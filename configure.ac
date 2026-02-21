@@ -1341,23 +1341,19 @@ AC_ARG_ENABLE([php],
 
 AS_IF([test "x$enable_shared" = xno], [
   # Shared-library based bindings cannot run on a static-only build.
-  # Normalize all binding toggles to "no" so recursive make does not try
-  # to invoke packaging steps that require libsixel shared objects.
+  # Keep this as a hard failure so unsupported combinations are rejected
+  # before nested build steps start.
   AS_IF([test "x$enable_python" != xno], [
-    AC_MSG_WARN([disabling python bindings because --disable-shared was specified])
-    enable_python=no
+    AC_MSG_ERROR([--enable-python requires shared library builds; remove --disable-shared])
   ])
   AS_IF([test "x$enable_ruby" != xno], [
-    AC_MSG_WARN([disabling ruby bindings because --disable-shared was specified])
-    enable_ruby=no
+    AC_MSG_ERROR([--enable-ruby requires shared library builds; remove --disable-shared])
   ])
   AS_IF([test "x$enable_perl" != xno], [
-    AC_MSG_WARN([disabling perl bindings because --disable-shared was specified])
-    enable_perl=no
+    AC_MSG_ERROR([--enable-perl requires shared library builds; remove --disable-shared])
   ])
   AS_IF([test "x$enable_php" != xno], [
-    AC_MSG_WARN([disabling php bindings because --disable-shared was specified])
-    enable_php=no
+    AC_MSG_ERROR([--enable-php requires shared library builds; remove --disable-shared])
   ])
 ])
 
@@ -3030,7 +3026,7 @@ if test x$with_webp != xno; then
     if test x$have_webp = xyes; then
         AC_DEFINE(HAVE_WEBP, 1, [whether libwebp is available])
         loaders="${loaders} webp"
-        if test "x$LIBWEBP_PKG_NAME" != x; then
+        if test x$LIBWEBP_PKG_NAME != x; then
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
         else
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"

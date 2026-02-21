@@ -18037,38 +18037,30 @@ if test "x$enable_shared" = xno
 then :
 
   # Shared-library based bindings cannot run on a static-only build.
-  # Normalize all binding toggles to "no" so recursive make does not try
-  # to invoke packaging steps that require libsixel shared objects.
+  # Keep this as a hard failure so unsupported combinations are rejected
+  # before nested build steps start.
   if test "x$enable_python" != xno
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling python bindings because --disable-shared was specified" >&5
-printf "%s\n" "$as_me: WARNING: disabling python bindings because --disable-shared was specified" >&2;}
-    enable_python=no
+    as_fn_error $? "--enable-python requires shared library builds; remove --disable-shared" "$LINENO" 5
 
 fi
   if test "x$enable_ruby" != xno
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling ruby bindings because --disable-shared was specified" >&5
-printf "%s\n" "$as_me: WARNING: disabling ruby bindings because --disable-shared was specified" >&2;}
-    enable_ruby=no
+    as_fn_error $? "--enable-ruby requires shared library builds; remove --disable-shared" "$LINENO" 5
 
 fi
   if test "x$enable_perl" != xno
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling perl bindings because --disable-shared was specified" >&5
-printf "%s\n" "$as_me: WARNING: disabling perl bindings because --disable-shared was specified" >&2;}
-    enable_perl=no
+    as_fn_error $? "--enable-perl requires shared library builds; remove --disable-shared" "$LINENO" 5
 
 fi
   if test "x$enable_php" != xno
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling php bindings because --disable-shared was specified" >&5
-printf "%s\n" "$as_me: WARNING: disabling php bindings because --disable-shared was specified" >&2;}
-    enable_php=no
+    as_fn_error $? "--enable-php requires shared library builds; remove --disable-shared" "$LINENO" 5
 
 fi
 
@@ -24945,7 +24937,7 @@ fi
 printf "%s\n" "#define HAVE_WEBP 1" >>confdefs.h
 
         loaders="${loaders} webp"
-        if test "x$LIBWEBP_PKG_NAME" != x; then
+        if test x$LIBWEBP_PKG_NAME != x; then
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
         else
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"

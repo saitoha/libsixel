@@ -136,7 +136,8 @@ The runtime loader checks bundled files first, then falls back to system
 library names for backward compatibility.
 
 Note: binding packaging requires shared libsixel artifacts. Static-only builds
-(`--disable-shared` or `-Ddefault_library=static`) disable language bindings.
+(`--disable-shared` or `-Ddefault_library=static`) reject language bindings
+as an explicit configuration error.
 
 ## Shared Library Loading
 
