@@ -285,6 +285,7 @@ _arguments -S -s -A "-*" -S \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-~,--lookup-policy=}'[choose histogram lookup width and backend]':lookuppolicy:_lookuppolicy \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
+  {-T,--start_frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \

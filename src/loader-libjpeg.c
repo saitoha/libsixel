@@ -158,6 +158,8 @@ load_with_libjpeg(
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -173,6 +175,8 @@ load_with_libjpeg(
     (void)fuse_palette;
     (void)reqcolors;
     (void)loop_control;
+    (void)start_frame_no_set;
+    (void)start_frame_no;
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {

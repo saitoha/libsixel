@@ -221,9 +221,6 @@ load_sixel(unsigned char        /* out */ **result,
         loader_trace_message("load_sixel: sixel_decode_raw -> %d",
                              (int)status);
     }
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
 
     image_bytes = (size_t)(*psx) * (size_t)(*psy);
 
@@ -1504,6 +1501,8 @@ load_with_builtin(
     int reqcolors,
     unsigned char *bgcolor,
     int loop_control,
+    int start_frame_no_set,
+    int start_frame_no_override,
     sixel_load_image_function fn_load,
     void *context)
 {
@@ -1538,7 +1537,14 @@ load_with_builtin(
     resolved_start_frame_no = -1;
     gif_frame_count = 0;
 
-    status = sixel_builtin_parse_animation_start_frame_no(&start_frame_no);
+    if (start_frame_no_set) {
+        start_frame_no = start_frame_no_override;
+    } else {
+        status = sixel_builtin_parse_animation_start_frame_no(&start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }

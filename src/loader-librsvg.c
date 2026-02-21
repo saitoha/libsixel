@@ -321,6 +321,8 @@ load_with_librsvg(
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -338,6 +340,8 @@ load_with_librsvg(
     (void)fuse_palette;
     (void)reqcolors;
     (void)loop_control;
+    (void)start_frame_no_set;
+    (void)start_frame_no;
 
     if (bgcolor != NULL) {
         opaque_bg[0] = bgcolor[0];

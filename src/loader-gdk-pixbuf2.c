@@ -383,9 +383,13 @@ load_with_gdkpixbuf(
     emit_callback = 1;
     source_frame_no = 0;
 
-    status = gdkpixbuf_parse_animation_start_frame_no(&start_frame_no);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (start_frame_no_set) {
+        start_frame_no = start_frame_no_override;
+    } else {
+        status = gdkpixbuf_parse_animation_start_frame_no(&start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = sixel_frame_new(&frame, pchunk->allocator);

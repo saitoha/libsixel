@@ -84,6 +84,8 @@ struct sixel_encoder {
     char *palette_output;
     char *loader_order;
     int loader_wic_ico_minsize;
+    int loader_start_frame_no;
+    int loader_start_frame_no_set;
     int builtin_palette;
     int method_for_diffuse;
     int method_for_scan;
