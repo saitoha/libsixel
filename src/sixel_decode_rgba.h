@@ -12,7 +12,7 @@
 
 #include <sixel.h>
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_rgba(unsigned char const *data,
                   size_t size,
                   int request_alpha,

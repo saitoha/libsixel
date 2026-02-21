@@ -232,23 +232,23 @@ struct sixel_assessment {
 #pragma warning(pop)
 #endif  /* _MSC_VER */
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_new(
     sixel_assessment_t  **ppassessment,
     sixel_allocator_t   *allocator);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_ref(sixel_assessment_t *assessment);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_unref(sixel_assessment_t *assessment);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_setopt(sixel_assessment_t *assessment,
                         int option,
                         char const *value);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_analyze(sixel_assessment_t *assessment,
                          sixel_frame_t *reference,
                          sixel_frame_t *output);
@@ -263,87 +263,87 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
  *  These helpers live in a private header so the lsqa tool can reuse
  *  the quality pipeline without exposing the API in the public header.
  */
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
                                         sixel_allocator_t *allocator,
                                         sixel_frame_t **ppframe);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_load_single_frame(char const *path,
                                    sixel_allocator_t *allocator,
                                    sixel_frame_t **ppframe);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_stage_transition(sixel_assessment_t *assessment,
                                   sixel_assessment_stage_t stage);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_stage_finish(sixel_assessment_t *assessment);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_stage_duration(sixel_assessment_t *assessment,
                                        sixel_assessment_stage_t stage,
                                        double duration);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_loader(sixel_assessment_t *assessment,
                                char const *path,
                                char const *loader_name,
                                size_t input_bytes);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_source_frame(sixel_assessment_t *assessment,
                                      sixel_frame_t *frame);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_quantized_capture(
     sixel_assessment_t *assessment,
     struct sixel_encoder *encoder);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_output_size(sixel_assessment_t *assessment,
                                     size_t output_bytes);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_output_write(sixel_assessment_t *assessment,
                                      size_t bytes,
                                      double duration);
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_assessment_palette_probe_enabled(void);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_palette_apply_span(double duration);
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_assessment_encode_probe_enabled(void);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_set_encode_parallelism(int threads);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_encode_span(sixel_assessment_stage_t stage,
                                     double duration);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_record_encode_work(sixel_assessment_stage_t stage,
                                     double amount);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_select_metrics(sixel_assessment_t *assessment,
                                 unsigned int metrics);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_get_json(sixel_assessment_t *assessment,
                           unsigned int sections,
                           sixel_assessment_json_callback_t callback,
                           void *user_data);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_select_sections(sixel_assessment_t *assessment,
                                  unsigned int sections);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_assessment_attach_encoder(sixel_assessment_t *assessment,
                                 struct sixel_encoder *encoder);
 

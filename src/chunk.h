@@ -41,7 +41,7 @@ typedef struct sixel_chunk
 extern "C" {
 #endif
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_chunk_new(
     sixel_chunk_t       /* out */   **ppchunk,
     char const          /* in */    *filename,
@@ -50,7 +50,7 @@ sixel_chunk_new(
     sixel_allocator_t   /* in */    *allocator);
 
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_chunk_destroy(
     sixel_chunk_t * const /* in */ pchunk);
 

@@ -76,7 +76,7 @@ void
 sixel_set_kmeans_threshold_override(int enabled,
                                    double threshold);
 
-SIXELAPI sixel_kmeans_init_type
+SIXEL_INTERNAL_API sixel_kmeans_init_type
 sixel_get_kmeans_init_type(void);
 
 void

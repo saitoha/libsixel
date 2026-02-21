@@ -77,27 +77,28 @@ typedef struct sixel_mutex sixel_mutex_t;
 typedef struct sixel_cond sixel_cond_t;
 typedef struct sixel_thread sixel_thread_t;
 
-SIXELAPI int sixel_mutex_init(sixel_mutex_t *mutex);
-SIXELAPI void sixel_mutex_destroy(sixel_mutex_t *mutex);
-SIXELAPI void sixel_mutex_lock(sixel_mutex_t *mutex);
-SIXELAPI void sixel_mutex_unlock(sixel_mutex_t *mutex);
+SIXEL_INTERNAL_API int sixel_mutex_init(sixel_mutex_t *mutex);
+SIXEL_INTERNAL_API void sixel_mutex_destroy(sixel_mutex_t *mutex);
+SIXEL_INTERNAL_API void sixel_mutex_lock(sixel_mutex_t *mutex);
+SIXEL_INTERNAL_API void sixel_mutex_unlock(sixel_mutex_t *mutex);
 
-SIXELAPI int sixel_cond_init(sixel_cond_t *cond);
-SIXELAPI void sixel_cond_destroy(sixel_cond_t *cond);
-SIXELAPI void sixel_cond_wait(sixel_cond_t *cond, sixel_mutex_t *mutex);
-SIXELAPI void sixel_cond_signal(sixel_cond_t *cond);
-SIXELAPI void sixel_cond_broadcast(sixel_cond_t *cond);
+SIXEL_INTERNAL_API int sixel_cond_init(sixel_cond_t *cond);
+SIXEL_INTERNAL_API void sixel_cond_destroy(sixel_cond_t *cond);
+SIXEL_INTERNAL_API void sixel_cond_wait(sixel_cond_t *cond,
+                                        sixel_mutex_t *mutex);
+SIXEL_INTERNAL_API void sixel_cond_signal(sixel_cond_t *cond);
+SIXEL_INTERNAL_API void sixel_cond_broadcast(sixel_cond_t *cond);
 
-SIXELAPI int sixel_thread_create(sixel_thread_t *thread,
+SIXEL_INTERNAL_API int sixel_thread_create(sixel_thread_t *thread,
                                  sixel_thread_fn fn,
                                  void *arg);
-SIXELAPI void sixel_thread_join(sixel_thread_t *thread);
-SIXELAPI int sixel_thread_pin_self(int cpu_index);
-SIXELAPI int sixel_get_hw_threads(void);
+SIXEL_INTERNAL_API void sixel_thread_join(sixel_thread_t *thread);
+SIXEL_INTERNAL_API int sixel_thread_pin_self(int cpu_index);
+SIXEL_INTERNAL_API int sixel_get_hw_threads(void);
 
-SIXELAPI int sixel_threads_normalize(int requested);
-SIXELAPI void sixel_set_threads(int threads);
-SIXELAPI int sixel_threads_resolve(void);
+SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
+SIXEL_INTERNAL_API void sixel_set_threads(int threads);
+SIXEL_INTERNAL_API int sixel_threads_resolve(void);
 
 #ifdef __cplusplus
 }

@@ -112,11 +112,11 @@ struct sixel_filter {
     void *progress_userdata;
 };
 
-SIXELAPI void sixel_filter_clear(sixel_filter_t *filter);
+SIXEL_INTERNAL_API void sixel_filter_clear(sixel_filter_t *filter);
 
-SIXELAPI SIXELSTATUS sixel_filter_alloc(sixel_filter_t **filter_out);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_filter_alloc(sixel_filter_t **filter_out);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_init(sixel_filter_t *filter,
                   const char *name,
                   sixel_filter_kind_t kind,
@@ -124,32 +124,32 @@ sixel_filter_init(sixel_filter_t *filter,
                   sixel_filter_dispose_fn dispose,
                   void *userdata);
 
-SIXELAPI void sixel_filter_bind_input(sixel_filter_t *filter,
+SIXEL_INTERNAL_API void sixel_filter_bind_input(sixel_filter_t *filter,
                                       sixel_frame_t **slot,
                                       int pixelformat,
                                       int colorspace);
 
-SIXELAPI void sixel_filter_bind_output(sixel_filter_t *filter,
+SIXEL_INTERNAL_API void sixel_filter_bind_output(sixel_filter_t *filter,
                                        sixel_frame_t **slot,
                                        int pixelformat,
                                        int colorspace);
 
-SIXELAPI void sixel_filter_set_progress(sixel_filter_t *filter,
+SIXEL_INTERNAL_API void sixel_filter_set_progress(sixel_filter_t *filter,
                                         sixel_filter_progress_fn progress_cb,
                                         void *progress_userdata,
                                         int total_units);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_update_progress(sixel_filter_t *filter, int completed_units);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_run(sixel_filter_t *filter,
                  sixel_allocator_t *allocator,
                  sixel_logger_t *logger);
 
-SIXELAPI void sixel_filter_teardown(sixel_filter_t *filter);
+SIXEL_INTERNAL_API void sixel_filter_teardown(sixel_filter_t *filter);
 
-SIXELAPI void sixel_filter_free(sixel_filter_t *filter);
+SIXEL_INTERNAL_API void sixel_filter_free(sixel_filter_t *filter);
 
 #endif /* LIBSIXEL_FILTER_H */
 

@@ -32,7 +32,7 @@ struct sixel_tty_output_state {
     int supports_color;
 };
 
-SIXELAPI struct sixel_tty_output_state const *
+SIXEL_INTERNAL_API struct sixel_tty_output_state const *
 sixel_tty_get_output_state(void);
 
 SIXELSTATUS

@@ -33,10 +33,10 @@
 extern "C" {
 #endif
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_probe_is_probable(unsigned char const *data, size_t len);
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_parse_header(unsigned char const *ibuf,
                    size_t headsize,
                    unsigned int **pparams,

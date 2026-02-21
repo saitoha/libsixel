@@ -40,19 +40,21 @@ typedef void (*tp_workspace_cleanup_fn)(void *workspace);
 struct threadpool;
 typedef struct threadpool threadpool_t;
 
-SIXELAPI threadpool_t *threadpool_create(int nthreads,
+SIXEL_INTERNAL_API threadpool_t *threadpool_create(int nthreads,
                                          int qsize,
                                          size_t workspace_size,
                                          tp_worker_fn worker,
                                          void *userdata,
                                          tp_workspace_cleanup_fn
                                             workspace_cleanup);
-SIXELAPI void threadpool_set_affinity(threadpool_t *pool, int pin_threads);
-SIXELAPI void threadpool_destroy(threadpool_t *pool);
-SIXELAPI void threadpool_push(threadpool_t *pool, tp_job_t job);
-SIXELAPI void threadpool_finish(threadpool_t *pool);
-SIXELAPI int threadpool_get_error(threadpool_t *pool);
-SIXELAPI int threadpool_grow(threadpool_t *pool, int additional_threads);
+SIXEL_INTERNAL_API void threadpool_set_affinity(threadpool_t *pool,
+                                                int pin_threads);
+SIXEL_INTERNAL_API void threadpool_destroy(threadpool_t *pool);
+SIXEL_INTERNAL_API void threadpool_push(threadpool_t *pool, tp_job_t job);
+SIXEL_INTERNAL_API void threadpool_finish(threadpool_t *pool);
+SIXEL_INTERNAL_API int threadpool_get_error(threadpool_t *pool);
+SIXEL_INTERNAL_API int threadpool_grow(threadpool_t *pool,
+                                       int additional_threads);
 
 #endif /* LIBSIXEL_THREADPOOL_H */
 

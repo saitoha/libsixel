@@ -38,27 +38,27 @@ typedef struct sixel_lut sixel_lut_t;
 
 #define SIXEL_MAX_CHANNELS 4
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lut_new(sixel_lut_t **out,
               int policy,
               sixel_allocator_t *allocator);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_lookup_set_parallel_dither_active(int active);
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_lookup_parallel_dither_active(void);
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_lookup_env_shared_certlut(void);
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_lookup_env_shared_5bit(void);
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_lookup_env_shared_6bit(void);
 
-SIXELAPI void
+SIXEL_INTERNAL_API void
 sixel_lut_unref(sixel_lut_t *lut);
 
 /*
@@ -66,7 +66,7 @@ sixel_lut_unref(sixel_lut_t *lut);
  * the underlying color space.  Each weight scales the corresponding channel
  * when evaluating palette distance.
  */
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lut_configure(sixel_lut_t *lut,
                     unsigned char const *palette,
                     float const *palette_float,
@@ -81,7 +81,7 @@ sixel_lut_configure(sixel_lut_t *lut,
                     int pixelformat);
 
 /* lookup */
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel);
 
 #ifdef __cplusplus
