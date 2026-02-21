@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: static frame with Atkinson dithering from animated GIF (builtin loader).
+# TAP test: static frame with Atkinson dithering from animated GIF matches reference.
 
 set -eux
 
@@ -13,12 +13,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
-
-run_img2sixel -Lbuiltin! -S -datkinson "${image_gif}" >/dev/null || {
+run_img2sixel -Lbuiltin! -S -datkinson \
+    "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
+    >"${ARTIFACT_LOCAL_DIR}/small_gif_atkinson_static.six" || {
     fail 1 "sequence splitting with Atkinson fails"
     exit 0
 }
 
-pass 1 "sequence splitting with Atkinson works"
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/small_gif_atkinson_static_reference.six" \
+    "${ARTIFACT_LOCAL_DIR}/small_gif_atkinson_static.six" 2>&1) || {
+    fail 1 "${lsqa_msg}"
+    exit 0
+}
+
+pass 1 "sequence splitting with Atkinson matches static reference"
 exit 0

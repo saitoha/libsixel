@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: builtin APNG start frame accepts positive indexes.
+# TAP test: builtin APNG positive start frame matches static reference.
 
 set -eux
 
@@ -13,13 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Lbuiltin! -S \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
-    >"${ARTIFACT_LOCAL_DIR}/apng_start_default.six" || {
-    fail 1 "baseline APNG decode failed"
-    exit 0
-}
-
 run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
     -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
@@ -28,11 +21,12 @@ run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
     exit 0
 }
 
-cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_default.six" \
-    "${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" && {
-    fail 1 "positive start frame did not change static APNG output"
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2_builtin_start_frame_positive_reference.six" \
+    "${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" 2>&1) || {
+    fail 1 "${lsqa_msg}"
     exit 0
 }
 
-pass 1 "builtin APNG positive start frame is applied"
+pass 1 "builtin APNG positive start frame matches static reference"
 exit 0

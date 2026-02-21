@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: libwebp decodes tiny lossless animation.
+# TAP test: libwebp loop-disable animation output matches static reference stream.
 
 set -eux
 
@@ -18,12 +18,19 @@ test "${HAVE_WEBP-}" = 1 || {
 echo "1..1"
 set -v
 
-image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
-
-run_img2sixel -Llibwebp! -ldisable "${image_webp}" >/dev/null || {
+run_img2sixel -Llibwebp! -ldisable \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
+    >"${ARTIFACT_LOCAL_DIR}/webp_loop_disable.six" || {
     fail 1 "libwebp lossless animation decode failed"
     exit 0
 }
 
-pass 1 "libwebp lossless animation decode succeeded"
+cmp -s \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/animated_lossless_8x8_2frame_min_loop_disable_reference.six" \
+    "${ARTIFACT_LOCAL_DIR}/webp_loop_disable.six" || {
+    fail 1 "libwebp loop-disable animation output differed from reference"
+    exit 0
+}
+
+pass 1 "libwebp loop-disable animation output matched static reference"
 exit 0

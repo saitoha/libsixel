@@ -352,7 +352,10 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/apng_8x8_dispose_background_builtin_static_reference.six \
     data/inputs/formats/apng_8x8_indexed_loop2.png \
     data/inputs/formats/apng_8x8_rgb_loop2.png \
+    data/inputs/formats/apng_8x8_rgb_loop2_builtin_start_frame_positive_reference.six \
+    data/inputs/formats/apng_8x8_rgb_loop2_builtin_start_frame_negative_reference.six \
     data/inputs/formats/apng_8x8_rgba_loop2.png \
+    data/inputs/formats/animated_lossless_8x8_2frame_min_loop_disable_reference.six \
     data/inputs/formats/apng_invalid_blend2.png \
     data/inputs/formats/apng_invalid_dispose3.png \
     data/inputs/formats/apng_invalid_fctl_oob.png \
@@ -402,6 +405,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.hdr \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
+    data/inputs/formats/small_gif_atkinson_static_reference.six \
     data/inputs/small.ppm \
     data/inputs/tall.ppm \
     data/inputs/small.gif \
