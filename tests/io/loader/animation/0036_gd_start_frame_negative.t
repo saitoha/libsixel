@@ -18,7 +18,7 @@ test "${HAVE_GD-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1" \
+run_img2sixel --start-frame=-1 \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gd_start_negative.six" || {
@@ -26,7 +26,7 @@ run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1" \
     exit 0
 }
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=4" \
+run_img2sixel --start-frame=4 \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gd_start_positive_equivalent.six" || {

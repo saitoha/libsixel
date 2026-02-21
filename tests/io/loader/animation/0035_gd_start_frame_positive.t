@@ -25,7 +25,7 @@ run_img2sixel -L gd! -ldisable \
     exit 0
 }
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
+run_img2sixel --start-frame=1 \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gd_start_positive.six" || {

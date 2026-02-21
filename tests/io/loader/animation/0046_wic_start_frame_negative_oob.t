@@ -21,7 +21,7 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
 echo "1..1"
 set -v
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-999" \
+run_img2sixel --start-frame=-999 \
     -L wic! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null && {
     fail 1 "wic negative out-of-range start frame succeeded"

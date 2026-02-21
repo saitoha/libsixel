@@ -25,7 +25,7 @@ run_img2sixel -Llibpng! -S \
     exit 0
 }
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1" \
+run_img2sixel --start-frame=-1 \
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_negative.six" || {

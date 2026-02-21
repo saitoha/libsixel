@@ -18,7 +18,7 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=999" \
+run_img2sixel --start-frame=999 \
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >/dev/null && {
