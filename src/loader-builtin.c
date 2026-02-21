@@ -1156,6 +1156,7 @@ sixel_builtin_load_apng_frames(
     int saw_animation;
     int has_frame;
     int frame_no;
+    int source_frame_no;
     int num_frames;
     int num_plays;
     int loop_no;
@@ -1181,6 +1182,7 @@ sixel_builtin_load_apng_frames(
     saw_animation = 0;
     has_frame = 0;
     frame_no = 0;
+    source_frame_no = 0;
     num_frames = 0;
     num_plays = 0;
     loop_no = 0;
@@ -1420,6 +1422,17 @@ sixel_builtin_load_apng_frames(
                 frames_in_loop < start_frame_no) {
                 emit_callback = 0;
             }
+            if (loop_no == 0 && start_frame_no != INT_MIN) {
+                /*
+                 * frame_no is used by the encoder/tty path to select DECSC
+                 * for the first emitted frame and DECRC for subsequent
+                 * frames. Keep frame_no aligned to emitted order when the
+                 * first loop skips leading source frames.
+                 */
+                frame_no = source_frame_no - start_frame_no;
+            } else {
+                frame_no = source_frame_no;
+            }
             status = sixel_builtin_apng_emit_frame(&state,
                                                    &control,
                                                    frame_no,
@@ -1434,7 +1447,7 @@ sixel_builtin_load_apng_frames(
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            ++frame_no;
+            ++source_frame_no;
             ++frames_in_loop;
             if (fstatic && emit_callback) {
                 status = SIXEL_OK;
