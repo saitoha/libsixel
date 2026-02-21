@@ -338,6 +338,13 @@ loader_apply_component_options(sixel_loader_component_t *component,
      * | START_FRAME_NO            | loader->start_frame_no/NULL   |
      * +---------------------------+-------------------------------+
      */
+    status = SIXEL_OK;
+    message[0] = '\0';
+    index = 0;
+    if (component == NULL || loader == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     options[0].option = SIXEL_LOADER_OPTION_REQUIRE_STATIC;
     options[0].name = "require-static";
     options[0].value = &loader->fstatic;
@@ -357,13 +364,6 @@ loader_apply_component_options(sixel_loader_component_t *component,
     options[5].name = "start-frame-no";
     options[5].value = loader->has_start_frame_no
         ? &loader->start_frame_no : NULL;
-
-    status = SIXEL_OK;
-    message[0] = '\0';
-    index = 0;
-    if (component == NULL || loader == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
 
     for (index = 0; index < sizeof(options) / sizeof(options[0]); ++index) {
         status = sixel_loader_component_setopt(component,
