@@ -761,6 +761,8 @@ load_gif(
     unsigned char bg_g;
     unsigned char bg_b;
     int emit_frame;
+    int decoded_frame_no;
+    int emitted_frame_no;
 
     frame = NULL;
     fnp.p = fn_load;
@@ -832,6 +834,8 @@ load_gif(
     for (;;) { /* per loop */
 
         sixel_frame_set_frame_no(frame, 0);
+        decoded_frame_no = 0;
+        emitted_frame_no = 0;
 
         s.img_buffer = s.img_buffer_original;
         status = gif_load_header(&s, &g);
@@ -899,11 +903,17 @@ load_gif(
              */
             if (start_frame_no >= 0 &&
                 sixel_frame_get_loop_no(frame) == 0 &&
-                sixel_frame_get_frame_no(frame) < start_frame_no) {
+                decoded_frame_no < start_frame_no) {
                 emit_frame = 0;
             }
 
             if (emit_frame) {
+                /*
+                 * Report frame numbers relative to the emitted stream.
+                 * This keeps the first emitted frame at index 0 even when
+                 * start-frame skipping suppresses earlier decoded frames.
+                 */
+                sixel_frame_set_frame_no(frame, emitted_frame_no);
                 status = fnp.fn(frame, context);
                 if (status != SIXEL_OK) {
                     goto end;
@@ -912,8 +922,10 @@ load_gif(
                 if (fstatic) {
                     goto end;
                 }
+                ++emitted_frame_no;
             }
 
+            ++decoded_frame_no;
             sixel_frame_increment_frame_no(frame);
         }
 
