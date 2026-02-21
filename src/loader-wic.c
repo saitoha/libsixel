@@ -186,6 +186,8 @@ load_with_wic(
                                                   /* color */
     int                       /* in */     loop_control, /* one of enum */
                                                   /* loop_control */
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no_override,
     sixel_load_image_function /* in */     fn_load,      /* callback */
     void                      /* in/out */ *context      /* private */
                                                   /* data for callback */
