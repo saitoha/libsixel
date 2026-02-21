@@ -384,6 +384,7 @@ _img2sixel()
                                    -q --quality \
                                    -~ --lookup-policy \
                                    -l --loop-control \
+                                   -T --start-frame \
                                    -t --palette-type \
                                    -b --builtin-palette \
                                    -E --encode-policy \

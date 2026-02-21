@@ -335,6 +335,8 @@ load_with_gdkpixbuf(
     int reqcolors,                     /* reqcolors */
     unsigned char *bgcolor,            /* background color */
     int loop_control,                  /* one of enum loop_control */
+    int start_frame_no_set,
+    int start_frame_no_override,
     sixel_load_image_function fn_load, /* callback */
     void *context                      /* private data for callback */
 )

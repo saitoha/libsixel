@@ -508,8 +508,8 @@ static cli_option_help_t const g_option_help_table[] = {
     },
     {
         'T',
-        "start_frame",
-        "-T FRAME_NO, --start_frame=FRAME_NO\n"
+        "start-frame",
+        "-T FRAME_NO, --start-frame=FRAME_NO\n"
         "                           set the animation start frame index\n"
         "                           for supported loaders.\n"
         "                           Positive values and zero select from\n"
@@ -1616,7 +1616,7 @@ main(int argc, char *argv[])
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},
         {"loop-control",          required_argument,  &long_opt, 'l'},
-        {"start_frame",          required_argument,  &long_opt, 'T'},
+        {"start-frame",          required_argument,  &long_opt, 'T'},
         {"use-macro",             no_argument,        &long_opt, 'u'},
         {"ignore-delay",          no_argument,        &long_opt, 'g'},
         {"verbose",               no_argument,        &long_opt, 'v'},
