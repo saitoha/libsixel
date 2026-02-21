@@ -383,6 +383,12 @@ SIXEL_OPTFLAG_STATIC           = 'S'  # -S, --static: render animated GIF as a s
 # keeps the intent obvious when the same letter spans historic features.
 SIXEL_OPTFLAG_DEQUANTIZE       = 'd'  # -d, --dequantize: repair palette.
 SIXEL_OPTFLAG_DIRECT           = 'D'  # -D, --direct: decode to RGBA pixels.
+SIXEL_OPTFLAG_SIMILARITY       = 'S'  # -S SCORE, --similarity-score=SCORE:
+                                      #        set contour detector similarity
+SIXEL_OPTFLAG_SIZE             = 's'  # -s SIZE, --segment-size=SIZE:
+                                      #        set contour detector segment size
+SIXEL_OPTFLAG_EDGE             = 'e'  # -e MODE, --detect-edge=MODE:
+                                      #        set contour edge detector mode
 SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
                                       #          choose diffusion method which used with -p option.
                                       #          DIFFUSIONTYPE is one of them:
@@ -548,6 +554,11 @@ SIXEL_OPTFLAG_LOOPMODE         = 'l'  # -l LOOPMODE, --loop-control=LOOPMODE:
                                       #                     GIF header (default)
                                       #          force   -> always enable loop
                                       #          disable -> always disable loop
+
+SIXEL_OPTFLAG_START_FRAME      = 'T'  # -T FRAME_NO, --start-frame=FRAME_NO:
+                                      #        set the first animation frame index
+                                      #          non-negative -> absolute index
+                                      #          negative     -> offset from end
 
 SIXEL_OPTFLAG_PALETTE_TYPE     = 't'  # -t PALETTETYPE, --palette-type=PALETTETYPE:
                                       #        select palette color space type
