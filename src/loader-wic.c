@@ -33,6 +33,9 @@
 
 #if HAVE_WIC
 
+#include <limits.h>
+#include <stdlib.h>
+
 #if !defined(_WIN32_WINNT)
 # define _WIN32_WINNT 0x0600
 #endif
@@ -71,6 +74,7 @@ typedef BYTE *WICInProcPointer;
 #include "frame.h"
 #include "loader-common.h"
 #include "loader-wic.h"
+#include "compat_stub.h"
 
 
 #ifndef FACILITY_WINCODEC_ERR
@@ -92,6 +96,83 @@ loader_wic_status_from_hresult(HRESULT hr)
     }
 
     return SIXEL_OK;
+}
+
+static SIXELSTATUS
+wic_parse_animation_start_frame_no(int *start_frame_no)
+{
+    SIXELSTATUS status;
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    status = SIXEL_OK;
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0;
+
+    *start_frame_no = INT_MIN;
+    env_value = sixel_compat_getenv("SIXEL_LOADER_ANIMATION_START_FRAME_NO");
+    if (env_value == NULL || env_value[0] == '\0') {
+        goto end;
+    }
+
+    parsed = strtol(env_value, &endptr, 10);
+    if (endptr == env_value || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (parsed < (long)INT_MIN || parsed > (long)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *start_frame_no = (int)parsed;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+wic_resolve_animation_start_frame_no(int start_frame_no,
+                                     int frame_count,
+                                     int *resolved)
+{
+    SIXELSTATUS status;
+    int index;
+
+    status = SIXEL_OK;
+    index = 0;
+
+    if (frame_count <= 0) {
+        sixel_helper_set_additional_message(
+            "Animation frame count must be positive.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (start_frame_no >= 0) {
+        index = start_frame_no;
+    } else {
+        index = frame_count + start_frame_no;
+    }
+
+    if (index < 0 || index >= frame_count) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+            " the animation frame range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *resolved = index;
+
+end:
+    return status;
 }
 
 SIXELAPI SIXELSTATUS
@@ -147,6 +228,9 @@ load_with_wic(
     PROPVARIANT             lp;
     WICColor                c;
     int                     set_palette;
+    int                     start_frame_no;
+    int                     resolved_start_frame_no;
+    int                     frame_count_int;
 
     set_palette = 0;
     selected_frame_index = 0;
@@ -161,6 +245,9 @@ load_with_wic(
     is_ico_container = 0;
     ico_minsize = 0;
     decoded_frames_end = 0;
+    start_frame_no = INT_MIN;
+    resolved_start_frame_no = INT_MIN;
+    frame_count_int = 0;
 
     (void) fstatic;
     (void) reqcolors;
@@ -170,7 +257,14 @@ load_with_wic(
     PropVariantInit(&prop);
     PropVariantInit(&lp);
 
-    hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_SPEED_OVER_MEMORY);
+    status = wic_parse_animation_start_frame_no(&start_frame_no);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    hr = CoInitializeEx(NULL,
+                        COINIT_APARTMENTTHREADED |
+                        COINIT_SPEED_OVER_MEMORY);
     if (FAILED(hr)) {
         sixel_helper_set_additional_message(
             "load_with_wic: CoInitializeEx() failed.");
@@ -221,6 +315,25 @@ load_with_wic(
         sixel_helper_set_additional_message(
             "load_with_wic: IWICBitmapDecoder::GetFrameCount() failed.");
         goto end;
+    }
+    if (frame_count == 0) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: decoder reported zero frames.");
+        status = SIXEL_WIC_ERROR;
+        hr = E_FAIL;
+        goto end;
+    }
+
+    frame_count_int = (int)frame_count;
+    if (start_frame_no != INT_MIN) {
+        status = wic_resolve_animation_start_frame_no(
+            start_frame_no,
+            frame_count_int,
+            &resolved_start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            hr = E_FAIL;
+            goto end;
+        }
     }
 
     hr = decoder->lpVtbl->GetContainerFormat(decoder, &container_format);
@@ -275,6 +388,14 @@ load_with_wic(
         if (selected_metric == 0 && fallback_metric > 0) {
             selected_frame_index = fallback_frame_index;
         }
+    }
+
+    if (!is_ico_container && resolved_start_frame_no != INT_MIN) {
+        /*
+         * WIC currently decodes one selected frame per invocation in this
+         * pipeline.  Apply start-frame selection only to the first pass.
+         */
+        selected_frame_index = (UINT)resolved_start_frame_no;
     }
 
     hr = decoder->lpVtbl->GetFrame(decoder,
@@ -480,7 +601,8 @@ load_with_wic(
         sixel_frame_set_pixels(frame,
                                sixel_allocator_malloc(
                                    pchunk->allocator,
-                                   (size_t)(frame->height * frame->width * comp)));
+                                   (size_t)(frame->height *
+                                            frame->width * comp)));
         pixels = sixel_frame_get_pixels(frame);
         if (pixels == NULL) {
             sixel_helper_set_additional_message(
