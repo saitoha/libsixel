@@ -53,6 +53,10 @@
 #endif
 
 #ifdef HAVE_GDK_PIXBUF2
+# if !defined(GLIB_DISABLE_DEPRECATION_WARNINGS)
+#  define GLIB_DISABLE_DEPRECATION_WARNINGS
+#  define SIXEL_GLIB_DISABLE_DEPRECATION_WARNINGS
+# endif
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION && defined(__clang__)
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wtypedef-redefinition"
@@ -61,6 +65,10 @@
 # include <gdk-pixbuf/gdk-pixbuf-simple-anim.h>
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION && defined(__clang__)
 #  pragma clang diagnostic pop
+# endif
+# if defined(SIXEL_GLIB_DISABLE_DEPRECATION_WARNINGS)
+#  undef GLIB_DISABLE_DEPRECATION_WARNINGS
+#  undef SIXEL_GLIB_DISABLE_DEPRECATION_WARNINGS
 # endif
 #endif
 
@@ -481,46 +489,26 @@ load_with_gdkpixbuf(
     }
 
 #if HAVE_GDK_PIXBUF_244
-    /*
-     * gdk-pixbuf 2.44 deprecates static-image helpers. Probe whether the
-     * payload is animated by advancing an iterator once and checking if it
-     * can move forward. The iterator is recreated later for the real decode.
-     */
-    pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
-    if (pixbuf == NULL) {
-        status = SIXEL_GDK_ERROR;
-        goto end;
-    }
-
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    time_val = start_time;
-    it = gdk_pixbuf_animation_get_iter(animation, &time_val);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    if (it == NULL) {
-        status = SIXEL_GDK_ERROR;
-        goto end;
-    }
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     /*
-     * gdk-pixbuf 2.44 keeps animation_iter_advance() deprecated, but newer
-     * helpers are unavailable in older releases. Silence the warning while we
-     * probe whether the stream should be decoded as an animation.
+     * animation_iter_advance() returns whether a frame changed at a timestamp,
+     * not whether the source is animated. Use the explicit static-image probe
+     * so short-delay GIFs are not misclassified as still images.
      */
-    use_animation = gdk_pixbuf_animation_iter_advance(it, &time_val);
+    use_animation = gdk_pixbuf_animation_is_static_image(animation) ? FALSE :
+                    TRUE;
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic pop
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    g_object_unref(it);
-    it = NULL;
     if (fstatic || !use_animation) {
+        pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+        if (pixbuf == NULL) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
         frame->width = gdk_pixbuf_get_width(pixbuf);
         frame->height = gdk_pixbuf_get_height(pixbuf);
         stride = gdk_pixbuf_get_rowstride(pixbuf);
