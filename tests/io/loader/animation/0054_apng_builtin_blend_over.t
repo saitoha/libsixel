@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG builtin blend-over result matches libpng output on frame 1.
+# TAP test: builtin APNG blend-over static rendering matches reference.
 
 set -eux
 
@@ -10,35 +10,22 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_LIBPNG-}" = 1 || {
-    printf "1..0 # SKIP libpng is disabled in this build\n";
-    exit 0
-}
-
 echo "1..1"
 set -v
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
-    -Lbuiltin! -S \
+run_img2sixel -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_blend_over.png" \
-    >"${ARTIFACT_LOCAL_DIR}/apng_builtin_blend_frame1.six" || {
-    fail 1 "APNG builtin blend-over extraction failed"
+    >"${ARTIFACT_LOCAL_DIR}/apng_blend_over_builtin_static.six" || {
+    fail 1 "builtin APNG blend-over static rendering failed"
     exit 0
 }
 
-run_img2sixel -Llibpng! -S -T 1 \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_blend_over.png" \
-    >"${ARTIFACT_LOCAL_DIR}/apng_libpng_blend_frame1.six" || {
-    fail 1 "APNG libpng blend-over reference extraction failed"
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_blend_over_builtin_static_reference.six" \
+    "${ARTIFACT_LOCAL_DIR}/apng_blend_over_builtin_static.six" 2>&1) || {
+    fail 1 "${lsqa_msg}"
     exit 0
 }
 
-run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
-    "${ARTIFACT_LOCAL_DIR}/apng_libpng_blend_frame1.six" \
-    "${ARTIFACT_LOCAL_DIR}/apng_builtin_blend_frame1.six" >/dev/null || {
-    fail 1 "APNG builtin blend-over frame differs from libpng reference"
-    exit 0
-}
-
-pass 1 "APNG builtin blend-over frame matches libpng reference"
+pass 1 "builtin APNG blend-over static rendering matches reference"
 exit 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG dispose background is accepted.
+# TAP test: builtin APNG dispose-background static rendering matches reference.
 
 set -eux
 
@@ -13,11 +13,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Lbuiltin! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" -o/dev/null || {
-    fail 1 "APNG dispose background failed"
+run_img2sixel -Lbuiltin! -S \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" \
+    >"${ARTIFACT_LOCAL_DIR}/apng_dispose_background_builtin_static.six" || {
+    fail 1 "builtin APNG dispose-background static rendering failed"
     exit 0
 }
 
-pass 1 "APNG dispose background succeeds"
-exit 0
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background_builtin_static_reference.six" \
+    "${ARTIFACT_LOCAL_DIR}/apng_dispose_background_builtin_static.six" 2>&1) || {
+    fail 1 "${lsqa_msg}"
+    exit 0
+}
 
+pass 1 "builtin APNG dispose-background static rendering matches reference"
+exit 0

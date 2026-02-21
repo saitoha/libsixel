@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG dispose background is accepted.
+# TAP test: libpng APNG dispose-background start frame matches reference.
 
 set -eux
 
@@ -18,11 +18,19 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" -o/dev/null || {
-    fail 1 "APNG dispose background failed"
+run_img2sixel -Llibpng! -S --start-frame=1 \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" \
+    >"${ARTIFACT_LOCAL_DIR}/apng_dispose_background_libpng_frame1.six" || {
+    fail 1 "libpng APNG dispose-background frame extraction failed"
     exit 0
 }
 
-pass 1 "APNG dispose background succeeds"
-exit 0
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background_libpng_start_frame1_reference.six" \
+    "${ARTIFACT_LOCAL_DIR}/apng_dispose_background_libpng_frame1.six" 2>&1) || {
+    fail 1 "${lsqa_msg}"
+    exit 0
+}
 
+pass 1 "libpng APNG dispose-background frame matches static reference"
+exit 0
