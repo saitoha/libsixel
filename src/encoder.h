@@ -37,31 +37,7 @@
 struct sixel_frame;
 struct sixel_logger;
 
-typedef struct sixel_encoding_planner {
-    int total_threads;
-    int main_threads;
-    int palette_threads;
-    int allow_palette_async;
-    int clip_active;
-    int scale_active;
-    int colorspace_active;
-    int heavy_ops;
-    int working_pixelformat;
-    int scale_pixelformat;
-    int scale_input_pixelformat;
-    int working_colorspace_effective;
-    int colorspace_before_scale;
-    int colorspace_after_scale;
-    int resize_precision_mode;
-    int pipeline_active;
-    int pipeline_band_height;
-    int pipeline_overlap;
-    int pipeline_queue_depth;
-    int pipeline_dither_threads;
-    int pipeline_encode_threads;
-    int pipeline_bands;
-    int pipeline_pin_threads;
-} sixel_encoding_planner_t;
+#include "planner.h"
 
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */

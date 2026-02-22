@@ -116,6 +116,8 @@ srcs = [
   'fromgif.c',
   'clipboard.c',
   'encoder.c',
+  'planner.c',
+  'planner.h',
   'decoder.c',
   'decoder-parallel.c',
   'decoder-parallel.h',
