@@ -4,8 +4,6 @@
 from __future__ import annotations
 
 import io
-import os
-import pathlib
 import sys
 import traceback
 from contextlib import redirect_stdout
@@ -17,56 +15,9 @@ def _skip_all(message: str) -> int:
     return 0
 
 
-def _prepend_library_path(var_name: str, libdir: str) -> None:
-    current = os.environ.get(var_name, "")
-    os.environ[var_name] = f"{libdir}:{current}" if current else libdir
-
-
-def _ensure_python_runtime() -> bool:
-    if os.environ.get("ENABLE_PYTHON", "0") != "1":
-        _skip_all("python bindings are disabled in this build")
-        return False
-
-    python_bin = os.environ.get("SIXEL_TEST_PYTHON", "")
-    if not python_bin:
-        _skip_all("python wheel test interpreter is unavailable")
-        return False
-
-    candidate = pathlib.Path(python_bin)
-    if not candidate.exists():
-        _skip_all("python wheel test interpreter is unavailable")
-        return False
-
-    current = pathlib.Path(sys.executable).resolve()
-    expected = candidate.resolve()
-    if current != expected:
-        os.execv(str(expected), [str(expected), *sys.argv])
-    return True
-
-
-def _prepare_runtime_env() -> None:
-    top_builddir = os.environ.get("TOP_BUILDDIR", "")
-    libdir = os.environ.get("LIBSIXEL_LIBDIR", "")
-    if not libdir:
-        if top_builddir:
-            preferred = pathlib.Path(top_builddir) / "src" / ".libs"
-            fallback = pathlib.Path(top_builddir) / "src"
-            libdir = str(preferred if preferred.is_dir() else fallback)
-        else:
-            libdir = "src"
-    os.environ["LIBSIXEL_LIBDIR"] = libdir
-    _prepend_library_path("LD_LIBRARY_PATH", libdir)
-    _prepend_library_path("DYLD_LIBRARY_PATH", libdir)
-
-
 def run_embedded_tap_test(
     description: str, argv: list[str], test_func: Callable[[], None]
 ) -> int:
-    if not _ensure_python_runtime():
-        return 0
-
-    _prepare_runtime_env()
-
     output = io.StringIO()
     code = 0
     detail = ""

@@ -250,9 +250,11 @@ python_venv_exports=$(
     "${MESON_BUILD_ROOT}/tests/.python-test-venv"
 )
 eval "$python_venv_exports"
-if test -n "${SIXEL_TEST_PYTHON:-}"; then
-  export SIXEL_TEST_PYTHON
+if test -z "${SIXEL_TEST_PYTHON:-}"; then
+  printf '%s\n' '1..0 # SKIP python test interpreter is unavailable'
+  exit 0
 fi
+export SIXEL_TEST_PYTHON
 
 exec "$@"
 ''', 'sh'] + test_cmd,
