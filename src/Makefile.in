@@ -231,13 +231,14 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
 	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-	$(srcdir)/decoder.c $(srcdir)/decoder.h \
-	$(srcdir)/decoder-parallel.c $(srcdir)/decoder-parallel.h \
-	$(srcdir)/decoder-image.h $(srcdir)/options.c \
-	$(srcdir)/options.h $(srcdir)/path.c $(srcdir)/path.h \
-	$(srcdir)/stb_image.h $(srcdir)/writer.c $(srcdir)/writer.h \
-	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
-	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
+	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
+	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-image.h \
+	$(srcdir)/options.c $(srcdir)/options.h $(srcdir)/path.c \
+	$(srcdir)/path.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
+	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
+	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
+	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
@@ -322,6 +323,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-clipboard.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-planner.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder-parallel.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-options.lo \
@@ -444,6 +446,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette.Plo \
 	./$(DEPDIR)/libsixel_la-path.Plo \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
+	./$(DEPDIR)/libsixel_la-planner.Plo \
 	./$(DEPDIR)/libsixel_la-probe.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
@@ -898,6 +901,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/planner.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/planner.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.c \
@@ -1139,6 +1144,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-path.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-planner.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-probe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
@@ -1667,6 +1673,13 @@ libsixel_la-encoder.lo: encoder.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-encoder.lo `test -f 'encoder.c' || echo '$(srcdir)/'`encoder.c
 
+libsixel_la-planner.lo: planner.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-planner.lo -MD -MP -MF $(DEPDIR)/libsixel_la-planner.Tpo -c -o libsixel_la-planner.lo `test -f 'planner.c' || echo '$(srcdir)/'`planner.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-planner.Tpo $(DEPDIR)/libsixel_la-planner.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner.c' object='libsixel_la-planner.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-planner.lo `test -f 'planner.c' || echo '$(srcdir)/'`planner.c
+
 libsixel_la-decoder.lo: decoder.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-decoder.lo -MD -MP -MF $(DEPDIR)/libsixel_la-decoder.Tpo -c -o libsixel_la-decoder.lo `test -f 'decoder.c' || echo '$(srcdir)/'`decoder.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-decoder.Tpo $(DEPDIR)/libsixel_la-decoder.Plo
@@ -2085,6 +2098,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-path.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-planner.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
@@ -2218,6 +2232,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-path.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-planner.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo

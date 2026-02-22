@@ -3,6 +3,11 @@ cp_cmd = find_program('cp', required: true)
 actionlint_prog = find_program('actionlint', required: false)
 shellcheck_prog = find_program('shellcheck', required: false)
 codespell_prog = find_program('codespell', required: false)
+python_for_tests = find_program('python3', required: false)
+if not get_option('python').disabled() and not python_for_tests.found()
+  error('python option is enabled but python3 executable was not found')
+endif
+
 artifact_root = meson.current_build_dir() / '_artifacts'
 cross_compiling = 'no'
 if meson.is_cross_build()
@@ -233,19 +238,24 @@ foreach t : tests
   test_env.set('test_dir', test_dir)
   test_env.set('category_name', test_category)
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
+  test_env.set('SIXEL_CONFIGURED_PYTHON', python_for_tests.found() ? python_for_tests.full_path() : '')
+  test_cmd = [meson.current_source_dir() / t]
   test(t, sh,
     args: ['-c', '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
 python_venv_exports=$(
   "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
-    "${ENABLE_PYTHON:-0}" "" "${MESON_BUILD_ROOT}/python/dist" \
+    "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" "${MESON_BUILD_ROOT}/python/dist" \
     "${MESON_BUILD_ROOT}/tests/.python-test-venv"
 )
 eval "$python_venv_exports"
+if test -n "${SIXEL_TEST_PYTHON:-}"; then
+  export SIXEL_TEST_PYTHON
+fi
 
 exec "$@"
-''', 'sh', meson.current_source_dir() / t],
+''', 'sh'] + test_cmd,
     depends: test_deps,
     protocol: 'tap',
     env: test_env,

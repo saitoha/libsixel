@@ -28,17 +28,13 @@ quote_single() {
 emit_assignment() {
     value=$1
     quoted_value=$(quote_single "$value")
-    printf "SIXEL_TEST_PYTHON_VENV=%s\n" "$quoted_value"
+    printf "SIXEL_TEST_PYTHON=%s\n" "$quoted_value"
 }
 
 emit_assignment ""
 
 if [ "$enable_python" != "1" ]; then
     exit 0
-fi
-
-if [ -z "$python_bin" ]; then
-    python_bin=$(command -v python3 || command -v python || true)
 fi
 
 if [ -z "$python_bin" ]; then
@@ -79,5 +75,5 @@ if ! "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 
 fi
 
 if "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
-    emit_assignment "$shared_python_venv"
+    emit_assignment "$shared_python_venv/bin/python"
 fi
