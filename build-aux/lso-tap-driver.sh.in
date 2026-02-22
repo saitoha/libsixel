@@ -178,7 +178,14 @@ run_with_timeout() {
       if [ -n "${SIXEL_TEST_PYTHON}" ] && [ -x "${SIXEL_TEST_PYTHON}" ]; then
         set -- "$SIXEL_TEST_PYTHON" "$test_path" "$@"
       else
-        set -- "$test_path" "$@"
+        printf '%s\n' '1..0 # SKIP python test interpreter is unavailable' >"$log_file"
+        cat >"$trs_file" <<'EOF'
+:test-result: SKIP
+:global-test-result: SKIP
+:recheck: yes
+:copy-in-global-log: no
+EOF
+        return 0
       fi
       ;;
     *)
