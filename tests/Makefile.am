@@ -23,11 +23,13 @@ SERIAL_TESTS = \
 COPY_TESTS = $(TESTS)
 check_PROGRAMS = test_runner
 
-TEST_EXTENSIONS = .t
+TEST_EXTENSIONS = .t .py
+
 
 HELPER_FILES = \
     _lib/sh/common.sh \
-    docs/consistency/list_envvars.sh
+    docs/consistency/list_envvars.sh \
+    bindings/python/_taptest.py
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
@@ -49,8 +51,6 @@ AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_SEP='@SIXEL_LIBTOOL_PATH_SEPARATOR@'; 
        export RUNTIME_SHLIBPATH_SEP;
 AM_TESTS_ENVIRONMENT += SIXEL_SHLIBPATH_OVERRIDES_RUNPATH='@SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@'; \
        export SIXEL_SHLIBPATH_OVERRIDES_RUNPATH;
-AM_TESTS_ENVIRONMENT += SIXEL_TEST_PYTHON_VENV='$(SIXEL_TEST_PYTHON_VENV)'; \
-       export SIXEL_TEST_PYTHON_VENV;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_ADDITIOANL_PATH='@SIXEL_TEST_ADDITIOANL_PATH@'; \
        export SIXEL_TEST_ADDITIOANL_PATH;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
@@ -280,6 +280,16 @@ staticcheck:
 		echo "skipped: codespell not found"; \
 	fi
 
+# Route Python TAP tests through the same driver as shell TAP tests so
+# elapsed time and result formatting stay consistent across extensions.
+.py.log:
+	@p='$<'; \
+	$(am__set_b); \
+	$(am__check_pre) $(T_LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
+	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
+
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
@@ -311,13 +321,17 @@ check-TESTS: $(check_PROGRAMS)
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
 	eval "$$python_venv_exports"; \
-	export SIXEL_TEST_PYTHON_VENV; \
+	python_make_arg=; \
+	if test -n "$$SIXEL_TEST_PYTHON"; then \
+	    export SIXEL_TEST_PYTHON; \
+	    python_make_arg="SIXEL_TEST_PYTHON=$$SIXEL_TEST_PYTHON"; \
+	fi; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=`echo $(TEST_LOGS)`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
-	    SIXEL_TEST_PYTHON_VENV="$$SIXEL_TEST_PYTHON_VENV"; \
+	    $$python_make_arg; \
 	exit $$?;
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \

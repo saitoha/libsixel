@@ -29,6 +29,7 @@ set -u
 # Prefer configure-time detected test shell. Allow runtime override for
 # troubleshooting and platform-specific experiments.
 : "${SIXEL_TEST_SHELL:=@SIXEL_TEST_SHELL@}"
+: "${SIXEL_TEST_PYTHON:=}"
 
 test_name=
 log_file=
@@ -167,21 +168,33 @@ run_with_helper() {
 }
 
 run_with_timeout() {
-  bin="$1"
   helper_bin=$(select_timeout_bin)
-
+  test_path=$1
   shift
 
-  if [ $# -gt 0 ] && [ -f "$1" ] && [ ! -x "$1" ]; then
-    set -- "$SIXEL_TEST_SHELL" "$@"
-  fi
+  case "$test_path" in
+    *.py)
+      run_desc="python ${test_path}"
+      if [ -n "${SIXEL_TEST_PYTHON}" ] && [ -x "${SIXEL_TEST_PYTHON}" ]; then
+        set -- "$SIXEL_TEST_PYTHON" "$test_path" "$@"
+      else
+        set -- "$test_path" "$@"
+      fi
+      ;;
+    *)
+      run_desc="shell ${test_path}"
+      set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
+      ;;
+  esac
+
+  echo "# lso-tap-driver: ${run_desc}"
 
   if [ -n "$helper_bin" ]; then
-    run_with_helper "$helper_bin" "$SIXEL_TEST_SHELL" "$bin" "$@"
+    run_with_helper "$helper_bin" "$@"
     return $?
   fi
 
-  "$bin" "$@"
+  "$@"
   return $?
 }
 
