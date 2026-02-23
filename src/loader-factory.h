@@ -32,6 +32,7 @@
 #include <sixel.h>
 
 #include "allocator.h"
+#include "chunk.h"
 #include "loader-component.h"
 #include "loader-registry.h"
 
@@ -55,6 +56,12 @@ int
 loader_factory_entry_available(
     sixel_loader_factory_t const *factory,
     char const *name);
+
+int
+loader_factory_entry_matches_chunk(
+    sixel_loader_factory_t const *factory,
+    sixel_loader_entry_t const *entry,
+    sixel_chunk_t const *chunk);
 
 SIXELSTATUS
 loader_factory_create_component(
