@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Lbuiltin! -lauto "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
+run_img2sixel -v -Lbuiltin! -lauto "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
     fail 1 "APNG finite auto loop failed"
     exit 0
 }
