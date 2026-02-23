@@ -256,6 +256,10 @@ if test -z "${SIXEL_TEST_PYTHON:-}"; then
 fi
 export SIXEL_TEST_PYTHON
 
+if test "${1##*.}" = "py"; then
+  exec "$SIXEL_TEST_PYTHON" "$1"
+fi
+
 exec "$@"
 ''', 'sh'] + test_cmd,
     depends: test_deps,
