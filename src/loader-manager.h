@@ -38,6 +38,9 @@ loader_manager_ref(sixel_loader_manager_t *manager);
 void
 loader_manager_unref(sixel_loader_manager_t *manager);
 
+void
+loader_manager_apply_loader_suboptions(char const *order);
+
 size_t
 loader_manager_build_plan(
     char const *order,

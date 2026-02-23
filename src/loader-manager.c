@@ -11,9 +11,12 @@
 
 #include "loader-manager.h"
 
+#include "loader-common.h"
+#include "options.h"
 #include "sixel_atomic.h"
 
 #include <ctype.h>
+#include <limits.h>
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -27,6 +30,73 @@ static struct sixel_loader_manager g_loader_manager_singleton = {
     0u,
     NULL
 };
+
+
+#if HAVE_WIC
+static sixel_suboption_key_t const g_subkeys_loader_wic_loader[] = {
+    {
+        "ico_minsize",
+        SIXEL_SUBOPT_VALUE_REQUIRED,
+        SIXEL_SUBOPT_VALUE_TEXT,
+        NULL,
+        0u
+    }
+};
+
+static sixel_option_argument_value_schema_t const
+g_schema_loader_values_loader[] = {
+    {
+        "wic",
+        0,
+        g_subkeys_loader_wic_loader,
+        sizeof(g_subkeys_loader_wic_loader)
+            / sizeof(g_subkeys_loader_wic_loader[0])
+    },
+};
+
+static sixel_option_argument_schema_t const g_schema_loaders_loader = {
+    SIXEL_OPTFLAG_LOADERS,
+    "--loaders",
+    g_schema_loader_values_loader,
+    sizeof(g_schema_loader_values_loader)
+        / sizeof(g_schema_loader_values_loader[0])
+};
+
+static int
+loader_manager_parse_positive_int(char const *text,
+                                  size_t length,
+                                  int *value_out)
+{
+    size_t index;
+    int value;
+    unsigned char digit;
+
+    index = 0u;
+    value = 0;
+    digit = 0u;
+    if (text == NULL || value_out == NULL || length == 0u) {
+        return 0;
+    }
+
+    for (index = 0u; index < length; ++index) {
+        digit = (unsigned char)text[index];
+        if (digit < (unsigned char)'0' || digit > (unsigned char)'9') {
+            return 0;
+        }
+        if (value > (INT_MAX - 9) / 10) {
+            return 0;
+        }
+        value = value * 10 + (digit - (unsigned char)'0');
+    }
+
+    if (value <= 0) {
+        return 0;
+    }
+
+    *value_out = value;
+    return 1;
+}
+#endif
 
 static int
 loader_manager_plan_contains(sixel_loader_entry_t const **plan,
@@ -104,6 +174,107 @@ loader_manager_lookup_token(char const *token,
     }
 
     return NULL;
+}
+
+
+void
+loader_manager_apply_loader_suboptions(char const *order)
+{
+#if HAVE_WIC
+    char const *cursor;
+    char const *token_start;
+    char const *token_end;
+    char const *order_end;
+    size_t token_length;
+    char token_buffer[256];
+    char match_detail[128];
+    sixel_option_argument_resolution_t resolution;
+    size_t assignment_index;
+    int parsed_value;
+
+    cursor = order;
+    token_start = order;
+    token_end = order;
+    order_end = NULL;
+    token_length = 0u;
+    token_buffer[0] = '\0';
+    match_detail[0] = '\0';
+    resolution.resolved_base_value = 0;
+    resolution.base_def = NULL;
+    resolution.assignments = NULL;
+    resolution.assignment_count = 0u;
+    assignment_index = 0u;
+    parsed_value = 0;
+
+    /*
+     * Suboptions currently control only WIC behavior. Reset first so a
+     * malformed token never leaks state from a previous invocation.
+     */
+    sixel_helper_set_wic_ico_minsize(0);
+
+    if (order == NULL || order[0] == '\0') {
+        return;
+    }
+
+    order_end = order + strlen(order);
+    while (order_end > order && isspace((unsigned char)order_end[-1])) {
+        --order_end;
+    }
+    if (order_end > order && order_end[-1] == '!') {
+        --order_end;
+    }
+
+    token_start = order;
+    cursor = order;
+    while (cursor <= order_end) {
+        if (cursor == order_end || *cursor == ',') {
+            token_end = cursor;
+            while (token_start < token_end &&
+                   isspace((unsigned char)*token_start)) {
+                ++token_start;
+            }
+            while (token_end > token_start &&
+                   isspace((unsigned char)token_end[-1])) {
+                --token_end;
+            }
+            token_length = (size_t)(token_end - token_start);
+            if (token_length > 0u && token_length < sizeof(token_buffer)) {
+                memcpy(token_buffer, token_start, token_length);
+                token_buffer[token_length] = '\0';
+                if (SIXEL_SUCCEEDED(
+                        sixel_option_parse_argument_with_suboptions(
+                            token_buffer,
+                            &g_schema_loaders_loader,
+                            &resolution,
+                            match_detail,
+                            sizeof(match_detail))) &&
+                    resolution.base_def != NULL &&
+                    strcmp(resolution.base_def->name, "wic") == 0) {
+                    for (assignment_index = 0u;
+                         assignment_index < resolution.assignment_count;
+                         ++assignment_index) {
+                        if (strcmp(resolution.assignments[assignment_index]
+                                   .resolved_key_name,
+                                   "ico_minsize") == 0 &&
+                            loader_manager_parse_positive_int(
+                                resolution.assignments[assignment_index]
+                                    .resolved_value_text,
+                                strlen(resolution.assignments[
+                                    assignment_index].resolved_value_text),
+                                &parsed_value)) {
+                            sixel_helper_set_wic_ico_minsize(parsed_value);
+                        }
+                    }
+                }
+                sixel_option_free_argument_resolution(&resolution);
+            }
+            token_start = cursor + 1;
+        }
+        ++cursor;
+    }
+#else
+    (void)order;
+#endif
 }
 
 size_t
