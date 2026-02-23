@@ -38,6 +38,14 @@ loader_manager_ref(sixel_loader_manager_t *manager);
 void
 loader_manager_unref(sixel_loader_manager_t *manager);
 
+size_t
+loader_manager_build_plan(
+    char const *order,
+    sixel_loader_entry_t const *entries,
+    size_t entry_count,
+    sixel_loader_entry_t const **plan,
+    size_t plan_capacity);
+
 SIXELSTATUS
 loader_manager_build_chain_from_plan(
     sixel_loader_manager_t *manager,
