@@ -104,6 +104,7 @@
 #include "loader-librsvg.h"
 #include "loader-quicklook.h"
 #include "loader-registry.h"
+#include "loader-factory.h"
 #include "loader-component.h"
 #include "loader-component-legacy.h"
 #include "loader-wic.h"
@@ -1571,7 +1572,7 @@ sixel_loader_load_file(
     sixel_chunk_t *pchunk;
     sixel_loader_entry_t const **plan;
     sixel_loader_entry_t const *entries;
-    sixel_loader_registry_t *registry;
+    sixel_loader_factory_t *factory;
     size_t entry_count;
     size_t plan_length;
     size_t plan_index;
@@ -1584,7 +1585,7 @@ sixel_loader_load_file(
     pchunk = NULL;
     plan = NULL;
     entries = NULL;
-    registry = NULL;
+    factory = NULL;
     entry_count = 0;
     plan_length = 0;
     plan_index = 0;
@@ -1620,11 +1621,11 @@ sixel_loader_load_file(
     callback_state.context = loader->context;
     loader->callback_failed = 0;
 
-    status = loader_registry_get_default(&registry);
+    status = loader_factory_get_default(&factory);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    entry_count = loader_registry_get_entries_from(registry, &entries);
+    entry_count = loader_factory_get_entries(factory, &entries);
 
     reqcolors = loader->reqcolors;
     if (reqcolors > SIXEL_PALETTE_MAX) {
@@ -1715,10 +1716,11 @@ sixel_loader_load_file(
         } else {
             loader->log_loader_name[0] = '\0';
         }
-        component = sixel_loader_component_legacy_new(plan[plan_index],
-                                                   loader->allocator);
-        if (component == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = loader_factory_create_component(factory,
+                                               plan[plan_index],
+                                               loader->allocator,
+                                               &component);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
 
@@ -1792,8 +1794,8 @@ end:
         sixel_allocator_free(loader->allocator, plan);
         plan = NULL;
     }
-    loader_registry_unref(registry);
-    registry = NULL;
+    loader_factory_unref(factory);
+    factory = NULL;
     sixel_chunk_destroy(pchunk);
     sixel_loader_unref(loader);
 
@@ -1929,24 +1931,24 @@ SIXELAPI size_t
 sixel_helper_get_available_loader_names(char const **names, size_t max_names)
 {
     sixel_loader_entry_t const *entries;
-    sixel_loader_registry_t *registry;
+    sixel_loader_factory_t *factory;
     size_t entry_count;
     size_t limit;
     size_t index;
     SIXELSTATUS status;
 
     entries = NULL;
-    registry = NULL;
+    factory = NULL;
     entry_count = 0u;
     limit = 0u;
     index = 0u;
     status = SIXEL_FALSE;
 
-    status = loader_registry_get_default(&registry);
+    status = loader_factory_get_default(&factory);
     if (SIXEL_FAILED(status)) {
         return 0u;
     }
-    entry_count = loader_registry_get_entries_from(registry, &entries);
+    entry_count = loader_factory_get_entries(factory, &entries);
 
     if (names != NULL && max_names > 0) {
         limit = entry_count;
@@ -1958,7 +1960,7 @@ sixel_helper_get_available_loader_names(char const **names, size_t max_names)
         }
     }
 
-    loader_registry_unref(registry);
+    loader_factory_unref(factory);
 
     return entry_count;
 }
