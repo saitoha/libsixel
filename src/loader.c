@@ -105,6 +105,7 @@
 #include "loader-quicklook.h"
 #include "loader-registry.h"
 #include "loader-factory.h"
+#include "loader-manager.h"
 #include "loader-component.h"
 #include "loader-component-legacy.h"
 #include "loader-wic.h"
@@ -153,6 +154,16 @@ typedef struct sixel_loader_callback_state {
     sixel_load_image_function fn;
     void *context;
 } sixel_loader_callback_state_t;
+
+typedef struct sixel_loader_component_option_context {
+    sixel_loader_t *loader;
+    int reqcolors;
+} sixel_loader_component_option_context_t;
+
+typedef struct sixel_loader_manager_trace_context {
+    sixel_loader_t *loader;
+    size_t input_bytes;
+} sixel_loader_manager_trace_context_t;
 
 int
 sixel_loader_callback_is_canceled(void *data)
@@ -1562,6 +1573,55 @@ sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
     return 1;
 }
 
+static SIXELSTATUS
+loader_manager_configure_component(sixel_loader_component_t *component,
+                                   void *context)
+{
+    sixel_loader_component_option_context_t *options;
+
+    options = (sixel_loader_component_option_context_t *)context;
+    if (options == NULL || options->loader == NULL) {
+        sixel_helper_set_additional_message(
+            "loader_manager_configure_component: invalid context.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return loader_apply_component_options(component,
+                                          options->loader,
+                                          options->reqcolors);
+}
+
+static void
+loader_manager_trace_try_callback(char const *name, void *context)
+{
+    sixel_loader_manager_trace_context_t *trace;
+
+    trace = (sixel_loader_manager_trace_context_t *)context;
+    if (trace == NULL || trace->loader == NULL) {
+        return;
+    }
+
+    trace->loader->log_input_bytes = trace->input_bytes;
+    if (name != NULL) {
+        (void)sixel_compat_snprintf(trace->loader->log_loader_name,
+                                    sizeof(trace->loader->log_loader_name),
+                                    "%s",
+                                    name);
+    } else {
+        trace->loader->log_loader_name[0] = '\0';
+    }
+    loader_trace_try(name);
+}
+
+static void
+loader_manager_trace_result_callback(char const *name,
+                                     SIXELSTATUS status,
+                                     void *context)
+{
+    (void)context;
+    loader_trace_result(name, status);
+}
+
 SIXELAPI SIXELSTATUS
 sixel_loader_load_file(
     sixel_loader_t         /* in */ *loader,
@@ -1573,26 +1633,32 @@ sixel_loader_load_file(
     sixel_loader_entry_t const **plan;
     sixel_loader_entry_t const *entries;
     sixel_loader_factory_t *factory;
+    sixel_loader_manager_t *manager;
+    sixel_loader_chain_t *chain;
     size_t entry_count;
     size_t plan_length;
-    size_t plan_index;
-    sixel_loader_component_t *component;
     int reqcolors;
     char const *order_override;
     char const *env_order;
+    char const *selected_name;
     sixel_loader_callback_state_t callback_state;
+    sixel_loader_component_option_context_t option_context;
+    sixel_loader_manager_trace_context_t trace_context;
 
     pchunk = NULL;
     plan = NULL;
     entries = NULL;
     factory = NULL;
+    manager = NULL;
+    chain = NULL;
     entry_count = 0;
     plan_length = 0;
-    plan_index = 0;
-    component = NULL;
     reqcolors = 0;
     order_override = NULL;
     env_order = NULL;
+    selected_name = NULL;
+    memset(&option_context, 0, sizeof(option_context));
+    memset(&trace_context, 0, sizeof(trace_context));
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -1660,10 +1726,6 @@ sixel_loader_load_file(
 
     status = SIXEL_FALSE;
     order_override = loader->loader_order;
-    /*
-     * Honour SIXEL_LOADER_PRIORITY_LIST when callers do not supply
-     * a loader order via -L/--loaders or sixel_loader_setopt().
-     */
     if (order_override == NULL) {
         env_order = sixel_compat_getenv("SIXEL_LOADER_PRIORITY_LIST");
         if (env_order != NULL && env_order[0] != '\0') {
@@ -1699,60 +1761,41 @@ sixel_loader_load_file(
         goto end;
     }
 
-    for (plan_index = 0; plan_index < plan_length; ++plan_index) {
-        if (plan[plan_index] == NULL) {
-            continue;
-        }
-        if (plan[plan_index]->predicate != NULL &&
-            plan[plan_index]->predicate(pchunk) == 0) {
-            continue;
-        }
-        loader->log_input_bytes = pchunk != NULL ? pchunk->size : 0u;
-        if (plan[plan_index]->name != NULL) {
-            (void)sixel_compat_snprintf(loader->log_loader_name,
-                                        sizeof(loader->log_loader_name),
-                                        "%s",
-                                        plan[plan_index]->name);
-        } else {
-            loader->log_loader_name[0] = '\0';
-        }
-        /*
-         * Keep loader orchestration in this function and delegate backend
-         * object materialization to the factory abstraction.
-         */
-        status = loader_factory_create_component(factory,
-                                               plan[plan_index],
-                                               loader->allocator,
-                                               &component);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-
-        status = loader_apply_component_options(component, loader, reqcolors);
-        if (SIXEL_FAILED(status)) {
-            sixel_loader_component_unref(component);
-            component = NULL;
-            goto end;
-        }
-
-        loader_trace_try(sixel_loader_component_get_name(component));
-        status = sixel_loader_component_load(component,
-                                             pchunk,
-                                             loader_callback_trampoline,
-                                             &callback_state);
-        loader_trace_result(sixel_loader_component_get_name(component), status);
-        sixel_loader_component_unref(component);
-        component = NULL;
-        if (SIXEL_SUCCEEDED(status)) {
-            break;
-        }
+    status = loader_manager_get_default(&manager);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
+
+    status = loader_manager_build_chain_from_plan(manager,
+                                                  plan,
+                                                  plan_length,
+                                                  pchunk,
+                                                  loader->allocator,
+                                                  &chain);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    option_context.loader = loader;
+    option_context.reqcolors = reqcolors;
+    trace_context.loader = loader;
+    trace_context.input_bytes = pchunk->size;
+    status = loader_manager_execute_chain(
+        manager,
+        chain,
+        pchunk,
+        loader_callback_trampoline,
+        &callback_state,
+        loader_manager_configure_component,
+        &option_context,
+        loader_manager_trace_try_callback,
+        loader_manager_trace_result_callback,
+        &trace_context,
+        &selected_name);
 
     if (SIXEL_FAILED(status)) {
         if (status == SIXEL_FALSE) {
-            if (!loader->callback_failed &&
-                    plan_index >= plan_length &&
-                    pchunk != NULL) {
+            if (!loader->callback_failed && pchunk != NULL) {
                 status = SIXEL_LOADER_FAILED;
                 loader_publish_diagnostic(pchunk, filename);
             } else {
@@ -1765,13 +1808,11 @@ sixel_loader_load_file(
         goto end;
     }
 
-    if (plan_index < plan_length &&
-            plan[plan_index] != NULL &&
-            plan[plan_index]->name != NULL) {
+    if (selected_name != NULL) {
         (void)sixel_compat_snprintf(loader->last_loader_name,
                                     sizeof(loader->last_loader_name),
                                     "%s",
-                                    plan[plan_index]->name);
+                                    selected_name);
     } else {
         loader->last_loader_name[0] = '\0';
     }
@@ -1790,10 +1831,10 @@ sixel_loader_load_file(
     }
 
 end:
-    if (component != NULL) {
-        sixel_loader_component_unref(component);
-        component = NULL;
-    }
+    loader_chain_unref(chain);
+    chain = NULL;
+    loader_manager_unref(manager);
+    manager = NULL;
     if (plan != NULL) {
         sixel_allocator_free(loader->allocator, plan);
         plan = NULL;
