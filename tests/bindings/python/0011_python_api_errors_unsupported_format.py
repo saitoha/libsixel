@@ -9,10 +9,8 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'unsupported format errors via wheel'
-ARGV = [os.path.expandvars("${ARTIFACT_LOCAL_DIR}/unsupported")]
 def test_0011_python_api_errors_unsupported_format() -> None:
     import pathlib
-    import sys
 
     try:
         from libsixel_wheel import (
@@ -25,7 +23,7 @@ def test_0011_python_api_errors_unsupported_format() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    workdir = pathlib.Path(sys.argv[1])
+    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/unsupported"))
     workdir.mkdir(parents=True, exist_ok=True)
     text_file = workdir / "note.xxx"
     text_file.write_text("this is not an image")
@@ -59,4 +57,4 @@ def test_0011_python_api_errors_unsupported_format() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0011_python_api_errors_unsupported_format))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0011_python_api_errors_unsupported_format))

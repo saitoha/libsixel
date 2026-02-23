@@ -16,14 +16,12 @@ def _skip_all(message: str) -> int:
 
 
 def run_embedded_tap_test(
-    description: str, argv: list[str], test_func: Callable[[], None]
+    description: str, test_func: Callable[[], None]
 ) -> int:
     output = io.StringIO()
     code = 0
     detail = ""
 
-    old_argv = list(sys.argv)
-    sys.argv = [old_argv[0], *argv]
     try:
         with redirect_stdout(output):
             test_func()
@@ -38,8 +36,6 @@ def run_embedded_tap_test(
     except Exception:  # noqa: BLE001
         detail = traceback.format_exc().strip()
         code = 1
-    finally:
-        sys.argv = old_argv
 
     raw_output = output.getvalue()
     if raw_output:

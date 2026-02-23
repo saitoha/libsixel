@@ -9,13 +9,11 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'encodes image via wheel'
-ARGV = [os.path.expandvars("${ARTIFACT_LOCAL_DIR}")]
 def test_0001_python_bindings() -> None:
     import ctypes.util
     import glob
     import os
     import pathlib
-    import sys
 
 
     def _prefer_build_library(name, original_find):
@@ -40,7 +38,7 @@ def test_0001_python_bindings() -> None:
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
-        root = pathlib.Path(sys.argv[1])
+        root = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}"))
         output = root / "sample.six"
 
         pixels = bytes([
@@ -65,4 +63,4 @@ def test_0001_python_bindings() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0001_python_bindings))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0001_python_bindings))

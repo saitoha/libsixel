@@ -4,16 +4,15 @@
 from __future__ import annotations
 
 import os
+import sys
 
 from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'invalid option value errors via wheel'
-ARGV = [os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"), os.path.expandvars("${ARTIFACT_LOCAL_DIR}/invalid_option"), os.path.expandvars("${TOP_SRCDIR}/include/sixel.h.in")]
 def test_0012_python_api_errors_invalid_option() -> None:
     import pathlib
     import re
-    import sys
 
     try:
         from libsixel_wheel import (
@@ -28,9 +27,9 @@ def test_0012_python_api_errors_invalid_option() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    source = pathlib.Path(sys.argv[1])
-    workdir = pathlib.Path(sys.argv[2])
-    header = pathlib.Path(sys.argv[3])
+    source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
+    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/invalid_option"))
+    header = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/include/sixel.h.in"))
     workdir.mkdir(parents=True, exist_ok=True)
     target = workdir / "invalid-option.six"
 
@@ -77,4 +76,4 @@ def test_0012_python_api_errors_invalid_option() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0012_python_api_errors_invalid_option))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0012_python_api_errors_invalid_option))

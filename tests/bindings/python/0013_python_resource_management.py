@@ -9,11 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'large image roundtrip via wheel frees resources'
-ARGV = [os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"), os.path.expandvars("${ARTIFACT_LOCAL_DIR}/work")]
 def test_0013_python_resource_management() -> None:
     import gc
     import pathlib
-    import sys
     import time
     import warnings
 
@@ -30,8 +28,8 @@ def test_0013_python_resource_management() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    source = pathlib.Path(sys.argv[1])
-    workdir = pathlib.Path(sys.argv[2])
+    source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
+    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/work"))
     workdir.mkdir(parents=True, exist_ok=True)
 
     sixel_path = workdir / "large.six"
@@ -97,4 +95,4 @@ def test_0013_python_resource_management() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0013_python_resource_management))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0013_python_resource_management))

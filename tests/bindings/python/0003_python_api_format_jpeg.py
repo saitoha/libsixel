@@ -9,17 +9,15 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'encodes JPEG via wheel (DCS/ST ok)'
-ARGV = [os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"), os.path.expandvars("${ARTIFACT_LOCAL_DIR}/JPEG.six")]
 def test_0003_python_api_format_jpeg() -> None:
     import pathlib
-    import sys
 
     try:
         from libsixel_wheel import SIXEL_OPTFLAG_INPUT
         from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
-        source = pathlib.Path(sys.argv[1])
-        target = pathlib.Path(sys.argv[2])
+        source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"))
+        target = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/JPEG.six"))
 
         encoder = Encoder()
         encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
@@ -42,4 +40,4 @@ def test_0003_python_api_format_jpeg() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0003_python_api_format_jpeg))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0003_python_api_format_jpeg))
