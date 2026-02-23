@@ -482,13 +482,21 @@ loader_manager_build_chain_from_plan(
         return status;
     }
 
+    /*
+     * Chain assembly keeps a strict separation of concerns.
+     *
+     * 1) plan[] already defines candidate order.
+     * 2) factory decides whether a candidate can run for this chunk.
+     * 3) factory materializes a backend component.
+     * 4) chain owns component references in execution order.
+     */
     for (index = 0u; index < plan_length; ++index) {
         if (plan[index] == NULL) {
             continue;
         }
-        if (plan[index]->predicate != NULL &&
-            chunk != NULL &&
-            plan[index]->predicate(chunk) == 0) {
+        if (!loader_factory_entry_matches_chunk(manager->factory,
+                                                plan[index],
+                                                chunk)) {
             continue;
         }
 

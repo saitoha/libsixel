@@ -130,6 +130,27 @@ loader_factory_entry_available(sixel_loader_factory_t const *factory,
     return loader_registry_entry_available_from(factory->registry, name);
 }
 
+int
+loader_factory_entry_matches_chunk(
+    sixel_loader_factory_t const *factory,
+    sixel_loader_entry_t const *entry,
+    sixel_chunk_t const *chunk)
+{
+    if (factory == NULL || entry == NULL) {
+        return 0;
+    }
+
+    if (factory->registry == NULL) {
+        return 0;
+    }
+
+    if (entry->predicate == NULL || chunk == NULL) {
+        return 1;
+    }
+
+    return entry->predicate(chunk) != 0;
+}
+
 SIXELSTATUS
 loader_factory_create_component(sixel_loader_factory_t const *factory,
                                 sixel_loader_entry_t const *entry,
