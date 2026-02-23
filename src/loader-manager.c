@@ -13,6 +13,11 @@
 
 #include "sixel_atomic.h"
 
+#include <ctype.h>
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+
 struct sixel_loader_manager {
     sixel_atomic_u32_t ref;
     sixel_loader_factory_t *factory;
@@ -22,6 +27,207 @@ static struct sixel_loader_manager g_loader_manager_singleton = {
     0u,
     NULL
 };
+
+static int
+loader_manager_plan_contains(sixel_loader_entry_t const **plan,
+                             size_t plan_length,
+                             sixel_loader_entry_t const *entry)
+{
+    size_t index;
+
+    index = 0u;
+    for (index = 0u; index < plan_length; ++index) {
+        if (plan[index] == entry) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static size_t
+loader_manager_token_name_length(char const *token,
+                                 size_t token_length)
+{
+    size_t length;
+
+    length = token_length;
+    if (token != NULL && token_length > 0 && token[token_length - 1] == '@') {
+        length = token_length - 1u;
+    }
+
+    return length;
+}
+
+static int
+loader_manager_token_matches(char const *token,
+                             size_t token_length,
+                             char const *name)
+{
+    size_t index;
+    unsigned char left;
+    unsigned char right;
+
+    index = 0u;
+    left = 0u;
+    right = 0u;
+    for (index = 0u; index < token_length && name[index] != '\0'; ++index) {
+        left = (unsigned char)token[index];
+        right = (unsigned char)name[index];
+        if (tolower(left) != tolower(right)) {
+            return 0;
+        }
+    }
+
+    if (index != token_length || name[index] != '\0') {
+        return 0;
+    }
+
+    return 1;
+}
+
+static sixel_loader_entry_t const *
+loader_manager_lookup_token(char const *token,
+                            size_t token_length,
+                            sixel_loader_entry_t const *entries,
+                            size_t entry_count)
+{
+    size_t index;
+
+    index = 0u;
+    for (index = 0u; index < entry_count; ++index) {
+        if (loader_manager_token_matches(token,
+                                         token_length,
+                                         entries[index].name)) {
+            return &entries[index];
+        }
+    }
+
+    return NULL;
+}
+
+size_t
+loader_manager_build_plan(
+    char const *order,
+    sixel_loader_entry_t const *entries,
+    size_t entry_count,
+    sixel_loader_entry_t const **plan,
+    size_t plan_capacity)
+{
+    size_t plan_length;
+    size_t index;
+    char const *cursor;
+    char const *token_start;
+    char const *token_end;
+    char const *order_end;
+    size_t token_length;
+    sixel_loader_entry_t const *entry;
+    size_t limit;
+    int allow_fallback;
+
+    plan_length = 0u;
+    index = 0u;
+    cursor = order;
+    token_start = order;
+    token_end = order;
+    order_end = NULL;
+    token_length = 0u;
+    entry = NULL;
+    limit = plan_capacity;
+    allow_fallback = 1;
+
+    if (order != NULL) {
+        order_end = order + strlen(order);
+        while (order_end > order &&
+               isspace((unsigned char)order_end[-1])) {
+            --order_end;
+        }
+        if (order_end > order && order_end[-1] == '!') {
+            allow_fallback = 0;
+            --order_end;
+            while (order_end > order &&
+                   isspace((unsigned char)order_end[-1])) {
+                --order_end;
+            }
+        }
+    }
+
+    if (order != NULL && plan != NULL && plan_capacity > 0u) {
+        token_start = order;
+        cursor = order;
+        while (cursor < order_end) {
+            if (*cursor == ',') {
+                token_end = cursor;
+                while (token_start < token_end &&
+                       isspace((unsigned char)*token_start)) {
+                    ++token_start;
+                }
+                while (token_end > token_start &&
+                       isspace((unsigned char)token_end[-1])) {
+                    --token_end;
+                }
+                token_length = (size_t)(token_end - token_start);
+                if (token_length > 0u) {
+                    entry = loader_manager_lookup_token(
+                        token_start,
+                        loader_manager_token_name_length(token_start,
+                                                         token_length),
+                        entries,
+                        entry_count);
+                    if (entry != NULL &&
+                        !loader_manager_plan_contains(plan,
+                                                     plan_length,
+                                                     entry) &&
+                        plan_length < limit) {
+                        plan[plan_length] = entry;
+                        ++plan_length;
+                    }
+                }
+                token_start = cursor + 1;
+            }
+            ++cursor;
+        }
+
+        token_end = order_end;
+        while (token_start < token_end &&
+               isspace((unsigned char)*token_start)) {
+            ++token_start;
+        }
+        while (token_end > token_start &&
+               isspace((unsigned char)token_end[-1])) {
+            --token_end;
+        }
+        token_length = (size_t)(token_end - token_start);
+        if (token_length > 0u) {
+            entry = loader_manager_lookup_token(
+                token_start,
+                loader_manager_token_name_length(token_start, token_length),
+                entries,
+                entry_count);
+            if (entry != NULL &&
+                !loader_manager_plan_contains(plan, plan_length, entry) &&
+                plan_length < limit) {
+                plan[plan_length] = entry;
+                ++plan_length;
+            }
+        }
+    }
+
+    if (allow_fallback) {
+        for (index = 0u; index < entry_count && plan_length < limit; ++index) {
+            entry = &entries[index];
+            if (!entry->default_enabled) {
+                continue;
+            }
+            if (!loader_manager_plan_contains(plan, plan_length, entry)) {
+                plan[plan_length] = entry;
+                ++plan_length;
+            }
+        }
+    }
+
+    return plan_length;
+}
 
 SIXELSTATUS
 loader_manager_get_default(sixel_loader_manager_t **ppmanager)
