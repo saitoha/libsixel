@@ -412,19 +412,6 @@ loader_apply_component_options(sixel_loader_component_t *component,
 
 
 static void
-loader_apply_loader_suboptions(char const *order)
-{
-    (void)order;
-
-    /*
-     * Loader-specific suboption parsing is currently only implemented for
-     * optional WIC backends. Keep the default reset behavior centralized
-     * until those backend-specific hooks are migrated into the manager.
-     */
-    sixel_helper_set_wic_ico_minsize(0);
-}
-
-static void
 loader_append_chunk(char *dest,
                     size_t capacity,
                     size_t *offset,
@@ -1336,7 +1323,7 @@ sixel_loader_load_file(
         }
     }
 
-    loader_apply_loader_suboptions(order_override);
+    loader_manager_apply_loader_suboptions(order_override);
 
     plan = sixel_allocator_malloc(loader->allocator,
                                   entry_count * sizeof(*plan));
