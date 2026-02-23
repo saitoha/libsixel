@@ -34,6 +34,8 @@
 # include <string.h>
 #endif
 
+#include "sixel_atomic.h"
+
 #include "loader-builtin.h"
 #include "loader-coregraphics.h"
 #include "loader-gd.h"
@@ -91,38 +93,111 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #endif
 };
 
-size_t
-loader_registry_get_entries(sixel_loader_entry_t const **entries)
+struct sixel_loader_registry {
+    sixel_atomic_u32_t ref;
+    sixel_loader_entry_t const *entries;
+    size_t entry_count;
+};
+
+static struct sixel_loader_registry g_loader_registry_singleton = {
+    0u,
+    sixel_loader_entries,
+    sizeof(sixel_loader_entries) / sizeof(sixel_loader_entries[0])
+};
+
+SIXELSTATUS
+loader_registry_get_default(sixel_loader_registry_t **ppregistry)
 {
-    if (entries != NULL) {
-        *entries = sixel_loader_entries;
+    if (ppregistry == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    return sizeof(sixel_loader_entries) /
-           sizeof(sixel_loader_entries[0]);
+    loader_registry_ref(&g_loader_registry_singleton);
+    *ppregistry = &g_loader_registry_singleton;
+
+    return SIXEL_OK;
+}
+
+void
+loader_registry_ref(sixel_loader_registry_t *registry)
+{
+    if (registry == NULL) {
+        return;
+    }
+
+    (void)sixel_atomic_fetch_add_u32(&registry->ref, 1u);
+}
+
+void
+loader_registry_unref(sixel_loader_registry_t *registry)
+{
+    unsigned int previous;
+
+    previous = 0u;
+    if (registry == NULL) {
+        return;
+    }
+
+    previous = sixel_atomic_fetch_sub_u32(&registry->ref, 1u);
+    if (previous == 0u) {
+        (void)sixel_atomic_fetch_add_u32(&registry->ref, 1u);
+    }
+}
+
+size_t
+loader_registry_get_entries_from(
+    sixel_loader_registry_t const *registry,
+    sixel_loader_entry_t const **entries)
+{
+    if (entries != NULL) {
+        *entries = NULL;
+    }
+
+    if (registry == NULL) {
+        return 0u;
+    }
+
+    if (entries != NULL) {
+        *entries = registry->entries;
+    }
+
+    return registry->entry_count;
 }
 
 int
-loader_registry_entry_available(char const *name)
+loader_registry_entry_available_from(
+    sixel_loader_registry_t const *registry,
+    char const *name)
 {
     size_t index;
-    size_t entry_count;
 
-    if (name == NULL) {
+    index = 0u;
+    if (registry == NULL || name == NULL) {
         return 0;
     }
 
-    entry_count = sizeof(sixel_loader_entries) /
-                  sizeof(sixel_loader_entries[0]);
-
-    for (index = 0; index < entry_count; ++index) {
-        if (sixel_loader_entries[index].name != NULL &&
-                strcmp(sixel_loader_entries[index].name, name) == 0) {
+    for (index = 0; index < registry->entry_count; ++index) {
+        if (registry->entries[index].name != NULL &&
+                strcmp(registry->entries[index].name, name) == 0) {
             return 1;
         }
     }
 
     return 0;
+}
+
+size_t
+loader_registry_get_entries(sixel_loader_entry_t const **entries)
+{
+    return loader_registry_get_entries_from(&g_loader_registry_singleton,
+                                            entries);
+}
+
+int
+loader_registry_entry_available(char const *name)
+{
+    return loader_registry_entry_available_from(&g_loader_registry_singleton,
+                                                name);
 }
 
 /* emacs Local Variables:      */

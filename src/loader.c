@@ -316,10 +316,17 @@ loader_apply_component_options(sixel_loader_component_t *component,
     typedef struct loader_component_option_entry {
         int option;
         char const *name;
-        void const *value;
     } loader_component_option_entry_t;
 
-    loader_component_option_entry_t options[6];
+    loader_component_option_entry_t const options[] = {
+        { SIXEL_LOADER_OPTION_REQUIRE_STATIC, "require-static" },
+        { SIXEL_LOADER_OPTION_USE_PALETTE, "use-palette" },
+        { SIXEL_LOADER_OPTION_REQCOLORS, "reqcolors" },
+        { SIXEL_LOADER_OPTION_BGCOLOR, "bgcolor" },
+        { SIXEL_LOADER_OPTION_LOOP_CONTROL, "loop-control" },
+        { SIXEL_LOADER_OPTION_START_FRAME_NO, "start-frame-no" }
+    };
+    void const *value;
     char message[128];
     size_t index;
     SIXELSTATUS status;
@@ -341,34 +348,40 @@ loader_apply_component_options(sixel_loader_component_t *component,
     status = SIXEL_OK;
     message[0] = '\0';
     index = 0;
+    value = NULL;
     if (component == NULL || loader == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    options[0].option = SIXEL_LOADER_OPTION_REQUIRE_STATIC;
-    options[0].name = "require-static";
-    options[0].value = &loader->fstatic;
-    options[1].option = SIXEL_LOADER_OPTION_USE_PALETTE;
-    options[1].name = "use-palette";
-    options[1].value = &loader->fuse_palette;
-    options[2].option = SIXEL_LOADER_OPTION_REQCOLORS;
-    options[2].name = "reqcolors";
-    options[2].value = &reqcolors;
-    options[3].option = SIXEL_LOADER_OPTION_BGCOLOR;
-    options[3].name = "bgcolor";
-    options[3].value = loader->has_bgcolor ? loader->bgcolor : NULL;
-    options[4].option = SIXEL_LOADER_OPTION_LOOP_CONTROL;
-    options[4].name = "loop-control";
-    options[4].value = &loader->loop_control;
-    options[5].option = SIXEL_LOADER_OPTION_START_FRAME_NO;
-    options[5].name = "start-frame-no";
-    options[5].value = loader->has_start_frame_no
-        ? &loader->start_frame_no : NULL;
-
     for (index = 0; index < sizeof(options) / sizeof(options[0]); ++index) {
+        switch (options[index].option) {
+        case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
+            value = &loader->fstatic;
+            break;
+        case SIXEL_LOADER_OPTION_USE_PALETTE:
+            value = &loader->fuse_palette;
+            break;
+        case SIXEL_LOADER_OPTION_REQCOLORS:
+            value = &reqcolors;
+            break;
+        case SIXEL_LOADER_OPTION_BGCOLOR:
+            value = loader->has_bgcolor ? loader->bgcolor : NULL;
+            break;
+        case SIXEL_LOADER_OPTION_LOOP_CONTROL:
+            value = &loader->loop_control;
+            break;
+        case SIXEL_LOADER_OPTION_START_FRAME_NO:
+            value = loader->has_start_frame_no
+                ? &loader->start_frame_no : NULL;
+            break;
+        default:
+            value = NULL;
+            break;
+        }
+
         status = sixel_loader_component_setopt(component,
                                                options[index].option,
-                                               options[index].value);
+                                               value);
         if (SIXEL_FAILED(status)) {
             (void)sixel_compat_snprintf(message,
                                         sizeof(message),
@@ -1558,6 +1571,7 @@ sixel_loader_load_file(
     sixel_chunk_t *pchunk;
     sixel_loader_entry_t const **plan;
     sixel_loader_entry_t const *entries;
+    sixel_loader_registry_t *registry;
     size_t entry_count;
     size_t plan_length;
     size_t plan_index;
@@ -1570,6 +1584,7 @@ sixel_loader_load_file(
     pchunk = NULL;
     plan = NULL;
     entries = NULL;
+    registry = NULL;
     entry_count = 0;
     plan_length = 0;
     plan_index = 0;
@@ -1605,7 +1620,11 @@ sixel_loader_load_file(
     callback_state.context = loader->context;
     loader->callback_failed = 0;
 
-    entry_count = loader_registry_get_entries(&entries);
+    status = loader_registry_get_default(&registry);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    entry_count = loader_registry_get_entries_from(registry, &entries);
 
     reqcolors = loader->reqcolors;
     if (reqcolors > SIXEL_PALETTE_MAX) {
@@ -1773,6 +1792,8 @@ end:
         sixel_allocator_free(loader->allocator, plan);
         plan = NULL;
     }
+    loader_registry_unref(registry);
+    registry = NULL;
     sixel_chunk_destroy(pchunk);
     sixel_loader_unref(loader);
 
@@ -1908,12 +1929,24 @@ SIXELAPI size_t
 sixel_helper_get_available_loader_names(char const **names, size_t max_names)
 {
     sixel_loader_entry_t const *entries;
+    sixel_loader_registry_t *registry;
     size_t entry_count;
     size_t limit;
     size_t index;
+    SIXELSTATUS status;
 
     entries = NULL;
-    entry_count = loader_registry_get_entries(&entries);
+    registry = NULL;
+    entry_count = 0u;
+    limit = 0u;
+    index = 0u;
+    status = SIXEL_FALSE;
+
+    status = loader_registry_get_default(&registry);
+    if (SIXEL_FAILED(status)) {
+        return 0u;
+    }
+    entry_count = loader_registry_get_entries_from(registry, &entries);
 
     if (names != NULL && max_names > 0) {
         limit = entry_count;
@@ -1924,6 +1957,8 @@ sixel_helper_get_available_loader_names(char const **names, size_t max_names)
             names[index] = entries[index].name;
         }
     }
+
+    loader_registry_unref(registry);
 
     return entry_count;
 }

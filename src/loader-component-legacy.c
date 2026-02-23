@@ -98,29 +98,22 @@ sixel_loader_component_legacy_unref(sixel_loader_component_t *component)
 }
 
 static SIXELSTATUS
-sixel_loader_component_legacy_setopt(sixel_loader_component_t *component,
-                                     int option,
-                                     void const *value)
+sixel_loader_component_legacy_set_common_option(
+    sixel_loader_component_legacy_t *legacy,
+    int option,
+    void const *value,
+    int *handled)
 {
-    sixel_loader_component_legacy_t *legacy;
     int const *flag;
     unsigned char const *color;
 
-    legacy = NULL;
     flag = NULL;
     color = NULL;
-
-    if (component == NULL) {
+    if (handled == NULL || legacy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    legacy = (sixel_loader_component_legacy_t *)component;
-
-    /*
-     * Common options are normalized by sixel_loader_setopt() before they are
-     * copied into each component instance.  This legacy bridge keeps setopt()
-     * lightweight and stores values without revalidating the same constraints.
-     */
+    *handled = 1;
     switch (option) {
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;
@@ -160,12 +153,52 @@ sixel_loader_component_legacy_setopt(sixel_loader_component_t *component,
         }
         return SIXEL_OK;
     default:
-        /*
-         * Accept unknown options so component-specific options can be routed
-         * through the same call path without coupling all implementations.
-         */
+        *handled = 0;
         return SIXEL_OK;
     }
+}
+
+static SIXELSTATUS
+sixel_loader_component_legacy_setopt(sixel_loader_component_t *component,
+                                     int option,
+                                     void const *value)
+{
+    sixel_loader_component_legacy_t *legacy;
+    int handled;
+    SIXELSTATUS status;
+
+    legacy = NULL;
+    handled = 0;
+    status = SIXEL_FALSE;
+
+    if (component == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    legacy = (sixel_loader_component_legacy_t *)component;
+
+    /*
+     * Common options are normalized by sixel_loader_setopt() before they are
+     * copied into each component instance.  This legacy bridge keeps setopt()
+     * lightweight and stores values without revalidating the same constraints.
+     */
+    status = sixel_loader_component_legacy_set_common_option(legacy,
+                                                             option,
+                                                             value,
+                                                             &handled);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (handled) {
+        return SIXEL_OK;
+    }
+
+    /*
+     * Accept unknown options so component-specific options can be routed
+     * through the same call path without coupling all implementations.
+     */
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS

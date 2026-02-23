@@ -53,6 +53,27 @@ typedef struct sixel_loader_entry {
     int                      default_enabled;
 } sixel_loader_entry_t;
 
+typedef struct sixel_loader_registry sixel_loader_registry_t;
+
+SIXELSTATUS
+loader_registry_get_default(sixel_loader_registry_t **ppregistry);
+
+void
+loader_registry_ref(sixel_loader_registry_t *registry);
+
+void
+loader_registry_unref(sixel_loader_registry_t *registry);
+
+size_t
+loader_registry_get_entries_from(
+    sixel_loader_registry_t const *registry,
+    sixel_loader_entry_t const **entries);
+
+int
+loader_registry_entry_available_from(
+    sixel_loader_registry_t const *registry,
+    char const *name);
+
 size_t loader_registry_get_entries(sixel_loader_entry_t const **entries);
 int loader_registry_entry_available(char const *name);
 
