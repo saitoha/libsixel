@@ -42,6 +42,27 @@ static struct sixel_loader_factory g_loader_factory_singleton = {
     NULL
 };
 
+static void
+loader_factory_unref_singleton_ref(sixel_atomic_u32_t *ref)
+{
+    unsigned int previous;
+
+    previous = 0u;
+    if (ref == NULL) {
+        return;
+    }
+
+    /*
+     * Singleton loader objects are process-lifetime in the current design.
+     * Treat unref() as a borrow release and saturate at zero to avoid
+     * underflow when callers over-release references.
+     */
+    previous = sixel_atomic_fetch_sub_u32(ref, 1u);
+    if (previous == 0u) {
+        (void)sixel_atomic_fetch_add_u32(ref, 1u);
+    }
+}
+
 SIXELSTATUS
 loader_factory_get_default(sixel_loader_factory_t **ppfactory)
 {
@@ -91,21 +112,11 @@ loader_factory_ref(sixel_loader_factory_t *factory)
 void
 loader_factory_unref(sixel_loader_factory_t *factory)
 {
-    unsigned int previous;
-
-    previous = 0u;
     if (factory == NULL) {
         return;
     }
 
-    /*
-     * The current implementation only exposes a singleton factory.
-     * Keep the same saturating unref pattern used by registry objects.
-     */
-    previous = sixel_atomic_fetch_sub_u32(&factory->ref, 1u);
-    if (previous == 0u) {
-        (void)sixel_atomic_fetch_add_u32(&factory->ref, 1u);
-    }
+    loader_factory_unref_singleton_ref(&factory->ref);
 }
 
 size_t
@@ -136,6 +147,10 @@ loader_factory_entry_matches_chunk(
     sixel_loader_entry_t const *entry,
     sixel_chunk_t const *chunk)
 {
+    /*
+     * Eligibility is intentionally evaluated in the factory so manager code
+     * stays agnostic to entry internals (predicate vs. future policy hooks).
+     */
     if (factory == NULL || entry == NULL) {
         return 0;
     }

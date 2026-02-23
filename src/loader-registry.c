@@ -105,6 +105,26 @@ static struct sixel_loader_registry g_loader_registry_singleton = {
     sizeof(sixel_loader_entries) / sizeof(sixel_loader_entries[0])
 };
 
+static void
+loader_registry_unref_singleton_ref(sixel_atomic_u32_t *ref)
+{
+    unsigned int previous;
+
+    previous = 0u;
+    if (ref == NULL) {
+        return;
+    }
+
+    /*
+     * Registry table has process lifetime. Refcount tracks borrows only,
+     * therefore unref() saturates at zero to avoid counter underflow.
+     */
+    previous = sixel_atomic_fetch_sub_u32(ref, 1u);
+    if (previous == 0u) {
+        (void)sixel_atomic_fetch_add_u32(ref, 1u);
+    }
+}
+
 SIXELSTATUS
 loader_registry_get_default(sixel_loader_registry_t **ppregistry)
 {
@@ -131,17 +151,11 @@ loader_registry_ref(sixel_loader_registry_t *registry)
 void
 loader_registry_unref(sixel_loader_registry_t *registry)
 {
-    unsigned int previous;
-
-    previous = 0u;
     if (registry == NULL) {
         return;
     }
 
-    previous = sixel_atomic_fetch_sub_u32(&registry->ref, 1u);
-    if (previous == 0u) {
-        (void)sixel_atomic_fetch_add_u32(&registry->ref, 1u);
-    }
+    loader_registry_unref_singleton_ref(&registry->ref);
 }
 
 size_t
