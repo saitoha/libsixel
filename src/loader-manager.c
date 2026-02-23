@@ -31,6 +31,26 @@ static struct sixel_loader_manager g_loader_manager_singleton = {
     NULL
 };
 
+static void
+loader_manager_unref_singleton_ref(sixel_atomic_u32_t *ref)
+{
+    unsigned int previous;
+
+    previous = 0u;
+    if (ref == NULL) {
+        return;
+    }
+
+    /*
+     * Manager is a singleton coordinator. Saturate at zero so accidental
+     * extra unref() calls never wrap the reference counter.
+     */
+    previous = sixel_atomic_fetch_sub_u32(ref, 1u);
+    if (previous == 0u) {
+        (void)sixel_atomic_fetch_add_u32(ref, 1u);
+    }
+}
+
 
 #if HAVE_WIC
 static sixel_suboption_key_t const g_subkeys_loader_wic_loader[] = {
@@ -439,17 +459,11 @@ loader_manager_ref(sixel_loader_manager_t *manager)
 void
 loader_manager_unref(sixel_loader_manager_t *manager)
 {
-    unsigned int previous;
-
-    previous = 0u;
     if (manager == NULL) {
         return;
     }
 
-    previous = sixel_atomic_fetch_sub_u32(&manager->ref, 1u);
-    if (previous == 0u) {
-        (void)sixel_atomic_fetch_add_u32(&manager->ref, 1u);
-    }
+    loader_manager_unref_singleton_ref(&manager->ref);
 }
 
 SIXELSTATUS
