@@ -51,11 +51,18 @@ loader_factory_get_default(sixel_loader_factory_t **ppfactory)
 
     if (ppfactory == NULL) {
         sixel_helper_set_additional_message(
-            "loader_factory_get_default: pfactory is null.");
+            "loader_factory_get_default: ppfactory is null.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
 
+    /*
+     * Lazily bind the singleton factory to the singleton registry.
+     *
+     * The registry object itself is process-lifetime in the current
+     * architecture, so the factory only acquires one shared reference and
+     * never releases it during normal operation.
+     */
     if (g_loader_factory_singleton.registry == NULL) {
         status = loader_registry_get_default(
             &g_loader_factory_singleton.registry);
@@ -91,6 +98,10 @@ loader_factory_unref(sixel_loader_factory_t *factory)
         return;
     }
 
+    /*
+     * The current implementation only exposes a singleton factory.
+     * Keep the same saturating unref pattern used by registry objects.
+     */
     previous = sixel_atomic_fetch_sub_u32(&factory->ref, 1u);
     if (previous == 0u) {
         (void)sixel_atomic_fetch_add_u32(&factory->ref, 1u);
@@ -125,18 +136,27 @@ loader_factory_create_component(sixel_loader_factory_t const *factory,
                                 sixel_allocator_t *allocator,
                                 sixel_loader_component_t **ppcomponent)
 {
+    if (ppcomponent != NULL) {
+        *ppcomponent = NULL;
+    }
+
     if (factory == NULL || entry == NULL || ppcomponent == NULL) {
         sixel_helper_set_additional_message(
             "loader_factory_create_component: invalid argument.");
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (!loader_factory_entry_available(factory, entry->name)) {
+    if (factory->registry == NULL) {
         sixel_helper_set_additional_message(
-            "loader_factory_create_component: loader is unavailable.");
+            "loader_factory_create_component: factory is not initialized.");
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /*
+     * Callers pass an entry selected from loader_factory_get_entries().
+     * The factory intentionally does not duplicate name-based resolution
+     * here; it only materializes a component from the supplied entry.
+     */
     *ppcomponent = sixel_loader_component_legacy_new(entry, allocator);
     if (*ppcomponent == NULL) {
         return SIXEL_BAD_ALLOCATION;

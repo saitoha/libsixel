@@ -1716,6 +1716,10 @@ sixel_loader_load_file(
         } else {
             loader->log_loader_name[0] = '\0';
         }
+        /*
+         * Keep loader orchestration in this function and delegate backend
+         * object materialization to the factory abstraction.
+         */
         status = loader_factory_create_component(factory,
                                                plan[plan_index],
                                                loader->allocator,
