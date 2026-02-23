@@ -24937,7 +24937,7 @@ fi
 printf "%s\n" "#define HAVE_WEBP 1" >>confdefs.h
 
         loaders="${loaders} webp"
-        if test x$LIBWEBP_PKG_NAME != x; then
+        if test "x$LIBWEBP_PKG_NAME" != x; then
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
         else
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"

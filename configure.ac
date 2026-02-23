@@ -3026,7 +3026,7 @@ if test x$with_webp != xno; then
     if test x$have_webp = xyes; then
         AC_DEFINE(HAVE_WEBP, 1, [whether libwebp is available])
         loaders="${loaders} webp"
-        if test x$LIBWEBP_PKG_NAME != x; then
+        if test "x$LIBWEBP_PKG_NAME" != x; then
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
         else
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"
