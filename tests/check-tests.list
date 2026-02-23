@@ -242,6 +242,9 @@ io/loader/0086_loader_builtin_palette_tga_path.t
 io/loader/0087_loader_builtin_rgb_tga_fallback.t
 io/loader/0088_loader_builtin_palette_disabled_by_scale.t
 io/loader/0089_loader_builtin_palette_disabled_by_highcolor.t
+io/loader/0090_loader_libjpeg_signature_probe.t
+io/loader/0091_loader_libjpeg_forced_jpeg.t
+io/loader/0092_loader_libjpeg_rejects_corrupt_jpeg.t
 io/loader/animation/0001_disable_update_mode.t
 io/loader/animation/0002_static_frame_render.t
 io/loader/animation/0003_update_and_static_frame.t
