@@ -11,6 +11,7 @@ bindings/python/0010_python_api_errors_corrupted_image.py
 bindings/python/0011_python_api_errors_unsupported_format.py
 bindings/python/0012_python_api_errors_invalid_option.py
 bindings/python/0013_python_resource_management.py
+bindings/python/0014_python_api_closed_handle_errors.py
 cli/aborttrace/0001_img2sixel_aborttrace.t
 cli/argument-shift/0001_invalid_positional.t
 cli/argument-shift/0002_argument_shift_missing_mapfile.t
