@@ -9,10 +9,8 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'corrupted image errors via wheel'
-ARGV = [os.path.expandvars("${ARTIFACT_LOCAL_DIR}/corrupt")]
 def test_0010_python_api_errors_corrupted_image() -> None:
     import pathlib
-    import sys
 
     try:
         from libsixel_wheel import (
@@ -25,7 +23,7 @@ def test_0010_python_api_errors_corrupted_image() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    workdir = pathlib.Path(sys.argv[1])
+    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/corrupt"))
     workdir.mkdir(parents=True, exist_ok=True)
     broken_bmp = workdir / "broken.bmp"
     broken_bmp.write_bytes(b"BM\x00\x00")
@@ -50,4 +48,4 @@ def test_0010_python_api_errors_corrupted_image() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0010_python_api_errors_corrupted_image))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0010_python_api_errors_corrupted_image))

@@ -9,11 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'explicit resize dimensions survive decode via wheel'
-ARGV = [os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"), os.path.expandvars("${ARTIFACT_LOCAL_DIR}/resize_fixed")]
 def test_0007_python_api_options_resize_fixed() -> None:
     import pathlib
     import re
-    import sys
 
     try:
         from libsixel_wheel import (
@@ -30,8 +28,8 @@ def test_0007_python_api_options_resize_fixed() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    source = pathlib.Path(sys.argv[1])
-    workdir = pathlib.Path(sys.argv[2])
+    source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
+    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/resize_fixed"))
     workdir.mkdir(parents=True, exist_ok=True)
     output = workdir / "resize_fixed.six"
     png = workdir / "resize_fixed.png"
@@ -79,4 +77,4 @@ def test_0007_python_api_options_resize_fixed() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0007_python_api_options_resize_fixed))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0007_python_api_options_resize_fixed))

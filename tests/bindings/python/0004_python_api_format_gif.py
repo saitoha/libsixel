@@ -9,17 +9,15 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'encodes GIF via wheel (DCS/ST ok)'
-ARGV = [os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"), os.path.expandvars("${ARTIFACT_LOCAL_DIR}/GIF.six")]
 def test_0004_python_api_format_gif() -> None:
     import pathlib
-    import sys
 
     try:
         from libsixel_wheel import SIXEL_OPTFLAG_INPUT
         from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
-        source = pathlib.Path(sys.argv[1])
-        target = pathlib.Path(sys.argv[2])
+        source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"))
+        target = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/GIF.six"))
 
         encoder = Encoder()
         encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
@@ -42,4 +40,4 @@ def test_0004_python_api_format_gif() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0004_python_api_format_gif))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0004_python_api_format_gif))

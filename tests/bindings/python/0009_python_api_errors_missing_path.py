@@ -9,10 +9,8 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'missing input path errors via wheel'
-ARGV = [os.path.expandvars("${ARTIFACT_LOCAL_DIR}/missing")]
 def test_0009_python_api_errors_missing_path() -> None:
     import pathlib
-    import sys
 
     try:
         from libsixel_wheel import (
@@ -25,7 +23,7 @@ def test_0009_python_api_errors_missing_path() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    workdir = pathlib.Path(sys.argv[1])
+    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/missing"))
     workdir.mkdir(parents=True, exist_ok=True)
     missing = workdir / "does-not-exist.png"
     target = workdir / "missing.six"
@@ -56,4 +54,4 @@ def test_0009_python_api_errors_missing_path() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, ARGV, test_0009_python_api_errors_missing_path))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0009_python_api_errors_missing_path))
