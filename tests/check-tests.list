@@ -728,3 +728,4 @@ io/loader/animation/0092_webp_start_frame_positive.t
 io/loader/animation/0093_webp_start_frame_negative.t
 io/loader/animation/0094_webp_start_frame_positive_oob.t
 io/loader/animation/0095_webp_start_frame_negative_oob.t
+io/loader/animation/0096_gd_start_frame_env_non_integer.t
