@@ -215,6 +215,7 @@ loader_manager_apply_loader_suboptions(char const *order)
     char match_detail[128];
     sixel_option_argument_resolution_t resolution;
     size_t assignment_index;
+    char const *key_name;
     char const *value_text;
     size_t value_length;
     int parsed_value;
@@ -231,6 +232,7 @@ loader_manager_apply_loader_suboptions(char const *order)
     resolution.assignments = NULL;
     resolution.assignment_count = 0u;
     assignment_index = 0u;
+    key_name = NULL;
     value_text = NULL;
     value_length = 0u;
     parsed_value = 0;
@@ -282,16 +284,18 @@ loader_manager_apply_loader_suboptions(char const *order)
                     for (assignment_index = 0u;
                          assignment_index < resolution.assignment_count;
                          ++assignment_index) {
+                        key_name = resolution.assignments[assignment_index]
+                            .resolved_key_name;
                         value_text = resolution.assignments[assignment_index]
                             .resolved_value_text;
                         value_length = 0u;
                         if (value_text != NULL) {
                             value_length = strlen(value_text);
                         }
-                        if (strcmp(resolution.assignments[assignment_index]
-                                   .resolved_key_name,
-                                   "ico_minsize") == 0 &&
-                            value_text != NULL &&
+                        if (key_name == NULL || value_text == NULL) {
+                            continue;
+                        }
+                        if (strcmp(key_name, "ico_minsize") == 0 &&
                             loader_manager_parse_positive_int(
                                 value_text,
                                 value_length,
