@@ -4,9 +4,14 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-wic.h"
-
 #if HAVE_WIC
+static SIXELSTATUS
+new_wic_component(sixel_allocator_t *allocator,
+                  sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("wic", allocator, ppcomponent);
+}
+
 static int
 run_wic_loader_test(void)
 {
@@ -15,7 +20,7 @@ run_wic_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGBA8888,
                                      2,
                                      1,
-                                     sixel_loader_wic_new);
+                                     new_wic_component);
 }
 #endif
 

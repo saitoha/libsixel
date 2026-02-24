@@ -4,9 +4,16 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-gdk-pixbuf2.h"
-
 #if defined(HAVE_GDK_PIXBUF2)
+static SIXELSTATUS
+new_gdk_pixbuf_component(sixel_allocator_t *allocator,
+                         sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("gdk-pixbuf2",
+                                           allocator,
+                                           ppcomponent);
+}
+
 static int
 run_gdk_pixbuf_loader_test(void)
 {
@@ -15,7 +22,7 @@ run_gdk_pixbuf_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGBA8888,
                                      2,
                                      1,
-                                     sixel_loader_gdkpixbuf2_new);
+                                     new_gdk_pixbuf_component);
 }
 #endif
 

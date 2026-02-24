@@ -4,9 +4,16 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-coregraphics.h"
-
 #if HAVE_COREGRAPHICS
+static SIXELSTATUS
+new_coregraphics_component(sixel_allocator_t *allocator,
+                           sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("coregraphics",
+                                           allocator,
+                                           ppcomponent);
+}
+
 static int
 run_coregraphics_loader_test(void)
 {
@@ -15,7 +22,7 @@ run_coregraphics_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGBA8888,
                                      2,
                                      1,
-                                     sixel_loader_coregraphics_new);
+                                     new_coregraphics_component);
 }
 #endif
 

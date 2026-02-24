@@ -4,8 +4,6 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-libwebp.h"
-
 #if HAVE_WEBP
 static int
 run_libwebp_component_case(char const *label,
@@ -47,7 +45,10 @@ run_libwebp_component_case(char const *label,
         source_root = ".";
     }
 
-    if (build_image_path(source_root, path, image_path, sizeof(image_path)) != 0) {
+    if (build_image_path(source_root,
+                         path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
         return 1;
     }
 
@@ -61,7 +62,9 @@ run_libwebp_component_case(char const *label,
         goto cleanup;
     }
 
-    status = sixel_loader_libwebp_new(allocator, &component);
+    status = create_loader_component_by_name("libwebp",
+                                             allocator,
+                                             &component);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

@@ -4,30 +4,11 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-factory.h"
-
 static SIXELSTATUS
-new_builtin_loader_component(sixel_allocator_t *allocator,
-                             sixel_loader_component_t **ppcomponent)
+new_builtin_component(sixel_allocator_t *allocator,
+                      sixel_loader_component_t **ppcomponent)
 {
-    SIXELSTATUS status;
-    sixel_loader_factory_t *factory;
-
-    status = SIXEL_FALSE;
-    factory = NULL;
-
-    status = loader_factory_get_default(&factory);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    status = loader_factory_create_component(factory,
-                                             "builtin",
-                                             allocator,
-                                             ppcomponent);
-    loader_factory_unref(factory);
-
-    return status;
+    return create_loader_component_by_name("builtin", allocator, ppcomponent);
 }
 
 static int
@@ -38,7 +19,7 @@ run_builtin_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGB888,
                                      2,
                                      1,
-                                     new_builtin_loader_component);
+                                     new_builtin_component);
 }
 
 int

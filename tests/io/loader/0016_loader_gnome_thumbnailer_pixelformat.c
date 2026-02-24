@@ -34,6 +34,15 @@ thumbnailer_available(void)
     return 1;
 }
 
+static SIXELSTATUS
+new_gnome_thumbnailer_component(sixel_allocator_t *allocator,
+                                sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("gnome-thumbnailer",
+                                           allocator,
+                                           ppcomponent);
+}
+
 static int
 run_thumbnailer_loader_test(void)
 {
@@ -42,7 +51,7 @@ run_thumbnailer_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGB888,
                                      GEOMETRY_ANY,
                                      GEOMETRY_ANY,
-                                     sixel_loader_gnome_thumbnailer_new);
+                                     new_gnome_thumbnailer_component);
 }
 #endif
 
