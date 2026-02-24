@@ -195,7 +195,7 @@ tests_text = run_command(
   sh,
   meson.project_source_root() / 'build-aux/read-check-test-list.sh',
   'tests',
-  meson.current_source_dir() / 'check-tests.list',
+  meson.current_source_dir(),
   check: true,
 ).stdout().strip()
 tests = []
