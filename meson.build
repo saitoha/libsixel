@@ -479,7 +479,9 @@ if file_prog.found()
                              check: false)
     if mime_probe.returncode() == 0
       mime_text = mime_probe.stdout().strip()
-      if mime_text.startswith('image/') or ': image/' in mime_text or ' image/' in mime_text
+      if (mime_text.startswith('image/') or
+          mime_text.contains(': image/') or
+          mime_text.contains(' image/'))
         file_mime_option = candidate
         break
       endif
