@@ -176,6 +176,9 @@ test_deps = [test_runner_exe, lsqa_bin] + img2sixel_deps + sixel2png_deps
 if not get_option('python').disabled()
   test_deps += [python_wheel_target]
 endif
+if not get_option('ruby').disabled()
+  test_deps += [ruby_gem_target]
+endif
 
 is_windows = host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 if is_windows

@@ -135,6 +135,20 @@ $ LIBSIXEL_LIBPATH=/path/to/libsixel.so \
 The runtime loader checks bundled files first, then falls back to system
 library names for backward compatibility.
 
+### Build artifact layout (aligned with Python wheel flow)
+
+When libsixel is built with Autotools or Meson and Ruby bindings are enabled,
+the build now emits a bundled Ruby platform gem into:
+
+- `ruby/dist/`
+
+This mirrors the Python packaging flow that writes wheels into `python/dist/`.
+You can install the generated gem directly:
+
+```
+$ gem install ruby/dist/libsixel-ruby-*.gem
+```
+
 Note: binding packaging requires shared libsixel artifacts. Static-only builds
 (`--disable-shared` or `-Ddefault_library=static`) reject language bindings
 as an explicit configuration error.

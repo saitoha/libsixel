@@ -1573,6 +1573,8 @@ endif
 
 ruby_message = 'no'
 have_ruby = false
+ruby_gem_target = disabler()
+ruby_gem_script = []
 # Generate Ruby version file (pure Ruby bindings)
 subdir('ruby/lib/libsixel')
 ruby_opt = get_option('ruby')
@@ -1583,6 +1585,7 @@ if ruby_opt.enabled()
   ruby = find_program('ruby', required: ruby_opt.enabled())
   if ruby.found()
     have_ruby = true
+    ruby_gem_script = files('ruby/gem_builder.rb')
     # Generate constants from header
     constants_rb = custom_target('ruby_constants',
       input: 'include/sixel.h',
@@ -1598,9 +1601,11 @@ if ruby_opt.enabled()
         install_dir: join_paths(sitelibdir, 'libsixel'),
         strip_directory: true,
         exclude_files: ['version_runtime.rb'])
-      # Install generated files explicitly to override source ones
+      # Install generated runtime version file explicitly.
+      # Keep constants.rb installation sourced from ruby/lib/libsixel/
+      # because Meson install_data() in our supported version only accepts
+      # source files, not custom_target outputs.
       install_data(ruby_version_runtime, install_dir: join_paths(sitelibdir, 'libsixel'))
-      install_data(constants_rb, install_dir: join_paths(sitelibdir, 'libsixel'))
     endif
   endif
 endif
@@ -1642,6 +1647,20 @@ lsqa_bin = disabler()
 subdir('include')
 
 subdir('src')
+if have_ruby
+  ruby_gem_distdir = join_paths(meson.project_build_root(), 'ruby', 'dist')
+  ruby_gem_target = custom_target(
+    'libsixel-ruby-gem',
+    input: libsixel_library,
+    output: 'libsixel-ruby-gem.stamp',
+    command: [
+      ruby, ruby_gem_script,
+      '--libpath', '@INPUT@',
+      '--distdir', ruby_gem_distdir,
+    ],
+    build_by_default: true,
+  )
+endif
 subdir('converters')
 if have_wiccodec
   subdir('wic')

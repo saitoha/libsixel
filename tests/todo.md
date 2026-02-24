@@ -11,6 +11,7 @@ This document tracks remaining TAP files that still bundle multiple test cases a
 - `tests/io/loader/` (pngsuite cases split)
 - `tests/quant/mapfile/` (palette import/export cases split with shared helper)
 - `tests/packaging/t/` (python wheel install and roundtrip split, shared helper)
+- `tests/bindings/ruby/` (bundled gem build and roundtrip split)
 - `tests/cli/core/` (basic option handling, invalid argument/combination, option matching, and argument-shift suites split)
 - `tests/lib/sh/conversion/common.sh` (shared setup extracted for converter-focused TAP cases)
 
