@@ -10,12 +10,12 @@
 static int
 run_libjpeg_loader_test(void)
 {
-    return run_loader_case("libjpeg loader",
-                           JPEG_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGB888,
-                           600,
-                           450,
-                           load_with_libjpeg);
+    return run_loader_component_case("libjpeg loader",
+                                     JPEG_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGB888,
+                                     600,
+                                     450,
+                                     sixel_loader_libjpeg_new);
 }
 #endif
 

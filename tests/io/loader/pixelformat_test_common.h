@@ -18,6 +18,7 @@
 #include "src/allocator.h"
 #include "src/chunk.h"
 #include "src/status.h"
+#include "src/loader-component.h"
 
 #if defined(__clang__)
 # if __has_attribute(unused)
@@ -278,6 +279,189 @@ cleanup:
     return result;
 }
 
+
+
+typedef SIXELSTATUS (*loader_component_new_fn)(
+    sixel_allocator_t *,
+    sixel_loader_component_t **);
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case(char const *label,
+                          char const *relative_path,
+                          int expected_pixelformat,
+                          int expected_width,
+                          int expected_height,
+                          loader_component_new_fn new_component)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
+    loader_probe_context_t context;
+    char const *source_root;
+#if defined(_MSC_VER)
+    char *source_root_dupe;
+    size_t source_root_len;
+#endif
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int result;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    loader_probe_callback_state_t callback_state;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    component = NULL;
+    cancel_flag = 0;
+    result = 1;
+    require_static = 1;
+    use_palette = 0;
+    reqcolors = 256;
+#if defined(_MSC_VER)
+    source_root = NULL;
+    source_root_dupe = NULL;
+    source_root_len = 0;
+    _dupenv_s(&source_root_dupe, &source_root_len, "MESON_SOURCE_ROOT");
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "abs_top_srcdir");
+    }
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "TOP_SRCDIR");
+    }
+    if (source_root_dupe != NULL) {
+        source_root = source_root_dupe;
+    }
+#else
+    source_root = getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+#endif
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_new(&chunk,
+                             image_path,
+                             0,
+                             &cancel_flag,
+                             allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    status = new_component(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+
+    context.callback_count = 0;
+    context.pixelformat = 0;
+    context.width = 0;
+    context.height = 0;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_frame;
+    callback_state.context = &context;
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    if (context.callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch\n", label);
+        goto cleanup;
+    }
+
+    if (context.pixelformat != expected_pixelformat) {
+        fprintf(stderr,
+                "%s: reported pixelformat %d\n",
+                label,
+                context.pixelformat);
+        goto cleanup;
+    }
+
+    if (context.width <= 0 || context.height <= 0) {
+        fprintf(stderr,
+                "%s: invalid geometry %dx%d\n",
+                label,
+                context.width,
+                context.height);
+        goto cleanup;
+    }
+
+    if (expected_width != GEOMETRY_ANY && expected_height != GEOMETRY_ANY) {
+        if (context.width != expected_width ||
+            context.height != expected_height) {
+            fprintf(stderr,
+                    "%s: unexpected geometry %dx%d\n",
+                    label,
+                    context.width,
+                    context.height);
+            goto cleanup;
+        }
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+#if defined(_MSC_VER)
+    free(source_root_dupe);
+#endif
+
+    return result;
+}
 
 static SIXEL_TEST_UNUSED int
 run_loader_case(char const *label,

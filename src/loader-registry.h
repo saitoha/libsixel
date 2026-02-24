@@ -31,6 +31,7 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "loader-component.h"
 
 typedef int (*sixel_loader_predicate)(sixel_chunk_t const *pchunk);
 
@@ -46,10 +47,15 @@ typedef SIXELSTATUS (*sixel_loader_backend)(
     sixel_load_image_function  fn_load,
     void                      *context);
 
+typedef SIXELSTATUS (*sixel_loader_new_component_fn)(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
+
 typedef struct sixel_loader_entry {
     char const              *name;
     sixel_loader_backend     backend;
     sixel_loader_predicate   predicate;
+    sixel_loader_new_component_fn new_component;
     char const * const      *magic_signatures;
     size_t                   magic_signature_count;
     int                      default_enabled;
