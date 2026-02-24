@@ -8,6 +8,17 @@ if not get_option('python').disabled() and not python_for_tests.found()
   error('python option is enabled but python3 executable was not found')
 endif
 
+# Keep Meson test-time Python resolution aligned with the interpreter selected
+# in the project root. Using a different binary here can make wheel builds pass
+# while Python TAP tests are skipped because the fallback interpreter lacks
+# venv/ensurepip support.
+python_for_tests_path = ''
+if py_opt.enabled() and py.found()
+  python_for_tests_path = py.full_path()
+elif python_for_tests.found()
+  python_for_tests_path = python_for_tests.full_path()
+endif
+
 artifact_root = meson.current_build_dir() / '_artifacts'
 cross_compiling = 'no'
 if meson.is_cross_build()
@@ -241,7 +252,7 @@ foreach t : tests
   test_env.set('test_dir', test_dir)
   test_env.set('category_name', test_category)
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
-  test_env.set('SIXEL_CONFIGURED_PYTHON', python_for_tests.found() ? python_for_tests.full_path() : '')
+  test_env.set('SIXEL_CONFIGURED_PYTHON', python_for_tests_path)
   test_cmd = [meson.current_source_dir() / t]
   test(t, sh,
     args: ['-c', '''
