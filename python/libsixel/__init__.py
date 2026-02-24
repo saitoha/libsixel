@@ -908,8 +908,11 @@ def sixel_loader_load_file(loader, filename, fn_load):
     if not encoding:
         encoding = 'utf-8'
 
+    # The C API expects a non-NULL filename pointer.
+    # Reject None in the Python wrapper to avoid passing NULL and
+    # crashing inside the native loader implementation.
     if filename is None:
-        c_filename = None
+        raise TypeError("filename must be str or bytes, not None")
     elif isinstance(filename, bytes):
         c_filename = filename
     else:
