@@ -358,6 +358,14 @@ CLEANFILES = libsixel/*.pyc
 # and it also prevents duplicate work when recursive make visits python/
 # more than once during the same top-level invocation.
 @HAVE_PYTHON_TRUE@WHEEL_STAMP = $(abs_top_builddir)/python/dist/.wheel-stamp
+
+# Keep the wheel in sync with all Python package sources, not only setup
+# helpers. This makes a regular "make" rebuild the wheel whenever wrapper
+# code under python/libsixel/ changes.
+@HAVE_PYTHON_TRUE@PYTHON_WHEEL_INPUTS = \
+@HAVE_PYTHON_TRUE@	$(wildcard $(srcdir)/libsixel/*.py) \
+@HAVE_PYTHON_TRUE@	$(wildcard $(srcdir)/libsixel/_libs/*.py)
+
 EXTRA_DIST = \
     setup.py \
     wheel_builder.py \
@@ -571,7 +579,7 @@ clean-local:
 	fi
 
 @HAVE_PYTHON_TRUE@$(WHEEL_STAMP): $(srcdir)/wheel_builder.py $(srcdir)/setup.py \
-@HAVE_PYTHON_TRUE@		$(srcdir)/libsixel/_wheel_ext.c
+@HAVE_PYTHON_TRUE@		$(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS)
 @HAVE_PYTHON_TRUE@	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
 @HAVE_PYTHON_TRUE@	$(AM_V_at) mkdir -p "$(abs_top_builddir)/python/dist"
 @HAVE_PYTHON_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \

@@ -17,8 +17,15 @@ if HAVE_PYTHON
 # more than once during the same top-level invocation.
 WHEEL_STAMP = $(abs_top_builddir)/python/dist/.wheel-stamp
 
+# Keep the wheel in sync with all Python package sources, not only setup
+# helpers. This makes a regular "make" rebuild the wheel whenever wrapper
+# code under python/libsixel/ changes.
+PYTHON_WHEEL_INPUTS = \
+	$(wildcard $(srcdir)/libsixel/*.py) \
+	$(wildcard $(srcdir)/libsixel/_libs/*.py)
+
 $(WHEEL_STAMP): $(srcdir)/wheel_builder.py $(srcdir)/setup.py \
-		$(srcdir)/libsixel/_wheel_ext.c
+		$(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS)
 	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
 	$(AM_V_at) mkdir -p "$(abs_top_builddir)/python/dist"
 	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
