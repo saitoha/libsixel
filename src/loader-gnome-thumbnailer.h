@@ -30,7 +30,14 @@
 
 #include <sixel.h>
 
+#include "loader-component.h"
+
 #if HAVE_FREEDESKTOP_THUMBNAILING
+SIXELSTATUS
+sixel_loader_gnome_thumbnailer_new(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
+
 SIXELSTATUS load_with_gnome_thumbnailer(
     sixel_chunk_t const       *pchunk,
     int                        fstatic,
