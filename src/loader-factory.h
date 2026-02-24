@@ -46,7 +46,7 @@ typedef struct sixel_loader_factory sixel_loader_factory_t;
  * - create_component(): materialize a component for eligible entries.
  */
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 loader_factory_get_default(sixel_loader_factory_t **ppfactory);
 
 void
@@ -71,7 +71,7 @@ loader_factory_entry_matches_chunk(
     sixel_loader_entry_t const *entry,
     sixel_chunk_t const *chunk);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 loader_factory_create_component(
     sixel_loader_factory_t const *factory,
     char const *name,
