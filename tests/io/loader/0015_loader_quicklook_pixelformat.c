@@ -4,9 +4,14 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-quicklook.h"
-
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+static SIXELSTATUS
+new_quicklook_component(sixel_allocator_t *allocator,
+                        sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("quicklook", allocator, ppcomponent);
+}
+
 static int
 run_quicklook_loader_test(void)
 {
@@ -15,7 +20,7 @@ run_quicklook_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGBA8888,
                                      GEOMETRY_ANY,
                                      GEOMETRY_ANY,
-                                     sixel_loader_quicklook_new);
+                                     new_quicklook_component);
 }
 #endif
 

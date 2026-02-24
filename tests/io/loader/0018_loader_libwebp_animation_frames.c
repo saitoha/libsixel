@@ -5,9 +5,6 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-libwebp.h"
-
-
 #if HAVE_WEBP
 typedef struct animated_probe_context {
     int callback_count;
@@ -117,7 +114,9 @@ run_libwebp_animation_test(void)
         goto cleanup;
     }
 
-    status = sixel_loader_libwebp_new(allocator, &component);
+    status = create_loader_component_by_name("libwebp",
+                                             allocator,
+                                             &component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "libwebp animation: component init failed\n");
         goto cleanup;

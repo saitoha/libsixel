@@ -4,9 +4,14 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-libpng.h"
-
 #if HAVE_LIBPNG
+static SIXELSTATUS
+new_libpng_component(sixel_allocator_t *allocator,
+                     sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("libpng", allocator, ppcomponent);
+}
+
 static int
 run_libpng_loader_test(void)
 {
@@ -15,7 +20,7 @@ run_libpng_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGB888,
                                      2,
                                      1,
-                                     sixel_loader_libpng_new);
+                                     new_libpng_component);
 }
 #endif
 

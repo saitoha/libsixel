@@ -4,9 +4,14 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-gd.h"
-
 #if HAVE_GD
+static SIXELSTATUS
+new_gd_component(sixel_allocator_t *allocator,
+                 sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("gd", allocator, ppcomponent);
+}
+
 static int
 run_gd_loader_test(void)
 {
@@ -15,7 +20,7 @@ run_gd_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGB888,
                                      2,
                                      1,
-                                     sixel_loader_gd_new);
+                                     new_gd_component);
 }
 #endif
 

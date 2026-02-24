@@ -4,9 +4,14 @@
 
 #include "tests/io/loader/pixelformat_test_common.h"
 
-#include "src/loader-libjpeg.h"
-
 #if HAVE_JPEG
+static SIXELSTATUS
+new_libjpeg_component(sixel_allocator_t *allocator,
+                      sixel_loader_component_t **ppcomponent)
+{
+    return create_loader_component_by_name("libjpeg", allocator, ppcomponent);
+}
+
 static int
 run_libjpeg_loader_test(void)
 {
@@ -15,7 +20,7 @@ run_libjpeg_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGB888,
                                      600,
                                      450,
-                                     sixel_loader_libjpeg_new);
+                                     new_libjpeg_component);
 }
 #endif
 

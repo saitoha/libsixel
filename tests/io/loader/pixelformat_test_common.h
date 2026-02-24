@@ -17,6 +17,7 @@
 
 #include "src/allocator.h"
 #include "src/chunk.h"
+#include "src/loader-factory.h"
 #include "src/status.h"
 #include "src/loader-component.h"
 
@@ -284,6 +285,31 @@ cleanup:
 typedef SIXELSTATUS (*loader_component_new_fn)(
     sixel_allocator_t *,
     sixel_loader_component_t **);
+
+static SIXEL_TEST_UNUSED SIXELSTATUS
+create_loader_component_by_name(char const *name,
+                                sixel_allocator_t *allocator,
+                                sixel_loader_component_t **ppcomponent)
+{
+    SIXELSTATUS status;
+    sixel_loader_factory_t *factory;
+
+    status = SIXEL_FALSE;
+    factory = NULL;
+
+    status = loader_factory_get_default(&factory);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = loader_factory_create_component(factory,
+                                             name,
+                                             allocator,
+                                             ppcomponent);
+    loader_factory_unref(factory);
+
+    return status;
+}
 
 static SIXEL_TEST_UNUSED int
 run_loader_component_case(char const *label,
