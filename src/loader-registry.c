@@ -53,7 +53,9 @@
 
 static char const * const g_magic_png[] = { "\x89PNG" };
 static char const * const g_magic_jpeg[] = { "\xff\xd8" };
+#if HAVE_WEBP
 static char const * const g_magic_webp[] = { "RIFF" };
+#endif
 static char const * const g_magic_tiff[] = { "II", "MM" };
 #if HAVE_LIBRSVG
 static char const * const g_magic_svg[] = { "<svg", "<?xml" };
