@@ -31,8 +31,14 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "loader-component.h"
 
 #if HAVE_GD
+SIXELSTATUS
+sixel_loader_gd_new(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
+
 SIXELSTATUS load_with_gd(
     sixel_chunk_t const       *pchunk,
     int                        fstatic,

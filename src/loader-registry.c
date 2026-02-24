@@ -145,9 +145,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_GD
     {
         "gd",
-        load_with_gd,
         NULL,
         NULL,
+        sixel_loader_gd_new,
         g_magic_gif,
         sizeof(g_magic_gif) / sizeof(g_magic_gif[0]),
         1

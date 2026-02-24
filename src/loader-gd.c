@@ -50,12 +50,27 @@
 #include "loader-common.h"
 #include "loader-gd.h"
 #include "compat_stub.h"
+#include "sixel_atomic.h"
 
 
 typedef union sixel_loader_gd_fn_pointer {
     sixel_load_image_function fn;
     void *                    p;
 } sixel_loader_gd_fn_pointer_t;
+
+typedef struct sixel_loader_gd_component {
+    sixel_loader_component_t base;
+    sixel_atomic_u32_t ref;
+    sixel_allocator_t *allocator;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    int has_bgcolor;
+    unsigned char bgcolor[3];
+    int loop_control;
+    int start_frame_no_set;
+    int start_frame_no;
+} sixel_loader_gd_component_t;
 
 static SIXELSTATUS
 gd_parse_animation_start_frame_no(int *start_frame_no)
@@ -263,6 +278,190 @@ gd_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
 
 end:
     return status;
+}
+
+static void
+sixel_loader_gd_ref(sixel_loader_component_t *component)
+{
+    sixel_loader_gd_component_t *self;
+
+    self = NULL;
+    if (component == NULL) {
+        return;
+    }
+
+    self = (sixel_loader_gd_component_t *)component;
+    (void)sixel_atomic_fetch_add_u32(&self->ref, 1u);
+}
+
+static void
+sixel_loader_gd_unref(sixel_loader_component_t *component)
+{
+    sixel_loader_gd_component_t *self;
+    unsigned int previous;
+
+    self = NULL;
+    previous = 0u;
+    if (component == NULL) {
+        return;
+    }
+
+    self = (sixel_loader_gd_component_t *)component;
+    previous = sixel_atomic_fetch_sub_u32(&self->ref, 1u);
+    if (previous != 1u) {
+        return;
+    }
+
+    sixel_allocator_unref(self->allocator);
+    sixel_allocator_free(self->allocator, self);
+}
+
+static SIXELSTATUS
+sixel_loader_gd_setopt(sixel_loader_component_t *component,
+                       int option,
+                       void const *value)
+{
+    sixel_loader_gd_component_t *self;
+    int const *int_value;
+    unsigned char const *bgcolor;
+
+    self = NULL;
+    int_value = NULL;
+    bgcolor = NULL;
+    if (component == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    self = (sixel_loader_gd_component_t *)component;
+
+    switch (option) {
+    case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
+        int_value = (int const *)value;
+        self->fstatic = int_value != NULL ? *int_value : 0;
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_USE_PALETTE:
+        int_value = (int const *)value;
+        self->fuse_palette = int_value != NULL ? *int_value : 0;
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_REQCOLORS:
+        int_value = (int const *)value;
+        if (int_value != NULL) {
+            self->reqcolors = *int_value;
+        }
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_BGCOLOR:
+        if (value == NULL) {
+            self->has_bgcolor = 0;
+            return SIXEL_OK;
+        }
+        bgcolor = (unsigned char const *)value;
+        self->bgcolor[0] = bgcolor[0];
+        self->bgcolor[1] = bgcolor[1];
+        self->bgcolor[2] = bgcolor[2];
+        self->has_bgcolor = 1;
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_LOOP_CONTROL:
+        int_value = (int const *)value;
+        if (int_value != NULL) {
+            self->loop_control = *int_value;
+        }
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_START_FRAME_NO:
+        int_value = (int const *)value;
+        if (int_value != NULL) {
+            self->start_frame_no = *int_value;
+            self->start_frame_no_set = 1;
+        } else {
+            self->start_frame_no_set = 0;
+        }
+        return SIXEL_OK;
+    default:
+        return SIXEL_OK;
+    }
+}
+
+static SIXELSTATUS
+sixel_loader_gd_load(sixel_loader_component_t *component,
+                     sixel_chunk_t const *chunk,
+                     sixel_load_image_function fn_load,
+                     void *context)
+{
+    sixel_loader_gd_component_t *self;
+    unsigned char *bgcolor;
+
+    self = NULL;
+    bgcolor = NULL;
+    if (component == NULL || chunk == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    self = (sixel_loader_gd_component_t *)component;
+    if (self->has_bgcolor) {
+        bgcolor = self->bgcolor;
+    }
+
+    return load_with_gd(chunk,
+                        self->fstatic,
+                        self->fuse_palette,
+                        self->reqcolors,
+                        bgcolor,
+                        self->loop_control,
+                        self->start_frame_no_set,
+                        self->start_frame_no,
+                        fn_load,
+                        context);
+}
+
+static char const *
+sixel_loader_gd_name(sixel_loader_component_t const *component)
+{
+    (void)component;
+    return "gd";
+}
+
+static sixel_loader_component_vtbl_t const g_sixel_loader_gd_vtbl = {
+    sixel_loader_gd_ref,
+    sixel_loader_gd_unref,
+    sixel_loader_gd_setopt,
+    sixel_loader_gd_load,
+    sixel_loader_gd_name,
+};
+
+SIXELSTATUS
+sixel_loader_gd_new(sixel_allocator_t *allocator,
+                    sixel_loader_component_t **ppcomponent)
+{
+    sixel_loader_gd_component_t *self;
+
+    self = NULL;
+    if (allocator == NULL || ppcomponent == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *ppcomponent = NULL;
+    self = (sixel_loader_gd_component_t *)
+        sixel_allocator_malloc(allocator, sizeof(*self));
+    if (self == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    self->base.vtbl = &g_sixel_loader_gd_vtbl;
+    self->ref = 1u;
+    self->allocator = allocator;
+    sixel_allocator_ref(allocator);
+    self->fstatic = 0;
+    self->fuse_palette = 0;
+    self->reqcolors = SIXEL_PALETTE_MAX;
+    self->has_bgcolor = 0;
+    self->bgcolor[0] = 0;
+    self->bgcolor[1] = 0;
+    self->bgcolor[2] = 0;
+    self->loop_control = SIXEL_LOOP_AUTO;
+    self->start_frame_no_set = 0;
+    self->start_frame_no = INT_MIN;
+
+    *ppcomponent = &self->base;
+    return SIXEL_OK;
 }
 
 SIXELSTATUS

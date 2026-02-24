@@ -10,12 +10,12 @@
 static int
 run_gd_loader_test(void)
 {
-    return run_loader_case("GD loader",
-                           RGBA_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGB888,
-                           2,
-                           1,
-                           load_with_gd);
+    return run_loader_component_case("GD loader",
+                                     RGBA_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGB888,
+                                     2,
+                                     1,
+                                     sixel_loader_gd_new);
 }
 #endif
 
