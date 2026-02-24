@@ -105,9 +105,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_LIBTIFF
     {
         "libtiff",
-        load_with_libtiff,
-        loader_can_try_libtiff,
         NULL,
+        loader_can_try_libtiff,
+        sixel_loader_libtiff_new,
         g_magic_tiff,
         sizeof(g_magic_tiff) / sizeof(g_magic_tiff[0]),
         1
