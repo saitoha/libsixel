@@ -16,7 +16,7 @@ def test_0061_python_api_helper_compute_depth_invalid_type() -> None:
 
     rejected = False
     try:
-        sixel_helper_compute_depth(b'RGB888')
+        sixel_helper_compute_depth(object())
     except (TypeError, RuntimeError):
         rejected = True
     except Exception as exc:  # ctypes may wrap TypeError as ArgumentError
@@ -26,7 +26,7 @@ def test_0061_python_api_helper_compute_depth_invalid_type() -> None:
             raise
 
     if not rejected:
-        raise SystemExit('compute_depth accepted non-integer pixelformat')
+        raise SystemExit('compute_depth accepted non-convertible pixelformat object')
 
     print('compute_depth type validation verified')
 
