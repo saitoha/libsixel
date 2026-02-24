@@ -218,11 +218,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-common.c $(srcdir)/loader-chain.c \
 	$(srcdir)/loader-factory.c $(srcdir)/loader-manager.c \
 	$(srcdir)/loader-component.c \
-	$(srcdir)/loader-component-legacy.c \
 	$(srcdir)/loader-registry.c $(srcdir)/loader.h \
 	$(srcdir)/loader-builtin.h $(srcdir)/loader-common.h \
-	$(srcdir)/loader-component.h \
-	$(srcdir)/loader-component-legacy.h $(srcdir)/loader-chain.h \
+	$(srcdir)/loader-component.h $(srcdir)/loader-chain.h \
 	$(srcdir)/loader-factory.h $(srcdir)/loader-manager.h \
 	$(srcdir)/loader-coregraphics.h $(srcdir)/loader-gd.h \
 	$(srcdir)/loader-gdk-pixbuf2.h \
@@ -323,7 +321,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-factory.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-manager.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-component.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-component-legacy.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-registry.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompnm.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
@@ -420,7 +417,6 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-loader-builtin.Plo \
 	./$(DEPDIR)/libsixel_la-loader-chain.Plo \
 	./$(DEPDIR)/libsixel_la-loader-common.Plo \
-	./$(DEPDIR)/libsixel_la-loader-component-legacy.Plo \
 	./$(DEPDIR)/libsixel_la-loader-component.Plo \
 	./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo \
 	./$(DEPDIR)/libsixel_la-loader-factory.Plo \
@@ -886,13 +882,11 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-factory.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-manager.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-component.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-component-legacy.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-registry.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-builtin.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-common.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-component.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-component-legacy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-chain.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-manager.h \
@@ -1127,7 +1121,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-builtin.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-chain.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-common.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-component-legacy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-component.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-factory.Plo@am__quote@ # am--include-marker
@@ -1670,12 +1663,7 @@ libsixel_la-loader-component.lo: loader-component.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-component.lo `test -f 'loader-component.c' || echo '$(srcdir)/'`loader-component.c
 
-libsixel_la-loader-component-legacy.lo: loader-component-legacy.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-component-legacy.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-component-legacy.Tpo -c -o libsixel_la-loader-component-legacy.lo `test -f 'loader-component-legacy.c' || echo '$(srcdir)/'`loader-component-legacy.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-component-legacy.Tpo $(DEPDIR)/libsixel_la-loader-component-legacy.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-component-legacy.c' object='libsixel_la-loader-component-legacy.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-component-legacy.lo `test -f 'loader-component-legacy.c' || echo '$(srcdir)/'`loader-component-legacy.c
 
 libsixel_la-loader-registry.lo: loader-registry.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-registry.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-registry.Tpo -c -o libsixel_la-loader-registry.lo `test -f 'loader-registry.c' || echo '$(srcdir)/'`loader-registry.c
@@ -2105,7 +2093,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-common.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-component-legacy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-component.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-factory.Plo
@@ -2242,7 +2229,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-common.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-component-legacy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-component.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-factory.Plo
