@@ -37,12 +37,12 @@ thumbnailer_available(void)
 static int
 run_thumbnailer_loader_test(void)
 {
-    return run_loader_case("GNOME thumbnailer",
-                           RGBA_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGB888,
-                           GEOMETRY_ANY,
-                           GEOMETRY_ANY,
-                           load_with_gnome_thumbnailer);
+    return run_loader_component_case("GNOME thumbnailer",
+                                     RGBA_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGB888,
+                                     GEOMETRY_ANY,
+                                     GEOMETRY_ANY,
+                                     sixel_loader_gnome_thumbnailer_new);
 }
 #endif
 

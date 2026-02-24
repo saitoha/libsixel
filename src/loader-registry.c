@@ -165,7 +165,15 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
     },
 #endif
 #if HAVE_FREEDESKTOP_THUMBNAILING
-    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, NULL, NULL, 0u, 0 },
+    {
+        "gnome-thumbnailer",
+        NULL,
+        NULL,
+        sixel_loader_gnome_thumbnailer_new,
+        NULL,
+        0u,
+        0
+    },
 #endif
 };
 
