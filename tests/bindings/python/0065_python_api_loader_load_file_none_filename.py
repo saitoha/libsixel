@@ -6,7 +6,7 @@ from __future__ import annotations
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'loader load_file accepts None filename without type error'
+DESCRIPTION = 'loader load_file rejects None filename without crashing'
 def test_0065_python_api_loader_load_file_none_filename() -> None:
     try:
         from libsixel_wheel import sixel_loader_load_file
@@ -17,10 +17,16 @@ def test_0065_python_api_loader_load_file_none_filename() -> None:
         raise SystemExit(2)
 
     loader = sixel_loader_new()
-    sixel_loader_load_file(loader, None, lambda _frame, _context: 0)
-#    sixel_loader_unref(loader)
 
-    print('loader load_file None-filename type path verified')
+    try:
+        sixel_loader_load_file(loader, None, lambda _frame, _context: 0)
+    except TypeError:
+        sixel_loader_unref(loader)
+        print('loader load_file None-filename rejection verified')
+        return
+
+    sixel_loader_unref(loader)
+    raise AssertionError('loader load_file accepted None filename')
 
 
 if __name__ == '__main__':
