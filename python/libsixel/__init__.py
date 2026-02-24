@@ -765,7 +765,7 @@ def sixel_helper_format_error(status):
 # compute pixel depth from pixelformat
 def sixel_helper_compute_depth(pixelformat):
     _sixel.sixel_helper_compute_depth.restype = c_int
-    _sixel.sixel_encoder_encode.argtypes = [c_int]
+    _sixel.sixel_helper_compute_depth.argtypes = [c_int]
     return _sixel.sixel_helper_compute_depth(pixelformat)
 
 
@@ -910,6 +910,8 @@ def sixel_loader_load_file(loader, filename, fn_load):
 
     if filename is None:
         c_filename = None
+    elif isinstance(filename, bytes):
+        c_filename = filename
     else:
         c_filename = filename.encode(encoding)
 
