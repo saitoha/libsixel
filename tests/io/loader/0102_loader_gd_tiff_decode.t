@@ -10,8 +10,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_GD-}" = 1 || {
-    printf "1..0 # SKIP gd support is disabled in this build\n";
+test "${HAVE_DECL_GDIMAGECREATEFROMTIFFPTR-}" = 1 || {
+    printf "1..0 # SKIP HAVE_DECL_GDIMAGECREATEFROMTIFFPTR is unavailable in this build\n";
     exit 0
 }
 

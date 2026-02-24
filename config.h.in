@@ -80,6 +80,10 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMGD2PTR
 
+/* Define to 1 if you have the declaration of 'gdImageCreateFromGdPtr', and to
+   0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMGDPTR
+
 /* Define to 1 if you have the declaration of 'gdImageCreateFromGifAnimPtr',
    and to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR
@@ -111,6 +115,10 @@
 /* Define to 1 if you have the declaration of 'gdImageCreateFromWBMPPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
+
+/* Define to 1 if you have the declaration of 'gdImageCreateFromWebpPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMWEBPPTR
 
 /* Define to 1 if you have the declaration of 'gdImagePaletteToTrueColor', and
    to 0 if you don't. */

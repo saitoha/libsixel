@@ -3,8 +3,8 @@
 
 set -eux
 
-test "${HAVE_GD-}" = 1 || {
-    printf "1..0 # SKIP GD loader is unavailable\n"
+test "${HAVE_DECL_GDIMAGECREATEFROMPNGPTR-}" = 1 || {
+    printf "1..0 # SKIP HAVE_DECL_GDIMAGECREATEFROMPNGPTR is unavailable\n"
     exit 0
 }
 
