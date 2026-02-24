@@ -49,24 +49,24 @@ struct sixel_loader_component {
     sixel_loader_component_vtbl_t const *vtbl;
 };
 
-void
+SIXEL_INTERNAL_API void
 sixel_loader_component_ref(sixel_loader_component_t *component);
 
-void
+SIXEL_INTERNAL_API void
 sixel_loader_component_unref(sixel_loader_component_t *component);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_component_setopt(sixel_loader_component_t *component,
                               int option,
                               void const *value);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_component_load(sixel_loader_component_t *component,
                             sixel_chunk_t const *chunk,
                             sixel_load_image_function fn_load,
                             void *context);
 
-char const *
+SIXEL_INTERNAL_API char const *
 sixel_loader_component_get_name(sixel_loader_component_t const *component);
 
 #endif /* LIBSIXEL_LOADER_COMPONENT_H */
