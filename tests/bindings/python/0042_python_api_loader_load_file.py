@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""TAP test for loader load-file callback API in libsixel.__init__.py."""
+
+from __future__ import annotations
+
+import os
+
+from _taptest import run_embedded_tap_test
+
+
+DESCRIPTION = 'loader load_file invokes callback for source image'
+def test_0042_python_api_loader_load_file() -> None:
+    import pathlib
+
+    try:
+        from libsixel_wheel import sixel_loader_load_file
+        from libsixel_wheel import sixel_loader_new
+        from libsixel_wheel import sixel_loader_unref
+    except (ModuleNotFoundError, OSError) as exc:
+        print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+        raise SystemExit(2)
+
+    source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
+    frames = []
+
+    def _load(frame_ptr: object, context_ptr: object) -> int:
+        frames.append((frame_ptr, context_ptr))
+        return 0
+
+    loader = sixel_loader_new()
+    sixel_loader_load_file(loader, str(source), _load)
+    sixel_loader_unref(loader)
+
+    if not frames:
+        raise SystemExit("loader callback was not invoked")
+
+    print(f"loader callback verified ({len(frames)} frame callbacks)")
+
+
+if __name__ == "__main__":
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0042_python_api_loader_load_file))
