@@ -65,6 +65,7 @@ TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
         $(LIBTIFF_CFLAGS) \
         $(LIBJPEG_CFLAGS) \
         $(LIBWEBP_CFLAGS) \
+        $(LIBRSVG_CFLAGS) \
         $(GDK_PIXBUF_CFLAGS) \
         $(GD_CFLAGS) \
         $(WIC_CFLAGS) \
@@ -87,6 +88,7 @@ TESTS_COMMON_LDADD_VAL = -lm \
         $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
         $(LIBWEBP_LIBS) \
+        $(LIBRSVG_LIBS) \
         $(GDK_PIXBUF_LIBS) \
         $(GD_LIBS) \
         $(WIC_LIBS) \
@@ -114,6 +116,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
         $(LIBWEBP_LIBS) \
+        $(LIBRSVG_LIBS) \
         $(GDK_PIXBUF_LIBS) \
         $(GD_LIBS) \
         $(WIC_LIBS) \
