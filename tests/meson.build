@@ -244,8 +244,18 @@ foreach t : tests
     args: ['-c', '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
-if test "${1##*.}" != "py"; then
-  exec sh "$@"
+# Meson runs `sh -c SCRIPT ARG0 ARG1 ...` where ARG0 becomes `$0`.
+# Keep compatibility with both forms by preferring `$1` and falling back
+# to `$0` when no positional argument is supplied.
+if test -n "${1:-}"; then
+  test_script=$1
+  shift
+else
+  test_script=$0
+fi
+
+if test "${test_script##*.}" != "py"; then
+  exec sh "$test_script" "$@"
 fi
 
 python_venv_exports=$(
@@ -259,7 +269,7 @@ if test -z "${SIXEL_TEST_PYTHON:-}"; then
   exit 0
 fi
 export SIXEL_TEST_PYTHON
-exec "$SIXEL_TEST_PYTHON" "$@"
+exec "$SIXEL_TEST_PYTHON" "$test_script" "$@"
 ''', 'sh'] + test_cmd,
     depends: test_deps,
     protocol: 'tap',
