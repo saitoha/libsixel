@@ -31,19 +31,13 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "loader-component.h"
 
 #if HAVE_WIC
-SIXEL_INTERNAL_API SIXELSTATUS load_with_wic(
-    sixel_chunk_t const       *pchunk,
-    int                        fstatic,
-    int                        fuse_palette,
-    int                        reqcolors,
-    unsigned char             *bgcolor,
-    int                        loop_control,
-    int                        start_frame_no_set,
-    int                        start_frame_no,
-    sixel_load_image_function  fn_load,
-    void                      *context);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_loader_wic_new(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
 
 SIXEL_INTERNAL_API int loader_can_try_wic(sixel_chunk_t const *chunk);
 #endif

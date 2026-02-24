@@ -28,21 +28,16 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "loader-component.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 SIXEL_INTERNAL_API SIXELSTATUS
-load_with_librsvg(
-    sixel_chunk_t const       /* in */     *pchunk,
-    int                       /* in */     fstatic,
-    int                       /* in */     fuse_palette,
-    int                       /* in */     reqcolors,
-    unsigned char             /* in */     *bgcolor,
-    int                       /* in */     loop_control,
-    sixel_load_image_function /* in */     fn_load,
-    void                      /* in/out */ *context);
+sixel_loader_librsvg_new(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
 
 SIXEL_INTERNAL_API int
 loader_can_try_librsvg(sixel_chunk_t const *chunk);
