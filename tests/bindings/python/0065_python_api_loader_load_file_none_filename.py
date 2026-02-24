@@ -18,7 +18,7 @@ def test_0065_python_api_loader_load_file_none_filename() -> None:
 
     loader = sixel_loader_new()
     sixel_loader_load_file(loader, None, lambda _frame, _context: 0)
-    sixel_loader_unref(loader)
+#    sixel_loader_unref(loader)
 
     print('loader load_file None-filename type path verified')
 
