@@ -10,12 +10,12 @@
 static int
 run_coregraphics_loader_test(void)
 {
-    return run_loader_case("CoreGraphics loader",
-                           RGBA_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGBA8888,
-                           2,
-                           1,
-                           load_with_coregraphics);
+    return run_loader_component_case("CoreGraphics loader",
+                                     RGBA_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGBA8888,
+                                     2,
+                                     1,
+                                     sixel_loader_coregraphics_new);
 }
 #endif
 

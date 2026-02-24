@@ -31,19 +31,13 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "loader-component.h"
 
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-SIXELSTATUS load_with_quicklook(
-    sixel_chunk_t const       *pchunk,
-    int                        fstatic,
-    int                        fuse_palette,
-    int                        reqcolors,
-    unsigned char             *bgcolor,
-    int                        loop_control,
-    int                        start_frame_no_set,
-    int                        start_frame_no,
-    sixel_load_image_function  fn_load,
-    void                      *context);
+SIXELSTATUS
+sixel_loader_quicklook_new(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
 
 int loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
                                 char const *filename);

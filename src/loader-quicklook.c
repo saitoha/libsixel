@@ -49,6 +49,20 @@
 #include "loader-common.h"
 #include "loader-quicklook.h"
 
+typedef struct sixel_loader_quicklook_component {
+    sixel_loader_component_t base;
+    sixel_allocator_t *allocator;
+    unsigned int ref;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    unsigned char bgcolor[3];
+    int has_bgcolor;
+    int loop_control;
+    int has_start_frame_no;
+    int start_frame_no;
+} sixel_loader_quicklook_component_t;
+
 #if HAVE_QUICKLOOK_THUMBNAILING
 CGImageRef
 sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
@@ -164,7 +178,7 @@ loader_quicklook_can_decode_chunk(sixel_chunk_t const *pchunk)
     return loader_quicklook_can_decode(pchunk, NULL);
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 load_with_quicklook(
     sixel_chunk_t const       /* in */     *pchunk,
     int                       /* in */     fstatic,
@@ -367,6 +381,189 @@ end:
         sixel_frame_unref(frame);
     }
     return status;
+}
+
+
+static void
+sixel_loader_quicklook_ref(sixel_loader_component_t *component)
+{
+    sixel_loader_quicklook_component_t *self;
+
+    self = NULL;
+    if (component == NULL) {
+        return;
+    }
+
+    self = (sixel_loader_quicklook_component_t *)component;
+    ++self->ref;
+}
+
+static void
+sixel_loader_quicklook_unref(sixel_loader_component_t *component)
+{
+    sixel_loader_quicklook_component_t *self;
+    sixel_allocator_t *allocator;
+
+    self = NULL;
+    allocator = NULL;
+    if (component == NULL) {
+        return;
+    }
+
+    self = (sixel_loader_quicklook_component_t *)component;
+    if (self->ref == 0u) {
+        return;
+    }
+
+    --self->ref;
+    if (self->ref > 0u) {
+        return;
+    }
+
+    allocator = self->allocator;
+    sixel_allocator_free(allocator, self);
+    sixel_allocator_unref(allocator);
+}
+
+static SIXELSTATUS
+sixel_loader_quicklook_setopt(sixel_loader_component_t *component,
+                              int option,
+                              void const *value)
+{
+    sixel_loader_quicklook_component_t *self;
+    int const *flag;
+    unsigned char const *color;
+
+    self = NULL;
+    flag = NULL;
+    color = NULL;
+    if (component == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    self = (sixel_loader_quicklook_component_t *)component;
+    switch (option) {
+    case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
+        flag = (int const *)value;
+        self->fstatic = flag != NULL ? *flag : 0;
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_USE_PALETTE:
+        flag = (int const *)value;
+        self->fuse_palette = flag != NULL ? *flag : 0;
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_REQCOLORS:
+        flag = (int const *)value;
+        if (flag != NULL) {
+            self->reqcolors = *flag;
+        }
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_BGCOLOR:
+        if (value == NULL) {
+            self->has_bgcolor = 0;
+            return SIXEL_OK;
+        }
+        color = (unsigned char const *)value;
+        self->bgcolor[0] = color[0];
+        self->bgcolor[1] = color[1];
+        self->bgcolor[2] = color[2];
+        self->has_bgcolor = 1;
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_LOOP_CONTROL:
+        flag = (int const *)value;
+        if (flag != NULL) {
+            self->loop_control = *flag;
+        }
+        return SIXEL_OK;
+    case SIXEL_LOADER_OPTION_START_FRAME_NO:
+        if (value == NULL) {
+            self->has_start_frame_no = 0;
+            self->start_frame_no = INT_MIN;
+            return SIXEL_OK;
+        }
+        flag = (int const *)value;
+        self->start_frame_no = *flag;
+        self->has_start_frame_no = 1;
+        return SIXEL_OK;
+    default:
+        return SIXEL_OK;
+    }
+}
+
+static SIXELSTATUS
+sixel_loader_quicklook_load(sixel_loader_component_t *component,
+                            sixel_chunk_t const *chunk,
+                            sixel_load_image_function fn_load,
+                            void *context)
+{
+    sixel_loader_quicklook_component_t *self;
+    unsigned char *bgcolor;
+
+    self = NULL;
+    bgcolor = NULL;
+    if (component == NULL || chunk == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    self = (sixel_loader_quicklook_component_t *)component;
+    if (self->has_bgcolor) {
+        bgcolor = self->bgcolor;
+    }
+
+    return load_with_quicklook(chunk,
+                               self->fstatic,
+                               self->fuse_palette,
+                               self->reqcolors,
+                               bgcolor,
+                               self->loop_control,
+                               self->has_start_frame_no,
+                               self->start_frame_no,
+                               fn_load,
+                               context);
+}
+
+static char const *
+sixel_loader_quicklook_name(sixel_loader_component_t const *component)
+{
+    (void)component;
+    return "quicklook";
+}
+
+static sixel_loader_component_vtbl_t const g_sixel_loader_quicklook_vtbl = {
+    sixel_loader_quicklook_ref,
+    sixel_loader_quicklook_unref,
+    sixel_loader_quicklook_setopt,
+    sixel_loader_quicklook_load,
+    sixel_loader_quicklook_name
+};
+
+SIXELSTATUS
+sixel_loader_quicklook_new(sixel_allocator_t *allocator,
+                           sixel_loader_component_t **ppcomponent)
+{
+    sixel_loader_quicklook_component_t *self;
+
+    self = NULL;
+    if (allocator == NULL || ppcomponent == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *ppcomponent = NULL;
+    self = (sixel_loader_quicklook_component_t *)
+        sixel_allocator_malloc(allocator, sizeof(*self));
+    if (self == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memset(self, 0, sizeof(*self));
+    self->base.vtbl = &g_sixel_loader_quicklook_vtbl;
+    self->allocator = allocator;
+    self->ref = 1u;
+    self->reqcolors = SIXEL_PALETTE_MAX;
+    self->loop_control = SIXEL_LOOP_AUTO;
+    self->start_frame_no = INT_MIN;
+    sixel_allocator_ref(allocator);
+    *ppcomponent = &self->base;
+    return SIXEL_OK;
 }
 
 #endif  /* HAVE_COREGRAPHICS && HAVE_QUICKLOOK */

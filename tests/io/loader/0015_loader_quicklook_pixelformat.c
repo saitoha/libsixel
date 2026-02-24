@@ -10,12 +10,12 @@
 static int
 run_quicklook_loader_test(void)
 {
-    return run_loader_case("QuickLook loader",
-                           RGBA_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGBA8888,
-                           GEOMETRY_ANY,
-                           GEOMETRY_ANY,
-                           load_with_quicklook);
+    return run_loader_component_case("QuickLook loader",
+                                     RGBA_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGBA8888,
+                                     GEOMETRY_ANY,
+                                     GEOMETRY_ANY,
+                                     sixel_loader_quicklook_new);
 }
 #endif
 

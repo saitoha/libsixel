@@ -31,19 +31,13 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "loader-component.h"
 
 #ifdef HAVE_GDK_PIXBUF2
-SIXELSTATUS load_with_gdkpixbuf(
-    sixel_chunk_t const       *pchunk,
-    int                        fstatic,
-    int                        fuse_palette,
-    int                        reqcolors,
-    unsigned char             *bgcolor,
-    int                        loop_control,
-    int                        start_frame_no_set,
-    int                        start_frame_no,
-    sixel_load_image_function  fn_load,
-    void                      *context);
+SIXELSTATUS
+sixel_loader_gdkpixbuf2_new(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
 #endif
 
 #endif /* LIBSIXEL_LOADER_GDK_PIXBUF2_H */

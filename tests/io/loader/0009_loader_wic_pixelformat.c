@@ -10,12 +10,12 @@
 static int
 run_wic_loader_test(void)
 {
-    return run_loader_case("WIC loader",
-                           RGBA_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGBA8888,
-                           2,
-                           1,
-                           load_with_wic);
+    return run_loader_component_case("WIC loader",
+                                     RGBA_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGBA8888,
+                                     2,
+                                     1,
+                                     sixel_loader_wic_new);
 }
 #endif
 

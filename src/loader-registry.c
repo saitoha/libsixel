@@ -121,9 +121,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_LIBRSVG
     {
         "librsvg",
-        load_with_librsvg,
-        loader_can_try_librsvg,
         NULL,
+        loader_can_try_librsvg,
+        sixel_loader_librsvg_new,
         g_magic_svg,
         sizeof(g_magic_svg) / sizeof(g_magic_svg[0]),
         1
@@ -131,13 +131,13 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #endif
     { "builtin", NULL, NULL, sixel_loader_builtin_new, NULL, 0u, 1 },
 #if HAVE_WIC
-    { "wic", load_with_wic, loader_can_try_wic, NULL, NULL, 0u, 1 },
+    { "wic", NULL, loader_can_try_wic, sixel_loader_wic_new, NULL, 0u, 1 },
 #endif
 #if HAVE_COREGRAPHICS
-    { "coregraphics", load_with_coregraphics, NULL, NULL, NULL, 0u, 1 },
+    { "coregraphics", NULL, NULL, sixel_loader_coregraphics_new, NULL, 0u, 1 },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
-    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL, NULL, NULL, 0u, 1 },
+    { "gdk-pixbuf2", NULL, NULL, sixel_loader_gdkpixbuf2_new, NULL, 0u, 1 },
 #endif
 #if HAVE_GD
     {
@@ -153,9 +153,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
     {
         "quicklook",
-        load_with_quicklook,
-        loader_quicklook_can_decode_chunk,
         NULL,
+        loader_quicklook_can_decode_chunk,
+        sixel_loader_quicklook_new,
         NULL,
         0u,
         1

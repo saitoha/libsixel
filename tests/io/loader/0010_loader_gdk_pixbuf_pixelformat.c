@@ -10,12 +10,12 @@
 static int
 run_gdk_pixbuf_loader_test(void)
 {
-    return run_loader_case("GDK-Pixbuf loader",
-                           RGBA_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGBA8888,
-                           2,
-                           1,
-                           load_with_gdkpixbuf);
+    return run_loader_component_case("GDK-Pixbuf loader",
+                                     RGBA_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGBA8888,
+                                     2,
+                                     1,
+                                     sixel_loader_gdkpixbuf2_new);
 }
 #endif
 
