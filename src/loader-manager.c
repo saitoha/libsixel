@@ -533,7 +533,7 @@ loader_manager_build_chain_from_plan(
         }
 
         status = loader_factory_create_component(manager->factory,
-                                                 plan[index],
+                                                 plan[index]->name,
                                                  allocator,
                                                  &component);
         if (SIXEL_FAILED(status)) {

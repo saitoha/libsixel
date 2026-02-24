@@ -50,6 +50,8 @@ typedef struct sixel_loader_entry {
     char const              *name;
     sixel_loader_backend     backend;
     sixel_loader_predicate   predicate;
+    char const * const      *magic_signatures;
+    size_t                   magic_signature_count;
     int                      default_enabled;
 } sixel_loader_entry_t;
 
