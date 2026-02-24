@@ -244,6 +244,10 @@ foreach t : tests
     args: ['-c', '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
+if test "${1##*.}" != "py"; then
+  exec "$@"
+fi
+
 python_venv_exports=$(
   "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
     "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" "${MESON_BUILD_ROOT}/python/dist" \
@@ -255,12 +259,7 @@ if test -z "${SIXEL_TEST_PYTHON:-}"; then
   exit 0
 fi
 export SIXEL_TEST_PYTHON
-
-if test "${1##*.}" = "py"; then
-  exec "$SIXEL_TEST_PYTHON" "$1"
-fi
-
-exec "$@"
+exec "$SIXEL_TEST_PYTHON" "$1"
 ''', 'sh'] + test_cmd,
     depends: test_deps,
     protocol: 'tap',
