@@ -31,8 +31,14 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "loader-component.h"
 
-SIXEL_INTERNAL_API SIXELSTATUS load_with_builtin(
+SIXELSTATUS
+sixel_loader_builtin_new(
+    sixel_allocator_t *allocator,
+    sixel_loader_component_t **ppcomponent);
+
+SIXELSTATUS load_with_builtin(
     sixel_chunk_t const       *pchunk,
     int                        fstatic,
     int                        fuse_palette,
