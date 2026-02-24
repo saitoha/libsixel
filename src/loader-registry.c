@@ -66,9 +66,6 @@ static char const * const g_magic_tiff[] = { "II", "MM" };
 #if HAVE_LIBRSVG
 static char const * const g_magic_svg[] = { "<svg", "<?xml" };
 #endif
-#if HAVE_GD
-static char const * const g_magic_gif[] = { "GIF8" };
-#endif
 
 static sixel_loader_entry_t const sixel_loader_entries[] = {
     /*
@@ -148,8 +145,8 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
         NULL,
         NULL,
         sixel_loader_gd_new,
-        g_magic_gif,
-        sizeof(g_magic_gif) / sizeof(g_magic_gif[0]),
+        NULL,
+        0u,
         1
     },
 #endif
