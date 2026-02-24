@@ -336,7 +336,6 @@ check-TESTS: $(check_PROGRAMS)
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
-    check-tests.list \
     check-test-exports.list \
     data/inputs/thumbnailer/bin/evince-thumbnailer \
     data/inputs/thumbnailer/bin/fake-thumb \

@@ -1,20 +1,20 @@
 #!/bin/sh
-# Convert plain newline-delimited metadata files into space-delimited strings.
+# Convert metadata into a space-delimited test list.
 # Supported mode:
-#   tests -> list of TAP test file paths
+#   tests -> scan the tests source tree and print runnable test scripts
 
 set -eu
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <tests> <file>" >&2
+    echo "Usage: $0 <tests> <tests-dir>" >&2
     exit 1
 fi
 
 mode=$1
-list_file=$2
+tests_dir=$2
 
-if [ ! -f "$list_file" ]; then
-    echo "Metadata list not found: $list_file" >&2
+if [ ! -d "$tests_dir" ]; then
+    echo "Tests directory not found: $tests_dir" >&2
     exit 1
 fi
 
@@ -27,16 +27,18 @@ case "$mode" in
         ;;
 esac
 
-awk '
-    /^[[:space:]]*($|#)/ { next }
-    {
-        gsub(/^[[:space:]]+/, "")
-        gsub(/[[:space:]]+$/, "")
-        if ($0 != "") {
-            printf "%s ", $0
+find "$tests_dir" -type f \( \
+    -name '*.t' -o \
+    -path '*/bindings/python/[0-9][0-9][0-9][0-9]_*.py' \
+\) -print |
+    LC_ALL=C sort |
+    awk -v prefix="$tests_dir/" '
+        {
+            path = $0
+            sub("^" prefix, "", path)
+            printf "%s ", path
         }
-    }
-    END {
-        printf "\n"
-    }
-' "$list_file"
+        END {
+            printf "\n"
+        }
+    '
