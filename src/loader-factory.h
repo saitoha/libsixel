@@ -49,23 +49,18 @@ typedef struct sixel_loader_factory sixel_loader_factory_t;
 SIXEL_INTERNAL_API SIXELSTATUS
 loader_factory_get_default(sixel_loader_factory_t **ppfactory);
 
-void
+SIXEL_INTERNAL_API void
 loader_factory_ref(sixel_loader_factory_t *factory);
 
-void
+SIXEL_INTERNAL_API void
 loader_factory_unref(sixel_loader_factory_t *factory);
 
-size_t
+SIXEL_INTERNAL_API size_t
 loader_factory_get_entries(
     sixel_loader_factory_t const *factory,
     sixel_loader_entry_t const **entries);
 
-int
-loader_factory_entry_available(
-    sixel_loader_factory_t const *factory,
-    char const *name);
-
-int
+SIXEL_INTERNAL_API int
 loader_factory_entry_matches_chunk(
     sixel_loader_factory_t const *factory,
     sixel_loader_entry_t const *entry,

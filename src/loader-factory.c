@@ -197,17 +197,6 @@ loader_factory_get_entries(sixel_loader_factory_t const *factory,
 }
 
 int
-loader_factory_entry_available(sixel_loader_factory_t const *factory,
-                               char const *name)
-{
-    if (factory == NULL) {
-        return 0;
-    }
-
-    return loader_registry_entry_available_from(factory->registry, name);
-}
-
-int
 loader_factory_entry_matches_chunk(
     sixel_loader_factory_t const *factory,
     sixel_loader_entry_t const *entry,
