@@ -29,6 +29,15 @@ typedef void (*sixel_loader_manager_trace_result_fn)(
     SIXELSTATUS status,
     void *context);
 
+/*
+ * Manager API boundary
+ *
+ * 1) build_plan(): parse order text into prioritized entry pointers.
+ * 2) build_chain_from_plan(): ask factory for per-entry eligibility and
+ *    materialize components in plan order.
+ * 3) execute_chain(): run configured components until one succeeds.
+ */
+
 SIXELSTATUS
 loader_manager_get_default(sixel_loader_manager_t **ppmanager);
 

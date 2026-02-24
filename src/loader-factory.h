@@ -38,6 +38,14 @@
 
 typedef struct sixel_loader_factory sixel_loader_factory_t;
 
+/*
+ * Factory API boundary
+ *
+ * - get_entries()/entry_available(): expose registry-backed entry metadata.
+ * - entry_matches_chunk(): decide runtime eligibility for an input chunk.
+ * - create_component(): materialize a component for eligible entries.
+ */
+
 SIXELSTATUS
 loader_factory_get_default(sixel_loader_factory_t **ppfactory);
 

@@ -78,6 +78,10 @@ loader_chain_unref(sixel_loader_chain_t *chain)
         if (previous == 0u) {
             (void)sixel_atomic_fetch_add_u32(&chain->ref, 1u);
         }
+        /*
+         * Unlike singleton objects, chain instances own heap nodes and are
+         * destructed only at the exact refcount transition 1 -> 0.
+         */
         return;
     }
 
