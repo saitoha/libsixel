@@ -2451,8 +2451,14 @@ if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
                      [gdImageCreateFromTiffPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromTiffPtr], [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGdPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGdPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
                      [gdImageCreateFromGd2Ptr],
                      [AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromWebpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromWebpPtr], [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
                      [gdImagePaletteToTrueColor],
                      [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])

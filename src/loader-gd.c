@@ -492,7 +492,9 @@ load_with_gd(
     int wbmp;
     int tga;
     int tiff;
+    int gd;
     int gd2;
+    int webp;
     int start_frame_no;
     int resolved_start_frame_no;
     int frame_count;
@@ -514,7 +516,12 @@ load_with_gd(
     wbmp = gdSupportsFileType(".wbmp", 0);
     tga = gdSupportsFileType(".tga", 0);
     tiff = gdSupportsFileType(".tiff", 0);
+    gd = gdSupportsFileType(".gd", 0);
     gd2 = gdSupportsFileType(".gd2", 0);
+    webp = gdSupportsFileType(".webp", 0);
+    (void) gd;
+    (void) gd2;
+    (void) webp;
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
     frame_count = 0;
@@ -586,9 +593,23 @@ load_with_gd(
         im = gdImageCreateFromTgaPtr((int)pchunk->size, pchunk->buffer);
     }
 
+#if HAVE_DECL_GDIMAGECREATEFROMGDPTR
+    if (im == NULL && gd) {
+        im = gdImageCreateFromGdPtr((int)pchunk->size, pchunk->buffer);
+    }
+#endif
+
+#if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
     if (im == NULL && gd2) {
         im = gdImageCreateFromGd2Ptr((int)pchunk->size, pchunk->buffer);
     }
+#endif
+
+#if HAVE_DECL_GDIMAGECREATEFROMWEBPPTR
+    if (im == NULL && webp && chunk_is_webp(pchunk)) {
+        im = gdImageCreateFromWebpPtr((int)pchunk->size, pchunk->buffer);
+    }
+#endif
 
     if (im == NULL) {
         /*

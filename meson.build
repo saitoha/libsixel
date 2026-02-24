@@ -860,7 +860,9 @@ if gd_dep.found()
     'gdImageCreateFromTgaPtr',
     'gdImageCreateFromWBMPPtr',
     'gdImageCreateFromTiffPtr',
+    'gdImageCreateFromGdPtr',
     'gdImageCreateFromGd2Ptr',
+    'gdImageCreateFromWebpPtr',
     'gdImagePaletteToTrueColor',
     'gdImageCreateFromGifAnimPtr',
   ]
