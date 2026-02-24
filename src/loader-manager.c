@@ -53,17 +53,22 @@ loader_manager_unref_singleton_ref(sixel_atomic_u32_t *ref)
 
 
 #if HAVE_WIC
+/*
+ * The loader option parser accepts free-form text for ico_minsize and
+ * validates it later via loader_manager_parse_positive_int().
+ */
 static sixel_suboption_key_t const g_subkeys_loader_wic_loader[] = {
     {
         "ico_minsize",
-        SIXEL_SUBOPT_VALUE_REQUIRED,
-        SIXEL_SUBOPT_VALUE_TEXT,
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
     }
 };
 
-static sixel_option_argument_value_schema_t const
+static sixel_option_value_schema_t const
 g_schema_loader_values_loader[] = {
     {
         "wic",
