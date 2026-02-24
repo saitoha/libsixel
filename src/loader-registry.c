@@ -94,9 +94,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_WEBP
     {
         "libwebp",
-        load_with_libwebp,
-        loader_can_try_libwebp,
         NULL,
+        loader_can_try_libwebp,
+        sixel_loader_libwebp_new,
         g_magic_webp,
         sizeof(g_magic_webp) / sizeof(g_magic_webp[0]),
         1

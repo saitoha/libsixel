@@ -61,16 +61,26 @@ run_libwebp_animation_test(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
     char const *source_root;
     char image_path[PATH_MAX];
     int cancel_flag;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    int loop_control;
     animated_probe_context_t context;
     int result;
 
     status = SIXEL_FALSE;
     allocator = NULL;
     chunk = NULL;
+    component = NULL;
     cancel_flag = 0;
+    fstatic = 0;
+    fuse_palette = 0;
+    reqcolors = 256;
+    loop_control = SIXEL_LOOP_DISABLE;
     result = 1;
     source_root = getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
@@ -107,6 +117,37 @@ run_libwebp_animation_test(void)
         goto cleanup;
     }
 
+    status = sixel_loader_libwebp_new(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "libwebp animation: component init failed\n");
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &fstatic);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                           &loop_control);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
     context.callback_count = 0;
     context.first_rgb[0] = 0;
     context.first_rgb[1] = 0;
@@ -115,16 +156,10 @@ run_libwebp_animation_test(void)
     context.second_rgb[1] = 0;
     context.second_rgb[2] = 0;
 
-    status = load_with_libwebp(chunk,
-                               0,
-                               0,
-                               256,
-                               NULL,
-                               SIXEL_LOOP_DISABLE,
-                               0,
-                               INT_MIN,
-                               capture_animated_frames,
-                               &context);
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_animated_frames,
+                                         &context);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "libwebp animation: loader returned failure (%d)\n",
@@ -154,16 +189,10 @@ run_libwebp_animation_test(void)
         goto cleanup;
     }
 
-    status = load_with_libwebp(chunk,
-                               0,
-                               0,
-                               256,
-                               NULL,
-                               SIXEL_LOOP_DISABLE,
-                               0,
-                               INT_MIN,
-                               interrupt_at_first_frame,
-                               NULL);
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         interrupt_at_first_frame,
+                                         NULL);
     if (status != SIXEL_INTERRUPTED) {
         fprintf(stderr,
                 "libwebp animation: interruption was not propagated (%d)\n",
@@ -175,6 +204,7 @@ run_libwebp_animation_test(void)
     result = 0;
 
 cleanup:
+    sixel_loader_component_unref(component);
     sixel_chunk_destroy(chunk);
     sixel_allocator_unref(allocator);
 
