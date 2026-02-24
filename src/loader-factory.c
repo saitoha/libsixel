@@ -27,6 +27,10 @@
 # include "config.h"
 #endif
 
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+
 #include "loader-factory.h"
 
 #include "loader-component-legacy.h"
@@ -41,6 +45,69 @@ static struct sixel_loader_factory g_loader_factory_singleton = {
     0u,
     NULL
 };
+
+
+static sixel_loader_entry_t const *
+loader_factory_find_entry_by_name(sixel_loader_factory_t const *factory,
+                                  char const *name)
+{
+    sixel_loader_entry_t const *entries;
+    size_t entry_count;
+    size_t index;
+
+    entries = NULL;
+    entry_count = 0u;
+    index = 0u;
+    if (factory == NULL || factory->registry == NULL || name == NULL) {
+        return NULL;
+    }
+
+    entry_count = loader_registry_get_entries_from(factory->registry, &entries);
+    for (index = 0u; index < entry_count; ++index) {
+        if (entries[index].name != NULL && strcmp(entries[index].name, name) == 0) {
+            return &entries[index];
+        }
+    }
+
+    return NULL;
+}
+
+static int
+loader_factory_magic_matches_chunk(sixel_loader_entry_t const *entry,
+                                   sixel_chunk_t const *chunk)
+{
+    size_t index;
+    char const *magic;
+    size_t magic_length;
+
+    index = 0u;
+    magic = NULL;
+    magic_length = 0u;
+    if (entry == NULL) {
+        return 0;
+    }
+
+    if (chunk == NULL || entry->magic_signature_count == 0u ||
+        entry->magic_signatures == NULL) {
+        return 1;
+    }
+
+    for (index = 0u; index < entry->magic_signature_count; ++index) {
+        magic = entry->magic_signatures[index];
+        if (magic == NULL) {
+            continue;
+        }
+        magic_length = strlen(magic);
+        if (magic_length == 0u || chunk->size < magic_length) {
+            continue;
+        }
+        if (memcmp(chunk->buffer, magic, magic_length) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 static void
 loader_factory_unref_singleton_ref(sixel_atomic_u32_t *ref)
@@ -147,36 +214,27 @@ loader_factory_entry_matches_chunk(
     sixel_loader_entry_t const *entry,
     sixel_chunk_t const *chunk)
 {
-    /*
-     * Eligibility is intentionally evaluated in the factory so manager code
-     * stays agnostic to entry internals (predicate vs. future policy hooks).
-     */
-    if (factory == NULL || entry == NULL) {
+    if (factory == NULL || factory->registry == NULL || entry == NULL) {
         return 0;
     }
 
-    if (factory->registry == NULL) {
-        return 0;
-    }
-
-    if (entry->predicate == NULL || chunk == NULL) {
-        return 1;
-    }
-
-    return entry->predicate(chunk) != 0;
+    return loader_factory_magic_matches_chunk(entry, chunk);
 }
 
 SIXELSTATUS
 loader_factory_create_component(sixel_loader_factory_t const *factory,
-                                sixel_loader_entry_t const *entry,
+                                char const *name,
                                 sixel_allocator_t *allocator,
                                 sixel_loader_component_t **ppcomponent)
 {
+    sixel_loader_entry_t const *entry;
+
+    entry = NULL;
     if (ppcomponent != NULL) {
         *ppcomponent = NULL;
     }
 
-    if (factory == NULL || entry == NULL || ppcomponent == NULL) {
+    if (factory == NULL || name == NULL || ppcomponent == NULL) {
         sixel_helper_set_additional_message(
             "loader_factory_create_component: invalid argument.");
         return SIXEL_BAD_ARGUMENT;
@@ -188,11 +246,13 @@ loader_factory_create_component(sixel_loader_factory_t const *factory,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    /*
-     * Callers pass an entry selected from loader_factory_get_entries().
-     * The factory intentionally does not duplicate name-based resolution
-     * here; it only materializes a component from the supplied entry.
-     */
+    entry = loader_factory_find_entry_by_name(factory, name);
+    if (entry == NULL) {
+        sixel_helper_set_additional_message(
+            "loader_factory_create_component: loader is not registered.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     *ppcomponent = sixel_loader_component_legacy_new(entry, allocator);
     if (*ppcomponent == NULL) {
         return SIXEL_BAD_ALLOCATION;

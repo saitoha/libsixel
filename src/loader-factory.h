@@ -74,7 +74,7 @@ loader_factory_entry_matches_chunk(
 SIXELSTATUS
 loader_factory_create_component(
     sixel_loader_factory_t const *factory,
-    sixel_loader_entry_t const *entry,
+    char const *name,
     sixel_allocator_t *allocator,
     sixel_loader_component_t **ppcomponent);
 

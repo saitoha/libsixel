@@ -50,6 +50,18 @@
 #include "loader-registry.h"
 #include "loader-wic.h"
 
+
+static char const * const g_magic_png[] = { "\x89PNG" };
+static char const * const g_magic_jpeg[] = { "\xff\xd8" };
+static char const * const g_magic_webp[] = { "RIFF" };
+static char const * const g_magic_tiff[] = { "II", "MM" };
+#if HAVE_LIBRSVG
+static char const * const g_magic_svg[] = { "<svg", "<?xml" };
+#endif
+#if HAVE_GD
+static char const * const g_magic_gif[] = { "GIF8" };
+#endif
+
 static sixel_loader_entry_t const sixel_loader_entries[] = {
     /*
      * Fast loaders take precedence so probing prefers native decoders.
@@ -58,38 +70,87 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
      * 6+. remaining loaders
      */
 #if HAVE_LIBPNG
-    { "libpng", load_with_libpng, loader_can_try_libpng, 1 },
+    {
+        "libpng",
+        load_with_libpng,
+        loader_can_try_libpng,
+        g_magic_png,
+        sizeof(g_magic_png) / sizeof(g_magic_png[0]),
+        1
+    },
 #endif
 #if HAVE_JPEG
-    { "libjpeg", load_with_libjpeg, loader_can_try_libjpeg, 1 },
+    {
+        "libjpeg",
+        load_with_libjpeg,
+        loader_can_try_libjpeg,
+        g_magic_jpeg,
+        sizeof(g_magic_jpeg) / sizeof(g_magic_jpeg[0]),
+        1
+    },
 #endif
 #if HAVE_WEBP
-    { "libwebp", load_with_libwebp, loader_can_try_libwebp, 1 },
+    {
+        "libwebp",
+        load_with_libwebp,
+        loader_can_try_libwebp,
+        g_magic_webp,
+        sizeof(g_magic_webp) / sizeof(g_magic_webp[0]),
+        1
+    },
 #endif
 #if HAVE_LIBTIFF
-    { "libtiff", load_with_libtiff, loader_can_try_libtiff, 1 },
+    {
+        "libtiff",
+        load_with_libtiff,
+        loader_can_try_libtiff,
+        g_magic_tiff,
+        sizeof(g_magic_tiff) / sizeof(g_magic_tiff[0]),
+        1
+    },
 #endif
 #if HAVE_LIBRSVG
-    { "librsvg", load_with_librsvg, loader_can_try_librsvg, 1 },
+    {
+        "librsvg",
+        load_with_librsvg,
+        loader_can_try_librsvg,
+        g_magic_svg,
+        sizeof(g_magic_svg) / sizeof(g_magic_svg[0]),
+        1
+    },
 #endif
-    { "builtin", load_with_builtin, NULL, 1 },
+    { "builtin", load_with_builtin, NULL, NULL, 0u, 1 },
 #if HAVE_WIC
-    { "wic", load_with_wic, loader_can_try_wic, 1 },
+    { "wic", load_with_wic, loader_can_try_wic, NULL, 0u, 1 },
 #endif
 #if HAVE_COREGRAPHICS
-    { "coregraphics", load_with_coregraphics, NULL, 1 },
+    { "coregraphics", load_with_coregraphics, NULL, NULL, 0u, 1 },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
-    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL, 1 },
+    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL, NULL, 0u, 1 },
 #endif
 #if HAVE_GD
-    { "gd", load_with_gd, NULL, 1 },
+    {
+        "gd",
+        load_with_gd,
+        NULL,
+        g_magic_gif,
+        sizeof(g_magic_gif) / sizeof(g_magic_gif[0]),
+        1
+    },
 #endif
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    { "quicklook", load_with_quicklook, loader_quicklook_can_decode_chunk, 1 },
+    {
+        "quicklook",
+        load_with_quicklook,
+        loader_quicklook_can_decode_chunk,
+        NULL,
+        0u,
+        1
+    },
 #endif
 #if HAVE_FREEDESKTOP_THUMBNAILING
-    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, 0 },
+    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, NULL, 0u, 0 },
 #endif
 };
 
