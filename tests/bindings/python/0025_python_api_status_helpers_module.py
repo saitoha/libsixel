@@ -19,7 +19,6 @@ def test_0025_python_api_status_helpers_module() -> None:
         raise SystemExit(2)
 
     statuses = [
-        # SIXEL_FALSE is a generic failure status in libsixel.
         (SIXEL_FALSE, False),
         (SIXEL_RUNTIME_ERROR, False),
         (SIXEL_BAD_ALLOCATION, False),

@@ -9,23 +9,25 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'dither palette getter and setter APIs are callable'
 def test_0041_python_api_dither_palette() -> None:
     try:
-        from libsixel_wheel import sixel_dither_get
+        from libsixel_wheel import sixel_dither_destroy
         from libsixel_wheel import sixel_dither_get_palette
+        from libsixel_wheel import sixel_dither_new
         from libsixel_wheel import sixel_dither_set_palette
-        from libsixel_wheel import SIXEL_BUILTIN_XTERM16
     except (ModuleNotFoundError, OSError) as exc:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    dither = sixel_dither_get(SIXEL_BUILTIN_XTERM16)
-    palette = sixel_dither_get_palette(dither)
-    if not palette:
-        raise SystemExit("palette getter returned empty data")
-
-    # Set the same palette back to cover the setter path.
+    dither = sixel_dither_new(2)
+    palette = [1, 2, 3, 4, 5, 6]
     sixel_dither_set_palette(dither, palette)
 
-    print(f"dither palette APIs verified ({len(palette)} bytes)")
+    actual_palette = sixel_dither_get_palette(dither)
+    sixel_dither_destroy(dither)
+
+    if actual_palette[:len(palette)] != palette:
+        raise SystemExit('palette getter returned unexpected data')
+
+    print(f"dither palette APIs verified ({len(actual_palette)} bytes)")
 
 
 if __name__ == "__main__":

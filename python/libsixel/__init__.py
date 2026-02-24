@@ -966,38 +966,38 @@ def sixel_output_get_8bit_availability(output):
 
 
 # set 8bit output mode state
-def sixel_output_set_8bit_availability(output):
+def sixel_output_set_8bit_availability(output, availability):
     _sixel.sixel_output_set_8bit_availability.restype = None
     _sixel.sixel_output_set_8bit_availability.argtypes = [c_void_p, c_int]
-    _sixel.sixel_output_set_8bit_availability(output)
+    _sixel.sixel_output_set_8bit_availability(output, availability)
 
 
 # set whether limit arguments of DECGRI('!') to 255
-def sixel_output_set_gri_arg_limit(output):
+def sixel_output_set_gri_arg_limit(output, value):
     _sixel.sixel_output_set_gri_arg_limit.restype = None
     _sixel.sixel_output_set_gri_arg_limit.argtypes = [c_void_p, c_int]
-    _sixel.sixel_output_set_gri_arg_limit(output)
+    _sixel.sixel_output_set_gri_arg_limit(output, value)
 
 
 # set GNU Screen penetration feature enable or disable
-def sixel_output_set_penetrate_multiplexer(output):
+def sixel_output_set_penetrate_multiplexer(output, penetrate):
     _sixel.sixel_output_set_penetrate_multiplexer.restype = None
     _sixel.sixel_output_set_penetrate_multiplexer.argtypes = [c_void_p, c_int]
-    _sixel.sixel_output_set_penetrate_multiplexer(output)
+    _sixel.sixel_output_set_penetrate_multiplexer(output, penetrate)
 
 
 # set whether we skip DCS envelope
-def sixel_output_set_skip_dcs_envelope(output):
+def sixel_output_set_skip_dcs_envelope(output, skip):
     _sixel.sixel_output_set_skip_dcs_envelope.restype = None
     _sixel.sixel_output_set_skip_dcs_envelope.argtypes = [c_void_p, c_int]
-    _sixel.sixel_output_set_skip_dcs_envelope(output)
+    _sixel.sixel_output_set_skip_dcs_envelope(output, skip)
 
 
 # set whether we skip SIXEL header
-def sixel_output_set_skip_header(output):
+def sixel_output_set_skip_header(output, skip):
     _sixel.sixel_output_set_skip_header.restype = None
     _sixel.sixel_output_set_skip_header.argtypes = [c_void_p, c_int]
-    _sixel.sixel_output_set_skip_header(output)
+    _sixel.sixel_output_set_skip_header(output, skip)
 
 
 # set palette type: RGB or HLS
@@ -1015,10 +1015,10 @@ def sixel_output_set_ormode(output, ormode):
 
 
 # set encodeing policy: auto, fast or size
-def sixel_output_set_encode_policy(output):
+def sixel_output_set_encode_policy(output, encode_policy):
     _sixel.sixel_output_set_encode_policy.restype = None
     _sixel.sixel_output_set_encode_policy.argtypes = [c_void_p, c_int]
-    _sixel.sixel_output_set_encode_policy(output)
+    _sixel.sixel_output_set_encode_policy(output, encode_policy)
 
 
 # create dither context object
@@ -1115,13 +1115,13 @@ def sixel_dither_get_palette(dither):
     _sixel.sixel_dither_get_palette.restype = c_char_p
     _sixel.sixel_dither_get_palette.argtypes = [c_void_p]
     cpalette = _sixel.sixel_dither_get_palette(dither)
-    return [ord(c) for c in cpalette]
+    return list(cpalette)
 
 
 def sixel_dither_set_palette(dither, palette):
     _sixel.sixel_dither_set_palette.restype = None
     _sixel.sixel_dither_set_palette.argtypes = [c_void_p, c_char_p]
-    cpalette = ''.join(map(chr, palette))
+    cpalette = bytes(palette)
     _sixel.sixel_dither_set_palette(dither, cpalette)
 
 
