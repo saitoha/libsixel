@@ -27,15 +27,21 @@ case "$mode" in
         ;;
 esac
 
-find "$tests_dir" -type f \( \
-    -name '*.t' -o \
-    -path '*/bindings/python/[0-9][0-9][0-9][0-9]_*.py' \
-\) -print |
+# Run the scan from tests_dir and emit normalized relative paths.
+# This avoids platform-specific absolute path forms (for example C:/...)
+# from leaking into Meson test names where ':' is deprecated.
+(
+    cd "$tests_dir"
+    find . -type f \( \
+        -name '*.t' -o \
+        -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' \
+    \) -print
+) |
     LC_ALL=C sort |
-    awk -v prefix="$tests_dir/" '
+    awk '
         {
             path = $0
-            sub("^" prefix, "", path)
+            sub("^\\./", "", path)
             printf "%s ", path
         }
         END {
