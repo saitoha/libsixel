@@ -245,7 +245,7 @@ foreach t : tests
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
 if test "${1##*.}" != "py"; then
-  exec "$@"
+  exec sh "$@"
 fi
 
 python_venv_exports=$(
@@ -259,7 +259,7 @@ if test -z "${SIXEL_TEST_PYTHON:-}"; then
   exit 0
 fi
 export SIXEL_TEST_PYTHON
-exec "$SIXEL_TEST_PYTHON" "$1"
+exec "$SIXEL_TEST_PYTHON" "$@"
 ''', 'sh'] + test_cmd,
     depends: test_deps,
     protocol: 'tap',
