@@ -1,11 +1,25 @@
 # Ruby bindings: build helpers, tests, install/uninstall
 
+RUBY_GEM_STAMP = $(abs_top_builddir)/ruby/dist/.gem-stamp
+
+$(RUBY_GEM_STAMP): $(srcdir)/gem_builder.rb $(srcdir)/libsixel-ruby.gemspec
+	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
+	$(AM_V_at) mkdir -p "$(abs_top_builddir)/ruby/dist"
+	$(AM_V_GEN) $(RUBY) $(srcdir)/gem_builder.rb \
+		--libdir "$(top_builddir)/src/.libs" \
+		--distdir "$(abs_top_builddir)/ruby/dist"
+	$(AM_V_at) touch "$@"
+
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 all-local:
 	@if test -x "$(RUBY)"; then \
 	  echo "Ensuring Ruby constants are generated..."; \
 	  $(MKDIR_P) $(builddir)/lib/libsixel 2>/dev/null || true; \
 	  $(RUBY) $(top_srcdir)/tools/gen_ruby_constants.rb $(top_srcdir)/include/sixel.h $(builddir)/lib/libsixel/constants.rb || true; \
+	fi
+	@if test -x "$(RUBY)"; then \
+	  echo "Building bundled Ruby platform gem..."; \
+	  $(MAKE) $(AM_MAKEFLAGS) "$(RUBY_GEM_STAMP)"; \
 	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
@@ -59,3 +73,8 @@ uninstall-local:
 	  rmdir $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel 2>/dev/null || true; \
 	fi
 
+clean-local:
+	rm -rf dist
+	rm -f $(RUBY_GEM_STAMP)
+
+EXTRA_DIST = gem_builder.rb

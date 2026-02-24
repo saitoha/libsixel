@@ -353,6 +353,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
+RUBY_GEM_STAMP = $(abs_top_builddir)/ruby/dist/.gem-stamp
+EXTRA_DIST = gem_builder.rb
 all: all-am
 
 .SUFFIXES:
@@ -468,7 +470,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -535,20 +537,28 @@ uninstall-am: uninstall-local
 .MAKE: check-am install-am install-strip
 
 .PHONY: all all-am all-local check check-am check-local clean \
-	clean-generic clean-libtool cscopelist-am ctags-am distclean \
-	distclean-generic distclean-libtool distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-data-local install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-local
+	clean-generic clean-libtool clean-local cscopelist-am ctags-am \
+	distclean distclean-generic distclean-libtool distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-data-local install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags-am uninstall uninstall-am uninstall-local
 
 .PRECIOUS: Makefile
 
+
+$(RUBY_GEM_STAMP): $(srcdir)/gem_builder.rb $(srcdir)/libsixel-ruby.gemspec
+	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
+	$(AM_V_at) mkdir -p "$(abs_top_builddir)/ruby/dist"
+	$(AM_V_GEN) $(RUBY) $(srcdir)/gem_builder.rb \
+		--libdir "$(top_builddir)/src/.libs" \
+		--distdir "$(abs_top_builddir)/ruby/dist"
+	$(AM_V_at) touch "$@"
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 all-local:
@@ -556,6 +566,10 @@ all-local:
 	  echo "Ensuring Ruby constants are generated..."; \
 	  $(MKDIR_P) $(builddir)/lib/libsixel 2>/dev/null || true; \
 	  $(RUBY) $(top_srcdir)/tools/gen_ruby_constants.rb $(top_srcdir)/include/sixel.h $(builddir)/lib/libsixel/constants.rb || true; \
+	fi
+	@if test -x "$(RUBY)"; then \
+	  echo "Building bundled Ruby platform gem..."; \
+	  $(MAKE) $(AM_MAKEFLAGS) "$(RUBY_GEM_STAMP)"; \
 	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
@@ -608,6 +622,10 @@ uninstall-local:
 	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
 	  rmdir $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel 2>/dev/null || true; \
 	fi
+
+clean-local:
+	rm -rf dist
+	rm -f $(RUBY_GEM_STAMP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
