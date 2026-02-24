@@ -124,7 +124,7 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
         1
     },
 #endif
-    { "builtin", load_with_builtin, NULL, NULL, NULL, 0u, 1 },
+    { "builtin", NULL, NULL, sixel_loader_builtin_new, NULL, 0u, 1 },
 #if HAVE_WIC
     { "wic", load_with_wic, loader_can_try_wic, NULL, NULL, 0u, 1 },
 #endif
