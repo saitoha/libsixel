@@ -253,6 +253,10 @@ loader_factory_create_component(sixel_loader_factory_t const *factory,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (entry->new_component != NULL) {
+        return entry->new_component(allocator, ppcomponent);
+    }
+
     *ppcomponent = sixel_loader_component_legacy_new(entry, allocator);
     if (*ppcomponent == NULL) {
         return SIXEL_BAD_ALLOCATION;

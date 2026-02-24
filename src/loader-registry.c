@@ -72,8 +72,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_LIBPNG
     {
         "libpng",
-        load_with_libpng,
+        NULL,
         loader_can_try_libpng,
+        sixel_loader_libpng_new,
         g_magic_png,
         sizeof(g_magic_png) / sizeof(g_magic_png[0]),
         1
@@ -82,8 +83,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_JPEG
     {
         "libjpeg",
-        load_with_libjpeg,
+        NULL,
         loader_can_try_libjpeg,
+        sixel_loader_libjpeg_new,
         g_magic_jpeg,
         sizeof(g_magic_jpeg) / sizeof(g_magic_jpeg[0]),
         1
@@ -94,6 +96,7 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
         "libwebp",
         load_with_libwebp,
         loader_can_try_libwebp,
+        NULL,
         g_magic_webp,
         sizeof(g_magic_webp) / sizeof(g_magic_webp[0]),
         1
@@ -104,6 +107,7 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
         "libtiff",
         load_with_libtiff,
         loader_can_try_libtiff,
+        NULL,
         g_magic_tiff,
         sizeof(g_magic_tiff) / sizeof(g_magic_tiff[0]),
         1
@@ -114,25 +118,27 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
         "librsvg",
         load_with_librsvg,
         loader_can_try_librsvg,
+        NULL,
         g_magic_svg,
         sizeof(g_magic_svg) / sizeof(g_magic_svg[0]),
         1
     },
 #endif
-    { "builtin", load_with_builtin, NULL, NULL, 0u, 1 },
+    { "builtin", load_with_builtin, NULL, NULL, NULL, 0u, 1 },
 #if HAVE_WIC
-    { "wic", load_with_wic, loader_can_try_wic, NULL, 0u, 1 },
+    { "wic", load_with_wic, loader_can_try_wic, NULL, NULL, 0u, 1 },
 #endif
 #if HAVE_COREGRAPHICS
-    { "coregraphics", load_with_coregraphics, NULL, NULL, 0u, 1 },
+    { "coregraphics", load_with_coregraphics, NULL, NULL, NULL, 0u, 1 },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
-    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL, NULL, 0u, 1 },
+    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL, NULL, NULL, 0u, 1 },
 #endif
 #if HAVE_GD
     {
         "gd",
         load_with_gd,
+        NULL,
         NULL,
         g_magic_gif,
         sizeof(g_magic_gif) / sizeof(g_magic_gif[0]),
@@ -145,12 +151,13 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
         load_with_quicklook,
         loader_quicklook_can_decode_chunk,
         NULL,
+        NULL,
         0u,
         1
     },
 #endif
 #if HAVE_FREEDESKTOP_THUMBNAILING
-    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, NULL, 0u, 0 },
+    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, NULL, NULL, 0u, 0 },
 #endif
 };
 

@@ -10,12 +10,12 @@
 static int
 run_libpng_loader_test(void)
 {
-    return run_loader_case("libpng loader",
-                           RGBA_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGB888,
-                           2,
-                           1,
-                           load_with_libpng);
+    return run_loader_component_case("libpng loader",
+                                     RGBA_IMAGE_PATH,
+                                     SIXEL_PIXELFORMAT_RGB888,
+                                     2,
+                                     1,
+                                     sixel_loader_libpng_new);
 }
 #endif
 
