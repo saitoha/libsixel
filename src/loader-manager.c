@@ -144,9 +144,25 @@ static size_t
 loader_manager_token_name_length(char const *token,
                                  size_t token_length)
 {
+    size_t index;
     size_t length;
 
+    index = 0u;
     length = token_length;
+
+    /*
+     * Loader tokens can carry suboptions after ':' (for example
+     * "wic:ico_minsize=30"). Build-plan lookup must match only the loader
+     * name so that suboptions do not prevent backend resolution.
+     */
+    while (index < length) {
+        if (token[index] == ':') {
+            length = index;
+            break;
+        }
+        ++index;
+    }
+
     if (token != NULL && token_length > 0 && token[token_length - 1] == '@') {
         length = token_length - 1u;
     }
