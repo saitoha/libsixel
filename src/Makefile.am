@@ -163,13 +163,11 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-factory.c \
                 $(srcdir)/loader-manager.c \
                 $(srcdir)/loader-component.c \
-                $(srcdir)/loader-component-legacy.c \
                 $(srcdir)/loader-registry.c \
                 $(srcdir)/loader.h \
                 $(srcdir)/loader-builtin.h \
                 $(srcdir)/loader-common.h \
                 $(srcdir)/loader-component.h \
-                $(srcdir)/loader-component-legacy.h \
                 $(srcdir)/loader-chain.h \
                 $(srcdir)/loader-factory.h \
                 $(srcdir)/loader-manager.h \

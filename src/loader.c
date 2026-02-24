@@ -107,7 +107,6 @@
 #include "loader-factory.h"
 #include "loader-manager.h"
 #include "loader-component.h"
-#include "loader-component-legacy.h"
 #include "loader-wic.h"
 #include "compat_stub.h"
 #include "frame.h"

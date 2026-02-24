@@ -33,7 +33,6 @@
 
 #include "loader-factory.h"
 
-#include "loader-component-legacy.h"
 #include "sixel_atomic.h"
 
 struct sixel_loader_factory {
@@ -253,16 +252,14 @@ loader_factory_create_component(sixel_loader_factory_t const *factory,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (entry->new_component != NULL) {
-        return entry->new_component(allocator, ppcomponent);
+    if (entry->new_component == NULL) {
+        sixel_helper_set_additional_message(
+            "loader_factory_create_component: loader does not provide"
+            " component constructor.");
+        return SIXEL_LOGIC_ERROR;
     }
 
-    *ppcomponent = sixel_loader_component_legacy_new(entry, allocator);
-    if (*ppcomponent == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    return SIXEL_OK;
+    return entry->new_component(allocator, ppcomponent);
 }
 
 /* emacs Local Variables:      */
