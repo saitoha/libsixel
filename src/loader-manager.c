@@ -215,6 +215,8 @@ loader_manager_apply_loader_suboptions(char const *order)
     char match_detail[128];
     sixel_option_argument_resolution_t resolution;
     size_t assignment_index;
+    char const *value_text;
+    size_t value_length;
     int parsed_value;
 
     cursor = order;
@@ -229,6 +231,8 @@ loader_manager_apply_loader_suboptions(char const *order)
     resolution.assignments = NULL;
     resolution.assignment_count = 0u;
     assignment_index = 0u;
+    value_text = NULL;
+    value_length = 0u;
     parsed_value = 0;
 
     /*
@@ -278,14 +282,19 @@ loader_manager_apply_loader_suboptions(char const *order)
                     for (assignment_index = 0u;
                          assignment_index < resolution.assignment_count;
                          ++assignment_index) {
+                        value_text = resolution.assignments[assignment_index]
+                            .resolved_value_text;
+                        value_length = 0u;
+                        if (value_text != NULL) {
+                            value_length = strlen(value_text);
+                        }
                         if (strcmp(resolution.assignments[assignment_index]
                                    .resolved_key_name,
                                    "ico_minsize") == 0 &&
+                            value_text != NULL &&
                             loader_manager_parse_positive_int(
-                                resolution.assignments[assignment_index]
-                                    .resolved_value_text,
-                                strlen(resolution.assignments[
-                                    assignment_index].resolved_value_text),
+                                value_text,
+                                value_length,
                                 &parsed_value)) {
                             sixel_helper_set_wic_ico_minsize(parsed_value);
                         }
