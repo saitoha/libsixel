@@ -224,43 +224,7 @@ endif
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 # Ensure Meson builds the TAP helper binary before running shell-based tests.
-foreach t : tests
-  parts = t.split('/')
-  test_base = parts[parts.length() - 1]
-  test_category = ''
-  if parts.length() > 1
-    foreach idx : range(0, parts.length() - 1)
-      if test_category == ''
-        test_category = parts[idx]
-      else
-        test_category = test_category + '/' + parts[idx]
-      endif
-    endforeach
-  endif
-  if test_category == ''
-    test_category = '.'
-  endif
-  test_dir = meson.current_source_dir()
-  if test_category != '.'
-    test_dir = test_dir / test_category
-  endif
-  test_artifact_dir = artifact_root / test_category / test_base
-  test_env = environment()
-  foreach setting : base_env_settings
-    test_env.set(setting[0], setting[1])
-  endforeach
-  if is_windows
-    foreach dll_path : dll_paths
-      test_env.prepend('PATH', dll_path)
-    endforeach
-  endif
-  test_env.set('test_dir', test_dir)
-  test_env.set('category_name', test_category)
-  test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
-  test_env.set('SIXEL_CONFIGURED_PYTHON', python_for_tests_path)
-  test_cmd = [meson.current_source_dir() / t]
-  test(t, sh,
-    args: ['-c', '''
+python_tap_wrapper = '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
 # Meson runs `sh -c SCRIPT ARG0 ARG1 ...` where ARG0 becomes `$0`.
@@ -316,7 +280,45 @@ if test -z "${SIXEL_TEST_PYTHON:-}"; then
 fi
 export SIXEL_TEST_PYTHON
 exec "$SIXEL_TEST_PYTHON" "$test_script" "$@"
-''', 'sh'] + test_cmd,
+'''
+
+foreach t : tests
+  parts = t.split('/')
+  test_base = parts[parts.length() - 1]
+  test_category = ''
+  if parts.length() > 1
+    foreach idx : range(0, parts.length() - 1)
+      if test_category == ''
+        test_category = parts[idx]
+      else
+        test_category = test_category + '/' + parts[idx]
+      endif
+    endforeach
+  endif
+  if test_category == ''
+    test_category = '.'
+  endif
+  test_dir = meson.current_source_dir()
+  if test_category != '.'
+    test_dir = test_dir / test_category
+  endif
+  test_artifact_dir = artifact_root / test_category / test_base
+  test_env = environment()
+  foreach setting : base_env_settings
+    test_env.set(setting[0], setting[1])
+  endforeach
+  if is_windows
+    foreach dll_path : dll_paths
+      test_env.prepend('PATH', dll_path)
+    endforeach
+  endif
+  test_env.set('test_dir', test_dir)
+  test_env.set('category_name', test_category)
+  test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
+  test_env.set('SIXEL_CONFIGURED_PYTHON', python_for_tests_path)
+  test_cmd = [meson.current_source_dir() / t]
+  test(t, sh,
+    args: ['-c', python_tap_wrapper, 'sh'] + test_cmd,
     depends: test_deps,
     protocol: 'tap',
     env: test_env,
