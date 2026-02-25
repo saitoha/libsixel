@@ -173,7 +173,7 @@ static char *img2sixel_compat_strerror(int error_number,
                                        char *buffer,
                                        size_t buffer_size);
 static FILE *img2sixel_compat_fopen(const char *filename, const char *mode);
-static const char *img2sixel_compat_getenv(const char *name);
+const char *img2sixel_compat_getenv(const char *name);
 static int img2sixel_compat_prepare_path(char const *path,
                                          char **buffer_out,
                                          char const **libc_path_out);
@@ -362,7 +362,7 @@ img2sixel_compat_fopen(const char *filename, const char *mode)
     return handle;
 }
 
-static const char *
+const char *
 img2sixel_compat_getenv(const char *name)
 {
 #if defined(_MSC_VER)
@@ -965,7 +965,7 @@ img2sixel_trace_topic_is_enabled(const char *topic)
         return 0;
     }
 
-    topics = getenv("SIXEL_TRACE_TOPIC");
+    topics = img2sixel_compat_getenv("SIXEL_TRACE_TOPIC");
     if (topics == NULL || topics[0] == '\0') {
         return 0;
     }

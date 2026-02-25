@@ -83,6 +83,8 @@
 # define STDERR_FILENO 2
 #endif
 
+const char *img2sixel_compat_getenv(const char *name);
+
 /*
  * Option-specific help snippets drive both the --help output and
  * contextual error reporting.  The layout below mirrors a table:
@@ -1578,7 +1580,7 @@ img2sixel_trace_topic_is_enabled(char const *topic)
         return 0;
     }
 
-    topics = getenv("SIXEL_TRACE_TOPIC");
+    topics = img2sixel_compat_getenv("SIXEL_TRACE_TOPIC");
     if (topics == NULL || topics[0] == '\0') {
         return 0;
     }
