@@ -198,7 +198,7 @@ static ssize_t img2sixel_compat_write(int fd,
                                       size_t count);
 static void img2sixel_compat_puts(const char *buf);
 static void img2sixel_log_errno(const char *fmt, ...);
-static int img2sixel_trace_topic_is_enabled(const char *topic);
+int img2sixel_trace_topic_is_enabled(const char *topic);
 static void img2sixel_trace_topic_message(const char *topic,
                                           const char *format, ...);
 
@@ -941,7 +941,7 @@ img2sixel_compat_puts(const char *buf)
  * Return non-zero when SIXEL_TRACE_TOPIC contains the given token.
  * Supported separators are comma, colon, semicolon, and whitespace.
  */
-static int
+int
 img2sixel_trace_topic_is_enabled(const char *topic)
 {
     const char *topics;
