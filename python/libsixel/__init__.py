@@ -1274,11 +1274,17 @@ def sixel_encoder_encode(encoder, filename):
     if not encoding:
         encoding = "ascii"
 
+    # Reject None before touching the codec path because the C API expects a
+    # real string pointer. This keeps the exception class deterministic and
+    # mirrors the explicit None guard used by sixel_loader_load_file().
+    if filename is None:
+        raise TypeError("filename must be str or bytes, not None")
+
     # Proactively validate the input path on the Python side so callers get a
     # deterministic exception even if a platform-specific libc or loader fails
     # to surface a failure.  This mirrors the C-side validation while keeping
     # the behaviour consistent across wheel and in-tree builds.
-    if filename not in (None, "-"):
+    if filename != "-":
         if not os.path.exists(filename):
             raise RuntimeError(f"input path does not exist: {filename}")
         if os.path.isdir(filename):
