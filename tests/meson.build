@@ -278,11 +278,13 @@ if test "${test_script##*.}" != "py"; then
 fi
 
 python_venv_exports=$(
-  # Resolve the shared Python test interpreter once per `meson test` run.
-  # Autotools computes this once in check-TESTS, so keep Meson behavior close
-  # by caching the exported assignment in the build tree.
-  cache_file="${MESON_BUILD_ROOT}/tests/.python-test-env.exports"
-  lock_dir="${MESON_BUILD_ROOT}/tests/.python-test-env.lock"
+  # Resolve the shared Python test interpreter once per `meson test` process.
+  # Use PPID-scoped cache files so each Meson test invocation gets a fresh
+  # resolution pass and can still reuse autotools-compatible checksum logic.
+  # This avoids stale cross-run caches while keeping parallel workers in one
+  # run synchronized.
+  cache_file="${MESON_BUILD_ROOT}/tests/.python-test-env.${PPID}.exports"
+  lock_dir="${MESON_BUILD_ROOT}/tests/.python-test-env.${PPID}.lock"
 
   if test -r "$cache_file"; then
     cat "$cache_file"
