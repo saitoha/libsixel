@@ -848,6 +848,173 @@ AS_IF([test "x$using_cl" = "xyes"], [
 AC_MSG_CHECKING([which LTO profile is enabled])
 AC_MSG_RESULT([$sixel_lto_status])
 
+AC_ARG_ENABLE([pgo],
+              [AS_HELP_STRING([--enable-pgo=@<:@no|generate|use@:>@],
+                              [enable profile guided optimization mode
+                               (default: no)])],
+              [enable_pgo="$enableval"],
+              [enable_pgo=no])
+
+AS_CASE([$enable_pgo],
+        [no|generate|use],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-pgo: $enable_pgo])])
+
+AC_ARG_WITH([pgo-data],
+            [AS_HELP_STRING([--with-pgo-data=PATH],
+                            [PGO profile data directory used by
+                             --enable-pgo=@<:@generate|use@:>@])],
+            [pgo_data_path="$withval"],
+            [pgo_data_path=""])
+
+AC_ARG_WITH([pgo-profdata],
+            [AS_HELP_STRING([--with-pgo-profdata=FILE],
+                            [LLVM merged profile data file used by
+                             --enable-pgo=use])],
+            [pgo_profdata_file="$withval"],
+            [pgo_profdata_file=""])
+
+sixel_pgo_toolchain="gnu"
+AS_CASE([$host_os],
+        [msvc*],
+        [sixel_pgo_toolchain="msvc"])
+AS_CASE(["$CC"],
+        [*clang-cl*|*cl*],
+        [sixel_pgo_toolchain="msvc"])
+
+sixel_pgo_cflags=""
+sixel_pgo_ldflags=""
+sixel_pgo_status="disabled"
+
+AS_IF([test "x$enable_pgo" = "xgenerate"], [
+  AS_IF([test "x$sixel_pgo_toolchain" = "xmsvc"], [
+    AS_IF([test "x$pgo_profdata_file" != "x"], [
+      AC_MSG_WARN([
+        --with-pgo-profdata is ignored when --enable-pgo=generate with MSVC
+      ])
+    ])
+
+    sixel_pgo_cflags="/GL"
+    sixel_pgo_ldflags="/LTCG:PGINSTRUMENT"
+    AS_IF([test "x$pgo_data_path" != "x"], [
+      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_status="generate(msvc-pgd=$pgo_data_path)"
+    ], [
+      sixel_pgo_status="generate(msvc)"
+    ])
+  ], [
+    AS_IF([test "x$pgo_profdata_file" != "x"], [
+      AC_MSG_WARN([
+        --with-pgo-profdata is ignored when --enable-pgo=generate is selected
+      ])
+    ])
+
+    AS_IF([test "x$pgo_data_path" != "x"], [
+      sixel_pgo_cflags="-fprofile-generate=$pgo_data_path"
+      sixel_pgo_ldflags="-fprofile-generate=$pgo_data_path"
+      sixel_pgo_status="generate(data=$pgo_data_path)"
+    ], [
+      sixel_pgo_cflags="-fprofile-generate"
+      sixel_pgo_ldflags="-fprofile-generate"
+      sixel_pgo_status="generate"
+    ])
+  ])
+])
+
+AS_IF([test "x$enable_pgo" = "xuse"], [
+  AS_IF([test "x$sixel_pgo_toolchain" = "xmsvc"], [
+    AS_IF([test "x$pgo_profdata_file" != "x"], [
+      AC_MSG_ERROR([
+        --with-pgo-profdata is not supported with MSVC; use --with-pgo-data for /PGD
+      ])
+    ])
+    sixel_pgo_cflags="/GL"
+    sixel_pgo_ldflags="/LTCG:PGOPTIMIZE"
+    AS_IF([test "x$pgo_data_path" != "x"], [
+      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_status="use(msvc-pgd=$pgo_data_path)"
+    ], [
+      sixel_pgo_status="use(msvc)"
+    ])
+  ], [
+    AS_IF([test "x$pgo_profdata_file" != "x"], [
+      AS_IF([test ! -f "$pgo_profdata_file"], [
+        AC_MSG_ERROR([--with-pgo-profdata file not found: $pgo_profdata_file])
+      ])
+      sixel_pgo_cflags="-fprofile-instr-use=$pgo_profdata_file"
+      sixel_pgo_ldflags="-fprofile-instr-use=$pgo_profdata_file"
+      sixel_pgo_status="use(profdata=$pgo_profdata_file)"
+    ], [
+      AS_IF([test "x$pgo_data_path" != "x"], [
+        AS_IF([test ! -d "$pgo_data_path"], [
+          AC_MSG_ERROR([--with-pgo-data directory not found: $pgo_data_path])
+        ])
+        sixel_pgo_cflags="-fprofile-use=$pgo_data_path"
+        sixel_pgo_ldflags="-fprofile-use=$pgo_data_path"
+        sixel_pgo_status="use(data=$pgo_data_path)"
+      ], [
+        sixel_pgo_cflags="-fprofile-use"
+        sixel_pgo_ldflags="-fprofile-use"
+        sixel_pgo_status="use"
+      ])
+    ])
+  ])
+])
+
+AS_IF([test "x$enable_pgo" = "xno"], [
+  AS_IF([test "x$pgo_data_path" != "x"], [
+    AC_MSG_WARN([--with-pgo-data is ignored unless --enable-pgo is generate or use])
+  ])
+  AS_IF([test "x$pgo_profdata_file" != "x"], [
+    AC_MSG_WARN([--with-pgo-profdata is ignored unless --enable-pgo=use])
+  ])
+])
+
+AS_IF([test "x$enable_pgo" != "xno"], [
+  AS_IF([test "x$enable_pgo" = "xuse" \
+              -a "x$sixel_pgo_toolchain" != "xmsvc" \
+              -a "x$pgo_profdata_file" = "x"], [
+    dnl -fprofile-use may fail during probe when profile data is missing.
+    dnl Skip this probe unless a concrete profdata file is provided.
+    AC_MSG_NOTICE([
+      skipping PGO capability probe for --enable-pgo=use without --with-pgo-profdata
+    ])
+  ], [
+    AS_IF([test "x$enable_pgo" = "xuse" \
+                -a "x$sixel_pgo_toolchain" = "xmsvc" \
+                -a "x$pgo_data_path" = "x"], [
+      dnl MSVC /LTCG:PGOPTIMIZE may require existing profile artifacts.
+      dnl Skip probing when /PGD path is not provided.
+      AC_MSG_NOTICE([
+        skipping PGO capability probe for MSVC --enable-pgo=use without --with-pgo-data
+      ])
+    ], [
+      AC_CACHE_CHECK(
+        [whether the compiler and linker support $sixel_pgo_cflags],
+        [ac_cv_sixel_pgo_mode],
+        [
+         CFLAGS="$ac_sixel_save_CFLAGS $sixel_pgo_cflags"
+         LDFLAGS="$ac_sixel_save_LDFLAGS $sixel_pgo_ldflags"
+         AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                        [ac_cv_sixel_pgo_mode=yes],
+                        [ac_cv_sixel_pgo_mode=no])
+        ])
+
+      CFLAGS="$ac_sixel_save_CFLAGS"
+      LDFLAGS="$ac_sixel_save_LDFLAGS"
+
+      AS_IF([test "x$ac_cv_sixel_pgo_mode" != "xyes"], [
+        AC_MSG_ERROR([
+          --enable-pgo=$enable_pgo requested, but PGO flags are not supported
+        ])
+      ])
+    ])
+  ])
+])
+
+AC_MSG_CHECKING([which PGO profile is enabled])
+AC_MSG_RESULT([$sixel_pgo_status])
+
 AC_CACHE_CHECK(
   [whether ThreadSanitizer instrumentation is enabled],
   [ac_cv_sixel_tsan],
@@ -3706,6 +3873,13 @@ AS_IF([test "x$enable_lto" != "xno"], [
   LDFLAGS="$LDFLAGS $sixel_lto_ldflags"
 ])
 
+AS_IF([test "x$enable_pgo" != "xno"], [
+  dnl Apply PGO profile flags after configure probes complete so checks keep
+  dnl using neutral compiler options and report capability mismatches clearly.
+  CFLAGS="$CFLAGS $sixel_pgo_cflags"
+  LDFLAGS="$LDFLAGS $sixel_pgo_ldflags"
+])
+
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
 AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_winhttp = xyes])
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
@@ -3805,6 +3979,7 @@ echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
+echo "       pgo                     : $sixel_pgo_status"
 echo "       gcov                    : $enable_gcov"
 echo "       debugging               : $enable_debug"
 echo "       tests                   : $enable_tests"

@@ -83,6 +83,38 @@ if get_option('gcov')
   add_project_arguments('--coverage', language: 'c')
   add_project_link_arguments('--coverage', language: 'c')
 endif
+
+msvc_pgo_mode = get_option('msvc_pgo')
+msvc_pgo_data = get_option('msvc_pgo_data')
+msvc_pgo_summary = 'off'
+if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
+  if msvc_pgo_mode != 'off'
+    # Keep PGO flags explicit for MSVC-like frontends because Meson base
+    # option b_pgo currently targets GNU/LLVM-style -fprofile-* flags.
+    add_project_arguments('/GL', language: 'c')
+
+    msvc_pgo_link_args = []
+    if msvc_pgo_mode == 'generate'
+      msvc_pgo_link_args += ['/LTCG:PGINSTRUMENT']
+    elif msvc_pgo_mode == 'use'
+      msvc_pgo_link_args += ['/LTCG:PGOPTIMIZE']
+    endif
+
+    if msvc_pgo_data != ''
+      msvc_pgo_link_args += ['/PGD:' + msvc_pgo_data]
+      msvc_pgo_summary = msvc_pgo_mode + '(pgd=' + msvc_pgo_data + ')'
+    else
+      msvc_pgo_summary = msvc_pgo_mode
+    endif
+
+    add_project_link_arguments(msvc_pgo_link_args, language: 'c')
+  endif
+else
+  if msvc_pgo_mode != 'off'
+    warning('msvc_pgo is ignored unless the C compiler is msvc or clang-cl')
+  endif
+endif
+
 if get_option('debug')
   conf.set('HAVE_DEBUG', 1)
 endif
@@ -1803,6 +1835,7 @@ message('       libwebp                 : ' + webp_message)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)
+message('       msvc pgo                : ' + msvc_pgo_summary)
 message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging               : ' + (get_option('debug') ? 'yes' : 'no'))
 message('       tests                   : ' + (get_option('tests') ? 'yes' : 'no'))
