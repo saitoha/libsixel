@@ -50,6 +50,7 @@ base_env_settings = [
   ['SIXEL_TSAN_BUILD', sixel_tsan_build],
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
   ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
+  ['SIXEL_CONFIGURED_PYTHON', python_for_tests_path],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
   # Ensure Python TAP tests can locate the freshly built shared library when
@@ -220,6 +221,7 @@ endif
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 # Ensure Meson builds the TAP helper binary before running shell-based tests.
+
 python_tap_wrapper = '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
@@ -237,20 +239,37 @@ if test "${test_script##*.}" != "py"; then
   exec sh "$test_script" "$@"
 fi
 
-configured_python=''
-if command -v python3 >/dev/null 2>&1; then
-  configured_python=$(command -v python3)
-elif command -v python >/dev/null 2>&1; then
-  configured_python=$(command -v python)
+# Resolve Python test venv once per meson test invocation. The first Python
+# TAP worker initializes the venv and writes exported variables, while other
+# workers wait for the shared result file and reuse the same interpreter.
+venv_state_dir="$MESON_BUILD_ROOT/tests"
+venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
+venv_exports_file="$venv_state_dir/.python-test-venv.$venv_run_id.exports"
+venv_lock_dir="$venv_state_dir/.python-test-venv.$venv_run_id.lock"
+
+if test ! -f "$venv_exports_file"; then
+  if mkdir "$venv_lock_dir" 2>/dev/null; then
+    venv_exports="$($TOP_SRCDIR/build-aux/resolve-python-test-venv.sh \
+      "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" \
+      "$MESON_BUILD_ROOT/python/dist" \
+      "$MESON_BUILD_ROOT/tests/.python-test-venv")"
+    printf '%s\n' "$venv_exports" > "$venv_exports_file"
+    rmdir "$venv_lock_dir"
+  else
+    wait_count=0
+    while test ! -f "$venv_exports_file"; do
+      wait_count=$((wait_count + 1))
+      if test "$wait_count" -gt 600; then
+        printf '%s\n' 'SIXEL_TEST_PYTHON=' > "$venv_exports_file"
+        break
+      fi
+      sleep 0.05
+    done
+  fi
 fi
 
-python_venv_exports=$(
-  "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
-    "${ENABLE_PYTHON:-0}" "$configured_python" \
-    "${MESON_BUILD_ROOT}/python/dist" \
-    "${MESON_BUILD_ROOT}/tests/.python-test-venv"
-)
-eval "$python_venv_exports"
+# shellcheck disable=SC1090
+. "$venv_exports_file"
 
 if test -z "${SIXEL_TEST_PYTHON:-}"; then
   printf '%s\n' '1..0 # SKIP python test interpreter is unavailable'
