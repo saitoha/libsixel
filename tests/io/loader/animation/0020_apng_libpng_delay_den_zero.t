@@ -18,7 +18,7 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Llibpng! \
+run_img2sixel --env SIXEL_TRACE_TOPIC=apng_decode -Llibpng! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_libpng_delay_den_zero.png" \
     -o/dev/null || {
     fail 1 "APNG delay_den zero input failed"
