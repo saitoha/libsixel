@@ -704,6 +704,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Set to '1' to explain failures or '0' (default) to suppress them."
     },
     {
+        "SIXEL_TRACE_TOPIC",
+        "enable topic-specific debug traces. Include 'suggestion' to show\n"
+        "missing-path suggestion timing and branch diagnostics."
+    },
+    {
         "SIXEL_STATUS_FORCE_COLORS",
         "force ANSI colorized diagnostics from status markup output.\n"
         "Set to '1' to emit color sequences without TTY detection."
