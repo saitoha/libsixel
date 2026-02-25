@@ -124,6 +124,7 @@ sixel_winhttp_set_error_message(char const *context)
 #include "chunk.h"
 #include "allocator.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 
 
 /* initialize chunk object with specified size */
@@ -356,6 +357,8 @@ open_binary_file(
 #endif
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
+        sixel_trace_topic_message("file_open",
+                                  "open_binary_file: using stdin");
         /* for windows */
         (void)sixel_compat_set_binary(STDIN_FILENO);
         *f = stdin;
@@ -363,6 +366,10 @@ open_binary_file(
         status = SIXEL_OK;
         goto end;
     }
+
+    sixel_trace_topic_message("file_open",
+                              "open_binary_file: fopen begin path=%s",
+                              filename);
 
 #if 0
 #if HAVE_WINDOWS_H
@@ -398,10 +405,19 @@ open_binary_file(
 
     *f = sixel_compat_fopen(filename, "rb");
     if (! *f) {
+        sixel_trace_topic_message(
+            "file_open",
+            "open_binary_file: fopen failed path=%s errno=%d",
+            filename,
+            errno);
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("sixel_compat_fopen() failed.");
         goto end;
     }
+
+    sixel_trace_topic_message("file_open",
+                              "open_binary_file: fopen success path=%s",
+                              filename);
 
     status = SIXEL_OK;
 
