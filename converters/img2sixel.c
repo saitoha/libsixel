@@ -1549,6 +1549,95 @@ signal_handler(int sig)
 
 #endif
 
+
+/*
+ * Return non-zero when SIXEL_TRACE_TOPIC contains the given token.
+ * Supported separators are comma, colon, semicolon, and whitespace.
+ */
+static int
+img2sixel_trace_topic_is_enabled(char const *topic)
+{
+    char const *topics;
+    char const *cursor;
+    char const *token_end;
+    size_t topic_length;
+    size_t token_length;
+
+    topics = NULL;
+    cursor = NULL;
+    token_end = NULL;
+    topic_length = 0u;
+    token_length = 0u;
+
+    if (topic == NULL || topic[0] == '\0') {
+        return 0;
+    }
+
+    topic_length = strlen(topic);
+    if (topic_length == 0u) {
+        return 0;
+    }
+
+    topics = getenv("SIXEL_TRACE_TOPIC");
+    if (topics == NULL || topics[0] == '\0') {
+        return 0;
+    }
+
+    cursor = topics;
+    while (*cursor != '\0') {
+        while (*cursor != '\0' &&
+               (*cursor == ' ' || *cursor == '\t' || *cursor == ',' ||
+                *cursor == ':' || *cursor == ';')) {
+            ++cursor;
+        }
+        if (*cursor == '\0') {
+            break;
+        }
+
+        token_end = cursor;
+        while (*token_end != '\0' &&
+               *token_end != ' ' && *token_end != '\t' &&
+               *token_end != ',' && *token_end != ':' &&
+               *token_end != ';') {
+            ++token_end;
+        }
+
+        token_length = (size_t)(token_end - cursor);
+        if (token_length == topic_length &&
+                strncmp(cursor, topic, token_length) == 0) {
+            return 1;
+        }
+
+        cursor = token_end;
+    }
+
+    return 0;
+}
+
+/* Emit topic-scoped diagnostics selected through SIXEL_TRACE_TOPIC. */
+static void
+img2sixel_trace_topic_message(
+    char const *topic,
+    char const *format,
+    ...)
+{
+    va_list args;
+
+    if (!img2sixel_trace_topic_is_enabled(topic)) {
+        return;
+    }
+
+    fprintf(stderr,
+            "img2sixel[%s]: ",
+            topic != NULL && topic[0] != '\0' ? topic : "trace");
+
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+
+    fprintf(stderr, "\n");
+}
+
 static int
 img2sixel_exit_code(SIXELSTATUS status)
 {
@@ -1667,6 +1756,10 @@ main(int argc, char *argv[])
         goto end;
     }
 
+    img2sixel_trace_topic_message("lifecycle",
+                                 "main start: argc=%d",
+                                 argc);
+
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -1760,6 +1853,10 @@ main(int argc, char *argv[])
         goto error;
     }
 #endif
+    img2sixel_trace_topic_message("lifecycle",
+                                 "encoding dispatch: optind=%d argc=%d",
+                                 optind,
+                                 argc);
     if (optind >= argc) {
         status = sixel_encoder_encode(encoder, NULL);
         if (SIXEL_FAILED(status)) {
@@ -1776,9 +1873,14 @@ main(int argc, char *argv[])
 
     /* mark as success */
     status = SIXEL_OK;
+    img2sixel_trace_topic_message("lifecycle",
+                                 "encode completed successfully");
     goto end;
 
 error:
+    img2sixel_trace_topic_message("lifecycle",
+                                 "enter error path: status=%d",
+                                 status);
     fprintf(stderr, "\n%s\n%s\n\n",
             sixel_helper_format_error(status),
             sixel_helper_get_additional_message());
@@ -1789,6 +1891,8 @@ error:
     goto end;
 
 unknown_option_error:
+    img2sixel_trace_topic_message("lifecycle",
+                                 "enter unknown-option path");
     fprintf(stderr,
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"
@@ -1807,10 +1911,16 @@ unknown_option_error:
     goto end;
 
 end:
+    img2sixel_trace_topic_message("lifecycle",
+                                 "begin cleanup: status=%d",
+                                 status);
     if (encoder != NULL) {
         sixel_encoder_unref(encoder);
     }
     exit_code = img2sixel_exit_code(status);
+    img2sixel_trace_topic_message("lifecycle",
+                                 "main return: exit_code=%d",
+                                 exit_code);
     return exit_code;
 }
 
