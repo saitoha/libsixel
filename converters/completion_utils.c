@@ -1020,7 +1020,23 @@ img2sixel_trace_topic_message(const char *topic, const char *format, ...)
 
         message[0] = '\0';
         va_start(args, format);
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wformat-nonliteral"
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
+#endif
         written = vsnprintf(message, sizeof(message), format, args);
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
+#endif
         va_end(args);
 
         if (written < 0) {
