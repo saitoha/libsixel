@@ -1447,6 +1447,14 @@ load_apng_frames(
             goto end;
         }
 
+        apng_decode_trace_message(
+            "chunk loop=%d remain=%lu type=%.4s length=%lu expected_seq=%lu",
+            loop_no,
+            (unsigned long)remain,
+            (char const *)(p + 4),
+            (unsigned long)length,
+            (unsigned long)state.expected_sequence);
+
         if (memcmp(p + 4, "IHDR", 4) == 0) {
             if (length != 13) {
                 sixel_helper_set_additional_message(
@@ -1561,6 +1569,11 @@ load_apng_frames(
                 goto end;
             }
             ++state.expected_sequence;
+            apng_decode_trace_message(
+                "fcTL accepted: seq=%lu next_expected=%lu seen_idat=%d",
+                (unsigned long)sequence_no,
+                (unsigned long)state.expected_sequence,
+                seen_idat);
             if (control.width == 0 || control.height == 0 ||
                 control.x_offset > (png_uint_32)canvas.width ||
                 control.y_offset > (png_uint_32)canvas.height ||
@@ -1622,6 +1635,13 @@ load_apng_frames(
                 control.blend_op = 0;
             }
             seen_idat = 1;
+            if (seen_actl != 0) {
+                apng_decode_trace_message(
+                    "IDAT accepted: has_frame=%d seen_fctl=%d seen_idat=%d",
+                    has_frame,
+                    seen_fctl,
+                    seen_idat);
+            }
             has_frame = 1;
         } else if (memcmp(p + 4, "IEND", 4) == 0) {
             break;
