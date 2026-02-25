@@ -18,7 +18,7 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -L coregraphics! -ldisable \
+run_img2sixel -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/metadata_noise.jpg" >/dev/null && {
     fail 1 "corrupted JPEG unexpectedly decoded by coregraphics"
     exit 0

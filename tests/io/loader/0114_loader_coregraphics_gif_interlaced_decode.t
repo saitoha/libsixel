@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: coregraphics loader decodes interlaced GIF input successfully.
+# TAP test: coregraphics loader keeps MS-SSIM baseline for interlaced GIF input.
 
 set -eux
 
@@ -18,12 +18,20 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -L coregraphics! -ldisable \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" \
-    >/dev/null || {
+lsqa_floor=0.98
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_gif_interlaced.six"
+
+run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
     fail 1 "coregraphics failed to decode interlaced GIF input"
     exit 0
 }
 
-pass 1 "coregraphics decodes interlaced GIF input"
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}"     "${reference_path}" "${output_sixel}" 2>&1) || {
+    fail 1 "$lsqa_msg"
+    exit 0
+}
+
+pass 1 "coregraphics keeps MS-SSIM baseline for interlaced GIF input"
 exit 0

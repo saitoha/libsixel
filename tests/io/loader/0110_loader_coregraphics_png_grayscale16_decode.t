@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: coregraphics loader decodes grayscale PNG input successfully.
+# TAP test: coregraphics loader keeps MS-SSIM baseline for grayscale PNG input.
 
 set -eux
 
@@ -18,11 +18,20 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -L coregraphics! -ldisable \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-gray16.png" >/dev/null || {
+lsqa_floor=0.98
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-gray16.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_png_gray16.six"
+
+run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
     fail 1 "coregraphics failed to decode grayscale PNG input"
     exit 0
 }
 
-pass 1 "coregraphics decodes grayscale PNG input"
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}"     "${reference_path}" "${output_sixel}" 2>&1) || {
+    fail 1 "$lsqa_msg"
+    exit 0
+}
+
+pass 1 "coregraphics keeps MS-SSIM baseline for grayscale PNG input"
 exit 0
