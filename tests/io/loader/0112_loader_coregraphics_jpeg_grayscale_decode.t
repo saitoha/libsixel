@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: coregraphics loader decodes grayscale JPEG input successfully.
+# TAP test: coregraphics loader keeps MS-SSIM baseline for grayscale JPEG input.
 
 set -eux
 
@@ -18,11 +18,20 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -L coregraphics! -ldisable \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-grayscale.jpg" >/dev/null || {
+lsqa_floor=0.98
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-grayscale.jpg"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_jpeg_grayscale.six"
+
+run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
     fail 1 "coregraphics failed to decode grayscale JPEG input"
     exit 0
 }
 
-pass 1 "coregraphics decodes grayscale JPEG input"
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}"     "${reference_path}" "${output_sixel}" 2>&1) || {
+    fail 1 "$lsqa_msg"
+    exit 0
+}
+
+pass 1 "coregraphics keeps MS-SSIM baseline for grayscale JPEG input"
 exit 0
