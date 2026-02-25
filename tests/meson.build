@@ -278,9 +278,34 @@ if test "${test_script##*.}" != "py"; then
 fi
 
 python_venv_exports=$(
-  "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
-    "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" "${MESON_BUILD_ROOT}/python/dist" \
-    "${MESON_BUILD_ROOT}/tests/.python-test-venv"
+  # Resolve the shared Python test interpreter once per `meson test` run.
+  # Autotools computes this once in check-TESTS, so keep Meson behavior close
+  # by caching the exported assignment in the build tree.
+  cache_file="${MESON_BUILD_ROOT}/tests/.python-test-env.exports"
+  lock_dir="${MESON_BUILD_ROOT}/tests/.python-test-env.lock"
+
+  if test -r "$cache_file"; then
+    cat "$cache_file"
+    exit 0
+  fi
+
+  while ! mkdir "$lock_dir" 2>/dev/null; do
+    if test -r "$cache_file"; then
+      cat "$cache_file"
+      exit 0
+    fi
+    sleep 0.1
+  done
+
+  resolved_exports=$(
+    "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
+      "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" \
+      "${MESON_BUILD_ROOT}/python/dist" \
+      "${MESON_BUILD_ROOT}/tests/.python-test-venv"
+  )
+  printf '%s\n' "$resolved_exports" >"$cache_file"
+  rmdir "$lock_dir" 2>/dev/null || true
+  printf '%s\n' "$resolved_exports"
 )
 eval "$python_venv_exports"
 if test -z "${SIXEL_TEST_PYTHON:-}"; then
