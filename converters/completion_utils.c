@@ -198,6 +198,9 @@ static ssize_t img2sixel_compat_write(int fd,
                                       size_t count);
 static void img2sixel_compat_puts(const char *buf);
 static void img2sixel_log_errno(const char *fmt, ...);
+static int img2sixel_trace_topic_is_enabled(const char *topic);
+static void img2sixel_trace_topic_message(const char *topic,
+                                          const char *format, ...);
 
 static char *
 img2sixel_compat_strerror(int error_number,
@@ -933,9 +936,100 @@ img2sixel_compat_puts(const char *buf)
 /* helpers for platform abstractions */
 /* ------------------------------------------------------------------------ */
 
+
+/*
+ * Return non-zero when SIXEL_TRACE_TOPIC contains the given token.
+ * Supported separators are comma, colon, semicolon, and whitespace.
+ */
+static int
+img2sixel_trace_topic_is_enabled(const char *topic)
+{
+    const char *topics;
+    const char *cursor;
+    const char *token_end;
+    size_t topic_length;
+    size_t token_length;
+
+    topics = NULL;
+    cursor = NULL;
+    token_end = NULL;
+    topic_length = 0u;
+    token_length = 0u;
+
+    if (topic == NULL || topic[0] == '\0') {
+        return 0;
+    }
+
+    topic_length = strlen(topic);
+    if (topic_length == 0u) {
+        return 0;
+    }
+
+    topics = getenv("SIXEL_TRACE_TOPIC");
+    if (topics == NULL || topics[0] == '\0') {
+        return 0;
+    }
+
+    cursor = topics;
+    while (*cursor != '\0') {
+        while (*cursor != '\0' &&
+               (*cursor == ' ' || *cursor == '\t' || *cursor == ',' ||
+                *cursor == ':' || *cursor == ';')) {
+            ++cursor;
+        }
+        if (*cursor == '\0') {
+            break;
+        }
+
+        token_end = cursor;
+        while (*token_end != '\0' &&
+               *token_end != ' ' && *token_end != '\t' &&
+               *token_end != ',' && *token_end != ':' &&
+               *token_end != ';') {
+            ++token_end;
+        }
+
+        token_length = (size_t)(token_end - cursor);
+        if (token_length == topic_length &&
+                strncmp(cursor, topic, token_length) == 0) {
+            return 1;
+        }
+
+        cursor = token_end;
+    }
+
+    return 0;
+}
+
+static void
+img2sixel_trace_topic_message(const char *topic, const char *format, ...)
+{
+    va_list args;
+
+    if (!img2sixel_trace_topic_is_enabled(topic)) {
+        return;
+    }
+
+    fprintf(stderr,
+            "img2sixel[%s]: ",
+            topic != NULL && topic[0] != '\0' ? topic : "trace");
+
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+
+    fprintf(stderr, "\n");
+}
+
 static int
 img2sixel_fsync(int fd)
 {
+    int sync_result;
+
+    sync_result = 0;
+    img2sixel_trace_topic_message("lifecycle",
+                                  "fsync begin: fd=%d",
+                                  fd);
 #if defined(__EMSCRIPTEN__)
     /*
      * Emscripten's Node.js backend can expose stdout/stderr streams without
@@ -947,16 +1041,22 @@ img2sixel_fsync(int fd)
      * emscripten targets.
      */
     (void)fd;
-    return (0);
+    sync_result = 0;
 #elif HAVE__COMMIT
-    return _commit(fd);
+    sync_result = _commit(fd);
 #elif HAVE_FSYNC
-    return fsync(fd);
+    sync_result = fsync(fd);
 #else
     /* Keep an explicit no-op for environments without fsync support. */
     (void)fd;
-    return (0);
+    sync_result = 0;
 #endif
+    img2sixel_trace_topic_message("lifecycle",
+                                  "fsync end: fd=%d result=%d errno=%d",
+                                  fd,
+                                  sync_result,
+                                  errno);
+    return sync_result;
 }
 
 #if HAVE__MKDIR

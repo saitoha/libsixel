@@ -114,6 +114,7 @@
 
 #include <sixel.h>
 #include "loader.h"
+#include "loader-common.h"
 #include "tty.h"
 #include "encoder.h"
 #include "frame.h"
@@ -9622,12 +9623,20 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
         }
         stream = NULL;
     } else {
+        sixel_trace_topic_message("lifecycle",
+            "palette output flush begin: stream=%p",
+            (void *)stream);
         if (fflush(stream) != 0) {
+            sixel_trace_topic_message("lifecycle",
+                "palette output flush failed: errno=%d",
+                errno);
             sixel_helper_set_additional_message(
                 "sixel_encoder_emit_palette_output: fflush() failed.");
             status = SIXEL_LIBC_ERROR;
             goto cleanup;
         }
+        sixel_trace_topic_message("lifecycle",
+            "palette output flush end: success");
     }
 
 cleanup:

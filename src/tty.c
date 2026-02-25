@@ -66,6 +66,7 @@
 #include <sixel.h>
 #include "tty.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -336,14 +337,21 @@ sixel_tty_restore(struct termios *old_termios)
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
 
+    sixel_trace_topic_message("lifecycle",
+        "tty restore begin: tcsetattr(TCSAFLUSH)");
     ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, old_termios);
     if (ret != 0) {
+        sixel_trace_topic_message("lifecycle",
+            "tty restore failed: errno=%d",
+            errno);
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
             "sixel_tty_restore: tcsetattr() failed.");
         goto end;
     }
 
+    sixel_trace_topic_message("lifecycle",
+        "tty restore end: success");
     status = SIXEL_OK;
 
 end:
