@@ -529,6 +529,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/resolutions/quarter_square.png \
     data/resolutions/svga_landscape.png \
     data/resolutions/tiny_square.png \
+    data/corrupted/invalid_signature.heic \
+    data/corrupted/invalid_signature.heif \
     data/corrupted/metadata_noise.jpg \
     data/corrupted/truncated.heic \
     data/corrupted/truncated.heif \
