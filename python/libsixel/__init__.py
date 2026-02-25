@@ -1284,7 +1284,14 @@ def sixel_encoder_encode(encoder, filename):
     # deterministic exception even if a platform-specific libc or loader fails
     # to surface a failure.  This mirrors the C-side validation while keeping
     # the behaviour consistent across wheel and in-tree builds.
-    if filename != "-":
+    if isinstance(filename, bytes):
+        encoded_filename = filename
+        stdin_token = b"-"
+    else:
+        encoded_filename = str(filename).encode(encoding)
+        stdin_token = b"-"
+
+    if encoded_filename != stdin_token:
         if not os.path.exists(filename):
             raise RuntimeError(f"input path does not exist: {filename}")
         if os.path.isdir(filename):
@@ -1292,7 +1299,7 @@ def sixel_encoder_encode(encoder, filename):
 
     _sixel.sixel_encoder_encode.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_char_p]
-    status = _sixel.sixel_encoder_encode(encoder, filename.encode(encoding))
+    status = _sixel.sixel_encoder_encode(encoder, encoded_filename)
     if SIXEL_FAILED(status):
         message = sixel_helper_format_error(status)
         raise RuntimeError(message)
