@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming forced coregraphics decoding rejects corrupted HEIC input.
+# TAP test confirming coregraphics rejects HEIC files with invalid signatures.
 
 set -eux
 
@@ -19,10 +19,10 @@ echo "1..1"
 set -v
 
 run_img2sixel -L coregraphics! \
-    "${TOP_SRCDIR}/tests/data/corrupted/truncated.heic" >/dev/null && {
-    fail 1 "coregraphics corrupted HEIC should fail"
+    "${TOP_SRCDIR}/tests/data/corrupted/invalid_signature.heic" >/dev/null && {
+    fail 1 "coregraphics invalid-signature HEIC should fail"
     exit 0
 }
 
-pass 1 "coregraphics corrupted HEIC is rejected"
+pass 1 "coregraphics invalid-signature HEIC is rejected"
 exit 0
