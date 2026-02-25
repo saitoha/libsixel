@@ -701,6 +701,121 @@ AS_CASE([$enable_sanitizer],
 AC_MSG_CHECKING([which sanitizer profile is enabled])
 AC_MSG_RESULT([$enable_sanitizer])
 
+AC_ARG_ENABLE([lto],
+              [AS_HELP_STRING([--enable-lto=@<:@no|full|thin@:>@],
+                              [enable link-time optimization profile
+                               (default: no)])],
+              [enable_lto="$enableval"],
+              [enable_lto=no])
+
+AS_CASE([$enable_lto],
+        [no|full|thin],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-lto: $enable_lto])])
+
+AC_ARG_ENABLE([thinlto-cache],
+              [AS_HELP_STRING([--enable-thinlto-cache],
+                              [enable ThinLTO linker cache when
+                               --enable-lto=thin (default: no)])],
+              [enable_thinlto_cache="$enableval"],
+              [enable_thinlto_cache=no])
+
+AS_CASE([$enable_thinlto_cache],
+        [yes|no],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-thinlto-cache: $enable_thinlto_cache])])
+
+AC_ARG_WITH([thinlto-cache-dir],
+            [AS_HELP_STRING([--with-thinlto-cache-dir=PATH],
+                            [ThinLTO cache directory used when
+                             --enable-thinlto-cache=yes])],
+            [thinlto_cache_dir="$withval"],
+            [thinlto_cache_dir=""])
+
+ac_sixel_save_CFLAGS="$CFLAGS"
+ac_sixel_save_LDFLAGS="$LDFLAGS"
+
+AC_CACHE_CHECK(
+  [whether the compiler and linker support -flto],
+  [ac_cv_sixel_lto_full],
+  [
+   CFLAGS="$ac_sixel_save_CFLAGS -flto"
+   LDFLAGS="$ac_sixel_save_LDFLAGS -flto"
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                  [ac_cv_sixel_lto_full=yes],
+                  [ac_cv_sixel_lto_full=no])
+  ])
+
+AC_CACHE_CHECK(
+  [whether the compiler and linker support -flto=thin],
+  [ac_cv_sixel_lto_thin],
+  [
+   CFLAGS="$ac_sixel_save_CFLAGS -flto=thin"
+   LDFLAGS="$ac_sixel_save_LDFLAGS -flto=thin"
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                  [ac_cv_sixel_lto_thin=yes],
+                  [ac_cv_sixel_lto_thin=no])
+  ])
+
+CFLAGS="$ac_sixel_save_CFLAGS"
+LDFLAGS="$ac_sixel_save_LDFLAGS"
+
+sixel_lto_cflags=""
+sixel_lto_ldflags=""
+sixel_lto_status="disabled"
+
+AS_CASE([$enable_lto],
+        [no],
+        [sixel_lto_status="disabled"],
+        [full],
+        [AS_IF([test "x$ac_cv_sixel_lto_full" != "xyes"],
+               [AC_MSG_ERROR([--enable-lto=full requested, but -flto is not supported by the current compiler/linker])])
+         sixel_lto_cflags="-flto"
+         sixel_lto_ldflags="-flto"
+         sixel_lto_status="full"],
+        [thin],
+        [AS_IF([test "x$ac_cv_sixel_lto_thin" != "xyes"],
+               [AC_MSG_ERROR([--enable-lto=thin requested, but -flto=thin is not supported by the current compiler/linker])])
+         sixel_lto_cflags="-flto=thin"
+         sixel_lto_ldflags="-flto=thin"
+         sixel_lto_status="thin"])
+
+AS_IF([test "x$enable_thinlto_cache" = "xyes"], [
+  AS_IF([test "x$enable_lto" != "xthin"], [
+    AC_MSG_ERROR([--enable-thinlto-cache requires --enable-lto=thin])
+  ])
+
+  AS_IF([test "x$thinlto_cache_dir" = "x"], [
+    thinlto_cache_dir='${TMPDIR-/tmp}/libsixel-thinlto-cache'
+  ])
+
+  sixel_thinlto_cache_flag="-Wl,--thinlto-cache-dir=$thinlto_cache_dir"
+
+  AC_CACHE_CHECK(
+    [whether the linker supports --thinlto-cache-dir],
+    [ac_cv_sixel_thinlto_cache],
+    [
+     CFLAGS="$ac_sixel_save_CFLAGS $sixel_lto_cflags"
+     LDFLAGS="$ac_sixel_save_LDFLAGS $sixel_lto_ldflags $sixel_thinlto_cache_flag"
+     AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                    [ac_cv_sixel_thinlto_cache=yes],
+                    [ac_cv_sixel_thinlto_cache=no])
+    ])
+
+  CFLAGS="$ac_sixel_save_CFLAGS"
+  LDFLAGS="$ac_sixel_save_LDFLAGS"
+
+  AS_IF([test "x$ac_cv_sixel_thinlto_cache" != "xyes"], [
+    AC_MSG_ERROR([--enable-thinlto-cache requested, but linker does not support --thinlto-cache-dir])
+  ])
+
+  sixel_lto_ldflags="$sixel_lto_ldflags $sixel_thinlto_cache_flag"
+  sixel_lto_status="thin+cache"
+])
+
+AC_MSG_CHECKING([which LTO profile is enabled])
+AC_MSG_RESULT([$sixel_lto_status])
+
 AC_CACHE_CHECK(
   [whether ThreadSanitizer instrumentation is enabled],
   [ac_cv_sixel_tsan],
@@ -3550,6 +3665,13 @@ AS_IF([test "x$enable_sanitizer" != "xno"], [
   dnl requirements that are unrelated to feature detection.
   CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
   LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
+])
+
+AS_IF([test "x$enable_lto" != "xno"], [
+  dnl Apply LTO profile flags after capability checks complete so probes
+  dnl remain independent from toolchain-specific LTO requirements.
+  CFLAGS="$CFLAGS $sixel_lto_cflags"
+  LDFLAGS="$LDFLAGS $sixel_lto_ldflags"
 ])
 
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])

@@ -966,6 +966,9 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 enable_sanitizer
+enable_lto
+enable_thinlto_cache
+with_thinlto_cache_dir
 enable_img2sixel
 enable_sixel2png
 enable_abort_trace
@@ -1710,6 +1713,10 @@ Optional Features:
   --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread]
                           enable sanitizer instrumentation and add recommended
                           compile/link flags (default: no)
+  --enable-lto=[no|full|thin]
+                          enable link-time optimization profile (default: no)
+  --enable-thinlto-cache  enable ThinLTO linker cache when --enable-lto=thin
+                          (default: no)
   --disable-img2sixel     disable building the img2sixel utility (default: no)
   --disable-sixel2png     disable building the sixel2png utility (default: no)
   --enable-abort-trace    enable abort stack trace support for CLI tools
@@ -1771,6 +1778,9 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
+  --with-thinlto-cache-dir=PATH
+                          ThinLTO cache directory used when
+                          --enable-thinlto-cache=yes
   --with-emscripten-stack_size=SIZE
                           set emscripten stack size (default: 786432)
   --with-emscripten-initial_memory=SIZE
@@ -16923,6 +16933,228 @@ printf %s "checking which sanitizer profile is enabled... " >&6; }
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_sanitizer" >&5
 printf "%s\n" "$enable_sanitizer" >&6; }
 
+# Check whether --enable-lto was given.
+if test ${enable_lto+y}
+then :
+  enableval=$enable_lto; enable_lto="$enableval"
+else case e in #(
+  e) enable_lto=no ;;
+esac
+fi
+
+
+case $enable_lto in #(
+  no|full|thin) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid value for --enable-lto: $enable_lto" "$LINENO" 5 ;;
+esac
+
+# Check whether --enable-thinlto-cache was given.
+if test ${enable_thinlto_cache+y}
+then :
+  enableval=$enable_thinlto_cache; enable_thinlto_cache="$enableval"
+else case e in #(
+  e) enable_thinlto_cache=no ;;
+esac
+fi
+
+
+case $enable_thinlto_cache in #(
+  yes|no) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid value for --enable-thinlto-cache: $enable_thinlto_cache" "$LINENO" 5 ;;
+esac
+
+
+# Check whether --with-thinlto-cache-dir was given.
+if test ${with_thinlto_cache_dir+y}
+then :
+  withval=$with_thinlto_cache_dir; thinlto_cache_dir="$withval"
+else case e in #(
+  e) thinlto_cache_dir="" ;;
+esac
+fi
+
+
+ac_sixel_save_CFLAGS="$CFLAGS"
+ac_sixel_save_LDFLAGS="$LDFLAGS"
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support -flto" >&5
+printf %s "checking whether the compiler and linker support -flto... " >&6; }
+if test ${ac_cv_sixel_lto_full+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   CFLAGS="$ac_sixel_save_CFLAGS -flto"
+   LDFLAGS="$ac_sixel_save_LDFLAGS -flto"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_sixel_lto_full=yes
+else case e in #(
+  e) ac_cv_sixel_lto_full=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_lto_full" >&5
+printf "%s\n" "$ac_cv_sixel_lto_full" >&6; }
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support -flto=thin" >&5
+printf %s "checking whether the compiler and linker support -flto=thin... " >&6; }
+if test ${ac_cv_sixel_lto_thin+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   CFLAGS="$ac_sixel_save_CFLAGS -flto=thin"
+   LDFLAGS="$ac_sixel_save_LDFLAGS -flto=thin"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_sixel_lto_thin=yes
+else case e in #(
+  e) ac_cv_sixel_lto_thin=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_lto_thin" >&5
+printf "%s\n" "$ac_cv_sixel_lto_thin" >&6; }
+
+CFLAGS="$ac_sixel_save_CFLAGS"
+LDFLAGS="$ac_sixel_save_LDFLAGS"
+
+sixel_lto_cflags=""
+sixel_lto_ldflags=""
+sixel_lto_status="disabled"
+
+case $enable_lto in #(
+  no) :
+    sixel_lto_status="disabled" ;; #(
+  full) :
+    if test "x$ac_cv_sixel_lto_full" != "xyes"
+then :
+  as_fn_error $? "--enable-lto=full requested, but -flto is not supported by the current compiler/linker" "$LINENO" 5
+fi
+         sixel_lto_cflags="-flto"
+         sixel_lto_ldflags="-flto"
+         sixel_lto_status="full" ;; #(
+  thin) :
+    if test "x$ac_cv_sixel_lto_thin" != "xyes"
+then :
+  as_fn_error $? "--enable-lto=thin requested, but -flto=thin is not supported by the current compiler/linker" "$LINENO" 5
+fi
+         sixel_lto_cflags="-flto=thin"
+         sixel_lto_ldflags="-flto=thin"
+         sixel_lto_status="thin" ;; #(
+  *) :
+     ;;
+esac
+
+if test "x$enable_thinlto_cache" = "xyes"
+then :
+
+  if test "x$enable_lto" != "xthin"
+then :
+
+    as_fn_error $? "--enable-thinlto-cache requires --enable-lto=thin" "$LINENO" 5
+
+fi
+
+  if test "x$thinlto_cache_dir" = "x"
+then :
+
+    thinlto_cache_dir='${TMPDIR-/tmp}/libsixel-thinlto-cache'
+
+fi
+
+  sixel_thinlto_cache_flag="-Wl,--thinlto-cache-dir=$thinlto_cache_dir"
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker supports --thinlto-cache-dir" >&5
+printf %s "checking whether the linker supports --thinlto-cache-dir... " >&6; }
+if test ${ac_cv_sixel_thinlto_cache+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+     CFLAGS="$ac_sixel_save_CFLAGS $sixel_lto_cflags"
+     LDFLAGS="$ac_sixel_save_LDFLAGS $sixel_lto_ldflags $sixel_thinlto_cache_flag"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_sixel_thinlto_cache=yes
+else case e in #(
+  e) ac_cv_sixel_thinlto_cache=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+     ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_thinlto_cache" >&5
+printf "%s\n" "$ac_cv_sixel_thinlto_cache" >&6; }
+
+  CFLAGS="$ac_sixel_save_CFLAGS"
+  LDFLAGS="$ac_sixel_save_LDFLAGS"
+
+  if test "x$ac_cv_sixel_thinlto_cache" != "xyes"
+then :
+
+    as_fn_error $? "--enable-thinlto-cache requested, but linker does not support --thinlto-cache-dir" "$LINENO" 5
+
+fi
+
+  sixel_lto_ldflags="$sixel_lto_ldflags $sixel_thinlto_cache_flag"
+  sixel_lto_status="thin+cache"
+
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking which LTO profile is enabled" >&5
+printf %s "checking which LTO profile is enabled... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_lto_status" >&5
+printf "%s\n" "$sixel_lto_status" >&6; }
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether ThreadSanitizer instrumentation is enabled" >&5
 printf %s "checking whether ThreadSanitizer instrumentation is enabled... " >&6; }
 if test ${ac_cv_sixel_tsan+y}
@@ -27199,6 +27431,14 @@ then :
 
         CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
   LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
+
+fi
+
+if test "x$enable_lto" != "xno"
+then :
+
+      CFLAGS="$CFLAGS $sixel_lto_cflags"
+  LDFLAGS="$LDFLAGS $sixel_lto_ldflags"
 
 fi
 
