@@ -240,12 +240,13 @@ jobs:
   lto:
     needs: [smoke]
     name: ${{ matrix.label }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-clang-lto-no
             buildtool: autotools
+            runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -256,6 +257,7 @@ jobs:
 
           - label: Autotools-ubuntu-x86_64-clang-lto-full
             buildtool: autotools
+            runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -266,6 +268,7 @@ jobs:
 
           - label: Autotools-ubuntu-x86_64-clang-lto-thin
             buildtool: autotools
+            runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -273,6 +276,14 @@ jobs:
             extra_packages: >-
               clang
             exec_type: bash
+
+          - label: Meson-cmd-x86_64-msvc-lto-full
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              -Db_lto=true
+              -Db_lto_mode=default
+            exec_type: cmd
 
     steps:
       - uses: actions/checkout@v6
