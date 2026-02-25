@@ -3,12 +3,12 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,9 +17,8 @@ missing_input="${TOP_SRCDIR}/xxxxx.xxx"
 stderr_capture="${ARTIFACT_LOCAL_DIR}/err.txt"
 
 run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
-              --env SIXEL_TRACE_TOPIC=suggestion \
-              -=1 \
-              "${missing_input}" >"${ARTIFACT_LOCAL_DIR}/output.txt" 2>"${stderr_capture}" && {
+              --env SIXEL_TRACE_TOPIC=suggestion:lifecycle \
+              "${missing_input}" -o/dev/null 2>"${stderr_capture}" && {
     fail 1 "accepts missing input path"
     exit 0
 }
