@@ -1014,9 +1014,24 @@ img2sixel_trace_topic_message(const char *topic, const char *format, ...)
             "img2sixel[%s]: ",
             topic != NULL && topic[0] != '\0' ? topic : "trace");
 
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
+    {
+        char message[1024];
+        int written;
+
+        message[0] = '\0';
+        va_start(args, format);
+        written = vsnprintf(message, sizeof(message), format, args);
+        va_end(args);
+
+        if (written < 0) {
+            fputs("trace formatting failed", stderr);
+        } else if ((size_t)written >= sizeof(message)) {
+            fputs(message, stderr);
+            fputs("...", stderr);
+        } else {
+            fputs(message, stderr);
+        }
+    }
 
     fprintf(stderr, "\n");
 }
