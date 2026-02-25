@@ -183,6 +183,7 @@ load_with_coregraphics(
     int frames_in_loop;
     int loop_no;
     int stop_loop;
+    int is_animation_container;
 
     (void) fuse_palette;
     (void) reqcolors;
@@ -195,6 +196,7 @@ load_with_coregraphics(
     frames_in_loop = 0;
     loop_no = 0;
     stop_loop = 0;
+    is_animation_container = 0;
     frame_props = NULL;
 
     if (start_frame_no_set) {
@@ -253,6 +255,12 @@ load_with_coregraphics(
         anim_dict = (CFDictionaryRef)CFDictionaryGetValue(
             props, kCGImagePropertyGIFDictionary);
         if (anim_dict) {
+            /*
+             * Treat multi-frame decoding as animation only when the source
+             * exposes GIF animation metadata. A multi-size ICO can contain
+             * multiple static images and must not enter animation mode.
+             */
+            is_animation_container = 1;
             loop_num = (CFNumberRef)CFDictionaryGetValue(
                 anim_dict, kCGImagePropertyGIFLoopCount);
             if (loop_num) {
@@ -261,7 +269,8 @@ load_with_coregraphics(
         }
     }
 
-    frame->multiframe = (!fstatic && frame_count > 1);
+    frame->multiframe = (!fstatic && frame_count > 1
+                        && is_animation_container);
 
     for (;;) {
         frame_index = 0;
@@ -406,7 +415,8 @@ load_with_coregraphics(
             CGContextRelease(ctx);
             ctx = NULL;
 
-            frame->multiframe = (!fstatic && frame_count > 1);
+            frame->multiframe = (!fstatic && frame_count > 1
+                                && is_animation_container);
             status = fn_load(frame, context);
             CGImageRelease(image);
             image = NULL;
@@ -422,7 +432,7 @@ load_with_coregraphics(
             ++frame_index;
             ++frames_in_loop;
 
-            if (fstatic) {
+            if (fstatic || !is_animation_container) {
                 status = SIXEL_OK;
                 goto end;
             }
