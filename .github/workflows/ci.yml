@@ -237,6 +237,54 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  lto:
+    needs: [smoke]
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-clang-lto-no
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-lto=no
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-lto-full
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-lto=full
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-lto-thin
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-lto=thin
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
 
   coverage-autotools:
     needs: [smoke]
