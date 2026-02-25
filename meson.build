@@ -42,6 +42,24 @@ else
   message('Objective-C compiler not available, skipping ObjC parts')
 endif
 
+# Keep Meson LTO behavior explicit on Windows toolchains.
+#
+# - MSVC (cl.exe) supports full LTO-style code generation via /GL+/LTCG,
+#   but does not support LLVM ThinLTO mode.
+# - clang-cl supports ThinLTO only when used with lld-link.
+if get_option('b_lto')
+  lto_mode = get_option('b_lto_mode')
+  if cc.get_id() == 'msvc' and lto_mode == 'thin'
+    error('b_lto_mode=thin is unsupported with MSVC (cl.exe). Use b_lto_mode=default.')
+  endif
+
+  if cc.get_id() == 'clang-cl' and lto_mode == 'thin'
+    if cc.get_linker_id() != 'lld-link'
+      error('b_lto_mode=thin with clang-cl requires lld-link.')
+    endif
+  endif
+endif
+
 if host_system == 'darwin'
   add_project_arguments('-D_DARWIN_C_SOURCE', language: 'c')
   conf.set('_DARWIN_C_SOURCE', 1)
