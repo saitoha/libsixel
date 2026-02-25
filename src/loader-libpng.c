@@ -52,6 +52,9 @@
 #if HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
+#if HAVE_STDARG_H
+# include <stdarg.h>
+#endif
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
@@ -82,6 +85,83 @@ typedef struct sixel_loader_libpng_component {
     int has_start_frame_no;
     int start_frame_no;
 } sixel_loader_libpng_component_t;
+
+/*
+ * Topic-scoped APNG decoder diagnostics.
+ *
+ * Enabled when SIXEL_TRACE_TOPIC includes "apng_decode".
+ * Supported separators follow options.c behavior:
+ * comma, colon, semicolon, and ASCII whitespace.
+ */
+static int
+apng_decode_trace_is_enabled(void)
+{
+    char const *topics;
+    char const *cursor;
+    char const *token_end;
+    size_t topic_length;
+    size_t token_length;
+    char const *topic;
+
+    topics = NULL;
+    cursor = NULL;
+    token_end = NULL;
+    topic_length = 0u;
+    token_length = 0u;
+    topic = "apng_decode";
+
+    topic_length = strlen(topic);
+    topics = sixel_compat_getenv("SIXEL_TRACE_TOPIC");
+    if (topics == NULL || topics[0] == '\0') {
+        return 0;
+    }
+
+    cursor = topics;
+    while (*cursor != '\0') {
+        while (*cursor != '\0' &&
+               (*cursor == ' ' || *cursor == '\t' || *cursor == ',' ||
+                *cursor == ':' || *cursor == ';')) {
+            ++cursor;
+        }
+        if (*cursor == '\0') {
+            break;
+        }
+
+        token_end = cursor;
+        while (*token_end != '\0' &&
+               *token_end != ' ' && *token_end != '\t' &&
+               *token_end != ',' && *token_end != ':' &&
+               *token_end != ';') {
+            ++token_end;
+        }
+
+        token_length = (size_t)(token_end - cursor);
+        if (token_length == topic_length &&
+            strncmp(cursor, topic, token_length) == 0) {
+            return 1;
+        }
+
+        cursor = token_end;
+    }
+
+    return 0;
+}
+
+static void
+apng_decode_trace_message(char const *format, ...)
+{
+    va_list args;
+
+    if (!apng_decode_trace_is_enabled()) {
+        return;
+    }
+
+    fprintf(stderr, "libsixel[apng_decode]: ");
+    va_start(args, format);
+    sixel_compat_vfprintf(stderr, format, args);
+    va_end(args);
+    fputc('\n', stderr);
+}
 
 static void
 read_png(png_structp png_ptr,
@@ -844,6 +924,7 @@ parse_fctl(
 {
     png_uint_32 delay_num;
     png_uint_32 delay_den;
+    png_uint_32 raw_delay_den;
 
     if (length != 26 || sequence_no == NULL || control == NULL) {
         sixel_helper_set_additional_message(
@@ -858,6 +939,7 @@ parse_fctl(
     control->y_offset = read_be32(data + 16);
     delay_num = (png_uint_32)(((unsigned int)data[20] << 8) | data[21]);
     delay_den = (png_uint_32)(((unsigned int)data[22] << 8) | data[23]);
+    raw_delay_den = delay_den;
     control->dispose_op = data[24];
     control->blend_op = data[25];
 
@@ -868,6 +950,10 @@ parse_fctl(
     }
 
     if (delay_den == 0) {
+        apng_decode_trace_message(
+            "fcTL seq=%u delay_den=0 detected, fallback=100 delay_num=%u",
+            (unsigned int)*sequence_no,
+            (unsigned int)delay_num);
         delay_den = 100;
     }
     /*
@@ -878,6 +964,20 @@ parse_fctl(
     if (control->delay_cs == 0 && delay_num > 0) {
         control->delay_cs = 1;
     }
+
+    apng_decode_trace_message(
+        "fcTL seq=%u rect=%ux%u+%u+%u delay_num=%u delay_den=%u "
+        "delay_cs=%u dispose=%u blend=%u",
+        (unsigned int)*sequence_no,
+        (unsigned int)control->width,
+        (unsigned int)control->height,
+        (unsigned int)control->x_offset,
+        (unsigned int)control->y_offset,
+        (unsigned int)delay_num,
+        (unsigned int)raw_delay_den,
+        control->delay_cs,
+        (unsigned int)control->dispose_op,
+        (unsigned int)control->blend_op);
 
     return 1;
 }
@@ -1302,6 +1402,14 @@ load_apng_frames(
     sequence_no = 0;
     fd_sequence = 0;
 
+    apng_decode_trace_message(
+        "load_apng_frames: input_size=%lu static=%d loop_control=%d "
+        "start_frame_no=%d",
+        (unsigned long)pchunk->size,
+        fstatic,
+        loop_control,
+        start_frame_no);
+
     for (;;) {
         if (sixel_loader_callback_is_canceled(context)) {
             status = SIXEL_INTERRUPTED;
@@ -1384,6 +1492,11 @@ load_apng_frames(
             saw_animation = 1;
             num_frames = (int)read_be32(p + 8);
             num_plays = (int)read_be32(p + 12);
+            apng_decode_trace_message(
+                "acTL parsed: num_frames=%d num_plays=%d loop_no=%d",
+                num_frames,
+                num_plays,
+                loop_no);
             state.expected_sequence = 0;
             if (num_frames <= 0) {
                 sixel_helper_set_additional_message(
@@ -1612,12 +1725,26 @@ load_apng_frames(
     state.chunk_base = NULL;
 
     if (stop_loop) {
+        apng_decode_trace_message(
+            "load_apng_frames: stop loop_no=%d frames_in_loop=%d "
+            "num_plays=%d",
+            loop_no,
+            frames_in_loop,
+            num_plays);
         status = SIXEL_OK;
         goto end;
     }
     }
 
 end:
+    apng_decode_trace_message(
+        "load_apng_frames: status=%d frame_no=%d source_frame_no=%d "
+        "loop_no=%d saw_animation=%d",
+        status,
+        frame_no,
+        source_frame_no,
+        loop_no,
+        saw_animation);
     sixel_allocator_free(pchunk->allocator, canvas.pixels);
     sixel_allocator_free(pchunk->allocator, canvas.backup);
     sixel_allocator_free(pchunk->allocator, state.shared_chunks);
