@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper that dispatches to the unified C test runner.
+# TAP test confirming librsvg background option affects transparent SVG output.
 
 set -eux
 
@@ -8,22 +8,53 @@ test "${HAVE_LIBRSVG-}" = 1 || {
     exit 0
 }
 
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+test "${HAVE_SIXEL2PNG-}" = 1 || {
+    printf "1..0 # SKIP sixel2png is disabled in this build\n"
+    exit 0
+}
+
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor.svg"
+default_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor-default.six"
+white_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor-white.six"
+default_png="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor-default.png"
+white_png="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor-white.png"
+
+printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='1'></svg>" >"${svg_path}"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0023_loader_librsvg_bgcolor_option" || rc="$?"
-
-test "${rc-}" = 77 && {
-    echo "ok 1 - loader/0023_loader_librsvg_bgcolor_option # SKIP unavailable"
+run_img2sixel -L librsvg! "${svg_path}" >"${default_sixel}" || {
+    fail 1 "default background conversion failed"
     exit 0
 }
 
-test -n "${rc-}" && {
-    echo "not ok 1 - loader/0023_loader_librsvg_bgcolor_option"
+run_img2sixel -L librsvg! -B '#ffffff' "${svg_path}" >"${white_sixel}" || {
+    fail 1 "white background conversion failed"
     exit 0
 }
 
-echo "ok 1 - loader/0023_loader_librsvg_bgcolor_option"
+run_sixel2png -i "${default_sixel}" -o "${default_png}" || {
+    fail 1 "default sixel decode failed"
+    exit 0
+}
+
+run_sixel2png -i "${white_sixel}" -o "${white_png}" || {
+    fail 1 "white sixel decode failed"
+    exit 0
+}
+
+cmp -s "${default_png}" "${white_png}" && {
+    fail 1 "background option did not change rendered output"
+    exit 0
+}
+
+pass 1 "background option changes transparent SVG output"
 exit 0

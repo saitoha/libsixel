@@ -168,9 +168,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0018_LOADER_LIBWEBP_ANIMATION_FRAMES \
     -DBUILD_TEST_0019_LOADER_LIBWEBP_PALETTE_PROMOTION_GUARD \
     -DBUILD_TEST_0020_LOADER_LIBRSVG_DETECT_SVG_LIKE \
-    -DBUILD_TEST_0021_LOADER_LIBRSVG_DEFAULT_SIZE \
-    -DBUILD_TEST_0022_LOADER_LIBRSVG_VIEWBOX_SIZE \
-    -DBUILD_TEST_0023_LOADER_LIBRSVG_BGCOLOR_OPTION \
     -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
     -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
     -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
@@ -215,10 +212,6 @@ test_runner_SOURCES = test_runner.c \
     io/loader/0018_loader_libwebp_animation_frames.c \
     io/loader/0019_loader_libwebp_palette_promotion_guard.c \
     io/loader/0020_loader_librsvg_detect_svg_like.c \
-    io/loader/0021_loader_librsvg_default_size.c \
-    io/loader/0022_loader_librsvg_viewbox_size.c \
-    io/loader/0023_loader_librsvg_bgcolor_option.c \
-    io/loader/librsvg_test_common.h \
     io/loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \

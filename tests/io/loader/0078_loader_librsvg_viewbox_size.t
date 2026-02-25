@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper that dispatches to the unified C test runner.
+# TAP test confirming librsvg uses viewBox geometry when size is omitted.
 
 set -eux
 
@@ -8,22 +8,41 @@ test "${HAVE_LIBRSVG-}" = 1 || {
     exit 0
 }
 
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+test "${HAVE_SIXEL2PNG-}" = 1 || {
+    printf "1..0 # SKIP sixel2png is disabled in this build\n"
+    exit 0
+}
+
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-viewbox-size.svg"
+sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-viewbox-size.six"
+png_path="${ARTIFACT_LOCAL_DIR}/librsvg-viewbox-size.png"
+
+printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 25'><rect x='0' y='0' width='40' height='25' fill='#00ff00'/></svg>" >"${svg_path}"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0022_loader_librsvg_viewbox_size" || rc="$?"
-
-test "${rc-}" = 77 && {
-    echo "ok 1 - loader/0022_loader_librsvg_viewbox_size # SKIP unavailable"
+run_img2sixel -L librsvg! "${svg_path}" >"${sixel_path}" || {
+    fail 1 "librsvg viewBox conversion failed"
     exit 0
 }
 
-test -n "${rc-}" && {
-    echo "not ok 1 - loader/0022_loader_librsvg_viewbox_size"
+run_sixel2png -i "${sixel_path}" -o "${png_path}" || {
+    fail 1 "sixel2png decode failed"
     exit 0
 }
 
-echo "ok 1 - loader/0022_loader_librsvg_viewbox_size"
+file "${png_path}" | grep -q " 40 x 25" || {
+    fail 1 "viewBox geometry is not 40x25"
+    exit 0
+}
+
+pass 1 "librsvg viewBox geometry is respected"
 exit 0
