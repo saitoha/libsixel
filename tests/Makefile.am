@@ -359,6 +359,12 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-64-reference-gray-flip.png \
     data/inputs/formats/snake-64-reference-gray.png \
     data/inputs/formats/snake-64-reference-rgba.png \
+    data/inputs/formats/heif-10bit-gradient-reference.png \
+    data/inputs/formats/snake-heic-10bit-lossless-64.heic \
+    data/inputs/formats/snake-heic-alpha-lossless-64.heic \
+    data/inputs/formats/snake-heic-lossless-64.heic \
+    data/inputs/formats/snake-heif-gray-lossless-64.heif \
+    data/inputs/formats/snake-heif-lossless-64.heif \
     data/inputs/formats/snake-64-grayscale.jpg \
     data/inputs/formats/snake-32.png \
     data/inputs/formats/rgba.png \
@@ -524,6 +530,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/resolutions/svga_landscape.png \
     data/resolutions/tiny_square.png \
     data/corrupted/metadata_noise.jpg \
+    data/corrupted/truncated.heic \
     data/corrupted/truncated.png \
     data/security/issue/data/166/poc \
     data/security/issue/data/167/poc \
