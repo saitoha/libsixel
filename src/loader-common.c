@@ -211,6 +211,95 @@ loader_trace_message(char const *format, ...)
     fprintf(stderr, "\n");
 }
 
+
+/*
+ * Return non-zero when SIXEL_TRACE_TOPIC contains the given token.
+ * Supported separators are comma, colon, semicolon, and whitespace.
+ */
+int
+sixel_trace_topic_is_enabled(char const *topic)
+{
+    char const *topics;
+    char const *cursor;
+    char const *token_end;
+    size_t topic_length;
+    size_t token_length;
+
+    topics = NULL;
+    cursor = NULL;
+    token_end = NULL;
+    topic_length = 0u;
+    token_length = 0u;
+
+    if (topic == NULL || topic[0] == '\0') {
+        return 0;
+    }
+
+    topic_length = strlen(topic);
+    if (topic_length == 0u) {
+        return 0;
+    }
+
+    topics = sixel_compat_getenv("SIXEL_TRACE_TOPIC");
+    if (topics == NULL || topics[0] == '\0') {
+        return 0;
+    }
+
+    cursor = topics;
+    while (*cursor != '\0') {
+        while (*cursor != '\0' &&
+               (*cursor == ' ' || *cursor == '\t' || *cursor == ',' ||
+                *cursor == ':' || *cursor == ';')) {
+            ++cursor;
+        }
+        if (*cursor == '\0') {
+            break;
+        }
+
+        token_end = cursor;
+        while (*token_end != '\0' &&
+               *token_end != ' ' && *token_end != '\t' &&
+               *token_end != ',' && *token_end != ':' &&
+               *token_end != ';') {
+            ++token_end;
+        }
+
+        token_length = (size_t)(token_end - cursor);
+        if (token_length == topic_length &&
+                strncmp(cursor, topic, token_length) == 0) {
+            return 1;
+        }
+
+        cursor = token_end;
+    }
+
+    return 0;
+}
+
+/* Emit topic-scoped diagnostics selected through SIXEL_TRACE_TOPIC. */
+void
+sixel_trace_topic_message(
+    char const *topic,
+    char const *format,
+    ...)
+{
+    va_list args;
+
+    if (!sixel_trace_topic_is_enabled(topic)) {
+        return;
+    }
+
+    fprintf(stderr,
+            "libsixel[%s]: ",
+            topic != NULL && topic[0] != '\0' ? topic : "trace");
+
+    va_start(args, format);
+    sixel_compat_vfprintf(stderr, format, args);
+    va_end(args);
+
+    fprintf(stderr, "\n");
+}
+
 void
 loader_trace_try(char const *name)
 {
