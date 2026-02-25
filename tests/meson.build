@@ -237,9 +237,16 @@ if test "${test_script##*.}" != "py"; then
   exec sh "$test_script" "$@"
 fi
 
+configured_python=''
+if command -v python3 >/dev/null 2>&1; then
+  configured_python=$(command -v python3)
+elif command -v python >/dev/null 2>&1; then
+  configured_python=$(command -v python)
+fi
+
 python_venv_exports=$(
   "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
-    "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" \
+    "${ENABLE_PYTHON:-0}" "$configured_python" \
     "${MESON_BUILD_ROOT}/python/dist" \
     "${MESON_BUILD_ROOT}/tests/.python-test-venv"
 )
@@ -268,10 +275,6 @@ foreach t : tests
   if test_category == ''
     test_category = '.'
   endif
-  test_dir = meson.current_source_dir()
-  if test_category != '.'
-    test_dir = test_dir / test_category
-  endif
   test_artifact_dir = artifact_root / test_category / test_base
   test_env = environment()
   foreach setting : base_env_settings
@@ -282,10 +285,7 @@ foreach t : tests
       test_env.prepend('PATH', dll_path)
     endforeach
   endif
-  test_env.set('test_dir', test_dir)
-  test_env.set('category_name', test_category)
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
-  test_env.set('SIXEL_CONFIGURED_PYTHON', python_for_tests_path)
   test_cmd = [meson.current_source_dir() / t]
   test(t, sh,
     args: ['-c', python_tap_wrapper, 'sh'] + test_cmd,
