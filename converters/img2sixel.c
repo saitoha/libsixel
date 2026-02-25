@@ -85,6 +85,7 @@
 
 const char *img2sixel_compat_getenv(const char *name);
 int img2sixel_trace_topic_is_enabled(char const *topic);
+void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
 
 /*
  * Option-specific help snippets drive both the --help output and
@@ -1551,62 +1552,6 @@ signal_handler(int sig)
 }
 
 #endif
-
-
-/* Emit topic-scoped diagnostics selected through SIXEL_TRACE_TOPIC. */
-static void
-img2sixel_trace_topic_message(
-    char const *topic,
-    char const *format,
-    ...)
-{
-    va_list args;
-
-    if (!img2sixel_trace_topic_is_enabled(topic)) {
-        return;
-    }
-
-    fprintf(stderr,
-            "img2sixel[%s]: ",
-            topic != NULL && topic[0] != '\0' ? topic : "trace");
-
-    {
-        char message[1024];
-        int written;
-
-        message[0] = '\0';
-        va_start(args, format);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wformat-nonliteral"
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
-# endif
-#endif
-        written = vsnprintf(message, sizeof(message), format, args);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic pop
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic pop
-# endif
-#endif
-        va_end(args);
-
-        if (written < 0) {
-            fputs("trace formatting failed", stderr);
-        } else if ((size_t)written >= sizeof(message)) {
-            fputs(message, stderr);
-            fputs("...", stderr);
-        } else {
-            fputs(message, stderr);
-        }
-    }
-
-    fprintf(stderr, "\n");
-}
 
 static int
 img2sixel_exit_code(SIXELSTATUS status)

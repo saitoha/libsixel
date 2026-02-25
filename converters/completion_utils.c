@@ -199,8 +199,8 @@ static ssize_t img2sixel_compat_write(int fd,
 static void img2sixel_compat_puts(const char *buf);
 static void img2sixel_log_errno(const char *fmt, ...);
 int img2sixel_trace_topic_is_enabled(const char *topic);
-static void img2sixel_trace_topic_message(const char *topic,
-                                          const char *format, ...);
+void img2sixel_trace_topic_message(const char *topic,
+                                   const char *format, ...);
 
 static char *
 img2sixel_compat_strerror(int error_number,
@@ -1001,7 +1001,7 @@ img2sixel_trace_topic_is_enabled(const char *topic)
     return 0;
 }
 
-static void
+void
 img2sixel_trace_topic_message(const char *topic, const char *format, ...)
 {
     va_list args;
