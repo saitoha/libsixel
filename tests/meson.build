@@ -278,7 +278,6 @@ if test -z "${SIXEL_TEST_PYTHON:-}"; then
   printf '%s\n' '1..0 # SKIP python test interpreter is unavailable'
   exit 0
 fi
-export SIXEL_TEST_PYTHON
 exec "$SIXEL_TEST_PYTHON" "$test_script" "$@"
 '''
 
