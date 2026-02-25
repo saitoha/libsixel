@@ -1755,17 +1755,6 @@ subdir('images')
 
 if get_option('tests')
   subdir('tests')
-  if have_ruby
-    env = environment()
-    bindir = meson.current_build_dir()
-    src_build_dir = join_paths(bindir, 'src')
-    env.set('LD_LIBRARY_PATH', src_build_dir + ':' + env.get('LD_LIBRARY_PATH', ''))
-    env.set('DYLD_LIBRARY_PATH', src_build_dir + ':' + env.get('DYLD_LIBRARY_PATH', ''))
-    ruby_build_libdir = join_paths(bindir, 'ruby', 'lib')
-    test('ruby-bindings', ruby,
-         args: ['-I', ruby_build_libdir, '-I', 'ruby/lib', '-I', 'ruby/test', 'ruby/test/test_libsixel.rb'],
-         env: env)
-  endif
 endif
 
 pkgconfig_dir_rel = join_paths(get_option('libdir'), 'pkgconfig')

@@ -3783,6 +3783,7 @@ message_ruby=no
 RUBY=
 RUBY_SITE_LIBDIR=
 have_ruby=no
+ENABLE_RUBY=0
 AS_IF([test "x$enable_ruby" != xno], [
   dnl Find Ruby explicitly first for robust behavior across environments
   AC_PATH_PROG([RUBY], [ruby], [])
@@ -3793,7 +3794,7 @@ AS_IF([test "x$enable_ruby" != xno], [
     AS_IF([test "x$have_ruby" = xyes], [AX_RUBY_EXT])
   ])
 
-  AS_IF([test "x$have_ruby" = xno], [
+    AS_IF([test "x$have_ruby" = xno], [
     AS_IF([test "x$enable_ruby" = xyes], [
       AC_MSG_ERROR([ruby was not found, but --enable-ruby was specified])
     ])
@@ -3807,8 +3808,12 @@ AS_IF([test "x$enable_ruby" != xno], [
     ], [
       AS_IF([test "x$enable_ruby" = xyes], [AC_MSG_ERROR([failed to detect Ruby sitelibdir])])
     ])
-  ])
+    ])
 ])
+AS_IF([test "x$enable_ruby" != xno -a "x$have_ruby" = xyes], [
+  ENABLE_RUBY=1
+])
+AC_SUBST([ENABLE_RUBY])
 AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x])
 
 AC_ARG_VAR([BASH], [Path to the Bash shell for converter tests])

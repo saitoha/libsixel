@@ -8,6 +8,11 @@ if not get_option('python').disabled() and not python_for_tests.found()
   error('python option is enabled but python3 executable was not found')
 endif
 
+ruby_for_tests_path = ''
+if have_ruby
+  ruby_for_tests_path = ruby.full_path()
+endif
+
 # Keep Meson test-time Python resolution aligned with the interpreter selected
 # in the project root. Using a different binary here can make wheel builds pass
 # while Python TAP tests are skipped because the fallback interpreter lacks
@@ -51,6 +56,8 @@ base_env_settings = [
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
   ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
   ['SIXEL_CONFIGURED_PYTHON', python_for_tests_path],
+  ['ENABLE_RUBY', (get_option('ruby').disabled() ? '0' : '1')],
+  ['SIXEL_CONFIGURED_RUBY', ruby_for_tests_path],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
   # Ensure Python TAP tests can locate the freshly built shared library when
@@ -236,31 +243,72 @@ else
 fi
 
 if test "${test_script##*.}" != "py"; then
-  exec sh "$test_script" "$@"
+  if test "${test_script##*.}" != "rb"; then
+    exec sh "$test_script" "$@"
+  fi
 fi
 
-# Resolve Python test venv once per meson test invocation. The first Python
-# TAP worker initializes the venv and writes exported variables, while other
-# workers wait for the shared result file and reuse the same interpreter.
-venv_state_dir="$MESON_BUILD_ROOT/tests"
-venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
-venv_exports_file="$venv_state_dir/.python-test-venv.$venv_run_id.exports"
-venv_lock_dir="$venv_state_dir/.python-test-venv.$venv_run_id.lock"
+if test "${test_script##*.}" = "py"; then
+  # Resolve Python test venv once per meson test invocation. The first
+  # Python TAP worker initializes the venv and writes exported variables,
+  # while other workers wait for the shared result file.
+  venv_state_dir="$MESON_BUILD_ROOT/tests"
+  venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
+  venv_exports_file="$venv_state_dir/.python-test-venv.$venv_run_id.exports"
+  venv_lock_dir="$venv_state_dir/.python-test-venv.$venv_run_id.lock"
 
-if test ! -f "$venv_exports_file"; then
-  if mkdir "$venv_lock_dir" 2>/dev/null; then
-    venv_exports="$($TOP_SRCDIR/build-aux/resolve-python-test-venv.sh \
-      "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" \
-      "$MESON_BUILD_ROOT/python/dist" \
-      "$MESON_BUILD_ROOT/tests/.python-test-venv")"
-    printf '%s\n' "$venv_exports" > "$venv_exports_file"
-    rmdir "$venv_lock_dir"
+  if test ! -f "$venv_exports_file"; then
+    if mkdir "$venv_lock_dir" 2>/dev/null; then
+      venv_exports="$($TOP_SRCDIR/build-aux/resolve-python-test-venv.sh \
+        "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" \
+        "$MESON_BUILD_ROOT/python/dist" \
+        "$MESON_BUILD_ROOT/tests/.python-test-venv")"
+      printf '%s\n' "$venv_exports" > "$venv_exports_file"
+      rmdir "$venv_lock_dir"
+    else
+      wait_count=0
+      while test ! -f "$venv_exports_file"; do
+        wait_count=$((wait_count + 1))
+        if test "$wait_count" -gt 600; then
+          printf '%s\n' 'SIXEL_TEST_PYTHON=' > "$venv_exports_file"
+          break
+        fi
+        sleep 0.05
+      done
+    fi
+  fi
+
+  # shellcheck disable=SC1090
+  . "$venv_exports_file"
+
+  if test -z "${SIXEL_TEST_PYTHON:-}"; then
+    printf '%s\n' '1..0 # SKIP python test interpreter is unavailable'
+    exit 0
+  fi
+
+  exec "$SIXEL_TEST_PYTHON" "$test_script" "$@"
+fi
+
+ruby_venv_state_dir="$MESON_BUILD_ROOT/tests"
+ruby_venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
+ruby_venv_exports_file="$ruby_venv_state_dir/.ruby-test-venv.$ruby_venv_run_id.exports"
+ruby_venv_lock_dir="$ruby_venv_state_dir/.ruby-test-venv.$ruby_venv_run_id.lock"
+
+if test ! -f "$ruby_venv_exports_file"; then
+  if mkdir "$ruby_venv_lock_dir" 2>/dev/null; then
+    ruby_venv_exports="$($TOP_SRCDIR/build-aux/resolve-ruby-test-venv.sh \
+      "${ENABLE_RUBY:-0}" "${SIXEL_CONFIGURED_RUBY:-}" \
+      "$MESON_BUILD_ROOT/ruby/dist" \
+      "$MESON_BUILD_ROOT/tests/.ruby-test-venv")"
+    printf '%s\n' "$ruby_venv_exports" > "$ruby_venv_exports_file"
+    rmdir "$ruby_venv_lock_dir"
   else
     wait_count=0
-    while test ! -f "$venv_exports_file"; do
+    while test ! -f "$ruby_venv_exports_file"; do
       wait_count=$((wait_count + 1))
       if test "$wait_count" -gt 600; then
-        printf '%s\n' 'SIXEL_TEST_PYTHON=' > "$venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_RUBY=' > "$ruby_venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_RUBY_GEM_HOME=' >> "$ruby_venv_exports_file"
         break
       fi
       sleep 0.05
@@ -269,13 +317,19 @@ if test ! -f "$venv_exports_file"; then
 fi
 
 # shellcheck disable=SC1090
-. "$venv_exports_file"
+. "$ruby_venv_exports_file"
 
-if test -z "${SIXEL_TEST_PYTHON:-}"; then
-  printf '%s\n' '1..0 # SKIP python test interpreter is unavailable'
+if test -z "${SIXEL_TEST_RUBY:-}"; then
+  printf '%s\n' '1..0 # SKIP ruby test interpreter is unavailable'
   exit 0
 fi
-exec "$SIXEL_TEST_PYTHON" "$test_script" "$@"
+
+if test -n "${SIXEL_TEST_RUBY_GEM_HOME:-}"; then
+  GEM_HOME="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_HOME
+  GEM_PATH="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_PATH
+fi
+
+exec "$SIXEL_TEST_RUBY" "$test_script" "$@"
 '''
 
 foreach t : tests

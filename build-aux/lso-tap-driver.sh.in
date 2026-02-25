@@ -188,6 +188,26 @@ EOF
         return 0
       fi
       ;;
+    *.rb)
+      run_desc="ruby ${test_path}"
+      if [ -n "${SIXEL_TEST_RUBY}" ] && [ -x "${SIXEL_TEST_RUBY}" ]; then
+        if [ -n "${SIXEL_TEST_RUBY_GEM_HOME}" ]; then
+          GEM_HOME="${SIXEL_TEST_RUBY_GEM_HOME}" \
+          GEM_PATH="${SIXEL_TEST_RUBY_GEM_HOME}" \
+            export GEM_HOME GEM_PATH
+        fi
+        set -- "$SIXEL_TEST_RUBY" "$test_path" "$@"
+      else
+        printf '%s\n' '1..0 # SKIP ruby test interpreter is unavailable' >"$log_file"
+        cat >"$trs_file" <<'EOF'
+:test-result: SKIP
+:global-test-result: SKIP
+:recheck: yes
+:copy-in-global-log: no
+EOF
+        return 0
+      fi
+      ;;
     *)
       run_desc="shell ${test_path}"
       set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"

@@ -23,7 +23,7 @@ SERIAL_TESTS = \
 COPY_TESTS = $(TESTS)
 check_PROGRAMS = test_runner
 
-TEST_EXTENSIONS = .t .py
+TEST_EXTENSIONS = .t .py .rb
 
 
 HELPER_FILES = \
@@ -45,6 +45,8 @@ AM_TESTS_ENVIRONMENT += SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
 AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
        export CROSS_COMPILING;
 AM_TESTS_ENVIRONMENT += ENABLE_PYTHON='@ENABLE_PYTHON@'; export ENABLE_PYTHON;
+AM_TESTS_ENVIRONMENT += ENABLE_RUBY='@ENABLE_RUBY@'; export ENABLE_RUBY;
+AM_TESTS_ENVIRONMENT += SIXEL_CONFIGURED_RUBY='@RUBY@'; export SIXEL_CONFIGURED_RUBY;
 AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; \
        export RUNTIME_SHLIBPATH_VAR;
 AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_SEP='@SIXEL_LIBTOOL_PATH_SEPARATOR@'; \
@@ -295,6 +297,16 @@ staticcheck:
 	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
 	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
 
+# Route Ruby TAP tests through the same driver so Python and Ruby
+# bindings share identical timeout and result formatting behavior.
+.rb.log:
+	@p='$<'; \
+	$(am__set_b); \
+	$(am__check_pre) $(T_LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
+	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
+
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
@@ -326,17 +338,31 @@ check-TESTS: $(check_PROGRAMS)
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
 	eval "$$python_venv_exports"; \
+	ruby_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-ruby-test-venv.sh" \
+	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
+	    "$(abs_top_builddir)/tests/.ruby-test-venv" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
+	eval "$$ruby_venv_exports"; \
 	python_make_arg=; \
+	ruby_make_arg=; \
 	if test -n "$$SIXEL_TEST_PYTHON"; then \
 	    export SIXEL_TEST_PYTHON; \
 	    python_make_arg="SIXEL_TEST_PYTHON=$$SIXEL_TEST_PYTHON"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_RUBY"; then \
+	    export SIXEL_TEST_RUBY; \
+	    ruby_make_arg="SIXEL_TEST_RUBY=$$SIXEL_TEST_RUBY"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_RUBY_GEM_HOME"; then \
+	    export SIXEL_TEST_RUBY_GEM_HOME; \
+	    ruby_make_arg="$$ruby_make_arg SIXEL_TEST_RUBY_GEM_HOME=$$SIXEL_TEST_RUBY_GEM_HOME"; \
 	fi; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=`echo $(TEST_LOGS)`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
-	    $$python_make_arg; \
+	    $$python_make_arg \
+	    $$ruby_make_arg; \
 	exit $$?;
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
@@ -625,6 +651,7 @@ clean-local:
 	fi
 	rm -rf $(ARTIFACT_ROOT)
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
+	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv
 	rm -f $(builddir)/*_metrics.json
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.

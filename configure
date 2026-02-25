@@ -680,6 +680,7 @@ HAVE_BASH_TRUE
 BASH
 HAVE_RUBY_FALSE
 HAVE_RUBY_TRUE
+ENABLE_RUBY
 RUBY_SITE_LIBDIR
 RUBY_EXT_DLEXT
 RUBY_EXT_LDFLAGS
@@ -27221,6 +27222,7 @@ message_ruby=no
 RUBY=
 RUBY_SITE_LIBDIR=
 have_ruby=no
+ENABLE_RUBY=0
 if test "x$enable_ruby" != xno
 then :
 
@@ -27431,7 +27433,7 @@ printf "%s\n" "$RUBY_EXT_DLEXT" >&6; }
 fi
 
 
-  if test "x$have_ruby" = xno
+    if test "x$have_ruby" = xno
 then :
 
     if test "x$enable_ruby" = xyes
@@ -27461,11 +27463,18 @@ fi
      ;;
 esac
 fi
-   ;;
+     ;;
 esac
 fi
 
 fi
+if test "x$enable_ruby" != xno -a "x$have_ruby" = xyes
+then :
+
+  ENABLE_RUBY=1
+
+fi
+
  if test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x; then
   HAVE_RUBY_TRUE=
   HAVE_RUBY_FALSE='#'
