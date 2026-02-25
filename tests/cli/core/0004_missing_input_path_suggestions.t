@@ -17,7 +17,7 @@ missing_input="${TOP_SRCDIR}/xxxxx.xxx"
 stderr_capture="${ARTIFACT_LOCAL_DIR}/err.txt"
 
 run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
-              --env SIXEL_TRACE_TOPIC=file_open \
+              --env SIXEL_TRACE_TOPIC=suggestion \
               -=1 \
               "${missing_input}" >"${ARTIFACT_LOCAL_DIR}/output.txt" 2>"${stderr_capture}" && {
     fail 1 "accepts missing input path"

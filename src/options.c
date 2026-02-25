@@ -1699,6 +1699,10 @@ sixel_option_build_missing_path_message(
         return 0;
     }
     target_name = sixel_option_basename_view(resolved_path);
+    sixel_trace_topic_message("suggestion",
+        "windows suggestion lookup: target=\"%s\" directory=\"%s\"",
+        target_name != NULL ? target_name : "",
+        directory_copy != NULL ? directory_copy : "");
     result = 0;
     candidates = NULL;
     grown = NULL;
@@ -1721,7 +1725,14 @@ sixel_option_build_missing_path_message(
     percent_double = 0.0;
     percent_int = 0;
     memset(time_buffer, 0, sizeof(time_buffer));
+    sixel_trace_topic_message("suggestion",
+        "windows directory probe begin: directory=\"%s\"",
+        directory_copy != NULL ? directory_copy : "");
     attributes = GetFileAttributesA(directory_copy);
+    sixel_trace_topic_message("suggestion",
+        "windows directory probe end: directory=\"%s\" attrs=0x%08lx",
+        directory_copy != NULL ? directory_copy : "",
+        (unsigned long)attributes);
     if (attributes == INVALID_FILE_ATTRIBUTES ||
             (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
         sixel_trace_topic_message("suggestion",
@@ -1759,6 +1770,9 @@ sixel_option_build_missing_path_message(
     pattern[directory_length + (size_t)needs_separator] = '*';
     pattern[directory_length + (size_t)needs_separator + 1u] = '\0';
 
+    sixel_trace_topic_message("suggestion",
+        "windows candidate scan begin: pattern=\"%s\"",
+        pattern != NULL ? pattern : "");
     directory_handle = FindFirstFileA(pattern, &find_data);
     free(pattern);
     pattern = NULL;
@@ -1774,6 +1788,9 @@ sixel_option_build_missing_path_message(
         return result;
     }
 
+    sixel_trace_topic_message("suggestion",
+        "windows candidate scan first entry: name=\"%s\"",
+        find_data.cFileName);
     do {
         if (find_data.cFileName[0] == '.' &&
                 (find_data.cFileName[1] == '\0' ||
@@ -1883,10 +1900,18 @@ sixel_option_build_missing_path_message(
                 candidates[index].recency_score;
     }
 
+    sixel_trace_topic_message("suggestion",
+        "windows ranking begin: candidates=%lu",
+        (unsigned long)candidate_count);
     qsort(candidates,
           candidate_count,
           sizeof(sixel_option_path_candidate_t),
           sixel_option_candidate_compare);
+    sixel_trace_topic_message("suggestion",
+        "windows ranking end: top=\"%s\"",
+        candidate_count > 0u && candidates[0].path != NULL
+            ? candidates[0].path
+            : "(none)");
 
     if (offset < buffer_size - 1u) {
         written = snprintf(buffer + offset,
@@ -1966,6 +1991,10 @@ sixel_option_build_missing_path_message(
         return 0;
     }
     target_name = sixel_option_basename_view(resolved_path);
+    sixel_trace_topic_message("suggestion",
+        "posix suggestion lookup: target=\"%s\" directory=\"%s\"",
+        target_name != NULL ? target_name : "",
+        directory_copy != NULL ? directory_copy : "");
     result = 0;
     directory_stream = NULL;
     entry = NULL;
@@ -1983,7 +2012,14 @@ sixel_option_build_missing_path_message(
     percent_double = 0.0;
     percent_int = 0;
     memset(time_buffer, 0, sizeof(time_buffer));
+    sixel_trace_topic_message("suggestion",
+        "posix directory open begin: directory=\"%s\"",
+        directory_copy != NULL ? directory_copy : "");
     directory_stream = opendir(directory_copy);
+    sixel_trace_topic_message("suggestion",
+        "posix directory open end: directory=\"%s\" ok=%d",
+        directory_copy != NULL ? directory_copy : "",
+        directory_stream != NULL ? 1 : 0);
     if (directory_stream == NULL) {
         error_code = errno;
         sixel_trace_topic_message("suggestion",
@@ -2027,6 +2063,9 @@ sixel_option_build_missing_path_message(
         return result;
     }
 
+    sixel_trace_topic_message("suggestion",
+        "posix candidate scan begin: directory=\"%s\"",
+        directory_copy != NULL ? directory_copy : "");
     while ((entry = readdir(directory_stream)) != NULL) {
         if (entry->d_name[0] == '.' &&
                 (entry->d_name[1] == '\0' ||
@@ -2088,6 +2127,10 @@ sixel_option_build_missing_path_message(
         directory_stream = NULL;
     }
 
+    sixel_trace_topic_message("suggestion",
+        "posix candidate scan end: directory=\"%s\" candidates=%lu",
+        directory_copy != NULL ? directory_copy : "",
+        (unsigned long)candidate_count);
     if (candidate_count == 0u) {
         sixel_trace_topic_message("suggestion",
             "enumeration finished with no candidates: directory=\"%s\"",
@@ -2143,10 +2186,18 @@ sixel_option_build_missing_path_message(
                 candidates[index].recency_score;
     }
 
+    sixel_trace_topic_message("suggestion",
+        "posix ranking begin: candidates=%lu",
+        (unsigned long)candidate_count);
     qsort(candidates,
           candidate_count,
           sizeof(sixel_option_path_candidate_t),
           sixel_option_candidate_compare);
+    sixel_trace_topic_message("suggestion",
+        "posix ranking end: top=\"%s\"",
+        candidate_count > 0u && candidates[0].path != NULL
+            ? candidates[0].path
+            : "(none)");
 
     if (offset < buffer_size - 1u) {
         written = snprintf(buffer + offset,
