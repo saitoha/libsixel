@@ -17275,6 +17275,20 @@ esac
 fi
 
 
+sixel_pgo_toolchain="gnu"
+case $host_os in #(
+  msvc*) :
+    sixel_pgo_toolchain="msvc" ;; #(
+  *) :
+     ;;
+esac
+case "$CC" in #(
+  *clang-cl*|*cl*) :
+    sixel_pgo_toolchain="msvc" ;; #(
+  *) :
+     ;;
+esac
+
 sixel_pgo_cflags=""
 sixel_pgo_ldflags=""
 sixel_pgo_status="disabled"
@@ -17282,30 +17296,65 @@ sixel_pgo_status="disabled"
 if test "x$enable_pgo" = "xgenerate"
 then :
 
-  if test "x$pgo_profdata_file" != "x"
+  if test "x$sixel_pgo_toolchain" = "xmsvc"
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
-      --with-pgo-profdata is ignored when --enable-pgo=generate is selected
-    " >&5
+    if test "x$pgo_profdata_file" != "x"
+then :
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+        --with-pgo-profdata is ignored when --enable-pgo=generate with MSVC
+      " >&5
 printf "%s\n" "$as_me: WARNING:
-      --with-pgo-profdata is ignored when --enable-pgo=generate is selected
-    " >&2;}
+        --with-pgo-profdata is ignored when --enable-pgo=generate with MSVC
+      " >&2;}
 
 fi
 
-  if test "x$pgo_data_path" != "x"
+    sixel_pgo_cflags="/GL"
+    sixel_pgo_ldflags="/LTCG:PGINSTRUMENT"
+    if test "x$pgo_data_path" != "x"
 then :
 
-    sixel_pgo_cflags="-fprofile-generate=$pgo_data_path"
-    sixel_pgo_ldflags="-fprofile-generate=$pgo_data_path"
-    sixel_pgo_status="generate(data=$pgo_data_path)"
+      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_status="generate(msvc-pgd=$pgo_data_path)"
 
 else case e in #(
   e)
-    sixel_pgo_cflags="-fprofile-generate"
-    sixel_pgo_ldflags="-fprofile-generate"
-    sixel_pgo_status="generate"
+      sixel_pgo_status="generate(msvc)"
+     ;;
+esac
+fi
+
+else case e in #(
+  e)
+    if test "x$pgo_profdata_file" != "x"
+then :
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+        --with-pgo-profdata is ignored when --enable-pgo=generate is selected
+      " >&5
+printf "%s\n" "$as_me: WARNING:
+        --with-pgo-profdata is ignored when --enable-pgo=generate is selected
+      " >&2;}
+
+fi
+
+    if test "x$pgo_data_path" != "x"
+then :
+
+      sixel_pgo_cflags="-fprofile-generate=$pgo_data_path"
+      sixel_pgo_ldflags="-fprofile-generate=$pgo_data_path"
+      sixel_pgo_status="generate(data=$pgo_data_path)"
+
+else case e in #(
+  e)
+      sixel_pgo_cflags="-fprofile-generate"
+      sixel_pgo_ldflags="-fprofile-generate"
+      sixel_pgo_status="generate"
+     ;;
+esac
+fi
    ;;
 esac
 fi
@@ -17315,39 +17364,70 @@ fi
 if test "x$enable_pgo" = "xuse"
 then :
 
-  if test "x$pgo_profdata_file" != "x"
+  if test "x$sixel_pgo_toolchain" = "xmsvc"
 then :
 
-    if test ! -f "$pgo_profdata_file"
+    if test "x$pgo_profdata_file" != "x"
 then :
 
-      as_fn_error $? "--with-pgo-profdata file not found: $pgo_profdata_file" "$LINENO" 5
+      as_fn_error $? "
+        --with-pgo-profdata is not supported with MSVC; use --with-pgo-data for /PGD
+      " "$LINENO" 5
 
 fi
-    sixel_pgo_cflags="-fprofile-instr-use=$pgo_profdata_file"
-    sixel_pgo_ldflags="-fprofile-instr-use=$pgo_profdata_file"
-    sixel_pgo_status="use(profdata=$pgo_profdata_file)"
-
-else case e in #(
-  e)
+    sixel_pgo_cflags="/GL"
+    sixel_pgo_ldflags="/LTCG:PGOPTIMIZE"
     if test "x$pgo_data_path" != "x"
 then :
 
-      if test ! -d "$pgo_data_path"
-then :
-
-        as_fn_error $? "--with-pgo-data directory not found: $pgo_data_path" "$LINENO" 5
-
-fi
-      sixel_pgo_cflags="-fprofile-use=$pgo_data_path"
-      sixel_pgo_ldflags="-fprofile-use=$pgo_data_path"
-      sixel_pgo_status="use(data=$pgo_data_path)"
+      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_status="use(msvc-pgd=$pgo_data_path)"
 
 else case e in #(
   e)
-      sixel_pgo_cflags="-fprofile-use"
-      sixel_pgo_ldflags="-fprofile-use"
-      sixel_pgo_status="use"
+      sixel_pgo_status="use(msvc)"
+     ;;
+esac
+fi
+
+else case e in #(
+  e)
+    if test "x$pgo_profdata_file" != "x"
+then :
+
+      if test ! -f "$pgo_profdata_file"
+then :
+
+        as_fn_error $? "--with-pgo-profdata file not found: $pgo_profdata_file" "$LINENO" 5
+
+fi
+      sixel_pgo_cflags="-fprofile-instr-use=$pgo_profdata_file"
+      sixel_pgo_ldflags="-fprofile-instr-use=$pgo_profdata_file"
+      sixel_pgo_status="use(profdata=$pgo_profdata_file)"
+
+else case e in #(
+  e)
+      if test "x$pgo_data_path" != "x"
+then :
+
+        if test ! -d "$pgo_data_path"
+then :
+
+          as_fn_error $? "--with-pgo-data directory not found: $pgo_data_path" "$LINENO" 5
+
+fi
+        sixel_pgo_cflags="-fprofile-use=$pgo_data_path"
+        sixel_pgo_ldflags="-fprofile-use=$pgo_data_path"
+        sixel_pgo_status="use(data=$pgo_data_path)"
+
+else case e in #(
+  e)
+        sixel_pgo_cflags="-fprofile-use"
+        sixel_pgo_ldflags="-fprofile-use"
+        sixel_pgo_status="use"
+       ;;
+esac
+fi
      ;;
 esac
 fi
@@ -17381,6 +17461,7 @@ if test "x$enable_pgo" != "xno"
 then :
 
   if test "x$enable_pgo" = "xuse" \
+              -a "x$sixel_pgo_toolchain" != "xmsvc" \
               -a "x$pgo_profdata_file" = "x"
 then :
 
@@ -17393,16 +17474,30 @@ printf "%s\n" "$as_me:
 
 else case e in #(
   e)
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support $sixel_pgo_cflags" >&5
+    if test "x$enable_pgo" = "xuse" \
+                -a "x$sixel_pgo_toolchain" = "xmsvc" \
+                -a "x$pgo_data_path" = "x"
+then :
+
+                  { printf "%s\n" "$as_me:${as_lineno-$LINENO}:
+        skipping PGO capability probe for MSVC --enable-pgo=use without --with-pgo-data
+      " >&5
+printf "%s\n" "$as_me:
+        skipping PGO capability probe for MSVC --enable-pgo=use without --with-pgo-data
+      " >&6;}
+
+else case e in #(
+  e)
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support $sixel_pgo_cflags" >&5
 printf %s "checking whether the compiler and linker support $sixel_pgo_cflags... " >&6; }
 if test ${ac_cv_sixel_pgo_mode+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
-       CFLAGS="$ac_sixel_save_CFLAGS $sixel_pgo_cflags"
-       LDFLAGS="$ac_sixel_save_LDFLAGS $sixel_pgo_ldflags"
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+         CFLAGS="$ac_sixel_save_CFLAGS $sixel_pgo_cflags"
+         LDFLAGS="$ac_sixel_save_LDFLAGS $sixel_pgo_ldflags"
+         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -17422,22 +17517,25 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-       ;;
+         ;;
 esac
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_pgo_mode" >&5
 printf "%s\n" "$ac_cv_sixel_pgo_mode" >&6; }
 
-    CFLAGS="$ac_sixel_save_CFLAGS"
-    LDFLAGS="$ac_sixel_save_LDFLAGS"
+      CFLAGS="$ac_sixel_save_CFLAGS"
+      LDFLAGS="$ac_sixel_save_LDFLAGS"
 
-    if test "x$ac_cv_sixel_pgo_mode" != "xyes"
+      if test "x$ac_cv_sixel_pgo_mode" != "xyes"
 then :
 
-      as_fn_error $? "
-        --enable-pgo=$enable_pgo requested, but PGO flags are not supported
-      " "$LINENO" 5
+        as_fn_error $? "
+          --enable-pgo=$enable_pgo requested, but PGO flags are not supported
+        " "$LINENO" 5
 
+fi
+     ;;
+esac
 fi
    ;;
 esac
