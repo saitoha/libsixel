@@ -705,8 +705,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_TRACE_TOPIC",
-        "enable topic-specific debug traces. Include 'suggestion' to show\n"
-        "missing-path suggestion timing and branch diagnostics."
+        "enable topic-scoped debug traces using comma-separated tokens.\n"
+        "Example: 'path,suggestion' narrows diagnostics to those topics."
     },
     {
         "SIXEL_STATUS_FORCE_COLORS",
