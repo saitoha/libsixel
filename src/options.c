@@ -114,7 +114,10 @@ sixel_option_trace_path_probe_end(
     double elapsed_seconds);
 
 static void
-sixel_option_trace_suggestion_message(char const *format, ...);
+sixel_option_trace_topic_message(
+    char const *topic,
+    char const *format,
+    ...);
 
 void
 sixel_option_apply_cli_suggestion_defaults(void)
@@ -1666,7 +1669,7 @@ sixel_option_build_missing_path_message(
         return -1;
     }
 
-    sixel_option_trace_suggestion_message(
+    sixel_option_trace_topic_message("suggestion",
         "build missing-path diagnostics: argument=\"%s\" resolved=\"%s\" "
         "directory=\"%s\"",
         argument_view != NULL ? argument_view : "",
@@ -1695,7 +1698,7 @@ sixel_option_build_missing_path_message(
     suggestions_enabled = sixel_option_environment_is_enabled(
         SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
     if (!suggestions_enabled) {
-        sixel_option_trace_suggestion_message(
+        sixel_option_trace_topic_message("suggestion",
             "skip suggestion lookup because %s is disabled",
             SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
         free(directory_copy);
@@ -1727,7 +1730,7 @@ sixel_option_build_missing_path_message(
     attributes = GetFileAttributesA(directory_copy);
     if (attributes == INVALID_FILE_ATTRIBUTES ||
             (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
-        sixel_option_trace_suggestion_message(
+        sixel_option_trace_topic_message("suggestion",
             "directory lookup failed before enumeration: directory=\"%s\"",
             directory_copy != NULL ? directory_copy : "");
         sixel_option_append_missing_directory_message(buffer,
@@ -1766,7 +1769,7 @@ sixel_option_build_missing_path_message(
     free(pattern);
     pattern = NULL;
     if (directory_handle == INVALID_HANDLE_VALUE) {
-        sixel_option_trace_suggestion_message(
+        sixel_option_trace_topic_message("suggestion",
             "FindFirstFileA failed: directory=\"%s\"",
             directory_copy != NULL ? directory_copy : "");
         sixel_option_append_missing_directory_message(buffer,
@@ -1829,7 +1832,7 @@ sixel_option_build_missing_path_message(
         directory_handle = INVALID_HANDLE_VALUE;
     }
 
-    sixel_option_trace_suggestion_message(
+    sixel_option_trace_topic_message("suggestion",
         "enumeration finished: directory=\"%s\" candidates=%lu",
         directory_copy != NULL ? directory_copy : "",
         (unsigned long)candidate_count);
@@ -1939,7 +1942,7 @@ sixel_option_build_missing_path_message(
         }
     }
 
-    sixel_option_trace_suggestion_message(
+    sixel_option_trace_topic_message("suggestion",
         "ranked suggestions ready: emitted=%lu total=%lu target=\"%s\"",
         (unsigned long)((candidate_count < SIXEL_OPTION_SUGGESTION_LIMIT)
             ? candidate_count
@@ -1962,7 +1965,7 @@ sixel_option_build_missing_path_message(
     suggestions_enabled = sixel_option_environment_is_enabled(
         SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
     if (!suggestions_enabled) {
-        sixel_option_trace_suggestion_message(
+        sixel_option_trace_topic_message("suggestion",
             "skip suggestion lookup because %s is disabled",
             SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
         free(directory_copy);
@@ -1989,7 +1992,7 @@ sixel_option_build_missing_path_message(
     directory_stream = opendir(directory_copy);
     if (directory_stream == NULL) {
         error_code = errno;
-        sixel_option_trace_suggestion_message(
+        sixel_option_trace_topic_message("suggestion",
             "opendir failed: directory=\"%s\" errno=%d",
             directory_copy != NULL ? directory_copy : "",
             error_code);
@@ -2092,7 +2095,7 @@ sixel_option_build_missing_path_message(
     }
 
     if (candidate_count == 0u) {
-        sixel_option_trace_suggestion_message(
+        sixel_option_trace_topic_message("suggestion",
             "enumeration finished with no candidates: directory=\"%s\"",
             directory_copy != NULL ? directory_copy : "");
         if (offset < buffer_size - 1u) {
@@ -2199,7 +2202,7 @@ sixel_option_build_missing_path_message(
         }
     }
 
-    sixel_option_trace_suggestion_message(
+    sixel_option_trace_topic_message("suggestion",
         "ranked suggestions ready: emitted=%lu total=%lu target=\"%s\"",
         (unsigned long)((candidate_count < SIXEL_OPTION_SUGGESTION_LIMIT)
             ? candidate_count
@@ -2223,7 +2226,7 @@ sixel_option_build_missing_path_message(
 
     return result;
 #else
-    sixel_option_trace_suggestion_message(
+    sixel_option_trace_topic_message("suggestion",
         "suggestion lookup unavailable at compile time for this platform");
     sixel_option_append_unavailable_suggestions_message(buffer,
                                                         buffer_size,
@@ -2288,34 +2291,36 @@ sixel_option_trace_path_probe_end(
 }
 
 /*
- * Enable suggestion tracing only when SIXEL_TRACE_TOPIC includes the
- * "suggestion" token. This lightweight parser accepts comma, colon,
- * semicolon, or whitespace separators so operators can combine topics in a
- * single environment variable.
+ * Return non-zero when SIXEL_TRACE_TOPIC contains the given token.
+ * Supported separators are comma, colon, semicolon, and whitespace.
  */
 static int
-sixel_option_suggestion_trace_is_enabled(void)
+sixel_option_trace_topic_is_enabled(char const *topic)
 {
-    static int initialized = 0;
-    static int enabled = 0;
     char const *topics;
     char const *cursor;
     char const *token_end;
+    size_t topic_length;
     size_t token_length;
 
     topics = NULL;
     cursor = NULL;
     token_end = NULL;
+    topic_length = 0u;
     token_length = 0u;
 
-    if (initialized) {
-        return enabled;
+    if (topic == NULL || topic[0] == '\0') {
+        return 0;
     }
-    initialized = 1;
+
+    topic_length = strlen(topic);
+    if (topic_length == 0u) {
+        return 0;
+    }
 
     topics = sixel_compat_getenv("SIXEL_TRACE_TOPIC");
     if (topics == NULL || topics[0] == '\0') {
-        return enabled;
+        return 0;
     }
 
     cursor = topics;
@@ -2338,32 +2343,33 @@ sixel_option_suggestion_trace_is_enabled(void)
         }
 
         token_length = (size_t)(token_end - cursor);
-        if (token_length == 10u &&
-                strncmp(cursor, "suggestion", token_length) == 0) {
-            enabled = 1;
-            break;
+        if (token_length == topic_length &&
+                strncmp(cursor, topic, token_length) == 0) {
+            return 1;
         }
 
         cursor = token_end;
     }
 
-    return enabled;
+    return 0;
 }
 
-/*
- * Emit suggestion-topic diagnostics with a dedicated prefix so timeout
- * analysis can distinguish this path from generic loader traces.
- */
+/* Emit topic-scoped diagnostics selected through SIXEL_TRACE_TOPIC. */
 static void
-sixel_option_trace_suggestion_message(char const *format, ...)
+sixel_option_trace_topic_message(
+    char const *topic,
+    char const *format,
+    ...)
 {
     va_list args;
 
-    if (!sixel_option_suggestion_trace_is_enabled()) {
+    if (!sixel_option_trace_topic_is_enabled(topic)) {
         return;
     }
 
-    fprintf(stderr, "libsixel[suggestion]: ");
+    fprintf(stderr,
+            "libsixel[%s]: ",
+            topic != NULL && topic[0] != '\0' ? topic : "trace");
 
     va_start(args, format);
     sixel_compat_vfprintf(stderr, format, args);
@@ -2421,22 +2427,50 @@ sixel_option_validate_filesystem_path(
     if ((argument == NULL || argument[0] == '\0') &&
             (resolved_path == NULL || resolved_path[0] == '\0')) {
         if (!allow_empty) {
+            sixel_option_trace_topic_message(
+                "path",
+                "reject empty argument and resolved path: flags=0x%04x",
+                flags);
             sixel_helper_set_additional_message(
                 "path argument is empty.");
             return -1;
         }
+        sixel_option_trace_topic_message(
+            "path",
+            "allow empty argument and resolved path: flags=0x%04x",
+            flags);
         return 0;
     }
 
     if (resolved_path == NULL || resolved_path[0] == '\0') {
         if (!allow_empty) {
+            sixel_option_trace_topic_message(
+                "path",
+                "reject empty resolved path: argument=\"%s\"",
+                argument != NULL ? argument : "");
             sixel_helper_set_additional_message(
                 "path argument is empty.");
             return -1;
         }
+        sixel_option_trace_topic_message(
+            "path",
+            "allow empty resolved path: argument=\"%s\"",
+            argument != NULL ? argument : "");
         return 0;
     }
+
+    sixel_option_trace_topic_message(
+        "suggestion",
+        "path validation start: argument=\"%s\" resolved=\"%s\" "
+        "flags=0x%04x",
+        argument != NULL ? argument : "",
+        resolved_path != NULL ? resolved_path : "",
+        flags);
+
     if (allow_stdin && argument != NULL && strcmp(argument, "-") == 0) {
+        sixel_option_trace_topic_message(
+            "path",
+            "bypass probe for stdin argument '-'");
         return 0;
     }
     /*
@@ -2446,12 +2480,23 @@ sixel_option_validate_filesystem_path(
      */
     if (allow_stdin && resolved_path != NULL && strcmp(resolved_path, "-")
             == 0) {
+        sixel_option_trace_topic_message(
+            "path",
+            "bypass probe for resolved stdin path '-'");
         return 0;
     }
     if (allow_clipboard && sixel_option_path_is_clipboard(argument)) {
+        sixel_option_trace_topic_message(
+            "path",
+            "bypass probe for clipboard argument=\"%s\"",
+            argument != NULL ? argument : "");
         return 0;
     }
     if (allow_remote && sixel_option_path_looks_remote(remote_view)) {
+        sixel_option_trace_topic_message(
+            "path",
+            "bypass probe for remote path=\"%s\"",
+            remote_view != NULL ? remote_view : "");
         return 0;
     }
 
@@ -2463,6 +2508,11 @@ sixel_option_validate_filesystem_path(
         sixel_option_trace_path_probe_begin(argument, resolved_path, flags);
     }
 
+    sixel_option_trace_topic_message(
+        "suggestion",
+        "path probe begin: resolved=\"%s\"",
+        resolved_path);
+
     start_ticks = clock();
     errno = 0;
     stat_result = sixel_compat_access(resolved_path, F_OK);
@@ -2472,6 +2522,21 @@ sixel_option_validate_filesystem_path(
         elapsed_seconds = (double)(end_ticks - start_ticks) /
             (double)CLOCKS_PER_SEC;
     }
+    sixel_option_trace_topic_message(
+        "suggestion",
+        "path probe end: resolved=\"%s\" result=%d errno=%d elapsed=%.3fs",
+        resolved_path,
+        stat_result,
+        error_value,
+        elapsed_seconds);
+
+    sixel_option_trace_topic_message(
+        "path",
+        "access probe: path=\"%s\" result=%d errno=%d elapsed=%.3fs",
+        resolved_path,
+        stat_result,
+        error_value,
+        elapsed_seconds);
     /*
      * Prefer the compat layer over stat() here to avoid the Win32 path
      * resolver's UNC probes, which can block for minutes on missing or
@@ -2489,15 +2554,33 @@ sixel_option_validate_filesystem_path(
         stat_check = sixel_compat_stat(resolved_path, &stat_buffer);
         error_value = errno;
         if (stat_check == 0 && S_ISDIR(stat_buffer.st_mode)) {
+            sixel_option_trace_topic_message(
+                "path",
+                "reject directory path=\"%s\"",
+                resolved_path);
             sixel_helper_set_additional_message(
                 "path refers to a directory; expected a file input.");
             return -1;
         }
+        sixel_option_trace_topic_message(
+            "path",
+            "path exists and is accepted: path=\"%s\"",
+            resolved_path);
         return 0;
     }
 
     error_value = errno;
     if (error_value != ENOENT && error_value != ENOTDIR) {
+        sixel_option_trace_topic_message(
+            "path",
+            "skip missing-path diagnostics: path=\"%s\" errno=%d",
+            resolved_path,
+            error_value);
+        sixel_option_trace_topic_message(
+            "suggestion",
+            "skip missing-path diagnostics: resolved=\"%s\" errno=%d",
+            resolved_path,
+            error_value);
         if (loader_trace_is_enabled()) {
             sixel_option_trace_path_probe_end(argument,
                                               resolved_path,
@@ -2517,6 +2600,17 @@ sixel_option_validate_filesystem_path(
                                           error_value,
                                           elapsed_seconds);
     }
+
+    sixel_option_trace_topic_message(
+        "path",
+        "enter missing-path diagnostics: argument=\"%s\" resolved=\"%s\"",
+        argument != NULL ? argument : "",
+        resolved_path != NULL ? resolved_path : "");
+    sixel_option_trace_topic_message(
+        "suggestion",
+        "enter missing-path diagnostics: argument=\"%s\" resolved=\"%s\"",
+        argument != NULL ? argument : "",
+        resolved_path != NULL ? resolved_path : "");
 
     if (sixel_option_build_missing_path_message(argument,
                                                 resolved_path,
