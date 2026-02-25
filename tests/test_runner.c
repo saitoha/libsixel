@@ -51,6 +51,10 @@ int test_loader_0017_loader_libwebp_pixelformat(int argc, char **argv);
 int test_loader_0018_loader_libwebp_animation_frames(int argc, char **argv);
 int test_loader_0019_loader_libwebp_palette_promotion_guard(int argc,
                                                              char **argv);
+int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
+int test_loader_0021_loader_librsvg_default_size(int argc, char **argv);
+int test_loader_0022_loader_librsvg_viewbox_size(int argc, char **argv);
+int test_loader_0023_loader_librsvg_bgcolor_option(int argc, char **argv);
 
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
 int test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv);
@@ -115,6 +119,14 @@ static test_entry_t const test_entries[] = {
       test_loader_0018_loader_libwebp_animation_frames },
     { "loader/0019_loader_libwebp_palette_promotion_guard",
       test_loader_0019_loader_libwebp_palette_promotion_guard },
+    { "loader/0020_loader_librsvg_detect_svg_like",
+      test_loader_0020_loader_librsvg_detect_svg_like },
+    { "loader/0021_loader_librsvg_default_size",
+      test_loader_0021_loader_librsvg_default_size },
+    { "loader/0022_loader_librsvg_viewbox_size",
+      test_loader_0022_loader_librsvg_viewbox_size },
+    { "loader/0023_loader_librsvg_bgcolor_option",
+      test_loader_0023_loader_librsvg_bgcolor_option },
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
     { "gdk-pixbuf-loader/0001_gdk_pixbuf_loader",
       test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader },
