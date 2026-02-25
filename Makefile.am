@@ -43,6 +43,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/read-check-test-list.sh \
 	build-aux/resolve-config-h-exports.sh \
 	build-aux/resolve-python-test-venv.sh \
+	build-aux/resolve-ruby-test-venv.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
 	tools/fuzz-img2sixel-cli.sh
 

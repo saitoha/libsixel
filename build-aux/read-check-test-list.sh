@@ -34,7 +34,8 @@ esac
     cd "$tests_dir"
     find . -type f \( \
         -name '*.t' -o \
-        -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' \
+        -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' -o \
+        -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' \
     \) -print
 ) |
     LC_ALL=C sort |
