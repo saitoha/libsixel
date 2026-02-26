@@ -17002,15 +17002,15 @@ sixel_lto_status="disabled"
 if test "x$using_cl" = "xyes"
 then :
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support MSVC LTO (-GL + -LTCG)" >&5
-printf %s "checking whether the compiler and linker support MSVC LTO (-GL + -LTCG)... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support MSVC LTO (-GL + /LTCG)" >&5
+printf %s "checking whether the compiler and linker support MSVC LTO (-GL + /LTCG)... " >&6; }
 if test ${ac_cv_sixel_lto_full_msvc+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
      CFLAGS="$ac_sixel_save_CFLAGS -GL"
-     LDFLAGS="$ac_sixel_save_LDFLAGS -LTCG"
+               LDFLAGS="$ac_sixel_save_LDFLAGS /LTCG"
      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -17046,10 +17046,10 @@ printf "%s\n" "$ac_cv_sixel_lto_full_msvc" >&6; }
   full) :
     if test "x$ac_cv_sixel_lto_full_msvc" != "xyes"
 then :
-  as_fn_error $? "--enable-lto=full requested, but -GL + -LTCG are not supported by the current MSVC toolchain" "$LINENO" 5
+  as_fn_error $? "--enable-lto=full requested, but -GL + /LTCG are not supported by the current MSVC toolchain" "$LINENO" 5
 fi
            sixel_lto_cflags="-GL"
-           sixel_lto_ldflags="-LTCG"
+           sixel_lto_ldflags="/LTCG"
            sixel_lto_status="full" ;; #(
   thin) :
     as_fn_error $? "--enable-lto=thin is unsupported with MSVC (cl.exe)" "$LINENO" 5 ;; #(
