@@ -944,8 +944,12 @@ AS_IF([test "x$enable_pgo" = "xuse"], [
       AS_IF([test ! -f "$pgo_profdata_file"], [
         AC_MSG_ERROR([--with-pgo-profdata file not found: $pgo_profdata_file])
       ])
+
+      dnl Clang consumes .profdata during compilation.
+      dnl Passing -fprofile-instr-use to the linker can fail capability
+      dnl probes even when compile-time PGO use is fully supported.
       sixel_pgo_cflags="-fprofile-instr-use=$pgo_profdata_file"
-      sixel_pgo_ldflags="-fprofile-instr-use=$pgo_profdata_file"
+      sixel_pgo_ldflags=""
       sixel_pgo_status="use(profdata=$pgo_profdata_file)"
     ], [
       AS_IF([test "x$pgo_data_path" != "x"], [

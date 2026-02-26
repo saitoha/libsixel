@@ -17404,8 +17404,9 @@ then :
         as_fn_error $? "--with-pgo-profdata file not found: $pgo_profdata_file" "$LINENO" 5
 
 fi
-      sixel_pgo_cflags="-fprofile-instr-use=$pgo_profdata_file"
-      sixel_pgo_ldflags="-fprofile-instr-use=$pgo_profdata_file"
+
+                        sixel_pgo_cflags="-fprofile-instr-use=$pgo_profdata_file"
+      sixel_pgo_ldflags=""
       sixel_pgo_status="use(profdata=$pgo_profdata_file)"
 
 else case e in #(
