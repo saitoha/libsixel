@@ -158,6 +158,7 @@ static int img2sixel_compat_strcpy(char *destination,
                                    size_t destination_size,
                                    const char *source);
 #endif
+static void img2sixel_compat_log_errno(const char *fmt, ...);
 char *
 img2sixel_compat_strerror(int error_number,
                           char *buffer,
@@ -268,14 +269,26 @@ img2sixel_compat_prepare_path(char const *path,
      * Keep behavior equivalent to the pre-split helper in completion_utils.c
      * so path conversion remains strict on Windows-hosted environments.
      */
+/*
+ * Amalgamation rewrites core path helpers with the sixel_ prefix in src/
+ * sources, while split converter builds keep the img2sixel_ prefix.
+ */
+#if defined(SIXEL_AMALGAMATION)
+    buffer_size = sixel_path_to_libc_buffer_size(path);
+#else
     buffer_size = img2sixel_path_to_libc_buffer_size(path);
+#endif
     if (buffer_size > 0u) {
         buffer = (char *)malloc(buffer_size);
         if (buffer == NULL) {
             errno = ENOMEM;
             return (-1);
         }
+#if defined(SIXEL_AMALGAMATION)
+        libc_path = sixel_path_to_libc(path, buffer, buffer_size);
+#else
         libc_path = img2sixel_path_to_libc(path, buffer, buffer_size);
+#endif
         if (libc_path == NULL) {
             free(buffer);
             buffer = NULL;
@@ -462,6 +475,64 @@ img2sixel_compat_strcpy(char *destination,
 }
 #endif
 
+static void
+img2sixel_compat_log_errno(const char *fmt, ...)
+{
+    va_list ap;
+    int written;
+    char errbuf[128];
+    char message[512];
+
+    written = 0;
+    /*
+     * Format into a fixed buffer so that compilers never treat the variadic
+     * format as unknown and warn about non-literal usage.
+     */
+    memset(message, 0, sizeof(message));
+
+    va_start(ap, fmt);
+    /*
+     * Fortified stdio wrappers warn about non-literal formats; the
+     * completion strings are fixed at generation time, so silence the
+     * diagnostic while still bounding the output.
+     */
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wformat-nonliteral"
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
+#endif
+    written = vsnprintf(message, sizeof(message), fmt, ap);
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
+#endif
+    va_end(ap);
+
+    if (written < 0) {
+        fputs("log formatting failed", stderr);
+    } else if ((size_t)written >= sizeof(message)) {
+        fputs(message, stderr);
+        fputs("...", stderr);
+    } else {
+        fputs(message, stderr);
+    }
+    if (errno != 0) {
+        if (img2sixel_compat_strerror(errno, errbuf, sizeof(errbuf)) != NULL) {
+            fprintf(stderr, ": %s", errbuf);
+        } else {
+            fprintf(stderr, ": errno=%d", errno);
+        }
+    }
+    fprintf(stderr, "\n");
+}
+
 /*
  * Use the platform-specific chmod entry point so MSVC does not warn
  * about the POSIX spelling.
@@ -481,6 +552,8 @@ img2sixel_compat_chmod(const char *path, mode_t mode)
 
 #if defined(_MSC_VER) && defined(HAVE__CHMOD)
     if (_chmod(libc_path, (int)mode) != 0) {
+        img2sixel_compat_log_errno("chmod failed path=%s libc_path=%s",
+                                   path, libc_path);
         if (buffer != NULL) {
             free(buffer);
         }
@@ -488,6 +561,8 @@ img2sixel_compat_chmod(const char *path, mode_t mode)
     }
 #elif defined(HAVE_CHMOD)
     if (chmod(libc_path, mode) != 0) {
+        img2sixel_compat_log_errno("chmod failed path=%s libc_path=%s",
+                                   path, libc_path);
         if (buffer != NULL) {
             free(buffer);
         }
