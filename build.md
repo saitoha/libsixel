@@ -67,7 +67,8 @@ or provide the desired directory path explicitly.
 | `--enable-python-wheel` | `no` | Build a Python wheel that bundles the libsixel shared library. |
 | `--enable-ruby` | `no` | Build and install the Ruby bindings. |
 | `--enable-debug` | `no` | Enable debug macros and apply extra diagnostic compiler flags. |
-| `--enable-gcov` | `no` | Compile with gcov coverage instrumentation. |
+| `--enable-coverage` | `no` | Compile with compiler coverage instrumentation. |
+| `--enable-gcov` | `no` | Deprecated alias for `--enable-coverage`. |
 | `--enable-tests` | `no` | Build the optional test suites. |
 | `--with-shebang-file=PATH` | disabled | Prepend the contents of `PATH` to generated executables (skips files that already start with a shebang) and mark them executable. |
 
