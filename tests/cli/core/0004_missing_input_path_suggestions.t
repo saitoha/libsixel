@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-missing_input="${TOP_SRCDIR}/xxxxx.xxx"
+missing_input="${TOP_SRCDIR}/tests/data/inputs/xxxxx.xxx"
 stderr_capture="${ARTIFACT_LOCAL_DIR}/err.txt"
 
 run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
