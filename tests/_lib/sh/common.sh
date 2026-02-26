@@ -108,7 +108,6 @@ run_sixel2png() {
 }
 
 run_lsqa() {
-    set +xv
     run_with_optional_env "${LSQA_PATH}" "$@"
 }
 
