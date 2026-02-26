@@ -122,6 +122,14 @@ if config_macro_pairs != ''
 endif
 base_env_settings += config_macro_env_settings
 
+base_env_settings += [['SIXEL_TEST_MACOS_PRODUCT_VERSION',
+                       run_command(
+                         sh,
+                         '-c',
+                         'sw_vers -productVersion 2>/dev/null || printf ""',
+                         check: true,
+                       ).stdout().strip()]]
+
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Most TAP shell wrappers reference built tools via ${SIXEL_BIN_EXT}.
   # Meson does not export this automatically, so Windows jobs otherwise look
