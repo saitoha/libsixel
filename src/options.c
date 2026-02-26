@@ -1312,6 +1312,89 @@ sixel_option_duplicate_directory(char const *path)
     return copy;
 }
 
+#if defined(_WIN32) && HAVE_WINDOWS_H
+/*
+ * Convert POSIX-like drive paths to Win32-style drive paths.
+ *
+ * Supported inputs:
+ *   - /cygdrive/x/... -> X:\...
+ *   - /x/...          -> X:\... (MSYS style)
+ *
+ * Other inputs are copied as-is so existing Windows-native paths continue to
+ * work without behavior changes.
+ */
+static char *
+sixel_option_duplicate_win32_path(char const *path)
+{
+    char *converted;
+    size_t index;
+    size_t source_index;
+    size_t source_length;
+    size_t target_length;
+    int converted_drive;
+
+    converted = NULL;
+    index = 0u;
+    source_index = 0u;
+    source_length = 0u;
+    target_length = 0u;
+    converted_drive = 0;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+    source_length = strlen(path);
+    converted = sixel_option_duplicate_string(path);
+    if (converted == NULL) {
+        return NULL;
+    }
+
+    if (source_length >= 11u && strncmp(path, "/cygdrive/", 10u) == 0 &&
+            isalpha((unsigned char)path[10]) &&
+            (path[11] == '/' || path[11] == '\\' || path[11] == '\0')) {
+        source_index = 11u;
+        converted_drive = 1;
+    } else if (source_length >= 2u && path[0] == '/' &&
+               isalpha((unsigned char)path[1]) &&
+               (path[2] == '/' || path[2] == '\\' || path[2] == '\0')) {
+        source_index = 2u;
+        converted_drive = 1;
+    }
+
+    if (!converted_drive) {
+        return converted;
+    }
+
+    target_length = source_length - source_index + 3u;
+    free(converted);
+    converted = (char *)malloc(target_length);
+    if (converted == NULL) {
+        return NULL;
+    }
+
+    converted[0] = (char)toupper((unsigned char)path[source_index - 1u]);
+    converted[1] = ':';
+    converted[2] = '\\';
+    index = 3u;
+
+    if (path[source_index] == '/' || path[source_index] == '\\') {
+        source_index += 1u;
+    }
+
+    while (source_index < source_length) {
+        converted[index] = path[source_index] == '/'
+            ? '\\'
+            : path[source_index];
+        ++index;
+        ++source_index;
+    }
+    converted[index] = '\0';
+
+    return converted;
+}
+#endif
+
 #if HAVE_DIRENT_H && HAVE_SYS_STAT_H || \
     (defined(_WIN32) && HAVE_WINDOWS_H)
 static char *
@@ -1601,6 +1684,7 @@ sixel_option_build_missing_path_message(
     int suggestions_enabled;
 #if defined(_WIN32) && HAVE_WINDOWS_H
     char const *target_name;
+    char *windows_directory_copy;
     int result;
     sixel_option_path_candidate_t *candidates;
     sixel_option_path_candidate_t *grown;
@@ -1699,10 +1783,23 @@ sixel_option_build_missing_path_message(
         return 0;
     }
     target_name = sixel_option_basename_view(resolved_path);
+    windows_directory_copy = NULL;
     sixel_trace_topic_message("suggestion",
         "windows suggestion lookup: target=\"%s\" directory=\"%s\"",
         target_name != NULL ? target_name : "",
         directory_copy != NULL ? directory_copy : "");
+    windows_directory_copy = sixel_option_duplicate_win32_path(directory_copy);
+    if (windows_directory_copy == NULL) {
+        sixel_option_append_unavailable_suggestions_message(buffer,
+                                                            buffer_size,
+                                                            offset);
+        free(directory_copy);
+        return 0;
+    }
+    sixel_trace_topic_message("suggestion",
+        "windows path normalization: input=\"%s\" normalized=\"%s\"",
+        directory_copy != NULL ? directory_copy : "",
+        windows_directory_copy != NULL ? windows_directory_copy : "");
     result = 0;
     candidates = NULL;
     grown = NULL;
@@ -1727,29 +1824,30 @@ sixel_option_build_missing_path_message(
     memset(time_buffer, 0, sizeof(time_buffer));
     sixel_trace_topic_message("suggestion",
         "windows directory probe begin: directory=\"%s\"",
-        directory_copy != NULL ? directory_copy : "");
-    attributes = GetFileAttributesA(directory_copy);
+        windows_directory_copy != NULL ? windows_directory_copy : "");
+    attributes = GetFileAttributesA(windows_directory_copy);
     sixel_trace_topic_message("suggestion",
         "windows directory probe end: directory=\"%s\" attrs=0x%08lx",
-        directory_copy != NULL ? directory_copy : "",
+        windows_directory_copy != NULL ? windows_directory_copy : "",
         (unsigned long)attributes);
     if (attributes == INVALID_FILE_ATTRIBUTES ||
             (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
         sixel_trace_topic_message("suggestion",
             "directory lookup failed before enumeration: directory=\"%s\"",
-            directory_copy != NULL ? directory_copy : "");
+            windows_directory_copy != NULL ? windows_directory_copy : "");
         sixel_option_append_missing_directory_message(buffer,
                                                       buffer_size,
                                                       offset,
                                                       directory_copy);
+        free(windows_directory_copy);
         free(directory_copy);
         return result;
     }
 
-    directory_length = strlen(directory_copy);
+    directory_length = strlen(windows_directory_copy);
     if (directory_length > 0u &&
-            directory_copy[directory_length - 1u] != '/' &&
-            directory_copy[directory_length - 1u] != '\\') {
+            windows_directory_copy[directory_length - 1u] != '/' &&
+            windows_directory_copy[directory_length - 1u] != '\\') {
         needs_separator = 1;
     }
     pattern_length = directory_length + (size_t)needs_separator + 2u;
@@ -1758,11 +1856,12 @@ sixel_option_build_missing_path_message(
         sixel_option_append_unavailable_suggestions_message(buffer,
                                                             buffer_size,
                                                             offset);
+        free(windows_directory_copy);
         free(directory_copy);
         return 0;
     }
     if (directory_length > 0u) {
-        memcpy(pattern, directory_copy, directory_length);
+        memcpy(pattern, windows_directory_copy, directory_length);
     }
     if (needs_separator) {
         pattern[directory_length] = '\\';
@@ -1779,11 +1878,12 @@ sixel_option_build_missing_path_message(
     if (directory_handle == INVALID_HANDLE_VALUE) {
         sixel_trace_topic_message("suggestion",
             "FindFirstFileA failed: directory=\"%s\"",
-            directory_copy != NULL ? directory_copy : "");
+            windows_directory_copy != NULL ? windows_directory_copy : "");
         sixel_option_append_missing_directory_message(buffer,
                                                       buffer_size,
                                                       offset,
                                                       directory_copy);
+        free(windows_directory_copy);
         free(directory_copy);
         return result;
     }
@@ -1860,6 +1960,7 @@ sixel_option_build_missing_path_message(
                 written = 0;
             }
         }
+        free(windows_directory_copy);
         free(directory_copy);
         return 0;
     }
@@ -1977,6 +2078,7 @@ sixel_option_build_missing_path_message(
         free(candidates);
         candidates = NULL;
     }
+    free(windows_directory_copy);
     free(directory_copy);
 
     return result;
