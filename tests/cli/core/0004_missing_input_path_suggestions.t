@@ -30,7 +30,11 @@ grep -q "Suggestions:" "${stderr_capture}" >/dev/null 2>&1 &&
 has_fallback=1
 grep -q "Suggestion lookup unavailable on this build." "${stderr_capture}" >/dev/null 2>&1 && has_fallback=0
 
-test "${has_suggestions}" -eq 0 || [ "${has_fallback}" -eq 0 ] || {
+has_no_nearby_matches=1
+grep -q "No nearby matches were found in" "${stderr_capture}" >/dev/null 2>&1 && has_no_nearby_matches=0
+
+test "${has_suggestions}" -eq 0 || test "${has_fallback}" -eq 0 || \
+    test "${has_no_nearby_matches}" -eq 0 || {
     fail 1 "missing path suggestion diagnostics"
     exit 0
 }
@@ -42,9 +46,14 @@ test "${has_suggestions}" -ne 0 ||
 }
 
 test "${has_suggestions}" -eq 0 || {
+    pass 1 "missing input path includes ranked suggestion diagnostics"
+    exit 0
+}
+
+test "${has_fallback}" -ne 0 || {
     pass 1 "missing input path reports unsupported suggestion lookup"
     exit 0
 }
 
-pass 1 "missing input path includes ranked suggestion diagnostics"
+pass 1 "missing input path reports no nearby matches"
 exit 0
