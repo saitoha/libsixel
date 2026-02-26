@@ -3433,6 +3433,8 @@ jobs:
             buildtool: autotools
             runner: ubuntu-latest
             version: '11.4'
+            setup_options: >-
+              --disable-dependency-tracking
             extra_packages: >-
               gnu-make
               gcc
@@ -3498,6 +3500,8 @@ jobs:
             buildtool: autotools
             runner: ubuntu-latest
             version: r151056
+            setup_options: >-
+              --disable-dependency-tracking
             extra_packages: >-
               developer/gcc13
               developer/build/gnu-make
@@ -3564,6 +3568,8 @@ jobs:
             buildtool: autotools
             runner: ubuntu-latest
             version: '202510'
+            setup_options: >-
+              --disable-dependency-tracking
             extra_packages: >-
               developer/build/gnu-make
               developer/gcc-13
