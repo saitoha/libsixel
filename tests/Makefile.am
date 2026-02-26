@@ -413,6 +413,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-64-reference-gray-flip.png \
     data/inputs/formats/snake-64-reference-gray.png \
     data/inputs/formats/snake-64-reference-rgba.png \
+    data/inputs/formats/snake-64-reference-rgb-from-pal4.png \
     data/inputs/formats/heif-10bit-gradient-reference.png \
     data/inputs/formats/snake-heic-10bit-lossless-64.heic \
     data/inputs/formats/snake-heic-alpha-lossless-64.heic \
