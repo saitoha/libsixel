@@ -5,7 +5,8 @@ require 'libsixel/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "libsixel-ruby"
-  spec.version       = Libsixel::VERSION
+  gem_version = ENV.fetch('LIBSIXEL_RUBY_GEM_VERSION', Libsixel::VERSION).tr('-', '.')
+  spec.version       = gem_version
   spec.authors       = ["Hayaki Saito"]
   spec.email         = ["saitoha@me.com"]
   spec.summary       = %q{A ruby interface to libsixel}

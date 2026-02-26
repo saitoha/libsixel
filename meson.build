@@ -1716,6 +1716,7 @@ if have_ruby
       ruby, ruby_gem_script,
       '--libpath', '@INPUT@',
       '--distdir', ruby_gem_distdir,
+      '--version', meson.project_version(),
     ],
     build_by_default: true,
   )

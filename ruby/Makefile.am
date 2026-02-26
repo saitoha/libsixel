@@ -7,7 +7,8 @@ $(RUBY_GEM_STAMP): $(srcdir)/gem_builder.rb $(srcdir)/libsixel-ruby.gemspec
 	$(AM_V_at) mkdir -p "$(abs_top_builddir)/ruby/dist"
 	$(AM_V_GEN) $(RUBY) $(srcdir)/gem_builder.rb \
 		--libdir "$(top_builddir)/src/.libs" \
-		--distdir "$(abs_top_builddir)/ruby/dist"
+		--distdir "$(abs_top_builddir)/ruby/dist" \
+		--version "$(PACKAGE_VERSION)"
 	$(AM_V_at) touch "$@"
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.

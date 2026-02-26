@@ -37,12 +37,32 @@ def find_library_in_dir(libdir)
 end
 
 
+
+
+def normalize_gem_version(raw)
+  version = raw.to_s.strip
+  raise ArgumentError, 'gem version is empty' if version.empty?
+
+  # RubyGems versions must be dot-separated alnum segments.
+  version = version.gsub(/[^0-9A-Za-z.]+/, '.')
+  version = version.gsub(/\.+/, '.')
+  version = version.sub(/\A\./, '')
+  version = version.sub(/\.\z/, '')
+  version = '0.0.0' if version.empty?
+  unless version.match?(/\A\d/)
+    version = '0.0.0.' + version
+  end
+
+  version
+end
+
 def main
   options = {
     distdir: nil,
     libpath: nil,
     libdir: nil,
-    platform: nil
+    platform: nil,
+    version: nil
   }
 
   OptionParser.new do |parser|
@@ -51,6 +71,7 @@ def main
     parser.on('--libpath FILE', 'Path to the built libsixel shared library') { |v| options[:libpath] = v }
     parser.on('--libdir DIR', 'Directory to scan for libsixel shared libraries') { |v| options[:libdir] = v }
     parser.on('--platform NAME', 'Gem platform override (e.g. x86_64-linux)') { |v| options[:platform] = v }
+    parser.on('--version VERSION', 'Gem version override (normalized for RubyGems)') { |v| options[:version] = v }
   end.parse!
 
   raise ArgumentError, '--distdir is required' if options[:distdir].nil?
@@ -74,7 +95,15 @@ def main
   env = {}
   env['LIBSIXEL_RUBY_GEM_PLATFORM'] = options[:platform] unless options[:platform].nil?
 
-  version = File.read(root.join('lib', 'libsixel', 'version.rb')).match(/VERSION\s*=\s*['\"]([^'\"]+)['\"]/)[1]
+  source_version = options[:version]
+  source_version = ENV['LIBSIXEL_RUBY_GEM_VERSION'] if source_version.nil?
+  if source_version.nil?
+    source_version = File.read(root.join('lib', 'libsixel', 'version.rb')).match(/VERSION\s*=\s*['"]([^'"]+)['"]/)[1]
+  end
+
+  version = normalize_gem_version(source_version)
+  env['LIBSIXEL_RUBY_GEM_VERSION'] = version
+
   platform = env.fetch('LIBSIXEL_RUBY_GEM_PLATFORM', 'ruby')
   output = distdir.join("libsixel-ruby-#{version}-#{platform}.gem")
 
