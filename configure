@@ -17284,7 +17284,7 @@ case $host_os in #(
      ;;
 esac
 case "$CC" in #(
-  *clang-cl*|*cl*) :
+  *clang-cl*|cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe) :
     sixel_pgo_toolchain="msvc" ;; #(
   *) :
      ;;
