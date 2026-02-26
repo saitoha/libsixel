@@ -1,0 +1,1 @@
+QuickLook text document sample for libsixel tests.

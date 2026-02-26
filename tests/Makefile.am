@@ -458,6 +458,11 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-ico-pal8.ico \
     data/inputs/formats/snake-ico-rgba.ico \
     data/inputs/formats/snake-jpeg-444.jpg \
+    data/inputs/quicklook/sample.txt \
+    data/inputs/quicklook/sample.html \
+    data/inputs/quicklook/sample.svg \
+    data/inputs/quicklook/sample.rtf \
+    data/inputs/quicklook/sample.pdf \
     data/inputs/formats/snake-jpeg-progressive-420.jpg \
     data/inputs/formats/animated-lossless-2frame.webp \
     data/inputs/formats/animated-8x8-frame1-reference.png \
