@@ -878,8 +878,11 @@ sixel_pgo_toolchain="gnu"
 AS_CASE([$host_os],
         [msvc*],
         [sixel_pgo_toolchain="msvc"])
+dnl Keep this compiler-name probe strict: a broad '*cl*' match incorrectly
+dnl classifies GNU/LLVM 'clang' as an MSVC frontend, which injects '/GL'
+dnl and '/LTCG:*' flags and breaks non-MSVC PGO builds.
 AS_CASE(["$CC"],
-        [*clang-cl*|*cl*],
+        [*clang-cl*|cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe],
         [sixel_pgo_toolchain="msvc"])
 
 sixel_pgo_cflags=""
