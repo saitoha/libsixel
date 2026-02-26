@@ -2782,6 +2782,31 @@ check-TESTS: $(check_PROGRAMS)
 	    $$ruby_make_arg; \
 	exit $$?;
 
+.PHONY: check-python
+check-python:
+	@set -eu; \
+	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
+	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
+	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
+	eval "$$python_venv_exports"; \
+	if test -z "$$SIXEL_TEST_PYTHON"; then \
+	    echo "check-python: skipped because Python test interpreter is unavailable"; \
+	    exit 0; \
+	fi; \
+	"$$SIXEL_TEST_PYTHON" -m pip install --disable-pip-version-check --quiet \
+	    pytest coverage; \
+	mkdir -p '$(abs_top_builddir)/tests/_artifacts/python/pytest'; \
+	ARTIFACT_LOCAL_DIR='$(abs_top_builddir)/tests/_artifacts/python/pytest' \
+	TOP_SRCDIR='$(abs_top_srcdir)' \
+	TOP_BUILDDIR='$(abs_top_builddir)' \
+	LIBSIXEL_LIBDIR='$(abs_top_builddir)/src' \
+	"$$SIXEL_TEST_PYTHON" -m coverage run \
+	    --source=libsixel_wheel \
+	    -m pytest -q -o python_files='[0-9][0-9][0-9][0-9]_*.py' \
+	    '$(abs_top_srcdir)/tests/bindings/python'; \
+	"$$SIXEL_TEST_PYTHON" -m coverage lcov -o '$(abs_top_builddir)/python-coverage.info'; \
+	echo "python coverage exported to $(abs_top_builddir)/python-coverage.info"
+
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
 # distributed sources remain intact for developers and package builds.
