@@ -10,6 +10,9 @@ inputs:
   github_token:
     description: Token used for Coveralls uploads.
     required: true
+  codecov_token:
+    description: Token used for Codecov uploads.
+    required: false
 
 runs:
   using: composite
@@ -963,6 +966,20 @@ runs:
         flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
         parallel: true
 
+    - name: Upload to Codecov (per-flag)
+      continue-on-error: true
+      uses: codecov/codecov-action@v5
+      if: >-
+        ${{ inputs.codecov_token != ''
+            && hashFiles('coverage.info') != ''
+            && steps.coverage_info_check.outputs.upload_ready == 'true' }}
+      with:
+        token: ${{ inputs.codecov_token }}
+        files: coverage.info
+        flags: ${{ fromJSON(inputs.matrix_json).label || '' }}
+        fail_ci_if_error: false
+        verbose: true
+
     - name: Upload Python coverage to Coveralls (per-flag, parallel)
       id: coveralls_upload_python
       continue-on-error: true
@@ -996,3 +1013,18 @@ runs:
         path-to-lcov: ${{ steps.python_coverage_info_check.outputs.coverage_file }}
         flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
         parallel: true
+
+    - name: Upload Python coverage to Codecov (per-flag)
+      continue-on-error: true
+      uses: codecov/codecov-action@v5
+      if: >-
+        ${{ inputs.codecov_token != ''
+            && hashFiles('python-coverage.info', 'builddir/python-coverage.info') != ''
+            && steps.python_coverage_info_check.outputs.upload_ready == 'true' }}
+      with:
+        token: ${{ inputs.codecov_token }}
+        files: ${{ steps.python_coverage_info_check.outputs.coverage_file }}
+        flags: >-
+          ${{ format('python,{0}', fromJSON(inputs.matrix_json).label || '') }}
+        fail_ci_if_error: false
+        verbose: true

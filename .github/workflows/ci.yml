@@ -91,6 +91,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   pgo:
     name: ${{ matrix.label }}
@@ -190,6 +191,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   python:
     name: ${{ matrix.label }}
@@ -282,6 +284,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   python-coverage:
     needs: [python]
@@ -378,6 +381,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   ruby:
     name: ${{ matrix.label }}
@@ -460,6 +464,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   autotools-out_of_tree:
     needs: [smoke]
@@ -513,6 +518,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   lto:
     needs: [smoke]
@@ -572,6 +578,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   coverage-autotools:
@@ -871,6 +878,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   coverage-meson:
@@ -1166,6 +1174,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   core-autotools-ubuntu:
     needs: [coverage-autotools]
@@ -1274,6 +1283,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   core-autotools-macos:
@@ -1334,6 +1344,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   core-autotools-msys2-variants:
@@ -1423,6 +1434,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   core-autotools-cygwin:
@@ -1486,6 +1498,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   core-autotools-msvc_abi-cygwin:
@@ -1582,6 +1595,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   core-autotools-msvc_abi-msys2:
@@ -1719,6 +1733,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   core-meson-ubuntu:
@@ -1839,6 +1854,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   core-meson-macos:
     needs: [core-meson-ubuntu]
@@ -1893,6 +1909,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   core-meson-msys2-variants:
     needs: [core-meson-ubuntu]
@@ -1976,6 +1993,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   core-meson-cygwin:
     needs: [coverage-meson]
@@ -2045,6 +2063,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   core-meson-msvc_abi:
@@ -2106,6 +2125,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   distcheck:
@@ -2195,6 +2215,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   coveralls:
     needs: [coverage-autotools, coverage-meson, emscripten-coverage, python-coverage]
@@ -2447,6 +2468,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   asan-ubsan-lsan-macos:
@@ -2559,6 +2581,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   asan-ubsan-lsan-msys2-clang64:
@@ -2631,6 +2654,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   msan:
     needs: [asan-ubsan-lsan-ubuntu, asan-ubsan-lsan-macos, asan-ubsan-lsan-msys2-clang64]
@@ -2702,6 +2726,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   tsan:
     needs: [asan-ubsan-lsan-ubuntu, asan-ubsan-lsan-macos, asan-ubsan-lsan-msys2-clang64]
@@ -2808,6 +2833,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   emscripten:
     name: ${{ matrix.label }}
@@ -2898,6 +2924,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   emscripten-ubsan:
     needs: [emscripten]
@@ -2998,6 +3025,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   emscripten-coverage:
     needs: [emscripten]
@@ -3108,6 +3136,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   cosmopolitan:
     name: ${{ matrix.label }}
@@ -3255,6 +3284,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   winecheck:
     needs: [smoke]
@@ -3346,6 +3376,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   solaris:
 #    needs: [openbsd]
@@ -3409,6 +3440,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   omnios:
@@ -3474,6 +3506,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   openindiana:
@@ -3539,6 +3572,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   docker:
     needs: [coveralls]
@@ -3593,6 +3627,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   haiku:
     needs: [openbsd]
@@ -3653,6 +3688,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   openbsd:
@@ -3714,6 +3750,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   freebsd:
     needs: [netbsd]
@@ -3822,6 +3859,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
   netbsd:
@@ -3883,6 +3921,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   dragonflybsd:
     name: ${{ matrix.label }}
@@ -3938,6 +3977,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 # emacs Local Variables:
 # emacs mode: c
