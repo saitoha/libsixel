@@ -735,7 +735,7 @@ jobs:
               --enable-gcov
             extra_packages: >-
               make
-              lcov
+              python3-gcovr
             exec_type: cygwin
 
     steps:
