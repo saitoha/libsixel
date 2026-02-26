@@ -251,19 +251,42 @@ img2sixel_compat_prepare_path(char const *path,
                               char **buffer_out,
                               char const **libc_path_out)
 {
+    size_t buffer_size;
+    char *buffer;
+    char const *libc_path;
+
+    buffer_size = 0u;
+    buffer = NULL;
+    libc_path = NULL;
+
     if (path == NULL || buffer_out == NULL || libc_path_out == NULL) {
         errno = EINVAL;
         return (-1);
     }
 
     /*
-     * Keep this helper allocation-free in split builds and amalgamation
-     * builds.  The callers still accept a converted pointer via libc_path_out,
-     * but current converter paths are already libc-friendly on supported
-     * targets.
+     * Keep behavior equivalent to the pre-split helper in completion_utils.c
+     * so path conversion remains strict on Windows-hosted environments.
      */
-    *buffer_out = NULL;
-    *libc_path_out = path;
+    buffer_size = img2sixel_path_to_libc_buffer_size(path);
+    if (buffer_size > 0u) {
+        buffer = (char *)malloc(buffer_size);
+        if (buffer == NULL) {
+            errno = ENOMEM;
+            return (-1);
+        }
+        libc_path = img2sixel_path_to_libc(path, buffer, buffer_size);
+        if (libc_path == NULL) {
+            free(buffer);
+            buffer = NULL;
+            libc_path = path;
+        }
+    } else {
+        libc_path = path;
+    }
+
+    *buffer_out = buffer;
+    *libc_path_out = libc_path;
     return 0;
 }
 
