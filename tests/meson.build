@@ -371,6 +371,38 @@ endforeach
 
 add_test_setup('ci', timeout_multiplier: 1)
 
+run_target('test-python',
+  command: [sh, '-c', '''
+set -eu
+
+python_bin="$1"
+source_root="$2"
+build_root="$3"
+
+if test -z "$python_bin"; then
+  echo "test-python: skipped because Python test interpreter is unavailable"
+  exit 0
+fi
+
+python_venv_exports="$($source_root/build-aux/resolve-python-test-venv.sh 1 "$python_bin" "$build_root/python/dist" "$build_root/tests/.python-test-venv")"
+eval "$python_venv_exports"
+if test -z "${SIXEL_TEST_PYTHON:-}"; then
+  echo "test-python: skipped because Python test virtualenv is unavailable"
+  exit 0
+fi
+
+"$SIXEL_TEST_PYTHON" -m pip install --disable-pip-version-check --quiet pytest coverage
+mkdir -p "$build_root/tests/_artifacts/python/pytest"
+ARTIFACT_LOCAL_DIR="$build_root/tests/_artifacts/python/pytest" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_PYTHON" -m coverage run --source=libsixel_wheel -m pytest -q -o python_files='[0-9][0-9][0-9][0-9]_*.py' "$source_root/tests/bindings/python"
+"$SIXEL_TEST_PYTHON" -m coverage lcov -o "$build_root/python-coverage.info"
+echo "python coverage exported to $build_root/python-coverage.info"
+''',
+            'sh',
+            python_for_tests_path,
+            meson.project_source_root(),
+            meson.project_build_root()],
+  depends: test_deps)
+
 run_target('staticcheck',
   command: [sh, '-c', '''
 set -e

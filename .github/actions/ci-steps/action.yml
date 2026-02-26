@@ -780,6 +780,7 @@ runs:
           **/*.trs
           **/_artifacts/**
           coverage.info
+          python-coverage.info
           pkg_install-err.log
           builddir/meson-dist/**
           builddir/meson-logs/**
@@ -809,6 +810,39 @@ runs:
           exit 0
         fi
 
+        echo "upload_ready=true" >> "$GITHUB_OUTPUT"
+
+    - name: Validate python-coverage.info
+      id: python_coverage_info_check
+      if: ${{ hashFiles('python-coverage.info', 'builddir/python-coverage.info') != '' }}
+      shell: bash
+      run: |
+        COVERAGE_FILE=""
+        if test -f python-coverage.info; then
+          COVERAGE_FILE="python-coverage.info"
+        elif test -f builddir/python-coverage.info; then
+          COVERAGE_FILE="builddir/python-coverage.info"
+        fi
+
+        if ! test -n "$COVERAGE_FILE"; then
+          echo "python coverage info file was not found"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        if ! test -s "$COVERAGE_FILE"; then
+          echo "$COVERAGE_FILE is empty; skip Coveralls upload"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        if ! grep -q '^SF:' "$COVERAGE_FILE"; then
+          echo "$COVERAGE_FILE does not contain SF records; skip Coveralls upload"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        echo "coverage_file=$COVERAGE_FILE" >> "$GITHUB_OUTPUT"
         echo "upload_ready=true" >> "$GITHUB_OUTPUT"
 
     - name: Upload to Coveralls (per-flag, parallel)
@@ -842,5 +876,39 @@ runs:
       with:
         github-token: ${{ inputs.github_token }}
         path-to-lcov: coverage.info
+        flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
+        parallel: true
+
+    - name: Upload Python coverage to Coveralls (per-flag, parallel)
+      id: coveralls_upload_python
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      if: >-
+        ${{ hashFiles('python-coverage.info', 'builddir/python-coverage.info') != ''
+            && steps.python_coverage_info_check.outputs.upload_ready == 'true' }}
+      with:
+        github-token: ${{ inputs.github_token }}
+        path-to-lcov: ${{ steps.python_coverage_info_check.outputs.coverage_file }}
+        flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
+        parallel: true
+
+    - name: Wait before Coveralls retry (python per-flag)
+      if: >-
+        ${{ hashFiles('python-coverage.info', 'builddir/python-coverage.info') != ''
+            && steps.python_coverage_info_check.outputs.upload_ready == 'true'
+            && steps.coveralls_upload_python.outcome == 'failure' }}
+      shell: bash
+      run: sleep 5
+
+    - name: Upload Python coverage to Coveralls (per-flag, retry)
+      if: >-
+        ${{ hashFiles('python-coverage.info', 'builddir/python-coverage.info') != ''
+            && steps.python_coverage_info_check.outputs.upload_ready == 'true'
+            && steps.coveralls_upload_python.outcome == 'failure' }}
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ inputs.github_token }}
+        path-to-lcov: ${{ steps.python_coverage_info_check.outputs.coverage_file }}
         flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
         parallel: true
