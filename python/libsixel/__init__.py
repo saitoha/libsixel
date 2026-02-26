@@ -21,6 +21,7 @@
 #
 
 import glob
+import locale
 import os
 import pathlib
 import struct
@@ -892,8 +893,6 @@ def sixel_loader_load_file(loader, filename, fn_load):
     ``sixel_loader_setopt``.
     """
 
-    import locale
-
     if fn_load is None:
         raise ValueError("fn_load callback is required")
 
@@ -904,7 +903,8 @@ def sixel_loader_load_file(loader, filename, fn_load):
         _sixel_loader_callback_type,
     ]
 
-    _language, encoding = locale.getdefaultlocale()
+    _language, _encoding = locale.getlocale()
+    encoding = locale.getencoding()
     if not encoding:
         encoding = 'utf-8'
 
@@ -1268,9 +1268,9 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
 
 # load source data from specified file and encode it to SIXEL format
 def sixel_encoder_encode(encoder, filename):
-    import locale
     import os
-    language, encoding = locale.getdefaultlocale()
+    language, _encoding = locale.getlocale()
+    encoding = locale.getencoding()
     if not encoding:
         encoding = "ascii"
 
