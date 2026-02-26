@@ -18,7 +18,7 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 }
 
 macos_version="${SIXEL_TEST_MACOS_PRODUCT_VERSION-}"
-dds_min_macos="14.0"
+dds_min_macos="13.0"
 
 test -n "${macos_version}" || {
     printf "1..0 # SKIP macOS version is unavailable\n"
