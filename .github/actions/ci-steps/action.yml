@@ -443,8 +443,29 @@ runs:
         set -exv
         LLVM_PROFDATA="$(command -v llvm-profdata || true)"
         if test -z "$LLVM_PROFDATA"; then
-          LLVM_PROFDATA="$(xcrun --find llvm-profdata 2>/dev/null || true)"
+          LLVM_PROFDATA="$(clang --print-prog-name=llvm-profdata 2>/dev/null || true)"
+          if test "x$LLVM_PROFDATA" = "xllvm-profdata"; then
+            LLVM_PROFDATA=""
+          fi
         fi
+        if test -z "$LLVM_PROFDATA"; then
+          LLVM_PROFDATA="$(command -v llvm-profdata-19 || true)"
+        fi
+        if test -z "$LLVM_PROFDATA"; then
+          LLVM_PROFDATA="$(command -v llvm-profdata-18 || true)"
+        fi
+        if test -z "$LLVM_PROFDATA"; then
+          LLVM_PROFDATA="$(command -v llvm-profdata-17 || true)"
+        fi
+        if test -z "$LLVM_PROFDATA"; then
+          LLVM_PROFDATA="$(command -v llvm-profdata-16 || true)"
+        fi
+        if test -z "$LLVM_PROFDATA"; then
+          if test "$(uname -s)" = "Darwin"; then
+            LLVM_PROFDATA="$(xcrun --find llvm-profdata 2>/dev/null || true)"
+          fi
+        fi
+        echo "Resolved llvm-profdata: ${LLVM_PROFDATA:-<not found>}"
         test -n "$LLVM_PROFDATA"
         mapfile -t profraw_files < <(find "$PWD/pgo" -type f -name '*.profraw')
         test "${#profraw_files[@]}" -gt 0
