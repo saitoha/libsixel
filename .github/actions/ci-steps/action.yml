@@ -486,7 +486,8 @@ runs:
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
           ${rel-.}/configure \
           ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        LIBTOOLFLAGS=--debug \
+          ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
