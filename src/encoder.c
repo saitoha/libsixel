@@ -8604,6 +8604,16 @@ sixel_encoder_encode(
     sixel_logger_init(&logger);
     sixel_logger_prepare_env(&logger);
     logger_prepared = logger.active;
+    if (encoder == NULL) {
+        status = sixel_encoder_new(&encoder, NULL);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode: sixel_encoder_new() failed.");
+            goto end;
+        }
+    }
+    sixel_encoder_ref(encoder);
+
     if (encoder != NULL) {
         encoder->logger = &logger;
         encoder->parallel_job_id = -1;
@@ -8755,17 +8765,6 @@ sixel_encoder_encode(
                                 png_temp_path != NULL
                                     ? png_temp_path
                                     : "(null)");
-    }
-
-    if (encoder == NULL) {
-        status = sixel_encoder_new(&encoder, NULL);
-        if (SIXEL_FAILED(status)) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode: sixel_encoder_new() failed.");
-            goto end;
-        }
-    } else {
-        sixel_encoder_ref(encoder);
     }
 
     if (encode_allocator == NULL && encoder != NULL) {
