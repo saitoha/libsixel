@@ -30,6 +30,8 @@ set -u
 # troubleshooting and platform-specific experiments.
 : "${SIXEL_TEST_SHELL:=@SIXEL_TEST_SHELL@}"
 : "${SIXEL_TEST_PYTHON:=}"
+: "${SIXEL_TEST_RUBY:=}"
+: "${SIXEL_TEST_RUBY_GEM_HOME:=}"
 
 test_name=
 log_file=
