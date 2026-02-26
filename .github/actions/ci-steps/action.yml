@@ -313,9 +313,16 @@ runs:
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        # Keep Clang PGO raw profiles in a deterministic directory so the
+        # follow-up merge step can build default.profdata reliably.
+        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"clang-pgo"* ]]; then
+          mkdir -p "$PWD/pgo"
+          LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
+            ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+            ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
         # Emit .profraw explicitly in emscripten coverage jobs so
         # llvm-profdata/llvm-cov can consume deterministic profile files.
-        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
+        elif [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
           LLVM_PROFILE_FILE="$PWD/coverage-%p-%m.profraw" \
             ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
             ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
@@ -332,7 +339,14 @@ runs:
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
-        LLVM_PROFILE_FILE="$PWD/coverage-%p-%m.profraw" meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"clang-pgo"* ]]; then
+          mkdir -p "$PWD/pgo"
+          LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
+            meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        else
+          LLVM_PROFILE_FILE="$PWD/coverage-%p-%m.profraw" \
+            meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        fi
 
     - name: Build and test (Autotools, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
@@ -408,6 +422,76 @@ runs:
         python -m pip install meson
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        endlocal
+
+
+    - name: Merge Clang PGO raw profiles
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).exec_type == 'bash'
+            && endsWith(fromJSON(inputs.matrix_json).label, '-pgo')
+            && contains(fromJSON(inputs.matrix_json).label, 'clang') }}
+      shell: bash
+      run: |
+        set -exv
+        LLVM_PROFDATA="$(command -v llvm-profdata || true)"
+        if test -z "$LLVM_PROFDATA"; then
+          LLVM_PROFDATA="$(xcrun --find llvm-profdata 2>/dev/null || true)"
+        fi
+        test -n "$LLVM_PROFDATA"
+        mapfile -t profraw_files < <(find "$PWD/pgo" -type f -name '*.profraw')
+        test "${#profraw_files[@]}" -gt 0
+        "$LLVM_PROFDATA" merge -output="$PWD/pgo/default.profdata" "${profraw_files[@]}"
+        if test -d "$PWD/builddir"; then
+          cp "$PWD/pgo/default.profdata" "$PWD/builddir/default.profdata"
+        fi
+    - name: Rebuild and retest (PGO use, Autotools, bash)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'bash'
+            && endsWith(fromJSON(inputs.matrix_json).label, '-pgo')
+            && fromJSON(inputs.matrix_json).pgo_use_options != '' }}
+      shell: bash
+      run: |
+        set -exv
+        export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
+          ${rel-.}/configure \
+          ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+          ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+
+    - name: Rebuild and retest (PGO use, Meson, bash)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'bash'
+            && endsWith(fromJSON(inputs.matrix_json).label, '-pgo')
+            && fromJSON(inputs.matrix_json).pgo_use_options != '' }}
+      shell: bash
+      run: |
+        set -exv
+        export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
+          meson setup builddir --reconfigure \
+          ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
+        meson compile -C builddir -v
+        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+
+    - name: Rebuild and retest (PGO use, Meson, Command Prompt)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'cmd'
+            && endsWith(fromJSON(inputs.matrix_json).label, '-pgo')
+            && fromJSON(inputs.matrix_json).pgo_use_options != '' }}
+      shell: cmd
+      run: |
+        setlocal ENABLEDELAYEDEXPANSION
+        python -m mesonbuild.mesonmain setup builddir --reconfigure ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
