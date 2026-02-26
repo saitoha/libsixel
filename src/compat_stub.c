@@ -100,11 +100,21 @@
 #  include <winsock2.h>  /* for struct timeval */
 # endif  /* defined(_MSC_VER) */
 # endif
-# if defined(_MSC_VER)
+# if defined(_MSC_VER) \
+     && !defined(_WINSOCKAPI_) \
+     && !defined(_WINSOCK2API_) \
+     && !defined(_TIMEVAL_DEFINED)
+/*
+ * Unity builds may include winsock headers from another translation unit
+ * before this file body is compiled.  winsock.h / winsock2.h define
+ * `struct timeval`, so keep this fallback guarded by their include macros.
+ * Non-unity MSVC builds that still miss timeval keep using this fallback.
+ */
 typedef struct timeval {
   long tv_sec;
   long tv_usec;
 } TIMEVAL, *PTIMEVAL, *LPTIMEVAL;
+#  define _TIMEVAL_DEFINED 1
 # endif
 #endif
 
