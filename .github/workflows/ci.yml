@@ -560,7 +560,49 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Meson-cmd-x86_64-msvc-lto-full
+          - label: Autotools-msys2-msys-msvc-lto-full
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-lto=full
+            extra_packages: >-
+              make
+            exec_type: msys2
+
+          - label: Meson-ubuntu-x86_64-gcc-lto-full
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_options: >-
+              -Db_lto=true
+              -Db_lto_mode=default
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-lto-thin
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_lto=true
+              -Db_lto_mode=thin
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+          - label: Meson-cmd-x86_64-msvc-x86_64-lto-full
             buildtool: meson
             runner: windows-latest
             setup_options: >-
