@@ -684,7 +684,7 @@ jobs:
 
           - label: Autotools-macos-x86_64-coverage
             buildtool: autotools
-            runner: macos-15
+            runner: macos-13
             setup_options: >-
               --enable-gcov
             extra_packages: >-
@@ -989,7 +989,7 @@ jobs:
 
           - label: Meson-macos-x86_64-unity-coverage
             buildtool: meson
-            runner: macos-15
+            runner: macos-13
             setup_options: >-
               -Db_coverage=true
               -Dunity=on
@@ -1294,7 +1294,7 @@ jobs:
 
           - label: Autotools-macos-x86_64-amalgamated_lib-amalgamated_tools
             buildtool: autotools
-            runner: macos-15
+            runner: macos-13
             setup_options: >-
               --enable-amalgamated-lib
               --enable-amalgamated-tools
@@ -1851,7 +1851,7 @@ jobs:
         include:
           - label: Meson-macos-x86_64-amalgamated_lib-amalgamated_tools
             buildtool: meson
-            runner: macos-15
+            runner: macos-13
             setup_options: >-
               -Damalgamated_lib=true
               -Damalgamated_tools=true
@@ -3296,21 +3296,21 @@ jobs:
             make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
 
-#          - label: Autotools-macos-x86_64-mingw-w64-x86_64-wine64-static
-#            buildtool: autotools
-#            runner: macos-15
-#            setup_prefix: >-
-#              wineboot -u;
-#              cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
-#              CC=x86_64-w64-mingw32-gcc
-#            setup_options: >-
-#              --host=x86_64-w64-mingw32
-#              --disable-shared
-#            extra_packages: >-
-#              wine@devel
-#              mingw-w64
-#            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
-#            exec_type: bash
+          - label: Autotools-macos-x86_64-mingw-w64-x86_64-wine64-static
+            buildtool: autotools
+            runner: macos-13
+            setup_prefix: >-
+              wineboot -u;
+              cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
+              CC=x86_64-w64-mingw32-gcc
+            setup_options: >-
+              --host=x86_64-w64-mingw32
+              --disable-shared
+            extra_packages: >-
+              wine@devel
+              mingw-w64
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
+            exec_type: bash
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
