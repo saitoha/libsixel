@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for auto thread byte input acceptance."""
+"""TAP test that set_threads accepts auto keyword as byte input."""
 
 from __future__ import annotations
 

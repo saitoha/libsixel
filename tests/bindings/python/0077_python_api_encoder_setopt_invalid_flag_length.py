@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for invalid encoder option flag width."""
+"""TAP test that encoder setopt rejects multi-character option flags."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for integer filename handling in encoder.encode."""
+"""TAP test that encoder encode rejects integer filename input."""
 
 from __future__ import annotations
 

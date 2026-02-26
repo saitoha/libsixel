@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for built-in dither getter API in libsixel.__init__.py."""
+"""TAP test that dither get returns usable built-in dither context."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for path-like filename rejection in loader_load_file."""
+"""TAP test that loader_load_file rejects pathlib.Path filename input."""
 
 from __future__ import annotations
 

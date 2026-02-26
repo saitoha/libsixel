@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for memoryview buffer rejection in encoder.encode_bytes."""
+"""TAP test that encoder encode_bytes rejects memoryview pixel buffer."""
 
 from __future__ import annotations
 

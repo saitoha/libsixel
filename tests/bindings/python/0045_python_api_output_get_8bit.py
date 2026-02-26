@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for sixel_output_get_8bit_availability()."""
+"""TAP test that output 8bit availability getter is callable."""
 
 from __future__ import annotations
 

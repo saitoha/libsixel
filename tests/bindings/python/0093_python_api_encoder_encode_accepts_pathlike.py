@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for path-like input acceptance in encoder encode."""
+"""TAP test that encoder encode accepts pathlib.Path input."""
 
 from __future__ import annotations
 

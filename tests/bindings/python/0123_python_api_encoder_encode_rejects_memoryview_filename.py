@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for memoryview filename rejection in encoder.encode."""
+"""TAP test that encoder encode rejects memoryview filename input."""
 
 from __future__ import annotations
 

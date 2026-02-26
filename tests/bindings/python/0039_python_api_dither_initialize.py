@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for dither initialization API in libsixel.__init__.py."""
+"""TAP test that dither initialize accepts RGB buffer and updates state."""
 
 from __future__ import annotations
 

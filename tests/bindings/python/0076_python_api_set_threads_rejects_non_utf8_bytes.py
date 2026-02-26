@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for non-UTF-8 thread byte input rejection."""
+"""TAP test that set_threads rejects non-UTF-8 byte input."""
 
 from __future__ import annotations
 

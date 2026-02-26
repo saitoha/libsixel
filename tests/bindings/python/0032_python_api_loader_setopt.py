@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader option setter API in libsixel.__init__.py."""
+"""TAP test that loader setopt accepts integer and string option payloads."""
 
 from __future__ import annotations
 

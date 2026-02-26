@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for dither palette component validation."""
+"""TAP test that dither set_palette rejects out-of-range components."""
 
 from __future__ import annotations
 

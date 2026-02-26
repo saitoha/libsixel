@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader load-file callback API in libsixel.__init__.py."""
+"""TAP test that loader load_file invokes callback for source image."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for Decoder.decode()."""
+"""TAP test that decoder decode writes png output via wheel."""
 
 from __future__ import annotations
 

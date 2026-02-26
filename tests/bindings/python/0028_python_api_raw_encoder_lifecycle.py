@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for raw encoder APIs in libsixel.__init__.py."""
+"""TAP test that raw encoder APIs create, configure, encode, and release."""
 
 from __future__ import annotations
 

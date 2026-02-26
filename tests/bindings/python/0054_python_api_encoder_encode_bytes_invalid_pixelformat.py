@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for invalid pixelformat handling in encode_bytes."""
+"""TAP test that encoder encode_bytes rejects invalid pixelformat values."""
 
 from __future__ import annotations
 

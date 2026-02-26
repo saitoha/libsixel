@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for zero-thread byte input rejection."""
+"""TAP test that set_threads rejects zero value for byte input."""
 
 from __future__ import annotations
 

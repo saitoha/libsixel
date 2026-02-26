@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for dither get_palette return type."""
+"""TAP test that dither get_palette returns list of integers."""
 
 from __future__ import annotations
 

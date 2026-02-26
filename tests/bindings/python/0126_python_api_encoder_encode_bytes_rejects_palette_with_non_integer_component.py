@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for non-integer palette-component rejection in encode_bytes."""
+"""TAP test that encoder encode_bytes rejects palette with non-integer component."""
 
 from __future__ import annotations
 

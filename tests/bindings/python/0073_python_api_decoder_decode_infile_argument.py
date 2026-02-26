@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for raw decoder infile argument path."""
+"""TAP test that raw decoder decode accepts explicit infile argument."""
 
 from __future__ import annotations
 

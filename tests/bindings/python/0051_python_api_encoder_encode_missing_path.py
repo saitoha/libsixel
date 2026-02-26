@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for path validation in sixel_encoder_encode."""
+"""TAP test that encoder encode rejects missing input path."""
 
 from __future__ import annotations
 

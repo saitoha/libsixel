@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for None filename rejection in encoder encode."""
+"""TAP test that encoder encode rejects None filename input."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for None rejection in set_threads."""
+"""TAP test that set_threads rejects None input."""
 
 from __future__ import annotations
 

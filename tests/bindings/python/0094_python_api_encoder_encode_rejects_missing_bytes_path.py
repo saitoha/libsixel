@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for missing bytes path rejection in encoder encode."""
+"""TAP test that encoder encode rejects missing bytes path input."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for uppercase auto string acceptance in sixel_set_threads()."""
+"""TAP test that set_threads accepts uppercase AUTO string input."""
 
 from __future__ import annotations
 

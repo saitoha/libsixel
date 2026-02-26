@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for bytes filename acceptance in encoder encode."""
+"""TAP test that encoder encode accepts bytes filename input."""
 
 from __future__ import annotations
 

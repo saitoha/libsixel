@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for numeric validation in sixel_set_threads()."""
+"""TAP test that set_threads rejects zero and negative numeric inputs."""
 
 from __future__ import annotations
 

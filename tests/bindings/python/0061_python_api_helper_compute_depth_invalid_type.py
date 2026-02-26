@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for compute_depth type validation."""
+"""TAP test that helper compute_depth rejects non-integer pixelformat."""
 
 from __future__ import annotations
 

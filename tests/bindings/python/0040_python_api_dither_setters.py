@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for dither setter APIs in libsixel.__init__.py."""
+"""TAP test that dither setter APIs accept expected argument values."""
 
 from __future__ import annotations
 

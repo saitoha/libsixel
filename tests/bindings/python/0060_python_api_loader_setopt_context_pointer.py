@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for c_void_p context path in sixel_loader_setopt()."""
+"""TAP test that loader setopt accepts c_void_p context values."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for sixel_dither_destroy()."""
+"""TAP test that dither destroy API is callable."""
 
 from __future__ import annotations
 

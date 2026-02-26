@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for integer flag path in sixel_encoder_setopt."""
+"""TAP test that encoder setopt accepts integer flag values."""
 
 from __future__ import annotations
 

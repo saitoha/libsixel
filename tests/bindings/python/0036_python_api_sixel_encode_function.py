@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for sixel_encode() in libsixel.__init__.py."""
+"""TAP test that sixel_encode writes sixel bytes through output context."""
 
 from __future__ import annotations
 

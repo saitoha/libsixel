@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for output setter APIs in libsixel.__init__.py."""
+"""TAP test that output setter APIs accept expected arguments."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for Decoder.setopt()."""
+"""TAP test that decoder setopt accepts input/output flags via wheel."""
 
 from __future__ import annotations
 

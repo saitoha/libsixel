@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for None flag rejection in encoder setopt."""
+"""TAP test that encoder setopt rejects None option flag."""
 
 from __future__ import annotations
 

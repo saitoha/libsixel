@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for invalid filename type handling in loader_load_file()."""
+"""TAP test that loader_load_file rejects non-string filename objects."""
 
 from __future__ import annotations
 

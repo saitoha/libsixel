@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test migrated from shell wrapper to Python-only execution."""
+"""TAP test that palette/diffusion/quality options honor palette limit via wheel."""
 
 from __future__ import annotations
 

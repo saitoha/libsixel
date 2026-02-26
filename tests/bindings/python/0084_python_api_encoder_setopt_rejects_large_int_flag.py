@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for oversized integer flag rejection in encoder setopt."""
+"""TAP test that encoder setopt rejects oversized integer flag values."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for bytearray palette acceptance in encoder.encode_bytes."""
+"""TAP test that encoder encode_bytes accepts bytearray palette input."""
 
 from __future__ import annotations
 

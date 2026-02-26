@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for whitespace-trimmed auto bytes in sixel_set_threads()."""
+"""TAP test that set_threads accepts whitespace-padded auto bytes input."""
 
 from __future__ import annotations
 

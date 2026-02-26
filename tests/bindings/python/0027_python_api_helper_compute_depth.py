@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for sixel_helper_compute_depth()."""
+"""TAP test that sixel_helper_compute_depth returns positive depth for RGB888."""
 
 from __future__ import annotations
 

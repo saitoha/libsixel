@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for bytearray auto rejection in set_threads."""
+"""TAP test that set_threads rejects bytearray auto input."""
 
 from __future__ import annotations
 

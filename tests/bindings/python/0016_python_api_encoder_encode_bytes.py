@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for Encoder.encode_bytes()."""
+"""TAP test that encoder encode_bytes writes sixel output via wheel."""
 
 from __future__ import annotations
 

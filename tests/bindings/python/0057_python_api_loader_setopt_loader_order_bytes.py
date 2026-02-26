@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for bytes input path in sixel_loader_setopt()."""
+"""TAP test that loader setopt accepts bytes value for loader order."""
 
 from __future__ import annotations
 

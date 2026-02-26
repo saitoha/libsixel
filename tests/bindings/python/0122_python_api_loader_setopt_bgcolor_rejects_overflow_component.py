@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for overflow component rejection in loader setopt bgcolor."""
+"""TAP test that loader setopt bgcolor rejects non-integer component values."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader-order bytearray conversion in loader setopt."""
+"""TAP test that loader setopt accepts bytearray loader-order input via string conversion."""
 
 from __future__ import annotations
 

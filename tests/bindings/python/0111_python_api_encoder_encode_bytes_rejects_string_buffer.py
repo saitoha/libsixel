@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for string buffer rejection in encoder.encode_bytes."""
+"""TAP test that encoder encode_bytes rejects string pixel buffer input."""
 
 from __future__ import annotations
 

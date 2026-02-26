@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for byte flag rejection in decoder setopt."""
+"""TAP test that decoder setopt rejects single-byte bytes option flag input."""
 
 from __future__ import annotations
 

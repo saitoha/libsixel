@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test migrated from shell wrapper to Python-only execution."""
+"""TAP test that missing input path errors via wheel."""
 
 from __future__ import annotations
 

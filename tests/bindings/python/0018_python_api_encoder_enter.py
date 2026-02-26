@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for Encoder.__enter__()."""
+"""TAP test that encoder __enter__ returns same instance via wheel."""
 
 from __future__ import annotations
 

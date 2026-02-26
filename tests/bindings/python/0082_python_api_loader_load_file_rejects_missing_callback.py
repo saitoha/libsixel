@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for missing callback rejection in loader_load_file()."""
+"""TAP test that loader_load_file rejects missing callback with ValueError."""
 
 from __future__ import annotations
 
