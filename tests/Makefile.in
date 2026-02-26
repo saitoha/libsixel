@@ -797,6 +797,7 @@ HELPER_FILES = \
     bindings/python/_taptest.py
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
+SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
 # Keep executable suffix in sync with the configured target so TAP
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
@@ -817,7 +818,9 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	SIXEL_SHLIBPATH_OVERRIDES_RUNPATH='@SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@'; \
 	export SIXEL_SHLIBPATH_OVERRIDES_RUNPATH; \
 	SIXEL_TEST_ADDITIOANL_PATH='@SIXEL_TEST_ADDITIOANL_PATH@'; \
-	export SIXEL_TEST_ADDITIOANL_PATH;
+	export SIXEL_TEST_ADDITIOANL_PATH; \
+	SIXEL_TEST_MACOS_PRODUCT_VERSION='$(SIXEL_TEST_MACOS_PRODUCT_VERSION)'; \
+	export SIXEL_TEST_MACOS_PRODUCT_VERSION;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
