@@ -1018,6 +1018,7 @@ enable_ruby
 enable_perl
 enable_php
 enable_debug
+enable_coverage
 enable_gcov
 enable_tests
 with_python_sys_prefix
@@ -1776,7 +1777,8 @@ Optional Features:
   --enable-perl           Perl interface (default: no)
   --enable-php            PHP interface (default: no)
   --enable-debug          Use debug macro and specific CFLAGS
-  --enable-gcov           Use gcov
+  --enable-coverage       Enable compiler coverage instrumentation
+  --enable-gcov           Deprecated alias for --enable-coverage
   --enable-tests          Build tests
 
 Optional Packages:
@@ -18712,33 +18714,56 @@ else
 fi
 
 
-# Check whether --enable-gcov was given.
-if test ${enable_gcov+y}
+# Check whether --enable-coverage was given.
+if test ${enable_coverage+y}
 then :
-  enableval=$enable_gcov;
+  enableval=$enable_coverage;
 else case e in #(
-  e) enable_gcov=no ;;
+  e) enable_coverage=no ;;
 esac
 fi
 
+# Check whether --enable-gcov was given.
+if test ${enable_gcov+y}
+then :
+  enableval=$enable_gcov; enable_gcov_alias=$enableval
+else case e in #(
+  e) enable_gcov_alias= ;;
+esac
+fi
+
+if test x$enable_gcov_alias != x
+then :
+  if test x$enable_coverage = xno
+then :
+  enable_coverage=$enable_gcov_alias
+fi
+       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+         --enable-gcov is deprecated; use --enable-coverage instead
+       " >&5
+printf "%s\n" "$as_me: WARNING:
+         --enable-gcov is deprecated; use --enable-coverage instead
+       " >&2;}
+fi
 coverage_from_cflags=no
 case " $CFLAGS " in
   *" --coverage "*|*" -fprofile-arcs "*|*" -ftest-coverage "*)
     coverage_from_cflags=yes
     ;;
 esac
-if test x$enable_gcov = xno \
+if test x$enable_coverage = xno \
             -a x$coverage_from_cflags = xyes
 then :
-  enable_gcov=yes
+  enable_coverage=yes
        { printf "%s\n" "$as_me:${as_lineno-$LINENO}:
-         enabling gcov because coverage flags are present in CFLAGS
+         enabling coverage because coverage flags are present in CFLAGS
        " >&5
 printf "%s\n" "$as_me:
-         enabling gcov because coverage flags are present in CFLAGS
+         enabling coverage because coverage flags are present in CFLAGS
        " >&6;}
 fi
- if test x$enable_gcov != xno; then
+enable_gcov=$enable_coverage
+ if test x$enable_coverage != xno; then
   COND_GCOV_TRUE=
   COND_GCOV_FALSE='#'
 else
@@ -30521,7 +30546,7 @@ echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
 echo "       pgo                     : $sixel_pgo_status"
-echo "       gcov                    : $enable_gcov"
+echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"
 echo "       tests                   : $enable_tests"
 echo ""

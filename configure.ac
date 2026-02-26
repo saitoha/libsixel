@@ -1681,24 +1681,36 @@ AC_ARG_ENABLE([debug],
               [enable_debug=no])
 AM_CONDITIONAL([COND_DEBUG], [test x$enable_debug != xno])
 
+AC_ARG_ENABLE([coverage],
+              [AS_HELP_STRING([--enable-coverage],
+                              [Enable compiler coverage instrumentation])],
+              [],
+              [enable_coverage=no])
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
-                              [Use gcov])],
-              [],
-              [enable_gcov=no])
+                              [Deprecated alias for --enable-coverage])],
+              [enable_gcov_alias=$enableval],
+              [enable_gcov_alias=])
+AS_IF([test x$enable_gcov_alias != x],
+      [AS_IF([test x$enable_coverage = xno],
+             [enable_coverage=$enable_gcov_alias])
+       AC_MSG_WARN([
+         --enable-gcov is deprecated; use --enable-coverage instead
+       ])])
 coverage_from_cflags=no
 case " $CFLAGS " in
   *" --coverage "*|*" -fprofile-arcs "*|*" -ftest-coverage "*)
     coverage_from_cflags=yes
     ;;
 esac
-AS_IF([test x$enable_gcov = xno \
+AS_IF([test x$enable_coverage = xno \
             -a x$coverage_from_cflags = xyes],
-      [enable_gcov=yes
+      [enable_coverage=yes
        AC_MSG_NOTICE([
-         enabling gcov because coverage flags are present in CFLAGS
+         enabling coverage because coverage flags are present in CFLAGS
        ])])
-AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+enable_gcov=$enable_coverage
+AM_CONDITIONAL([COND_GCOV], [test x$enable_coverage != xno])
 AM_CONDITIONAL([CFLAGS_HAVE_COVERAGE],
                [test x$coverage_from_cflags = xyes])
 
@@ -3988,7 +4000,7 @@ echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
 echo "       pgo                     : $sixel_pgo_status"
-echo "       gcov                    : $enable_gcov"
+echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"
 echo "       tests                   : $enable_tests"
 echo ""
