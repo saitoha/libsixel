@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for output callback private object passthrough."""
+"""TAP test that output callback receives priv object from sixel_output_new."""
 
 from __future__ import annotations
 

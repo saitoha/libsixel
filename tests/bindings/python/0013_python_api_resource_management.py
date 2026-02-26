@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test migrated from shell wrapper to Python-only execution."""
+"""TAP test that small roundtrip via wheel closes file resources promptly."""
 
 from __future__ import annotations
 
@@ -8,11 +8,9 @@ import os
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'large image roundtrip via wheel frees resources'
-def test_0013_python_resource_management() -> None:
-    import gc
+DESCRIPTION = 'small roundtrip via wheel closes file resources promptly'
+def test_0013_python_api_resource_management() -> None:
     import pathlib
-    import time
     import warnings
 
     try:
@@ -29,11 +27,9 @@ def test_0013_python_resource_management() -> None:
         raise SystemExit(2)
 
     source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
-    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/work"))
-    workdir.mkdir(parents=True, exist_ok=True)
-
-    sixel_path = workdir / "large.six"
-    decoded_png = workdir / "roundtrip.png"
+    artifact_dir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}"))
+    sixel_path = artifact_dir / "resource_roundtrip.six"
+    decoded_png = artifact_dir / "resource_roundtrip.png"
 
     with warnings.catch_warnings():
         warnings.simplefilter("error", ResourceWarning)
@@ -41,8 +37,8 @@ def test_0013_python_resource_management() -> None:
         with Encoder() as encoder:
             encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
             encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(sixel_path))
-            encoder.setopt(SIXEL_OPTFLAG_WIDTH, "800")
-            encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "600")
+            encoder.setopt(SIXEL_OPTFLAG_WIDTH, "96")
+            encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "72")
             encoder.encode(str(source))
 
         if not sixel_path.exists() or sixel_path.stat().st_size == 0:
@@ -62,31 +58,15 @@ def test_0013_python_resource_management() -> None:
         width = int.from_bytes(header[16:20], "big")
         height = int.from_bytes(header[20:24], "big")
 
-    limit = time.monotonic() + 15.0
-    while True:
-        gc.collect()
-        try:
-            sixel_path.unlink()
-            break
-        except FileNotFoundError:
-            break
-        except PermissionError:
-            if time.monotonic() >= limit:
-                raise SystemExit(f"failed to remove {sixel_path.name}")
-            time.sleep(0.2)
+    try:
+        sixel_path.unlink()
+    except FileNotFoundError:
+        pass
 
-    limit = time.monotonic() + 15.0
-    while True:
-        gc.collect()
-        try:
-            decoded_png.unlink()
-            break
-        except FileNotFoundError:
-            break
-        except PermissionError:
-            if time.monotonic() >= limit:
-                raise SystemExit(f"failed to remove {decoded_png.name}")
-            time.sleep(0.2)
+    try:
+        decoded_png.unlink()
+    except FileNotFoundError:
+        pass
 
     if sixel_path.exists() or decoded_png.exists():
         raise SystemExit("output files persist after deletion")
@@ -95,4 +75,4 @@ def test_0013_python_resource_management() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0013_python_resource_management))
+    raise SystemExit(run_embedded_tap_test(DESCRIPTION, test_0013_python_api_resource_management))

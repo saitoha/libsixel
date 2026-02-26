@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for bgcolor validation in sixel_loader_setopt()."""
+"""TAP test that loader setopt rejects invalid bgcolor tuple length."""
 
 from __future__ import annotations
 

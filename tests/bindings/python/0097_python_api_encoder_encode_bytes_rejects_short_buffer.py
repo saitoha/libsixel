@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for short pixel buffer handling in encoder.encode_bytes."""
+"""TAP test that encoder encode_bytes rejects too-short pixel buffer."""
 
 from __future__ import annotations
 

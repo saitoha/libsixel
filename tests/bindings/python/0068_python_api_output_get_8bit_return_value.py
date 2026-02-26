@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for output get_8bit return value behavior."""
+"""TAP test that output get_8bit returns None after setter call."""
 
 from __future__ import annotations
 

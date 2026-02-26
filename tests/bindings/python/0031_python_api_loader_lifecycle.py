@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader lifecycle APIs in libsixel.__init__.py."""
+"""TAP test that loader new/ref/unref lifecycle APIs are callable."""
 
 from __future__ import annotations
 

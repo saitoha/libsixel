@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for raw decoder ref/unref APIs in libsixel.__init__.py."""
+"""TAP test that raw decoder ref and unref APIs are callable."""
 
 from __future__ import annotations
 

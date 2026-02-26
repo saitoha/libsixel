@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for status helper APIs exported by libsixel_wheel."""
+"""TAP test that module status helpers classify success and failure."""
 
 from __future__ import annotations
 

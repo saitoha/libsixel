@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for non-numeric option rejection in loader setopt."""
+"""TAP test that loader setopt rejects non-numeric option identifier."""
 
 from __future__ import annotations
 

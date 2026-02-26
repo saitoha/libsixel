@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for output setter signature validation."""
+"""TAP test that output setters reject missing required value argument."""
 
 from __future__ import annotations
 

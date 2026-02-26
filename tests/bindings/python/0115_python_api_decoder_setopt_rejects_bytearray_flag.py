@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for bytearray flag rejection in decoder setopt."""
+"""TAP test that decoder setopt rejects bytearray option flag input."""
 
 from __future__ import annotations
 

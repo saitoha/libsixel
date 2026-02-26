@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for invalid sixel_loader_setopt option handling."""
+"""TAP test that loader setopt rejects unknown option values."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for exported function coverage in python/libsixel/__init__.py."""
+"""TAP test that all public functions in __init__.py are exported by libsixel_wheel."""
 
 from __future__ import annotations
 

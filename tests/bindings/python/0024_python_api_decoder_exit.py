@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for Decoder.__exit__()."""
+"""TAP test that decoder __exit__ closes instance via wheel."""
 
 from __future__ import annotations
 

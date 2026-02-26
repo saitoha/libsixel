@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader setopt cancel-flag integer pointer path."""
+"""TAP test that loader setopt accepts integer pointer for cancel flag."""
 
 from __future__ import annotations
 

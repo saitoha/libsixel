@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for directory-path rejection in sixel_encoder_encode()."""
+"""TAP test that encoder_encode rejects directory paths before C invocation."""
 
 from __future__ import annotations
 

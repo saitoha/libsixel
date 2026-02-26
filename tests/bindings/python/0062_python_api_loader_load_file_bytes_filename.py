@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader_load_file bytes filename support."""
+"""TAP test that loader load_file accepts bytes filename input."""
 
 from __future__ import annotations
 

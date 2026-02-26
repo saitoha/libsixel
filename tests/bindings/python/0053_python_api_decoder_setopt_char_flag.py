@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for character flag path in sixel_decoder_setopt."""
+"""TAP test that decoder setopt accepts character flag values."""
 
 from __future__ import annotations
 

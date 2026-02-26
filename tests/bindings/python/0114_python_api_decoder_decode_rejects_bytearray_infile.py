@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for bytearray infile rejection in decoder.decode."""
+"""TAP test that decoder decode rejects bytearray infile input."""
 
 from __future__ import annotations
 

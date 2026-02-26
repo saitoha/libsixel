@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for dither palette color count getter."""
+"""TAP test that dither palette color count getter returns positive value."""
 
 from __future__ import annotations
 

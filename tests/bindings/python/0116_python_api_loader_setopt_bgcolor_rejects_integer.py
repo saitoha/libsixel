@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for non-iterable bgcolor rejection in loader setopt."""
+"""TAP test that loader setopt rejects integer bgcolor input."""
 
 from __future__ import annotations
 

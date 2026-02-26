@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for whitespace-only byte rejection in sixel_set_threads()."""
+"""TAP test that set_threads rejects whitespace-only byte input."""
 
 from __future__ import annotations
 

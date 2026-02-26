@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for destructor safety after missing-path encoder failure."""
+"""TAP test that encoder destructor stays safe after missing path error."""
 
 from __future__ import annotations
 

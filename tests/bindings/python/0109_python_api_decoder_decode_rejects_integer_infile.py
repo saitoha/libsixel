@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for integer infile rejection in decoder.decode."""
+"""TAP test that decoder decode rejects integer infile input."""
 
 from __future__ import annotations
 

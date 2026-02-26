@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for additional sixel_loader_setopt() variants."""
+"""TAP test that loader setopt accepts bgcolor and pointer-style options."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for sixel_set_threads() in libsixel.__init__.py."""
+"""TAP test that set_threads accepts valid inputs and rejects invalid input."""
 
 from __future__ import annotations
 

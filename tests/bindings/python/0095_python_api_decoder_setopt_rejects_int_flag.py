@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for integer flag rejection in decoder setopt."""
+"""TAP test that decoder setopt rejects integer option flag."""
 
 from __future__ import annotations
 

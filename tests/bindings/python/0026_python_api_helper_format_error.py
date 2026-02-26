@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for sixel_helper_format_error()."""
+"""TAP test that sixel_helper_format_error returns a non-empty message."""
 
 from __future__ import annotations
 

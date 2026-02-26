@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for byte-string inputs to sixel_set_threads()."""
+"""TAP test that set_threads accepts byte inputs and rejects invalid bytes."""
 
 from __future__ import annotations
 

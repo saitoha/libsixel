@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for integer filename rejection in loader.load_file."""
+"""TAP test that loader load_file rejects integer filename input."""
 
 from __future__ import annotations
 

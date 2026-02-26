@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for decode() without infile after setopt input path."""
+"""TAP test that raw decoder decode works without infile when input option is set."""
 
 from __future__ import annotations
 

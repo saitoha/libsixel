@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for Encoder.close()."""
+"""TAP test that encoder close is idempotent and enforces closed state."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader order option numeric input conversion."""
+"""TAP test that loader setopt accepts numeric loader-order input via string conversion."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for loader_load_file None filename path."""
+"""TAP test that loader load_file rejects None filename without crashing."""
 
 from __future__ import annotations
 

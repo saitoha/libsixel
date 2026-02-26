@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for dither palette getter/setter APIs."""
+"""TAP test that dither palette getter and setter APIs are callable."""
 
 from __future__ import annotations
 

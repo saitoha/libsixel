@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test for path-like infile handling in decoder.decode."""
+"""TAP test that decoder decode accepts pathlib.Path infile argument."""
 
 from __future__ import annotations
 
