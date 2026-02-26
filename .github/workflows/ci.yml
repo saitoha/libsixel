@@ -92,6 +92,105 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  pgo:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-clang-pgo
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-pgo=generate --with-pgo-data=$PWD/pgo
+            pgo_use_options: >-
+              --enable-pgo=use --with-pgo-profdata=$PWD/pgo/default.profdata
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-pgo
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_pgo=generate
+            pgo_use_options: >-
+              -Db_pgo=use
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-gcc-pgo
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_options: >-
+              --enable-pgo=generate
+            pgo_use_options: >-
+              --enable-pgo=use
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-gcc-pgo
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_options: >-
+              -Db_pgo=generate
+            pgo_use_options: >-
+              -Db_pgo=use
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Meson-cmd-x86_64-msvc-pgo
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              -Dmsvc_pgo=generate -Dmsvc_pgo_data=builddir/pgo/libsixel.pgd
+            pgo_use_options: >-
+              -Dmsvc_pgo=use -Dmsvc_pgo_data=builddir/pgo/libsixel.pgd
+            exec_type: cmd
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   python:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
