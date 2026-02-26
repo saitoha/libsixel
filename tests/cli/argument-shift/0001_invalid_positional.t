@@ -25,7 +25,9 @@ set -v
 missing_path="${ARTIFACT_LOCAL_DIR}/invalid_filename"
 missing_output="${ARTIFACT_LOCAL_DIR}/capture.invalid"
 
-run_img2sixel -v "${missing_path}" >"${missing_output}" && {
+run_img2sixel \
+    --env SIXEL_TRACE_TOPIC=file_open:lifecycle \
+    -v "${missing_path}" >"${missing_output}" && {
     fail 1 "img2sixel accepted missing input"
     exit 0
 }
