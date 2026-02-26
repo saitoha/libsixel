@@ -16,15 +16,15 @@ lines.each do |line|
   line = line.strip
   next unless line.start_with?('#define ')
   line = line.sub(/^#define\s+/, '')
-  # skip function-like macros
-  next if line =~ /\(/
+  # skip function-like macros only (e.g. NAME(arg)), not parenthesized values
+  next if line =~ /^\w+\(/
   name, val = line.split(/\s+/, 2)
   next if name.nil? || val.nil?
   name = name.strip
   val = val.strip
   next unless name =~ /^(SIXEL_|LIBSIXEL_)/
-  # strip trailing comments
-  val = val.sub(%r{/\*.*\*/}, '').strip
+  # strip trailing comments (single-line and multi-line starts)
+  val = val.sub(%r{/\*.*}, '').strip
   order << name unless defs.key?(name)
   defs[name] = val
 end
@@ -49,6 +49,18 @@ max_pass.times do
       progress = true
       next
     end
+
+    # Convert parenthesized C character literals such as ('d') into
+    # Ruby string literals so option flag constants keep their semantics.
+    char_match = /\A\(?\s*'((?:\\.|[^']))'\s*\)?\z/.match(v)
+    if char_match
+      c = char_match[1]
+      c = c.gsub('\\', '\\\\').gsub('"', '\\"')
+      resolved[k] = '"' + c + '"'
+      progress = true
+      next
+    end
+
     expr = v.dup
     # normalize integer suffixes (UL, U, L)
     expr.gsub!(/([0-9])([uUlL]+)/, '\\1')

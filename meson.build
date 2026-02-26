@@ -1623,6 +1623,10 @@ if py_opt.enabled()
   python_message = 'yes: libsixel_wheel'
 endif
 
+# Configure the public header before optional language bindings.
+# Ruby constant generation consumes the configured sixel.h.
+subdir('include')
+
 ruby_message = 'no'
 have_ruby = false
 ruby_gem_target = disabler()
@@ -1638,11 +1642,16 @@ if ruby_opt.enabled()
   if ruby.found()
     have_ruby = true
     ruby_gem_script = files('ruby/gem_builder.rb')
-    # Generate constants from header
+    # Generate Ruby constants from the configured public header.
+    # The header is produced by include/meson.build via configure_file(),
+    # so we must reference the generated target (sixel_h) instead of a
+    # source-tree path such as include/sixel.h.
     constants_rb = custom_target('ruby_constants',
-      input: 'include/sixel.h',
+      input: sixel_h,
       output: 'constants.rb',
-      command: [ruby, 'tools/gen_ruby_constants.rb', '@INPUT@', '@OUTPUT@'],
+      command: [ruby,
+        join_paths(meson.project_source_root(), 'tools', 'gen_ruby_constants.rb'),
+        '@INPUT@', '@OUTPUT@'],
       build_by_default: true)
     # Install Ruby bindings if requested
     if ruby_opt.enabled()
@@ -1695,8 +1704,6 @@ if amalgamated_sources_enabled
 endif
 
 lsqa_bin = disabler()
-
-subdir('include')
 
 subdir('src')
 if have_ruby

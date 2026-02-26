@@ -566,7 +566,7 @@ all-local:
 	@if test -x "$(RUBY)"; then \
 	  echo "Ensuring Ruby constants are generated..."; \
 	  $(MKDIR_P) $(builddir)/lib/libsixel 2>/dev/null || true; \
-	  $(RUBY) $(top_srcdir)/tools/gen_ruby_constants.rb $(top_srcdir)/include/sixel.h $(builddir)/lib/libsixel/constants.rb || true; \
+	  $(RUBY) $(top_srcdir)/tools/gen_ruby_constants.rb $(top_builddir)/include/sixel.h $(builddir)/lib/libsixel/constants.rb; \
 	fi
 	@if test -x "$(RUBY)"; then \
 	  echo "Building bundled Ruby platform gem..."; \
