@@ -594,12 +594,14 @@ jobs:
             runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
+              LDFLAGS='-fuse-ld=lld'
             setup_options: >-
               -Db_lto=true
               -Db_lto_mode=thin
             extra_packages: >-
               meson
               clang
+              lld
             exec_type: bash
 
           - label: Meson-cmd-x86_64-msvc-x86_64-lto-full
