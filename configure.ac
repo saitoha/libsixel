@@ -741,11 +741,13 @@ sixel_lto_status="disabled"
 
 AS_IF([test "x$using_cl" = "xyes"], [
   AC_CACHE_CHECK(
-    [whether the compiler and linker support MSVC LTO (-GL + -LTCG)],
+    [whether the compiler and linker support MSVC LTO (-GL + /LTCG)],
     [ac_cv_sixel_lto_full_msvc],
     [
      CFLAGS="$ac_sixel_save_CFLAGS -GL"
-     LDFLAGS="$ac_sixel_save_LDFLAGS -LTCG"
+     dnl Use '/LTCG' for MSVC linker flags. '-LTCG' is parsed by
+     dnl libtool as '-L TCG' (library search path) and breaks linking.
+     LDFLAGS="$ac_sixel_save_LDFLAGS /LTCG"
      AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
                     [ac_cv_sixel_lto_full_msvc=yes],
                     [ac_cv_sixel_lto_full_msvc=no])
@@ -759,9 +761,9 @@ AS_IF([test "x$using_cl" = "xyes"], [
           [sixel_lto_status="disabled"],
           [full],
           [AS_IF([test "x$ac_cv_sixel_lto_full_msvc" != "xyes"],
-                 [AC_MSG_ERROR([--enable-lto=full requested, but -GL + -LTCG are not supported by the current MSVC toolchain])])
+                 [AC_MSG_ERROR([--enable-lto=full requested, but -GL + /LTCG are not supported by the current MSVC toolchain])])
            sixel_lto_cflags="-GL"
-           sixel_lto_ldflags="-LTCG"
+           sixel_lto_ldflags="/LTCG"
            sixel_lto_status="full"],
           [thin],
           [AC_MSG_ERROR([--enable-lto=thin is unsupported with MSVC (cl.exe)])])
