@@ -23,7 +23,8 @@ endif
 
 BASH = @BASH@
 
-EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
+EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
+             $(srcdir)/compat.h
 
 bin_PROGRAMS =
 dist_man_MANS =
@@ -108,6 +109,8 @@ else
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/completion_utils.c \
                     $(srcdir)/completion_utils.h \
+                    $(srcdir)/compat.c \
+                    $(srcdir)/compat.h \
                     $(srcdir)/path.c \
                     $(srcdir)/path.h \
                     $(srcdir)/cli.c \

@@ -48,7 +48,7 @@ if img2sixel_opt.enabled()
       install: true)
   else
     img2sixel_exe = executable('img2sixel',
-      ['img2sixel.c', 'completion_utils.c', 'path.c', completion_embed]
+      ['img2sixel.c', 'completion_utils.c', 'compat.c', 'path.c', completion_embed]
         + sources_common + aborttrace_sources,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H'],
