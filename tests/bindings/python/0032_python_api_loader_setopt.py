@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""TAP test that loader setopt accepts integer and string option payloads."""
+"""TAP test that loader setopt call paths accept integer and string payloads."""
 
 from __future__ import annotations
 
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'loader setopt accepts integer and string option payloads'
+DESCRIPTION = 'loader setopt call paths accept integer and string payloads'
 def test_0032_python_api_loader_setopt() -> None:
     try:
         from libsixel_wheel import SIXEL_LOADER_OPTION_LOADER_ORDER
