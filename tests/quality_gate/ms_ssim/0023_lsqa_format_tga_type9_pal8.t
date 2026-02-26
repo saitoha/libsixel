@@ -1,11 +1,9 @@
 #!/bin/sh
 # Verify TGA type 9 (RLE color-mapped) with 256-color palette.
 # Reproduction commands (ImageMagick):
-#   convert images/snake.png -resize 64x64\! -colors 256 -type Palette -compress RLE tests/data/inputs/formats/snake-tga-type9-pal8.tga
+#   convert images/snake.png -resize 64x64\! -colors 256 -type Palette -compress RLE -define tga:image-origin=TopLeft tests/data/inputs/formats/snake-tga-type9-pal8.tga
 #   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.png
-#   convert tests/data/inputs/formats/snake-64-reference-rgb.png -flip tests/data/inputs/formats/snake-64-reference-rgb-flip.png
 #   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.png
-#   convert tests/data/inputs/formats/snake-64-reference-gray.png -flip tests/data/inputs/formats/snake-64-reference-gray-flip.png
 #   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.png
 
 set -eux
@@ -23,7 +21,7 @@ printf '1..1\n'
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type9-pal8.tga"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb-flip.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     fail 1 "type 9 PAL8 TGA quality below floor"
