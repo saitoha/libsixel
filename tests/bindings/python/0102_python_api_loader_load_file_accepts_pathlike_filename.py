@@ -11,7 +11,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader_load_file accepts pathlib.Path filename input'
 
 
-def test_0105_python_api_loader_load_file_accepts_pathlike_filename() -> None:
+def test_0102_python_api_loader_load_file_accepts_pathlike_filename() -> None:
     import pathlib
 
     try:
@@ -47,5 +47,5 @@ def test_0105_python_api_loader_load_file_accepts_pathlike_filename() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0105_python_api_loader_load_file_accepts_pathlike_filename,
+        test_0102_python_api_loader_load_file_accepts_pathlike_filename,
     ))

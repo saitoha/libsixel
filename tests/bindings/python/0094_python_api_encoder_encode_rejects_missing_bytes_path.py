@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode rejects missing bytes path input'
 
 
-def test_0098_python_api_encoder_encode_rejects_missing_bytes_path() -> None:
+def test_0094_python_api_encoder_encode_rejects_missing_bytes_path() -> None:
     try:
         from libsixel_wheel import sixel_encoder_encode
         from libsixel_wheel import sixel_encoder_new
@@ -34,5 +34,5 @@ def test_0098_python_api_encoder_encode_rejects_missing_bytes_path() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0098_python_api_encoder_encode_rejects_missing_bytes_path,
+        test_0094_python_api_encoder_encode_rejects_missing_bytes_path,
     ))

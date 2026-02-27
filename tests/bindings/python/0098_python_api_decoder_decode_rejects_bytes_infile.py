@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder decode rejects bytes infile argument'
 
 
-def test_0102_python_api_decoder_decode_rejects_bytes_infile() -> None:
+def test_0098_python_api_decoder_decode_rejects_bytes_infile() -> None:
     import os
 
     try:
@@ -39,5 +39,5 @@ def test_0102_python_api_decoder_decode_rejects_bytes_infile() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0102_python_api_decoder_decode_rejects_bytes_infile,
+        test_0098_python_api_decoder_decode_rejects_bytes_infile,
     ))

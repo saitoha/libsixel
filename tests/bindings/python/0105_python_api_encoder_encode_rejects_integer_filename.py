@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode rejects integer filename input'
 
 
-def test_0108_python_api_encoder_encode_rejects_integer_filename() -> None:
+def test_0105_python_api_encoder_encode_rejects_integer_filename() -> None:
     try:
         from libsixel_wheel import sixel_encoder_encode
         from libsixel_wheel import sixel_encoder_new
@@ -34,5 +34,5 @@ def test_0108_python_api_encoder_encode_rejects_integer_filename() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0108_python_api_encoder_encode_rejects_integer_filename,
+        test_0105_python_api_encoder_encode_rejects_integer_filename,
     ))

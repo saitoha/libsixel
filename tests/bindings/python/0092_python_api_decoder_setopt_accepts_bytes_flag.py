@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder setopt accepts bytes option flag'
 
 
-def test_0096_python_api_decoder_setopt_accepts_bytes_flag() -> None:
+def test_0092_python_api_decoder_setopt_accepts_bytes_flag() -> None:
     try:
         from libsixel_wheel import sixel_decoder_new
         from libsixel_wheel import sixel_decoder_setopt
@@ -28,5 +28,5 @@ def test_0096_python_api_decoder_setopt_accepts_bytes_flag() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0096_python_api_decoder_setopt_accepts_bytes_flag,
+        test_0092_python_api_decoder_setopt_accepts_bytes_flag,
     ))

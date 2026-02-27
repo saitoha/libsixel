@@ -11,7 +11,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder decode accepts pathlib.Path infile argument'
 
 
-def test_0104_python_api_decoder_decode_accepts_pathlike_infile() -> None:
+def test_0101_python_api_decoder_decode_accepts_pathlike_infile() -> None:
     import pathlib
 
     try:
@@ -53,5 +53,5 @@ def test_0104_python_api_decoder_decode_accepts_pathlike_infile() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0104_python_api_decoder_decode_accepts_pathlike_infile,
+        test_0101_python_api_decoder_decode_accepts_pathlike_infile,
     ))
