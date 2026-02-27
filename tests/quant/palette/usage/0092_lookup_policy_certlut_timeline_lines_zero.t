@@ -16,7 +16,7 @@ small_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/timeline-lines-zero.six"
 log_path="${ARTIFACT_LOCAL_DIR}/timeline-lines-zero.json"
 
-run_img2sixel --env SIXEL_LOG_PATH="${log_path}",SIXEL_LOG_LINES=0 \
+run_img2sixel --env SIXEL_LOG_PATH="${log_path}" --env SIXEL_LOG_LINES=0 \
     --lookup-policy=certlut -p 4 -o "${output_sixel}" "${small_ppm}" || {
     fail 1 "conversion with SIXEL_LOG_LINES=0 failed"
     exit 0

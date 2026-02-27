@@ -16,7 +16,7 @@ set -v
 err_file="${ARTIFACT_LOCAL_DIR}/error.txt"
 esc_char=$(printf '\033')
 
-run_img2sixel --env SIXEL_STATUS_FORCE_COLORS=1 -- \
+run_img2sixel --env SIXEL_STATUS_FORCE_COLORS=1 \
     -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>"${err_file}" && {
     fail 1 "force colors diagnostic unexpectedly succeeded"

@@ -15,7 +15,7 @@ set -v
 
 err_file="${ARTIFACT_LOCAL_DIR}/path-suggestions-missing-dir.err"
 
-run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 -- \
+run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               -m "${ARTIFACT_LOCAL_DIR}/not-there/map.gpl" \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
               -o/dev/null 2>"${err_file}" && {
