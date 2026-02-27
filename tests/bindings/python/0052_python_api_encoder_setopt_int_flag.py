@@ -18,6 +18,7 @@ def test_0052_python_api_encoder_setopt_int_flag() -> None:
         raise SystemExit(2)
 
     encoder = sixel_encoder_new()
+    # Pass a numeric flag value to verify the integer-flag call path.
     sixel_encoder_setopt(encoder, ord(SIXEL_OPTFLAG_COLORS), 16)
     sixel_encoder_unref(encoder)
 
