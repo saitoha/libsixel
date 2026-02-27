@@ -67,12 +67,21 @@ typedef struct sixel_filter_io {
 } sixel_filter_io_t;
 
 typedef struct sixel_filter sixel_filter_t;
+typedef struct sixel_filter_vtbl sixel_filter_vtbl_t;
 
 typedef SIXELSTATUS (*sixel_filter_apply_fn)(sixel_filter_t *filter,
                                              sixel_allocator_t *allocator,
                                              sixel_logger_t *logger);
 
 typedef void (*sixel_filter_dispose_fn)(sixel_filter_t *filter);
+
+typedef SIXELSTATUS (*sixel_filter_validate_fn)(sixel_filter_t *filter);
+
+typedef SIXELSTATUS (*sixel_filter_prepare_fn)(sixel_filter_t *filter,
+                                               sixel_allocator_t *allocator,
+                                               sixel_logger_t *logger);
+
+typedef int (*sixel_filter_can_pipeline_fn)(sixel_filter_t const *filter);
 
 typedef void (*sixel_filter_progress_fn)(sixel_filter_t *filter,
                                          sixel_filter_event_t event,
@@ -95,16 +104,26 @@ typedef struct sixel_filter_progress {
     int completed_units;
 } sixel_filter_progress_t;
 
+struct sixel_filter_vtbl {
+    char const *type_name;
+    sixel_filter_kind_t kind;
+    sixel_filter_apply_fn apply;
+    sixel_filter_dispose_fn dispose;
+    sixel_filter_validate_fn validate;
+    sixel_filter_prepare_fn prepare;
+    sixel_filter_can_pipeline_fn can_pipeline;
+};
+
 struct sixel_filter {
     const char *name;
     sixel_filter_kind_t kind;
+    sixel_filter_vtbl_t const *vtbl;
     unsigned int flags;
 
     sixel_filter_io_t input;
     sixel_filter_io_t output;
 
-    sixel_filter_apply_fn apply;
-    sixel_filter_dispose_fn dispose;
+    sixel_filter_vtbl_t legacy_vtbl;
     void *userdata;
 
     sixel_filter_progress_t progress;
@@ -115,6 +134,11 @@ struct sixel_filter {
 SIXEL_INTERNAL_API void sixel_filter_clear(sixel_filter_t *filter);
 
 SIXEL_INTERNAL_API SIXELSTATUS sixel_filter_alloc(sixel_filter_t **filter_out);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_filter_init_with_vtbl(sixel_filter_t *filter,
+                            sixel_filter_vtbl_t const *vtbl,
+                            void *userdata);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_init(sixel_filter_t *filter,

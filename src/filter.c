@@ -86,6 +86,30 @@ sixel_filter_alloc(sixel_filter_t **filter_out)
 }
 
 SIXELAPI SIXELSTATUS
+sixel_filter_init_with_vtbl(sixel_filter_t *filter,
+                            sixel_filter_vtbl_t const *vtbl,
+                            void *userdata)
+{
+    SIXELSTATUS status;
+
+    if (filter == NULL || vtbl == NULL || vtbl->apply == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_filter_clear(filter);
+
+    filter->name = vtbl->type_name;
+    filter->kind = vtbl->kind;
+    filter->vtbl = vtbl;
+    filter->flags = 0;
+    filter->userdata = userdata;
+
+    status = SIXEL_OK;
+
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
 sixel_filter_init(sixel_filter_t *filter,
                   const char *name,
                   sixel_filter_kind_t kind,
@@ -93,24 +117,30 @@ sixel_filter_init(sixel_filter_t *filter,
                   sixel_filter_dispose_fn dispose,
                   void *userdata)
 {
-    SIXELSTATUS status;
-
     if (filter == NULL || apply == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /*
+     * Keep the legacy initializer stable for existing callers while moving
+     * runtime dispatch to a single vtable-based path.
+     */
     sixel_filter_clear(filter);
+    filter->legacy_vtbl.type_name = name;
+    filter->legacy_vtbl.kind = kind;
+    filter->legacy_vtbl.apply = apply;
+    filter->legacy_vtbl.dispose = dispose;
+    filter->legacy_vtbl.validate = NULL;
+    filter->legacy_vtbl.prepare = NULL;
+    filter->legacy_vtbl.can_pipeline = NULL;
 
     filter->name = name;
     filter->kind = kind;
+    filter->vtbl = &filter->legacy_vtbl;
     filter->flags = 0;
-    filter->apply = apply;
-    filter->dispose = dispose;
     filter->userdata = userdata;
 
-    status = SIXEL_OK;
-
-    return status;
+    return SIXEL_OK;
 }
 
 SIXELAPI void
@@ -183,12 +213,28 @@ sixel_filter_run(sixel_filter_t *filter,
 {
     SIXELSTATUS status;
 
-    if (filter == NULL || filter->apply == NULL) {
+    if (filter == NULL || filter->vtbl == NULL || filter->vtbl->apply == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (filter->vtbl != NULL && filter->vtbl->prepare != NULL) {
+        status = filter->vtbl->prepare(filter, allocator, logger);
+        if (SIXEL_FAILED(status)) {
+            sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_ABORT);
+            return status;
+        }
+    }
+
+    if (filter->vtbl != NULL && filter->vtbl->validate != NULL) {
+        status = filter->vtbl->validate(filter);
+        if (SIXEL_FAILED(status)) {
+            sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_ABORT);
+            return status;
+        }
+    }
+
     sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_BEGIN);
-    status = filter->apply(filter, allocator, logger);
+    status = filter->vtbl->apply(filter, allocator, logger);
     if (SIXEL_SUCCEEDED(status)) {
         sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_COMPLETE);
     } else {
@@ -205,8 +251,8 @@ sixel_filter_teardown(sixel_filter_t *filter)
         return;
     }
 
-    if (filter->dispose != NULL) {
-        filter->dispose(filter);
+    if (filter->vtbl != NULL && filter->vtbl->dispose != NULL) {
+        filter->vtbl->dispose(filter);
     }
 
     sixel_filter_clear(filter);

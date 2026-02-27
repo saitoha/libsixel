@@ -46,6 +46,24 @@ typedef struct sixel_filter_lookup_state {
     sixel_filter_lookup_result_t result;
 } sixel_filter_lookup_state_t;
 
+static SIXELSTATUS
+sixel_filter_lookup_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_lookup_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_lookup_vtbl = {
+    "lookup",
+    SIXEL_FILTER_KIND_LOOKUP,
+    sixel_filter_lookup_apply,
+    sixel_filter_lookup_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
 static void
 sixel_filter_lookup_weights(const sixel_filter_lookup_config_t *config,
                             int *wcomp1_out,
@@ -238,12 +256,10 @@ sixel_filter_lookup_init(sixel_filter_t *filter,
 
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "lookup",
-                               SIXEL_FILTER_KIND_LOOKUP,
-                               sixel_filter_lookup_apply,
-                               sixel_filter_lookup_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_lookup_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
         return status;

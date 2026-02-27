@@ -44,6 +44,24 @@ typedef struct sixel_filter_resize_state {
     sixel_filter_resize_config_t config;
 } sixel_filter_resize_state_t;
 
+static SIXELSTATUS
+sixel_filter_resize_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_resize_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_resize_vtbl = {
+    "resize",
+    SIXEL_FILTER_KIND_RESIZE,
+    sixel_filter_resize_apply,
+    sixel_filter_resize_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
 static void
 sixel_filter_resize_compute_target(const sixel_filter_resize_config_t *config,
                                    int src_width,
@@ -420,12 +438,10 @@ sixel_filter_resize_init(sixel_filter_t *filter,
 
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "resize",
-                               SIXEL_FILTER_KIND_RESIZE,
-                               sixel_filter_resize_apply,
-                               sixel_filter_resize_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_resize_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
         return status;

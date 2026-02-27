@@ -41,6 +41,24 @@ typedef struct sixel_filter_sample_state {
     sixel_filter_sample_config_t config;
 } sixel_filter_sample_state_t;
 
+static SIXELSTATUS
+sixel_filter_sample_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_sample_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_sample_vtbl = {
+    "sample",
+    SIXEL_FILTER_KIND_SAMPLE,
+    sixel_filter_sample_apply,
+    sixel_filter_sample_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
 static size_t
 sixel_filter_sample_select_stride(
         sixel_filter_sample_config_t const *config,
@@ -377,12 +395,10 @@ sixel_filter_sample_init(sixel_filter_t *filter,
 
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "sample",
-                               SIXEL_FILTER_KIND_SAMPLE,
-                               sixel_filter_sample_apply,
-                               sixel_filter_sample_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_sample_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
     }

@@ -43,6 +43,24 @@ typedef struct sixel_filter_palette_state {
 
 static SIXELSTATUS
 sixel_filter_palette_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_palette_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_palette_vtbl = {
+    "palette",
+    SIXEL_FILTER_KIND_PALETTE,
+    sixel_filter_palette_apply,
+    sixel_filter_palette_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
+static SIXELSTATUS
+sixel_filter_palette_apply(sixel_filter_t *filter,
                            sixel_allocator_t *allocator,
                            sixel_logger_t *logger)
 {
@@ -143,12 +161,10 @@ sixel_filter_palette_init(sixel_filter_t *filter,
     memset(state, 0, sizeof(*state));
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "palette",
-                               SIXEL_FILTER_KIND_PALETTE,
-                               sixel_filter_palette_apply,
-                               sixel_filter_palette_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_palette_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
         return status;
