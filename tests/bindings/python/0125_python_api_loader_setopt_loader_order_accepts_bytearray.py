@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""TAP test that loader setopt accepts bytearray loader-order input via string conversion."""
+"""TAP test that loader setopt accepts bytearray loader-order input."""
 
 from __future__ import annotations
 
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'loader setopt accepts bytearray loader-order input via string conversion'
+DESCRIPTION = 'loader setopt accepts bytearray loader-order input'
 
 
 def test_0128_python_api_loader_setopt_loader_order_accepts_bytearray() -> None:

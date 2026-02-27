@@ -28,7 +28,7 @@ def test_0130_python_api_loader_setopt_rejects_non_numeric_option() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader accepted non-numeric option identifier')
+    raise SystemExit('loader accepted non-numeric option identifier')
 
 
 if __name__ == '__main__':

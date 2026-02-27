@@ -31,7 +31,7 @@ def test_0122_python_api_loader_load_file_rejects_memoryview_filename() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader accepted memoryview filename input')
+    raise SystemExit('loader accepted memoryview filename input')
 
 
 if __name__ == '__main__':

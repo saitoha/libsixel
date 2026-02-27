@@ -28,7 +28,7 @@ def test_0126_python_api_encoder_encode_rejects_memoryview_filename() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted memoryview filename input')
+    raise SystemExit('encoder accepted memoryview filename input')
 
 
 if __name__ == '__main__':

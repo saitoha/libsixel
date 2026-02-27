@@ -36,7 +36,7 @@ def test_0129_python_api_encoder_encode_bytes_rejects_palette_with_non_integer_c
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError(
+    raise SystemExit(
         'encoder encode_bytes accepted palette with non-integer component'
     )
 
