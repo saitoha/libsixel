@@ -28,7 +28,7 @@ def test_0081_python_api_encoder_setopt_invalid_flag_length() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted multi-character option flag')
+    raise SystemExit('encoder accepted multi-character option flag')
 
 
 if __name__ == '__main__':

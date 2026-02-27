@@ -25,12 +25,12 @@ def test_0074_python_api_encoder_encode_rejects_directory() -> None:
     except RuntimeError as exc:
         sixel_encoder_unref(encoder)
         if 'directory' not in str(exc):
-            raise AssertionError(f'unexpected error message: {exc}')
+            raise SystemExit(f'unexpected error message: {exc}')
         print('encoder directory-path rejection verified')
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted directory path')
+    raise SystemExit('encoder accepted directory path')
 
 
 if __name__ == '__main__':

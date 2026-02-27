@@ -22,7 +22,7 @@ def test_0080_python_api_set_threads_rejects_non_utf8_bytes() -> None:
         print('set_threads non-UTF-8-byte rejection verified')
         return
 
-    raise AssertionError('set_threads accepted non-UTF-8 byte input')
+    raise SystemExit('set_threads accepted non-UTF-8 byte input')
 
 
 if __name__ == '__main__':

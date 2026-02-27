@@ -28,7 +28,7 @@ def test_0075_python_api_loader_load_file_invalid_filename_type() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader accepted non-string filename')
+    raise SystemExit('loader accepted non-string filename')
 
 
 if __name__ == '__main__':

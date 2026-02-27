@@ -28,7 +28,7 @@ def test_0099_python_api_decoder_setopt_rejects_int_flag() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted integer option flag')
+    raise SystemExit('decoder accepted integer option flag')
 
 
 if __name__ == '__main__':

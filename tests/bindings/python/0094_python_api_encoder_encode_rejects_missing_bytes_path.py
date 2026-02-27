@@ -28,7 +28,7 @@ def test_0098_python_api_encoder_encode_rejects_missing_bytes_path() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted missing bytes path')
+    raise SystemExit('encoder accepted missing bytes path')
 
 
 if __name__ == '__main__':
