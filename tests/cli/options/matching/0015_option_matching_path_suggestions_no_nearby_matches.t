@@ -17,7 +17,6 @@ missing_path="${TOP_SRCDIR}/tests/quant/no-such-file.gpl"
 err_file="${ARTIFACT_LOCAL_DIR}/path-suggestions-no-nearby.err"
 
 run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
-              -- \
               -m "${missing_path}" \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>"${err_file}" && {
     fail 1 "missing mapfile unexpectedly succeeded"

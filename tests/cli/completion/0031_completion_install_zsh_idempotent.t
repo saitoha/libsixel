@@ -24,13 +24,13 @@ echo '1..1'
 set -v
 
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
-    -- -2 zsh >/dev/null || {
+    -2 zsh >/dev/null || {
     fail 1 "zsh completion install failed on first run"
     exit 0
 }
 
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
-    -- -2 zsh >/dev/null || {
+    -2 zsh >/dev/null || {
     fail 1 "zsh completion install failed on second run"
     exit 0
 }
