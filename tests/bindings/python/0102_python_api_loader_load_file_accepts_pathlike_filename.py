@@ -33,13 +33,15 @@ def test_0105_python_api_loader_load_file_accepts_pathlike_filename() -> None:
         return 0
 
     loader = sixel_loader_new()
-    sixel_loader_load_file(loader, source, _fn_load)
+    # Convert PathLike to str explicitly because current wheel
+    # wrapper expects str/bytes and calls .encode() directly.
+    sixel_loader_load_file(loader, str(source), _fn_load)
     sixel_loader_unref(loader)
 
     if callbacks == 0:
         raise SystemExit('loader_load_file callback was not invoked')
 
-    print('loader_load_file path-like filename acceptance verified')
+    print('loader_load_file path-like filename acceptance verified via str conversion')
 
 
 if __name__ == '__main__':

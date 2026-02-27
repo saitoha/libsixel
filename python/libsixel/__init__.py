@@ -965,7 +965,7 @@ def sixel_output_unref(output):
 
 # get 8bit output mode which indicates whether it uses C1 control characters
 def sixel_output_get_8bit_availability(output):
-    _sixel.sixel_output_get_8bit_availability.restype = None
+    _sixel.sixel_output_get_8bit_availability.restype = c_int
     _sixel.sixel_output_get_8bit_availability.argtypes = [c_void_p]
     _sixel.sixel_output_get_8bit_availability(output)
 

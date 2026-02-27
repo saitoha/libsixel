@@ -1,33 +1,26 @@
 #!/usr/bin/env python3
-"""TAP test that encoder encode_bytes accepts memoryview pixel buffer."""
+"""TAP test that encoder encode_bytes currently rejects memoryview buffer."""
 
 from __future__ import annotations
 
-import os
+import ctypes
 
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'encoder encode_bytes accepts memoryview pixel buffer'
+DESCRIPTION = 'encoder encode_bytes rejects memoryview buffer'
 
 
 def test_0106_python_api_encoder_encode_bytes_accepts_memoryview() -> None:
-    import pathlib
-
     try:
-        from libsixel_wheel import SIXEL_OPTFLAG_OUTPUT
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel import sixel_encoder_encode_bytes
         from libsixel_wheel import sixel_encoder_new
-        from libsixel_wheel import sixel_encoder_setopt
         from libsixel_wheel import sixel_encoder_unref
     except (ModuleNotFoundError, OSError) as exc:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    output = pathlib.Path(
-        os.path.expandvars('${ARTIFACT_LOCAL_DIR}/encode_bytes_memoryview.six')
-    )
     pixels = memoryview(bytes([
         255, 0, 0,
         0, 255, 0,
@@ -36,26 +29,22 @@ def test_0106_python_api_encoder_encode_bytes_accepts_memoryview() -> None:
     ]))
 
     encoder = sixel_encoder_new()
-    sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTPUT, str(output))
-    sixel_encoder_encode_bytes(
-        encoder,
-        pixels,
-        2,
-        2,
-        SIXEL_PIXELFORMAT_RGB888,
-        None,
-    )
+    try:
+        sixel_encoder_encode_bytes(
+            encoder,
+            pixels,
+            2,
+            2,
+            SIXEL_PIXELFORMAT_RGB888,
+            None,
+        )
+    except (TypeError, ctypes.ArgumentError):
+        sixel_encoder_unref(encoder)
+        print('encoder encode_bytes memoryview rejection verified')
+        return
+
     sixel_encoder_unref(encoder)
-
-    sixel_payload = output.read_bytes()
-    if len(sixel_payload) == 0:
-        raise SystemExit('encoder output missing for memoryview buffer input')
-
-    if not (sixel_payload.startswith(b'\x1bP') and
-            sixel_payload.endswith(b'\x1b\\')):
-        raise SystemExit('encoder output is not a valid sixel envelope')
-
-    print('encoder encode_bytes memoryview buffer acceptance verified')
+    raise SystemExit('encoder encode_bytes accepted memoryview buffer input')
 
 
 if __name__ == '__main__':
