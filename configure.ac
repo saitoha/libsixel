@@ -401,13 +401,28 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
       AC_CACHE_CHECK([whether config.status supports --jobs],
                      [ac_cv_config_status_jobs],
                      [ac_cv_config_status_jobs=no
-                      ac_config_status_help=`$SHELL $CONFIG_STATUS --help \
-                        2>/dev/null`
-                      case " $ac_config_status_help " in
-                        *" --jobs"*|*" --jobs="*)
-                          ac_cv_config_status_jobs=yes
-                          ;;
-                      esac])
+                      if test -r "$CONFIG_STATUS"; then
+                        # Prefer scanning the generated script directly so
+                        # configure avoids spawning config.status just for
+                        # capability detection.
+                        while IFS= read -r ac_config_status_line; do
+                          case " $ac_config_status_line " in
+                            *" --jobs"*|*" --jobs="*)
+                              ac_cv_config_status_jobs=yes
+                              break
+                              ;;
+                          esac
+                        done < "$CONFIG_STATUS"
+                      fi
+                      if test "x$ac_cv_config_status_jobs" != "xyes"; then
+                        ac_config_status_help=`$SHELL $CONFIG_STATUS --help \
+                          2>/dev/null`
+                        case " $ac_config_status_help " in
+                          *" --jobs"*|*" --jobs="*)
+                            ac_cv_config_status_jobs=yes
+                            ;;
+                        esac
+                      fi])
       AS_IF([test "x$ac_cv_config_status_jobs" = "xyes"],
             [ac_config_status_jobs="--jobs=$CPU_COUNT"],
             [ac_config_status_jobs=""])
