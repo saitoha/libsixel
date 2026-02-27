@@ -1085,7 +1085,7 @@ static char const g_img2sixel_optstring[] =
     "=:"
     ".:"
     "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
-    "OVX:W:HY:y:%:";
+    "OVX:W:HY:y:%:1:2:3:";
 
 static int
 img2sixel_option_allows_leading_dash(int short_opt)
@@ -1650,6 +1650,9 @@ main(int argc, char *argv[])
         {"drcs",                  required_argument,  &long_opt, '@'},
         {"ormode",                no_argument,        &long_opt, 'O'},
         {"env",                   required_argument,  &long_opt, '%'},
+        {"show-completion",       required_argument,  &long_opt, '1'},
+        {"install-completion",    required_argument,  &long_opt, '2'},
+        {"uninstall-completion",  required_argument,  &long_opt, '3'},
         {"version",               no_argument,        &long_opt, 'V'},
         {"help",                  no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
@@ -1671,13 +1674,6 @@ main(int argc, char *argv[])
     sixel_aborttrace_install_if_unhandled();
 
     optstring = g_img2sixel_optstring;
-    completion_exit_status = 0;
-    completion_cli_result = img2sixel_handle_completion_cli(
-        argc, argv, &completion_exit_status);
-    if (completion_cli_result != 0) {
-        status = completion_exit_status;
-        goto end;
-    }
 
     img2sixel_trace_topic_message("lifecycle",
                                  "main start: argc=%d",
@@ -1741,6 +1737,20 @@ main(int argc, char *argv[])
                 goto error;
             }
             break;
+        case '1':
+        case '2':
+        case '3':
+            completion_exit_status = 0;
+            completion_cli_result =
+                img2sixel_handle_completion_option(n,
+                                                   optarg,
+                                                   &completion_exit_status);
+            if (completion_cli_result <= 0) {
+                status = SIXEL_FALSE;
+                goto end;
+            }
+            status = SIXEL_OK;
+            goto end;
 
         default:
             status = sixel_encoder_setopt(encoder, n, optarg);

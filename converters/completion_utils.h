@@ -47,6 +47,8 @@ int ensure_dir_p(const char *path, mode_t mode);
 int files_equal(const char *path, const void *buf, size_t len);
 int ensure_line_in_file(const char *path, const char *line);
 int get_completion_text(const char *shell, char **out, size_t *len);
+int img2sixel_handle_completion_option(int option, const char *value,
+                                       int *exit_code);
 int img2sixel_handle_completion_cli(int argc, char **argv,
                                     int *exit_code);
 

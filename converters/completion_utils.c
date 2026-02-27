@@ -1679,6 +1679,76 @@ img2sixel_parse_completion(int argc, char **argv, int *mask,
 }
 
 int
+img2sixel_handle_completion_option(int option, const char *value,
+                                   int *exit_code)
+{
+    int mask;
+
+    if (exit_code == NULL) {
+        return -1;
+    }
+
+    if (value == NULL || value[0] == '\0') {
+        const char *option_name;
+
+        option_name = "completion option";
+        if (option == '1') {
+            option_name = "--show-completion";
+        } else if (option == '2') {
+            option_name = "--install-completion";
+        } else if (option == '3') {
+            option_name = "--uninstall-completion";
+        }
+        fprintf(stderr, "missing completion target for %s\n", option_name);
+        *exit_code = EXIT_FAILURE;
+        return -1;
+    }
+
+    mask = img2sixel_shell_mask(value);
+    if (mask == 0) {
+        const char *option_name;
+
+        option_name = "completion option";
+        if (option == '1') {
+            option_name = "--show-completion";
+        } else if (option == '2') {
+            option_name = "--install-completion";
+        } else if (option == '3') {
+            option_name = "--uninstall-completion";
+        }
+        fprintf(stderr,
+                "invalid completion target for %s: %s\n",
+                option_name,
+                value);
+        *exit_code = EXIT_FAILURE;
+        return -1;
+    }
+
+    if (option == '1') {
+        if (img2sixel_handle_show(mask) != 0) {
+            *exit_code = EXIT_FAILURE;
+            return -1;
+        }
+    } else if (option == '2') {
+        if (img2sixel_handle_install(mask) != 0) {
+            *exit_code = EXIT_FAILURE;
+            return -1;
+        }
+    } else if (option == '3') {
+        if (img2sixel_handle_uninstall(mask) != 0) {
+            *exit_code = EXIT_FAILURE;
+            return -1;
+        }
+    } else {
+        *exit_code = EXIT_FAILURE;
+        return -1;
+    }
+
+    *exit_code = EXIT_SUCCESS;
+    return 1;
+}
+
+int
 img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
 {
     const char *action;
