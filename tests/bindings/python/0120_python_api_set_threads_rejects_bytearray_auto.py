@@ -22,7 +22,7 @@ def test_0123_python_api_set_threads_rejects_bytearray_auto() -> None:
         print('set_threads bytearray auto rejection verified')
         return
 
-    raise AssertionError('set_threads accepted bytearray auto input')
+    raise SystemExit('set_threads accepted bytearray auto input')
 
 
 if __name__ == '__main__':

@@ -36,7 +36,7 @@ def test_0124_python_api_encoder_encode_bytes_rejects_string_palette() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder encode_bytes accepted string palette input')
+    raise SystemExit('encoder encode_bytes accepted string palette input')
 
 
 if __name__ == '__main__':

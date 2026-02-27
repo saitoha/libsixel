@@ -36,7 +36,7 @@ def test_0131_python_api_encoder_encode_bytes_rejects_palette_with_none_componen
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder encode_bytes accepted palette with None component')
+    raise SystemExit('encoder encode_bytes accepted palette with None component')
 
 
 if __name__ == '__main__':

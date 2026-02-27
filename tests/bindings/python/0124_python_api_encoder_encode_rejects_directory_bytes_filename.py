@@ -28,7 +28,7 @@ def test_0127_python_api_encoder_encode_rejects_directory_bytes_filename() -> No
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted bytes directory filename input')
+    raise SystemExit('encoder accepted bytes directory filename input')
 
 
 if __name__ == '__main__':

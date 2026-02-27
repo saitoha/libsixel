@@ -22,7 +22,7 @@ def test_0132_python_api_set_threads_rejects_decimal_string() -> None:
         print('set_threads decimal string rejection verified')
         return
 
-    raise AssertionError('set_threads accepted decimal numeric string input')
+    raise SystemExit('set_threads accepted decimal numeric string input')
 
 
 if __name__ == '__main__':
