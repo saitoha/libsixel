@@ -162,6 +162,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           hardware thread count.\n"
     },
     {
+        '%',
+        "env",
+        "-% KEY=VALUE, --env=KEY=VALUE\n"
+        "                           set process environment variable\n"
+        "                           before decoding. Repeatable.\n"
+    },
+    {
         'V',
         "version",
         "-V, --version              show version and license info.\n"
@@ -183,7 +190,7 @@ sixel2png_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:DVH";
+static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:%:DVH";
 
 static int
 sixel2png_option_allows_leading_dash(int short_opt)
@@ -443,6 +450,7 @@ main(int argc, char *argv[])
         {"edge",             required_argument,  &long_opt, 'e'},
         {"direct",           no_argument,        &long_opt, 'D'},
         {"threads",          required_argument,  &long_opt, '='},
+        {"env",              required_argument,  &long_opt, '%'},
         {"version",          no_argument,        &long_opt, 'V'},
         {"help",             no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
@@ -501,6 +509,15 @@ main(int argc, char *argv[])
                     : NULL);
             status = SIXEL_BAD_ARGUMENT;
             goto error;
+        case '%':
+            if (cli_apply_env_assignment(optarg,
+                                         detail_buffer,
+                                         sizeof(detail_buffer)) != 0) {
+                sixel_helper_set_additional_message(detail_buffer);
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+            break;
         default:
             status = sixel_decoder_setopt(decoder, n, optarg);
             if (SIXEL_FAILED(status)) {

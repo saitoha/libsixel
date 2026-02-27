@@ -671,6 +671,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           TARGET is one of [bash, zsh, all]\n"
     },
     {
+        '%',
+        "env",
+        "-% KEY=VALUE, --env=KEY=VALUE\n"
+        "                           set process environment variable\n"
+        "                           before conversion. Repeatable.\n"
+    },
+    {
         'V',
         "version",
         "-V, --version              show version and license info\n"
@@ -1078,7 +1085,7 @@ static char const g_img2sixel_optstring[] =
     "=:"
     ".:"
     "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
-    "OVX:W:HY:y:";
+    "OVX:W:HY:y:%:";
 
 static int
 img2sixel_option_allows_leading_dash(int short_opt)
@@ -1642,6 +1649,7 @@ main(int argc, char *argv[])
         {"pipe-mode",             no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",                  required_argument,  &long_opt, '@'},
         {"ormode",                no_argument,        &long_opt, 'O'},
+        {"env",                   required_argument,  &long_opt, '%'},
         {"version",               no_argument,        &long_opt, 'V'},
         {"help",                  no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
@@ -1724,6 +1732,15 @@ main(int argc, char *argv[])
                     : NULL);
             status = SIXEL_BAD_ARGUMENT;
             goto unknown_option_error;
+        case '%':
+            if (cli_apply_env_assignment(optarg,
+                                         detail_buffer,
+                                         sizeof(detail_buffer)) != 0) {
+                sixel_helper_set_additional_message(detail_buffer);
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+            break;
 
         default:
             status = sixel_encoder_setopt(encoder, n, optarg);

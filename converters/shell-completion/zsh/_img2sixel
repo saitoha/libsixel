@@ -302,6 +302,7 @@ _arguments -S -s -A "-*" -S \
   {-1,--show-completion=}'[print shell completion script]':target:_completiontarget \
   {-2,--install-completion=}'[install shell completion script]':target:_completiontarget \
   {-3,--uninstall-completion=}'[remove installed shell completion script]':target:_completiontarget \
+  {-%,--env=}'[set process environment variable (KEY=VALUE)]' \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
   '*:files:_files' \

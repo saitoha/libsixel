@@ -87,4 +87,9 @@ cli_report_unrecognized_option(char const *tool_name,
                                int short_opt,
                                char const *token);
 
+int
+cli_apply_env_assignment(char const *assignment,
+                         char *error_buffer,
+                         size_t error_buffer_size);
+
 #endif  /* LIBSIXEL_CONVERTERS_CLI_H */

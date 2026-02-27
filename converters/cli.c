@@ -22,12 +22,21 @@
  * SOFTWARE.
  */
 
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
 
 #if HAVE_GETOPT_H
 # include <getopt.h>
@@ -375,6 +384,79 @@ cli_report_unrecognized_option(char const *tool_name,
     }
 
     sixel_helper_set_additional_message(buffer);
+}
+
+int
+cli_apply_env_assignment(char const *assignment,
+                         char *error_buffer,
+                         size_t error_buffer_size)
+{
+    char const *separator;
+    size_t name_length;
+    size_t value_length;
+    char name[256];
+    char value[1024];
+    int status;
+
+    if (error_buffer != NULL && error_buffer_size > 0u) {
+        error_buffer[0] = '\0';
+    }
+
+    if (assignment == NULL || assignment[0] == '\0') {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "--env requires KEY=VALUE.");
+        }
+        return -1;
+    }
+
+    separator = strchr(assignment, '=');
+    if (separator == NULL || separator == assignment) {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "--env expects KEY=VALUE: '%s'",
+                           assignment);
+        }
+        return -1;
+    }
+
+    name_length = (size_t)(separator - assignment);
+    value_length = strlen(separator + 1);
+    if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "--env assignment is too long: '%s'",
+                           assignment);
+        }
+        return -1;
+    }
+
+    memcpy(name, assignment, name_length);
+    name[name_length] = '\0';
+    memcpy(value, separator + 1, value_length + 1u);
+
+#if defined(_WIN32)
+    status = _putenv_s(name, value);
+    if (status != 0) {
+        errno = status;
+    }
+#else
+    status = setenv(name, value, 1);
+#endif
+    if (status != 0) {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "failed to set environment variable '%s'",
+                           name);
+        }
+        return -1;
+    }
+
+    return 0;
 }
 
 /* vim: set et ts=4 sw=4: */
