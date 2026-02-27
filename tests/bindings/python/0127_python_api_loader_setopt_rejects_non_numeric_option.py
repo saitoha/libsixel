@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader setopt rejects non-numeric option identifier'
 
 
-def test_0130_python_api_loader_setopt_rejects_non_numeric_option() -> None:
+def test_0127_python_api_loader_setopt_rejects_non_numeric_option() -> None:
     try:
         from libsixel_wheel import sixel_loader_new
         from libsixel_wheel import sixel_loader_setopt
@@ -34,5 +34,5 @@ def test_0130_python_api_loader_setopt_rejects_non_numeric_option() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0130_python_api_loader_setopt_rejects_non_numeric_option,
+        test_0127_python_api_loader_setopt_rejects_non_numeric_option,
     ))
