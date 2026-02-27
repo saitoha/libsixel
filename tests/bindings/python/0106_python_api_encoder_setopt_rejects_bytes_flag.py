@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder setopt rejects bytes option flag input'
 
 
-def test_0109_python_api_encoder_setopt_rejects_bytes_flag() -> None:
+def test_0106_python_api_encoder_setopt_rejects_bytes_flag() -> None:
     try:
         from libsixel_wheel import sixel_encoder_new
         from libsixel_wheel import sixel_encoder_setopt
@@ -34,5 +34,5 @@ def test_0109_python_api_encoder_setopt_rejects_bytes_flag() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0109_python_api_encoder_setopt_rejects_bytes_flag,
+        test_0106_python_api_encoder_setopt_rejects_bytes_flag,
     ))

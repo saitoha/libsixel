@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'set_threads rejects None input'
 
 
-def test_0115_python_api_set_threads_rejects_none() -> None:
+def test_0112_python_api_set_threads_rejects_none() -> None:
     try:
         from libsixel_wheel import sixel_set_threads
     except (ModuleNotFoundError, OSError) as exc:
@@ -28,5 +28,5 @@ def test_0115_python_api_set_threads_rejects_none() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0115_python_api_set_threads_rejects_none,
+        test_0112_python_api_set_threads_rejects_none,
     ))

@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder setopt rejects bytearray option flag input'
 
 
-def test_0118_python_api_decoder_setopt_rejects_bytearray_flag() -> None:
+def test_0115_python_api_decoder_setopt_rejects_bytearray_flag() -> None:
     try:
         from libsixel_wheel import sixel_decoder_new
         from libsixel_wheel import sixel_decoder_setopt
@@ -34,5 +34,5 @@ def test_0118_python_api_decoder_setopt_rejects_bytearray_flag() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0118_python_api_decoder_setopt_rejects_bytearray_flag,
+        test_0115_python_api_decoder_setopt_rejects_bytearray_flag,
     ))

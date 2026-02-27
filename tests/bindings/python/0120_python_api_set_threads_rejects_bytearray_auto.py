@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'set_threads rejects bytearray auto input'
 
 
-def test_0123_python_api_set_threads_rejects_bytearray_auto() -> None:
+def test_0120_python_api_set_threads_rejects_bytearray_auto() -> None:
     try:
         from libsixel_wheel import sixel_set_threads
     except (ModuleNotFoundError, OSError) as exc:
@@ -28,5 +28,5 @@ def test_0123_python_api_set_threads_rejects_bytearray_auto() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0123_python_api_set_threads_rejects_bytearray_auto,
+        test_0120_python_api_set_threads_rejects_bytearray_auto,
     ))

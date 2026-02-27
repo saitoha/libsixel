@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader setopt accepts bytearray loader-order input'
 
 
-def test_0128_python_api_loader_setopt_loader_order_accepts_bytearray() -> None:
+def test_0125_python_api_loader_setopt_loader_order_accepts_bytearray() -> None:
     try:
         from libsixel_wheel import SIXEL_LOADER_OPTION_LOADER_ORDER
         from libsixel_wheel import sixel_loader_new
@@ -33,5 +33,5 @@ def test_0128_python_api_loader_setopt_loader_order_accepts_bytearray() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0128_python_api_loader_setopt_loader_order_accepts_bytearray,
+        test_0125_python_api_loader_setopt_loader_order_accepts_bytearray,
     ))

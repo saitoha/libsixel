@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode_bytes rejects string palette input'
 
 
-def test_0124_python_api_encoder_encode_bytes_rejects_string_palette() -> None:
+def test_0121_python_api_encoder_encode_bytes_rejects_string_palette() -> None:
     try:
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel import sixel_encoder_encode_bytes
@@ -42,5 +42,5 @@ def test_0124_python_api_encoder_encode_bytes_rejects_string_palette() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0124_python_api_encoder_encode_bytes_rejects_string_palette,
+        test_0121_python_api_encoder_encode_bytes_rejects_string_palette,
     ))

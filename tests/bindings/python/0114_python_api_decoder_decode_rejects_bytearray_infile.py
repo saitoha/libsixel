@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder decode rejects bytearray infile input'
 
 
-def test_0117_python_api_decoder_decode_rejects_bytearray_infile() -> None:
+def test_0114_python_api_decoder_decode_rejects_bytearray_infile() -> None:
     try:
         from libsixel_wheel import sixel_decoder_decode
         from libsixel_wheel import sixel_decoder_new
@@ -34,5 +34,5 @@ def test_0117_python_api_decoder_decode_rejects_bytearray_infile() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0117_python_api_decoder_decode_rejects_bytearray_infile,
+        test_0114_python_api_decoder_decode_rejects_bytearray_infile,
     ))

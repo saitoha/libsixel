@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader load_file rejects integer filename input'
 
 
-def test_0111_python_api_loader_load_file_rejects_integer_filename() -> None:
+def test_0108_python_api_loader_load_file_rejects_integer_filename() -> None:
     try:
         from libsixel_wheel import sixel_loader_load_file
         from libsixel_wheel import sixel_loader_new
@@ -37,5 +37,5 @@ def test_0111_python_api_loader_load_file_rejects_integer_filename() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0111_python_api_loader_load_file_rejects_integer_filename,
+        test_0108_python_api_loader_load_file_rejects_integer_filename,
     ))

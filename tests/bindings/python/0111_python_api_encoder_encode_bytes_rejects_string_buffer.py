@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode_bytes rejects string pixel buffer input'
 
 
-def test_0114_python_api_encoder_encode_bytes_rejects_string_buffer() -> None:
+def test_0111_python_api_encoder_encode_bytes_rejects_string_buffer() -> None:
     try:
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel import sixel_encoder_encode_bytes
@@ -41,5 +41,5 @@ def test_0114_python_api_encoder_encode_bytes_rejects_string_buffer() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0114_python_api_encoder_encode_bytes_rejects_string_buffer,
+        test_0111_python_api_encoder_encode_bytes_rejects_string_buffer,
     ))
