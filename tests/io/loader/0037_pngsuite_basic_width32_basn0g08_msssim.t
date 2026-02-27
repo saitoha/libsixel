@@ -25,7 +25,7 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0037_pngsuite_ba
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn0g08.sixel"
 
 run_img2sixel -w32 -Llibpng! "${input_png}" >"${output_sixel}" || {
-    fail 1 "img2sixel faild"
+    fail 1 "img2sixel failed"
     exit 0
 }
 

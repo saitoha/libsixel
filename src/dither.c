@@ -1979,7 +1979,7 @@ sixel_dither_set_complexion_score(
 }
 
 
-/* set whether omitting palette difinition */
+/* set whether omitting palette definition */
 SIXELAPI void
 sixel_dither_set_body_only(
     sixel_dither_t /* in */ *dither,     /* dither context object */

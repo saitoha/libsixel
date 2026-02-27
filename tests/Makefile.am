@@ -305,11 +305,17 @@ staticcheck-codespell:
 	echo "1..1"; \
 	if test -n "$(CODESPELL)"; then \
 		cd "$(abs_top_srcdir)"; \
-		find src tests -type f \( -name '*.[ch]' -o -name '*.md' -o \
-			-name '*.1' -o -name '*.in' -o -name '*.am' -o \
-			-name '*.build' -o -name '*.t' -o -name 'LICENSE' -o \
-			-name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o \
-			-name '*.sh' \) -exec "$(CODESPELL)" {} +; \
+		find src tests \
+			\( -path 'src/stb_image.h' -o -path 'src/stb_image_write.h' -o \
+				-path 'tests/.python-test-venv' -o \
+				-path 'tests/.ruby-test-venv' -o \
+				-path 'tests/.ruby-test-gem-home' \) -prune -o \
+			-type f \( -name '*.[ch]' -o -name '*.md' -o \
+				-name '*.1' -o -name '*.in' -o -name '*.am' -o \
+				-name '*.build' -o -name '*.t' -o -name 'LICENSE' -o \
+				-name '*.py' -o -name '*.rb' -o \
+				-name '*.thumbnailer' -o -name '*.sh' \) \
+			-exec "$(CODESPELL)" -L 'ser,sie' {} +; \
 		echo "ok 1 - codespell"; \
 	else \
 		echo "ok 1 # SKIP codespell not found"; \

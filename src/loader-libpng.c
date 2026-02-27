@@ -388,7 +388,7 @@ load_png(unsigned char      /* out */ **result,
 #  endif
         if (ppalette == NULL || *pncolors > reqcolors) {
 #  if HAVE_DEBUG
-            fprintf(stderr, "detected more colors than reqired(>%d).\n",
+            fprintf(stderr, "detected more colors than required(>%d).\n",
                     reqcolors);
             fprintf(stderr, "expand to RGB format...\n");
 #  endif
@@ -483,7 +483,7 @@ load_png(unsigned char      /* out */ **result,
 #  endif
         if (1 << bitdepth > reqcolors) {
 #  if HAVE_DEBUG
-            fprintf(stderr, "detected more colors than reqired(>%d).\n",
+            fprintf(stderr, "detected more colors than required(>%d).\n",
                     reqcolors);
             fprintf(stderr, "expand into RGB format...\n");
 #  endif

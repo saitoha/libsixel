@@ -30,7 +30,7 @@
  * Initial developer of this file is kmiya@culti.
  *
  * He distributes it under very permissive license which permits
- * useing, copying, modification, redistribution, and all other
+ * using, copying, modification, redistribution, and all other
  * public activities without any restrictions.
  *
  * He declares this is compatible with MIT/BSD/GPL.
@@ -226,7 +226,7 @@ hls_to_rgb(int hue, int lum, int sat)
     /* https://wikimedia.org/api/rest_v1/media/math/render/svg/f6721b57985ad83db3d5b800dc38c9980eedde1d */
     min = lum - sat * (1.0 - (lum > 50 ? (2 * (lum / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
 
-    /* sixel hue color ring is roteted -120 degree from nowdays general one. */
+    /* sixel hue color ring is roteted -120 degree from nowadays general one. */
     hue = (hue + 240) % 360;
 
     /* https://wikimedia.org/api/rest_v1/media/math/render/svg/937e8abdab308a22ff99de24d645ec9e70f1e384 */

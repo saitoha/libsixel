@@ -29,7 +29,7 @@
  * Initial developer of this file is kmiya@culti.
  *
  * He distributes it under very permissive license which permits
- * useing, copying, modification, redistribution, and all other
+ * using, copying, modification, redistribution, and all other
  * public activities without any restrictions.
  *
  * He declares this is compatible with MIT/BSD/GPL.
@@ -1884,7 +1884,7 @@ sixel_put_flash(sixel_output_t *const output)
 
     if (output->has_gri_arg_limit) {  /* VT240 Max 255 ? */
             while (output->save_count > 255) {
-                /* argument of DECGRI('!') is limitted to 255 in real VT */
+                /* argument of DECGRI('!') is limited to 255 in real VT */
                 sixel_puts(output->buffer + output->pos, "!255", 4);
                 sixel_advance(output, 4);
                 sixel_putc(output->buffer + output->pos,

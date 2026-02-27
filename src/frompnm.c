@@ -59,7 +59,7 @@ pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
             }
         }
 
-        /* skip invald characters */
+        /* skip invalid characters */
         if (p < end && *p < ' ') {
             p++;
         }
@@ -213,7 +213,7 @@ load_pnm(unsigned char      /* in */  *p,
             /* check empty content */
             /* Issue 71: https://github.com/saitoha/libsixel/issues/71 */
             sixel_helper_set_additional_message(
-                "load_pnm: the 3nd line (depth) is empty");
+                "load_pnm: the 3rd line (depth) is empty");
             goto invalid;
         }
         s = tmp;

@@ -222,17 +222,11 @@ if is_windows
   endforeach
 endif
 
-ruby_tests_mode = 'include'
-if not get_option('ruby').disabled()
-  ruby_tests_mode = 'skip'
-endif
-
 tests_text = run_command(
   sh,
   meson.project_source_root() / 'build-aux/read-check-test-list.sh',
   'tests',
   meson.current_source_dir(),
-  ruby_tests_mode,
   check: true,
 ).stdout().strip()
 tests = []
@@ -454,7 +448,7 @@ echo "1..1"
 
 if test -n "$2"; then
   cd "$1"
-  find src tests -type f '(' -name '*.[ch]' -o -name '*.md' -o -name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' ')' -exec "$2" {} +
+  find src tests '(' -path 'src/stb_image.h' -o -path 'src/stb_image_write.h' -o -path 'tests/.python-test-venv' -o -path 'tests/.ruby-test-venv' -o -path 'tests/.ruby-test-gem-home' ')' -prune -o -type f '(' -name '*.[ch]' -o -name '*.md' -o -name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' ')' -exec "$2" -L 'ser,sie' {} +
   echo "ok 1 - codespell"
 else
   echo "ok 1 # SKIP codespell not found"
