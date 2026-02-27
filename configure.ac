@@ -513,10 +513,10 @@ AC_CACHE_CHECK([for date +%s.%N with sub-second resolution],
                       *.*)
                         if test "x$lso_date_sample1" != \
                                 "x$lso_date_sample2"; then
-                          lso_date_frac=`printf '%s\n' "$lso_date_sample1" \
-                            | sed 's/^[^.]*\.//'`
-                          lso_date_frac_len=`printf '%s\n' \
-                            "$lso_date_frac" | "$AWK" '{print length($0)}'`
+                          # Keep this branch free from sed/awk so configure
+                          # avoids extra forks on each probe run.
+                          lso_date_frac=${lso_date_sample1#*.}
+                          lso_date_frac_len=${#lso_date_frac}
                           if test "$lso_date_frac_len" -ge 3; then
                             ac_cv_lso_date_epoch_nsec=yes
                           fi
@@ -2627,8 +2627,18 @@ case $host_os in
             macos_product_version=`sw_vers -productVersion 2>/dev/null`
         fi
         if test "x$macos_product_version" != x; then
-            macos_version_major=`echo "$macos_product_version" | awk -F. '{print $1}'`
-            macos_version_minor=`echo "$macos_product_version" | awk -F. '{print ($2 != "" ? $2 : 0)}'`
+            # Parse version components with shell parameter expansion to
+            # reduce process spawning in configure.
+            macos_version_major=${macos_product_version%%.*}
+            macos_version_minor=${macos_product_version#*.}
+            if test "x$macos_version_minor" = "x$macos_product_version"; then
+                macos_version_minor=0
+            else
+                macos_version_minor=${macos_version_minor%%.*}
+                if test "x$macos_version_minor" = x; then
+                    macos_version_minor=0
+                fi
+            fi
             case $macos_version_major in
               ''|*[!0-9]*)
                 quicklook_os_version_ok=no
