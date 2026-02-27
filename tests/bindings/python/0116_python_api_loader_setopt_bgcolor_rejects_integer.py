@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader setopt rejects integer bgcolor input'
 
 
-def test_0119_python_api_loader_setopt_bgcolor_rejects_integer() -> None:
+def test_0116_python_api_loader_setopt_bgcolor_rejects_integer() -> None:
     try:
         from libsixel_wheel import SIXEL_LOADER_OPTION_BGCOLOR
         from libsixel_wheel import sixel_loader_new
@@ -35,5 +35,5 @@ def test_0119_python_api_loader_setopt_bgcolor_rejects_integer() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0119_python_api_loader_setopt_bgcolor_rejects_integer,
+        test_0116_python_api_loader_setopt_bgcolor_rejects_integer,
     ))

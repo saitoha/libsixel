@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder decode rejects integer infile input'
 
 
-def test_0112_python_api_decoder_decode_rejects_integer_infile() -> None:
+def test_0109_python_api_decoder_decode_rejects_integer_infile() -> None:
     try:
         from libsixel_wheel import sixel_decoder_decode
         from libsixel_wheel import sixel_decoder_new
@@ -34,5 +34,5 @@ def test_0112_python_api_decoder_decode_rejects_integer_infile() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0112_python_api_decoder_decode_rejects_integer_infile,
+        test_0109_python_api_decoder_decode_rejects_integer_infile,
     ))

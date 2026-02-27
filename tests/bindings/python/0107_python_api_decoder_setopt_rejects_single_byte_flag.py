@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder setopt rejects single-byte bytes option flag input'
 
 
-def test_0110_python_api_decoder_setopt_rejects_single_byte_flag() -> None:
+def test_0107_python_api_decoder_setopt_rejects_single_byte_flag() -> None:
     try:
         from libsixel_wheel import sixel_decoder_new
         from libsixel_wheel import sixel_decoder_setopt
@@ -34,5 +34,5 @@ def test_0110_python_api_decoder_setopt_rejects_single_byte_flag() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0110_python_api_decoder_setopt_rejects_single_byte_flag,
+        test_0107_python_api_decoder_setopt_rejects_single_byte_flag,
     ))

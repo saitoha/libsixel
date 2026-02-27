@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader setopt bgcolor rejects non-integer components'
 
 
-def test_0125_python_api_loader_setopt_bgcolor_rejects_overflow_component() -> None:
+def test_0122_python_api_loader_setopt_bgcolor_rejects_overflow_component() -> None:
     try:
         from libsixel_wheel import SIXEL_LOADER_OPTION_BGCOLOR
         from libsixel_wheel import sixel_loader_new
@@ -35,5 +35,5 @@ def test_0125_python_api_loader_setopt_bgcolor_rejects_overflow_component() -> N
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0125_python_api_loader_setopt_bgcolor_rejects_overflow_component,
+        test_0122_python_api_loader_setopt_bgcolor_rejects_overflow_component,
     ))
