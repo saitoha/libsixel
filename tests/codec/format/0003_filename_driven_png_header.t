@@ -2,18 +2,15 @@
 # Ensure filename-driven PNG output uses correct header.
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
 echo "1..1"
 set -v
-
-SIXEL_LOG_PATH="${TOP_BUILDDIR}/sixel-timeline-codec-format-0003.log"
-export SIXEL_LOG_PATH
 
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 filename_png="${ARTIFACT_LOCAL_DIR}/snake-filename.png"
