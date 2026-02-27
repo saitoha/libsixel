@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder setopt rejects multi-character option flags'
 
 
-def test_0076_python_api_decoder_setopt_invalid_flag_length() -> None:
+def test_0072_python_api_decoder_setopt_invalid_flag_length() -> None:
     try:
         from libsixel_wheel import sixel_decoder_new
         from libsixel_wheel import sixel_decoder_setopt
@@ -28,11 +28,11 @@ def test_0076_python_api_decoder_setopt_invalid_flag_length() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted multi-character option flag')
+    raise SystemExit('decoder accepted multi-character option flag')
 
 
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0076_python_api_decoder_setopt_invalid_flag_length,
+        test_0072_python_api_decoder_setopt_invalid_flag_length,
     ))

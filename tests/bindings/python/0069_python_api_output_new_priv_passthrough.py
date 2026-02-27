@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'output callback receives priv object from sixel_output_new'
 
 
-def test_0073_python_api_output_new_priv_passthrough() -> None:
+def test_0069_python_api_output_new_priv_passthrough() -> None:
     try:
         from libsixel_wheel import SIXEL_BUILTIN_XTERM256
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
@@ -27,7 +27,7 @@ def test_0073_python_api_output_new_priv_passthrough() -> None:
 
     def _write(data: bytes, priv: object) -> None:
         if priv is not priv_obj:
-            raise AssertionError('output callback priv was not preserved')
+            raise SystemExit('output callback priv was not preserved')
         chunks.append(data)
 
     output = sixel_output_new(_write, priv=priv_obj)
@@ -38,10 +38,10 @@ def test_0073_python_api_output_new_priv_passthrough() -> None:
     sixel_output_unref(output)
 
     if status != 0:
-        raise AssertionError(f'sixel_encode failed with status {status}')
+        raise SystemExit(f'sixel_encode failed with status {status}')
 
     if not chunks:
-        raise AssertionError('output callback was not invoked')
+        raise SystemExit('output callback was not invoked')
 
     print('output callback priv passthrough verified')
 
@@ -49,5 +49,5 @@ def test_0073_python_api_output_new_priv_passthrough() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0073_python_api_output_new_priv_passthrough,
+        test_0069_python_api_output_new_priv_passthrough,
     ))

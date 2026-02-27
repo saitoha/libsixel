@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader_load_file rejects missing callback with ValueError'
 
 
-def test_0086_python_api_loader_load_file_rejects_missing_callback() -> None:
+def test_0082_python_api_loader_load_file_rejects_missing_callback() -> None:
     try:
         from libsixel_wheel import sixel_loader_load_file
         from libsixel_wheel import sixel_loader_new
@@ -28,11 +28,11 @@ def test_0086_python_api_loader_load_file_rejects_missing_callback() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader accepted missing callback')
+    raise SystemExit('loader accepted missing callback')
 
 
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0086_python_api_loader_load_file_rejects_missing_callback,
+        test_0082_python_api_loader_load_file_rejects_missing_callback,
     ))

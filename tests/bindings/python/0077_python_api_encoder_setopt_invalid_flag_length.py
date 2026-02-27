@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder setopt rejects multi-character option flags'
 
 
-def test_0081_python_api_encoder_setopt_invalid_flag_length() -> None:
+def test_0077_python_api_encoder_setopt_invalid_flag_length() -> None:
     try:
         from libsixel_wheel import sixel_encoder_new
         from libsixel_wheel import sixel_encoder_setopt
@@ -34,5 +34,5 @@ def test_0081_python_api_encoder_setopt_invalid_flag_length() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0081_python_api_encoder_setopt_invalid_flag_length,
+        test_0077_python_api_encoder_setopt_invalid_flag_length,
     ))

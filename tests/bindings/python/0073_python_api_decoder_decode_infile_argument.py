@@ -11,7 +11,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'raw decoder decode accepts explicit infile argument'
 
 
-def test_0077_python_api_decoder_decode_infile_argument() -> None:
+def test_0073_python_api_decoder_decode_infile_argument() -> None:
     import pathlib
 
     try:
@@ -42,7 +42,7 @@ def test_0077_python_api_decoder_decode_infile_argument() -> None:
     sixel_decoder_decode(decoder, str(sixel_path))
     sixel_decoder_unref(decoder)
 
-    if not png_path.exists() or png_path.stat().st_size == 0:
+    if png_path.stat().st_size == 0:
         raise SystemExit('decoder decode(infile=...) did not produce output')
 
     print('decoder decode infile-argument path verified')
@@ -51,5 +51,5 @@ def test_0077_python_api_decoder_decode_infile_argument() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0077_python_api_decoder_decode_infile_argument,
+        test_0073_python_api_decoder_decode_infile_argument,
     ))

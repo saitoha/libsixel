@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder setopt rejects negative integer flag values'
 
 
-def test_0084_python_api_encoder_setopt_rejects_negative_int_flag() -> None:
+def test_0080_python_api_encoder_setopt_rejects_negative_int_flag() -> None:
     try:
         from libsixel_wheel import sixel_encoder_new
         from libsixel_wheel import sixel_encoder_setopt
@@ -34,5 +34,5 @@ def test_0084_python_api_encoder_setopt_rejects_negative_int_flag() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0084_python_api_encoder_setopt_rejects_negative_int_flag,
+        test_0080_python_api_encoder_setopt_rejects_negative_int_flag,
     ))
