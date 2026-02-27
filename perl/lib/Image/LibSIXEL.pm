@@ -5,6 +5,8 @@ use warnings;
 
 use Carp qw(croak);
 use FFI::Platypus 2.00;
+use File::Basename qw(dirname);
+use File::Spec;
 use Image::LibSIXEL::Constants ();
 use Image::LibSIXEL::GeneratedAttach ();
 
@@ -14,12 +16,19 @@ our $VERSION = '0.01';
 # the Python and Ruby bindings.  The low-level functions are attached once
 # and thin Perl wrappers provide status checks and callback lifetime control.
 my $ffi = FFI::Platypus->new(api => 2);
-my @libs = grep { defined && length } (
-    $ENV{PERL_LIBSIXEL_LIB},
-    'libsixel.so.1',
-    'libsixel.so',
+my $module_dir = File::Spec->catdir(dirname(__FILE__), 'LibSIXEL');
+my @bundled_candidates = (
+    File::Spec->catfile($module_dir, 'libsixel.so.1'),
+    File::Spec->catfile($module_dir, 'libsixel.so'),
+    File::Spec->catfile($module_dir, 'libsixel.dylib'),
+    File::Spec->catfile($module_dir, 'libsixel.dll'),
 );
-$ffi->lib($libs[0]);
+my ($bundled_lib) = grep { -f $_ } @bundled_candidates;
+
+defined $bundled_lib
+    or croak 'Bundled libsixel shared library is missing. '
+           . 'Reinstall Image::LibSIXEL to rebuild it.';
+$ffi->lib($bundled_lib);
 
 Image::LibSIXEL::GeneratedAttach::attach_all($ffi);
 

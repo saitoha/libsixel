@@ -21,6 +21,12 @@ Image::LibSIXEL - The Perl interface for libsixel (A lightweight, fast implement
 This perl module provides wrapper objects for part of libsixel interface.
 http://saitoha.github.io/libsixel/
 
+
+# INSTALLATION NOTE
+
+This distribution builds and bundles the native libsixel shared library during
+installation. You do not need to install libsixel separately.
+
 # LICENSE
 
 Copyright (c) 2014,2015 Hayaki Saito

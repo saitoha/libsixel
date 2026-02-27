@@ -7,11 +7,17 @@ use 5.008_001;
 use strict;
 
 use Module::Build;
+use lib 'builder';
+use MyBuilder;
 
 my $builder = Module::Build->new (
   module_name    => 'Image::LibSIXEL',
   license        => 'mit',
   dist_abstract  => 'libsixel binding for Perl',
+  dist_name      => 'Image-LibSIXEL',
+  dist_author    => 'Hayaki Saito <saitoha@me.com>',
+  dist_version_from => 'lib/Image/LibSIXEL.pm',
+  build_class    => 'MyBuilder',
 
   requires       => {
     'FFI::Platypus' => '2.00',
