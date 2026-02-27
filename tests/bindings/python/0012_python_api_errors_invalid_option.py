@@ -28,10 +28,9 @@ def test_0012_python_api_errors_invalid_option() -> None:
         raise SystemExit(2)
 
     source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
-    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/invalid_option"))
+    artifact_dir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}"))
     header = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/include/sixel.h.in"))
-    workdir.mkdir(parents=True, exist_ok=True)
-    target = workdir / "invalid-option.six"
+    target = artifact_dir / "invalid-option.six"
 
     module = sys.modules["libsixel_wheel"]
     expected = set(

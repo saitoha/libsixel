@@ -23,11 +23,10 @@ def test_0011_python_api_errors_unsupported_format() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/unsupported"))
-    workdir.mkdir(parents=True, exist_ok=True)
-    text_file = workdir / "note.xxx"
+    artifact_dir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}"))
+    text_file = artifact_dir / "note.xxx"
     text_file.write_text("this is not an image")
-    target = workdir / "note.six"
+    target = artifact_dir / "note.six"
 
     message = ""
     try:

@@ -26,7 +26,7 @@ def test_0015_python_api_encoder_encode() -> None:
     encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
     encoder.encode(str(source))
 
-    if not output.exists() or output.stat().st_size == 0:
+    if output.stat().st_size == 0:
         raise SystemExit("encoder output missing or empty")
 
     print("encoder encode verified")

@@ -41,7 +41,7 @@ def test_0013_python_api_resource_management() -> None:
             encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "72")
             encoder.encode(str(source))
 
-        if not sixel_path.exists() or sixel_path.stat().st_size == 0:
+        if sixel_path.stat().st_size == 0:
             raise SystemExit("encoder output missing or empty")
         size = sixel_path.stat().st_size
 
@@ -50,7 +50,7 @@ def test_0013_python_api_resource_management() -> None:
             decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(decoded_png))
             decoder.decode(str(sixel_path))
 
-        if not decoded_png.exists() or decoded_png.stat().st_size == 0:
+        if decoded_png.stat().st_size == 0:
             raise SystemExit("decoder output missing or empty")
         header = decoded_png.read_bytes()[:24]
         if len(header) < 24:

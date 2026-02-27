@@ -23,11 +23,10 @@ def test_0010_python_api_errors_corrupted_image() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/corrupt"))
-    workdir.mkdir(parents=True, exist_ok=True)
-    broken_bmp = workdir / "broken.bmp"
+    artifact_dir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}"))
+    broken_bmp = artifact_dir / "broken.bmp"
     broken_bmp.write_bytes(b"BM\x00\x00")
-    target = workdir / "broken.six"
+    target = artifact_dir / "broken.six"
 
     message = ""
     try:
@@ -43,6 +42,10 @@ def test_0010_python_api_errors_corrupted_image() -> None:
 
     if not message:
         raise SystemExit("corrupted bmp: expected exception but call succeeded")
+
+    keywords = ("corrupt", "invalid", "decode", "failed", "error")
+    if not any(keyword in message.lower() for keyword in keywords):
+        raise SystemExit("corrupted bmp: missing expected keywords")
 
     print(f"corrupted bmp: RuntimeError ({message})")
 
