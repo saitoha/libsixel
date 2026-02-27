@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode_bytes rejects palette with non-integer component'
 
 
-def test_0129_python_api_encoder_encode_bytes_rejects_palette_with_non_integer_component() -> None:
+def test_0126_python_api_encoder_encode_bytes_rejects_palette_with_non_integer_component() -> None:
     try:
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel import sixel_encoder_encode_bytes
@@ -44,5 +44,5 @@ def test_0129_python_api_encoder_encode_bytes_rejects_palette_with_non_integer_c
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0129_python_api_encoder_encode_bytes_rejects_palette_with_non_integer_component,
+        test_0126_python_api_encoder_encode_bytes_rejects_palette_with_non_integer_component,
     ))
