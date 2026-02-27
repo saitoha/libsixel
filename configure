@@ -681,6 +681,7 @@ BASH
 HAVE_RUBY_FALSE
 HAVE_RUBY_TRUE
 ENABLE_RUBY
+SIXEL_CHECK_TESTS
 RUBY_SITE_LIBDIR
 RUBY_EXT_DLEXT
 RUBY_EXT_LDFLAGS
@@ -781,7 +782,6 @@ THREAD_CFLAGS
 THREAD_CPPFLAGS
 WITH_SHEBANG_FILE_FALSE
 WITH_SHEBANG_FILE_TRUE
-SIXEL_CHECK_TESTS
 SIXEL_SHEBANG_HELPER
 SIXEL_SHEBANG_FILE
 WANT_AMALGAMATED_SOURCES_FALSE
@@ -18013,8 +18013,6 @@ fi
 
 SIXEL_SHEBANG_HELPER="${top_srcdir}/build-aux/sixel-apply-shebang.sh"
 
-SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh"     tests "$srcdir/tests"`
-
  if test -n "$SIXEL_SHEBANG_FILE"; then
   WITH_SHEBANG_FILE_TRUE=
   WITH_SHEBANG_FILE_FALSE='#'
@@ -27500,6 +27498,18 @@ then :
   ENABLE_RUBY=1
 
 fi
+
+sixel_ruby_tests_mode=include
+if test "x$ENABLE_RUBY" = x1
+then :
+
+  sixel_ruby_tests_mode=skip
+
+fi
+SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+    tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+
+
 
  if test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x; then
   HAVE_RUBY_TRUE=

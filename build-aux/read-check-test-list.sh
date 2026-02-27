@@ -5,13 +5,23 @@
 
 set -eu
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <tests> <tests-dir>" >&2
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+    echo "Usage: $0 <tests> <tests-dir> [include|skip]" >&2
     exit 1
 fi
 
 mode=$1
 tests_dir=$2
+ruby_tests_mode=${3:-include}
+
+case "$ruby_tests_mode" in
+    include|skip)
+        ;;
+    *)
+        echo "Unknown ruby-tests mode: $ruby_tests_mode" >&2
+        exit 1
+        ;;
+esac
 
 if [ ! -d "$tests_dir" ]; then
     echo "Tests directory not found: $tests_dir" >&2
@@ -39,10 +49,14 @@ esac
     \) -print
 ) |
     LC_ALL=C sort |
-    awk '
+    awk -v ruby_tests_mode="$ruby_tests_mode" '
         {
             path = $0
             sub("^\\./", "", path)
+            if (ruby_tests_mode == "skip" &&
+                path ~ /^bindings\/ruby\/[0-9][0-9][0-9][0-9]_.+\.rb$/) {
+                next
+            }
             printf "%s ", path
         }
         END {

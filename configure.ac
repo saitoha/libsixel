@@ -1261,8 +1261,6 @@ fi
 AC_SUBST([SIXEL_SHEBANG_FILE])
 AC_SUBST([SIXEL_SHEBANG_HELPER],
          ["${top_srcdir}/build-aux/sixel-apply-shebang.sh"])
-SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh"     tests "$srcdir/tests"`
-AC_SUBST([SIXEL_CHECK_TESTS])
 AM_CONDITIONAL([WITH_SHEBANG_FILE],
                [test -n "$SIXEL_SHEBANG_FILE"])
 
@@ -3834,6 +3832,18 @@ AS_IF([test "x$enable_ruby" != xno], [
 AS_IF([test "x$enable_ruby" != xno -a "x$have_ruby" = xyes], [
   ENABLE_RUBY=1
 ])
+
+dnl Skip Ruby binding TAP scripts from make check when Ruby support is
+dnl enabled. The Ruby build itself is still validated by configure/build,
+dnl while runtime gem tests are exercised in dedicated jobs.
+sixel_ruby_tests_mode=include
+AS_IF([test "x$ENABLE_RUBY" = x1], [
+  sixel_ruby_tests_mode=skip
+])
+SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+    tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+AC_SUBST([SIXEL_CHECK_TESTS])
+
 AC_SUBST([ENABLE_RUBY])
 AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x])
 
