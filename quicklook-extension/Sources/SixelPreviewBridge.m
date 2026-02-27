@@ -251,12 +251,37 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
         NSError *legacyError = nil;
-        BOOL success = [[NSWorkspace sharedWorkspace]
+        BOOL success = YES;
+#if defined(HAVE_NSWORKSPACE_OPENURLS_RETURNS_RUNNING_APPLICATION)
+        NSRunningApplication *app = [[NSWorkspace sharedWorkspace]
             openURLs:@[url]
             withApplicationAtURL:previewAppURL
             options:NSWorkspaceLaunchDefault
             configuration:@{}
             error:&legacyError];
+        if (app == nil) {
+            success = NO;
+        }
+#elif defined(HAVE_NSWORKSPACE_OPENURLS_RETURNS_BOOL)
+        success = [[NSWorkspace sharedWorkspace]
+            openURLs:@[url]
+            withApplicationAtURL:previewAppURL
+            options:NSWorkspaceLaunchDefault
+            configuration:@{}
+            error:&legacyError];
+#else
+        /*
+         * Keep compatibility with environments where the build probe is not
+         * available. The modern openURLs API is already used in the branch
+         * above, so we only need a conservative fallback here.
+         */
+        success = NO;
+        legacyError = [NSError
+            errorWithDomain:NSCocoaErrorDomain
+                       code:NSFeatureUnsupportedError
+                   userInfo:@{NSLocalizedDescriptionKey:
+                                  @"unknown NSWorkspace openURLs signature"}];
+#endif
         if (!success && legacyError != nil) {
             SixelQuickLookLog(OS_LOG_TYPE_ERROR,
                               @"[bridge] failed to open %@ in Preview: %@",

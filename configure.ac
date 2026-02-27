@@ -2613,6 +2613,8 @@ AM_CONDITIONAL([HAVE_CLIPBOARD_MACOS_CARBON],
 APPLE_QUICKLOOK_EXTENSION_LIBS=""
 APPLE_QUICKLOOK_REGISTER_LIBS=""
 APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
+have_nsworkspace_openurls_returns_running_application=no
+have_nsworkspace_openurls_returns_bool=no
 have_quicklook_extension=no
 message_quicklook_extension=no
 case $host_os in
@@ -2680,6 +2682,75 @@ case $host_os in
         LIBS="$saved_LIBS"
         AC_LANG_POP([Objective C])
         if test x$have_quicklook_extension = xyes; then
+            AC_MSG_CHECKING([whether NSWorkspace openURLs returns NSRunningApplication *])
+            AC_LANG_PUSH([Objective C])
+            saved_LIBS_OBJC="$LIBS"
+            LIBS="$LIBS $added_LIBS"
+            AC_COMPILE_IFELSE(
+                [AC_LANG_PROGRAM([[
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>]],
+                                 [[NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
+NSError *error = nil;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+NSRunningApplication *app = [[NSWorkspace sharedWorkspace]
+    openURLs:@[url]
+    withApplicationAtURL:url
+    options:NSWorkspaceLaunchDefault
+    configuration:@{}
+    error:&error];
+#pragma clang diagnostic pop
+(void)app;
+(void)error;]])],
+                [have_nsworkspace_openurls_returns_running_application=yes],
+                [have_nsworkspace_openurls_returns_running_application=no])
+            AC_LANG_POP([Objective C])
+            LIBS="$saved_LIBS_OBJC"
+            AC_MSG_RESULT([$have_nsworkspace_openurls_returns_running_application])
+
+            if test x$have_nsworkspace_openurls_returns_running_application != xyes; then
+                AC_MSG_CHECKING([whether NSWorkspace openURLs returns BOOL])
+                AC_LANG_PUSH([Objective C])
+                saved_LIBS_OBJC="$LIBS"
+                LIBS="$LIBS $added_LIBS"
+                AC_COMPILE_IFELSE(
+                    [AC_LANG_PROGRAM([[
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>]],
+                                     [[NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
+NSError *error = nil;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+BOOL success = [[NSWorkspace sharedWorkspace]
+    openURLs:@[url]
+    withApplicationAtURL:url
+    options:NSWorkspaceLaunchDefault
+    configuration:@{}
+    error:&error];
+#pragma clang diagnostic pop
+(void)success;
+(void)error;]])],
+                    [have_nsworkspace_openurls_returns_bool=yes],
+                    [have_nsworkspace_openurls_returns_bool=no])
+                AC_LANG_POP([Objective C])
+                LIBS="$saved_LIBS_OBJC"
+                AC_MSG_RESULT([$have_nsworkspace_openurls_returns_bool])
+            fi
+
+            if test x$have_nsworkspace_openurls_returns_running_application = xyes; then
+                AC_DEFINE(
+                    HAVE_NSWORKSPACE_OPENURLS_RETURNS_RUNNING_APPLICATION,
+                    1,
+                    [whether NSWorkspace openURLs returns NSRunningApplication *])
+            fi
+            if test x$have_nsworkspace_openurls_returns_bool = xyes; then
+                AC_DEFINE(
+                    HAVE_NSWORKSPACE_OPENURLS_RETURNS_BOOL,
+                    1,
+                    [whether NSWorkspace openURLs returns BOOL])
+            fi
+
             APPLE_QUICKLOOK_EXTENSION_LIBS="$added_LIBS"
             APPLE_QUICKLOOK_REGISTER_LIBS=
             APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework Foundation "

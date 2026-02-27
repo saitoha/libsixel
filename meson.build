@@ -1137,10 +1137,72 @@ if host_system == 'darwin'
       modules: ['Foundation', 'CoreServices', 'UniformTypeIdentifiers'],
       required: quicklook_ext_opt.enabled())
     if quicklook_ext_dep.found() and quicklook_register_dep.found()
-      have_quicklook_extension = true
-      quicklook_extension_frameworks = [quicklook_ext_dep]
-      quicklook_extension_register_frameworks = [quicklook_register_dep]
-      quicklook_extension_message = 'yes'
+      if not have_objc
+        if quicklook_ext_opt.enabled()
+          error('Quick Look extension requires an Objective-C compiler')
+        endif
+        quicklook_extension_message = 'no (Objective-C compiler unavailable)'
+      else
+        openurls_returns_running_application = objc.compiles('''
+            #import <Foundation/Foundation.h>
+            #import <AppKit/AppKit.h>
+            int main(void) {
+                NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
+                NSError *error = nil;
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                NSRunningApplication *app = [[NSWorkspace sharedWorkspace]
+                    openURLs:@[url]
+                    withApplicationAtURL:url
+                    options:NSWorkspaceLaunchDefault
+                    configuration:@{}
+                    error:&error];
+            #pragma clang diagnostic pop
+                return (app == nil && error != nil) ? 0 : 0;
+            }
+          ''',
+          name: 'NSWorkspace openURLs returns NSRunningApplication *',
+          dependencies: quicklook_ext_dep,
+          args: ['-fobjc-arc', '-fmodules'])
+
+        openurls_returns_bool = false
+        if not openurls_returns_running_application
+          openurls_returns_bool = objc.compiles('''
+              #import <Foundation/Foundation.h>
+              #import <AppKit/AppKit.h>
+              int main(void) {
+                  NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
+                  NSError *error = nil;
+              #pragma clang diagnostic push
+              #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                  BOOL success = [[NSWorkspace sharedWorkspace]
+                      openURLs:@[url]
+                      withApplicationAtURL:url
+                      options:NSWorkspaceLaunchDefault
+                      configuration:@{}
+                      error:&error];
+              #pragma clang diagnostic pop
+                  return (success || error != nil) ? 0 : 0;
+              }
+            ''',
+            name: 'NSWorkspace openURLs returns BOOL',
+            dependencies: quicklook_ext_dep,
+            args: ['-fobjc-arc', '-fmodules'])
+        endif
+
+        if openurls_returns_running_application
+          conf.set('HAVE_NSWORKSPACE_OPENURLS_RETURNS_RUNNING_APPLICATION', 1)
+        elif openurls_returns_bool
+          conf.set('HAVE_NSWORKSPACE_OPENURLS_RETURNS_BOOL', 1)
+        elif quicklook_ext_opt.enabled()
+          error('Unable to determine NSWorkspace openURLs return type')
+        endif
+
+        have_quicklook_extension = true
+        quicklook_extension_frameworks = [quicklook_ext_dep]
+        quicklook_extension_register_frameworks = [quicklook_register_dep]
+        quicklook_extension_message = 'yes'
+      endif
     elif quicklook_ext_opt.enabled()
       error('Quick Look extension requested, but required frameworks were not found')
     else
