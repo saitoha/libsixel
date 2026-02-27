@@ -955,6 +955,14 @@ uninstall-am: uninstall-binPROGRAMS
 
 @WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
 
+.PHONY: prelink-objs
+
+# Build only lsqa object files before the final executable link.
+#
+# The top-level Makefile uses this split target to run object compilation in
+# parallel with libsixel shared library creation.
+prelink-objs: $(BUILT_SOURCES) $(lsqa_OBJECTS)
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

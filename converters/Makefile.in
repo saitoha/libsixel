@@ -104,6 +104,8 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(ABORTTRACE_LIBS)
 @WANT_SIXEL2PNG_TRUE@am__append_12 = $(srcdir)/sixel2png.1
 @WITH_SHEBANG_FILE_TRUE@am__append_13 = $(SIXEL_SHEBANG_STAMP)
+@WANT_IMG2SIXEL_TRUE@am__append_14 = $(img2sixel_OBJECTS)
+@WANT_SIXEL2PNG_TRUE@am__append_15 = $(sixel2png_OBJECTS)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -709,6 +711,12 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_13)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_11)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = converters-shebang.stamp
+
+# Build only executable object files so link steps can wait for libsixel.
+#
+# This target is consumed by the top-level parallel orchestration to overlap
+# compilation in converters/ with libsixel shared library creation.
+PRELINK_OBJECTS = $(am__append_14) $(am__append_15)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1487,6 +1495,9 @@ completion_embed.h: \
 @WITH_SHEBANG_FILE_TRUE@	@touch $@
 
 @WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
+
+.PHONY: prelink-objs
+prelink-objs: $(BUILT_SOURCES) $(PRELINK_OBJECTS)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

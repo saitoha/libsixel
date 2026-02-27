@@ -114,3 +114,11 @@ $(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
 all-local: $(SIXEL_SHEBANG_STAMP)
 CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif
+
+.PHONY: prelink-objs
+
+# Build only lsqa object files before the final executable link.
+#
+# The top-level Makefile uses this split target to run object compilation in
+# parallel with libsixel shared library creation.
+prelink-objs: $(BUILT_SOURCES) $(lsqa_OBJECTS)

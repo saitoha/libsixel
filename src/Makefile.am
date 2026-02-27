@@ -286,6 +286,14 @@ libsixel_la_LIBADD = -lm \
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
 
+.PHONY: libobjs
+
+# Build only the libtool object set for libsixel.
+#
+# This target lets the top-level Makefile overlap executable object
+# compilation in other directories with the libsixel link step.
+libobjs: $(libsixel_la_OBJECTS)
+
 GPERF_OPT=--ignore-case --language=ANSI-C
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
