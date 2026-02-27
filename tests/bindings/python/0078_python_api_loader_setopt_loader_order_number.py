@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""TAP test that loader setopt accepts numeric loader-order input via string conversion."""
+"""TAP test that loader setopt accepts numeric loader-order input."""
 
 from __future__ import annotations
 
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'loader setopt accepts numeric loader-order input via string conversion'
+DESCRIPTION = 'loader setopt accepts numeric loader-order input'
 
 
 def test_0082_python_api_loader_setopt_loader_order_number() -> None:

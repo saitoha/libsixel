@@ -22,7 +22,7 @@ def test_0078_python_api_set_threads_rejects_zero_bytes() -> None:
         print('set_threads zero-byte rejection verified')
         return
 
-    raise AssertionError('set_threads accepted zero-byte input')
+    raise SystemExit('set_threads accepted zero-byte input')
 
 
 if __name__ == '__main__':

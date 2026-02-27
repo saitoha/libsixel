@@ -28,7 +28,7 @@ def test_0084_python_api_encoder_setopt_rejects_negative_int_flag() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted negative integer option flag')
+    raise SystemExit('encoder accepted negative integer option flag')
 
 
 if __name__ == '__main__':

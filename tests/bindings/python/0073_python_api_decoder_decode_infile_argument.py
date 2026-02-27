@@ -43,7 +43,7 @@ def test_0077_python_api_decoder_decode_infile_argument() -> None:
     sixel_decoder_unref(decoder)
 
     if not png_path.exists() or png_path.stat().st_size == 0:
-        raise AssertionError('decoder decode(infile=...) did not produce output')
+        raise SystemExit('decoder decode(infile=...) did not produce output')
 
     print('decoder decode infile-argument path verified')
 

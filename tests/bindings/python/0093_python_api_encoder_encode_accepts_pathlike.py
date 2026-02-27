@@ -36,8 +36,13 @@ def test_0097_python_api_encoder_encode_accepts_pathlike() -> None:
     sixel_encoder_encode(encoder, source)
     sixel_encoder_unref(encoder)
 
-    if not output.exists() or output.stat().st_size == 0:
-        raise AssertionError('encoder output missing for path-like input')
+    sixel_payload = output.read_bytes()
+    if len(sixel_payload) == 0:
+        raise SystemExit('encoder output missing for path-like input')
+
+    if not (sixel_payload.startswith(b'\x1bP') and
+            sixel_payload.endswith(b'\x1b\\')):
+        raise SystemExit('encoder output is not a valid sixel envelope')
 
     print('encoder path-like input acceptance verified')
 
