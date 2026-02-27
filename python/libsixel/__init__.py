@@ -967,7 +967,7 @@ def sixel_output_unref(output):
 def sixel_output_get_8bit_availability(output):
     _sixel.sixel_output_get_8bit_availability.restype = c_int
     _sixel.sixel_output_get_8bit_availability.argtypes = [c_void_p]
-    _sixel.sixel_output_get_8bit_availability(output)
+    return _sixel.sixel_output_get_8bit_availability(output)
 
 
 # set 8bit output mode state
