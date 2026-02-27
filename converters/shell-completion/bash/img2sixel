@@ -345,6 +345,9 @@ _img2sixel()
         _img2sixel_filedir
         return 0
         ;;
+    -%|--env)
+        return 0
+        ;;
     esac
 
     case "$cur" in
@@ -401,6 +404,7 @@ _img2sixel()
                                    -1 --show-completion \
                                    -2 --install-completion \
                                    -3 --uninstall-completion \
+                                   -% --env \
                                    -V --version \
                                    -H --help \
                                   ' -- "$cur" ))

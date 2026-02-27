@@ -779,6 +779,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           fail when METRIC is below VALUE.\n"
     },
     {
+        '%',
+        "env",
+        "-% KEY=VALUE, --env=KEY=VALUE\n"
+        "                           set process environment variable\n"
+        "                           before assessment. Repeatable.\n"
+    },
+    {
         'H',
         "help",
         "-H, --help                 show this help.\n"
@@ -795,7 +802,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:b:Hh";
+static char const g_lsqa_optstring[] = "m:b:%:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -1296,6 +1303,7 @@ parse_args(int argc, char **argv, Options *opts)
     char **scan_argv;
     int scan_argc;
     int opt;
+    char detail_buffer[256];
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -1339,6 +1347,7 @@ parse_args(int argc, char **argv, Options *opts)
         struct option long_options[] = {
             {"metrics", required_argument, &long_opt, 'm'},
             {"baseline", required_argument, &long_opt, 'b'},
+            {"env", required_argument, &long_opt, '%'},
             {"help", no_argument, &long_opt, 'H'},
             {0, 0, 0, 0}
         };
@@ -1368,6 +1377,15 @@ parse_args(int argc, char **argv, Options *opts)
         case 'h':
             parse_status = 1;
             goto cleanup;
+        case '%':
+            if (cli_apply_env_assignment(optarg,
+                                         detail_buffer,
+                                         sizeof(detail_buffer)) != 0) {
+                lsqa_set_parse_error(detail_buffer);
+                parse_status = -1;
+                goto cleanup;
+            }
+            break;
         case 'b':
             if (opts->baseline_enabled) {
                 lsqa_set_parse_error(
