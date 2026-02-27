@@ -42,7 +42,7 @@ def test_0029_python_api_raw_decoder_lifecycle() -> None:
     sixel_decoder_decode(decoder, str(sixel_path))
     sixel_decoder_unref(decoder)
 
-    if not png_path.exists() or png_path.stat().st_size == 0:
+    if png_path.stat().st_size == 0:
         raise SystemExit("raw decoder output missing or empty")
 
     print("raw decoder APIs verified")

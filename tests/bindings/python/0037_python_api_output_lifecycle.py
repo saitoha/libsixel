@@ -16,12 +16,7 @@ def test_0037_python_api_output_lifecycle() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    chunks = []
-
-    def _write(data: bytes, _priv: object) -> None:
-        chunks.append(data)
-
-    output = sixel_output_new(_write)
+    output = sixel_output_new(lambda _data, _priv: None)
     sixel_output_ref(output)
     sixel_output_unref(output)
     sixel_output_unref(output)
