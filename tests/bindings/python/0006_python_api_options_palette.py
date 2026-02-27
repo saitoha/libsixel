@@ -29,9 +29,7 @@ def test_0006_python_api_options_palette() -> None:
         raise SystemExit(2)
 
     source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
-    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/palette"))
-    workdir.mkdir(parents=True, exist_ok=True)
-    output = workdir / "palette.six"
+    output = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/palette.six"))
 
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
@@ -43,7 +41,7 @@ def test_0006_python_api_options_palette() -> None:
     encoder.setopt(SIXEL_OPTFLAG_BGCOLOR, "#000000")
     encoder.encode(str(source))
 
-    if not output.exists() or output.stat().st_size == 0:
+    if output.stat().st_size == 0:
         raise SystemExit("missing or empty sixel output")
 
     data = output.read_bytes()

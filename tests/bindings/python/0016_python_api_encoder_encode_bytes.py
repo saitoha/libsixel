@@ -26,7 +26,7 @@ def test_0016_python_api_encoder_encode_bytes() -> None:
     encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
     encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
 
-    if not output.exists() or output.stat().st_size == 0:
+    if output.stat().st_size == 0:
         raise SystemExit("encoder output missing or empty")
 
     print("encoder encode_bytes verified")

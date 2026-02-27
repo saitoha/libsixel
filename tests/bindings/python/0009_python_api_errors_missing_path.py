@@ -23,10 +23,9 @@ def test_0009_python_api_errors_missing_path() -> None:
         print(f"SKIP_LIBSIXEL_LOAD:{exc}")
         raise SystemExit(2)
 
-    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/missing"))
-    workdir.mkdir(parents=True, exist_ok=True)
-    missing = workdir / "does-not-exist.png"
-    target = workdir / "missing.six"
+    artifact_dir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}"))
+    missing = artifact_dir / "does-not-exist.png"
+    target = artifact_dir / "missing.six"
 
     message = ""
     try:

@@ -29,10 +29,8 @@ def test_0007_python_api_options_resize_fixed() -> None:
         raise SystemExit(2)
 
     source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
-    workdir = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/resize_fixed"))
-    workdir.mkdir(parents=True, exist_ok=True)
-    output = workdir / "resize_fixed.six"
-    png = workdir / "resize_fixed.png"
+    output = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/resize_fixed.six"))
+    png = pathlib.Path(os.path.expandvars("${ARTIFACT_LOCAL_DIR}/resize_fixed.png"))
 
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
@@ -43,7 +41,7 @@ def test_0007_python_api_options_resize_fixed() -> None:
     encoder.setopt(SIXEL_OPTFLAG_QUALITY, "full")
     encoder.encode(str(source))
 
-    if not output.exists() or output.stat().st_size == 0:
+    if output.stat().st_size == 0:
         raise SystemExit("missing or empty sixel output")
 
     data = output.read_bytes()
@@ -58,7 +56,7 @@ def test_0007_python_api_options_resize_fixed() -> None:
     decoder.setopt(SIXEL_OPTFLAG_INPUT, str(output))
     decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(png))
     decoder.decode(str(output))
-    if not png.exists() or png.stat().st_size == 0:
+    if png.stat().st_size == 0:
         raise SystemExit("decoder did not write output")
 
     header = png.read_bytes()

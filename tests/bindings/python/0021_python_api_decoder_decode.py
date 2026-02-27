@@ -33,7 +33,7 @@ def test_0021_python_api_decoder_decode() -> None:
     decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(png_path))
     decoder.decode(str(sixel_path))
 
-    if not png_path.exists() or png_path.stat().st_size == 0:
+    if png_path.stat().st_size == 0:
         raise SystemExit("decoder output missing or empty")
 
     print("decoder decode verified")
