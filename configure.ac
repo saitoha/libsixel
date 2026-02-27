@@ -1017,7 +1017,13 @@ AS_IF([test "x$enable_pgo" != "xno"], [
         [whether the compiler and linker support $sixel_pgo_cflags],
         [ac_cv_sixel_pgo_mode],
         [
-         CFLAGS="$ac_sixel_save_CFLAGS $sixel_pgo_cflags"
+         dnl This probe checks flag availability, not warning policy.
+         dnl Keep user-visible builds strict, but drop bare -Werror only
+         dnl for this capability test to avoid false negatives when
+         dnl profile/hash diagnostics are emitted by the backend.
+         ac_sixel_pgo_probe_cflags=`AS_ECHO([" $ac_sixel_save_CFLAGS "]) \
+           | sed 's/ -Werror / /g'`
+         CFLAGS="$ac_sixel_pgo_probe_cflags $sixel_pgo_cflags"
          LDFLAGS="$ac_sixel_save_LDFLAGS $sixel_pgo_ldflags"
          AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
                         [ac_cv_sixel_pgo_mode=yes],

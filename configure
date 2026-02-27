@@ -17499,7 +17499,9 @@ then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
-         CFLAGS="$ac_sixel_save_CFLAGS $sixel_pgo_cflags"
+                                             ac_sixel_pgo_probe_cflags=`printf "%s\n" " $ac_sixel_save_CFLAGS " \
+           | sed 's/ -Werror / /g'`
+         CFLAGS="$ac_sixel_pgo_probe_cflags $sixel_pgo_cflags"
          LDFLAGS="$ac_sixel_save_LDFLAGS $sixel_pgo_ldflags"
          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
