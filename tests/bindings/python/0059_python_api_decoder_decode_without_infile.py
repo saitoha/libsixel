@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test that raw decoder decode works without infile when input option is set."""
+"""TAP test that file-based raw decoder decode works without infile argument."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import os
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'raw decoder decode works without infile when input option is set'
+DESCRIPTION = 'file-based raw decoder decode works without infile argument'
 def test_0059_python_api_decoder_decode_without_infile() -> None:
     import pathlib
 

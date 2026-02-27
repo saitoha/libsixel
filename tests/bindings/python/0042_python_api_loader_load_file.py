@@ -21,20 +21,21 @@ def test_0042_python_api_loader_load_file() -> None:
         raise SystemExit(2)
 
     source = pathlib.Path(os.path.expandvars("${TOP_SRCDIR}/tests/data/inputs/snake_64.png"))
-    frames = []
+    callback_count = 0
 
-    def _load(frame_ptr: object, context_ptr: object) -> int:
-        frames.append((frame_ptr, context_ptr))
+    def _load(_frame_ptr: object, _context_ptr: object) -> int:
+        nonlocal callback_count
+        callback_count += 1
         return 0
 
     loader = sixel_loader_new()
     sixel_loader_load_file(loader, str(source), _load)
     sixel_loader_unref(loader)
 
-    if not frames:
+    if callback_count <= 0:
         raise SystemExit("loader callback was not invoked")
 
-    print(f"loader callback verified ({len(frames)} frame callbacks)")
+    print(f"loader callback verified ({callback_count} frame callbacks)")
 
 
 if __name__ == "__main__":
