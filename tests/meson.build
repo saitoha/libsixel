@@ -417,29 +417,79 @@ echo "python coverage exported to $build_root/python-coverage.info"
             meson.project_build_root()],
   depends: test_deps)
 
-run_target('staticcheck',
+staticcheck_actionlint = run_target('staticcheck-actionlint',
   command: [sh, '-c', '''
-set -e
+set -eu
+echo "1..1"
 
-cd "$2"
-if test -n "$4"; then
-  "$4"
+cd "$1"
+if test -n "$2"; then
+  "$2"
+  echo "ok 1 - actionlint"
 else
-  echo "skipped: actionlint not found"
+  echo "ok 1 # SKIP actionlint not found"
 fi
+''',
+            'sh',
+            meson.project_source_root(),
+            actionlint_prog.found() ? actionlint_prog.full_path() : ''])
+
+staticcheck_shellcheck = run_target('staticcheck-shellcheck',
+  command: [sh, '-c', '''
+set -eu
+echo "1..1"
 
 SHELLCHECK_CMD="$3" "$1" "$2"
-
-if test -n "$5"; then
-  cd "$2"
-  find src tests -type f '(' -name '*.[ch]' -o -name '*.md' -o -name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' ')' -exec "$5" {} +
-else
-  echo "skipped: codespell not found"
-fi
+echo "ok 1 - shellcheck"
 ''',
             'sh',
             meson.current_source_dir() / '_static/sh/shellcheck.sh',
             meson.project_source_root(),
-            shellcheck_prog.found() ? shellcheck_prog.full_path() : '',
-            actionlint_prog.found() ? actionlint_prog.full_path() : '',
+            shellcheck_prog.found() ? shellcheck_prog.full_path() : ''])
+
+staticcheck_codespell = run_target('staticcheck-codespell',
+  command: [sh, '-c', '''
+set -eu
+echo "1..1"
+
+if test -n "$2"; then
+  cd "$1"
+  find src tests -type f '(' -name '*.[ch]' -o -name '*.md' -o -name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' ')' -exec "$2" {} +
+  echo "ok 1 - codespell"
+else
+  echo "ok 1 # SKIP codespell not found"
+fi
+''',
+            'sh',
+            meson.project_source_root(),
             codespell_prog.found() ? codespell_prog.full_path() : ''])
+
+staticcheck_python_compileall = run_target('staticcheck-python-compileall',
+  command: [sh, '-c', '''
+set -eu
+echo "1..1"
+
+cd "$1"
+python_bin="$2"
+if test -z "$python_bin"; then
+  python_bin=python3
+fi
+if ! command -v "$python_bin" >/dev/null 2>&1; then
+  python_bin=python
+fi
+if ! command -v "$python_bin" >/dev/null 2>&1; then
+  echo "ok 1 # SKIP python interpreter not found"
+  exit 0
+fi
+find python tests/bindings/python -name '*.py' -exec "$python_bin" -m compileall {} +
+echo "ok 1 - python compileall"
+''',
+            'sh',
+            meson.project_source_root(),
+            python_for_tests_path])
+
+alias_target('staticcheck',
+  staticcheck_actionlint,
+  staticcheck_shellcheck,
+  staticcheck_codespell,
+  staticcheck_python_compileall)
