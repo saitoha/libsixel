@@ -11,7 +11,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode_bytes rejects memoryview buffer'
 
 
-def test_0106_python_api_encoder_encode_bytes_accepts_memoryview() -> None:
+def test_0103_python_api_encoder_encode_bytes_accepts_memoryview() -> None:
     try:
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel import sixel_encoder_encode_bytes
@@ -50,5 +50,5 @@ def test_0106_python_api_encoder_encode_bytes_accepts_memoryview() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0106_python_api_encoder_encode_bytes_accepts_memoryview,
+        test_0103_python_api_encoder_encode_bytes_accepts_memoryview,
     ))

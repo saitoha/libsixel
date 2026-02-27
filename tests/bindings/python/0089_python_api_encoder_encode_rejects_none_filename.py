@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode rejects None filename input'
 
 
-def test_0093_python_api_encoder_encode_rejects_none_filename() -> None:
+def test_0089_python_api_encoder_encode_rejects_none_filename() -> None:
     try:
         from libsixel_wheel import sixel_encoder_encode
         from libsixel_wheel import sixel_encoder_new
@@ -28,11 +28,11 @@ def test_0093_python_api_encoder_encode_rejects_none_filename() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted None filename')
+    raise SystemExit('encoder accepted None filename')
 
 
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0093_python_api_encoder_encode_rejects_none_filename,
+        test_0089_python_api_encoder_encode_rejects_none_filename,
     ))

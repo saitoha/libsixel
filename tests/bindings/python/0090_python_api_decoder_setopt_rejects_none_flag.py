@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'decoder setopt rejects None option flag'
 
 
-def test_0094_python_api_decoder_setopt_rejects_none_flag() -> None:
+def test_0090_python_api_decoder_setopt_rejects_none_flag() -> None:
     try:
         from libsixel_wheel import sixel_decoder_new
         from libsixel_wheel import sixel_decoder_setopt
@@ -28,11 +28,11 @@ def test_0094_python_api_decoder_setopt_rejects_none_flag() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted None option flag')
+    raise SystemExit('decoder accepted None option flag')
 
 
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0094_python_api_decoder_setopt_rejects_none_flag,
+        test_0090_python_api_decoder_setopt_rejects_none_flag,
     ))

@@ -11,7 +11,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode accepts pathlib.Path input'
 
 
-def test_0097_python_api_encoder_encode_accepts_pathlike() -> None:
+def test_0093_python_api_encoder_encode_accepts_pathlike() -> None:
     import pathlib
 
     try:
@@ -50,5 +50,5 @@ def test_0097_python_api_encoder_encode_accepts_pathlike() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0097_python_api_encoder_encode_accepts_pathlike,
+        test_0093_python_api_encoder_encode_accepts_pathlike,
     ))

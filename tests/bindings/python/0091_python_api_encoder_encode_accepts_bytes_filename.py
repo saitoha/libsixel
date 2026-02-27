@@ -11,7 +11,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode accepts bytes filename input'
 
 
-def test_0095_python_api_encoder_encode_accepts_bytes_filename() -> None:
+def test_0091_python_api_encoder_encode_accepts_bytes_filename() -> None:
     import pathlib
 
     try:
@@ -36,8 +36,8 @@ def test_0095_python_api_encoder_encode_accepts_bytes_filename() -> None:
     sixel_encoder_encode(encoder, bytes(source))
     sixel_encoder_unref(encoder)
 
-    if not output.exists() or output.stat().st_size == 0:
-        raise AssertionError('encoder output missing for bytes filename input')
+    if output.stat().st_size == 0:
+        raise SystemExit('encoder output missing for bytes filename input')
 
     print('encoder bytes filename acceptance verified')
 
@@ -45,5 +45,5 @@ def test_0095_python_api_encoder_encode_accepts_bytes_filename() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0095_python_api_encoder_encode_accepts_bytes_filename,
+        test_0091_python_api_encoder_encode_accepts_bytes_filename,
     ))

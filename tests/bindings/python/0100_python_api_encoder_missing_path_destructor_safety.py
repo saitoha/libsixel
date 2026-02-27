@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder destructor stays safe after missing path error'
 
 
-def test_0103_python_api_encoder_missing_path_destructor_safety() -> None:
+def test_0100_python_api_encoder_missing_path_destructor_safety() -> None:
     import gc
 
     try:
@@ -40,5 +40,5 @@ def test_0103_python_api_encoder_missing_path_destructor_safety() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0103_python_api_encoder_missing_path_destructor_safety,
+        test_0100_python_api_encoder_missing_path_destructor_safety,
     ))

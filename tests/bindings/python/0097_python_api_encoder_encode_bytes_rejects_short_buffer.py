@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode_bytes rejects too-short pixel buffer'
 
 
-def test_0101_python_api_encoder_encode_bytes_rejects_short_buffer() -> None:
+def test_0097_python_api_encoder_encode_bytes_rejects_short_buffer() -> None:
     try:
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel import sixel_encoder_encode_bytes
@@ -42,5 +42,5 @@ def test_0101_python_api_encoder_encode_bytes_rejects_short_buffer() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0101_python_api_encoder_encode_bytes_rejects_short_buffer,
+        test_0097_python_api_encoder_encode_bytes_rejects_short_buffer,
     ))

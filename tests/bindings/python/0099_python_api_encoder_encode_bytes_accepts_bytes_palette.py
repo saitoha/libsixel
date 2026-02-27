@@ -11,7 +11,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder encode_bytes accepts bytes palette input'
 
 
-def test_0103_python_api_encoder_encode_bytes_accepts_bytes_palette() -> None:
+def test_0099_python_api_encoder_encode_bytes_accepts_bytes_palette() -> None:
     import pathlib
 
     try:
@@ -62,5 +62,5 @@ def test_0103_python_api_encoder_encode_bytes_accepts_bytes_palette() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0103_python_api_encoder_encode_bytes_accepts_bytes_palette,
+        test_0099_python_api_encoder_encode_bytes_accepts_bytes_palette,
     ))

@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'set_threads accepts uppercase AUTO string input'
 
 
-def test_0091_python_api_set_threads_accepts_uppercase_auto_string() -> None:
+def test_0087_python_api_set_threads_accepts_uppercase_auto_string() -> None:
     try:
         from libsixel_wheel import sixel_set_threads
     except (ModuleNotFoundError, OSError) as exc:
@@ -23,5 +23,5 @@ def test_0091_python_api_set_threads_accepts_uppercase_auto_string() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0091_python_api_set_threads_accepts_uppercase_auto_string,
+        test_0087_python_api_set_threads_accepts_uppercase_auto_string,
     ))
