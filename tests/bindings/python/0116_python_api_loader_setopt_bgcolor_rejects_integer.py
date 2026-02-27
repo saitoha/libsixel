@@ -29,7 +29,7 @@ def test_0119_python_api_loader_setopt_bgcolor_rejects_integer() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader accepted integer bgcolor input')
+    raise SystemExit('loader accepted integer bgcolor input')
 
 
 if __name__ == '__main__':

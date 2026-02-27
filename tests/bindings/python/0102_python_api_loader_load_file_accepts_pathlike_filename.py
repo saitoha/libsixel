@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TAP test that loader_load_file rejects pathlib.Path filename input."""
+"""TAP test that loader_load_file accepts pathlib.Path filename input."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ import os
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'loader_load_file rejects pathlib.Path filename input'
+DESCRIPTION = 'loader_load_file accepts pathlib.Path filename input'
 
 
-def test_0105_python_api_loader_load_file_rejects_pathlike_filename() -> None:
+def test_0105_python_api_loader_load_file_accepts_pathlike_filename() -> None:
     import pathlib
 
     try:
@@ -25,21 +25,25 @@ def test_0105_python_api_loader_load_file_rejects_pathlike_filename() -> None:
     source = pathlib.Path(
         os.path.expandvars('${TOP_SRCDIR}/tests/data/inputs/snake_64.png')
     )
+    callbacks = 0
+
+    def _fn_load(_frame: object, _context: object) -> int:
+        nonlocal callbacks
+        callbacks += 1
+        return 0
 
     loader = sixel_loader_new()
-    try:
-        sixel_loader_load_file(loader, source, lambda _frame, _context: 0)
-    except AttributeError:
-        sixel_loader_unref(loader)
-        print('loader_load_file path-like filename rejection verified')
-        return
-
+    sixel_loader_load_file(loader, source, _fn_load)
     sixel_loader_unref(loader)
-    raise AssertionError('loader_load_file accepted pathlib.Path filename input')
+
+    if callbacks == 0:
+        raise SystemExit('loader_load_file callback was not invoked')
+
+    print('loader_load_file path-like filename acceptance verified')
 
 
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0105_python_api_loader_load_file_rejects_pathlike_filename,
+        test_0105_python_api_loader_load_file_accepts_pathlike_filename,
     ))

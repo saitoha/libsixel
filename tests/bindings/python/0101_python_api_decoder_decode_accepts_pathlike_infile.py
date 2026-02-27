@@ -40,8 +40,12 @@ def test_0104_python_api_decoder_decode_accepts_pathlike_infile() -> None:
     sixel_decoder_decode(decoder, infile)
     sixel_decoder_unref(decoder)
 
-    if not output.exists() or output.stat().st_size == 0:
-        raise AssertionError('decoder decode path-like infile did not write output')
+    png_payload = output.read_bytes()
+    if len(png_payload) == 0:
+        raise SystemExit('decoder decode path-like infile did not write output')
+
+    if not png_payload.startswith(b'\x89PNG\r\n\x1a\n'):
+        raise SystemExit('decoder decode output is not a PNG stream')
 
     print('decoder decode path-like infile acceptance verified')
 

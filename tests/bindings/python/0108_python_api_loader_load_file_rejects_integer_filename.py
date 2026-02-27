@@ -31,7 +31,7 @@ def test_0111_python_api_loader_load_file_rejects_integer_filename() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader accepted integer filename input')
+    raise SystemExit('loader accepted integer filename input')
 
 
 if __name__ == '__main__':

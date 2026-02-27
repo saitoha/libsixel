@@ -33,7 +33,7 @@ def test_0102_python_api_decoder_decode_rejects_bytes_infile() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder decode accepted bytes infile path')
+    raise SystemExit('decoder decode accepted bytes infile path')
 
 
 if __name__ == '__main__':

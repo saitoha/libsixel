@@ -48,8 +48,13 @@ def test_0103_python_api_encoder_encode_bytes_accepts_bytes_palette() -> None:
     )
     sixel_encoder_unref(encoder)
 
-    if not output.exists() or output.stat().st_size == 0:
-        raise AssertionError('encoder output missing for bytes palette')
+    sixel_payload = output.read_bytes()
+    if len(sixel_payload) == 0:
+        raise SystemExit('encoder output missing for bytes palette')
+
+    if not (sixel_payload.startswith(b'\x1bP') and
+            sixel_payload.endswith(b'\x1b\\')):
+        raise SystemExit('encoder output is not a valid sixel envelope')
 
     print('encoder encode_bytes bytes palette acceptance verified')
 

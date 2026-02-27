@@ -28,7 +28,7 @@ def test_0112_python_api_decoder_decode_rejects_integer_infile() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted integer infile input')
+    raise SystemExit('decoder accepted integer infile input')
 
 
 if __name__ == '__main__':

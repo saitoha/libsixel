@@ -35,7 +35,7 @@ def test_0114_python_api_encoder_encode_bytes_rejects_string_buffer() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder encode_bytes accepted string buffer input')
+    raise SystemExit('encoder encode_bytes accepted string buffer input')
 
 
 if __name__ == '__main__':
