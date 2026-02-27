@@ -276,69 +276,57 @@ AM_LOG_FLAGS =
 	staticcheck-python-compileall
 
 staticcheck: \
+	staticcheck-clean \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
 	staticcheck-python-compileall
 
+.PHONY: staticcheck-clean
+
+staticcheck-clean:
+	@$(am__rm_f) staticcheck-*.log staticcheck-*.trs
+
 staticcheck-actionlint:
-	@set -eu; \
-	echo "1..1"; \
-	if test -n "$(ACTIONLINT)"; then \
-		cd "$(abs_top_srcdir)"; \
-		"$(ACTIONLINT)"; \
-		echo "ok 1 - actionlint"; \
-	else \
-		echo "ok 1 # SKIP actionlint not found"; \
-	fi
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-actionlint" \
+		--log-file staticcheck-actionlint.log \
+		--trs-file staticcheck-actionlint.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-actionlint.sh" \
+		"$(abs_top_srcdir)" "$(ACTIONLINT)"
 
 staticcheck-shellcheck:
-	@set -eu; \
-	echo "1..1"; \
-	SHELLCHECK_CMD="$(SHELLCHECK)" \
-		$(SHELL) "$(top_srcdir)/tests/_static/sh/shellcheck.sh" \
-		"$(abs_top_srcdir)"; \
-	echo "ok 1 - shellcheck"
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-shellcheck" \
+		--log-file staticcheck-shellcheck.log \
+		--trs-file staticcheck-shellcheck.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-shellcheck.sh" \
+		"$(top_srcdir)/tests/_static/sh/shellcheck.sh" \
+		"$(abs_top_srcdir)" "$(SHELLCHECK)"
 
 staticcheck-codespell:
-	@set -eu; \
-	echo "1..1"; \
-	if test -n "$(CODESPELL)"; then \
-		cd "$(abs_top_srcdir)"; \
-		find src tests \
-			\( -path 'src/stb_image.h' -o -path 'src/stb_image_write.h' -o \
-				-path 'tests/.python-test-venv' -o \
-				-path 'tests/.ruby-test-venv' -o \
-				-path 'tests/.ruby-test-gem-home' \) -prune -o \
-			-type f \( -name '*.[ch]' -o -name '*.md' -o \
-				-name '*.1' -o -name '*.in' -o -name '*.am' -o \
-				-name '*.build' -o -name '*.t' -o -name 'LICENSE' -o \
-				-name '*.py' -o -name '*.rb' -o \
-				-name '*.thumbnailer' -o -name '*.sh' \) \
-			-exec "$(CODESPELL)" -L 'ser,sie' {} +; \
-		echo "ok 1 - codespell"; \
-	else \
-		echo "ok 1 # SKIP codespell not found"; \
-	fi
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-codespell" \
+		--log-file staticcheck-codespell.log \
+		--trs-file staticcheck-codespell.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-codespell.sh" \
+		"$(abs_top_srcdir)" "$(CODESPELL)"
 
 staticcheck-python-compileall:
-	@set -eu; \
-	echo "1..1"; \
-	cd "$(abs_top_srcdir)"; \
-	python_bin='$(PYTHON)'; \
-	if test -z "$$python_bin"; then \
-		python_bin=python3; \
-	fi; \
-	if ! command -v "$$python_bin" >/dev/null 2>&1; then \
-		python_bin=python; \
-	fi; \
-	if ! command -v "$$python_bin" >/dev/null 2>&1; then \
-		echo "ok 1 # SKIP python interpreter not found"; \
-		exit 0; \
-	fi; \
-	find python tests/bindings/python -name '*.py' \
-		-exec "$$python_bin" -m compileall {} +; \
-	echo "ok 1 - python compileall"
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-python-compileall" \
+		--log-file staticcheck-python-compileall.log \
+		--trs-file staticcheck-python-compileall.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-python-compileall.sh" \
+		"$(abs_top_srcdir)" "$(PYTHON)"
 
 # Route Python TAP tests through the same driver as shell TAP tests so
 # elapsed time and result formatting stay consistent across extensions.
@@ -450,6 +438,10 @@ TEST_DATA_FILES = $(shell cd $(srcdir) && find data -type f | LC_ALL=C sort)
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
+    _static/sh/staticcheck-actionlint.sh \
+    _static/sh/staticcheck-shellcheck.sh \
+    _static/sh/staticcheck-codespell.sh \
+    _static/sh/staticcheck-python-compileall.sh \
     check-test-exports.list \
     $(TEST_DATA_FILES)
 
