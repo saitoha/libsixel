@@ -2171,9 +2171,13 @@ sixel_file_mime_option=''
 if test -n "$FILE_CMD"; then
     AC_MSG_CHECKING([for file(1) MIME option])
     sixel_file_mime_fixture="${srcdir}/tests/data/inputs/formats/rgba.png"
+    sixel_carriage_return=`printf '\r'`
     for sixel_candidate in '--mime-type' '-I' '-i'; do
         sixel_file_mime_output=`"$FILE_CMD" "$sixel_candidate" \
-            "$sixel_file_mime_fixture" 2>/dev/null | tr -d '\r'`
+            "$sixel_file_mime_fixture" 2>/dev/null`
+        # file(1) may emit CRLF on some platforms; trim only trailing CR
+        # without spawning extra helpers inside this probe loop.
+        sixel_file_mime_output=${sixel_file_mime_output%"$sixel_carriage_return"}
         case "$sixel_file_mime_output" in
             image/*|*:[[:space:]]image/*|*" image/"*)
                 sixel_file_mime_option="$sixel_candidate"
@@ -2640,12 +2644,12 @@ case $host_os in
                 fi
             fi
             case $macos_version_major in
-              ''|*[!0-9]*)
+              ''|*[[!0-9]]*)
                 quicklook_os_version_ok=no
                 quicklook_os_reason="unable to parse macOS version ($macos_product_version)"
                 ;;
               10)
-                case $macos_version_minor in ''|*[!0-9]*) macos_version_minor=0 ;; esac
+                case $macos_version_minor in ''|*[[!0-9]]*) macos_version_minor=0 ;; esac
                 if test "$macos_version_minor" -lt 15; then
                     quicklook_os_version_ok=no
                 fi
