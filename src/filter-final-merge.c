@@ -42,6 +42,24 @@ typedef struct sixel_filter_final_merge_state {
 
 static SIXELSTATUS
 sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_final_merge_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_final_merge_vtbl = {
+    "final-merge",
+    SIXEL_FILTER_KIND_FINAL_MERGE,
+    sixel_filter_final_merge_apply_filter,
+    sixel_filter_final_merge_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
+static SIXELSTATUS
+sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
                                       sixel_allocator_t *allocator,
                                       sixel_logger_t *logger)
 {
@@ -113,12 +131,10 @@ sixel_filter_final_merge_init(sixel_filter_t *filter,
     memset(state, 0, sizeof(*state));
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "final-merge",
-                               SIXEL_FILTER_KIND_FINAL_MERGE,
-                               sixel_filter_final_merge_apply_filter,
-                               sixel_filter_final_merge_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_final_merge_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
         return status;

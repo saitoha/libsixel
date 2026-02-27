@@ -43,6 +43,24 @@ typedef struct sixel_filter_clip_state {
     sixel_filter_clip_config_t config;
 } sixel_filter_clip_state_t;
 
+static SIXELSTATUS
+sixel_filter_clip_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_clip_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_clip_vtbl = {
+    "clip",
+    SIXEL_FILTER_KIND_CLIP,
+    sixel_filter_clip_apply,
+    sixel_filter_clip_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
 static void
 sixel_filter_clip_adjust_bounds(sixel_filter_clip_config_t const *config,
                                 int width,
@@ -232,12 +250,10 @@ sixel_filter_clip_init(sixel_filter_t *filter,
 
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "clip",
-                               SIXEL_FILTER_KIND_CLIP,
-                               sixel_filter_clip_apply,
-                               sixel_filter_clip_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_clip_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
     }

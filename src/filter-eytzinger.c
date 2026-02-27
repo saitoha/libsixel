@@ -49,6 +49,24 @@ typedef struct sixel_filter_1d_eytzinger_state {
 
 static SIXELSTATUS
 sixel_filter_1d_eytzinger_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_1d_eytzinger_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_eytzinger_vtbl = {
+    "eytzinger",
+    SIXEL_FILTER_KIND_EYTZINGER,
+    sixel_filter_1d_eytzinger_apply,
+    sixel_filter_1d_eytzinger_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
+static SIXELSTATUS
+sixel_filter_1d_eytzinger_apply(sixel_filter_t *filter,
                                 sixel_allocator_t *allocator,
                                 sixel_logger_t *logger)
 {
@@ -142,12 +160,10 @@ sixel_filter_1d_eytzinger_init(sixel_filter_t *filter,
 
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "eytzinger",
-                               SIXEL_FILTER_KIND_EYTZINGER,
-                               sixel_filter_1d_eytzinger_apply,
-                               sixel_filter_1d_eytzinger_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_eytzinger_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
         return status;

@@ -60,6 +60,24 @@ typedef struct sixel_filter_colors_state {
     sixel_filter_colors_config_t config;
 } sixel_filter_colors_state_t;
 
+static SIXELSTATUS
+sixel_filter_colors_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_colors_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_colors_vtbl = {
+    "colorspace",
+    SIXEL_FILTER_KIND_COLORS,
+    sixel_filter_colors_apply,
+    sixel_filter_colors_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
 SIXELSTATUS
 sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
                             sixel_frame_t *frame,
@@ -210,12 +228,10 @@ sixel_filter_colors_init(sixel_filter_t *filter,
 
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "colorspace",
-                               SIXEL_FILTER_KIND_COLORS,
-                               sixel_filter_colors_apply,
-                               sixel_filter_colors_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_colors_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
         return status;

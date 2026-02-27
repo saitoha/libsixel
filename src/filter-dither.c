@@ -45,6 +45,24 @@ typedef struct sixel_filter_dither_state {
 
 static SIXELSTATUS
 sixel_filter_dither_apply(sixel_filter_t *filter,
+      sixel_allocator_t *allocator,
+      sixel_logger_t *logger);
+
+static void
+sixel_filter_dither_dispose(sixel_filter_t *filter);
+
+static sixel_filter_vtbl_t const sixel_filter_dither_vtbl = {
+    "dither",
+    SIXEL_FILTER_KIND_DITHER,
+    sixel_filter_dither_apply,
+    sixel_filter_dither_dispose,
+    NULL,
+    NULL,
+    NULL
+};
+
+static SIXELSTATUS
+sixel_filter_dither_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
                           sixel_logger_t *logger)
 {
@@ -145,12 +163,10 @@ sixel_filter_dither_init(sixel_filter_t *filter,
 
     state->config = *config;
 
-    status = sixel_filter_init(filter,
-                               "dither",
-                               SIXEL_FILTER_KIND_DITHER,
-                               sixel_filter_dither_apply,
-                               sixel_filter_dither_dispose,
-                               state);
+    status = sixel_filter_init_with_vtbl(
+        filter,
+        &sixel_filter_dither_vtbl,
+        state);
     if (SIXEL_FAILED(status)) {
         free(state);
         return status;
