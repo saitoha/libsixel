@@ -45,7 +45,9 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-python-test-venv.sh \
 	build-aux/resolve-ruby-test-venv.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
-	tools/fuzz-img2sixel-cli.sh
+	tools/fuzz-img2sixel-cli.sh \
+	tools/gen_perl_constants.pl \
+	tools/gen_perl_attach.pl
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
 #

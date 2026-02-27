@@ -1,8 +1,9 @@
 Build.PL
-lib/Image/LibSIXEL.xs
 lib/Image/LibSIXEL.pm
 lib/Image/LibSIXEL/Encoder.pm
 lib/Image/LibSIXEL/Decoder.pm
+lib/Image/LibSIXEL/Constants.pm
+lib/Image/LibSIXEL/GeneratedAttach.pm
 t/libsixel.t
 LICENSE
 Makefile.PL
