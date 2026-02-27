@@ -22939,6 +22939,8 @@ fi
 APPLE_QUICKLOOK_EXTENSION_LIBS=""
 APPLE_QUICKLOOK_REGISTER_LIBS=""
 APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
+have_nsworkspace_openurls_returns_running_application=no
+have_nsworkspace_openurls_returns_bool=no
 have_quicklook_extension=no
 message_quicklook_extension=no
 case $host_os in
@@ -23031,6 +23033,125 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
         if test x$have_quicklook_extension = xyes; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether NSWorkspace openURLs returns NSRunningApplication *" >&5
+printf %s "checking whether NSWorkspace openURLs returns NSRunningApplication *... " >&6; }
+            ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+            saved_LIBS_OBJC="$LIBS"
+            LIBS="$LIBS $added_LIBS"
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
+int
+main (void)
+{
+NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
+NSError *error = nil;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+NSRunningApplication *app = [[NSWorkspace sharedWorkspace]
+    openURLs:@[url]
+    withApplicationAtURL:url
+    options:NSWorkspaceLaunchDefault
+    configuration:@{}
+    error:&error];
+#pragma clang diagnostic pop
+(void)app;
+(void)error;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_compile "$LINENO"
+then :
+  have_nsworkspace_openurls_returns_running_application=yes
+else case e in #(
+  e) have_nsworkspace_openurls_returns_running_application=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+            ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+            LIBS="$saved_LIBS_OBJC"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_nsworkspace_openurls_returns_running_application" >&5
+printf "%s\n" "$have_nsworkspace_openurls_returns_running_application" >&6; }
+
+            if test x$have_nsworkspace_openurls_returns_running_application != xyes; then
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether NSWorkspace openURLs returns BOOL" >&5
+printf %s "checking whether NSWorkspace openURLs returns BOOL... " >&6; }
+                ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+                saved_LIBS_OBJC="$LIBS"
+                LIBS="$LIBS $added_LIBS"
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
+int
+main (void)
+{
+NSURL *url = [NSURL fileURLWithPath:@"/tmp"];
+NSError *error = nil;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+BOOL success = [[NSWorkspace sharedWorkspace]
+    openURLs:@[url]
+    withApplicationAtURL:url
+    options:NSWorkspaceLaunchDefault
+    configuration:@{}
+    error:&error];
+#pragma clang diagnostic pop
+(void)success;
+(void)error;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_compile "$LINENO"
+then :
+  have_nsworkspace_openurls_returns_bool=yes
+else case e in #(
+  e) have_nsworkspace_openurls_returns_bool=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+                LIBS="$saved_LIBS_OBJC"
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_nsworkspace_openurls_returns_bool" >&5
+printf "%s\n" "$have_nsworkspace_openurls_returns_bool" >&6; }
+            fi
+
+            if test x$have_nsworkspace_openurls_returns_running_application = xyes; then
+
+printf "%s\n" "#define HAVE_NSWORKSPACE_OPENURLS_RETURNS_RUNNING_APPLICATION 1" >>confdefs.h
+
+            fi
+            if test x$have_nsworkspace_openurls_returns_bool = xyes; then
+
+printf "%s\n" "#define HAVE_NSWORKSPACE_OPENURLS_RETURNS_BOOL 1" >>confdefs.h
+
+            fi
+
             APPLE_QUICKLOOK_EXTENSION_LIBS="$added_LIBS"
             APPLE_QUICKLOOK_REGISTER_LIBS=
             APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework Foundation "
