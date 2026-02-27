@@ -192,6 +192,13 @@ sixel2png_option_help_count(void)
 
 static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:%:DVH";
 
+typedef struct sixel2png_parsed_option {
+    int code;
+    int optopt_value;
+    char const *argument;
+    char const *token;
+} sixel2png_parsed_option_t;
+
 static int
 sixel2png_option_allows_leading_dash(int short_opt)
 {
@@ -436,6 +443,27 @@ main(int argc, char *argv[])
     char detail_buffer[1024];
     char const *detail_source = NULL;
     int detail_limit;
+    sixel2png_parsed_option_t *parsed_options;
+    sixel2png_parsed_option_t *grown_options;
+    sixel2png_parsed_option_t current_option;
+    size_t parsed_count;
+    size_t parsed_capacity;
+    size_t parsed_index;
+    int parse_unknown_option;
+    int parse_terminal_optind;
+
+    decoder = NULL;
+    parsed_options = NULL;
+    grown_options = NULL;
+    parsed_count = 0u;
+    parsed_capacity = 0u;
+    parsed_index = 0u;
+    parse_unknown_option = 0;
+    parse_terminal_optind = 1;
+    current_option.code = 0;
+    current_option.optopt_value = 0;
+    current_option.argument = NULL;
+    current_option.token = NULL;
 
     sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
@@ -459,13 +487,7 @@ main(int argc, char *argv[])
 
     optstring = g_sixel2png_optstring;
 
-    status = sixel_decoder_new(&decoder, NULL);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-
-    sixel_option_apply_cli_suggestion_defaults();
-
+    optind = 1;
     for (;;) {
 
 #if HAVE_GETOPT_LONG
@@ -476,7 +498,6 @@ main(int argc, char *argv[])
 #endif  /* HAVE_GETOPT_LONG */
 
         if (n == (-1)) {
-            /* parsed successfully */
             break;
         }
 #if HAVE_GETOPT_LONG
@@ -492,7 +513,51 @@ main(int argc, char *argv[])
             }
         }
 
-        switch (n) {
+        current_option.code = n;
+        current_option.optopt_value = optopt;
+        current_option.argument = optarg;
+        current_option.token = (optind > 0 && optind <= argc)
+            ? argv[optind - 1]
+            : NULL;
+
+        if (parsed_count == parsed_capacity) {
+            size_t new_capacity;
+
+            new_capacity = parsed_capacity == 0u
+                ? 16u
+                : parsed_capacity * 2u;
+            grown_options = (sixel2png_parsed_option_t *)realloc(
+                parsed_options,
+                new_capacity * sizeof(*parsed_options));
+            if (grown_options == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            parsed_options = grown_options;
+            parsed_capacity = new_capacity;
+        }
+
+        parsed_options[parsed_count] = current_option;
+        ++parsed_count;
+
+        if (n == '?') {
+            parse_unknown_option = 1;
+            break;
+        }
+    }
+    parse_terminal_optind = optind;
+
+    for (parsed_index = 0u; parsed_index < parsed_count; ++parsed_index) {
+        switch (parsed_options[parsed_index].code) {
+        case '%':
+            if (cli_apply_env_assignment(parsed_options[parsed_index].argument,
+                                         detail_buffer,
+                                         sizeof(detail_buffer)) != 0) {
+                sixel_helper_set_additional_message(detail_buffer);
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+            break;
         case 'V':
             show_version();
             status = SIXEL_OK;
@@ -501,23 +566,40 @@ main(int argc, char *argv[])
             show_help();
             status = SIXEL_OK;
             goto end;
+        default:
+            break;
+        }
+    }
+
+    if (parse_unknown_option != 0) {
+        sixel2png_handle_getopt_error(
+            parsed_options[parsed_count - 1u].optopt_value,
+            parsed_options[parsed_count - 1u].token);
+        status = SIXEL_BAD_ARGUMENT;
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    sixel_option_apply_cli_suggestion_defaults();
+
+    for (parsed_index = 0u; parsed_index < parsed_count; ++parsed_index) {
+        n = parsed_options[parsed_index].code;
+        optarg = (char *)parsed_options[parsed_index].argument;
+        switch (n) {
+        case 'V':
+        case 'H':
+        case '%':
+            break;
         case '?':
             sixel2png_handle_getopt_error(
-                optopt,
-                (optind > 0 && optind <= argc)
-                    ? argv[optind - 1]
-                    : NULL);
+                parsed_options[parsed_index].optopt_value,
+                parsed_options[parsed_index].token);
             status = SIXEL_BAD_ARGUMENT;
             goto error;
-        case '%':
-            if (cli_apply_env_assignment(optarg,
-                                         detail_buffer,
-                                         sizeof(detail_buffer)) != 0) {
-                sixel_helper_set_additional_message(detail_buffer);
-                status = SIXEL_BAD_ARGUMENT;
-                goto error;
-            }
-            break;
         default:
             status = sixel_decoder_setopt(decoder, n, optarg);
             if (SIXEL_FAILED(status)) {
@@ -540,12 +622,8 @@ main(int argc, char *argv[])
                 goto error;
             }
         }
-
-        if (optind >= argc) {
-            break;
-        }
-
     }
+    optind = parse_terminal_optind;
 
     if (optind < argc) {
         char const *argument;
@@ -592,7 +670,13 @@ error:
     status = (-1);
 
 end:
-    sixel_decoder_unref(decoder);
+    if (decoder != NULL) {
+        sixel_decoder_unref(decoder);
+    }
+    if (parsed_options != NULL) {
+        free(parsed_options);
+        parsed_options = NULL;
+    }
     return status;
 }
 

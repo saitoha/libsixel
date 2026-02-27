@@ -291,7 +291,7 @@ cli_report_missing_argument(char const *tool_name,
                             size_t count,
                             int short_opt)
 {
-    char buffer[1024];
+    char buffer[2048];
     cli_option_help_t const *entry;
     char const *long_opt;
     char const *help_text;

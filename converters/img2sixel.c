@@ -1586,6 +1586,13 @@ img2sixel_exit_code(SIXELSTATUS status)
     }
 }
 
+typedef struct img2sixel_parsed_option {
+    int code;
+    int optopt_value;
+    char const *argument;
+    char const *token;
+} img2sixel_parsed_option_t;
+
 int
 main(int argc, char *argv[])
 {
@@ -1661,6 +1668,14 @@ main(int argc, char *argv[])
     char detail_buffer[2048];
     char const *detail_source = NULL;
     int detail_limit;
+    img2sixel_parsed_option_t *parsed_options;
+    img2sixel_parsed_option_t *grown_options;
+    size_t parsed_count;
+    size_t parsed_capacity;
+    size_t parsed_index;
+    int parse_unknown_option;
+    int parse_terminal_optind;
+    img2sixel_parsed_option_t current_option;
 
     n = 0;
     completion_cli_result = 0;
@@ -1669,6 +1684,17 @@ main(int argc, char *argv[])
     long_opt = 0;
     option_index = 0;
 #endif  /* HAVE_GETOPT_LONG */
+    parsed_options = NULL;
+    grown_options = NULL;
+    parsed_count = 0u;
+    parsed_capacity = 0u;
+    parsed_index = 0u;
+    parse_unknown_option = 0;
+    parse_terminal_optind = 1;
+    current_option.code = 0;
+    current_option.optopt_value = 0;
+    current_option.argument = NULL;
+    current_option.token = NULL;
 
     sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
@@ -1679,13 +1705,7 @@ main(int argc, char *argv[])
                                  "main start: argc=%d",
                                  argc);
 
-    status = sixel_encoder_new(&encoder, NULL);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-
-    sixel_option_apply_cli_suggestion_defaults();
-
+    optind = 1;
     for (;;) {
 
 #if HAVE_GETOPT_LONG
@@ -1711,7 +1731,50 @@ main(int argc, char *argv[])
             }
         }
 
-        switch (n) {
+        current_option.code = n;
+        current_option.optopt_value = optopt;
+        current_option.argument = optarg;
+        current_option.token = (optind > 0 && optind <= argc)
+            ? argv[optind - 1]
+            : NULL;
+
+        if (parsed_count == parsed_capacity) {
+            size_t new_capacity;
+
+            new_capacity = parsed_capacity == 0u
+                ? 16u
+                : parsed_capacity * 2u;
+            grown_options = (img2sixel_parsed_option_t *)realloc(
+                parsed_options,
+                new_capacity * sizeof(*parsed_options));
+            if (grown_options == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            parsed_options = grown_options;
+            parsed_capacity = new_capacity;
+        }
+        parsed_options[parsed_count] = current_option;
+        ++parsed_count;
+
+        if (n == '?') {
+            parse_unknown_option = 1;
+            break;
+        }
+    }
+    parse_terminal_optind = optind;
+
+    for (parsed_index = 0u; parsed_index < parsed_count; ++parsed_index) {
+        switch (parsed_options[parsed_index].code) {
+        case '%':
+            if (cli_apply_env_assignment(parsed_options[parsed_index].argument,
+                                         detail_buffer,
+                                         sizeof(detail_buffer)) != 0) {
+                sixel_helper_set_additional_message(detail_buffer);
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+            break;
         case 'V':
             show_version();
             status = SIXEL_OK;
@@ -1720,30 +1783,48 @@ main(int argc, char *argv[])
             show_help();
             status = SIXEL_OK;
             goto end;
+        default:
+            break;
+        }
+    }
+
+    if (parse_unknown_option != 0) {
+        img2sixel_handle_getopt_error(
+            parsed_options[parsed_count - 1u].optopt_value,
+            parsed_options[parsed_count - 1u].token);
+        status = SIXEL_BAD_ARGUMENT;
+        goto unknown_option_error;
+    }
+
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    sixel_option_apply_cli_suggestion_defaults();
+
+    for (parsed_index = 0u; parsed_index < parsed_count; ++parsed_index) {
+        n = parsed_options[parsed_index].code;
+        optarg = (char *)parsed_options[parsed_index].argument;
+        switch (n) {
+        case 'V':
+        case 'H':
+        case '%':
+            break;
         case '?':
             img2sixel_handle_getopt_error(
-                optopt,
-                (optind > 0 && optind <= argc)
-                    ? argv[optind - 1]
-                    : NULL);
+                parsed_options[parsed_index].optopt_value,
+                parsed_options[parsed_index].token);
             status = SIXEL_BAD_ARGUMENT;
             goto unknown_option_error;
-        case '%':
-            if (cli_apply_env_assignment(optarg,
-                                         detail_buffer,
-                                         sizeof(detail_buffer)) != 0) {
-                sixel_helper_set_additional_message(detail_buffer);
-                status = SIXEL_BAD_ARGUMENT;
-                goto error;
-            }
-            break;
         case '1':
         case '2':
         case '3':
             completion_exit_status = 0;
             completion_cli_result =
                 img2sixel_handle_completion_option(n,
-                                                   optarg,
+                                                   parsed_options[
+                                                       parsed_index].argument,
                                                    &completion_exit_status);
             if (completion_cli_result <= 0) {
                 status = SIXEL_FALSE;
@@ -1778,6 +1859,7 @@ main(int argc, char *argv[])
             break;
         }
     }
+    optind = parse_terminal_optind;
 
     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
 #if HAVE_SIGNAL
@@ -1858,6 +1940,10 @@ end:
                                  status);
     if (encoder != NULL) {
         sixel_encoder_unref(encoder);
+    }
+    if (parsed_options != NULL) {
+        free(parsed_options);
+        parsed_options = NULL;
     }
     exit_code = img2sixel_exit_code(status);
     img2sixel_trace_topic_message("lifecycle",
