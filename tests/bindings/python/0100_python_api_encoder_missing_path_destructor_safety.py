@@ -27,7 +27,7 @@ def test_0103_python_api_encoder_missing_path_destructor_safety() -> None:
         rejected = True
 
     if not rejected:
-        raise AssertionError('encoder accepted missing input path')
+        raise SystemExit('encoder accepted missing input path')
 
     # Keep this object going out of scope to exercise the Python-side
     # destructor path after a C-side encode error.

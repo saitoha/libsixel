@@ -36,7 +36,7 @@ def test_0101_python_api_encoder_encode_bytes_rejects_short_buffer() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder encode_bytes accepted a too-short pixel buffer')
+    raise SystemExit('encoder encode_bytes accepted a too-short pixel buffer')
 
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@ def test_0115_python_api_set_threads_rejects_none() -> None:
         print('set_threads None rejection verified')
         return
 
-    raise AssertionError('set_threads accepted None input')
+    raise SystemExit('set_threads accepted None input')
 
 
 if __name__ == '__main__':

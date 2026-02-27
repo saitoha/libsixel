@@ -28,7 +28,7 @@ def test_0110_python_api_decoder_setopt_rejects_single_byte_flag() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted single-byte bytes option flag input')
+    raise SystemExit('decoder accepted single-byte bytes option flag input')
 
 
 if __name__ == '__main__':

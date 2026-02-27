@@ -31,7 +31,7 @@ def test_0116_python_api_loader_load_file_rejects_bytearray_filename() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader accepted bytearray filename input')
+    raise SystemExit('loader accepted bytearray filename input')
 
 
 if __name__ == '__main__':

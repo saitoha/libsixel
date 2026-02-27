@@ -28,7 +28,7 @@ def test_0113_python_api_encoder_setopt_rejects_multibyte_bytes_flag() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted multi-byte bytes option flag input')
+    raise SystemExit('encoder accepted multi-byte bytes option flag input')
 
 
 if __name__ == '__main__':

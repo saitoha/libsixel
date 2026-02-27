@@ -36,7 +36,7 @@ def test_0120_python_api_encoder_encode_bytes_rejects_none_buffer() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder encode_bytes accepted None buffer input')
+    raise SystemExit('encoder encode_bytes accepted None buffer input')
 
 
 if __name__ == '__main__':

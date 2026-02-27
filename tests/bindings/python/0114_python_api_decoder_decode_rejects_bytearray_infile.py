@@ -28,7 +28,7 @@ def test_0117_python_api_decoder_decode_rejects_bytearray_infile() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted bytearray infile input')
+    raise SystemExit('decoder accepted bytearray infile input')
 
 
 if __name__ == '__main__':

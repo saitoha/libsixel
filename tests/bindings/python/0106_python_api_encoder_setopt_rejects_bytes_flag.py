@@ -28,7 +28,7 @@ def test_0109_python_api_encoder_setopt_rejects_bytes_flag() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted bytes option flag input')
+    raise SystemExit('encoder accepted bytes option flag input')
 
 
 if __name__ == '__main__':

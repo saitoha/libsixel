@@ -28,7 +28,7 @@ def test_0107_python_api_decoder_setopt_rejects_multibyte_flag() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted multi-byte bytes option flag')
+    raise SystemExit('decoder accepted multi-byte bytes option flag')
 
 
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ def test_0118_python_api_decoder_setopt_rejects_bytearray_flag() -> None:
         return
 
     sixel_decoder_unref(decoder)
-    raise AssertionError('decoder accepted bytearray option flag input')
+    raise SystemExit('decoder accepted bytearray option flag input')
 
 
 if __name__ == '__main__':

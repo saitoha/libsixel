@@ -28,7 +28,7 @@ def test_0108_python_api_encoder_encode_rejects_integer_filename() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted integer filename input')
+    raise SystemExit('encoder accepted integer filename input')
 
 
 if __name__ == '__main__':
