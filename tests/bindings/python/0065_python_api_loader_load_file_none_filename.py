@@ -26,7 +26,7 @@ def test_0065_python_api_loader_load_file_none_filename() -> None:
         return
 
     sixel_loader_unref(loader)
-    raise AssertionError('loader load_file accepted None filename')
+    raise SystemExit('loader load_file accepted None filename')
 
 
 if __name__ == '__main__':

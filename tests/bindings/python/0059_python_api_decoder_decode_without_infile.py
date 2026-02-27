@@ -42,7 +42,7 @@ def test_0059_python_api_decoder_decode_without_infile() -> None:
     sixel_decoder_decode(decoder)
     sixel_decoder_unref(decoder)
 
-    if not png_path.exists() or png_path.stat().st_size == 0:
+    if png_path.stat().st_size == 0:
         raise SystemExit("decoder decode() without infile did not write output")
 
     print("decoder decode() without infile verified")
