@@ -19,5 +19,6 @@ if ! command -v "$python_bin" >/dev/null 2>&1; then
     echo "ok 1 # SKIP python interpreter not found"
     exit 0
 fi
-find python tests/bindings/python -name '*.py' -exec "$python_bin" -m compileall {} +
+find python tests/bindings/python -name '*.py' \
+    -exec "$python_bin" -m compileall -q {} +
 echo "ok 1 - python compileall"
