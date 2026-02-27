@@ -14,6 +14,7 @@ my $builder = Module::Build->new (
   dist_abstract  => 'libsixel binding for Perl',
 
   requires       => {
+    'FFI::Platypus' => '2.00',
   },
 
   build_requires => {
@@ -23,8 +24,6 @@ my $builder = Module::Build->new (
   script_files   => [
   ],
 
-  extra_compiler_flags => scalar `libsixel-config --cflags` . ' -Wall -Wextra',
-  extra_linker_flags   => scalar `libsixel-config --libs`,
   create_makefile_pl   => 'passthrough',
 );
 
