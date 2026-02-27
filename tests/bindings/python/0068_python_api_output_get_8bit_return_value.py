@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""TAP test that output get_8bit returns None after setter call."""
+"""TAP test that output get_8bit returns a valid availability state."""
 
 from __future__ import annotations
 
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'output get_8bit returns None after setter call'
+DESCRIPTION = 'output get_8bit returns a valid availability state'
 def test_0068_python_api_output_get_8bit_return_value() -> None:
     try:
         from libsixel_wheel import sixel_output_get_8bit_availability
@@ -22,10 +22,10 @@ def test_0068_python_api_output_get_8bit_return_value() -> None:
     result = sixel_output_get_8bit_availability(output)
     sixel_output_unref(output)
 
-    if result is not None:
-        raise SystemExit('get_8bit returned unexpected non-None value')
+    if result not in (0, 1):
+        raise SystemExit(f'get_8bit returned unexpected value: {result}')
 
-    print('output get_8bit return value verified')
+    print(f'output get_8bit return value verified ({result})')
 
 
 if __name__ == '__main__':
