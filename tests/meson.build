@@ -222,11 +222,17 @@ if is_windows
   endforeach
 endif
 
+ruby_tests_mode = 'include'
+if not get_option('ruby').disabled()
+  ruby_tests_mode = 'skip'
+endif
+
 tests_text = run_command(
   sh,
   meson.project_source_root() / 'build-aux/read-check-test-list.sh',
   'tests',
   meson.current_source_dir(),
+  ruby_tests_mode,
   check: true,
 ).stdout().strip()
 tests = []
