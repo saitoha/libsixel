@@ -5,6 +5,10 @@
  * linked into a single executable while keeping per-test exit status.
  */
 
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -178,33 +182,165 @@ test_runner_is_running_under_wine(void)
 #endif
 }
 
+static int
+test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
+{
+    int index;
+    char const *token;
+    char const *assignment;
+    char const *separator;
+    size_t name_length;
+    size_t value_length;
+    char name[256];
+    char value[1024];
+    int status;
+
+    index = 1;
+    token = NULL;
+    assignment = NULL;
+
+    while (index < argc) {
+        token = argv[index];
+        if (strcmp(token, "-%") == 0) {
+            if (index + 1 >= argc) {
+                fprintf(stderr,
+                        "test_runner: short env option requires KEY=VALUE"
+                        " argument\n");
+                return -1;
+            }
+            assignment = argv[index + 1];
+            separator = strchr(assignment, '=');
+            if (separator == NULL || separator == assignment) {
+                fprintf(stderr, "test_runner: invalid env assignment\n");
+                return -1;
+            }
+            name_length = (size_t)(separator - assignment);
+            value_length = strlen(separator + 1);
+            if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
+                fprintf(stderr, "test_runner: env assignment too long\n");
+                return -1;
+            }
+            memcpy(name, assignment, name_length);
+            name[name_length] = '\0';
+            memcpy(value, separator + 1, value_length + 1u);
+#if defined(_WIN32)
+            status = _putenv_s(name, value);
+#else
+            status = setenv(name, value, 1);
+#endif
+            if (status != 0) {
+                fprintf(stderr, "test_runner: failed to set env\n");
+                return -1;
+            }
+            index += 2;
+            continue;
+        }
+        if (strncmp(token, "--env=", 6) == 0) {
+            assignment = token + 6;
+            separator = strchr(assignment, '=');
+            if (separator == NULL || separator == assignment) {
+                fprintf(stderr, "test_runner: invalid env assignment\n");
+                return -1;
+            }
+            name_length = (size_t)(separator - assignment);
+            value_length = strlen(separator + 1);
+            if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
+                fprintf(stderr, "test_runner: env assignment too long\n");
+                return -1;
+            }
+            memcpy(name, assignment, name_length);
+            name[name_length] = '\0';
+            memcpy(value, separator + 1, value_length + 1u);
+#if defined(_WIN32)
+            status = _putenv_s(name, value);
+#else
+            status = setenv(name, value, 1);
+#endif
+            if (status != 0) {
+                fprintf(stderr, "test_runner: failed to set env\n");
+                return -1;
+            }
+            index += 1;
+            continue;
+        }
+        if (strcmp(token, "--env") == 0) {
+            if (index + 1 >= argc) {
+                fprintf(stderr,
+                        "test_runner: --env requires KEY=VALUE argument\n");
+                return -1;
+            }
+            assignment = argv[index + 1];
+            separator = strchr(assignment, '=');
+            if (separator == NULL || separator == assignment) {
+                fprintf(stderr, "test_runner: invalid env assignment\n");
+                return -1;
+            }
+            name_length = (size_t)(separator - assignment);
+            value_length = strlen(separator + 1);
+            if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
+                fprintf(stderr, "test_runner: env assignment too long\n");
+                return -1;
+            }
+            memcpy(name, assignment, name_length);
+            name[name_length] = '\0';
+            memcpy(value, separator + 1, value_length + 1u);
+#if defined(_WIN32)
+            status = _putenv_s(name, value);
+#else
+            status = setenv(name, value, 1);
+#endif
+            if (status != 0) {
+                fprintf(stderr, "test_runner: failed to set env\n");
+                return -1;
+            }
+            index += 2;
+            continue;
+        }
+        break;
+    }
+
+    *out_first_index = index;
+    return 0;
+}
+
 int
 main(int argc, char **argv)
 {
     size_t index;
     char const *requested;
+    int first_index;
 
-    if (argc < 2) {
+    index = 0u;
+    requested = NULL;
+    first_index = 1;
+
+    if (test_runner_apply_env_options(argc, argv, &first_index) != 0) {
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
 
-    if (strcmp(argv[1], "--list") == 0) {
+    if (argc <= first_index) {
+        print_usage(argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    if (strcmp(argv[first_index], "--list") == 0) {
         for (index = 0u; test_entries[index].name != NULL; index++) {
             printf("%s\n", test_entries[index].name);
         }
         return EXIT_SUCCESS;
     }
 
-    if (strcmp(argv[1], "--is-running-under-wine") == 0) {
+    if (strcmp(argv[first_index], "--is-running-under-wine") == 0) {
         return test_runner_is_running_under_wine() ? EXIT_SUCCESS
                                                    : EXIT_FAILURE;
     }
 
-    requested = argv[1];
+    requested = argv[first_index];
     for (index = 0u; test_entries[index].name != NULL; index++) {
         if (strcmp(requested, test_entries[index].name) == 0) {
-            return test_entries[index].run(argc - 1, argv + 1);
+            return test_entries[index].run(argc - first_index,
+                                           argv + first_index);
         }
     }
 
