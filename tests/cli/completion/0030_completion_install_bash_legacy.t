@@ -16,7 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo '1..1'
 set -v
 
-run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}",IMG2SIXEL_BASH_VERSION_OVERRIDE=3.2 \
+run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" --env IMG2SIXEL_BASH_VERSION_OVERRIDE=3.2 \
     -- -2 bash >/dev/null || {
     fail 1 "legacy bash completion install failed"
     exit 0

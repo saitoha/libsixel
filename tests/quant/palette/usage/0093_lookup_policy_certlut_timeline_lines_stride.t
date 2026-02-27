@@ -18,13 +18,13 @@ output_stride3="${ARTIFACT_LOCAL_DIR}/timeline-stride3.six"
 log_stride1="${ARTIFACT_LOCAL_DIR}/timeline-stride1.json"
 log_stride3="${ARTIFACT_LOCAL_DIR}/timeline-stride3.json"
 
-run_img2sixel --env SIXEL_LOG_PATH="${log_stride1}",SIXEL_LOG_LINES=1 \
+run_img2sixel --env SIXEL_LOG_PATH="${log_stride1}" --env SIXEL_LOG_LINES=1 \
     --lookup-policy=certlut -p 4 -o "${output_stride1}" "${small_ppm}" || {
     fail 1 "conversion with SIXEL_LOG_LINES=1 failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOG_PATH="${log_stride3}",SIXEL_LOG_LINES=3 \
+run_img2sixel --env SIXEL_LOG_PATH="${log_stride3}" --env SIXEL_LOG_LINES=3 \
     --lookup-policy=certlut -p 4 -o "${output_stride3}" "${small_ppm}" || {
     fail 1 "conversion with SIXEL_LOG_LINES=3 failed"
     exit 0

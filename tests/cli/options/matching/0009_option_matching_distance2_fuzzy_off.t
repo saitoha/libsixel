@@ -20,7 +20,7 @@ out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 : >"${err_file}"
 : >"${out_file}"
 
-run_img2sixel --env SIXEL_OPTION_FUZZY_SUGGESTIONS=0 -- \
+run_img2sixel --env SIXEL_OPTION_FUZZY_SUGGESTIONS=0 \
     -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >"${out_file}" 2>"${err_file}" && {
     fail 1 "distance-2 typo unexpectedly succeeded"

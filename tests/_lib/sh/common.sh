@@ -32,87 +32,20 @@ runtime_exec() {
     fi
 }
 
-# Execute a helper command and optionally export extra environment values
-# for that specific invocation.
-#
-# Usage:
-#   run_img2sixel --env KEY=VALUE,KEY2=VALUE2 [--] <args...>
-#   run_sixel2png --env KEY=VALUE [--] <args...>
-#   run_lsqa --env KEY=VALUE [--] <args...>
-#   run_test_runner --env KEY=VALUE [--] <args...>
-#
-# The --env option can be specified multiple times and accepts a comma-separated
-# list. This keeps behavior consistent even when SIXEL_RUNTIME wraps the target
-# command (for example node or wine), because the variables are exported before
-# runtime_exec invokes the wrapper.
-run_with_optional_env() {
-    tool_path=$1
-    env_items=""
-    env_chunk=""
-    old_ifs=""
-
-    shift
-    while [ $# -gt 0 ]; do
-        case "$1" in
-        --env)
-            if [ $# -lt 2 ]; then
-                printf '%s\n' "run helper: --env requires KEY=VALUE list" >&2
-                return 2
-            fi
-            if [ -n "${env_items}" ]; then
-                env_items="${env_items},$2"
-            else
-                env_items="$2"
-            fi
-            shift 2
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            break
-            ;;
-        esac
-    done
-
-    if [ -z "${env_items}" ]; then
-        runtime_exec "${tool_path}" "$@"
-        return $?
-    fi
-
-    old_ifs=$IFS
-    IFS=,
-    for env_chunk in ${env_items}; do
-        case "${env_chunk}" in
-        *=*)
-            # shellcheck disable=SC2163
-            export "${env_chunk}"
-            ;;
-        *)
-            printf '%s\n' "run helper: invalid env assignment: ${env_chunk}" >&2
-            exit 2
-            ;;
-        esac
-    done
-    IFS=${old_ifs}
-    runtime_exec "${tool_path}" "$@"
-}
-
 run_img2sixel() {
-    run_with_optional_env "${IMG2SIXEL_PATH}" "$@"
+    runtime_exec "${IMG2SIXEL_PATH}" "$@"
 }
 
 run_sixel2png() {
-    run_with_optional_env "${SIXEL2PNG_PATH}" "$@"
+    runtime_exec "${SIXEL2PNG_PATH}" "$@"
 }
 
 run_lsqa() {
-    run_with_optional_env "${LSQA_PATH}" "$@"
+    runtime_exec "${LSQA_PATH}" "$@"
 }
 
 run_test_runner() {
-    run_with_optional_env "${TEST_RUNNER_PATH}" "$@"
+    runtime_exec "${TEST_RUNNER_PATH}" "$@"
 }
 
 # Shared TAP helpers for shell-based tests.

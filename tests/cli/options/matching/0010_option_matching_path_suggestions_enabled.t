@@ -15,7 +15,7 @@ set -v
 
 err_file="${ARTIFACT_LOCAL_DIR}/path-suggestions-enabled.err"
 
-run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 -- \
+run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               -m "${TOP_SRCDIR}/tests/data/inputs/snake_64.pgn" \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>"${err_file}" && {
     fail 1 "missing mapfile unexpectedly succeeded"

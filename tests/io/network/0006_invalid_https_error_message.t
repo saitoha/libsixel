@@ -21,7 +21,7 @@ set -v
 # valid HTTPS URL. This avoids parser-dependent fallback paths where malformed
 # URLs are treated as local filenames.
 set +e
-capture_output=$(run_img2sixel --env LC_ALL=C -- \
+capture_output=$(run_img2sixel --env LC_ALL=C \
     'https://127.0.0.1:1/test' 2>&1 >/dev/null)
 command_status=$?
 set -e
