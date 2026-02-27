@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'set_threads accepts auto keyword as byte input'
 
 
-def test_0079_python_api_set_threads_accepts_auto_bytes() -> None:
+def test_0075_python_api_set_threads_accepts_auto_bytes() -> None:
     try:
         from libsixel_wheel import sixel_set_threads
     except (ModuleNotFoundError, OSError) as exc:
@@ -23,5 +23,5 @@ def test_0079_python_api_set_threads_accepts_auto_bytes() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0079_python_api_set_threads_accepts_auto_bytes,
+        test_0075_python_api_set_threads_accepts_auto_bytes,
     ))

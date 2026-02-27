@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder setopt rejects oversized integer flag values'
 
 
-def test_0088_python_api_encoder_setopt_rejects_large_int_flag() -> None:
+def test_0084_python_api_encoder_setopt_rejects_large_int_flag() -> None:
     try:
         from libsixel_wheel import sixel_encoder_new
         from libsixel_wheel import sixel_encoder_setopt
@@ -28,11 +28,11 @@ def test_0088_python_api_encoder_setopt_rejects_large_int_flag() -> None:
         return
 
     sixel_encoder_unref(encoder)
-    raise AssertionError('encoder accepted oversized integer option flag')
+    raise SystemExit('encoder accepted oversized integer option flag')
 
 
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0088_python_api_encoder_setopt_rejects_large_int_flag,
+        test_0084_python_api_encoder_setopt_rejects_large_int_flag,
     ))

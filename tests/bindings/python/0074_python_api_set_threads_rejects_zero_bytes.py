@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'set_threads rejects zero value for byte input'
 
 
-def test_0078_python_api_set_threads_rejects_zero_bytes() -> None:
+def test_0074_python_api_set_threads_rejects_zero_bytes() -> None:
     try:
         from libsixel_wheel import sixel_set_threads
     except (ModuleNotFoundError, OSError) as exc:
@@ -28,5 +28,5 @@ def test_0078_python_api_set_threads_rejects_zero_bytes() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0078_python_api_set_threads_rejects_zero_bytes,
+        test_0074_python_api_set_threads_rejects_zero_bytes,
     ))

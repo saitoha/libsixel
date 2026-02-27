@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader setopt accepts numeric loader-order input'
 
 
-def test_0082_python_api_loader_setopt_loader_order_number() -> None:
+def test_0078_python_api_loader_setopt_loader_order_number() -> None:
     try:
         from libsixel_wheel import SIXEL_LOADER_OPTION_LOADER_ORDER
         from libsixel_wheel import sixel_loader_new
@@ -29,5 +29,5 @@ def test_0082_python_api_loader_setopt_loader_order_number() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0082_python_api_loader_setopt_loader_order_number,
+        test_0078_python_api_loader_setopt_loader_order_number,
     ))
