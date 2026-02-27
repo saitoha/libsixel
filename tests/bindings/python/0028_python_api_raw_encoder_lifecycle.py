@@ -30,7 +30,7 @@ def test_0028_python_api_raw_encoder_lifecycle() -> None:
     sixel_encoder_encode(encoder, str(source))
     sixel_encoder_unref(encoder)
 
-    if not output.exists() or output.stat().st_size == 0:
+    if output.stat().st_size == 0:
         raise SystemExit("raw encoder output missing or empty")
 
     print("raw encoder APIs verified")
