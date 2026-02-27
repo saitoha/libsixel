@@ -51,7 +51,7 @@ struct sixel_output {
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
 
-    /* compatiblity flags */
+    /* compatibility flags */
 
     /* 0: 7bit terminal,
      * 1: 8bit terminal */
@@ -61,8 +61,8 @@ struct sixel_output {
      * 1: the terminal does not have sixel scrolling */
     unsigned char has_sixel_scrolling;
 
-    /* 1: the argument of repeat introducer(DECGRI) is not limitted
-       0: the argument of repeat introducer(DECGRI) is limitted 255 */
+    /* 1: the argument of repeat introducer(DECGRI) is not limited
+       0: the argument of repeat introducer(DECGRI) is limited 255 */
     unsigned char has_gri_arg_limit;
 
     /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling

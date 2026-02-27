@@ -367,7 +367,7 @@ static sixel_option_choice_t const g_option_choices_select_color[] = {
     { "center", SIXEL_REP_CENTER_BOX },
     { "average", SIXEL_REP_AVERAGE_COLORS },
     { "histogram", SIXEL_REP_AVERAGE_PIXELS },
-    { "histgram", SIXEL_REP_AVERAGE_PIXELS }
+    { "histogram", SIXEL_REP_AVERAGE_PIXELS }
 };
 
 static sixel_suboption_choice_t const g_option_choices_kmeans_init_type[] = {

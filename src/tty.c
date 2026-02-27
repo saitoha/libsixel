@@ -441,7 +441,7 @@ sixel_tty_scroll(
     }
 
     /* if we can not retrieve terminal pixel size over TIOCGWINSZ ioctl,
-       return immediatly */
+       return immediately */
     if (size.ws_ypixel <= 0) {
         nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {

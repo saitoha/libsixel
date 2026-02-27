@@ -612,7 +612,7 @@ write_png_to_file(
     default:
         status = SIXEL_BAD_ARGUMENT;
         sixel_helper_set_additional_message(
-            "write_png_to_file: unkown pixelformat is specified");
+            "write_png_to_file: unknown pixelformat is specified");
         goto end;
     }
 

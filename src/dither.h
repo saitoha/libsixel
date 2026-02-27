@@ -42,11 +42,11 @@ struct sixel_dither {
     int force_palette;              /* keep palette size when non-zero */
     int ncolors;                    /* active colors */
     int origcolors;                 /* original colors */
-    int optimized;                  /* pixel is 15bpp compressable */
+    int optimized;                  /* pixel is 15bpp compressible */
     int optimize_palette;           /* minimize palette size */
     int complexion;                 /* for complexion correction */
     int bodyonly;                   /* do not output palette section if true */
-    int method_for_largest;         /* method for finding the largest dimention
+    int method_for_largest;         /* method for finding the largest dimension
                                        for splitting */
     int method_for_rep;             /* method for choosing a color from the box */
     int method_for_diffuse;         /* method for diffusing */

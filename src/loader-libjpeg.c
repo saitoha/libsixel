@@ -140,7 +140,7 @@ load_jpeg(unsigned char **result,
         jpeg_read_scanlines(&cinfo, buffer, 1);
         if (cinfo.err->num_warnings > 0) {
             sixel_helper_set_additional_message(
-                "jpeg_read_scanlines: error/warining occuered.");
+                "jpeg_read_scanlines: error/warning occuered.");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
