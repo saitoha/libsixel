@@ -1,7 +1,7 @@
 #
 # @configure_input@
 #
-SUBDIRS = include src . converters assessment tools python examples images
+SUBDIRS = include . src converters assessment tools python examples images
 if WANT_AMALGAMATED_SOURCES
 SUBDIRS += amalgamation
 endif
@@ -155,7 +155,13 @@ CLEANFILES = $(builddir)/package.json $(builddir)/*.log
 	prepare-amalgamation-check \
 	phase1-all \
 	phase2-all \
+	phase3-all \
 	phase2-members-all \
+	phase3-members-all \
+	all-src-lib \
+	all-src-libobjs \
+	all-converters-objs \
+	all-assessment-objs \
 	all-converters \
 	all-tools \
 	all-assessment \
@@ -167,21 +173,32 @@ CLEANFILES = $(builddir)/package.json $(builddir)/*.log
 	staticcheck
 
 PHASE2_ALL_TARGETS = \
-	all-converters \
+	all-src-lib \
+	all-converters-objs \
+	all-assessment-objs \
 	all-tools \
+	all-python
+
+PHASE3_ALL_TARGETS = \
+	all-converters \
 	all-assessment \
+	all-tools \
 	all-python
 if ENABLE_GDK_PIXBUF_LOADER
 PHASE2_ALL_TARGETS += all-gdk-pixbuf-loader
+PHASE3_ALL_TARGETS += all-gdk-pixbuf-loader
 endif
 if HAVE_APPLE_QUICKLOOK_EXTENSION
 PHASE2_ALL_TARGETS += all-quicklook-extension
+PHASE3_ALL_TARGETS += all-quicklook-extension
 endif
 if HAVE_WICCODEC
 PHASE2_ALL_TARGETS += all-wic
+PHASE3_ALL_TARGETS += all-wic
 endif
 if HAVE_RUBY
 PHASE2_ALL_TARGETS += all-ruby
+PHASE3_ALL_TARGETS += all-ruby
 endif
 
 prepare-amalgamation-all:
@@ -192,12 +209,30 @@ endif
 
 prepare-amalgamation-check: prepare-amalgamation-all
 
-phase1-all: prepare-amalgamation-all
+phase1-all: prepare-amalgamation-all all-src-libobjs
 
 phase2-members-all: $(PHASE2_ALL_TARGETS)
 
+phase3-members-all: $(PHASE3_ALL_TARGETS)
+
 phase2-all: phase1-all
 	$(MAKE) $(AM_MAKEFLAGS) phase2-members-all
+	$(MAKE) $(AM_MAKEFLAGS) phase3-all
+
+phase3-all:
+	$(MAKE) $(AM_MAKEFLAGS) phase3-members-all
+
+all-src-libobjs:
+	$(MAKE) -C src $(AM_MAKEFLAGS) libobjs
+
+all-src-lib:
+	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
+
+all-converters-objs:
+	$(MAKE) -C converters $(AM_MAKEFLAGS) prelink-objs
+
+all-assessment-objs:
+	$(MAKE) -C assessment $(AM_MAKEFLAGS) prelink-objs
 
 all-converters:
 	$(MAKE) -s -C converters $(AM_MAKEFLAGS) all

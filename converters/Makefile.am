@@ -211,3 +211,18 @@ $(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
 all-local: $(SIXEL_SHEBANG_STAMP)
 CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif
+
+.PHONY: prelink-objs
+
+# Build only executable object files so link steps can wait for libsixel.
+#
+# This target is consumed by the top-level parallel orchestration to overlap
+# compilation in converters/ with libsixel shared library creation.
+PRELINK_OBJECTS =
+if WANT_IMG2SIXEL
+PRELINK_OBJECTS += $(img2sixel_OBJECTS)
+endif
+if WANT_SIXEL2PNG
+PRELINK_OBJECTS += $(sixel2png_OBJECTS)
+endif
+prelink-objs: $(BUILT_SOURCES) $(PRELINK_OBJECTS)

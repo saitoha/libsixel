@@ -2327,6 +2327,14 @@ uninstall-man: uninstall-man5
 @WANT_AMALGAMATED_LIB_TRUE@libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_LIB_TRUE@	$(AMALGAMATION_COMPILE) -c -o $@ $<
 
+.PHONY: libobjs
+
+# Build only the libtool object set for libsixel.
+#
+# This target lets the top-level Makefile overlap executable object
+# compilation in other directories with the libsixel link step.
+libobjs: $(libsixel_la_OBJECTS)
+
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\

@@ -95,9 +95,13 @@ host_triplet = @host@
 @HAVE_WICCODEC_TRUE@am__append_4 = wic
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_5 = quicklook-extension
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_6 = all-gdk-pixbuf-loader
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_7 = all-quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_8 = all-wic
-@HAVE_RUBY_TRUE@am__append_9 = all-ruby
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_7 = all-gdk-pixbuf-loader
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_8 = all-quicklook-extension
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_9 = all-quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_10 = all-wic
+@HAVE_WICCODEC_TRUE@am__append_11 = all-wic
+@HAVE_RUBY_TRUE@am__append_12 = all-ruby
+@HAVE_RUBY_TRUE@am__append_13 = all-ruby
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -506,7 +510,7 @@ zshcompletiondir = @zshcompletiondir@
 #
 # @configure_input@
 #
-SUBDIRS = include src . converters assessment tools python examples \
+SUBDIRS = include . src converters assessment tools python examples \
 	images $(am__append_1) $(am__append_2) $(am__append_3) \
 	$(am__append_4) $(am__append_5) tests
 DIST_SUBDIRS = \
@@ -551,9 +555,12 @@ AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAUL
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json $(builddir)/*.log
-PHASE2_ALL_TARGETS = all-converters all-tools all-assessment \
-	all-python $(am__append_6) $(am__append_7) $(am__append_8) \
-	$(am__append_9)
+PHASE2_ALL_TARGETS = all-src-lib all-converters-objs \
+	all-assessment-objs all-tools all-python $(am__append_6) \
+	$(am__append_8) $(am__append_10) $(am__append_12)
+PHASE3_ALL_TARGETS = all-converters all-assessment all-tools \
+	all-python $(am__append_7) $(am__append_9) $(am__append_11) \
+	$(am__append_13)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1186,7 +1193,13 @@ fuzz-cli-img2sixel: all
 	prepare-amalgamation-check \
 	phase1-all \
 	phase2-all \
+	phase3-all \
 	phase2-members-all \
+	phase3-members-all \
+	all-src-lib \
+	all-src-libobjs \
+	all-converters-objs \
+	all-assessment-objs \
 	all-converters \
 	all-tools \
 	all-assessment \
@@ -1203,12 +1216,30 @@ prepare-amalgamation-all:
 
 prepare-amalgamation-check: prepare-amalgamation-all
 
-phase1-all: prepare-amalgamation-all
+phase1-all: prepare-amalgamation-all all-src-libobjs
 
 phase2-members-all: $(PHASE2_ALL_TARGETS)
 
+phase3-members-all: $(PHASE3_ALL_TARGETS)
+
 phase2-all: phase1-all
 	$(MAKE) $(AM_MAKEFLAGS) phase2-members-all
+	$(MAKE) $(AM_MAKEFLAGS) phase3-all
+
+phase3-all:
+	$(MAKE) $(AM_MAKEFLAGS) phase3-members-all
+
+all-src-libobjs:
+	$(MAKE) -C src $(AM_MAKEFLAGS) libobjs
+
+all-src-lib:
+	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
+
+all-converters-objs:
+	$(MAKE) -C converters $(AM_MAKEFLAGS) prelink-objs
+
+all-assessment-objs:
+	$(MAKE) -C assessment $(AM_MAKEFLAGS) prelink-objs
 
 all-converters:
 	$(MAKE) -s -C converters $(AM_MAKEFLAGS) all
