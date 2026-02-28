@@ -466,6 +466,18 @@ img2sixel_compat_setenv(const char *name, const char *value)
     }
 
     return 0;
+#elif defined(_WIN32) && defined(HAVE__PUTENV_S) && HAVE__PUTENV_S
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (_putenv_s(name, value) != 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    return 0;
 #else
     if (name == NULL || value == NULL) {
         errno = EINVAL;
