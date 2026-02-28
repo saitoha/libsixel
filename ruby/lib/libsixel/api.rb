@@ -254,6 +254,44 @@ module Libsixel
     extern "void sixel_loader_unref(void *)"
     extern "int sixel_loader_setopt(void *, int, void *)"
     extern "int sixel_loader_load_file(void *, char *, void *)"
+
+    singleton_class.class_eval do
+      alias_method :__raw_sixel_loader_setopt, :sixel_loader_setopt
+      alias_method :__raw_sixel_loader_load_file, :sixel_loader_load_file
+    end
+
+    def self.sixel_loader_load_file(loader, filename, callback)
+      path =
+        if filename.respond_to?(:to_path)
+          filename.to_path
+        elsif filename.is_a?(String)
+          filename
+        else
+          raise TypeError, 'filename must be a String or respond to #to_path'
+        end
+      unless callback.nil? || callback.is_a?(Integer) || callback.is_a?(Fiddle::Pointer)
+        raise TypeError, 'callback must be nil, Integer, or Fiddle::Pointer'
+      end
+
+      __raw_sixel_loader_load_file(loader, path, callback)
+    end
+
+    def self.sixel_loader_setopt(loader, option, value)
+      raise TypeError, 'option must be an Integer' unless option.is_a?(Integer)
+
+      coerced =
+        if value.nil? || value.is_a?(String) || value.is_a?(Fiddle::Pointer)
+          value
+        elsif value.respond_to?(:to_path)
+          value.to_path
+        elsif value.respond_to?(:to_str)
+          value.to_str
+        else
+          raise TypeError, 'value must be nil, String-like, Path-like, or Fiddle::Pointer'
+        end
+
+      __raw_sixel_loader_setopt(loader, option, coerced)
+    end
     extern "int sixel_helper_load_image_file(char *, int, int, int, char *, int, void *, int, int, void *, void *)"
     extern "int sixel_helper_write_image_file(char *, int, int, char *, int, char *, int, void *)"
 
