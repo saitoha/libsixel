@@ -95,6 +95,10 @@ void sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
                                  struct sixel_frame *frame,
                                  int palette_ready);
+void sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
+                                   struct sixel_encoder *encoder,
+                                   struct sixel_frame *frame,
+                                   int palette_ready);
 int sixel_encoding_palette_job_ready(struct sixel_encoder *encoder,
                                      sixel_encoding_planner_t *planner,
                                      struct sixel_frame *frame);
