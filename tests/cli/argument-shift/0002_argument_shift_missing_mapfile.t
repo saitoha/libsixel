@@ -15,12 +15,8 @@ set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 err_file="${ARTIFACT_LOCAL_DIR}/missing-map.err"
-out_file="${ARTIFACT_LOCAL_DIR}/missing-map.out"
 
-: >"${err_file}"
-: >"${out_file}"
-
-run_img2sixel -m -w 100 -h 100 "${image_path}" >"${out_file}" 2>"${err_file}" && {
+run_img2sixel -m -w 100 -h 100 "${image_path}" >/dev/null 2>"${err_file}" && {
     fail 1 "accepted -m without argument"
     exit 0
 }

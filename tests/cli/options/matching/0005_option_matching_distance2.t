@@ -15,13 +15,9 @@ set -v
 
 label="distance2"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
-
-: >"${err_file}"
-: >"${out_file}"
 
 run_img2sixel -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >"${out_file}" 2>"${err_file}" && {
+    >/dev/null 2>"${err_file}" && {
     fail 1 "distance-2 typo unexpectedly succeeded"
     exit 0
 }

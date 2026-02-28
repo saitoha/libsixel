@@ -15,16 +15,11 @@ set -v
 
 label="distance1_single"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
-status=0
-
-: >"${err_file}"
-: >"${out_file}"
 
 run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >"${out_file}" 2>"${err_file}" || status=$?
+    >/dev/null 2>"${err_file}" || status=$?
 
-test "${status}" -eq 0 && {
+test "${status-0}" -eq 0 && {
     grep 'corrected --diffusion value "burkez" -> "burkes".' \
         "${err_file}" >/dev/null 2>&1 || {
         fail 1 "missing correction notice"
