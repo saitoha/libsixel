@@ -27637,12 +27637,6 @@ then :
 fi
 
 sixel_ruby_tests_mode=include
-if test "x$ENABLE_RUBY" = x1
-then :
-
-  sixel_ruby_tests_mode=skip
-
-fi
 SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
     tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
 
