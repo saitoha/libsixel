@@ -930,13 +930,24 @@ def sixel_loader_load_file(loader, filename, fn_load):
 
 # create new output context object
 def sixel_output_new(fn_write, priv=None, allocator=c_void_p(None)):
+    output = c_void_p(None)
+
+    # ctypes callback exceptions do not propagate to the original Python
+    # caller. Keep the original exception object on the output handle so
+    # sixel_encode() can re-raise it in the caller context.
+    output.__callback_exception = None
+
     def _fn_write_local(data, size, priv_from_c):
-        fn_write(string_at(data, size), priv)
+        try:
+            fn_write(string_at(data, size), priv)
+        except Exception as exc:
+            output.__callback_exception = exc
+            return -1
         return size
+
     sixel_write_function = CFUNCTYPE(c_int, c_char_p, c_int, c_void_p)
     _sixel.sixel_output_new.restype = c_int
     _sixel.sixel_output_new.argtypes = [POINTER(c_void_p), sixel_write_function, c_void_p, c_void_p]
-    output = c_void_p(None)
     _fn_write = sixel_write_function(_fn_write_local)
     _fn_write.restype = c_int
     _fn_write.argtypes = [sixel_write_function, c_void_p, c_void_p]
@@ -961,6 +972,7 @@ def sixel_output_unref(output):
     _sixel.sixel_output_unref.argtypes = [c_void_p]
     _sixel.sixel_output_unref(output)
     output.__fn_write = None
+    output.__callback_exception = None
 
 
 # get 8bit output mode which indicates whether it uses C1 control characters
@@ -1209,7 +1221,14 @@ def sixel_set_threads(threads):
 def sixel_encode(pixels, width, height, depth, dither, output):
     _sixel.sixel_encode.restype = c_int
     _sixel.sixel_encode.argtypes = [c_char_p, c_int, c_int, c_int, c_void_p, c_void_p]
-    return _sixel.sixel_encode(pixels, width, height, depth, dither, output)
+    status = _sixel.sixel_encode(pixels, width, height, depth, dither, output)
+
+    callback_exception = getattr(output, '__callback_exception', None)
+    if callback_exception is not None:
+        output.__callback_exception = None
+        raise callback_exception
+
+    return status
 
 
 # create encoder object
