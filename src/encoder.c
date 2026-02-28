@@ -3710,6 +3710,13 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
     int height;
+    int index;
+    sixel_planner_node_kind_t kind;
+
+    status = SIXEL_OK;
+    height = 0;
+    index = 0;
+    kind = SIXEL_PLANNER_NODE_LOAD;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3744,97 +3751,124 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
         height = 0;
     }
 
-    if (context->encoder->clipfirst != 0 && context->clip_active != 0) {
-        status = sixel_encoder_filter_plan_append(
-            &context->pre_plan,
-            SIXEL_FILTER_KIND_CLIP,
-            &context->clip_config,
-            &context->frame,
-            context->current_pixelformat,
-            context->current_colorspace,
-            context->current_pixelformat,
-            context->current_colorspace,
-            height);
-        if (SIXEL_FAILED(status)) {
-            return status;
+    if (context->planner != NULL) {
+        /*
+         * Phase 3-D: drive the pre-processing chain from DAG node order
+         * instead of duplicating clip/colorspace/resize branch logic.
+         */
+        for (index = 0; index < context->planner->dag_node_count; ++index) {
+            kind = context->planner->dag_nodes[index].kind;
+            switch (kind) {
+            case SIXEL_PLANNER_NODE_CLIP:
+                status = sixel_encoder_filter_plan_append(
+                    &context->pre_plan,
+                    SIXEL_FILTER_KIND_CLIP,
+                    &context->clip_config,
+                    &context->frame,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    height);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                break;
+            case SIXEL_PLANNER_NODE_COLORSPACE_PRE:
+                context->colors_config.target_pixelformat =
+                    context->planner->scale_input_pixelformat;
+                status = sixel_encoder_filter_plan_append(
+                    &context->pre_plan,
+                    SIXEL_FILTER_KIND_COLORS,
+                    &context->colors_config,
+                    &context->frame,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    context->planner->scale_input_pixelformat,
+                    SIXEL_COLORSPACE_LINEAR,
+                    height);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                context->current_pixelformat =
+                    context->planner->scale_input_pixelformat;
+                context->current_colorspace = SIXEL_COLORSPACE_LINEAR;
+                break;
+            case SIXEL_PLANNER_NODE_SCALE:
+                status = sixel_encoder_filter_plan_append(
+                    &context->pre_plan,
+                    SIXEL_FILTER_KIND_RESIZE,
+                    &context->resize_config,
+                    &context->frame,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    context->planner->scale_pixelformat,
+                    context->current_colorspace,
+                    height);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                context->current_pixelformat =
+                    context->planner->scale_pixelformat;
+                break;
+            case SIXEL_PLANNER_NODE_COLORSPACE_POST:
+                context->colors_config.target_pixelformat =
+                    context->planner->working_pixelformat;
+                status = sixel_encoder_filter_plan_append(
+                    &context->pre_plan,
+                    SIXEL_FILTER_KIND_COLORS,
+                    &context->colors_config,
+                    &context->frame,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    context->planner->working_pixelformat,
+                    context->planner->working_colorspace_effective,
+                    height);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                context->current_pixelformat =
+                    context->planner->working_pixelformat;
+                context->current_colorspace =
+                    context->planner->working_colorspace_effective;
+                break;
+            default:
+                break;
+            }
         }
-    }
+    } else {
+        /* Keep legacy serial pre-plan when planner is unavailable. */
+        if (context->encoder->clipfirst != 0 && context->clip_active != 0) {
+            status = sixel_encoder_filter_plan_append(
+                &context->pre_plan,
+                SIXEL_FILTER_KIND_CLIP,
+                &context->clip_config,
+                &context->frame,
+                context->current_pixelformat,
+                context->current_colorspace,
+                context->current_pixelformat,
+                context->current_colorspace,
+                height);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
 
-    if (context->planner != NULL
-        && context->planner->colorspace_before_scale != 0) {
-        context->colors_config.target_pixelformat =
-            context->planner->scale_input_pixelformat;
-        status = sixel_encoder_filter_plan_append(
-            &context->pre_plan,
-            SIXEL_FILTER_KIND_COLORS,
-            &context->colors_config,
-            &context->frame,
-            context->current_pixelformat,
-            context->current_colorspace,
-            context->planner->scale_input_pixelformat,
-            SIXEL_COLORSPACE_LINEAR,
-            height);
-        if (SIXEL_FAILED(status)) {
-            return status;
+        if (context->encoder->clipfirst == 0 && context->clip_active != 0) {
+            status = sixel_encoder_filter_plan_append(
+                &context->pre_plan,
+                SIXEL_FILTER_KIND_CLIP,
+                &context->clip_config,
+                &context->frame,
+                context->current_pixelformat,
+                context->current_colorspace,
+                context->current_pixelformat,
+                context->current_colorspace,
+                height);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
         }
-        context->current_pixelformat =
-            context->planner->scale_input_pixelformat;
-        context->current_colorspace = SIXEL_COLORSPACE_LINEAR;
-    }
-
-    if (context->planner != NULL && context->planner->scale_active != 0) {
-        status = sixel_encoder_filter_plan_append(
-            &context->pre_plan,
-            SIXEL_FILTER_KIND_RESIZE,
-            &context->resize_config,
-            &context->frame,
-            context->current_pixelformat,
-            context->current_colorspace,
-            context->planner->scale_pixelformat,
-            context->current_colorspace,
-            height);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-        context->current_pixelformat = context->planner->scale_pixelformat;
-    }
-
-    if (context->encoder->clipfirst == 0 && context->clip_active != 0) {
-        status = sixel_encoder_filter_plan_append(
-            &context->pre_plan,
-            SIXEL_FILTER_KIND_CLIP,
-            &context->clip_config,
-            &context->frame,
-            context->current_pixelformat,
-            context->current_colorspace,
-            context->current_pixelformat,
-            context->current_colorspace,
-            height);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-    }
-
-    if (context->planner != NULL
-        && context->planner->colorspace_after_scale != 0) {
-        context->colors_config.target_pixelformat =
-            context->planner->working_pixelformat;
-        status = sixel_encoder_filter_plan_append(
-            &context->pre_plan,
-            SIXEL_FILTER_KIND_COLORS,
-            &context->colors_config,
-            &context->frame,
-            context->current_pixelformat,
-            context->current_colorspace,
-            context->planner->working_pixelformat,
-            context->planner->working_colorspace_effective,
-            height);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-        context->current_pixelformat = context->planner->working_pixelformat;
-        context->current_colorspace =
-            context->planner->working_colorspace_effective;
     }
 
     status = sixel_encoder_filter_plan_run(&context->pre_plan,
