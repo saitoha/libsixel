@@ -80,6 +80,9 @@ typedef struct sixel_encoding_planner {
     int pipeline_encode_threads;
     int pipeline_bands;
     int pipeline_pin_threads;
+    int loader_multiframe_known;
+    int loader_multiframe;
+    int loader_pipeline_active;
 
     int dag_node_count;
     int dag_edge_count;
@@ -102,6 +105,10 @@ void sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
 int sixel_encoding_palette_job_ready(struct sixel_encoder *encoder,
                                      sixel_encoding_planner_t *planner,
                                      struct sixel_frame *frame);
+void sixel_encoding_planner_set_loader_metadata(
+    sixel_encoding_planner_t *planner,
+    int multiframe_known,
+    int multiframe);
 
 #endif /* LIBSIXEL_PLANNER_H */
 
