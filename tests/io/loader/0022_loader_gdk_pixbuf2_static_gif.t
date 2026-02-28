@@ -21,9 +21,9 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_static_gif.sixel"
 
 run_img2sixel -L gdk-pixbuf2! -S "${input_gif}" >"${output_sixel}" || {
-    fail 1 "gdk-pixbuf2 static GIF decode failed"
+    echo "not ok" 1 "gdk-pixbuf2 static GIF decode failed"
     exit 0
 }
 
-pass 1 "gdk-pixbuf2 static GIF decode succeeds"
+echo "ok" 1 "gdk-pixbuf2 static GIF decode succeeds"
 exit 0

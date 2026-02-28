@@ -23,7 +23,7 @@ sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"
 roundtrip_png="${ARTIFACT_LOCAL_DIR}/clipboard-roundtrip.png"
 
 run_img2sixel "${sixel_src}" >"${sixel_tmp}" || {
-    fail 1 "failed to prepare sixel input"
+    echo "not ok" 1 "failed to prepare sixel input"
     exit 0
 }
 
@@ -43,8 +43,8 @@ run_sixel2png -i clipboard: -o "${roundtrip_png}" || {
 }
 
 test -s "${roundtrip_png}" || {
-    fail 1 "round-trip PNG missing"
+    echo "not ok" 1 "round-trip PNG missing"
     exit 0
 }
 
-pass 1 "clipboard round-trip succeeded"
+echo "ok" 1 "clipboard round-trip succeeded"

@@ -23,9 +23,9 @@ sum2=$(awk '
 ' "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" | cksum)
 
 test "${sum1}" = "${sum2}" || {
-    fail 1 "manpage diverges from bash completion"
+    echo "not ok" 1 "manpage diverges from bash completion"
     exit 0
 }
 
-pass 1 "manpage matches bash completion"
+echo "ok" 1 "manpage matches bash completion"
 exit 0

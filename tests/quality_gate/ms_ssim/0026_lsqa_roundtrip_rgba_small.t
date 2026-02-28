@@ -25,12 +25,12 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
-    fail 1 "rgba roundtrip encode failed"
+    echo "not ok" 1 "rgba roundtrip encode failed"
     exit 0
 }
 
 run_sixel2png -i "${output_sixel}" -o "${output_png}" || {
-    fail 1 "rgba roundtrip decode failed"
+    echo "not ok" 1 "rgba roundtrip decode failed"
     exit 0
 }
 
@@ -42,16 +42,16 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    fail 1 "rgba roundtrip ms-ssim regressed"
+    echo "not ok" 1 "rgba roundtrip ms-ssim regressed"
     exit 0
 }
 
-pass 1 "rgba roundtrip ms-ssim meets baseline"
+echo "ok" 1 "rgba roundtrip ms-ssim meets baseline"
 
 
 exit 0

@@ -17,14 +17,14 @@ stderr_capture="${ARTIFACT_LOCAL_DIR}/stderr.txt"
 stdout_capture="${ARTIFACT_LOCAL_DIR}/stdout.txt"
 
 run_sixel2png --unknown 2>"${stderr_capture}" >"${stdout_capture}" && {
-    fail 1 "unknown option should fail"
+    echo "not ok" 1 "unknown option should fail"
     exit 0
 }
 
 grep -qi "unrecognized option" "${stderr_capture}" >/dev/null 2>&1 || {
-    fail 1 "error message did not mention unknown option"
+    echo "not ok" 1 "error message did not mention unknown option"
     exit 0
 }
 
-pass 1 "unknown option reported"
+echo "ok" 1 "unknown option reported"
 exit 0

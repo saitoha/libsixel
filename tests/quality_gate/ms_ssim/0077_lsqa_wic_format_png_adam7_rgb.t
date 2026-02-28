@@ -29,7 +29,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-adam7-rgb.png"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_png_adam7_rgb.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
-    fail 1 "wic png adam7 rgb conversion failed"
+    echo "not ok" 1 "wic png adam7 rgb conversion failed"
     exit 0
 }
 
@@ -39,15 +39,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "wic png adam7 rgb quality meets baseline"
+    echo "ok" 1 "wic png adam7 rgb quality meets baseline"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "wic png adam7 rgb quality regressed"
+echo "not ok" 1 "wic png adam7 rgb quality regressed"
 
 exit 0

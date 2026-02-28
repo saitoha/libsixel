@@ -24,7 +24,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -d a_dither -y raster -W oklab -o "${output_sixel}" "${input_image}" || {
-    fail 1 "img2sixel failed"
+    echo "not ok" 1 "img2sixel failed"
     exit 0
 }
 
@@ -34,15 +34,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "positional float32 with A dither mask lsqa passed"
+    echo "ok" 1 "positional float32 with A dither mask lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "positional float32 with A dither mask lsqa failed"
+echo "not ok" 1 "positional float32 with A dither mask lsqa failed"
 
 exit 0

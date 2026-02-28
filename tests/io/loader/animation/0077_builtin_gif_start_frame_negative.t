@@ -16,7 +16,7 @@ set -v
 run_img2sixel -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_default_neg.six" || {
-    fail 1 "baseline builtin GIF decode failed"
+    echo "not ok" 1 "baseline builtin GIF decode failed"
     exit 0
 }
 
@@ -24,15 +24,15 @@ run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1" \
     -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_negative.six" || {
-    fail 1 "builtin GIF decode with negative start frame failed"
+    echo "not ok" 1 "builtin GIF decode with negative start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/builtin_gif_start_default_neg.six" \
     "${ARTIFACT_LOCAL_DIR}/builtin_gif_start_negative.six" && {
-    fail 1 "negative start frame did not change builtin GIF output"
+    echo "not ok" 1 "negative start frame did not change builtin GIF output"
     exit 0
 }
 
-pass 1 "builtin GIF negative start frame is applied"
+echo "ok" 1 "builtin GIF negative start frame is applied"
 exit 0

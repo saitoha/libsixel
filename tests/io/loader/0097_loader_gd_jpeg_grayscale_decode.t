@@ -21,9 +21,9 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-grayscale.jpg" \
     >/dev/null || {
-    fail 1 "gd failed to decode grayscale JPEG input"
+    echo "not ok" 1 "gd failed to decode grayscale JPEG input"
     exit 0
 }
 
-pass 1 "gd decodes grayscale JPEG input"
+echo "ok" 1 "gd decodes grayscale JPEG input"
 exit 0

@@ -24,12 +24,12 @@ output_hls="${ARTIFACT_LOCAL_DIR}/hls.six"
 output_rgb="${ARTIFACT_LOCAL_DIR}/rgb.six"
 
 run_img2sixel -t hls -o "${output_hls}" "${input_image}" || {
-    fail 1 "img2sixel hls conversion failed"
+    echo "not ok" 1 "img2sixel hls conversion failed"
     exit 0
 }
 
 run_img2sixel -t rgb -o "${output_rgb}" "${input_image}" || {
-    fail 1 "img2sixel rgb conversion failed"
+    echo "not ok" 1 "img2sixel rgb conversion failed"
     exit 0
 }
 
@@ -39,15 +39,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "hls vs rgb lsqa passed"
+    echo "ok" 1 "hls vs rgb lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "hls vs rgb lsqa failed"
+echo "not ok" 1 "hls vs rgb lsqa failed"
 
 exit 0

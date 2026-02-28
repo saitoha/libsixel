@@ -18,9 +18,9 @@ label="quantize_suboption_success"
 run_img2sixel -Qk:i=p:t=0.120 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >/dev/null || {
-    fail 1 "-Q kmeans suboptions were rejected"
+    echo "not ok" 1 "-Q kmeans suboptions were rejected"
     exit 0
 }
 
-pass 1 "-Q accepts kmeans suboptions"
+echo "ok" 1 "-Q accepts kmeans suboptions"
 exit 0

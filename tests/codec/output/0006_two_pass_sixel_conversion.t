@@ -15,14 +15,14 @@ set -v
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 stage1="${ARTIFACT_LOCAL_DIR}/two-pass-stage1.sixel"
 run_img2sixel -w204 -h204 "${snake_png}" >"${stage1}" || {
-    fail 1 "two-pass Sixel conversion fails"
+    echo "not ok" 1 "two-pass Sixel conversion fails"
     exit 0
 }
 
 run_img2sixel <"${stage1}" >/dev/null || {
-    fail 1 "two-pass Sixel conversion fails"
+    echo "not ok" 1 "two-pass Sixel conversion fails"
     exit 0
 }
 
-pass 1 "two-pass Sixel conversion succeeds"
+echo "ok" 1 "two-pass Sixel conversion succeeds"
 exit 0

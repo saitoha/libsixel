@@ -21,14 +21,14 @@ set -v
 run_img2sixel -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_interlaced_static.six" || {
-    fail 1 "static interlaced GIF decode failed on coregraphics"
+    echo "not ok" 1 "static interlaced GIF decode failed on coregraphics"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_interlaced_static.six" || {
-    fail 1 "static interlaced GIF decode produced empty output"
+    echo "not ok" 1 "static interlaced GIF decode produced empty output"
     exit 0
 }
 
-pass 1 "coregraphics emits non-empty static output for interlaced GIF"
+echo "ok" 1 "coregraphics emits non-empty static output for interlaced GIF"
 exit 0

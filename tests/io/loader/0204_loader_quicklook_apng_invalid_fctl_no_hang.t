@@ -42,9 +42,9 @@ subprocess.run(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNUL
                timeout=5, check=False)
 sys.exit(0)
 ' || {
-    fail 1 "quicklook hang guard failed for invalid APNG fctl bounds"
+    echo "not ok" 1 "quicklook hang guard failed for invalid APNG fctl bounds"
     exit 0
 }
 
-pass 1 "quicklook does not hang on invalid APNG fctl bounds"
+echo "ok" 1 "quicklook does not hang on invalid APNG fctl bounds"
 exit 0

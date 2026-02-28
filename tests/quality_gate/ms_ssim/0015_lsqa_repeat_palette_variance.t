@@ -16,14 +16,14 @@ value1=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
 value2=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
 
 test "${value0}" = "${value1}" || {
-    fail 1 "palette repeat variance exceeded tolerance"
+    echo "not ok" 1 "palette repeat variance exceeded tolerance"
     exit 0
 }
 
 test "${value1}" = "${value2}" || {
-    fail 1 "palette repeat variance exceeded tolerance"
+    echo "not ok" 1 "palette repeat variance exceeded tolerance"
     exit 0
 }
 
-pass 1 "palette repeat variance within tolerance"
+echo "ok" 1 "palette repeat variance within tolerance"
 exit 0

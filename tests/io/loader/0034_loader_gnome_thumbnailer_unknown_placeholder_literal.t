@@ -27,14 +27,14 @@ run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir}:${PATH}" \
               --env "THUMB_LOG=${log_file}" \
               -L gnome-thumbnailer! "${input_png}" -o/dev/null || {
-    fail 1 "img2sixel failed"
+    echo "not ok" 1 "img2sixel failed"
     exit 0
 }
 
 awk -v expected="%x" '$0 == expected { found = 1; exit } END { if (!found) exit 1 }' "${log_file}" || {
-    fail 1 "unknown placeholder handling failed"
+    echo "not ok" 1 "unknown placeholder handling failed"
     exit 0
 }
 
-pass 1 "unknown placeholder remains literal"
+echo "ok" 1 "unknown placeholder remains literal"
 exit 0

@@ -17,14 +17,14 @@ label="quantize_suboption_unknown_value"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
 
 run_img2sixel -Qk:i=xyz "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>"${err_file}" && {
-    fail 1 "unknown -Q suboption value unexpectedly succeeded"
+    echo "not ok" 1 "unknown -Q suboption value unexpectedly succeeded"
     exit 0
 }
 
 grep "unknown suboption value" "${err_file}" >/dev/null 2>&1 || {
-    fail 1 "missing unknown suboption value diagnostic"
+    echo "not ok" 1 "missing unknown suboption value diagnostic"
     exit 0
 }
 
-pass 1 "unknown -Q suboption value is rejected"
+echo "ok" 1 "unknown -Q suboption value is rejected"
 exit 0

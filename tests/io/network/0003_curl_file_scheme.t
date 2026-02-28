@@ -19,9 +19,9 @@ set -v
 
 local_file="file://${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 run_img2sixel "${local_file}" >"${ARTIFACT_LOCAL_DIR}/local-file.sixel" || {
-    fail 1 "local file fetch via file scheme failed"
+    echo "not ok" 1 "local file fetch via file scheme failed"
     exit 0
 }
 
-pass 1 "fetches local file via file scheme"
+echo "ok" 1 "fetches local file via file scheme"
 exit 0

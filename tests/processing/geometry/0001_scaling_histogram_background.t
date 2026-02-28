@@ -17,10 +17,10 @@ snake_scaling="${ARTIFACT_LOCAL_DIR}/snake-scaling.sixel"
 
 run_img2sixel -w50% -h150% -dfs -Bblue -thls -shist <"${snake_jpg}" \
     | tee "${snake_scaling}" >/dev/null || {
-    fail 1 "scaling with histogram and background failed"
+    echo "not ok" 1 "scaling with histogram and background failed"
     exit 0
 }
 
-pass 1 "scaling with histogram and background succeeded"
+echo "ok" 1 "scaling with histogram and background succeeded"
 
 exit 0

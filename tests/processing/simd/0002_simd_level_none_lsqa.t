@@ -23,22 +23,22 @@ lsqa_run_status=0
 lsqa_err=""
 
 run_img2sixel --env SIXEL_SIMD_LEVEL=none -Wo -w63 -o "${output_sixel}" "${input_image}" || {
-    fail 1 "img2sixel failed"
+    echo "not ok" 1 "img2sixel failed"
     exit 0
 }
 
 lsqa_err=$(run_lsqa -b "MS-SSIM:0.99" "${reference_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
 test "${lsqa_run_status}" -eq 0 && {
-    pass 1 "SIXEL_SIMD_LEVEL=none reached MS-SSIM 0.99"
+    echo "ok" 1 "SIXEL_SIMD_LEVEL=none reached MS-SSIM 0.99"
     exit 0
 }
 
 lsqa_run_status=0
 lsqa_err=$(run_lsqa -b "MS-SSIM:0.98" "${reference_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
 test "${lsqa_run_status}" -eq 0 && {
-    pass 1 "SIXEL_SIMD_LEVEL=none reached MS-SSIM 0.98"
+    echo "ok" 1 "SIXEL_SIMD_LEVEL=none reached MS-SSIM 0.98"
     exit 0
 }
 
-fail 1 "SIXEL_SIMD_LEVEL=none fell below MS-SSIM 0.98: ${lsqa_err}"
+echo "not ok" 1 "SIXEL_SIMD_LEVEL=none fell below MS-SSIM 0.98: ${lsqa_err}"
 exit 0

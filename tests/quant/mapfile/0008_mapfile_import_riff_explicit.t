@@ -18,22 +18,22 @@ riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
 riff_alias="${ARTIFACT_LOCAL_DIR}/palette-riff.alias"
 
 run_img2sixel -M pal-riff:"${riff_palette}"         -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}" || {
-    fail 1 "Preparing RIFF palette for import failed"
+    echo "not ok" 1 "Preparing RIFF palette for import failed"
     exit 0
 }
 
 cat "${riff_palette}" >"${riff_alias}"
 
 run_img2sixel -m pal-riff:"${riff_alias}"         -o "${ARTIFACT_LOCAL_DIR}/from-riff.six" "${snake_png}" || {
-    fail 1 "RIFF palette conversion failed"
+    echo "not ok" 1 "RIFF palette conversion failed"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/from-riff.six" || {
-    fail 1 "RIFF palette conversion produced no data"
+    echo "not ok" 1 "RIFF palette conversion produced no data"
     exit 0
 }
 
-pass 1 "RIFF palette import using explicit type works"
+echo "ok" 1 "RIFF palette import using explicit type works"
 
 exit 0

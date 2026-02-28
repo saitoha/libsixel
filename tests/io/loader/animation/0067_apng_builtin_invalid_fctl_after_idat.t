@@ -16,9 +16,9 @@ set -v
 run_img2sixel -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fctl_after_idat.png" \
     -o/dev/null || {
-    fail 1 "APNG fcTL after IDAT failed"
+    echo "not ok" 1 "APNG fcTL after IDAT failed"
     exit 0
 }
 
-pass 1 "APNG fcTL after IDAT input is handled"
+echo "ok" 1 "APNG fcTL after IDAT input is handled"
 exit 0

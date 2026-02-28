@@ -15,9 +15,9 @@ echo "1..1"
 set -v
 
 test "${rc}" -eq 0 || {
-    fail 1 "cli_token_is_known_option"
+    echo "not ok" 1 "cli_token_is_known_option"
     exit 0
 }
 
-pass 1 "cli_token_is_known_option"
+echo "ok" 1 "cli_token_is_known_option"
 exit 0

@@ -16,9 +16,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgb.png"
 
 run_img2sixel -L builtin! "${input_png}" >/dev/null || {
-    fail 1 "builtin loader RGB PNG fallback failed"
+    echo "not ok" 1 "builtin loader RGB PNG fallback failed"
     exit 0
 }
 
-pass 1 "builtin loader falls back for non-indexed PNG"
+echo "ok" 1 "builtin loader falls back for non-indexed PNG"
 exit 0

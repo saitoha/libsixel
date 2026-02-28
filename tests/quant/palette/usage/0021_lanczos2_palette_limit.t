@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos2-palette-limit.sixel"
 
 run_img2sixel -p 16 -C3 -h100 -fnorm -rlanczos2 "${snake_jpg}" \
         >"${target_sixel}" || {
-    fail 1 "Lanczos2 scaling with palette limit fails"
+    echo "not ok" 1 "Lanczos2 scaling with palette limit fails"
     exit 0
 }
 
-pass 1 "Lanczos2 scaling with palette limit succeeds"
+echo "ok" 1 "Lanczos2 scaling with palette limit succeeds"
 
 exit 0

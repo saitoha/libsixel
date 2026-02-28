@@ -21,16 +21,16 @@ set -v
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type9-pal4.tga" \
     >"${ARTIFACT_LOCAL_DIR}/quicklook_tga_rle_pal4.six" || {
-    fail 1 "quicklook TGA rle pal4 decode failed"
+    echo "not ok" 1 "quicklook TGA rle pal4 decode failed"
     exit 0
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb-from-pal4.png" \
     "${ARTIFACT_LOCAL_DIR}/quicklook_tga_rle_pal4.six" 2>&1) || {
-    fail 1 "$lsqa_msg"
+    echo "not ok" 1 "$lsqa_msg"
     exit 0
 }
 
-pass 1 "quicklook TGA rle pal4 decode preserves quality"
+echo "ok" 1 "quicklook TGA rle pal4 decode preserves quality"
 exit 0

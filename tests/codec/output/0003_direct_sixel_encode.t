@@ -16,9 +16,9 @@ snake_six="${TOP_SRCDIR}/images/map8.six"
 target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-direct.sixel"
 
 run_img2sixel -e "${snake_six}" >"${target_sixel}" || {
-    fail 1 "direct Sixel encode failed"
+    echo "not ok" 1 "direct Sixel encode failed"
     exit 0
 }
 
-pass 1 "direct Sixel encode emits data"
+echo "ok" 1 "direct Sixel encode emits data"
 exit 0

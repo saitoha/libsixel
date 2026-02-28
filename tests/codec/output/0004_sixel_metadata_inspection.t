@@ -16,10 +16,10 @@ snake_six="${TOP_SRCDIR}/images/map8.six"
 target_txt="${ARTIFACT_LOCAL_DIR}/sixel-inspection.txt"
 
 run_img2sixel -I "${snake_six}" >"${target_txt}" || {
-    fail 1 "Sixel metadata inspection fails"
+    echo "not ok" 1 "Sixel metadata inspection fails"
     exit 0
 }
 
-pass 1 "Sixel metadata inspection succeeds"
+echo "ok" 1 "Sixel metadata inspection succeeds"
 
 exit 0

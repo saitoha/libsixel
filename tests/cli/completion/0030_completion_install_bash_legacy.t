@@ -19,14 +19,14 @@ legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               --env IMG2SIXEL_BASH_VERSION_OVERRIDE=3.2 \
               -2 bash >&2 || {
-    fail 1 "legacy bash completion install failed"
+    echo "not ok" 1 "legacy bash completion install failed"
     exit 0
 }
 
 test -f "${legacy_path}" || {
-    fail 1 "legacy bash completion path is not created"
+    echo "not ok" 1 "legacy bash completion path is not created"
     exit 0
 }
 
-pass 1 "legacy bash completion path is used"
+echo "ok" 1 "legacy bash completion path is used"
 exit 0

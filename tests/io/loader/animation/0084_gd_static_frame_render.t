@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L gd! -ldisable -dnone -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
-    fail 1 "gd static frame rendering failed"
+    echo "not ok" 1 "gd static frame rendering failed"
     exit 0
 }
 
-pass 1 "gd static frame rendering succeeded"
+echo "ok" 1 "gd static frame rendering succeeded"
 exit 0

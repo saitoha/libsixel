@@ -17,15 +17,15 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    fail 1 "baseline trailing garbage was not rejected as expected"
+    echo "not ok" 1 "baseline trailing garbage was not rejected as expected"
     exit 0
 }
 
 grep -q "Unexpected characters in value" "${err_file}" || {
-    fail 1 "baseline trailing garbage was not rejected as expected"
+    echo "not ok" 1 "baseline trailing garbage was not rejected as expected"
     exit 0
 }
 
-pass 1 "baseline trailing garbage was rejected"
+echo "ok" 1 "baseline trailing garbage was rejected"
 
 exit 0

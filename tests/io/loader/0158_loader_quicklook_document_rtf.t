@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/quicklook/sample.rtf" >/dev/null || {
-    fail 1 "quicklook RTF render failed"
+    echo "not ok" 1 "quicklook RTF render failed"
     exit 0
 }
 
-pass 1 "quicklook renders RTF"
+echo "ok" 1 "quicklook renders RTF"
 exit 0

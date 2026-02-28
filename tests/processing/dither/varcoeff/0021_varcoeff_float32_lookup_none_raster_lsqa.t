@@ -30,7 +30,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/varcoeff-float32-lookup-none-raster.six"
 
 run_img2sixel -d lso2 -y raster --precision=float32 \
         --lookup-policy=none -p 16 -o "${output_sixel}" "${input_image}" || {
-    fail 1 "varcoeff float32 lookup none raster conversion failed"
+    echo "not ok" 1 "varcoeff float32 lookup none raster conversion failed"
     exit 0
 }
 
@@ -41,15 +41,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "varcoeff float32 lookup none raster lsqa passed"
+    echo "ok" 1 "varcoeff float32 lookup none raster lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "varcoeff float32 lookup none raster lsqa failed"
+echo "not ok" 1 "varcoeff float32 lookup none raster lsqa failed"
 
 exit 0

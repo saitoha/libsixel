@@ -19,10 +19,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel --env SIXEL_DITHER_BLUENOISE_CHANNEL=rgb \
         -d bluenoise -y raster --precision=float32 -p 16 \
         -o "${output_sixel}" "${input_image}" || {
-    fail 1 "positional float32 bluenoise rgb channel env failed"
+    echo "not ok" 1 "positional float32 bluenoise rgb channel env failed"
     exit 0
 }
 
-pass 1 "positional float32 bluenoise rgb channel env passed"
+echo "ok" 1 "positional float32 bluenoise rgb channel env passed"
 
 exit 0

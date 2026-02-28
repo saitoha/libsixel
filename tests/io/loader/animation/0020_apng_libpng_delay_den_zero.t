@@ -21,9 +21,9 @@ set -v
 run_img2sixel --env SIXEL_TRACE_TOPIC=apng_decode -Llibpng! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_libpng_delay_den_zero.png" \
     -o/dev/null || {
-    fail 1 "APNG delay_den zero input failed"
+    echo "not ok" 1 "APNG delay_den zero input failed"
     exit 0
 }
 
-pass 1 "APNG delay_den zero input is handled"
+echo "ok" 1 "APNG delay_den zero input is handled"
 exit 0

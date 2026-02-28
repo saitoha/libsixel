@@ -19,26 +19,25 @@ err_invalid="${ARTIFACT_LOCAL_DIR}/img2sixel_env_invalid.err"
 
 run_img2sixel --env SIXEL_COLORS=16 --env SIXEL_THREADS=1 \
     "${input_image}" >"${out_env}" || {
-    fail 1 "reference environment conversion failed"
+    echo "not ok" 1 "reference environment conversion failed"
     exit 0
 }
 
 run_img2sixel -% SIXEL_COLORS=16 -% SIXEL_THREADS=1 \
     "${input_image}" >"${out_opt}" || {
-    fail 1 "-% conversion failed"
+    echo "not ok" 1 "-% conversion failed"
     exit 0
 }
 
 cmp -s "${out_env}" "${out_opt}" || {
-    fail 1 "-% output differs from process environment"
+    echo "not ok" 1 "-% output differs from process environment"
     exit 0
 }
-pass 1 "-% matches process environment"
 
 run_img2sixel -% INVALID "${input_image}" > /dev/null 2>"${err_invalid}" && {
-    fail 2 "invalid -% argument should fail"
+    echo "not ok" 1 "invalid -% argument should fail"
     exit 0
 }
-pass 2 "invalid -% argument rejected"
 
+echo "ok" 1 "invalid -% argument rejected"
 exit 0

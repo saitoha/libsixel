@@ -18,9 +18,9 @@ snake_six="${TOP_SRCDIR}/images/map8.six"
 target_txt="${ARTIFACT_LOCAL_DIR}/sixel-inspection-x-dither.txt"
 
 run_img2sixel -I -dx_dither -h100 "${snake_six}" >"${target_txt}" || {
-    fail 1 "X ordered dither inspection fails"
+    echo "not ok" 1 "X ordered dither inspection fails"
     exit "${status}"
 }
 
-pass 1 "X ordered dither inspection works"
+echo "ok" 1 "X ordered dither inspection works"
 exit "${status}"

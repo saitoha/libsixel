@@ -18,14 +18,14 @@ err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
 
 run_img2sixel -Qk:z=p "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >/dev/null 2>"${err_file}" && {
-    fail 1 "unknown -Q suboption key unexpectedly succeeded"
+    echo "not ok" 1 "unknown -Q suboption key unexpectedly succeeded"
     exit 0
 }
 
 grep "unknown suboption key" "${err_file}" >/dev/null || {
-    fail 1 "missing unknown suboption key diagnostic"
+    echo "not ok" 1 "missing unknown suboption key diagnostic"
     exit 0
 }
 
-pass 1 "unknown -Q suboption key is rejected"
+echo "ok" 1 "unknown -Q suboption key is rejected"
 exit 0

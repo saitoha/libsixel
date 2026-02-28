@@ -21,9 +21,9 @@ set -v
 input_jpeg="${TOP_SRCDIR}/images/snake-progressive-16x16.jpg"
 
 run_img2sixel -L libjpeg! "${input_jpeg}" >/dev/null || {
-    fail 1 "libjpeg forced progressive JPEG decoding failed"
+    echo "not ok" 1 "libjpeg forced progressive JPEG decoding failed"
     exit 0
 }
 
-pass 1 "libjpeg forced progressive JPEG decoding succeeds"
+echo "ok" 1 "libjpeg forced progressive JPEG decoding succeeds"
 exit 0

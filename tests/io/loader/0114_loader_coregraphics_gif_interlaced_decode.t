@@ -24,14 +24,14 @@ reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.p
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_gif_interlaced.six"
 
 run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
-    fail 1 "coregraphics failed to decode interlaced GIF input"
+    echo "not ok" 1 "coregraphics failed to decode interlaced GIF input"
     exit 0
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}"     "${reference_path}" "${output_sixel}" 2>&1) || {
-    fail 1 "$lsqa_msg"
+    echo "not ok" 1 "$lsqa_msg"
     exit 0
 }
 
-pass 1 "coregraphics keeps MS-SSIM baseline for interlaced GIF input"
+echo "ok" 1 "coregraphics keeps MS-SSIM baseline for interlaced GIF input"
 exit 0

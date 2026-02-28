@@ -18,15 +18,15 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    fail 1 "mismatched baseline metric was not rejected as expected"
+    echo "not ok" 1 "mismatched baseline metric was not rejected as expected"
     exit 0
 }
 
 grep "baseline metric must match -m" "${err_file}" >/dev/null || {
-    fail 1 "mismatched baseline metric was not rejected as expected"
+    echo "not ok" 1 "mismatched baseline metric was not rejected as expected"
     exit 0
 }
 
-pass 1 "mismatched baseline metric was rejected"
+echo "ok" 1 "mismatched baseline metric was rejected"
 
 exit 0

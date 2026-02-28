@@ -17,10 +17,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/varcoeff-8bit.six"
 
 run_img2sixel -d lso2 -y raster --precision=8bit -p 16 \
         -o "${output_sixel}" "${snake_png}" || {
-    fail 1 "variable-coefficient 8-bit dither failed"
+    echo "not ok" 1 "variable-coefficient 8-bit dither failed"
     exit 0
 }
 
-pass 1 "variable-coefficient 8-bit dither completes"
+echo "ok" 1 "variable-coefficient 8-bit dither completes"
 
 exit 0

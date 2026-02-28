@@ -16,16 +16,16 @@ set -v
 ppm_small="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 pipeline_log=$(run_img2sixel --env SIXEL_THREADS=4 -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" 2>&1) || {
-    fail 1 "baseline thread split run failed"
+    echo "not ok" 1 "baseline thread split run failed"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
 
 printf '%s\n' "${pipeline_log}" | awk '/band_height=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
-    fail 1 "baseline thread split"
+    echo "not ok" 1 "baseline thread split"
     exit 0
 }
 
-pass 1 "baseline thread split"
+echo "ok" 1 "baseline thread split"
 
 exit 0

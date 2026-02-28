@@ -29,15 +29,15 @@ run_img2sixel \
         --env "SIXEL_LOADER_PRIORITY_LIST=builtin!" \
         -L gnome-thumbnailer! "${input_png}" \
         >"${output_sixel}" || {
-    fail 1 "CLI override for loader priority list failed"
+    echo "not ok" 1 "CLI override for loader priority list failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    fail 1 "CLI override for loader priority list failed"
+    echo "not ok" 1 "CLI override for loader priority list failed"
     exit 0
 }
 
-pass 1 "-L overrides SIXEL_LOADER_PRIORITY_LIST"
+echo "ok" 1 "-L overrides SIXEL_LOADER_PRIORITY_LIST"
 
 exit 0

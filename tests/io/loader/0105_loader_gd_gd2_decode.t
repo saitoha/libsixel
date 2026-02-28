@@ -21,7 +21,7 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/sample-gd2-conv_test.gd2" \
     >/dev/null && {
-    pass 1 "gd decodes GD2 input"
+    echo "ok" 1 "gd decodes GD2 input"
     exit 0
 }
 

@@ -28,14 +28,14 @@ missing_output="${ARTIFACT_LOCAL_DIR}/capture.invalid"
 run_img2sixel \
     --env SIXEL_TRACE_TOPIC=file_open:lifecycle \
     -v "${missing_path}" >"${missing_output}" && {
-    fail 1 "img2sixel accepted missing input"
+    echo "not ok" 1 "img2sixel accepted missing input"
     exit 0
 }
 
 test ! -s "${missing_output}" || {
-    fail 1 "img2sixel produced output for missing input"
+    echo "not ok" 1 "img2sixel produced output for missing input"
     exit 0
 }
 
-pass 1 "missing input rejected without output"
+echo "ok" 1 "missing input rejected without output"
 exit 0

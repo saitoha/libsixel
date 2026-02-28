@@ -21,7 +21,7 @@ set -v
 run_img2sixel -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_default.six" || {
-    fail 1 "baseline APNG decode failed"
+    echo "not ok" 1 "baseline APNG decode failed"
     exit 0
 }
 
@@ -29,15 +29,15 @@ run_img2sixel --start-frame=1 \
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" || {
-    fail 1 "APNG decode with positive start frame failed"
+    echo "not ok" 1 "APNG decode with positive start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_default.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" && {
-    fail 1 "positive start frame did not change static APNG output"
+    echo "not ok" 1 "positive start frame did not change static APNG output"
     exit 0
 }
 
-pass 1 "libpng APNG positive start frame is applied"
+echo "ok" 1 "libpng APNG positive start frame is applied"
 exit 0

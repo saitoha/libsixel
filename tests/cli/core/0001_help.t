@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -H >"${ARTIFACT_LOCAL_DIR}/help.txt" || {
-    fail 1 "help output failed"
+    echo "not ok" 1 "help output failed"
     exit 0
 }
 
-pass 1 "help output available"
+echo "ok" 1 "help output available"
 exit 0

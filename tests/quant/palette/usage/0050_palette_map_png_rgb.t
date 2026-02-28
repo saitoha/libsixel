@@ -22,10 +22,10 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/mapfile-rgb.sixel"
 
 run_img2sixel -m "${palette_png}" "${input_png}" >"${target_sixel}" || {
-    fail 1 "RGB PNG palette mapfile rejected"
+    echo "not ok" 1 "RGB PNG palette mapfile rejected"
     exit 0
 }
 
-pass 1 "RGB PNG palette mapfile accepted"
+echo "ok" 1 "RGB PNG palette mapfile accepted"
 
 exit 0

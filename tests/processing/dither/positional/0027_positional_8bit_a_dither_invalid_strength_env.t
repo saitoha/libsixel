@@ -19,10 +19,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel --env SIXEL_DITHER_A_DITHER_STRENGTH=abc \
         -d a_dither -y raster --precision=8bit -p 16 \
         -o "${output_sixel}" "${input_image}" || {
-    fail 1 "positional 8-bit a_dither invalid strength env failed"
+    echo "not ok" 1 "positional 8-bit a_dither invalid strength env failed"
     exit 0
 }
 
-pass 1 "positional 8-bit a_dither invalid strength env passed"
+echo "ok" 1 "positional 8-bit a_dither invalid strength env passed"
 
 exit 0

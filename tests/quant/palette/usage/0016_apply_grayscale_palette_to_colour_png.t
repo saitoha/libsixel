@@ -17,10 +17,10 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/gray-palette-colour.sixel"
 
 run_img2sixel -m "${snake_gray_png}" "${snake_png}" >"${target_sixel}" || {
-    fail 1 "grayscale palette application fails"
+    echo "not ok" 1 "grayscale palette application fails"
     exit 0
 }
 
-pass 1 "grayscale palette applied to colour PNG"
+echo "ok" 1 "grayscale palette applied to colour PNG"
 
 exit 0

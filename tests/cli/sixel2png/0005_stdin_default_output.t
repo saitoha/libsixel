@@ -16,12 +16,12 @@ set -v
 stdout_path="${ARTIFACT_LOCAL_DIR}/stdout.png"
 
 run_sixel2png -i - <"${TOP_SRCDIR}/images/map8.six" >"${stdout_path}" || {
-    fail 1 "sixel2png without -o failed"
+    echo "not ok" 1 "sixel2png without -o failed"
     exit 0
 }
 
 test -s "${stdout_path}" || {
-    fail 1 "stdout png missing"
+    echo "not ok" 1 "stdout png missing"
     exit 0
 }
 
@@ -29,9 +29,9 @@ expected_header_cksum="3308842558 4"
 actual_header_cksum=$(dd bs=1 count=4 if="${stdout_path}" 2>/dev/null | cksum)
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
-    fail 1 "stdout png signature is invalid"
+    echo "not ok" 1 "stdout png signature is invalid"
     exit 0
 }
 
-pass 1 "default stdout PNG produced"
+echo "ok" 1 "default stdout PNG produced"
 exit 0

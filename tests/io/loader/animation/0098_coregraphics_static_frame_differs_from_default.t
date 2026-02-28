@@ -21,22 +21,22 @@ set -v
 run_img2sixel -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_animated_default.six" || {
-    fail 1 "default animated GIF decode failed on coregraphics"
+    echo "not ok" 1 "default animated GIF decode failed on coregraphics"
     exit 0
 }
 
 run_img2sixel -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_animated_static.six" || {
-    fail 1 "static animated GIF decode failed on coregraphics"
+    echo "not ok" 1 "static animated GIF decode failed on coregraphics"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/coregraphics_animated_default.six" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_animated_static.six" && {
-    fail 1 "default and static coregraphics GIF outputs unexpectedly match"
+    echo "not ok" 1 "default and static coregraphics GIF outputs unexpectedly match"
     exit 0
 }
 
-pass 1 "coregraphics static frame output differs from default animation output"
+echo "ok" 1 "coregraphics static frame output differs from default animation output"
 exit 0

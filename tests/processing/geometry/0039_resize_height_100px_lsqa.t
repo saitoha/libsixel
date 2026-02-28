@@ -28,7 +28,7 @@ echo "1..1"
 set -v
 
 run_img2sixel -h 100px -o "${output_sixel}" "${input_image}" || {
-    fail 1 "height scaling with -h 100px failed"
+    echo "not ok" 1 "height scaling with -h 100px failed"
     exit 0
 }
 
@@ -38,15 +38,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "height scaling -h 100px lsqa passed"
+    echo "ok" 1 "height scaling -h 100px lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "height scaling -h 100px lsqa failed"
+echo "not ok" 1 "height scaling -h 100px lsqa failed"
 
 exit 0

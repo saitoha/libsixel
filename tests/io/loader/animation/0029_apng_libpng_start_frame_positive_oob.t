@@ -22,9 +22,9 @@ run_img2sixel --start-frame=999 \
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >/dev/null && {
-    fail 1 "out-of-range positive start frame unexpectedly succeeded"
+    echo "not ok" 1 "out-of-range positive start frame unexpectedly succeeded"
     exit 0
 }
 
-pass 1 "libpng APNG positive out-of-range start frame is rejected"
+echo "ok" 1 "libpng APNG positive out-of-range start frame is rejected"
 exit 0

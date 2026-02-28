@@ -19,10 +19,10 @@ echo "1..1"
 set -v
 
 run_img2sixel -Llibpng! -S "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
-    fail 1 "APNG static render failed"
+    echo "not ok" 1 "APNG static render failed"
     exit 0
 }
 
-pass 1 "APNG static render succeeds"
+echo "ok" 1 "APNG static render succeeds"
 exit 0
 

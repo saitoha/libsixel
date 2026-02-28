@@ -21,9 +21,9 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" \
     >/dev/null || {
-    fail 1 "gd failed to decode interlaced GIF input"
+    echo "not ok" 1 "gd failed to decode interlaced GIF input"
     exit 0
 }
 
-pass 1 "gd decodes interlaced GIF input"
+echo "ok" 1 "gd decodes interlaced GIF input"
 exit 0

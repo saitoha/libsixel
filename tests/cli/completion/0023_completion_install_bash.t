@@ -28,22 +28,22 @@ run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
               --env BASH_VERSION=5.0 \
               -2 bash >&2 || {
-    fail 1 "bash completion install failed"
+    echo "not ok" 1 "bash completion install failed"
     exit 0
 }
 
 test -f "${target_path}" && \
     grep '# bash completion for img2sixel' "${target_path}" >/dev/null 2>&1 && {
-    pass 1 "bash completion installed"
+    echo "ok" 1 "bash completion installed"
     exit 0
 }
 
 test -f "${legacy_path}" && \
     grep '# bash completion for img2sixel' "${legacy_path}" >/dev/null 2>&1 && {
-    pass 1 "bash completion installed"
+    echo "ok" 1 "bash completion installed"
     exit 0
 }
 
-fail 1 "bash completion not installed"
+echo "not ok" 1 "bash completion not installed"
 
 exit 0

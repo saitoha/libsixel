@@ -16,10 +16,10 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 target_txt="${ARTIFACT_LOCAL_DIR}/png-inspection.txt"
 
 run_img2sixel -I -C10 -djajuni "${snake_png}" >"${target_txt}" || {
-    fail 1 "PNG inspection colour space failed"
+    echo "not ok" 1 "PNG inspection colour space failed"
     exit 0
 }
 
-pass 1 "PNG inspection sets colour space"
+echo "ok" 1 "PNG inspection sets colour space"
 
 exit 0

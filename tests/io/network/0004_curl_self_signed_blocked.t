@@ -156,13 +156,13 @@ wait "${server_pid}" 2>/dev/null || :
 
 # The HTTPS request must fail TLS verification when -k is omitted.
 test "${command_status}" -ne 0 || {
-    fail 1 "self-signed fetch unexpectedly succeeded without -k"
+    echo "not ok" 1 "self-signed fetch unexpectedly succeeded without -k"
     exit 0
 }
 
 test ! -s "${verify_output}" || {
-    fail 1 "self-signed fetch produced output without -k"
+    echo "not ok" 1 "self-signed fetch produced output without -k"
     exit 0
 }
 
-pass 1 "self-signed fetch blocked without -k"
+echo "ok" 1 "self-signed fetch blocked without -k"

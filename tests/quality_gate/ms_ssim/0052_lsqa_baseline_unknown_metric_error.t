@@ -17,15 +17,15 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    fail 1 "unknown baseline metric was not rejected as expected"
+    echo "not ok" 1 "unknown baseline metric was not rejected as expected"
     exit 0
 }
 
 grep -q "Unknown metric name" "${err_file}" || {
-    fail 1 "unknown baseline metric was not rejected as expected"
+    echo "not ok" 1 "unknown baseline metric was not rejected as expected"
     exit 0
 }
 
-pass 1 "unknown baseline metric was rejected"
+echo "ok" 1 "unknown baseline metric was rejected"
 
 exit 0

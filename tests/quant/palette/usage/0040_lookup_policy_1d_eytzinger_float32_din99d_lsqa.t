@@ -21,7 +21,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-din99d.six"
 
 run_img2sixel --lookup-policy=eytzinger --precision=float32 \
     --working-colorspace=din99d -o "${output_sixel}" "${input_image}" || {
-    fail 1 "float32 Eytzinger DIN99d colorspace conversion failed"
+    echo "not ok" 1 "float32 Eytzinger DIN99d colorspace conversion failed"
     exit 0
 }
 
@@ -31,15 +31,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "float32 Eytzinger DIN99d colorspace lsqa passed"
+    echo "ok" 1 "float32 Eytzinger DIN99d colorspace lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "float32 Eytzinger DIN99d colorspace lsqa failed"
+echo "not ok" 1 "float32 Eytzinger DIN99d colorspace lsqa failed"
 
 exit 0

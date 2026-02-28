@@ -17,14 +17,14 @@ output_file="${ARTIFACT_LOCAL_DIR}/completion.sh"
 
 run_img2sixel --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
               -1 bash >"${output_file}" || {
-    fail 1 "bash completion output failed"
+    echo "not ok" 1 "bash completion output failed"
     exit 0
 }
 
 grep '# bash completion for img2sixel' "${output_file}" >/dev/null 2>&1 || {
-    fail 1 "missing bash completion header"
+    echo "not ok" 1 "missing bash completion header"
     exit 0
 }
 
-pass 1 "bash completion output available"
+echo "ok" 1 "bash completion output available"
 exit 0

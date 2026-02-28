@@ -16,14 +16,14 @@ set -v
 out_path="${ARTIFACT_LOCAL_DIR}/out.png"
 
 run_sixel2png -o "png:${out_path}" <"${TOP_SRCDIR}/images/map8.six" || {
-    fail 1 "prefixed output command failed"
+    echo "not ok" 1 "prefixed output command failed"
     exit 0
 }
 
 test -s "${out_path}" || {
-    fail 1 "prefixed output missing"
+    echo "not ok" 1 "prefixed output missing"
     exit 0
 }
 
-pass 1 "prefixed output trims scheme"
+echo "ok" 1 "prefixed output trims scheme"
 exit 0

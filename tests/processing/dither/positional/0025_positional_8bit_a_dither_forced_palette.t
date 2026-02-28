@@ -18,10 +18,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -d a_dither -y raster --precision=8bit -p 16! \
         -o "${output_sixel}" "${input_image}" || {
-    fail 1 "positional 8-bit a_dither forced palette failed"
+    echo "not ok" 1 "positional 8-bit a_dither forced palette failed"
     exit 0
 }
 
-pass 1 "positional 8-bit a_dither forced palette passed"
+echo "ok" 1 "positional 8-bit a_dither forced palette passed"
 
 exit 0

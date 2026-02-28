@@ -16,9 +16,9 @@ set -v
 run_img2sixel -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fctl_sequence_gap.png" \
     -o/dev/null || {
-    fail 1 "APNG fcTL sequence gap decode failed on builtin loader"
+    echo "not ok" 1 "APNG fcTL sequence gap decode failed on builtin loader"
     exit 0
 }
 
-pass 1 "APNG fcTL sequence gap input is accepted by builtin loader"
+echo "ok" 1 "APNG fcTL sequence gap input is accepted by builtin loader"
 exit 0

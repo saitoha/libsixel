@@ -16,14 +16,14 @@ set -v
 err_file="${ARTIFACT_LOCAL_DIR}/path-remote-bypass.err"
 
 run_sixel2png -i "https://example.invalid/test.six" -o/dev/null 2>"${err_file}" && {
-    fail 1 "remote input unexpectedly succeeded"
+    echo "not ok" 1 "remote input unexpectedly succeeded"
     exit 0
 }
 
 grep 'path "https://example.invalid/test.six" not found.' "${err_file}" >/dev/null 2>&1 && {
-    fail 1 "remote path was validated as a local filesystem path"
+    echo "not ok" 1 "remote path was validated as a local filesystem path"
     exit 0
 }
 
-pass 1 "remote path bypassed local filesystem existence checks"
+echo "ok" 1 "remote path bypassed local filesystem existence checks"
 exit 0

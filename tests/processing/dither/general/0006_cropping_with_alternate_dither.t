@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/crop-alt-dither.sixel"
 
 run_img2sixel -c200x200+100+100 -w400 -da_dither \
         "${snake_gray_png}" >"${target_sixel}" || {
-    fail 1 "cropping with alternate dither fails"
+    echo "not ok" 1 "cropping with alternate dither fails"
     exit 0
 }
 
-pass 1 "cropping with alternate dither succeeds"
+echo "ok" 1 "cropping with alternate dither succeeds"
 
 exit 0

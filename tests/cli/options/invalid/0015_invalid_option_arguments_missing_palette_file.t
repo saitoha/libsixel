@@ -15,9 +15,9 @@ set -v
 
 run_img2sixel -m "${ARTIFACT_LOCAL_DIR}/invalid_filename" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg" </dev/null >/dev/null  && {
-    fail 1 "unexpected success: missing palette file"
+    echo "not ok" 1 "unexpected success: missing palette file"
     exit 0
 }
 
-pass 1 "invalid option rejected"
+echo "ok" 1 "invalid option rejected"
 exit 0
