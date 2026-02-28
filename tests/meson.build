@@ -129,6 +129,7 @@ base_env_settings += [['SIXEL_TEST_MACOS_PRODUCT_VERSION',
                          'sw_vers -productVersion 2>/dev/null || printf ""',
                          check: true,
                        ).stdout().strip()]]
+base_env_settings += [['SIXEL_TEST_HOST_ARCH', host_machine.cpu_family()]]
 
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Most TAP shell wrappers reference built tools via ${SIXEL_BIN_EXT}.
