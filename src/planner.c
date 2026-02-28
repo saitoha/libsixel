@@ -49,6 +49,21 @@ static void sixel_encoding_planner_plan_pipeline(
     sixel_encoding_planner_t *planner,
     sixel_encoder_t *encoder,
     sixel_frame_t *frame);
+static void
+sixel_encoding_planner_dag_clear(sixel_encoding_planner_t *planner);
+static int
+sixel_encoding_planner_dag_add_node(sixel_encoding_planner_t *planner,
+                                    sixel_planner_node_kind_t kind,
+                                    char const *label);
+static void
+sixel_encoding_planner_dag_add_edge(sixel_encoding_planner_t *planner,
+                                    int from,
+                                    int to,
+                                    int pipeline);
+static void
+sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
+                                 sixel_encoder_t *encoder,
+                                 int palette_ready);
 static char const *
 sixel_encoding_planner_pixelformat_label(int pixelformat);
 
@@ -71,6 +86,208 @@ sixel_planner_pixelformat_for_colorspace(int colorspace,
         }
         return SIXEL_PIXELFORMAT_RGB888;
     }
+}
+
+static void
+sixel_encoding_planner_dag_clear(sixel_encoding_planner_t *planner)
+{
+    int i;
+
+    if (planner == NULL) {
+        return;
+    }
+
+    planner->dag_node_count = 0;
+    planner->dag_edge_count = 0;
+    for (i = 0; i < SIXEL_PLANNER_DAG_NODE_MAX; ++i) {
+        planner->dag_nodes[i].kind = SIXEL_PLANNER_NODE_LOAD;
+        planner->dag_nodes[i].label = NULL;
+    }
+    for (i = 0; i < SIXEL_PLANNER_DAG_EDGE_MAX; ++i) {
+        planner->dag_edges[i].from = -1;
+        planner->dag_edges[i].to = -1;
+        planner->dag_edges[i].pipeline = 0;
+    }
+}
+
+static int
+sixel_encoding_planner_dag_add_node(sixel_encoding_planner_t *planner,
+                                    sixel_planner_node_kind_t kind,
+                                    char const *label)
+{
+    int index;
+
+    if (planner == NULL || label == NULL) {
+        return -1;
+    }
+    index = planner->dag_node_count;
+    if (index < 0 || index >= SIXEL_PLANNER_DAG_NODE_MAX) {
+        return -1;
+    }
+
+    planner->dag_nodes[index].kind = kind;
+    planner->dag_nodes[index].label = label;
+    planner->dag_node_count = index + 1;
+
+    return index;
+}
+
+static void
+sixel_encoding_planner_dag_add_edge(sixel_encoding_planner_t *planner,
+                                    int from,
+                                    int to,
+                                    int pipeline)
+{
+    int index;
+
+    if (planner == NULL) {
+        return;
+    }
+    index = planner->dag_edge_count;
+    if (index < 0 || index >= SIXEL_PLANNER_DAG_EDGE_MAX) {
+        return;
+    }
+
+    planner->dag_edges[index].from = from;
+    planner->dag_edges[index].to = to;
+    planner->dag_edges[index].pipeline = pipeline;
+    planner->dag_edge_count = index + 1;
+}
+
+static void
+sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
+                                 sixel_encoder_t *encoder,
+                                 int palette_ready)
+{
+    int load_node;
+    int palette_node;
+    int lut_node;
+    int clip_node;
+    int colorspace_pre_node;
+    int scale_node;
+    int colorspace_post_node;
+    int join_node;
+    int dither_node;
+    int encode_node;
+    int work_tail;
+
+    load_node = -1;
+    palette_node = -1;
+    lut_node = -1;
+    clip_node = -1;
+    colorspace_pre_node = -1;
+    scale_node = -1;
+    colorspace_post_node = -1;
+    join_node = -1;
+    dither_node = -1;
+    encode_node = -1;
+    work_tail = -1;
+
+    if (planner == NULL || encoder == NULL) {
+        return;
+    }
+
+    sixel_encoding_planner_dag_clear(planner);
+
+    load_node = sixel_encoding_planner_dag_add_node(
+        planner, SIXEL_PLANNER_NODE_LOAD, "load");
+    work_tail = load_node;
+
+    if (encoder->clipfirst != 0 && planner->clip_active != 0) {
+        clip_node = sixel_encoding_planner_dag_add_node(
+            planner, SIXEL_PLANNER_NODE_CLIP, "clip");
+        sixel_encoding_planner_dag_add_edge(planner, work_tail, clip_node, 0);
+        work_tail = clip_node;
+    }
+
+    if (planner->colorspace_before_scale != 0) {
+        colorspace_pre_node = sixel_encoding_planner_dag_add_node(
+            planner, SIXEL_PLANNER_NODE_COLORSPACE_PRE, "colorspace(pre)");
+        sixel_encoding_planner_dag_add_edge(planner,
+                                            work_tail,
+                                            colorspace_pre_node,
+                                            0);
+        work_tail = colorspace_pre_node;
+    }
+
+    if (planner->scale_active != 0) {
+        scale_node = sixel_encoding_planner_dag_add_node(
+            planner, SIXEL_PLANNER_NODE_SCALE, "scale");
+        sixel_encoding_planner_dag_add_edge(planner, work_tail, scale_node, 0);
+        work_tail = scale_node;
+    }
+
+    if (encoder->clipfirst == 0 && planner->clip_active != 0) {
+        clip_node = sixel_encoding_planner_dag_add_node(
+            planner, SIXEL_PLANNER_NODE_CLIP, "clip");
+        sixel_encoding_planner_dag_add_edge(planner, work_tail, clip_node, 0);
+        work_tail = clip_node;
+    }
+
+    if (planner->colorspace_after_scale != 0) {
+        colorspace_post_node = sixel_encoding_planner_dag_add_node(
+            planner,
+            SIXEL_PLANNER_NODE_COLORSPACE_POST,
+            "colorspace(post)");
+        sixel_encoding_planner_dag_add_edge(planner,
+                                            work_tail,
+                                            colorspace_post_node,
+                                            0);
+        work_tail = colorspace_post_node;
+    }
+
+    if (palette_ready != 0) {
+        palette_node = sixel_encoding_planner_dag_add_node(
+            planner, SIXEL_PLANNER_NODE_PALETTE, "palette");
+        sixel_encoding_planner_dag_add_edge(planner,
+                                            load_node,
+                                            palette_node,
+                                            0);
+
+        if (encoder->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+            lut_node = sixel_encoding_planner_dag_add_node(
+                planner, SIXEL_PLANNER_NODE_FHEDT, "fhedt");
+        } else if (encoder->lut_policy == SIXEL_LUT_POLICY_VPTREE) {
+            lut_node = sixel_encoding_planner_dag_add_node(
+                planner, SIXEL_PLANNER_NODE_VPTREE, "vptree");
+        } else if (encoder->lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
+            lut_node = sixel_encoding_planner_dag_add_node(
+                planner, SIXEL_PLANNER_NODE_EYTZINGER, "eytzinger");
+        }
+        if (lut_node >= 0) {
+            sixel_encoding_planner_dag_add_edge(planner,
+                                                palette_node,
+                                                lut_node,
+                                                0);
+        }
+
+        join_node = sixel_encoding_planner_dag_add_node(
+            planner, SIXEL_PLANNER_NODE_JOIN, "join");
+        if (lut_node >= 0) {
+            sixel_encoding_planner_dag_add_edge(planner,
+                                                lut_node,
+                                                join_node,
+                                                0);
+        } else {
+            sixel_encoding_planner_dag_add_edge(planner,
+                                                palette_node,
+                                                join_node,
+                                                0);
+        }
+        sixel_encoding_planner_dag_add_edge(planner, work_tail, join_node, 0);
+        work_tail = join_node;
+    }
+
+    dither_node = sixel_encoding_planner_dag_add_node(
+        planner, SIXEL_PLANNER_NODE_DITHER, "dither");
+    sixel_encoding_planner_dag_add_edge(planner, work_tail, dither_node, 0);
+
+    encode_node = sixel_encoding_planner_dag_add_node(
+        planner, SIXEL_PLANNER_NODE_ENCODE, "encode");
+    sixel_encoding_planner_dag_add_edge(planner,
+                                        dither_node,
+                                        encode_node,
+                                        planner->pipeline_active != 0);
 }
 
 void
@@ -103,6 +320,7 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->pipeline_encode_threads = 0;
     planner->pipeline_bands = 0;
     planner->pipeline_pin_threads = 1;
+    sixel_encoding_planner_dag_clear(planner);
 }
 
 
@@ -379,6 +597,10 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     }
 
     sixel_encoding_planner_plan_pipeline(planner, encoder, frame);
+
+    sixel_encoding_planner_build_dag(planner,
+                                     encoder,
+                                     planner->allow_palette_async != 0);
 }
 
 
@@ -626,59 +848,21 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                             sixel_frame_t *frame,
                             int palette_ready)
 {
-    int scale_active;
-    int clip_active;
-    int clip_first;
-    int fhedt_active;
-    int vptree_active;
-    int eytzinger_active;
-    int colorspace_before_scale;
-    int colorspace_after_scale;
     FILE *stream;
-    char const *ops[5];
-    char const *node;
-    char const *lut_node;
-    char const *lut_edge;
-    int count;
-    int index;
+    int i;
+    sixel_planner_edge_t const *edge;
+    sixel_planner_node_t const *from;
+    sixel_planner_node_t const *to;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
     }
 
     stream = stderr;
-    scale_active = planner->scale_active;
-    clip_active = planner->clip_active;
-    clip_first = encoder->clipfirst ? 1 : 0;
-    colorspace_before_scale = planner->colorspace_before_scale;
-    colorspace_after_scale = planner->colorspace_after_scale;
-    fhedt_active = (palette_ready != 0
-                   && encoder->lut_policy == SIXEL_LUT_POLICY_FHEDT)
-        ? 1
-        : 0;
-    vptree_active = (palette_ready != 0
-                     && encoder->lut_policy == SIXEL_LUT_POLICY_VPTREE)
-        ? 1
-        : 0;
-    eytzinger_active = (palette_ready != 0
-                        && encoder->lut_policy
-                        == SIXEL_LUT_POLICY_EYTZINGER)
-        ? 1
-        : 0;
-    count = 0;
-    lut_node = NULL;
-    lut_edge = "";
-
-    if (fhedt_active != 0) {
-        lut_node = "fhedt";
-        lut_edge = " -> fhedt";
-    } else if (vptree_active != 0) {
-        lut_node = "vptree";
-        lut_edge = " -> vptree";
-    } else if (eytzinger_active != 0) {
-        lut_node = "eytzinger";
-        lut_edge = " -> eytzinger";
-    }
+    edge = NULL;
+    from = NULL;
+    to = NULL;
+    sixel_encoding_planner_build_dag(planner, encoder, palette_ready);
 
     fprintf(stream, "[planner] DAG (Directed Acyclic Graph)\n");
     fprintf(stream,
@@ -702,61 +886,28 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                 planner->scale_input_pixelformat));
 
     fprintf(stream, "  nodes:\n");
-    fprintf(stream, "    load\n");
-    if (palette_ready != 0) {
-        fprintf(stream, "    palette (async)\n");
-        if (lut_node != NULL) {
-            fprintf(stream, "    %s\n", lut_node);
-        }
+    for (i = 0; i < planner->dag_node_count; ++i) {
+        fprintf(stream, "    %s\n", planner->dag_nodes[i].label);
     }
-    if (clip_first != 0 && clip_active != 0) {
-        fprintf(stream, "    clip\n");
-    }
-    if (colorspace_before_scale != 0) {
-        fprintf(stream, "    colorspace(pre)\n");
-    }
-    if (scale_active != 0) {
-        fprintf(stream, "    scale\n");
-    }
-    if (clip_first == 0 && clip_active != 0) {
-        fprintf(stream, "    clip\n");
-    }
-    if (colorspace_after_scale != 0) {
-        fprintf(stream, "    colorspace(post)\n");
-    }
-    fprintf(stream, "    dither\n");
-    fprintf(stream, "    encode\n");
 
     fprintf(stream, "  edges:\n");
-    if (palette_ready != 0) {
-        fprintf(stream,
-                "    load -> palette%s -> dither\n",
-                lut_edge);
+    for (i = 0; i < planner->dag_edge_count; ++i) {
+        edge = &planner->dag_edges[i];
+        if (edge->from < 0 || edge->from >= planner->dag_node_count
+            || edge->to < 0 || edge->to >= planner->dag_node_count) {
+            continue;
+        }
+        from = &planner->dag_nodes[edge->from];
+        to = &planner->dag_nodes[edge->to];
+        if (edge->pipeline != 0) {
+            fprintf(stream,
+                    "    %s -> %s (pipeline)\n",
+                    from->label,
+                    to->label);
+        } else {
+            fprintf(stream, "    %s -> %s\n", from->label, to->label);
+        }
     }
-    if (clip_first != 0 && clip_active != 0) {
-        ops[count++] = "clip";
-    }
-    if (colorspace_before_scale != 0) {
-        ops[count++] = "colorspace(pre)";
-    }
-    if (scale_active != 0) {
-        ops[count++] = "scale";
-    }
-    if (clip_first == 0 && clip_active != 0) {
-        ops[count++] = "clip";
-    }
-    if (colorspace_after_scale != 0) {
-        ops[count++] = "colorspace(post)";
-    }
-
-    node = "load";
-    for (index = 0; index < count; ++index) {
-        fprintf(stream, "    %s -> %s\n", node, ops[index]);
-        node = ops[index];
-    }
-    fprintf(stream, "    %s -> dither\n", node);
-    fprintf(stream, "    dither -> encode (%s)\n",
-            planner->pipeline_active != 0 ? "pipeline" : "serial");
 
     fprintf(stream, "  pipeline:\n");
     fprintf(stream, "    bands=%d queue=%d mode=%s\n",

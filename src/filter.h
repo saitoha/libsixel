@@ -123,6 +123,11 @@ struct sixel_filter {
     sixel_filter_io_t input;
     sixel_filter_io_t output;
 
+    /*
+     * Legacy initializer stores callbacks in this embedded vtable so the
+     * runtime always dispatches through filter->vtbl without temporary
+     * objects or dual callback paths.
+     */
     sixel_filter_vtbl_t legacy_vtbl;
     void *userdata;
 

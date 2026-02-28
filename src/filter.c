@@ -33,6 +33,36 @@
 
 static void sixel_filter_emit_progress(sixel_filter_t *filter,
                                        sixel_filter_event_t event);
+static SIXELSTATUS
+sixel_filter_invoke_prepare_and_validate(sixel_filter_t *filter,
+                                         sixel_allocator_t *allocator,
+                                         sixel_logger_t *logger);
+
+static SIXELSTATUS
+sixel_filter_invoke_prepare_and_validate(sixel_filter_t *filter,
+                                         sixel_allocator_t *allocator,
+                                         sixel_logger_t *logger)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+
+    if (filter->vtbl->prepare != NULL) {
+        status = filter->vtbl->prepare(filter, allocator, logger);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    if (filter->vtbl->validate != NULL) {
+        status = filter->vtbl->validate(filter);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    return status;
+}
 
 static void
 sixel_filter_emit_progress(sixel_filter_t *filter, sixel_filter_event_t event)
@@ -217,20 +247,12 @@ sixel_filter_run(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (filter->vtbl != NULL && filter->vtbl->prepare != NULL) {
-        status = filter->vtbl->prepare(filter, allocator, logger);
-        if (SIXEL_FAILED(status)) {
-            sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_ABORT);
-            return status;
-        }
-    }
-
-    if (filter->vtbl != NULL && filter->vtbl->validate != NULL) {
-        status = filter->vtbl->validate(filter);
-        if (SIXEL_FAILED(status)) {
-            sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_ABORT);
-            return status;
-        }
+    status = sixel_filter_invoke_prepare_and_validate(filter,
+                                                     allocator,
+                                                     logger);
+    if (SIXEL_FAILED(status)) {
+        sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_ABORT);
+        return status;
     }
 
     sixel_filter_emit_progress(filter, SIXEL_FILTER_EVENT_BEGIN);
