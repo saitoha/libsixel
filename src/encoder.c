@@ -229,6 +229,7 @@ typedef struct sixel_encoder_frame_pipeline {
 typedef struct sixel_encoder_load_context {
     sixel_encoder_t *encoder;
     sixel_output_t *output;
+    sixel_encoding_planner_t *planner;
     sixel_encoder_frame_pipeline_t frame_pipeline;
 } sixel_encoder_load_context_t;
 
@@ -5869,6 +5870,11 @@ sixel_encoder_encode_frame(
     int clip_active;
     int current_pixelformat;
     int current_colorspace;
+    int loader_multiframe_known;
+    int loader_multiframe;
+
+    loader_multiframe_known = 0;
+    loader_multiframe = 0;
 
     memset(&context, 0, sizeof(context));
     context.encoder = encoder;
@@ -5922,7 +5928,13 @@ sixel_encoder_encode_frame(
     }
     planner = context.planner;
     if (planner != NULL) {
+        loader_multiframe_known = planner->loader_multiframe_known;
+        loader_multiframe = planner->loader_multiframe;
         sixel_encoding_planner_init(planner);
+        sixel_encoding_planner_set_loader_metadata(
+            planner,
+            loader_multiframe_known,
+            loader_multiframe);
     }
 
     /*
@@ -8457,22 +8469,27 @@ load_image_callback(sixel_frame_t *frame, void *data)
 {
     sixel_encoder_load_context_t *context;
     sixel_encoder_frame_pipeline_t *pipeline;
+    sixel_encoding_planner_t *planner;
     sixel_encoder_t *encoder;
     SIXELSTATUS status;
     int result;
     int multiframe;
+    int allow_loader_pipeline;
 
     context = (sixel_encoder_load_context_t *)data;
     pipeline = NULL;
+    planner = NULL;
     encoder = NULL;
     status = SIXEL_OK;
     result = 0;
     multiframe = 0;
+    allow_loader_pipeline = 0;
 
     if (context == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     encoder = context->encoder;
+    planner = context->planner;
     pipeline = &context->frame_pipeline;
     if (encoder == NULL || pipeline == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -8483,9 +8500,14 @@ load_image_callback(sixel_frame_t *frame, void *data)
         encoder->capture_source_frame = frame;
     }
 
-    multiframe = sixel_frame_get_multiframe(frame);
+    if (planner != NULL) {
+        multiframe = sixel_frame_get_multiframe(frame);
+        sixel_encoding_planner_set_loader_metadata(planner, 1, multiframe);
+        allow_loader_pipeline = planner->loader_pipeline_active;
+    }
+
     if (pipeline->pipeline_enabled == 0 && pipeline->pipeline_locked == 0) {
-        if (multiframe != 0) {
+        if (allow_loader_pipeline != 0) {
             result = sixel_thread_create(&pipeline->thread,
                                          sixel_encoder_frame_pipeline_worker,
                                          pipeline);
@@ -8495,7 +8517,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
             } else {
                 pipeline->pipeline_locked = 1;
             }
-        } else {
+        } else if (multiframe == 0) {
             pipeline->pipeline_locked = 1;
         }
     }
@@ -8980,6 +9002,7 @@ sixel_encoder_encode(
         encoder->parallel_job_id = -1;
         load_context.encoder = encoder;
         load_context.output = NULL;
+        load_context.planner = &encoder->planner;
         status = sixel_encoder_frame_pipeline_init(&load_context.frame_pipeline,
                                                    encoder,
                                                    NULL);

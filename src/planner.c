@@ -71,6 +71,10 @@ sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
                                              int palette_ready);
 static char const *
 sixel_encoding_planner_pixelformat_label(int pixelformat);
+void
+sixel_encoding_planner_set_loader_metadata(sixel_encoding_planner_t *planner,
+                                           int multiframe_known,
+                                           int multiframe);
 
 static int
 sixel_planner_pixelformat_for_colorspace(int colorspace,
@@ -378,6 +382,9 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->pipeline_encode_threads = 0;
     planner->pipeline_bands = 0;
     planner->pipeline_pin_threads = 1;
+    planner->loader_multiframe_known = 0;
+    planner->loader_multiframe = 0;
+    planner->loader_pipeline_active = 0;
     sixel_encoding_planner_dag_clear(planner);
 }
 
@@ -654,6 +661,11 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         planner->main_threads = total;
     }
 
+    sixel_encoding_planner_set_loader_metadata(
+        planner,
+        planner->loader_multiframe_known,
+        planner->loader_multiframe);
+
     sixel_encoding_planner_plan_pipeline(planner, encoder, frame);
 
     sixel_encoding_planner_replan(planner,
@@ -730,6 +742,10 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     planner->pipeline_encode_threads = 0;
     planner->pipeline_bands = 0;
     planner->pipeline_pin_threads = 1;
+    planner->loader_pipeline_active = 0;
+    if (!planner->loader_multiframe_known) {
+        planner->loader_multiframe = 0;
+    }
 
     pin_threads = 1;
     pin_env_override = 0;
@@ -861,6 +877,34 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
 }
 
 
+void
+sixel_encoding_planner_set_loader_metadata(sixel_encoding_planner_t *planner,
+                                           int multiframe_known,
+                                           int multiframe)
+{
+    int allow_pipeline;
+
+    allow_pipeline = 0;
+
+    if (planner == NULL) {
+        return;
+    }
+
+    planner->loader_multiframe_known = multiframe_known != 0 ? 1 : 0;
+    planner->loader_multiframe = multiframe != 0 ? 1 : 0;
+
+    /*
+     * Loader/encoder handoff starts in serial mode and is enabled only after
+     * the loader reports multiframe metadata. Restrict the handoff pipeline to
+     * runs where the main path can spare at least one extra thread.
+     */
+    allow_pipeline = planner->main_threads > 1
+        && planner->loader_multiframe_known != 0
+        && planner->loader_multiframe != 0;
+    planner->loader_pipeline_active = allow_pipeline ? 1 : 0;
+}
+
+
 static char const *
 sixel_encoding_planner_pixelformat_label(int pixelformat)
 {
@@ -964,6 +1008,12 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
             planner->resize_precision_mode,
             sixel_encoding_planner_pixelformat_label(
                 planner->scale_input_pixelformat));
+    fprintf(stream,
+            "  loader: multiframe=%s handoff=%s\n",
+            planner->loader_multiframe_known != 0
+                ? (planner->loader_multiframe != 0 ? "yes" : "no")
+                : "unknown",
+            planner->loader_pipeline_active != 0 ? "pipeline" : "serial");
 
     fprintf(stream, "  nodes:\n");
     for (i = 0; i < planner->dag_node_count; ++i) {
