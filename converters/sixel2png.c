@@ -436,7 +436,6 @@ main(int argc, char *argv[])
     int n;
     sixel_decoder_t *decoder;
 #if HAVE_GETOPT_LONG
-    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
@@ -469,18 +468,23 @@ main(int argc, char *argv[])
     sixel_aborttrace_install_if_unhandled();
 
 #if HAVE_GETOPT_LONG
+    /*
+     * Keep getopt_long() in "return val directly" mode by passing NULL
+     * as the flag field. This avoids reading an intermediate flag value
+     * and keeps MSan from reporting a false uninitialized read in main.
+     */
     struct option long_options[] = {
-        {"input",            required_argument,  &long_opt, 'i'},
-        {"output",           required_argument,  &long_opt, 'o'},
-        {"dequantize",       required_argument,  &long_opt, 'd'},
-        {"similarity",       required_argument,  &long_opt, 'S'},
-        {"size",             required_argument,  &long_opt, 's'},
-        {"edge",             required_argument,  &long_opt, 'e'},
-        {"direct",           no_argument,        &long_opt, 'D'},
-        {"threads",          required_argument,  &long_opt, '='},
-        {"env",              required_argument,  &long_opt, '%'},
-        {"version",          no_argument,        &long_opt, 'V'},
-        {"help",             no_argument,        &long_opt, 'H'},
+        {"input",            required_argument,  NULL, 'i'},
+        {"output",           required_argument,  NULL, 'o'},
+        {"dequantize",       required_argument,  NULL, 'd'},
+        {"similarity",       required_argument,  NULL, 'S'},
+        {"size",             required_argument,  NULL, 's'},
+        {"edge",             required_argument,  NULL, 'e'},
+        {"direct",           no_argument,        NULL, 'D'},
+        {"threads",          required_argument,  NULL, '='},
+        {"env",              required_argument,  NULL, '%'},
+        {"version",          no_argument,        NULL, 'V'},
+        {"help",             no_argument,        NULL, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -500,12 +504,6 @@ main(int argc, char *argv[])
         if (n == (-1)) {
             break;
         }
-#if HAVE_GETOPT_LONG
-        if (n == 0) {
-            n = long_opt;
-        }
-#endif  /* HAVE_GETOPT_LONG */
-
         if (n > 0) {
             if (sixel2png_guard_missing_argument(n, argv) != 0) {
                 status = SIXEL_BAD_ARGUMENT;
