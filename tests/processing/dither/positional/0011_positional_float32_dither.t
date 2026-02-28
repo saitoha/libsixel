@@ -2,14 +2,14 @@
 # TAP test ensuring positional dithering exercises the float32 pipeline.
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+status=0
 
 echo "1..1"
 set -v

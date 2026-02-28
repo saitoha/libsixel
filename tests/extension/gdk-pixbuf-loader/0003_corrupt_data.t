@@ -3,12 +3,12 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_GDK_PIXBUF2-}" = 1 || {
     printf "1..0 # SKIP gdk-pixbuf2 support is disabled in this build\n"
     exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v

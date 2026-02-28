@@ -2,12 +2,12 @@
 # Confirm test_runner -%/--env behaves like wrapper-level --env.
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_TEST_RUNNER-}" = 1 || {
     printf "1..0 # SKIP test_runner is disabled in this build\n"
     exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..2"
 set -v
