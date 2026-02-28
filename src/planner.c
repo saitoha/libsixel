@@ -64,6 +64,11 @@ static void
 sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
                                  sixel_encoder_t *encoder,
                                  int palette_ready);
+static int
+sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
+                                             sixel_encoder_t *encoder,
+                                             sixel_frame_t *frame,
+                                             int palette_ready);
 static char const *
 sixel_encoding_planner_pixelformat_label(int pixelformat);
 
@@ -288,6 +293,59 @@ sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
                                         dither_node,
                                         encode_node,
                                         planner->pipeline_active != 0);
+}
+
+static int
+sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
+                                             sixel_encoder_t *encoder,
+                                             sixel_frame_t *frame,
+                                             int palette_ready)
+{
+    int source_pixelformat;
+    int source_ncolors;
+    int effective_reqcolors;
+    int has_palette;
+    int palette_branch_active;
+
+    source_pixelformat = 0;
+    source_ncolors = 0;
+    effective_reqcolors = 0;
+    has_palette = 0;
+    palette_branch_active = 0;
+
+    if (planner == NULL || encoder == NULL || frame == NULL) {
+        return 0;
+    }
+
+    source_pixelformat = sixel_frame_get_pixelformat(frame);
+    source_ncolors = sixel_frame_get_ncolors(frame);
+    effective_reqcolors = encoder->reqcolors;
+    if (effective_reqcolors <= 0 || effective_reqcolors > SIXEL_PALETTE_MAX) {
+        effective_reqcolors = SIXEL_PALETTE_MAX;
+    }
+
+    has_palette = (sixel_frame_get_palette(frame) != NULL && source_ncolors > 0)
+        ? 1
+        : 0;
+    palette_branch_active = (palette_ready != 0) ? 1 : 0;
+
+    /*
+     * Replan rule for PAL-preserving inputs:
+     *
+     * - If the loader already produced a palette frame and the frame satisfies
+     *   the requested palette size, skip palette/LUT generation in the DAG.
+     * - This keeps the graph aligned with the no-requantization path used by
+     *   the execution planner and avoids redundant palette branches.
+     */
+    if ((source_pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0
+        && encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT
+        && planner->scale_active == 0
+        && has_palette != 0
+        && source_ncolors <= effective_reqcolors) {
+        palette_branch_active = 0;
+    }
+
+    return palette_branch_active;
 }
 
 void
@@ -598,11 +656,32 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
 
     sixel_encoding_planner_plan_pipeline(planner, encoder, frame);
 
-    sixel_encoding_planner_build_dag(planner,
-                                     encoder,
-                                     planner->allow_palette_async != 0);
+    sixel_encoding_planner_replan(planner,
+                                 encoder,
+                                 frame,
+                                 planner->allow_palette_async != 0);
 }
 
+
+void
+sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
+                              sixel_encoder_t *encoder,
+                              sixel_frame_t *frame,
+                              int palette_ready)
+{
+    int palette_branch_active;
+
+    if (planner == NULL || encoder == NULL || frame == NULL) {
+        return;
+    }
+
+    palette_branch_active = sixel_encoding_planner_replan_palette_branch(
+        planner,
+        encoder,
+        frame,
+        palette_ready);
+    sixel_encoding_planner_build_dag(planner, encoder, palette_branch_active);
+}
 
 void
 sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
@@ -862,7 +941,8 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     edge = NULL;
     from = NULL;
     to = NULL;
-    sixel_encoding_planner_build_dag(planner, encoder, palette_ready);
+    sixel_encoding_planner_replan(planner, encoder, frame,
+                                  palette_ready);
 
     fprintf(stream, "[planner] DAG (Directed Acyclic Graph)\n");
     fprintf(stream,

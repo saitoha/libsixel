@@ -5842,6 +5842,12 @@ sixel_encoder_encode_frame(
     current_colorspace = sixel_frame_get_colorspace(frame);
 
     palette_ready = sixel_encoding_palette_job_ready(encoder, planner, frame);
+    if (planner != NULL) {
+        sixel_encoding_planner_replan(planner,
+                                      encoder,
+                                      frame,
+                                      palette_ready);
+    }
     clip_active = (planner != NULL) ? planner->clip_active
         : (encoder->clipwidth > 0 && encoder->clipheight > 0);
     if (encoder->verbose) {
