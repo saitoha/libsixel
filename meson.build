@@ -91,6 +91,12 @@ if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
   if msvc_pgo_mode != 'off'
     # Keep PGO flags explicit for MSVC-like frontends because Meson base
     # option b_pgo currently targets GNU/LLVM-style -fprofile-* flags.
+    #
+    # MSVC linker instrumentation emits C4964 when no optimization flag is
+    # active, and this project treats warnings as errors on CI. Force an
+    # optimization level during msvc_pgo generate/use to keep instrumentation
+    # valid even with buildtype=plain.
+    add_project_arguments('/O2', language: 'c')
     add_project_arguments('/GL', language: 'c')
 
     msvc_pgo_link_args = []
