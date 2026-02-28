@@ -74,6 +74,7 @@ char *img2sixel_compat_strerror(int error_number,
                                 size_t buffer_size);
 FILE *img2sixel_compat_fopen(const char *filename, const char *mode);
 const char *img2sixel_compat_getenv(const char *name);
+int img2sixel_compat_setenv(const char *name, const char *value);
 int img2sixel_compat_prepare_path(char const *path,
                                   char **buffer_out,
                                   char const **libc_path_out);

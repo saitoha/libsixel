@@ -665,51 +665,34 @@ sixel_compat_fopen(const char *filename, const char *mode)
 SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {
-#if HAVE__DUPENV_S || defined(_MSC_VER)
+#if defined(_MSC_VER)
     static char *buffer = NULL;
-    static size_t buffer_size = 0u;
-    char *value;
-    size_t length;
-    char *new_buffer;
-    errno_t status;
+    static DWORD buffer_size = 0u;
+    DWORD required;
 
-    if (name == NULL) {
+    if (name == NULL || name[0] == '\0') {
         return NULL;
     }
 
-    value = NULL;
-    length = 0u;
-    status = 0;
-
-    /*
-     * Keep a single mutable buffer instead of caching per-variable values.
-     * This matches getenv()-style semantics where callers can read the value
-     * immediately and later calls may overwrite the returned pointer.
-     */
-    status = _dupenv_s(&value, &length, name);
-    if (status != 0) {
-        if (value != NULL) {
-            free(value);
-        }
-        return NULL;
-    }
-    if (value == NULL) {
+    required = GetEnvironmentVariableA(name, NULL, 0u);
+    if (required == 0u) {
         return NULL;
     }
 
-    if (length > buffer_size) {
-        new_buffer = (char *)realloc(buffer, length + 1u);
+    if (required > buffer_size) {
+        char *new_buffer;
+
+        new_buffer = (char *)realloc(buffer, (size_t)required);
         if (new_buffer == NULL) {
-            free(value);
             return NULL;
         }
         buffer = new_buffer;
-        buffer_size = length;
+        buffer_size = required;
     }
 
-    memcpy(buffer, value, length);
-    buffer[length] = '\0';
-    free(value);
+    if (GetEnvironmentVariableA(name, buffer, buffer_size) == 0u) {
+        return NULL;
+    }
 
     return buffer;
 #else
@@ -849,11 +832,16 @@ sixel_compat_gettimeofday(struct timeval *tv)
 SIXEL_COMPAT_API int
 sixel_compat_setenv(const char *name, const char *value)
 {
-#if defined(_WIN32)
+#if defined(_MSC_VER)
     errno_t status;
 
     status = 0;
     if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    if (SetEnvironmentVariableA(name, value) == 0) {
         errno = EINVAL;
         return (-1);
     }

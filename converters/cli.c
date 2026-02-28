@@ -41,6 +41,13 @@
 #if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
+#if defined(_MSC_VER)
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+# endif
+# include <windows.h>
+#endif
+
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #elif HAVE_SYS_UNISTD_H
@@ -50,6 +57,39 @@
 #include <sixel.h>
 
 #include "cli.h"
+
+static int
+cli_setenv_portable(char const *name, char const *value)
+{
+#if defined(_MSC_VER)
+    errno_t status;
+
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (SetEnvironmentVariableA(name, value) == 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    status = _putenv_s(name, value);
+    if (status != 0) {
+        errno = status;
+        return -1;
+    }
+
+    return 0;
+#else
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    return setenv(name, value, 1);
+#endif
+}
 
 static size_t
 cli_safe_count(cli_option_help_t const *table, size_t count)
@@ -438,14 +478,7 @@ cli_apply_env_assignment(char const *assignment,
     name[name_length] = '\0';
     memcpy(value, separator + 1, value_length + 1u);
 
-#if defined(_WIN32)
-    status = _putenv_s(name, value);
-    if (status != 0) {
-        errno = status;
-    }
-#else
-    status = setenv(name, value, 1);
-#endif
+    status = cli_setenv_portable(name, value);
     if (status != 0) {
         if (error_buffer != NULL && error_buffer_size > 0u) {
             (void)snprintf(error_buffer,
