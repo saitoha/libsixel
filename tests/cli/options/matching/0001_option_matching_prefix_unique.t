@@ -12,18 +12,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 label="prefix_unique"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 filtered_err="${ARTIFACT_LOCAL_DIR}/${label}.filtered.err"
-
-: >"${err_file}"
-: >"${out_file}"
-: >"${filtered_err}"
 
 echo "1..1"
 set -v
 
-run_img2sixel -y ser "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >"${out_file}" 2>"${err_file}" || {
+run_img2sixel -y ser \
+              "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+              >/dev/null 2>"${err_file}" || {
     fail 1 "unique prefix was rejected"
     exit 0
 }
@@ -39,12 +35,12 @@ sed '1d' "${err_file}" \
     | grep -i 'error\|warning\|failed' \
     >"${filtered_err}" || :
 
-test ! -s "${filtered_err}" && {
-    pass 1 "unique prefix is accepted"
+test -s "${filtered_err}" && {
+    fail 1 "unique prefix emitted diagnostics"
+    printf '%s\n' '--- stderr ---' >&2
+    cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-cli_core_fail 1 "unique prefix emitted diagnostics"
-printf '%s\n' '--- stderr ---' >&2
-cat "${err_file}" >&2 2>/dev/null || :
+pass 1 "unique prefix is accepted"
 exit 0

@@ -17,17 +17,11 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 outfile_err="${ARTIFACT_LOCAL_DIR}/outfile-option-name.err"
 out_file="${ARTIFACT_LOCAL_DIR}/-p"
 
-: >"${outfile_err}"
 : >"${out_file}"
 
-cd "${ARTIFACT_LOCAL_DIR}" || {
-    fail 1 "failed to enter artifact directory"
-    exit 0
-}
-run_img2sixel -o -p "${image_path}" >/dev/null 2>"${outfile_err}" || {
+cd "${ARTIFACT_LOCAL_DIR}" && run_img2sixel -o -p "${image_path}" >/dev/null || {
     fail 1 "outfile named like option rejected"
     printf '%s\n' '--- stderr ---' >&2
-    cat "${outfile_err}" >&2 2>/dev/null || :
     exit 0
 }
 
