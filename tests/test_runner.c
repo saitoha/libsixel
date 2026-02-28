@@ -297,11 +297,19 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
 static int
 test_runner_setenv_portable(char const *name, char const *value)
 {
-#if defined(_WIN32)
+#if defined(_MSC_VER)
     if (name == NULL || value == NULL) {
         return -1;
     }
     if (SetEnvironmentVariableA(name, value) == 0) {
+        return -1;
+    }
+    return 0;
+#elif defined(_WIN32) && defined(HAVE__PUTENV_S) && HAVE__PUTENV_S
+    if (name == NULL || value == NULL) {
+        return -1;
+    }
+    if (_putenv_s(name, value) != 0) {
         return -1;
     }
     return 0;
