@@ -8,14 +8,14 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.96}
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.96}
 
 printf '1..1\n'
 set -v

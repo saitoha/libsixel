@@ -10,6 +10,11 @@
 # using LSQA with the default MS-SSIM floor (0.98 unless overridden).
 set -eux
 
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
+    exit 0
+}
+
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
@@ -18,11 +23,6 @@ data_root="${TOP_SRCDIR}/tests/data/inputs"
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_h32.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/height_32.six"
-
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n";
-    exit 0
-}
 
 echo "1..1"
 set -v

@@ -6,12 +6,12 @@
 #       -define ppm:format=plain PPM:tests/data/loader/pngsuite_expected/0082_pngsuite_background_width32_white_bgwn6a08_msssim.ppm
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_LIBPNG-}" = 1 || {
     printf "1..0 # SKIP libpng support is disabled in this build\n"
     exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
