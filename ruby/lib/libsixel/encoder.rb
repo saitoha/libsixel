@@ -60,11 +60,44 @@ class Encoder
     nil
   end
 
-  # 任意: バイト配列の直接エンコード
+  # Optional direct encoding API for already-decoded pixel buffers.
+  #
+  # Validation flow:
+  #   1. Normalize geometry and pixel format.
+  #   2. Resolve depth bytes/pixel via libsixel helper.
+  #   3. Verify the Ruby buffer has enough bytes before crossing FFI.
+  #
+  # This keeps short-input failures deterministic at Ruby level instead of
+  # leaving behavior to downstream C calls.
   def encode_bytes(bytes, width:, height:, pixelformat:, palette: nil)
+    width_i = width.to_i
+    height_i = height.to_i
+    pixelformat_i = pixelformat.to_i
+    pixel_depth = Libsixel::API.sixel_helper_compute_depth(pixelformat_i)
+
+    raise ArgumentError, 'width must be positive' unless width_i.positive?
+    raise ArgumentError, 'height must be positive' unless height_i.positive?
+    unless pixel_depth.is_a?(Integer) && pixel_depth.positive?
+      raise ArgumentError, "invalid pixelformat: #{pixelformat_i}"
+    end
+
+    buffer =
+      if bytes.is_a?(String)
+        bytes
+      elsif bytes.respond_to?(:to_str)
+        bytes.to_str
+      else
+        raise TypeError, 'bytes must be a String or String-like object'
+      end
+    required_bytes = width_i * height_i * pixel_depth
+    if buffer.bytesize < required_bytes
+      raise ArgumentError,
+            "pixel buffer is too short: got #{buffer.bytesize}, need #{required_bytes}"
+    end
+
     palette_ptr = palette ? palette.pack('C*') : nil
     status = Libsixel::API.sixel_encoder_encode_bytes(
-      @ptr, bytes, width.to_i, height.to_i, pixelformat.to_i,
+      @ptr, buffer, width_i, height_i, pixelformat_i,
       palette_ptr, palette ? palette.length : 0
     )
     raise RuntimeError, Libsixel::API::Err.message(status) if Libsixel::API.failed?(status)
