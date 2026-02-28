@@ -24,14 +24,14 @@ echo "1..1"
 set -v
 
 run_img2sixel -L librsvg! "${svg_path}" >"${sixel_path}" || {
-    fail 1 "librsvg viewBox conversion failed"
+    echo "not ok" 1 "librsvg viewBox conversion failed"
     exit 0
 }
 
 sed 's/^.*"//;s/#.*$//' "${sixel_path}" | grep -q '^1;1;40;25$' || {
-    fail 1 "viewBox geometry is not 40x25"
+    echo "not ok" 1 "viewBox geometry is not 40x25"
     exit 0
 }
 
-pass 1 "librsvg viewBox geometry is respected"
+echo "ok" 1 "librsvg viewBox geometry is respected"
 exit 0

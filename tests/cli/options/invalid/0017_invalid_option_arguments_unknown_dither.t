@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -d "" </dev/null >/dev/null  && {
-    fail 1 "unexpected success: unknown dither option"
+    echo "not ok" 1 "unexpected success: unknown dither option"
     exit 0
 }
 
-pass 1 "invalid option rejected"
+echo "ok" 1 "invalid option rejected"
 exit 0

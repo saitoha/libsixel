@@ -47,25 +47,3 @@ run_lsqa() {
 run_test_runner() {
     runtime_exec "${TEST_RUNNER_PATH}" "$@"
 }
-
-# Shared TAP helpers for shell-based tests.
-#
-# This module standardizes TAP output to the following format:
-# - Plan:   "1..N"
-# - Pass:   "ok <case> - <description>"
-# - Fail:   "not ok <case> - <description>"
-# - Skip:   "1..0 # SKIP <reason>"
-#
-# The helpers expose both tap_* names and pass/fail wrappers so existing
-# scripts can opt into the shared implementation without rewriting every
-# call site. When pass/fail are invoked with a single argument, the
-# helpers assume the case number is 1 and treat the argument as the
-# description to match historical single-case tests.
-
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
-
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-}

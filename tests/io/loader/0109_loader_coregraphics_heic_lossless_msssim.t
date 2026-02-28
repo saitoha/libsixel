@@ -21,16 +21,16 @@ set -v
 run_img2sixel -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-heic-lossless-64.heic" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_heic_lossless.six" || {
-    fail 1 "coregraphics HEIC decode failed"
+    echo "not ok" 1 "coregraphics HEIC decode failed"
     exit 0
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_heic_lossless.six" 2>&1) || {
-    fail 1 "$lsqa_msg"
+    echo "not ok" 1 "$lsqa_msg"
     exit 0
 }
 
-pass 1 "coregraphics HEIC decode preserves quality"
+echo "ok" 1 "coregraphics HEIC decode preserves quality"
 exit 0

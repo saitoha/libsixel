@@ -21,16 +21,16 @@ set -v
 run_img2sixel -Llibwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_loop_disable.six" || {
-    fail 1 "libwebp lossless animation decode failed"
+    echo "not ok" 1 "libwebp lossless animation decode failed"
     exit 0
 }
 
 cmp -s \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated_lossless_8x8_2frame_min_loop_disable_reference.six" \
     "${ARTIFACT_LOCAL_DIR}/webp_loop_disable.six" || {
-    fail 1 "libwebp loop-disable animation output differed from reference"
+    echo "not ok" 1 "libwebp loop-disable animation output differed from reference"
     exit 0
 }
 
-pass 1 "libwebp loop-disable animation output matched static reference"
+echo "ok" 1 "libwebp loop-disable animation output matched static reference"
 exit 0

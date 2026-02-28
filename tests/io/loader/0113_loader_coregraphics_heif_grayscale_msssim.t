@@ -21,16 +21,16 @@ set -v
 run_img2sixel -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-heif-gray-lossless-64.heif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_heif_gray_lossless.six" || {
-    fail 1 "coregraphics grayscale HEIF decode failed"
+    echo "not ok" 1 "coregraphics grayscale HEIF decode failed"
     exit 0
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_heif_gray_lossless.six" 2>&1) || {
-    fail 1 "$lsqa_msg"
+    echo "not ok" 1 "$lsqa_msg"
     exit 0
 }
 
-pass 1 "coregraphics grayscale HEIF decode preserves quality"
+echo "ok" 1 "coregraphics grayscale HEIF decode preserves quality"
 exit 0

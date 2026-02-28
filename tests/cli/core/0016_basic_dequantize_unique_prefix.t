@@ -16,14 +16,14 @@ set -v
 run_sixel2png -dk_ <"${TOP_SRCDIR}/images/map8.six" \
         >"${ARTIFACT_LOCAL_DIR}/dequantize-short.png" \
        2>"${ARTIFACT_LOCAL_DIR}/err.txt" || {
-    fail 1 "unique dequantize prefix rejected"
+    echo "not ok" 1 "unique dequantize prefix rejected"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/dequantize-short.png" || {
-    fail 1 "unexpected diagnostics for -dk_"
+    echo "not ok" 1 "unexpected diagnostics for -dk_"
     exit 0
 }
 
-pass 1 "accepts unique dequantize prefix"
+echo "ok" 1 "accepts unique dequantize prefix"
 exit 0

@@ -27,7 +27,7 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    fail 1 "invalid HTTPS endpoint unexpectedly succeeded"
+    echo "not ok" 1 "invalid HTTPS endpoint unexpectedly succeeded"
     exit 0
 }
 
@@ -37,12 +37,12 @@ test "${command_status}" -ne 0 || {
 # Keep the check broad enough to accept backend-consistent failures.
 printf '%s\n' "${capture_output}" |
 awk '/^curl_easy_/ { ++m } /^WinHttp/ { ++m } /runtime error: unable/ { ++m } END { if (!m) exit 1; }' || {
-    fail 1 "missing formatted network failure message"
+    echo "not ok" 1 "missing formatted network failure message"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${capture_output}" >&2
     exit 0
 }
 
-pass 1 "invalid HTTPS endpoint reports formatted network failure"
+echo "ok" 1 "invalid HTTPS endpoint reports formatted network failure"
 
 exit 0

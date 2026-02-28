@@ -16,9 +16,9 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-ormode.sixel"
 
 run_img2sixel -O --outfile="${output_sixel}" <"${snake_jpg}" >/dev/null || {
-    fail 1 "-O mode conversion failed"
+    echo "not ok" 1 "-O mode conversion failed"
     exit 0
 }
 
-pass 1 "-O mode conversion succeeded"
+echo "ok" 1 "-O mode conversion succeeded"
 exit 0

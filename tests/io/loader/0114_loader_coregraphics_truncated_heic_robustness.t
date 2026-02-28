@@ -22,9 +22,9 @@ set -v
 # This test intentionally accepts both outcomes and only checks robustness.
 run_img2sixel -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/truncated.heic" >/dev/null && {
-    pass 1 "coregraphics truncated HEIC decode completed without crash"
+    echo "ok" 1 "coregraphics truncated HEIC decode completed without crash"
     exit 0
 }
 
-pass 1 "coregraphics truncated HEIC decode rejected without crash"
+echo "ok" 1 "coregraphics truncated HEIC decode rejected without crash"
 exit 0

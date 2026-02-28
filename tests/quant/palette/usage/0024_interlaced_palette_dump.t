@@ -16,10 +16,10 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_sixel="${ARTIFACT_LOCAL_DIR}/interlaced-palette-dump.sixel"
 
 run_img2sixel -e -i -P "${snake_jpg}" >"${target_sixel}" || {
-    fail 1 "interlaced encode palette dump fails"
+    echo "not ok" 1 "interlaced encode palette dump fails"
     exit 0
 }
 
-pass 1 "interlaced encode emits palette dump"
+echo "ok" 1 "interlaced encode emits palette dump"
 
 exit 0

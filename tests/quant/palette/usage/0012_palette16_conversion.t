@@ -17,10 +17,10 @@ map16_palette="${TOP_SRCDIR}/images/map16-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/palette16.sixel"
 
 run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" >"${target_sixel}" || {
-    fail 1 "16-colour palette conversion fails"
+    echo "not ok" 1 "16-colour palette conversion fails"
     exit 0
 }
 
-pass 1 "16-colour palette conversion succeeds"
+echo "ok" 1 "16-colour palette conversion succeeds"
 
 exit 0

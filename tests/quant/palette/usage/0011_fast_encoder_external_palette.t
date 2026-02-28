@@ -17,10 +17,10 @@ map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
 
 run_img2sixel -8 -m "${map8_palette}" -Esize "${snake_ppm}" \
         -o/dev/null || {
-    fail 1 "fast encoder with palette fails"
+    echo "not ok" 1 "fast encoder with palette fails"
     exit 0
 }
 
-pass 1 "fast encoder with palette succeeds"
+echo "ok" 1 "fast encoder with palette succeeds"
 
 exit 0

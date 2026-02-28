@@ -18,10 +18,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -d x_dither -y raster --precision=float32 \
         --lookup-policy=none -p 16 -o "${output_sixel}" "${input_image}" || {
-    fail 1 "positional float32 x_dither lookup none failed"
+    echo "not ok" 1 "positional float32 x_dither lookup none failed"
     exit 0
 }
 
-pass 1 "positional float32 x_dither lookup none passed"
+echo "ok" 1 "positional float32 x_dither lookup none passed"
 
 exit 0

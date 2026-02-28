@@ -21,7 +21,7 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp" \
     >/dev/null && {
-    pass 1 "gd decodes WBMP input"
+    echo "ok" 1 "gd decodes WBMP input"
     exit 0
 }
 

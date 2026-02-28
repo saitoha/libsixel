@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" >/dev/null || {
-    fail 1 "quicklook APNG still-frame decode failed"
+    echo "not ok" 1 "quicklook APNG still-frame decode failed"
     exit 0
 }
 
-pass 1 "quicklook reads APNG as still image"
+echo "ok" 1 "quicklook reads APNG as still image"
 exit 0

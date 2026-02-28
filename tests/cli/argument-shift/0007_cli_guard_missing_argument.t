@@ -15,9 +15,9 @@ echo "1..1"
 set -v
 
 test "${rc}" -eq 0 || {
-    fail 1 "cli_guard_missing_argument"
+    echo "not ok" 1 "cli_guard_missing_argument"
     exit 0
 }
 
-pass 1 "cli_guard_missing_argument"
+echo "ok" 1 "cli_guard_missing_argument"
 exit 0

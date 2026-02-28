@@ -28,7 +28,7 @@ echo "1..1"
 set -v
 
 run_img2sixel -r bicubic -w 120% -o "${output_sixel}" "${input_image}" || {
-    fail 1 "bicubic upscale 120pct scaling failed"
+    echo "not ok" 1 "bicubic upscale 120pct scaling failed"
     exit 0
 }
 
@@ -38,15 +38,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "bicubic upscale 120pct lsqa passed"
+    echo "ok" 1 "bicubic upscale 120pct lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "bicubic upscale 120pct lsqa failed"
+echo "not ok" 1 "bicubic upscale 120pct lsqa failed"
 
 exit 0

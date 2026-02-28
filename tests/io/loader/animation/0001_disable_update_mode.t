@@ -16,9 +16,9 @@ set -v
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 run_img2sixel -Lbuiltin! -ldisable -dnone -u -lauto "${image_gif}" -o/dev/null || {
-    fail 1 "animation disable with update failed"
+    echo "not ok" 1 "animation disable with update failed"
     exit 0
 }
 
-pass 1 "animation disabled with update mode"
+echo "ok" 1 "animation disabled with update mode"
 exit 0

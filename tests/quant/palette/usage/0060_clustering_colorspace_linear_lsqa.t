@@ -22,7 +22,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-linear.six"
 
 run_img2sixel -t rgb -X linear -o "${output_sixel}" "${input_image}" || {
-    fail 1 "img2sixel clustering linear conversion failed"
+    echo "not ok" 1 "img2sixel clustering linear conversion failed"
     exit 0
 }
 
@@ -32,15 +32,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "clustering linear lsqa passed"
+    echo "ok" 1 "clustering linear lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "clustering linear lsqa failed"
+echo "not ok" 1 "clustering linear lsqa failed"
 
 exit 0

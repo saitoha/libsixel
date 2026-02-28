@@ -19,7 +19,7 @@ stderr_capture="${ARTIFACT_LOCAL_DIR}/err.txt"
 run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               --env SIXEL_TRACE_TOPIC=file_open:suggestion:lifecycle \
               "${missing_input}" -o/dev/null 2>"${stderr_capture}" && {
-    fail 1 "accepts missing input path"
+    echo "not ok" 1 "accepts missing input path"
     exit 0
 }
 
@@ -29,9 +29,9 @@ awk '
 /No nearby matches were found in/ { m++ }
 END { if (!m) exit 1 }
 ' "${stderr_capture}" >/dev/null 2>&1 || {
-    fail 1 "missing path suggestion diagnostics"
+    echo "not ok" 1 "missing path suggestion diagnostics"
     exit 0
 }
 
-pass 1 "missing input path suggestion diagnostics reported"
+echo "ok" 1 "missing input path suggestion diagnostics reported"
 exit 0

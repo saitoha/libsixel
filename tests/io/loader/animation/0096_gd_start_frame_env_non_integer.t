@@ -21,9 +21,9 @@ set -v
 run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc" \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null && {
-    fail 1 "gd accepted a non-integer start-frame environment value"
+    echo "not ok" 1 "gd accepted a non-integer start-frame environment value"
     exit 0
 }
 
-pass 1 "gd rejects non-integer start-frame environment values"
+echo "ok" 1 "gd rejects non-integer start-frame environment values"
 exit 0

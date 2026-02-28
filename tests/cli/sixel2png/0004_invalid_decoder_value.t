@@ -18,19 +18,19 @@ stderr_capture="${ARTIFACT_LOCAL_DIR}/stderr.txt"
 stdout_capture="${ARTIFACT_LOCAL_DIR}/stdout.txt"
 
 run_sixel2png --similarity=invalid "${input_path}" >"${stdout_capture}"     2>"${stderr_capture}" && {
-    fail 1 "invalid similarity should fail"
+    echo "not ok" 1 "invalid similarity should fail"
     exit 0
 }
 
 grep -qi "similarity" "${stderr_capture}" >/dev/null 2>&1 && {
-    pass 1 "invalid similarity reported"
+    echo "ok" 1 "invalid similarity reported"
     exit 0
 }
 
 grep -qi "SIXEL_BAD_ARGUMENT" "${stderr_capture}" >/dev/null 2>&1 && {
-    pass 1 "invalid similarity reported"
+    echo "ok" 1 "invalid similarity reported"
     exit 0
 }
 
-fail 1 "error message missing similarity hint"
+echo "not ok" 1 "error message missing similarity hint"
 exit 0

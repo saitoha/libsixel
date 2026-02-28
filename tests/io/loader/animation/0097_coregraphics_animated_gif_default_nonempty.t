@@ -21,14 +21,14 @@ set -v
 run_img2sixel -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_animated_default.six" || {
-    fail 1 "default animated GIF decode failed on coregraphics"
+    echo "not ok" 1 "default animated GIF decode failed on coregraphics"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_animated_default.six" || {
-    fail 1 "default animated GIF decode produced empty output"
+    echo "not ok" 1 "default animated GIF decode produced empty output"
     exit 0
 }
 
-pass 1 "coregraphics emits non-empty output for animated GIF"
+echo "ok" 1 "coregraphics emits non-empty output for animated GIF"
 exit 0

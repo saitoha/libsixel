@@ -25,9 +25,9 @@ bin_dir="${template_root}/bin"
 run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir}:${PATH}" \
               -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    fail 1 "absolute TryExec path handling failed"
+    echo "not ok" 1 "absolute TryExec path handling failed"
     exit 0
 }
 
-pass 1 "absolute TryExec path is accepted"
+echo "ok" 1 "absolute TryExec path is accepted"
 exit 0

@@ -39,9 +39,9 @@ subprocess.run(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNUL
                timeout=5, check=False)
 sys.exit(0)
 ' || {
-    fail 1 "quicklook hang guard failed for truncated HEIC"
+    echo "not ok" 1 "quicklook hang guard failed for truncated HEIC"
     exit 0
 }
 
-pass 1 "quicklook does not hang on truncated HEIC"
+echo "ok" 1 "quicklook does not hang on truncated HEIC"
 exit 0

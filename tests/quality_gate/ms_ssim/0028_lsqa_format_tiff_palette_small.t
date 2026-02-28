@@ -29,7 +29,7 @@ reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.p
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_indexed.six"
 
 run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}" || {
-    fail 1 "tiff palette conversion failed"
+    echo "not ok" 1 "tiff palette conversion failed"
     exit 0
 }
 
@@ -41,14 +41,14 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    fail 1 "tiff palette quality regressed"
+    echo "not ok" 1 "tiff palette quality regressed"
     exit 0
 }
 
-pass 1 "tiff palette quality meets baseline"
+echo "ok" 1 "tiff palette quality meets baseline"
 exit 0

@@ -15,10 +15,10 @@ set -v
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 run_img2sixel -shist "${snake_jpg}" >/dev/null || {
-    fail 1 "unique select-color prefix failed"
+    echo "not ok" 1 "unique select-color prefix failed"
     exit 0
 }
 
-pass 1 "unique select-color prefix accepted"
+echo "ok" 1 "unique select-color prefix accepted"
 
 exit 0

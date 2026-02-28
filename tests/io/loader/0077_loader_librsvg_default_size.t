@@ -24,14 +24,14 @@ echo "1..1"
 set -v
 
 run_img2sixel -L librsvg! "${svg_path}" >"${sixel_path}" || {
-    fail 1 "librsvg default-size conversion failed"
+    echo "not ok" 1 "librsvg default-size conversion failed"
     exit 0
 }
 
 sed 's/^.*"//;s/#.*$//' "${sixel_path}" | grep -q '^1;1;300;150$' || {
-    fail 1 "fallback geometry is not 300x150"
+    echo "not ok" 1 "fallback geometry is not 300x150"
     exit 0
 }
 
-pass 1 "librsvg fallback geometry is 300x150"
+echo "ok" 1 "librsvg fallback geometry is 300x150"
 exit 0

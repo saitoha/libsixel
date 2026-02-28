@@ -22,22 +22,22 @@ run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
 test "${status-0}" -eq 0 && {
     grep 'corrected --diffusion value "burkez" -> "burkes".' \
         "${err_file}" >/dev/null 2>&1 || {
-        fail 1 "missing correction notice"
+        echo "not ok" 1 "missing correction notice"
         printf '%s\n' '--- stderr ---' >&2
         cat "${err_file}" >&2 2>/dev/null || :
         exit 0
     }
-    pass 1 "distance-1 typo is corrected"
+    echo "ok" 1 "distance-1 typo is corrected"
     exit 0
 }
 
 grep 'specified diffusion method is not supported.' "${err_file}" \
     >/dev/null 2>&1 || {
-    fail 1 "unexpected rejection without diagnostic"
+    echo "not ok" 1 "unexpected rejection without diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-pass 1 "distance-1 typo rejected with diagnostic"
+echo "ok" 1 "distance-1 typo rejected with diagnostic"
 exit 0

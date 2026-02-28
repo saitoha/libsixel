@@ -21,9 +21,9 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-444.jpg" \
     >/dev/null || {
-    fail 1 "gd failed to decode 4:4:4 JPEG input"
+    echo "not ok" 1 "gd failed to decode 4:4:4 JPEG input"
     exit 0
 }
 
-pass 1 "gd decodes 4:4:4 JPEG input"
+echo "ok" 1 "gd decodes 4:4:4 JPEG input"
 exit 0

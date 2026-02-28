@@ -13,10 +13,10 @@ output=$(
 ) || output=""
 
 test "${output}" = "pca" || {
-    fail 1 "unexpected kmeans init output: ${output}"
+    echo "not ok" 1 "unexpected kmeans init output: ${output}"
     exit 0
 }
 
-pass 1 "kmeans init output matched: pca"
+echo "ok" 1 "kmeans init output matched: pca"
 
 exit 0

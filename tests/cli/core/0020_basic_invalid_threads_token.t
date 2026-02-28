@@ -17,14 +17,14 @@ threads_err="${ARTIFACT_LOCAL_DIR}/err.txt"
 
 run_sixel2png -= bogus <"${TOP_SRCDIR}/images/map64.six" \
         >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2> "${threads_err}" && {
-    fail 1 "accepts invalid thread token"
+    echo "not ok" 1 "accepts invalid thread token"
     exit 0
 }
 
 grep "threads must be a positive integer or 'auto'" "${threads_err}" >/dev/null || {
-    fail 1 "missing invalid thread diagnostic"
+    echo "not ok" 1 "missing invalid thread diagnostic"
     exit 0
 }
 
-pass 1 "rejects invalid thread token"
+echo "ok" 1 "rejects invalid thread token"
 exit 0

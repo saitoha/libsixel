@@ -21,7 +21,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-linear.six"
 
 run_img2sixel --lookup-policy=fhedt --working-colorspace=linear -o "${output_sixel}" "${input_image}" || {
-    fail 1 "float32 FHEDT linear colorspace conversion failed"
+    echo "not ok" 1 "float32 FHEDT linear colorspace conversion failed"
     exit 0
 }
 
@@ -31,15 +31,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "float32 FHEDT linear colorspace lsqa passed"
+    echo "ok" 1 "float32 FHEDT linear colorspace lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "float32 FHEDT linear colorspace lsqa failed"
+echo "not ok" 1 "float32 FHEDT linear colorspace lsqa failed"
 
 exit 0

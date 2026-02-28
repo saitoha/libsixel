@@ -26,14 +26,14 @@ bin_dir="${template_root}/bin"
 run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir}:${PATH}" \
               -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" || {
-    fail 1 "img2sixel failed"
+    echo "not ok" 1 "img2sixel failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    fail 1 "empty output"
+    echo "not ok" 1 "empty output"
     exit 0
 }
 
-pass 1 "gnome-thumbnailer wildcard MIME entry matches PNG"
+echo "ok" 1 "gnome-thumbnailer wildcard MIME entry matches PNG"
 exit 0

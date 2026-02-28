@@ -24,14 +24,14 @@ echo "1..1"
 set -v
 
 run_img2sixel -L librsvg! "${svg_path}" >"${sixel_path}" || {
-    fail 1 "librsvg explicit-size conversion failed"
+    echo "not ok" 1 "librsvg explicit-size conversion failed"
     exit 0
 }
 
 sed 's/^.*"//;s/#.*$//' "${sixel_path}" | grep -q '^1;1;13;7$' || {
-    fail 1 "explicit width/height geometry is not 13x7"
+    echo "not ok" 1 "explicit width/height geometry is not 13x7"
     exit 0
 }
 
-pass 1 "librsvg explicit width/height geometry is respected"
+echo "ok" 1 "librsvg explicit width/height geometry is respected"
 exit 0

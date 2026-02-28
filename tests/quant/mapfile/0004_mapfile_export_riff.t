@@ -18,7 +18,7 @@ riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
 
 run_img2sixel -M pal-riff:"${riff_palette}" \
     -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}" || {
-    fail 1 "RIFF palette export failed"
+    echo "not ok" 1 "RIFF palette export failed"
     exit 0
 }
 
@@ -35,10 +35,10 @@ dd if="${riff_palette}" bs=1 count=4 2>/dev/null | awk '
         }
     }
 ' || {
-    fail 1 "RIFF palette export missing RIFF header"
+    echo "not ok" 1 "RIFF palette export missing RIFF header"
     exit 0
 }
 
-pass 1 "RIFF palette export has RIFF header"
+echo "ok" 1 "RIFF palette export has RIFF header"
 
 exit 0

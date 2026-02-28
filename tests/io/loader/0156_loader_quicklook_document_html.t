@@ -25,9 +25,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/quicklook/sample.html" >/dev/null || {
-    fail 1 "quicklook HTML render failed"
+    echo "not ok" 1 "quicklook HTML render failed"
     exit 0
 }
 
-pass 1 "quicklook renders HTML"
+echo "ok" 1 "quicklook renders HTML"
 exit 0

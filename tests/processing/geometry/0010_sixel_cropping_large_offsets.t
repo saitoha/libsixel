@@ -16,10 +16,10 @@ snake_six="${TOP_SRCDIR}/images/map8.six"
 target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-crop-offsets.sixel"
 
 run_img2sixel -c200x200+2000+2000 "${snake_six}" >"${target_sixel}" || {
-    fail 1 "Sixel cropping with large offsets fails"
+    echo "not ok" 1 "Sixel cropping with large offsets fails"
     exit 0
 }
 
-pass 1 "Sixel cropping tolerates large offsets"
+echo "ok" 1 "Sixel cropping tolerates large offsets"
 
 exit 0

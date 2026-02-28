@@ -20,7 +20,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-gamma.six"
 
 run_img2sixel --lookup-policy=eytzinger --precision=float32 --working-colorspace=gamma -o "${output_sixel}" "${input_image}" || {
-    fail 1 "float32 Eytzinger gamma colorspace conversion failed"
+    echo "not ok" 1 "float32 Eytzinger gamma colorspace conversion failed"
     exit 0
 }
 
@@ -30,14 +30,14 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "float32 Eytzinger gamma colorspace lsqa passed"
+    echo "ok" 1 "float32 Eytzinger gamma colorspace lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    fail 1 "${lsqa_err}"
+    echo "not ok" 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "float32 Eytzinger gamma colorspace lsqa failed"
+echo "not ok" 1 "float32 Eytzinger gamma colorspace lsqa failed"
 exit 0

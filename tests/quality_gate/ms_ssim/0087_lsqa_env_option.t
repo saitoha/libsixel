@@ -20,21 +20,21 @@ err_invalid="${ARTIFACT_LOCAL_DIR}/lsqa_env_invalid.err"
 
 run_lsqa --env SIXEL_THREADS=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     "${reference_image}" "${target_image}" >"${out_env}" || {
-    fail 1 "reference environment assessment failed"
+    echo "not ok" 1 "reference environment assessment failed"
     exit 0
 }
 
 run_lsqa -% SIXEL_THREADS=1 -% SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     "${reference_image}" "${target_image}" >"${out_opt}" || {
-    fail 1 "-% assessment failed"
+    echo "not ok" 1 "-% assessment failed"
     exit 0
 }
 
 cmp -s "${out_env}" "${out_opt}" || {
-    fail 1 "-% output differs from process environment"
+    echo "not ok" 1 "-% output differs from process environment"
     exit 0
 }
-pass 1 "-% matches process environment"
+echo "ok" 1 "-% matches process environment"
 
 run_lsqa -% INVALID "${reference_image}" "${target_image}" > /dev/null \
     2>"${err_invalid}" && {

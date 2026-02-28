@@ -17,15 +17,15 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    fail 1 "empty baseline value was not rejected as expected"
+    echo "not ok" 1 "empty baseline value was not rejected as expected"
     exit 0
 }
 
 grep -q "Baseline value is empty" "${err_file}" || {
-    fail 1 "empty baseline value was not rejected as expected"
+    echo "not ok" 1 "empty baseline value was not rejected as expected"
     exit 0
 }
 
-pass 1 "empty baseline value was rejected"
+echo "ok" 1 "empty baseline value was rejected"
 
 exit 0

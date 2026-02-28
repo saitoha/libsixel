@@ -18,15 +18,15 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    fail 1 "baseline without colon was not rejected as expected"
+    echo "not ok" 1 "baseline without colon was not rejected as expected"
     exit 0
 }
 
 grep "Expected METRIC:VALUE format" "${err_file}" >/dev/null || {
-    fail 1 "baseline without colon was not rejected as expected"
+    echo "not ok" 1 "baseline without colon was not rejected as expected"
     exit 0
 }
 
-pass 1 "baseline without colon was rejected"
+echo "ok" 1 "baseline without colon was rejected"
 
 exit 0

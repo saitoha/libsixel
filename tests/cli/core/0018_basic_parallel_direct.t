@@ -25,9 +25,9 @@ run_sixel2png --env SIXEL_THREADS=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${par
 run_sixel2png --env SIXEL_THREADS=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
 
 cmp -s "${parallel_direct_1}" "${parallel_direct_4}" || {
-    fail 1 "parallel direct diverges"
+    echo "not ok" 1 "parallel direct diverges"
     exit 0
 }
 
-pass 1 "parallel direct matches serial"
+echo "ok" 1 "parallel direct matches serial"
 exit 0

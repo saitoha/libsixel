@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-resize.sixel"
 
 run_img2sixel -w200 -p8 "${snake_six}" \
         >"${target_sixel}" || {
-    fail 1 "Sixel resizing with palette limit fails"
+    echo "not ok" 1 "Sixel resizing with palette limit fails"
     exit 0
 }
 
-pass 1 "Sixel resizing with palette limit succeeds"
+echo "ok" 1 "Sixel resizing with palette limit succeeds"
 
 exit 0

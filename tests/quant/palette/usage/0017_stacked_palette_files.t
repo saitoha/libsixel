@@ -17,10 +17,10 @@ snake_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 target_sixel="${ARTIFACT_LOCAL_DIR}/stacked-palettes.sixel"
 
 run_img2sixel -m "${map8_six}" -m "${map8_six}" "${snake_six}" >"${target_sixel}" || {
-    fail 1 "stacked palette files fail"
+    echo "not ok" 1 "stacked palette files fail"
     exit 0
 }
 
-pass 1 "stacked palette files handled"
+echo "ok" 1 "stacked palette files handled"
 
 exit 0

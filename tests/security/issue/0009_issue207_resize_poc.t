@@ -20,9 +20,9 @@ run_img2sixel -Lbuiltin! -h 50% -r lanczos3 -w 300px "${issue207}" \
 
 # Accept success or mapped error exits (1/2/3) without crashing.
 test "${command_status-0}" -le 3 || {
-    fail 1 "resize path failed"
+    echo "not ok" 1 "resize path failed"
     exit 0
 }
 
-pass 1 "resize path handled"
+echo "ok" 1 "resize path handled"
 exit 0

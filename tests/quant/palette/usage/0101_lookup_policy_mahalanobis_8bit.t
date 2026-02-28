@@ -17,10 +17,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/mahalanobis-8bit.six"
 
 run_img2sixel --lookup-policy=mahalanobis -p 16 -d none \
         -o "${output_sixel}" "${snake_png}" || {
-    fail 1 "8-bit Mahalanobis lookup policy failed"
+    echo "not ok" 1 "8-bit Mahalanobis lookup policy failed"
     exit 0
 }
 
-pass 1 "8-bit Mahalanobis lookup policy completes"
+echo "ok" 1 "8-bit Mahalanobis lookup policy completes"
 
 exit 0

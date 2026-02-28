@@ -15,14 +15,14 @@ printf '1..1\n'
 set -v
 
 run_img2sixel -B '#000' -B '' </dev/null >/dev/null && {
-    fail 1 "empty background accepted unexpectedly"
+    echo "not ok" 1 "empty background accepted unexpectedly"
     exit 0
 }
 
 test "$?" = 2 || {
-    fail 1 "empty background is not rejected"
+    echo "not ok" 1 "empty background is not rejected"
     exit 0
 }
 
-pass 1 "empty background rejected"
+echo "ok" 1 "empty background rejected"
 exit 0

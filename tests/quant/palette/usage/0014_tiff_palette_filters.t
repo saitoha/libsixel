@@ -21,10 +21,10 @@ snake_tiff="${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff"
 
 run_img2sixel -Llibtiff! -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhan -dstucki \
     -thls "${snake_tiff}" -o/dev/null || {
-    fail 1 "TIFF conversion with palette controls failed"
+    echo "not ok" 1 "TIFF conversion with palette controls failed"
     exit 0
 }
 
-pass 1 "TIFF conversion with palette controls succeeded"
+echo "ok" 1 "TIFF conversion with palette controls succeeded"
 
 exit 0

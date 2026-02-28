@@ -16,9 +16,9 @@ set -v
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 run_img2sixel -Lbuiltin! -ldisable -dnone -u -g "${image_gif}" >/dev/null || {
-    fail 1 "combined update and static frame fails"
+    echo "not ok" 1 "combined update and static frame fails"
     exit 0
 }
 
-pass 1 "combined update and static frame works"
+echo "ok" 1 "combined update and static frame works"
 exit 0

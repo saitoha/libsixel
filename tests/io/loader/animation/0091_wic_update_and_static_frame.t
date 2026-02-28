@@ -25,9 +25,9 @@ set -v
 
 run_img2sixel -L wic! -ldisable -dnone -u -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
-    fail 1 "wic combined update/static frame failed"
+    echo "not ok" 1 "wic combined update/static frame failed"
     exit 0
 }
 
-pass 1 "wic combined update/static frame succeeded"
+echo "ok" 1 "wic combined update/static frame succeeded"
 exit 0

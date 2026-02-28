@@ -18,10 +18,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -d x_dither -y serpentine --precision=8bit -p 16 \
         -o "${output_sixel}" "${input_image}" || {
-    fail 1 "positional 8-bit x_dither serpentine failed"
+    echo "not ok" 1 "positional 8-bit x_dither serpentine failed"
     exit 0
 }
 
-pass 1 "positional 8-bit x_dither serpentine passed"
+echo "ok" 1 "positional 8-bit x_dither serpentine passed"
 
 exit 0

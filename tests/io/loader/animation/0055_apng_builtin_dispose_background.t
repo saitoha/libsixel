@@ -16,16 +16,16 @@ set -v
 run_img2sixel -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_dispose_background_builtin_static.six" || {
-    fail 1 "builtin APNG dispose-background static rendering failed"
+    echo "not ok" 1 "builtin APNG dispose-background static rendering failed"
     exit 0
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background_builtin_static_reference.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_dispose_background_builtin_static.six" 2>&1) || {
-    fail 1 "${lsqa_msg}"
+    echo "not ok" 1 "${lsqa_msg}"
     exit 0
 }
 
-pass 1 "builtin APNG dispose-background static rendering matches reference"
+echo "ok" 1 "builtin APNG dispose-background static rendering matches reference"
 exit 0

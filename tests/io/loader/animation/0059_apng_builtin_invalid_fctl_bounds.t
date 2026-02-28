@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -Lbuiltin! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_fctl_oob.png" -o/dev/null || {
-    fail 1 "APNG out-of-bounds frame rect decode failed on builtin loader"
+    echo "not ok" 1 "APNG out-of-bounds frame rect decode failed on builtin loader"
     exit 0
 }
 
-pass 1 "APNG out-of-bounds frame rect input is accepted by builtin loader"
+echo "ok" 1 "APNG out-of-bounds frame rect input is accepted by builtin loader"
 exit 0

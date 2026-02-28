@@ -18,15 +18,15 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    fail 1 "duplicate -m option was not rejected as expected"
+    echo "not ok" 1 "duplicate -m option was not rejected as expected"
     exit 0
 }
 
 grep "metric already specified" "${err_file}" >/dev/null || {
-    fail 1 "duplicate -m option was not rejected as expected"
+    echo "not ok" 1 "duplicate -m option was not rejected as expected"
     exit 0
 }
 
-pass 1 "duplicate -m option was rejected"
+echo "ok" 1 "duplicate -m option was rejected"
 
 exit 0

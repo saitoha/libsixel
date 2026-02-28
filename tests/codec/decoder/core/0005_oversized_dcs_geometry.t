@@ -17,9 +17,9 @@ set -v
 oversized="${TOP_SRCDIR}/tests/data/inputs/snake_64-oversized.six"
 
 run_img2sixel "${oversized}" >/dev/null || {
-    fail 1 "oversized DCS geometry rejected"
+    echo "not ok" 1 "oversized DCS geometry rejected"
     exit 0
 }
 
-pass 1 "oversized DCS geometry tolerated"
+echo "ok" 1 "oversized DCS geometry tolerated"
 exit 0

@@ -18,10 +18,10 @@ echo "1..1"
 set -v
 
 test "${rc:-0}" -eq 0 || {
-    fail 1 "probe_parse"
+    echo "not ok" 1 "probe_parse"
     exit 0
 }
 
-pass 1 "probe_parse"
+echo "ok" 1 "probe_parse"
 
 exit 0

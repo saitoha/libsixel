@@ -21,9 +21,9 @@ set -v
 run_img2sixel --start-frame=999 -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >/dev/null && {
-    fail 1 "libwebp positive out-of-range start frame unexpectedly succeeded"
+    echo "not ok" 1 "libwebp positive out-of-range start frame unexpectedly succeeded"
     exit 0
 }
 
-pass 1 "libwebp positive out-of-range start frame is rejected"
+echo "ok" 1 "libwebp positive out-of-range start frame is rejected"
 exit 0

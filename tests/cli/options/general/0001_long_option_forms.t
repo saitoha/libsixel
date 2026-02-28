@@ -16,9 +16,9 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 longopt_sixel="${ARTIFACT_LOCAL_DIR}/snake-longopt.sixel"
 
 run_img2sixel --height=100 --diffusion=atkinson     --outfile="${longopt_sixel}" <"${snake_jpg}" || {
-    fail 1 "long option forms rejected"
+    echo "not ok" 1 "long option forms rejected"
     exit 0
 }
 
-pass 1 "long option forms accepted"
+echo "ok" 1 "long option forms accepted"
 exit 0

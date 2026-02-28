@@ -18,19 +18,19 @@ abort_output=$(run_test_runner --env SIXEL_ABORT_TRACE=1 \
 printf '%s' "${abort_output}" >&2
 
 test "${rc:-0}" -eq 77 && {
-    pass 1 "abort trace # SKIP abort trace disabled"
+    echo "ok" 1 "abort trace # SKIP abort trace disabled"
     exit 0
 }
 
 printf '%s' "${abort_output}" | grep "libsixel: abort() detected" >/dev/null || {
-    fail 1 "abort trace missing"
+    echo "not ok" 1 "abort trace missing"
     exit 0
 }
 printf '%s' "${abort_output}" | grep "libsixel: abort trace complete" >/dev/null || {
-    fail 1 "abort trace missing"
+    echo "not ok" 1 "abort trace missing"
     exit 0
 }
 
-pass 1 "abort trace emitted"
+echo "ok" 1 "abort trace emitted"
 
 exit 0

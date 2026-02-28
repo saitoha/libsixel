@@ -21,9 +21,9 @@ set -v
 run_img2sixel --start-frame=-999 \
     -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null && {
-    fail 1 "coregraphics negative out-of-range start frame succeeded"
+    echo "not ok" 1 "coregraphics negative out-of-range start frame succeeded"
     exit 0
 }
 
-pass 1 "coregraphics negative out-of-range start frame is rejected"
+echo "ok" 1 "coregraphics negative out-of-range start frame is rejected"
 exit 0

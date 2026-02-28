@@ -18,10 +18,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -d bluenoise -y raster --precision=8bit \
         --lookup-policy=none -p 16 -o "${output_sixel}" "${input_image}" || {
-    fail 1 "positional 8-bit bluenoise lookup-policy none failed"
+    echo "not ok" 1 "positional 8-bit bluenoise lookup-policy none failed"
     exit 0
 }
 
-pass 1 "positional 8-bit bluenoise lookup-policy none passed"
+echo "ok" 1 "positional 8-bit bluenoise lookup-policy none passed"
 
 exit 0

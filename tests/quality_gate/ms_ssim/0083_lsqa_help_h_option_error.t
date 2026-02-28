@@ -9,9 +9,9 @@ printf '1..1\n'
 set -v
 
 run_lsqa -h >/dev/null && {
-    fail 1 "lsqa -h should fail"
+    echo "not ok" 1 "lsqa -h should fail"
     exit 0
 }
 
-pass 1 "lsqa -h is rejected"
+echo "ok" 1 "lsqa -h is rejected"
 exit 0

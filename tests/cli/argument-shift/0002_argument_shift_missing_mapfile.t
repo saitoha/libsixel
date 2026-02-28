@@ -17,16 +17,16 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 err_file="${ARTIFACT_LOCAL_DIR}/missing-map.err"
 
 run_img2sixel -m -w 100 -h 100 "${image_path}" >/dev/null 2>"${err_file}" && {
-    fail 1 "accepted -m without argument"
+    echo "not ok" 1 "accepted -m without argument"
     exit 0
 }
 
 grep -q 'missing required argument for -m,--mapfile option' "${err_file}" || {
-    fail 1 "no diagnostic for missing -m argument"
+    echo "not ok" 1 "no diagnostic for missing -m argument"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-pass 1 "reports missing mapfile argument"
+echo "ok" 1 "reports missing mapfile argument"
 exit 0

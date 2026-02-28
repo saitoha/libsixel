@@ -16,9 +16,9 @@ set -v
 input_hdr="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.hdr"
 
 run_img2sixel "${input_hdr}" >/dev/null || {
-    fail 1 "builtin loader failed to decode HDR"
+    echo "not ok" 1 "builtin loader failed to decode HDR"
     exit 0
 }
 
-pass 1 "builtin loader decodes HDR"
+echo "ok" 1 "builtin loader decodes HDR"
 exit 0

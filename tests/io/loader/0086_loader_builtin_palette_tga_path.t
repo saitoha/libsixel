@@ -16,9 +16,9 @@ set -v
 input_tga="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type1-pal8.tga"
 
 run_img2sixel -L builtin! "${input_tga}" >/dev/null || {
-    fail 1 "builtin loader indexed TGA palette path failed"
+    echo "not ok" 1 "builtin loader indexed TGA palette path failed"
     exit 0
 }
 
-pass 1 "builtin loader keeps indexed TGA palette path"
+echo "ok" 1 "builtin loader keeps indexed TGA palette path"
 exit 0

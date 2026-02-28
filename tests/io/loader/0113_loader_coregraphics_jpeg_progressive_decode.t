@@ -24,14 +24,14 @@ reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.p
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_jpeg_progressive.six"
 
 run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
-    fail 1 "coregraphics failed to decode progressive JPEG input"
+    echo "not ok" 1 "coregraphics failed to decode progressive JPEG input"
     exit 0
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}"     "${reference_path}" "${output_sixel}" 2>&1) || {
-    fail 1 "$lsqa_msg"
+    echo "not ok" 1 "$lsqa_msg"
     exit 0
 }
 
-pass 1 "coregraphics keeps MS-SSIM baseline for progressive JPEG input"
+echo "ok" 1 "coregraphics keeps MS-SSIM baseline for progressive JPEG input"
 exit 0

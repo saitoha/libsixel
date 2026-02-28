@@ -16,9 +16,9 @@ set -v
 run_img2sixel -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_libpng_default_image_first_valid.png" \
     -o/dev/null || {
-    fail 1 "APNG default image first input failed"
+    echo "not ok" 1 "APNG default image first input failed"
     exit 0
 }
 
-pass 1 "APNG default image first input is handled"
+echo "ok" 1 "APNG default image first input is handled"
 exit 0

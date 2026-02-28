@@ -30,17 +30,17 @@ run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
 
 test "${status-0}" -eq 0 || grep "gnome-thumbnailer\|thumbnailer" \
         "${error_log}" >/dev/null 2>&1 || {
-    fail 1 "forced gnome-thumbnailer loader path failed"
+    echo "not ok" 1 "forced gnome-thumbnailer loader path failed"
     exit 0
 }
 test "${status-0}" -eq 0 || {
-    fail 1 "gnome-thumbnailer runtime should be available"
+    echo "not ok" 1 "gnome-thumbnailer runtime should be available"
     exit 0
 }
 test -s "${output_sixel}" || {
-    fail 1 "forced gnome-thumbnailer loader path failed"
+    echo "not ok" 1 "forced gnome-thumbnailer loader path failed"
     exit 0
 }
 
-pass 1 "forced gnome-thumbnailer loader path succeeds"
+echo "ok" 1 "forced gnome-thumbnailer loader path succeeds"
 exit 0

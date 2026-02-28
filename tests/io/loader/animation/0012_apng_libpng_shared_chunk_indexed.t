@@ -22,10 +22,10 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=apng_decode \
               -v -Llibpng! \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_indexed_loop2.png" \
               -o/dev/null || {
-    fail 1 "APNG indexed shared chunk failed"
+    echo "not ok" 1 "APNG indexed shared chunk failed"
     exit 0
 }
 
-pass 1 "APNG indexed shared chunk succeeds"
+echo "ok" 1 "APNG indexed shared chunk succeeds"
 exit 0
 

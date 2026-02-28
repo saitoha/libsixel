@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_sixel2png -i "${TOP_SRCDIR}/images/map8.six" -o "${ARTIFACT_LOCAL_DIR}/output.png" || {
-    fail 1 "snake file conversion failed"
+    echo "not ok" 1 "snake file conversion failed"
     exit 0
 }
 
-pass 1 "converts snake with file arguments"
+echo "ok" 1 "converts snake with file arguments"
 exit 0

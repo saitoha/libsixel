@@ -16,9 +16,9 @@ set -v
 run_img2sixel -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fdat_without_fctl.png" \
     -o/dev/null && {
-    fail 1 "APNG fdAT without fcTL unexpectedly succeeded"
+    echo "not ok" 1 "APNG fdAT without fcTL unexpectedly succeeded"
     exit 0
 }
 
-pass 1 "APNG fdAT without fcTL is rejected"
+echo "ok" 1 "APNG fdAT without fcTL is rejected"
 exit 0

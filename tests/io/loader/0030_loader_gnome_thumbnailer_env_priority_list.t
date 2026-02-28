@@ -29,15 +29,15 @@ run_img2sixel \
         --env "PATH=${bin_dir}:${PATH}" \
         --env "SIXEL_LOADER_PRIORITY_LIST=gnome-thumbnailer!" \
         "${input_png}" >"${output_sixel}" 2>"${error_log}" || {
-    fail 1 "env priority list test failed"
+    echo "not ok" 1 "env priority list test failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    fail 1 "env priority list test failed"
+    echo "not ok" 1 "env priority list test failed"
     exit 0
 }
 
-pass 1 "env priority list enables gnome-thumbnailer"
+echo "ok" 1 "env priority list enables gnome-thumbnailer"
 
 exit 0

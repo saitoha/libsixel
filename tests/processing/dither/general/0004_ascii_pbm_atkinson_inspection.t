@@ -17,10 +17,10 @@ target_txt="${ARTIFACT_LOCAL_DIR}/ascii-pbm-inspection.txt"
 
 run_img2sixel -I -datkinson "${snake_ascii_pbm}" \
         >"${target_txt}" || {
-    fail 1 "ASCII PBM Atkinson inspection fails"
+    echo "not ok" 1 "ASCII PBM Atkinson inspection fails"
     exit 0
 }
 
-pass 1 "ASCII PBM Atkinson inspection works"
+echo "ok" 1 "ASCII PBM Atkinson inspection works"
 
 exit 0

@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" >/dev/null || {
-    fail 1 "gd failed to decode RGBA PNG input"
+    echo "not ok" 1 "gd failed to decode RGBA PNG input"
     exit 0
 }
 
-pass 1 "gd decodes RGBA PNG input"
+echo "ok" 1 "gd decodes RGBA PNG input"
 exit 0

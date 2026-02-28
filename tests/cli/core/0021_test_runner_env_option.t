@@ -18,21 +18,21 @@ err_invalid="${ARTIFACT_LOCAL_DIR}/test_runner_env_invalid.err"
 
 run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE=pca \
     "palette/0001_kmeans_init" >"${out_wrapper}" || {
-    fail 1 "test_runner wrapper --env execution failed"
+    echo "not ok" 1 "test_runner wrapper --env execution failed"
     exit 0
 }
 
 run_test_runner -% SIXEL_PALETTE_KMEANS_INITTYPE=pca \
     "palette/0001_kmeans_init" >"${out_option}" || {
-    fail 1 "test_runner -% execution failed"
+    echo "not ok" 1 "test_runner -% execution failed"
     exit 0
 }
 
 cmp -s "${out_wrapper}" "${out_option}" || {
-    fail 1 "test_runner -% output differs from wrapper --env"
+    echo "not ok" 1 "test_runner -% output differs from wrapper --env"
     exit 0
 }
-pass 1 "test_runner -% matches wrapper --env"
+echo "ok" 1 "test_runner -% matches wrapper --env"
 
 run_test_runner -% INVALID "palette/0001_kmeans_init" > /dev/null \
     2>"${err_invalid}" && {

@@ -21,9 +21,9 @@ set -v
 input_jpeg="${TOP_SRCDIR}/tests/data/corrupted/metadata_noise.jpg"
 
 run_img2sixel -L libjpeg! "${input_jpeg}" >/dev/null && {
-    fail 1 "corrupted JPEG unexpectedly decoded"
+    echo "not ok" 1 "corrupted JPEG unexpectedly decoded"
     exit 0
 }
 
-pass 1 "corrupted JPEG is rejected"
+echo "ok" 1 "corrupted JPEG is rejected"
 exit 0

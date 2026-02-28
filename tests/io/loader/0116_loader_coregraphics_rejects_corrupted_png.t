@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/truncated.png" >/dev/null && {
-    fail 1 "corrupted PNG unexpectedly decoded by coregraphics"
+    echo "not ok" 1 "corrupted PNG unexpectedly decoded by coregraphics"
     exit 0
 }
 
-pass 1 "coregraphics rejects corrupted PNG without crashing"
+echo "ok" 1 "coregraphics rejects corrupted PNG without crashing"
 exit 0

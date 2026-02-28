@@ -21,9 +21,9 @@ set -v
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type11-gray.tga" \
     >/dev/null || {
-    fail 1 "quicklook grayscale RLE TGA decode failed"
+    echo "not ok" 1 "quicklook grayscale RLE TGA decode failed"
     exit 0
 }
 
-pass 1 "quicklook does not hang on grayscale RLE TGA"
+echo "ok" 1 "quicklook does not hang on grayscale RLE TGA"
 exit 0

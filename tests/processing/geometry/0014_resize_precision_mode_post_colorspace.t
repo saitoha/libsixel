@@ -23,21 +23,21 @@ P3
 255 0 0   0 255 0   0 0 255   255 255 0
 PPM
 ) || {
-    fail 1 "img2sixel failed while collecting resize planner log"
+    echo "not ok" 1 "img2sixel failed while collecting resize planner log"
     exit 0
 }
 printf '%s' "${resize_log}" >&2
 
 printf '%s' "${resize_log}" | grep -q "scale -> colorspace(post)" || {
-    fail 1 "missing scale -> colorspace(post)"
+    echo "not ok" 1 "missing scale -> colorspace(post)"
     exit 0
 }
 
 printf '%s' "${resize_log}" | grep -q "colorspace(post) -> dither" || {
-    fail 1 "missing colorspace(post) -> dither"
+    echo "not ok" 1 "missing colorspace(post) -> dither"
     exit 0
 }
 
-pass 1 "colorspace conversion placed after scaler"
+echo "ok" 1 "colorspace conversion placed after scaler"
 
 exit 0

@@ -17,10 +17,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32.six"
 
 run_img2sixel --lookup-policy=eytzinger --precision=float32 -p 16 -d none \
         -o "${output_sixel}" "${snake_png}" || {
-    fail 1 "float32 Eytzinger lookup policy failed"
+    echo "not ok" 1 "float32 Eytzinger lookup policy failed"
     exit 0
 }
 
-pass 1 "float32 Eytzinger lookup policy completes"
+echo "ok" 1 "float32 Eytzinger lookup policy completes"
 
 exit 0

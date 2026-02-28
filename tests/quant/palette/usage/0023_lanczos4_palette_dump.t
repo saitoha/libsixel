@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos4-palette-dump.sixel"
 
 run_img2sixel -e -h140 -rlanczos4 -P "${snake_jpg}" \
         >"${target_sixel}" || {
-    fail 1 "Lanczos4 scaling palette dump fails"
+    echo "not ok" 1 "Lanczos4 scaling palette dump fails"
     exit 0
 }
 
-pass 1 "Lanczos4 scaling emits palette dump"
+echo "ok" 1 "Lanczos4 scaling emits palette dump"
 
 exit 0

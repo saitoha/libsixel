@@ -23,14 +23,14 @@ probe_output=$(
 ) || probe_status=$?
 
 printf '%s' "${probe_output}" | grep -q "invalid argument for -L,--loaders option" && {
-    fail 1 "-L wic suboptions were rejected by option parser"
+    echo "not ok" 1 "-L wic suboptions were rejected by option parser"
     exit 0
 }
 
 test "${probe_status-}" = "" || {
-    fail 1 "-L wic suboptions were rejected by option parser"
+    echo "not ok" 1 "-L wic suboptions were rejected by option parser"
     exit 0
 }
 
-pass 1 "-L accepts wic:ico_minsize suboptions"
+echo "ok" 1 "-L accepts wic:ico_minsize suboptions"
 exit 0

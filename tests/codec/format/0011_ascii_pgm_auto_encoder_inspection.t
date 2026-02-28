@@ -16,10 +16,10 @@ snake_ascii_pgm="${TOP_SRCDIR}/images/snake-ascii.pgm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ascii-pgm-inspection.txt"
 
 run_img2sixel -I -Eauto "${snake_ascii_pgm}" >"${target_txt}" || {
-    fail 1 "ASCII PGM auto encoder inspection fails"
+    echo "not ok" 1 "ASCII PGM auto encoder inspection fails"
     exit 0
 }
 
-pass 1 "ASCII PGM auto encoder inspection works"
+echo "ok" 1 "ASCII PGM auto encoder inspection works"
 
 exit 0

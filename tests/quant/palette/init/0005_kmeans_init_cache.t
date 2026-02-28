@@ -13,9 +13,9 @@ output=$(
 )
 
 test "${output}" = "pca pca" || {
-    fail 1 "cache check returned ${output}"
+    echo "not ok" 1 "cache check returned ${output}"
     exit 0
 }
 
-pass 1 "cache preserves initial value"
+echo "ok" 1 "cache preserves initial value"
 exit 0

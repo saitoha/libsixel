@@ -18,17 +18,17 @@ err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
 
 run_img2sixel -r hamning "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >/dev/null 2>"${err_file}" && {
-    fail 1 "distance-1 multi-match unexpectedly succeeded"
+    echo "not ok" 1 "distance-1 multi-match unexpectedly succeeded"
     exit 0
 }
 
 grep 'specified desampling method is not supported.' "${err_file}" \
     >/dev/null 2>&1 || {
-    fail 1 "missing diagnostic for distance-1 multi-match"
+    echo "not ok" 1 "missing diagnostic for distance-1 multi-match"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-pass 1 "distance-1 multi-match reports diagnostic"
+echo "ok" 1 "distance-1 multi-match reports diagnostic"
 exit 0

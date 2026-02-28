@@ -20,12 +20,12 @@ set -v
 run_img2sixel -y ser \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
               >/dev/null 2>"${err_file}" || {
-    fail 1 "unique prefix was rejected"
+    echo "not ok" 1 "unique prefix was rejected"
     exit 0
 }
 
 test ! -s "${err_file}" && {
-    pass 1 "unique prefix is accepted"
+    echo "ok" 1 "unique prefix is accepted"
     exit 0
 }
 
@@ -36,11 +36,11 @@ sed '1d' "${err_file}" \
     >"${filtered_err}" || :
 
 test -s "${filtered_err}" && {
-    fail 1 "unique prefix emitted diagnostics"
+    echo "not ok" 1 "unique prefix emitted diagnostics"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-pass 1 "unique prefix is accepted"
+echo "ok" 1 "unique prefix is accepted"
 exit 0

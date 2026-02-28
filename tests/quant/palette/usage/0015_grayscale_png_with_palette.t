@@ -17,10 +17,10 @@ map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/gray-png-palette.sixel"
 
 run_img2sixel -m "${map8_palette}" "${snake_gray_png}" >"${target_sixel}" || {
-    fail 1 "grayscale PNG palette conversion fails"
+    echo "not ok" 1 "grayscale PNG palette conversion fails"
     exit 0
 }
 
-pass 1 "grayscale PNG with external palette works"
+echo "ok" 1 "grayscale PNG with external palette works"
 
 exit 0

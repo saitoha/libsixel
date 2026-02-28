@@ -19,10 +19,10 @@ echo "1..1"
 set -v
 
 run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_num_frames_mismatch.png" -o/dev/null && {
-    fail 1 "APNG num_frames mismatch unexpectedly succeeded"
+    echo "not ok" 1 "APNG num_frames mismatch unexpectedly succeeded"
     exit 0
 }
 
-pass 1 "APNG num_frames mismatch is rejected"
+echo "ok" 1 "APNG num_frames mismatch is rejected"
 exit 0
 

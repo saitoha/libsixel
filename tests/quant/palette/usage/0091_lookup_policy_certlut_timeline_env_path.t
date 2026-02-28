@@ -18,14 +18,14 @@ log_path="${ARTIFACT_LOCAL_DIR}/timeline-env-path.json"
 
 run_img2sixel --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
     -o "${output_sixel}" "${small_ppm}" || {
-    fail 1 "conversion with SIXEL_LOG_PATH failed"
+    echo "not ok" 1 "conversion with SIXEL_LOG_PATH failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    fail 1 "conversion succeeded but output file is empty"
+    echo "not ok" 1 "conversion succeeded but output file is empty"
     exit 0
 }
 
-pass 1 "SIXEL_LOG_PATH works with non-FHEDT conversion"
+echo "ok" 1 "SIXEL_LOG_PATH works with non-FHEDT conversion"
 exit 0

@@ -28,9 +28,9 @@ echo "1..1"
 set -v
 
 test "${rc-0}" -eq 0 || {
-    fail 1 "wic forced PNG decoding failed"
+    echo "not ok" 1 "wic forced PNG decoding failed"
     exit 0
 }
 
-pass 1 "wic forced PNG decoding succeeds"
+echo "ok" 1 "wic forced PNG decoding succeeds"
 exit 0

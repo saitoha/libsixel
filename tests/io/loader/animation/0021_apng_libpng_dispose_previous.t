@@ -21,9 +21,9 @@ set -v
 run_img2sixel -Llibpng! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_libpng_dispose_previous.png" \
     -o/dev/null || {
-    fail 1 "APNG dispose previous input failed"
+    echo "not ok" 1 "APNG dispose previous input failed"
     exit 0
 }
 
-pass 1 "APNG dispose previous input is handled"
+echo "ok" 1 "APNG dispose previous input is handled"
 exit 0

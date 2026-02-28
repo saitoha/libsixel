@@ -23,10 +23,10 @@ set -e
 
 # Accept success or mapped error exits (1/2/3) without crashing.
 test "${command_status}" -le 3 || {
-    fail 1 "crafted height input failed"
+    echo "not ok" 1 "crafted height input failed"
     exit 0
 }
 
-pass 1 "crafted height input handled"
+echo "ok" 1 "crafted height input handled"
 
 exit 0

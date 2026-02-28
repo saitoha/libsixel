@@ -17,14 +17,14 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/timeline-empty-path.six"
 
 run_img2sixel --env SIXEL_LOG_PATH= --env SIXEL_LOG_LINES=3 \
     --lookup-policy=certlut -p 4 -o "${output_sixel}" "${small_ppm}" || {
-    fail 1 "conversion failed with empty SIXEL_LOG_PATH"
+    echo "not ok" 1 "conversion failed with empty SIXEL_LOG_PATH"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    fail 1 "output file is empty with empty SIXEL_LOG_PATH"
+    echo "not ok" 1 "output file is empty with empty SIXEL_LOG_PATH"
     exit 0
 }
 
-pass 1 "empty SIXEL_LOG_PATH keeps conversion successful"
+echo "ok" 1 "empty SIXEL_LOG_PATH keeps conversion successful"
 exit 0

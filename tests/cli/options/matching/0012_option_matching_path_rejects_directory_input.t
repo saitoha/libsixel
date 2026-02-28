@@ -18,14 +18,14 @@ err_file="${ARTIFACT_LOCAL_DIR}/path-rejects-directory.err"
 run_img2sixel -m "${TOP_SRCDIR}/tests/data/inputs" \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
               -o/dev/null 2>"${err_file}" && {
-    fail 1 "directory mapfile unexpectedly succeeded"
+    echo "not ok" 1 "directory mapfile unexpectedly succeeded"
     exit 0
 }
 
 grep 'path refers to a directory; expected a file input.' "${err_file}" >/dev/null 2>&1 || {
-    fail 1 "directory rejection diagnostic was not emitted"
+    echo "not ok" 1 "directory rejection diagnostic was not emitted"
     exit 0
 }
 
-pass 1 "directory arguments are rejected for file-only options"
+echo "ok" 1 "directory arguments are rejected for file-only options"
 exit 0

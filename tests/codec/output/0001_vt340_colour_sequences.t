@@ -16,10 +16,10 @@ snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 target_sixel="${ARTIFACT_LOCAL_DIR}/vt340-colour.sixel"
 
 run_img2sixel -bvt340color "${snake_ppm}" >"${target_sixel}" || {
-    fail 1 "VT340 colour control emission failed"
+    echo "not ok" 1 "VT340 colour control emission failed"
     exit 0
 }
 
-pass 1 "VT340 colour control sequences emitted"
+echo "ok" 1 "VT340 colour control sequences emitted"
 
 exit 0

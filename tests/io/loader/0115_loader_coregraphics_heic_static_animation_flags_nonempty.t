@@ -21,14 +21,14 @@ set -v
 run_img2sixel -L coregraphics! -u -g \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-heic-lossless-64.heic" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_heic_static_with_anim_flags.six" || {
-    fail 1 "coregraphics HEIC static decode with animation flags failed"
+    echo "not ok" 1 "coregraphics HEIC static decode with animation flags failed"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_heic_static_with_anim_flags.six" || {
-    fail 1 "coregraphics HEIC static decode with animation flags is empty"
+    echo "not ok" 1 "coregraphics HEIC static decode with animation flags is empty"
     exit 0
 }
 
-pass 1 "coregraphics HEIC static decode with animation flags is non-empty"
+echo "ok" 1 "coregraphics HEIC static decode with animation flags is non-empty"
 exit 0

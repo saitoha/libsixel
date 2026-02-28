@@ -21,7 +21,7 @@ set -v
 run_img2sixel -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gdk_start_default_neg.six" || {
-    fail 1 "baseline gdk-pixbuf2 animation decode failed"
+    echo "not ok" 1 "baseline gdk-pixbuf2 animation decode failed"
     exit 0
 }
 
@@ -29,15 +29,15 @@ run_img2sixel --start-frame=-1 \
     -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gdk_start_negative.six" || {
-    fail 1 "gdk-pixbuf2 decode with negative start frame failed"
+    echo "not ok" 1 "gdk-pixbuf2 decode with negative start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/gdk_start_default_neg.six" \
     "${ARTIFACT_LOCAL_DIR}/gdk_start_negative.six" && {
-    fail 1 "negative start frame did not change gdk-pixbuf2 output"
+    echo "not ok" 1 "negative start frame did not change gdk-pixbuf2 output"
     exit 0
 }
 
-pass 1 "gdk-pixbuf2 negative start frame is applied"
+echo "ok" 1 "gdk-pixbuf2 negative start frame is applied"
 exit 0
