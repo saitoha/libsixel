@@ -152,9 +152,9 @@ jobs:
             buildtool: meson
             runner: windows-latest
             setup_options: >-
-              -Dmsvc_pgo=generate -Dmsvc_pgo_data=builddir/pgo/libsixel.pgd
+              -Dmsvc_pgo=generate
             pgo_use_options: >-
-              -Dmsvc_pgo=use -Dmsvc_pgo_data=builddir/pgo/libsixel.pgd
+              -Dmsvc_pgo=use
             exec_type: cmd
 
     steps:

@@ -100,11 +100,14 @@ if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
       msvc_pgo_link_args += ['/LTCG:PGOPTIMIZE']
     endif
 
+    # Avoid forcing a single .pgd path at project scope unless explicitly
+    # requested. The global link arguments apply to every target, so sharing
+    # one .pgd can cause MSVC linker contention in parallel builds.
     if msvc_pgo_data != ''
       msvc_pgo_link_args += ['/PGD:' + msvc_pgo_data]
       msvc_pgo_summary = msvc_pgo_mode + '(pgd=' + msvc_pgo_data + ')'
     else
-      msvc_pgo_summary = msvc_pgo_mode
+      msvc_pgo_summary = msvc_pgo_mode + '(pgd=per-target default)'
     endif
 
     add_project_link_arguments(msvc_pgo_link_args, language: 'c')
