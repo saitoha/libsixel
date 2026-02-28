@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""TAP test that encoder encode_bytes rejects object width argument."""
+"""TAP test that encode_bytes requires height argument."""
 
 from __future__ import annotations
 
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'encoder encode_bytes rejects object width argument'
+DESCRIPTION = 'encoder encode_bytes requires height argument'
 
 
-def test_0139_python_api_encoder_encode_bytes_rejects_object_width() -> None:
+def test_0132_python_api_encoder_encode_bytes_requires_height_argument() -> None:
     try:
         from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
         from libsixel_wheel import sixel_encoder_encode_bytes
@@ -24,22 +24,21 @@ def test_0139_python_api_encoder_encode_bytes_rejects_object_width() -> None:
         sixel_encoder_encode_bytes(
             encoder,
             b'\x00\x00\x00',
-            object(),
-            1,
-            SIXEL_PIXELFORMAT_RGB888,
-            None,
+            width=1,
+            pixelformat=SIXEL_PIXELFORMAT_RGB888,
+            palette=None,
         )
-    except (RuntimeError, ValueError, TypeError):
+    except TypeError:
         sixel_encoder_unref(encoder)
-        print('encoder encode_bytes object width rejection verified')
+        print('encoder encode_bytes missing height argument rejection verified')
         return
 
     sixel_encoder_unref(encoder)
-    raise SystemExit('encoder encode_bytes accepted object width argument')
+    raise SystemExit('encoder encode_bytes accepted missing height argument')
 
 
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0139_python_api_encoder_encode_bytes_rejects_object_width,
+        test_0132_python_api_encoder_encode_bytes_requires_height_argument,
     ))

@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'encoder setopt rejects empty string option flag'
 
 
-def test_0132_python_api_encoder_setopt_rejects_empty_string_flag() -> None:
+def test_0134_python_api_encoder_setopt_rejects_empty_string_flag() -> None:
     try:
         from libsixel_wheel import sixel_encoder_new
         from libsixel_wheel import sixel_encoder_setopt
@@ -33,5 +33,5 @@ def test_0132_python_api_encoder_setopt_rejects_empty_string_flag() -> None:
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0132_python_api_encoder_setopt_rejects_empty_string_flag,
+        test_0134_python_api_encoder_setopt_rejects_empty_string_flag,
     ))

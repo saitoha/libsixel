@@ -9,7 +9,7 @@ from _taptest import run_embedded_tap_test
 DESCRIPTION = 'loader load_file rejects non-callable callback object'
 
 
-def test_0134_python_api_loader_load_file_rejects_noncallable_callback() -> None:
+def test_0139_python_api_loader_load_file_rejects_noncallable_callback() -> None:
     try:
         from libsixel_wheel import sixel_loader_load_file
         from libsixel_wheel import sixel_loader_new
@@ -33,5 +33,5 @@ def test_0134_python_api_loader_load_file_rejects_noncallable_callback() -> None
 if __name__ == '__main__':
     raise SystemExit(run_embedded_tap_test(
         DESCRIPTION,
-        test_0134_python_api_loader_load_file_rejects_noncallable_callback,
+        test_0139_python_api_loader_load_file_rejects_noncallable_callback,
     ))
