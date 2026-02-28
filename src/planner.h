@@ -27,6 +27,35 @@
 struct sixel_encoder;
 struct sixel_frame;
 
+typedef enum sixel_planner_node_kind {
+    SIXEL_PLANNER_NODE_LOAD = 0,
+    SIXEL_PLANNER_NODE_PALETTE,
+    SIXEL_PLANNER_NODE_FHEDT,
+    SIXEL_PLANNER_NODE_VPTREE,
+    SIXEL_PLANNER_NODE_EYTZINGER,
+    SIXEL_PLANNER_NODE_CLIP,
+    SIXEL_PLANNER_NODE_COLORSPACE_PRE,
+    SIXEL_PLANNER_NODE_SCALE,
+    SIXEL_PLANNER_NODE_COLORSPACE_POST,
+    SIXEL_PLANNER_NODE_JOIN,
+    SIXEL_PLANNER_NODE_DITHER,
+    SIXEL_PLANNER_NODE_ENCODE,
+} sixel_planner_node_kind_t;
+
+typedef struct sixel_planner_node {
+    sixel_planner_node_kind_t kind;
+    char const *label;
+} sixel_planner_node_t;
+
+typedef struct sixel_planner_edge {
+    int from;
+    int to;
+    int pipeline;
+} sixel_planner_edge_t;
+
+#define SIXEL_PLANNER_DAG_NODE_MAX 16
+#define SIXEL_PLANNER_DAG_EDGE_MAX 32
+
 typedef struct sixel_encoding_planner {
     int total_threads;
     int main_threads;
@@ -51,6 +80,11 @@ typedef struct sixel_encoding_planner {
     int pipeline_encode_threads;
     int pipeline_bands;
     int pipeline_pin_threads;
+
+    int dag_node_count;
+    int dag_edge_count;
+    sixel_planner_node_t dag_nodes[SIXEL_PLANNER_DAG_NODE_MAX];
+    sixel_planner_edge_t dag_edges[SIXEL_PLANNER_DAG_EDGE_MAX];
 } sixel_encoding_planner_t;
 
 void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
