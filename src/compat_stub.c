@@ -666,32 +666,15 @@ SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {
 #if HAVE__DUPENV_S || defined(_MSC_VER)
-    struct sixel_env_cache {
-        char *name;
-        char *value;
-        struct sixel_env_cache *next;
-    };
-    static struct sixel_env_cache *cache_head = NULL;
-    struct sixel_env_cache *entry;
-    struct sixel_env_cache *new_entry;
-    size_t name_length;
+    static char *buffer = NULL;
+    static size_t buffer_size = 0u;
     char *value;
-    char *name_copy;
-    char *value_copy;
     size_t length;
-    int copy_result;
+    char *new_buffer;
     errno_t status;
 
     if (name == NULL) {
         return NULL;
-    }
-
-    entry = cache_head;
-    while (entry != NULL) {
-        if (strcmp(entry->name, name) == 0) {
-            break;
-        }
-        entry = entry->next;
     }
 
     value = NULL;
@@ -699,9 +682,9 @@ sixel_compat_getenv(const char *name)
     status = 0;
 
     /*
-     * `_dupenv_s()` allocates the buffer for us and reports the byte count
-     * in `length`.  Cache a dedicated copy per variable name so multiple
-     * lookups can coexist without sharing a single static buffer.
+     * Keep a single mutable buffer instead of caching per-variable values.
+     * This matches getenv()-style semantics where callers can read the value
+     * immediately and later calls may overwrite the returned pointer.
      */
     status = _dupenv_s(&value, &length, name);
     if (status != 0) {
@@ -713,58 +696,27 @@ sixel_compat_getenv(const char *name)
     if (value == NULL) {
         return NULL;
     }
-    value_copy = (char *)malloc(length + 1);
-    if (value_copy == NULL) {
-        free(value);
-        return NULL;
+
+    if (length > buffer_size) {
+        new_buffer = (char *)realloc(buffer, length + 1u);
+        if (new_buffer == NULL) {
+            free(value);
+            return NULL;
+        }
+        buffer = new_buffer;
+        buffer_size = length;
     }
-    memcpy(value_copy, value, length);
-    value_copy[length] = '\0';
+
+    memcpy(buffer, value, length);
+    buffer[length] = '\0';
     free(value);
 
-    if (entry != NULL) {
-        free(entry->value);
-        entry->value = value_copy;
-        return entry->value;
-    }
-
-    new_entry = (struct sixel_env_cache *)malloc(sizeof(*new_entry));
-    if (new_entry == NULL) {
-        free(value_copy);
-        return NULL;
-    }
-
-    name_length = strlen(name);
-    name_copy = (char *)malloc(name_length + 1);
-    if (name_copy == NULL) {
-        free(value_copy);
-        free(new_entry);
-        return NULL;
-    }
-    /*
-     * Copy the variable name via the compat helper so MSVC uses
-     * strcpy_s() without emitting deprecation warnings.
-     */
-    copy_result = sixel_compat_strcpy(name_copy,
-                                      name_length + 1,
-                                      name);
-    if (copy_result < 0) {
-        free(name_copy);
-        free(value_copy);
-        free(new_entry);
-        return NULL;
-    }
-
-    new_entry->name = name_copy;
-    new_entry->value = value_copy;
-    new_entry->next = cache_head;
-    cache_head = new_entry;
-
-    return new_entry->value;
+    return buffer;
 #else
     return getenv(name);
 #endif
 }
+
 
 
 SIXEL_COMPAT_API int
