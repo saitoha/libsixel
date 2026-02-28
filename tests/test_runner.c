@@ -184,6 +184,8 @@ test_runner_is_running_under_wine(void)
 
 static int
 test_runner_setenv_portable(char const *name, char const *value);
+static int
+test_runner_apply_env_assignment(char const *assignment);
 
 static int
 test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
@@ -191,11 +193,6 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
     int index;
     char const *token;
     char const *assignment;
-    char const *separator;
-    size_t name_length;
-    size_t value_length;
-    char name[256];
-    char value[1024];
     int status;
 
     index = 1;
@@ -212,21 +209,7 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
                 return -1;
             }
             assignment = argv[index + 1];
-            separator = strchr(assignment, '=');
-            if (separator == NULL || separator == assignment) {
-                fprintf(stderr, "test_runner: invalid env assignment\n");
-                return -1;
-            }
-            name_length = (size_t)(separator - assignment);
-            value_length = strlen(separator + 1);
-            if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
-                fprintf(stderr, "test_runner: env assignment too long\n");
-                return -1;
-            }
-            memcpy(name, assignment, name_length);
-            name[name_length] = '\0';
-            memcpy(value, separator + 1, value_length + 1u);
-            status = test_runner_setenv_portable(name, value);
+            status = test_runner_apply_env_assignment(assignment);
             if (status != 0) {
                 fprintf(stderr, "test_runner: failed to set env\n");
                 return -1;
@@ -236,21 +219,7 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
         }
         if (strncmp(token, "--env=", 6) == 0) {
             assignment = token + 6;
-            separator = strchr(assignment, '=');
-            if (separator == NULL || separator == assignment) {
-                fprintf(stderr, "test_runner: invalid env assignment\n");
-                return -1;
-            }
-            name_length = (size_t)(separator - assignment);
-            value_length = strlen(separator + 1);
-            if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
-                fprintf(stderr, "test_runner: env assignment too long\n");
-                return -1;
-            }
-            memcpy(name, assignment, name_length);
-            name[name_length] = '\0';
-            memcpy(value, separator + 1, value_length + 1u);
-            status = test_runner_setenv_portable(name, value);
+            status = test_runner_apply_env_assignment(assignment);
             if (status != 0) {
                 fprintf(stderr, "test_runner: failed to set env\n");
                 return -1;
@@ -265,21 +234,7 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
                 return -1;
             }
             assignment = argv[index + 1];
-            separator = strchr(assignment, '=');
-            if (separator == NULL || separator == assignment) {
-                fprintf(stderr, "test_runner: invalid env assignment\n");
-                return -1;
-            }
-            name_length = (size_t)(separator - assignment);
-            value_length = strlen(separator + 1);
-            if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
-                fprintf(stderr, "test_runner: env assignment too long\n");
-                return -1;
-            }
-            memcpy(name, assignment, name_length);
-            name[name_length] = '\0';
-            memcpy(value, separator + 1, value_length + 1u);
-            status = test_runner_setenv_portable(name, value);
+            status = test_runner_apply_env_assignment(assignment);
             if (status != 0) {
                 fprintf(stderr, "test_runner: failed to set env\n");
                 return -1;
@@ -292,6 +247,58 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
 
     *out_first_index = index;
     return 0;
+}
+
+static int
+test_runner_apply_env_assignment(char const *assignment)
+{
+    char const *separator;
+    size_t name_length;
+    size_t value_length;
+    char *name;
+    char *value;
+    int status;
+
+    separator = NULL;
+    name_length = 0u;
+    value_length = 0u;
+    name = NULL;
+    value = NULL;
+    status = -1;
+
+    separator = strchr(assignment, '=');
+    if (separator == NULL || separator == assignment) {
+        fprintf(stderr, "test_runner: invalid env assignment\n");
+        return -1;
+    }
+
+    name_length = (size_t)(separator - assignment);
+    value_length = strlen(separator + 1);
+
+    /*
+     * Keep test-runner option parsing consistent with img2sixel --env
+     * behavior even when hosted environments expose a very long PATH.
+     */
+    name = (char *)malloc(name_length + 1u);
+    if (name == NULL) {
+        fprintf(stderr, "test_runner: failed to allocate env key\n");
+        return -1;
+    }
+    value = (char *)malloc(value_length + 1u);
+    if (value == NULL) {
+        free(name);
+        fprintf(stderr, "test_runner: failed to allocate env value\n");
+        return -1;
+    }
+
+    memcpy(name, assignment, name_length);
+    name[name_length] = '\0';
+    memcpy(value, separator + 1, value_length + 1u);
+
+    status = test_runner_setenv_portable(name, value);
+    free(value);
+    free(name);
+    return status;
 }
 
 static int
