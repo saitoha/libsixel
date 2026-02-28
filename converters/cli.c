@@ -438,9 +438,12 @@ cli_apply_env_assignment(char const *assignment,
     char const *separator;
     size_t name_length;
     size_t value_length;
-    char name[256];
-    char value[1024];
+    char *name;
+    char *value;
     int status;
+
+    name = NULL;
+    value = NULL;
 
     if (error_buffer != NULL && error_buffer_size > 0u) {
         error_buffer[0] = '\0';
@@ -468,12 +471,36 @@ cli_apply_env_assignment(char const *assignment,
 
     name_length = (size_t)(separator - assignment);
     value_length = strlen(separator + 1);
-    if (name_length >= sizeof(name) || value_length >= sizeof(value)) {
+    if (name_length == 0u) {
         if (error_buffer != NULL && error_buffer_size > 0u) {
             (void)snprintf(error_buffer,
                            error_buffer_size,
-                           "--env assignment is too long: '%s'",
+                           "--env expects KEY=VALUE: '%s'",
                            assignment);
+        }
+        return -1;
+    }
+
+    /*
+     * Parse KEY=VALUE without fixed-size stack buffers so long values
+     * (for example PATH on hosted Windows runners) remain accepted.
+     */
+    name = (char *)malloc(name_length + 1u);
+    if (name == NULL) {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "failed to allocate memory for --env key");
+        }
+        return -1;
+    }
+    value = (char *)malloc(value_length + 1u);
+    if (value == NULL) {
+        free(name);
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "failed to allocate memory for --env value");
         }
         return -1;
     }
@@ -490,8 +517,13 @@ cli_apply_env_assignment(char const *assignment,
                            "failed to set environment variable '%s'",
                            name);
         }
+        free(value);
+        free(name);
         return -1;
     }
+
+    free(value);
+    free(name);
 
     return 0;
 }
