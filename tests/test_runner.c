@@ -183,6 +183,9 @@ test_runner_is_running_under_wine(void)
 }
 
 static int
+test_runner_setenv_portable(char const *name, char const *value);
+
+static int
 test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
 {
     int index;
@@ -223,11 +226,7 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
             memcpy(name, assignment, name_length);
             name[name_length] = '\0';
             memcpy(value, separator + 1, value_length + 1u);
-#if defined(_WIN32)
-            status = _putenv_s(name, value);
-#else
-            status = setenv(name, value, 1);
-#endif
+            status = test_runner_setenv_portable(name, value);
             if (status != 0) {
                 fprintf(stderr, "test_runner: failed to set env\n");
                 return -1;
@@ -251,11 +250,7 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
             memcpy(name, assignment, name_length);
             name[name_length] = '\0';
             memcpy(value, separator + 1, value_length + 1u);
-#if defined(_WIN32)
-            status = _putenv_s(name, value);
-#else
-            status = setenv(name, value, 1);
-#endif
+            status = test_runner_setenv_portable(name, value);
             if (status != 0) {
                 fprintf(stderr, "test_runner: failed to set env\n");
                 return -1;
@@ -284,11 +279,7 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
             memcpy(name, assignment, name_length);
             name[name_length] = '\0';
             memcpy(value, separator + 1, value_length + 1u);
-#if defined(_WIN32)
-            status = _putenv_s(name, value);
-#else
-            status = setenv(name, value, 1);
-#endif
+            status = test_runner_setenv_portable(name, value);
             if (status != 0) {
                 fprintf(stderr, "test_runner: failed to set env\n");
                 return -1;
@@ -301,6 +292,25 @@ test_runner_apply_env_options(int argc, char **argv, int *out_first_index)
 
     *out_first_index = index;
     return 0;
+}
+
+static int
+test_runner_setenv_portable(char const *name, char const *value)
+{
+#if defined(_WIN32)
+    if (name == NULL || value == NULL) {
+        return -1;
+    }
+    if (SetEnvironmentVariableA(name, value) == 0) {
+        return -1;
+    }
+    return 0;
+#else
+    if (name == NULL || value == NULL) {
+        return -1;
+    }
+    return setenv(name, value, 1);
+#endif
 }
 
 int

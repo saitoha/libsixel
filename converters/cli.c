@@ -62,8 +62,6 @@ static int
 cli_setenv_portable(char const *name, char const *value)
 {
 #if defined(_MSC_VER)
-    errno_t status;
-
     if (name == NULL || value == NULL) {
         errno = EINVAL;
         return -1;
@@ -71,12 +69,6 @@ cli_setenv_portable(char const *name, char const *value)
 
     if (SetEnvironmentVariableA(name, value) == 0) {
         errno = EINVAL;
-        return -1;
-    }
-
-    status = _putenv_s(name, value);
-    if (status != 0) {
-        errno = status;
         return -1;
     }
 

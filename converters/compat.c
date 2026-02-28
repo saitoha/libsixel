@@ -347,11 +347,13 @@ img2sixel_compat_getenv(const char *name)
     static struct img2sixel_env_cache *cache_head = NULL;
     struct img2sixel_env_cache *entry;
     struct img2sixel_env_cache *new_entry;
-    char *value;
+    DWORD required_size;
+    DWORD actual_size;
+    DWORD last_error;
     char *name_copy;
     char *value_copy;
     int copy_result;
-    size_t length;
+    size_t required_length;
     size_t name_length;
 
     if (name == NULL || name[0] == '\0') {
@@ -366,26 +368,43 @@ img2sixel_compat_getenv(const char *name)
         entry = entry->next;
     }
 
-    value = NULL;
-    length = 0;
-    if (_dupenv_s(&value, &length, name) != 0) {
-        if (value != NULL) {
-            free(value);
+    required_size = GetEnvironmentVariableA(name, NULL, 0);
+    if (required_size == 0) {
+        last_error = GetLastError();
+        if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+            return NULL;
         }
         return NULL;
     }
-    if (value == NULL) {
+
+    required_length = (size_t)required_size;
+    value_copy = (char *)malloc(required_length);
+    if (value_copy == NULL) {
         return NULL;
     }
 
-    value_copy = (char *)malloc(length + 1);
-    if (value_copy == NULL) {
-        free(value);
-        return NULL;
+    for (;;) {
+        actual_size = GetEnvironmentVariableA(name,
+                                              value_copy,
+                                              required_size);
+        if (actual_size == 0) {
+            last_error = GetLastError();
+            free(value_copy);
+            if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+                return NULL;
+            }
+            return NULL;
+        }
+        if (actual_size < required_size) {
+            break;
+        }
+        required_size = actual_size + 1;
+        required_length = (size_t)required_size;
+        value_copy = (char *)realloc(value_copy, required_length);
+        if (value_copy == NULL) {
+            return NULL;
+        }
     }
-    memcpy(value_copy, value, length);
-    value_copy[length] = '\0';
-    free(value);
 
     if (entry != NULL) {
         free(entry->value);
@@ -436,8 +455,6 @@ int
 img2sixel_compat_setenv(const char *name, const char *value)
 {
 #if defined(_MSC_VER)
-    errno_t status;
-
     if (name == NULL || value == NULL) {
         errno = EINVAL;
         return -1;
@@ -445,12 +462,6 @@ img2sixel_compat_setenv(const char *name, const char *value)
 
     if (SetEnvironmentVariableA(name, value) == 0) {
         errno = EINVAL;
-        return -1;
-    }
-
-    status = _putenv_s(name, value);
-    if (status != 0) {
-        errno = status;
         return -1;
     }
 

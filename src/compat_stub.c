@@ -665,7 +665,7 @@ sixel_compat_fopen(const char *filename, const char *mode)
 SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {
-#if HAVE__DUPENV_S || defined(_MSC_VER)
+#if defined(_MSC_VER)
     struct sixel_env_cache {
         char *name;
         char *value;
@@ -675,12 +675,13 @@ sixel_compat_getenv(const char *name)
     struct sixel_env_cache *entry;
     struct sixel_env_cache *new_entry;
     size_t name_length;
-    char *value;
+    DWORD required_size;
+    DWORD actual_size;
+    DWORD last_error;
     char *name_copy;
     char *value_copy;
-    size_t length;
+    size_t required_length;
     int copy_result;
-    errno_t status;
 
     if (name == NULL || name[0] == '\0') {
         return NULL;
@@ -694,33 +695,43 @@ sixel_compat_getenv(const char *name)
         entry = entry->next;
     }
 
-    value = NULL;
-    length = 0u;
-    status = 0;
-
-    /*
-     * `_dupenv_s()` allocates the buffer for us and reports the byte count
-     * in `length`. Cache a dedicated copy per variable name so multiple
-     * lookups can coexist without sharing a single static buffer.
-     */
-    status = _dupenv_s(&value, &length, name);
-    if (status != 0) {
-        if (value != NULL) {
-            free(value);
+    required_size = GetEnvironmentVariableA(name, NULL, 0);
+    if (required_size == 0) {
+        last_error = GetLastError();
+        if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+            return NULL;
         }
         return NULL;
     }
-    if (value == NULL) {
-        return NULL;
-    }
-    value_copy = (char *)malloc(length + 1);
+
+    required_length = (size_t)required_size;
+    value_copy = (char *)malloc(required_length);
     if (value_copy == NULL) {
-        free(value);
         return NULL;
     }
-    memcpy(value_copy, value, length);
-    value_copy[length] = '\0';
-    free(value);
+
+    for (;;) {
+        actual_size = GetEnvironmentVariableA(name,
+                                              value_copy,
+                                              required_size);
+        if (actual_size == 0) {
+            last_error = GetLastError();
+            free(value_copy);
+            if (last_error == ERROR_ENVVAR_NOT_FOUND) {
+                return NULL;
+            }
+            return NULL;
+        }
+        if (actual_size < required_size) {
+            break;
+        }
+        required_size = actual_size + 1;
+        required_length = (size_t)required_size;
+        value_copy = (char *)realloc(value_copy, required_length);
+        if (value_copy == NULL) {
+            return NULL;
+        }
+    }
 
     if (entry != NULL) {
         free(entry->value);
@@ -900,9 +911,6 @@ SIXEL_COMPAT_API int
 sixel_compat_setenv(const char *name, const char *value)
 {
 #if defined(_MSC_VER)
-    errno_t status;
-
-    status = 0;
     if (name == NULL || value == NULL) {
         errno = EINVAL;
         return (-1);
@@ -910,12 +918,6 @@ sixel_compat_setenv(const char *name, const char *value)
 
     if (SetEnvironmentVariableA(name, value) == 0) {
         errno = EINVAL;
-        return (-1);
-    }
-
-    status = _putenv_s(name, value);
-    if (status != 0) {
-        errno = status;
         return (-1);
     }
 
