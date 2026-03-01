@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: animation with disable loop, macro mode, ignore delay flags (builtin loader).
+# TAP test: builtin loader accepts update and static-frame flags together.
 
 set -eux
 

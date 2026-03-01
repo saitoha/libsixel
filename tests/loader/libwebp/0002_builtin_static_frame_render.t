@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: animation without loop and delay succeeds (builtin loader).
+# TAP test: builtin loader renders a static frame with no loop and no delay.
 
 set -eux
 

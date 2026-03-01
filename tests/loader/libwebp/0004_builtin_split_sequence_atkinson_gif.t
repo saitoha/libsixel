@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: static frame with Atkinson dithering from animated GIF matches reference.
+# TAP test: builtin loader static GIF frame with Atkinson dithering matches reference.
 
 set -eux
 
