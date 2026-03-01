@@ -377,6 +377,25 @@ check-TESTS: $(check_PROGRAMS)
 	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
 	eval "$$config_exports"; \
 	set +a; \
+	libsixel_runtime_libdir="$(top_builddir)/src/.libs"; \
+	if test -n "$$LD_LIBRARY_PATH"; then \
+	    LD_LIBRARY_PATH="$$libsixel_runtime_libdir:$$LD_LIBRARY_PATH"; \
+	else \
+	    LD_LIBRARY_PATH="$$libsixel_runtime_libdir"; \
+	fi; \
+	export LD_LIBRARY_PATH; \
+	if test -n "$$DYLD_LIBRARY_PATH"; then \
+	    DYLD_LIBRARY_PATH="$$libsixel_runtime_libdir:$$DYLD_LIBRARY_PATH"; \
+	else \
+	    DYLD_LIBRARY_PATH="$$libsixel_runtime_libdir"; \
+	fi; \
+	export DYLD_LIBRARY_PATH; \
+	if test -n "$$PATH"; then \
+	    PATH="$$libsixel_runtime_libdir:$$PATH"; \
+	else \
+	    PATH="$$libsixel_runtime_libdir"; \
+	fi; \
+	export PATH; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
