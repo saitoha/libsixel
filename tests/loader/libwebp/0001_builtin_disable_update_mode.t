@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: animation disabled with macro mode flags (builtin loader).
+# TAP test: builtin loader accepts disable/update macro mode flag combination.
 
 set -eux
 
