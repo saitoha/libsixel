@@ -756,13 +756,13 @@ sixel_lto_status="disabled"
 
 AS_IF([test "x$using_cl" = "xyes"], [
   AC_CACHE_CHECK(
-    [whether the compiler and linker support MSVC LTO (-GL + /LTCG)],
+    [whether the compiler and linker support MSVC LTO (-GL + -LTCG)],
     [ac_cv_sixel_lto_full_msvc],
     [
      CFLAGS="$ac_sixel_save_CFLAGS -GL"
-     dnl Use '/LTCG' for MSVC linker flags. '-LTCG' is parsed by
+     dnl Use '-LTCG' for MSVC linker flags. '-LTCG' is parsed by
      dnl libtool as '-L TCG' (library search path) and breaks linking.
-     LDFLAGS="$ac_sixel_save_LDFLAGS /LTCG"
+     LDFLAGS="$ac_sixel_save_LDFLAGS -LTCG"
      AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
                     [ac_cv_sixel_lto_full_msvc=yes],
                     [ac_cv_sixel_lto_full_msvc=no])
@@ -776,9 +776,9 @@ AS_IF([test "x$using_cl" = "xyes"], [
           [sixel_lto_status="disabled"],
           [full],
           [AS_IF([test "x$ac_cv_sixel_lto_full_msvc" != "xyes"],
-                 [AC_MSG_ERROR([--enable-lto=full requested, but -GL + /LTCG are not supported by the current MSVC toolchain])])
+                 [AC_MSG_ERROR([--enable-lto=full requested, but -GL + -LTCG are not supported by the current MSVC toolchain])])
            sixel_lto_cflags="-GL"
-           sixel_lto_ldflags="/LTCG"
+           sixel_lto_ldflags="-LTCG"
            sixel_lto_status="full"],
           [thin],
           [AC_MSG_ERROR([--enable-lto=thin is unsupported with MSVC (cl.exe)])])
@@ -897,7 +897,7 @@ AS_CASE([$host_os],
         [sixel_pgo_toolchain="msvc"])
 dnl Keep this compiler-name probe strict: a broad '*cl*' match incorrectly
 dnl classifies GNU/LLVM 'clang' as an MSVC frontend, which injects '/GL'
-dnl and '/LTCG:*' flags and breaks non-MSVC PGO builds.
+dnl and '-LTCG:*' flags and breaks non-MSVC PGO builds.
 AS_CASE(["$CC"],
         [*clang-cl*|cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe],
         [sixel_pgo_toolchain="msvc"])
@@ -914,10 +914,10 @@ AS_IF([test "x$enable_pgo" = "xgenerate"], [
       ])
     ])
 
-    sixel_pgo_cflags="/GL"
-    sixel_pgo_ldflags="/LTCG:PGINSTRUMENT"
+    sixel_pgo_cflags="-GL"
+    sixel_pgo_ldflags="-LTCG:PGINSTRUMENT"
     AS_IF([test "x$pgo_data_path" != "x"], [
-      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_ldflags="$sixel_pgo_ldflags -PGD:$pgo_data_path"
       sixel_pgo_status="generate(msvc-pgd=$pgo_data_path)"
     ], [
       sixel_pgo_status="generate(msvc)"
@@ -945,13 +945,13 @@ AS_IF([test "x$enable_pgo" = "xuse"], [
   AS_IF([test "x$sixel_pgo_toolchain" = "xmsvc"], [
     AS_IF([test "x$pgo_profdata_file" != "x"], [
       AC_MSG_ERROR([
-        --with-pgo-profdata is not supported with MSVC; use --with-pgo-data for /PGD
+        --with-pgo-profdata is not supported with MSVC; use --with-pgo-data for -PGD
       ])
     ])
-    sixel_pgo_cflags="/GL"
-    sixel_pgo_ldflags="/LTCG:PGOPTIMIZE"
+    sixel_pgo_cflags="-GL"
+    sixel_pgo_ldflags="-LTCG:PGOPTIMIZE"
     AS_IF([test "x$pgo_data_path" != "x"], [
-      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_ldflags="$sixel_pgo_ldflags -PGD:$pgo_data_path"
       sixel_pgo_status="use(msvc-pgd=$pgo_data_path)"
     ], [
       sixel_pgo_status="use(msvc)"
@@ -1007,8 +1007,8 @@ AS_IF([test "x$enable_pgo" != "xno"], [
     AS_IF([test "x$enable_pgo" = "xuse" \
                 -a "x$sixel_pgo_toolchain" = "xmsvc" \
                 -a "x$pgo_data_path" = "x"], [
-      dnl MSVC /LTCG:PGOPTIMIZE may require existing profile artifacts.
-      dnl Skip probing when /PGD path is not provided.
+      dnl MSVC -LTCG:PGOPTIMIZE may require existing profile artifacts.
+      dnl Skip probing when -PGD path is not provided.
       AC_MSG_NOTICE([
         skipping PGO capability probe for MSVC --enable-pgo=use without --with-pgo-data
       ])
@@ -3010,7 +3010,7 @@ if test x$with_winhttp != xno; then
                     ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
                 else
                 ADDED_CFLAGS="-I${with_winhttp}\\include"
-                ADDED_LIBS="/LIBPATH:${with_winhttp}/lib winhttp.lib"
+                ADDED_LIBS="-LIBPATH:${with_winhttp}/lib winhttp.lib"
                 fi
             else
                 ADDED_CFLAGS="-I${with_winhttp}/include"
@@ -3559,7 +3559,7 @@ if test x$with_wic != xno; then
                     ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
                 else
                     ADDED_CFLAGS="-I${with_wic}\\include"
-                    ADDED_LIBS="/LIBPATH:${with_wic}/lib windowscodecs.lib \
+                    ADDED_LIBS="-LIBPATH:${with_wic}/lib windowscodecs.lib \
 ole32.lib shlwapi.lib uuid.lib"
                 fi
             else
@@ -3703,7 +3703,7 @@ else
                              <emmintrin.h>])
             saved_CFLAGS="$CFLAGS"
             if test "x$using_cl" = xyes; then
-                simd_flag="/arch:SSE2"
+                simd_flag="-arch:SSE2"
             else
                 simd_flag="-msse2"
             fi

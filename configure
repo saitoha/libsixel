@@ -17002,15 +17002,15 @@ sixel_lto_status="disabled"
 if test "x$using_cl" = "xyes"
 then :
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support MSVC LTO (-GL + /LTCG)" >&5
-printf %s "checking whether the compiler and linker support MSVC LTO (-GL + /LTCG)... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler and linker support MSVC LTO (-GL + -LTCG)" >&5
+printf %s "checking whether the compiler and linker support MSVC LTO (-GL + -LTCG)... " >&6; }
 if test ${ac_cv_sixel_lto_full_msvc+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
      CFLAGS="$ac_sixel_save_CFLAGS -GL"
-               LDFLAGS="$ac_sixel_save_LDFLAGS /LTCG"
+               LDFLAGS="$ac_sixel_save_LDFLAGS -LTCG"
      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -17046,10 +17046,10 @@ printf "%s\n" "$ac_cv_sixel_lto_full_msvc" >&6; }
   full) :
     if test "x$ac_cv_sixel_lto_full_msvc" != "xyes"
 then :
-  as_fn_error $? "--enable-lto=full requested, but -GL + /LTCG are not supported by the current MSVC toolchain" "$LINENO" 5
+  as_fn_error $? "--enable-lto=full requested, but -GL + -LTCG are not supported by the current MSVC toolchain" "$LINENO" 5
 fi
            sixel_lto_cflags="-GL"
-           sixel_lto_ldflags="/LTCG"
+           sixel_lto_ldflags="-LTCG"
            sixel_lto_status="full" ;; #(
   thin) :
     as_fn_error $? "--enable-lto=thin is unsupported with MSVC (cl.exe)" "$LINENO" 5 ;; #(
@@ -17314,12 +17314,12 @@ printf "%s\n" "$as_me: WARNING:
 
 fi
 
-    sixel_pgo_cflags="/GL"
-    sixel_pgo_ldflags="/LTCG:PGINSTRUMENT"
+    sixel_pgo_cflags="-GL"
+    sixel_pgo_ldflags="-LTCG:PGINSTRUMENT"
     if test "x$pgo_data_path" != "x"
 then :
 
-      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_ldflags="$sixel_pgo_ldflags -PGD:$pgo_data_path"
       sixel_pgo_status="generate(msvc-pgd=$pgo_data_path)"
 
 else case e in #(
@@ -17374,16 +17374,16 @@ then :
 then :
 
       as_fn_error $? "
-        --with-pgo-profdata is not supported with MSVC; use --with-pgo-data for /PGD
+        --with-pgo-profdata is not supported with MSVC; use --with-pgo-data for -PGD
       " "$LINENO" 5
 
 fi
-    sixel_pgo_cflags="/GL"
-    sixel_pgo_ldflags="/LTCG:PGOPTIMIZE"
+    sixel_pgo_cflags="-GL"
+    sixel_pgo_ldflags="-LTCG:PGOPTIMIZE"
     if test "x$pgo_data_path" != "x"
 then :
 
-      sixel_pgo_ldflags="$sixel_pgo_ldflags /PGD:$pgo_data_path"
+      sixel_pgo_ldflags="$sixel_pgo_ldflags -PGD:$pgo_data_path"
       sixel_pgo_status="use(msvc-pgd=$pgo_data_path)"
 
 else case e in #(
@@ -24472,7 +24472,7 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
                     ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
                 else
                 ADDED_CFLAGS="-I${with_winhttp}\\include"
-                ADDED_LIBS="/LIBPATH:${with_winhttp}/lib winhttp.lib"
+                ADDED_LIBS="-LIBPATH:${with_winhttp}/lib winhttp.lib"
                 fi
             else
                 ADDED_CFLAGS="-I${with_winhttp}/include"
@@ -26078,7 +26078,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
                     ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
                 else
                     ADDED_CFLAGS="-I${with_wic}\\include"
-                    ADDED_LIBS="/LIBPATH:${with_wic}/lib windowscodecs.lib \
+                    ADDED_LIBS="-LIBPATH:${with_wic}/lib windowscodecs.lib \
 ole32.lib shlwapi.lib uuid.lib"
                 fi
             else
@@ -26477,7 +26477,7 @@ printf %s "checking whether the compiler supports SSE2 flags and
                              <emmintrin.h>... " >&6; }
             saved_CFLAGS="$CFLAGS"
             if test "x$using_cl" = xyes; then
-                simd_flag="/arch:SSE2"
+                simd_flag="-arch:SSE2"
             else
                 simd_flag="-msse2"
             fi
