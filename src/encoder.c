@@ -8487,9 +8487,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
         encoder->capture_source_frame = frame;
     }
 
-    if (planner != NULL) {
-        allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
+    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED
+        && planner != NULL) {
+        allow_loader_pipeline = sixel_encoding_planner_finalize_loader_handoff(
             planner,
+            encoder,
             frame);
     }
 
