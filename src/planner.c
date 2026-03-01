@@ -389,6 +389,29 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
 }
 
 
+void
+sixel_encoding_planner_reset_for_frame(sixel_encoding_planner_t *planner)
+{
+    int loader_multiframe_known;
+    int loader_multiframe;
+
+    loader_multiframe_known = 0;
+    loader_multiframe = 0;
+
+    if (planner == NULL) {
+        return;
+    }
+
+    loader_multiframe_known = planner->loader_multiframe_known;
+    loader_multiframe = planner->loader_multiframe;
+
+    sixel_encoding_planner_init(planner);
+    sixel_encoding_planner_set_loader_metadata(planner,
+                                               loader_multiframe_known,
+                                               loader_multiframe);
+}
+
+
 int
 sixel_encoding_palette_job_ready(sixel_encoder_t *encoder,
                                  sixel_encoding_planner_t *planner,

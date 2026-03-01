@@ -91,6 +91,8 @@ typedef struct sixel_encoding_planner {
 } sixel_encoding_planner_t;
 
 void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
+void sixel_encoding_planner_reset_for_frame(
+    sixel_encoding_planner_t *planner);
 void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
                                  struct sixel_frame *frame);
