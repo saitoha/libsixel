@@ -41,8 +41,22 @@ class Dither
 
   def ptr; @ptr; end
 
-  def ref; Libsixel::API.sixel_dither_ref(@ptr); nil; end
-  def unref; Libsixel::API.sixel_dither_unref(@ptr); nil; end
+  def ref
+    Libsixel::API.sixel_dither_ref(@ptr) if @ptr && @ptr.to_i != 0
+    nil
+  end
+
+  def unref
+    return nil unless @ptr && @ptr.to_i != 0
+
+    ptr = @ptr
+    @ptr = nil
+    ObjectSpace.undefine_finalizer(self)
+    Libsixel::API.sixel_dither_unref(ptr)
+    nil
+  end
+
+  alias close unref
 
   def initialize_palette(data, width:, height:, pixelformat:, method_for_largest:, method_for_rep:, quality_mode:)
     buf = data.is_a?(String) ? data : data.pack('C*')

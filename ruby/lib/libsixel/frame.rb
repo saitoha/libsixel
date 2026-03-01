@@ -13,8 +13,22 @@ class Frame
 
   def ptr; @ptr; end
 
-  def ref; Libsixel::API.sixel_frame_ref(@ptr); nil; end
-  def unref; Libsixel::API.sixel_frame_unref(@ptr); nil; end
+  def ref
+    Libsixel::API.sixel_frame_ref(@ptr) if @ptr && @ptr.to_i != 0
+    nil
+  end
+
+  def unref
+    return nil unless @ptr && @ptr.to_i != 0
+
+    ptr = @ptr
+    @ptr = nil
+    ObjectSpace.undefine_finalizer(self)
+    Libsixel::API.sixel_frame_unref(ptr)
+    nil
+  end
+
+  alias close unref
 
   def init(pixels:, width:, height:, pixelformat:, palette: nil, ncolors: -1)
     px = pixels.is_a?(String) ? pixels : pixels.pack('C*')

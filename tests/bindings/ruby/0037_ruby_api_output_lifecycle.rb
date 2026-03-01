@@ -9,6 +9,7 @@ begin
   output = Output.new(write_proc: ->(_data, _priv) { nil })
   output.ref
   output.unref
+  output.unref
 
   puts 'ok 1 - output new/ref/unref lifecycle APIs are callable'
 rescue StandardError => e
