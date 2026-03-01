@@ -8501,7 +8501,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
     if (planner != NULL) {
         allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
             planner,
-            encoder,
             frame);
     }
 

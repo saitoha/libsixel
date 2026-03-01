@@ -111,7 +111,6 @@ void sixel_encoding_planner_set_loader_metadata(
     int multiframe);
 int sixel_encoding_planner_update_loader_handoff(
     sixel_encoding_planner_t *planner,
-    struct sixel_encoder *encoder,
     struct sixel_frame *frame);
 
 #endif /* LIBSIXEL_PLANNER_H */
