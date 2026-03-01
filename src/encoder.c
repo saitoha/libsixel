@@ -178,6 +178,9 @@ static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
                                                   sixel_dither_t *dither);
 
 #define SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY 4
+#define SIXEL_ENCODER_HANDOFF_UNDECIDED 0
+#define SIXEL_ENCODER_HANDOFF_SERIAL 1
+#define SIXEL_ENCODER_HANDOFF_PIPELINE 2
 
 typedef struct sixel_palette_async_job {
     sixel_thread_t thread;
@@ -222,8 +225,7 @@ typedef struct sixel_encoder_frame_pipeline {
     int initialized;
     int started;
     int loader_done;
-    int pipeline_enabled;
-    int pipeline_locked;
+    int handoff_mode;
 } sixel_encoder_frame_pipeline_t;
 
 typedef struct sixel_encoder_load_context {
@@ -8342,8 +8344,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->initialized = 0;
     pipeline->started = 0;
     pipeline->loader_done = 0;
-    pipeline->pipeline_enabled = 0;
-    pipeline->pipeline_locked = 0;
+    pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_UNDECIDED;
 
     result = sixel_mutex_init(&pipeline->mutex);
     if (result != 0) {
@@ -8385,8 +8386,7 @@ sixel_encoder_frame_pipeline_dispose(sixel_encoder_frame_pipeline_t *pipeline)
     sixel_mutex_destroy(&pipeline->mutex);
     pipeline->initialized = 0;
     pipeline->started = 0;
-    pipeline->pipeline_enabled = 0;
-    pipeline->pipeline_locked = 1;
+    pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
 }
 
 
@@ -8506,23 +8506,23 @@ load_image_callback(sixel_frame_t *frame, void *data)
         allow_loader_pipeline = planner->loader_pipeline_active;
     }
 
-    if (pipeline->pipeline_enabled == 0 && pipeline->pipeline_locked == 0) {
+    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED) {
         if (allow_loader_pipeline != 0) {
             result = sixel_thread_create(&pipeline->thread,
                                          sixel_encoder_frame_pipeline_worker,
                                          pipeline);
             if (result == 0) {
                 pipeline->started = 1;
-                pipeline->pipeline_enabled = 1;
+                pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_PIPELINE;
             } else {
-                pipeline->pipeline_locked = 1;
+                pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
             }
-        } else if (multiframe == 0) {
-            pipeline->pipeline_locked = 1;
+        } else {
+            pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
         }
     }
 
-    if (pipeline->pipeline_enabled != 0) {
+    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_PIPELINE) {
         status = sixel_encoder_frame_pipeline_enqueue(pipeline, frame);
         if (SIXEL_SUCCEEDED(status)) {
             return SIXEL_OK;
