@@ -47,8 +47,22 @@ class Output
 
   def ptr; @ptr; end
 
-  def ref; Libsixel::API.sixel_output_ref(@ptr); end
-  def unref; Libsixel::API.sixel_output_unref(@ptr); end
+  def ref
+    Libsixel::API.sixel_output_ref(@ptr) if @ptr && @ptr.to_i != 0
+    nil
+  end
+
+  def unref
+    return nil unless @ptr && @ptr.to_i != 0
+
+    ptr = @ptr
+    @ptr = nil
+    ObjectSpace.undefine_finalizer(self)
+    Libsixel::API.sixel_output_unref(ptr)
+    nil
+  end
+
+  alias close unref
 
   def get_8bit_availability
     Libsixel::API.sixel_output_get_8bit_availability(@ptr)

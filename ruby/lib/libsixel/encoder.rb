@@ -43,6 +43,27 @@ class Encoder
     proc { Libsixel::API.sixel_encoder_unref(ptr) if ptr && ptr.to_i != 0 }
   end
 
+  def ptr
+    @ptr
+  end
+
+  def ref
+    Libsixel::API.sixel_encoder_ref(@ptr) if @ptr && @ptr.to_i != 0
+    nil
+  end
+
+  def unref
+    return nil unless @ptr && @ptr.to_i != 0
+
+    ptr = @ptr
+    @ptr = nil
+    ObjectSpace.undefine_finalizer(self)
+    Libsixel::API.sixel_encoder_unref(ptr)
+    nil
+  end
+
+  alias close unref
+
   # setopt: flag は 1 文字。opt は文字列 or 数値
   # Width/height accept auto, numeric, percent, pixel (<number>px), and
   # terminal cell (<number>c) units to stay aligned with the CLI parser.

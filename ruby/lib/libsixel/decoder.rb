@@ -41,6 +41,28 @@ class Decoder
     proc { Libsixel::API.sixel_decoder_unref(ptr) if ptr && ptr.to_i != 0 }
   end
 
+
+  def ptr
+    @ptr
+  end
+
+  def ref
+    Libsixel::API.sixel_decoder_ref(@ptr) if @ptr && @ptr.to_i != 0
+    nil
+  end
+
+  def unref
+    return nil unless @ptr && @ptr.to_i != 0
+
+    ptr = @ptr
+    @ptr = nil
+    ObjectSpace.undefine_finalizer(self)
+    Libsixel::API.sixel_decoder_unref(ptr)
+    nil
+  end
+
+  alias close unref
+
   def setopt(flag, opt)
     # The dequantizer flag mirrors the CLI table below so callers can
     # request Kornel's undither preset.
