@@ -907,7 +907,6 @@ sixel_encoding_planner_set_loader_metadata(sixel_encoding_planner_t *planner,
 int
 sixel_encoding_planner_update_loader_handoff(
     sixel_encoding_planner_t *planner,
-    sixel_encoder_t *encoder,
     sixel_frame_t *frame)
 {
     int multiframe;
@@ -918,15 +917,13 @@ sixel_encoding_planner_update_loader_handoff(
         return 0;
     }
 
+    /*
+     * The loader callback only reports frame metadata and asks the planner
+     * for the current handoff decision. Keep this path free from DAG
+     * replanning so callback-side policy remains minimal and deterministic.
+     */
     multiframe = sixel_frame_get_multiframe(frame);
     sixel_encoding_planner_set_loader_metadata(planner, 1, multiframe);
-
-    if (encoder != NULL) {
-        sixel_encoding_planner_replan(planner,
-                                      encoder,
-                                      frame,
-                                      planner->allow_palette_async != 0);
-    }
 
     return planner->loader_pipeline_active;
 }
