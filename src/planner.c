@@ -904,6 +904,34 @@ sixel_encoding_planner_set_loader_metadata(sixel_encoding_planner_t *planner,
     planner->loader_pipeline_active = allow_pipeline ? 1 : 0;
 }
 
+int
+sixel_encoding_planner_update_loader_handoff(
+    sixel_encoding_planner_t *planner,
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame)
+{
+    int multiframe;
+
+    multiframe = 0;
+
+    if (planner == NULL || frame == NULL) {
+        return 0;
+    }
+
+    multiframe = sixel_frame_get_multiframe(frame);
+    sixel_encoding_planner_set_loader_metadata(planner, 1, multiframe);
+
+    if (encoder != NULL) {
+        sixel_encoding_planner_replan(planner,
+                                      encoder,
+                                      frame,
+                                      planner->allow_palette_async != 0);
+    }
+
+    return planner->loader_pipeline_active;
+}
+
+
 
 static char const *
 sixel_encoding_planner_pixelformat_label(int pixelformat)

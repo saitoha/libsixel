@@ -8473,7 +8473,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encoder_t *encoder;
     SIXELSTATUS status;
     int result;
-    int multiframe;
     int allow_loader_pipeline;
 
     context = (sixel_encoder_load_context_t *)data;
@@ -8482,7 +8481,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
     encoder = NULL;
     status = SIXEL_OK;
     result = 0;
-    multiframe = 0;
     allow_loader_pipeline = 0;
 
     if (context == NULL || frame == NULL) {
@@ -8501,9 +8499,10 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     if (planner != NULL) {
-        multiframe = sixel_frame_get_multiframe(frame);
-        sixel_encoding_planner_set_loader_metadata(planner, 1, multiframe);
-        allow_loader_pipeline = planner->loader_pipeline_active;
+        allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
+            planner,
+            encoder,
+            frame);
     }
 
     if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED) {
