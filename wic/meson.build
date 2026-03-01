@@ -45,13 +45,27 @@ if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   ]
 endif
 
+wic_c_args = [
+  '-DSIXEL_STATUS_HAVE_TTY_HELPERS=0',
+  '-DHAVE_CONFIG_H',
+]
+wic_link_args = []
+
+if (cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl') and msvc_pgo_mode != 'off'
+  # This module is not exercised by the current PGO training commands.
+  # Keep project-wide PGO for the core binaries, but opt out for WIC to
+  # avoid C4961/C2220 when no wicsixel!*.pgc is produced.
+  wic_c_args += ['/GL-']
+  wic_link_args += ['/LTCG:OFF']
+endif
+
 shared_module(
   'wicsixel',
   wic_sources,
   include_directories: project_inc,
   dependencies: [ole32, oleaut32, gdi32, windowscodecs],
-  c_args: ['-DSIXEL_STATUS_HAVE_TTY_HELPERS=0',
-            '-DHAVE_CONFIG_H'],
+  c_args: wic_c_args,
+  link_args: wic_link_args,
   install: true,
   install_dir: join_paths(get_option('libdir'), meson.project_name()),
 )
