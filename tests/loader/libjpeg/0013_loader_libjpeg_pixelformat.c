@@ -2,7 +2,7 @@
  * Verify libjpeg loader reports RGB output for JPEG sources.
  */
 
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_JPEG
 static SIXELSTATUS

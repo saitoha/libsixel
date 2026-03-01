@@ -7,7 +7,7 @@
 
 #include "src/chunk.h"
 #include "src/loader-librsvg.h"
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
 int
 test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv)

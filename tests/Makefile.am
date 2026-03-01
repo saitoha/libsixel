@@ -206,20 +206,20 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
     processing/filter/filter_test_common.h \
-    io/loader/0008_loader_coregraphics_pixelformat.c \
-    io/loader/0009_loader_wic_pixelformat.c \
-    io/loader/0010_loader_gdk_pixbuf_pixelformat.c \
-    io/loader/0011_loader_gd_pixelformat.c \
-    io/loader/0012_loader_libpng_pixelformat.c \
-    io/loader/0013_loader_libjpeg_pixelformat.c \
-    io/loader/0014_loader_builtin_pixelformat.c \
-    io/loader/0015_loader_quicklook_pixelformat.c \
-    io/loader/0016_loader_gnome_thumbnailer_pixelformat.c \
-    io/loader/0017_loader_libwebp_pixelformat.c \
-    io/loader/0018_loader_libwebp_animation_frames.c \
-    io/loader/0019_loader_libwebp_palette_promotion_guard.c \
-    io/loader/0020_loader_librsvg_detect_svg_like.c \
-    io/loader/pixelformat_test_common.h \
+    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
+    loader/wic/0009_loader_wic_pixelformat.c \
+    loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c \
+    loader/gd/0011_loader_gd_pixelformat.c \
+    loader/libpng/0012_loader_libpng_pixelformat.c \
+    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+    loader/builtin/0014_loader_builtin_pixelformat.c \
+    loader/quicklook/0015_loader_quicklook_pixelformat.c \
+    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
+    loader/libwebp/0017_loader_libwebp_pixelformat.c \
+    loader/libwebp/0018_loader_libwebp_animation_frames.c \
+    loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
+    loader/libsvg/0020_loader_librsvg_detect_svg_like.c \
+    loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \

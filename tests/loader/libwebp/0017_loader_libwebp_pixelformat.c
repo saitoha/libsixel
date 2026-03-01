@@ -1,19 +1,20 @@
 /*
- * Verify palette mode does not promote non-indexed WebP inputs to PAL8.
+ * Verify libwebp loader reports RGB output by default and PAL8 when
+ * palette promotion is requested for indexed sources.
  */
 
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_WEBP
 static int
-run_libwebp_component_case(char const *label,
-                           char const *path,
-                           int expected_pixelformat,
-                           int expected_width,
-                           int expected_height,
-                           int fstatic,
-                           int fuse_palette,
-                           int reqcolors)
+run_libwebp_loader_case_with_options(char const *label,
+                                     char const *path,
+                                     int expected_pixelformat,
+                                     int expected_width,
+                                     int expected_height,
+                                     int fstatic,
+                                     int fuse_palette,
+                                     int reqcolors)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -124,43 +125,42 @@ cleanup:
 }
 
 static int
-run_libwebp_palette_guard_test(void)
+run_libwebp_loader_test(void)
 {
     int status;
 
-    status = run_libwebp_component_case(
-        "libwebp non-indexed static webp keeps rgb",
-        WEBP_IMAGE_PATH,
-        SIXEL_PIXELFORMAT_RGB888,
-        64,
-        64,
-        1,
-        1,
-        256);
+    status = run_libwebp_loader_case_with_options("libwebp loader",
+                                                  WEBP_IMAGE_PATH,
+                                                  SIXEL_PIXELFORMAT_RGB888,
+                                                  64,
+                                                  64,
+                                                  1,
+                                                  0,
+                                                  256);
     if (status != 0) {
         return status;
     }
 
-    return run_libwebp_component_case(
-        "libwebp non-indexed animated webp keeps rgb",
-        "/tests/data/inputs/formats/animated-lossy-8x8-2frame-min.webp",
-        SIXEL_PIXELFORMAT_RGB888,
+    return run_libwebp_loader_case_with_options(
+        "libwebp loader palette mode",
+        "/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp",
+        SIXEL_PIXELFORMAT_PAL8,
         8,
         8,
         1,
         1,
-        256);
+        8);
 }
 #endif
 
 int
-test_loader_0019_loader_libwebp_palette_promotion_guard(int argc, char **argv)
+test_loader_0017_loader_libwebp_pixelformat(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
+    (void) argc;
+    (void) argv;
 
 #if HAVE_WEBP
-    return run_libwebp_palette_guard_test();
+    return run_libwebp_loader_test();
 #else
     fprintf(stderr, "libwebp loader unavailable\n");
     return SIXEL_TEST_SKIP;

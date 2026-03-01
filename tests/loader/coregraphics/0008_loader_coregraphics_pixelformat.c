@@ -1,41 +1,41 @@
 /*
- * Verify GDK-Pixbuf loader reports RGBA output for RGBA sources.
+ * Verify CoreGraphics loads RGBA sources as four-component frames.
  */
 
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#if defined(HAVE_GDK_PIXBUF2)
+#if HAVE_COREGRAPHICS
 static SIXELSTATUS
-new_gdk_pixbuf_component(sixel_allocator_t *allocator,
-                         sixel_loader_component_t **ppcomponent)
+new_coregraphics_component(sixel_allocator_t *allocator,
+                           sixel_loader_component_t **ppcomponent)
 {
-    return create_loader_component_by_name("gdk-pixbuf2",
+    return create_loader_component_by_name("coregraphics",
                                            allocator,
                                            ppcomponent);
 }
 
 static int
-run_gdk_pixbuf_loader_test(void)
+run_coregraphics_loader_test(void)
 {
-    return run_loader_component_case("GDK-Pixbuf loader",
+    return run_loader_component_case("CoreGraphics loader",
                                      RGBA_IMAGE_PATH,
                                      SIXEL_PIXELFORMAT_RGBA8888,
                                      2,
                                      1,
-                                     new_gdk_pixbuf_component);
+                                     new_coregraphics_component);
 }
 #endif
 
 int
-test_loader_0010_loader_gdk_pixbuf_pixelformat(int argc, char **argv)
+test_loader_0008_loader_coregraphics_pixelformat(int argc, char **argv)
 {
     (void) argc;
     (void) argv;
 
-#if defined(HAVE_GDK_PIXBUF2)
-    return run_gdk_pixbuf_loader_test();
+#if HAVE_COREGRAPHICS
+    return run_coregraphics_loader_test();
 #else
-    fprintf(stderr, "GDK-Pixbuf loader unavailable\n");
+    fprintf(stderr, "CoreGraphics loader unavailable\n");
     return SIXEL_TEST_SKIP;
 #endif
 }

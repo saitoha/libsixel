@@ -13,8 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-label="quantize_suboption_success"
-
 run_img2sixel -Qk:i=p:t=0.120 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >/dev/null || {

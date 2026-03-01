@@ -3,7 +3,7 @@
  * propagates interruption requests from callbacks.
  */
 
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_WEBP
 typedef struct animated_probe_context {

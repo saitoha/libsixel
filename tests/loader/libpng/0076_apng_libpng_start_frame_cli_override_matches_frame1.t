@@ -4,14 +4,14 @@
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 test "${HAVE_LIBPNG-}" = 1 || {
-    printf "1..0 # SKIP libpng is disabled in this build\n";
+    printf "1..0 # SKIP libpng is disabled in this build\n"
     exit 0
 }
 

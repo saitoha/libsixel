@@ -9,13 +9,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-echo "1..2"
+echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 out_env="${ARTIFACT_LOCAL_DIR}/img2sixel_env_ref.six"
 out_opt="${ARTIFACT_LOCAL_DIR}/img2sixel_env_opt.six"
-err_invalid="${ARTIFACT_LOCAL_DIR}/img2sixel_env_invalid.err"
 
 run_img2sixel --env SIXEL_COLORS=16 --env SIXEL_THREADS=1 \
     "${input_image}" >"${out_env}" || {
@@ -34,7 +33,7 @@ cmp -s "${out_env}" "${out_opt}" || {
     exit 0
 }
 
-run_img2sixel -% INVALID "${input_image}" > /dev/null 2>"${err_invalid}" && {
+run_img2sixel -% INVALID "${input_image}" > /dev/null && {
     echo "not ok" 1 "invalid -% argument should fail"
     exit 0
 }
