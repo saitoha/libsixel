@@ -5872,11 +5872,6 @@ sixel_encoder_encode_frame(
     int clip_active;
     int current_pixelformat;
     int current_colorspace;
-    int loader_multiframe_known;
-    int loader_multiframe;
-
-    loader_multiframe_known = 0;
-    loader_multiframe = 0;
 
     memset(&context, 0, sizeof(context));
     context.encoder = encoder;
@@ -5930,13 +5925,7 @@ sixel_encoder_encode_frame(
     }
     planner = context.planner;
     if (planner != NULL) {
-        loader_multiframe_known = planner->loader_multiframe_known;
-        loader_multiframe = planner->loader_multiframe;
-        sixel_encoding_planner_init(planner);
-        sixel_encoding_planner_set_loader_metadata(
-            planner,
-            loader_multiframe_known,
-            loader_multiframe);
+        sixel_encoding_planner_reset_for_frame(planner);
     }
 
     /*
