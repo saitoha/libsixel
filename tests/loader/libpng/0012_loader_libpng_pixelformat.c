@@ -2,7 +2,7 @@
  * Verify libpng loader reports RGB output for RGBA sources.
  */
 
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_LIBPNG
 static SIXELSTATUS

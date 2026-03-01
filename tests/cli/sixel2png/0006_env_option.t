@@ -9,13 +9,12 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-echo "1..2"
+echo "1..1"
 set -v
 
 input_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 out_env="${ARTIFACT_LOCAL_DIR}/sixel2png_env_ref.png"
 out_opt="${ARTIFACT_LOCAL_DIR}/sixel2png_env_opt.png"
-err_invalid="${ARTIFACT_LOCAL_DIR}/sixel2png_env_invalid.err"
 
 run_sixel2png --env SIXEL_THREADS=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     -i "${input_six}" -o "${out_env}" || {
@@ -34,7 +33,7 @@ cmp -s "${out_env}" "${out_opt}" || {
     exit 0
 }
 
-run_sixel2png -% INVALID -i "${input_six}" > /dev/null 2>"${err_invalid}" && {
+run_sixel2png -% INVALID -i "${input_six}" > /dev/null && {
     echo "not ok" 1 "invalid -% argument should fail"
     exit 0
 }

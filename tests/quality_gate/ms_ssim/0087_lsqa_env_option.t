@@ -9,14 +9,13 @@ test "${HAVE_LSQA-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-echo "1..2"
+echo "1..1"
 set -v
 
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 out_env="${ARTIFACT_LOCAL_DIR}/lsqa_env_ref.txt"
 out_opt="${ARTIFACT_LOCAL_DIR}/lsqa_env_opt.txt"
-err_invalid="${ARTIFACT_LOCAL_DIR}/lsqa_env_invalid.err"
 
 run_lsqa --env SIXEL_THREADS=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     "${reference_image}" "${target_image}" >"${out_env}" || {
@@ -34,13 +33,11 @@ cmp -s "${out_env}" "${out_opt}" || {
     echo "not ok" 1 "-% output differs from process environment"
     exit 0
 }
-echo "ok" 1 "-% matches process environment"
 
-run_lsqa -% INVALID "${reference_image}" "${target_image}" > /dev/null \
-    2>"${err_invalid}" && {
-    fail 2 "invalid -% argument should fail"
+run_lsqa -% INVALID "${reference_image}" "${target_image}" > /dev/null && {
+    echo "not ok" 1 "invalid -% argument should fail"
     exit 0
 }
-pass 2 "invalid -% argument rejected"
+echo "ok" 1 "invalid -% argument rejected"
 
 exit 0

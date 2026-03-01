@@ -2,7 +2,7 @@
  * Verify GNOME thumbnailer path reports RGB output for RGBA sources.
  */
 
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
 #include "src/loader-gnome-thumbnailer.h"
 

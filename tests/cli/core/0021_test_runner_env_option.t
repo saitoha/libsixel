@@ -9,12 +9,11 @@ test "${HAVE_TEST_RUNNER-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-echo "1..2"
+echo "1..1"
 set -v
 
 out_wrapper="${ARTIFACT_LOCAL_DIR}/test_runner_env_wrapper.out"
 out_option="${ARTIFACT_LOCAL_DIR}/test_runner_env_option.out"
-err_invalid="${ARTIFACT_LOCAL_DIR}/test_runner_env_invalid.err"
 
 run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE=pca \
     "palette/0001_kmeans_init" >"${out_wrapper}" || {
@@ -32,13 +31,11 @@ cmp -s "${out_wrapper}" "${out_option}" || {
     echo "not ok" 1 "test_runner -% output differs from wrapper --env"
     exit 0
 }
-echo "ok" 1 "test_runner -% matches wrapper --env"
 
-run_test_runner -% INVALID "palette/0001_kmeans_init" > /dev/null \
-    2>"${err_invalid}" && {
-    fail 2 "invalid test_runner -% argument should fail"
+run_test_runner -% INVALID "palette/0001_kmeans_init" > /dev/null && {
+    echo "not ok" 1 "invalid test_runner -% argument should fail"
     exit 0
 }
-pass 2 "invalid test_runner -% argument rejected"
 
+echo "ok" 1 "invalid test_runner -% argument rejected"
 exit 0

@@ -14,15 +14,16 @@ echo "1..1"
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
-outfile_err="${ARTIFACT_LOCAL_DIR}/outfile-option-name.err"
 out_file="${ARTIFACT_LOCAL_DIR}/-p"
 
 : >"${out_file}"
 
-cd "${ARTIFACT_LOCAL_DIR}" && run_img2sixel -o -p "${image_path}" >/dev/null || {
-    echo "not ok" 1 "outfile named like option rejected"
-    printf '%s\n' '--- stderr ---' >&2
-    exit 0
+cd "${ARTIFACT_LOCAL_DIR}" && {
+    run_img2sixel -o -p "${image_path}" >/dev/null || {
+        echo "not ok" 1 "outfile named like option rejected"
+        printf '%s\n' '--- stderr ---' >&2
+        exit 0
+    }
 }
 
 cd "${TOP_SRCDIR}" || {

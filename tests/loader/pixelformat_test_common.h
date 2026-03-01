@@ -56,7 +56,7 @@ typedef struct loader_probe_context {
 /*
  * Loader backends expect `context` to follow loader callback state layout.
  *
- * tests/io/loader invokes backend entry points directly, so this test-local
+ * tests/loader invokes backend entry points directly, so this test-local
  * adapter mirrors the minimal state needed by cancellation checks while still
  * forwarding the frame callback to loader_probe_context_t.
  */

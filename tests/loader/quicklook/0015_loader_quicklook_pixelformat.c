@@ -2,7 +2,7 @@
  * Verify QuickLook loader reports RGBA output for RGBA sources.
  */
 
-#include "tests/io/loader/pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
 static SIXELSTATUS

@@ -124,20 +124,20 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
 	processing/filter/filter_test_common.h \
-	io/loader/0008_loader_coregraphics_pixelformat.c \
-	io/loader/0009_loader_wic_pixelformat.c \
-	io/loader/0010_loader_gdk_pixbuf_pixelformat.c \
-	io/loader/0011_loader_gd_pixelformat.c \
-	io/loader/0012_loader_libpng_pixelformat.c \
-	io/loader/0013_loader_libjpeg_pixelformat.c \
-	io/loader/0014_loader_builtin_pixelformat.c \
-	io/loader/0015_loader_quicklook_pixelformat.c \
-	io/loader/0016_loader_gnome_thumbnailer_pixelformat.c \
-	io/loader/0017_loader_libwebp_pixelformat.c \
-	io/loader/0018_loader_libwebp_animation_frames.c \
-	io/loader/0019_loader_libwebp_palette_promotion_guard.c \
-	io/loader/0020_loader_librsvg_detect_svg_like.c \
-	io/loader/pixelformat_test_common.h \
+	loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
+	loader/wic/0009_loader_wic_pixelformat.c \
+	loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c \
+	loader/gd/0011_loader_gd_pixelformat.c \
+	loader/libpng/0012_loader_libpng_pixelformat.c \
+	loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+	loader/builtin/0014_loader_builtin_pixelformat.c \
+	loader/quicklook/0015_loader_quicklook_pixelformat.c \
+	loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
+	loader/libwebp/0017_loader_libwebp_pixelformat.c \
+	loader/libwebp/0018_loader_libwebp_animation_frames.c \
+	loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
+	loader/libsvg/0020_loader_librsvg_detect_svg_like.c \
+	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	diagnostics/probe/0001_probe_parse.c \
 	extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
@@ -166,19 +166,19 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0008_filter_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0011_loader_gd_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/wic/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/gd/test_runner-0011_loader_gd_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
@@ -275,19 +275,19 @@ am__depfiles_remade =  \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po \
-	io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po \
-	io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po \
-	io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po \
-	io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
+	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
+	loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po \
+	loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po \
+	loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
+	loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po \
+	loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
+	loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po \
+	loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po \
+	loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po \
+	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
+	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
 	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
@@ -986,20 +986,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0008_loader_coregraphics_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0009_loader_wic_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0010_loader_gdk_pixbuf_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0011_loader_gd_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0012_loader_libpng_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0013_loader_libjpeg_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0014_loader_builtin_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0015_loader_quicklook_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0016_loader_gnome_thumbnailer_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0017_loader_libwebp_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0018_loader_libwebp_animation_frames.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0019_loader_libwebp_palette_promotion_guard.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0020_loader_librsvg_detect_svg_like.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/pixelformat_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/wic/0009_loader_wic_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/gd/0011_loader_gd_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0012_loader_libpng_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0014_loader_builtin_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0017_loader_libwebp_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0018_loader_libwebp_animation_frames.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libsvg/0020_loader_librsvg_detect_svg_like.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
@@ -1140,38 +1140,110 @@ processing/filter/test_runner-0009_filter_dither.$(OBJEXT):  \
 processing/filter/test_runner-0010_filter_encode.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
-io/loader/$(am__dirstamp):
-	@$(MKDIR_P) io/loader
-	@: >>io/loader/$(am__dirstamp)
-io/loader/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) io/loader/$(DEPDIR)
-	@: >>io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0009_loader_wic_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0011_loader_gd_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
-io/loader/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT):  \
-	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/$(am__dirstamp):
+	@$(MKDIR_P) loader/coregraphics
+	@: >>loader/coregraphics/$(am__dirstamp)
+loader/coregraphics/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/coregraphics/$(DEPDIR)
+	@: >>loader/coregraphics/$(DEPDIR)/$(am__dirstamp)
+loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT):  \
+	loader/coregraphics/$(am__dirstamp) \
+	loader/coregraphics/$(DEPDIR)/$(am__dirstamp)
+loader/wic/$(am__dirstamp):
+	@$(MKDIR_P) loader/wic
+	@: >>loader/wic/$(am__dirstamp)
+loader/wic/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/wic/$(DEPDIR)
+	@: >>loader/wic/$(DEPDIR)/$(am__dirstamp)
+loader/wic/test_runner-0009_loader_wic_pixelformat.$(OBJEXT):  \
+	loader/wic/$(am__dirstamp) \
+	loader/wic/$(DEPDIR)/$(am__dirstamp)
+loader/gdk-pixbuf2/$(am__dirstamp):
+	@$(MKDIR_P) loader/gdk-pixbuf2
+	@: >>loader/gdk-pixbuf2/$(am__dirstamp)
+loader/gdk-pixbuf2/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/gdk-pixbuf2/$(DEPDIR)
+	@: >>loader/gdk-pixbuf2/$(DEPDIR)/$(am__dirstamp)
+loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT):  \
+	loader/gdk-pixbuf2/$(am__dirstamp) \
+	loader/gdk-pixbuf2/$(DEPDIR)/$(am__dirstamp)
+loader/gd/$(am__dirstamp):
+	@$(MKDIR_P) loader/gd
+	@: >>loader/gd/$(am__dirstamp)
+loader/gd/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/gd/$(DEPDIR)
+	@: >>loader/gd/$(DEPDIR)/$(am__dirstamp)
+loader/gd/test_runner-0011_loader_gd_pixelformat.$(OBJEXT):  \
+	loader/gd/$(am__dirstamp) loader/gd/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/$(am__dirstamp):
+	@$(MKDIR_P) loader/libpng
+	@: >>loader/libpng/$(am__dirstamp)
+loader/libpng/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/libpng/$(DEPDIR)
+	@: >>loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/$(am__dirstamp):
+	@$(MKDIR_P) loader/libjpeg
+	@: >>loader/libjpeg/$(am__dirstamp)
+loader/libjpeg/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/libjpeg/$(DEPDIR)
+	@: >>loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
+loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
+	loader/libjpeg/$(am__dirstamp) \
+	loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/$(am__dirstamp):
+	@$(MKDIR_P) loader/builtin
+	@: >>loader/builtin/$(am__dirstamp)
+loader/builtin/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/builtin/$(DEPDIR)
+	@: >>loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/quicklook/$(am__dirstamp):
+	@$(MKDIR_P) loader/quicklook
+	@: >>loader/quicklook/$(am__dirstamp)
+loader/quicklook/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/quicklook/$(DEPDIR)
+	@: >>loader/quicklook/$(DEPDIR)/$(am__dirstamp)
+loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT):  \
+	loader/quicklook/$(am__dirstamp) \
+	loader/quicklook/$(DEPDIR)/$(am__dirstamp)
+loader/gnome-thumbnailer/$(am__dirstamp):
+	@$(MKDIR_P) loader/gnome-thumbnailer
+	@: >>loader/gnome-thumbnailer/$(am__dirstamp)
+loader/gnome-thumbnailer/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/gnome-thumbnailer/$(DEPDIR)
+	@: >>loader/gnome-thumbnailer/$(DEPDIR)/$(am__dirstamp)
+loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT):  \
+	loader/gnome-thumbnailer/$(am__dirstamp) \
+	loader/gnome-thumbnailer/$(DEPDIR)/$(am__dirstamp)
+loader/libwebp/$(am__dirstamp):
+	@$(MKDIR_P) loader/libwebp
+	@: >>loader/libwebp/$(am__dirstamp)
+loader/libwebp/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/libwebp/$(DEPDIR)
+	@: >>loader/libwebp/$(DEPDIR)/$(am__dirstamp)
+loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT):  \
+	loader/libwebp/$(am__dirstamp) \
+	loader/libwebp/$(DEPDIR)/$(am__dirstamp)
+loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT):  \
+	loader/libwebp/$(am__dirstamp) \
+	loader/libwebp/$(DEPDIR)/$(am__dirstamp)
+loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT):  \
+	loader/libwebp/$(am__dirstamp) \
+	loader/libwebp/$(DEPDIR)/$(am__dirstamp)
+loader/libsvg/$(am__dirstamp):
+	@$(MKDIR_P) loader/libsvg
+	@: >>loader/libsvg/$(am__dirstamp)
+loader/libsvg/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/libsvg/$(DEPDIR)
+	@: >>loader/libsvg/$(DEPDIR)/$(am__dirstamp)
+loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT):  \
+	loader/libsvg/$(am__dirstamp) \
+	loader/libsvg/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1261,7 +1333,17 @@ mostlyclean-compile:
 	-rm -f cli/aborttrace/*.$(OBJEXT)
 	-rm -f diagnostics/probe/*.$(OBJEXT)
 	-rm -f extension/gdk-pixbuf-loader/*.$(OBJEXT)
-	-rm -f io/loader/*.$(OBJEXT)
+	-rm -f loader/builtin/*.$(OBJEXT)
+	-rm -f loader/coregraphics/*.$(OBJEXT)
+	-rm -f loader/gd/*.$(OBJEXT)
+	-rm -f loader/gdk-pixbuf2/*.$(OBJEXT)
+	-rm -f loader/gnome-thumbnailer/*.$(OBJEXT)
+	-rm -f loader/libjpeg/*.$(OBJEXT)
+	-rm -f loader/libpng/*.$(OBJEXT)
+	-rm -f loader/libsvg/*.$(OBJEXT)
+	-rm -f loader/libwebp/*.$(OBJEXT)
+	-rm -f loader/quicklook/*.$(OBJEXT)
+	-rm -f loader/wic/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
 
@@ -1285,19 +1367,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
@@ -1550,187 +1632,187 @@ processing/filter/test_runner-0010_filter_encode.obj: processing/filter/0010_fil
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0010_filter_encode.obj `if test -f 'processing/filter/0010_filter_encode.c'; then $(CYGPATH_W) 'processing/filter/0010_filter_encode.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0010_filter_encode.c'; fi`
 
-io/loader/test_runner-0008_loader_coregraphics_pixelformat.o: io/loader/0008_loader_coregraphics_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0008_loader_coregraphics_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o io/loader/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'io/loader/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`io/loader/0008_loader_coregraphics_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0008_loader_coregraphics_pixelformat.c' object='io/loader/test_runner-0008_loader_coregraphics_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o: loader/coregraphics/0008_loader_coregraphics_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o -MD -MP -MF loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/coregraphics/0008_loader_coregraphics_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/0008_loader_coregraphics_pixelformat.c' object='loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'io/loader/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`io/loader/0008_loader_coregraphics_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/coregraphics/0008_loader_coregraphics_pixelformat.c
 
-io/loader/test_runner-0008_loader_coregraphics_pixelformat.obj: io/loader/0008_loader_coregraphics_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0008_loader_coregraphics_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o io/loader/test_runner-0008_loader_coregraphics_pixelformat.obj `if test -f 'io/loader/0008_loader_coregraphics_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0008_loader_coregraphics_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0008_loader_coregraphics_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0008_loader_coregraphics_pixelformat.c' object='io/loader/test_runner-0008_loader_coregraphics_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.obj: loader/coregraphics/0008_loader_coregraphics_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.obj -MD -MP -MF loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.obj `if test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c'; then $(CYGPATH_W) 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/0008_loader_coregraphics_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/coregraphics/0008_loader_coregraphics_pixelformat.c' object='loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0008_loader_coregraphics_pixelformat.obj `if test -f 'io/loader/0008_loader_coregraphics_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0008_loader_coregraphics_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0008_loader_coregraphics_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.obj `if test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c'; then $(CYGPATH_W) 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/coregraphics/0008_loader_coregraphics_pixelformat.c'; fi`
 
-io/loader/test_runner-0009_loader_wic_pixelformat.o: io/loader/0009_loader_wic_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0009_loader_wic_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo -c -o io/loader/test_runner-0009_loader_wic_pixelformat.o `test -f 'io/loader/0009_loader_wic_pixelformat.c' || echo '$(srcdir)/'`io/loader/0009_loader_wic_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0009_loader_wic_pixelformat.c' object='io/loader/test_runner-0009_loader_wic_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/wic/test_runner-0009_loader_wic_pixelformat.o: loader/wic/0009_loader_wic_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/wic/test_runner-0009_loader_wic_pixelformat.o -MD -MP -MF loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo -c -o loader/wic/test_runner-0009_loader_wic_pixelformat.o `test -f 'loader/wic/0009_loader_wic_pixelformat.c' || echo '$(srcdir)/'`loader/wic/0009_loader_wic_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/wic/0009_loader_wic_pixelformat.c' object='loader/wic/test_runner-0009_loader_wic_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0009_loader_wic_pixelformat.o `test -f 'io/loader/0009_loader_wic_pixelformat.c' || echo '$(srcdir)/'`io/loader/0009_loader_wic_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/wic/test_runner-0009_loader_wic_pixelformat.o `test -f 'loader/wic/0009_loader_wic_pixelformat.c' || echo '$(srcdir)/'`loader/wic/0009_loader_wic_pixelformat.c
 
-io/loader/test_runner-0009_loader_wic_pixelformat.obj: io/loader/0009_loader_wic_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0009_loader_wic_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo -c -o io/loader/test_runner-0009_loader_wic_pixelformat.obj `if test -f 'io/loader/0009_loader_wic_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0009_loader_wic_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0009_loader_wic_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0009_loader_wic_pixelformat.c' object='io/loader/test_runner-0009_loader_wic_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/wic/test_runner-0009_loader_wic_pixelformat.obj: loader/wic/0009_loader_wic_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/wic/test_runner-0009_loader_wic_pixelformat.obj -MD -MP -MF loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo -c -o loader/wic/test_runner-0009_loader_wic_pixelformat.obj `if test -f 'loader/wic/0009_loader_wic_pixelformat.c'; then $(CYGPATH_W) 'loader/wic/0009_loader_wic_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/wic/0009_loader_wic_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Tpo loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/wic/0009_loader_wic_pixelformat.c' object='loader/wic/test_runner-0009_loader_wic_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0009_loader_wic_pixelformat.obj `if test -f 'io/loader/0009_loader_wic_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0009_loader_wic_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0009_loader_wic_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/wic/test_runner-0009_loader_wic_pixelformat.obj `if test -f 'loader/wic/0009_loader_wic_pixelformat.c'; then $(CYGPATH_W) 'loader/wic/0009_loader_wic_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/wic/0009_loader_wic_pixelformat.c'; fi`
 
-io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.o: io/loader/0010_loader_gdk_pixbuf_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo -c -o io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.o `test -f 'io/loader/0010_loader_gdk_pixbuf_pixelformat.c' || echo '$(srcdir)/'`io/loader/0010_loader_gdk_pixbuf_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0010_loader_gdk_pixbuf_pixelformat.c' object='io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.o: loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.o -MD -MP -MF loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo -c -o loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.o `test -f 'loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c' || echo '$(srcdir)/'`loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c' object='loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.o `test -f 'io/loader/0010_loader_gdk_pixbuf_pixelformat.c' || echo '$(srcdir)/'`io/loader/0010_loader_gdk_pixbuf_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.o `test -f 'loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c' || echo '$(srcdir)/'`loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c
 
-io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj: io/loader/0010_loader_gdk_pixbuf_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo -c -o io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj `if test -f 'io/loader/0010_loader_gdk_pixbuf_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0010_loader_gdk_pixbuf_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0010_loader_gdk_pixbuf_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0010_loader_gdk_pixbuf_pixelformat.c' object='io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj: loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj -MD -MP -MF loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo -c -o loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj `if test -f 'loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c'; then $(CYGPATH_W) 'loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Tpo loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c' object='loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj `if test -f 'io/loader/0010_loader_gdk_pixbuf_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0010_loader_gdk_pixbuf_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0010_loader_gdk_pixbuf_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.obj `if test -f 'loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c'; then $(CYGPATH_W) 'loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c'; fi`
 
-io/loader/test_runner-0011_loader_gd_pixelformat.o: io/loader/0011_loader_gd_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0011_loader_gd_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo -c -o io/loader/test_runner-0011_loader_gd_pixelformat.o `test -f 'io/loader/0011_loader_gd_pixelformat.c' || echo '$(srcdir)/'`io/loader/0011_loader_gd_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0011_loader_gd_pixelformat.c' object='io/loader/test_runner-0011_loader_gd_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/gd/test_runner-0011_loader_gd_pixelformat.o: loader/gd/0011_loader_gd_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gd/test_runner-0011_loader_gd_pixelformat.o -MD -MP -MF loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo -c -o loader/gd/test_runner-0011_loader_gd_pixelformat.o `test -f 'loader/gd/0011_loader_gd_pixelformat.c' || echo '$(srcdir)/'`loader/gd/0011_loader_gd_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gd/0011_loader_gd_pixelformat.c' object='loader/gd/test_runner-0011_loader_gd_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0011_loader_gd_pixelformat.o `test -f 'io/loader/0011_loader_gd_pixelformat.c' || echo '$(srcdir)/'`io/loader/0011_loader_gd_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gd/test_runner-0011_loader_gd_pixelformat.o `test -f 'loader/gd/0011_loader_gd_pixelformat.c' || echo '$(srcdir)/'`loader/gd/0011_loader_gd_pixelformat.c
 
-io/loader/test_runner-0011_loader_gd_pixelformat.obj: io/loader/0011_loader_gd_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0011_loader_gd_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo -c -o io/loader/test_runner-0011_loader_gd_pixelformat.obj `if test -f 'io/loader/0011_loader_gd_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0011_loader_gd_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0011_loader_gd_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0011_loader_gd_pixelformat.c' object='io/loader/test_runner-0011_loader_gd_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/gd/test_runner-0011_loader_gd_pixelformat.obj: loader/gd/0011_loader_gd_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gd/test_runner-0011_loader_gd_pixelformat.obj -MD -MP -MF loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo -c -o loader/gd/test_runner-0011_loader_gd_pixelformat.obj `if test -f 'loader/gd/0011_loader_gd_pixelformat.c'; then $(CYGPATH_W) 'loader/gd/0011_loader_gd_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/gd/0011_loader_gd_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Tpo loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gd/0011_loader_gd_pixelformat.c' object='loader/gd/test_runner-0011_loader_gd_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0011_loader_gd_pixelformat.obj `if test -f 'io/loader/0011_loader_gd_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0011_loader_gd_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0011_loader_gd_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gd/test_runner-0011_loader_gd_pixelformat.obj `if test -f 'loader/gd/0011_loader_gd_pixelformat.c'; then $(CYGPATH_W) 'loader/gd/0011_loader_gd_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/gd/0011_loader_gd_pixelformat.c'; fi`
 
-io/loader/test_runner-0012_loader_libpng_pixelformat.o: io/loader/0012_loader_libpng_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0012_loader_libpng_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo -c -o io/loader/test_runner-0012_loader_libpng_pixelformat.o `test -f 'io/loader/0012_loader_libpng_pixelformat.c' || echo '$(srcdir)/'`io/loader/0012_loader_libpng_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0012_loader_libpng_pixelformat.c' object='io/loader/test_runner-0012_loader_libpng_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/libpng/test_runner-0012_loader_libpng_pixelformat.o: loader/libpng/0012_loader_libpng_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0012_loader_libpng_pixelformat.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo -c -o loader/libpng/test_runner-0012_loader_libpng_pixelformat.o `test -f 'loader/libpng/0012_loader_libpng_pixelformat.c' || echo '$(srcdir)/'`loader/libpng/0012_loader_libpng_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0012_loader_libpng_pixelformat.c' object='loader/libpng/test_runner-0012_loader_libpng_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0012_loader_libpng_pixelformat.o `test -f 'io/loader/0012_loader_libpng_pixelformat.c' || echo '$(srcdir)/'`io/loader/0012_loader_libpng_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0012_loader_libpng_pixelformat.o `test -f 'loader/libpng/0012_loader_libpng_pixelformat.c' || echo '$(srcdir)/'`loader/libpng/0012_loader_libpng_pixelformat.c
 
-io/loader/test_runner-0012_loader_libpng_pixelformat.obj: io/loader/0012_loader_libpng_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0012_loader_libpng_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo -c -o io/loader/test_runner-0012_loader_libpng_pixelformat.obj `if test -f 'io/loader/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0012_loader_libpng_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0012_loader_libpng_pixelformat.c' object='io/loader/test_runner-0012_loader_libpng_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj: loader/libpng/0012_loader_libpng_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo -c -o loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj `if test -f 'loader/libpng/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'loader/libpng/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0012_loader_libpng_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Tpo loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0012_loader_libpng_pixelformat.c' object='loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0012_loader_libpng_pixelformat.obj `if test -f 'io/loader/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0012_loader_libpng_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0012_loader_libpng_pixelformat.obj `if test -f 'loader/libpng/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'loader/libpng/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0012_loader_libpng_pixelformat.c'; fi`
 
-io/loader/test_runner-0013_loader_libjpeg_pixelformat.o: io/loader/0013_loader_libjpeg_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0013_loader_libjpeg_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo -c -o io/loader/test_runner-0013_loader_libjpeg_pixelformat.o `test -f 'io/loader/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`io/loader/0013_loader_libjpeg_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0013_loader_libjpeg_pixelformat.c' object='io/loader/test_runner-0013_loader_libjpeg_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o: loader/libjpeg/0013_loader_libjpeg_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o -MD -MP -MF loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o `test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`loader/libjpeg/0013_loader_libjpeg_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/0013_loader_libjpeg_pixelformat.c' object='loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0013_loader_libjpeg_pixelformat.o `test -f 'io/loader/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`io/loader/0013_loader_libjpeg_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.o `test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`loader/libjpeg/0013_loader_libjpeg_pixelformat.c
 
-io/loader/test_runner-0013_loader_libjpeg_pixelformat.obj: io/loader/0013_loader_libjpeg_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0013_loader_libjpeg_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo -c -o io/loader/test_runner-0013_loader_libjpeg_pixelformat.obj `if test -f 'io/loader/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0013_loader_libjpeg_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0013_loader_libjpeg_pixelformat.c' object='io/loader/test_runner-0013_loader_libjpeg_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj: loader/libjpeg/0013_loader_libjpeg_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj -MD -MP -MF loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Tpo loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libjpeg/0013_loader_libjpeg_pixelformat.c' object='loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0013_loader_libjpeg_pixelformat.obj `if test -f 'io/loader/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0013_loader_libjpeg_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libjpeg/test_runner-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libjpeg/0013_loader_libjpeg_pixelformat.c'; fi`
 
-io/loader/test_runner-0014_loader_builtin_pixelformat.o: io/loader/0014_loader_builtin_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0014_loader_builtin_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo -c -o io/loader/test_runner-0014_loader_builtin_pixelformat.o `test -f 'io/loader/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`io/loader/0014_loader_builtin_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0014_loader_builtin_pixelformat.c' object='io/loader/test_runner-0014_loader_builtin_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/builtin/test_runner-0014_loader_builtin_pixelformat.o: loader/builtin/0014_loader_builtin_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0014_loader_builtin_pixelformat.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo -c -o loader/builtin/test_runner-0014_loader_builtin_pixelformat.o `test -f 'loader/builtin/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`loader/builtin/0014_loader_builtin_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0014_loader_builtin_pixelformat.c' object='loader/builtin/test_runner-0014_loader_builtin_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0014_loader_builtin_pixelformat.o `test -f 'io/loader/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`io/loader/0014_loader_builtin_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0014_loader_builtin_pixelformat.o `test -f 'loader/builtin/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`loader/builtin/0014_loader_builtin_pixelformat.c
 
-io/loader/test_runner-0014_loader_builtin_pixelformat.obj: io/loader/0014_loader_builtin_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0014_loader_builtin_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo -c -o io/loader/test_runner-0014_loader_builtin_pixelformat.obj `if test -f 'io/loader/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0014_loader_builtin_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0014_loader_builtin_pixelformat.c' object='io/loader/test_runner-0014_loader_builtin_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/builtin/test_runner-0014_loader_builtin_pixelformat.obj: loader/builtin/0014_loader_builtin_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0014_loader_builtin_pixelformat.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo -c -o loader/builtin/test_runner-0014_loader_builtin_pixelformat.obj `if test -f 'loader/builtin/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'loader/builtin/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0014_loader_builtin_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Tpo loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0014_loader_builtin_pixelformat.c' object='loader/builtin/test_runner-0014_loader_builtin_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0014_loader_builtin_pixelformat.obj `if test -f 'io/loader/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0014_loader_builtin_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0014_loader_builtin_pixelformat.obj `if test -f 'loader/builtin/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'loader/builtin/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0014_loader_builtin_pixelformat.c'; fi`
 
-io/loader/test_runner-0015_loader_quicklook_pixelformat.o: io/loader/0015_loader_quicklook_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o io/loader/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'io/loader/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`io/loader/0015_loader_quicklook_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0015_loader_quicklook_pixelformat.c' object='io/loader/test_runner-0015_loader_quicklook_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o: loader/quicklook/0015_loader_quicklook_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/quicklook/0015_loader_quicklook_pixelformat.c' object='loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'io/loader/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`io/loader/0015_loader_quicklook_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.o `test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/quicklook/0015_loader_quicklook_pixelformat.c
 
-io/loader/test_runner-0015_loader_quicklook_pixelformat.obj: io/loader/0015_loader_quicklook_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0015_loader_quicklook_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o io/loader/test_runner-0015_loader_quicklook_pixelformat.obj `if test -f 'io/loader/0015_loader_quicklook_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0015_loader_quicklook_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0015_loader_quicklook_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0015_loader_quicklook_pixelformat.c' object='io/loader/test_runner-0015_loader_quicklook_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.obj: loader/quicklook/0015_loader_quicklook_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.obj -MD -MP -MF loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.obj `if test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c'; then $(CYGPATH_W) 'loader/quicklook/0015_loader_quicklook_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/quicklook/0015_loader_quicklook_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Tpo loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/quicklook/0015_loader_quicklook_pixelformat.c' object='loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0015_loader_quicklook_pixelformat.obj `if test -f 'io/loader/0015_loader_quicklook_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0015_loader_quicklook_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0015_loader_quicklook_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.obj `if test -f 'loader/quicklook/0015_loader_quicklook_pixelformat.c'; then $(CYGPATH_W) 'loader/quicklook/0015_loader_quicklook_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/quicklook/0015_loader_quicklook_pixelformat.c'; fi`
 
-io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o: io/loader/0016_loader_gnome_thumbnailer_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo -c -o io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o `test -f 'io/loader/0016_loader_gnome_thumbnailer_pixelformat.c' || echo '$(srcdir)/'`io/loader/0016_loader_gnome_thumbnailer_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0016_loader_gnome_thumbnailer_pixelformat.c' object='io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o: loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o -MD -MP -MF loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo -c -o loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o `test -f 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c' || echo '$(srcdir)/'`loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c' object='loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o `test -f 'io/loader/0016_loader_gnome_thumbnailer_pixelformat.c' || echo '$(srcdir)/'`io/loader/0016_loader_gnome_thumbnailer_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o `test -f 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c' || echo '$(srcdir)/'`loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c
 
-io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj: io/loader/0016_loader_gnome_thumbnailer_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo -c -o io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'io/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0016_loader_gnome_thumbnailer_pixelformat.c' object='io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj: loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj -MD -MP -MF loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo -c -o loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Tpo loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c' object='loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'io/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
 
-io/loader/test_runner-0017_loader_libwebp_pixelformat.o: io/loader/0017_loader_libwebp_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0017_loader_libwebp_pixelformat.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o io/loader/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'io/loader/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`io/loader/0017_loader_libwebp_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0017_loader_libwebp_pixelformat.c' object='io/loader/test_runner-0017_loader_libwebp_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o: loader/libwebp/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/libwebp/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0017_loader_libwebp_pixelformat.c' object='loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'io/loader/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`io/loader/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/libwebp/0017_loader_libwebp_pixelformat.c
 
-io/loader/test_runner-0017_loader_libwebp_pixelformat.obj: io/loader/0017_loader_libwebp_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0017_loader_libwebp_pixelformat.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o io/loader/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'io/loader/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0017_loader_libwebp_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0017_loader_libwebp_pixelformat.c' object='io/loader/test_runner-0017_loader_libwebp_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj: loader/libwebp/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0017_loader_libwebp_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0017_loader_libwebp_pixelformat.c' object='loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'io/loader/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'io/loader/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0017_loader_libwebp_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0017_loader_libwebp_pixelformat.c'; fi`
 
-io/loader/test_runner-0018_loader_libwebp_animation_frames.o: io/loader/0018_loader_libwebp_animation_frames.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0018_loader_libwebp_animation_frames.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo -c -o io/loader/test_runner-0018_loader_libwebp_animation_frames.o `test -f 'io/loader/0018_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`io/loader/0018_loader_libwebp_animation_frames.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0018_loader_libwebp_animation_frames.c' object='io/loader/test_runner-0018_loader_libwebp_animation_frames.o' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o: loader/libwebp/0018_loader_libwebp_animation_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o `test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`loader/libwebp/0018_loader_libwebp_animation_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0018_loader_libwebp_animation_frames.c' object='loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0018_loader_libwebp_animation_frames.o `test -f 'io/loader/0018_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`io/loader/0018_loader_libwebp_animation_frames.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o `test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`loader/libwebp/0018_loader_libwebp_animation_frames.c
 
-io/loader/test_runner-0018_loader_libwebp_animation_frames.obj: io/loader/0018_loader_libwebp_animation_frames.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0018_loader_libwebp_animation_frames.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo -c -o io/loader/test_runner-0018_loader_libwebp_animation_frames.obj `if test -f 'io/loader/0018_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'io/loader/0018_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0018_loader_libwebp_animation_frames.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0018_loader_libwebp_animation_frames.c' object='io/loader/test_runner-0018_loader_libwebp_animation_frames.obj' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj: loader/libwebp/0018_loader_libwebp_animation_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj `if test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0018_loader_libwebp_animation_frames.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0018_loader_libwebp_animation_frames.c' object='loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0018_loader_libwebp_animation_frames.obj `if test -f 'io/loader/0018_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'io/loader/0018_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0018_loader_libwebp_animation_frames.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj `if test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0018_loader_libwebp_animation_frames.c'; fi`
 
-io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o: io/loader/0019_loader_libwebp_palette_promotion_guard.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`io/loader/0019_loader_libwebp_palette_promotion_guard.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0019_loader_libwebp_palette_promotion_guard.c' object='io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o: loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' object='loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`io/loader/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
 
-io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj: io/loader/0019_loader_libwebp_palette_promotion_guard.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0019_loader_libwebp_palette_promotion_guard.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0019_loader_libwebp_palette_promotion_guard.c' object='io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj: loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' object='loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0019_loader_libwebp_palette_promotion_guard.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; fi`
 
-io/loader/test_runner-0020_loader_librsvg_detect_svg_like.o: io/loader/0020_loader_librsvg_detect_svg_like.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0020_loader_librsvg_detect_svg_like.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o io/loader/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'io/loader/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`io/loader/0020_loader_librsvg_detect_svg_like.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0020_loader_librsvg_detect_svg_like.c' object='io/loader/test_runner-0020_loader_librsvg_detect_svg_like.o' libtool=no @AMDEPBACKSLASH@
+loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o: loader/libsvg/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o -MD -MP -MF loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`loader/libsvg/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libsvg/0020_loader_librsvg_detect_svg_like.c' object='loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'io/loader/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`io/loader/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`loader/libsvg/0020_loader_librsvg_detect_svg_like.c
 
-io/loader/test_runner-0020_loader_librsvg_detect_svg_like.obj: io/loader/0020_loader_librsvg_detect_svg_like.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0020_loader_librsvg_detect_svg_like.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o io/loader/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'io/loader/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'io/loader/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0020_loader_librsvg_detect_svg_like.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0020_loader_librsvg_detect_svg_like.c' object='io/loader/test_runner-0020_loader_librsvg_detect_svg_like.obj' libtool=no @AMDEPBACKSLASH@
+loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj: loader/libsvg/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj -MD -MP -MF loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libsvg/0020_loader_librsvg_detect_svg_like.c' object='loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'io/loader/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'io/loader/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0020_loader_librsvg_detect_svg_like.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -2243,8 +2325,28 @@ distclean-generic:
 	-$(am__rm_f) diagnostics/probe/$(am__dirstamp)
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(am__dirstamp)
-	-$(am__rm_f) io/loader/$(DEPDIR)/$(am__dirstamp)
-	-$(am__rm_f) io/loader/$(am__dirstamp)
+	-$(am__rm_f) loader/builtin/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/builtin/$(am__dirstamp)
+	-$(am__rm_f) loader/coregraphics/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/coregraphics/$(am__dirstamp)
+	-$(am__rm_f) loader/gd/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/gd/$(am__dirstamp)
+	-$(am__rm_f) loader/gdk-pixbuf2/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/gdk-pixbuf2/$(am__dirstamp)
+	-$(am__rm_f) loader/gnome-thumbnailer/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/gnome-thumbnailer/$(am__dirstamp)
+	-$(am__rm_f) loader/libjpeg/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/libjpeg/$(am__dirstamp)
+	-$(am__rm_f) loader/libpng/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/libpng/$(am__dirstamp)
+	-$(am__rm_f) loader/libsvg/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/libsvg/$(am__dirstamp)
+	-$(am__rm_f) loader/libwebp/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/libwebp/$(am__dirstamp)
+	-$(am__rm_f) loader/quicklook/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/quicklook/$(am__dirstamp)
+	-$(am__rm_f) loader/wic/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/wic/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -2277,19 +2379,19 @@ distclean: distclean-am
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
+	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
+	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
+	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
+	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
+	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
+	-rm -f loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
+	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
@@ -2363,19 +2465,19 @@ maintainer-clean: maintainer-clean-am
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
-	-rm -f io/loader/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
+	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
+	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
+	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
+	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
+	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
+	-rm -f loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
+	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
