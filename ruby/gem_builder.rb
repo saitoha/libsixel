@@ -12,6 +12,7 @@
 require 'fileutils'
 require 'optparse'
 require 'pathname'
+require 'rubygems'
 
 SIXEL_NAMES = %w[sixel libsixel sixel-1 libsixel-1 msys-sixel cygsixel].freeze
 SIXEL_SUFFIXES = %w[.so .dylib .dll].freeze
@@ -93,7 +94,13 @@ def main
   FileUtils.cp(libpath, copied)
 
   env = {}
-  env['LIBSIXEL_RUBY_GEM_PLATFORM'] = options[:platform] unless options[:platform].nil?
+  # Always emit a platform gem for build-system generated artifacts so
+  # runtime loaders can rely on bundled shared objects living under
+  # lib/libsixel/_libs. Callers may still override with --platform for
+  # cross packaging jobs.
+  platform = options[:platform]
+  platform = Gem::Platform.local.to_s if platform.nil? || platform.empty?
+  env['LIBSIXEL_RUBY_GEM_PLATFORM'] = platform
 
   source_version = options[:version]
   source_version = ENV['LIBSIXEL_RUBY_GEM_VERSION'] if source_version.nil?
@@ -104,7 +111,6 @@ def main
   version = normalize_gem_version(source_version)
   env['LIBSIXEL_RUBY_GEM_VERSION'] = version
 
-  platform = env.fetch('LIBSIXEL_RUBY_GEM_PLATFORM', 'ruby')
   output = distdir.join("libsixel-ruby-#{version}-#{platform}.gem")
 
   begin
