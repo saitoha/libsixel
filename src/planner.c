@@ -952,29 +952,6 @@ sixel_encoding_planner_update_loader_handoff(
 }
 
 
-int
-sixel_encoding_planner_finalize_loader_handoff(
-    sixel_encoding_planner_t *planner,
-    sixel_encoder_t *encoder,
-    sixel_frame_t *frame)
-{
-    if (planner == NULL || encoder == NULL || frame == NULL) {
-        return 0;
-    }
-
-    (void)sixel_encoding_planner_update_loader_handoff(planner, frame);
-
-    /*
-     * Replan after loader metadata becomes available. The planner starts from
-     * a serial-first DAG and switches loader handoff only after this stage.
-     */
-    sixel_encoding_planner_replan(planner,
-                                  encoder,
-                                  frame,
-                                  planner->allow_palette_async != 0);
-
-    return planner->loader_pipeline_active;
-}
 
 
 

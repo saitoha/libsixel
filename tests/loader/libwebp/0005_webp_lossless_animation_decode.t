@@ -18,7 +18,7 @@ test "${HAVE_WEBP-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Llibwebp! -ldisable \
+run_img2sixel -Llibwebp! -=1 -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_loop_disable.six" || {
     echo "not ok" 1 "libwebp lossless animation decode failed"

@@ -8335,6 +8335,11 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->loader_done = 0;
     pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_UNDECIDED;
 
+#if !SIXEL_ENABLE_THREADS
+    pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
+    return SIXEL_OK;
+#endif  /* !SIXEL_ENABLE_THREADS */
+
     result = sixel_mutex_init(&pipeline->mutex);
     if (result != 0) {
         status = SIXEL_RUNTIME_ERROR;
@@ -8489,9 +8494,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
 
     if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED
         && planner != NULL) {
-        allow_loader_pipeline = sixel_encoding_planner_finalize_loader_handoff(
+        allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
             planner,
-            encoder,
             frame);
     }
 
