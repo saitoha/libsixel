@@ -674,7 +674,7 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-png-jpeg-tiff-webp-coverage
+          - label: Autotools-ubuntu-x86_64-clang-png-jpeg-tiff-webp-svg-coverage
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -685,6 +685,8 @@ jobs:
               --with-jpeg
               --with-tiff
               --with-webp
+              --with-librsvg
+              --without-lcms2
             extra_packages: >-
               meson
               clang
@@ -692,6 +694,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
+              librsvg-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -742,7 +745,7 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-coverage
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-coverage
             buildtool: autotools
             runner: macos-latest
             setup_options: >-
@@ -751,11 +754,14 @@ jobs:
               --with-jpeg
               --with-tiff
               --with-webp
+              --with-librsvg
+              --without-lcms2
             extra_packages: >-
               libpng
               jpeg-turbo
               libtiff
               webp
+              librsvg
               lcov
             exec_type: bash
 
@@ -978,7 +984,7 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-png-jpeg-tiff-webp-coverage
+          - label: Meson-ubuntu-x86_64-clang-png-jpeg-tiff-webp-svg-coverage
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -989,6 +995,8 @@ jobs:
               -Djpeg=enabled
               -Dtiff=enabled
               -Dwebp=enabled
+              -Dlibrsvg=enabled
+              -Dlcms2=disabled
             extra_packages: >-
               meson
               clang
@@ -996,6 +1004,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
+              librsvg-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -2323,7 +2332,7 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-webp-tiff
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-webp-svg-tiff
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -2335,6 +2344,8 @@ jobs:
               --with-jpeg
               --with-tiff
               --with-webp
+              --with-librsvg
+              --without-lcms2
             extra_packages: >-
               meson
               clang
@@ -2342,9 +2353,10 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
+              librsvg-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-svg-webp
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -2358,6 +2370,8 @@ jobs:
               -Djpeg=enabled
               -Dtiff=enabled
               -Dwebp=enabled
+              -Dlibrsvg=enabled
+              -Dlcms2=disabled
             extra_packages: >-
               meson
               clang
@@ -2365,6 +2379,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
+              librsvg-dev
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-ASan-UBSan-gdk-pixbuf2
