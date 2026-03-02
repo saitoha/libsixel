@@ -155,7 +155,7 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/timer.c $(srcdir)/timer.h $(srcdir)/sleep.c \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
@@ -593,6 +593,8 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LCMS2_CFLAGS = @LCMS2_CFLAGS@
+LCMS2_LIBS = @LCMS2_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
@@ -958,6 +960,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBPNG_CFLAGS) \
                 $(LIBTIFF_CFLAGS) \
                 $(LIBJPEG_CFLAGS) \
+                $(LCMS2_CFLAGS) \
                 $(LIBWEBP_CFLAGS) \
                 $(LIBRSVG_CFLAGS) \
                 $(GDK_PIXBUF_CFLAGS) \
@@ -976,6 +979,7 @@ libsixel_la_LIBADD = -lm \
                 $(LIBPNG_LIBS) \
                 $(LIBTIFF_LIBS) \
                 $(LIBJPEG_LIBS) \
+                $(LCMS2_LIBS) \
                 $(LIBWEBP_LIBS) \
                 $(LIBRSVG_LIBS) \
                 $(GDK_PIXBUF_LIBS) \

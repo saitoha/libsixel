@@ -288,6 +288,9 @@
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
 
+/* whether lcms2 is available */
+#undef HAVE_LCMS2
+
 /* Define to 1 if you have the `ldiv' function. */
 #undef HAVE_LDIV
 

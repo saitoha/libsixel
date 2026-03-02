@@ -45,6 +45,9 @@
 # include <limits.h>
 #endif
 #include <jpeglib.h>
+#if HAVE_LCMS2
+# include <lcms2.h>
+#endif
 
 #include <sixel.h>
 
@@ -70,6 +73,191 @@ typedef struct sixel_loader_libjpeg_component {
     int start_frame_no;
 } sixel_loader_libjpeg_component_t;
 
+#if HAVE_LCMS2
+/*
+ * JPEG ICC profile blocks are stored in APP2 markers as "ICC_PROFILE\0"
+ * payloads with sequence numbering. This parser reassembles the profile in
+ * marker order and returns a contiguous ICC blob for lcms2.
+ */
+static int
+jpeg_collect_icc_profile(struct jpeg_decompress_struct *cinfo,
+                         unsigned char **profile,
+                         unsigned int *profile_length,
+                         sixel_allocator_t *allocator)
+{
+    jpeg_saved_marker_ptr marker;
+    unsigned char **chunks;
+    unsigned int *chunk_sizes;
+    unsigned int chunk_count;
+    unsigned int max_index;
+    unsigned int total_size;
+    unsigned int index;
+    unsigned int sequence_no;
+    unsigned int sequence_count;
+    unsigned int payload_size;
+    unsigned char *assembled;
+    unsigned int offset;
+
+    marker = NULL;
+    chunks = NULL;
+    chunk_sizes = NULL;
+    chunk_count = 0u;
+    max_index = 0u;
+    total_size = 0u;
+    index = 0u;
+    sequence_no = 0u;
+    sequence_count = 0u;
+    payload_size = 0u;
+    assembled = NULL;
+    offset = 0u;
+
+    *profile = NULL;
+    *profile_length = 0u;
+    for (marker = cinfo->marker_list; marker != NULL; marker = marker->next) {
+        if (marker->marker != (JPEG_APP0 + 2) || marker->data_length < 14u) {
+            continue;
+        }
+        if (memcmp(marker->data, "ICC_PROFILE\0", 12) != 0) {
+            continue;
+        }
+
+        sequence_no = (unsigned int)marker->data[12];
+        sequence_count = (unsigned int)marker->data[13];
+        if (sequence_no == 0u || sequence_count == 0u ||
+            sequence_no > sequence_count) {
+            return 0;
+        }
+        if (chunk_count == 0u) {
+            chunk_count = sequence_count;
+            chunks = (unsigned char **)sixel_allocator_calloc(
+                allocator,
+                chunk_count,
+                sizeof(*chunks));
+            chunk_sizes = (unsigned int *)sixel_allocator_calloc(
+                allocator,
+                chunk_count,
+                sizeof(*chunk_sizes));
+            if (chunks == NULL || chunk_sizes == NULL) {
+                goto cleanup;
+            }
+        }
+        if (sequence_count != chunk_count) {
+            goto cleanup;
+        }
+
+        index = sequence_no - 1u;
+        if (chunks[index] != NULL) {
+            goto cleanup;
+        }
+        payload_size = (unsigned int)marker->data_length - 14u;
+        chunks[index] = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            payload_size);
+        if (chunks[index] == NULL) {
+            goto cleanup;
+        }
+        memcpy(chunks[index], marker->data + 14, payload_size);
+        chunk_sizes[index] = payload_size;
+        if (index > max_index) {
+            max_index = index;
+        }
+    }
+
+    if (chunk_count == 0u) {
+        return 0;
+    }
+    if (max_index + 1u != chunk_count) {
+        goto cleanup;
+    }
+    for (index = 0u; index < chunk_count; ++index) {
+        if (chunks[index] == NULL ||
+            total_size > UINT_MAX - chunk_sizes[index]) {
+            goto cleanup;
+        }
+        total_size += chunk_sizes[index];
+    }
+
+    assembled = (unsigned char *)sixel_allocator_malloc(allocator, total_size);
+    if (assembled == NULL) {
+        goto cleanup;
+    }
+    for (index = 0u; index < chunk_count; ++index) {
+        memcpy(assembled + offset, chunks[index], chunk_sizes[index]);
+        offset += chunk_sizes[index];
+    }
+
+    *profile = assembled;
+    *profile_length = total_size;
+    assembled = NULL;
+
+cleanup:
+    if (chunks != NULL) {
+        for (index = 0u; index < chunk_count; ++index) {
+            sixel_allocator_free(allocator, chunks[index]);
+        }
+    }
+    sixel_allocator_free(allocator, chunks);
+    sixel_allocator_free(allocator, chunk_sizes);
+    sixel_allocator_free(allocator, assembled);
+    return *profile != NULL;
+}
+
+static void
+jpeg_convert_icc_to_srgb(unsigned char *pixels,
+                         int width,
+                         int height,
+                         unsigned char const *profile,
+                         unsigned int profile_length)
+{
+    cmsHPROFILE src_profile;
+    cmsHPROFILE dst_profile;
+    cmsHTRANSFORM transform;
+    size_t pixel_count;
+
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    pixel_count = 0;
+
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        profile == NULL || profile_length == 0u) {
+        return;
+    }
+
+    src_profile = cmsOpenProfileFromMem(profile, profile_length);
+    if (src_profile == NULL) {
+        return;
+    }
+    dst_profile = cmsCreate_sRGBProfile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+    transform = cmsCreateTransform(src_profile,
+                                   TYPE_RGB_8,
+                                   dst_profile,
+                                   TYPE_RGB_8,
+                                   INTENT_PERCEPTUAL,
+                                   0);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+
+cleanup:
+    if (transform != NULL) {
+        cmsDeleteTransform(transform);
+    }
+    if (dst_profile != NULL) {
+        cmsCloseProfile(dst_profile);
+    }
+    if (src_profile != NULL) {
+        cmsCloseProfile(src_profile);
+    }
+}
+#endif
+
 /*
  * import from @uobikiemukot's sdump loader.h
  *
@@ -92,13 +280,30 @@ load_jpeg(unsigned char **result,
     JSAMPARRAY buffer;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr pub;
+#if HAVE_LCMS2
+    unsigned char *icc_profile;
+    unsigned int icc_profile_length;
+#endif
 
     status = SIXEL_JPEG_ERROR;
+#if HAVE_LCMS2
+    icc_profile = NULL;
+    icc_profile_length = 0u;
+#endif
     cinfo.err = jpeg_std_error(&pub);
 
     jpeg_create_decompress(&cinfo);
     jpeg_mem_src(&cinfo, data, datasize);
+#if HAVE_LCMS2
+    jpeg_save_markers(&cinfo, JPEG_APP0 + 2, 0xFFFF);
+#endif
     jpeg_read_header(&cinfo, TRUE);
+#if HAVE_LCMS2
+    (void)jpeg_collect_icc_profile(&cinfo,
+                                   &icc_profile,
+                                   &icc_profile_length,
+                                   allocator);
+#endif
 
     /* disable colormap (indexed color), grayscale -> rgb */
     cinfo.quantize_colors = FALSE;
@@ -149,11 +354,22 @@ load_jpeg(unsigned char **result,
                row_stride);
     }
 
+#if HAVE_LCMS2
+    jpeg_convert_icc_to_srgb(*result,
+                             *pwidth,
+                             *pheight,
+                             icc_profile,
+                             icc_profile_length);
+#endif
+
     status = SIXEL_OK;
 
 end:
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
+#if HAVE_LCMS2
+    sixel_allocator_free(allocator, icc_profile);
+#endif
 
     return status;
 }

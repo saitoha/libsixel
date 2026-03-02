@@ -231,8 +231,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/missing build-aux/py-compile
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -340,6 +340,8 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LCMS2_CFLAGS = @LCMS2_CFLAGS@
+LCMS2_LIBS = @LCMS2_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
