@@ -175,7 +175,6 @@ CLEANFILES = $(builddir)/package.json $(builddir)/*.log
 	staticcheck
 
 PHASE2_ALL_TARGETS = \
-	all-src-lib \
 	all-converters-objs \
 	all-assessment-objs \
 	all-tools \
@@ -211,7 +210,11 @@ endif
 
 prepare-amalgamation-check: prepare-amalgamation-all
 
-phase1-all: prepare-amalgamation-all all-src-libobjs
+# Build libsixel.la in phase1 so phase2/phase3 workers only consume it.
+#
+# This avoids concurrent relink attempts from multiple phase2 members when
+# recursive check/all are launched with parallel jobs.
+phase1-all: prepare-amalgamation-all all-src-lib
 
 phase2-members-all: $(PHASE2_ALL_TARGETS)
 
@@ -227,7 +230,7 @@ phase3-all:
 all-src-libobjs:
 	$(MAKE) -C src $(AM_MAKEFLAGS) libobjs
 
-all-src-lib:
+all-src-lib: all-src-libobjs
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
 
 all-converters-objs:
