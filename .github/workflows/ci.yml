@@ -3202,6 +3202,9 @@ jobs:
               --without-png
               --without-jpeg
               --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-lcms2
               --without-libcurl
             exec_type: bash
 
@@ -3219,6 +3222,9 @@ jobs:
               -Dpng=disabled
               -Djpeg=disabled
               -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dlcms2=disabled
               -Dcurl=disabled
             check_target:
               test --wrapper "$PWD"/build-aux/ape-wrapper
@@ -3240,6 +3246,9 @@ jobs:
               --without-png
               --without-jpeg
               --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-lcms2
               --without-libcurl
               --without-coregraphics
               --disable-quicklook-extension
@@ -3261,6 +3270,9 @@ jobs:
               -Dpng=disabled
               -Djpeg=disabled
               -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dlcms2=disabled
               -Dcurl=disabled
               -Dcoregraphics=disabled
               -Dquicklook_extension=disabled
@@ -3287,6 +3299,9 @@ jobs:
               --without-png
               --without-jpeg
               --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-lcms2
               --without-libcurl
               --disable-wiccodec
             extra_packages: >-
