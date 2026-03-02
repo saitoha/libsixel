@@ -53,10 +53,11 @@ wic_link_args = []
 
 if (cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl') and msvc_pgo_mode != 'off'
   # This module is not exercised by the current PGO training commands.
-  # Keep project-wide PGO for the core binaries, but opt out for WIC to
-  # avoid C4961/C2220 when no wicsixel!*.pgc is produced.
+  # Keep project-wide PGO for the core binaries, but still cancel /GL for
+  # WIC compile units so they do not emit profile data. Do not force
+  # /LTCG:OFF here because msvc_pgo adds /LTCG:PGINSTRUMENT or
+  # /LTCG:PGOPTIMIZE project-wide and the linker rejects both together.
   wic_c_args += ['/GL-']
-  wic_link_args += ['/LTCG:OFF']
 endif
 
 shared_module(

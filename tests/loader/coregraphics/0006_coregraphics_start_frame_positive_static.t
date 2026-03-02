@@ -8,17 +8,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_COREGRAPHICS-}" = 1 || {
     printf "1..0 # SKIP coregraphics support is disabled in this build\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
 echo "1..1"
 set -v
 
-run_img2sixel -L coregraphics! -ldisable -S \
+run_img2sixel -v -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
     echo "not ok" 1 "baseline static coregraphics decode failed"
@@ -26,7 +26,7 @@ run_img2sixel -L coregraphics! -ldisable -S \
 }
 
 run_img2sixel --start-frame=1 \
-    -L coregraphics! -ldisable -S \
+    -v -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_positive.six" || {
     echo "not ok" 1 "static coregraphics decode with positive start frame failed"

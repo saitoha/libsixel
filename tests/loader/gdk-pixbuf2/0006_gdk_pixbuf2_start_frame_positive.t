@@ -18,7 +18,7 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -L gdk-pixbuf2! -ldisable \
+run_img2sixel -v -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gdk_start_default.six" || {
     echo "not ok" 1 "baseline gdk-pixbuf2 animation decode failed"
@@ -26,7 +26,7 @@ run_img2sixel -L gdk-pixbuf2! -ldisable \
 }
 
 run_img2sixel --start-frame=1 \
-    -L gdk-pixbuf2! -ldisable \
+    -v -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gdk_start_positive.six" || {
     echo "not ok" 1 "gdk-pixbuf2 decode with positive start frame failed"
