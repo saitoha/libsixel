@@ -2374,6 +2374,23 @@ load_with_builtin(
                 frame->ncolors = palette_colors;
                 frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
                 frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+#if HAVE_LCMS2
+                /*
+                 * Indexed PNG keeps palette entries in RGB triplets. If iCCP
+                 * exists, apply the transform to each palette color before
+                 * exposing PAL8 output.
+                 */
+                if (sixel_builtin_extract_png_icc(pchunk->buffer,
+                                                  pchunk->size,
+                                                  &icc_profile,
+                                                  &icc_profile_length)) {
+                    sixel_builtin_convert_icc_to_srgb(frame->palette,
+                                                      palette_colors,
+                                                      1,
+                                                      icc_profile,
+                                                      icc_profile_length);
+                }
+#endif
                 sixel_frame_set_pixels(frame, pixels);
                 frame->loop_count = 1;
                 goto done;
