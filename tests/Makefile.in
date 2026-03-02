@@ -136,7 +136,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libwebp/0017_loader_libwebp_pixelformat.c \
 	loader/libwebp/0018_loader_libwebp_animation_frames.c \
 	loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
-	loader/libsvg/0020_loader_librsvg_detect_svg_like.c \
+	loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	diagnostics/probe/0001_probe_parse.c \
@@ -178,7 +178,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
@@ -284,7 +284,7 @@ am__depfiles_remade =  \
 	loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
 	loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po \
-	loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
+	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po \
@@ -1008,7 +1008,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0017_loader_libwebp_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0018_loader_libwebp_animation_frames.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libsvg/0020_loader_librsvg_detect_svg_like.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -1245,15 +1245,15 @@ loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT):  \
 loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT):  \
 	loader/libwebp/$(am__dirstamp) \
 	loader/libwebp/$(DEPDIR)/$(am__dirstamp)
-loader/libsvg/$(am__dirstamp):
-	@$(MKDIR_P) loader/libsvg
-	@: >>loader/libsvg/$(am__dirstamp)
-loader/libsvg/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) loader/libsvg/$(DEPDIR)
-	@: >>loader/libsvg/$(DEPDIR)/$(am__dirstamp)
-loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT):  \
-	loader/libsvg/$(am__dirstamp) \
-	loader/libsvg/$(DEPDIR)/$(am__dirstamp)
+loader/librsvg/$(am__dirstamp):
+	@$(MKDIR_P) loader/librsvg
+	@: >>loader/librsvg/$(am__dirstamp)
+loader/librsvg/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/librsvg/$(DEPDIR)
+	@: >>loader/librsvg/$(DEPDIR)/$(am__dirstamp)
+loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT):  \
+	loader/librsvg/$(am__dirstamp) \
+	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1350,7 +1350,7 @@ mostlyclean-compile:
 	-rm -f loader/gnome-thumbnailer/*.$(OBJEXT)
 	-rm -f loader/libjpeg/*.$(OBJEXT)
 	-rm -f loader/libpng/*.$(OBJEXT)
-	-rm -f loader/libsvg/*.$(OBJEXT)
+	-rm -f loader/librsvg/*.$(OBJEXT)
 	-rm -f loader/libwebp/*.$(OBJEXT)
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
@@ -1384,7 +1384,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
@@ -1810,19 +1810,19 @@ loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj: load
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; fi`
 
-loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o: loader/libsvg/0020_loader_librsvg_detect_svg_like.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o -MD -MP -MF loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`loader/libsvg/0020_loader_librsvg_detect_svg_like.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libsvg/0020_loader_librsvg_detect_svg_like.c' object='loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o' libtool=no @AMDEPBACKSLASH@
+loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o: loader/librsvg/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'loader/librsvg/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`loader/librsvg/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0020_loader_librsvg_detect_svg_like.c' object='loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`loader/libsvg/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'loader/librsvg/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`loader/librsvg/0020_loader_librsvg_detect_svg_like.c
 
-loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj: loader/libsvg/0020_loader_librsvg_detect_svg_like.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj -MD -MP -MF loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libsvg/0020_loader_librsvg_detect_svg_like.c' object='loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj' libtool=no @AMDEPBACKSLASH@
+loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj: loader/librsvg/0020_loader_librsvg_detect_svg_like.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'loader/librsvg/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'loader/librsvg/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0020_loader_librsvg_detect_svg_like.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0020_loader_librsvg_detect_svg_like.c' object='loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/loader/libsvg/0020_loader_librsvg_detect_svg_like.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.obj `if test -f 'loader/librsvg/0020_loader_librsvg_detect_svg_like.c'; then $(CYGPATH_W) 'loader/librsvg/0020_loader_librsvg_detect_svg_like.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0020_loader_librsvg_detect_svg_like.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -2349,8 +2349,8 @@ distclean-generic:
 	-$(am__rm_f) loader/libjpeg/$(am__dirstamp)
 	-$(am__rm_f) loader/libpng/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/libpng/$(am__dirstamp)
-	-$(am__rm_f) loader/libsvg/$(DEPDIR)/$(am__dirstamp)
-	-$(am__rm_f) loader/libsvg/$(am__dirstamp)
+	-$(am__rm_f) loader/librsvg/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/librsvg/$(am__dirstamp)
 	-$(am__rm_f) loader/libwebp/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/libwebp/$(am__dirstamp)
 	-$(am__rm_f) loader/quicklook/$(DEPDIR)/$(am__dirstamp)
@@ -2396,7 +2396,7 @@ distclean: distclean-am
 	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
-	-rm -f loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
@@ -2482,7 +2482,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/gnome-thumbnailer/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
-	-rm -f loader/libsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po

@@ -247,42 +247,34 @@ png_error_callback(png_structp png_ptr, png_const_charp error_message)
  * the original decoded pixels so behavior remains backward compatible.
  */
 static void
-png_convert_embedded_icc_to_srgb(unsigned char *pixels,
-                                 int width,
-                                 int height,
-                                 int pixelformat,
-                                 png_bytep profile,
-                                 png_uint_32 profile_length)
+png_convert_profile_to_srgb(unsigned char *pixels,
+                            int width,
+                            int height,
+                            int pixelformat,
+                            cmsHPROFILE src_profile)
 {
-    cmsHPROFILE src_profile;
     cmsHPROFILE dst_profile;
     cmsHTRANSFORM transform;
     cmsUInt32Number src_type;
     cmsUInt32Number dst_type;
     size_t pixel_count;
 
-    src_profile = NULL;
     dst_profile = NULL;
     transform = NULL;
     src_type = TYPE_RGB_8;
     dst_type = TYPE_RGB_8;
     pixel_count = 0;
 
-    if (pixels == NULL || width <= 0 || height <= 0 ||
-        profile == NULL || profile_length == 0u) {
+    if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
         return;
     }
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         return;
     }
 
-    src_profile = cmsOpenProfileFromMem(profile, profile_length);
-    if (src_profile == NULL) {
-        return;
-    }
     dst_profile = cmsCreate_sRGBProfile();
     if (dst_profile == NULL) {
-        goto cleanup;
+        return;
     }
 
     transform = cmsCreateTransform(src_profile,
@@ -305,9 +297,160 @@ cleanup:
     if (dst_profile != NULL) {
         cmsCloseProfile(dst_profile);
     }
-    if (src_profile != NULL) {
-        cmsCloseProfile(src_profile);
+}
+
+static int
+png_build_rgb_profile_from_chunks(png_structp png_ptr,
+                                  png_infop info_ptr,
+                                  cmsHPROFILE *profile)
+{
+    cmsHPROFILE built_profile;
+    cmsToneCurve *curve;
+    cmsToneCurve *curves[3];
+    cmsCIExyY white_point;
+    cmsCIExyYTRIPLE primaries;
+    double file_gamma;
+    double white_x;
+    double white_y;
+    double red_x;
+    double red_y;
+    double green_x;
+    double green_y;
+    double blue_x;
+    double blue_y;
+    int intent;
+    int has_srgb;
+    int has_chrm;
+    int has_gama;
+
+    built_profile = NULL;
+    curve = NULL;
+    curves[0] = NULL;
+    curves[1] = NULL;
+    curves[2] = NULL;
+    file_gamma = 0.0;
+    white_x = 0.0;
+    white_y = 0.0;
+    red_x = 0.0;
+    red_y = 0.0;
+    green_x = 0.0;
+    green_y = 0.0;
+    blue_x = 0.0;
+    blue_y = 0.0;
+    intent = 0;
+    has_srgb = 0;
+    has_chrm = 0;
+    has_gama = 0;
+
+    if (profile == NULL) {
+        return 0;
     }
+    *profile = NULL;
+
+    has_srgb = png_get_sRGB(png_ptr, info_ptr, &intent) == PNG_INFO_sRGB;
+    if (has_srgb) {
+        (void)intent;
+        return 0;
+    }
+
+    has_chrm = png_get_cHRM(png_ptr,
+                            info_ptr,
+                            &white_x,
+                            &white_y,
+                            &red_x,
+                            &red_y,
+                            &green_x,
+                            &green_y,
+                            &blue_x,
+                            &blue_y) == PNG_INFO_cHRM;
+    has_gama = png_get_gAMA(png_ptr, info_ptr, &file_gamma) == PNG_INFO_gAMA;
+
+    if (!has_chrm && !has_gama) {
+        return 0;
+    }
+
+    /*
+     * Fallback policy for missing metadata:
+     *  - cHRM only: assume gamma 2.2 (sRGB-like tone response).
+     *  - gAMA only: assume sRGB/Rec.709 primaries and D65 white point.
+     */
+    if (!has_chrm) {
+        white_x = 0.3127;
+        white_y = 0.3290;
+        red_x = 0.6400;
+        red_y = 0.3300;
+        green_x = 0.3000;
+        green_y = 0.6000;
+        blue_x = 0.1500;
+        blue_y = 0.0600;
+    }
+    if (!has_gama) {
+        file_gamma = 1.0 / 2.2;
+    }
+    if (file_gamma <= 0.0) {
+        return 0;
+    }
+
+    white_point.x = white_x;
+    white_point.y = white_y;
+    white_point.Y = 1.0;
+
+    primaries.Red.x = red_x;
+    primaries.Red.y = red_y;
+    primaries.Red.Y = 1.0;
+    primaries.Green.x = green_x;
+    primaries.Green.y = green_y;
+    primaries.Green.Y = 1.0;
+    primaries.Blue.x = blue_x;
+    primaries.Blue.y = blue_y;
+    primaries.Blue.Y = 1.0;
+
+    curve = cmsBuildGamma(NULL, 1.0 / file_gamma);
+    if (curve == NULL) {
+        return 0;
+    }
+    curves[0] = curve;
+    curves[1] = curve;
+    curves[2] = curve;
+
+    built_profile = cmsCreateRGBProfile(&white_point,
+                                        &primaries,
+                                        curves);
+    cmsFreeToneCurve(curve);
+    if (built_profile == NULL) {
+        return 0;
+    }
+
+    *profile = built_profile;
+    return 1;
+}
+
+static void
+png_convert_embedded_icc_to_srgb(unsigned char *pixels,
+                                 int width,
+                                 int height,
+                                 int pixelformat,
+                                 png_bytep profile,
+                                 png_uint_32 profile_length)
+{
+    cmsHPROFILE src_profile;
+
+    src_profile = NULL;
+    if (profile == NULL || profile_length == 0u) {
+        return;
+    }
+
+    src_profile = cmsOpenProfileFromMem(profile, profile_length);
+    if (src_profile == NULL) {
+        return;
+    }
+
+    png_convert_profile_to_srgb(pixels,
+                                width,
+                                height,
+                                pixelformat,
+                                src_profile);
+    cmsCloseProfile(src_profile);
 }
 #endif
 
@@ -344,6 +487,8 @@ load_png(unsigned char      /* out */ **result,
     int icc_compression_type;
     png_bytep icc_profile;
     png_uint_32 icc_profile_length;
+    cmsHPROFILE chunk_profile;
+    int has_embedded_icc;
 #endif
     png_uint_32 width;
     png_uint_32 height;
@@ -366,6 +511,8 @@ load_png(unsigned char      /* out */ **result,
     icc_compression_type = 0;
     icc_profile = NULL;
     icc_profile_length = 0u;
+    chunk_profile = NULL;
+    has_embedded_icc = 0;
 #endif
 
     png_ptr = png_create_read_struct(
@@ -418,9 +565,11 @@ load_png(unsigned char      /* out */ **result,
                      &icc_profile_length) == PNG_INFO_iCCP) {
         (void)icc_name;
         (void)icc_compression_type;
+        has_embedded_icc = 1;
     } else {
         icc_profile = NULL;
         icc_profile_length = 0u;
+        has_embedded_icc = 0;
     }
 #endif
 
@@ -724,12 +873,23 @@ load_png(unsigned char      /* out */ **result,
     png_read_image(png_ptr, rows);
 
 #if HAVE_LCMS2
-    png_convert_embedded_icc_to_srgb(*result,
-                                     *psx,
-                                     *psy,
-                                     *pixelformat,
-                                     icc_profile,
-                                     icc_profile_length);
+    if (has_embedded_icc) {
+        png_convert_embedded_icc_to_srgb(*result,
+                                         *psx,
+                                         *psy,
+                                         *pixelformat,
+                                         icc_profile,
+                                         icc_profile_length);
+    } else if (png_build_rgb_profile_from_chunks(png_ptr,
+                                                  info_ptr,
+                                                  &chunk_profile)) {
+        png_convert_profile_to_srgb(*result,
+                                    *psx,
+                                    *psy,
+                                    *pixelformat,
+                                    chunk_profile);
+        cmsCloseProfile(chunk_profile);
+    }
 #endif
 
     status = SIXEL_OK;
