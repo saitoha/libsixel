@@ -26,7 +26,6 @@ PYTHON_WHEEL_INPUTS = \
 
 $(WHEEL_STAMP): $(srcdir)/wheel_builder.py $(srcdir)/setup.py \
 		$(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS)
-	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
 	$(AM_V_at) mkdir -p "$(abs_top_builddir)/python/dist"
 	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
 		--libdir "$(top_builddir)/src/.libs" \

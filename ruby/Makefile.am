@@ -3,7 +3,6 @@
 RUBY_GEM_STAMP = $(abs_top_builddir)/ruby/dist/.gem-stamp
 
 $(RUBY_GEM_STAMP): $(srcdir)/gem_builder.rb $(srcdir)/libsixel-ruby.gemspec
-	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
 	$(AM_V_at) mkdir -p "$(abs_top_builddir)/ruby/dist"
 	$(AM_V_GEN) $(RUBY) $(srcdir)/gem_builder.rb \
 		--libdir "$(top_builddir)/src/.libs" \

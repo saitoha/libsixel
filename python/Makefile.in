@@ -583,7 +583,6 @@ clean-local:
 
 @HAVE_PYTHON_TRUE@$(WHEEL_STAMP): $(srcdir)/wheel_builder.py $(srcdir)/setup.py \
 @HAVE_PYTHON_TRUE@		$(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS)
-@HAVE_PYTHON_TRUE@	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
 @HAVE_PYTHON_TRUE@	$(AM_V_at) mkdir -p "$(abs_top_builddir)/python/dist"
 @HAVE_PYTHON_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
 @HAVE_PYTHON_TRUE@		--libdir "$(top_builddir)/src/.libs" \
