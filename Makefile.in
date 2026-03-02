@@ -559,9 +559,9 @@ AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAUL
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json $(builddir)/*.log
-PHASE2_ALL_TARGETS = all-src-lib all-converters-objs \
-	all-assessment-objs all-tools all-python $(am__append_6) \
-	$(am__append_8) $(am__append_10) $(am__append_12)
+PHASE2_ALL_TARGETS = all-converters-objs all-assessment-objs all-tools \
+	all-python $(am__append_6) $(am__append_8) $(am__append_10) \
+	$(am__append_12)
 PHASE3_ALL_TARGETS = all-converters all-assessment all-tools \
 	all-python $(am__append_7) $(am__append_9) $(am__append_11) \
 	$(am__append_13)
@@ -1220,7 +1220,11 @@ prepare-amalgamation-all:
 
 prepare-amalgamation-check: prepare-amalgamation-all
 
-phase1-all: prepare-amalgamation-all all-src-libobjs
+# Build libsixel.la in phase1 so phase2/phase3 workers only consume it.
+#
+# This avoids concurrent relink attempts from multiple phase2 members when
+# recursive check/all are launched with parallel jobs.
+phase1-all: prepare-amalgamation-all all-src-lib
 
 phase2-members-all: $(PHASE2_ALL_TARGETS)
 
@@ -1236,7 +1240,7 @@ phase3-all:
 all-src-libobjs:
 	$(MAKE) -C src $(AM_MAKEFLAGS) libobjs
 
-all-src-lib:
+all-src-lib: all-src-libobjs
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
 
 all-converters-objs:
