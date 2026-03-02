@@ -694,7 +694,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -719,7 +719,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
               liblcms2-dev
             pip_packages: >-
               gcovr
@@ -1051,7 +1051,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -1076,7 +1076,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
               liblcms2-dev
             pip_packages: >-
               gcovr
@@ -2426,7 +2426,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg-lcms2
@@ -2450,7 +2450,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
               liblcms2-dev
             exec_type: bash
 
@@ -2477,7 +2477,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg-lcms2
@@ -2503,7 +2503,7 @@ jobs:
               libjpeg-dev
               libtiff-dev
               libwebp-dev
-              librsvg-dev
+              librsvg2-dev
               liblcms2-dev
             exec_type: bash
 
