@@ -254,10 +254,17 @@ all-quicklook-extension:
 all-wic:
 	$(MAKE) -C wic $(AM_MAKEFLAGS) all
 
+# Build libsixel.la at the top level before entering ruby/python.
+# This prevents parallel recursion from racing on src/libsixel.la when
+# language packaging targets run at the same time.
 all-ruby:
+	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
 	$(MAKE) -C ruby $(AM_MAKEFLAGS) all
 
+# Keep the src/lib link step serialized at the top level to avoid
+# duplicate "make -C src all" recursion from language bindings.
 all-python:
+	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
 	$(MAKE) -C python $(AM_MAKEFLAGS) all
 
 all-am: phase2-all
