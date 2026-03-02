@@ -866,10 +866,8 @@ load_with_libwebp(
     int resolved_start_frame_no;
     int decode_start_frame_no;
     int emitted_frame_no;
-#if HAVE_LCMS2
     unsigned char *icc_profile;
     size_t icc_profile_length;
-#endif
 
     status = SIXEL_FALSE;
     frame = NULL;
