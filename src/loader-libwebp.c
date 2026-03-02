@@ -889,10 +889,8 @@ load_with_libwebp(
     resolved_start_frame_no = 0;
     decode_start_frame_no = 0;
     emitted_frame_no = 0;
-#if HAVE_LCMS2
     icc_profile = NULL;
     icc_profile_length = 0U;
-#endif
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
