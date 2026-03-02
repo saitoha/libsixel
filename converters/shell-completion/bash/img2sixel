@@ -297,6 +297,7 @@ _img2sixel()
                                    libjpeg \
                                    libwebp \
                                    libtiff \
+                                   librsvg \
                                    builtin \
                                    wic \
                                    coregraphics \
