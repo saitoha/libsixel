@@ -347,6 +347,11 @@ png_build_rgb_profile_from_chunks(png_structp png_ptr,
     }
     *profile = NULL;
 
+    /*
+     * PNG colorspace precedence when iCCP is unavailable:
+     *  1) sRGB (authoritative intent + transfer/primaries)
+     *  2) cHRM and/or gAMA-derived fallback profile
+     */
     has_srgb = png_get_sRGB(png_ptr, info_ptr, &intent) == PNG_INFO_sRGB;
     if (has_srgb) {
         (void)intent;
