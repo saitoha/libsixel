@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.9970}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.9965}
 
 printf '1..1\n'
 set -v

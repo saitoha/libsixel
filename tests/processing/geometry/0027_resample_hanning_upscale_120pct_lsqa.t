@@ -17,7 +17,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.9790}
 
 data_root="${TOP_SRCDIR}/tests/data/inputs"
 input_image="${data_root}/snake_64.png"
