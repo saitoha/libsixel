@@ -172,7 +172,7 @@ test_runner_sources = [
   'loader/libwebp/0017_loader_libwebp_pixelformat.c',
   'loader/libwebp/0018_loader_libwebp_animation_frames.c',
   'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c',
-  'loader/libsvg/0020_loader_librsvg_detect_svg_like.c',
+  'loader/librsvg/0020_loader_librsvg_detect_svg_like.c',
   'loader/pixelformat_test_common.h',
   'quant/palette/0001_kmeans_init.c',
   'diagnostics/probe/0001_probe_parse.c',
