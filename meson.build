@@ -741,6 +741,7 @@ webp_dep = disabler()
 webpdemux_dep = disabler()
 lcms2_opt = get_option('lcms2')
 lcms2_dep = disabler()
+lcms2_header_found = false
 
 if not webp_opt.disabled()
   if host_system == 'emscripten'
@@ -786,15 +787,27 @@ endif
 
 if not lcms2_opt.disabled()
   lcms2_dep = dependency('lcms2', required: lcms2_opt.enabled(), method: 'pkg-config')
+  if lcms2_dep.found()
+    # Verify headers explicitly to avoid enabling lcms2 when only runtime
+    # libraries are available (for example on Solaris build environments).
+    lcms2_header_found = cc.has_header('lcms2.h', dependencies: lcms2_dep)
+  endif
   if not lcms2_dep.found()
     lcms2_dep = cc.find_library('lcms2', required: lcms2_opt.enabled())
+    if lcms2_dep.found()
+      # find_library() does not validate development headers.
+      lcms2_header_found = cc.has_header('lcms2.h')
+      if not lcms2_header_found
+        lcms2_dep = disabler()
+      endif
+    endif
   endif
-  if not lcms2_dep.found() and lcms2_opt.enabled()
-    error('lcms2=enabled requires lcms2')
+  if lcms2_opt.enabled() and (not lcms2_dep.found() or not lcms2_header_found)
+    error('lcms2=enabled requires both lcms2 library and lcms2.h header')
   endif
 endif
 
-if lcms2_dep.found()
+if lcms2_dep.found() and lcms2_header_found
   deps += lcms2_dep
   reqs += lcms2_dep
   conf.set('HAVE_LCMS2', 1)
