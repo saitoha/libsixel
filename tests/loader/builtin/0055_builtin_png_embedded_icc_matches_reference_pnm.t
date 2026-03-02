@@ -21,11 +21,6 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0001_map8_embedded_icc_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/map8-builtin-icc.sixel"
 
-test -f "${reference_ppm}" || {
-    echo "not ok" 1 "missing reference image"
-    exit 0
-}
-
 run_img2sixel -Lbuiltin! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 "builtin decode failed"
     exit 0

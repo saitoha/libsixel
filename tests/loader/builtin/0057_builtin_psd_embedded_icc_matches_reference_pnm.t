@@ -21,11 +21,6 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-64-builtin-psd-icc.sixel"
 
-test -f "${reference_ppm}" || {
-    echo "not ok" 1 "missing reference image"
-    exit 0
-}
-
 run_img2sixel -Lbuiltin! "${input_psd}" >"${output_sixel}" || {
     echo "not ok" 1 "builtin decode failed"
     exit 0
