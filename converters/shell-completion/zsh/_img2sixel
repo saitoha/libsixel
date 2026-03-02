@@ -149,6 +149,7 @@ _loaders() {
     'libjpeg[libjpeg based loader]' \
     'libwebp[libwebp based loader]' \
     'libtiff[libtiff based loader]' \
+    'librsvg[librsvg based loader]' \
     'builtin[libsixel builtin decoder]' \
     'wic[Windows Imaging Component loader]' \
     'coregraphics[macOS CoreGraphics loader]' \

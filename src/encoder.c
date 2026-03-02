@@ -571,6 +571,7 @@ enum {
     SIXEL_LOADER_CHOICE_LIBJPEG,
     SIXEL_LOADER_CHOICE_LIBWEBP,
     SIXEL_LOADER_CHOICE_LIBTIFF,
+    SIXEL_LOADER_CHOICE_LIBRSVG,
     SIXEL_LOADER_CHOICE_BUILTIN,
     SIXEL_LOADER_CHOICE_WIC,
     SIXEL_LOADER_CHOICE_COREGRAPHICS,
@@ -605,6 +606,9 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
 #endif
 #if HAVE_LIBTIFF
     { "libtiff", SIXEL_LOADER_CHOICE_LIBTIFF, NULL, 0u },
+#endif
+#if HAVE_LIBRSVG
+    { "librsvg", SIXEL_LOADER_CHOICE_LIBRSVG, NULL, 0u },
 #endif
     { "builtin", SIXEL_LOADER_CHOICE_BUILTIN, NULL, 0u },
 #if HAVE_WIC
