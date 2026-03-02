@@ -1522,6 +1522,12 @@ AC_ARG_WITH([webp],
             [],
             [with_webp=auto])
 
+AC_ARG_WITH([lcms2],
+            [AS_HELP_STRING([--with-lcms2],
+                            [whether to build with lcms2 (default: auto)])],
+            [],
+            [with_lcms2=auto])
+
 AC_ARG_WITH([librsvg],
             [AS_HELP_STRING([--with-librsvg],
                             [whether to build with librsvg and cairo (default: auto)])],
@@ -2240,6 +2246,7 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 LIBJPEG_PKG_NAME=""
+have_lcms2="no"
 have_webp="no"
 LIBWEBP_PKG_NAME=""
 have_png="no"
@@ -3399,6 +3406,63 @@ fi
 AC_SUBST(LIBTIFF_CFLAGS)
 AC_SUBST(LIBTIFF_LIBS)
 
+if test x$with_lcms2 != xno; then
+    if test x$build = x$host -o x$using_cl = xyes; then
+        AC_MSG_NOTICE([checking for lcms2])
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_lcms2 != xyes -a x$with_lcms2 != xauto; then
+            if test ! -d "$with_lcms2"; then
+                AC_MSG_ERROR(["${with_lcms2}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_lcms2}/include"
+            ADDED_LIBS="-L${with_lcms2}/lib -llcms2"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -llcms2"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -llcms2"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        AC_CHECK_HEADER([lcms2.h],
+                        [AC_CHECK_LIB([lcms2],
+                                      [cmsCreate_sRGBProfile],
+                                      [have_lcms2=yes
+                                       LCMS2_CFLAGS=$ADDED_CFLAGS
+                                       LCMS2_LIBS=$ADDED_LIBS],
+                                      [have_lcms2=no])],
+                        [have_lcms2=no])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_lcms2 != xyes -a ! -d "$with_lcms2"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES([LCMS2],
+                                  [lcms2],
+                                  [have_lcms2=yes],
+                                  [have_lcms2=no])
+            fi
+        fi
+    fi
+    if test x$have_lcms2 = xyes; then
+        AC_DEFINE([HAVE_LCMS2], [1], [whether lcms2 is available])
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE lcms2"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LCMS2_LIBS"
+        AC_MSG_NOTICE([lcms2 cflags is ${LCMS2_CFLAGS}])
+        AC_MSG_NOTICE([lcms2 libs is ${LCMS2_LIBS}])
+    else
+        if test x$with_lcms2 != xauto; then
+            AC_MSG_ERROR([unable to find lcms2])
+        fi
+        AC_MSG_NOTICE([lcms2 is not available])
+    fi
+fi
+AC_SUBST(LCMS2_CFLAGS)
+AC_SUBST(LCMS2_LIBS)
+
 if test x$with_webp != xno; then
     if test x$host_os = xemscripten -a x$with_webp != xno; then
         dnl Validate Emscripten codec flag support before enabling webp.
@@ -4102,6 +4166,7 @@ echo ""
 echo "       Loader component        : $loaders"
 echo "       Network access          : $net"
 echo "       libwinpthread           : $have_winpthread"
+echo "       lcms2                   : $have_lcms2"
 echo "       internal threads        : $message_threads"
 echo "       pkg-config dir          : $pkgconfigdir"
 echo "       Bash completion dir     : $message_bashcompletiondir"

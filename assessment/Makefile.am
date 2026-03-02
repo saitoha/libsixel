@@ -29,6 +29,7 @@ AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(LIBPNG_CFLAGS) \
         $(LIBTIFF_CFLAGS) \
         $(LIBJPEG_CFLAGS) \
+        $(LCMS2_CFLAGS) \
         $(LIBWEBP_CFLAGS) \
         $(LIBRSVG_CFLAGS) \
         $(GDK_PIXBUF_CFLAGS) \
@@ -48,6 +49,7 @@ AMALGAMATION_LSQA_LIBS = -lm \
         $(LIBPNG_LIBS) \
         $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
+        $(LCMS2_LIBS) \
         $(LIBWEBP_LIBS) \
         $(LIBRSVG_LIBS) \
         $(GDK_PIXBUF_LIBS) \
@@ -90,6 +92,7 @@ lsqa_LDADD += -lm \
         $(LIBPNG_LIBS) \
         $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
+        $(LCMS2_LIBS) \
         $(LIBWEBP_LIBS) \
         $(GDK_PIXBUF_LIBS) \
         $(GD_LIBS) \

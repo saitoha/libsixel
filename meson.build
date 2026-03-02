@@ -739,6 +739,8 @@ endif
 webp_opt = get_option('webp')
 webp_dep = disabler()
 webpdemux_dep = disabler()
+lcms2_opt = get_option('lcms2')
+lcms2_dep = disabler()
 
 if not webp_opt.disabled()
   if host_system == 'emscripten'
@@ -780,6 +782,22 @@ if webp_dep.found()
   reqs += webp_dep
   conf.set('HAVE_WEBP', 1)
   loaders += 'webp'
+endif
+
+if not lcms2_opt.disabled()
+  lcms2_dep = dependency('lcms2', required: lcms2_opt.enabled(), method: 'pkg-config')
+  if not lcms2_dep.found()
+    lcms2_dep = cc.find_library('lcms2', required: lcms2_opt.enabled())
+  endif
+  if not lcms2_dep.found() and lcms2_opt.enabled()
+    error('lcms2=enabled requires lcms2')
+  endif
+endif
+
+if lcms2_dep.found()
+  deps += lcms2_dep
+  reqs += lcms2_dep
+  conf.set('HAVE_LCMS2', 1)
 endif
 
 librsvg_opt = get_option('librsvg')
@@ -1881,6 +1899,7 @@ endif
 
 webp_message = webp_dep.found() ? 'yes' : 'no'
 tiff_message = tiff_dep.found() ? 'yes' : 'no'
+lcms2_message = lcms2_dep.found() ? 'yes' : 'no'
 
 message('')
 message('libsixel was configured as follows')
@@ -1900,6 +1919,7 @@ message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)
 message('       libtiff                 : ' + tiff_message)
 message('       libwebp                 : ' + webp_message)
+message('       lcms2                   : ' + lcms2_message)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)

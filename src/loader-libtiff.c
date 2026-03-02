@@ -49,6 +49,9 @@
 #endif
 
 #include <tiffio.h>
+#if HAVE_LCMS2
+# include <lcms2.h>
+#endif
 
 #include <sixel.h>
 
@@ -78,6 +81,69 @@ typedef struct tiff_memory_chunk {
     toff_t size;
     toff_t offset;
 } tiff_memory_chunk_t;
+
+#if HAVE_LCMS2
+/*
+ * Convert decoded RGBA pixels from an embedded TIFF ICC profile to sRGB.
+ *
+ * The alpha channel is preserved while only color channels are transformed.
+ * Invalid or unsupported profiles are ignored to preserve compatibility.
+ */
+static void
+tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  void const *profile,
+                                  uint32_t profile_length)
+{
+    cmsHPROFILE src_profile;
+    cmsHPROFILE dst_profile;
+    cmsHTRANSFORM transform;
+    size_t pixel_count;
+
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    pixel_count = 0;
+
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        profile == NULL || profile_length == 0u) {
+        return;
+    }
+
+    src_profile = cmsOpenProfileFromMem(profile, profile_length);
+    if (src_profile == NULL) {
+        return;
+    }
+    dst_profile = cmsCreate_sRGBProfile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+    transform = cmsCreateTransform(src_profile,
+                                   TYPE_RGBA_8,
+                                   dst_profile,
+                                   TYPE_RGBA_8,
+                                   INTENT_PERCEPTUAL,
+                                   cmsFLAGS_COPY_ALPHA);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+
+cleanup:
+    if (transform != NULL) {
+        cmsDeleteTransform(transform);
+    }
+    if (dst_profile != NULL) {
+        cmsCloseProfile(dst_profile);
+    }
+    if (src_profile != NULL) {
+        cmsCloseProfile(src_profile);
+    }
+}
+#endif
 
 static tsize_t
 tiff_memory_read(thandle_t handle, tdata_t data, tsize_t length)
@@ -216,6 +282,10 @@ load_tiff(unsigned char      /* out */ **result,
     unsigned char *pixels;
     uint32_t pixel;
     size_t offset;
+#if HAVE_LCMS2
+    uint32_t icc_profile_length;
+    void *icc_profile;
+#endif
 
     status = SIXEL_TIFF_ERROR;
     tif = NULL;
@@ -225,6 +295,10 @@ load_tiff(unsigned char      /* out */ **result,
     height = 0;
     pixel_count = 0;
     pixel_bytes = 0;
+#if HAVE_LCMS2
+    icc_profile_length = 0u;
+    icc_profile = NULL;
+#endif
 
     chunk.buffer = buffer;
     chunk.size = (toff_t)size;
@@ -314,6 +388,19 @@ load_tiff(unsigned char      /* out */ **result,
         pixels[offset + 2] = TIFFGetB(pixel);
         pixels[offset + 3] = TIFFGetA(pixel);
     }
+
+#if HAVE_LCMS2
+    if (TIFFGetField(tif,
+                     TIFFTAG_ICCPROFILE,
+                     &icc_profile_length,
+                     &icc_profile) == 1) {
+        tiff_convert_embedded_icc_to_srgb(pixels,
+                                          (int)width,
+                                          (int)height,
+                                          icc_profile,
+                                          icc_profile_length);
+    }
+#endif
 
     *result = pixels;
     *pwidth = (int)width;

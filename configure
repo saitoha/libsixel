@@ -712,6 +712,8 @@ LIBRSVG_LIBS
 LIBRSVG_CFLAGS
 LIBWEBP_LIBS
 LIBWEBP_CFLAGS
+LCMS2_LIBS
+LCMS2_CFLAGS
 LIBTIFF_LIBS
 LIBTIFF_CFLAGS
 LIBPNG_LIBS
@@ -1002,6 +1004,7 @@ with_jpeg
 with_png
 with_tiff
 with_webp
+with_lcms2
 with_librsvg
 with_winpthread
 with_wic
@@ -1057,6 +1060,8 @@ LIBPNG_CFLAGS
 LIBPNG_LIBS
 LIBTIFF_CFLAGS
 LIBTIFF_LIBS
+LCMS2_CFLAGS
+LCMS2_LIBS
 LIBWEBP_CFLAGS
 LIBWEBP_LIBS
 LIBRSVG_CFLAGS
@@ -1811,6 +1816,7 @@ Optional Packages:
   --with-png              whether to build with libpng (default: auto)
   --with-tiff             whether to build with libtiff (default: auto)
   --with-webp             whether to build with libwebp (default: auto)
+  --with-lcms2            whether to build with lcms2 (default: auto)
   --with-librsvg          whether to build with librsvg and cairo (default:
                           auto)
   --with-winpthread       whether to build with libwinpthread, windows only
@@ -1883,6 +1889,9 @@ Some influential environment variables:
               C compiler flags for LIBTIFF, overriding pkg-config
   LIBTIFF_LIBS
               linker flags for LIBTIFF, overriding pkg-config
+  LCMS2_CFLAGS
+              C compiler flags for LCMS2, overriding pkg-config
+  LCMS2_LIBS  linker flags for LCMS2, overriding pkg-config
   LIBWEBP_CFLAGS
               C compiler flags for LIBWEBP, overriding pkg-config
   LIBWEBP_LIBS
@@ -18423,6 +18432,17 @@ fi
 
 
 
+# Check whether --with-lcms2 was given.
+if test ${with_lcms2+y}
+then :
+  withval=$with_lcms2;
+else case e in #(
+  e) with_lcms2=auto ;;
+esac
+fi
+
+
+
 # Check whether --with-librsvg was given.
 if test ${with_librsvg+y}
 then :
@@ -22041,6 +22061,7 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 LIBJPEG_PKG_NAME=""
+have_lcms2="no"
 have_webp="no"
 LIBWEBP_PKG_NAME=""
 have_png="no"
@@ -25569,6 +25590,189 @@ printf "%s\n" "$as_me: libtiff libs is ${LIBTIFF_LIBS}" >&6;}
         fi
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libtiff is not available" >&5
 printf "%s\n" "$as_me: libtiff is not available" >&6;}
+    fi
+fi
+
+
+
+if test x$with_lcms2 != xno; then
+    if test x$build = x$host -o x$using_cl = xyes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lcms2" >&5
+printf "%s\n" "$as_me: checking for lcms2" >&6;}
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_lcms2 != xyes -a x$with_lcms2 != xauto; then
+            if test ! -d "$with_lcms2"; then
+                as_fn_error $? "\"${with_lcms2}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_lcms2}/include"
+            ADDED_LIBS="-L${with_lcms2}/lib -llcms2"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -llcms2"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -llcms2"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        ac_fn_c_check_header_compile "$LINENO" "lcms2.h" "ac_cv_header_lcms2_h" "$ac_includes_default"
+if test "x$ac_cv_header_lcms2_h" = xyes
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for cmsCreate_sRGBProfile in -llcms2" >&5
+printf %s "checking for cmsCreate_sRGBProfile in -llcms2... " >&6; }
+if test ${ac_cv_lib_lcms2_cmsCreate_sRGBProfile+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-llcms2  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char cmsCreate_sRGBProfile (void);
+int
+main (void)
+{
+return cmsCreate_sRGBProfile ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_lcms2_cmsCreate_sRGBProfile=yes
+else case e in #(
+  e) ac_cv_lib_lcms2_cmsCreate_sRGBProfile=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_lcms2_cmsCreate_sRGBProfile" >&5
+printf "%s\n" "$ac_cv_lib_lcms2_cmsCreate_sRGBProfile" >&6; }
+if test "x$ac_cv_lib_lcms2_cmsCreate_sRGBProfile" = xyes
+then :
+  have_lcms2=yes
+                                       LCMS2_CFLAGS=$ADDED_CFLAGS
+                                       LCMS2_LIBS=$ADDED_LIBS
+else case e in #(
+  e) have_lcms2=no ;;
+esac
+fi
+
+else case e in #(
+  e) have_lcms2=no ;;
+esac
+fi
+
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_lcms2 != xyes -a ! -d "$with_lcms2"; then
+            if test x${PKG_CONFIG} != x; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lcms2" >&5
+printf %s "checking for lcms2... " >&6; }
+
+if test -n "$LCMS2_CFLAGS"; then
+    pkg_cv_LCMS2_CFLAGS="$LCMS2_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lcms2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "lcms2") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LCMS2_CFLAGS=`$PKG_CONFIG --cflags "lcms2" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LCMS2_LIBS"; then
+    pkg_cv_LCMS2_LIBS="$LCMS2_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lcms2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "lcms2") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LCMS2_LIBS=`$PKG_CONFIG --libs "lcms2" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                LCMS2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "lcms2" 2>&1`
+        else
+                LCMS2_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "lcms2" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$LCMS2_PKG_ERRORS" >&5
+
+        have_lcms2=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_lcms2=no
+else
+        LCMS2_CFLAGS=$pkg_cv_LCMS2_CFLAGS
+        LCMS2_LIBS=$pkg_cv_LCMS2_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_lcms2=yes
+fi
+            fi
+        fi
+    fi
+    if test x$have_lcms2 = xyes; then
+
+printf "%s\n" "#define HAVE_LCMS2 1" >>confdefs.h
+
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE lcms2"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LCMS2_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: lcms2 cflags is ${LCMS2_CFLAGS}" >&5
+printf "%s\n" "$as_me: lcms2 cflags is ${LCMS2_CFLAGS}" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: lcms2 libs is ${LCMS2_LIBS}" >&5
+printf "%s\n" "$as_me: lcms2 libs is ${LCMS2_LIBS}" >&6;}
+    else
+        if test x$with_lcms2 != xauto; then
+            as_fn_error $? "unable to find lcms2" "$LINENO" 5
+        fi
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: lcms2 is not available" >&5
+printf "%s\n" "$as_me: lcms2 is not available" >&6;}
     fi
 fi
 
@@ -30689,6 +30893,7 @@ echo ""
 echo "       Loader component        : $loaders"
 echo "       Network access          : $net"
 echo "       libwinpthread           : $have_winpthread"
+echo "       lcms2                   : $have_lcms2"
 echo "       internal threads        : $message_threads"
 echo "       pkg-config dir          : $pkgconfigdir"
 echo "       Bash completion dir     : $message_bashcompletiondir"

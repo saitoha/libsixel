@@ -60,6 +60,9 @@
 #endif
 
 #include <png.h>
+#if HAVE_LCMS2
+# include <lcms2.h>
+#endif
 
 #include <sixel.h>
 
@@ -236,6 +239,78 @@ png_error_callback(png_structp png_ptr, png_const_charp error_message)
 #endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 }
 
+#if HAVE_LCMS2
+/*
+ * Convert decoded PNG RGB pixels from an embedded ICC profile to sRGB.
+ *
+ * The iCCP chunk is optional. When it is absent or invalid, the loader keeps
+ * the original decoded pixels so behavior remains backward compatible.
+ */
+static void
+png_convert_embedded_icc_to_srgb(unsigned char *pixels,
+                                 int width,
+                                 int height,
+                                 int pixelformat,
+                                 png_bytep profile,
+                                 png_uint_32 profile_length)
+{
+    cmsHPROFILE src_profile;
+    cmsHPROFILE dst_profile;
+    cmsHTRANSFORM transform;
+    cmsUInt32Number src_type;
+    cmsUInt32Number dst_type;
+    size_t pixel_count;
+
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    src_type = TYPE_RGB_8;
+    dst_type = TYPE_RGB_8;
+    pixel_count = 0;
+
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        profile == NULL || profile_length == 0u) {
+        return;
+    }
+    if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        return;
+    }
+
+    src_profile = cmsOpenProfileFromMem(profile, profile_length);
+    if (src_profile == NULL) {
+        return;
+    }
+    dst_profile = cmsCreate_sRGBProfile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+
+    transform = cmsCreateTransform(src_profile,
+                                   src_type,
+                                   dst_profile,
+                                   dst_type,
+                                   INTENT_PERCEPTUAL,
+                                   0);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+
+cleanup:
+    if (transform != NULL) {
+        cmsDeleteTransform(transform);
+    }
+    if (dst_profile != NULL) {
+        cmsCloseProfile(dst_profile);
+    }
+    if (src_profile != NULL) {
+        cmsCloseProfile(src_profile);
+    }
+}
+#endif
+
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char      /* in */  *buffer,
@@ -264,6 +339,12 @@ load_png(unsigned char      /* out */ **result,
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
+#if HAVE_LCMS2
+    png_charp icc_name;
+    int icc_compression_type;
+    png_bytep icc_profile;
+    png_uint_32 icc_profile_length;
+#endif
     png_uint_32 width;
     png_uint_32 height;
     int i;
@@ -280,6 +361,12 @@ load_png(unsigned char      /* out */ **result,
 
     status = SIXEL_FALSE;
     *result = NULL;
+#if HAVE_LCMS2
+    icc_name = NULL;
+    icc_compression_type = 0;
+    icc_profile = NULL;
+    icc_profile_length = 0u;
+#endif
 
     png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
@@ -322,6 +409,20 @@ load_png(unsigned char      /* out */ **result,
 
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
+#if HAVE_LCMS2
+    if (png_get_iCCP(png_ptr,
+                     info_ptr,
+                     &icc_name,
+                     &icc_compression_type,
+                     &icc_profile,
+                     &icc_profile_length) == PNG_INFO_iCCP) {
+        (void)icc_name;
+        (void)icc_compression_type;
+    } else {
+        icc_profile = NULL;
+        icc_profile_length = 0u;
+    }
+#endif
 
     width = png_get_image_width(png_ptr, info_ptr);
     height = png_get_image_height(png_ptr, info_ptr);
@@ -621,6 +722,15 @@ load_png(unsigned char      /* out */ **result,
     }
 
     png_read_image(png_ptr, rows);
+
+#if HAVE_LCMS2
+    png_convert_embedded_icc_to_srgb(*result,
+                                     *psx,
+                                     *psy,
+                                     *pixelformat,
+                                     icc_profile,
+                                     icc_profile_length);
+#endif
 
     status = SIXEL_OK;
 
