@@ -26,6 +26,7 @@ option('webp', type: 'feature', value: 'auto', description: 'Use libwebp for Web
 option('lcms2', type: 'feature', value: 'auto', description: 'Use lcms2 for ICC color management')
 option('librsvg', type: 'feature', value: 'auto', description: 'Use librsvg+cairo for SVG support')
 option('curl', type: 'feature', value: 'auto', description: 'Use libcurl for network access')
+option('fetch', type: 'feature', value: 'auto', description: 'Use libfetch for network access')
 option('gdk_pixbuf2', type: 'feature', value: 'disabled', description: 'Use gdk-pixbuf2 loader')
 option('gdk_pixbuf_loader', type: 'feature', value: 'disabled',
        description: 'Build gdk-pixbuf SIXEL loader module')

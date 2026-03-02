@@ -667,6 +667,8 @@ HAVE_JPEG_FALSE
 HAVE_JPEG_TRUE
 HAVE_WINHTTP_FALSE
 HAVE_WINHTTP_TRUE
+HAVE_FETCH_FALSE
+HAVE_FETCH_TRUE
 HAVE_CURL_FALSE
 HAVE_CURL_TRUE
 LS_SH_PATH
@@ -722,6 +724,8 @@ LIBJPEG_LIBS
 LIBJPEG_CFLAGS
 WINHTTP_LIBS
 WINHTTP_CFLAGS
+LIBFETCH_LIBS
+LIBFETCH_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
 AM_CPPFLAGS
@@ -1000,6 +1004,7 @@ enable_appkit
 enable_quicklook_extension
 enable_quicklook_preview
 with_libcurl
+with_libfetch
 with_jpeg
 with_png
 with_tiff
@@ -1054,6 +1059,8 @@ GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
 LIBCURL_LIBS
+LIBFETCH_CFLAGS
+LIBFETCH_LIBS
 LIBJPEG_CFLAGS
 LIBJPEG_LIBS
 LIBPNG_CFLAGS
@@ -1812,6 +1819,7 @@ Optional Packages:
   --with-gd               whether to build with gd (default: no)
   --with-coregraphics     whether to build with CoreGraphics (default: auto)
   --with-libcurl          whether to build with libcurl (default: auto)
+  --with-libfetch         whether to build with libfetch (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
   --with-tiff             whether to build with libtiff (default: auto)
@@ -1878,6 +1886,10 @@ Some influential environment variables:
               C compiler flags for LIBCURL, overriding pkg-config
   LIBCURL_LIBS
               linker flags for LIBCURL, overriding pkg-config
+  LIBFETCH_CFLAGS
+              C compiler flags for LIBFETCH, overriding pkg-config
+  LIBFETCH_LIBS
+              linker flags for LIBFETCH, overriding pkg-config
   LIBJPEG_CFLAGS
               C compiler flags for LIBJPEG, overriding pkg-config
   LIBJPEG_LIBS
@@ -18388,6 +18400,17 @@ fi
 
 
 
+# Check whether --with-libfetch was given.
+if test ${with_libfetch+y}
+then :
+  withval=$with_libfetch;
+else case e in #(
+  e) with_libfetch=auto ;;
+esac
+fi
+
+
+
 # Check whether --with-jpeg was given.
 if test ${with_jpeg+y}
 then :
@@ -22059,6 +22082,7 @@ printf "%s\n" "#define HAVE_DECL_SIGHUP $ac_have_decl" >>confdefs.h
 
 loaders="stb_image"
 have_curl="no"
+have_fetch="no"
 have_jpeg="no"
 LIBJPEG_PKG_NAME=""
 have_lcms2="no"
@@ -24472,6 +24496,202 @@ printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
 printf "%s\n" "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libcurl libs is ${LIBCURL_LIBS}" >&5
 printf "%s\n" "$as_me: libcurl libs is ${LIBCURL_LIBS}" >&6;}
+fi
+
+
+
+if test x$with_libfetch != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libfetch" >&5
+printf "%s\n" "$as_me: checking for libfetch" >&6;}
+    CFLAGS_BACKUP=$CFLAGS
+    LDFLAGS_BACKUP=$LDFLAGS
+    if test x$with_libfetch != xyes -a x$with_libfetch != xauto; then
+        if test ! -d "$with_libfetch"; then
+            as_fn_error $? "\"${with_libfetch}\" is not directory" "$LINENO" 5
+        fi
+        ADDED_CFLAGS="-I${with_libfetch}/include"
+        ADDED_LIBS="-L${with_libfetch}/lib -lfetch"
+    else
+        if test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lfetch"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lfetch"
+        fi
+    fi
+
+    CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+    LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <fetch.h>
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fetchGetURL in -lfetch" >&5
+printf %s "checking for fetchGetURL in -lfetch... " >&6; }
+if test ${ac_cv_lib_fetch_fetchGetURL+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfetch  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fetchGetURL (void);
+int
+main (void)
+{
+return fetchGetURL ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_fetch_fetchGetURL=yes
+else case e in #(
+  e) ac_cv_lib_fetch_fetchGetURL=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fetch_fetchGetURL" >&5
+printf "%s\n" "$ac_cv_lib_fetch_fetchGetURL" >&6; }
+if test "x$ac_cv_lib_fetch_fetchGetURL" = xyes
+then :
+  have_fetch=yes
+                       LIBFETCH_CFLAGS=$ADDED_CFLAGS
+                       LIBFETCH_LIBS=$ADDED_LIBS
+else case e in #(
+  e) have_fetch=no ;;
+esac
+fi
+
+else case e in #(
+  e) have_fetch=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    CFLAGS=$CFLAGS_BACKUP
+    LDFLAGS=$LDFLAGS_BACKUP
+
+    if test x$have_fetch != xyes -a ! -d "$with_libfetch"; then
+        if test x${PKG_CONFIG} != x; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libfetch" >&5
+printf %s "checking for libfetch... " >&6; }
+
+if test -n "$LIBFETCH_CFLAGS"; then
+    pkg_cv_LIBFETCH_CFLAGS="$LIBFETCH_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libfetch\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libfetch") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBFETCH_CFLAGS=`$PKG_CONFIG --cflags "libfetch" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBFETCH_LIBS"; then
+    pkg_cv_LIBFETCH_LIBS="$LIBFETCH_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libfetch\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libfetch") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBFETCH_LIBS=`$PKG_CONFIG --libs "libfetch" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                LIBFETCH_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libfetch" 2>&1`
+        else
+                LIBFETCH_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libfetch" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBFETCH_PKG_ERRORS" >&5
+
+        have_fetch=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_fetch=no
+else
+        LIBFETCH_CFLAGS=$pkg_cv_LIBFETCH_CFLAGS
+        LIBFETCH_LIBS=$pkg_cv_LIBFETCH_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_fetch=yes
+fi
+        fi
+    fi
+
+    if test x$have_fetch = xyes; then
+        if test x${net} = x; then
+            net="libfetch"
+        else
+            net="${net} libfetch"
+        fi
+
+printf "%s\n" "#define HAVE_LIBFETCH 1" >>confdefs.h
+
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBFETCH_LIBS"
+    else
+        if test x$with_libfetch != xauto; then
+            as_fn_error $? "unable to find libfetch" "$LINENO" 5
+        fi
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libfetch cflags is ${LIBFETCH_CFLAGS}" >&5
+printf "%s\n" "$as_me: libfetch cflags is ${LIBFETCH_CFLAGS}" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libfetch libs is ${LIBFETCH_LIBS}" >&5
+printf "%s\n" "$as_me: libfetch libs is ${LIBFETCH_LIBS}" >&6;}
 fi
 
 
@@ -28231,6 +28451,14 @@ else
   HAVE_CURL_FALSE=
 fi
 
+ if test x$have_fetch = xyes; then
+  HAVE_FETCH_TRUE=
+  HAVE_FETCH_FALSE='#'
+else
+  HAVE_FETCH_TRUE='#'
+  HAVE_FETCH_FALSE=
+fi
+
  if test x$have_winhttp = xyes; then
   HAVE_WINHTTP_TRUE=
   HAVE_WINHTTP_FALSE='#'
@@ -28573,6 +28801,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_FETCH_TRUE}" && test -z "${HAVE_FETCH_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_FETCH\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_WINHTTP_TRUE}" && test -z "${HAVE_WINHTTP_FALSE}"; then

@@ -248,7 +248,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "insecure",
         "-k, --insecure             allow to connect to SSL sites without\n"
         "                           certs(enabled only when configured\n"
-        "                           with --with-libcurl)\n"
+        "                           with a supported network backend)\n"
     },
     {
         'i',
@@ -1466,6 +1466,12 @@ void show_version(void)
            "configured with:\n"
            "  libcurl: "
 #ifdef HAVE_LIBCURL
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  libfetch: "
+#ifdef HAVE_LIBFETCH
            "yes\n"
 #else
            "no\n"

@@ -1498,6 +1498,12 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=auto])
 
+AC_ARG_WITH([libfetch],
+            [AS_HELP_STRING([--with-libfetch],
+                            [whether to build with libfetch (default: auto)])],
+            [],
+            [with_libfetch=auto])
+
 AC_ARG_WITH([jpeg],
             [AS_HELP_STRING([--with-jpeg],
                             [whether to build with libjpeg (default: auto)])],
@@ -2244,6 +2250,7 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
 
 loaders="stb_image"
 have_curl="no"
+have_fetch="no"
 have_jpeg="no"
 LIBJPEG_PKG_NAME=""
 have_lcms2="no"
@@ -3000,6 +3007,68 @@ if test x$with_libcurl != xno && test "x$using_cl" != "xyes"; then
 fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
+
+if test x$with_libfetch != xno; then
+    AC_MSG_NOTICE([checking for libfetch])
+    CFLAGS_BACKUP=$CFLAGS
+    LDFLAGS_BACKUP=$LDFLAGS
+    if test x$with_libfetch != xyes -a x$with_libfetch != xauto; then
+        if test ! -d "$with_libfetch"; then
+            AC_MSG_ERROR(["${with_libfetch}" is not directory])
+        fi
+        ADDED_CFLAGS="-I${with_libfetch}/include"
+        ADDED_LIBS="-L${with_libfetch}/lib -lfetch"
+    else
+        if test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lfetch"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lfetch"
+        fi
+    fi
+
+    CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+    LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[#include <fetch.h>]], [[]])],
+        [AC_CHECK_LIB([fetch],
+                      [fetchGetURL],
+                      [have_fetch=yes
+                       LIBFETCH_CFLAGS=$ADDED_CFLAGS
+                       LIBFETCH_LIBS=$ADDED_LIBS],
+                      [have_fetch=no])],
+        [have_fetch=no])
+    CFLAGS=$CFLAGS_BACKUP
+    LDFLAGS=$LDFLAGS_BACKUP
+
+    if test x$have_fetch != xyes -a ! -d "$with_libfetch"; then
+        if test x${PKG_CONFIG} != x; then
+            PKG_CHECK_MODULES(LIBFETCH,
+                              [libfetch],
+                              [have_fetch=yes],
+                              [have_fetch=no])
+        fi
+    fi
+
+    if test x$have_fetch = xyes; then
+        if test x${net} = x; then
+            net="libfetch"
+        else
+            net="${net} libfetch"
+        fi
+        AC_DEFINE(HAVE_LIBFETCH, 1, [whether libfetch is available])
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBFETCH_LIBS"
+    else
+        if test x$with_libfetch != xauto; then
+            AC_MSG_ERROR([unable to find libfetch])
+        fi
+    fi
+    AC_MSG_NOTICE([libfetch cflags is ${LIBFETCH_CFLAGS}])
+    AC_MSG_NOTICE([libfetch libs is ${LIBFETCH_LIBS}])
+fi
+AC_SUBST(LIBFETCH_CFLAGS)
+AC_SUBST(LIBFETCH_LIBS)
 
 if test x$with_winhttp != xno; then
     case "$host_os" in
@@ -4081,6 +4150,7 @@ AS_IF([test "x$enable_pgo" != "xno"], [
 ])
 
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
+AM_CONDITIONAL([HAVE_FETCH], [test x$have_fetch = xyes])
 AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_winhttp = xyes])
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
