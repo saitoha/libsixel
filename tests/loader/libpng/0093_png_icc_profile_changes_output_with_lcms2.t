@@ -13,16 +13,16 @@ test "${HAVE_LCMS2-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-input_png="${TOP_SRCDIR}/images/map8.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
 output_builtin="${ARTIFACT_LOCAL_DIR}/map8-builtin.sixel"
 output_libpng="${ARTIFACT_LOCAL_DIR}/map8-libpng.sixel"
 
@@ -36,7 +36,7 @@ run_img2sixel -Llibpng! "${input_png}" >"${output_libpng}" || {
     exit 0
 }
 
-lsqa_msg=$(run_lsqa -b "MS-SSIM:0.999" "${output_builtin}" "${output_libpng}" 2>&1) || lsqa_status=$?
+lsqa_msg=$(set +xv; run_lsqa -b "MS-SSIM:0.999" "${output_builtin}" "${output_libpng}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
     echo "not ok" 1 "${lsqa_msg}"
