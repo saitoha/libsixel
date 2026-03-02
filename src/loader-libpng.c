@@ -380,9 +380,16 @@ png_build_rgb_profile_from_chunks(png_structp png_ptr,
     }
 
     /*
+     * Match ImageMagick behavior: gAMA-only metadata does not trigger
+     * an explicit profile conversion when primaries are absent.
+     */
+    if (!has_chrm && has_gama) {
+        return 0;
+    }
+
+    /*
      * Fallback policy for missing metadata:
      *  - cHRM only: assume gamma 2.2 (sRGB-like tone response).
-     *  - gAMA only: assume sRGB/Rec.709 primaries and D65 white point.
      */
     if (!has_chrm) {
         white_x = 0.3127;
