@@ -294,12 +294,11 @@ end:
 
 #if HAVE_LCMS2
 /*
- * Decode an embedded PNG iCCP chunk and convert RGB888 pixels to sRGB.
+ * Decode embedded ICC payloads and convert RGB888 pixels to sRGB.
  *
  * The builtin path decodes image pixels with stb_image. To keep behavior
- * compatible with the libpng backend when lcms2 is available, this helper
- * reads iCCP from raw PNG bytes, inflates the profile payload, and applies a
- * best-effort in-place color transform.
+ * compatible with external backends when lcms2 is available, these helpers
+ * parse container-specific ICC payloads and apply a best-effort transform.
  */
 static void
 sixel_builtin_convert_icc_to_srgb(unsigned char *pixels,
@@ -529,6 +528,8 @@ cleanup:
 
     return *profile != NULL;
 }
+
+
 static int
 sixel_builtin_extract_png_icc(unsigned char const *buffer,
                               size_t size,
@@ -590,8 +591,7 @@ sixel_builtin_extract_png_icc(unsigned char const *buffer,
 
         name_index = 0u;
         while (name_index < (size_t)chunk_length &&
-               chunk_data[name_index] != 0u)
-        {
+               chunk_data[name_index] != 0u) {
             ++name_index;
         }
         if (name_index == (size_t)chunk_length) {
@@ -627,7 +627,142 @@ sixel_builtin_extract_png_icc(unsigned char const *buffer,
 
     return 0;
 }
+
+
+static int
+sixel_builtin_extract_psd_icc(unsigned char const *buffer,
+                              size_t size,
+                              unsigned char **profile,
+                              size_t *profile_length,
+                              sixel_allocator_t *allocator)
+{
+    size_t offset;
+    size_t section_length;
+    size_t resource_end;
+    size_t name_length;
+    size_t data_length;
+    unsigned int resource_id;
+    unsigned char *copied;
+
+    offset = 0u;
+    section_length = 0u;
+    resource_end = 0u;
+    name_length = 0u;
+    data_length = 0u;
+    resource_id = 0u;
+    copied = NULL;
+
+    *profile = NULL;
+    *profile_length = 0u;
+
+    if (buffer == NULL || profile == NULL || profile_length == NULL ||
+        allocator == NULL || size < 34u) {
+        return 0;
+    }
+    if (memcmp(buffer, "8BPS", 4u) != 0) {
+        return 0;
+    }
+
+    /* color mode data section */
+    offset = 26u;
+    section_length = ((size_t)buffer[offset + 0u] << 24) |
+                     ((size_t)buffer[offset + 1u] << 16) |
+                     ((size_t)buffer[offset + 2u] << 8) |
+                     (size_t)buffer[offset + 3u];
+    offset += 4u;
+    if (section_length > size - offset) {
+        return 0;
+    }
+    offset += section_length;
+
+    /* image resources section */
+    if (offset + 4u > size) {
+        return 0;
+    }
+    section_length = ((size_t)buffer[offset + 0u] << 24) |
+                     ((size_t)buffer[offset + 1u] << 16) |
+                     ((size_t)buffer[offset + 2u] << 8) |
+                     (size_t)buffer[offset + 3u];
+    offset += 4u;
+    if (section_length > size - offset) {
+        return 0;
+    }
+
+    resource_end = offset + section_length;
+    while (offset + 12u <= resource_end) {
+        if (memcmp(buffer + offset, "8BIM", 4u) != 0) {
+            return 0;
+        }
+        offset += 4u;
+
+        resource_id = ((unsigned int)buffer[offset + 0u] << 8) |
+                      (unsigned int)buffer[offset + 1u];
+        offset += 2u;
+
+        name_length = (size_t)buffer[offset];
+        ++offset;
+        if (name_length > resource_end - offset) {
+            return 0;
+        }
+        offset += name_length;
+        if (((1u + name_length) & 1u) != 0u) {
+            if (offset >= resource_end) {
+                return 0;
+            }
+            ++offset;
+        }
+
+        if (offset + 4u > resource_end) {
+            return 0;
+        }
+        data_length = ((size_t)buffer[offset + 0u] << 24) |
+                      ((size_t)buffer[offset + 1u] << 16) |
+                      ((size_t)buffer[offset + 2u] << 8) |
+                      (size_t)buffer[offset + 3u];
+        offset += 4u;
+        if (data_length > resource_end - offset) {
+            return 0;
+        }
+
+        if (resource_id == 0x040fu) {
+            if (data_length == 0u) {
+                return 0;
+            }
+            copied = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                             data_length);
+            if (copied == NULL) {
+                return 0;
+            }
+            memcpy(copied, buffer + offset, data_length);
+            *profile = copied;
+            *profile_length = data_length;
+            return 1;
+        }
+
+        offset += data_length;
+        if ((data_length & 1u) != 0u) {
+            if (offset >= resource_end) {
+                return 0;
+            }
+            ++offset;
+        }
+    }
+
+    return 0;
+}
 #endif
+
+static int
+chunk_is_psd(sixel_chunk_t const *chunk)
+{
+    if (chunk->size < 4u) {
+        return 0;
+    }
+    if (memcmp(chunk->buffer, "8BPS", 4u) == 0) {
+        return 1;
+    }
+    return 0;
+}
 
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
@@ -2317,6 +2452,18 @@ load_with_builtin(
                                                &icc_profile,
                                                &icc_profile_length,
                                                pchunk->allocator)) {
+                sixel_builtin_convert_icc_to_srgb(pixels,
+                                                  frame->width,
+                                                  frame->height,
+                                                  icc_profile,
+                                                  icc_profile_length);
+            }
+        } else if (chunk_is_psd(pchunk)) {
+            if (sixel_builtin_extract_psd_icc(pchunk->buffer,
+                                              pchunk->size,
+                                              &icc_profile,
+                                              &icc_profile_length,
+                                              pchunk->allocator)) {
                 sixel_builtin_convert_icc_to_srgb(pixels,
                                                   frame->width,
                                                   frame->height,
