@@ -752,6 +752,7 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
 }
 #endif
 
+#if HAVE_LCMS2
 static int
 chunk_is_psd(sixel_chunk_t const *chunk)
 {
@@ -763,6 +764,7 @@ chunk_is_psd(sixel_chunk_t const *chunk)
     }
     return 0;
 }
+#endif
 
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
