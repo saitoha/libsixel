@@ -31,6 +31,10 @@ cd "${BUILDDIR}" && (
     --enable-static \
     --without-png \
     --without-jpeg \
+    --without-tiff \
+    --without-webp \
+    --without-librsvg \
+    --without-lcms2 \
     --without-libcurl \
     --disable-wiccodec \
     --disable-appkit \
