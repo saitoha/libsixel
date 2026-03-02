@@ -48,6 +48,9 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#if HAVE_LCMS2
+# include <lcms2.h>
+#endif
 
 #include <sixel.h>
 
@@ -288,6 +291,170 @@ end:
 
     return status;
 }
+
+#if HAVE_LCMS2
+/*
+ * Decode an embedded PNG iCCP chunk and convert RGB888 pixels to sRGB.
+ *
+ * The builtin path decodes image pixels with stb_image. To keep behavior
+ * compatible with the libpng backend when lcms2 is available, this helper
+ * reads iCCP from raw PNG bytes, inflates the profile payload, and applies a
+ * best-effort in-place color transform.
+ */
+static void
+sixel_builtin_convert_icc_to_srgb(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  unsigned char const *profile,
+                                  size_t profile_length)
+{
+    cmsHPROFILE src_profile;
+    cmsHPROFILE dst_profile;
+    cmsHTRANSFORM transform;
+    size_t pixel_count;
+
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    pixel_count = 0;
+
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        profile == NULL || profile_length == 0u) {
+        return;
+    }
+
+    src_profile = cmsOpenProfileFromMem(profile, profile_length);
+    if (src_profile == NULL) {
+        return;
+    }
+    dst_profile = cmsCreate_sRGBProfile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+    transform = cmsCreateTransform(src_profile,
+                                   TYPE_RGB_8,
+                                   dst_profile,
+                                   TYPE_RGB_8,
+                                   INTENT_PERCEPTUAL,
+                                   0);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+
+cleanup:
+    if (transform != NULL) {
+        cmsDeleteTransform(transform);
+    }
+    if (dst_profile != NULL) {
+        cmsCloseProfile(dst_profile);
+    }
+    if (src_profile != NULL) {
+        cmsCloseProfile(src_profile);
+    }
+}
+
+static int
+sixel_builtin_extract_png_icc(unsigned char const *buffer,
+                              size_t size,
+                              unsigned char **profile,
+                              size_t *profile_length)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    size_t offset;
+    uint32_t chunk_length;
+    unsigned char const *chunk_data;
+    size_t chunk_total;
+    size_t name_index;
+    size_t compressed_offset;
+    unsigned char compression_method;
+    unsigned char *decoded;
+    int decoded_length;
+
+    offset = 0u;
+    chunk_length = 0u;
+    chunk_data = NULL;
+    chunk_total = 0u;
+    name_index = 0u;
+    compressed_offset = 0u;
+    compression_method = 0u;
+    decoded = NULL;
+    decoded_length = 0;
+
+    *profile = NULL;
+    *profile_length = 0u;
+
+    if (buffer == NULL || size < sizeof(png_signature) + 12u) {
+        return 0;
+    }
+    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+
+    offset = sizeof(png_signature);
+    while (offset + 12u <= size) {
+        chunk_length = ((uint32_t)buffer[offset + 0u] << 24) |
+                       ((uint32_t)buffer[offset + 1u] << 16) |
+                       ((uint32_t)buffer[offset + 2u] << 8) |
+                       (uint32_t)buffer[offset + 3u];
+        chunk_total = (size_t)chunk_length + 12u;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+        if (memcmp(buffer + offset + 4u, "iCCP", 4u) != 0) {
+            offset += chunk_total;
+            continue;
+        }
+
+        chunk_data = buffer + offset + 8u;
+        if (chunk_length < 3u) {
+            return 0;
+        }
+
+        name_index = 0u;
+        while (name_index < (size_t)chunk_length &&
+               chunk_data[name_index] != 0u)
+        {
+            ++name_index;
+        }
+        if (name_index == (size_t)chunk_length) {
+            return 0;
+        }
+        compressed_offset = name_index + 1u;
+        if (compressed_offset >= (size_t)chunk_length) {
+            return 0;
+        }
+        compression_method = chunk_data[compressed_offset];
+        if (compression_method != 0u) {
+            return 0;
+        }
+        ++compressed_offset;
+        if (compressed_offset >= (size_t)chunk_length) {
+            return 0;
+        }
+
+        decoded = (unsigned char *)stbi_zlib_decode_malloc_guesssize_headerflag(
+            (char const *)(chunk_data + compressed_offset),
+            (int)((size_t)chunk_length - compressed_offset),
+            16384,
+            &decoded_length,
+            1);
+        if (decoded == NULL || decoded_length <= 0) {
+            stbi_free(decoded);
+            return 0;
+        }
+        *profile = decoded;
+        *profile_length = (size_t)decoded_length;
+        return 1;
+    }
+
+    return 0;
+}
+#endif
 
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
@@ -1720,6 +1887,10 @@ load_with_builtin(
     int start_frame_no;
     int resolved_start_frame_no;
     int gif_frame_count;
+#if HAVE_LCMS2
+    unsigned char *png_icc_profile;
+    size_t png_icc_profile_length;
+#endif
 
     status = SIXEL_BAD_INPUT;
     pixels = NULL;
@@ -1735,6 +1906,10 @@ load_with_builtin(
     start_frame_no = INT_MIN;
     resolved_start_frame_no = -1;
     gif_frame_count = 0;
+#if HAVE_LCMS2
+    png_icc_profile = NULL;
+    png_icc_profile_length = 0u;
+#endif
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -1951,6 +2126,20 @@ load_with_builtin(
         }
         sixel_frame_set_pixels(frame, pixels);
         frame->loop_count = 1;
+#if HAVE_LCMS2
+        if (chunk_is_png(pchunk)) {
+            if (sixel_builtin_extract_png_icc(pchunk->buffer,
+                                              pchunk->size,
+                                              &png_icc_profile,
+                                              &png_icc_profile_length)) {
+                sixel_builtin_convert_icc_to_srgb(pixels,
+                                                  frame->width,
+                                                  frame->height,
+                                                  png_icc_profile,
+                                                  png_icc_profile_length);
+            }
+        }
+#endif
         switch (depth) {
         case 1:
         case 3:
@@ -1986,6 +2175,11 @@ done:
     status = SIXEL_OK;
 
 end:
+#if HAVE_LCMS2
+    if (png_icc_profile != NULL) {
+        sixel_allocator_free(pchunk->allocator, png_icc_profile);
+    }
+#endif
     sixel_frame_unref(frame);
 
     return status;
