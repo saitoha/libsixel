@@ -57,6 +57,9 @@
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
 #endif  /* HAVE_LIBCURL */
+#ifdef HAVE_LIBFETCH
+# include <fetch.h>
+#endif  /* HAVE_LIBFETCH */
 #if HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif  /* HAVE_SYS_SELECT_H */
@@ -830,6 +833,136 @@ end:
 }
 # endif  /* HAVE_LIBCURL */
 
+# if HAVE_LIBFETCH
+static SIXELSTATUS
+sixel_chunk_from_url_with_fetch(
+    char const      /* in */ *url,
+    sixel_chunk_t   /* in */ *pchunk,
+    int             /* in */ finsecure)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    FILE *fetch_stream = NULL;
+    unsigned char bucket[4096];
+    size_t nread;
+    void *grown;
+    int use_insecure;
+    char const *saved_peer;
+    char const *saved_host;
+    char *saved_peer_copy;
+    char *saved_host_copy;
+    char message[256];
+
+    fetch_stream = NULL;
+    nread = 0;
+    grown = NULL;
+    use_insecure = 0;
+    saved_peer = NULL;
+    saved_host = NULL;
+    saved_peer_copy = NULL;
+    saved_host_copy = NULL;
+
+    use_insecure = finsecure && strncmp(url, "https://", 8) == 0;
+    if (use_insecure) {
+        saved_peer = getenv("SSL_NO_VERIFY_PEER");
+        saved_host = getenv("SSL_NO_VERIFY_HOSTNAME");
+        if (saved_peer != NULL) {
+            saved_peer_copy = strdup(saved_peer);
+            if (saved_peer_copy == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                sixel_helper_set_additional_message(
+                    "strdup(SSL_NO_VERIFY_PEER) failed.");
+                goto end;
+            }
+        }
+        if (saved_host != NULL) {
+            saved_host_copy = strdup(saved_host);
+            if (saved_host_copy == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                sixel_helper_set_additional_message(
+                    "strdup(SSL_NO_VERIFY_HOSTNAME) failed.");
+                goto end;
+            }
+        }
+        if (setenv("SSL_NO_VERIFY_PEER", "1", 1) != 0
+            || setenv("SSL_NO_VERIFY_HOSTNAME", "1", 1) != 0) {
+            status = SIXEL_LIBC_ERROR | (errno & 0xff);
+            sixel_helper_set_additional_message(
+                "setenv() for SSL_NO_VERIFY_* failed.");
+            goto end;
+        }
+    }
+
+    fetch_stream = fetchGetURL(url, "");
+    if (fetch_stream == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        (void)sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "fetchGetURL() failed (code=%d, reason=%s).",
+            fetchLastErrCode,
+            fetchLastErrString ? fetchLastErrString : "unknown");
+        sixel_helper_set_additional_message(message);
+        goto end;
+    }
+
+    for (;;) {
+        nread = fread(bucket, 1, sizeof(bucket), fetch_stream);
+        if (nread == 0) {
+            break;
+        }
+
+        if (pchunk->max_size - pchunk->size < nread) {
+            do {
+                pchunk->max_size *= 2;
+            } while (pchunk->max_size - pchunk->size < nread);
+            grown = sixel_allocator_realloc(pchunk->allocator,
+                                            pchunk->buffer,
+                                            pchunk->max_size);
+            if (grown == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                sixel_helper_set_additional_message(
+                    "sixel_allocator_realloc() failed.");
+                goto end;
+            }
+            pchunk->buffer = (unsigned char *)grown;
+        }
+
+        memcpy(pchunk->buffer + pchunk->size, bucket, nread);
+        pchunk->size += nread;
+    }
+
+    if (ferror(fetch_stream)) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "fread() failed while reading fetched stream.");
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (fetch_stream != NULL) {
+        fclose(fetch_stream);
+    }
+    if (use_insecure) {
+        if (saved_peer_copy != NULL) {
+            (void)setenv("SSL_NO_VERIFY_PEER", saved_peer_copy, 1);
+        } else {
+            (void)unsetenv("SSL_NO_VERIFY_PEER");
+        }
+        if (saved_host_copy != NULL) {
+            (void)setenv("SSL_NO_VERIFY_HOSTNAME", saved_host_copy, 1);
+        } else {
+            (void)unsetenv("SSL_NO_VERIFY_HOSTNAME");
+        }
+    }
+    free(saved_peer_copy);
+    free(saved_host_copy);
+
+    return status;
+}
+# endif  /* HAVE_LIBFETCH */
+
 /* get chunk of specified resource over libcurl function */
 static SIXELSTATUS
 sixel_chunk_from_url(
@@ -852,16 +985,23 @@ sixel_chunk_from_url(
     }
 #endif  /* HAVE_LIBCURL */
 
-#if !defined(HAVE_WINHTTP) && !defined(HAVE_LIBCURL)
+#if HAVE_LIBFETCH
+    status = sixel_chunk_from_url_with_fetch(url, pchunk, finsecure);
+    if (SIXEL_SUCCEEDED(status)) {
+        return status;
+    }
+#endif  /* HAVE_LIBFETCH */
+
+#if !defined(HAVE_WINHTTP) && !defined(HAVE_LIBCURL) && !defined(HAVE_LIBFETCH)
     (void) url;
     (void) pchunk;
     (void) finsecure;
     sixel_helper_set_additional_message(
         "To specify URI schemes, you must configure this program "
-        "at compile time using either the --with-libcurl option "
-        "or the --with-winhttp (only available on Windows) option.\n");
+        "at compile time using one of --with-libcurl, --with-libfetch, "
+        "or --with-winhttp (only available on Windows).\n");
     status = SIXEL_NOT_IMPLEMENTED;
-#endif  /* !defined(HAVE_WINHTTP) && !defined(HAVE_LIBCURL) */
+#endif  /* !defined(HAVE_WINHTTP) && !defined(HAVE_LIBCURL) && !defined(HAVE_LIBFETCH) */
 
     return status;
 }

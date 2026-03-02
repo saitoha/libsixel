@@ -155,7 +155,8 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/timer.c $(srcdir)/timer.h $(srcdir)/sleep.c \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
@@ -599,6 +600,8 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
+LIBFETCH_CFLAGS = @LIBFETCH_CFLAGS@
+LIBFETCH_LIBS = @LIBFETCH_LIBS@
 LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@
 LIBJPEG_LIBS = @LIBJPEG_LIBS@
 LIBOBJS = @LIBOBJS@
@@ -956,6 +959,7 @@ libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir) $(AM_CPPFLAGS)
 
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
+                $(LIBFETCH_CFLAGS) \
                 $(WINHTTP_CFLAGS) \
                 $(LIBPNG_CFLAGS) \
                 $(LIBTIFF_CFLAGS) \
@@ -975,6 +979,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 @BUILDING_ON_WINDOWS_TRUE@libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 libsixel_la_LIBADD = -lm \
                 $(LIBCURL_LIBS) \
+                $(LIBFETCH_LIBS) \
                 $(WINHTTP_LIBS) \
                 $(LIBPNG_LIBS) \
                 $(LIBTIFF_LIBS) \

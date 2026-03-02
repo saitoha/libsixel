@@ -3,8 +3,8 @@
 
 set -eux
 
-test "${HAVE_LIBCURL-}" = 1 || {
-    printf "1..0 # SKIP libcurl support is disabled in this build\n"
+test "${HAVE_LIBCURL-}" = 1 || test "${HAVE_LIBFETCH-}" = 1 || {
+    printf "1..0 # SKIP libcurl/libfetch support is disabled in this build\n"
     exit 0
 }
 test "${HAVE_IMG2SIXEL-}" = 1 || {

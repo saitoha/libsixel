@@ -297,6 +297,9 @@
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
 
+/* whether libfetch is available */
+#undef HAVE_LIBFETCH
+
 /* Define to 1 if you have the 'iconv' library (-liconv). */
 #undef HAVE_LIBICONV
 

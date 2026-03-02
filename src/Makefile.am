@@ -249,6 +249,7 @@ libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir) $(AM_CPPFLAGS)
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
+                $(LIBFETCH_CFLAGS) \
                 $(WINHTTP_CFLAGS) \
                 $(LIBPNG_CFLAGS) \
                 $(LIBTIFF_CFLAGS) \
@@ -270,6 +271,7 @@ libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 endif
 libsixel_la_LIBADD = -lm \
                 $(LIBCURL_LIBS) \
+                $(LIBFETCH_LIBS) \
                 $(WINHTTP_LIBS) \
                 $(LIBPNG_LIBS) \
                 $(LIBTIFF_LIBS) \

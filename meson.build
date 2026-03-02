@@ -847,6 +847,38 @@ if curl_dep.found()
   net += 'libcurl'
 endif
 
+fetch_opt = get_option('fetch')
+fetch_dep = disabler()
+if not fetch_opt.disabled()
+  fetch_dep = dependency('libfetch',
+                         required: false,
+                         method: 'pkg-config')
+  have_fetch_header = false
+
+  if fetch_dep.found()
+    have_fetch_header = cc.has_header('fetch.h', dependencies: fetch_dep)
+    if not have_fetch_header
+      fetch_dep = disabler()
+    endif
+  else
+    fetch_lib = cc.find_library('fetch', required: false)
+    if fetch_lib.found() and cc.has_header('fetch.h')
+      fetch_dep = declare_dependency(dependencies: [fetch_lib])
+      have_fetch_header = true
+    endif
+  endif
+
+  if fetch_opt.enabled() and not fetch_dep.found()
+    error('libfetch support requested, but required headers or library were not found')
+  endif
+endif
+
+if fetch_dep.found()
+  deps += fetch_dep
+  conf.set('HAVE_LIBFETCH', 1)
+  net += 'libfetch'
+endif
+
 gdk_dep = dependency('gdk-pixbuf-2.0', required: false, method: 'pkg-config')
 gdk_opt = get_option('gdk_pixbuf2')
 if not gdk_opt.disabled()

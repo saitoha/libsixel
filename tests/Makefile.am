@@ -67,6 +67,7 @@ TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
 if WANT_AMALGAMATED_TOOLS
 TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
         $(LIBCURL_CFLAGS) \
+        $(LIBFETCH_CFLAGS) \
         $(WINHTTP_CFLAGS) \
         $(LIBPNG_CFLAGS) \
         $(LIBTIFF_CFLAGS) \
@@ -90,6 +91,7 @@ if WANT_AMALGAMATED_TOOLS
 TESTS_COMMON_LDADD_VAL = -lm \
         $(LIBS) \
         $(LIBCURL_LIBS) \
+        $(LIBFETCH_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
         $(LIBTIFF_LIBS) \
@@ -118,6 +120,7 @@ if WANT_AMALGAMATED_TOOLS
 TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(LIBS) \
         $(LIBCURL_LIBS) \
+        $(LIBFETCH_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
         $(LIBTIFF_LIBS) \
@@ -242,6 +245,7 @@ test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
 test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
         $(LIBS) \
         $(LIBCURL_LIBS) \
+        $(LIBFETCH_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
         $(LIBTIFF_LIBS) \

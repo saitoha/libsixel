@@ -3,8 +3,8 @@
 
 set -eux
 
-test "${HAVE_LIBCURL-}" = 1 || test "${HAVE_WINHTTP-}" = 1 || {
-    printf "1..0 # SKIP libcurl or WinHTTP support is disabled in this build\n"
+test "${HAVE_LIBCURL-}" = 1 || test "${HAVE_WINHTTP-}" = 1 || test "${HAVE_LIBFETCH-}" = 1 || {
+    printf "1..0 # SKIP network backend support is disabled in this build\n"
     exit 0
 }
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -36,7 +36,7 @@ test "${command_status}" -ne 0 || {
 # - libcurl may fail at setopt/perform stages depending on URL parsing.
 # Keep the check broad enough to accept backend-consistent failures.
 printf '%s\n' "${capture_output}" |
-awk '/^curl_easy_/ { ++m } /^WinHttp/ { ++m } /runtime error: unable/ { ++m } END { if (!m) exit 1; }' || {
+awk '/^curl_easy_/ { ++m } /^WinHttp/ { ++m } /^fetchGetURL\(\)/ { ++m } /runtime error: unable/ { ++m } END { if (!m) exit 1; }' || {
     echo "not ok" 1 "missing formatted network failure message"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${capture_output}" >&2
