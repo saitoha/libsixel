@@ -46,6 +46,9 @@
 #endif
 #include <webp/decode.h>
 #include <webp/demux.h>
+#if HAVE_LCMS2
+# include <lcms2.h>
+#endif
 
 #include <sixel.h>
 
@@ -71,6 +74,16 @@ typedef struct sixel_loader_libwebp_component {
     int start_frame_no;
 } sixel_loader_libwebp_component_t;
 
+#if HAVE_LCMS2
+static void
+webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  int pixelformat,
+                                  unsigned char const *icc_profile,
+                                  size_t icc_profile_length);
+#endif
+
 /*
  * Decode a WebP buffer into an RGB(A) pixel buffer managed by libsixel.
  *
@@ -86,6 +99,8 @@ load_webp(unsigned char **result,
           int *pwidth,
           int *pheight,
           int *ppixelformat,
+          unsigned char const *icc_profile,
+          size_t icc_profile_length,
           sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -152,10 +167,170 @@ load_webp(unsigned char **result,
         }
     }
 
+#if HAVE_LCMS2
+    webp_convert_embedded_icc_to_srgb(*result,
+                                      *pwidth,
+                                      *pheight,
+                                      *ppixelformat,
+                                      icc_profile,
+                                      icc_profile_length);
+#else
+    (void)icc_profile;
+    (void)icc_profile_length;
+#endif
+
     status = SIXEL_OK;
 
     return status;
 }
+
+#if HAVE_LCMS2
+/*
+ * Extract embedded ICC profile bytes from a WebP container if present.
+ *
+ * The ICC payload is stored in the ICCP chunk. This helper copies the
+ * payload into allocator-managed memory so callers can safely use it after
+ * the demuxer has been deleted.
+ */
+static void
+webp_extract_icc_profile(unsigned char const *data,
+                         size_t size,
+                         unsigned char **icc_profile,
+                         size_t *icc_profile_length,
+                         sixel_allocator_t *allocator)
+{
+    WebPData webp_data;
+    WebPDemuxer *demux;
+    WebPChunkIterator chunk_iter;
+    unsigned int format_flags;
+
+    webp_data = (WebPData){ 0 };
+    demux = NULL;
+    chunk_iter = (WebPChunkIterator){ 0 };
+    format_flags = 0U;
+
+    *icc_profile = NULL;
+    *icc_profile_length = 0U;
+
+    if (data == NULL || size == 0U || allocator == NULL) {
+        return;
+    }
+
+    webp_data.bytes = data;
+    webp_data.size = size;
+    demux = WebPDemux(&webp_data);
+    if (demux == NULL) {
+        return;
+    }
+
+    format_flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
+    if ((format_flags & ICCP_FLAG) == 0U) {
+        goto cleanup;
+    }
+
+    if (!WebPDemuxGetChunk(demux, "ICCP", 1, &chunk_iter)) {
+        goto cleanup;
+    }
+    if (chunk_iter.chunk.bytes == NULL || chunk_iter.chunk.size == 0U) {
+        goto cleanup;
+    }
+
+    *icc_profile = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        chunk_iter.chunk.size);
+    if (*icc_profile == NULL) {
+        goto cleanup;
+    }
+
+    memcpy(*icc_profile, chunk_iter.chunk.bytes, chunk_iter.chunk.size);
+    *icc_profile_length = chunk_iter.chunk.size;
+
+cleanup:
+    if (chunk_iter.chunk.bytes != NULL) {
+        WebPDemuxReleaseChunkIterator(&chunk_iter);
+    }
+    if (demux != NULL) {
+        WebPDemuxDelete(demux);
+    }
+}
+
+/*
+ * Convert decoded WebP pixels from embedded ICC profile space to sRGB.
+ *
+ * The alpha channel is preserved when RGBA pixels are provided. If ICC data
+ * is missing or invalid, the decoded pixels remain unchanged.
+ */
+static void
+webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  int pixelformat,
+                                  unsigned char const *icc_profile,
+                                  size_t icc_profile_length)
+{
+    cmsHPROFILE src_profile;
+    cmsHPROFILE dst_profile;
+    cmsHTRANSFORM transform;
+    cmsUInt32Number src_type;
+    cmsUInt32Number dst_type;
+    cmsUInt32Number transform_flags;
+    size_t pixel_count;
+
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    src_type = TYPE_RGB_8;
+    dst_type = TYPE_RGB_8;
+    transform_flags = 0U;
+    pixel_count = 0U;
+
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        icc_profile == NULL || icc_profile_length == 0U) {
+        return;
+    }
+
+    if (pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
+        src_type = TYPE_RGBA_8;
+        dst_type = TYPE_RGBA_8;
+        transform_flags = cmsFLAGS_COPY_ALPHA;
+    } else if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        return;
+    }
+
+    src_profile = cmsOpenProfileFromMem(icc_profile, icc_profile_length);
+    if (src_profile == NULL) {
+        return;
+    }
+    dst_profile = cmsCreate_sRGBProfile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+
+    transform = cmsCreateTransform(src_profile,
+                                   src_type,
+                                   dst_profile,
+                                   dst_type,
+                                   INTENT_PERCEPTUAL,
+                                   transform_flags);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+
+cleanup:
+    if (transform != NULL) {
+        cmsDeleteTransform(transform);
+    }
+    if (dst_profile != NULL) {
+        cmsCloseProfile(dst_profile);
+    }
+    if (src_profile != NULL) {
+        cmsCloseProfile(src_profile);
+    }
+}
+#endif
 
 
 /*
@@ -691,6 +866,10 @@ load_with_libwebp(
     int resolved_start_frame_no;
     int decode_start_frame_no;
     int emitted_frame_no;
+#if HAVE_LCMS2
+    unsigned char *icc_profile;
+    size_t icc_profile_length;
+#endif
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -710,6 +889,10 @@ load_with_libwebp(
     resolved_start_frame_no = 0;
     decode_start_frame_no = 0;
     emitted_frame_no = 0;
+#if HAVE_LCMS2
+    icc_profile = NULL;
+    icc_profile_length = 0U;
+#endif
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -726,6 +909,14 @@ load_with_libwebp(
 
     webp_data.bytes = pchunk->buffer;
     webp_data.size = pchunk->size;
+
+#if HAVE_LCMS2
+    webp_extract_icc_profile(pchunk->buffer,
+                             pchunk->size,
+                             &icc_profile,
+                             &icc_profile_length,
+                             pchunk->allocator);
+#endif
 
     if (!WebPAnimDecoderOptionsInit(&decoder_options)) {
         sixel_helper_set_additional_message(
@@ -772,6 +963,8 @@ load_with_libwebp(
                            &frame->width,
                            &frame->height,
                            &frame->pixelformat,
+                           icc_profile,
+                           icc_profile_length,
                            pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -863,6 +1056,14 @@ load_with_libwebp(
             goto end;
         }
         memcpy(pixels, decoded_frame, frame_bytes);
+#if HAVE_LCMS2
+        webp_convert_embedded_icc_to_srgb(pixels,
+                                          frame->width,
+                                          frame->height,
+                                          frame->pixelformat,
+                                          icc_profile,
+                                          icc_profile_length);
+#endif
         sixel_frame_set_pixels(frame, pixels);
 
         status = sixel_frame_strip_alpha(frame, bgcolor);
@@ -970,6 +1171,14 @@ load_with_libwebp(
             }
 
             memcpy(pixels, decoded_frame, frame_bytes);
+#if HAVE_LCMS2
+            webp_convert_embedded_icc_to_srgb(pixels,
+                                              (int)anim_info.canvas_width,
+                                              (int)anim_info.canvas_height,
+                                              SIXEL_PIXELFORMAT_RGBA8888,
+                                              icc_profile,
+                                              icc_profile_length);
+#endif
             sixel_frame_set_pixels(frame, pixels);
             pixels = NULL;
 
@@ -1037,6 +1246,9 @@ end:
     if (decoder != NULL) {
         WebPAnimDecoderDelete(decoder);
     }
+#if HAVE_LCMS2
+    sixel_allocator_free(pchunk->allocator, icc_profile);
+#endif
     sixel_frame_unref(frame);
 
     return status;
