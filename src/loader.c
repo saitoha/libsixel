@@ -925,7 +925,11 @@ sixel_loader_new(
 
     loader->ref = 1U;
     loader->fstatic = 0;
-    loader->fuse_palette = 0;
+    /*
+     * Default policy: keep source palettes when a loader can provide them.
+     * This avoids unnecessary requantization loss in downstream encoding.
+     */
+    loader->fuse_palette = 1;
     loader->reqcolors = SIXEL_PALETTE_MAX;
     loader->bgcolor[0] = 0;
     loader->bgcolor[1] = 0;
@@ -1030,7 +1034,7 @@ sixel_loader_setopt(
         break;
     case SIXEL_LOADER_OPTION_USE_PALETTE:
         flag = (int const *)value;
-        loader->fuse_palette = flag != NULL ? *flag : 0;
+        loader->fuse_palette = flag != NULL ? *flag : 1;
         status = SIXEL_OK;
         break;
     case SIXEL_LOADER_OPTION_REQCOLORS:
