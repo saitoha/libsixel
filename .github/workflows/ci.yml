@@ -3568,7 +3568,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
-              wineboot -u;
+              wineboot -u || :;
               CC=x86_64-w64-mingw32-gcc-win32
             setup_options: >-
               --host=x86_64-w64-mingw32
@@ -3584,7 +3584,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
-              wineboot -u;
+              wineboot -u || :;
               cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
               CC=x86_64-w64-mingw32-gcc-posix
             setup_options: >-
@@ -3601,7 +3601,7 @@ jobs:
             buildtool: autotools
             runner: macos-15-intel
             setup_prefix: >-
-              wineboot -u;
+              wineboot -u || :;
               cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
               CC=x86_64-w64-mingw32-gcc
             setup_options: >-
