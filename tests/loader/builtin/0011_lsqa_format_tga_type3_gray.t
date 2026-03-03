@@ -2,9 +2,9 @@
 # Verify TGA type 3 (uncompressed grayscale) quality against lsqa baselines.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -colorspace Gray -define tga:image-origin=TopLeft tests/data/inputs/formats/snake-tga-type3-gray.tga
-#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.png
-#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.png
-#   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.png
+#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.ppm
+#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.ppm
+#   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.ppm
 
 set -eux
 
@@ -21,7 +21,7 @@ printf '1..1\n'
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type3-gray.tga"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "type 3 gray TGA quality below floor"

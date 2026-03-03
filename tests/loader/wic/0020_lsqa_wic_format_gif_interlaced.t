@@ -32,7 +32,7 @@ set -v
 lsqa_floor=0.98
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_gif_interlaced.six"
 run_img2sixel -S -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "wic gif interlaced conversion failed"

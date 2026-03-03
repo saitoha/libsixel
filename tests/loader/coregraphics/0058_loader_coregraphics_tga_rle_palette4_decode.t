@@ -20,7 +20,7 @@ set -v
 
 lsqa_floor=0.98
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type9-pal4.tga"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb-from-pal4.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb-from-pal4.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_tga_rle_palette4.six"
 
 run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {

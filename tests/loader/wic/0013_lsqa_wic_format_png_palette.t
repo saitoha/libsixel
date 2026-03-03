@@ -24,7 +24,7 @@ printf '1..1\n'
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8.png"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_png_palette.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "wic png palette conversion failed"

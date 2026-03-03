@@ -2,9 +2,9 @@
 # Confirm RGBA TIFF quality meets the MS-SSIM baseline.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/rgba.tiff
-#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.png
-#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.png
-#   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.png
+#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.ppm
+#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.ppm
+#   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.ppm
 
 set -eux
 
@@ -27,7 +27,7 @@ printf '1..1
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.tiff"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba.six"
 run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "tiff rgba conversion failed"

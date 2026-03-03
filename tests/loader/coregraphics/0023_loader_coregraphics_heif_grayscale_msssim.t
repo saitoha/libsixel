@@ -26,7 +26,7 @@ run_img2sixel -L coregraphics! \
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_heif_gray_lossless.six" 2>&1) || {
     echo "not ok" 1 "$lsqa_msg"
     exit 0

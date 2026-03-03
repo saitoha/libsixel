@@ -26,7 +26,7 @@ set -v
 lsqa_floor=0.98
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-bmp3-rle8.bmp"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_bmp3_rle8.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "wic bmp3 rle8 conversion failed"

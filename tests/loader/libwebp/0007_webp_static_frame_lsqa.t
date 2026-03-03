@@ -24,7 +24,7 @@ echo "1..1"
 set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
-image_ref="${TOP_SRCDIR}/tests/data/inputs/formats/animated-8x8-frame1-reference.png"
+image_ref="${TOP_SRCDIR}/tests/data/inputs/formats/animated-8x8-frame1-reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/webp_static_frame.six"
 
 run_img2sixel -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {

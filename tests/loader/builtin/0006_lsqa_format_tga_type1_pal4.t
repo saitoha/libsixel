@@ -2,9 +2,9 @@
 # Verify TGA type 1 (uncompressed color-mapped) with 16-color palette.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -colors 16 -type Palette -define tga:image-origin=TopLeft tests/data/inputs/formats/snake-tga-type1-pal4.tga
-#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.png
-#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.png
-#   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.png
+#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.ppm
+#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.ppm
+#   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.ppm
 
 set -eux
 
@@ -21,7 +21,7 @@ printf '1..1\n'
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type1-pal4.tga"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {

@@ -24,7 +24,7 @@ set -v
 lsqa_floor=0.99
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.tiff"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_tiff_rgba.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "wic tiff rgba conversion failed"

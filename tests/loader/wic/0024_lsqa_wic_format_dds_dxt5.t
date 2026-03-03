@@ -7,7 +7,7 @@
 #   convert tests/data/inputs/snake_64.png -colors 256 tests/data/inputs/formats/snake-ico-pal8.ico
 #   convert tests/data/inputs/formats/rgba.png tests/data/inputs/formats/snake-ico-rgba.ico
 #   convert tests/data/inputs/snake_64.png DXT1:tests/data/inputs/formats/snake-dds-dxt1.dds
-#   convert tests/data/inputs/formats/snake-64-reference-rgba.png -define dds:compression=dxt5 DDS:tests/data/inputs/formats/snake-dds-dxt5.dds
+#   convert tests/data/inputs/formats/snake-64-reference-rgba.ppm -define dds:compression=dxt5 DDS:tests/data/inputs/formats/snake-dds-dxt5.dds
 
 set -eux
 
@@ -32,7 +32,7 @@ set -v
 lsqa_floor=0.95
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt5.dds"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_dds_dxt5.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "wic dds dxt5 conversion failed"
