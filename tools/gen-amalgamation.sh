@@ -532,7 +532,7 @@ emit_all_units() {
             src/threadpool.c)
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
                 ;;
-            converters/cli.c|converters/completion_utils.c|converters/path.c|converters/malloc_stub.c|converters/aborttrace.c)
+            converters/cli.c|converters/completion_utils.c|converters/path.c|converters/malloc_stub.c|converters/aborttrace.c|converters/compat.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_${guard})"
