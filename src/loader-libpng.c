@@ -261,6 +261,7 @@ png_convert_profile_to_srgb(unsigned char *pixels,
     size_t pixel_count;
     unsigned char *gray_in;
     unsigned char *rgb_out;
+    unsigned char *rgb_in;
     size_t i;
 
     dst_profile = NULL;
@@ -271,12 +272,14 @@ png_convert_profile_to_srgb(unsigned char *pixels,
     pixel_count = 0;
     gray_in = NULL;
     rgb_out = NULL;
+    rgb_in = NULL;
     i = 0u;
 
     if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
         return;
     }
-    if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+    if (pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
+        pixelformat != SIXEL_PIXELFORMAT_G8) {
         return;
     }
     src_colorspace = cmsGetColorSpace(src_profile);
@@ -287,7 +290,7 @@ png_convert_profile_to_srgb(unsigned char *pixels,
         return;
     }
 
-    if (src_colorspace == cmsSigGrayData) {
+    if (src_colorspace == cmsSigGrayData && pixelformat == SIXEL_PIXELFORMAT_RGB888) {
         gray_in = (unsigned char *)malloc(pixel_count);
         rgb_out = (unsigned char *)malloc(pixel_count * 3u);
         if (gray_in == NULL || rgb_out == NULL) {
@@ -309,6 +312,53 @@ png_convert_profile_to_srgb(unsigned char *pixels,
         memcpy(pixels, rgb_out, pixel_count * 3u);
         goto cleanup;
     }
+    if (pixelformat == SIXEL_PIXELFORMAT_G8) {
+        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
+        if (rgb_out == NULL) {
+            goto cleanup;
+        }
+        if (src_colorspace == cmsSigGrayData) {
+            gray_in = (unsigned char *)malloc(pixel_count);
+            if (gray_in == NULL) {
+                goto cleanup;
+            }
+            memcpy(gray_in, pixels, pixel_count);
+            transform = cmsCreateTransform(src_profile,
+                                           TYPE_GRAY_8,
+                                           dst_profile,
+                                           TYPE_RGB_8,
+                                           INTENT_PERCEPTUAL,
+                                           0);
+            if (transform == NULL) {
+                goto cleanup;
+            }
+            cmsDoTransform(transform, gray_in, rgb_out, (cmsUInt32Number)pixel_count);
+        } else {
+            rgb_in = (unsigned char *)malloc(pixel_count * 3u);
+            if (rgb_in == NULL) {
+                goto cleanup;
+            }
+            for (i = 0u; i < pixel_count; ++i) {
+                rgb_in[i * 3u + 0u] = pixels[i];
+                rgb_in[i * 3u + 1u] = pixels[i];
+                rgb_in[i * 3u + 2u] = pixels[i];
+            }
+            transform = cmsCreateTransform(src_profile,
+                                           TYPE_RGB_8,
+                                           dst_profile,
+                                           TYPE_RGB_8,
+                                           INTENT_PERCEPTUAL,
+                                           0);
+            if (transform == NULL) {
+                goto cleanup;
+            }
+            cmsDoTransform(transform, rgb_in, rgb_out, (cmsUInt32Number)pixel_count);
+        }
+        for (i = 0u; i < pixel_count; ++i) {
+            pixels[i] = rgb_out[i * 3u + 0u];
+        }
+        goto cleanup;
+    }
 
     transform = cmsCreateTransform(src_profile,
                                    src_type,
@@ -328,6 +378,9 @@ cleanup:
     }
     if (gray_in != NULL) {
         free(gray_in);
+    }
+    if (rgb_in != NULL) {
+        free(rgb_in);
     }
     if (transform != NULL) {
         cmsDeleteTransform(transform);
@@ -488,6 +541,7 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *pixelformat,
          unsigned char      /* out */ *bgcolor,
          int                /* out */ *transparent,
+         int                /* in */  enable_cms,
          sixel_allocator_t  /* in */  *allocator)
 {
     SIXELSTATUS status;
@@ -557,6 +611,8 @@ load_png(unsigned char      /* out */ **result,
     green_y = 0.0;
     blue_x = 0.0;
     blue_y = 0.0;
+#else
+    (void)enable_cms;
 #endif
 
     png_ptr = png_create_read_struct(
@@ -928,9 +984,9 @@ load_png(unsigned char      /* out */ **result,
     png_read_image(png_ptr, rows);
 
 #if HAVE_LCMS2
-    if (has_embedded_icc && has_srgb_chunk && has_chrm_chunk) {
+    if (enable_cms && has_embedded_icc && has_srgb_chunk && has_chrm_chunk) {
         /* Priority 1: iCCP+sRGB+cHRM coexistence => no conversion. */
-    } else if (has_embedded_icc) {
+    } else if (enable_cms && has_embedded_icc) {
         /* Priority 2: iCCP only. */
         if (*pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
             ppalette != NULL &&
@@ -956,11 +1012,12 @@ load_png(unsigned char      /* out */ **result,
                                              icc_profile,
                                              icc_profile_length);
         }
-    } else if (has_srgb_chunk) {
+    } else if (enable_cms && has_srgb_chunk) {
         /* Priority 3: sRGB present => no conversion. */
-    } else if (png_build_rgb_profile_from_chunks(png_ptr,
-                                                  info_ptr,
-                                                  &chunk_profile)) {
+    } else if (enable_cms &&
+               png_build_rgb_profile_from_chunks(png_ptr,
+                                                 info_ptr,
+                                                 &chunk_profile)) {
         /* Priority 4: gAMA(+/-cHRM). */
         if (*pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
             ppalette != NULL &&
@@ -2163,11 +2220,13 @@ load_with_libpng(
     sixel_frame_t *frame;
     unsigned char *pixels;
     int start_frame_no;
+    int enable_cms;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
     start_frame_no = INT_MIN;
+    enable_cms = 1;
 
     (void)fstatic;
     (void)loop_control;
@@ -2180,6 +2239,8 @@ load_with_libpng(
             goto end;
         }
     }
+
+    enable_cms = loader_libpng_get_enable_cms();
     status = load_apng_frames(pchunk,
                               fstatic,
                               fuse_palette,
@@ -2214,6 +2275,7 @@ load_with_libpng(
                       &frame->pixelformat,
                       bgcolor,
                       &frame->transparent,
+                      enable_cms,
                       pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;

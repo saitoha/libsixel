@@ -52,6 +52,24 @@ loader_manager_unref_singleton_ref(sixel_atomic_u32_t *ref)
 }
 
 
+static sixel_suboption_choice_t const
+g_suboption_choices_loader_enable_cms_loader[] = {
+    { "0", 0 },
+    { "1", 1 }
+};
+
+static sixel_suboption_key_t const g_subkeys_loader_enable_cms_loader[] = {
+    {
+        "enable_cms",
+        "e",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_enable_cms_loader,
+        sizeof(g_suboption_choices_loader_enable_cms_loader)
+            / sizeof(g_suboption_choices_loader_enable_cms_loader[0])
+    }
+};
+
 #if HAVE_WIC
 /*
  * The loader option parser accepts free-form text for ico_minsize and
@@ -67,16 +85,35 @@ static sixel_suboption_key_t const g_subkeys_loader_wic_loader[] = {
         0u
     }
 };
+#endif
 
 static sixel_option_value_schema_t const
 g_schema_loader_values_loader[] = {
+#if HAVE_LIBPNG
+    {
+        "libpng",
+        0,
+        g_subkeys_loader_enable_cms_loader,
+        sizeof(g_subkeys_loader_enable_cms_loader)
+            / sizeof(g_subkeys_loader_enable_cms_loader[0])
+    },
+#endif
+    {
+        "builtin",
+        1,
+        g_subkeys_loader_enable_cms_loader,
+        sizeof(g_subkeys_loader_enable_cms_loader)
+            / sizeof(g_subkeys_loader_enable_cms_loader[0])
+    },
+#if HAVE_WIC
     {
         "wic",
-        0,
+        2,
         g_subkeys_loader_wic_loader,
         sizeof(g_subkeys_loader_wic_loader)
             / sizeof(g_subkeys_loader_wic_loader[0])
     },
+#endif
 };
 
 static sixel_option_argument_schema_t const g_schema_loaders_loader = {
@@ -87,6 +124,7 @@ static sixel_option_argument_schema_t const g_schema_loaders_loader = {
         / sizeof(g_schema_loader_values_loader[0])
 };
 
+#if HAVE_WIC
 static int
 loader_manager_parse_positive_int(char const *text,
                                   size_t length,
@@ -122,6 +160,25 @@ loader_manager_parse_positive_int(char const *text,
     return 1;
 }
 #endif
+
+static int
+loader_manager_parse_bool_flag(char const *text,
+                               size_t length,
+                               int *value_out)
+{
+    if (text == NULL || value_out == NULL || length != 1u) {
+        return 0;
+    }
+    if (text[0] == '0') {
+        *value_out = 0;
+        return 1;
+    }
+    if (text[0] == '1') {
+        *value_out = 1;
+        return 1;
+    }
+    return 0;
+}
 
 static int
 loader_manager_plan_contains(sixel_loader_entry_t const **plan,
@@ -221,7 +278,6 @@ loader_manager_lookup_token(char const *token,
 void
 loader_manager_apply_loader_suboptions(char const *order)
 {
-#if HAVE_WIC
     char const *cursor;
     char const *token_start;
     char const *token_end;
@@ -253,11 +309,12 @@ loader_manager_apply_loader_suboptions(char const *order)
     value_length = 0u;
     parsed_value = 0;
 
-    /*
-     * Suboptions currently control only WIC behavior. Reset first so a
-     * malformed token never leaks state from a previous invocation.
-     */
+    /* Reset overrides first so malformed tokens cannot leak previous state. */
+#if HAVE_WIC
     sixel_helper_set_wic_ico_minsize(0);
+#endif
+    sixel_helper_set_libpng_enable_cms(-1);
+    sixel_helper_set_builtin_enable_cms(-1);
 
     if (order == NULL || order[0] == '\0') {
         return;
@@ -295,8 +352,7 @@ loader_manager_apply_loader_suboptions(char const *order)
                             &resolution,
                             match_detail,
                             sizeof(match_detail))) &&
-                    resolution.base_def != NULL &&
-                    strcmp(resolution.base_def->name, "wic") == 0) {
+                    resolution.base_def != NULL) {
                     for (assignment_index = 0u;
                          assignment_index < resolution.assignment_count;
                          ++assignment_index) {
@@ -311,12 +367,29 @@ loader_manager_apply_loader_suboptions(char const *order)
                         if (key_name == NULL || value_text == NULL) {
                             continue;
                         }
-                        if (strcmp(key_name, "ico_minsize") == 0 &&
+#if HAVE_WIC
+                        if (strcmp(resolution.base_def->name, "wic") == 0 &&
+                            strcmp(key_name, "ico_minsize") == 0 &&
                             loader_manager_parse_positive_int(
                                 value_text,
                                 value_length,
                                 &parsed_value)) {
                             sixel_helper_set_wic_ico_minsize(parsed_value);
+                            continue;
+                        }
+#endif
+                        if (strcmp(key_name, "enable_cms") == 0 &&
+                            loader_manager_parse_bool_flag(
+                                value_text,
+                                value_length,
+                                &parsed_value)) {
+                            if (strcmp(resolution.base_def->name, "libpng")
+                                == 0) {
+                                sixel_helper_set_libpng_enable_cms(parsed_value);
+                            } else if (strcmp(resolution.base_def->name,
+                                              "builtin") == 0) {
+                                sixel_helper_set_builtin_enable_cms(parsed_value);
+                            }
                         }
                     }
                 }
@@ -326,9 +399,6 @@ loader_manager_apply_loader_suboptions(char const *order)
         }
         ++cursor;
     }
-#else
-    (void)order;
-#endif
 }
 
 size_t

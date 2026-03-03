@@ -29,7 +29,7 @@ test -f "${expected_ppm}" || {
     exit 0
 }
 
-run_img2sixel -c16x16+8+8 -Llibpng! "${input_png}" >"${output_sixel}" || {
+run_img2sixel -c16x16+8+8 -Llibpng:enable_cms=0! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 "img2sixel failed"
     exit 0
 }
