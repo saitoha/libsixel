@@ -87,6 +87,8 @@ endif
 msvc_pgo_mode = get_option('msvc_pgo')
 msvc_pgo_data = get_option('msvc_pgo_data')
 msvc_pgo_summary = 'off'
+msvc_pgo_compile_args = []
+msvc_pgo_link_args = []
 if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
   if msvc_pgo_mode != 'off'
     # Keep PGO flags explicit for MSVC-like frontends because Meson base
@@ -96,10 +98,7 @@ if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
     # active, and this project treats warnings as errors on CI. Force an
     # optimization level during msvc_pgo generate/use to keep instrumentation
     # valid even with buildtype=plain.
-    add_project_arguments('/O2', language: 'c')
-    add_project_arguments('/GL', language: 'c')
-
-    msvc_pgo_link_args = []
+    msvc_pgo_compile_args += ['/O2', '/GL']
     if msvc_pgo_mode == 'generate'
       msvc_pgo_link_args += ['/LTCG:PGINSTRUMENT']
     elif msvc_pgo_mode == 'use'
@@ -116,7 +115,6 @@ if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
       msvc_pgo_summary = msvc_pgo_mode + '(pgd=per-target default)'
     endif
 
-    add_project_link_arguments(msvc_pgo_link_args, language: 'c')
   endif
 else
   if msvc_pgo_mode != 'off'
@@ -1840,6 +1838,16 @@ endif
 
 lsqa_bin = disabler()
 
+if have_wiccodec
+  subdir('wic')
+endif
+
+if msvc_pgo_mode != 'off' and msvc_pgo_link_args.length() > 0
+  # Keep WIC uninstrumented: apply MSVC PGO flags only after the WIC module.
+  add_project_arguments(msvc_pgo_compile_args, language: 'c')
+  add_project_link_arguments(msvc_pgo_link_args, language: 'c')
+endif
+
 subdir('src')
 if have_ruby
   ruby_gem_distdir = join_paths(meson.project_build_root(), 'ruby', 'dist')
@@ -1857,9 +1865,6 @@ if have_ruby
   )
 endif
 subdir('converters')
-if have_wiccodec
-  subdir('wic')
-endif
 
 if gdk_pixbuf_loader_deps.length() > 0
   subdir('gdk-pixbuf-loader')
