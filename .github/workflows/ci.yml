@@ -3536,7 +3536,7 @@ jobs:
               --host=x86_64-w64-mingw32
               --disable-shared
             extra_packages: >-
-              wine@devel
+              wine@staging
               mingw-w64
             make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
