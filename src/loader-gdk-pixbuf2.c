@@ -673,7 +673,7 @@ load_with_gdkpixbuf(
                  */
                 g_time_val_add(&time_val, delay_ms * 1000);
                 frame->delay = delay_ms / 10;
-                frame->multiframe = 1;
+                frame->multiframe = fstatic ? 0 : 1;
 
                 if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
                     finished = TRUE;
@@ -907,7 +907,7 @@ load_with_gdkpixbuf(
                  */
                 g_time_val_add(&time_val, delay_ms * 1000);
                 frame->delay = delay_ms / 10;
-                frame->multiframe = 1;
+                frame->multiframe = fstatic ? 0 : 1;
 
                 if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
                     finished = TRUE;

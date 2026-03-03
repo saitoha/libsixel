@@ -5342,7 +5342,7 @@ sixel_encoder_output_without_macro(
     }
 #endif
     delay = sixel_frame_get_delay(frame);
-    if (delay > 0 && !encoder->fignore_delay) {
+    if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
 # if defined(HAVE_CLOCK)
         last_clock = clock();
 /* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
@@ -5560,7 +5560,7 @@ sixel_encoder_output_with_macro(
             goto end;
         }
     delay = sixel_frame_get_delay(frame);
-    if (delay > 0 && !encoder->fignore_delay) {
+    if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
 # if defined(HAVE_CLOCK)
             last_clock = clock();
 /* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
@@ -8455,6 +8455,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         && planner != NULL) {
         allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
             planner,
+            encoder,
             frame);
     }
 
