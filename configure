@@ -17070,7 +17070,7 @@ then :
   as_fn_error $? "--enable-lto=full requested, but -GL + -LTCG are not supported by the current MSVC toolchain" "$LINENO" 5
 fi
            sixel_lto_cflags="-GL"
-           sixel_lto_ldflags="-LTCG"
+                                 sixel_lto_ldflags="-XCClinker -LTCG"
            sixel_lto_status="full" ;; #(
   thin) :
     as_fn_error $? "--enable-lto=thin is unsupported with MSVC (cl.exe)" "$LINENO" 5 ;; #(
@@ -17336,7 +17336,7 @@ printf "%s\n" "$as_me: WARNING:
 fi
 
     sixel_pgo_cflags="-GL"
-    sixel_pgo_ldflags="-LTCG:PGINSTRUMENT"
+    sixel_pgo_ldflags="-XCClinker -LTCG:PGINSTRUMENT"
     if test "x$pgo_data_path" != "x"
 then :
 
@@ -17400,7 +17400,7 @@ then :
 
 fi
     sixel_pgo_cflags="-GL"
-    sixel_pgo_ldflags="-LTCG:PGOPTIMIZE"
+    sixel_pgo_ldflags="-XCClinker -LTCG:PGOPTIMIZE"
     if test "x$pgo_data_path" != "x"
 then :
 
