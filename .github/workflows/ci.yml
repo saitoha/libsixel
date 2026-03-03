@@ -685,6 +685,11 @@ jobs:
             exec_type: cmd
 
     steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
