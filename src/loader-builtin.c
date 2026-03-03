@@ -2463,6 +2463,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                              self->loop_control,
                              self->start_frame_no_set,
                              self->start_frame_no,
+                             loader_builtin_get_enable_cms(),
                              fn_load,
                              context);
 }
@@ -2529,6 +2530,7 @@ load_with_builtin(
     int loop_control,
     int start_frame_no_set,
     int start_frame_no_override,
+    int enable_cms,
     sixel_load_image_function fn_load,
     void *context)
 {
@@ -2569,6 +2571,8 @@ load_with_builtin(
 #if HAVE_LCMS2
     icc_profile = NULL;
     icc_profile_length = 0u;
+#else
+    (void)enable_cms;
 #endif
 
     if (start_frame_no_set) {
@@ -2730,13 +2734,15 @@ load_with_builtin(
                  * PNG colorspace fallback rules (iCCP > sRGB > cHRM/gAMA)
                  * before exposing PAL8 output.
                  */
-                sixel_builtin_apply_png_colorspace_fallback(
-                    frame->palette,
-                    palette_colors,
-                    1,
-                    pchunk->buffer,
-                    pchunk->size,
-                    pchunk->allocator);
+                if (enable_cms) {
+                    sixel_builtin_apply_png_colorspace_fallback(
+                        frame->palette,
+                        palette_colors,
+                        1,
+                        pchunk->buffer,
+                        pchunk->size,
+                        pchunk->allocator);
+                }
 #endif
                 sixel_frame_set_pixels(frame, pixels);
                 frame->loop_count = 1;
@@ -2801,14 +2807,14 @@ load_with_builtin(
         sixel_frame_set_pixels(frame, pixels);
         frame->loop_count = 1;
 #if HAVE_LCMS2
-        if (chunk_is_png(pchunk)) {
+        if (enable_cms && chunk_is_png(pchunk)) {
             sixel_builtin_apply_png_colorspace_fallback(pixels,
                                                         frame->width,
                                                         frame->height,
                                                         pchunk->buffer,
                                                         pchunk->size,
                                                         pchunk->allocator);
-        } else if (chunk_is_jpeg(pchunk)) {
+        } else if (enable_cms && chunk_is_jpeg(pchunk)) {
             if (sixel_builtin_extract_jpeg_icc(pchunk->buffer,
                                                pchunk->size,
                                                &icc_profile,
@@ -2820,7 +2826,7 @@ load_with_builtin(
                                                   icc_profile,
                                                   icc_profile_length);
             }
-        } else if (chunk_is_psd(pchunk)) {
+        } else if (enable_cms && chunk_is_psd(pchunk)) {
             if (sixel_builtin_extract_psd_icc(pchunk->buffer,
                                               pchunk->size,
                                               &icc_profile,

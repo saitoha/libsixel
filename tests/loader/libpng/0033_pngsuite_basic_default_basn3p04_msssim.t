@@ -23,7 +23,7 @@ set -v
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn3p04.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0028_pngsuite_basic_default_basn3p04_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn3p04.sixel"
-run_img2sixel -Llibpng! "${input_png}" >"${output_sixel}" || {
+run_img2sixel -Llibpng:enable_cms=0! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 "img2sixel failed"
     exit 0
 }

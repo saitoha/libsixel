@@ -594,9 +594,46 @@ static sixel_suboption_key_t const g_subkeys_loader_wic[] = {
 };
 #endif
 
+static sixel_suboption_choice_t const g_suboption_choices_loader_enable_cms[] = {
+    { "0", 0 },
+    { "1", 1 }
+};
+
+#if HAVE_LIBPNG
+static sixel_suboption_key_t const g_subkeys_loader_libpng[] = {
+    {
+        "enable_cms",
+        "e",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_enable_cms,
+        sizeof(g_suboption_choices_loader_enable_cms)
+            / sizeof(g_suboption_choices_loader_enable_cms[0])
+    }
+};
+#endif
+
+static sixel_suboption_key_t const g_subkeys_loader_builtin[] = {
+    {
+        "enable_cms",
+        "e",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_enable_cms,
+        sizeof(g_suboption_choices_loader_enable_cms)
+            / sizeof(g_suboption_choices_loader_enable_cms[0])
+    }
+};
+
 static sixel_option_value_schema_t const g_schema_loader_values[] = {
 #if HAVE_LIBPNG
-    { "libpng", SIXEL_LOADER_CHOICE_LIBPNG, NULL, 0u },
+    {
+        "libpng",
+        SIXEL_LOADER_CHOICE_LIBPNG,
+        g_subkeys_loader_libpng,
+        sizeof(g_subkeys_loader_libpng)
+            / sizeof(g_subkeys_loader_libpng[0])
+    },
 #endif
 #if HAVE_JPEG
     { "libjpeg", SIXEL_LOADER_CHOICE_LIBJPEG, NULL, 0u },
@@ -610,7 +647,13 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
 #if HAVE_LIBRSVG
     { "librsvg", SIXEL_LOADER_CHOICE_LIBRSVG, NULL, 0u },
 #endif
-    { "builtin", SIXEL_LOADER_CHOICE_BUILTIN, NULL, 0u },
+    {
+        "builtin",
+        SIXEL_LOADER_CHOICE_BUILTIN,
+        g_subkeys_loader_builtin,
+        sizeof(g_subkeys_loader_builtin)
+            / sizeof(g_subkeys_loader_builtin[0])
+    },
 #if HAVE_WIC
     {
         "wic",
@@ -731,6 +774,8 @@ sixel_encoder_validate_loader_suboptions(
     }
 
     if (strcmp(resolution->base_def->name, "wic") != 0 &&
+        strcmp(resolution->base_def->name, "libpng") != 0 &&
+        strcmp(resolution->base_def->name, "builtin") != 0 &&
         resolution->assignment_count > 0u) {
         sixel_helper_set_additional_message(
             "specified loader does not support suboptions.");
@@ -739,7 +784,8 @@ sixel_encoder_validate_loader_suboptions(
 
     while (index < resolution->assignment_count) {
         assignment = resolution->assignments + index;
-        if (strcmp(assignment->resolved_key_name, "ico_minsize") == 0) {
+        if (strcmp(resolution->base_def->name, "wic") == 0 &&
+            strcmp(assignment->resolved_key_name, "ico_minsize") == 0) {
             if (!sixel_loader_parse_positive_int(
                     assignment->resolved_value_text,
                     strlen(assignment->resolved_value_text),

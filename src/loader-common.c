@@ -60,6 +60,10 @@ static int thumbnailer_size_hint_initialized;
 static int wic_ico_minsize_default;
 static int wic_ico_minsize;
 static int wic_ico_minsize_initialized;
+static int libpng_enable_cms_default = 1;
+static int libpng_enable_cms = 1;
+static int builtin_enable_cms_default = 1;
+static int builtin_enable_cms = 1;
 
 
 static void
@@ -118,6 +122,38 @@ sixel_helper_set_wic_ico_minsize(int size)
         wic_ico_minsize = size;
     } else {
         wic_ico_minsize = wic_ico_minsize_default;
+    }
+}
+
+int
+loader_libpng_get_enable_cms(void)
+{
+    return libpng_enable_cms;
+}
+
+void
+sixel_helper_set_libpng_enable_cms(int enable)
+{
+    if (enable >= 0) {
+        libpng_enable_cms = enable != 0 ? 1 : 0;
+    } else {
+        libpng_enable_cms = libpng_enable_cms_default;
+    }
+}
+
+int
+loader_builtin_get_enable_cms(void)
+{
+    return builtin_enable_cms;
+}
+
+void
+sixel_helper_set_builtin_enable_cms(int enable)
+{
+    if (enable >= 0) {
+        builtin_enable_cms = enable != 0 ? 1 : 0;
+    } else {
+        builtin_enable_cms = builtin_enable_cms_default;
     }
 }
 void

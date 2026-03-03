@@ -3098,6 +3098,7 @@ load_with_gnome_thumbnailer(
                                loop_control,
                                start_frame_no_set,
                                start_frame_no,
+                               loader_builtin_get_enable_cms(),
                                fn_load,
                                context);
     if (SIXEL_FAILED(status)) {
