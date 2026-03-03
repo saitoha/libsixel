@@ -57,6 +57,12 @@
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
 #endif  /* HAVE_LIBCURL */
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
+#if HAVE_SYS_PARAM_H
+# include <sys/param.h>
+#endif
 #ifdef HAVE_LIBFETCH
 # include <fetch.h>
 #endif  /* HAVE_LIBFETCH */
@@ -898,9 +904,8 @@ sixel_chunk_from_url_with_fetch(
         (void)sixel_compat_snprintf(
             message,
             sizeof(message),
-            "fetchGetURL() failed (code=%d, reason=%s).",
-            fetchLastErrCode,
-            fetchLastErrString ? fetchLastErrString : "unknown");
+            "fetchGetURL() failed (code=%d).",
+            fetchLastErrCode);
         sixel_helper_set_additional_message(message);
         goto end;
     }

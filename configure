@@ -20034,6 +20034,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
   ac_check_headers_parallel_includes=""
   ac_check_headers_parallel_dir="ac-check-headers.$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
@@ -20058,6 +20060,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
                            signal.h \
                            sys/select.h \
                            sys/signal.h \
+                           sys/param.h \
                            termios.h \
                            sys/ioctl.h \
                            sys/ttycom.h \

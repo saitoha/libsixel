@@ -337,6 +337,7 @@ std_headers = [
     'signal.h',
     'sys/select.h',
     'sys/signal.h',
+    'sys/param.h',
     'termios.h',
     'sys/ioctl.h',
     'sys/ttycom.h',
