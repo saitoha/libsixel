@@ -920,6 +920,42 @@ safe_stat64A(const char *path, struct stat *st)
 
     return rc;
 }
+
+static int
+safe_utf8_to_wide(const char *path, wchar_t **wide_path)
+{
+    int wlen;
+    wchar_t *buffer;
+
+    if (path == NULL || wide_path == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    wlen = MultiByteToWideChar(SAFE_STAT64_CODEPAGE,
+                               MB_ERR_INVALID_CHARS,
+                               path, -1, NULL, 0);
+    if (wlen <= 0) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    buffer = (wchar_t *)malloc((size_t)wlen * sizeof(wchar_t));
+    if (buffer == NULL) {
+        errno = ENOMEM;
+        return (-1);
+    }
+
+    if (MultiByteToWideChar(SAFE_STAT64_CODEPAGE, MB_ERR_INVALID_CHARS,
+                            path, -1, buffer, wlen) <= 0) {
+        free(buffer);
+        errno = EINVAL;
+        return (-1);
+    }
+
+    *wide_path = buffer;
+    return 0;
+}
 #endif  /* _MSC_VER */
 
 
@@ -990,8 +1026,48 @@ img2sixel_compat_rename(const char *src_path, const char *dst_path)
         return (-1);
     }
 
-    /* rename is available on MSVC and avoids undefined _rename warnings. */
+#if defined(_MSC_VER)
+    {
+        DWORD ge;
+        wchar_t *wide_src;
+        wchar_t *wide_dst;
+
+        wide_src = NULL;
+        wide_dst = NULL;
+        if (safe_utf8_to_wide(libc_src, &wide_src) != 0
+            || safe_utf8_to_wide(libc_dst, &wide_dst) != 0) {
+            if (wide_src != NULL) {
+                free(wide_src);
+            }
+            if (wide_dst != NULL) {
+                free(wide_dst);
+            }
+            if (src_buffer != NULL) {
+                free(src_buffer);
+            }
+            if (dst_buffer != NULL) {
+                free(dst_buffer);
+            }
+            return (-1);
+        }
+
+        if (MoveFileExW(wide_src, wide_dst,
+                        MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED)
+            != 0) {
+            result = 0;
+        } else {
+            ge = GetLastError();
+            errno = ge ? safe__win32_error_to_errno(ge) : EIO;
+            result = (-1);
+        }
+
+        free(wide_src);
+        free(wide_dst);
+    }
+#else
+    /* POSIX rename() semantics: destination is replaced atomically. */
     result = rename(libc_src, libc_dst);
+#endif
 
     if (src_buffer != NULL) {
         free(src_buffer);
