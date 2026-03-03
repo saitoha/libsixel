@@ -93,6 +93,78 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  static-analyze:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Meson-cmd-x86_64-msvc-static-analyze
+            runner: windows-latest
+            analyzer: msvc
+
+          - label: Autotools-ubuntu-x86_64-clang-static-analyze
+            runner: ubuntu-latest
+            analyzer: clang
+
+          - label: Autotools-ubuntu-x86_64-gcc-static-analyze
+            runner: ubuntu-latest
+            analyzer: gcc
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup MSVC developer env
+        if: ${{ matrix.analyzer == 'msvc' }}
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build with MSVC /W4 /analyze
+        if: ${{ matrix.analyzer == 'msvc' }}
+        shell: cmd
+        run: |
+          setlocal ENABLEDELAYEDEXPANSION
+          python -m pip install --upgrade pip
+          if errorlevel 1 exit /b !errorlevel!
+          python -m pip install meson
+          if errorlevel 1 exit /b !errorlevel!
+          set "CFLAGS=/W4 /analyze"
+          python -m mesonbuild.mesonmain setup builddir
+          if errorlevel 1 exit /b !errorlevel!
+          python -m mesonbuild.mesonmain compile -C builddir
+          if errorlevel 1 exit /b !errorlevel!
+          endlocal
+
+      - name: Install Clang Static Analyzer
+        if: ${{ matrix.analyzer == 'clang' }}
+        shell: bash
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y clang clang-tools
+
+      - name: Build with Clang Static Analyzer
+        if: ${{ matrix.analyzer == 'clang' }}
+        shell: bash
+        run: |
+          set -eux
+          SCAN_BUILD="$(command -v scan-build || true)"
+          if test -z "$SCAN_BUILD"; then
+            SCAN_BUILD="$(command -v scan-build-18 || command -v scan-build-17 || command -v scan-build-16 || true)"
+          fi
+          test -n "$SCAN_BUILD"
+          CC=clang ./configure
+          "$SCAN_BUILD" --status-bugs --keep-going make -j"$(nproc)" V=1
+
+      - name: Build with GCC Static Analyzer
+        if: ${{ matrix.analyzer == 'gcc' }}
+        shell: bash
+        run: |
+          set -eux
+          CC=gcc CFLAGS="-O2 -fanalyzer" ./configure
+          make -j"$(nproc)" V=1
+
   pgo:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
