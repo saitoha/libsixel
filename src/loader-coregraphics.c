@@ -174,7 +174,6 @@ load_with_coregraphics(
     CFDictionaryRef frame_props;
     CFDictionaryRef frame_anim_dict;
     CFNumberRef delay_num;
-    double delay_sec;
     unsigned char *pixels;
     int start_frame_no;
     int resolved_start_frame_no;
@@ -264,7 +263,14 @@ load_with_coregraphics(
             loop_num = (CFNumberRef)CFDictionaryGetValue(
                 anim_dict, kCGImagePropertyGIFLoopCount);
             if (loop_num) {
-                CFNumberGetValue(loop_num, kCFNumberIntType, &anim_loop_count);
+                int loop_value;
+                Boolean ok;
+
+                loop_value = anim_loop_count;
+                ok = CFNumberGetValue(loop_num, kCFNumberIntType, &loop_value);
+                if (ok) {
+                    anim_loop_count = loop_value;
+                }
             }
         }
     }
@@ -303,9 +309,16 @@ load_with_coregraphics(
                     loop_num = (CFNumberRef)CFDictionaryGetValue(
                         frame_anim_dict, kCGImagePropertyGIFLoopCount);
                     if (loop_num) {
-                        CFNumberGetValue(loop_num,
-                                         kCFNumberIntType,
-                                         &anim_loop_count);
+                        int loop_value;
+                        Boolean ok;
+
+                        loop_value = anim_loop_count;
+                        ok = CFNumberGetValue(loop_num,
+                                              kCFNumberIntType,
+                                              &loop_value);
+                        if (ok) {
+                            anim_loop_count = loop_value;
+                        }
                     }
                     delay_num = (CFNumberRef)CFDictionaryGetValue(
                         frame_anim_dict,
@@ -315,14 +328,19 @@ load_with_coregraphics(
                             frame_anim_dict, kCGImagePropertyGIFDelayTime);
                     }
                     if (delay_num) {
-                        CFNumberGetValue(
-                            delay_num,
-                            kCFNumberDoubleType,
-                            &delay_sec);
-                        if (delay_sec < 0) {
-                            delay_sec = 0.0;
+                        double delay_value;
+                        Boolean ok;
+
+                        delay_value = 0.0;
+                        ok = CFNumberGetValue(delay_num,
+                                              kCFNumberDoubleType,
+                                              &delay_value);
+                        if (ok) {
+                            if (delay_value < 0) {
+                                delay_value = 0.0;
+                            }
+                            frame->delay = (int)(delay_value * 100);
                         }
-                        frame->delay = (int)(delay_sec * 100);
                     }
                 }
                 CFRelease(frame_props);
