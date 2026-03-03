@@ -760,8 +760,8 @@ AS_IF([test "x$using_cl" = "xyes"], [
     [ac_cv_sixel_lto_full_msvc],
     [
      CFLAGS="$ac_sixel_save_CFLAGS -GL"
-     dnl Use '-LTCG' for MSVC linker flags. '-LTCG' is parsed by
-     dnl libtool as '-L TCG' (library search path) and breaks linking.
+     dnl Probe with plain '-LTCG'. The actual build flags below route this
+     dnl through libtool's pass-through options to avoid '-L<dir>' parsing.
      LDFLAGS="$ac_sixel_save_LDFLAGS -LTCG"
      AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
                     [ac_cv_sixel_lto_full_msvc=yes],
@@ -778,7 +778,9 @@ AS_IF([test "x$using_cl" = "xyes"], [
           [AS_IF([test "x$ac_cv_sixel_lto_full_msvc" != "xyes"],
                  [AC_MSG_ERROR([--enable-lto=full requested, but -GL + -LTCG are not supported by the current MSVC toolchain])])
            sixel_lto_cflags="-GL"
-           sixel_lto_ldflags="-LTCG"
+           dnl Keep '-LTCG' intact by passing it via libtool (-XCClinker).
+           dnl This also avoids MSYS '/LTCG' path conversion issues.
+           sixel_lto_ldflags="-XCClinker -LTCG"
            sixel_lto_status="full"],
           [thin],
           [AC_MSG_ERROR([--enable-lto=thin is unsupported with MSVC (cl.exe)])])
@@ -915,7 +917,7 @@ AS_IF([test "x$enable_pgo" = "xgenerate"], [
     ])
 
     sixel_pgo_cflags="-GL"
-    sixel_pgo_ldflags="-LTCG:PGINSTRUMENT"
+    sixel_pgo_ldflags="-XCClinker -LTCG:PGINSTRUMENT"
     AS_IF([test "x$pgo_data_path" != "x"], [
       sixel_pgo_ldflags="$sixel_pgo_ldflags -PGD:$pgo_data_path"
       sixel_pgo_status="generate(msvc-pgd=$pgo_data_path)"
@@ -949,7 +951,7 @@ AS_IF([test "x$enable_pgo" = "xuse"], [
       ])
     ])
     sixel_pgo_cflags="-GL"
-    sixel_pgo_ldflags="-LTCG:PGOPTIMIZE"
+    sixel_pgo_ldflags="-XCClinker -LTCG:PGOPTIMIZE"
     AS_IF([test "x$pgo_data_path" != "x"], [
       sixel_pgo_ldflags="$sixel_pgo_ldflags -PGD:$pgo_data_path"
       sixel_pgo_status="use(msvc-pgd=$pgo_data_path)"
