@@ -32,7 +32,7 @@ set -v
 lsqa_floor=0.95
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt1.dds"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_dds_dxt1.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "wic dds dxt1 conversion failed"

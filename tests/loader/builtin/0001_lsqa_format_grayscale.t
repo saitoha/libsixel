@@ -2,7 +2,7 @@
 # Ensure grayscale JPEG quality stays within the recorded lsqa baseline.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-grayscale.jpg
-#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.png
+#   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.ppm
 
 set -eux
 
@@ -20,7 +20,7 @@ printf '1..1
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-grayscale.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/grayscale.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "grayscale quality regressed"

@@ -20,7 +20,7 @@ set -v
 
 lsqa_floor=0.98
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-grayscale.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_jpeg_grayscale.six"
 
 run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {

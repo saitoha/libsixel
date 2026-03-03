@@ -2,7 +2,7 @@
 # Confirm RGB PNG quality meets the lsqa baseline thresholds.
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! tests/data/inputs/snake_64.png
-#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.png
+#   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.ppm
 
 set -eux
 
@@ -20,7 +20,7 @@ printf '1..1
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgb.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "rgb quality regressed"

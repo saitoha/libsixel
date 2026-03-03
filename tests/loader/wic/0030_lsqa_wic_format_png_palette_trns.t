@@ -26,7 +26,7 @@ set -v
 lsqa_floor=0.98
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8-trns.png"
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_png_palette_trns.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 "wic png palette trns conversion failed"

@@ -26,7 +26,7 @@ run_img2sixel -L coregraphics! \
 }
 
 lsqa_msg=$(set +x; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/heif-10bit-gradient-reference.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/heif-10bit-gradient-reference.ppm" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_heic_10bit_lossless.six" 2>&1) || {
     echo "not ok" 1 "$lsqa_msg"
     exit 0

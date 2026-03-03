@@ -31,7 +31,7 @@ run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
 }
 
 lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm" \
     "${ARTIFACT_LOCAL_DIR}/quicklook_heif_gray.six" 2>&1) || {
     echo "not ok" 1 "$lsqa_msg"
     exit 0

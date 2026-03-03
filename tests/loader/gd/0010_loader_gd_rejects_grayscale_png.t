@@ -19,7 +19,7 @@ echo "1..1"
 set -v
 
 run_img2sixel -L gd! -ldisable \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.ppm" \
     >/dev/null && {
     echo "not ok" 1 "gd unexpectedly accepted grayscale PNG input"
     exit 0
