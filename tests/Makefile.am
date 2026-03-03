@@ -96,6 +96,7 @@ TESTS_COMMON_LDADD_VAL = -lm \
         $(LIBPNG_LIBS) \
         $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
+        $(LCMS2_LIBS) \
         $(LIBWEBP_LIBS) \
         $(LIBRSVG_LIBS) \
         $(GDK_PIXBUF_LIBS) \
@@ -125,6 +126,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(LIBPNG_LIBS) \
         $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
+        $(LCMS2_LIBS) \
         $(LIBWEBP_LIBS) \
         $(LIBRSVG_LIBS) \
         $(GDK_PIXBUF_LIBS) \
