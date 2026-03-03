@@ -1842,10 +1842,14 @@ if have_wiccodec
   subdir('wic')
 endif
 
+msvc_pgo_post_wic_deps = []
 if msvc_pgo_mode != 'off' and msvc_pgo_link_args.length() > 0
-  # Keep WIC uninstrumented: apply MSVC PGO flags only after the WIC module.
-  add_project_arguments(msvc_pgo_compile_args, language: 'c')
-  add_project_link_arguments(msvc_pgo_link_args, language: 'c')
+  # Keep WIC uninstrumented: attach MSVC PGO flags only to targets declared
+  # after the WIC module instead of mutating project-wide arguments.
+  msvc_pgo_post_wic_deps = [declare_dependency(
+    compile_args: msvc_pgo_compile_args,
+    link_args: msvc_pgo_link_args,
+  )]
 endif
 
 subdir('src')
