@@ -307,6 +307,88 @@ sixel_builtin_extract_png_icc(unsigned char const *buffer,
  * parse container-specific ICC payloads and apply a best-effort transform.
  */
 static void
+sixel_builtin_convert_profile_to_srgb(unsigned char *pixels,
+                                      int width,
+                                      int height,
+                                      cmsHPROFILE src_profile)
+{
+    cmsHPROFILE dst_profile;
+    cmsHTRANSFORM transform;
+    cmsColorSpaceSignature src_colorspace;
+    size_t pixel_count;
+    unsigned char *gray_in;
+    unsigned char *rgb_out;
+    size_t i;
+
+    dst_profile = NULL;
+    transform = NULL;
+    src_colorspace = cmsSigRgbData;
+    pixel_count = 0;
+    gray_in = NULL;
+    rgb_out = NULL;
+    i = 0u;
+
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        src_profile == NULL) {
+        return;
+    }
+    src_colorspace = cmsGetColorSpace(src_profile);
+    dst_profile = cmsCreate_sRGBProfile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (src_colorspace == cmsSigGrayData) {
+        gray_in = (unsigned char *)malloc(pixel_count);
+        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
+        if (gray_in == NULL || rgb_out == NULL) {
+            goto cleanup;
+        }
+        for (i = 0u; i < pixel_count; ++i) {
+            gray_in[i] = pixels[i * 3u];
+        }
+        transform = cmsCreateTransform(src_profile,
+                                       TYPE_GRAY_8,
+                                       dst_profile,
+                                       TYPE_RGB_8,
+                                       INTENT_PERCEPTUAL,
+                                       0);
+        if (transform == NULL) {
+            goto cleanup;
+        }
+        cmsDoTransform(transform, gray_in, rgb_out, (cmsUInt32Number)pixel_count);
+        memcpy(pixels, rgb_out, pixel_count * 3u);
+    } else {
+        transform = cmsCreateTransform(src_profile,
+                                       TYPE_RGB_8,
+                                       dst_profile,
+                                       TYPE_RGB_8,
+                                       INTENT_PERCEPTUAL,
+                                       0);
+        if (transform == NULL) {
+            goto cleanup;
+        }
+        cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+    }
+
+cleanup:
+    if (rgb_out != NULL) {
+        free(rgb_out);
+    }
+    if (gray_in != NULL) {
+        free(gray_in);
+    }
+    if (transform != NULL) {
+        cmsDeleteTransform(transform);
+    }
+    if (dst_profile != NULL) {
+        cmsCloseProfile(dst_profile);
+    }
+}
+
+
+static void
 sixel_builtin_convert_icc_to_srgb(unsigned char *pixels,
                                   int width,
                                   int height,
@@ -314,14 +396,8 @@ sixel_builtin_convert_icc_to_srgb(unsigned char *pixels,
                                   size_t profile_length)
 {
     cmsHPROFILE src_profile;
-    cmsHPROFILE dst_profile;
-    cmsHTRANSFORM transform;
-    size_t pixel_count;
 
     src_profile = NULL;
-    dst_profile = NULL;
-    transform = NULL;
-    pixel_count = 0;
 
     if (pixels == NULL || width <= 0 || height <= 0 ||
         profile == NULL || profile_length == 0u) {
@@ -332,76 +408,8 @@ sixel_builtin_convert_icc_to_srgb(unsigned char *pixels,
     if (src_profile == NULL) {
         return;
     }
-    dst_profile = cmsCreate_sRGBProfile();
-    if (dst_profile == NULL) {
-        goto cleanup;
-    }
-    transform = cmsCreateTransform(src_profile,
-                                   TYPE_RGB_8,
-                                   dst_profile,
-                                   TYPE_RGB_8,
-                                   INTENT_PERCEPTUAL,
-                                   0);
-    if (transform == NULL) {
-        goto cleanup;
-    }
-
-    pixel_count = (size_t)width * (size_t)height;
-    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
-
-cleanup:
-    if (transform != NULL) {
-        cmsDeleteTransform(transform);
-    }
-    if (dst_profile != NULL) {
-        cmsCloseProfile(dst_profile);
-    }
+    sixel_builtin_convert_profile_to_srgb(pixels, width, height, src_profile);
     cmsCloseProfile(src_profile);
-}
-
-
-static void
-sixel_builtin_convert_profile_to_srgb(unsigned char *pixels,
-                                      int width,
-                                      int height,
-                                      cmsHPROFILE src_profile)
-{
-    cmsHPROFILE dst_profile;
-    cmsHTRANSFORM transform;
-    size_t pixel_count;
-
-    dst_profile = NULL;
-    transform = NULL;
-    pixel_count = 0u;
-
-    if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
-        return;
-    }
-
-    dst_profile = cmsCreate_sRGBProfile();
-    if (dst_profile == NULL) {
-        goto cleanup;
-    }
-    transform = cmsCreateTransform(src_profile,
-                                   TYPE_RGB_8,
-                                   dst_profile,
-                                   TYPE_RGB_8,
-                                   INTENT_PERCEPTUAL,
-                                   0);
-    if (transform == NULL) {
-        goto cleanup;
-    }
-
-    pixel_count = (size_t)width * (size_t)height;
-    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
-
-cleanup:
-    if (transform != NULL) {
-        cmsDeleteTransform(transform);
-    }
-    if (dst_profile != NULL) {
-        cmsCloseProfile(dst_profile);
-    }
 }
 
 static uint32_t
@@ -414,6 +422,63 @@ sixel_builtin_png_read_be32(unsigned char const *p)
           | ((uint32_t)p[2] << 8)
           |  (uint32_t)p[3];
     return value;
+}
+
+static int
+sixel_builtin_detect_png_chunk_flags(unsigned char const *buffer,
+                                     size_t size,
+                                     int *has_iccp,
+                                     int *has_srgb,
+                                     int *has_chrm,
+                                     int *has_gama)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    size_t offset;
+    uint32_t chunk_length;
+    size_t chunk_total;
+    unsigned char const *chunk_type;
+
+    if (has_iccp == NULL || has_srgb == NULL ||
+        has_chrm == NULL || has_gama == NULL) {
+        return 0;
+    }
+
+    *has_iccp = 0;
+    *has_srgb = 0;
+    *has_chrm = 0;
+    *has_gama = 0;
+
+    if (buffer == NULL || size < sizeof(png_signature) + 12u) {
+        return 0;
+    }
+    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+
+    offset = sizeof(png_signature);
+    while (offset + 12u <= size) {
+        chunk_length = sixel_builtin_png_read_be32(buffer + offset);
+        chunk_total = (size_t)chunk_length + 12u;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+        chunk_type = buffer + offset + 4u;
+
+        if (memcmp(chunk_type, "iCCP", 4u) == 0) {
+            *has_iccp = 1;
+        } else if (memcmp(chunk_type, "sRGB", 4u) == 0) {
+            *has_srgb = 1;
+        } else if (memcmp(chunk_type, "cHRM", 4u) == 0) {
+            *has_chrm = 1;
+        } else if (memcmp(chunk_type, "gAMA", 4u) == 0) {
+            *has_gama = 1;
+        }
+        offset += chunk_total;
+    }
+
+    return 1;
 }
 
 static int
@@ -434,7 +499,6 @@ sixel_builtin_build_png_profile_from_chunks(unsigned char const *buffer,
     size_t chunk_total;
     unsigned char const *chunk_type;
     unsigned char const *chunk_data;
-    int has_srgb;
     int has_chrm;
     int has_gama;
     double white_x;
@@ -457,7 +521,6 @@ sixel_builtin_build_png_profile_from_chunks(unsigned char const *buffer,
     chunk_total = 0u;
     chunk_type = NULL;
     chunk_data = NULL;
-    has_srgb = 0;
     has_chrm = 0;
     has_gama = 0;
     white_x = 0.0;
@@ -492,9 +555,7 @@ sixel_builtin_build_png_profile_from_chunks(unsigned char const *buffer,
         chunk_type = buffer + offset + 4u;
         chunk_data = buffer + offset + 8u;
 
-        if (memcmp(chunk_type, "sRGB", 4u) == 0) {
-            has_srgb = 1;
-        } else if (memcmp(chunk_type, "cHRM", 4u) == 0 &&
+        if (memcmp(chunk_type, "cHRM", 4u) == 0 &&
                    chunk_length >= 32u) {
             white_x = (double)sixel_builtin_png_read_be32(chunk_data + 0u)
                       / 100000.0;
@@ -523,10 +584,7 @@ sixel_builtin_build_png_profile_from_chunks(unsigned char const *buffer,
         offset += chunk_total;
     }
 
-    if (has_srgb) {
-        return 0;
-    }
-    if (!has_chrm && !has_gama) {
+    if (!has_gama) {
         return 0;
     }
     if (!has_chrm) {
@@ -587,28 +645,56 @@ sixel_builtin_apply_png_colorspace_fallback(unsigned char *pixels,
     unsigned char *icc_profile;
     size_t icc_profile_length;
     cmsHPROFILE chunk_profile;
+    int has_iccp;
+    int has_srgb;
+    int has_chrm;
+    int has_gama;
 
     icc_profile = NULL;
     icc_profile_length = 0u;
     chunk_profile = NULL;
+    has_iccp = 0;
+    has_srgb = 0;
+    has_chrm = 0;
+    has_gama = 0;
 
     if (pixels == NULL || width <= 0 || height <= 0 ||
         buffer == NULL || allocator == NULL) {
         return;
     }
 
-    if (sixel_builtin_extract_png_icc(buffer,
-                                      size,
-                                      &icc_profile,
-                                      &icc_profile_length)) {
-        sixel_builtin_convert_icc_to_srgb(pixels,
-                                          width,
-                                          height,
-                                          icc_profile,
-                                          icc_profile_length);
-    } else if (sixel_builtin_build_png_profile_from_chunks(buffer,
-                                                           size,
-                                                           &chunk_profile)) {
+    if (!sixel_builtin_detect_png_chunk_flags(buffer,
+                                              size,
+                                              &has_iccp,
+                                              &has_srgb,
+                                              &has_chrm,
+                                              &has_gama)) {
+        return;
+    }
+
+    if (has_iccp && has_srgb && has_chrm) {
+        /* Priority 1: iCCP+sRGB+cHRM coexistence => no conversion. */
+        return;
+    }
+
+    if (has_iccp) {
+        /* Priority 2: iCCP. */
+        if (sixel_builtin_extract_png_icc(buffer,
+                                          size,
+                                          &icc_profile,
+                                          &icc_profile_length)) {
+            sixel_builtin_convert_icc_to_srgb(pixels,
+                                              width,
+                                              height,
+                                              icc_profile,
+                                              icc_profile_length);
+        }
+    } else if (has_srgb) {
+        /* Priority 3: sRGB present => no conversion. */
+    } else if (has_gama && sixel_builtin_build_png_profile_from_chunks(buffer,
+                                                                        size,
+                                                                        &chunk_profile)) {
+        /* Priority 4: gAMA(+/-cHRM). */
         sixel_builtin_convert_profile_to_srgb(pixels,
                                               width,
                                               height,
