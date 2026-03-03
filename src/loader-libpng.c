@@ -255,15 +255,23 @@ png_convert_profile_to_srgb(unsigned char *pixels,
 {
     cmsHPROFILE dst_profile;
     cmsHTRANSFORM transform;
+    cmsColorSpaceSignature src_colorspace;
     cmsUInt32Number src_type;
     cmsUInt32Number dst_type;
     size_t pixel_count;
+    unsigned char *gray_in;
+    unsigned char *rgb_out;
+    size_t i;
 
     dst_profile = NULL;
     transform = NULL;
+    src_colorspace = cmsSigRgbData;
     src_type = TYPE_RGB_8;
     dst_type = TYPE_RGB_8;
     pixel_count = 0;
+    gray_in = NULL;
+    rgb_out = NULL;
+    i = 0u;
 
     if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
         return;
@@ -271,10 +279,35 @@ png_convert_profile_to_srgb(unsigned char *pixels,
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         return;
     }
+    src_colorspace = cmsGetColorSpace(src_profile);
+    pixel_count = (size_t)width * (size_t)height;
 
     dst_profile = cmsCreate_sRGBProfile();
     if (dst_profile == NULL) {
         return;
+    }
+
+    if (src_colorspace == cmsSigGrayData) {
+        gray_in = (unsigned char *)malloc(pixel_count);
+        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
+        if (gray_in == NULL || rgb_out == NULL) {
+            goto cleanup;
+        }
+        for (i = 0u; i < pixel_count; ++i) {
+            gray_in[i] = pixels[i * 3u];
+        }
+        transform = cmsCreateTransform(src_profile,
+                                       TYPE_GRAY_8,
+                                       dst_profile,
+                                       TYPE_RGB_8,
+                                       INTENT_PERCEPTUAL,
+                                       0);
+        if (transform == NULL) {
+            goto cleanup;
+        }
+        cmsDoTransform(transform, gray_in, rgb_out, (cmsUInt32Number)pixel_count);
+        memcpy(pixels, rgb_out, pixel_count * 3u);
+        goto cleanup;
     }
 
     transform = cmsCreateTransform(src_profile,
@@ -287,10 +320,15 @@ png_convert_profile_to_srgb(unsigned char *pixels,
         goto cleanup;
     }
 
-    pixel_count = (size_t)width * (size_t)height;
     cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
 
 cleanup:
+    if (rgb_out != NULL) {
+        free(rgb_out);
+    }
+    if (gray_in != NULL) {
+        free(gray_in);
+    }
     if (transform != NULL) {
         cmsDeleteTransform(transform);
     }
@@ -318,8 +356,6 @@ png_build_rgb_profile_from_chunks(png_structp png_ptr,
     double green_y;
     double blue_x;
     double blue_y;
-    int intent;
-    int has_srgb;
     int has_chrm;
     int has_gama;
 
@@ -337,8 +373,6 @@ png_build_rgb_profile_from_chunks(png_structp png_ptr,
     green_y = 0.0;
     blue_x = 0.0;
     blue_y = 0.0;
-    intent = 0;
-    has_srgb = 0;
     has_chrm = 0;
     has_gama = 0;
 
@@ -346,22 +380,6 @@ png_build_rgb_profile_from_chunks(png_structp png_ptr,
         return 0;
     }
     *profile = NULL;
-
-    /*
-     * PNG colorspace precedence when iCCP is unavailable:
-     *  1) sRGB chunk
-     *  2) cHRM and/or gAMA-derived fallback profile
-     */
-    has_srgb = png_get_sRGB(png_ptr, info_ptr, &intent) == PNG_INFO_sRGB;
-    if (has_srgb) {
-        (void)intent;
-        built_profile = cmsCreate_sRGBProfile();
-        if (built_profile == NULL) {
-            return 0;
-        }
-        *profile = built_profile;
-        return 1;
-    }
 
     has_chrm = png_get_cHRM(png_ptr,
                             info_ptr,
@@ -375,22 +393,9 @@ png_build_rgb_profile_from_chunks(png_structp png_ptr,
                             &blue_y) == PNG_INFO_cHRM;
     has_gama = png_get_gAMA(png_ptr, info_ptr, &file_gamma) == PNG_INFO_gAMA;
 
-    if (!has_chrm && !has_gama) {
+    if (!has_gama) {
         return 0;
     }
-
-    /*
-     * Match ImageMagick behavior: gAMA-only metadata does not trigger
-     * an explicit profile conversion when primaries are absent.
-     */
-    if (!has_chrm && has_gama) {
-        return 0;
-    }
-
-    /*
-     * Fallback policy for missing metadata:
-     *  - cHRM only: assume gamma 2.2 (sRGB-like tone response).
-     */
     if (!has_chrm) {
         white_x = 0.3127;
         white_y = 0.3290;
@@ -506,6 +511,17 @@ load_png(unsigned char      /* out */ **result,
     png_uint_32 icc_profile_length;
     cmsHPROFILE chunk_profile;
     int has_embedded_icc;
+    int has_srgb_chunk;
+    int has_chrm_chunk;
+    int intent;
+    double white_x;
+    double white_y;
+    double red_x;
+    double red_y;
+    double green_x;
+    double green_y;
+    double blue_x;
+    double blue_y;
 #endif
     png_uint_32 width;
     png_uint_32 height;
@@ -530,6 +546,17 @@ load_png(unsigned char      /* out */ **result,
     icc_profile_length = 0u;
     chunk_profile = NULL;
     has_embedded_icc = 0;
+    has_srgb_chunk = 0;
+    has_chrm_chunk = 0;
+    intent = 0;
+    white_x = 0.0;
+    white_y = 0.0;
+    red_x = 0.0;
+    red_y = 0.0;
+    green_x = 0.0;
+    green_y = 0.0;
+    blue_x = 0.0;
+    blue_y = 0.0;
 #endif
 
     png_ptr = png_create_read_struct(
@@ -588,6 +615,17 @@ load_png(unsigned char      /* out */ **result,
         icc_profile_length = 0u;
         has_embedded_icc = 0;
     }
+    has_srgb_chunk = png_get_sRGB(png_ptr, info_ptr, &intent) == PNG_INFO_sRGB;
+    has_chrm_chunk = png_get_cHRM(png_ptr,
+                                  info_ptr,
+                                  &white_x,
+                                  &white_y,
+                                  &red_x,
+                                  &red_y,
+                                  &green_x,
+                                  &green_y,
+                                  &blue_x,
+                                  &blue_y) == PNG_INFO_cHRM;
 #endif
 
     width = png_get_image_width(png_ptr, info_ptr);
@@ -890,21 +928,57 @@ load_png(unsigned char      /* out */ **result,
     png_read_image(png_ptr, rows);
 
 #if HAVE_LCMS2
-    if (has_embedded_icc) {
-        png_convert_embedded_icc_to_srgb(*result,
-                                         *psx,
-                                         *psy,
-                                         *pixelformat,
-                                         icc_profile,
-                                         icc_profile_length);
+    if (has_embedded_icc && has_srgb_chunk && has_chrm_chunk) {
+        /* Priority 1: iCCP+sRGB+cHRM coexistence => no conversion. */
+    } else if (has_embedded_icc) {
+        /* Priority 2: iCCP only. */
+        if (*pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
+            ppalette != NULL &&
+            *ppalette != NULL &&
+            pncolors != NULL &&
+            *pncolors > 0) {
+            cmsHPROFILE embedded_profile;
+
+            embedded_profile = cmsOpenProfileFromMem(icc_profile, icc_profile_length);
+            if (embedded_profile != NULL) {
+                png_convert_profile_to_srgb(*ppalette,
+                                            *pncolors,
+                                            1,
+                                            SIXEL_PIXELFORMAT_RGB888,
+                                            embedded_profile);
+                cmsCloseProfile(embedded_profile);
+            }
+        } else {
+            png_convert_embedded_icc_to_srgb(*result,
+                                             *psx,
+                                             *psy,
+                                             *pixelformat,
+                                             icc_profile,
+                                             icc_profile_length);
+        }
+    } else if (has_srgb_chunk) {
+        /* Priority 3: sRGB present => no conversion. */
     } else if (png_build_rgb_profile_from_chunks(png_ptr,
                                                   info_ptr,
                                                   &chunk_profile)) {
-        png_convert_profile_to_srgb(*result,
-                                    *psx,
-                                    *psy,
-                                    *pixelformat,
-                                    chunk_profile);
+        /* Priority 4: gAMA(+/-cHRM). */
+        if (*pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
+            ppalette != NULL &&
+            *ppalette != NULL &&
+            pncolors != NULL &&
+            *pncolors > 0) {
+            png_convert_profile_to_srgb(*ppalette,
+                                        *pncolors,
+                                        1,
+                                        SIXEL_PIXELFORMAT_RGB888,
+                                        chunk_profile);
+        } else {
+            png_convert_profile_to_srgb(*result,
+                                        *psx,
+                                        *psy,
+                                        *pixelformat,
+                                        chunk_profile);
+        }
         cmsCloseProfile(chunk_profile);
     }
 #endif
