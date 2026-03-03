@@ -1929,6 +1929,7 @@ AC_CHECK_HEADERS_PARALLEL([assert.h \
                            signal.h \
                            sys/select.h \
                            sys/signal.h \
+                           sys/param.h \
                            termios.h \
                            sys/ioctl.h \
                            sys/ttycom.h \
