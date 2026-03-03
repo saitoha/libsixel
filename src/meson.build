@@ -186,20 +186,21 @@ if amalgamated_lib_enabled
 else
   libsixel_sources = srcs
 endif
+libsixel_build_deps = deps + msvc_pgo_post_wic_deps
 
 libsixel = library('sixel',
                    libsixel_sources,
                    include_directories: project_inc,
                    c_args: libsixel_posix_defs,
                    objc_args: libsixel_posix_defs,
-                   dependencies: deps,
+                   dependencies: libsixel_build_deps,
                    version: lt_version,
                    soversion: lt_soversion.to_string(),
                    install: true)
 
 libsixel_dep = declare_dependency(link_with: libsixel,
                                   include_directories: project_inc,
-                                  dependencies: deps)
+                                  dependencies: libsixel_build_deps)
 
 # Export the library target for other subdirectories (e.g. wheel builds).
 set_variable('libsixel_library', libsixel)
