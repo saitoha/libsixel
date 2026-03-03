@@ -847,9 +847,16 @@ sixel_chunk_from_url_with_fetch(
     int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_FALSE;
+#if defined(__NetBSD__)
+    fetchIO *fetch_stream = NULL;
+#else
     FILE *fetch_stream = NULL;
+#endif
     unsigned char bucket[4096];
     size_t nread;
+#if defined(__NetBSD__)
+    ssize_t fetched;
+#endif
     void *grown;
     int use_insecure;
     char const *saved_peer;
@@ -911,10 +918,24 @@ sixel_chunk_from_url_with_fetch(
     }
 
     for (;;) {
+#if defined(__NetBSD__)
+        fetched = fetchIO_read(fetch_stream, bucket, sizeof(bucket));
+        if (fetched < 0) {
+            status = SIXEL_RUNTIME_ERROR;
+            sixel_helper_set_additional_message(
+                "fetchIO_read() failed while reading fetched stream.");
+            goto end;
+        }
+        if (fetched == 0) {
+            break;
+        }
+        nread = (size_t)fetched;
+#else
         nread = fread(bucket, 1, sizeof(bucket), fetch_stream);
         if (nread == 0) {
             break;
         }
+#endif
 
         if (pchunk->max_size - pchunk->size < nread) {
             do {
@@ -936,18 +957,24 @@ sixel_chunk_from_url_with_fetch(
         pchunk->size += nread;
     }
 
+#if !defined(__NetBSD__)
     if (ferror(fetch_stream)) {
         status = SIXEL_RUNTIME_ERROR;
         sixel_helper_set_additional_message(
             "fread() failed while reading fetched stream.");
         goto end;
     }
+#endif
 
     status = SIXEL_OK;
 
 end:
     if (fetch_stream != NULL) {
+#if defined(__NetBSD__)
+        fetchIO_close(fetch_stream);
+#else
         fclose(fetch_stream);
+#endif
     }
     if (use_insecure) {
         if (saved_peer_copy != NULL) {
