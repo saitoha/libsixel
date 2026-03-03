@@ -19,7 +19,7 @@ echo "1..1"
 set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
-    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png" \
     >"${ARTIFACT_LOCAL_DIR}/quicklook_png_rgb.six" || {
     echo "not ok" 1 "quicklook PNG decode failed"
     exit 0
