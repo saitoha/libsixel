@@ -1806,10 +1806,6 @@ thumbnailer_extract_mime_token(char *text)
  *     Newly allocated string trimmed of trailing whitespace or NULL on
  *     failure.
  */
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"
-#endif
 char *
 thumbnailer_run_file(char const *path, char const *option)
 {
@@ -1818,7 +1814,8 @@ thumbnailer_run_file(char const *path, char const *option)
     ssize_t bytes_read;
     char buffer[256];
     size_t total;
-    int status;
+    int child_status;
+    pid_t wait_result;
     char *result;
     char *trimmed;
     int mime_mode;
@@ -1829,14 +1826,15 @@ thumbnailer_run_file(char const *path, char const *option)
     pid = (-1);
     bytes_read = 0;
     total = 0;
-    status = 0;
+    child_status = 0;
+    wait_result = (-1);
     result = NULL;
     trimmed = NULL;
     mime_mode = 0;
     mime_option = SIXEL_FILE_MIME_OPTION;
 
     if (path == NULL) {
-        return NULL;
+        goto cleanup;
     }
 
     if (option != NULL && strcmp(option, "--mime-type") == 0) {
@@ -1848,14 +1846,12 @@ thumbnailer_run_file(char const *path, char const *option)
     }
 
     if (pipe(pipefd) < 0) {
-        return NULL;
+        goto cleanup;
     }
 
     pid = fork();
     if (pid < 0) {
-        sixel_compat_close(pipefd[0]);
-        sixel_compat_close(pipefd[1]);
-        return NULL;
+        goto cleanup;
     }
 
     if (pid == 0) {
@@ -1867,7 +1863,9 @@ thumbnailer_run_file(char const *path, char const *option)
             sixel_compat_close(pipefd[1]);
             _exit(127);
         }
-        sixel_compat_close(pipefd[1]);
+        if (pipefd[1] != STDOUT_FILENO) {
+            sixel_compat_close(pipefd[1]);
+        }
         arg_index = 0u;
         argv[arg_index++] = "file";
         if (mime_mode) {
@@ -1884,8 +1882,10 @@ thumbnailer_run_file(char const *path, char const *option)
         _exit(127);
     }
 
-    sixel_compat_close(pipefd[1]);
-    pipefd[1] = -1;
+    if (pipefd[1] >= 0) {
+        sixel_compat_close(pipefd[1]);
+        pipefd[1] = -1;
+    }
     total = 0;
     while ((bytes_read = read(pipefd[0], buffer + total,
                               sizeof(buffer) - total - 1)) > 0) {
@@ -1895,15 +1895,20 @@ thumbnailer_run_file(char const *path, char const *option)
         }
     }
     buffer[total] = '\0';
-    sixel_compat_close(pipefd[0]);
-    pipefd[0] = -1;
-
-    while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {
-        continue;
+    if (pipefd[0] >= 0) {
+        sixel_compat_close(pipefd[0]);
+        pipefd[0] = -1;
     }
 
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        return NULL;
+    while ((wait_result = waitpid(pid, &child_status, 0)) < 0 && errno == EINTR) {
+        continue;
+    }
+    if (wait_result < 0) {
+        goto cleanup;
+    }
+
+    if (!WIFEXITED(child_status) || WEXITSTATUS(child_status) != 0) {
+        goto cleanup;
     }
 
     trimmed = thumbnailer_trim_left(buffer);
@@ -1912,16 +1917,22 @@ thumbnailer_run_file(char const *path, char const *option)
         trimmed = thumbnailer_extract_mime_token(trimmed);
     }
     if (trimmed[0] == '\0') {
-        return NULL;
+        goto cleanup;
     }
 
     result = thumbnailer_strdup(trimmed);
 
+cleanup:
+    if (pipefd[0] >= 0) {
+        sixel_compat_close(pipefd[0]);
+        pipefd[0] = -1;
+    }
+    if (pipefd[1] >= 0) {
+        sixel_compat_close(pipefd[1]);
+        pipefd[1] = -1;
+    }
     return result;
 }
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /*
  * thumbnailer_guess_content_type
