@@ -569,6 +569,87 @@ png_convert_embedded_icc_to_srgb(unsigned char *pixels,
 #endif
 
 static SIXELSTATUS
+png_convert_rgb16_rows_to_rgbfloat32(unsigned char      /* out */ **result,
+                                     unsigned char const /* in */  *rows16,
+                                     png_size_t          /* in */  rowbytes,
+                                     int                 /* in */  width,
+                                     int                 /* in */  height,
+                                     sixel_allocator_t   /* in */  *allocator)
+{
+    SIXELSTATUS status;
+    float *dst;
+    size_t pixel_count;
+    size_t total_bytes;
+    size_t y;
+    size_t x;
+    unsigned char const *src_row;
+    size_t src_index;
+    size_t dst_index;
+    unsigned int value;
+
+    status = SIXEL_FALSE;
+    dst = NULL;
+    pixel_count = 0u;
+    total_bytes = 0u;
+    y = 0u;
+    x = 0u;
+    src_row = NULL;
+    src_index = 0u;
+    dst_index = 0u;
+    value = 0u;
+
+    if (result == NULL || rows16 == NULL || allocator == NULL ||
+        width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)rowbytes < (size_t)width * 6u) {
+        sixel_helper_set_additional_message(
+            "load_png: invalid 16-bit RGB row stride.");
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    total_bytes = pixel_count * 3u * sizeof(float);
+    dst = (float *)sixel_allocator_malloc(allocator, total_bytes);
+    if (dst == NULL) {
+        sixel_helper_set_additional_message(
+            "load_png: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (y = 0u; y < (size_t)height; ++y) {
+        src_row = rows16 + y * (size_t)rowbytes;
+        for (x = 0u; x < (size_t)width; ++x) {
+            src_index = x * 6u;
+            dst_index = (y * (size_t)width + x) * 3u;
+
+            value = ((unsigned int)src_row[src_index + 0u] << 8u)
+                | (unsigned int)src_row[src_index + 1u];
+            dst[dst_index + 0u] = (float)value / 65535.0f;
+
+            value = ((unsigned int)src_row[src_index + 2u] << 8u)
+                | (unsigned int)src_row[src_index + 3u];
+            dst[dst_index + 1u] = (float)value / 65535.0f;
+
+            value = ((unsigned int)src_row[src_index + 4u] << 8u)
+                | (unsigned int)src_row[src_index + 5u];
+            dst[dst_index + 2u] = (float)value / 65535.0f;
+        }
+    }
+
+    *result = (unsigned char *)dst;
+    status = SIXEL_OK;
+
+    return status;
+}
+
+static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char      /* in */  *buffer,
          size_t             /* in */  size,
@@ -625,6 +706,12 @@ load_png(unsigned char      /* out */ **result,
 #endif
     png_uint_32 width;
     png_uint_32 height;
+    png_uint_32 read_bitdepth;
+    png_uint_32 read_channels;
+    png_size_t rowbytes;
+    unsigned char *raw16_pixels;
+    size_t raw16_size;
+    int promote_to_float32;
     int i;
     int depth;
 
@@ -639,6 +726,12 @@ load_png(unsigned char      /* out */ **result,
 
     status = SIXEL_FALSE;
     *result = NULL;
+    read_bitdepth = 0u;
+    read_channels = 0u;
+    rowbytes = 0u;
+    raw16_pixels = NULL;
+    raw16_size = 0u;
+    promote_to_float32 = 0;
 #if HAVE_LCMS2
     icc_name = NULL;
     icc_compression_type = 0;
@@ -765,10 +858,9 @@ load_png(unsigned char      /* out */ **result,
     if (bitdepth == 16) {
 #  if HAVE_DEBUG
         fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
-        fprintf(stderr, "stripping to 8bit...\n");
+        fprintf(stderr, "preserving 16bit for float32 conversion...\n");
 #  endif
-        png_set_strip_16(png_ptr);
-        bitdepth = 8;
+        promote_to_float32 = 1;
     }
 
     if (bgcolor) {
@@ -777,10 +869,25 @@ load_png(unsigned char      /* out */ **result,
                 "background color is specified [%02x, %02x, %02x]\n",
                 bgcolor[0], bgcolor[1], bgcolor[2]);
 #  endif
-        background.red = bgcolor[0];
-        background.green = bgcolor[1];
-        background.blue = bgcolor[2];
-        background.gray = (bgcolor[0] + bgcolor[1] + bgcolor[2]) / 3;
+        if (bitdepth == 16) {
+            /*
+             * png_set_background() expects background samples in the source
+             * image precision. 16-bit PNG paths therefore require 8-bit CLI
+             * colors to be expanded into 0..65535 before alpha composition.
+             */
+            background.red = (png_uint_16)(bgcolor[0] * 257u);
+            background.green = (png_uint_16)(bgcolor[1] * 257u);
+            background.blue = (png_uint_16)(bgcolor[2] * 257u);
+            background.gray = (png_uint_16)(
+                ((unsigned int)bgcolor[0]
+                 + (unsigned int)bgcolor[1]
+                 + (unsigned int)bgcolor[2]) * 257u / 3u);
+        } else {
+            background.red = bgcolor[0];
+            background.green = bgcolor[1];
+            background.blue = bgcolor[2];
+            background.gray = (bgcolor[0] + bgcolor[1] + bgcolor[2]) / 3;
+        }
     } else if (png_get_bKGD(png_ptr, info_ptr, &default_background)
             == PNG_INFO_bKGD) {
         memcpy(&background, default_background, sizeof(background));
@@ -1013,41 +1120,94 @@ load_png(unsigned char      /* out */ **result,
         /* unknown format */
         goto cleanup;
     }
-    depth = sixel_helper_compute_depth(*pixelformat);
-    *result = (unsigned char *)
-        sixel_allocator_malloc(allocator,
-                               (size_t)(*psx * *psy * depth));
-    if (*result == NULL) {
-        sixel_helper_set_additional_message(
-            "load_png: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
-    }
-    rows = (unsigned char **)sixel_allocator_malloc(
-        allocator,
-        (size_t)*psy * sizeof(unsigned char *));
-    if (rows == NULL) {
-        sixel_helper_set_additional_message(
-            "load_png: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
-    }
-    switch (*pixelformat) {
-    case SIXEL_PIXELFORMAT_PAL1:
-    case SIXEL_PIXELFORMAT_PAL2:
-    case SIXEL_PIXELFORMAT_PAL4:
-        for (i = 0; i < *psy; ++i) {
-            rows[i] = *result + (depth * *psx * (int)bitdepth + 7) / 8 * i;
-        }
-        break;
-    default:
-        for (i = 0; i < *psy; ++i) {
-            rows[i] = *result + depth * *psx * i;
-        }
-        break;
-    }
+    if (promote_to_float32 && *pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        png_read_update_info(png_ptr, info_ptr);
+        read_bitdepth = png_get_bit_depth(png_ptr, info_ptr);
+        read_channels = png_get_channels(png_ptr, info_ptr);
+        rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
-    png_read_image(png_ptr, rows);
+        if (read_bitdepth != 16u || read_channels != 3u) {
+            sixel_helper_set_additional_message(
+                "load_png: unsupported 16-bit PNG channel layout.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+        if ((size_t)*psy > 0u && (size_t)rowbytes > SIZE_MAX / (size_t)*psy) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto cleanup;
+        }
+        raw16_size = (size_t)rowbytes * (size_t)*psy;
+        raw16_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                               raw16_size);
+        if (raw16_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+
+        rows = (unsigned char **)sixel_allocator_malloc(
+            allocator,
+            (size_t)*psy * sizeof(unsigned char *));
+        if (rows == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = raw16_pixels + (size_t)i * (size_t)rowbytes;
+        }
+
+        png_read_image(png_ptr, rows);
+
+        status = png_convert_rgb16_rows_to_rgbfloat32(result,
+                                                      raw16_pixels,
+                                                      rowbytes,
+                                                      *psx,
+                                                      *psy,
+                                                      allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        *pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    } else {
+        depth = sixel_helper_compute_depth(*pixelformat);
+        *result = (unsigned char *)
+            sixel_allocator_malloc(allocator,
+                                   (size_t)(*psx * *psy * depth));
+        if (*result == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        rows = (unsigned char **)sixel_allocator_malloc(
+            allocator,
+            (size_t)*psy * sizeof(unsigned char *));
+        if (rows == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        switch (*pixelformat) {
+        case SIXEL_PIXELFORMAT_PAL1:
+        case SIXEL_PIXELFORMAT_PAL2:
+        case SIXEL_PIXELFORMAT_PAL4:
+            for (i = 0; i < *psy; ++i) {
+                rows[i] = *result + (depth * *psx * (int)bitdepth + 7) / 8 * i;
+            }
+            break;
+        default:
+            for (i = 0; i < *psy; ++i) {
+                rows[i] = *result + depth * *psx * i;
+            }
+            break;
+        }
+
+        png_read_image(png_ptr, rows);
+    }
 
 #if HAVE_LCMS2
     if (enable_cms && has_embedded_icc && has_srgb_chunk_raw && has_chrm_chunk_raw) {
@@ -1114,6 +1274,9 @@ cleanup:
 
     if (rows != NULL) {
         sixel_allocator_free(allocator, rows);
+    }
+    if (raw16_pixels != NULL) {
+        sixel_allocator_free(allocator, raw16_pixels);
     }
 
     return status;
