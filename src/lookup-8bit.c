@@ -53,6 +53,10 @@
 #include "config.h"
 #endif
 
+#if defined(_MSC_VER)
+# pragma warning(disable : 28301)
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <stdint.h>
@@ -63,10 +67,7 @@
 # include <math.h>
 #endif  /* HAVE_MATH_H */
 #if defined(_MSC_VER) && defined(HAVE_INTRIN_H)
-# pragma warning(push)
-# pragma warning(disable : 28301)
 #include <intrin.h>
-# pragma warning(pop)
 #endif
 
 #include <sixel.h>

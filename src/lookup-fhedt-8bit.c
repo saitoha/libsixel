@@ -2242,10 +2242,11 @@ sixel_lookup_fhedt_8bit_map(sixel_lookup_fhedt_8bit_t *fhedt,
            + (size_t)x;
 
     cache_active = fhedt->use_cache;
-    if (cache_active != 0 && SIXEL_FHEDT_TLS_AVAILABLE == 0
-            && sixel_lookup_parallel_dither_active() != 0) {
+#if SIXEL_FHEDT_TLS_AVAILABLE == 0
+    if (cache_active != 0 && sixel_lookup_parallel_dither_active() != 0) {
         cache_active = 0;
     }
+#endif
     if (cache_active != 0) {
         sixel_lookup_fhedt_cache_prepare_8bit(fhedt->shared);
         if (sixel_lookup_fhedt_cache_get_8bit(

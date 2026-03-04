@@ -2324,10 +2324,11 @@ sixel_lookup_fhedt_float32_map(sixel_lookup_fhedt_float32_t *fhedt,
            + (size_t)x;
 
     cache_active = fhedt->use_cache;
-    if (cache_active != 0 && SIXEL_FHEDT_TLS_AVAILABLE == 0
-            && sixel_lookup_parallel_dither_active() != 0) {
+#if SIXEL_FHEDT_TLS_AVAILABLE == 0
+    if (cache_active != 0 && sixel_lookup_parallel_dither_active() != 0) {
         cache_active = 0;
     }
+#endif
     if (cache_active != 0) {
         sixel_lookup_fhedt_cache_prepare_float32(fhedt->shared);
         if (sixel_lookup_fhedt_cache_get_float32(&sixel_lookup_fhedt_thread_cache_float32,
