@@ -495,12 +495,24 @@ sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
     }
     sixel_parallel_writer_stop(ctx, 1);
     if (ctx->bands != NULL) {
+        if (ctx->band_count < 0) {
+            ctx->band_count = 0;
+        }
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 6001)
+#endif
         for (i = 0; i < ctx->band_count; i++) {
             free(ctx->bands[i].data);
+            ctx->bands[i].data = NULL;
         }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
         free(ctx->bands);
         ctx->bands = NULL;
     }
+    ctx->band_count = 0;
     if (ctx->pool != NULL) {
         threadpool_destroy(ctx->pool);
         ctx->pool = NULL;
@@ -794,6 +806,10 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->output = output;
     ctx->logger = logger;
     ctx->pin_threads = (pin_threads != 0) ? 1 : 0;
+    ctx->bands = NULL;
+    ctx->band_count = 0;
+    ctx->workers = NULL;
+    ctx->worker_capacity = 0;
 
     nbands = (height + 5) / 6;
     if (nbands <= 0) {
