@@ -145,6 +145,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/scale.h \
                 $(srcdir)/chunk.c \
                 $(srcdir)/chunk.h \
+                $(srcdir)/cms.c \
+                $(srcdir)/cms.h \
                 $(srcdir)/loader.c \
                 $(srcdir)/loader-gdk-pixbuf2.c \
                 $(srcdir)/loader-gnome-thumbnailer.c \

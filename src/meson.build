@@ -93,6 +93,8 @@ srcs = [
   'scale.c',
   'scale.h',
   'chunk.c',
+  'cms.c',
+  'cms.h',
   'loader.c',
   'loader-gdk-pixbuf2.c',
   'loader-gnome-thumbnailer.c',

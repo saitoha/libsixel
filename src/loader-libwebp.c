@@ -46,13 +46,11 @@
 #endif
 #include <webp/decode.h>
 #include <webp/demux.h>
-#if HAVE_LCMS2
-# include <lcms2.h>
-#endif
 
 #include <sixel.h>
 
 #include "allocator.h"
+#include "cms.h"
 #include "chunk.h"
 #include "frame.h"
 #include "loader-common.h"
@@ -268,19 +266,19 @@ webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
                                   unsigned char const *icc_profile,
                                   size_t icc_profile_length)
 {
-    cmsHPROFILE src_profile;
-    cmsHPROFILE dst_profile;
-    cmsHTRANSFORM transform;
-    cmsUInt32Number src_type;
-    cmsUInt32Number dst_type;
-    cmsUInt32Number transform_flags;
+    sixel_cms_profile_t * src_profile;
+    sixel_cms_profile_t * dst_profile;
+    sixel_cms_transform_t * transform;
+    sixel_cms_pixel_format_t src_type;
+    sixel_cms_pixel_format_t dst_type;
+    int transform_flags;
     size_t pixel_count;
 
     src_profile = NULL;
     dst_profile = NULL;
     transform = NULL;
-    src_type = TYPE_RGB_8;
-    dst_type = TYPE_RGB_8;
+    src_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
+    dst_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
     transform_flags = 0U;
     pixel_count = 0U;
 
@@ -290,44 +288,43 @@ webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
     }
 
     if (pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
-        src_type = TYPE_RGBA_8;
-        dst_type = TYPE_RGBA_8;
-        transform_flags = cmsFLAGS_COPY_ALPHA;
+        src_type = SIXEL_CMS_PIXELFORMAT_RGBA_8;
+        dst_type = SIXEL_CMS_PIXELFORMAT_RGBA_8;
+        transform_flags = SIXEL_CMS_TRANSFORM_COPY_ALPHA;
     } else if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         return;
     }
 
-    src_profile = cmsOpenProfileFromMem(icc_profile, icc_profile_length);
+    src_profile = sixel_cms_open_profile_from_mem(icc_profile, icc_profile_length);
     if (src_profile == NULL) {
         return;
     }
-    dst_profile = cmsCreate_sRGBProfile();
+    dst_profile = sixel_cms_create_srgb_profile();
     if (dst_profile == NULL) {
         goto cleanup;
     }
 
-    transform = cmsCreateTransform(src_profile,
+    transform = sixel_cms_create_transform(src_profile,
                                    src_type,
                                    dst_profile,
                                    dst_type,
-                                   INTENT_PERCEPTUAL,
                                    transform_flags);
     if (transform == NULL) {
         goto cleanup;
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+    sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
 
 cleanup:
     if (transform != NULL) {
-        cmsDeleteTransform(transform);
+        sixel_cms_delete_transform(transform);
     }
     if (dst_profile != NULL) {
-        cmsCloseProfile(dst_profile);
+        sixel_cms_close_profile(dst_profile);
     }
     if (src_profile != NULL) {
-        cmsCloseProfile(src_profile);
+        sixel_cms_close_profile(src_profile);
     }
 }
 #endif
