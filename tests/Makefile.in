@@ -109,8 +109,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = $(shell find $(top_srcdir)/tests -type \
-	f \( -name '*.c' -o '*.h' \) | LC_ALL=C sort sed \
-	's|^$(top_srcdir)/tests/||') \
+	f -name '*.[ch]' | LC_ALL=C sort) \
 	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
 	$(top_srcdir)/converters/aborttrace.c \
 	$(top_srcdir)/converters/cli.c
@@ -878,8 +877,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 # Collect test runner sources under tests/ dynamically so additions/removals
 # do not require manual Makefile updates.
-@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_TESTS_SOURCES = $(shell find $(top_srcdir)/tests -type f \( -name '*.c' -o -name '*.h' \) | \
-@WANT_AMALGAMATED_TOOLS_FALSE@    LC_ALL=C sort | sed 's|^$(top_srcdir)/tests/||')
+@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_TESTS_SOURCES = $(shell find $(top_srcdir)/tests -type f -name '*.[ch]' | \
+@WANT_AMALGAMATED_TOOLS_FALSE@    LC_ALL=C sort)
 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = $(TEST_RUNNER_TESTS_SOURCES) \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
