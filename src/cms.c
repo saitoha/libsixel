@@ -43,6 +43,10 @@ sixel_cms_intent_from_name(char const *name, size_t length, int *intent)
         *intent = INTENT_PERCEPTUAL;
         return 1;
     }
+    if (length == 8u && memcmp(name, "relative", 8u) == 0) {
+        *intent = INTENT_RELATIVE_COLORIMETRIC;
+        return 1;
+    }
     if (length == 21u &&
         memcmp(name, "relative_colorimetric", 21u) == 0) {
         *intent = INTENT_RELATIVE_COLORIMETRIC;
@@ -50,6 +54,10 @@ sixel_cms_intent_from_name(char const *name, size_t length, int *intent)
     }
     if (length == 10u && memcmp(name, "saturation", 10u) == 0) {
         *intent = INTENT_SATURATION;
+        return 1;
+    }
+    if (length == 8u && memcmp(name, "absolute", 8u) == 0) {
+        *intent = INTENT_ABSOLUTE_COLORIMETRIC;
         return 1;
     }
     if (length == 21u &&
