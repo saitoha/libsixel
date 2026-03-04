@@ -105,7 +105,16 @@ runs:
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
           pkgman refresh
-          pkgman install -y ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}
+          for attempt in 1 2 3; do
+            if pkgman install -y ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "pkgman install failed after ${attempt} attempts" >&2
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
 
     - name: Setup MSVC developer env (vcvars, x86_64 target)
       if: ${{ fromJSON(inputs.matrix_json).runner == 'windows-latest' }}
