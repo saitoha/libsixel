@@ -34,6 +34,7 @@
 #if HAVE_LIBTIFF
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -92,17 +93,30 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
                                   int width,
                                   int height,
                                   void const *profile,
-                                  uint32_t profile_length)
+                                  uint32_t profile_length,
+                                  uint16_t photometric)
 {
     sixel_cms_profile_t * src_profile;
     sixel_cms_profile_t * dst_profile;
     sixel_cms_transform_t * transform;
+    sixel_cms_color_space_t src_colorspace;
     size_t pixel_count;
+    unsigned char *gray_in;
+    unsigned char *rgb_out;
+    size_t i;
+    int treat_as_gray;
+    int treat_as_rgb;
 
     src_profile = NULL;
     dst_profile = NULL;
     transform = NULL;
+    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     pixel_count = 0;
+    gray_in = NULL;
+    rgb_out = NULL;
+    i = 0u;
+    treat_as_gray = 0;
+    treat_as_rgb = 0;
 
     if (pixels == NULL || width <= 0 || height <= 0 ||
         profile == NULL || profile_length == 0u) {
@@ -113,23 +127,75 @@ tiff_convert_embedded_icc_to_srgb(unsigned char *pixels,
     if (src_profile == NULL) {
         return;
     }
+    src_colorspace = sixel_cms_get_color_space(src_profile);
     dst_profile = sixel_cms_create_srgb_profile();
     if (dst_profile == NULL) {
         goto cleanup;
     }
-    transform = sixel_cms_create_transform(src_profile,
-                                   SIXEL_CMS_PIXELFORMAT_RGBA_8,
-                                   dst_profile,
-                                   SIXEL_CMS_PIXELFORMAT_RGBA_8,
-                                   SIXEL_CMS_TRANSFORM_COPY_ALPHA);
-    if (transform == NULL) {
-        goto cleanup;
-    }
 
     pixel_count = (size_t)width * (size_t)height;
-    sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
+    switch (photometric) {
+    case PHOTOMETRIC_MINISWHITE:
+    case PHOTOMETRIC_MINISBLACK:
+        treat_as_gray = 1;
+        break;
+    case PHOTOMETRIC_RGB:
+    case PHOTOMETRIC_PALETTE:
+    case PHOTOMETRIC_YCBCR:
+        treat_as_rgb = 1;
+        break;
+    default:
+        break;
+    }
+
+    if (treat_as_gray) {
+        if (src_colorspace != SIXEL_CMS_COLORSPACE_GRAY) {
+            goto cleanup;
+        }
+        gray_in = (unsigned char *)malloc(pixel_count);
+        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
+        if (gray_in == NULL || rgb_out == NULL) {
+            goto cleanup;
+        }
+        for (i = 0u; i < pixel_count; ++i) {
+            gray_in[i] = pixels[i * 4u];
+        }
+        transform = sixel_cms_create_transform(src_profile,
+                                       SIXEL_CMS_PIXELFORMAT_GRAY_8,
+                                       dst_profile,
+                                       SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                       SIXEL_CMS_TRANSFORM_DEFAULT);
+        if (transform == NULL) {
+            goto cleanup;
+        }
+        sixel_cms_do_transform(transform, gray_in, rgb_out, pixel_count);
+        for (i = 0u; i < pixel_count; ++i) {
+            pixels[i * 4u + 0u] = rgb_out[i * 3u + 0u];
+            pixels[i * 4u + 1u] = rgb_out[i * 3u + 1u];
+            pixels[i * 4u + 2u] = rgb_out[i * 3u + 2u];
+        }
+    } else if (treat_as_rgb || photometric == (uint16_t)0xffffu) {
+        if (src_colorspace != SIXEL_CMS_COLORSPACE_RGB) {
+            goto cleanup;
+        }
+        transform = sixel_cms_create_transform(src_profile,
+                                       SIXEL_CMS_PIXELFORMAT_RGBA_8,
+                                       dst_profile,
+                                       SIXEL_CMS_PIXELFORMAT_RGBA_8,
+                                       SIXEL_CMS_TRANSFORM_COPY_ALPHA);
+        if (transform == NULL) {
+            goto cleanup;
+        }
+        sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
+    }
 
 cleanup:
+    if (rgb_out != NULL) {
+        free(rgb_out);
+    }
+    if (gray_in != NULL) {
+        free(gray_in);
+    }
     if (transform != NULL) {
         sixel_cms_delete_transform(transform);
     }
@@ -282,6 +348,7 @@ load_tiff(unsigned char      /* out */ **result,
 #if HAVE_LCMS2
     uint32_t icc_profile_length;
     void *icc_profile;
+    uint16_t photometric;
 #endif
 
     status = SIXEL_TIFF_ERROR;
@@ -295,6 +362,7 @@ load_tiff(unsigned char      /* out */ **result,
 #if HAVE_LCMS2
     icc_profile_length = 0u;
     icc_profile = NULL;
+    photometric = (uint16_t)0xffffu;
 #endif
 
     chunk.buffer = buffer;
@@ -387,6 +455,7 @@ load_tiff(unsigned char      /* out */ **result,
     }
 
 #if HAVE_LCMS2
+    (void)TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photometric);
     if (TIFFGetField(tif,
                      TIFFTAG_ICCPROFILE,
                      &icc_profile_length,
@@ -395,7 +464,8 @@ load_tiff(unsigned char      /* out */ **result,
                                           (int)width,
                                           (int)height,
                                           icc_profile,
-                                          icc_profile_length);
+                                          icc_profile_length,
+                                          photometric);
     }
 #endif
 
