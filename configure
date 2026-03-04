@@ -17575,6 +17575,56 @@ printf %s "checking which PGO profile is enabled... " >&6; }
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_pgo_status" >&5
 printf "%s\n" "$sixel_pgo_status" >&6; }
 
+# GCC may emit -Wmissing-profile under -fprofile-use when some .gcda files
+# are absent or stale. Keep CI strict generally, but avoid failing the whole
+# PGO-use build on this diagnostic alone.
+if test "x$CI" != "x" \
+            -a "x$enable_pgo" = "xuse" \
+            -a "x$sixel_pgo_toolchain" = "xgnu"
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $CC supports -Wno-error=missing-profile" >&5
+printf %s "checking whether $CC supports -Wno-error=missing-profile... " >&6; }
+if test ${ac_cv_cc_wno_error_missing_profile+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_save_CFLAGS="$CFLAGS"
+     CFLAGS="$CFLAGS -Werror -Wno-error=missing-profile"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_cc_wno_error_missing_profile=yes
+else case e in #(
+  e) ac_cv_cc_wno_error_missing_profile=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+     CFLAGS="$ac_save_CFLAGS" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_wno_error_missing_profile" >&5
+printf "%s\n" "$ac_cv_cc_wno_error_missing_profile" >&6; }
+  if test "x$ac_cv_cc_wno_error_missing_profile" = "xyes"
+then :
+
+    CFLAGS="$CFLAGS -Wno-error=missing-profile"
+    AM_CFLAGS="$AM_CFLAGS -Wno-error=missing-profile"
+
+fi
+
+fi
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether ThreadSanitizer instrumentation is enabled" >&5
 printf %s "checking whether ThreadSanitizer instrumentation is enabled... " >&6; }
 if test ${ac_cv_sixel_tsan+y}

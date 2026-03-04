@@ -205,10 +205,12 @@ jobs:
           - label: Autotools-ubuntu-x86_64-gcc-pgo
             buildtool: autotools
             runner: ubuntu-latest
+            setup_prefix: >-
+              mkdir -p "$PWD/pgo";
             setup_options: >-
-              --enable-pgo=generate
+              --enable-pgo=generate --with-pgo-data=$PWD/pgo
             pgo_use_options: >-
-              --enable-pgo=use
+              --enable-pgo=use --with-pgo-data=$PWD/pgo
             extra_packages: >-
               clang
             exec_type: bash
