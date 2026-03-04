@@ -149,7 +149,7 @@ test_runner_tests_sources_text = run_command(
   sh,
   '-c',
   'set -eu; cd "$1"; ' +
-  'find . -type f \\( -name "*.c" -o -name "*.h" \\) | ' +
+  'find . -type f -name "*.[ch]" | ' +
   'LC_ALL=C sort | sed "s|^\\./||"',
   'meson-test-runner-sources',
   meson.current_source_dir(),
