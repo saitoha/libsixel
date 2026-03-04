@@ -22,42 +22,41 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/libpng_expected/0141_libpng_rgb16_srgb_only_64x64_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_rgb16_srgb_only.sixel"
 
-python3 - "$input_png" <<'PY'
-import struct
-import sys
+test -f "${input_png}" || {
+    echo "not ok" 1 "missing test fixture"
+    exit 0
+}
+test -f "${expected_ppm}" || {
+    echo "not ok" 1 "missing reference PPM"
+    exit 0
+}
 
-path = sys.argv[1]
-with open(path, "rb") as f:
-    payload = f.read()
-if payload[:8] != b"\x89PNG\r\n\x1a\n":
-    raise SystemExit("fixture is not a png")
+# Validate IHDR: width=64, height=64, bit depth=16.
+width=$(dd if="${input_png}" bs=1 skip=16 count=4 2>/dev/null \
+    | od -An -tu1 \
+    | awk 'NF {print ($1 * 16777216) + ($2 * 65536) + ($3 * 256) + $4; exit}')
+height=$(dd if="${input_png}" bs=1 skip=20 count=4 2>/dev/null \
+    | od -An -tu1 \
+    | awk 'NF {print ($1 * 16777216) + ($2 * 65536) + ($3 * 256) + $4; exit}')
+bit_depth=$(dd if="${input_png}" bs=1 skip=24 count=1 2>/dev/null \
+    | od -An -tu1 \
+    | tr -d '[:space:]')
+if [ "${width}" != "64" ] || [ "${height}" != "64" ] || [ "${bit_depth}" != "16" ]; then
+    echo "not ok" 1 "fixture IHDR mismatch (${width}x${height}, depth=${bit_depth})"
+    exit 0
+fi
 
-offset = 8
-chunk_names = []
-width = 0
-height = 0
-bit_depth = 0
-while offset + 12 <= len(payload):
-    length = int.from_bytes(payload[offset:offset + 4], "big")
-    chunk_type = payload[offset + 4:offset + 8].decode("ascii")
-    chunk_data = payload[offset + 8:offset + 8 + length]
-    chunk_names.append(chunk_type)
-    if chunk_type == "IHDR":
-        width, height, bit_depth = struct.unpack(">IIB", chunk_data[:9])
-    offset += 12 + length
-    if chunk_type == "IEND":
-        break
-
-if width != 64 or height != 64:
-    raise SystemExit(f"fixture size mismatch: {width}x{height}")
-if bit_depth != 16:
-    raise SystemExit(f"fixture bit depth mismatch: {bit_depth}")
-if "sRGB" not in chunk_names:
-    raise SystemExit("sRGB chunk missing")
-for banned in ("iCCP", "gAMA", "cHRM"):
-    if banned in chunk_names:
-        raise SystemExit(f"unexpected chunk present: {banned}")
-PY
+# Validate color-management chunk composition of fixture.
+grep -a -q 'sRGB' "${input_png}" || {
+    echo "not ok" 1 "fixture missing sRGB chunk"
+    exit 0
+}
+for banned_chunk in iCCP gAMA cHRM; do
+    if grep -a -q "${banned_chunk}" "${input_png}"; then
+        echo "not ok" 1 "fixture has unexpected ${banned_chunk} chunk"
+        exit 0
+    fi
+done
 
 run_img2sixel -Llibpng:enable_cms=0! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 "img2sixel failed"
