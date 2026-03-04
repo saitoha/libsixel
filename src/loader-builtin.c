@@ -48,13 +48,11 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
-#if HAVE_LCMS2
-# include <lcms2.h>
-#endif
 
 #include <sixel.h>
 
 #include "allocator.h"
+#include "cms.h"
 #include "chunk.h"
 #include "compat_stub.h"
 #include "frame.h"
@@ -310,11 +308,11 @@ static void
 sixel_builtin_convert_profile_to_srgb(unsigned char *pixels,
                                       int width,
                                       int height,
-                                      cmsHPROFILE src_profile)
+                                      sixel_cms_profile_t * src_profile)
 {
-    cmsHPROFILE dst_profile;
-    cmsHTRANSFORM transform;
-    cmsColorSpaceSignature src_colorspace;
+    sixel_cms_profile_t * dst_profile;
+    sixel_cms_transform_t * transform;
+    sixel_cms_color_space_t src_colorspace;
     size_t pixel_count;
     unsigned char *gray_in;
     unsigned char *rgb_out;
@@ -322,7 +320,7 @@ sixel_builtin_convert_profile_to_srgb(unsigned char *pixels,
 
     dst_profile = NULL;
     transform = NULL;
-    src_colorspace = cmsSigRgbData;
+    src_colorspace = SIXEL_CMS_COLORSPACE_RGB;
     pixel_count = 0;
     gray_in = NULL;
     rgb_out = NULL;
@@ -332,14 +330,14 @@ sixel_builtin_convert_profile_to_srgb(unsigned char *pixels,
         src_profile == NULL) {
         return;
     }
-    src_colorspace = cmsGetColorSpace(src_profile);
-    dst_profile = cmsCreate_sRGBProfile();
+    src_colorspace = sixel_cms_get_color_space(src_profile);
+    dst_profile = sixel_cms_create_srgb_profile();
     if (dst_profile == NULL) {
         goto cleanup;
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    if (src_colorspace == cmsSigGrayData) {
+    if (src_colorspace == SIXEL_CMS_COLORSPACE_GRAY) {
         gray_in = (unsigned char *)malloc(pixel_count);
         rgb_out = (unsigned char *)malloc(pixel_count * 3u);
         if (gray_in == NULL || rgb_out == NULL) {
@@ -348,28 +346,26 @@ sixel_builtin_convert_profile_to_srgb(unsigned char *pixels,
         for (i = 0u; i < pixel_count; ++i) {
             gray_in[i] = pixels[i * 3u];
         }
-        transform = cmsCreateTransform(src_profile,
-                                       TYPE_GRAY_8,
+        transform = sixel_cms_create_transform(src_profile,
+                                       SIXEL_CMS_PIXELFORMAT_GRAY_8,
                                        dst_profile,
-                                       TYPE_RGB_8,
-                                       INTENT_PERCEPTUAL,
-                                       0);
+                                       SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                       SIXEL_CMS_TRANSFORM_DEFAULT);
         if (transform == NULL) {
             goto cleanup;
         }
-        cmsDoTransform(transform, gray_in, rgb_out, (cmsUInt32Number)pixel_count);
+        sixel_cms_do_transform(transform, gray_in, rgb_out, pixel_count);
         memcpy(pixels, rgb_out, pixel_count * 3u);
     } else {
-        transform = cmsCreateTransform(src_profile,
-                                       TYPE_RGB_8,
+        transform = sixel_cms_create_transform(src_profile,
+                                       SIXEL_CMS_PIXELFORMAT_RGB_8,
                                        dst_profile,
-                                       TYPE_RGB_8,
-                                       INTENT_PERCEPTUAL,
-                                       0);
+                                       SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                       SIXEL_CMS_TRANSFORM_DEFAULT);
         if (transform == NULL) {
             goto cleanup;
         }
-        cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+        sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
     }
 
 cleanup:
@@ -380,10 +376,10 @@ cleanup:
         free(gray_in);
     }
     if (transform != NULL) {
-        cmsDeleteTransform(transform);
+        sixel_cms_delete_transform(transform);
     }
     if (dst_profile != NULL) {
-        cmsCloseProfile(dst_profile);
+        sixel_cms_close_profile(dst_profile);
     }
 }
 
@@ -395,7 +391,7 @@ sixel_builtin_convert_icc_to_srgb(unsigned char *pixels,
                                   unsigned char const *profile,
                                   size_t profile_length)
 {
-    cmsHPROFILE src_profile;
+    sixel_cms_profile_t * src_profile;
 
     src_profile = NULL;
 
@@ -404,12 +400,12 @@ sixel_builtin_convert_icc_to_srgb(unsigned char *pixels,
         return;
     }
 
-    src_profile = cmsOpenProfileFromMem(profile, profile_length);
+    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
     if (src_profile == NULL) {
         return;
     }
     sixel_builtin_convert_profile_to_srgb(pixels, width, height, src_profile);
-    cmsCloseProfile(src_profile);
+    sixel_cms_close_profile(src_profile);
 }
 
 static uint32_t
@@ -484,16 +480,12 @@ sixel_builtin_detect_png_chunk_flags(unsigned char const *buffer,
 static int
 sixel_builtin_build_png_profile_from_chunks(unsigned char const *buffer,
                                             size_t size,
-                                            cmsHPROFILE *profile)
+                                            sixel_cms_profile_t **profile)
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
     };
-    cmsHPROFILE built_profile;
-    cmsToneCurve *curve;
-    cmsToneCurve *curves[3];
-    cmsCIExyY white_point;
-    cmsCIExyYTRIPLE primaries;
+    sixel_cms_profile_t *built_profile;
     size_t offset;
     uint32_t chunk_length;
     size_t chunk_total;
@@ -512,10 +504,6 @@ sixel_builtin_build_png_profile_from_chunks(unsigned char const *buffer,
     double file_gamma;
 
     built_profile = NULL;
-    curve = NULL;
-    curves[0] = NULL;
-    curves[1] = NULL;
-    curves[2] = NULL;
     offset = 0u;
     chunk_length = 0u;
     chunk_total = 0u;
@@ -604,28 +592,15 @@ sixel_builtin_build_png_profile_from_chunks(unsigned char const *buffer,
         return 0;
     }
 
-    white_point.x = white_x;
-    white_point.y = white_y;
-    white_point.Y = 1.0;
-    primaries.Red.x = red_x;
-    primaries.Red.y = red_y;
-    primaries.Red.Y = 1.0;
-    primaries.Green.x = green_x;
-    primaries.Green.y = green_y;
-    primaries.Green.Y = 1.0;
-    primaries.Blue.x = blue_x;
-    primaries.Blue.y = blue_y;
-    primaries.Blue.Y = 1.0;
-
-    curve = cmsBuildGamma(NULL, 1.0 / file_gamma);
-    if (curve == NULL) {
-        return 0;
-    }
-    curves[0] = curve;
-    curves[1] = curve;
-    curves[2] = curve;
-    built_profile = cmsCreateRGBProfile(&white_point, &primaries, curves);
-    cmsFreeToneCurve(curve);
+    built_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(file_gamma,
+                                                                 white_x,
+                                                                 white_y,
+                                                                 red_x,
+                                                                 red_y,
+                                                                 green_x,
+                                                                 green_y,
+                                                                 blue_x,
+                                                                 blue_y);
     if (built_profile == NULL) {
         return 0;
     }
@@ -644,7 +619,7 @@ sixel_builtin_apply_png_colorspace_fallback(unsigned char *pixels,
 {
     unsigned char *icc_profile;
     size_t icc_profile_length;
-    cmsHPROFILE chunk_profile;
+    sixel_cms_profile_t * chunk_profile;
     int has_iccp;
     int has_srgb;
     int has_chrm;
@@ -699,7 +674,7 @@ sixel_builtin_apply_png_colorspace_fallback(unsigned char *pixels,
                                               width,
                                               height,
                                               chunk_profile);
-        cmsCloseProfile(chunk_profile);
+        sixel_cms_close_profile(chunk_profile);
     }
     if (icc_profile != NULL) {
         sixel_allocator_free(allocator, icc_profile);

@@ -45,13 +45,11 @@
 # include <limits.h>
 #endif
 #include <jpeglib.h>
-#if HAVE_LCMS2
-# include <lcms2.h>
-#endif
 
 #include <sixel.h>
 
 #include "allocator.h"
+#include "cms.h"
 #include "chunk.h"
 #include "loader-common.h"
 #include "loader-component.h"
@@ -209,9 +207,9 @@ jpeg_convert_icc_to_srgb(unsigned char *pixels,
                          unsigned char const *profile,
                          unsigned int profile_length)
 {
-    cmsHPROFILE src_profile;
-    cmsHPROFILE dst_profile;
-    cmsHTRANSFORM transform;
+    sixel_cms_profile_t * src_profile;
+    sixel_cms_profile_t * dst_profile;
+    sixel_cms_transform_t * transform;
     size_t pixel_count;
 
     src_profile = NULL;
@@ -224,36 +222,35 @@ jpeg_convert_icc_to_srgb(unsigned char *pixels,
         return;
     }
 
-    src_profile = cmsOpenProfileFromMem(profile, profile_length);
+    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
     if (src_profile == NULL) {
         return;
     }
-    dst_profile = cmsCreate_sRGBProfile();
+    dst_profile = sixel_cms_create_srgb_profile();
     if (dst_profile == NULL) {
         goto cleanup;
     }
-    transform = cmsCreateTransform(src_profile,
-                                   TYPE_RGB_8,
+    transform = sixel_cms_create_transform(src_profile,
+                                   SIXEL_CMS_PIXELFORMAT_RGB_8,
                                    dst_profile,
-                                   TYPE_RGB_8,
-                                   INTENT_PERCEPTUAL,
-                                   0);
+                                   SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                   SIXEL_CMS_TRANSFORM_DEFAULT);
     if (transform == NULL) {
         goto cleanup;
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    cmsDoTransform(transform, pixels, pixels, (cmsUInt32Number)pixel_count);
+    sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
 
 cleanup:
     if (transform != NULL) {
-        cmsDeleteTransform(transform);
+        sixel_cms_delete_transform(transform);
     }
     if (dst_profile != NULL) {
-        cmsCloseProfile(dst_profile);
+        sixel_cms_close_profile(dst_profile);
     }
     if (src_profile != NULL) {
-        cmsCloseProfile(src_profile);
+        sixel_cms_close_profile(src_profile);
     }
 }
 #endif
