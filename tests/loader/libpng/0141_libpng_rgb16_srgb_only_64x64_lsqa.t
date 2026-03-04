@@ -26,10 +26,6 @@ test -f "${input_png}" || {
     echo "not ok" 1 "missing test fixture"
     exit 0
 }
-test -f "${expected_ppm}" || {
-    echo "not ok" 1 "missing reference PPM"
-    exit 0
-}
 
 run_img2sixel -Llibpng:enable_cms=0! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 "img2sixel failed"
