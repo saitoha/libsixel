@@ -436,31 +436,11 @@ static SIXELSTATUS sixel_encode_emit_palette(int bodyonly,
 static void
 sixel_parallel_context_init(sixel_parallel_context_t *ctx)
 {
+    memset(ctx, 0, sizeof(*ctx));
     ctx->pixels = NULL;
-    ctx->width = 0;
-    ctx->height = 0;
-    ctx->ncolors = 0;
     ctx->keycolor = (-1);
-    ctx->palstate = NULL;
     ctx->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
-    ctx->allocator = NULL;
-    ctx->output = NULL;
-    ctx->thread_count = 0;
-    ctx->band_count = 0;
-    ctx->bands = NULL;
-    ctx->workers = NULL;
-    ctx->worker_capacity = 0;
-    ctx->worker_registered = 0;
-    ctx->pool = NULL;
-    ctx->logger = NULL;
-    ctx->mutex_ready = 0;
-    ctx->cond_ready = 0;
-    ctx->writer_started = 0;
-    ctx->next_band_to_flush = 0;
-    ctx->writer_should_stop = 0;
     ctx->writer_error = SIXEL_OK;
-    ctx->queue_capacity = 0;
-    ctx->pin_threads = 0;
 }
 
 static void
@@ -1366,7 +1346,7 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
                            int requested_threads,
                            int pin_threads)
 {
-    sixel_parallel_context_t ctx;
+    sixel_parallel_context_t ctx = {0};
     SIXELSTATUS status;
     int nbands;
     int threads;
@@ -1454,7 +1434,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
 {
     SIXELSTATUS status;
     SIXELSTATUS wait_status;
-    sixel_parallel_context_t ctx;
+    sixel_parallel_context_t ctx = {0};
     sixel_index_t *indexes;
     sixel_index_t *result;
     sixel_allocator_t *allocator;
