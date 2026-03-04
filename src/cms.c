@@ -4,7 +4,9 @@
 
 #include "cms.h"
 
+#include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if HAVE_LCMS2
 # include <lcms2.h>
@@ -29,6 +31,160 @@ sixel_cms_map_format(sixel_cms_pixel_format_t format)
     default:
         return TYPE_RGB_8;
     }
+}
+
+static int
+sixel_cms_intent_from_name(char const *name, size_t length, int *intent)
+{
+    if (name == NULL || intent == NULL || length == 0u) {
+        return 0;
+    }
+    if (length == 10u && memcmp(name, "perceptual", 10u) == 0) {
+        *intent = INTENT_PERCEPTUAL;
+        return 1;
+    }
+    if (length == 21u &&
+        memcmp(name, "relative_colorimetric", 21u) == 0) {
+        *intent = INTENT_RELATIVE_COLORIMETRIC;
+        return 1;
+    }
+    if (length == 10u && memcmp(name, "saturation", 10u) == 0) {
+        *intent = INTENT_SATURATION;
+        return 1;
+    }
+    if (length == 21u &&
+        memcmp(name, "absolute_colorimetric", 21u) == 0) {
+        *intent = INTENT_ABSOLUTE_COLORIMETRIC;
+        return 1;
+    }
+    return 0;
+}
+
+static int
+sixel_cms_intent_contains(int const *intents, size_t count, int intent)
+{
+    size_t i;
+
+    for (i = 0u; i < count; ++i) {
+        if (intents[i] == intent) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static size_t
+sixel_cms_build_intent_order(int intents[4])
+{
+    static int const defaults[4] = {
+        INTENT_PERCEPTUAL,
+        INTENT_RELATIVE_COLORIMETRIC,
+        INTENT_SATURATION,
+        INTENT_ABSOLUTE_COLORIMETRIC
+    };
+    char const *env;
+    char const *p;
+    char const *end;
+    int custom[4];
+    size_t custom_count;
+    size_t i;
+    int exclusive;
+
+    env = getenv("SIXEL_LOADER_CMS_RENDERING_INTENT");
+    if (env == NULL || *env == '\0') {
+        env = getenv("SIXEL_CMS_RENDERING_INTENT");
+    }
+    if (env == NULL || *env == '\0') {
+        memcpy(intents, defaults, sizeof(defaults));
+        return 4u;
+    }
+
+    p = env;
+    end = env + strlen(env);
+    while (p < end && isspace((unsigned char)*p)) {
+        ++p;
+    }
+    while (end > p && isspace((unsigned char)end[-1])) {
+        --end;
+    }
+    if (p == end) {
+        memcpy(intents, defaults, sizeof(defaults));
+        return 4u;
+    }
+
+    exclusive = 0;
+    if (end > p && end[-1] == '!') {
+        exclusive = 1;
+        --end;
+        while (end > p && isspace((unsigned char)end[-1])) {
+            --end;
+        }
+        if (p == end) {
+            memcpy(intents, defaults, sizeof(defaults));
+            return 4u;
+        }
+    }
+
+    custom_count = 0u;
+    while (p < end) {
+        char const *token_start;
+        char const *token_end;
+        char const *comma;
+        int intent;
+
+        while (p < end && isspace((unsigned char)*p)) {
+            ++p;
+        }
+        token_start = p;
+        comma = memchr(p, ',', (size_t)(end - p));
+        if (comma == NULL) {
+            token_end = end;
+            p = end;
+        } else {
+            token_end = comma;
+            p = comma + 1;
+        }
+        while (token_end > token_start &&
+               isspace((unsigned char)token_end[-1])) {
+            --token_end;
+        }
+        if (token_end == token_start) {
+            memcpy(intents, defaults, sizeof(defaults));
+            return 4u;
+        }
+        if (!sixel_cms_intent_from_name(token_start,
+                                        (size_t)(token_end - token_start),
+                                        &intent)) {
+            memcpy(intents, defaults, sizeof(defaults));
+            return 4u;
+        }
+        if (!sixel_cms_intent_contains(custom, custom_count, intent)) {
+            if (custom_count >= 4u) {
+                memcpy(intents, defaults, sizeof(defaults));
+                return 4u;
+            }
+            custom[custom_count++] = intent;
+        }
+    }
+
+    if (custom_count == 0u) {
+        memcpy(intents, defaults, sizeof(defaults));
+        return 4u;
+    }
+
+    if (exclusive) {
+        memcpy(intents, custom, custom_count * sizeof(custom[0]));
+        return custom_count;
+    }
+
+    memcpy(intents, custom, custom_count * sizeof(custom[0]));
+    for (i = 0u; i < 4u; ++i) {
+        if (!sixel_cms_intent_contains(intents, custom_count, defaults[i])) {
+            intents[custom_count++] = defaults[i];
+        }
+    }
+
+    return custom_count;
 }
 
 sixel_cms_profile_t *
@@ -164,12 +320,8 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
 {
     sixel_cms_transform_t *transform;
     cmsUInt32Number cflags;
-    int const intents[] = {
-        INTENT_PERCEPTUAL,
-        INTENT_RELATIVE_COLORIMETRIC,
-        INTENT_SATURATION,
-        INTENT_ABSOLUTE_COLORIMETRIC
-    };
+    int intents[4];
+    size_t intent_count;
     size_t i;
 
     if (src_profile == NULL || dst_profile == NULL ||
@@ -187,8 +339,9 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
         cflags |= cmsFLAGS_COPY_ALPHA;
     }
 
+    intent_count = sixel_cms_build_intent_order(intents);
     transform->handle = NULL;
-    for (i = 0u; i < sizeof(intents) / sizeof(intents[0]); ++i) {
+    for (i = 0u; i < intent_count; ++i) {
         transform->handle = cmsCreateTransform(src_profile->handle,
                                                sixel_cms_map_format(src_format),
                                                dst_profile->handle,
