@@ -119,6 +119,8 @@ srcs = [
   'loader-factory.h',
   'loader-manager.h',
   'frompnm.c',
+  'frompng.c',
+  'frompng.h',
   'fromgif.c',
   'clipboard.c',
   'encoder.c',
