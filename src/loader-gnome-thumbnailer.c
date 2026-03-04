@@ -1806,6 +1806,10 @@ thumbnailer_extract_mime_token(char *text)
  *     Newly allocated string trimmed of trailing whitespace or NULL on
  *     failure.
  */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"
+#endif
 char *
 thumbnailer_run_file(char const *path, char const *option)
 {
@@ -1860,6 +1864,7 @@ thumbnailer_run_file(char const *path, char const *option)
 
         sixel_compat_close(pipefd[0]);
         if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
+            sixel_compat_close(pipefd[1]);
             _exit(127);
         }
         sixel_compat_close(pipefd[1]);
@@ -1914,6 +1919,9 @@ thumbnailer_run_file(char const *path, char const *option)
 
     return result;
 }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 /*
  * thumbnailer_guess_content_type

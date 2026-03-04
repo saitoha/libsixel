@@ -1540,6 +1540,9 @@ sixel_dither_get(
         dither = NULL;
         goto end;
     }
+    if (dither == NULL) {
+        goto end;
+    }
 
     status = sixel_palette_set_entries(dither->palette,
                                        palette,
@@ -2486,23 +2489,25 @@ end:
                           "serial status=%d",
                           status);
     }
-    if (normalized_pixels != NULL) {
-        sixel_allocator_free(dither->allocator, normalized_pixels);
-    }
-    if (float_pipeline_pixels != NULL && owns_float_pipeline) {
-        sixel_allocator_free(dither->allocator, float_pipeline_pixels);
-    }
-    sixel_dither_unref(dither);
     sixel_lookup_set_parallel_dither_active(0);
-    dither->pipeline_index_buffer = NULL;
-    dither->pipeline_index_owned = 0;
-    dither->pipeline_index_size = 0;
-    dither->pipeline_parallel_active = 0;
-    dither->pipeline_band_height = 0;
-    dither->pipeline_band_overlap = 0;
-    dither->pipeline_dither_threads = 0;
-    dither->pipeline_image_height = 0;
-    dither->pipeline_logger = NULL;
+    if (dither != NULL) {
+        if (normalized_pixels != NULL) {
+            sixel_allocator_free(dither->allocator, normalized_pixels);
+        }
+        if (float_pipeline_pixels != NULL && owns_float_pipeline) {
+            sixel_allocator_free(dither->allocator, float_pipeline_pixels);
+        }
+        dither->pipeline_index_buffer = NULL;
+        dither->pipeline_index_owned = 0;
+        dither->pipeline_index_size = 0;
+        dither->pipeline_parallel_active = 0;
+        dither->pipeline_band_height = 0;
+        dither->pipeline_band_overlap = 0;
+        dither->pipeline_dither_threads = 0;
+        dither->pipeline_image_height = 0;
+        dither->pipeline_logger = NULL;
+        sixel_dither_unref(dither);
+    }
     return dest;
 }
 

@@ -1211,6 +1211,10 @@ sixel_palette_make_palette(unsigned char **result,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    if (palette == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
 
     if (methodForLargest == SIXEL_LARGE_AUTO) {
         methodForLargest = palette_method_for_largest;

@@ -144,8 +144,8 @@ sixel_cms_build_intent_order(int intents[4])
             ++p;
         }
         token_start = p;
-        comma = memchr(p, ',', (size_t)(end - p));
-        if (comma == NULL) {
+        comma = strchr(p, ',');
+        if (comma == NULL || comma > end) {
             token_end = end;
             p = end;
         } else {

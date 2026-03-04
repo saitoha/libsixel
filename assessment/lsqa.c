@@ -1337,7 +1337,8 @@ parse_args(int argc, char **argv, Options *opts)
     if (lsqa_build_reordered_argv(argc, argv,
                                   &scan_argv,
                                   &scan_argc) != 0) {
-        return -1;
+        parse_status = -1;
+        goto cleanup;
     }
 
     optind = 1;
@@ -1368,7 +1369,8 @@ parse_args(int argc, char **argv, Options *opts)
 
         if (opt > 0) {
             if (lsqa_guard_missing_argument(opt, argv) != 0) {
-                return -1;
+                parse_status = -1;
+                goto cleanup;
             }
         }
 
@@ -1500,7 +1502,8 @@ parse_args(int argc, char **argv, Options *opts)
                           sizeof(opts->prefix_buffer),
                           "report");
         if (status < 0) {
-            return -1;
+            parse_status = -1;
+            goto cleanup;
         }
     } else {
         memcpy(opts->prefix_buffer, base_start, prefix_len);
@@ -1515,8 +1518,8 @@ parse_args(int argc, char **argv, Options *opts)
                           "%s",
                           prefix_env);
         if (status < 0) {
-            free(prefix_env);
-            return -1;
+            parse_status = -1;
+            goto cleanup;
         }
         opts->prefix = opts->prefix_buffer;
     }

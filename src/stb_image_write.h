@@ -769,6 +769,9 @@ static int stbi_write_hdr_core(stbi__write_context *s, int x, int y, int comp, f
       char buffer[128];
       char header[] = "#?RADIANCE\n# Written by stb_image_write.h\n"
                       "FORMAT=32-bit_rle_rgbe\n";
+      if (scratch == NULL) {
+         return 0;
+      }
       s->func(s->context, header, sizeof(header)-1);
 
       /*
@@ -903,6 +906,10 @@ static unsigned int stbiw__zhash(unsigned char *data)
 
 STBIWDEF unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_len, int quality)
 {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 #ifdef STBIW_ZLIB_COMPRESS
    // user provided a zlib compress implementation, use that
    return STBIW_ZLIB_COMPRESS(data, data_len, out_len, quality);
@@ -1028,6 +1035,9 @@ STBIWDEF unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, i
    STBIW_MEMMOVE(stbiw__sbraw(out), out, *out_len);
    return (unsigned char *) stbiw__sbraw(out);
 #endif // STBIW_ZLIB_COMPRESS
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 static unsigned int stbiw__crc32(unsigned char *buffer, int len)

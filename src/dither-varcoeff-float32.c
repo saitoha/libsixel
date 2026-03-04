@@ -449,7 +449,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     unsigned char *palette;
     unsigned char *new_palette;
     float *source_pixel;
-    float corrected[SIXEL_MAX_CHANNELS];
     float quantized_float;
     unsigned char quantized[SIXEL_MAX_CHANNELS];
     float *carry_curr = NULL;
@@ -480,6 +479,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     size_t base;
     size_t carry_base;
     int depth;
+    int channel_count;
     int reqcolor;
     int n;
     int color_index;
@@ -519,6 +519,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     migration_map = context->migration_map;
     ncolors = context->ncolors;
     depth = context->depth;
+    channel_count = depth;
     reqcolor = context->reqcolor;
     lookup = context->lookup;
     fast_lut = context->lut;
@@ -560,7 +561,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (depth <= 0 || depth > SIXEL_MAX_CHANNELS) {
+    if (channel_count <= 0 || channel_count > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -623,9 +624,13 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
             pos = y * context->width + x;
             base = (size_t)pos * (size_t)depth;
             carry_base = (size_t)x * (size_t)depth;
+            source_pixel = data + base;
             if (use_carry) {
-                for (n = 0; n < depth; ++n) {
+                for (n = 0; n < channel_count; ++n) {
                     float accum;
+                    if (n >= SIXEL_MAX_CHANNELS) {
+                        break;
+                    }
 
                     accum = data[base + (size_t)n]
                            + carry_curr[carry_base + (size_t)n];
@@ -634,14 +639,14 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                         context->pixelformat,
                         n,
                         accum);
-                    corrected[n] = accum;
+                    source_pixel[n] = accum;
                 }
-                source_pixel = corrected;
-            } else {
-                source_pixel = data + base;
             }
 
-            for (n = 0; n < depth; ++n) {
+            for (n = 0; n < channel_count; ++n) {
+                if (n >= SIXEL_MAX_CHANNELS) {
+                    break;
+                }
                 quantized_float = source_pixel[n];
                 quantized_float = sixel_pixelformat_float_channel_clamp(
                     context->pixelformat,
@@ -699,7 +704,10 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                 if (optimize_palette) {
                     if (migration_map[color_index] == 0) {
                         output_index = *ncolors;
-                        for (n = 0; n < depth; ++n) {
+                        for (n = 0; n < channel_count; ++n) {
+                            if (n >= SIXEL_MAX_CHANNELS) {
+                                break;
+                            }
                             new_palette[output_index * depth + n]
                                 = palette[color_index * depth + n];
                     }
@@ -737,7 +745,10 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     context->result[pos] = (sixel_index_t)output_index;
                 }
             }
-            for (n = 0; n < depth; ++n) {
+            for (n = 0; n < channel_count; ++n) {
+                if (n >= SIXEL_MAX_CHANNELS) {
+                    break;
+                }
                 if (n > 0 && (
                         context->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
                         context->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
