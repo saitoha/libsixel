@@ -1377,7 +1377,6 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     sixel_parallel_context_init(&ctx);
     sixel_logger_prepare(&logger);
     nbands = (height + 5) / 6;
-    ctx.band_count = nbands;
     if (nbands <= 0) {
         sixel_logger_close(&logger);
         return SIXEL_OK;
