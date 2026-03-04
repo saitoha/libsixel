@@ -687,7 +687,7 @@ AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
 ])
 
 AC_CACHE_CHECK(
-  [whether the compiler can silence -Werror=analyzer-fd-leak via pragmas],
+  [whether the compiler can silence -Wanalyzer-fd-leak via pragmas],
   [ac_cv_have_diag_werror_analyzer_fd_leak],
   [
    ac_save_CFLAGS="$CFLAGS"
@@ -695,7 +695,7 @@ AC_CACHE_CHECK(
    AC_COMPILE_IFELSE(
      [AC_LANG_SOURCE([[
        #pragma GCC diagnostic push
-       #pragma GCC diagnostic ignored "-Werror=analyzer-fd-leak"
+       #pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"
        int main(void) { return 0; }
        #pragma GCC diagnostic pop
      ]])],
@@ -707,7 +707,31 @@ AC_CACHE_CHECK(
 AS_IF([test "x$ac_cv_have_diag_werror_analyzer_fd_leak" = "xyes"], [
   AC_DEFINE([HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK],
             [1],
-            [Define to 1 if the compiler can ignore -Werror=analyzer-fd-leak via pragmas])
+            [Define to 1 if the compiler can ignore -Wanalyzer-fd-leak via pragmas])
+])
+
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wanalyzer-malloc-leak via pragmas],
+  [ac_cv_have_diag_wanalyzer_malloc_leak],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #pragma GCC diagnostic push
+       #pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+       int main(void) { return 0; }
+       #pragma GCC diagnostic pop
+     ]])],
+     [ac_cv_have_diag_wanalyzer_malloc_leak=yes],
+     [ac_cv_have_diag_wanalyzer_malloc_leak=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+
+AS_IF([test "x$ac_cv_have_diag_wanalyzer_malloc_leak" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK],
+            [1],
+            [Define to 1 if the compiler can ignore -Wanalyzer-malloc-leak via pragmas])
 ])
 
 AC_ARG_ENABLE([sanitizer],
