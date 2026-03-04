@@ -186,6 +186,14 @@
    */
 #undef HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK
 
+/* Define to 1 if the compiler can ignore -Wanalyzer-out-of-bounds via pragmas
+   */
+#undef HAVE_DIAGNOSTIC_WANALYZER_OUT_OF_BOUNDS
+
+/* Define to 1 if the compiler can ignore
+   -Wanalyzer-use-of-uninitialized-value via pragmas */
+#undef HAVE_DIAGNOSTIC_WANALYZER_USE_OF_UNINITIALIZED_VALUE
+
 /* Define to 1 if the compiler can ignore -Wanalyzer-fd-leak via pragmas */
 #undef HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK
 

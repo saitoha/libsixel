@@ -262,6 +262,24 @@ if cc.compiles('''
   conf.set('HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK', 1)
 endif
 
+if cc.compiles('''
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
+    int main(void) { return 0; }
+    #pragma GCC diagnostic pop
+  ''', args: ['-Werror'])
+  conf.set('HAVE_DIAGNOSTIC_WANALYZER_OUT_OF_BOUNDS', 1)
+endif
+
+if cc.compiles('''
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
+    int main(void) { return 0; }
+    #pragma GCC diagnostic pop
+  ''', args: ['-Werror'])
+  conf.set('HAVE_DIAGNOSTIC_WANALYZER_USE_OF_UNINITIALIZED_VALUE', 1)
+endif
+
 #flags = cc.get_supported_arguments([
 #    '-Wformat=2',
 #    '-fno-emulated-tls',

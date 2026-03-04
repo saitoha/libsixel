@@ -17016,6 +17016,90 @@ printf "%s\n" "#define HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK 1" >>confdefs.h
 
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wanalyzer-out-of-bounds via pragmas" >&5
+printf %s "checking whether the compiler can silence -Wanalyzer-out-of-bounds via pragmas... " >&6; }
+if test ${ac_cv_have_diag_wanalyzer_out_of_bounds+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+       #pragma GCC diagnostic push
+       #pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
+       int main(void) { return 0; }
+       #pragma GCC diagnostic pop
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_have_diag_wanalyzer_out_of_bounds=yes
+else case e in #(
+  e) ac_cv_have_diag_wanalyzer_out_of_bounds=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_wanalyzer_out_of_bounds" >&5
+printf "%s\n" "$ac_cv_have_diag_wanalyzer_out_of_bounds" >&6; }
+
+if test "x$ac_cv_have_diag_wanalyzer_out_of_bounds" = "xyes"
+then :
+
+
+printf "%s\n" "#define HAVE_DIAGNOSTIC_WANALYZER_OUT_OF_BOUNDS 1" >>confdefs.h
+
+
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wanalyzer-use-of-uninitialized-value via pragmas" >&5
+printf %s "checking whether the compiler can silence -Wanalyzer-use-of-uninitialized-value via pragmas... " >&6; }
+if test ${ac_cv_have_diag_wanalyzer_use_of_uninitialized_value+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+       #pragma GCC diagnostic push
+       #pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
+       int main(void) { return 0; }
+       #pragma GCC diagnostic pop
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_have_diag_wanalyzer_use_of_uninitialized_value=yes
+else case e in #(
+  e) ac_cv_have_diag_wanalyzer_use_of_uninitialized_value=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_wanalyzer_use_of_uninitialized_value" >&5
+printf "%s\n" "$ac_cv_have_diag_wanalyzer_use_of_uninitialized_value" >&6; }
+
+if test "x$ac_cv_have_diag_wanalyzer_use_of_uninitialized_value" = "xyes"
+then :
+
+
+printf "%s\n" "#define HAVE_DIAGNOSTIC_WANALYZER_USE_OF_UNINITIALIZED_VALUE 1" >>confdefs.h
+
+
+fi
+
 # Check whether --enable-sanitizer was given.
 if test ${enable_sanitizer+y}
 then :

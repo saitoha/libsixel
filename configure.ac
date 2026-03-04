@@ -734,6 +734,54 @@ AS_IF([test "x$ac_cv_have_diag_wanalyzer_malloc_leak" = "xyes"], [
             [Define to 1 if the compiler can ignore -Wanalyzer-malloc-leak via pragmas])
 ])
 
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wanalyzer-out-of-bounds via pragmas],
+  [ac_cv_have_diag_wanalyzer_out_of_bounds],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #pragma GCC diagnostic push
+       #pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
+       int main(void) { return 0; }
+       #pragma GCC diagnostic pop
+     ]])],
+     [ac_cv_have_diag_wanalyzer_out_of_bounds=yes],
+     [ac_cv_have_diag_wanalyzer_out_of_bounds=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+
+AS_IF([test "x$ac_cv_have_diag_wanalyzer_out_of_bounds" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_WANALYZER_OUT_OF_BOUNDS],
+            [1],
+            [Define to 1 if the compiler can ignore -Wanalyzer-out-of-bounds via pragmas])
+])
+
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wanalyzer-use-of-uninitialized-value via pragmas],
+  [ac_cv_have_diag_wanalyzer_use_of_uninitialized_value],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #pragma GCC diagnostic push
+       #pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
+       int main(void) { return 0; }
+       #pragma GCC diagnostic pop
+     ]])],
+     [ac_cv_have_diag_wanalyzer_use_of_uninitialized_value=yes],
+     [ac_cv_have_diag_wanalyzer_use_of_uninitialized_value=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+
+AS_IF([test "x$ac_cv_have_diag_wanalyzer_use_of_uninitialized_value" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_WANALYZER_USE_OF_UNINITIALIZED_VALUE],
+            [1],
+            [Define to 1 if the compiler can ignore -Wanalyzer-use-of-uninitialized-value via pragmas])
+])
+
 AC_ARG_ENABLE([sanitizer],
               [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread@:>@],
                               [enable sanitizer instrumentation and add
