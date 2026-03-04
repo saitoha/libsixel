@@ -1047,6 +1047,27 @@ AS_IF([test "x$enable_pgo" != "xno"], [
 AC_MSG_CHECKING([which PGO profile is enabled])
 AC_MSG_RESULT([$sixel_pgo_status])
 
+# GCC may emit -Wmissing-profile under -fprofile-use when some .gcda files
+# are absent or stale. Keep CI strict generally, but avoid failing the whole
+# PGO-use build on this diagnostic alone.
+AS_IF([test "x$CI" != "x" \
+            -a "x$enable_pgo" = "xuse" \
+            -a "x$sixel_pgo_toolchain" = "xgnu"], [
+  AC_CACHE_CHECK(
+    [whether $CC supports -Wno-error=missing-profile],
+    [ac_cv_cc_wno_error_missing_profile],
+    [ac_save_CFLAGS="$CFLAGS"
+     CFLAGS="$CFLAGS -Werror -Wno-error=missing-profile"
+     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+                       [ac_cv_cc_wno_error_missing_profile=yes],
+                       [ac_cv_cc_wno_error_missing_profile=no])
+     CFLAGS="$ac_save_CFLAGS"])
+  AS_IF([test "x$ac_cv_cc_wno_error_missing_profile" = "xyes"], [
+    CFLAGS="$CFLAGS -Wno-error=missing-profile"
+    AM_CFLAGS="$AM_CFLAGS -Wno-error=missing-profile"
+  ])
+])
+
 AC_CACHE_CHECK(
   [whether ThreadSanitizer instrumentation is enabled],
   [ac_cv_sixel_tsan],
