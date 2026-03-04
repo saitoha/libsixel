@@ -237,6 +237,7 @@ png_error_callback(png_structp png_ptr, png_const_charp error_message)
 #endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 }
 
+#if HAVE_LCMS2
 static uint32_t
 png_read_be32_chunk(unsigned char const *p)
 {
@@ -307,7 +308,6 @@ png_detect_chunk_flags_raw(unsigned char const *buffer,
     return 1;
 }
 
-#if HAVE_LCMS2
 /*
  * Convert decoded PNG RGB pixels from an embedded ICC profile to sRGB.
  *
