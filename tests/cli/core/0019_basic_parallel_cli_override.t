@@ -8,13 +8,13 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 command -v cmp >/dev/null 2>&1 || {
     printf "1..0 # SKIP cmp unavailable\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 

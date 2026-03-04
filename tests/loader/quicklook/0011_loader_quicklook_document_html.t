@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 test "${HAVE_QUICKLOOK-}" = 1 || {
     printf "1..0 # SKIP quicklook loader is unavailable\n"
@@ -20,6 +19,7 @@ test "${SIXEL_TEST_HOST_ARCH-}" != "x86_64" || {
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 

@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 test -x "${IMG2SIXEL_PATH}" || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
@@ -13,6 +12,7 @@ test -x "${LSQA_PATH}" || {
     printf "1..0 # SKIP lsqa is disabled in this build\n";
     exit 0
 }
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
