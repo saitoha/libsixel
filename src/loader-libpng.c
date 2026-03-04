@@ -237,6 +237,76 @@ png_error_callback(png_structp png_ptr, png_const_charp error_message)
 #endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 }
 
+static uint32_t
+png_read_be32_chunk(unsigned char const *p)
+{
+    return ((uint32_t)p[0] << 24u) |
+           ((uint32_t)p[1] << 16u) |
+           ((uint32_t)p[2] << 8u) |
+           (uint32_t)p[3];
+}
+
+static int
+png_detect_chunk_flags_raw(unsigned char const *buffer,
+                           size_t size,
+                           int *has_iccp,
+                           int *has_srgb,
+                           int *has_chrm,
+                           int *has_gama)
+{
+    static unsigned char const signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    size_t offset;
+
+    if (has_iccp == NULL || has_srgb == NULL ||
+        has_chrm == NULL || has_gama == NULL) {
+        return 0;
+    }
+
+    *has_iccp = 0;
+    *has_srgb = 0;
+    *has_chrm = 0;
+    *has_gama = 0;
+
+    if (buffer == NULL || size < 8u) {
+        return 0;
+    }
+    if (memcmp(buffer, signature, sizeof(signature)) != 0) {
+        return 0;
+    }
+
+    offset = 8u;
+    while (offset + 12u <= size) {
+        uint32_t chunk_length;
+        size_t chunk_total;
+        unsigned char const *chunk_type;
+
+        chunk_length = png_read_be32_chunk(buffer + offset);
+        chunk_total = 12u + (size_t)chunk_length;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+
+        chunk_type = buffer + offset + 4u;
+        if (memcmp(chunk_type, "iCCP", 4u) == 0) {
+            *has_iccp = 1;
+        } else if (memcmp(chunk_type, "sRGB", 4u) == 0) {
+            *has_srgb = 1;
+        } else if (memcmp(chunk_type, "cHRM", 4u) == 0) {
+            *has_chrm = 1;
+        } else if (memcmp(chunk_type, "gAMA", 4u) == 0) {
+            *has_gama = 1;
+        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+
+        offset += chunk_total;
+    }
+
+    return 1;
+}
+
 #if HAVE_LCMS2
 /*
  * Convert decoded PNG RGB pixels from an embedded ICC profile to sRGB.
@@ -534,8 +604,14 @@ load_png(unsigned char      /* out */ **result,
     png_uint_32 icc_profile_length;
     sixel_cms_profile_t * chunk_profile;
     int has_embedded_icc;
+    int has_embedded_icc_raw;
     int has_srgb_chunk;
     int has_chrm_chunk;
+    int has_gama_chunk;
+    int has_raw_chunk_flags;
+    int has_srgb_chunk_raw;
+    int has_chrm_chunk_raw;
+    int has_gama_chunk_raw;
     int intent;
     double white_x;
     double white_y;
@@ -545,6 +621,7 @@ load_png(unsigned char      /* out */ **result,
     double green_y;
     double blue_x;
     double blue_y;
+    double file_gamma;
 #endif
     png_uint_32 width;
     png_uint_32 height;
@@ -569,8 +646,14 @@ load_png(unsigned char      /* out */ **result,
     icc_profile_length = 0u;
     chunk_profile = NULL;
     has_embedded_icc = 0;
+    has_embedded_icc_raw = 0;
     has_srgb_chunk = 0;
     has_chrm_chunk = 0;
+    has_gama_chunk = 0;
+    has_raw_chunk_flags = 0;
+    has_srgb_chunk_raw = 0;
+    has_chrm_chunk_raw = 0;
+    has_gama_chunk_raw = 0;
     intent = 0;
     white_x = 0.0;
     white_y = 0.0;
@@ -580,6 +663,7 @@ load_png(unsigned char      /* out */ **result,
     green_y = 0.0;
     blue_x = 0.0;
     blue_y = 0.0;
+    file_gamma = 0.0;
 #else
     (void)enable_cms;
 #endif
@@ -651,6 +735,19 @@ load_png(unsigned char      /* out */ **result,
                                   &green_y,
                                   &blue_x,
                                   &blue_y) == PNG_INFO_cHRM;
+    has_gama_chunk = png_get_gAMA(png_ptr, info_ptr, &file_gamma) == PNG_INFO_gAMA;
+    has_raw_chunk_flags = png_detect_chunk_flags_raw(buffer,
+                                                     size,
+                                                     &has_embedded_icc_raw,
+                                                     &has_srgb_chunk_raw,
+                                                     &has_chrm_chunk_raw,
+                                                     &has_gama_chunk_raw);
+    if (!has_raw_chunk_flags) {
+        has_srgb_chunk_raw = has_srgb_chunk;
+        has_chrm_chunk_raw = has_chrm_chunk;
+        has_gama_chunk_raw = has_gama_chunk;
+    }
+    (void)has_embedded_icc_raw;
 #endif
 
     width = png_get_image_width(png_ptr, info_ptr);
@@ -953,7 +1050,7 @@ load_png(unsigned char      /* out */ **result,
     png_read_image(png_ptr, rows);
 
 #if HAVE_LCMS2
-    if (enable_cms && has_embedded_icc && has_srgb_chunk && has_chrm_chunk) {
+    if (enable_cms && has_embedded_icc && has_srgb_chunk_raw && has_chrm_chunk_raw) {
         /* Priority 1: iCCP+sRGB+cHRM coexistence => no conversion. */
     } else if (enable_cms && has_embedded_icc) {
         /* Priority 2: iCCP only. */
@@ -981,9 +1078,10 @@ load_png(unsigned char      /* out */ **result,
                                              icc_profile,
                                              icc_profile_length);
         }
-    } else if (enable_cms && has_srgb_chunk) {
+    } else if (enable_cms && has_srgb_chunk_raw) {
         /* Priority 3: sRGB present => no conversion. */
     } else if (enable_cms &&
+               has_gama_chunk_raw &&
                png_build_rgb_profile_from_chunks(png_ptr,
                                                  info_ptr,
                                                  &chunk_profile)) {
