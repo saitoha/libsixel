@@ -5451,6 +5451,14 @@ sixel_encoder_output_without_macro(
 #endif
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
+        sixel_trace_topic_message(
+            "lifecycle",
+            "frame delay check: frame_no=%d loop_no=%d delay_cs=%d ignore=%d static=%d",
+            sixel_frame_get_frame_no(frame),
+            sixel_frame_get_loop_no(frame),
+            delay,
+            encoder->fignore_delay,
+            encoder->fstatic);
 # if defined(HAVE_CLOCK)
         last_clock = clock();
 /* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
@@ -5470,9 +5478,22 @@ sixel_encoder_output_without_macro(
 # else
         dulation = 0;
 # endif
+        sixel_trace_topic_message(
+            "lifecycle",
+            "frame delay timing: frame_no=%d loop_no=%d measured_usec=%d target_usec=%u",
+            sixel_frame_get_frame_no(frame),
+            sixel_frame_get_loop_no(frame),
+            dulation,
+            (unsigned int)(1000 * 10 * delay));
         if (dulation < 1000 * 10 * delay) {
             remaining_delay =
                 (unsigned int)(1000 * 10 * delay - dulation);
+            sixel_trace_topic_message(
+                "lifecycle",
+                "frame delay sleep: frame_no=%d loop_no=%d sleep_usec=%u",
+                sixel_frame_get_frame_no(frame),
+                sixel_frame_get_loop_no(frame),
+                remaining_delay);
             sixel_sleep(remaining_delay);
         }
     }
@@ -5674,6 +5695,14 @@ sixel_encoder_output_with_macro(
         }
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
+            sixel_trace_topic_message(
+                "lifecycle",
+                "frame delay check: frame_no=%d loop_no=%d delay_cs=%d ignore=%d static=%d",
+                sixel_frame_get_frame_no(frame),
+                sixel_frame_get_loop_no(frame),
+                delay,
+                encoder->fignore_delay,
+                encoder->fstatic);
 # if defined(HAVE_CLOCK)
             last_clock = clock();
 /* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
@@ -5693,9 +5722,22 @@ sixel_encoder_output_with_macro(
 # else
             dulation = 0;
 # endif
+            sixel_trace_topic_message(
+                "lifecycle",
+                "frame delay timing: frame_no=%d loop_no=%d measured_usec=%d target_usec=%u",
+                sixel_frame_get_frame_no(frame),
+                sixel_frame_get_loop_no(frame),
+                dulation,
+                (unsigned int)(1000 * 10 * delay));
             if (dulation < 1000 * 10 * delay) {
                 remaining_delay =
                     (unsigned int)(1000 * 10 * delay - dulation);
+                sixel_trace_topic_message(
+                    "lifecycle",
+                    "frame delay sleep: frame_no=%d loop_no=%d sleep_usec=%u",
+                    sixel_frame_get_frame_no(frame),
+                    sixel_frame_get_loop_no(frame),
+                    remaining_delay);
                 sixel_sleep(remaining_delay);
             }
         }
