@@ -1184,6 +1184,9 @@ pixels_to_luma709(const float *pixels, int width, int height)
 
     total = (size_t)width * (size_t)height;
     buf = float_buffer_create(total);
+    if (pixels == NULL || buf.values == NULL) {
+        return buf;
+    }
     for (i = 0; i < total; ++i) {
         r = pixels[i * 3 + 0];
         g = pixels[i * 3 + 1];
@@ -1203,6 +1206,9 @@ pixels_channel(const float *pixels, int width, int height, int channel)
 
     total = (size_t)width * (size_t)height;
     buf = float_buffer_create(total);
+    if (pixels == NULL || buf.values == NULL) {
+        return buf;
+    }
     for (i = 0; i < total; ++i) {
         value = pixels[i * 3 + channel];
         buf.values[i] = value;

@@ -1414,7 +1414,9 @@ img2sixel_handle_show(int mask)
         }
         img2sixel_compat_puts("# ---- bash ----\n");
         (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
-        if (len == 0 || buf[len - 1] != '\n') {
+        if (len == 0) {
+            printf("\n");
+        } else if (buf[len - 1] != '\n') {
             printf("\n");
         }
         free(buf);
@@ -1425,7 +1427,9 @@ img2sixel_handle_show(int mask)
         }
         img2sixel_compat_puts("# ---- zsh ----\n");
         (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
-        if (len == 0 || buf[len - 1] != '\n') {
+        if (len == 0) {
+            printf("\n");
+        } else if (buf[len - 1] != '\n') {
             printf("\n");
         }
         free(buf);
@@ -1439,7 +1443,9 @@ img2sixel_handle_show(int mask)
             return -1;
         }
         (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
-        if (len == 0 || buf[len - 1] != '\n') {
+        if (len == 0) {
+            printf("\n");
+        } else if (buf[len - 1] != '\n') {
             printf("\n");
         }
         free(buf);
@@ -1451,7 +1457,9 @@ img2sixel_handle_show(int mask)
             return -1;
         }
         (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
-        if (len == 0 || buf[len - 1] != '\n') {
+        if (len == 0) {
+            printf("\n");
+        } else if (buf[len - 1] != '\n') {
             printf("\n");
         }
         free(buf);
