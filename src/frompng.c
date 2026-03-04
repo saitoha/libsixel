@@ -23,24 +23,21 @@
 #include "compat_stub.h"
 #include "frompng.h"
 
-typedef unsigned char stbi_uc;
-typedef unsigned short stbi_us;
-
 char const *stbi_failure_reason(void);
 void stbi_image_free(void *retval_from_stbi_load);
-int stbi_is_16_bit_from_memory(stbi_uc const *buffer, int len);
-stbi_us *stbi_load_16_from_memory(stbi_uc const *buffer,
-                                  int len,
-                                  int *x,
-                                  int *y,
-                                  int *channels_in_file,
-                                  int desired_channels);
-stbi_uc *stbi_load_from_memory(stbi_uc const *buffer,
-                               int len,
-                               int *x,
-                               int *y,
-                               int *channels_in_file,
-                               int desired_channels);
+int stbi_is_16_bit_from_memory(unsigned char const *buffer, int len);
+unsigned short *stbi_load_16_from_memory(unsigned char const *buffer,
+                                         int len,
+                                         int *x,
+                                         int *y,
+                                         int *channels_in_file,
+                                         int desired_channels);
+unsigned char *stbi_load_from_memory(unsigned char const *buffer,
+                                     int len,
+                                     int *x,
+                                     int *y,
+                                     int *channels_in_file,
+                                     int desired_channels);
 char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
                                                    int len,
                                                    int initial_size,
