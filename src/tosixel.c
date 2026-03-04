@@ -3819,6 +3819,27 @@ sixel_encode(
 
     (void) depth;
 
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad pixels parameter."
+            " (pixels == NULL)");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (dither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad dither parameter."
+            " (dither == NULL)");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (output == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad output parameter."
+            " (output == NULL)");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     /* TODO: reference counting should be thread-safe */
     sixel_dither_ref(dither);
     sixel_output_ref(output);
