@@ -316,23 +316,8 @@ runs:
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
-        # Keep Clang PGO raw profiles in a deterministic directory so the
-        # follow-up merge step can build default.profdata reliably.
-        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"clang-pgo"* ]]; then
-          mkdir -p "$PWD/pgo"
-          LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
-            ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
-            ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
-        # Emit .profraw explicitly in emscripten coverage jobs so
-        # llvm-profdata/llvm-cov can consume deterministic profile files.
-        elif [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
-          LLVM_PROFILE_FILE="$PWD/coverage-%p-%m.profraw" \
-            ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
-            ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
-        else
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
-            ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
-        fi
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+          ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build and test (Meson, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
@@ -342,14 +327,7 @@ runs:
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
-        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"clang-pgo"* ]]; then
-          mkdir -p "$PWD/pgo"
-          LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
-            meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
-        else
-          LLVM_PROFILE_FILE="$PWD/coverage-%p-%m.profraw" \
-            meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
-        fi
+        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
     - name: Build and test (Autotools, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
@@ -486,8 +464,7 @@ runs:
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
           ${rel-.}/configure \
           ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
-        LIBTOOLFLAGS=--debug \
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
