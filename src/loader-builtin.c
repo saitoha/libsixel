@@ -1075,6 +1075,188 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
 
     return 0;
 }
+
+static uint16_t
+sixel_builtin_tiff_read_u16(unsigned char const *p, int little_endian)
+{
+    if (little_endian) {
+        return (uint16_t)((uint16_t)p[0] |
+                          ((uint16_t)p[1] << 8));
+    }
+    return (uint16_t)(((uint16_t)p[0] << 8) |
+                      (uint16_t)p[1]);
+}
+
+static uint32_t
+sixel_builtin_tiff_read_u32(unsigned char const *p, int little_endian)
+{
+    if (little_endian) {
+        return (uint32_t)p[0] |
+               ((uint32_t)p[1] << 8) |
+               ((uint32_t)p[2] << 16) |
+               ((uint32_t)p[3] << 24);
+    }
+    return ((uint32_t)p[0] << 24) |
+           ((uint32_t)p[1] << 16) |
+           ((uint32_t)p[2] << 8) |
+           (uint32_t)p[3];
+}
+
+static int
+sixel_builtin_extract_tiff_icc(unsigned char const *buffer,
+                               size_t size,
+                               unsigned char **profile,
+                               size_t *profile_length,
+                               uint16_t *photometric,
+                               sixel_allocator_t *allocator)
+{
+    enum { TIFFTAG_PHOTOMETRIC = 262 };
+    enum { TIFFTAG_ICCPROFILE = 34675 };
+    enum { TIFF_TYPE_BYTE = 1, TIFF_TYPE_SHORT = 3, TIFF_TYPE_UNDEFINED = 7 };
+    int little_endian;
+    uint16_t version;
+    size_t ifd_offset;
+    uint16_t entry_count;
+    size_t entries_offset;
+    size_t entries_size;
+    uint16_t i;
+    size_t entry_offset;
+    uint16_t tag;
+    uint16_t type;
+    uint32_t count32;
+    size_t count;
+    uint32_t value_offset32;
+    size_t value_offset;
+    unsigned char *copied;
+
+    little_endian = 0;
+    version = 0u;
+    ifd_offset = 0u;
+    entry_count = 0u;
+    entries_offset = 0u;
+    entries_size = 0u;
+    i = 0u;
+    entry_offset = 0u;
+    tag = 0u;
+    type = 0u;
+    count32 = 0u;
+    count = 0u;
+    value_offset32 = 0u;
+    value_offset = 0u;
+    copied = NULL;
+
+    *profile = NULL;
+    *profile_length = 0u;
+    if (photometric != NULL) {
+        *photometric = (uint16_t)0xffffu;
+    }
+
+    if (buffer == NULL || profile == NULL || profile_length == NULL ||
+        allocator == NULL || size < 8u) {
+        return 0;
+    }
+
+    if (buffer[0] == 'I' && buffer[1] == 'I') {
+        little_endian = 1;
+    } else if (buffer[0] == 'M' && buffer[1] == 'M') {
+        little_endian = 0;
+    } else {
+        return 0;
+    }
+
+    version = sixel_builtin_tiff_read_u16(buffer + 2u, little_endian);
+    if (version != 42u) {
+        /* BigTIFF (43) and other variants are ignored in builtin path. */
+        return 0;
+    }
+
+    ifd_offset = (size_t)sixel_builtin_tiff_read_u32(buffer + 4u,
+                                                     little_endian);
+    if (ifd_offset == 0u || ifd_offset > size - 2u) {
+        return 0;
+    }
+
+    entry_count = sixel_builtin_tiff_read_u16(buffer + ifd_offset,
+                                              little_endian);
+    entries_offset = ifd_offset + 2u;
+    entries_size = (size_t)entry_count * 12u;
+    if (entries_size > size - entries_offset) {
+        return 0;
+    }
+
+    for (i = 0u; i < entry_count; ++i) {
+        entry_offset = entries_offset + (size_t)i * 12u;
+        tag = sixel_builtin_tiff_read_u16(buffer + entry_offset,
+                                          little_endian);
+        if (tag == TIFFTAG_PHOTOMETRIC) {
+            type = sixel_builtin_tiff_read_u16(buffer + entry_offset + 2u,
+                                               little_endian);
+            count32 = sixel_builtin_tiff_read_u32(buffer + entry_offset + 4u,
+                                                  little_endian);
+            if (photometric != NULL &&
+                type == TIFF_TYPE_SHORT && count32 == 1u) {
+                *photometric = sixel_builtin_tiff_read_u16(buffer + entry_offset + 8u,
+                                                           little_endian);
+            }
+            continue;
+        }
+        if (tag != TIFFTAG_ICCPROFILE) {
+            continue;
+        }
+        type = sixel_builtin_tiff_read_u16(buffer + entry_offset + 2u,
+                                           little_endian);
+        if (type != TIFF_TYPE_BYTE && type != TIFF_TYPE_UNDEFINED) {
+            return 0;
+        }
+
+        count32 = sixel_builtin_tiff_read_u32(buffer + entry_offset + 4u,
+                                              little_endian);
+        if (count32 == 0u) {
+            return 0;
+        }
+        count = (size_t)count32;
+
+        copied = (unsigned char *)sixel_allocator_malloc(allocator, count);
+        if (copied == NULL) {
+            return 0;
+        }
+
+        if (count <= 4u) {
+            memcpy(copied, buffer + entry_offset + 8u, count);
+        } else {
+            value_offset32 = sixel_builtin_tiff_read_u32(buffer + entry_offset + 8u,
+                                                         little_endian);
+            value_offset = (size_t)value_offset32;
+            if (value_offset > size || count > size - value_offset) {
+                sixel_allocator_free(allocator, copied);
+                return 0;
+            }
+            memcpy(copied, buffer + value_offset, count);
+        }
+
+        *profile = copied;
+        *profile_length = count;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_builtin_tiff_photometric_supports_icc(uint16_t photometric)
+{
+    switch (photometric) {
+    case 0u: /* WhiteIsZero (Gray) */
+    case 1u: /* BlackIsZero (Gray) */
+    case 2u: /* RGB */
+    case 3u: /* Palette */
+    case 6u: /* YCbCr */
+    case 0xffffu: /* unknown/missing tag */
+        return 1;
+    default:
+        return 0;
+    }
+}
 #endif
 
 #if HAVE_LCMS2
@@ -2527,6 +2709,7 @@ load_with_builtin(
 #if HAVE_LCMS2
     unsigned char *icc_profile;
     size_t icc_profile_length;
+    uint16_t tiff_photometric;
 #endif
 
     status = SIXEL_BAD_INPUT;
@@ -2546,6 +2729,7 @@ load_with_builtin(
 #if HAVE_LCMS2
     icc_profile = NULL;
     icc_profile_length = 0u;
+    tiff_photometric = (uint16_t)0xffffu;
 #else
     (void)enable_cms;
 #endif
@@ -2812,6 +2996,22 @@ load_with_builtin(
                                                   frame->height,
                                                   icc_profile,
                                                   icc_profile_length);
+            }
+        } else if (enable_cms && chunk_is_tiff(pchunk)) {
+            if (sixel_builtin_extract_tiff_icc(pchunk->buffer,
+                                               pchunk->size,
+                                               &icc_profile,
+                                               &icc_profile_length,
+                                               &tiff_photometric,
+                                               pchunk->allocator)) {
+                if (sixel_builtin_tiff_photometric_supports_icc(
+                        tiff_photometric)) {
+                    sixel_builtin_convert_icc_to_srgb(pixels,
+                                                      frame->width,
+                                                      frame->height,
+                                                      icc_profile,
+                                                      icc_profile_length);
+                }
             }
         }
 #endif
