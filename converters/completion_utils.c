@@ -1400,12 +1400,12 @@ img2sixel_handle_install(int mask)
     return 0;
 }
 
-static int
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_OUT_OF_BOUNDS) && \
     defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
 #endif
+static int
 img2sixel_handle_show(int mask)
 {
     char *buf;
