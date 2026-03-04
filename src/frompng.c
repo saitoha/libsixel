@@ -11,6 +11,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
 #include "allocator.h"
 #include "cms.h"
 #include "compat_stub.h"
@@ -39,6 +46,10 @@ char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
                                                    int initial_size,
                                                    int *outlen,
                                                    int parse_header);
+
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t)-1)
+#endif
 
 static SIXELSTATUS
 sixel_frompng_convert_rgb16_to_rgbfloat32(unsigned char **result,
@@ -637,3 +648,12 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
 
     return SIXEL_OK;
 }
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 : */
+/* EOF */
