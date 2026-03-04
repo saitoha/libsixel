@@ -175,13 +175,13 @@ jobs:
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw";
-              mkdir -p "$PWD/pgo";
+              export LLVM_PROFILE_FILE="${GITHUB_WORKSPACE}/pgo/default-%p-%m.profraw";
+              mkdir -p "${GITHUB_WORKSPACE}/pgo";
               CC=clang
             setup_options: >-
-              --enable-pgo=generate --with-pgo-data=$PWD/pgo
+              --enable-pgo=generate --with-pgo-data=${GITHUB_WORKSPACE}/pgo
             pgo_use_options: >-
-              --enable-pgo=use --with-pgo-profdata=$PWD/pgo/default.profdata
+              --enable-pgo=use --with-pgo-profdata=${GITHUB_WORKSPACE}/pgo/default.profdata
             extra_packages: >-
               clang
             exec_type: bash
@@ -206,11 +206,11 @@ jobs:
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
-              mkdir -p "$PWD/pgo";
+              mkdir -p "${GITHUB_WORKSPACE}/pgo";
             setup_options: >-
-              --enable-pgo=generate --with-pgo-data=$PWD/pgo
+              --enable-pgo=generate --with-pgo-data=${GITHUB_WORKSPACE}/pgo
             pgo_use_options: >-
-              --enable-pgo=use --with-pgo-data=$PWD/pgo
+              --enable-pgo=use --with-pgo-data=${GITHUB_WORKSPACE}/pgo
             extra_packages: >-
               clang
             exec_type: bash

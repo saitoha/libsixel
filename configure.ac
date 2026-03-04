@@ -1068,6 +1068,27 @@ AS_IF([test "x$CI" != "x" \
   ])
 ])
 
+# Clang PGO-use may report profile hash/control-flow mismatches as
+# -Wbackend-plugin diagnostics. Keep CI strict in general, but avoid
+# failing the whole PGO-use rebuild on this backend warning alone.
+AS_IF([test "x$CI" != "x" \
+            -a "x$enable_pgo" = "xuse" \
+            -a "x$pgo_profdata_file" != "x"], [
+  AC_CACHE_CHECK(
+    [whether $CC supports -Wno-error=backend-plugin],
+    [ac_cv_cc_wno_error_backend_plugin],
+    [ac_save_CFLAGS="$CFLAGS"
+     CFLAGS="$CFLAGS -Werror -Wno-error=backend-plugin"
+     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+                       [ac_cv_cc_wno_error_backend_plugin=yes],
+                       [ac_cv_cc_wno_error_backend_plugin=no])
+     CFLAGS="$ac_save_CFLAGS"])
+  AS_IF([test "x$ac_cv_cc_wno_error_backend_plugin" = "xyes"], [
+    CFLAGS="$CFLAGS -Wno-error=backend-plugin"
+    AM_CFLAGS="$AM_CFLAGS -Wno-error=backend-plugin"
+  ])
+])
+
 AC_CACHE_CHECK(
   [whether ThreadSanitizer instrumentation is enabled],
   [ac_cv_sixel_tsan],
