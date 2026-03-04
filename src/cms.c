@@ -328,6 +328,9 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
 {
     sixel_cms_transform_t *transform;
     cmsUInt32Number cflags;
+    cmsUInt32Number trial_flags[2];
+    size_t trial_flag_count;
+    size_t tf;
     int intents[4];
     size_t intent_count;
     size_t i;
@@ -346,18 +349,23 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
     if ((flags & SIXEL_CMS_TRANSFORM_COPY_ALPHA) != 0) {
         cflags |= cmsFLAGS_COPY_ALPHA;
     }
+    trial_flags[0] = cflags;
+    trial_flags[1] = cflags | cmsFLAGS_NOOPTIMIZE;
+    trial_flag_count = 2u;
 
     intent_count = sixel_cms_build_intent_order(intents);
     transform->handle = NULL;
-    for (i = 0u; i < intent_count; ++i) {
-        transform->handle = cmsCreateTransform(src_profile->handle,
-                                               sixel_cms_map_format(src_format),
-                                               dst_profile->handle,
-                                               sixel_cms_map_format(dst_format),
-                                               intents[i],
-                                               cflags);
-        if (transform->handle != NULL) {
-            break;
+    for (tf = 0u; tf < trial_flag_count && transform->handle == NULL; ++tf) {
+        for (i = 0u; i < intent_count; ++i) {
+            transform->handle = cmsCreateTransform(src_profile->handle,
+                                                   sixel_cms_map_format(src_format),
+                                                   dst_profile->handle,
+                                                   sixel_cms_map_format(dst_format),
+                                                   intents[i],
+                                                   trial_flags[tf]);
+            if (transform->handle != NULL) {
+                break;
+            }
         }
     }
     if (transform->handle == NULL) {
