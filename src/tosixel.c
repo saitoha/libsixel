@@ -819,8 +819,6 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     if (nbands <= 0) {
         return SIXEL_OK;
     }
-    ctx->band_count = nbands;
-
     threads = requested_threads;
     if (threads > nbands) {
         threads = nbands;
@@ -850,6 +848,15 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     if (ctx->bands == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
+    for (i = 0; i < nbands; ++i) {
+        ctx->bands[i].data = NULL;
+        ctx->bands[i].size = 0;
+        ctx->bands[i].used = 0;
+        ctx->bands[i].status = SIXEL_OK;
+        ctx->bands[i].ready = 0;
+        ctx->bands[i].dispatched = 0;
+    }
+    ctx->band_count = nbands;
 
     ctx->workers = (sixel_parallel_worker_state_t **)
         calloc((size_t)ctx->worker_capacity, sizeof(*ctx->workers));
@@ -897,13 +904,6 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->next_band_to_flush = 0;
     ctx->writer_should_stop = 0;
     ctx->writer_error = SIXEL_OK;
-
-    for (i = 0; i < nbands; ++i) {
-        ctx->bands[i].used = 0;
-        ctx->bands[i].status = SIXEL_OK;
-        ctx->bands[i].ready = 0;
-        ctx->bands[i].dispatched = 0;
-    }
 
     status = sixel_thread_create(&ctx->writer_thread,
                                  sixel_parallel_writer_main,
