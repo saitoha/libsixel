@@ -34,6 +34,7 @@
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -299,6 +300,9 @@ sixel_palette_reversible_palette(unsigned char *palette,
     if (palette == NULL || colors == 0U || depth <= 0) {
         return;
     }
+    if ((size_t)colors > SIZE_MAX / (size_t)depth) {
+        return;
+    }
 
     /*
      * Snap in gamma-corrected sRGB space.  Byte palettes that already live in
@@ -306,12 +310,12 @@ sixel_palette_reversible_palette(unsigned char *palette,
      * on the safe-tone grid, then converted back to the original colorspace.
      */
     palette_bytes = (size_t)colors * (size_t)depth;
+    working = (unsigned char *)malloc(palette_bytes);
+    if (working == NULL) {
+        return;
+    }
+    memcpy(working, palette, palette_bytes);
     if (colorspace != SIXEL_COLORSPACE_GAMMA) {
-        working = (unsigned char *)malloc(palette_bytes);
-        if (working == NULL) {
-            return;
-        }
-        memcpy(working, palette, palette_bytes);
         status = sixel_helper_convert_colorspace(working,
                                                  palette_bytes,
                                                  pixelformat,
@@ -321,8 +325,6 @@ sixel_palette_reversible_palette(unsigned char *palette,
             free(working);
             return;
         }
-    } else {
-        working = palette;
     }
 
     /*
@@ -369,9 +371,9 @@ sixel_palette_reversible_palette(unsigned char *palette,
             free(working);
             return;
         }
-        memcpy(palette, working, palette_bytes);
-        free(working);
     }
+    memcpy(palette, working, palette_bytes);
+    free(working);
 }
 
 void
