@@ -686,6 +686,30 @@ AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
             [Define to 1 if the compiler can ignore -Wdeprecated-declarations via pragmas])
 ])
 
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Werror=analyzer-fd-leak via pragmas],
+  [ac_cv_have_diag_werror_analyzer_fd_leak],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #pragma GCC diagnostic push
+       #pragma GCC diagnostic ignored "-Werror=analyzer-fd-leak"
+       int main(void) { return 0; }
+       #pragma GCC diagnostic pop
+     ]])],
+     [ac_cv_have_diag_werror_analyzer_fd_leak=yes],
+     [ac_cv_have_diag_werror_analyzer_fd_leak=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+
+AS_IF([test "x$ac_cv_have_diag_werror_analyzer_fd_leak" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK],
+            [1],
+            [Define to 1 if the compiler can ignore -Werror=analyzer-fd-leak via pragmas])
+])
+
 AC_ARG_ENABLE([sanitizer],
               [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread@:>@],
                               [enable sanitizer instrumentation and add

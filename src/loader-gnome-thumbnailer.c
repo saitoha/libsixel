@@ -1806,6 +1806,11 @@ thumbnailer_extract_mime_token(char *text)
  *     Newly allocated string trimmed of trailing whitespace or NULL on
  *     failure.
  */
+#if defined(HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Werror=analyzer-fd-leak"
+#endif
 char *
 thumbnailer_run_file(char const *path, char const *option)
 {
@@ -1933,6 +1938,10 @@ cleanup:
     }
     return result;
 }
+#if defined(HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 /*
  * thumbnailer_guess_content_type

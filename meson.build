@@ -244,6 +244,15 @@ if cc.compiles('''
   conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
 endif
 
+if cc.compiles('''
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Werror=analyzer-fd-leak"
+    int main(void) { return 0; }
+    #pragma GCC diagnostic pop
+  ''', args: ['-Werror'])
+  conf.set('HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK', 1)
+endif
+
 #flags = cc.get_supported_arguments([
 #    '-Wformat=2',
 #    '-fno-emulated-tls',
