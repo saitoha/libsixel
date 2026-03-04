@@ -1,5 +1,7 @@
 /*
- * Verify libpng loader reports RGB output for RGBA sources.
+ * Verify libpng loader reports expected pixelformats:
+ * - RGBA(8-bit)  -> RGB888
+ * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
  */
 
 #include "tests/loader/pixelformat_test_common.h"
@@ -15,11 +17,23 @@ new_libpng_component(sixel_allocator_t *allocator,
 static int
 run_libpng_loader_test(void)
 {
-    return run_loader_component_case("libpng loader",
-                                     RGBA_IMAGE_PATH,
-                                     SIXEL_PIXELFORMAT_RGB888,
-                                     2,
-                                     1,
+    int result;
+
+    result = run_loader_component_case("libpng loader rgba8",
+                                       RGBA_IMAGE_PATH,
+                                       SIXEL_PIXELFORMAT_RGB888,
+                                       2,
+                                       1,
+                                       new_libpng_component);
+    if (result != 0) {
+        return result;
+    }
+
+    return run_loader_component_case("libpng loader gray16",
+                                     "/tests/data/inputs/formats/snake-png-gray16.png",
+                                     SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                     GEOMETRY_ANY,
+                                     GEOMETRY_ANY,
                                      new_libpng_component);
 }
 #endif
