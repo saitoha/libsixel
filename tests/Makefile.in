@@ -133,9 +133,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0014_loader_builtin_pixelformat.c \
 	loader/quicklook/0015_loader_quicklook_pixelformat.c \
 	loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
-	loader/libwebp/0017_loader_libwebp_pixelformat.c \
-	loader/libwebp/0018_loader_libwebp_animation_frames.c \
-	loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
+	loader/libwebp/0013_loader_libwebp_pixelformat.c \
+	loader/libwebp/0014_loader_libwebp_animation_frames.c \
+	loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c \
 	loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
@@ -175,9 +175,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/quicklook/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
@@ -286,9 +286,9 @@ am__depfiles_remade =  \
 	loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po \
 	loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
-	loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po \
-	loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po \
-	loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po \
+	loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po \
+	loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po \
+	loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po \
 	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
@@ -1008,9 +1008,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0014_loader_builtin_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/quicklook/0015_loader_quicklook_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0017_loader_libwebp_pixelformat.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0018_loader_libwebp_animation_frames.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0013_loader_libwebp_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0014_loader_libwebp_animation_frames.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
@@ -1239,13 +1239,13 @@ loader/libwebp/$(am__dirstamp):
 loader/libwebp/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) loader/libwebp/$(DEPDIR)
 	@: >>loader/libwebp/$(DEPDIR)/$(am__dirstamp)
-loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT):  \
+loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.$(OBJEXT):  \
 	loader/libwebp/$(am__dirstamp) \
 	loader/libwebp/$(DEPDIR)/$(am__dirstamp)
-loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT):  \
+loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.$(OBJEXT):  \
 	loader/libwebp/$(am__dirstamp) \
 	loader/libwebp/$(DEPDIR)/$(am__dirstamp)
-loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT):  \
+loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.$(OBJEXT):  \
 	loader/libwebp/$(am__dirstamp) \
 	loader/libwebp/$(DEPDIR)/$(am__dirstamp)
 loader/librsvg/$(am__dirstamp):
@@ -1388,9 +1388,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
@@ -1771,47 +1771,47 @@ loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.o
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gnome-thumbnailer/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
 
-loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o: loader/libwebp/0017_loader_libwebp_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/libwebp/0017_loader_libwebp_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0017_loader_libwebp_pixelformat.c' object='loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.o: loader/libwebp/0013_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Tpo -c -o loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.o `test -f 'loader/libwebp/0013_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/libwebp/0013_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Tpo loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0013_loader_libwebp_pixelformat.c' object='loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/libwebp/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.o `test -f 'loader/libwebp/0013_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/libwebp/0013_loader_libwebp_pixelformat.c
 
-loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj: loader/libwebp/0017_loader_libwebp_pixelformat.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0017_loader_libwebp_pixelformat.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0017_loader_libwebp_pixelformat.c' object='loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.obj: loader/libwebp/0013_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Tpo -c -o loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.obj `if test -f 'loader/libwebp/0013_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/libwebp/0013_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0013_loader_libwebp_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Tpo loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0013_loader_libwebp_pixelformat.c' object='loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/libwebp/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0017_loader_libwebp_pixelformat.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0013_loader_libwebp_pixelformat.obj `if test -f 'loader/libwebp/0013_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/libwebp/0013_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0013_loader_libwebp_pixelformat.c'; fi`
 
-loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o: loader/libwebp/0018_loader_libwebp_animation_frames.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o `test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`loader/libwebp/0018_loader_libwebp_animation_frames.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0018_loader_libwebp_animation_frames.c' object='loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.o: loader/libwebp/0014_loader_libwebp_animation_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Tpo -c -o loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.o `test -f 'loader/libwebp/0014_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`loader/libwebp/0014_loader_libwebp_animation_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Tpo loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0014_loader_libwebp_animation_frames.c' object='loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.o `test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`loader/libwebp/0018_loader_libwebp_animation_frames.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.o `test -f 'loader/libwebp/0014_loader_libwebp_animation_frames.c' || echo '$(srcdir)/'`loader/libwebp/0014_loader_libwebp_animation_frames.c
 
-loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj: loader/libwebp/0018_loader_libwebp_animation_frames.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj `if test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0018_loader_libwebp_animation_frames.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Tpo loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0018_loader_libwebp_animation_frames.c' object='loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.obj: loader/libwebp/0014_loader_libwebp_animation_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Tpo -c -o loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.obj `if test -f 'loader/libwebp/0014_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'loader/libwebp/0014_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0014_loader_libwebp_animation_frames.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Tpo loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0014_loader_libwebp_animation_frames.c' object='loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0018_loader_libwebp_animation_frames.obj `if test -f 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'loader/libwebp/0018_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0018_loader_libwebp_animation_frames.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0014_loader_libwebp_animation_frames.obj `if test -f 'loader/libwebp/0014_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'loader/libwebp/0014_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0014_loader_libwebp_animation_frames.c'; fi`
 
-loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o: loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' object='loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.o: loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.o -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Tpo -c -o loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.o `test -f 'loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Tpo loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c' object='loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.o `test -f 'loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c
 
-loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj: loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c' object='loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj' libtool=no @AMDEPBACKSLASH@
+loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.obj: loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.obj -MD -MP -MF loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Tpo -c -o loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.obj `if test -f 'loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Tpo loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c' object='loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.obj `if test -f 'loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c'; fi`
 
 loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o: loader/librsvg/0020_loader_librsvg_detect_svg_like.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Tpo -c -o loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.o `test -f 'loader/librsvg/0020_loader_librsvg_detect_svg_like.c' || echo '$(srcdir)/'`loader/librsvg/0020_loader_librsvg_detect_svg_like.c
@@ -2400,9 +2400,9 @@ distclean: distclean-am
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
-	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
@@ -2486,9 +2486,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libjpeg/$(DEPDIR)/test_runner-0013_loader_libjpeg_pixelformat.Po
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0012_loader_libpng_pixelformat.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
-	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
-	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
+	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po

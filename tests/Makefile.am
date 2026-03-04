@@ -220,9 +220,9 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0014_loader_builtin_pixelformat.c \
     loader/quicklook/0015_loader_quicklook_pixelformat.c \
     loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
-    loader/libwebp/0017_loader_libwebp_pixelformat.c \
-    loader/libwebp/0018_loader_libwebp_animation_frames.c \
-    loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
+    loader/libwebp/0013_loader_libwebp_pixelformat.c \
+    loader/libwebp/0014_loader_libwebp_animation_frames.c \
+    loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c \
     loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
