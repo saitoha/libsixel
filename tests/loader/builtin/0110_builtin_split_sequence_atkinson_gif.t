@@ -20,7 +20,7 @@ run_img2sixel -Lbuiltin! -S -datkinson \
     exit 0
 }
 
-lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/small_gif_atkinson_static_reference.six" \
     "${ARTIFACT_LOCAL_DIR}/small_gif_atkinson_static.six" 2>&1) || {
     echo "not ok" 1 "${lsqa_msg}"

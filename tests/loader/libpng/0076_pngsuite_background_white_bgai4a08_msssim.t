@@ -29,7 +29,7 @@ run_img2sixel -B#fff -Llibpng:enable_cms=0! "${input_png}" >"${output_sixel}" ||
     exit 0
 }
 
-lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 "$lsqa_msg"
     exit 0
 }
