@@ -197,7 +197,8 @@ test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
 # Collect test runner sources under tests/ dynamically so additions/removals
 # do not require manual Makefile updates.
-TEST_RUNNER_TESTS_SOURCES = $(shell find $(top_srcdir)/tests -type f -name '*.[ch]' | \
+TEST_RUNNER_TESTS_SOURCES = $(shell find $(top_srcdir)/tests \
+    -type f -name '*.[ch]' | \
     LC_ALL=C sort)
 
 test_runner_SOURCES = $(TEST_RUNNER_TESTS_SOURCES) \

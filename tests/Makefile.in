@@ -877,7 +877,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 # Collect test runner sources under tests/ dynamically so additions/removals
 # do not require manual Makefile updates.
-@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_TESTS_SOURCES = $(shell find $(top_srcdir)/tests -type f -name '*.[ch]' | \
+@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_TESTS_SOURCES = $(shell find $(top_srcdir)/tests \
+@WANT_AMALGAMATED_TOOLS_FALSE@    -type f -name '*.[ch]' | \
 @WANT_AMALGAMATED_TOOLS_FALSE@    LC_ALL=C sort)
 
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = $(TEST_RUNNER_TESTS_SOURCES) \
