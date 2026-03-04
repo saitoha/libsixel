@@ -195,45 +195,13 @@ test_runner_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
 test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
 test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
-test_runner_SOURCES = test_runner.c \
-    cli/aborttrace/0001_img2sixel_aborttrace.c \
-    cli/0029_cli_token_is_known_option.c \
-    cli/0030_cli_option_requires_argument.c \
-    cli/0031_cli_guard_missing_argument.c \
-    processing/filter/0001_filter_clip.c \
-    processing/filter/0002_filter_sample.c \
-    processing/filter/0003_filter_resize.c \
-    processing/filter/0004_filter_colors.c \
-    processing/filter/0005_filter_lookup.c \
-    processing/filter/0006_filter_final_merge.c \
-    processing/filter/0007_filter_fhedt.c \
-    processing/filter/0008_filter_load.c \
-    processing/filter/0009_filter_dither.c \
-    processing/filter/0010_filter_encode.c \
-    processing/filter/filter_test_common.h \
-    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
-    loader/wic/0009_loader_wic_pixelformat.c \
-    loader/gdk-pixbuf2/0010_loader_gdk_pixbuf_pixelformat.c \
-    loader/gd/0011_loader_gd_pixelformat.c \
-    loader/libpng/0012_loader_libpng_pixelformat.c \
-    loader/libjpeg/0013_loader_libjpeg_pixelformat.c \
-    loader/builtin/0014_loader_builtin_pixelformat.c \
-    loader/quicklook/0015_loader_quicklook_pixelformat.c \
-    loader/gnome-thumbnailer/0016_loader_gnome_thumbnailer_pixelformat.c \
-    loader/libwebp/0017_loader_libwebp_pixelformat.c \
-    loader/libwebp/0018_loader_libwebp_animation_frames.c \
-    loader/libwebp/0019_loader_libwebp_palette_promotion_guard.c \
-    loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
-    loader/pixelformat_test_common.h \
-    quant/palette/0001_kmeans_init.c \
-    diagnostics/probe/0001_probe_parse.c \
-    extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
-    extension/gdk-pixbuf-loader/0002_incremental_load.c \
-    extension/gdk-pixbuf-loader/0003_corrupt_data.c \
-    extension/gdk-pixbuf-loader/0004_propagate_error.c \
-    extension/gdk-pixbuf-loader/0005_context_free.c \
-    extension/gdk-pixbuf-loader/0006_loader_module.c \
-    extension/gdk-pixbuf-loader/0007_loader_plugin_integration.c \
+# Collect test runner sources under tests/ dynamically so additions/removals
+# do not require manual Makefile updates.
+TEST_RUNNER_TESTS_SOURCES = $(shell cd $(srcdir) && \
+    find . -type f \( -name '*.c' -o -name '*.h' \) | \
+    LC_ALL=C sort | sed 's|^\./||')
+
+test_runner_SOURCES = $(TEST_RUNNER_TESTS_SOURCES) \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
     $(top_srcdir)/converters/aborttrace.c \
     $(top_srcdir)/converters/cli.c
