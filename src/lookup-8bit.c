@@ -63,7 +63,10 @@
 # include <math.h>
 #endif  /* HAVE_MATH_H */
 #if defined(_MSC_VER) && defined(HAVE_INTRIN_H)
+# pragma warning(push)
+# pragma warning(disable : 28301)
 #include <intrin.h>
+# pragma warning(pop)
 #endif
 
 #include <sixel.h>
