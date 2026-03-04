@@ -7,6 +7,7 @@ begin
   require 'libsixel'
 
   encoder = Encoder.new
+  encoder.setopt(Libsixel::API::SIXEL_OPTFLAG_OUTPUT, File::NULL)
   buffer_like = Class.new do
     def to_str
       [
