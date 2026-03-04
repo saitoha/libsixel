@@ -898,6 +898,19 @@ static cli_env_help_t const g_env_help_table[] = {
         "Applied only on the first loop; later loops decode from frame 0."
     },
     {
+        "SIXEL_LOADER_CMS_RENDERING_INTENT",
+        "override the lcms2 rendering-intent fallback order used by PNG\n"
+        "loader CMS conversion. Accepts comma-separated values from\n"
+        "`perceptual`, `relative` (`relative_colorimetric`),\n"
+        "`saturation`, and `absolute` (`absolute_colorimetric`).\n"
+        "Append `!` to disable default fallback intents."
+    },
+    {
+        "SIXEL_CMS_RENDERING_INTENT",
+        "legacy alias for SIXEL_LOADER_CMS_RENDERING_INTENT. Used only when\n"
+        "SIXEL_LOADER_CMS_RENDERING_INTENT is unset."
+    },
+    {
         "SIXEL_LODER_WIC_ICO_MINSIZE",
         "default minimum edge size used by wic:ico_minsize when no\n"
         "suboption is provided. Accepts positive integers."

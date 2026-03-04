@@ -857,6 +857,18 @@ out-of-range indexes fail with an error.
 the index is applied only on the first playback loop, and later loops
 decode from frame 0.
 .TP 5
+.B SIXEL_LOADER_CMS_RENDERING_INTENT
+.br
+override the lcms2 rendering-intent fallback order used by PNG loader CMS
+conversion. Accepts comma-separated values from "perceptual",
+"relative" ("relative_colorimetric"), "saturation", and "absolute"
+("absolute_colorimetric"). Append "!" to disable default fallback intents.
+.TP 5
+.B SIXEL_CMS_RENDERING_INTENT
+.br
+legacy alias for \fBSIXEL_LOADER_CMS_RENDERING_INTENT\fP. Used only when
+\fBSIXEL_LOADER_CMS_RENDERING_INTENT\fP is unset.
+.TP 5
 .B SIXEL_LODER_WIC_ICO_MINSIZE
 .br
 default minimum edge used by \fBwic:ico_minsize\fP when no suboption is
