@@ -18,7 +18,7 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
     -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_builtin_update_frame1.six" || {
@@ -26,7 +26,7 @@ run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
     exit 0
 }
 
-run_img2sixel -Llibpng! -S -T 1 \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! -S -T 1 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_libpng_update_frame1.six" || {
     echo "not ok" 1 "APNG libpng reference extraction failed"

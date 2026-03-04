@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Lbuiltin! -S \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_dispose_background_builtin_static.six" || {
     echo "not ok" 1 "builtin APNG dispose-background static rendering failed"

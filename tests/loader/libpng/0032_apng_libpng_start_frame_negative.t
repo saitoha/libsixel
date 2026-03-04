@@ -18,14 +18,14 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -v -Llibpng! -S \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
               >"${ARTIFACT_LOCAL_DIR}/apng_start_default_neg.six" || {
     echo "not ok" 1 "baseline APNG decode failed"
     exit 0
 }
 
-run_img2sixel -v -Llibpng! -S \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
               --start-frame=-1 \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
               >"${ARTIFACT_LOCAL_DIR}/apng_start_negative.six" || {
