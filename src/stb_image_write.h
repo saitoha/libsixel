@@ -906,7 +906,12 @@ static unsigned int stbiw__zhash(unsigned char *data)
 
 STBIWDEF unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_len, int quality)
 {
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 10)
+   /*
+    * GCC analyzer may report a leak through stb stretchy-buffer growth
+    * internals here, but ownership is returned to caller via sbraw(out)
+    * and freed by stbi_write_png_to_mem().
+    */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
 #endif
@@ -1035,7 +1040,7 @@ STBIWDEF unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, i
    STBIW_MEMMOVE(stbiw__sbraw(out), out, *out_len);
    return (unsigned char *) stbiw__sbraw(out);
 #endif // STBIW_ZLIB_COMPRESS
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 10)
 #pragma GCC diagnostic pop
 #endif
 }
