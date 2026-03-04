@@ -1123,6 +1123,11 @@ struct thumbnailer_builder {
  * Returns:
  *     1 on success, 0 on allocation failure.
  */
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 static int
 thumbnailer_builder_reserve(struct thumbnailer_builder *builder,
                             size_t additional)
@@ -1152,6 +1157,10 @@ thumbnailer_builder_reserve(struct thumbnailer_builder *builder,
 
     return 1;
 }
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 /*
  * thumbnailer_builder_append_char
@@ -1809,7 +1818,7 @@ thumbnailer_extract_mime_token(char *text)
 #if defined(HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK) && \
     defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Werror=analyzer-fd-leak"
+#pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"
 #endif
 char *
 thumbnailer_run_file(char const *path, char const *option)

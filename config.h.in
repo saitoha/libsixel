@@ -182,8 +182,11 @@
 /* define 1 if GCC supports -Wunused-function */
 #undef HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 
-/* Define to 1 if the compiler can ignore -Werror=analyzer-fd-leak via pragmas
+/* Define to 1 if the compiler can ignore -Wanalyzer-malloc-leak via pragmas
    */
+#undef HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK
+
+/* Define to 1 if the compiler can ignore -Wanalyzer-fd-leak via pragmas */
 #undef HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK
 
 /* Define to 1 if you have the <dirent.h> header file. */

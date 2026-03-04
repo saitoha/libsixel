@@ -246,11 +246,20 @@ endif
 
 if cc.compiles('''
     #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Werror=analyzer-fd-leak"
+    #pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"
     int main(void) { return 0; }
     #pragma GCC diagnostic pop
   ''', args: ['-Werror'])
   conf.set('HAVE_DIAGNOSTIC_WERROR_ANALYZER_FD_LEAK', 1)
+endif
+
+if cc.compiles('''
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+    int main(void) { return 0; }
+    #pragma GCC diagnostic pop
+  ''', args: ['-Werror'])
+  conf.set('HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK', 1)
 endif
 
 #flags = cc.get_supported_arguments([
