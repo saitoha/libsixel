@@ -10206,9 +10206,6 @@ sixel_encoder_copy_source_frame(
     return SIXEL_OK;
 }
 
-
-
-
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */
