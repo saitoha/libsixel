@@ -1332,11 +1332,9 @@ sixel_decode_raw(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
-    image_buffer_t image;
+    image_buffer_t *image = NULL;
     int n;
     int alloc_size;
-
-    image.pixels.p = NULL;
 
     if (allocator) {
         sixel_allocator_ref(allocator);
@@ -1348,19 +1346,28 @@ sixel_decode_raw(
         }
     }
 
+    image = (image_buffer_t *)malloc(sizeof(*image));
+    if (image == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_raw: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto error;
+    }
+    image->pixels.p = NULL;
+
     status = sixel_decode_image(p,
                                 len,
                                 1,  /* initial_width */
                                 1,  /* initial_height */
                                 1,  /* depth */
-                                &image,
+                                image,
                                 &context,
                                 allocator);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    *ncolors = alloc_size = image.ncolors;
+    *ncolors = alloc_size = image->ncolors;
     if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
@@ -1369,7 +1376,7 @@ sixel_decode_raw(
         allocator,
         (size_t)(alloc_size * 3));
     if (palette == NULL) {
-        sixel_allocator_free(allocator, image.pixels.p);
+        sixel_allocator_free(allocator, image->pixels.p);
         sixel_helper_set_additional_message(
             "sixel_deocde_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
@@ -1380,29 +1387,31 @@ sixel_decode_raw(
      * This keeps unused slots valid when the image uses fewer colors.
      */
     for (n = 0; n < alloc_size; ++n) {
-        (*palette)[n * 3 + 0] = image.palette[n] >> 16 & 0xff;
-        (*palette)[n * 3 + 1] = image.palette[n] >> 8 & 0xff;
-        (*palette)[n * 3 + 2] = image.palette[n] & 0xff;
+        (*palette)[n * 3 + 0] = image->palette[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = image->palette[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = image->palette[n] & 0xff;
     }
 
-    *pwidth = image.width;
-    *pheight = image.height;
-    *pixels = image.pixels.p;
+    *pwidth = image->width;
+    *pheight = image->height;
+    *pixels = image->pixels.p;
+    image->pixels.p = NULL;
 
     status = SIXEL_OK;
     goto end;
 
 error:
-    if (image.pixels.p != NULL) {
+    if (image != NULL && image->pixels.p != NULL) {
         if (allocator != NULL) {
-            sixel_allocator_free(allocator, image.pixels.p);
+            sixel_allocator_free(allocator, image->pixels.p);
         } else {
-            free(image.pixels.p);
+            free(image->pixels.p);
         }
-        image.pixels.p = NULL;
+        image->pixels.p = NULL;
     }
 
 end:
+    free(image);
     sixel_allocator_unref(allocator);
     return status;
 }
@@ -1422,11 +1431,9 @@ sixel_decode_wide(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
-    image_buffer_t image;
+    image_buffer_t *image = NULL;
     int n;
     int alloc_size;
-
-    image.pixels.p = NULL;
 
     if (allocator) {
         sixel_allocator_ref(allocator);
@@ -1438,19 +1445,28 @@ sixel_decode_wide(
         }
     }
 
+    image = (image_buffer_t *)malloc(sizeof(*image));
+    if (image == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_wide: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto error;
+    }
+    image->pixels.p = NULL;
+
     status = sixel_decode_image(p,
                                 len,
                                 1,  /* initial width */
                                 1,  /* initial height */
                                 2,  /* depth */
-                                &image,
+                                image,
                                 &context,
                                 allocator);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    *ncolors = alloc_size = image.ncolors;
+    *ncolors = alloc_size = image->ncolors;
     if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
@@ -1459,7 +1475,7 @@ sixel_decode_wide(
         allocator,
         (size_t)(alloc_size * 3));
     if (palette == NULL) {
-        sixel_allocator_free(allocator, image.pixels.p);
+        sixel_allocator_free(allocator, image->pixels.p);
         sixel_helper_set_additional_message(
             "sixel_deocde_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
@@ -1470,29 +1486,30 @@ sixel_decode_wide(
      * This keeps unused slots valid when the image uses fewer colors.
      */
     for (n = 0; n < alloc_size; ++n) {
-        (*palette)[n * 3 + 0] = image.palette[n] >> 16 & 0xff;
-        (*palette)[n * 3 + 1] = image.palette[n] >> 8 & 0xff;
-        (*palette)[n * 3 + 2] = image.palette[n] & 0xff;
+        (*palette)[n * 3 + 0] = image->palette[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = image->palette[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = image->palette[n] & 0xff;
     }
 
-    *pwidth = image.width;
-    *pheight = image.height;
-    *pixels = image.pixels.in_shorts;
+    *pwidth = image->width;
+    *pheight = image->height;
+    *pixels = image->pixels.in_shorts;
 
     status = SIXEL_OK;
     goto end;
 
 error:
-    if (image.pixels.p != NULL) {
+    if (image != NULL && image->pixels.p != NULL) {
         if (allocator != NULL) {
-            sixel_allocator_free(allocator, image.pixels.p);
+            sixel_allocator_free(allocator, image->pixels.p);
         } else {
-            free(image.pixels.p);
+            free(image->pixels.p);
         }
-        image.pixels.p = NULL;
+        image->pixels.p = NULL;
     }
 
 end:
+    free(image);
     sixel_allocator_unref(allocator);
     return status;
 }
@@ -1509,9 +1526,7 @@ sixel_decode_direct(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
-    image_buffer_t image;
-
-    image.pixels.p = NULL;
+    image_buffer_t *image = NULL;
 
     if (allocator) {
         sixel_allocator_ref(allocator);
@@ -1523,36 +1538,46 @@ sixel_decode_direct(
         }
     }
 
+    image = (image_buffer_t *)malloc(sizeof(*image));
+    if (image == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_direct: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto error;
+    }
+    image->pixels.p = NULL;
+
     status = sixel_decode_image(p,
                                 len,
                                 1,
                                 1,
                                 4U,
-                                &image,
+                                image,
                                 &context,
                                 allocator);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    *pwidth = image.width;
-    *pheight = image.height;
-    *pixels = image.pixels.in_bytes;
+    *pwidth = image->width;
+    *pheight = image->height;
+    *pixels = image->pixels.in_bytes;
 
     status = SIXEL_OK;
     goto end;
 
 error:
-    if (image.pixels.p != NULL) {
+    if (image != NULL && image->pixels.p != NULL) {
         if (allocator != NULL) {
-            sixel_allocator_free(allocator, image.pixels.p);
+            sixel_allocator_free(allocator, image->pixels.p);
         } else {
-            free(image.pixels.p);
+            free(image->pixels.p);
         }
-        image.pixels.p = NULL;
+        image->pixels.p = NULL;
     }
 
 end:
+    free(image);
     sixel_allocator_unref(allocator);
     return status;
 }
@@ -1572,8 +1597,17 @@ sixel_decode(unsigned char              /* in */   *p,        /* sixel bytes */
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_allocator_t *allocator = NULL;
     parser_context_t context;
-    image_buffer_t image;
+    image_buffer_t *image = NULL;
     int n;
+
+    image = (image_buffer_t *)malloc(sizeof(*image));
+    if (image == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    image->pixels.p = NULL;
 
     status = sixel_allocator_new(&allocator, fn_malloc, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
@@ -1586,35 +1620,45 @@ sixel_decode(unsigned char              /* in */   *p,        /* sixel bytes */
                                 2048,
                                 2048,
                                 0,
-                                &image,
+                                image,
                                 &context,
                                 allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    *ncolors = image.ncolors;
+    *ncolors = image->ncolors;
     *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
     if (palette == NULL) {
-        sixel_allocator_free(allocator, image.pixels.p);
+        sixel_allocator_free(allocator, image->pixels.p);
         sixel_helper_set_additional_message(
             "sixel_deocde_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
     for (n = 0; n < *ncolors; ++n) {
-        (*palette)[n * 3 + 0] = image.palette[n] >> 16 & 0xff;
-        (*palette)[n * 3 + 1] = image.palette[n] >> 8 & 0xff;
-        (*palette)[n * 3 + 2] = image.palette[n] & 0xff;
+        (*palette)[n * 3 + 0] = image->palette[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = image->palette[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = image->palette[n] & 0xff;
     }
 
-    *pwidth = image.width;
-    *pheight = image.height;
-    *pixels = image.pixels.p;
+    *pwidth = image->width;
+    *pheight = image->height;
+    *pixels = image->pixels.p;
+    image->pixels.p = NULL;
 
     status = SIXEL_OK;
 
 end:
+    if (image != NULL && image->pixels.p != NULL) {
+        if (allocator != NULL) {
+            sixel_allocator_free(allocator, image->pixels.p);
+        } else {
+            free(image->pixels.p);
+        }
+        image->pixels.p = NULL;
+    }
+    free(image);
     sixel_allocator_unref(allocator);
     return status;
 }
