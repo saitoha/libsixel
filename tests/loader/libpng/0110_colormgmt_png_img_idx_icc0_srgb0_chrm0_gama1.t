@@ -39,7 +39,7 @@ run_img2sixel -Llibpng! "${input_png}" >"${output_six}" || {
     exit 0
 }
 
-lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.975" "${reference_six}" "${output_six}" 2>&1) || {
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.975" "${reference_six}" "${output_six}" 2>&1) || {
     echo "not ok" 1 "${lsqa_msg}"
     exit 0
 }

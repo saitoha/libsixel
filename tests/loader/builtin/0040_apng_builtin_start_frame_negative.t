@@ -21,7 +21,7 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env
     exit 0
 }
 
-lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2_builtin_start_frame_negative_reference.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_negative.six" 2>&1) || {
     echo "not ok" 1 "${lsqa_msg}"
