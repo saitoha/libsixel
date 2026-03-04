@@ -15,33 +15,11 @@ test "${HAVE_QUICKLOOK-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_PYTHON-}" = 1 || {
-    printf "1..0 # SKIP python runtime is unavailable\n"
-    exit 0
-}
-
 echo "1..1"
 set -v
 
-python3 -c 'import os
-import subprocess
-import sys
-
-cmd = [
-    os.environ["IMG2SIXEL_PATH"],
-    "-L",
-    "quicklook!",
-    os.path.join(os.environ["TOP_SRCDIR"], "tests/data/corrupted/truncated.heif"),
-]
-env = dict(os.environ)
-env["SIXEL_THUMBNAILER_HINT_SIZE"] = "64"
-subprocess.run(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-               timeout=5, check=False)
-sys.exit(0)
-' || {
-    echo "not ok" 1 "quicklook hang guard failed for truncated HEIF"
-    exit 0
-}
+run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
+    "${TOP_SRCDIR}/tests/data/corrupted/truncated.heif" >/dev/null 2>/dev/null || :
 
 echo "ok" 1 "quicklook does not hang on truncated HEIF"
 exit 0

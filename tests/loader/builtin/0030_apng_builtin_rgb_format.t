@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel --env SIXEL_TRACE_TOPIC=apng_decode \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle \
               -v -Lbuiltin! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" -o/dev/null || {
     echo "not ok" 1 "APNG RGB decode failed"
     exit 0

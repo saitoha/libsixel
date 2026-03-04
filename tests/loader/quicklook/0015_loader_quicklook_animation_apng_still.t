@@ -18,7 +18,7 @@ test "${HAVE_QUICKLOOK-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" >/dev/null || {
     echo "not ok" 1 "quicklook APNG still-frame decode failed"
     exit 0

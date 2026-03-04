@@ -18,7 +18,7 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Llibpng! -S --start-frame=1 \
+run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! -S --start-frame=1 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_blend_over.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_blend_over_libpng_frame1.six" || {
     echo "not ok" 1 "libpng APNG blend-over frame extraction failed"
