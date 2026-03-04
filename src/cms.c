@@ -164,6 +164,13 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
 {
     sixel_cms_transform_t *transform;
     cmsUInt32Number cflags;
+    int const intents[] = {
+        INTENT_PERCEPTUAL,
+        INTENT_RELATIVE_COLORIMETRIC,
+        INTENT_SATURATION,
+        INTENT_ABSOLUTE_COLORIMETRIC
+    };
+    size_t i;
 
     if (src_profile == NULL || dst_profile == NULL ||
         src_profile->handle == NULL || dst_profile->handle == NULL) {
@@ -180,12 +187,18 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
         cflags |= cmsFLAGS_COPY_ALPHA;
     }
 
-    transform->handle = cmsCreateTransform(src_profile->handle,
-                                           sixel_cms_map_format(src_format),
-                                           dst_profile->handle,
-                                           sixel_cms_map_format(dst_format),
-                                           INTENT_PERCEPTUAL,
-                                           cflags);
+    transform->handle = NULL;
+    for (i = 0u; i < sizeof(intents) / sizeof(intents[0]); ++i) {
+        transform->handle = cmsCreateTransform(src_profile->handle,
+                                               sixel_cms_map_format(src_format),
+                                               dst_profile->handle,
+                                               sixel_cms_map_format(dst_format),
+                                               intents[i],
+                                               cflags);
+        if (transform->handle != NULL) {
+            break;
+        }
+    }
     if (transform->handle == NULL) {
         free(transform);
         return NULL;
