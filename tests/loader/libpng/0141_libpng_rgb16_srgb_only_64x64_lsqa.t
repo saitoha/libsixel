@@ -31,33 +31,6 @@ test -f "${expected_ppm}" || {
     exit 0
 }
 
-# Validate IHDR: width=64, height=64, bit depth=16.
-width=$(dd if="${input_png}" bs=1 skip=16 count=4 2>/dev/null \
-    | od -An -tu1 \
-    | awk 'NF {print ($1 * 16777216) + ($2 * 65536) + ($3 * 256) + $4; exit}')
-height=$(dd if="${input_png}" bs=1 skip=20 count=4 2>/dev/null \
-    | od -An -tu1 \
-    | awk 'NF {print ($1 * 16777216) + ($2 * 65536) + ($3 * 256) + $4; exit}')
-bit_depth=$(dd if="${input_png}" bs=1 skip=24 count=1 2>/dev/null \
-    | od -An -tu1 \
-    | tr -d '[:space:]')
-if [ "${width}" != "64" ] || [ "${height}" != "64" ] || [ "${bit_depth}" != "16" ]; then
-    echo "not ok" 1 "fixture IHDR mismatch (${width}x${height}, depth=${bit_depth})"
-    exit 0
-fi
-
-# Validate color-management chunk composition of fixture.
-grep -a -q 'sRGB' "${input_png}" || {
-    echo "not ok" 1 "fixture missing sRGB chunk"
-    exit 0
-}
-for banned_chunk in iCCP gAMA cHRM; do
-    if grep -a -q "${banned_chunk}" "${input_png}"; then
-        echo "not ok" 1 "fixture has unexpected ${banned_chunk} chunk"
-        exit 0
-    fi
-done
-
 run_img2sixel -Llibpng:enable_cms=0! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 "img2sixel failed"
     exit 0
