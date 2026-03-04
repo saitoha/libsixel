@@ -187,6 +187,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-wic.h \
                 $(srcdir)/frompnm.c \
                 $(srcdir)/frompnm.h \
+                $(srcdir)/frompng.c \
+                $(srcdir)/frompng.h \
                 $(srcdir)/fromgif.c \
                 $(srcdir)/fromgif.h \
                 $(srcdir)/clipboard.c \
