@@ -3472,6 +3472,10 @@ sixel_encode_dither(
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_logger_t *logger = NULL;
 
+    if (output == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
