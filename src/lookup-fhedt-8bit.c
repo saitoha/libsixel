@@ -1063,7 +1063,7 @@ sixel_lookup_fhedt_edt1d_scalar_8bit(double *line_dist,
                   - (line_dist[vbuf[k]]
                      + weight * (double)(vbuf[k] * vbuf[k]));
         s = candidate / denom;
-        while (s <= zbuf[k]) {
+        while (k > 0 && s <= zbuf[k]) {
             --k;
             denom = 2.0 * weight * (double)(q - vbuf[k]);
             if (denom == 0.0) {

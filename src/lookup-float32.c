@@ -879,6 +879,10 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
                 best_pivot = j;
             }
         }
+        if (best_pivot < 0 || best_pivot >= pivots) {
+            sixel_lookup_float32_rbc_clear(lut);
+            return SIXEL_RUNTIME_ERROR;
+        }
         lut->rbc.member_offset[best_pivot + 1]++;
     }
     for (j = 0; j < pivots; ++j) {
@@ -900,7 +904,15 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
                 best_pivot = j;
             }
         }
+        if (best_pivot < 0 || best_pivot >= pivots) {
+            sixel_lookup_float32_rbc_clear(lut);
+            return SIXEL_RUNTIME_ERROR;
+        }
         c = lut->rbc.member_offset[best_pivot]++;
+        if (c < 0 || c >= lut->ncolors) {
+            sixel_lookup_float32_rbc_clear(lut);
+            return SIXEL_RUNTIME_ERROR;
+        }
         lut->rbc.member_index[c] = i;
         distance = sqrtf(best_distance);
         if (distance > lut->rbc.radius[best_pivot]) {
@@ -924,9 +936,12 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
             continue;
         }
         for (k = lut->rbc.member_offset[j];
-             k < lut->rbc.member_offset[j + 1];
+            k < lut->rbc.member_offset[j + 1];
              ++k) {
             c = lut->rbc.member_index[k];
+            if (c < 0 || c >= lut->ncolors) {
+                continue;
+            }
             mean0 += lut->palette[c * 3 + 0];
             mean1 += lut->palette[c * 3 + 1];
             mean2 += lut->palette[c * 3 + 2];
