@@ -1173,6 +1173,11 @@ clamp_float(float v, float min_v, float max_v)
  * Luma conversion and resizing utilities
  */
 static sixel_assessment_float_buffer_t
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_USE_OF_UNINITIALIZED_VALUE) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
+#endif
 pixels_to_luma709(const float *pixels, int width, int height)
 {
     sixel_assessment_float_buffer_t buf;
@@ -1195,6 +1200,10 @@ pixels_to_luma709(const float *pixels, int width, int height)
     }
     return buf;
 }
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_USE_OF_UNINITIALIZED_VALUE) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 static sixel_assessment_float_buffer_t
 pixels_channel(const float *pixels, int width, int height, int channel)
