@@ -454,6 +454,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int budget;
     int source_colorspace;
     int source_pixelformat;
+    int source_is_float32;
     int source_ncolors;
     int target_pixelformat;
     int scale_pixelformat;
@@ -487,6 +488,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     prefer_float32_effective = prefer_float32;
     working_colorspace_effective = encoder->working_colorspace;
     source_pixelformat = sixel_frame_get_pixelformat(frame);
+    source_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(source_pixelformat);
     source_ncolors = sixel_frame_get_ncolors(frame);
     effective_reqcolors = encoder->reqcolors;
     if (effective_reqcolors <= 0 || effective_reqcolors > SIXEL_PALETTE_MAX) {
@@ -515,6 +517,13 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         : 0;
     source_colorspace = sixel_frame_get_colorspace(frame);
     prefer_float32 = encoder->prefer_float32;
+    if (source_is_float32) {
+        /*
+         * Loader-originated float buffers must stay float through the planner
+         * path so pre-plan does not down-convert them to RGB888 before dither.
+         */
+        prefer_float32 = 1;
+    }
     scale_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
     float_resize_required = (planner->scale_active != 0) ? 1 : 0;
@@ -553,6 +562,13 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     target_pixelformat = sixel_planner_pixelformat_for_colorspace(
         working_colorspace_effective,
         prefer_float32_effective);
+    if (source_is_float32
+        && !SIXEL_PIXELFORMAT_IS_FLOAT32(target_pixelformat)) {
+        target_pixelformat = sixel_planner_pixelformat_for_colorspace(
+            working_colorspace_effective,
+            1);
+        prefer_float32_effective = 1;
+    }
 
     /*
      * PAL sources that already satisfy the requested palette size do not need
@@ -644,7 +660,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                             scale_bytes,
                             scale_limit);
                 }
-                if (scale_limit == 0U || scale_bytes > scale_limit) {
+                if (!source_is_float32
+                        && (scale_limit == 0U || scale_bytes > scale_limit)) {
                     scale_input_pixelformat = SIXEL_PIXELFORMAT_RGB888;
                     scale_pixelformat = scale_input_pixelformat;
                     colorspace_before_scale = 1;
