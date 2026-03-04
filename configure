@@ -17625,6 +17625,56 @@ fi
 
 fi
 
+# Clang PGO-use may report profile hash/control-flow mismatches as
+# -Wbackend-plugin diagnostics. Keep CI strict in general, but avoid
+# failing the whole PGO-use rebuild on this backend warning alone.
+if test "x$CI" != "x" \
+            -a "x$enable_pgo" = "xuse" \
+            -a "x$pgo_profdata_file" != "x"
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $CC supports -Wno-error=backend-plugin" >&5
+printf %s "checking whether $CC supports -Wno-error=backend-plugin... " >&6; }
+if test ${ac_cv_cc_wno_error_backend_plugin+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_save_CFLAGS="$CFLAGS"
+     CFLAGS="$CFLAGS -Werror -Wno-error=backend-plugin"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_cc_wno_error_backend_plugin=yes
+else case e in #(
+  e) ac_cv_cc_wno_error_backend_plugin=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+     CFLAGS="$ac_save_CFLAGS" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_wno_error_backend_plugin" >&5
+printf "%s\n" "$ac_cv_cc_wno_error_backend_plugin" >&6; }
+  if test "x$ac_cv_cc_wno_error_backend_plugin" = "xyes"
+then :
+
+    CFLAGS="$CFLAGS -Wno-error=backend-plugin"
+    AM_CFLAGS="$AM_CFLAGS -Wno-error=backend-plugin"
+
+fi
+
+fi
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether ThreadSanitizer instrumentation is enabled" >&5
 printf %s "checking whether ThreadSanitizer instrumentation is enabled... " >&6; }
 if test ${ac_cv_sixel_tsan+y}
