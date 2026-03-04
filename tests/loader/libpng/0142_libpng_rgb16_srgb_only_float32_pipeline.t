@@ -29,7 +29,6 @@ planner_log=$(
     echo "not ok" 1 "img2sixel failed"
     exit 0
 }
-printf '%s' "${planner_log}" >&2
 
 case "${planner_log}" in
     *"formats: source=rgb-f32 work=rgb-f32"*)
