@@ -461,6 +461,18 @@ runs:
       run: |
         set -exv
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+        pgo_profdata_backup=''
+        if test -f "$PWD/pgo/default.profdata"; then
+          pgo_profdata_backup="$(mktemp "$PWD/pgo/default.profdata.XXXXXX")"
+          cp "$PWD/pgo/default.profdata" "$pgo_profdata_backup"
+        fi
+        # Avoid mixing -fprofile-generate and -fprofile-use objects.
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} distclean
+        mkdir -p "$PWD/pgo"
+        if test -n "$pgo_profdata_backup"; then
+          cp "$pgo_profdata_backup" "$PWD/pgo/default.profdata"
+          rm -f "$pgo_profdata_backup"
+        fi
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
           ${rel-.}/configure \
           ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
