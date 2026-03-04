@@ -8,13 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 test "${HAVE_DECL_GDIMAGECREATEFROMTIFFPTR-}" = 1 || {
     printf "1..0 # SKIP HAVE_DECL_GDIMAGECREATEFROMTIFFPTR is unavailable in this build\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 

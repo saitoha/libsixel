@@ -8,13 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 command -v zsh >/dev/null || {
     printf "1..0 # SKIP zsh is not found\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 completion_home="${ARTIFACT_LOCAL_DIR}"
 rc_path="${completion_home}/.zshrc"
 fpath_count=0

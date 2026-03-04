@@ -8,12 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 test "${HAVE_WIC-}" = 1 || {
     printf "1..0 # SKIP wic loader is unavailable\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 
 probe_output=$(
