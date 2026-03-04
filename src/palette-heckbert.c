@@ -1007,12 +1007,15 @@ computePcaAxis(tupletable2 const colorfreqtable,
             next[plane] = 0.0;
         }
         for (plane = 0U; plane < dims; ++plane) {
-            next[plane] = cov[plane][0] * vec[0]
-                          + cov[plane][1] * vec[1]
-                          + cov[plane][2] * vec[2];
+            for (other = 0U; other < dims; ++other) {
+                next[plane] += cov[plane][other] * vec[other];
+            }
         }
-        norm = sqrt(next[0] * next[0] + next[1] * next[1]
-                    + next[2] * next[2]);
+        norm = 0.0;
+        for (plane = 0U; plane < dims; ++plane) {
+            norm += next[plane] * next[plane];
+        }
+        norm = sqrt(norm);
         if (norm <= 0.0) {
             return 0;
         }
@@ -1020,16 +1023,22 @@ computePcaAxis(tupletable2 const colorfreqtable,
             vec[plane] = (plane < dims) ? next[plane] / norm : 0.0;
         }
     }
-    lambda = (vec[0] * (cov[0][0] * vec[0] + cov[0][1] * vec[1]
-                        + cov[0][2] * vec[2]))
-             + (vec[1] * (cov[1][0] * vec[0] + cov[1][1] * vec[1]
-                          + cov[1][2] * vec[2]))
-             + (vec[2] * (cov[2][0] * vec[0] + cov[2][1] * vec[1]
-                          + cov[2][2] * vec[2]));
+    lambda = 0.0;
+    for (plane = 0U; plane < dims; ++plane) {
+        double projected = 0.0;
+        for (other = 0U; other < dims; ++other) {
+            projected += cov[plane][other] * vec[other];
+        }
+        lambda += vec[plane] * projected;
+    }
     if (!(lambda > 0.0)) {
         return 0;
     }
-    norm = sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
+    norm = 0.0;
+    for (plane = 0U; plane < dims; ++plane) {
+        norm += vec[plane] * vec[plane];
+    }
+    norm = sqrt(norm);
     if (norm <= 0.0) {
         return 0;
     }

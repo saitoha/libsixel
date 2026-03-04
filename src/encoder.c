@@ -232,6 +232,7 @@ typedef struct sixel_encoder_load_context {
     sixel_encoder_t *encoder;
     sixel_output_t *output;
     sixel_encoding_planner_t *planner;
+    sixel_allocator_t *allocator;
     sixel_encoder_frame_pipeline_t frame_pipeline;
 } sixel_encoder_load_context_t;
 
@@ -5531,11 +5532,16 @@ sixel_encoder_output_with_macro(
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     unsigned char *converted = NULL;
     sixel_encoding_planner_t *planner;
+    sixel_allocator_t *allocator;
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
 #endif
 
-    planner = (encoder != NULL) ? &encoder->planner : NULL;
+    if (frame == NULL || output == NULL || encoder == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    allocator = encoder->allocator;
+    planner = &encoder->planner;
 
 #if defined(HAVE_CLOCK)
     if (output->last_clock == 0) {
@@ -5562,7 +5568,7 @@ sixel_encoder_output_with_macro(
     frame_colorspace = sixel_frame_get_colorspace(frame);
     size = (size_t)width * (size_t)height * (size_t)depth;
     converted = (unsigned char *)sixel_allocator_malloc(
-        encoder->allocator, size);
+        allocator, size);
     if (converted == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_output_with_macro: "
@@ -5682,7 +5688,7 @@ sixel_encoder_output_with_macro(
 end:
     output->pixelformat = pixelformat;
     output->source_colorspace = frame_colorspace;
-    sixel_allocator_free(encoder->allocator, converted);
+    sixel_allocator_free(allocator, converted);
 
     return status;
 }
@@ -7052,6 +7058,12 @@ sixel_encoder_setopt(
         encoder->force_palette = forced_palette;
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
+        if (value == NULL || *value == '\0') {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: no mapfile specified.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
         mapfile_view = sixel_palette_strip_prefix(value, NULL);
         if (mapfile_view == NULL) {
             mapfile_view = value;
@@ -9039,6 +9051,10 @@ sixel_encoder_encode(
             goto end;
         }
     }
+    if (encoder == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
     sixel_encoder_ref(encoder);
 
     if (encoder != NULL) {
@@ -9495,15 +9511,19 @@ end:
     if (png_temp_path != NULL) {
         (void)sixel_compat_unlink(png_temp_path);
     }
-    sixel_allocator_free(encoder->allocator, png_temp_path);
+    if (encoder != NULL) {
+        sixel_allocator_free(encoder->allocator, png_temp_path);
+    }
     if (clipboard_input_path != NULL) {
         (void)sixel_compat_unlink(clipboard_input_path);
-        sixel_allocator_free(encoder->allocator, clipboard_input_path);
+        if (encoder != NULL) {
+            sixel_allocator_free(encoder->allocator, clipboard_input_path);
+        }
     }
     if (clipboard_blob != NULL) {
         free(clipboard_blob);
     }
-    if (encoder->clipboard_output_path != NULL) {
+    if (encoder != NULL && encoder->clipboard_output_path != NULL) {
         (void)sixel_compat_unlink(encoder->clipboard_output_path);
         sixel_allocator_free(encoder->allocator,
                              encoder->clipboard_output_path);
@@ -9512,8 +9532,10 @@ end:
         encoder->clipboard_output_active = 0;
         encoder->clipboard_output_format[0] = '\0';
     }
-    sixel_allocator_free(encoder->allocator, encoder->png_output_path);
-    encoder->png_output_path = NULL;
+    if (encoder != NULL) {
+        sixel_allocator_free(encoder->allocator, encoder->png_output_path);
+        encoder->png_output_path = NULL;
+    }
     if (encoder != NULL) {
         encoder->logger = NULL;
         encoder->parallel_job_id = -1;
@@ -9522,7 +9544,9 @@ end:
         sixel_logger_close(&logger);
     }
 
-    sixel_encoder_unref(encoder);
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
 
     if (encode_allocator != NULL) {
         /*
