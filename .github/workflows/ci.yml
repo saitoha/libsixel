@@ -155,7 +155,7 @@ jobs:
           fi
           test -n "$SCAN_BUILD"
           CC=clang ./configure
-          "$SCAN_BUILD" --status-bugs --keep-going make -j"$(nproc)" V=1
+          "$SCAN_BUILD" --use-cc=clang --use-c++=clang++ --status-bugs --keep-going make -j"$(nproc)" V=1
 
       - name: Build with GCC Static Analyzer
         if: ${{ matrix.analyzer == 'gcc' }}
