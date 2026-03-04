@@ -1,5 +1,7 @@
 /*
- * Verify builtin loader reports RGB output for RGBA sources.
+ * Verify builtin loader reports expected pixelformats:
+ * - RGBA(8-bit)  -> RGB888
+ * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
  */
 
 #include "tests/loader/pixelformat_test_common.h"
@@ -14,11 +16,23 @@ new_builtin_component(sixel_allocator_t *allocator,
 static int
 run_builtin_loader_test(void)
 {
-    return run_loader_component_case("builtin loader",
-                                     RGBA_IMAGE_PATH,
-                                     SIXEL_PIXELFORMAT_RGB888,
-                                     2,
-                                     1,
+    int result;
+
+    result = run_loader_component_case("builtin loader rgba8",
+                                       RGBA_IMAGE_PATH,
+                                       SIXEL_PIXELFORMAT_RGB888,
+                                       2,
+                                       1,
+                                       new_builtin_component);
+    if (result != 0) {
+        return result;
+    }
+
+    return run_loader_component_case("builtin loader gray16",
+                                     "/tests/data/inputs/formats/snake-png-gray16.png",
+                                     SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                     GEOMETRY_ANY,
+                                     GEOMETRY_ANY,
                                      new_builtin_component);
 }
 
