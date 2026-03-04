@@ -31,11 +31,14 @@ planner_log=$(
 }
 printf '%s' "${planner_log}" >&2
 
-printf '%s\n' "${planner_log}" |
-awk '/formats: source=rgb-f32 work=rgb-f32/{ ok = 1 } END { exit(ok ? 0 : 1) }' || {
-    echo "not ok" 1 "planner downgraded float32 input"
-    exit 0
-}
+case "${planner_log}" in
+    *"formats: source=rgb-f32 work=rgb-f32"*)
+        ;;
+    *)
+        echo "not ok" 1 "planner downgraded float32 input"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "planner keeps libpng rgb16 source in float32 work format"
 exit 0
