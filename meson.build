@@ -333,6 +333,28 @@ ci_env = run_command(
   'import os, sys; sys.stdout.write(os.getenv("CI", ""))',
   check: false
 ).stdout().strip()
+
+# Keep profile output paths usable for PGO generate runs even when the
+# caller exports LLVM_PROFILE_FILE into a directory that does not exist yet.
+if get_option('b_pgo') == 'generate'
+  llvm_profile_file = run_command(
+    ci_probe,
+    '-c',
+    'import os, sys; sys.stdout.write(os.getenv("LLVM_PROFILE_FILE", ""))',
+    check: false
+  ).stdout().strip()
+  if llvm_profile_file != ''
+    run_command(
+      ci_probe,
+      '-c',
+      'import os, sys; p = sys.argv[1]; d = os.path.dirname(p); ' +
+      'os.makedirs(d, exist_ok=True) if d else None',
+      llvm_profile_file,
+      check: true
+    )
+  endif
+endif
+
 if ci_env != ''
   werror_flags = []
   if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'

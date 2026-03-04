@@ -1004,6 +1004,13 @@ sixel_pgo_cflags=""
 sixel_pgo_ldflags=""
 sixel_pgo_status="disabled"
 
+AS_IF([test "x$enable_pgo" = "xgenerate" -a "x$pgo_data_path" != "x"], [
+  AS_IF([test ! -d "$pgo_data_path"], [
+    AC_MSG_NOTICE([creating PGO data directory: $pgo_data_path])
+    mkdir -p "$pgo_data_path" || AC_MSG_ERROR([failed to create --with-pgo-data directory: $pgo_data_path])
+  ])
+])
+
 AS_IF([test "x$enable_pgo" = "xgenerate"], [
   AS_IF([test "x$sixel_pgo_toolchain" = "xmsvc"], [
     AS_IF([test "x$pgo_profdata_file" != "x"], [

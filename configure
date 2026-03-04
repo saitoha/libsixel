@@ -17485,6 +17485,20 @@ sixel_pgo_cflags=""
 sixel_pgo_ldflags=""
 sixel_pgo_status="disabled"
 
+if test "x$enable_pgo" = "xgenerate" -a "x$pgo_data_path" != "x"
+then :
+
+  if test ! -d "$pgo_data_path"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: creating PGO data directory: $pgo_data_path" >&5
+printf "%s\n" "$as_me: creating PGO data directory: $pgo_data_path" >&6;}
+    mkdir -p "$pgo_data_path" || as_fn_error $? "failed to create --with-pgo-data directory: $pgo_data_path" "$LINENO" 5
+
+fi
+
+fi
+
 if test "x$enable_pgo" = "xgenerate"
 then :
 
