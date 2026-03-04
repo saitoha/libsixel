@@ -830,6 +830,8 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
     int j;
     int k;
     int c;
+    int start;
+    int end;
     int best_pivot;
     float best_distance;
     float distance;
@@ -926,6 +928,12 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
 
     for (j = 0; j < pivots; ++j) {
         i = lut->rbc.member_offset[j + 1] - lut->rbc.member_offset[j];
+        start = lut->rbc.member_offset[j];
+        end = lut->rbc.member_offset[j + 1];
+        if (start < 0 || end < start || end > lut->ncolors) {
+            sixel_lookup_float32_rbc_clear(lut);
+            return SIXEL_RUNTIME_ERROR;
+        }
         mean0 = 0.0f;
         mean1 = 0.0f;
         mean2 = 0.0f;
@@ -935,9 +943,7 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
         if (i <= 0) {
             continue;
         }
-        for (k = lut->rbc.member_offset[j];
-            k < lut->rbc.member_offset[j + 1];
-             ++k) {
+        for (k = start; k < end; ++k) {
             c = lut->rbc.member_index[k];
             if (c < 0 || c >= lut->ncolors) {
                 continue;
@@ -969,10 +975,11 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
             continue;
         }
         memset(cov, 0, sizeof(cov));
-        for (k = lut->rbc.member_offset[j];
-             k < lut->rbc.member_offset[j + 1];
-             ++k) {
+        for (k = start; k < end; ++k) {
             c = lut->rbc.member_index[k];
+            if (c < 0 || c >= lut->ncolors) {
+                continue;
+            }
             d0 = sixel_lookup_float32_weighted_component(
                 lut,
                 lut->palette[c * 3 + 0],
