@@ -464,6 +464,9 @@ runs:
         srcdir="$top/${rel-.}"
         builddir="$top/builddir-pgo-use"
         export PATH="$top/build-aux:$top/bin:$PATH"
+        if test -f "$top/Makefile"; then
+          ${{ fromJSON(inputs.matrix_json).make || 'make' }} distclean
+        fi
         rm -rf "$builddir"
         mkdir -p "$builddir"
         cd "$builddir"
