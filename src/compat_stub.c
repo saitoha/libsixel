@@ -177,7 +177,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 # define _CRTIMP
 #endif
 
-#if defined(_WIN32) && (HAVE__DUPENV_S || defined(_MSC_VER))
+#if defined(_WIN32) && HAVE__DUPENV_S && !defined(_MSC_VER)
 /*
  * Some Windows SDKs require feature macros to expose `_dupenv_s()`.  The
  * declaration below acts as a safety net when headers remain silent even

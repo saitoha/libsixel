@@ -3224,7 +3224,8 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
         offset += 8u + ((chunk_size + 1u) & ~1u);
     }
 
-    if (offset + 8u > size || memcmp(chunk, "data", 4) != 0) {
+    if (offset + 8u > size || chunk == NULL ||
+            memcmp(chunk, "data", 4) != 0) {
         sixel_helper_set_additional_message(
             "sixel_palette_parse_pal_riff: missing data chunk.");
         return SIXEL_BAD_INPUT;

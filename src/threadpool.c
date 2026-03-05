@@ -96,16 +96,18 @@ threadpool_free(threadpool_t *pool)
     }
     if (pool->workers != NULL) {
         for (i = 0; i < pool->worker_capacity; ++i) {
-            if (pool->workers[i] == NULL) {
+            threadpool_worker_t *worker;
+            worker = pool->workers[i];
+            if (worker == NULL) {
                 continue;
             }
-            if (pool->workers[i]->workspace != NULL) {
+            if (worker->workspace != NULL) {
                 if (pool->workspace_cleanup != NULL) {
-                    pool->workspace_cleanup(pool->workers[i]->workspace);
+                    pool->workspace_cleanup(worker->workspace);
                 }
-                free(pool->workers[i]->workspace);
+                free(worker->workspace);
             }
-            free(pool->workers[i]);
+            free(worker);
         }
         free(pool->workers);
     }

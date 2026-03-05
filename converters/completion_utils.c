@@ -1411,6 +1411,9 @@ img2sixel_handle_show(int mask)
     char *buf;
     size_t len;
 
+    buf = NULL;
+    len = 0u;
+
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0
         && (mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
         if (get_completion_text("bash", &buf, &len) != 0) {

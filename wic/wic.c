@@ -3566,7 +3566,9 @@ RegisterStringValue(
 
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
-                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n", subkey, r);
+                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n",
+                 subkey,
+                 (unsigned long)r);
         return;
     }
 
@@ -3580,7 +3582,8 @@ RegisterStringValue(
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
                  L"RegSetValueExW: failed. key: %ls, code: %lu\n",
-                 subkey, r);
+                 subkey,
+                 (unsigned long)r);
         return;
     }
 
@@ -3588,7 +3591,8 @@ RegisterStringValue(
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
                  L"RegCloseKey: failed. key: %ls, code: %lu\n",
-                 subkey, r);
+                 subkey,
+                 (unsigned long)r);
         return;
     }
 
