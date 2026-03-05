@@ -1093,6 +1093,13 @@ averageColors(unsigned int boxStart,
     sample sum;
     unsigned int i;
 
+    if (boxSize == 0U) {
+        for (plane = 0U; plane < depth; ++plane) {
+            newTuple[plane] = 0;
+        }
+        return;
+    }
+
     for (plane = 0U; plane < depth; ++plane) {
         sum = 0;
         for (i = 0U; i < boxSize; ++i) {

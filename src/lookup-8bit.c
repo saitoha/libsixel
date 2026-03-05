@@ -1521,6 +1521,9 @@ sixel_certlut_pool_alloc(sixel_certlut_t *lut, int *status)
         lut->pool_capacity = next_capacity;
     }
     offset = lut->pool_size;
+    if (lut->pool == NULL) {
+        return 0U;
+    }
     memset(lut->pool + offset, 0, 8 * sizeof(uint32_t));
     lut->pool_size = required;
     if (status != NULL) {
