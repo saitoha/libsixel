@@ -13,7 +13,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_sixel2png - <"${TOP_SRCDIR}/images/map8.six" >"${ARTIFACT_LOCAL_DIR}/snake-stdin.png" || {
+run_sixel2png - <"${TOP_SRCDIR}/images/map8.six" >/dev/null || {
     echo "not ok" 1 "snake stdin conversion failed"
     exit 0
 }

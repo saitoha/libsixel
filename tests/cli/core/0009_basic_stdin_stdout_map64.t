@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 
 run_sixel2png - - <"${TOP_SRCDIR}/images/map64.six" \
-        >"${ARTIFACT_LOCAL_DIR}/map64-stdin-stdout.png" || {
+        >/dev/null || {
     echo "not ok" 1 "map64 stdin/stdout conversion failed"
     exit 0
 }

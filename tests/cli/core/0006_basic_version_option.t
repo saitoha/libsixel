@@ -13,7 +13,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_sixel2png -V >"${ARTIFACT_LOCAL_DIR}/version.txt" || {
+run_sixel2png -V >/dev/null || {
     echo "not ok" 1 "version option failed"
 }
 
