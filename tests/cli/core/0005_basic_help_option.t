@@ -13,7 +13,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_sixel2png -H >"${ARTIFACT_LOCAL_DIR}/help.txt" || {
+run_sixel2png -H >/dev/null || {
     echo "not ok" 1 "help option failed"
     exit 0
 }

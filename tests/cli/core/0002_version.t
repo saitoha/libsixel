@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -V >"${ARTIFACT_LOCAL_DIR}/version.txt" || {
+run_img2sixel -V >/dev/null || {
     echo "not ok" 1 "version output failed"
     exit 0
 }

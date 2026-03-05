@@ -13,9 +13,8 @@ echo "1..1"
 set -v
 
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
-output_sixel="${ARTIFACT_LOCAL_DIR}/snake-ormode.sixel"
 
-run_img2sixel -O --outfile="${output_sixel}" <"${snake_jpg}" >/dev/null || {
+run_img2sixel -O --outfile=/dev/null <"${snake_jpg}" >/dev/null || {
     echo "not ok" 1 "-O mode conversion failed"
     exit 0
 }
