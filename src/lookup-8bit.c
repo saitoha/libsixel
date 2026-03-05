@@ -54,6 +54,8 @@
 #endif
 
 #if defined(_MSC_VER)
+/* C28301: Windows SDK intrinsics (e.g. _rotl8) may lack SAL annotations in
+ * first declarations under /analyze; suppress this external-header warning. */
 # pragma warning(disable : 28301)
 #endif
 
