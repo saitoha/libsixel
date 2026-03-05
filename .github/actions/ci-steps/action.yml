@@ -323,6 +323,7 @@ runs:
       run: |
         set -exv
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+        mkdir -p "$PWD/pgo"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
@@ -334,6 +335,7 @@ runs:
       run: |
         set -exv
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+        mkdir -p "$PWD/pgo"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
         meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
