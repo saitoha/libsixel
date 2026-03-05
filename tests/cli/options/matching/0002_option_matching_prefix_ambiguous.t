@@ -13,21 +13,22 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-label="prefix_ambiguous"
-err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-
-run_img2sixel -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >/dev/null 2>"${err_file}" && {
+msg=$(set +xv; run_img2sixel -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    -o/dev/null 2>&1) && {
     echo "not ok" 1 "ambiguous prefix unexpectedly succeeded"
     exit 0
 }
 
-grep 'ambiguous prefix "sie"' "${err_file}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "missing diagnostic for ambiguous prefix"
-    printf '%s\n' '--- stderr ---' >&2
-    cat "${err_file}" >&2 2>/dev/null || :
-    exit 0
-}
+case "${msg}" in
+    *'ambiguous prefix "sie"'*)
+        ;;
+    *)
+        echo "not ok" 1 "missing diagnostic for ambiguous prefix"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "ambiguous prefix reports diagnostic"
 exit 0

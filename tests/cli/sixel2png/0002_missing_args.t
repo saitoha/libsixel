@@ -13,25 +13,32 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
-stderr_capture="${ARTIFACT_LOCAL_DIR}/stderr.txt"
-stdout_capture="${ARTIFACT_LOCAL_DIR}/stdout.txt"
-
-run_sixel2png -i 2>"${stderr_capture}" >"${stdout_capture}" && {
+msg=$(set +xv; run_sixel2png -o/dev/null -i 2>&1) && {
     echo "not ok" 1 "-i without value should fail"
     exit 0
 }
 
-awk 'index(tolower($0), "missing") { found = 1; exit }
-    END { exit found ? 0 : 1 }' "${stderr_capture}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "error message did not mention missing input"
-    exit 0
-}
+case "${msg}" in
+    *"missing"*)
+        ;;
+    *)
+        echo "not ok" 1 "error message did not mention missing input"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
-awk 'index($0, "--input") { found = 1; exit }
-    END { exit found ? 0 : 1 }' "${stderr_capture}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "error message did not mention missing input"
-    exit 0
-}
+case "${msg}" in
+    *"--input"*)
+        ;;
+    *)
+        echo "not ok" 1 "error message did not mention missing input"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "missing input argument reported"
 exit 0

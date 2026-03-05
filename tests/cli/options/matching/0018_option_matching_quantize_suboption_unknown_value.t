@@ -13,18 +13,21 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-label="quantize_suboption_unknown_value"
-err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-
-run_img2sixel -Qk:i=xyz "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>"${err_file}" && {
+msg=$(set +xv; run_img2sixel -Qk:i=xyz "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
     echo "not ok" 1 "unknown -Q suboption value unexpectedly succeeded"
     exit 0
 }
 
-grep "unknown suboption value" "${err_file}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "missing unknown suboption value diagnostic"
-    exit 0
-}
+case "${msg}" in
+    *"unknown suboption value"*)
+        ;;
+    *)
+        echo "not ok" 1 "missing unknown suboption value diagnostic"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "unknown -Q suboption value is rejected"
 exit 0

@@ -13,18 +13,21 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
-stderr_capture="${ARTIFACT_LOCAL_DIR}/stderr.txt"
-stdout_capture="${ARTIFACT_LOCAL_DIR}/stdout.txt"
-
-run_sixel2png --unknown 2>"${stderr_capture}" >"${stdout_capture}" && {
+msg=$(set +xv; run_sixel2png --unknown -o/dev/null 2>&1) && {
     echo "not ok" 1 "unknown option should fail"
     exit 0
 }
 
-grep -qi "unrecognized option" "${stderr_capture}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "error message did not mention unknown option"
-    exit 0
-}
+case "${msg}" in
+    *"unrecognized option"*)
+        ;;
+    *)
+        echo "not ok" 1 "error message did not mention unknown option"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "unknown option reported"
 exit 0
