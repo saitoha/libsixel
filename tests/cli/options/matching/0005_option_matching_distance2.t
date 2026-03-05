@@ -13,22 +13,22 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-label="distance2"
-err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-
-run_img2sixel -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >/dev/null 2>"${err_file}" && {
+msg=$(set +xv; run_img2sixel -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    -o/dev/null 2>&1) && {
     echo "not ok" 1 "distance-2 typo unexpectedly succeeded"
     exit 0
 }
 
-grep 'specified desampling method is not supported.' "${err_file}" \
-    >/dev/null 2>&1 || {
-    echo "not ok" 1 "missing diagnostic for distance-2 typo"
-    printf '%s\n' '--- stderr ---' >&2
-    cat "${err_file}" >&2 2>/dev/null || :
-    exit 0
-}
+case "${msg}" in
+    *'specified desampling method is not supported.'*)
+        ;;
+    *)
+        echo "not ok" 1 "missing diagnostic for distance-2 typo"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "distance-2 typo reports diagnostic"
 exit 0

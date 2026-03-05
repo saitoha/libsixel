@@ -13,29 +13,34 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-label="prefix_ambiguous_suggestions_off"
-err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-
-run_img2sixel --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
+msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
     -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >/dev/null 2>"${err_file}" && {
+    -o/dev/null 2>&1) && {
     echo "not ok" 1 "ambiguous prefix unexpectedly succeeded"
     exit 0
 }
 
-grep 'ambiguous prefix "sie".' "${err_file}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "ambiguity diagnostic still contains candidate list"
-    printf '%s\n' '--- stderr ---' >&2
-    cat "${err_file}" >&2 2>/dev/null || :
-    exit 0
-}
+case "${msg}" in
+    *'ambiguous prefix "sie".'*)
+        ;;
+    *)
+        echo "not ok" 1 "ambiguity diagnostic still contains candidate list"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
-grep '(matches:' "${err_file}" >/dev/null 2>&1 && {
-    echo "not ok" 1 "ambiguity diagnostic still contains candidate list"
-    printf '%s\n' '--- stderr ---' >&2
-    cat "${err_file}" >&2 2>/dev/null || :
-    exit 0
-}
+case "${msg}" in
+    *'(matches:'*)
+        echo "not ok" 1 "ambiguity diagnostic still contains candidate list"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+    *)
+        ;;
+esac
 
 echo "ok" 1 "ambiguity diagnostic omits candidate list when disabled"
 exit 0

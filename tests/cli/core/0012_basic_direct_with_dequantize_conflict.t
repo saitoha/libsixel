@@ -13,18 +13,22 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
-direct_err="${ARTIFACT_LOCAL_DIR}/err.txt"
-
-run_sixel2png -D -dk_undither <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
-        >"${ARTIFACT_LOCAL_DIR}/output.txt" 2>"${direct_err}" && {
+msg=$(set +xv; run_sixel2png -D -dk_undither <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
+        2>&1) && {
     echo "not ok" 1 "accepts conflicting direct/dequantize flags"
     exit 0
 }
 
-grep "cannot be combined" "${direct_err}" >/dev/null || {
-    echo "not ok" 1 "missing direct/dequantize diagnostic"
-    exit 0
-}
+case "${msg}" in
+    *"cannot be combined"*)
+        ;;
+    *)
+        echo "not ok" 1 "missing direct/dequantize diagnostic"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "rejects direct/dequantize mix"
 exit 0

@@ -10,37 +10,33 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-label="prefix_unique"
-err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-filtered_err="${ARTIFACT_LOCAL_DIR}/${label}.filtered.err"
-
 echo "1..1"
 set -v
 
-run_img2sixel -y ser \
+msg=$(set +xv; run_img2sixel -y ser \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-              >/dev/null 2>"${err_file}" || {
+              -o/dev/null 2>&1) || {
     echo "not ok" 1 "unique prefix was rejected"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-test ! -s "${err_file}" && {
+test -z "${msg}" && {
     echo "ok" 1 "unique prefix is accepted"
     exit 0
 }
 
-sed '1d' "${err_file}" \
-    | grep -v '^+' \
-    | grep -v 'img2sixel' \
-    | grep -i 'error\|warning\|failed' \
-    >"${filtered_err}" || :
-
-test -s "${filtered_err}" && {
-    echo "not ok" 1 "unique prefix emitted diagnostics"
-    printf '%s\n' '--- stderr ---' >&2
-    cat "${err_file}" >&2 2>/dev/null || :
-    exit 0
-}
+case "${msg}" in
+    *"error"*|*"warning"*|*"failed"*)
+        echo "not ok" 1 "unique prefix emitted diagnostics"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+    *)
+        ;;
+esac
 
 echo "ok" 1 "unique prefix is accepted"
 exit 0

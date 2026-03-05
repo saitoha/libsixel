@@ -13,27 +13,34 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-err_file="${ARTIFACT_LOCAL_DIR}/path-suggestions-enabled.err"
-
-run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
+msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               -m "${TOP_SRCDIR}/tests/data/inputs/snake_64.pgn" \
-              "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>"${err_file}" && {
+              "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
     echo "not ok" 1 "missing mapfile unexpectedly succeeded"
     exit 0
 }
 
-grep 'path "' "${err_file}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "missing path suggestion diagnostics"
-    exit 0
-}
+case "${msg}" in
+    *'path "'*)
+        ;;
+    *)
+        echo "not ok" 1 "missing path suggestion diagnostics"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
-has_suggestions=1
-grep 'Suggestions:' "${err_file}" >/dev/null 2>&1 || has_suggestions=0
-
-test "${has_suggestions}" -eq 1 || {
-    echo "not ok" 1 "missing mapfile reports unsupported suggestion lookup"
-    exit 0
-}
+case "${msg}" in
+    *'Suggestions:'*)
+        ;;
+    *)
+        echo "not ok" 1 "missing mapfile reports unsupported suggestion lookup"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "missing mapfile prints ranked path suggestions"
 exit 0

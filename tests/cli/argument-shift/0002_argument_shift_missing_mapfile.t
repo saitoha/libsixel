@@ -14,19 +14,22 @@ echo "1..1"
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
-err_file="${ARTIFACT_LOCAL_DIR}/missing-map.err"
 
-run_img2sixel -m -w 100 -h 100 "${image_path}" >/dev/null 2>"${err_file}" && {
+msg=$(set +xv; run_img2sixel -m -w 100 -h 100 "${image_path}" -o/dev/null 2>&1) && {
     echo "not ok" 1 "accepted -m without argument"
     exit 0
 }
 
-grep -q 'missing required argument for -m,--mapfile option' "${err_file}" || {
-    echo "not ok" 1 "no diagnostic for missing -m argument"
-    printf '%s\n' '--- stderr ---' >&2
-    cat "${err_file}" >&2 2>/dev/null || :
-    exit 0
-}
+case "${msg}" in
+    *'missing required argument for -m,--mapfile option'*)
+        ;;
+    *)
+        echo "not ok" 1 "no diagnostic for missing -m argument"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 "reports missing mapfile argument"
 exit 0
