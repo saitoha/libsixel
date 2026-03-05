@@ -281,14 +281,18 @@ AM_LOG_FLAGS =
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
-	staticcheck-python-compileall
+	staticcheck-python-compileall \
+	staticcheck-build-doc-configure-help \
+	staticcheck-build-doc-meson-options
 
 staticcheck: \
 	staticcheck-clean \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
-	staticcheck-python-compileall
+	staticcheck-python-compileall \
+	staticcheck-build-doc-configure-help \
+	staticcheck-build-doc-meson-options
 
 .PHONY: staticcheck-clean
 
@@ -335,6 +339,26 @@ staticcheck-python-compileall:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-python-compileall.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-build-doc-configure-help:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-build-doc-configure-help" \
+		--log-file staticcheck-build-doc-configure-help.log \
+		--trs-file staticcheck-build-doc-configure-help.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-build-doc-configure-help.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-build-doc-meson-options:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-build-doc-meson-options" \
+		--log-file staticcheck-build-doc-meson-options.log \
+		--trs-file staticcheck-build-doc-meson-options.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-build-doc-meson-options.sh" \
+		"$(abs_top_srcdir)"
 
 # Route Python TAP tests through the same driver as shell TAP tests so
 # elapsed time and result formatting stay consistent across extensions.
@@ -469,6 +493,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/staticcheck-shellcheck.sh \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
+    _static/sh/staticcheck-build-doc-configure-help.sh \
+    _static/sh/staticcheck-build-doc-meson-options.sh \
     check-test-exports.list \
     $(TEST_DATA_FILES)
 
