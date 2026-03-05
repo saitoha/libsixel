@@ -749,7 +749,7 @@ load_gif(
     sixel_allocator_t   /* in */ *allocator)   /* allocator object */
 {
     gif_context_t s;
-    gif_t g;
+    gif_t *g;
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame;
     sixel_fromgif_fn_pointer_t fnp;
@@ -765,30 +765,40 @@ load_gif(
     int emitted_frame_no;
 
     frame = NULL;
+    g = NULL;
     fnp.p = fn_load;
 
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    g = (gif_t *)sixel_allocator_malloc(allocator, sizeof(*g));
+    if (g == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
     s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
     s.img_buffer_end = (unsigned char *)buffer + size;
-    memset(&g, 0, sizeof(g));
-    g.delay = SIXEL_DEFALUT_GIF_DELAY;
-    status = gif_load_header(&s, &g);
+    memset(g, 0, sizeof(*g));
+    g->delay = SIXEL_DEFALUT_GIF_DELAY;
+    status = gif_load_header(&s, g);
     if (status != SIXEL_OK) {
         goto end;
     }
-    if (g.w <= 0 || g.h <= 0 ||
-        (size_t)g.w > SIZE_MAX / (size_t)g.h) {
+    if (g->w <= 0 || g->h <= 0 ||
+        (size_t)g->w > SIZE_MAX / (size_t)g->h) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: invalid image size).");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    if (g.w > SIXEL_WIDTH_LIMIT || g.h > SIXEL_HEIGHT_LIMIT) {
+    if (g->w > SIXEL_WIDTH_LIMIT || g->h > SIXEL_HEIGHT_LIMIT) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: image dimensions exceed limit).");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    pcount = (size_t)g.w * (size_t)g.h;
+    pcount = (size_t)g->w * (size_t)g->h;
     if (pcount > SIXEL_ALLOCATE_BYTES_MAX) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: image data exceeds limit).");
@@ -803,10 +813,10 @@ load_gif(
     }
     bcount = pcount * 3;
 
-    g.out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
-    g.prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
-    g.history = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
-    if (g.out == NULL || g.prev_out == NULL || g.history == NULL) {
+    g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+    g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+    g->history = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+    if (g->out == NULL || g->prev_out == NULL || g->history == NULL) {
         sixel_compat_snprintf(
             message,
             sizeof(message),
@@ -816,18 +826,18 @@ load_gif(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    bg_r = g.pal[g.bgindex][2];
-    bg_g = g.pal[g.bgindex][1];
-    bg_b = g.pal[g.bgindex][0];
+    bg_r = g->pal[g->bgindex][2];
+    bg_g = g->pal[g->bgindex][1];
+    bg_b = g->pal[g->bgindex][0];
     for (i = 0; i < pcount; ++i) {
-        g.out[i * 3 + 0] = bg_r;
-        g.out[i * 3 + 1] = bg_g;
-        g.out[i * 3 + 2] = bg_b;
-        g.prev_out[i * 3 + 0] = bg_r;
-        g.prev_out[i * 3 + 1] = bg_g;
-        g.prev_out[i * 3 + 2] = bg_b;
+        g->out[i * 3 + 0] = bg_r;
+        g->out[i * 3 + 1] = bg_g;
+        g->out[i * 3 + 2] = bg_b;
+        g->prev_out[i * 3 + 0] = bg_r;
+        g->prev_out[i * 3 + 1] = bg_g;
+        g->prev_out[i * 3 + 2] = bg_b;
     }
-    memset(g.history, 0, pcount);
+    memset(g->history, 0, pcount);
 
     sixel_frame_set_loop_count(frame, 0);
 
@@ -838,24 +848,24 @@ load_gif(
         emitted_frame_no = 0;
 
         s.img_buffer = s.img_buffer_original;
-        status = gif_load_header(&s, &g);
+        status = gif_load_header(&s, g);
         if (status != SIXEL_OK) {
             goto end;
         }
-        if (g.w <= 0 || g.h <= 0 ||
-            (size_t)g.w > SIZE_MAX / (size_t)g.h) {
+        if (g->w <= 0 || g->h <= 0 ||
+            (size_t)g->w > SIZE_MAX / (size_t)g->h) {
             sixel_helper_set_additional_message(
                 "corrupt GIF (reason: invalid image size).");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        if (g.w > SIXEL_WIDTH_LIMIT || g.h > SIXEL_HEIGHT_LIMIT) {
+        if (g->w > SIXEL_WIDTH_LIMIT || g->h > SIXEL_HEIGHT_LIMIT) {
             sixel_helper_set_additional_message(
                 "corrupt GIF (reason: image dimensions exceed limit).");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        pcount = (size_t)g.w * (size_t)g.h;
+        pcount = (size_t)g->w * (size_t)g->h;
         if (pcount > SIXEL_ALLOCATE_BYTES_MAX) {
             sixel_helper_set_additional_message(
                 "corrupt GIF (reason: image data exceeds limit).");
@@ -864,28 +874,28 @@ load_gif(
         }
 
         /* reset canvas for new loop */
-        bg_r = g.pal[g.bgindex][2];
-        bg_g = g.pal[g.bgindex][1];
-        bg_b = g.pal[g.bgindex][0];
+        bg_r = g->pal[g->bgindex][2];
+        bg_g = g->pal[g->bgindex][1];
+        bg_b = g->pal[g->bgindex][0];
         for (i = 0; i < pcount; ++i) {
-            g.out[i * 3 + 0] = bg_r;
-            g.out[i * 3 + 1] = bg_g;
-            g.out[i * 3 + 2] = bg_b;
-            g.prev_out[i * 3 + 0] = bg_r;
-            g.prev_out[i * 3 + 1] = bg_g;
-            g.prev_out[i * 3 + 2] = bg_b;
+            g->out[i * 3 + 0] = bg_r;
+            g->out[i * 3 + 1] = bg_g;
+            g->out[i * 3 + 2] = bg_b;
+            g->prev_out[i * 3 + 0] = bg_r;
+            g->prev_out[i * 3 + 1] = bg_g;
+            g->prev_out[i * 3 + 2] = bg_b;
         }
-        memset(g.history, 0, pcount);
-        g.is_multiframe = 0;
+        memset(g->history, 0, pcount);
+        g->is_multiframe = 0;
 
-        g.is_terminated = 0;
+        g->is_terminated = 0;
 
         for (;;) { /* per frame */
-            status = gif_load_next(&s, &g, bgcolor);
+            status = gif_load_next(&s, g, bgcolor);
             if (status != SIXEL_OK) {
                 goto end;
             }
-            if (g.is_terminated) {
+            if (g->is_terminated) {
                 break;
             }
 
@@ -897,9 +907,9 @@ load_gif(
              * would make the packed RGB buffer width/height inconsistent and
              * produce corrupted output on partial-update frames.
              */
-            sixel_frame_set_width(frame, g.w);
-            sixel_frame_set_height(frame, g.h);
-            status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
+            sixel_frame_set_width(frame, g->w);
+            sixel_frame_set_height(frame, g->h);
+            status = gif_init_frame(frame, g, bgcolor, reqcolors, fuse_palette);
             if (status != SIXEL_OK) {
                 goto end;
             }
@@ -939,7 +949,7 @@ load_gif(
 
         sixel_frame_increment_loop_count(frame);
 
-        if (g.loop_count < 0) {
+        if (g->loop_count < 0) {
             break;
         }
         if (loop_control == SIXEL_LOOP_DISABLE ||
@@ -947,17 +957,22 @@ load_gif(
             break;
         }
         if (loop_control == SIXEL_LOOP_AUTO) {
-            if (sixel_frame_get_loop_no(frame) == g.loop_count) {
+            if (sixel_frame_get_loop_no(frame) == g->loop_count) {
                 break;
             }
         }
     }
 
 end:
-    sixel_allocator_free(allocator, g.out);
-    sixel_allocator_free(allocator, g.prev_out);
-    sixel_allocator_free(allocator, g.history);
-    sixel_frame_unref(frame);
+    if (g != NULL) {
+        sixel_allocator_free(allocator, g->out);
+        sixel_allocator_free(allocator, g->prev_out);
+        sixel_allocator_free(allocator, g->history);
+        sixel_allocator_free(allocator, g);
+    }
+    if (frame != NULL) {
+        sixel_frame_unref(frame);
+    }
 
     return status;
 }

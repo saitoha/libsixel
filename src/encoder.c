@@ -1756,23 +1756,47 @@ sixel_hex_write_callback(
     int     /* in */ size,
     void    /* in */ *priv)
 {
-    char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
+    char hex[512];
+    unsigned char ch;
+    int chunk;
+    int pos;
     int i;
     int j;
     int result;
+    int total;
 
-    for (i = j = 0; i < size; ++i, ++j) {
-        hex[j] = (data[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
-        hex[++j] = data[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
+    total = 0;
+    i = 0;
+    while (i < size) {
+        chunk = size - i;
+        if (chunk > (int)(sizeof(hex) / 2)) {
+            chunk = (int)(sizeof(hex) / 2);
+        }
+        pos = 0;
+        for (j = 0; j < chunk; ++j) {
+            ch = (unsigned char)data[i + j];
+            hex[pos] = (char)((ch >> 4) & 0x0f);
+            hex[pos] += (char)(hex[pos] < 10 ? '0' : ('a' - 10));
+            ++pos;
+            hex[pos] = (char)(ch & 0x0f);
+            hex[pos] += (char)(hex[pos] < 10 ? '0' : ('a' - 10));
+            ++pos;
+        }
+
+        result = (int)sixel_compat_write(*(int *)priv,
+                                         hex,
+                                         (size_t)pos);
+        if (result <= 0) {
+            return (total > 0 ? total : result);
+        }
+        total += result;
+        if (result < pos) {
+            return total;
+        }
+        i += chunk;
     }
 
-    result = (int)sixel_compat_write(*(int *)priv,
-                                     hex,
-                                     (size_t)(size * 2));
-
-    return result;
+    return total;
 }
 
 typedef struct sixel_encoder_output_probe {
