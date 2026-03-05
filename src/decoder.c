@@ -347,6 +347,9 @@ strdup_with_allocator(
 {
     char *p;
 
+    if (s == NULL || allocator == NULL) {
+        return NULL;
+    }
     p = (char *)sixel_allocator_malloc(allocator, (size_t)(strlen(s) + 1));
     if (p) {
         (void)sixel_compat_strcpy(p, strlen(s) + 1, s);

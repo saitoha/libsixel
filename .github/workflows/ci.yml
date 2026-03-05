@@ -156,18 +156,19 @@ jobs:
           fi
           test -n "$SCAN_BUILD"
           CC=clang ./configure
+          ROOT_DIR="$(pwd)"
           "$SCAN_BUILD" \
             --use-cc=clang \
             --use-c++=clang++ \
             -disable-checker deadcode.DeadStores \
-            --exclude assessment \
-            --exclude tests \
-            --exclude examples \
-            --exclude drawing \
-            --exclude python \
-            --exclude ruby \
-            --exclude windows \
-            --exclude quicklook-extension \
+            --exclude "$ROOT_DIR/assessment" \
+            --exclude "$ROOT_DIR/tests" \
+            --exclude "$ROOT_DIR/examples" \
+            --exclude "$ROOT_DIR/drawing" \
+            --exclude "$ROOT_DIR/python" \
+            --exclude "$ROOT_DIR/ruby" \
+            --exclude "$ROOT_DIR/windows" \
+            --exclude "$ROOT_DIR/quicklook-extension" \
             --status-bugs \
             --keep-going \
             make -j"$(nproc)" V=1

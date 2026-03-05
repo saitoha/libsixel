@@ -1157,12 +1157,17 @@ sixel_lookup_fhedt_edt1d_scalar_float32(double *line_dist,
 
     k = 0;
     for (i = 0; i < length; ++i) {
+        int idx;
         while ((k + 1) < length && zbuf[k + 1] < (double)i) {
             ++k;
         }
-        scratch[i] = line_dist[vbuf[k]]
-                   + weight * (double)((i - vbuf[k]) * (i - vbuf[k]));
-        line_src[i] = line_src[vbuf[k]];
+        idx = vbuf[k];
+        if (idx < 0 || idx >= length) {
+            continue;
+        }
+        scratch[i] = line_dist[idx]
+                   + weight * (double)((i - idx) * (i - idx));
+        line_src[i] = line_src[idx];
     }
 
     for (i = 0; i < length; ++i) {
