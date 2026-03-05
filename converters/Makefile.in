@@ -1490,9 +1490,13 @@ completion_embed.h: \
 	$(srcdir)/shell-completion/bash/img2sixel \
 	$(srcdir)/shell-completion/zsh/_img2sixel \
 	$(top_srcdir)/tools/gen_completion_embed.awk
-	$(AM_V_GEN)$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
+	$(AM_V_GEN)tmp="$@.tmp"; \
+	$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
 	       $(srcdir)/shell-completion/bash/img2sixel \
-	       $(srcdir)/shell-completion/zsh/_img2sixel > $@
+	       $(srcdir)/shell-completion/zsh/_img2sixel > "$$tmp" && \
+	mv "$$tmp" "$@" || { rm -f "$$tmp"; exit 1; }
+# Ensure completion_utils never compiles before the generated header exists.
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel-completion_utils.$(OBJEXT): completion_embed.h
 
 @WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
 @WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
