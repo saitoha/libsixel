@@ -1161,6 +1161,7 @@ sixel_lookup_fhedt_edt1d_scalar_float32(double *line_dist,
         while ((k + 1) < length && zbuf[k + 1] < (double)i) {
             ++k;
         }
+        scratch[i] = line_dist[i];
         idx = vbuf[k];
         if (idx < 0 || idx >= length) {
             continue;
