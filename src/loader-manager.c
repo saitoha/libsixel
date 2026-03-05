@@ -508,7 +508,7 @@ loader_manager_build_plan(
         }
     }
 
-    if (allow_fallback) {
+    if (allow_fallback && plan != NULL && limit > 0u) {
         for (index = 0u; index < entry_count && plan_length < limit; ++index) {
             entry = &entries[index];
             if (!entry->default_enabled) {

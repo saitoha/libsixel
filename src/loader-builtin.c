@@ -1009,6 +1009,9 @@ end:
 static SIXELSTATUS
 sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
 {
+    static size_t const gif_color_table_bytes[8] = {
+        6u, 12u, 24u, 48u, 96u, 192u, 384u, 768u
+    };
     SIXELSTATUS status;
     unsigned char const *p;
     unsigned char const *end;
@@ -1043,7 +1046,7 @@ sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
     packed = p[10];
     p += 13;
     if ((packed & 0x80) != 0) {
-        gct_size = (size_t)(2U << (packed & 0x07U)) * 3U;
+        gct_size = gif_color_table_bytes[(size_t)packed & 0x07u];
         if ((size_t)(end - p) < gct_size) {
             status = SIXEL_BAD_INPUT;
             goto end;
@@ -1066,7 +1069,7 @@ sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
             packed = p[8];
             p += 9;
             if ((packed & 0x80) != 0) {
-                lct_size = (size_t)(2U << (packed & 0x07U)) * 3U;
+                lct_size = gif_color_table_bytes[(size_t)packed & 0x07u];
                 if ((size_t)(end - p) < lct_size) {
                     status = SIXEL_BAD_INPUT;
                     goto end;
