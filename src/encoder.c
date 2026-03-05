@@ -4414,6 +4414,9 @@ sixel_encoder_palette_job_thread(void *priv)
     sixel_dither_t *local;
 
     job = (sixel_palette_async_job_t *)priv;
+    if (job == NULL) {
+        return 0;
+    }
     status = SIXEL_BAD_ARGUMENT;
     local = NULL;
 
@@ -4954,6 +4957,9 @@ sixel_encoder_prepare_palette(
     clustering_colorspace = SIXEL_COLORSPACE_GAMMA;
     working_colorspace = SIXEL_COLORSPACE_GAMMA;
     prefer_float32 = 0;
+    if (encoder == NULL || frame == NULL || dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (encoder != NULL) {
         if (target_logger == NULL) {
             target_logger = encoder->logger;
@@ -6010,6 +6016,10 @@ sixel_encoder_encode_frame(
     int clip_active;
     int current_pixelformat;
     int current_colorspace;
+
+    if (encoder == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     memset(&context, 0, sizeof(context));
     context.encoder = encoder;

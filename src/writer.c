@@ -643,6 +643,9 @@ write_png_to_file(
                           "target=%s",
                           filename != NULL ? filename : "(null)");
     }
+    if (filename == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (strcmp(filename, "-") == 0) {
 #if defined(O_BINARY)
         (void)sixel_compat_set_binary(STDOUT_FILENO);
