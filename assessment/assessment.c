@@ -1595,6 +1595,10 @@ fft_cooley_tukey(sixel_assessment_complex_t *data, int n, int inverse)
     double tmp_re;
     double tmp_im;
 
+    if (data == NULL || n <= 1) {
+        return;
+    }
+
     fft_bit_reverse(data, n);
     for (len = 2; len <= n; len <<= 1) {
 
@@ -1609,15 +1613,23 @@ fft_cooley_tukey(sixel_assessment_complex_t *data, int n, int inverse)
             w.re = 1.0;
             w.im = 0.0;
             for (j = 0; j < half; ++j) {
-                u = data[i + j];
-                v.re = data[i + j + half].re * w.re -
-                       data[i + j + half].im * w.im;
-                v.im = data[i + j + half].re * w.im +
-                       data[i + j + half].im * w.re;
-                data[i + j].re = u.re + v.re;
-                data[i + j].im = u.im + v.im;
-                data[i + j + half].re = u.re - v.re;
-                data[i + j + half].im = u.im - v.im;
+                int left;
+                int right;
+                sixel_assessment_complex_t t;
+
+                left = i + j;
+                right = left + half;
+                if (right >= n) {
+                    break;
+                }
+                u = data[left];
+                t = data[right];
+                v.re = t.re * w.re - t.im * w.im;
+                v.im = t.re * w.im + t.im * w.re;
+                data[left].re = u.re + v.re;
+                data[left].im = u.im + v.im;
+                data[right].re = u.re - v.re;
+                data[right].im = u.im - v.im;
                 tmp_re = w.re * wlen.re - w.im * wlen.im;
                 tmp_im = w.re * wlen.im + w.im * wlen.re;
                 w.re = tmp_re;
@@ -2271,22 +2283,35 @@ static void
 linear_to_xyz(const float *rgb, float *xyz, size_t pixels)
 {
     size_t i;
+    size_t base;
+    size_t channel_count;
     float r;
     float g;
     float b;
     float X;
     float Y;
     float Z;
+    if (rgb == NULL || xyz == NULL || pixels == 0u) {
+        return;
+    }
+    if (pixels > SIZE_MAX / 3u) {
+        return;
+    }
+    channel_count = pixels * 3u;
     for (i = 0; i < pixels; ++i) {
-        r = rgb[i * 3 + 0];
-        g = rgb[i * 3 + 1];
-        b = rgb[i * 3 + 2];
+        base = i * 3u;
+        if (base > channel_count - 3u) {
+            return;
+        }
+        r = rgb[base + 0u];
+        g = rgb[base + 1u];
+        b = rgb[base + 2u];
         X = 0.4124564f * r + 0.3575761f * g + 0.1804375f * b;
         Y = 0.2126729f * r + 0.7151522f * g + 0.0721750f * b;
         Z = 0.0193339f * r + 0.1191920f * g + 0.9503041f * b;
-        xyz[i * 3 + 0] = X;
-        xyz[i * 3 + 1] = Y;
-        xyz[i * 3 + 2] = Z;
+        xyz[base + 0u] = X;
+        xyz[base + 1u] = Y;
+        xyz[base + 2u] = Z;
     }
 }
 
@@ -2308,6 +2333,8 @@ xyz_to_lab(const float *xyz, float *lab, size_t pixels)
     const float Yn = 1.00000f;
     const float Zn = 1.08883f;
     size_t i;
+    size_t base;
+    size_t channel_count;
     float X;
     float Y;
     float Z;
@@ -2317,19 +2344,31 @@ xyz_to_lab(const float *xyz, float *lab, size_t pixels)
     float L;
     float a;
     float b;
+
+    if (xyz == NULL || lab == NULL || pixels == 0u) {
+        return;
+    }
+    if (pixels > SIZE_MAX / 3u) {
+        return;
+    }
+    channel_count = pixels * 3u;
     for (i = 0; i < pixels; ++i) {
-        X = xyz[i * 3 + 0] / Xn;
-        Y = xyz[i * 3 + 1] / Yn;
-        Z = xyz[i * 3 + 2] / Zn;
+        base = i * 3u;
+        if (base > channel_count - 3u) {
+            return;
+        }
+        X = xyz[base + 0u] / Xn;
+        Y = xyz[base + 1u] / Yn;
+        Z = xyz[base + 2u] / Zn;
         fx = f_lab(X);
         fy = f_lab(Y);
         fz = f_lab(Z);
         L = 116.0f * fy - 16.0f;
         a = 500.0f * (fx - fy);
         b = 200.0f * (fy - fz);
-        lab[i * 3 + 0] = L;
-        lab[i * 3 + 1] = a;
-        lab[i * 3 + 2] = b;
+        lab[base + 0u] = L;
+        lab[base + 1u] = a;
+        lab[base + 2u] = b;
     }
 }
 
@@ -2345,6 +2384,9 @@ rgb_to_lab(const float *pixels, int width, int height)
     lab = float_buffer_create(pixel_count * 3);
     linear = (float *)xmalloc(pixel_count * 3 * sizeof(float));
     xyz = (float *)xmalloc(pixel_count * 3 * sizeof(float));
+    memset(lab.values, 0, pixel_count * 3 * sizeof(float));
+    memset(linear, 0, pixel_count * 3 * sizeof(float));
+    memset(xyz, 0, pixel_count * 3 * sizeof(float));
     srgb_to_linear(pixels, linear, pixel_count * 3);
     linear_to_xyz(linear, xyz, pixel_count);
     xyz_to_lab(xyz, lab.values, pixel_count);
