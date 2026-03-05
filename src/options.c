@@ -37,6 +37,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
 
 #if HAVE_UNISTD_H
 # include <unistd.h>
