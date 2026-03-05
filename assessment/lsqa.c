@@ -1329,6 +1329,8 @@ parse_args(int argc, char **argv, Options *opts)
     scan_argv = NULL;
     scan_argc = 0;
     opt = 0;
+    verbose_env = NULL;
+    prefix_env = NULL;
 #if HAVE_GETOPT_LONG
     long_opt = 0;
     option_index = 0;
@@ -1529,12 +1531,11 @@ parse_args(int argc, char **argv, Options *opts)
         opts->verbose = 1;
     }
 
-    free(prefix_env);
-    free(verbose_env);
-
     parse_status = 0;
 
 cleanup:
+    free(prefix_env);
+    free(verbose_env);
     free(scan_argv);
     return parse_status;
 }
