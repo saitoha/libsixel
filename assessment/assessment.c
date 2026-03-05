@@ -3748,6 +3748,19 @@ assessment_emit_quality_lines(sixel_assessment_t *assessment,
         last = (i + 1 == sizeof(g_metric_table) /
                 sizeof(g_metric_table[0]));
         index = SIXEL_ASSESSMENT_INDEX(g_metric_table[i].id);
+        if (index < 0 || index >= SIXEL_ASSESSMENT_METRIC_COUNT) {
+            written = snprintf(line,
+                               sizeof(line),
+                               "%s\"%s\": null%s\n",
+                               indent,
+                               g_metric_table[i].json_key,
+                               last ? "" : ",");
+            if (written < 0 || (size_t)written >= sizeof(line)) {
+                return SIXEL_RUNTIME_ERROR;
+            }
+            callback(line, (size_t)written, user_data);
+            continue;
+        }
         if ((assessment->results_valid_mask &
                 SIXEL_ASSESSMENT_METRIC_MASK(g_metric_table[i].id)) == 0u) {
             written = snprintf(line,

@@ -189,8 +189,9 @@ _CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
                                   const char *name);
 #endif
 
-#if HAVE__SETMODE && (defined(_WIN32) || defined(__CYGWIN__) || \
-    defined(__MINGW32__) || defined(__MSYS__))
+#if HAVE__SETMODE && !defined(_MSC_VER) && \
+    (defined(_WIN32) || defined(__CYGWIN__) || \
+     defined(__MINGW32__) || defined(__MSYS__))
 /*
  * Some MinGW/MSYS headers hide `_setmode()` when POSIX feature macros
  * are enabled.  Declare it ourselves to keep the prototype visible

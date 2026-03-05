@@ -3613,24 +3613,24 @@ RegisterDwordValue(
                         KEY_SET_VALUE, NULL, &h, NULL);
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
-                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n",
-                 subkey, r);
+                 L"RegCreateKeyExW: failed. key: %ls, code: %ld\n",
+                 subkey, (long)r);
         return;
     }
 
     r = RegSetValueExW(h, name, 0, REG_DWORD, (const BYTE *)&value, sizeof(value));
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
-                 L"RegSetValueExW: failed. key: %ls, name: %ls, code: %lu\n",
-                 subkey, name, r);
+                 L"RegSetValueExW: failed. key: %ls, name: %ls, code: %ld\n",
+                 subkey, name, (long)r);
         return;
     }
 
     r = RegCloseKey(h);
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
-                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
-                 subkey, r);
+                 L"RegCloseKey: failed. key: %ls, code: %ld\n",
+                 subkey, (long)r);
         return;
     }
 }

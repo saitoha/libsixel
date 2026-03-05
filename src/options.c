@@ -856,6 +856,7 @@ sixel_option_collect_choice_suggestions(
 {
     sixel_option_choice_suggestion_t *candidates;
     size_t candidate_count;
+    size_t candidate_capacity;
     size_t index;
     size_t diag_length;
     size_t copy_length;
@@ -871,6 +872,7 @@ sixel_option_collect_choice_suggestions(
 
     candidates = NULL;
     candidate_count = 0u;
+    candidate_capacity = 0u;
     index = 0u;
     diag_length = 0u;
     copy_length = 0u;
@@ -902,6 +904,7 @@ sixel_option_collect_choice_suggestions(
     if (candidates == NULL) {
         return 0u;
     }
+    candidate_capacity = choice_count;
 
     for (index = 0u; index < choice_count; ++index) {
         name = choices[index].name;
@@ -958,6 +961,9 @@ sixel_option_collect_choice_suggestions(
                     candidates[existing_index].score = score;
                     candidates[existing_index].distance = distance;
                 }
+                continue;
+            }
+            if (candidate_count >= candidate_capacity) {
                 continue;
             }
             candidates[candidate_count].name = name;
