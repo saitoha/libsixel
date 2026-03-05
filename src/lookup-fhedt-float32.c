@@ -1113,6 +1113,7 @@ sixel_lookup_fhedt_edt1d_scalar_float32(double *line_dist,
     int k;
     int q;
     int i;
+    int hull_end;
     double s;
     double candidate;
     double denom;
@@ -1155,10 +1156,11 @@ sixel_lookup_fhedt_edt1d_scalar_float32(double *line_dist,
         zbuf[k + 1] = DBL_MAX;
     }
 
+    hull_end = k;
     k = 0;
     for (i = 0; i < length; ++i) {
         int idx;
-        while ((k + 1) < length && zbuf[k + 1] < (double)i) {
+        while (k < hull_end && zbuf[k + 1] < (double)i) {
             ++k;
         }
         scratch[i] = line_dist[i];
