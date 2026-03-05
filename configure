@@ -808,6 +808,8 @@ WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
 SIXEL_MSAN_BUILD
 SIXEL_TSAN_BUILD
+SIXEL_ANALYZER_MODE
+SIXEL_SCAN_BUILD
 USING_CL_FALSE
 USING_CL_TRUE
 BUILD_LSO_TIMEOUT_FALSE
@@ -972,6 +974,7 @@ enable_dependency_tracking
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+enable_analyzer
 enable_sanitizer
 enable_lto
 enable_thinlto_cache
@@ -1727,6 +1730,7 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-analyzer       enable compiler static analyzer mode (default: no)
   --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread]
                           enable sanitizer instrumentation and add recommended
                           compile/link flags (default: no)
@@ -17100,6 +17104,123 @@ printf "%s\n" "#define HAVE_DIAGNOSTIC_WANALYZER_USE_OF_UNINITIALIZED_VALUE 1" >
 
 fi
 
+# Check whether --enable-analyzer was given.
+if test ${enable_analyzer+y}
+then :
+  enableval=$enable_analyzer; enable_analyzer="$enableval"
+else case e in #(
+  e) enable_analyzer=no ;;
+esac
+fi
+
+
+case $enable_analyzer in #(
+  yes|no) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid value for --enable-analyzer: $enable_analyzer" "$LINENO" 5 ;;
+esac
+
+sixel_analyzer_mode="disabled"
+sixel_analyzer_scan_build=""
+sixel_analyzer_cflags=""
+sixel_analyzer_status="disabled"
+
+if test "x$enable_analyzer" = "xyes"
+then :
+
+  if test "x$using_cl" = "xyes"
+then :
+
+    sixel_analyzer_mode="msvc"
+    sixel_analyzer_cflags="/W4 /analyze /wd28253"
+    sixel_analyzer_status="msvc(/W4 /analyze /wd28253)"
+
+else case e in #(
+  e)
+    case "$CC" in
+      *clang*)
+        sixel_analyzer_mode="clang"
+        for ac_prog in scan-build scan-build-18 scan-build-17 scan-build-16
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_SIXEL_SCAN_BUILD+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $SIXEL_SCAN_BUILD in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_SIXEL_SCAN_BUILD="$SIXEL_SCAN_BUILD" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_SIXEL_SCAN_BUILD="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+SIXEL_SCAN_BUILD=$ac_cv_path_SIXEL_SCAN_BUILD
+if test -n "$SIXEL_SCAN_BUILD"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_SCAN_BUILD" >&5
+printf "%s\n" "$SIXEL_SCAN_BUILD" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$SIXEL_SCAN_BUILD" && break
+done
+
+        if test "x$SIXEL_SCAN_BUILD" = "x"
+then :
+
+          as_fn_error $? "--enable-analyzer with clang requires scan-build (or versioned scan-build-18/17/16) in PATH" "$LINENO" 5
+
+fi
+        sixel_analyzer_scan_build="$SIXEL_SCAN_BUILD"
+        sixel_analyzer_status="clang(scan-build=$SIXEL_SCAN_BUILD)"
+        ;;
+      *gcc*)
+        sixel_analyzer_mode="gcc"
+        sixel_analyzer_cflags="-O2 -fanalyzer"
+        sixel_analyzer_status="gcc(-O2 -fanalyzer)"
+        ;;
+      *)
+        as_fn_error $? "--enable-analyzer is unsupported for compiler: $CC" "$LINENO" 5
+        ;;
+    esac
+   ;;
+esac
+fi
+
+fi
+
+SIXEL_ANALYZER_MODE=$sixel_analyzer_mode
+
+SIXEL_SCAN_BUILD=$sixel_analyzer_scan_build
+
+
 # Check whether --enable-sanitizer was given.
 if test ${enable_sanitizer+y}
 then :
@@ -28728,6 +28849,13 @@ then :
 
 fi
 
+if test "x$enable_analyzer" = "xyes"
+then :
+
+    CFLAGS="$CFLAGS $sixel_analyzer_cflags"
+
+fi
+
  if test x$have_curl = xyes; then
   HAVE_CURL_TRUE=
   HAVE_CURL_FALSE='#'
@@ -31424,6 +31552,7 @@ echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
+echo "       analyzer                : $sixel_analyzer_status"
 echo "       pgo                     : $sixel_pgo_status"
 echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"

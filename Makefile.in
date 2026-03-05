@@ -231,8 +231,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/missing build-aux/py-compile
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -417,6 +417,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
+SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
 SIXEL_CHECK_TESTS = @SIXEL_CHECK_TESTS@
 SIXEL_EMSCRIPTEN_CC = @SIXEL_EMSCRIPTEN_CC@
 SIXEL_LIBTOOL_BUILD_LIBS = @SIXEL_LIBTOOL_BUILD_LIBS@
@@ -424,6 +425,7 @@ SIXEL_LIBTOOL_OBJDIR = @SIXEL_LIBTOOL_OBJDIR@
 SIXEL_LIBTOOL_PATH_SEPARATOR = @SIXEL_LIBTOOL_PATH_SEPARATOR@
 SIXEL_LIBTOOL_SHLIBPATH_VAR = @SIXEL_LIBTOOL_SHLIBPATH_VAR@
 SIXEL_MSAN_BUILD = @SIXEL_MSAN_BUILD@
+SIXEL_SCAN_BUILD = @SIXEL_SCAN_BUILD@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = @SIXEL_SHEBANG_HELPER@
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@

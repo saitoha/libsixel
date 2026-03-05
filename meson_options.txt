@@ -53,6 +53,8 @@ option('amalgamated_lib', type: 'boolean', value: false,
 option('amalgamated_tools', type: 'boolean', value: false,
        description: 'Build CLI tools from the amalgamated translation unit')
 option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage flags')
+option('analyzer', type: 'boolean', value: false,
+       description: 'Enable static analyzer mode (clang: require scan-build, gcc: -fanalyzer, msvc/clang-cl: /analyze)')
 option('msvc_pgo', type: 'combo', choices: ['off', 'generate', 'use'], value: 'off',
        description: 'MSVC-only PGO mode for /LTCG:PGINSTRUMENT or /LTCG:PGOPTIMIZE')
 option('msvc_pgo_data', type: 'string', value: '',

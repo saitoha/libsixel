@@ -130,8 +130,7 @@ jobs:
           if errorlevel 1 exit /b !errorlevel!
           python -m pip install meson
           if errorlevel 1 exit /b !errorlevel!
-          set "CFLAGS=/W4 /analyze /wd28253"
-          python -m mesonbuild.mesonmain setup builddir
+          python -m mesonbuild.mesonmain setup builddir -Danalyzer=true
           if errorlevel 1 exit /b !errorlevel!
           python -m mesonbuild.mesonmain compile -C builddir --ninja-args=-k0
           if errorlevel 1 exit /b !errorlevel!
@@ -150,12 +149,8 @@ jobs:
         shell: bash
         run: |
           set -eux
-          SCAN_BUILD="$(command -v scan-build || true)"
-          if test -z "$SCAN_BUILD"; then
-            SCAN_BUILD="$(command -v scan-build-18 || command -v scan-build-17 || command -v scan-build-16 || true)"
-          fi
-          test -n "$SCAN_BUILD"
-          CC=clang ./configure
+          CC=clang ./configure --enable-analyzer
+          SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v scan-build-17 || command -v scan-build-16)"
           ROOT_DIR="$(pwd)"
           "$SCAN_BUILD" \
             --use-cc=clang \
@@ -178,7 +173,7 @@ jobs:
         shell: bash
         run: |
           set -eux
-          CC=gcc CFLAGS="-O2 -fanalyzer" ./configure
+          CC=gcc ./configure --enable-analyzer
           make -j"$(nproc)" V=1
 
   pgo:
