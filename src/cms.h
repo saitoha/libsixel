@@ -27,7 +27,8 @@ typedef enum sixel_cms_color_space {
 typedef enum sixel_cms_pixel_format {
     SIXEL_CMS_PIXELFORMAT_GRAY_8 = 1,
     SIXEL_CMS_PIXELFORMAT_RGB_8,
-    SIXEL_CMS_PIXELFORMAT_RGBA_8
+    SIXEL_CMS_PIXELFORMAT_RGBA_8,
+    SIXEL_CMS_PIXELFORMAT_RGB_F32
 } sixel_cms_pixel_format_t;
 
 enum {

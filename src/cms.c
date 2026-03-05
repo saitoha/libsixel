@@ -27,6 +27,8 @@ sixel_cms_map_format(sixel_cms_pixel_format_t format)
         return TYPE_GRAY_8;
     case SIXEL_CMS_PIXELFORMAT_RGBA_8:
         return TYPE_RGBA_8;
+    case SIXEL_CMS_PIXELFORMAT_RGB_F32:
+        return TYPE_RGB_FLT;
     case SIXEL_CMS_PIXELFORMAT_RGB_8:
     default:
         return TYPE_RGB_8;
