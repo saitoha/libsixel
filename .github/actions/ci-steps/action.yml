@@ -792,10 +792,18 @@ runs:
           fi
 
           if [ -n "$GCOV_TOOL" ]; then
-            gcovr -r . --lcov -o coverage.info \
-              --gcov-executable "$GCOV_TOOL" || true
+            # gcovr may fail to resolve working dirs for a subset of *.gcda.
+            # Ignore those errors and fall back to auto gcov selection.
+            if ! gcovr -r . --lcov -o coverage.info \
+              --gcov-executable "$GCOV_TOOL" \
+              --gcov-ignore-errors=no_working_dir_found; then
+              echo "gcovr with explicit gcov tool failed; retrying with auto gcov selection"
+              gcovr -r . --lcov -o coverage.info \
+                --gcov-ignore-errors=no_working_dir_found || true
+            fi
           else
-            gcovr -r . --lcov -o coverage.info || true
+            gcovr -r . --lcov -o coverage.info \
+              --gcov-ignore-errors=no_working_dir_found || true
           fi
         elif command -v lcov >/dev/null 2>&1; then
           # Keep src for static builds; avoid duplicate gcda from src/.libs.
