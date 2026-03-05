@@ -3566,9 +3566,9 @@ RegisterStringValue(
 
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
-                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n",
+                 L"RegCreateKeyExW: failed. key: %ls, code: %ld\n",
                  subkey,
-                 (unsigned long)r);
+                 (long)r);
         return;
     }
 
@@ -3581,18 +3581,18 @@ RegisterStringValue(
 
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
-                 L"RegSetValueExW: failed. key: %ls, code: %lu\n",
+                 L"RegSetValueExW: failed. key: %ls, code: %ld\n",
                  subkey,
-                 (unsigned long)r);
+                 (long)r);
         return;
     }
 
     r = RegCloseKey(h);
     if (r != ERROR_SUCCESS) {
         fwprintf(stderr,
-                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
+                 L"RegCloseKey: failed. key: %ls, code: %ld\n",
                  subkey,
-                 (unsigned long)r);
+                 (long)r);
         return;
     }
 
@@ -4054,7 +4054,7 @@ DllUnregisterServer(void)
           L"Decoders\\" CLSIDSTR_SixelDecoder;
     r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* WIC extensions */
@@ -4062,14 +4062,14 @@ DllUnregisterServer(void)
           L"Extensions\\.six";
     r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"Software\\Microsoft\\Windows Imaging Component\\"
           L"Extensions\\.sixel";
     r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* category */
@@ -4077,56 +4077,56 @@ DllUnregisterServer(void)
           L"Instance\\" CLSIDSTR_SixelDecoder;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* Patterns */
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\6";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\5";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\4";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\3";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\2";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\1";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\0";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* Formats */
@@ -4134,95 +4134,95 @@ DllUnregisterServer(void)
           GUIDSTR_WICPixelFormat8bppIndexed;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats\\"
           GUIDSTR_WICPixelFormat32bppBGRA;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* InprocServer32 */
     key =L"CLSID\\" CLSIDSTR_SixelDecoder L"\\InprocServer32";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* CLSID */
     key = L"CLSID\\" CLSIDSTR_SixelDecoder;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"CLSID\\" CLSIDSTR_SixelDecoderDispatch;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"Libsixel.Decoder.1";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"Libsixel.Decoder";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* progid */
     key = L"sixelfile\\shell\\printto\\command";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"sixelfile\\shell\\printto";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"sixelfile\\shell\\open\\DropTarget";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"sixelfile\\shell\\open\\command";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"sixelfile\\shell\\open";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"sixelfile\\shell";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"sixelfile";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     /* extensions */
@@ -4230,133 +4230,133 @@ DllUnregisterServer(void)
     key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
     r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.six\\ShellEx\\"
           IIDSTR_IThumbnailProvider;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.six\\ShellEx\\"
           L"ContextMenuHandlers\\ShellImagePreview";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.six\\ShellEx\\"
           L"ContextMenuHandlers";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.six\\ShellEx";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.six";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".six\\ShellEx\\" IIDSTR_IThumbnailProvider;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".six\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".six\\ShellEx\\ContextMenuHandlers";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".six\\ShellEx";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".six";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
           IIDSTR_IThumbnailProvider;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
           L"ContextMenuHandlers\\ShellImagePreview";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
           L"ContextMenuHandlers";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.sixel\\ShellEx";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L"SystemFileAssociations\\.sixel";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".sixel\\ShellEx\\" IIDSTR_IThumbnailProvider;
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".sixel\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".sixel\\ShellEx\\ContextMenuHandlers";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".sixel\\ShellEx";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     key = L".sixel";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %ld\n", key, (long)r);
     }
 
     return S_OK;

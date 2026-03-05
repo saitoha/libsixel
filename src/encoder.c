@@ -3597,8 +3597,8 @@ sixel_palette_write_pal_riff(FILE *stream,
                              unsigned char const *palette,
                              int exported_colors)
 {
-    unsigned char header[12];
-    unsigned char chunk[8];
+    unsigned char size_le[4];
+    unsigned char data_size_le[4];
     unsigned char log_palette[4 + 256 * 4];
     unsigned int data_size;
     unsigned int riff_size;
@@ -3614,18 +3614,14 @@ sixel_palette_write_pal_riff(FILE *stream,
     data_size = 4u + (unsigned int)exported_colors * 4u;
     riff_size = 4u + 8u + data_size;
 
-    memcpy(header, "RIFF", 4);
-    header[4] = (unsigned char)(riff_size & 0xffu);
-    header[5] = (unsigned char)((riff_size >> 8) & 0xffu);
-    header[6] = (unsigned char)((riff_size >> 16) & 0xffu);
-    header[7] = (unsigned char)((riff_size >> 24) & 0xffu);
-    memcpy(header + 8, "PAL ", 4);
-
-    memcpy(chunk, "data", 4);
-    chunk[4] = (unsigned char)(data_size & 0xffu);
-    chunk[5] = (unsigned char)((data_size >> 8) & 0xffu);
-    chunk[6] = (unsigned char)((data_size >> 16) & 0xffu);
-    chunk[7] = (unsigned char)((data_size >> 24) & 0xffu);
+    size_le[0] = (unsigned char)(riff_size & 0xffu);
+    size_le[1] = (unsigned char)((riff_size >> 8) & 0xffu);
+    size_le[2] = (unsigned char)((riff_size >> 16) & 0xffu);
+    size_le[3] = (unsigned char)((riff_size >> 24) & 0xffu);
+    data_size_le[0] = (unsigned char)(data_size & 0xffu);
+    data_size_le[1] = (unsigned char)((data_size >> 8) & 0xffu);
+    data_size_le[2] = (unsigned char)((data_size >> 16) & 0xffu);
+    data_size_le[3] = (unsigned char)((data_size >> 24) & 0xffu);
 
     memset(log_palette, 0, sizeof(log_palette));
     log_palette[0] = 0x00;
@@ -3639,11 +3635,20 @@ sixel_palette_write_pal_riff(FILE *stream,
         log_palette[4 + index * 4 + 3] = 0u;
     }
 
-    if (fwrite(header, 1, sizeof(header), stream)
-            != sizeof(header)) {
+    if (fwrite("RIFF", 1, 4u, stream) != 4u) {
         return SIXEL_LIBC_ERROR;
     }
-    if (fwrite(chunk, 1, sizeof(chunk), stream) != sizeof(chunk)) {
+    if (fwrite(size_le, 1, sizeof(size_le), stream) != sizeof(size_le)) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fwrite("PAL ", 1, 4u, stream) != 4u) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fwrite("data", 1, 4u, stream) != 4u) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fwrite(data_size_le, 1, sizeof(data_size_le), stream)
+            != sizeof(data_size_le)) {
         return SIXEL_LIBC_ERROR;
     }
     if (fwrite(log_palette, 1, (size_t)data_size, stream)
