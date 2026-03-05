@@ -906,6 +906,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "Append `!` to disable default fallback intents."
     },
     {
+        "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
+        "set loader CMS output colorspace for PNG fallback conversion.\n"
+        "Accepts gamma, linear, or cielab. Default is linear."
+    },
+    {
+        "SIXEL_LOADER_PREFER_8BIT",
+        "when set to 1, keep loader CMS output in RGB888 instead of\n"
+        "float32 target colorspaces."
+    },
+    {
         "SIXEL_CMS_RENDERING_INTENT",
         "legacy alias for SIXEL_LOADER_CMS_RENDERING_INTENT. Used only when\n"
         "SIXEL_LOADER_CMS_RENDERING_INTENT is unset."
