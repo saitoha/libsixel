@@ -158,7 +158,10 @@ static int img2sixel_compat_strcpy(char *destination,
                                    size_t destination_size,
                                    const char *source);
 #endif
-static void img2sixel_compat_log_errno(const char *fmt, ...);
+static void img2sixel_compat_log_errno_impl(int saved_errno,
+                                            const char *fmt, ...);
+#define img2sixel_compat_log_errno(...) \
+    img2sixel_compat_log_errno_impl(errno, __VA_ARGS__)
 char *
 img2sixel_compat_strerror(int error_number,
                           char *buffer,
@@ -540,7 +543,7 @@ img2sixel_compat_strcpy(char *destination,
 #endif
 
 static void
-img2sixel_compat_log_errno(const char *fmt, ...)
+img2sixel_compat_log_errno_impl(int saved_errno, const char *fmt, ...)
 {
     va_list ap;
     int written;
@@ -587,11 +590,11 @@ img2sixel_compat_log_errno(const char *fmt, ...)
     } else {
         fputs(message, stderr);
     }
-    if (errno != 0) {
-        if (img2sixel_compat_strerror(errno, errbuf, sizeof(errbuf)) != NULL) {
+    if (saved_errno != 0) {
+        if (img2sixel_compat_strerror(saved_errno, errbuf, sizeof(errbuf)) != NULL) {
             fprintf(stderr, ": %s", errbuf);
         } else {
-            fprintf(stderr, ": errno=%d", errno);
+            fprintf(stderr, ": errno=%d", saved_errno);
         }
     }
     fprintf(stderr, "\n");

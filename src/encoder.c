@@ -3516,6 +3516,7 @@ cleanup:
 static SIXELSTATUS
 sixel_palette_write_act(FILE *stream,
                         unsigned char const *palette,
+                        size_t palette_bytes,
                         int exported_colors)
 {
     SIXELSTATUS status;
@@ -3535,6 +3536,9 @@ sixel_palette_write_act(FILE *stream,
 
     memset(act_table, 0, sizeof(act_table));
     exported_bytes = (size_t)exported_colors * 3u;
+    if (palette_bytes < exported_bytes) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     memcpy(act_table, palette, exported_bytes);
 
     trailer[0] = (unsigned char)(((unsigned int)exported_colors >> 8)
@@ -10160,6 +10164,7 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char const *palette;
+    size_t palette_bytes;
     int exported_colors;
     FILE *stream;
     int close_stream;
@@ -10175,6 +10180,7 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     status = SIXEL_OK;
     frame = NULL;
     palette = NULL;
+    palette_bytes = 0u;
     exported_colors = 0;
     stream = NULL;
     close_stream = 0;
@@ -10200,6 +10206,9 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
 
     palette = (unsigned char const *)sixel_frame_get_palette(frame);
     exported_colors = sixel_frame_get_ncolors(frame);
+    if (exported_colors > 0) {
+        palette_bytes = (size_t)exported_colors * 3u;
+    }
     if (palette == NULL || exported_colors <= 0) {
         sixel_helper_set_additional_message(
             "sixel_encoder_emit_palette_output: palette unavailable.");
@@ -10286,7 +10295,10 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
 
     switch (format_final) {
     case SIXEL_PALETTE_FORMAT_ACT:
-        status = sixel_palette_write_act(stream, palette, exported_colors);
+        status = sixel_palette_write_act(stream,
+                                         palette,
+                                         palette_bytes,
+                                         exported_colors);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_emit_palette_output: failed to write ACT.");

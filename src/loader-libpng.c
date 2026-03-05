@@ -725,8 +725,8 @@ load_png(unsigned char      /* out */ **result,
     png_uint_32 read_bitdepth;
     png_uint_32 read_channels;
     png_size_t rowbytes;
-    unsigned char *raw16_pixels;
-    size_t raw16_size;
+    unsigned char *raw16_pixels = NULL;
+    size_t raw16_size = 0u;
     int promote_to_float32;
     int i;
     int depth;
@@ -746,8 +746,6 @@ load_png(unsigned char      /* out */ **result,
     read_bitdepth = 0u;
     read_channels = 0u;
     rowbytes = 0u;
-    raw16_pixels = NULL;
-    raw16_size = 0u;
     promote_to_float32 = 0;
     cms_converted = 0;
 #if HAVE_LCMS2

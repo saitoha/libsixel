@@ -409,8 +409,8 @@ load_with_coregraphics(
             }
 
             color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-            if (! color_space) {
-                CGImageRelease(image);
+            if (!color_space) {
+                status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
 
@@ -422,8 +422,10 @@ load_with_coregraphics(
                                         color_space,
                                         kCGImageAlphaPremultipliedLast |
                                                 kCGBitmapByteOrder32Big);
+            CGColorSpaceRelease(color_space);
+            color_space = NULL;
             if (!ctx) {
-                CGImageRelease(image);
+                status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
 

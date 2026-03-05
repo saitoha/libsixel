@@ -161,7 +161,9 @@ int fchmod(int, mode_t);
 #define IMG2SIXEL_COMPLETION_SHELL_BASH  1
 #define IMG2SIXEL_COMPLETION_SHELL_ZSH   2
 
-static void img2sixel_log_errno(const char *fmt, ...);
+static void img2sixel_log_errno_impl(int saved_errno, const char *fmt, ...);
+#define img2sixel_log_errno(...) \
+    img2sixel_log_errno_impl(errno, __VA_ARGS__)
 int img2sixel_trace_topic_is_enabled(const char *topic);
 void img2sixel_trace_topic_message(const char *topic,
                                    const char *format, ...);
@@ -377,7 +379,7 @@ img2sixel_mkdir(const char *path, mode_t mode)
 }
 
 static void
-img2sixel_log_errno(const char *fmt, ...)
+img2sixel_log_errno_impl(int saved_errno, const char *fmt, ...)
 {
     va_list ap;
     int written;
@@ -424,11 +426,11 @@ img2sixel_log_errno(const char *fmt, ...)
     } else {
         fputs(message, stderr);
     }
-    if (errno != 0) {
-        if (img2sixel_compat_strerror(errno, errbuf, sizeof(errbuf)) != NULL) {
+    if (saved_errno != 0) {
+        if (img2sixel_compat_strerror(saved_errno, errbuf, sizeof(errbuf)) != NULL) {
             fprintf(stderr, ": %s", errbuf);
         } else {
-            fprintf(stderr, ": errno=%d", errno);
+            fprintf(stderr, ": errno=%d", saved_errno);
         }
     }
     fprintf(stderr, "\n");
@@ -952,8 +954,12 @@ ensure_line_in_file(const char *path, const char *line)
                 break;
             }
         }
-    } else if (errno != ENOENT) {
-        return -1;
+    } else {
+        struct stat st;
+
+        if (img2sixel_compat_stat(path, &st) == 0) {
+            return -1;
+        }
     }
 
     if (found) {
@@ -1416,6 +1422,8 @@ img2sixel_handle_show(int mask)
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0
         && (mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
+        buf = NULL;
+        len = 0u;
         if (get_completion_text("bash", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
@@ -1428,7 +1436,11 @@ img2sixel_handle_show(int mask)
             printf("\n");
         }
         free(buf);
+        buf = NULL;
+        len = 0u;
 
+        buf = NULL;
+        len = 0u;
         if (get_completion_text("zsh", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
@@ -1441,11 +1453,15 @@ img2sixel_handle_show(int mask)
             printf("\n");
         }
         free(buf);
+        buf = NULL;
+        len = 0u;
 
         return 0;
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0) {
+        buf = NULL;
+        len = 0u;
         if (get_completion_text("bash", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
@@ -1457,9 +1473,13 @@ img2sixel_handle_show(int mask)
             printf("\n");
         }
         free(buf);
+        buf = NULL;
+        len = 0u;
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
+        buf = NULL;
+        len = 0u;
         if (get_completion_text("zsh", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
@@ -1471,6 +1491,8 @@ img2sixel_handle_show(int mask)
             printf("\n");
         }
         free(buf);
+        buf = NULL;
+        len = 0u;
     }
 
     (void) img2sixel_fsync(STDOUT_FILENO);
