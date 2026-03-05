@@ -97,6 +97,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Meson-cmd-x86_64-msvc-static-analyze
