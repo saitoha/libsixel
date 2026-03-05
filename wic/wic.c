@@ -4369,9 +4369,9 @@ __declspec(dllexport)
 #endif
 STDAPI
 DllGetClassObject(
-    REFCLSID   rclsid,
-    REFIID     riid,
-    void     **ppv
+    _In_ REFCLSID   rclsid,
+    _In_ REFIID     riid,
+    _COM_Outptr_ LPVOID *ppv
 )
 {
     SixelFactory *factory;
