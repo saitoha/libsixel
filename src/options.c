@@ -726,12 +726,14 @@ sixel_option_match_suboption_key(
     size_t diagnostic_size)
 {
     size_t index;
+    size_t capacity;
     size_t choice_count;
     sixel_option_choice_t *choices;
     sixel_option_choice_result_t result;
     int matched_value;
 
     index = 0u;
+    capacity = 0u;
     choice_count = 0u;
     choices = NULL;
     result = SIXEL_OPTION_CHOICE_NONE;
@@ -753,8 +755,13 @@ sixel_option_match_suboption_key(
         ++index;
     }
 
+    capacity = choice_count;
+    if (capacity == 0u ||
+            capacity > (SIZE_MAX / sizeof(sixel_option_choice_t))) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
     choices = (sixel_option_choice_t *)malloc(
-        choice_count * sizeof(sixel_option_choice_t));
+        capacity * sizeof(sixel_option_choice_t));
     if (choices == NULL) {
         return SIXEL_OPTION_CHOICE_NONE;
     }
@@ -762,11 +769,17 @@ sixel_option_match_suboption_key(
     choice_count = 0u;
     index = 0u;
     while (index < key_count) {
+        if (choice_count >= capacity) {
+            break;
+        }
         choices[choice_count].name = keys[index].name;
         choices[choice_count].value = (int)index;
         choice_count += 1u;
         if (keys[index].short_name != NULL &&
                 keys[index].short_name[0] != '\0') {
+            if (choice_count >= capacity) {
+                break;
+            }
             choices[choice_count].name = keys[index].short_name;
             choices[choice_count].value = (int)index;
             choice_count += 1u;

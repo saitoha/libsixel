@@ -131,7 +131,7 @@ jobs:
           python -m pip install meson
           if errorlevel 1 exit /b !errorlevel!
           set "CFLAGS=/W4 /analyze /wd28253"
-          python -m mesonbuild.mesonmain setup builddir -Dwerror=false
+          python -m mesonbuild.mesonmain setup builddir
           if errorlevel 1 exit /b !errorlevel!
           python -m mesonbuild.mesonmain compile -C builddir --ninja-args=-k0
           if errorlevel 1 exit /b !errorlevel!

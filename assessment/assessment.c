@@ -3038,6 +3038,7 @@ align_frame_pixels(float **ref_pixels,
             out_pixels == NULL || out_width == NULL || out_height == NULL) {
         assessment_fail(SIXEL_BAD_ARGUMENT,
                        "align_frame_pixels: invalid parameters");
+        return;
     }
 
     channels = SIXEL_ASSESSMENT_RGB_CHANNELS;
@@ -3046,6 +3047,7 @@ align_frame_pixels(float **ref_pixels,
     if (width <= 0 || height <= 0) {
         assessment_fail(SIXEL_BAD_ARGUMENT,
                        "align_frame_pixels: empty frame dimensions");
+        return;
     }
     ref_new = (float *)xmalloc((size_t)width * (size_t)height *
                                (size_t)channels * sizeof(float));
