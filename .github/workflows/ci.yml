@@ -159,7 +159,7 @@ jobs:
           "$SCAN_BUILD" \
             --use-cc=clang \
             --use-c++=clang++ \
-            --disable-checker deadcode.DeadStores \
+            -disable-checker deadcode.DeadStores \
             --exclude assessment \
             --exclude tests \
             --exclude examples \
