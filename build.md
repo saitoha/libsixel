@@ -69,6 +69,7 @@ or provide the desired directory path explicitly.
 | `--enable-debug` | `no` | Enable debug macros and apply extra diagnostic compiler flags. |
 | `--enable-coverage` | `no` | Compile with compiler coverage instrumentation. |
 | `--enable-gcov` | `no` | Deprecated alias for `--enable-coverage`. |
+| `--enable-analyzer` | `no` | Enable static analyzer mode. Compiler-specific behavior: clang requires `scan-build`, gcc adds `-O2 -fanalyzer`, MSVC/clang-cl adds `/W4 /analyze /wd28253`. |
 | `--enable-tests` | `no` | Build the optional test suites. |
 | `--with-shebang-file=PATH` | disabled | Prepend the contents of `PATH` to generated executables (skips files that already start with a shebang) and mark them executable. |
 
@@ -107,6 +108,26 @@ make uninstall
 
 The uninstall target invokes `regsvr32 /u` automatically when the DLL was
 registered during install.
+
+### Static analyzer builds (Autotools)
+
+Enable analyzer mode at configure time:
+
+```sh
+./configure --enable-analyzer
+```
+
+Build command behavior depends on the compiler:
+
+- clang: run build through `scan-build` explicitly.
+- gcc / MSVC / clang-cl: run normal `make`.
+
+Example (clang):
+
+```sh
+SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v scan-build-17 || command -v scan-build-16)"
+"$SCAN_BUILD" --status-bugs --keep-going make -j"$(nproc)" V=1
+```
 
 ### Emscripten (Autotools)
 
@@ -211,6 +232,7 @@ meson setup builddir
 | `-Dtests=` | boolean, `false` | Build the test suites. |
 | `-Dshebang_file=` | string, empty | Prepend the file contents to generated executables (skips files that already start with a shebang) and mark them executable. |
 | `-Dgcov=` | boolean, `false` | Enable gcov coverage instrumentation. |
+| `-Danalyzer=` | boolean, `false` | Enable static analyzer mode. Compiler-specific behavior: clang requires `scan-build` at setup time, gcc adds `-O2 -fanalyzer`, MSVC/clang-cl adds `/W4 /analyze /wd28253`. |
 | `-Dimg2sixel=` | feature, `enabled` | Build the `img2sixel` CLI tool. |
 | `-Dsixel2png=` | feature, `enabled` | Build the `sixel2png` CLI tool. |
 
@@ -224,6 +246,26 @@ Then build and run tests:
 meson compile -C builddir
 meson test -C builddir
 meson install -C builddir  # may require sudo on Unix-like systems
+```
+
+### Static analyzer builds (Meson)
+
+Enable analyzer mode at setup time:
+
+```sh
+meson setup builddir -Danalyzer=true
+```
+
+Build command behavior depends on the compiler:
+
+- clang: run compile through `scan-build` explicitly.
+- gcc / MSVC / clang-cl: run normal `meson compile`.
+
+Example (clang):
+
+```sh
+SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v scan-build-17 || command -v scan-build-16)"
+"$SCAN_BUILD" --status-bugs --keep-going meson compile -C builddir
 ```
 
 ## Git hooks

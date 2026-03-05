@@ -84,6 +84,28 @@ if get_option('gcov')
   add_project_link_arguments('--coverage', language: 'c')
 endif
 
+analyzer_summary = 'disabled'
+if get_option('analyzer')
+  if cc.get_id() == 'clang'
+    scan_build_prog = find_program(
+      'scan-build',
+      'scan-build-18',
+      'scan-build-17',
+      'scan-build-16',
+      required: true
+    )
+    analyzer_summary = 'clang(scan-build=' + scan_build_prog.full_path() + ')'
+  elif cc.get_id() == 'gcc'
+    add_project_arguments(['-O2', '-fanalyzer'], language: 'c')
+    analyzer_summary = 'gcc(-O2 -fanalyzer)'
+  elif cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
+    add_project_arguments(['/W4', '/analyze', '/wd28253'], language: 'c')
+    analyzer_summary = 'msvc(/W4 /analyze /wd28253)'
+  else
+    error('analyzer=true is unsupported for C compiler: ' + cc.get_id())
+  endif
+endif
+
 msvc_pgo_mode = get_option('msvc_pgo')
 msvc_pgo_data = get_option('msvc_pgo_data')
 msvc_pgo_summary = 'off'
@@ -2036,6 +2058,7 @@ message('       lcms2                   : ' + lcms2_message)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)
+message('       analyzer                : ' + analyzer_summary)
 message('       msvc pgo                : ' + msvc_pgo_summary)
 message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging               : ' + (get_option('debug') ? 'yes' : 'no'))

@@ -782,6 +782,56 @@ AS_IF([test "x$ac_cv_have_diag_wanalyzer_use_of_uninitialized_value" = "xyes"], 
             [Define to 1 if the compiler can ignore -Wanalyzer-use-of-uninitialized-value via pragmas])
 ])
 
+AC_ARG_ENABLE([analyzer],
+              [AS_HELP_STRING([--enable-analyzer],
+                              [enable compiler static analyzer mode
+                               (default: no)])],
+              [enable_analyzer="$enableval"],
+              [enable_analyzer=no])
+
+AS_CASE([$enable_analyzer],
+        [yes|no],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-analyzer: $enable_analyzer])])
+
+sixel_analyzer_mode="disabled"
+sixel_analyzer_scan_build=""
+sixel_analyzer_cflags=""
+sixel_analyzer_status="disabled"
+
+AS_IF([test "x$enable_analyzer" = "xyes"], [
+  AS_IF([test "x$using_cl" = "xyes"], [
+    sixel_analyzer_mode="msvc"
+    sixel_analyzer_cflags="/W4 /analyze /wd28253"
+    sixel_analyzer_status="msvc(/W4 /analyze /wd28253)"
+  ], [
+    case "$CC" in
+      *clang*)
+        sixel_analyzer_mode="clang"
+        AC_PATH_PROGS([SIXEL_SCAN_BUILD],
+                      [scan-build scan-build-18 scan-build-17 scan-build-16],
+                      [])
+        AS_IF([test "x$SIXEL_SCAN_BUILD" = "x"], [
+          AC_MSG_ERROR([--enable-analyzer with clang requires scan-build (or versioned scan-build-18/17/16) in PATH])
+        ])
+        sixel_analyzer_scan_build="$SIXEL_SCAN_BUILD"
+        sixel_analyzer_status="clang(scan-build=$SIXEL_SCAN_BUILD)"
+        ;;
+      *gcc*)
+        sixel_analyzer_mode="gcc"
+        sixel_analyzer_cflags="-O2 -fanalyzer"
+        sixel_analyzer_status="gcc(-O2 -fanalyzer)"
+        ;;
+      *)
+        AC_MSG_ERROR([--enable-analyzer is unsupported for compiler: $CC])
+        ;;
+    esac
+  ])
+])
+
+AC_SUBST([SIXEL_ANALYZER_MODE], [$sixel_analyzer_mode])
+AC_SUBST([SIXEL_SCAN_BUILD], [$sixel_analyzer_scan_build])
+
 AC_ARG_ENABLE([sanitizer],
               [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread@:>@],
                               [enable sanitizer instrumentation and add
@@ -4297,6 +4347,11 @@ AS_IF([test "x$enable_pgo" != "xno"], [
   LDFLAGS="$LDFLAGS $sixel_pgo_ldflags"
 ])
 
+AS_IF([test "x$enable_analyzer" = "xyes"], [
+  dnl Keep analyzer flags off feature probes and apply only to build commands.
+  CFLAGS="$CFLAGS $sixel_analyzer_cflags"
+])
+
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
 AM_CONDITIONAL([HAVE_FETCH], [test x$have_fetch = xyes])
 AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_winhttp = xyes])
@@ -4398,6 +4453,7 @@ echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
+echo "       analyzer                : $sixel_analyzer_status"
 echo "       pgo                     : $sixel_pgo_status"
 echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"
