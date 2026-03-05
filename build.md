@@ -44,15 +44,25 @@ or provide the desired directory path explicitly.
 | --- | --- | --- |
 | `--disable-img2sixel` | disabled (builds by default) | Skip building the `img2sixel` CLI tool. |
 | `--disable-sixel2png` | disabled (builds by default) | Skip building the `sixel2png` CLI tool. |
+| `--enable-abort-trace` | `auto` | Enable abort stack trace support for CLI tools (unsupported on Emscripten and Windows targets). |
 | `--enable-quicklook-extension` | `auto` | Build the macOS Quick Look extension bundle (requires macOS ≥ 10.15). |
 | `--enable-quicklook-preview` | `auto` | Use macOS Quick Look to render previews for non-image inputs. |
+| `--disable-appkit` | enabled | Build the macOS clipboard backend without AppKit (default uses AppKit when available). |
 | `--enable-thumbnailer-command` | `auto` | Enable the FreeDesktop.org thumbnailer command bridge used by GNOME, Cinnamon, MATE, and Xfce (via Tumbler) as well as other desktops that honour `.thumbnailer` definitions. |
+| `--disable-threads` | `auto` | Disable the internal threadpool support. |
+| `--enable-amalgamated-lib` | `no` | Build `libsixel` from the amalgamated translation unit. |
+| `--enable-amalgamated-tools` | `no` | Build CLI tools from the amalgamated translation unit. |
 | `--with-coregraphics[=auto]` | `auto` | Use CoreGraphics for macOS-only rendering helpers. |
 | `--with-libcurl[=auto]` | `auto` | Link against libcurl to enable network transfers. |
+| `--with-libfetch[=auto]` | `auto` | Link against libfetch to enable network transfers. |
 | `--with-jpeg[=auto]` | `auto` | Link against libjpeg to decode JPEG input. |
 | `--with-png[=auto]` | `auto` | Link against libpng to decode PNG input. |
+| `--with-tiff[=auto]` | `auto` | Link against libtiff to decode TIFF input. |
 | `--with-webp[=auto]` | `auto` | Link against libwebp to decode WebP input. |
+| `--with-lcms2[=auto]` | `auto` | Link against lcms2 for ICC color management. |
+| `--with-librsvg[=auto]` | `auto` | Link against librsvg (+cairo) for SVG rendering. |
 | `--with-gdk-pixbuf2` | `no` | Build the optional gdk-pixbuf2 loader module. |
+| `--enable-gdk-pixbuf-loader` | `no` | Build the gdk-pixbuf SIXEL loader module. |
 | `--with-gd` | `no` | Enable helpers that use the GD image library. |
 | `--with-winpthread` | `no` | Link against `libwinpthread` (Windows targets only). |
 | `--with-wic[=auto]` | `auto` | Use Windows Imaging Component (WIC) libraries when present. |
@@ -64,14 +74,32 @@ or provide the desired directory path explicitly.
 | `--enable-wiccodec` / `--disable-wiccodec` | `auto` | Build the Windows WIC codec DLL. |
 | `--enable-register-dll` | `no` | Call `regsvr32` during `make install` to register the WIC codec DLL (requires admin rights). |
 | `--enable-python` | `no` | Build and install the Python bindings. |
-| `--enable-python-wheel` | `no` | Build a Python wheel that bundles the libsixel shared library. |
 | `--enable-ruby` | `no` | Build and install the Ruby bindings. |
+| `--enable-perl` | `no` | Enable the Perl binding compatibility checks used by build scripts. |
+| `--enable-php` | `no` | Enable the PHP binding compatibility checks used by build scripts. |
 | `--enable-debug` | `no` | Enable debug macros and apply extra diagnostic compiler flags. |
 | `--enable-coverage` | `no` | Compile with compiler coverage instrumentation. |
 | `--enable-gcov` | `no` | Deprecated alias for `--enable-coverage`. |
 | `--enable-analyzer` | `no` | Enable static analyzer mode. Compiler-specific behavior: clang requires `scan-build`, gcc adds `-O2 -fanalyzer`, MSVC/clang-cl adds `/W4 /analyze /wd28253`. |
+| `--enable-sanitizer=<profile>` | `no` | Enable sanitizer instrumentation (`address`, `undefined`, `address,undefined`, `memory`, or `thread`). |
+| `--enable-lto=<mode>` | `no` | Enable link-time optimization (`full` or `thin`). |
+| `--enable-thinlto-cache` | `no` | Enable linker ThinLTO cache (requires `--enable-lto=thin`). |
+| `--with-thinlto-cache-dir=PATH` | auto | ThinLTO cache directory (default: `${TMPDIR-/tmp}/libsixel-thinlto-cache` when cache is enabled). |
+| `--enable-pgo=<mode>` | `no` | Enable profile-guided optimization (`generate` or `use`). |
+| `--with-pgo-data=PATH` | empty | Profile data directory/path used by PGO generate/use mode. |
+| `--with-pgo-profdata=FILE` | empty | LLVM merged profile used by `--enable-pgo=use` (GNU/LLVM toolchains). |
 | `--enable-tests` | `no` | Build the optional test suites. |
+| `--enable-xsave-probe` / `--disable-xsave-probe` | `auto` | Control `_xgetbv` probing during AVX capability detection. |
 | `--with-shebang-file=PATH` | disabled | Prepend the contents of `PATH` to generated executables (skips files that already start with a shebang) and mark them executable. |
+| `--disable-emscripten-retain_compiler_settings` | enabled | Disable `-sRETAIN_COMPILER_SETTINGS=1` in Emscripten builds. |
+| `--disable-emscripten-noderawfs` | enabled | Disable `-sNODERAWFS=1` in Emscripten builds. |
+| `--with-emscripten-stack_size=SIZE` | `786432` | Set Emscripten `-sSTACK_SIZE`. |
+| `--with-emscripten-initial_memory=SIZE` | `268435456` | Set Emscripten `-sINITIAL_MEMORY`. |
+| `--with-emscripten-environment=LIST` | empty | Set Emscripten `-sENVIRONMENT`. |
+| `--disable-emscripten-allow_memory_growth` | enabled | Disable `-sALLOW_MEMORY_GROWTH=1` in Emscripten builds. |
+| `--disable-emscripten-single_file` | disabled | Enable `-sSINGLE_FILE=1` (configure semantics follow current implementation). |
+| `--disable-emscripten-wasm_bigint` | disabled | Enable `-sWASM_BIGINT=1` (configure semantics follow current implementation). |
+| `--disable-emscripten-assertions` | enabled | Add `-sASSERTIONS=0` in Emscripten builds. |
 
 #### macOS Quick Look preview
 
@@ -98,7 +126,7 @@ tools/quicklook-extension.bash uninstall \
 #### Windows WIC codec (Autotools)
 
 When building with Autotools under MSYS2 or Cygwin, you can enable the WIC
-codec by configuring with `--with-wiccodec`.  If `--register-dll` is specified,
+codec by configuring with `--enable-wiccodec`.  If `--register-dll` is specified,
 `make install` calls `regsvr32` to register `libwicsixel.dll`.  To unregister
 later:
 
@@ -210,12 +238,18 @@ meson setup builddir
 | Option | Type / Default | Description |
 | --- | --- | --- |
 | `-Dpng=` | feature, `auto` | Link against libpng for PNG decoding. |
+| `-Dtiff=` | feature, `auto` | Link against libtiff for TIFF decoding. |
 | `-Djpeg=` | feature, `auto` | Link against libjpeg for JPEG decoding. |
 | `-Dwebp=` | feature, `auto` | Link against libwebp for WebP decoding. |
+| `-Dlcms2=` | feature, `auto` | Link against lcms2 for ICC color management. |
+| `-Dlibrsvg=` | feature, `auto` | Link against librsvg (+cairo) for SVG rendering. |
 | `-Dcurl=` | feature, `auto` | Link against libcurl for network transfers. |
+| `-Dfetch=` | feature, `auto` | Link against libfetch for network transfers. |
 | `-Dgdk_pixbuf2=` | feature, `disabled` | Build the gdk-pixbuf2 loader module. |
+| `-Dgdk_pixbuf_loader=` | feature, `disabled` | Build the gdk-pixbuf SIXEL loader module. |
 | `-Dgd=` | feature, `disabled` | Enable helpers based on the GD image library. |
 | `-Dcoregraphics=` | feature, `auto` | Use the CoreGraphics framework on macOS. |
+| `-Dappkit=` | feature, `enabled` | Control AppKit clipboard backend support on macOS. |
 | `-Dquicklook_extension=` | feature, `auto` | Build the macOS Quick Look extension bundle. |
 | `-Dquicklook_preview=` | feature, `auto` | Use macOS Quick Look to render previews for non-image inputs. |
 | `-Dwic=` | feature, `auto` | Use Windows Imaging Component (WIC) libraries. |
@@ -223,18 +257,38 @@ meson setup builddir
 | `-Dregister_dll=` | boolean, `false` | Register the WIC codec DLL during `meson install` (requires admin rights). |
 | `-Dwinhttp=` | feature, `auto` | Use WinHTTP on Windows for network operations. |
 | `-Dwinpthread=` | feature, `disabled` | Link against `libwinpthread`. |
+| `-Dthreads=` | feature, `auto` | Control internal threadpool support. |
 | `-Dbashcompletiondir=` | string, `disabled` | Install the bash completion script (`auto` selects the system default path). |
 | `-Dzshcompletiondir=` | string, `disabled` | Install the zsh completion script (`auto` selects the system default path). |
 | `-Dsimd=` | feature, `enabled` | Control SIMD acceleration; `auto` defers to detection, `disabled` forces off. |
 | `-Dpython=` | feature, `disabled` | Build and install the Python bindings. |
-| `-Dpython_wheel=` | feature, `disabled` | Build a Python wheel that bundles the libsixel shared library. |
 | `-Druby=` | feature, `disabled` | Build and install the Ruby bindings. |
-| `-Dtests=` | boolean, `false` | Build the test suites. |
+| `-Dtests=` | boolean, `true` | Build the test suites. |
+| `-Damalgamated_lib=` | boolean, `false` | Build `libsixel` from the amalgamated translation unit. |
+| `-Damalgamated_tools=` | boolean, `false` | Build CLI tools from the amalgamated translation unit. |
 | `-Dshebang_file=` | string, empty | Prepend the file contents to generated executables (skips files that already start with a shebang) and mark them executable. |
 | `-Dgcov=` | boolean, `false` | Enable gcov coverage instrumentation. |
 | `-Danalyzer=` | boolean, `false` | Enable static analyzer mode. Compiler-specific behavior: clang requires `scan-build` at setup time, gcc adds `-O2 -fanalyzer`, MSVC/clang-cl adds `/W4 /analyze /wd28253`. |
+| `-Dmsvc_pgo=` | combo, `off` | MSVC/clang-cl specific PGO mode (`off`, `generate`, `use`). |
+| `-Dmsvc_pgo_data=` | string, empty | Optional `/PGD:` path used when `-Dmsvc_pgo=generate/use`. |
 | `-Dimg2sixel=` | feature, `enabled` | Build the `img2sixel` CLI tool. |
 | `-Dsixel2png=` | feature, `enabled` | Build the `sixel2png` CLI tool. |
+| `-Dabort_trace=` | feature, `auto` | Enable abort stack traces for CLI tools. |
+| `-Dthumbnailer_command=` | feature, `auto` | Install the SIXEL thumbnailer command integration. |
+| `-Dxsave_probe=` | feature, `auto` | Control `_xgetbv` probing during AVX capability detection. |
+| `-Demscripten_retain_compiler_settings=` | boolean, `true` | Add `-sRETAIN_COMPILER_SETTINGS=1` for Emscripten builds. |
+| `-Demscripten_noderawfs=` | boolean, `true` | Add `-sNODERAWFS=1` for Emscripten builds. |
+| `-Demscripten_stack_size=` | integer, `786432` | Set Emscripten `-sSTACK_SIZE`. |
+| `-Demscripten_initial_memory=` | integer, `268435456` | Set Emscripten `-sINITIAL_MEMORY`. |
+| `-Demscripten_environment=` | string, empty | Set Emscripten `-sENVIRONMENT`. |
+| `-Demscripten_allow_memory_growth=` | boolean, `true` | Add `-sALLOW_MEMORY_GROWTH=1` for Emscripten builds. |
+| `-Demscripten_single_file=` | boolean, `false` | Add `-sSINGLE_FILE=1` for Emscripten builds. |
+| `-Demscripten_wasm_bigint=` | boolean, `false` | Add `-sWASM_BIGINT=1` for Emscripten builds. |
+| `-Demscripten_assertions=` | boolean, `true` | Keep Emscripten assertions enabled (`false` adds `-sASSERTIONS=0`). |
+| `-Db_lto=` | base option, `false` | Meson base option for link-time optimization. |
+| `-Db_lto_mode=` | base option, `default` | LTO mode (`default`/`thin`; `thin` requires compatible toolchain). |
+| `-Db_pgo=` | base option, `off` | Meson base option for profile-guided optimization (`generate`/`use`). |
+| `-Db_sanitize=` | base option, `none` | Meson base sanitizer option (`address`, `undefined`, etc.). |
 
 To install shell completion scripts, add `-Dbashcompletiondir=auto` or
 `-Dzshcompletiondir=auto` to the command above, or supply the target directory
