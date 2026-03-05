@@ -19,17 +19,18 @@ set -v
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_env_priority.sixel"
-error_log="${ARTIFACT_LOCAL_DIR}/gnome_env_priority.err"
 template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0030"
 bin_dir="${template_root}/bin"
 
-run_img2sixel \
+msg=$(set +xv; run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
         --env "PATH=${bin_dir}:${PATH}" \
         --env "SIXEL_LOADER_PRIORITY_LIST=gnome-thumbnailer!" \
-        "${input_png}" >"${output_sixel}" 2>"${error_log}" || {
+        "${input_png}" >"${output_sixel}" 2>&1) || {
     echo "not ok" 1 "env priority list test failed"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
     exit 0
 }
 
