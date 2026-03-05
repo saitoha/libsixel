@@ -3520,9 +3520,10 @@ sixel_palette_write_act(FILE *stream,
                         int exported_colors)
 {
     SIXELSTATUS status;
-    unsigned char act_table[256 * 3];
+    unsigned char zero_pad[256 * 3];
     unsigned char trailer[4];
     size_t exported_bytes;
+    size_t pad_bytes;
 
     status = SIXEL_FALSE;
     exported_bytes = 0u;
@@ -3534,12 +3535,12 @@ sixel_palette_write_act(FILE *stream,
         exported_colors = 256;
     }
 
-    memset(act_table, 0, sizeof(act_table));
+    memset(zero_pad, 0, sizeof(zero_pad));
     exported_bytes = (size_t)exported_colors * 3u;
     if (palette_bytes < exported_bytes) {
         return SIXEL_BAD_ARGUMENT;
     }
-    memcpy(act_table, palette, exported_bytes);
+    pad_bytes = sizeof(zero_pad) - exported_bytes;
 
     trailer[0] = (unsigned char)(((unsigned int)exported_colors >> 8)
                                  & 0xffu);
@@ -3547,8 +3548,12 @@ sixel_palette_write_act(FILE *stream,
     trailer[2] = 0u;
     trailer[3] = 0u;
 
-    if (fwrite(act_table, 1, sizeof(act_table), stream)
-            != sizeof(act_table)) {
+    if (fwrite(palette, 1, exported_bytes, stream) != exported_bytes) {
+        status = SIXEL_LIBC_ERROR;
+        return status;
+    }
+    if (pad_bytes > 0u &&
+            fwrite(zero_pad, 1, pad_bytes, stream) != pad_bytes) {
         status = SIXEL_LIBC_ERROR;
         return status;
     }

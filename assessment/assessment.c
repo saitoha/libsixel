@@ -84,6 +84,15 @@
 #include "timer.h"
 #include "sixel_atomic.h"
 
+#if defined(_MSC_VER)
+# define SIXEL_ASSESSMENT_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
+    !defined(__STDC_NO_THREADS__)
+# define SIXEL_ASSESSMENT_TLS _Thread_local
+#else
+# define SIXEL_ASSESSMENT_TLS
+#endif
+
 #if defined(_WIN32)
 #include <io.h>
 #include <windows.h>
@@ -3803,10 +3812,10 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
     size_t stage_count;
     size_t stage_index;
     sixel_assessment_stage_t stage;
-    char line[line_buffer_size];
-    char escaped_path[path_buffer_size];
-    char escaped_loader[128];
-    char escaped_format[64];
+    static SIXEL_ASSESSMENT_TLS char line[line_buffer_size];
+    static SIXEL_ASSESSMENT_TLS char escaped_path[path_buffer_size];
+    static SIXEL_ASSESSMENT_TLS char escaped_loader[128];
+    static SIXEL_ASSESSMENT_TLS char escaped_format[64];
     double duration_ms;
     double throughput;
     double total_duration;
