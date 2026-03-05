@@ -728,9 +728,14 @@ sixel_compat_getenv(const char *name)
         }
         required_size = actual_size + 1;
         required_length = (size_t)required_size;
-        value_copy = (char *)realloc(value_copy, required_length);
-        if (value_copy == NULL) {
-            return NULL;
+        {
+            char *realloced;
+            realloced = (char *)realloc(value_copy, required_length);
+            if (realloced == NULL) {
+                free(value_copy);
+                return NULL;
+            }
+            value_copy = realloced;
         }
     }
 

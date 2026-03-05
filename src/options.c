@@ -1392,7 +1392,11 @@ sixel_option_duplicate_win32_path(char const *path)
         return converted;
     }
 
-    target_length = source_length - source_index + 3u;
+    if (source_length - source_index > SIZE_MAX - 4u) {
+        free(converted);
+        return NULL;
+    }
+    target_length = source_length - source_index + 4u;
     free(converted);
     converted = (char *)malloc(target_length);
     if (converted == NULL) {
