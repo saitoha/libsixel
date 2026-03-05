@@ -1345,7 +1345,9 @@ sixel_compat_set_binary(int fd)
 
     result = 0;
 #if defined(O_BINARY)
-# if defined(SIXEL_HAVE_WIN_SETMODE)
+# if defined(_MSC_VER) && HAVE__SETMODE
+    result = _setmode(fd, O_BINARY);
+# elif defined(SIXEL_HAVE_WIN_SETMODE)
     result = _setmode(fd, O_BINARY);
 # elif HAVE_SETMODE
     result = setmode(fd, O_BINARY);
