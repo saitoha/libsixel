@@ -762,9 +762,24 @@ runs:
             echo "No coverage objects found for llvm-cov; skipping coverage capture"
             exit 0
           fi
-          "$LLVM_COV" export -format=lcov \
-            -instr-profile=coverage.profdata \
-            "${COV_OBJECTS[@]}" > coverage.info || true
+          rm -f coverage.info coverage.info.tmp
+          : > coverage.info.tmp
+          COVERAGE_OBJECTS_EXPORTED=0
+          for cov_object in "${COV_OBJECTS[@]}"; do
+            if "$LLVM_COV" export -format=lcov \
+              -instr-profile=coverage.profdata \
+              "$cov_object" >> coverage.info.tmp 2>/dev/null; then
+              COVERAGE_OBJECTS_EXPORTED=$((COVERAGE_OBJECTS_EXPORTED + 1))
+            else
+              echo "Skipping non-instrumented coverage object: $cov_object"
+            fi
+          done
+          if [ "$COVERAGE_OBJECTS_EXPORTED" -eq 0 ]; then
+            echo "No instrumented coverage objects found for llvm-cov; skipping coverage capture"
+            rm -f coverage.info.tmp
+            exit 0
+          fi
+          mv coverage.info.tmp coverage.info
         elif command -v gcovr >/dev/null 2>&1; then
           GCOV_TOOL=""
           # Prefer llvm-cov for clang coverage so gcovr can read
