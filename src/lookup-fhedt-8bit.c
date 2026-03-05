@@ -1049,6 +1049,13 @@ sixel_lookup_fhedt_edt1d_scalar_8bit(double *line_dist,
     double candidate;
     double denom;
 
+    if (length <= 0) {
+        return;
+    }
+    if (length > 256) {
+        length = 256;
+    }
+
     vbuf[0] = 0;
     zbuf[0] = -DBL_MAX;
     zbuf[1] = DBL_MAX;
@@ -1082,7 +1089,7 @@ sixel_lookup_fhedt_edt1d_scalar_8bit(double *line_dist,
 
     k = 0;
     for (i = 0; i < length; ++i) {
-        while (zbuf[k + 1] < (double)i) {
+        while ((k + 1) < length && zbuf[k + 1] < (double)i) {
             ++k;
         }
         scratch[i] = line_dist[vbuf[k]]
