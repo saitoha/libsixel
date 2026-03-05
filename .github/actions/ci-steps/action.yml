@@ -861,6 +861,9 @@ runs:
         if command -v gcovr >/dev/null 2>&1; then
           gcovr -r . --lcov -o coverage.info || true
           cat coverage.info
+        elif command -v python3 >/dev/null 2>&1 && python3 -c "import gcovr" >/dev/null 2>&1; then
+          python3 -m gcovr -r . --lcov -o coverage.info || true
+          cat coverage.info
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
             -d "${PWD}" \
