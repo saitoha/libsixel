@@ -64,6 +64,9 @@ static int libpng_enable_cms_default = 1;
 static int libpng_enable_cms = 1;
 static int builtin_enable_cms_default = 1;
 static int builtin_enable_cms = 1;
+static int loader_cms_target_initialized;
+static int loader_cms_prefer_8bit_flag;
+static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
 
 
 static void
@@ -154,6 +157,72 @@ sixel_helper_set_builtin_enable_cms(int enable)
         builtin_enable_cms = enable != 0 ? 1 : 0;
     } else {
         builtin_enable_cms = builtin_enable_cms_default;
+    }
+}
+
+static void
+loader_cms_initialize_target(void)
+{
+    char const *prefer8_env;
+    char const *target_env;
+
+    if (loader_cms_target_initialized) {
+        return;
+    }
+    loader_cms_target_initialized = 1;
+    loader_cms_prefer_8bit_flag = 0;
+    loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
+
+    prefer8_env = sixel_compat_getenv("SIXEL_LOADER_PREFER_8BIT");
+    if (prefer8_env != NULL && strcmp(prefer8_env, "1") == 0) {
+        loader_cms_prefer_8bit_flag = 1;
+    }
+
+    target_env = sixel_compat_getenv("SIXEL_LOADER_CMS_TARGET_COLORSPACE");
+    if (target_env == NULL || target_env[0] == '\0') {
+        return;
+    }
+    if (strcmp(target_env, "gamma") == 0) {
+        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+    } else if (strcmp(target_env, "linear") == 0) {
+        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
+    } else if (strcmp(target_env, "cielab") == 0) {
+        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_CIELAB;
+    }
+}
+
+int
+loader_cms_prefer_8bit(void)
+{
+    loader_cms_initialize_target();
+
+    return loader_cms_prefer_8bit_flag;
+}
+
+int
+loader_cms_target_colorspace(void)
+{
+    loader_cms_initialize_target();
+
+    return loader_cms_target_colorspace_value;
+}
+
+int
+loader_cms_target_pixelformat(void)
+{
+    loader_cms_initialize_target();
+
+    if (loader_cms_prefer_8bit_flag) {
+        return SIXEL_PIXELFORMAT_RGB888;
+    }
+    switch (loader_cms_target_colorspace_value) {
+    case SIXEL_COLORSPACE_GAMMA:
+        return SIXEL_PIXELFORMAT_RGBFLOAT32;
+    case SIXEL_COLORSPACE_CIELAB:
+        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
+    case SIXEL_COLORSPACE_LINEAR:
+    default:
+        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     }
 }
 void
