@@ -93,9 +93,11 @@ completion_embed.h: \
 	$(srcdir)/shell-completion/bash/img2sixel \
 	$(srcdir)/shell-completion/zsh/_img2sixel \
 	$(top_srcdir)/tools/gen_completion_embed.awk
-	$(AM_V_GEN)$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
+	$(AM_V_GEN)tmp="$@.tmp"; \
+	$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
 	       $(srcdir)/shell-completion/bash/img2sixel \
-	       $(srcdir)/shell-completion/zsh/_img2sixel > $@
+	       $(srcdir)/shell-completion/zsh/_img2sixel > "$$tmp" && \
+	mv "$$tmp" "$@" || { rm -f "$$tmp"; exit 1; }
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
@@ -128,6 +130,8 @@ nodist_img2sixel_SOURCES = completion_embed.h
 img2sixel_CPPFLAGS = -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H \
         -I$(top_builddir)/include/ \
         $(AM_CPPFLAGS)
+# Ensure completion_utils never compiles before the generated header exists.
+img2sixel-completion_utils.$(OBJEXT): completion_embed.h
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
