@@ -944,6 +944,9 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
             continue;
         }
         for (k = start; k < end; ++k) {
+            if (k < 0 || k >= lut->ncolors) {
+                continue;
+            }
             c = lut->rbc.member_index[k];
             if (c < 0 || c >= lut->ncolors) {
                 continue;
@@ -976,6 +979,9 @@ sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
         }
         memset(cov, 0, sizeof(cov));
         for (k = start; k < end; ++k) {
+            if (k < 0 || k >= lut->ncolors) {
+                continue;
+            }
             c = lut->rbc.member_index[k];
             if (c < 0 || c >= lut->ncolors) {
                 continue;
@@ -1088,8 +1094,17 @@ sixel_lookup_float32_rbc_search(sixel_lookup_float32_t const *lut,
         }
         start = lut->rbc.member_offset[j];
         end = lut->rbc.member_offset[j + 1];
+        if (start < 0 || end < start || end > lut->ncolors) {
+            return sixel_lookup_float32_linear_search(lut, sample);
+        }
         for (k = start; k < end; ++k) {
+            if (k < 0 || k >= lut->ncolors) {
+                continue;
+            }
             idx = lut->rbc.member_index[k];
+            if (idx < 0 || idx >= lut->ncolors) {
+                continue;
+            }
             dist2 = sixel_lookup_float32_distance(lut, sample, idx);
             if (dist2 < best2) {
                 best2 = dist2;
