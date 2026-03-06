@@ -11,7 +11,7 @@ test "${HAVE_TEST_RUNNER-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 out_wrapper="${ARTIFACT_LOCAL_DIR}/test_runner_env_wrapper.out"
 out_option="${ARTIFACT_LOCAL_DIR}/test_runner_env_option.out"

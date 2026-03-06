@@ -17,7 +17,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 sixel_src="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"

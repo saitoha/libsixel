@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'fileutils'
+
 puts '1..1'
 artifact_local_dir = ENV.fetch('ARTIFACT_LOCAL_DIR')
-Dir.mkdir(artifact_local_dir) unless File.directory?(artifact_local_dir)
+FileUtils.mkdir_p(artifact_local_dir)
 
 
 begin

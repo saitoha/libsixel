@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 ppm_tall="${TOP_SRCDIR}/tests/data/inputs/tall.ppm"
 log_file="${ARTIFACT_LOCAL_DIR}/pipeline-row-ready-span.log"

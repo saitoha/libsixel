@@ -16,7 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 server_port_base=4443
 max_port_attempts=5

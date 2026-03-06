@@ -12,7 +12,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 version_output="${ARTIFACT_LOCAL_DIR}/version.txt"
 

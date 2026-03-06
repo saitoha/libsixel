@@ -21,7 +21,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp_noicc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_noicc.webp"
 input_webp_icc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp"

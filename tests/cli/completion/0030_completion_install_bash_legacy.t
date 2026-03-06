@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo '1..1'
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 completion_home="${ARTIFACT_LOCAL_DIR}"
 legacy_path="${completion_home}/.bash_completion.d/img2sixel"

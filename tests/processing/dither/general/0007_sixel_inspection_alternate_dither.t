@@ -10,7 +10,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 status=0
 

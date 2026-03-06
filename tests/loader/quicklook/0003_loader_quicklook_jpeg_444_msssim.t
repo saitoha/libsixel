@@ -22,7 +22,7 @@ test "${SIXEL_TEST_HOST_ARCH-}" != "x86_64" || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-444.jpg" \

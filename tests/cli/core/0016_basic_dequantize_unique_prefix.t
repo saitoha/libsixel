@@ -12,7 +12,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 run_sixel2png -dk_ <"${TOP_SRCDIR}/images/map8.six" \
         >"${ARTIFACT_LOCAL_DIR}/dequantize-short.png" \

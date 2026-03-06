@@ -16,7 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 local_file="file://${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 run_img2sixel "${local_file}" >"${ARTIFACT_LOCAL_DIR}/local-file.sixel" || {

@@ -7,7 +7,7 @@ set -eux
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 rc=0
 cli_output_file="${ARTIFACT_LOCAL_DIR}/cli_guard_missing_argument.out"
