@@ -408,24 +408,22 @@ check-TESTS: $(check_PROGRAMS)
 	eval "$$config_exports"; \
 	set +a; \
 	libsixel_runtime_libdir="$(top_builddir)/src/.libs"; \
-	if test -n "$$LD_LIBRARY_PATH"; then \
-	    LD_LIBRARY_PATH="$$libsixel_runtime_libdir:$$LD_LIBRARY_PATH"; \
-	else \
-	    LD_LIBRARY_PATH="$$libsixel_runtime_libdir"; \
+	runtime_var="$${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"; \
+	runtime_sep="$${RUNTIME_SHLIBPATH_SEP:-:}"; \
+	runtime_extra="$${SIXEL_TEST_ADDITIOANL_PATH:-}"; \
+	shlibpath_overrides_runpath="$${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH:-yes}"; \
+	if test "$$shlibpath_overrides_runpath" = yes; then \
+	    eval "runtime_current=\$${$$runtime_var:-}"; \
+	    runtime_value="$$libsixel_runtime_libdir"; \
+	    if test -n "$$runtime_extra"; then \
+	        runtime_value="$$runtime_value$$runtime_sep$$runtime_extra"; \
+	    fi; \
+	    if test -n "$$runtime_current"; then \
+	        runtime_value="$$runtime_value$$runtime_sep$$runtime_current"; \
+	    fi; \
+	    eval "$$runtime_var=\$$runtime_value"; \
+	    eval "export $$runtime_var"; \
 	fi; \
-	export LD_LIBRARY_PATH; \
-	if test -n "$$DYLD_LIBRARY_PATH"; then \
-	    DYLD_LIBRARY_PATH="$$libsixel_runtime_libdir:$$DYLD_LIBRARY_PATH"; \
-	else \
-	    DYLD_LIBRARY_PATH="$$libsixel_runtime_libdir"; \
-	fi; \
-	export DYLD_LIBRARY_PATH; \
-	if test -n "$$PATH"; then \
-	    PATH="$$libsixel_runtime_libdir:$$PATH"; \
-	else \
-	    PATH="$$libsixel_runtime_libdir"; \
-	fi; \
-	export PATH; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \

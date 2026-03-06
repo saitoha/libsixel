@@ -1051,6 +1051,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/staticcheck-shellcheck.sh \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
+    _static/sh/staticcheck-build-doc-configure-help.sh \
+    _static/sh/staticcheck-build-doc-meson-options.sh \
     check-test-exports.list \
     $(TEST_DATA_FILES)
 
@@ -2553,14 +2555,18 @@ uninstall-am:
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
-	staticcheck-python-compileall
+	staticcheck-python-compileall \
+	staticcheck-build-doc-configure-help \
+	staticcheck-build-doc-meson-options
 
 staticcheck: \
 	staticcheck-clean \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
-	staticcheck-python-compileall
+	staticcheck-python-compileall \
+	staticcheck-build-doc-configure-help \
+	staticcheck-build-doc-meson-options
 
 .PHONY: staticcheck-clean
 
@@ -2607,6 +2613,26 @@ staticcheck-python-compileall:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-python-compileall.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-build-doc-configure-help:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-build-doc-configure-help" \
+		--log-file staticcheck-build-doc-configure-help.log \
+		--trs-file staticcheck-build-doc-configure-help.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-build-doc-configure-help.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-build-doc-meson-options:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-build-doc-meson-options" \
+		--log-file staticcheck-build-doc-meson-options.log \
+		--trs-file staticcheck-build-doc-meson-options.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-build-doc-meson-options.sh" \
+		"$(abs_top_srcdir)"
 
 # Route Python TAP tests through the same driver as shell TAP tests so
 # elapsed time and result formatting stay consistent across extensions.
@@ -2656,24 +2682,22 @@ check-TESTS: $(check_PROGRAMS)
 	eval "$$config_exports"; \
 	set +a; \
 	libsixel_runtime_libdir="$(top_builddir)/src/.libs"; \
-	if test -n "$$LD_LIBRARY_PATH"; then \
-	    LD_LIBRARY_PATH="$$libsixel_runtime_libdir:$$LD_LIBRARY_PATH"; \
-	else \
-	    LD_LIBRARY_PATH="$$libsixel_runtime_libdir"; \
+	runtime_var="$${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"; \
+	runtime_sep="$${RUNTIME_SHLIBPATH_SEP:-:}"; \
+	runtime_extra="$${SIXEL_TEST_ADDITIOANL_PATH:-}"; \
+	shlibpath_overrides_runpath="$${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH:-yes}"; \
+	if test "$$shlibpath_overrides_runpath" = yes; then \
+	    eval "runtime_current=\$${$$runtime_var:-}"; \
+	    runtime_value="$$libsixel_runtime_libdir"; \
+	    if test -n "$$runtime_extra"; then \
+	        runtime_value="$$runtime_value$$runtime_sep$$runtime_extra"; \
+	    fi; \
+	    if test -n "$$runtime_current"; then \
+	        runtime_value="$$runtime_value$$runtime_sep$$runtime_current"; \
+	    fi; \
+	    eval "$$runtime_var=\$$runtime_value"; \
+	    eval "export $$runtime_var"; \
 	fi; \
-	export LD_LIBRARY_PATH; \
-	if test -n "$$DYLD_LIBRARY_PATH"; then \
-	    DYLD_LIBRARY_PATH="$$libsixel_runtime_libdir:$$DYLD_LIBRARY_PATH"; \
-	else \
-	    DYLD_LIBRARY_PATH="$$libsixel_runtime_libdir"; \
-	fi; \
-	export DYLD_LIBRARY_PATH; \
-	if test -n "$$PATH"; then \
-	    PATH="$$libsixel_runtime_libdir:$$PATH"; \
-	else \
-	    PATH="$$libsixel_runtime_libdir"; \
-	fi; \
-	export PATH; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
