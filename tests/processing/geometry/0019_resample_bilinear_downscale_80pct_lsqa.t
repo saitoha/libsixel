@@ -16,6 +16,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
@@ -24,8 +27,6 @@ input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_bilinear_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/bilinear-downscale_80pct.six"
 
-echo "1..1"
-set -v
 
 run_img2sixel -r bilinear -w 80% -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "bilinear downscale 80pct scaling failed"

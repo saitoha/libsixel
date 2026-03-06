@@ -14,14 +14,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-viewbox-size.svg"
 sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-viewbox-size.six"
 
 printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 25'><rect x='0' y='0' width='40' height='25' fill='#00ff00'/></svg>" >"${svg_path}"
 
-echo "1..1"
-set -v
 
 run_img2sixel -L librsvg! "${svg_path}" >"${sixel_path}" || {
     echo "not ok" 1 - "librsvg viewBox conversion failed"

@@ -17,6 +17,7 @@ test "${HAVE_LIBPNG-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \

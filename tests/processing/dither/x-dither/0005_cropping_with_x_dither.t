@@ -8,11 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 status=0
 
-echo "1..1"
-set -v
 
 snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/crop-x-dither.sixel"

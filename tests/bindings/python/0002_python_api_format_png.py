@@ -9,6 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'encodes PNG via wheel (DCS/ST ok)'
+ARTIFACT_LOCAL_DIR = os.path.expandvars("${ARTIFACT_LOCAL_DIR}")
+os.makedirs(ARTIFACT_LOCAL_DIR, exist_ok=True)
+
 def test_0002_python_api_format_png() -> None:
     import pathlib
 

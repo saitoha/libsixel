@@ -4,6 +4,9 @@
 require 'pathname'
 
 puts '1..1'
+artifact_local_dir = ENV.fetch('ARTIFACT_LOCAL_DIR')
+Dir.mkdir(artifact_local_dir) unless File.directory?(artifact_local_dir)
+
 
 begin
   require 'libsixel'

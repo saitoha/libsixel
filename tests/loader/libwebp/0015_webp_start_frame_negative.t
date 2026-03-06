@@ -17,6 +17,7 @@ test "${HAVE_WEBP-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 run_img2sixel -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \

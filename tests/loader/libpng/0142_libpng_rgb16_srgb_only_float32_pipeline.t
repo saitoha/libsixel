@@ -16,6 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_rgb16_srgb_only_float32.sixel"

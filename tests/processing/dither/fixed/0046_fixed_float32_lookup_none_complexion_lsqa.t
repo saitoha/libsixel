@@ -14,6 +14,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 # Threshold rationale:
 # - lookup-policy=none disables LUT shortcuts and keeps this test focused on
@@ -23,8 +26,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 #   while still catching visible regressions.
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.94}
 
-echo "1..1"
-set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fixed-float32-lookup-none-complexion.six"

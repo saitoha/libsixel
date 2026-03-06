@@ -9,6 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'raw encoder APIs create, configure, encode, and release'
+ARTIFACT_LOCAL_DIR = os.path.expandvars("${ARTIFACT_LOCAL_DIR}")
+os.makedirs(ARTIFACT_LOCAL_DIR, exist_ok=True)
+
 def test_0028_python_api_raw_encoder_lifecycle() -> None:
     import pathlib
 

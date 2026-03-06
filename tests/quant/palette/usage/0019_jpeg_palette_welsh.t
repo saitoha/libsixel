@@ -11,6 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 egret_jpg="${TOP_SRCDIR}/images/egret.jpg"
 map8_png="${TOP_SRCDIR}/images/map8.png"

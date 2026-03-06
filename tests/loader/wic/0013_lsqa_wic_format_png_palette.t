@@ -17,11 +17,12 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+printf '1..1\n'
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.99
 
-printf '1..1\n'
-set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8.png"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"

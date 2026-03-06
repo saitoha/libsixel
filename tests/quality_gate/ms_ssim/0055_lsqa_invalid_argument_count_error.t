@@ -7,6 +7,7 @@ set -eux
 
 printf '1..1\n'
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"

@@ -9,6 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'encoder encode_bytes writes sixel output via wheel'
+ARTIFACT_LOCAL_DIR = os.path.expandvars("${ARTIFACT_LOCAL_DIR}")
+os.makedirs(ARTIFACT_LOCAL_DIR, exist_ok=True)
+
 def test_0016_python_api_encoder_encode_bytes() -> None:
     import pathlib
 

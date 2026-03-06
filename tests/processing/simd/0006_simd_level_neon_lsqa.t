@@ -15,6 +15,7 @@ test -x "${LSQA_PATH}" || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64_jpg_resize_63x.png"

@@ -14,11 +14,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+printf '1..1\n'
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-printf '1..1\n'
-set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type10-rgb.tga"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"

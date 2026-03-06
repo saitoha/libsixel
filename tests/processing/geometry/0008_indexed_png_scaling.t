@@ -11,6 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 snake_palette_png="${TOP_SRCDIR}/images/snake-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/indexed-scale.sixel"

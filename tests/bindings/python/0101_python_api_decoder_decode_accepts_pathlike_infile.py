@@ -9,6 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'decoder decode accepts pathlib.Path infile argument'
+ARTIFACT_LOCAL_DIR = os.path.expandvars("${ARTIFACT_LOCAL_DIR}")
+os.makedirs(ARTIFACT_LOCAL_DIR, exist_ok=True)
+
 
 
 def test_0101_python_api_decoder_decode_accepts_pathlike_infile() -> None:

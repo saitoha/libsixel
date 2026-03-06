@@ -16,6 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 palette_png="${TOP_SRCDIR}/images/pngsuite/basic/basn3p02.png"
 input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"

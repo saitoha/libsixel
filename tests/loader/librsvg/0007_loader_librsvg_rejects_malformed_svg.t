@@ -14,13 +14,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-malformed.svg"
 
 printf '%s' "<svg xmlns='http://www.w3.org/2000/svg'><g><rect x='0' y='0' width='1' height='1'></svg>" >"${svg_path}"
 
-echo "1..1"
-set -v
 
 set +e
 run_img2sixel -L librsvg! "${svg_path}" >/dev/null

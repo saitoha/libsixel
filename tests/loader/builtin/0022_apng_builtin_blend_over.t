@@ -12,6 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_blend_over.png" \

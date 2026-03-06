@@ -17,8 +17,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/rgb/img_rgb_icc1_srgb0_chrm0_gama1.png"
 reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc1_srgb0_chrm0_gama1.six"

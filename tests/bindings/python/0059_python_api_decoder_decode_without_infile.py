@@ -9,6 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'file-based raw decoder decode works without infile argument'
+ARTIFACT_LOCAL_DIR = os.path.expandvars("${ARTIFACT_LOCAL_DIR}")
+os.makedirs(ARTIFACT_LOCAL_DIR, exist_ok=True)
+
 def test_0059_python_api_decoder_decode_without_infile() -> None:
     import pathlib
 

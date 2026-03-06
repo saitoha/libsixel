@@ -9,6 +9,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'encoder encode_bytes accepts bytearray palette input'
+ARTIFACT_LOCAL_DIR = os.path.expandvars("${ARTIFACT_LOCAL_DIR}")
+os.makedirs(ARTIFACT_LOCAL_DIR, exist_ok=True)
+
 
 
 def test_0096_python_api_encoder_encode_bytes_accepts_bytearray_palette() -> None:

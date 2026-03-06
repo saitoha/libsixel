@@ -8,14 +8,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 test "${HAVE_SIXEL2PNG-}" = 1 || {
     printf "1..0 # SKIP sixel2png is disabled in this build\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 # Baseline MS-SSIM measured from the current roundtrip output.
 lsqa_floor=0.9
