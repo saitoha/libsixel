@@ -407,23 +407,6 @@ check-TESTS: $(check_PROGRAMS)
 	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
 	eval "$$config_exports"; \
 	set +a; \
-	libsixel_runtime_libdir="$(abs_top_builddir)/src/.libs"; \
-	runtime_var='$(SIXEL_LIBTOOL_SHLIBPATH_VAR)'; \
-	runtime_sep='$(SIXEL_LIBTOOL_PATH_SEPARATOR)'; \
-	runtime_extra='$(SIXEL_TEST_ADDITIOANL_PATH)'; \
-	shlibpath_overrides_runpath='$(SIXEL_SHLIBPATH_OVERRIDES_RUNPATH)'; \
-	if test "$$shlibpath_overrides_runpath" = yes && test -n "$$runtime_var"; then \
-	    eval "runtime_current=\$${$$runtime_var:-}"; \
-	    runtime_value="$$libsixel_runtime_libdir"; \
-	    if test -n "$$runtime_extra"; then \
-	        runtime_value="$$runtime_value$$runtime_sep$$runtime_extra"; \
-	    fi; \
-	    if test -n "$$runtime_current"; then \
-	        runtime_value="$$runtime_value$$runtime_sep$$runtime_current"; \
-	    fi; \
-	    eval "$$runtime_var=\$$runtime_value"; \
-	    eval "export $$runtime_var"; \
-	fi; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
