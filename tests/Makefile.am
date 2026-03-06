@@ -449,8 +449,7 @@ check-TESTS: $(check_PROGRAMS)
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=`echo $(TEST_LOGS)`; \
-	env "$$runtime_var=$$runtime_value" $(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
-	    SIXEL_RUNTIME="env $$runtime_var=$$runtime_value $(SIXEL_RUNTIME)" \
+	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
 	    $$python_make_arg \
 	    $$ruby_make_arg; \
