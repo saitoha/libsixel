@@ -408,10 +408,10 @@ check-TESTS: $(check_PROGRAMS)
 	eval "$$config_exports"; \
 	set +a; \
 	libsixel_runtime_libdir="$(abs_top_builddir)/src/.libs"; \
-	runtime_var="$${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"; \
-	runtime_sep="$${RUNTIME_SHLIBPATH_SEP:-:}"; \
-	runtime_extra="$${SIXEL_TEST_ADDITIOANL_PATH:-}"; \
-	shlibpath_overrides_runpath="$${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH:-yes}"; \
+	runtime_var='$(SIXEL_LIBTOOL_SHLIBPATH_VAR)'; \
+	runtime_sep='$(SIXEL_LIBTOOL_PATH_SEPARATOR)'; \
+	runtime_extra='$(SIXEL_TEST_ADDITIOANL_PATH)'; \
+	shlibpath_overrides_runpath='$(SIXEL_SHLIBPATH_OVERRIDES_RUNPATH)'; \
 	if test "$$shlibpath_overrides_runpath" = yes; then \
 	    eval "runtime_current=\$${$$runtime_var:-}"; \
 	    runtime_value="$$libsixel_runtime_libdir"; \
@@ -449,7 +449,8 @@ check-TESTS: $(check_PROGRAMS)
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=`echo $(TEST_LOGS)`; \
-	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
+	env "$$runtime_var=$$runtime_value" $(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
+	    SIXEL_RUNTIME="env $$runtime_var=$$runtime_value $(SIXEL_RUNTIME)" \
 	    TEST_LOGS="$$log_list" \
 	    $$python_make_arg \
 	    $$ruby_make_arg; \
