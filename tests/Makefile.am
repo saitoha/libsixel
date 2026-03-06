@@ -412,7 +412,7 @@ check-TESTS: $(check_PROGRAMS)
 	runtime_sep='$(SIXEL_LIBTOOL_PATH_SEPARATOR)'; \
 	runtime_extra='$(SIXEL_TEST_ADDITIOANL_PATH)'; \
 	shlibpath_overrides_runpath='$(SIXEL_SHLIBPATH_OVERRIDES_RUNPATH)'; \
-	if test "$$shlibpath_overrides_runpath" = yes; then \
+	if test "$$shlibpath_overrides_runpath" = yes && test -n "$$runtime_var"; then \
 	    eval "runtime_current=\$${$$runtime_var:-}"; \
 	    runtime_value="$$libsixel_runtime_libdir"; \
 	    if test -n "$$runtime_extra"; then \
