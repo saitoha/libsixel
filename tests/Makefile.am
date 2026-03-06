@@ -432,9 +432,7 @@ check-TESTS: $(check_PROGRAMS)
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=`echo $(TEST_LOGS)`; \
-	artifact_root="$(ARTIFACT_ROOT)"; \
-	rm -rf "$$artifact_root"; \
-	mkdir -p "$$artifact_root"; \
+	mkdir -p "$(ARTIFACT_ROOT)"; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
 	    $$python_make_arg \
