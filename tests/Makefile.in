@@ -2681,7 +2681,7 @@ check-TESTS: $(check_PROGRAMS)
 	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
 	eval "$$config_exports"; \
 	set +a; \
-	libsixel_runtime_libdir="$(top_builddir)/src/.libs"; \
+	libsixel_runtime_libdir="$(abs_top_builddir)/src/.libs"; \
 	runtime_var="$${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"; \
 	runtime_sep="$${RUNTIME_SHLIBPATH_SEP:-:}"; \
 	runtime_extra="$${SIXEL_TEST_ADDITIOANL_PATH:-}"; \
