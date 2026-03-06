@@ -17,10 +17,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/varcoeff-float32.six"
 
 run_img2sixel -d lso2 -y serpentine --precision=float32 -p 16 \
         -o "${output_sixel}" "${snake_png}" || {
-    echo "not ok" 1 "variable-coefficient float32 dither failed"
+    echo "not ok" 1 - "variable-coefficient float32 dither failed"
     exit 0
 }
 
-echo "ok" 1 "variable-coefficient float32 dither completes"
+echo "ok" 1 - "variable-coefficient float32 dither completes"
 
 exit 0

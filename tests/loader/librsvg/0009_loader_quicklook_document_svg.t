@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/quicklook/sample.svg" >/dev/null || {
-    echo "not ok" 1 "quicklook SVG render failed"
+    echo "not ok" 1 - "quicklook SVG render failed"
     exit 0
 }
 
-echo "ok" 1 "quicklook renders SVG"
+echo "ok" 1 - "quicklook renders SVG"
 exit 0

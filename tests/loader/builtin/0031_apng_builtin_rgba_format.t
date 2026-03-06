@@ -17,10 +17,10 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle  \
     -v -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
     -o/dev/null || {
-    echo "not ok" 1 "APNG RGBA decode failed"
+    echo "not ok" 1 - "APNG RGBA decode failed"
     exit 0
 }
 
-echo "ok" 1 "APNG RGBA decode succeeds"
+echo "ok" 1 - "APNG RGBA decode succeeds"
 exit 0
 

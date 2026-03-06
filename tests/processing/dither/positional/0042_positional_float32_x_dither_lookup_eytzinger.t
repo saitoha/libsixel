@@ -19,10 +19,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel -d x_dither -y raster --precision=float32 \
         --lookup-policy=eytzinger -p 16 \
         -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "positional float32 x_dither lookup eytzinger failed"
+    echo "not ok" 1 - "positional float32 x_dither lookup eytzinger failed"
     exit 0
 }
 
-echo "ok" 1 "positional float32 x_dither lookup eytzinger passed"
+echo "ok" 1 - "positional float32 x_dither lookup eytzinger passed"
 
 exit 0

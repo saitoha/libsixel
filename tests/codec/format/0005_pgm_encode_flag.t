@@ -15,10 +15,10 @@ set -v
 snake_pgm="${TOP_SRCDIR}/tests/data/inputs/snake_64.pgm"
 
 run_img2sixel -8 -qauto -thls -e "${snake_pgm}" -o/dev/null || {
-    echo "not ok" 1 "PGM encode flag failed"
+    echo "not ok" 1 - "PGM encode flag failed"
     exit 0
 }
 
-echo "ok" 1 "PGM encode flag cooperates with palette auto-selection"
+echo "ok" 1 - "PGM encode flag cooperates with palette auto-selection"
 
 exit 0

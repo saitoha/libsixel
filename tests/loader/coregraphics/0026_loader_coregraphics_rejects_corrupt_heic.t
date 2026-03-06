@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/invalid_signature.heic" >/dev/null && {
-    echo "not ok" 1 "coregraphics invalid-signature HEIC should fail"
+    echo "not ok" 1 - "coregraphics invalid-signature HEIC should fail"
     exit 0
 }
 
-echo "ok" 1 "coregraphics invalid-signature HEIC is rejected"
+echo "ok" 1 - "coregraphics invalid-signature HEIC is rejected"
 exit 0

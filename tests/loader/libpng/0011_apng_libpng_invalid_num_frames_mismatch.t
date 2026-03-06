@@ -19,10 +19,10 @@ echo "1..1"
 set -v
 
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_num_frames_mismatch.png" -o/dev/null && {
-    echo "not ok" 1 "APNG num_frames mismatch unexpectedly succeeded"
+    echo "not ok" 1 - "APNG num_frames mismatch unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 "APNG num_frames mismatch is rejected"
+echo "ok" 1 - "APNG num_frames mismatch is rejected"
 exit 0
 

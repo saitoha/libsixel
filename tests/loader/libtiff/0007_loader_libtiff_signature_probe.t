@@ -21,9 +21,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 
 run_img2sixel -L libtiff! "${input_png}" >/dev/null && {
-    echo "not ok" 1 "non-TIFF data unexpectedly accepted by libtiff"
+    echo "not ok" 1 - "non-TIFF data unexpectedly accepted by libtiff"
     exit 0
 }
 
-echo "ok" 1 "non-TIFF data is rejected by libtiff"
+echo "ok" 1 - "non-TIFF data is rejected by libtiff"
 exit 0

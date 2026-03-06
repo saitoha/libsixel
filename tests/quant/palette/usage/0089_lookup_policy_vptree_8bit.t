@@ -17,10 +17,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/vptree-8bit.six"
 
 run_img2sixel --lookup-policy=vptree -p 16 -d none \
         -o "${output_sixel}" "${snake_png}" || {
-    echo "not ok" 1 "8-bit VP-tree lookup policy failed"
+    echo "not ok" 1 - "8-bit VP-tree lookup policy failed"
     exit 0
 }
 
-echo "ok" 1 "8-bit VP-tree lookup policy completes"
+echo "ok" 1 - "8-bit VP-tree lookup policy completes"
 
 exit 0

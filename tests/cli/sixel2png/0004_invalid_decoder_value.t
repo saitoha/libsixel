@@ -17,20 +17,20 @@ input_path="${TOP_SRCDIR}/images/map8.six"
 
 msg=$(set +xv; run_sixel2png --similarity=invalid -o/dev/null "${input_path}" \
     2>&1) && {
-    echo "not ok" 1 "invalid similarity should fail"
+    echo "not ok" 1 - "invalid similarity should fail"
     exit 0
 }
 
 case "${msg}" in
     *[Ss][Ii][Mm][Ii][Ll][Aa][Rr][Ii][Tt][Yy]*|*[Ss][Ii][Xx][Ee][Ll]_[Bb][Aa][Dd]_[Aa][Rr][Gg][Uu][Mm][Ee][Nn][Tt]*)
-        echo "ok" 1 "invalid similarity reported"
+        echo "ok" 1 - "invalid similarity reported"
         exit 0
         ;;
     *)
         ;;
 esac
 
-echo "not ok" 1 "error message missing similarity hint"
+echo "not ok" 1 - "error message missing similarity hint"
 printf '%s\n' '--- stderr ---' >&2
 printf '%s\n' "${msg}" >&2
 exit 0

@@ -22,15 +22,15 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_ico_multisize_prefix.six"
 
 run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "coregraphics failed to decode multi-size ICO input"
+    echo "not ok" 1 - "coregraphics failed to decode multi-size ICO input"
     exit 0
 }
 
 prefix_hex=$(xxd -l 3 -p "${output_sixel}")
 test "${prefix_hex}" = "1b5b48" && {
-    echo "not ok" 1 "multi-size ICO output unexpectedly starts with ESC [ H"
+    echo "not ok" 1 - "multi-size ICO output unexpectedly starts with ESC [ H"
     exit 0
 }
 
-echo "ok" 1 "coregraphics multisize ICO output does not start with ESC [ H"
+echo "ok" 1 - "coregraphics multisize ICO output does not start with ESC [ H"
 exit 0

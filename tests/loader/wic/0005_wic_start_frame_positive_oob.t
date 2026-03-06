@@ -24,9 +24,9 @@ set -v
 run_img2sixel --start-frame=999 \
     -L wic! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null && {
-    echo "not ok" 1 "wic positive out-of-range start frame succeeded"
+    echo "not ok" 1 - "wic positive out-of-range start frame succeeded"
     exit 0
 }
 
-echo "ok" 1 "wic positive out-of-range start frame is rejected"
+echo "ok" 1 - "wic positive out-of-range start frame is rejected"
 exit 0

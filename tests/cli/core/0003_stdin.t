@@ -18,9 +18,9 @@ output_file="${ARTIFACT_LOCAL_DIR}/capture.stdin"
 echo a | run_img2sixel - >"${output_file}" && :
 
 test ! -s "${output_file}" || {
-    echo "not ok" 1 "img2sixel produced output for invalid stdin"
+    echo "not ok" 1 - "img2sixel produced output for invalid stdin"
     exit 0
 }
 
-echo "ok" 1 "invalid stdin rejected without output"
+echo "ok" 1 - "invalid stdin rejected without output"
 exit 0

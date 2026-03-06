@@ -16,9 +16,9 @@ set -v
 input_pic="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.pic"
 
 run_img2sixel "${input_pic}" >/dev/null || {
-    echo "not ok" 1 "builtin loader failed to decode PIC"
+    echo "not ok" 1 - "builtin loader failed to decode PIC"
     exit 0
 }
 
-echo "ok" 1 "builtin loader decodes PIC"
+echo "ok" 1 - "builtin loader decodes PIC"
 exit 0

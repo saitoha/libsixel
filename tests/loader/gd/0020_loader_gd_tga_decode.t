@@ -21,9 +21,9 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type2-rgb.tga" \
     >/dev/null || {
-    echo "not ok" 1 "gd failed to decode TGA input"
+    echo "not ok" 1 - "gd failed to decode TGA input"
     exit 0
 }
 
-echo "ok" 1 "gd decodes TGA input"
+echo "ok" 1 - "gd decodes TGA input"
 exit 0

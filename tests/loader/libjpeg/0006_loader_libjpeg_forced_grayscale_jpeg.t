@@ -21,9 +21,9 @@ set -v
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/grayscale.jpg"
 
 run_img2sixel -L libjpeg! "${input_jpeg}" >/dev/null || {
-    echo "not ok" 1 "libjpeg forced grayscale JPEG decoding failed"
+    echo "not ok" 1 - "libjpeg forced grayscale JPEG decoding failed"
     exit 0
 }
 
-echo "ok" 1 "libjpeg forced grayscale JPEG decoding succeeds"
+echo "ok" 1 - "libjpeg forced grayscale JPEG decoding succeeds"
 exit 0

@@ -21,9 +21,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 
 run_img2sixel -L gdk-pixbuf2! "${input_png}" >/dev/null || {
-    echo "not ok" 1 "gdk-pixbuf2 forced PNG decoding failed"
+    echo "not ok" 1 - "gdk-pixbuf2 forced PNG decoding failed"
     exit 0
 }
 
-echo "ok" 1 "gdk-pixbuf2 forced PNG decoding succeeds"
+echo "ok" 1 - "gdk-pixbuf2 forced PNG decoding succeeds"
 exit 0

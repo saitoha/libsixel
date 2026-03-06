@@ -21,9 +21,9 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8.png" \
     >/dev/null && {
-    echo "not ok" 1 "gd unexpectedly accepted indexed PNG input"
+    echo "not ok" 1 - "gd unexpectedly accepted indexed PNG input"
     exit 0
 }
 
-echo "ok" 1 "gd rejects indexed PNG input"
+echo "ok" 1 - "gd rejects indexed PNG input"
 exit 0

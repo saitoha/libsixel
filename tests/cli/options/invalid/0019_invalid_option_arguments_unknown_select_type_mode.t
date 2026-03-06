@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -s invalid_option </dev/null >/dev/null  && {
-    echo "not ok" 1 "unexpected success: unknown select type mode"
+    echo "not ok" 1 - "unexpected success: unknown select type mode"
     exit 0
 }
 
-echo "ok" 1 "invalid option rejected"
+echo "ok" 1 - "invalid option rejected"
 exit 0

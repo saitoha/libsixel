@@ -21,9 +21,9 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-bmp3-rgb.bmp" \
     >/dev/null || {
-    echo "not ok" 1 "gd failed to decode BMP input"
+    echo "not ok" 1 - "gd failed to decode BMP input"
     exit 0
 }
 
-echo "ok" 1 "gd decodes BMP input"
+echo "ok" 1 - "gd decodes BMP input"
 exit 0

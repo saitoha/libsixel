@@ -35,7 +35,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-pal8.ico"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_palette.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "wic ico palette conversion failed"
+    echo "not ok" 1 - "wic ico palette conversion failed"
     exit 0
 }
 
@@ -45,15 +45,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "wic ico palette quality meets baseline"
+    echo "ok" 1 - "wic ico palette quality meets baseline"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "wic ico palette quality regressed"
+echo "not ok" 1 - "wic ico palette quality regressed"
 
 exit 0

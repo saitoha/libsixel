@@ -24,15 +24,15 @@ reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.p
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_gif_static.six"
 
 run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "coregraphics failed to decode static GIF input"
+    echo "not ok" 1 - "coregraphics failed to decode static GIF input"
     exit 0
 }
 
 lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 "$lsqa_msg"
+    echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 "coregraphics keeps MS-SSIM baseline for static GIF input"
+echo "ok" 1 - "coregraphics keeps MS-SSIM baseline for static GIF input"
 exit 0

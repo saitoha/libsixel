@@ -17,10 +17,10 @@ snake_roundtrip="${ARTIFACT_LOCAL_DIR}/snake-roundtrip.sixel"
 
 run_img2sixel "${snake_jpg}" -datkinson -flum -save \
     | run_img2sixel | tee "${snake_roundtrip}" >/dev/null || {
-    echo "not ok" 1 "round-trip conversion failed"
+    echo "not ok" 1 - "round-trip conversion failed"
     exit 0
 }
 
-echo "ok" 1 "round-trip conversion with dithering and gamma succeeded"
+echo "ok" 1 - "round-trip conversion with dithering and gamma succeeded"
 
 exit 0

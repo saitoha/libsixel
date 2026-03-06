@@ -22,7 +22,7 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --sta
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_frame0.six" || {
-    echo "not ok" 1 "APNG decode with --start-frame=0 failed"
+    echo "not ok" 1 - "APNG decode with --start-frame=0 failed"
     exit 0
 }
 
@@ -30,15 +30,15 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --sta
     -T 1 -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_cli_override.six" || {
-    echo "not ok" 1 "APNG decode with -T override failed"
+    echo "not ok" 1 - "APNG decode with -T override failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_frame0.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_cli_override.six" && {
-    echo "not ok" 1 "-T did not override earlier --start-frame"
+    echo "not ok" 1 - "-T did not override earlier --start-frame"
     exit 0
 }
 
-echo "ok" 1 "-T overrides earlier --start-frame selection"
+echo "ok" 1 - "-T overrides earlier --start-frame selection"
 exit 0

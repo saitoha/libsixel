@@ -24,9 +24,9 @@ run_sixel2png --env SIXEL_THREADS=1 <"${TOP_SRCDIR}/images/map64.six" >"${parall
 run_sixel2png --env SIXEL_THREADS=4 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_4}"
 
 cmp -s "${parallel_indexed_1}" "${parallel_indexed_4}" >/dev/null || {
-    echo "not ok" 1 "parallel indexed diverges"
+    echo "not ok" 1 - "parallel indexed diverges"
     exit 0
 }
 
-echo "ok" 1 "parallel indexed matches serial"
+echo "ok" 1 - "parallel indexed matches serial"
 exit 0

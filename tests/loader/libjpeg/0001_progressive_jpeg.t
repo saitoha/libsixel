@@ -16,9 +16,9 @@ set -v
 progressive_jpeg="${TOP_SRCDIR}/images/snake-progressive-16x16.jpg"
 
 run_img2sixel "${progressive_jpeg}" >/dev/null || {
-    echo "not ok" 1 "progressive JPEG conversion failed"
+    echo "not ok" 1 - "progressive JPEG conversion failed"
     exit 0
 }
 
-echo "ok" 1 "progressive JPEG converts"
+echo "ok" 1 - "progressive JPEG converts"
 exit 0

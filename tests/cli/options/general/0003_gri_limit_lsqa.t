@@ -18,11 +18,11 @@ output_plain="${ARTIFACT_LOCAL_DIR}/plain.six"
 output_limited="${ARTIFACT_LOCAL_DIR}/limited.six"
 
 run_img2sixel -=1 -o "${output_plain}" "${input_image}" || {
-    echo "not ok" 1 "img2sixel failed"
+    echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 run_img2sixel -=1 --gri-limit -o "${output_limited}" "${input_image}" || {
-    echo "not ok" 1 "img2sixel failed"
+    echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
@@ -32,14 +32,14 @@ lsqa_message=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status-0}" -eq 0 && {
-    echo "ok" 1 "gri-limit deterministic output matches"
+    echo "ok" 1 - "gri-limit deterministic output matches"
     exit 0
 }
 
 test "${lsqa_run_status-0}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_message}"
+    echo "not ok" 1 - "${lsqa_message}"
     exit 0
 }
 
-echo "not ok" 1 "gri-limit deterministic output mismatch"
+echo "not ok" 1 - "gri-limit deterministic output mismatch"
 exit 0

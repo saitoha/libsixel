@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -B "#0000000000000" </dev/null >/dev/null  && {
-    echo "not ok" 1 "unexpected success: invalid background specification"
+    echo "not ok" 1 - "unexpected success: invalid background specification"
     exit 0
 }
 
-echo "ok" 1 "invalid option rejected"
+echo "ok" 1 - "invalid option rejected"
 exit 0

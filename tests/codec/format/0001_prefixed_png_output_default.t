@@ -16,14 +16,14 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 prefixed_png="${ARTIFACT_LOCAL_DIR}/snake-prefixed.png"
 
 run_img2sixel -o "png:${prefixed_png}" "${snake_jpg}" || {
-    echo "not ok" 1 "prefixed PNG conversion failed"
+    echo "not ok" 1 - "prefixed PNG conversion failed"
     exit 0
 }
 
 test -s "${prefixed_png}" || {
-    echo "not ok" 1 "prefixed PNG output missing"
+    echo "not ok" 1 - "prefixed PNG output missing"
     exit 0
 }
 
-echo "ok" 1 "prefixed PNG output created"
+echo "ok" 1 - "prefixed PNG output created"
 exit 0

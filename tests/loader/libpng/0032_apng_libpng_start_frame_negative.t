@@ -21,7 +21,7 @@ set -v
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
               >"${ARTIFACT_LOCAL_DIR}/apng_start_default_neg.six" || {
-    echo "not ok" 1 "baseline APNG decode failed"
+    echo "not ok" 1 - "baseline APNG decode failed"
     exit 0
 }
 
@@ -29,15 +29,15 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -L
               --start-frame=-1 \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
               >"${ARTIFACT_LOCAL_DIR}/apng_start_negative.six" || {
-    echo "not ok" 1 "APNG decode with negative start frame failed"
+    echo "not ok" 1 - "APNG decode with negative start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_default_neg.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_negative.six" && {
-    echo "not ok" 1 "negative start frame did not change static APNG output"
+    echo "not ok" 1 - "negative start frame did not change static APNG output"
     exit 0
 }
 
-echo "ok" 1 "libpng APNG negative start frame is applied"
+echo "ok" 1 - "libpng APNG negative start frame is applied"
 exit 0

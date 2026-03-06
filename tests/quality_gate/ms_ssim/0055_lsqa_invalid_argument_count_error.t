@@ -19,14 +19,14 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 "invalid positional argument count was not rejected as expected"
+    echo "not ok" 1 - "invalid positional argument count was not rejected as expected"
     exit 0
 }
 
 grep "invalid number of arguments" "${err_file}" >/dev/null || {
-    echo "not ok" 1 "invalid positional argument count was not rejected as expected"
+    echo "not ok" 1 - "invalid positional argument count was not rejected as expected"
     exit 0
 }
 
-echo "ok" 1 "invalid positional argument count was rejected"
+echo "ok" 1 - "invalid positional argument count was rejected"
 exit 0

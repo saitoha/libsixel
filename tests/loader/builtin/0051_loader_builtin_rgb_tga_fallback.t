@@ -16,9 +16,9 @@ set -v
 input_tga="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type2-rgb.tga"
 
 run_img2sixel -L builtin! "${input_tga}" >/dev/null || {
-    echo "not ok" 1 "builtin loader RGB TGA fallback failed"
+    echo "not ok" 1 - "builtin loader RGB TGA fallback failed"
     exit 0
 }
 
-echo "ok" 1 "builtin loader falls back for non-indexed TGA"
+echo "ok" 1 - "builtin loader falls back for non-indexed TGA"
 exit 0

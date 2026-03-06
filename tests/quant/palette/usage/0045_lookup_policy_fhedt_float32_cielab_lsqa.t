@@ -22,7 +22,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-cielab.six"
 
 run_img2sixel --lookup-policy=fhedt --working-colorspace=cielab \
     -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "float32 FHEDT cielab colorspace conversion failed"
+    echo "not ok" 1 - "float32 FHEDT cielab colorspace conversion failed"
     exit 0
 }
 
@@ -32,15 +32,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "float32 FHEDT cielab colorspace lsqa passed"
+    echo "ok" 1 - "float32 FHEDT cielab colorspace lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "float32 FHEDT cielab colorspace lsqa failed"
+echo "not ok" 1 - "float32 FHEDT cielab colorspace lsqa failed"
 
 exit 0

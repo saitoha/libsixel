@@ -16,7 +16,7 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 filename_png="${ARTIFACT_LOCAL_DIR}/snake-filename.png"
 
 run_img2sixel -o "${filename_png}" "${snake_jpg}" || {
-    echo "not ok" 1 "filename-driven PNG conversion failed"
+    echo "not ok" 1 - "filename-driven PNG conversion failed"
     exit 0
 }
 
@@ -24,10 +24,10 @@ expected_header_cksum="3308842558 4"
 actual_header_cksum=$(dd bs=1 count=4 if="${filename_png}" 2>/dev/null | cksum)
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
-    echo "not ok" 1 "filename-driven PNG header incorrect"
+    echo "not ok" 1 - "filename-driven PNG header incorrect"
     exit 0
 }
 
-echo "ok" 1 "filename-driven PNG output uses PNG header"
+echo "ok" 1 - "filename-driven PNG output uses PNG header"
 
 exit 0

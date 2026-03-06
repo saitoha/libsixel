@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L gdk-pixbuf2! -ldisable -dnone -u \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" -o/dev/null || {
-    echo "not ok" 1 "gdk-pixbuf2 disable/update flag combination failed"
+    echo "not ok" 1 - "gdk-pixbuf2 disable/update flag combination failed"
     exit 0
 }
 
-echo "ok" 1 "gdk-pixbuf2 disable/update flag combination succeeded"
+echo "ok" 1 - "gdk-pixbuf2 disable/update flag combination succeeded"
 exit 0

@@ -23,12 +23,12 @@ run_img2sixel --env SIXEL_LOG_PATH="${log_file}" \
               --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
               --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
               -v -o "${out_file}" "${ppm_tall}" || {
-    echo "not ok" 1 "row_ready span conversion failed"
+    echo "not ok" 1 - "row_ready span conversion failed"
     exit 0
 }
 
 grep -q '"event":"row_ready"' "${log_file}" || {
-    echo "ok" 1 "row_ready span unavailable in serial environment"
+    echo "ok" 1 - "row_ready span unavailable in serial environment"
     exit 0
 }
 
@@ -41,9 +41,9 @@ dither_threads=$(awk '/"worker":"dither"/ {
     }
 } END {print count + 0}' "${log_file}")
 test "${dither_threads}" -ge 1 || {
-    echo "not ok" 1 "row_ready spans multiple bands"
+    echo "not ok" 1 - "row_ready spans multiple bands"
     exit 0
 }
 
-echo "ok" 1 "row_ready spans multiple bands"
+echo "ok" 1 - "row_ready spans multiple bands"
 exit 0

@@ -25,14 +25,14 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0044_pngsuite_ba
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn4a16.sixel"
 
 run_img2sixel -w32 -Llibpng:enable_cms=0! "${input_png}" >"${output_sixel}" || {
-    echo "not ok" 1 "img2sixel failed"
+    echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 "$lsqa_msg"
+    echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 "basic_width32 basic/basn4a16.png"
+echo "ok" 1 - "basic_width32 basic/basn4a16.png"
 exit 0

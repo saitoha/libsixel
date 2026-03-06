@@ -23,7 +23,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/hls-oklab.six"
 
 run_img2sixel -t hls -W oklab -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "img2sixel hls+oklab conversion failed"
+    echo "not ok" 1 - "img2sixel hls+oklab conversion failed"
     exit 0
 }
 
@@ -33,15 +33,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "hls+oklab lsqa passed"
+    echo "ok" 1 - "hls+oklab lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "hls+oklab lsqa failed"
+echo "not ok" 1 - "hls+oklab lsqa failed"
 
 exit 0

@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos2-no-diffusion.sixel"
 
 run_img2sixel -v -p 8 -h200 -fnorm -rlanczos2 -dnone \
         "${snake_jpg}" >"${target_sixel}" || {
-    echo "not ok" 1 "Lanczos2 scaling without diffusion fails"
+    echo "not ok" 1 - "Lanczos2 scaling without diffusion fails"
     exit 0
 }
 
-echo "ok" 1 "Lanczos2 scaling without diffusion succeeds"
+echo "ok" 1 - "Lanczos2 scaling without diffusion succeeds"
 
 exit 0

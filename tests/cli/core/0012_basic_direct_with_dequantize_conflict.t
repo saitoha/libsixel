@@ -15,7 +15,7 @@ set -v
 
 msg=$(set +xv; run_sixel2png -D -dk_undither <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
         2>&1) && {
-    echo "not ok" 1 "accepts conflicting direct/dequantize flags"
+    echo "not ok" 1 - "accepts conflicting direct/dequantize flags"
     exit 0
 }
 
@@ -23,12 +23,12 @@ case "${msg}" in
     *"cannot be combined"*)
         ;;
     *)
-        echo "not ok" 1 "missing direct/dequantize diagnostic"
+        echo "not ok" 1 - "missing direct/dequantize diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 "rejects direct/dequantize mix"
+echo "ok" 1 - "rejects direct/dequantize mix"
 exit 0

@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -C0.5 </dev/null >/dev/null  && {
-    echo "not ok" 1 "unexpected success: invalid complexion score"
+    echo "not ok" 1 - "unexpected success: invalid complexion score"
     exit 0
 }
 
-echo "ok" 1 "invalid option rejected"
+echo "ok" 1 - "invalid option rejected"
 exit 0

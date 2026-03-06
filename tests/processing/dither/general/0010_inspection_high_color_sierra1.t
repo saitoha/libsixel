@@ -22,10 +22,10 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
 run_img2sixel -I -d sierra1 "${input_image}" >"${target_txt}" || {
-    echo "not ok" 1 "inspection with high color and Sierra-1 failed"
+    echo "not ok" 1 - "inspection with high color and Sierra-1 failed"
     exit 0
 }
 
-echo "ok" 1 "inspection with high color and Sierra-1 exits cleanly"
+echo "ok" 1 - "inspection with high color and Sierra-1 exits cleanly"
 
 exit 0

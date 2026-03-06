@@ -11,9 +11,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 run_img2sixel -B "#ffff" </dev/null >/dev/null  && {
-    echo "not ok" 1 "unexpected success: invalid background component"
+    echo "not ok" 1 - "unexpected success: invalid background component"
     exit 0
 }
 
-echo "ok" 1 "invalid option rejected"
+echo "ok" 1 - "invalid option rejected"
 exit 0

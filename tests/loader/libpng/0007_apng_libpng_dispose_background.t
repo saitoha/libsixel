@@ -21,16 +21,16 @@ set -v
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! -S --start-frame=1 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_dispose_background_libpng_frame1.six" || {
-    echo "not ok" 1 "libpng APNG dispose-background frame extraction failed"
+    echo "not ok" 1 - "libpng APNG dispose-background frame extraction failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background_libpng_start_frame1_reference.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_dispose_background_libpng_frame1.six" 2>&1) || {
-    echo "not ok" 1 "${lsqa_msg}"
+    echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 "libpng APNG dispose-background frame matches static reference"
+echo "ok" 1 - "libpng APNG dispose-background frame matches static reference"
 exit 0

@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 
 msg=$(set +xv; run_img2sixel -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
-    echo "not ok" 1 "distance-2 typo unexpectedly succeeded"
+    echo "not ok" 1 - "distance-2 typo unexpectedly succeeded"
     exit 0
 }
 
@@ -22,7 +22,7 @@ case "${msg}" in
     *'specified desampling method is not supported.'*)
         ;;
     *)
-        echo "not ok" 1 "default CLI setup did not emit fuzzy suggestion"
+        echo "not ok" 1 - "default CLI setup did not emit fuzzy suggestion"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -33,12 +33,12 @@ case "${msg}" in
     *'Did you mean:'*)
         ;;
     *)
-        echo "not ok" 1 "default CLI setup did not emit fuzzy suggestion"
+        echo "not ok" 1 - "default CLI setup did not emit fuzzy suggestion"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 "default CLI setup keeps fuzzy suggestions enabled"
+echo "ok" 1 - "default CLI setup keeps fuzzy suggestions enabled"
 exit 0

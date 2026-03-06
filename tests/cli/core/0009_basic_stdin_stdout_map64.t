@@ -15,9 +15,9 @@ set -v
 
 run_sixel2png - - <"${TOP_SRCDIR}/images/map64.six" \
         >/dev/null || {
-    echo "not ok" 1 "map64 stdin/stdout conversion failed"
+    echo "not ok" 1 - "map64 stdin/stdout conversion failed"
     exit 0
 }
 
-echo "ok" 1 "converts map64 with explicit stdin/stdout"
+echo "ok" 1 - "converts map64 with explicit stdin/stdout"
 exit 0

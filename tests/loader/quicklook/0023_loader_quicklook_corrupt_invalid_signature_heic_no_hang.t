@@ -21,5 +21,5 @@ set -v
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/corrupted/invalid_signature.heic" >/dev/null 2>/dev/null || :
 
-echo "ok" 1 "quicklook does not hang on invalid-signature HEIC"
+echo "ok" 1 - "quicklook does not hang on invalid-signature HEIC"
 exit 0

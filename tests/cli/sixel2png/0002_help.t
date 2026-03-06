@@ -16,14 +16,14 @@ set -v
 help_output="${ARTIFACT_LOCAL_DIR}/help.txt"
 
 run_sixel2png -H 1>"${help_output}" || {
-    echo "not ok" 1 "-H exited with failure"
+    echo "not ok" 1 - "-H exited with failure"
     exit 0
 }
 
 grep -q '^Usage: sixel2png' "${help_output}" || {
-    echo "not ok" 1 "help usage header missing"
+    echo "not ok" 1 - "help usage header missing"
     exit 0
 }
 
-echo "ok" 1 "-H prints usage"
+echo "ok" 1 - "-H prints usage"
 exit 0

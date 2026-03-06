@@ -25,9 +25,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${SIXEL_TEST_QUICKLOOK_MKV}" >/dev/null || {
-    echo "not ok" 1 "quicklook MKV still-frame decode failed"
+    echo "not ok" 1 - "quicklook MKV still-frame decode failed"
     exit 0
 }
 
-echo "ok" 1 "quicklook probe reads MKV as still image"
+echo "ok" 1 - "quicklook probe reads MKV as still image"
 exit 0

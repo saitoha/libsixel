@@ -23,10 +23,10 @@ target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
 run_img2sixel -I -d sierra3 "${input_image}" \
         >"${target_txt}" || {
-    echo "not ok" 1 "inspection with high color and Sierra-3 failed"
+    echo "not ok" 1 - "inspection with high color and Sierra-3 failed"
     exit 0
 }
 
-echo "ok" 1 "inspection with high color and Sierra-3 exits cleanly"
+echo "ok" 1 - "inspection with high color and Sierra-3 exits cleanly"
 
 exit 0

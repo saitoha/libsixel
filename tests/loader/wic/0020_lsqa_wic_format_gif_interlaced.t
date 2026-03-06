@@ -35,7 +35,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_gif_interlaced.six"
 run_img2sixel -S -Lwic! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "wic gif interlaced conversion failed"
+    echo "not ok" 1 - "wic gif interlaced conversion failed"
     exit 0
 }
 
@@ -44,15 +44,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "wic gif interlaced quality meets baseline"
+    echo "ok" 1 - "wic gif interlaced quality meets baseline"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "wic gif interlaced quality regressed"
+echo "not ok" 1 - "wic gif interlaced quality regressed"
 
 exit 0

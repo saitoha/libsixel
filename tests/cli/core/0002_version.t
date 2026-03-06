@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -V >/dev/null || {
-    echo "not ok" 1 "version output failed"
+    echo "not ok" 1 - "version output failed"
     exit 0
 }
 
-echo "ok" 1 "version output available"
+echo "ok" 1 - "version output available"
 exit 0

@@ -21,9 +21,9 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png" \
     >/dev/null && {
-    echo "not ok" 1 "gd unexpectedly accepted grayscale PNG input"
+    echo "not ok" 1 - "gd unexpectedly accepted grayscale PNG input"
     exit 0
 }
 
-echo "ok" 1 "gd rejects grayscale PNG input"
+echo "ok" 1 - "gd rejects grayscale PNG input"
 exit 0

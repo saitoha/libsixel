@@ -26,16 +26,16 @@ set -v
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-444.jpg" \
     >"${ARTIFACT_LOCAL_DIR}/quicklook_jpeg_444.six" || {
-    echo "not ok" 1 "quicklook JPEG decode failed"
+    echo "not ok" 1 - "quicklook JPEG decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm" \
     "${ARTIFACT_LOCAL_DIR}/quicklook_jpeg_444.six" 2>&1) || {
-    echo "not ok" 1 "$lsqa_msg"
+    echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 "quicklook JPEG decode preserves quality"
+echo "ok" 1 - "quicklook JPEG decode preserves quality"
 exit 0

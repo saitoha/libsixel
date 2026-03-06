@@ -21,9 +21,9 @@ sum2=$(awk '
 ' "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 
 test "${sum1}" = "${sum2}" || {
-    echo "not ok" 1 "--help diverges from manpage"
+    echo "not ok" 1 - "--help diverges from manpage"
     exit 0
 }
 
-echo "ok" 1 "--help matches manpage"
+echo "ok" 1 - "--help matches manpage"
 exit 0

@@ -16,17 +16,17 @@ set -v
 ppm_small="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 pipeline_log=$(run_img2sixel --env SIXEL_THREADS=4 -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" 2>&1) || {
-    echo "not ok" 1 "baseline pipeline run failed"
+    echo "not ok" 1 - "baseline pipeline run failed"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
 
 summary=$(printf '%s' "${pipeline_log}" | grep "bands=" | head -n 1) || summary=""
 printf '%s' "${summary}" | grep -q '^    bands=' || {
-    echo "not ok" 1 "baseline bands/queue/mode"
+    echo "not ok" 1 - "baseline bands/queue/mode"
     exit 0
 }
 
-echo "ok" 1 "baseline bands/queue/mode"
+echo "ok" 1 - "baseline bands/queue/mode"
 
 exit 0

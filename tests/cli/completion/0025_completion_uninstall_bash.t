@@ -19,19 +19,19 @@ legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               -3 bash >/dev/null || {
-    echo "not ok" 1 "bash completion removal failed"
+    echo "not ok" 1 - "bash completion removal failed"
     exit 0
 }
 
 test ! -e "${primary_path}" || {
-    echo "not ok" 1 "bash completion not removed"
+    echo "not ok" 1 - "bash completion not removed"
     exit 0
 }
 
 test ! -e "${legacy_path}" || {
-    echo "not ok" 1 "bash completion not removed"
+    echo "not ok" 1 - "bash completion not removed"
     exit 0
 }
 
-echo "ok" 1 "bash completion removed"
+echo "ok" 1 - "bash completion removed"
 exit 0

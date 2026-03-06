@@ -16,10 +16,10 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 snake_dims="${ARTIFACT_LOCAL_DIR}/snake-dims.sixel"
 
 run_img2sixel -w210 -h210 -djajuni -bxterm256 -o "${snake_dims}" <"${snake_jpg}" || {
-    echo "not ok" 1 "explicit dimensions and palette options failed"
+    echo "not ok" 1 - "explicit dimensions and palette options failed"
     exit 0
 }
 
-echo "ok" 1 "explicit dimensions and palette options succeeded"
+echo "ok" 1 - "explicit dimensions and palette options succeeded"
 
 exit 0

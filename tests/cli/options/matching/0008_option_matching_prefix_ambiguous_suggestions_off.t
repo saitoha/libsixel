@@ -16,7 +16,7 @@ set -v
 msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
     -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 "ambiguous prefix unexpectedly succeeded"
+    echo "not ok" 1 - "ambiguous prefix unexpectedly succeeded"
     exit 0
 }
 
@@ -24,7 +24,7 @@ case "${msg}" in
     *'ambiguous prefix "sie".'*)
         ;;
     *)
-        echo "not ok" 1 "ambiguity diagnostic still contains candidate list"
+        echo "not ok" 1 - "ambiguity diagnostic still contains candidate list"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -33,7 +33,7 @@ esac
 
 case "${msg}" in
     *'(matches:'*)
-        echo "not ok" 1 "ambiguity diagnostic still contains candidate list"
+        echo "not ok" 1 - "ambiguity diagnostic still contains candidate list"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -42,5 +42,5 @@ case "${msg}" in
         ;;
 esac
 
-echo "ok" 1 "ambiguity diagnostic omits candidate list when disabled"
+echo "ok" 1 - "ambiguity diagnostic omits candidate list when disabled"
 exit 0

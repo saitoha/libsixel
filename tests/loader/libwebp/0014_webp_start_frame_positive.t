@@ -21,22 +21,22 @@ set -v
 run_img2sixel -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_start_default.six" || {
-    echo "not ok" 1 "baseline libwebp animation decode failed"
+    echo "not ok" 1 - "baseline libwebp animation decode failed"
     exit 0
 }
 
 run_img2sixel --start-frame=1 -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_start_positive.six" || {
-    echo "not ok" 1 "libwebp decode with positive start frame failed"
+    echo "not ok" 1 - "libwebp decode with positive start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/webp_start_default.six" \
     "${ARTIFACT_LOCAL_DIR}/webp_start_positive.six" && {
-    echo "not ok" 1 "positive start frame did not change libwebp output"
+    echo "not ok" 1 - "positive start frame did not change libwebp output"
     exit 0
 }
 
-echo "ok" 1 "libwebp positive start frame is applied"
+echo "ok" 1 - "libwebp positive start frame is applied"
 exit 0

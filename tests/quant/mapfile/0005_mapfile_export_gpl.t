@@ -17,15 +17,15 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 gpl_palette="${ARTIFACT_LOCAL_DIR}/palette.gpl"
 
 run_img2sixel -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six" "${snake_png}" || {
-    echo "not ok" 1 "GPL palette export failed"
+    echo "not ok" 1 - "GPL palette export failed"
     exit 0
 }
 
 head -n 1 "${gpl_palette}" | grep -q "GIMP Palette" || {
-    echo "not ok" 1 "GPL palette missing GIMP header"
+    echo "not ok" 1 - "GPL palette missing GIMP header"
     exit 0
 }
 
-echo "ok" 1 "GPL palette exported with GIMP header"
+echo "ok" 1 - "GPL palette exported with GIMP header"
 
 exit 0

@@ -25,9 +25,9 @@ set -v
 
 run_img2sixel -L wic! -ldisable -dnone -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
-    echo "not ok" 1 "wic static frame rendering failed"
+    echo "not ok" 1 - "wic static frame rendering failed"
     exit 0
 }
 
-echo "ok" 1 "wic static frame rendering succeeded"
+echo "ok" 1 - "wic static frame rendering succeeded"
 exit 0

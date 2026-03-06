@@ -17,9 +17,9 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env
     -T 1 -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >/dev/null && {
-    echo "not ok" 1 "-T unexpectedly succeeded with builtin loader"
+    echo "not ok" 1 - "-T unexpectedly succeeded with builtin loader"
     exit 0
 }
 
-echo "ok" 1 "builtin loader rejects APNG -T start frame override"
+echo "ok" 1 - "builtin loader rejects APNG -T start frame override"
 exit 0

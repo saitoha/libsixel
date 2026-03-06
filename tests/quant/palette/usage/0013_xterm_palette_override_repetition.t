@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/xterm-override.sixel"
 
 run_img2sixel -7 -w100 -h100 -bxterm16 -B"#aB3" -B"#aB3" \
         "${snake_pbm}" >"${target_sixel}" || {
-    echo "not ok" 1 "xterm palette overrides fail"
+    echo "not ok" 1 - "xterm palette overrides fail"
     exit 0
 }
 
-echo "ok" 1 "xterm palette overrides repeat"
+echo "ok" 1 - "xterm palette overrides repeat"
 
 exit 0

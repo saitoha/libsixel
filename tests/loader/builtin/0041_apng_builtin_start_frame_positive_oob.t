@@ -17,9 +17,9 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env
     -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >/dev/null || {
-    echo "not ok" 1 "out-of-range positive start frame decode failed on builtin loader"
+    echo "not ok" 1 - "out-of-range positive start frame decode failed on builtin loader"
     exit 0
 }
 
-echo "ok" 1 "builtin loader accepts positive out-of-range start frame"
+echo "ok" 1 - "builtin loader accepts positive out-of-range start frame"
 exit 0

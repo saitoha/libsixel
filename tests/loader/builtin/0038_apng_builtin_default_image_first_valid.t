@@ -16,9 +16,9 @@ set -v
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_libpng_default_image_first_valid.png" \
     -o/dev/null || {
-    echo "not ok" 1 "APNG default image first input failed"
+    echo "not ok" 1 - "APNG default image first input failed"
     exit 0
 }
 
-echo "ok" 1 "APNG default image first input is handled"
+echo "ok" 1 - "APNG default image first input is handled"
 exit 0

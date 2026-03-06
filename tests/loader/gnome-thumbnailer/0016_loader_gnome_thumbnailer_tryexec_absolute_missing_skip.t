@@ -25,14 +25,14 @@ run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "HOME=${ARTIFACT_LOCAL_DIR}" \
               -v \
               -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" || {
-    echo "not ok" 1 "img2sixel failed"
+    echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 "absolute TryExec skip behavior failed"
+    echo "not ok" 1 - "absolute TryExec skip behavior failed"
     exit 0
 }
 
-echo "ok" 1 "missing absolute TryExec entry is skipped"
+echo "ok" 1 - "missing absolute TryExec entry is skipped"
 exit 0

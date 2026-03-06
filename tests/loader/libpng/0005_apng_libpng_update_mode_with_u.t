@@ -21,7 +21,7 @@ set -v
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! -S -T 1 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_libpng_update_frame1.six" || {
-    echo "not ok" 1 "APNG libpng frame extraction failed"
+    echo "not ok" 1 - "APNG libpng frame extraction failed"
     exit 0
 }
 
@@ -29,16 +29,16 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env
     -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_builtin_update_frame1.six" || {
-    echo "not ok" 1 "APNG builtin reference extraction failed"
+    echo "not ok" 1 - "APNG builtin reference extraction failed"
     exit 0
 }
 
 run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
     "${ARTIFACT_LOCAL_DIR}/apng_builtin_update_frame1.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_libpng_update_frame1.six" >/dev/null || {
-    echo "not ok" 1 "APNG libpng update frame differs from builtin reference"
+    echo "not ok" 1 - "APNG libpng update frame differs from builtin reference"
     exit 0
 }
 
-echo "ok" 1 "APNG libpng update frame matches builtin reference"
+echo "ok" 1 - "APNG libpng update frame matches builtin reference"
 exit 0

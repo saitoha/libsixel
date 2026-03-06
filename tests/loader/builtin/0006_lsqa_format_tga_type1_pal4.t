@@ -25,7 +25,7 @@ reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.p
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "type 1 PAL4 TGA quality below floor"
+    echo "not ok" 1 - "type 1 PAL4 TGA quality below floor"
     exit 0
 }
 
@@ -37,16 +37,16 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 "type 1 PAL4 TGA quality below floor"
+    echo "not ok" 1 - "type 1 PAL4 TGA quality below floor"
     exit 0
 }
 
-echo "ok" 1 "type 1 PAL4 TGA meets lsqa floor"
+echo "ok" 1 - "type 1 PAL4 TGA meets lsqa floor"
 
 
 exit 0

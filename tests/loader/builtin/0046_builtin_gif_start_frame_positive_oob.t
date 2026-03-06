@@ -17,9 +17,9 @@ run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=999" \
     -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >/dev/null && {
-    echo "not ok" 1 "out-of-range positive start frame unexpectedly succeeded"
+    echo "not ok" 1 - "out-of-range positive start frame unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 "builtin GIF positive out-of-range start frame is rejected"
+echo "ok" 1 - "builtin GIF positive out-of-range start frame is rejected"
 exit 0

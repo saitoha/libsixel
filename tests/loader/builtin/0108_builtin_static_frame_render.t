@@ -16,9 +16,9 @@ set -v
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 run_img2sixel -Lbuiltin! -ldisable -dnone -g "${image_gif}" >/dev/null || {
-    echo "not ok" 1 "static frame rendering fails"
+    echo "not ok" 1 - "static frame rendering fails"
     exit 0
 }
 
-echo "ok" 1 "static frame rendering succeeds"
+echo "ok" 1 - "static frame rendering succeeds"
 exit 0

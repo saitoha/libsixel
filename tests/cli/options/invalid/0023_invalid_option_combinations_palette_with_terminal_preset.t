@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -p64 -bxterm256 </dev/null >/dev/null  && {
-    echo "not ok" 1 "unexpected success: palette size conflicts with builtin palette option"
+    echo "not ok" 1 - "unexpected success: palette size conflicts with builtin palette option"
     exit 0
 }
 
-echo "ok" 1 "invalid option rejected"
+echo "ok" 1 - "invalid option rejected"
 exit 0

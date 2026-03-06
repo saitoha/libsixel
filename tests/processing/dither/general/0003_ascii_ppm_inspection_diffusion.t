@@ -16,9 +16,9 @@ snake_ascii_ppm="${TOP_SRCDIR}/images/snake-ascii.ppm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ascii-ppm-inspection.txt"
 
 run_img2sixel -I -8 -dburkes -B"#ffffffffffff" "${snake_ascii_ppm}" >"${target_txt}" || {
-    echo "not ok" 1 "ASCII PPM inspection failed"
+    echo "not ok" 1 - "ASCII PPM inspection failed"
     exit 0
 }
 
-echo "ok" 1 "ASCII PPM inspection honours diffusion"
+echo "ok" 1 - "ASCII PPM inspection honours diffusion"
 exit 0

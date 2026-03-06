@@ -16,10 +16,10 @@ snake_tga="${TOP_SRCDIR}/tests/data/inputs/snake_64.tga"
 target_sixel="${ARTIFACT_LOCAL_DIR}/vt340-mono.sixel"
 
 run_img2sixel -bvt340mono "${snake_tga}" >"${target_sixel}" || {
-    echo "not ok" 1 "VT340 monochrome control failed"
+    echo "not ok" 1 - "VT340 monochrome control failed"
     exit 0
 }
 
-echo "ok" 1 "VT340 monochrome control sequences emitted"
+echo "ok" 1 - "VT340 monochrome control sequences emitted"
 
 exit 0

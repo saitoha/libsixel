@@ -17,10 +17,10 @@ target_txt="${ARTIFACT_LOCAL_DIR}/ppm-inspection.txt"
 
 run_img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs \
         -rbilinear -trgb "${snake_ppm}" >"${target_txt}" || {
-    echo "not ok" 1 "PPM inspection with scaling fails"
+    echo "not ok" 1 - "PPM inspection with scaling fails"
     exit 0
 }
 
-echo "ok" 1 "PPM inspection tolerates aggressive scaling"
+echo "ok" 1 - "PPM inspection tolerates aggressive scaling"
 
 exit 0

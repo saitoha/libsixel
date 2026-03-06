@@ -16,9 +16,9 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_sixel="${ARTIFACT_LOCAL_DIR}/monochrome-frame.sixel"
 
 run_img2sixel -p 1 -h100 -n1 "${snake_jpg}" >"${target_sixel}" || {
-    echo "not ok" 1 "monochrome frame conversion fails"
+    echo "not ok" 1 - "monochrome frame conversion fails"
     exit 0
 }
 
-echo "ok" 1 "monochrome frame conversion succeeds"
+echo "ok" 1 - "monochrome frame conversion succeeds"
 exit 0
