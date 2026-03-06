@@ -416,18 +416,44 @@ staticcheck_cases = [
       meson.project_source_root(),
       python_for_tests_path],
   ],
+  [
+    'staticcheck-build-doc-configure-help',
+    [meson.current_source_dir() / '_static/sh/staticcheck-build-doc-configure-help.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-build-doc-meson-options',
+    [meson.current_source_dir() / '_static/sh/staticcheck-build-doc-meson-options.sh',
+      meson.project_source_root()],
+  ],
 ]
 
 foreach static_case : staticcheck_cases
-  static_name = static_case[0]
   static_cmd = static_case[1]
-  test(static_name, sh,
-    args: ['-c', python_tap_wrapper, 'sh'] + static_cmd,
-    protocol: 'tap',
-    timeout: 90,
-    suite: ['staticcheck'])
+  run_target(static_case[0], command: [sh] + static_cmd)
 endforeach
 
-meson_prog = find_program('meson')
 run_target('staticcheck',
-  command: [meson_prog, 'test', '--suite', 'staticcheck', '-C', meson.project_build_root()])
+  command: [
+    sh,
+    '-c',
+    'set -eu; "$1" "$2" "$3"; "$4" "$5" "$6" "$7"; "$8" "$9" "${10}"; "${11}" "${12}" "${13}"; "${14}" "${15}"; "${16}" "${17}"',
+    'sh',
+    staticcheck_cases[0][1][0],
+    staticcheck_cases[0][1][1],
+    staticcheck_cases[0][1][2],
+    staticcheck_cases[1][1][0],
+    staticcheck_cases[1][1][1],
+    staticcheck_cases[1][1][2],
+    staticcheck_cases[1][1][3],
+    staticcheck_cases[2][1][0],
+    staticcheck_cases[2][1][1],
+    staticcheck_cases[2][1][2],
+    staticcheck_cases[3][1][0],
+    staticcheck_cases[3][1][1],
+    staticcheck_cases[3][1][2],
+    staticcheck_cases[4][1][0],
+    staticcheck_cases[4][1][1],
+    staticcheck_cases[5][1][0],
+    staticcheck_cases[5][1][1],
+  ])
