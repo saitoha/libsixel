@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L librsvg! "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null && {
-    echo "not ok" 1 "forced librsvg loader accepted non-SVG signature"
+    echo "not ok" 1 - "forced librsvg loader accepted non-SVG signature"
     exit 0
 }
 
-echo "ok" 1 "forced librsvg loader rejects non-SVG signature"
+echo "ok" 1 - "forced librsvg loader rejects non-SVG signature"
 exit 0

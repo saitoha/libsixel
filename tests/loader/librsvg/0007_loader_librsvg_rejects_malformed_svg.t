@@ -28,9 +28,9 @@ status="$?"
 set -e
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 "forced librsvg unexpectedly accepted malformed SVG"
+    echo "not ok" 1 - "forced librsvg unexpectedly accepted malformed SVG"
     exit 0
 }
 
-echo "ok" 1 "forced librsvg rejects malformed SVG"
+echo "ok" 1 - "forced librsvg rejects malformed SVG"
 exit 0

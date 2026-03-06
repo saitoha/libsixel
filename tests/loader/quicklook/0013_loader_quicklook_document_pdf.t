@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/quicklook/sample.pdf" >/dev/null || {
-    echo "not ok" 1 "quicklook PDF render failed"
+    echo "not ok" 1 - "quicklook PDF render failed"
     exit 0
 }
 
-echo "ok" 1 "quicklook renders PDF"
+echo "ok" 1 - "quicklook renders PDF"
 exit 0

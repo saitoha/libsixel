@@ -19,10 +19,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel --env SIXEL_DITHER_BLUENOISE_SEED=123 \
         -d bluenoise -y raster --precision=8bit -p 16 \
         -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "positional 8-bit bluenoise seed env failed"
+    echo "not ok" 1 - "positional 8-bit bluenoise seed env failed"
     exit 0
 }
 
-echo "ok" 1 "positional 8-bit bluenoise seed env passed"
+echo "ok" 1 - "positional 8-bit bluenoise seed env passed"
 
 exit 0

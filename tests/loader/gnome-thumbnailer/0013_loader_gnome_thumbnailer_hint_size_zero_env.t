@@ -29,7 +29,7 @@ run_img2sixel \
     --env "PATH=${bin_dir}:${PATH}" \
     --env "THUMB_LOG=${default_log}" \
     -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    echo "not ok" 1 "img2sixel failed"
+    echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
@@ -41,21 +41,21 @@ run_img2sixel \
     --env "THUMB_LOG=${zero_log}" \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=0" \
     -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    echo "not ok" 1 "img2sixel failed"
+    echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
 zero_size=$(cat "${zero_log}")
 
 test -n "${default_size}" || {
-    echo "not ok" 1 "zero hint-size env fallback check failed"
+    echo "not ok" 1 - "zero hint-size env fallback check failed"
     exit 0
 }
 
 test "${default_size}" = "${zero_size}" || {
-    echo "not ok" 1 "zero hint-size env fallback check failed"
+    echo "not ok" 1 - "zero hint-size env fallback check failed"
     exit 0
 }
 
-echo "ok" 1 "zero hint-size env falls back to default"
+echo "ok" 1 - "zero hint-size env falls back to default"
 exit 0

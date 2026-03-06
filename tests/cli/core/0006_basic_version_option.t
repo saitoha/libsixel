@@ -14,8 +14,8 @@ echo "1..1"
 set -v
 
 run_sixel2png -V >/dev/null || {
-    echo "not ok" 1 "version option failed"
+    echo "not ok" 1 - "version option failed"
 }
 
-echo "ok" 1 "prints version"
+echo "ok" 1 - "prints version"
 exit 0

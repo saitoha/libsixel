@@ -17,10 +17,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/rbc-float32.six"
 
 run_img2sixel --lookup-policy=rbc --precision=float32 -p 16 -d none \
         -o "${output_sixel}" "${snake_png}" || {
-    echo "not ok" 1 "float32 RBC lookup policy failed"
+    echo "not ok" 1 - "float32 RBC lookup policy failed"
     exit 0
 }
 
-echo "ok" 1 "float32 RBC lookup policy completes"
+echo "ok" 1 - "float32 RBC lookup policy completes"
 
 exit 0

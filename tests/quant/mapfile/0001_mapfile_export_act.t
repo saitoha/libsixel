@@ -17,16 +17,16 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 act_palette="${ARTIFACT_LOCAL_DIR}/palette.act"
 
 run_img2sixel -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six" "${snake_png}" || {
-    echo "not ok" 1 "ACT palette export failed"
+    echo "not ok" 1 - "ACT palette export failed"
     exit 0
 }
 
 act_size=$(wc -c <"${act_palette}")
 test "${act_size}" -eq 772 || {
-    echo "not ok" 1 "ACT palette length mismatch (${act_size})"
+    echo "not ok" 1 - "ACT palette length mismatch (${act_size})"
     exit 0
 }
 
-echo "ok" 1 "ACT palette exported with correct length"
+echo "ok" 1 - "ACT palette exported with correct length"
 
 exit 0

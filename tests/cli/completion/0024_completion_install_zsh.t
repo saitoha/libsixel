@@ -26,29 +26,29 @@ rc_path="${completion_home}/.zshrc"
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               --env IMG2SIXEL_COMPLETION_DIR="${completion_dir}" \
               -2 zsh >/dev/null || {
-    echo "not ok" 1 "zsh completion install failed"
+    echo "not ok" 1 - "zsh completion install failed"
     exit 0
 }
 
 test -f "${target_path}" || {
-    echo "not ok" 1 "zsh completion not installed"
+    echo "not ok" 1 - "zsh completion not installed"
     exit 0
 }
 
 grep '#compdef img2sixel' "${target_path}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "zsh completion not installed"
+    echo "not ok" 1 - "zsh completion not installed"
     exit 0
 }
 
 grep "fpath+=(\"\$HOME/.zfunc\")" "${rc_path}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "zsh completion not installed"
+    echo "not ok" 1 - "zsh completion not installed"
     exit 0
 }
 
 grep 'autoload -Uz compinit && compinit -u' "${rc_path}" >/dev/null 2>&1 || {
-    echo "not ok" 1 "zsh completion not installed"
+    echo "not ok" 1 - "zsh completion not installed"
     exit 0
 }
 
-echo "ok" 1 "zsh completion installed"
+echo "ok" 1 - "zsh completion installed"
 exit 0

@@ -15,7 +15,7 @@ set -v
 
 msg=$(set +xv; run_img2sixel -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 "ambiguous prefix unexpectedly succeeded"
+    echo "not ok" 1 - "ambiguous prefix unexpectedly succeeded"
     exit 0
 }
 
@@ -23,12 +23,12 @@ case "${msg}" in
     *'ambiguous prefix "sie"'*)
         ;;
     *)
-        echo "not ok" 1 "missing diagnostic for ambiguous prefix"
+        echo "not ok" 1 - "missing diagnostic for ambiguous prefix"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 "ambiguous prefix reports diagnostic"
+echo "ok" 1 - "ambiguous prefix reports diagnostic"
 exit 0

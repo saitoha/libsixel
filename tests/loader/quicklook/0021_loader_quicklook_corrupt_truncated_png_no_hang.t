@@ -21,5 +21,5 @@ set -v
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/corrupted/truncated.png" >/dev/null 2>/dev/null || :
 
-echo "ok" 1 "quicklook does not hang on truncated PNG"
+echo "ok" 1 - "quicklook does not hang on truncated PNG"
 exit 0

@@ -21,9 +21,9 @@ set -v
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 
 run_img2sixel -Llibwebp! -ldisable "${image_webp}" >/dev/null || {
-    echo "not ok" 1 "libwebp loop disable failed"
+    echo "not ok" 1 - "libwebp loop disable failed"
     exit 0
 }
 
-echo "ok" 1 "libwebp loop disable succeeded"
+echo "ok" 1 - "libwebp loop disable succeeded"
 exit 0

@@ -21,9 +21,9 @@ loader_output=$(run_test_runner "loader/0009_loader_wic_pixelformat" 2>&1) || rc
 printf '%s' "${loader_output}" >&2
 
 test "${rc-0}" -eq 0 || {
-    echo "not ok" 1 "loader/0009_loader_wic_pixelformat"
+    echo "not ok" 1 - "loader/0009_loader_wic_pixelformat"
     exit 0
 }
 
-echo "ok" 1 "loader/0009_loader_wic_pixelformat"
+echo "ok" 1 - "loader/0009_loader_wic_pixelformat"
 exit 0

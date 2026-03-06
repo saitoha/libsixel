@@ -18,9 +18,9 @@ snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/crop-x-dither.sixel"
 
 run_img2sixel -c200x200+100+100 -dx_dither "${snake_gray_png}" >"${target_sixel}" || {
-    echo "not ok" 1 "cropping with X ordered dither fails"
+    echo "not ok" 1 - "cropping with X ordered dither fails"
     exit "${status}"
 }
 
-echo "ok" 1 "cropping with X ordered dither succeeds"
+echo "ok" 1 - "cropping with X ordered dither succeeds"
 exit "${status}"

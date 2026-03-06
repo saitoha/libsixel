@@ -25,7 +25,7 @@ run_img2sixel --env SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
               --env SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
               --env SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
               -Q kmeans -F ward -W oklab -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "img2sixel merge kmeans float32 failed"
+    echo "not ok" 1 - "img2sixel merge kmeans float32 failed"
     exit 0
 }
 
@@ -35,14 +35,14 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status-}" = 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
 test -n "${lsqa_run_status-}" && {
-    echo "not ok" 1 "merge kmeans float32 lsqa failed (${lsqa_run_status-})"
+    echo "not ok" 1 - "merge kmeans float32 lsqa failed (${lsqa_run_status-})"
     exit 0
 }
 
-echo "ok" 1 "merge kmeans float32 lsqa passed"
+echo "ok" 1 - "merge kmeans float32 lsqa passed"
 exit 0

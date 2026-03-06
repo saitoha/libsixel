@@ -17,15 +17,15 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 pal_stdout="${ARTIFACT_LOCAL_DIR}/palette-stdout.pal"
 
 run_img2sixel -M pal:- -o "${ARTIFACT_LOCAL_DIR}/pal-stdout.six"     "${snake_png}" >"${pal_stdout}" || {
-    echo "not ok" 1 "PAL stdout export failed"
+    echo "not ok" 1 - "PAL stdout export failed"
     exit 0
 }
 
 head -n 1 "${pal_stdout}" | grep -q "JASC-PAL" || {
-    echo "not ok" 1 "PAL stdout export missing JASC-PAL header"
+    echo "not ok" 1 - "PAL stdout export missing JASC-PAL header"
     exit 0
 }
 
-echo "ok" 1 "PAL stdout export emitted JASC-PAL header"
+echo "ok" 1 - "PAL stdout export emitted JASC-PAL header"
 
 exit 0

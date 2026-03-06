@@ -17,9 +17,9 @@ snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
 run_img2sixel -I -dstucki -thls -B"#a0B030" "${snake_ppm}" >"${target_txt}" || {
-    echo "not ok" 1 "inspection with diffusion failed"
+    echo "not ok" 1 - "inspection with diffusion failed"
     exit 0
 }
 
-echo "ok" 1 "inspection with diffusion and background works"
+echo "ok" 1 - "inspection with diffusion and background works"
 exit 0

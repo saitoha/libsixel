@@ -23,7 +23,7 @@ SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
         SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
         run_img2sixel -Q kmeans -6 -W oklab \
     -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "img2sixel snap kmeans float32 failed"
+    echo "not ok" 1 - "img2sixel snap kmeans float32 failed"
     exit 0
 }
 
@@ -33,15 +33,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "snap kmeans float32 lsqa passed"
+    echo "ok" 1 - "snap kmeans float32 lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "snap kmeans float32 lsqa failed"
+echo "not ok" 1 - "snap kmeans float32 lsqa failed"
 
 exit 0

@@ -24,13 +24,13 @@ set -v
 
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     -2 zsh >/dev/null || {
-    echo "not ok" 1 "zsh completion install failed on first run"
+    echo "not ok" 1 - "zsh completion install failed on first run"
     exit 0
 }
 
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     -2 zsh >/dev/null || {
-    echo "not ok" 1 "zsh completion install failed on second run"
+    echo "not ok" 1 - "zsh completion install failed on second run"
     exit 0
 }
 
@@ -38,14 +38,14 @@ fpath_count=$(grep -c "^fpath+=(\"\$HOME/.zfunc\")$" "${rc_path}")
 compinit_count=$(grep -c '^autoload -Uz compinit && compinit -u$' "${rc_path}")
 
 test "${fpath_count}" -eq 1 || {
-    echo "not ok" 1 "zsh fpath line was duplicated"
+    echo "not ok" 1 - "zsh fpath line was duplicated"
     exit 0
 }
 
 test "${compinit_count}" -eq 1 || {
-    echo "not ok" 1 "zsh compinit line was duplicated"
+    echo "not ok" 1 - "zsh compinit line was duplicated"
     exit 0
 }
 
-echo "ok" 1 "zsh rc lines stay unique across repeated installs"
+echo "ok" 1 - "zsh rc lines stay unique across repeated installs"
 exit 0

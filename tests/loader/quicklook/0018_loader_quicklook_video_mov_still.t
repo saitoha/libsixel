@@ -25,9 +25,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${SIXEL_TEST_QUICKLOOK_MOV}" >/dev/null || {
-    echo "not ok" 1 "quicklook MOV still-frame decode failed"
+    echo "not ok" 1 - "quicklook MOV still-frame decode failed"
     exit 0
 }
 
-echo "ok" 1 "quicklook reads MOV as still image"
+echo "ok" 1 - "quicklook reads MOV as still image"
 exit 0

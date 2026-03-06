@@ -28,14 +28,14 @@ image_ref="${TOP_SRCDIR}/tests/data/inputs/formats/animated-8x8-frame1-reference
 output_sixel="${ARTIFACT_LOCAL_DIR}/webp_static_frame.six"
 
 run_img2sixel -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {
-    echo "not ok" 1 "libwebp static frame conversion failed"
+    echo "not ok" 1 - "libwebp static frame conversion failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${image_ref}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 "${lsqa_msg}"
+    echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 "libwebp static frame output matched expected first frame"
+echo "ok" 1 - "libwebp static frame output matched expected first frame"
 exit 0

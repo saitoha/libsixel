@@ -18,20 +18,20 @@ log_file="${ARTIFACT_LOCAL_DIR}/pipeline-row-ready.log"
 out_file="${ARTIFACT_LOCAL_DIR}/tall-row-ready.six"
 
 SIXEL_LOG_PATH="${log_file}"         SIXEL_THREADS=6         SIXEL_DITHER_PARALLEL_THREADS_MAX=1         SIXEL_DITHER_PARALLEL_BAND_WIDTH=9         SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4         run_img2sixel -v -o "${out_file}" "${ppm_tall}" || {
-    echo "not ok" 1 "row_ready conversion failed"
+    echo "not ok" 1 - "row_ready conversion failed"
     exit 0
 }
 
 grep -q '"event":"row_ready"' "${log_file}" || {
-    echo "ok" 1 "row_ready unavailable in serial environment"
+    echo "ok" 1 - "row_ready unavailable in serial environment"
     exit 0
 }
 
 grep -q '"event":"row_ready".*"job":[0-9][0-9]*' "${log_file}" || {
-    echo "not ok" 1 "row_ready jobs are non-negative"
+    echo "not ok" 1 - "row_ready jobs are non-negative"
     exit 0
 }
 
-echo "ok" 1 "row_ready jobs are non-negative"
+echo "ok" 1 - "row_ready jobs are non-negative"
 
 exit 0

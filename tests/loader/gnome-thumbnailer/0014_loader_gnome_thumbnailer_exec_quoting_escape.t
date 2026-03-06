@@ -27,14 +27,14 @@ run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir}:${PATH}" \
               --env "THUMB_LOG=${log_file}" \
               -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    echo "not ok" 1 "img2sixel failed"
+    echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
 awk '/a3=value with space|a4=escaped token|a5=%/ { ++cnt; } END { if (cnt != 3) exit 1; }' "${log_file}" || {
-    echo "not ok" 1 "Exec quote and escape parsing failed"
+    echo "not ok" 1 - "Exec quote and escape parsing failed"
     exit 0
 }
 
-echo "ok" 1 "Exec quote and escape tokens are parsed correctly"
+echo "ok" 1 - "Exec quote and escape tokens are parsed correctly"
 exit 0

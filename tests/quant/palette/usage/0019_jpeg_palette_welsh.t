@@ -17,10 +17,10 @@ map8_png="${TOP_SRCDIR}/images/map8.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/jpeg-welsh.sixel"
 
 run_img2sixel -m "${map8_png}" -w200 -fau -rwelsh "${egret_jpg}" >"${target_sixel}" || {
-    echo "not ok" 1 "JPEG palette Welsh conversion fails"
+    echo "not ok" 1 - "JPEG palette Welsh conversion fails"
     exit 0
 }
 
-echo "ok" 1 "JPEG conversion using palette and Welsh filter"
+echo "ok" 1 - "JPEG conversion using palette and Welsh filter"
 
 exit 0

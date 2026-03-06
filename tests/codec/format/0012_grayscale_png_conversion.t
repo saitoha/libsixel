@@ -16,10 +16,10 @@ snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/gray-png.sixel"
 
 run_img2sixel "${snake_gray_png}" >"${target_sixel}" || {
-    echo "not ok" 1 "grayscale PNG conversion fails"
+    echo "not ok" 1 - "grayscale PNG conversion fails"
     exit 0
 }
 
-echo "ok" 1 "grayscale PNG conversion succeeds"
+echo "ok" 1 - "grayscale PNG conversion succeeds"
 
 exit 0

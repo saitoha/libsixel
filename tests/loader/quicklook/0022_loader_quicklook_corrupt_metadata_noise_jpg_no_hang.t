@@ -21,5 +21,5 @@ set -v
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/corrupted/metadata_noise.jpg" >/dev/null 2>/dev/null || :
 
-echo "ok" 1 "quicklook does not hang on metadata-noise JPEG"
+echo "ok" 1 - "quicklook does not hang on metadata-noise JPEG"
 exit 0

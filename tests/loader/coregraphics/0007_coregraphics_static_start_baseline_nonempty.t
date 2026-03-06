@@ -21,14 +21,14 @@ set -v
 run_img2sixel -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
-    echo "not ok" 1 "baseline static coregraphics decode failed"
+    echo "not ok" 1 - "baseline static coregraphics decode failed"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
-    echo "not ok" 1 "baseline static coregraphics decode produced empty output"
+    echo "not ok" 1 - "baseline static coregraphics decode produced empty output"
     exit 0
 }
 
-echo "ok" 1 "baseline static coregraphics output is non-empty"
+echo "ok" 1 - "baseline static coregraphics output is non-empty"
 exit 0

@@ -15,9 +15,9 @@ set -v
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 run_img2sixel -O --outfile=/dev/null <"${snake_jpg}" >/dev/null || {
-    echo "not ok" 1 "-O mode conversion failed"
+    echo "not ok" 1 - "-O mode conversion failed"
     exit 0
 }
 
-echo "ok" 1 "-O mode conversion succeeded"
+echo "ok" 1 - "-O mode conversion succeeded"
 exit 0

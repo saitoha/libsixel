@@ -15,7 +15,7 @@ set -v
 
 msg=$(set +xv; run_img2sixel -Qk:z=p "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 "unknown -Q suboption key unexpectedly succeeded"
+    echo "not ok" 1 - "unknown -Q suboption key unexpectedly succeeded"
     exit 0
 }
 
@@ -23,12 +23,12 @@ case "${msg}" in
     *"unknown suboption key"*)
         ;;
     *)
-        echo "not ok" 1 "missing unknown suboption key diagnostic"
+        echo "not ok" 1 - "missing unknown suboption key diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 "unknown -Q suboption key is rejected"
+echo "ok" 1 - "unknown -Q suboption key is rejected"
 exit 0

@@ -21,16 +21,16 @@ pipeline_log=$(
                   --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
                   --env SIXEL_THREADS=6 \
                   -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" 2>&1) || {
-    echo "not ok" 1 "override thread split run failed"
+    echo "not ok" 1 - "override thread split run failed"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
 
 printf '%s\n' "${pipeline_log}" | awk '/band_height=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
-    echo "not ok" 1 "override thread split"
+    echo "not ok" 1 - "override thread split"
     exit 0
 }
 
-echo "ok" 1 "override thread split"
+echo "ok" 1 - "override thread split"
 
 exit 0

@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/indexed-scale.sixel"
 
 run_img2sixel -7 -w300 "${snake_palette_png}" \
         >"${target_sixel}" || {
-    echo "not ok" 1 "indexed PNG scaling fails"
+    echo "not ok" 1 - "indexed PNG scaling fails"
     exit 0
 }
 
-echo "ok" 1 "indexed PNG scales to large width"
+echo "ok" 1 - "indexed PNG scales to large width"
 
 exit 0

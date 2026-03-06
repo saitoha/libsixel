@@ -22,10 +22,10 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_loop_disable_gif.sixel"
 
 run_img2sixel -L gdk-pixbuf2! -ldisable "${input_gif}" >"${output_sixel}" || {
-    echo "not ok" 1 "gdk-pixbuf2 GIF decode with loop disable failed"
+    echo "not ok" 1 - "gdk-pixbuf2 GIF decode with loop disable failed"
     exit 0
 }
 
-echo "ok" 1 "gdk-pixbuf2 GIF decode respects loop disable"
+echo "ok" 1 - "gdk-pixbuf2 GIF decode respects loop disable"
 
 exit 0

@@ -18,10 +18,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -d x_dither -y raster --precision=float32 -p 16! \
         -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "positional float32 x_dither forced palette failed"
+    echo "not ok" 1 - "positional float32 x_dither forced palette failed"
     exit 0
 }
 
-echo "ok" 1 "positional float32 x_dither forced palette passed"
+echo "ok" 1 - "positional float32 x_dither forced palette passed"
 
 exit 0

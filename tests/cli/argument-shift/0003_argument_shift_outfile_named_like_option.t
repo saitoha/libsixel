@@ -20,21 +20,21 @@ out_file="${ARTIFACT_LOCAL_DIR}/-p"
 
 cd "${ARTIFACT_LOCAL_DIR}" && {
     run_img2sixel -o -p "${image_path}" >/dev/null || {
-        echo "not ok" 1 "outfile named like option rejected"
+        echo "not ok" 1 - "outfile named like option rejected"
         printf '%s\n' '--- stderr ---' >&2
         exit 0
     }
 }
 
 cd "${TOP_SRCDIR}" || {
-    echo "not ok" 1 "failed to return to source directory"
+    echo "not ok" 1 - "failed to return to source directory"
     exit 0
 }
 
 test -s "${out_file}" || {
-    echo "not ok" 1 "outfile named like option missing"
+    echo "not ok" 1 - "outfile named like option missing"
     exit 0
 }
 
-echo "ok" 1 "outfile named like option is supported"
+echo "ok" 1 - "outfile named like option is supported"
 exit 0

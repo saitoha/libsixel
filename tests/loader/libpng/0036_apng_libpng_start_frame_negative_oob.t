@@ -22,9 +22,9 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --sta
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >/dev/null && {
-    echo "not ok" 1 "out-of-range negative start frame unexpectedly succeeded"
+    echo "not ok" 1 - "out-of-range negative start frame unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 "libpng APNG negative out-of-range start frame is rejected"
+echo "ok" 1 - "libpng APNG negative out-of-range start frame is rejected"
 exit 0

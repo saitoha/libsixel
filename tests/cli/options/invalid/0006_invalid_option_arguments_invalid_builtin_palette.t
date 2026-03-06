@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -b "" </dev/null >/dev/null  && {
-    echo "not ok" 1 "unexpected success: invalid builtin palette name"
+    echo "not ok" 1 - "unexpected success: invalid builtin palette name"
     exit 0
 }
 
-echo "ok" 1 "invalid option rejected"
+echo "ok" 1 - "invalid option rejected"
 exit 0

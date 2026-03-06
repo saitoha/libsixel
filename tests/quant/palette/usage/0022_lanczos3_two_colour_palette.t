@@ -17,10 +17,10 @@ target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos3-two-colour.sixel"
 
 run_img2sixel -p 2 -h100 -wauto -rlanczos3 "${snake_jpg}" \
         >"${target_sixel}" || {
-    echo "not ok" 1 "Lanczos3 scaling with two-colour palette fails"
+    echo "not ok" 1 - "Lanczos3 scaling with two-colour palette fails"
     exit 0
 }
 
-echo "ok" 1 "Lanczos3 scaling with two-colour palette works"
+echo "ok" 1 - "Lanczos3 scaling with two-colour palette works"
 
 exit 0

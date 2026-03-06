@@ -22,9 +22,9 @@ capture_output=$(run_img2sixel 'file:///test')
 set -e
 
 test -z "${capture_output}" || {
-    echo "not ok" 1 "invalid file URL produced output"
+    echo "not ok" 1 - "invalid file URL produced output"
     exit 0
 }
 
-echo "ok" 1 "rejects invalid file URL"
+echo "ok" 1 - "rejects invalid file URL"
 exit 0

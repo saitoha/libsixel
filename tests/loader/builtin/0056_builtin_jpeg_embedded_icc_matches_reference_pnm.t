@@ -22,14 +22,14 @@ reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_em
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-64-builtin-jpeg-icc.sixel"
 
 run_img2sixel -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
-    echo "not ok" 1 "builtin decode failed"
+    echo "not ok" 1 - "builtin decode failed"
     exit 0
 }
 
 run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${reference_ppm}" "${output_sixel}" >/dev/null || {
-    echo "not ok" 1 "builtin output mismatched converted reference"
+    echo "not ok" 1 - "builtin output mismatched converted reference"
     exit 0
 }
 
-echo "ok" 1 "builtin JPEG ICC conversion matches fixed PNM reference"
+echo "ok" 1 - "builtin JPEG ICC conversion matches fixed PNM reference"
 exit 0

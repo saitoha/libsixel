@@ -31,7 +31,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/fixed-float32-lookup-none-complexion.six"
 
 run_img2sixel -d fs --precision=float32 --lookup-policy=none \
         -C 8 -p 16 -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "fixed float32 lookup none complexion conversion failed"
+    echo "not ok" 1 - "fixed float32 lookup none complexion conversion failed"
     exit 0
 }
 
@@ -42,15 +42,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "fixed float32 lookup none complexion lsqa passed"
+    echo "ok" 1 - "fixed float32 lookup none complexion lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "fixed float32 lookup none complexion lsqa failed"
+echo "not ok" 1 - "fixed float32 lookup none complexion lsqa failed"
 
 exit 0

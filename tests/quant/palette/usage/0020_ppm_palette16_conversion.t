@@ -17,10 +17,10 @@ map16_png="${TOP_SRCDIR}/images/map16.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/ppm-palette16.sixel"
 
 run_img2sixel -m "${map16_png}" -w100 -hauto -rbicubic -dauto "${snake_ppm}" >"${target_sixel}" || {
-    echo "not ok" 1 "PPM conversion with 16-colour palette fails"
+    echo "not ok" 1 - "PPM conversion with 16-colour palette fails"
     exit 0
 }
 
-echo "ok" 1 "PPM conversion with 16-colour palette works"
+echo "ok" 1 - "PPM conversion with 16-colour palette works"
 
 exit 0

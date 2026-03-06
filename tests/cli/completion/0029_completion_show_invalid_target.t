@@ -14,9 +14,9 @@ echo '1..1'
 set -v
 
 run_img2sixel -1 fish >/dev/null && {
-    echo "not ok" 1 "invalid show target unexpectedly succeeded"
+    echo "not ok" 1 - "invalid show target unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 "invalid show target is rejected"
+echo "ok" 1 - "invalid show target is rejected"
 exit 0

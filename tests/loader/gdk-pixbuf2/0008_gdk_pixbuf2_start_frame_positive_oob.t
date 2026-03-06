@@ -22,9 +22,9 @@ run_img2sixel --start-frame=999 \
     -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >/dev/null && {
-    echo "not ok" 1 "out-of-range positive start frame unexpectedly succeeded"
+    echo "not ok" 1 - "out-of-range positive start frame unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 "gdk-pixbuf2 positive out-of-range start frame is rejected"
+echo "ok" 1 - "gdk-pixbuf2 positive out-of-range start frame is rejected"
 exit 0

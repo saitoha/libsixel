@@ -16,9 +16,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
 
 run_img2sixel -L builtin! "${input_png}" >/dev/null || {
-    echo "not ok" 1 "builtin loader indexed PNG palette path failed"
+    echo "not ok" 1 - "builtin loader indexed PNG palette path failed"
     exit 0
 }
 
-echo "ok" 1 "builtin loader keeps indexed PNG palette path"
+echo "ok" 1 - "builtin loader keeps indexed PNG palette path"
 exit 0

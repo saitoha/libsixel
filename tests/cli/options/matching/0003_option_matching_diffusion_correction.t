@@ -17,11 +17,11 @@ msg=$(set +xv; run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64
     -o/dev/null 2>&1) || {
     case "${msg}" in
         *'specified diffusion method is not supported.'*)
-            echo "ok" 1 "distance-1 typo rejected with diagnostic"
+            echo "ok" 1 - "distance-1 typo rejected with diagnostic"
             exit 0
             ;;
         *)
-            echo "not ok" 1 "unexpected rejection without diagnostic"
+            echo "not ok" 1 - "unexpected rejection without diagnostic"
             printf '%s\n' '--- stderr ---' >&2
             printf '%s\n' "${msg}" >&2
             exit 0
@@ -31,11 +31,11 @@ msg=$(set +xv; run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64
 
 case "${msg}" in
     *'corrected --diffusion value "burkez" -> "burkes".'*)
-        echo "ok" 1 "distance-1 typo is corrected"
+        echo "ok" 1 - "distance-1 typo is corrected"
         exit 0
         ;;
     *)
-        echo "not ok" 1 "missing correction notice"
+        echo "not ok" 1 - "missing correction notice"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0

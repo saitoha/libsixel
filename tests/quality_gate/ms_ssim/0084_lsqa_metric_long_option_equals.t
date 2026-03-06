@@ -11,18 +11,18 @@ set -v
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 value_short=$(run_lsqa -m MS-SSIM "${image_ref}" "${image_out}") || {
-    echo "not ok" 1 "failed to calculate metric with -m"
+    echo "not ok" 1 - "failed to calculate metric with -m"
     exit 0
 }
 value_long=$(run_lsqa --metrics=MS-SSIM "${image_ref}" "${image_out}") || {
-    echo "not ok" 1 "failed to calculate metric with --metrics="
+    echo "not ok" 1 - "failed to calculate metric with --metrics="
     exit 0
 }
 
 test "${value_short}" = "${value_long}" || {
-    echo "not ok" 1 "--metrics= output does not match -m"
+    echo "not ok" 1 - "--metrics= output does not match -m"
     exit 0
 }
 
-echo "ok" 1 "--metrics= returns same value as -m"
+echo "ok" 1 - "--metrics= returns same value as -m"
 exit 0

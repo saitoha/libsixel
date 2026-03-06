@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" >/dev/null || {
-    echo "not ok" 1 "quicklook animated WebP still-frame decode failed"
+    echo "not ok" 1 - "quicklook animated WebP still-frame decode failed"
     exit 0
 }
 
-echo "ok" 1 "quicklook reads animated WebP as still image"
+echo "ok" 1 - "quicklook reads animated WebP as still image"
 exit 0

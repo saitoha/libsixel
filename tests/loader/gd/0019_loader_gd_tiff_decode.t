@@ -21,7 +21,7 @@ set -v
 run_img2sixel -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff" \
     >/dev/null && {
-    echo "ok" 1 "gd decodes TIFF input"
+    echo "ok" 1 - "gd decodes TIFF input"
     exit 0
 }
 

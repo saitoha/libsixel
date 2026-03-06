@@ -17,20 +17,20 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 gpl_palette="${ARTIFACT_LOCAL_DIR}/palette-gpl.dat"
 
 run_img2sixel -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six"         "${snake_png}" || {
-    echo "not ok" 1 "Preparing GPL palette for import failed"
+    echo "not ok" 1 - "Preparing GPL palette for import failed"
     exit 0
 }
 
 run_img2sixel -m gpl:"${gpl_palette}"         -o "${ARTIFACT_LOCAL_DIR}/from-gpl.six" "${snake_png}" || {
-    echo "not ok" 1 "GPL palette conversion failed"
+    echo "not ok" 1 - "GPL palette conversion failed"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/from-gpl.six" || {
-    echo "not ok" 1 "GPL palette conversion produced no data"
+    echo "not ok" 1 - "GPL palette conversion produced no data"
     exit 0
 }
 
-echo "ok" 1 "GPL palette input via type prefix works"
+echo "ok" 1 - "GPL palette input via type prefix works"
 
 exit 0

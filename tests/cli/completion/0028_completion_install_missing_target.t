@@ -14,9 +14,9 @@ echo '1..1'
 set -v
 
 run_img2sixel -2 >/dev/null && {
-    echo "not ok" 1 "missing install target unexpectedly succeeded"
+    echo "not ok" 1 - "missing install target unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 "missing install target is rejected"
+echo "ok" 1 - "missing install target is rejected"
 exit 0

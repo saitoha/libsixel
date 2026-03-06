@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/truncated.png" \
     >/dev/null && {
-    echo "not ok" 1 "forced libwebp loader accepted corrupted PNG"
+    echo "not ok" 1 - "forced libwebp loader accepted corrupted PNG"
     exit 0
 }
 
-echo "ok" 1 "forced libwebp loader rejects corrupted PNG"
+echo "ok" 1 - "forced libwebp loader rejects corrupted PNG"
 exit 0

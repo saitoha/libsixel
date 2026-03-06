@@ -17,7 +17,7 @@ lsqa_floor=0.99
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/palette.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "palette quality regressed"
+    echo "not ok" 1 - "palette quality regressed"
     exit 0
 }
 
@@ -28,14 +28,14 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 "palette quality regressed"
+    echo "not ok" 1 - "palette quality regressed"
     exit 0
 }
 
-echo "ok" 1 "palette quality meets baseline"
+echo "ok" 1 - "palette quality meets baseline"
 exit 0

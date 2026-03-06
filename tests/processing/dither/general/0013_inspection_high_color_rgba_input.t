@@ -23,10 +23,10 @@ set -v
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
 run_img2sixel -I "${input_image}" >"${target_txt}" || {
-    echo "not ok" 1 "inspection with high color and RGBA input failed"
+    echo "not ok" 1 - "inspection with high color and RGBA input failed"
     exit 0
 }
 
-echo "ok" 1 "inspection with high color and RGBA input exits cleanly"
+echo "ok" 1 - "inspection with high color and RGBA input exits cleanly"
 
 exit 0

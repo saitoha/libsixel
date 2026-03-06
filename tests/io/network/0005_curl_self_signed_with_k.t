@@ -138,13 +138,13 @@ kill "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 test ${server_ok} -eq 0 || {
-    echo "not ok" 1 "self-signed fetch with -k failed"
+    echo "not ok" 1 - "self-signed fetch with -k failed"
     exit 0
 }
 
 test -s "${verify_output}" || {
-    echo "not ok" 1 "self-signed fetch with -k failed"
+    echo "not ok" 1 - "self-signed fetch with -k failed"
     exit 0
 }
 
-echo "ok" 1 "self-signed fetch succeeds with -k"
+echo "ok" 1 - "self-signed fetch succeeds with -k"

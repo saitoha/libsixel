@@ -16,7 +16,7 @@ set -v
 msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               -m "${TOP_SRCDIR}/tests/data/inputs/snake_64.pgn" \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
-    echo "not ok" 1 "missing mapfile unexpectedly succeeded"
+    echo "not ok" 1 - "missing mapfile unexpectedly succeeded"
     exit 0
 }
 
@@ -24,7 +24,7 @@ case "${msg}" in
     *'path "'*)
         ;;
     *)
-        echo "not ok" 1 "missing path suggestion diagnostics"
+        echo "not ok" 1 - "missing path suggestion diagnostics"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -35,12 +35,12 @@ case "${msg}" in
     *'Suggestions:'*)
         ;;
     *)
-        echo "not ok" 1 "missing mapfile reports unsupported suggestion lookup"
+        echo "not ok" 1 - "missing mapfile reports unsupported suggestion lookup"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 "missing mapfile prints ranked path suggestions"
+echo "ok" 1 - "missing mapfile prints ranked path suggestions"
 exit 0

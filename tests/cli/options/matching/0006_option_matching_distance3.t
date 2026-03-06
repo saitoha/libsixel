@@ -15,7 +15,7 @@ set -v
 
 msg=$(set +xv; run_img2sixel -r zzzzz "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 "distance-3 typo unexpectedly succeeded"
+    echo "not ok" 1 - "distance-3 typo unexpectedly succeeded"
     exit 0
 }
 
@@ -23,12 +23,12 @@ case "${msg}" in
     *'specified desampling method is not supported.'*)
         ;;
     *)
-        echo "not ok" 1 "missing diagnostic for distance-3 typo"
+        echo "not ok" 1 - "missing diagnostic for distance-3 typo"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 "distance-3 typo reports diagnostic"
+echo "ok" 1 - "distance-3 typo reports diagnostic"
 exit 0

@@ -21,5 +21,5 @@ set -v
 run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_fctl_oob.png" >/dev/null 2>/dev/null || :
 
-echo "ok" 1 "quicklook does not hang on invalid APNG fctl bounds"
+echo "ok" 1 - "quicklook does not hang on invalid APNG fctl bounds"
 exit 0

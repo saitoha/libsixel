@@ -21,9 +21,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 
 run_img2sixel -L libjpeg! "${input_png}" >/dev/null && {
-    echo "not ok" 1 "non-JPEG data unexpectedly accepted by libjpeg"
+    echo "not ok" 1 - "non-JPEG data unexpectedly accepted by libjpeg"
     exit 0
 }
 
-echo "ok" 1 "non-JPEG data is rejected by libjpeg"
+echo "ok" 1 - "non-JPEG data is rejected by libjpeg"
 exit 0

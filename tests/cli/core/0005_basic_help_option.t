@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_sixel2png -H >/dev/null || {
-    echo "not ok" 1 "help option failed"
+    echo "not ok" 1 - "help option failed"
     exit 0
 }
 
-echo "ok" 1 "prints help"
+echo "ok" 1 - "prints help"
 exit 0

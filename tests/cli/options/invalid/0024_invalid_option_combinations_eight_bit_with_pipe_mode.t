@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 run_img2sixel -8 -P </dev/null >/dev/null  && {
-    echo "not ok" 1 "unexpected success: 8-bit output conflicts with pipe mode"
+    echo "not ok" 1 - "unexpected success: 8-bit output conflicts with pipe mode"
     exit 0
 }
 
-echo "ok" 1 "invalid option rejected"
+echo "ok" 1 - "invalid option rejected"
 exit 0

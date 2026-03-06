@@ -20,9 +20,9 @@ set -v
 
 run_img2sixel -L gd! -ldisable -dnone -u -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
-    echo "not ok" 1 "gd combined update/static frame failed"
+    echo "not ok" 1 - "gd combined update/static frame failed"
     exit 0
 }
 
-echo "ok" 1 "gd combined update/static frame succeeded"
+echo "ok" 1 - "gd combined update/static frame succeeded"
 exit 0

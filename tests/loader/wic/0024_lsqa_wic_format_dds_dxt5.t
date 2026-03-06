@@ -35,7 +35,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt5.dds"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_dds_dxt5.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "wic dds dxt5 conversion failed"
+    echo "not ok" 1 - "wic dds dxt5 conversion failed"
     exit 0
 }
 
@@ -44,15 +44,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "wic dds dxt5 quality meets baseline"
+    echo "ok" 1 - "wic dds dxt5 quality meets baseline"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "wic dds dxt5 quality regressed"
+echo "not ok" 1 - "wic dds dxt5 quality regressed"
 
 exit 0

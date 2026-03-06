@@ -16,10 +16,10 @@ snake_gray_jpg="${TOP_SRCDIR}/images/snake-grayscale.jpg"
 target_txt="${ARTIFACT_LOCAL_DIR}/gray-jpeg-inspection.txt"
 
 run_img2sixel -I "${snake_gray_jpg}" >"${target_txt}" || {
-    echo "not ok" 1 "grayscale JPEG inspection fails"
+    echo "not ok" 1 - "grayscale JPEG inspection fails"
     exit 0
 }
 
-echo "ok" 1 "grayscale JPEG inspection succeeds"
+echo "ok" 1 - "grayscale JPEG inspection succeeds"
 
 exit 0

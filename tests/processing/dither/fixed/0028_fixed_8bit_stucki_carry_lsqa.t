@@ -24,7 +24,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 run_img2sixel -d stucki -Y carry -y raster -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 "fixed 8-bit Stucki with carry propagation lsqa failed"
+    echo "not ok" 1 - "fixed 8-bit Stucki with carry propagation lsqa failed"
     exit 0
 }
 
@@ -34,15 +34,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 "fixed 8-bit Stucki with carry propagation lsqa passed"
+    echo "ok" 1 - "fixed 8-bit Stucki with carry propagation lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 "fixed 8-bit Stucki with carry propagation lsqa failed"
+echo "not ok" 1 - "fixed 8-bit Stucki with carry propagation lsqa failed"
 
 exit 0

@@ -26,10 +26,10 @@ set -e
 
 # Accept success or mapped error exits (1/2/3) without crashing.
 test "${command_status}" -le 3 || {
-    echo "not ok" 1 "issue #51 PoC handling failed"
+    echo "not ok" 1 - "issue #51 PoC handling failed"
     exit 0
 }
 
-echo "ok" 1 "issue #51 PoC rejected safely"
+echo "ok" 1 - "issue #51 PoC rejected safely"
 
 exit 0

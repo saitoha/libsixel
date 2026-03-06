@@ -29,7 +29,7 @@ reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.
 output_sixel="${ARTIFACT_LOCAL_DIR}/grayscale.six"
 
 run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 "tiff grayscale conversion failed"
+    echo "not ok" 1 - "tiff grayscale conversion failed"
     exit 0
 }
 
@@ -41,16 +41,16 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    echo "not ok" 1 "${lsqa_err}"
+    echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 "tiff grayscale quality regressed"
+    echo "not ok" 1 - "tiff grayscale quality regressed"
     exit 0
 }
 
-echo "ok" 1 "tiff grayscale quality meets baseline"
+echo "ok" 1 - "tiff grayscale quality meets baseline"
 
 
 exit 0

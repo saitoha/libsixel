@@ -18,10 +18,10 @@ printf '1..1\n'
 set -v
 
 run_img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose         "${issue200}" -o /dev/null || {
-    echo "not ok" 1 "heap overflow regression triggered"
+    echo "not ok" 1 - "heap overflow regression triggered"
     exit 0
 }
 
-echo "ok" 1 "heap overflow regression avoided"
+echo "ok" 1 - "heap overflow regression avoided"
 
 exit 0

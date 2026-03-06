@@ -23,9 +23,9 @@ set -v
 
 run_img2sixel -L wic! "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null || {
-    echo "not ok" 1 "wic forced PNG decoding failed"
+    echo "not ok" 1 - "wic forced PNG decoding failed"
     exit 0
 }
 
-echo "ok" 1 "wic forced PNG decoding succeeds"
+echo "ok" 1 - "wic forced PNG decoding succeeds"
 exit 0

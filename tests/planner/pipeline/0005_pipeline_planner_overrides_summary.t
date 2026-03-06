@@ -21,15 +21,15 @@ pipeline_log=$(
                   --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
                   --env SIXEL_THREADS=6 \
                   -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" 2>&1) || {
-    echo "not ok" 1 "override bands/queue/mode run failed"
+    echo "not ok" 1 - "override bands/queue/mode run failed"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
 
 printf '%s\n' "${pipeline_log}" | awk '/bands=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
-    echo "not ok" 1 "override bands/queue/mode"
+    echo "not ok" 1 - "override bands/queue/mode"
     exit 0
 }
 
-echo "ok" 1 "override bands/queue/mode"
+echo "ok" 1 - "override bands/queue/mode"
 exit 0

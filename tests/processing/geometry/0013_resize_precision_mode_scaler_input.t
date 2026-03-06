@@ -23,15 +23,15 @@ P3
 255 0 0   0 255 0   0 0 255   255 255 0
 PPM
 ) || {
-    echo "not ok" 1 "img2sixel failed while collecting resize planner log"
+    echo "not ok" 1 - "img2sixel failed while collecting resize planner log"
     exit 0
 }
 printf '%s' "${resize_log}" >&2
 
 printf '%s' "${resize_log}" | grep -q "resize: mode=.*input=linear-f32" || {
-    echo "not ok" 1 "missing scaler input declaration"
+    echo "not ok" 1 - "missing scaler input declaration"
     exit 0
 }
 
-echo "ok" 1 "planner reports scaler input pixelformat"
+echo "ok" 1 - "planner reports scaler input pixelformat"
 exit 0

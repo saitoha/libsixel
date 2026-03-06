@@ -16,14 +16,14 @@ set -v
 png_stdout="${ARTIFACT_LOCAL_DIR}/png-stdout.png"
 
 run_sixel2png -o "png:-" <"${TOP_SRCDIR}/images/map8.six" >"${png_stdout}" || {
-    echo "not ok" 1 "png:- command failed"
+    echo "not ok" 1 - "png:- command failed"
     exit 0
 }
 
 test -s "${png_stdout}" || {
-    echo "not ok" 1 "png:- produced empty output"
+    echo "not ok" 1 - "png:- produced empty output"
     exit 0
 }
 
-echo "ok" 1 "png:- writes to stdout"
+echo "ok" 1 - "png:- writes to stdout"
 exit 0

@@ -16,9 +16,9 @@ set -v
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.psd"
 
 run_img2sixel "${input_psd}" >/dev/null || {
-    echo "not ok" 1 "builtin loader failed to decode PSD"
+    echo "not ok" 1 - "builtin loader failed to decode PSD"
     exit 0
 }
 
-echo "ok" 1 "builtin loader decodes PSD"
+echo "ok" 1 - "builtin loader decodes PSD"
 exit 0
