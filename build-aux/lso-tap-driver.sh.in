@@ -113,6 +113,33 @@ export category_name
 export ARTIFACT_LOCAL_DIR
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
+# Keep runtime library lookup setup in the test driver so each test process
+# gets a fresh, direct assignment without relying on recursive make exports.
+runtime_var=${RUNTIME_SHLIBPATH_VAR-}
+runtime_sep=${RUNTIME_SHLIBPATH_SEP-:}
+runtime_extra=${SIXEL_TEST_ADDITIOANL_PATH-}
+runtime_libdir=${LIBSIXEL_LIBDIR-}
+runtime_inject_active=no
+LSO_RUNTIME_SHLIBPATH_VALUE=
+if [ -z "$runtime_libdir" ]; then
+  runtime_libdir="${TOP_BUILDDIR}/src/.libs"
+fi
+if [ "${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH-}" = "yes" ] && [ -n "$runtime_var" ]; then
+  eval "runtime_current=\${$runtime_var-}"
+  runtime_value="$runtime_libdir"
+  if [ -n "$runtime_extra" ]; then
+    runtime_value="${runtime_value}${runtime_sep}${runtime_extra}"
+  fi
+  if [ -n "$runtime_current" ]; then
+    runtime_value="${runtime_value}${runtime_sep}${runtime_current}"
+  fi
+  LSO_RUNTIME_SHLIBPATH_VALUE=$runtime_value
+  runtime_inject_active=yes
+  export LSO_RUNTIME_SHLIBPATH_VALUE
+  eval "$runtime_var=\$runtime_value"
+  eval "export $runtime_var"
+fi
+
 timestamp_millis() {
   if [ -x "$LSO_TAP_TIMER_BIN" ]; then
     ${SIXEL_RUNTIME-} "$LSO_TAP_TIMER_BIN" && return
@@ -223,7 +250,13 @@ EOF
       ;;
     *)
       run_desc="shell ${test_path}"
-      set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
+      if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
+        set -- "$SIXEL_TEST_SHELL" -c \
+          'eval "${RUNTIME_SHLIBPATH_VAR}=${LSO_RUNTIME_SHLIBPATH_VALUE}"; eval "export ${RUNTIME_SHLIBPATH_VAR}"; script=$0; . "$script"' \
+          "$test_path" "$@"
+      else
+        set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
+      fi
       ;;
   esac
 
