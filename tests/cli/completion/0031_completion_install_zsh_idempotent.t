@@ -17,7 +17,7 @@ command -v zsh >/dev/null || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo '1..1'
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 completion_home="${ARTIFACT_LOCAL_DIR}"
 rc_path="${completion_home}/.zshrc"
 fpath_count=0

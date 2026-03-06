@@ -435,10 +435,6 @@ check-TESTS: $(check_PROGRAMS)
 	artifact_root="$(ARTIFACT_ROOT)"; \
 	rm -rf "$$artifact_root"; \
 	mkdir -p "$$artifact_root"; \
-	artifact_parent_dirs=`printf '%s\n' $$log_list | sed -n "s|^\(.*\)/[^/]*\\.log$$|$$artifact_root/\\1|p" | sort -u`; \
-	if test -n "$$artifact_parent_dirs"; then \
-	    mkdir -p $$artifact_parent_dirs; \
-	fi; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
 	    $$python_make_arg \

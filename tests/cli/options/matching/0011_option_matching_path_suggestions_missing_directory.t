@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               -m "${ARTIFACT_LOCAL_DIR}/not-there/map.gpl" \

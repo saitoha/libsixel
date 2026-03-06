@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 run_img2sixel -Lbuiltin! -S -datkinson \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \

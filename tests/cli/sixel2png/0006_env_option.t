@@ -11,7 +11,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 out_env="${ARTIFACT_LOCAL_DIR}/sixel2png_env_ref.png"

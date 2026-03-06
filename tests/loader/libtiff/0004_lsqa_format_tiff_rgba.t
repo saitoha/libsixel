@@ -25,7 +25,7 @@ test "${HAVE_LIBTIFF-}" = 1 || {
 printf '1..1
 '
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.tiff"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.ppm"

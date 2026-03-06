@@ -17,7 +17,7 @@ command -v cmp >/dev/null 2>&1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 parallel_direct_1="${ARTIFACT_LOCAL_DIR}/parallel-direct-1.png"
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"

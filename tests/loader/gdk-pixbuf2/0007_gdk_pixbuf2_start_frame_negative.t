@@ -17,7 +17,7 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 run_img2sixel -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \

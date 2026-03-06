@@ -12,7 +12,7 @@ test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 xdg_data_home="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader"
 bin_dir="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader/bin"

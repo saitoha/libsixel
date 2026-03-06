@@ -28,7 +28,7 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
 
 printf '1..1\n'
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.98
 

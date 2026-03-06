@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ppm-inspection.txt"

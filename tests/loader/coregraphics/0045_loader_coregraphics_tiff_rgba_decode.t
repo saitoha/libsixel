@@ -17,7 +17,7 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.98
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.tiff"

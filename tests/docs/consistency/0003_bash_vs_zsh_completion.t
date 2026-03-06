@@ -22,7 +22,7 @@ command -v diff >/dev/null 2>&1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
-mkdir "${ARTIFACT_LOCAL_DIR}"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 grep ' --[0-9a-zA-Z_@=~%?]' \
     "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" \
