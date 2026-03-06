@@ -14,6 +14,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 # Threshold rationale:
 # - lookup-policy=none forces the float32 full scan path that this case wants
@@ -22,8 +25,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 #   so 0.96 is strict enough to catch regressions without becoming flaky.
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.96}
 
-echo "1..1"
-set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/varcoeff-float32-lookup-none.six"

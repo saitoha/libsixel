@@ -13,14 +13,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 server_port_base=4444
 max_port_attempts=5
 # Use nearby ports so the HTTPS server can start when the default is busy.
 port_file="${ARTIFACT_LOCAL_DIR}/server.port"
 
-echo "1..1"
-set -v
 
 PYTHON=""
 command -v python >/dev/null 2>&1 && PYTHON=python

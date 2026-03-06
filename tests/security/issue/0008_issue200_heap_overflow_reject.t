@@ -9,12 +9,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+printf '1..1\n'
+set -v
+
 
 
 issue200="${TOP_SRCDIR}/tests/data/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
-
-printf '1..1\n'
-set -v
 
 set +e
 run_img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose         "${issue200}" -o /dev/null

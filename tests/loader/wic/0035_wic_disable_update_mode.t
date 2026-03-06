@@ -15,13 +15,13 @@ test "${HAVE_WIC-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
 test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
     printf "1..0 # SKIP WIC is unavailable under wine\n"
     exit 0
 }
 
-echo "1..1"
-set -v
 
 run_img2sixel -L wic! -ldisable -dnone -u \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" -o/dev/null || {

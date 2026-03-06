@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
@@ -22,9 +21,11 @@ test "${HAVE_LIBTIFF-}" = 1 || {
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1
 '
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.tiff"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.ppm"

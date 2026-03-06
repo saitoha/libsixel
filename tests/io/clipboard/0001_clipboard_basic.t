@@ -9,14 +9,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 test "${HAVE_SIXEL2PNG-}" = 1 || {
     printf "1..0 # SKIP sixel2png is disabled in this build\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 sixel_src="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"

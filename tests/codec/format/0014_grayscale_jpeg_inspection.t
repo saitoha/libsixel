@@ -11,6 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 snake_gray_jpg="${TOP_SRCDIR}/images/snake-grayscale.jpg"
 target_txt="${ARTIFACT_LOCAL_DIR}/gray-jpeg-inspection.txt"

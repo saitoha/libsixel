@@ -21,6 +21,7 @@ printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin' && {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 missing_path="${ARTIFACT_LOCAL_DIR}/invalid_filename"
 missing_output="${ARTIFACT_LOCAL_DIR}/capture.invalid"

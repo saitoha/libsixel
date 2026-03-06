@@ -12,6 +12,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 help_output="${ARTIFACT_LOCAL_DIR}/help.txt"
 

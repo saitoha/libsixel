@@ -12,6 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 printf '1..1\n'
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 issue131="${TOP_SRCDIR}/tests/data/security/issue/data/131/2020-01-30-img2sixel.gif"
 

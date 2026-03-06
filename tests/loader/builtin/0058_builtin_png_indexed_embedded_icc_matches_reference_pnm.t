@@ -16,6 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-indexed-embedded-esrgb.png"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0003_snake_64_indexed_embedded_esrgb_converted_srgb_noicc.ppm"

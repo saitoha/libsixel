@@ -17,6 +17,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.93}
 
@@ -25,8 +28,6 @@ input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_nearest_120pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/nearest-upscale_120pct.six"
 
-echo "1..1"
-set -v
 
 run_img2sixel -r nearest -w 120% -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "nearest upscale 120pct scaling failed"

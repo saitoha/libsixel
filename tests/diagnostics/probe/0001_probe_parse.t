@@ -4,6 +4,8 @@
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
 
 binary="${TEST_RUNNER_PATH}"
 test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || {
@@ -14,8 +16,6 @@ test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || {
 probe_output=$(run_test_runner "probe/0001_probe_parse" 2>&1) || rc=$?
 printf '%s' "${probe_output}" >&2
 
-echo "1..1"
-set -v
 
 test "${rc:-0}" -eq 0 || {
     echo "not ok" 1 - "probe_parse"

@@ -10,6 +10,9 @@ from _taptest import run_embedded_tap_test
 
 
 DESCRIPTION = 'invalid option value errors via wheel'
+ARTIFACT_LOCAL_DIR = os.path.expandvars("${ARTIFACT_LOCAL_DIR}")
+os.makedirs(ARTIFACT_LOCAL_DIR, exist_ok=True)
+
 def test_0012_python_api_errors_invalid_option() -> None:
     import pathlib
     import re

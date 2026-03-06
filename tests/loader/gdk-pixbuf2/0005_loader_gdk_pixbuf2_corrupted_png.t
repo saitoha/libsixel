@@ -17,6 +17,7 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/corrupted/truncated.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_corrupted_png.sixel"

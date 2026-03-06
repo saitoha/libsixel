@@ -15,12 +15,13 @@ command -v zsh >/dev/null || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo '1..1'
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 completion_home="${ARTIFACT_LOCAL_DIR}"
 rc_path="${completion_home}/.zshrc"
 fpath_count=0
 compinit_count=0
-echo '1..1'
-set -v
 
 run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     -2 zsh >/dev/null || {

@@ -9,12 +9,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+printf '1..1\n'
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 
 issue167="${TOP_SRCDIR}/tests/data/security/issue/data/167/poc"
 
-printf '1..1\n'
-set -v
 
 set +e
 run_img2sixel -h128 "${issue167}" >"${ARTIFACT_LOCAL_DIR}/issue167-height-option-first.sixel"

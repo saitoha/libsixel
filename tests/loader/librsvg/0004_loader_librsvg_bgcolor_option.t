@@ -19,6 +19,9 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor.svg"
 default_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor-default.six"
@@ -28,8 +31,6 @@ white_png="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor-white.png"
 
 printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='1'></svg>" >"${svg_path}"
 
-echo "1..1"
-set -v
 
 run_img2sixel -L librsvg! "${svg_path}" >"${default_sixel}" || {
     echo "not ok" 1 - "default background conversion failed"

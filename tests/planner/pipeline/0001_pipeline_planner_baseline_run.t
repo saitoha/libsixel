@@ -9,11 +9,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 ppm_small="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
-echo "1..1"
-set -v
 
 run_img2sixel --env SIXEL_THREADS=4 -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" \
         >"${ARTIFACT_LOCAL_DIR}/small.out" || {

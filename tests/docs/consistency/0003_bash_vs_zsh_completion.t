@@ -13,15 +13,16 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 command -v diff >/dev/null 2>&1 || {
     printf "1..0 # SKIP diff not available\n";
     exit 0
 }
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 grep ' --[0-9a-zA-Z_@=~%?]' \
     "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" \

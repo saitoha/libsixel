@@ -111,7 +111,6 @@ ARTIFACT_LOCAL_DIR="${artifact_root}/${category_name}/${test_name_base}"
 export test_dir
 export category_name
 export ARTIFACT_LOCAL_DIR
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 # Keep runtime library lookup setup in the test driver so each test process
 # gets a fresh, direct assignment without relying on recursive make exports.

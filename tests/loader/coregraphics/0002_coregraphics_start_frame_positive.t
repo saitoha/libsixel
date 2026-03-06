@@ -17,6 +17,7 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 run_img2sixel -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \

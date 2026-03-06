@@ -19,6 +19,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn0g08.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0024_pngsuite_basic_default_basn0g08_msssim.ppm"

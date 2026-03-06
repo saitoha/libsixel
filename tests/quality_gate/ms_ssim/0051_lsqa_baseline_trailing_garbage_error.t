@@ -7,6 +7,7 @@ set -eux
 
 printf '1..1\n'
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_baseline_trailing_garbage.err"

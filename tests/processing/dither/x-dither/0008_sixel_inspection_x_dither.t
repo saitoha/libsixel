@@ -8,11 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+echo "1..1"
+set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 status=0
 
-echo "1..1"
-set -v
 
 snake_six="${TOP_SRCDIR}/images/map8.six"
 target_txt="${ARTIFACT_LOCAL_DIR}/sixel-inspection-x-dither.txt"

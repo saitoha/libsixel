@@ -11,6 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 snake_ascii_ppm="${TOP_SRCDIR}/images/snake-ascii.ppm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ascii-ppm-inspection.txt"

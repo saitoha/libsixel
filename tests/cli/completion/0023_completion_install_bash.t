@@ -17,6 +17,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 printf '1..1\n'
 set -v
+mkdir "${ARTIFACT_LOCAL_DIR}"
 
 completion_home="${ARTIFACT_LOCAL_DIR}"
 target_path="${completion_home}/.local/share/bash-completion/completions/img2sixel"
