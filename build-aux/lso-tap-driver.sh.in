@@ -134,6 +134,8 @@ if [ "${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH-}" = "yes" ] && [ -n "$runtime_var" ];
   fi
   LSO_RUNTIME_SHLIBPATH_VALUE=$runtime_value
   runtime_inject_active=yes
+  export LSO_RUNTIME_SHLIBPATH_VALUE
+  export "$runtime_var=$runtime_value"
 fi
 
 timestamp_millis() {
@@ -246,13 +248,15 @@ EOF
       ;;
     *)
       run_desc="shell ${test_path}"
-      set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
+      if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
+        set -- "$SIXEL_TEST_SHELL" -c \
+          'runtime_var=$1; runtime_value=$2; script=$3; shift 3; export "$runtime_var=$runtime_value"; . "$script" "$@"' \
+          "$test_path" "$runtime_var" "$LSO_RUNTIME_SHLIBPATH_VALUE" "$test_path" "$@"
+      else
+        set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
+      fi
       ;;
   esac
-
-  if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
-    set -- env "${runtime_var}=${LSO_RUNTIME_SHLIBPATH_VALUE}" "$@"
-  fi
 
   echo "# lso-tap-driver: ${run_desc}"
 
