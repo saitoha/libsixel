@@ -43,8 +43,7 @@ Security issues affecting the archived upstream fork **libsixel/libsixel** may a
 
 However, fixes can only be provided if the issue can be reproduced in this repository (**saitoha/libsixel**).
 
-If the issue only affects older forked versions and cannot be reproduced here, the maintainers of this repository may not be able to provide a fix.
-In such cases, downstream distributions or package maintainers that ship the affected fork may handle the issue independently.
+If the issue only affects older forked versions and cannot be reproduced here, the maintainers of this repository may not be able to provide a fix. In such cases, downstream distributions or package maintainers that ship the affected fork may handle the issue independently.
 
 ---
 
@@ -66,7 +65,7 @@ Downstream distributions or external security databases may assign CVE identifie
 This policy applies to:
 
 * the **libsixel library**
-* bundled utilities (such as `img2sixel`)
+* bundled utilities such as `img2sixel`
 * image decoding and encoding functionality
 
 Issues in third-party dependencies should be reported to their respective upstream projects.
@@ -119,4 +118,42 @@ If the issue was discovered by fuzzing tools (such as libFuzzer, AFL++, or OSS-F
 
 ---
 
-Thank you for helping improve the security of libsixel.
+## Minimizing test cases
+
+When possible, please try to provide a **minimized input file** that still reproduces the issue.
+
+Large fuzzing inputs can make debugging more difficult and slow down analysis.
+
+Helpful techniques include:
+
+* reducing the input file size while preserving the crash
+* removing unnecessary metadata or chunks
+* providing the smallest input that still reproduces the issue
+
+If the issue was found by a fuzzing tool, consider using the minimization tools provided by the fuzzer:
+
+* `afl-tmin`
+* `libFuzzer -minimize_crash`
+* `honggfuzz --minimize`
+
+Providing a minimized test case greatly helps maintainers analyze and fix the issue more quickly.
+
+---
+
+## Proof-of-concept test cases
+
+By submitting a vulnerability report, you agree that any provided proof-of-concept files (PoC inputs) may be used by the libsixel project for testing purposes.
+
+This may include:
+
+* adding the PoC to the test suite
+* using the PoC as a regression test
+* modifying the PoC to create minimized test cases
+
+These files may be stored in the repository and distributed as part of the test suite.
+
+If you do not want your PoC to be included in the repository, please clearly indicate this in your report.
+
+Please avoid submitting proof-of-concept files that contain copyrighted third-party content.
+
+Prefer minimized or synthetic inputs created specifically to reproduce the issue.
