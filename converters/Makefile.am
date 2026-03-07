@@ -286,6 +286,7 @@ endif
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000000" $(top_srcdir)/tests/issue/220/poc1_gif_oob.gif -o/dev/null
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -h 1890177820 -e -I -C 637555838 -S -o/dev/null $(top_srcdir)/tests/issue/220/poc3_encoder_integer_overflow.gif; test $$? = 255 -o $$? = 127
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -S -o/dev/null $(top_srcdir)/tests/issue/220/poc5_encode_integer_overflow.gif
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) -p4 -C 2147483647 -o/dev/null $(top_srcdir)/tests/issue/220/poc6_quant_integer_overflow_8x8.png; test $$? = 255 -o $$? = 127
 
 	@echo '[test14] documentation'
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > $(builddir)/tmp/options1.txt
