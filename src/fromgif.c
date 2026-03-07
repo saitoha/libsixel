@@ -82,8 +82,13 @@ typedef struct
 typedef struct
 {
    int w, h;
-   unsigned char *out;       /* composited frame buffer (color indices) */
-   unsigned char *prev_out;  /* backup buffer for disposal method 3 */
+   /*
+    * Keep the compositing canvas in RGB888 instead of palette indices.
+    * GIF frames can switch local color tables per frame, so carrying only
+    * indices across frames corrupts colors when the active palette changes.
+    */
+   unsigned char *out;       /* composited frame buffer (RGB888) */
+   unsigned char *prev_out;  /* RGB888 backup for disposal method 3 */
    unsigned char *history;   /* pixels modified in the previous frame */
    int flags, bgindex, ratio, transparent, eflags;
    unsigned char pal[256][3];
@@ -196,81 +201,29 @@ gif_init_frame(
     int           /* in */ fuse_palette)
 {
     SIXELSTATUS status = SIXEL_OK;
-    int i;
-    int ncolors;
-    size_t palette_size, frame_size;
+    size_t frame_size;
+
+    (void)bgcolor;
+    (void)reqcolors;
+    (void)fuse_palette;
 
     frame->delay = pg->delay;
-    ncolors = 2 << (((pg->lflags & 0x80) ? pg->lflags : pg->flags) & 7);
-    palette_size = (size_t)ncolors * 3;
-    if (frame->palette == NULL) {
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, palette_size);
-    } else if (frame->ncolors < ncolors) {
-        sixel_allocator_free(frame->allocator, frame->palette);
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, palette_size);
-    }
-    if (frame->palette == NULL) {
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    sixel_allocator_free(frame->allocator, frame->pixels);
+    frame_size = (size_t)frame->width * (size_t)frame->height * 3;
+    frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
+    if (frame->pixels == NULL) {
         sixel_helper_set_additional_message(
-            "gif_init_frame: sixel_allocator_malloc() failed.");
+            "sixel_allocator_malloc() failed in gif_init_frame().");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    frame->ncolors = ncolors;
-    if (frame->ncolors <= reqcolors && fuse_palette) {
-        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-        sixel_allocator_free(frame->allocator, frame->pixels);
-        frame_size = (size_t)frame->width * (size_t)frame->height;
-        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
-        if (frame->pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_allocator_malloc() failed in gif_init_frame().");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        memcpy(frame->pixels, pg->out, frame_size);
 
-        for (i = 0; i < frame->ncolors; ++i) {
-            frame->palette[i * 3 + 0] = pg->color_table[i * 3 + 2];
-            frame->palette[i * 3 + 1] = pg->color_table[i * 3 + 1];
-            frame->palette[i * 3 + 2] = pg->color_table[i * 3 + 0];
-        }
-        if (pg->lflags & 0x80) {
-            if (pg->eflags & 0x01) {
-                if (bgcolor) {
-                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
-                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
-                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
-                } else {
-                    frame->transparent = pg->transparent;
-                }
-            }
-        } else if (pg->flags & 0x80) {
-            if (pg->eflags & 0x01) {
-                if (bgcolor) {
-                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
-                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
-                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
-                } else {
-                    frame->transparent = pg->transparent;
-                }
-            }
-        }
-    } else {
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame_size = (size_t)pg->w * (size_t)pg->h * 3;
-        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
-        if (frame->pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_allocator_malloc() failed in gif_init_frame().");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        for (i = 0; i < pg->w * pg->h; ++i) {
-            frame->pixels[i * 3 + 0] = pg->color_table[pg->out[i] * 3 + 2];
-            frame->pixels[i * 3 + 1] = pg->color_table[pg->out[i] * 3 + 1];
-            frame->pixels[i * 3 + 2] = pg->color_table[pg->out[i] * 3 + 0];
-        }
-    }
+    /*
+     * The canvas is already composited in RGB888, so each frame can be
+     * exported directly without reinterpretation through a per-frame palette.
+     */
+    memcpy(frame->pixels, pg->out, frame_size);
     frame->multiframe = (pg->loop_count != (-1));
 
     status = SIXEL_OK;
@@ -287,6 +240,8 @@ gif_out_code(
 )
 {
     size_t idx;
+    size_t pixel_offset;
+    size_t palette_offset;
     unsigned char suffix;
     SIXELSTATUS status;
 
@@ -310,10 +265,22 @@ gif_out_code(
 
     idx = (size_t)g->cur_x + (size_t)g->cur_y * g->w;
     suffix = g->codes[code].suffix;
+    /*
+     * Track every decoded pixel position, even when the source index is the
+     * transparent index. GIF disposal methods 2/3 are defined on the whole
+     * image rectangle of the previous frame, not only on non-transparent
+     * writes. If we only mark opaque writes here, the next disposal step keeps
+     * stale pixels and visible noise appears in animated transparent GIFs.
+     */
+    if (g->history) {
+        g->history[idx] = 1;
+    }
     if (!(g->transparent >= 0 && suffix == g->transparent)) {
-        g->out[idx] = suffix;
-        if (g->history)
-            g->history[idx] = 1;
+        pixel_offset = idx * 3;
+        palette_offset = (size_t)suffix * 3;
+        g->out[pixel_offset + 0] = g->color_table[palette_offset + 2];
+        g->out[pixel_offset + 1] = g->color_table[palette_offset + 1];
+        g->out[pixel_offset + 2] = g->color_table[palette_offset + 0];
     }
     if (g->cur_x >= g->actual_width) {
         g->actual_width = g->cur_x + 1;
@@ -463,7 +430,12 @@ gif_load_next(
     int len;
     int dispose;
     size_t pcount;
+    size_t bcount;
     size_t i;
+    size_t pixel_offset;
+    unsigned char bg_r;
+    unsigned char bg_g;
+    unsigned char bg_b;
 
     /* apply disposal of previous frame and prepare buffers */
     if (g->out) {
@@ -487,6 +459,17 @@ gif_load_next(
             status = SIXEL_BAD_INPUT;
             goto end;
         }
+        if (pcount > SIZE_MAX / 3) {
+            sixel_helper_set_additional_message(
+                "corrupt GIF (reason: image data exceeds limit).");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        bcount = pcount * 3;
+
+        bg_r = g->pal[g->bgindex][2];
+        bg_g = g->pal[g->bgindex][1];
+        bg_b = g->pal[g->bgindex][0];
 
         if (g->is_multiframe) {
             dispose = (g->eflags & 0x1C) >> 2;
@@ -494,27 +477,39 @@ gif_load_next(
                 if (g->prev_out) {
                     for (i = 0; i < pcount; ++i) {
                         if (g->history[i]) {
-                            g->out[i] = g->prev_out[i];
+                            pixel_offset = i * 3;
+                            g->out[pixel_offset + 0] =
+                                g->prev_out[pixel_offset + 0];
+                            g->out[pixel_offset + 1] =
+                                g->prev_out[pixel_offset + 1];
+                            g->out[pixel_offset + 2] =
+                                g->prev_out[pixel_offset + 2];
                         }
                     }
                 } else {
                     for (i = 0; i < pcount; ++i) {
                         if (g->history[i]) {
-                            g->out[i] = (unsigned char)g->bgindex;
+                            pixel_offset = i * 3;
+                            g->out[pixel_offset + 0] = bg_r;
+                            g->out[pixel_offset + 1] = bg_g;
+                            g->out[pixel_offset + 2] = bg_b;
                         }
                     }
                 }
             } else if (dispose == 2) {
                 for (i = 0; i < pcount; ++i) {
                     if (g->history[i]) {
-                        g->out[i] = (unsigned char)g->bgindex;
+                        pixel_offset = i * 3;
+                        g->out[pixel_offset + 0] = bg_r;
+                        g->out[pixel_offset + 1] = bg_g;
+                        g->out[pixel_offset + 2] = bg_b;
                     }
                 }
             }
         }
 
         if (g->prev_out) {
-            memcpy(g->prev_out, g->out, pcount);
+            memcpy(g->prev_out, g->out, bcount);
         }
         if (g->history) {
             memset(g->history, 0, pcount);
@@ -712,6 +707,11 @@ load_gif(
     fn_pointer fnp;
     char message[256];
     size_t pcount;
+    size_t bcount;
+    size_t i;
+    unsigned char bg_r;
+    unsigned char bg_g;
+    unsigned char bg_b;
 
     fnp.p = fn_load;
 
@@ -747,8 +747,16 @@ load_gif(
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    g.out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
-    g.prev_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+    if (pcount > SIZE_MAX / 3) {
+        sixel_helper_set_additional_message(
+            "corrupt GIF (reason: image data exceeds limit).");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    bcount = pcount * 3;
+
+    g.out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+    g.prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
     g.history = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
     if (g.out == NULL || g.prev_out == NULL || g.history == NULL) {
         sprintf(message,
@@ -758,8 +766,17 @@ load_gif(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    memset(g.out, g.bgindex, pcount);
-    memset(g.prev_out, g.bgindex, pcount);
+    bg_r = g.pal[g.bgindex][2];
+    bg_g = g.pal[g.bgindex][1];
+    bg_b = g.pal[g.bgindex][0];
+    for (i = 0; i < pcount; ++i) {
+        g.out[i * 3 + 0] = bg_r;
+        g.out[i * 3 + 1] = bg_g;
+        g.out[i * 3 + 2] = bg_b;
+        g.prev_out[i * 3 + 0] = bg_r;
+        g.prev_out[i * 3 + 1] = bg_g;
+        g.prev_out[i * 3 + 2] = bg_b;
+    }
     memset(g.history, 0, pcount);
 
     frame->loop_count = 0;
@@ -795,8 +812,17 @@ load_gif(
         }
 
         /* reset canvas for new loop */
-        memset(g.out, g.bgindex, pcount);
-        memset(g.prev_out, g.bgindex, pcount);
+        bg_r = g.pal[g.bgindex][2];
+        bg_g = g.pal[g.bgindex][1];
+        bg_b = g.pal[g.bgindex][0];
+        for (i = 0; i < pcount; ++i) {
+            g.out[i * 3 + 0] = bg_r;
+            g.out[i * 3 + 1] = bg_g;
+            g.out[i * 3 + 2] = bg_b;
+            g.prev_out[i * 3 + 0] = bg_r;
+            g.prev_out[i * 3 + 1] = bg_g;
+            g.prev_out[i * 3 + 2] = bg_b;
+        }
         memset(g.history, 0, pcount);
         g.is_multiframe = 0;
 
