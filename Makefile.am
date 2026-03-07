@@ -105,6 +105,9 @@ issue-167-vexe:
 issue-200:
 	converters/img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose tests/issue/200/POC_img2sixel_heap_buffer_overflow -o /dev/null
 
+issue-220:
+	converters/img2sixel -B '#000000' tests/issue/220/poc1_gif_oob.gif -o /dev/null
+
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
 

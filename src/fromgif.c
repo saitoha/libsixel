@@ -189,6 +189,7 @@ gif_init_frame(
     SIXELSTATUS status = SIXEL_OK;
     int i;
     int ncolors;
+    int transparent_index_valid;
     size_t palette_size, frame_size;
 
     frame->delay = pg->delay;
@@ -225,23 +226,29 @@ gif_init_frame(
             frame->palette[i * 3 + 1] = pg->color_table[i * 3 + 1];
             frame->palette[i * 3 + 2] = pg->color_table[i * 3 + 0];
         }
+        transparent_index_valid =
+            (pg->transparent >= 0 && pg->transparent < frame->ncolors);
         if (pg->lflags & 0x80) {
             if (pg->eflags & 0x01) {
                 if (bgcolor) {
-                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
-                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
-                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
-                } else {
+                    if (transparent_index_valid) {
+                        frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
+                        frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
+                        frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
+                    }
+                } else if (transparent_index_valid) {
                     frame->transparent = pg->transparent;
                 }
             }
         } else if (pg->flags & 0x80) {
             if (pg->eflags & 0x01) {
                 if (bgcolor) {
-                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
-                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
-                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
-                } else {
+                    if (transparent_index_valid) {
+                        frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
+                        frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
+                        frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
+                    }
+                } else if (transparent_index_valid) {
                     frame->transparent = pg->transparent;
                 }
             }
