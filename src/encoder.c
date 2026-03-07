@@ -45,6 +45,9 @@
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif  /* HAVE_INTTYPES_H */
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif  /* HAVE_ERRNO_H */
@@ -919,6 +922,8 @@ sixel_encoder_output_without_macro(
     int dulation;
     int delay;
     int lag = 0;
+    long long target_usec;
+    long long remaining_usec;
     struct timespec tv;
 # if HAVE_CLOCK
     clock_t start;
@@ -984,19 +989,27 @@ sixel_encoder_output_without_macro(
 #endif
 #if HAVE_NANOSLEEP
     delay = sixel_frame_get_delay(frame);
-    if (delay > 0 && !encoder->fignore_delay) {
+    if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
 # if HAVE_CLOCK
         dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
         lag = 0;
 # else
         dulation = 0;
 # endif
-        if (dulation < 10000 * delay) {
-            tv.tv_sec = 0;
-            tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+        target_usec = 10000LL * (long long)delay;
+        remaining_usec = target_usec - (long long)dulation;
+        if (remaining_usec > 0) {
+            tv.tv_sec = (time_t)(remaining_usec / 1000000LL);
+            tv.tv_nsec = (long)((remaining_usec % 1000000LL) * 1000LL);
             nanosleep(&tv, NULL);
         } else {
-            lag = (int)(10000 * delay - dulation);
+            if (remaining_usec > INT_MAX) {
+                lag = INT_MAX;
+            } else if (remaining_usec < INT_MIN) {
+                lag = INT_MIN;
+            } else {
+                lag = (int)remaining_usec;
+            }
         }
     }
 #endif
@@ -1034,6 +1047,8 @@ sixel_encoder_output_with_macro(
 #if HAVE_NANOSLEEP
     int dulation;
     int lag = 0;
+    long long target_usec;
+    long long remaining_usec;
     struct timespec tv;
 # if HAVE_CLOCK
     clock_t start;
@@ -1101,19 +1116,27 @@ sixel_encoder_output_with_macro(
         }
 #if HAVE_NANOSLEEP
         delay = sixel_frame_get_delay(frame);
-        if (delay > 0 && !encoder->fignore_delay) {
+        if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
 # if HAVE_CLOCK
             dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
             lag = 0;
 # else
             dulation = 0;
 # endif
-            if (dulation < 10000 * delay) {
-                tv.tv_sec = 0;
-                tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+            target_usec = 10000LL * (long long)delay;
+            remaining_usec = target_usec - (long long)dulation;
+            if (remaining_usec > 0) {
+                tv.tv_sec = (time_t)(remaining_usec / 1000000LL);
+                tv.tv_nsec = (long)((remaining_usec % 1000000LL) * 1000LL);
                 nanosleep(&tv, NULL);
             } else {
-                lag = (int)(10000 * delay - dulation);
+                if (remaining_usec > INT_MAX) {
+                    lag = INT_MAX;
+                } else if (remaining_usec < INT_MIN) {
+                    lag = INT_MIN;
+                } else {
+                    lag = (int)remaining_usec;
+                }
             }
         }
 #endif
