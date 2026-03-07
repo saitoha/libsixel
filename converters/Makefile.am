@@ -282,6 +282,7 @@ endif
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) --7bit-mode -8 --invert --palette-type=auto --verbose $(top_srcdir)/tests/issue/200/POC_img2sixel_heap_buffer_overflow -o/dev/null
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000000" $(top_srcdir)/tests/issue/220/poc1_gif_oob.gif -o/dev/null
 
 	@echo '[test14] documentation'
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > $(builddir)/tmp/options1.txt
