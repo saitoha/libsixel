@@ -84,4 +84,39 @@ Older versions may not receive security updates.
 
 ---
 
+## Reporting guidelines
+
+To help maintainers reproduce and fix issues efficiently, please include as much of the following information as possible in your report:
+
+* the **input file** that triggers the issue (minimal proof-of-concept if possible)
+* the **exact command line** used
+* the **libsixel version or commit hash**
+* the **build configuration** (compiler, sanitizer, build flags)
+* the **platform and operating system**
+* the **crash log or stack trace**
+
+Example:
+
+```
+command:
+img2sixel poc.png
+
+version:
+libsixel commit 1a2b3c4
+
+build:
+clang 17
+AddressSanitizer enabled
+
+platform:
+Ubuntu 24.04 x86_64
+
+stack trace:
+<ASan output here>
+```
+
+If the issue was discovered by fuzzing tools (such as libFuzzer, AFL++, or OSS-Fuzz), please include the fuzzing output and the minimized test case.
+
+---
+
 Thank you for helping improve the security of libsixel.
