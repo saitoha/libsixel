@@ -712,8 +712,6 @@ load_gif(
     unsigned char bg_r;
     unsigned char bg_g;
     unsigned char bg_b;
-    int frame_no;
-    int loop_no;
 
     frame = NULL;
     fnp.p = fn_load;
