@@ -1257,10 +1257,13 @@ sixel_quant_apply_palette(
 {
     typedef int component_t;
     enum { max_depth = 4 };
+    enum { max_channel_diff_sq = 255 * 255 };
     SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
+    int non_weighted_components;
     component_t offset;
     int color_index;
+    long long max_complexion;
     unsigned short *indextable;
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
@@ -1353,6 +1356,19 @@ sixel_quant_apply_palette(
             f_lookup = lookup_fast;
         } else {
             f_lookup = lookup_normal;
+        }
+    }
+
+    if ((f_lookup == lookup_fast || f_lookup == lookup_normal) && complexion > 1) {
+        non_weighted_components = depth > 1 ? depth - 1 : 0;
+        max_complexion = (INT_MAX - (long long)max_channel_diff_sq
+                          * (long long)non_weighted_components)
+                         / (long long)max_channel_diff_sq;
+        if ((long long)complexion > max_complexion) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "sixel_quant_apply_palette: complexion parameter is too large.");
+            goto end;
         }
     }
 
