@@ -337,6 +337,8 @@ load_png(unsigned char      /* out */ **result,
 
     status = SIXEL_FALSE;
     *result = NULL;
+    png_ptr = NULL;
+    info_ptr = NULL;
 
     png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
@@ -654,7 +656,9 @@ load_png(unsigned char      /* out */ **result,
     status = SIXEL_OK;
 
 cleanup:
-    png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
+    if (png_ptr != NULL) {
+        png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)0);
+    }
 
     if (rows != NULL) {
         sixel_allocator_free(allocator, rows);
