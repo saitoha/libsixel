@@ -2703,6 +2703,10 @@ check-TESTS: $(check_PROGRAMS)
 	    export SIXEL_TEST_RUBY_GEM_HOME; \
 	    ruby_make_arg="$$ruby_make_arg SIXEL_TEST_RUBY_GEM_HOME=$$SIXEL_TEST_RUBY_GEM_HOME"; \
 	fi; \
+	if test -n "$$SIXEL_TEST_RUBYLIB"; then \
+	    export SIXEL_TEST_RUBYLIB; \
+	    ruby_make_arg="$$ruby_make_arg SIXEL_TEST_RUBYLIB=$$SIXEL_TEST_RUBYLIB"; \
+	fi; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=`echo $(TEST_LOGS)`; \

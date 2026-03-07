@@ -296,6 +296,7 @@ if test ! -f "$ruby_venv_exports_file"; then
       if test "$wait_count" -gt 600; then
         printf '%s\n' 'SIXEL_TEST_RUBY=' > "$ruby_venv_exports_file"
         printf '%s\n' 'SIXEL_TEST_RUBY_GEM_HOME=' >> "$ruby_venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_RUBYLIB=' >> "$ruby_venv_exports_file"
         break
       fi
       sleep 0.05
@@ -312,6 +313,13 @@ if test -z "${SIXEL_TEST_RUBY:-}"; then
 fi
 
 if test -n "${SIXEL_TEST_RUBY_GEM_HOME:-}"; then
+  if test -n "${SIXEL_TEST_RUBYLIB:-}"; then
+    if test -n "${RUBYLIB:-}"; then
+      RUBYLIB="${SIXEL_TEST_RUBYLIB}:${RUBYLIB}" export RUBYLIB
+    else
+      RUBYLIB="${SIXEL_TEST_RUBYLIB}" export RUBYLIB
+    fi
+  fi
   GEM_HOME="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_HOME
   GEM_PATH="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_PATH
 fi
