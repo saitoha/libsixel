@@ -275,7 +275,7 @@ EOF
 # If you want streaming, do it in the test itself (or add tee here).
 if test "$(command -v time)" = time; then
     # use builtin time
-    time_begin=0
+    time_begin=0.000
     time_end=$( TIMEFORMAT='%R'; { time run_with_timeout "$@" >"$log_file" 2>&1; } 2>&1 )
     rc=$?
 else
@@ -285,6 +285,7 @@ else
     time_end=$(timestamp_millis)
 fi
 
+if test "${reduce_fork-}" != yes; then
 # Generate .trs (reStructuredText fields), at minimum :test-result: fields. :contentReference[oaicite:4]{index=4}
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
 # (Automake recognizes these fields). :contentReference[oaicite:5]{index=5}
@@ -405,3 +406,116 @@ fi
        exit 1;
      }
    }'
+
+else
+
+# - Plan:        "1..N"
+# - Pass:        "ok <case> - <description>"
+# - Fail:        "not ok <case> - <description>"
+# - Skip(all):   "1..0 # SKIP <reason>"
+# - Skip:        "ok <case> # SKIP <reason>"
+{
+    rc=0
+    saw_plan=0
+    saw_tap=0
+    pass=0
+    skip=0
+    error=0
+    fail=0
+    is_not=0
+    shutdown=0
+    while read line; do
+        read col1 col2 col3 col4 <<__line__
+${line}
+__line__
+        case "$col1" in
+            1..*)
+                saw_plan=1
+                saw_tap=1
+                test "$col2" = '#' && test "$col3" = SKIP && {
+                    desc="${col4}"
+                    echo ":test-result: SKIP $desc" >&2
+                    break
+                }
+                plan="${col1%1..}"
+                ;;
+            ok)
+                saw_tap=1
+                is_not=0
+                n="${col2}"
+                test "$col3" = '#' && test "$col4" = SKIP && {
+                    skip=$((skip+1))
+                    desc="${line#*SKIP}"
+                    echo ":test-result: SKIP $desc" >&2
+                }
+                echo ":test-result: PASS ${line#*-}" >&2
+                ;;
+            not)
+                saw_tap=1
+                is_not=1
+                n="${col3}"
+                echo ":test-result: FAIL ${line#*-}" >&2
+                ;;
+        esac
+    done < "$log_file"
+    
+    test ! "$ignore_exit" = "yes" && test "$rc" -gt 0 && {
+        case "${saw_tap}" in
+        0)
+            error=1
+            echo ":test-result: ERROR $test_name" >&2
+            ;;
+        *)
+            case "${fail}" in
+            0)
+                fail=1
+                desc="non-zero exit status ($rc)"
+                echo ":test-result: FAIL $desc" >&2
+                ;;
+            esac
+        esac 
+    }
+    
+    e=$(printf "\033")
+    global="PASS"
+    recheck=no
+    copy=no
+    sgr="$e[0;32m"
+    test "$error" -gt 0 && {
+        global="ERROR"
+        recheck=yes
+        copy=yes
+        sgr="$e[1;31m"
+        test "$hard_errors" = "yes" && shutdown=1
+    }
+    test "$fail" -gt 0 && {
+        global="FAIL"
+        recheck=yes
+        copy=yes
+        sgr="$e[0;31m"
+        test "$hard_errors" = "yes" && shutdown=1
+    }
+    test "$pass" -eq 0 && test "$skip" -gt 0 && {
+        global="SKIP"
+        copy=yes
+        sgr="$e[0;33m"
+    }
+    test "$color_tests" = yes || {
+        sgr=
+    }
+    time_begin_scaled=$(printf %d "${time_begin%.*}${time_begin#*.}")
+    time_end_scaled=$(printf %d "${time_end%.*}${time_end#*.}")
+    duration_ms=$((${time_end_scaled} - ${time_begin_scaled}))
+    duration=$(printf "%d.%03d" $((duration_ms/1000)) $((duration_ms%1000)))
+    {
+        echo ":global-test-result: $global"
+        echo ":recheck: $recheck"
+        echo ":copy-in-global-log: $copy"
+    } >&2
+    printf "%s%-5s\033[m \033[1m%.03f\033[ms %s\n" "$sgr" "$global" "$duration" "$test_name"
+    test "$global" != "PASS" && "$desc" != "" && {
+      echo "             > $desc"
+    }
+} 2> "$trs_file"
+test "$shutdown" -eq 0 || rc=1
+fi
