@@ -8343,6 +8343,9 @@ sixel_encoder_setopt(
         encoder->ormode = 1;
         break;
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
+    {
+        long max_complexion;
+
         errno = 0;
         endptr = NULL;
         parsed_value = strtol(value, &endptr, 10);
@@ -8353,8 +8356,17 @@ sixel_encoder_setopt(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        max_complexion = ((long)INT_MAX - (255L * 255L * 3L))
+            / (255L * 255L);
+        if (parsed_value > max_complexion) {
+            sixel_helper_set_additional_message(
+                "complexion parameter is too large.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
         encoder->complexion = (int)parsed_value;
         break;
+    }
     case SIXEL_OPTFLAG_PIPE_MODE:  /* D */
         encoder->pipe_mode = 1;
         break;
