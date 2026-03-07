@@ -700,6 +700,77 @@ end:
 }
 
 
+static void
+sixel_encoder_compute_resize_target(
+    sixel_encoder_t const *encoder,
+    int src_width,
+    int src_height,
+    int *dst_width_out,
+    int *dst_height_out)
+{
+    int dst_width;
+    int dst_height;
+    long long scaled_width;
+    long long scaled_height;
+
+    dst_width = encoder->pixelwidth;
+    dst_height = encoder->pixelheight;
+    scaled_width = 0;
+    scaled_height = 0;
+
+    if (encoder->percentwidth > 0) {
+        scaled_width = (long long)src_width * (long long)encoder->percentwidth;
+        scaled_width /= 100;
+        if (scaled_width < 1) {
+            scaled_width = 1;
+        }
+        if (scaled_width > SIXEL_WIDTH_LIMIT) {
+            scaled_width = SIXEL_WIDTH_LIMIT;
+        }
+        dst_width = (int)scaled_width;
+    }
+    if (encoder->percentheight > 0) {
+        scaled_height = (long long)src_height * (long long)encoder->percentheight;
+        scaled_height /= 100;
+        if (scaled_height < 1) {
+            scaled_height = 1;
+        }
+        if (scaled_height > SIXEL_HEIGHT_LIMIT) {
+            scaled_height = SIXEL_HEIGHT_LIMIT;
+        }
+        dst_height = (int)scaled_height;
+    }
+
+    if (dst_width > 0 && dst_height <= 0) {
+        scaled_height = (long long)src_height * (long long)dst_width;
+        scaled_height += (long long)src_width - 1;
+        scaled_height /= (long long)src_width;
+        if (scaled_height < 1) {
+            scaled_height = 1;
+        }
+        if (scaled_height > SIXEL_HEIGHT_LIMIT) {
+            scaled_height = SIXEL_HEIGHT_LIMIT;
+        }
+        dst_height = (int)scaled_height;
+    }
+    if (dst_height > 0 && dst_width <= 0) {
+        scaled_width = (long long)src_width * (long long)dst_height;
+        scaled_width += (long long)src_height - 1;
+        scaled_width /= (long long)src_height;
+        if (scaled_width < 1) {
+            scaled_width = 1;
+        }
+        if (scaled_width > SIXEL_WIDTH_LIMIT) {
+            scaled_width = SIXEL_WIDTH_LIMIT;
+        }
+        dst_width = (int)scaled_width;
+    }
+
+    *dst_width_out = dst_width;
+    *dst_height_out = dst_height;
+}
+
+
 /* resize a frame with settings of specified encoder object */
 static SIXELSTATUS
 sixel_encoder_do_resize(
@@ -731,26 +802,11 @@ sixel_encoder_do_resize(
     }
 
     /* settings around scaling */
-    dst_width = encoder->pixelwidth;    /* may be -1 (default) */
-    dst_height = encoder->pixelheight;  /* may be -1 (default) */
-
-    /* if the encoder has percentwidth or percentheight property,
-       convert them to pixelwidth / pixelheight */
-    if (encoder->percentwidth > 0) {
-        dst_width = src_width * encoder->percentwidth / 100;
-    }
-    if (encoder->percentheight > 0) {
-        dst_height = src_height * encoder->percentheight / 100;
-    }
-
-    /* if only either width or height is set, set also the other
-       to retain frame aspect ratio */
-    if (dst_width > 0 && dst_height <= 0) {
-        dst_height = src_height * dst_width / src_width;
-    }
-    if (dst_height > 0 && dst_width <= 0) {
-        dst_width = src_width * dst_height / src_height;
-    }
+    sixel_encoder_compute_resize_target(encoder,
+                                        src_width,
+                                        src_height,
+                                        &dst_width,
+                                        &dst_height);
 
     /* do resize */
     if (dst_width > 0 && dst_height > 0) {
