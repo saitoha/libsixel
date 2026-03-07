@@ -401,6 +401,26 @@ end:
 }
 
 
+static SIXELSTATUS
+safe_multiply_by_params_div10(int lhs, int rhs, int *result)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    if (lhs > 0 && rhs > INT_MAX / lhs) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        sixel_helper_set_additional_message(
+            "safe_multiply_by_params_div10: integer overflow detected.");
+        goto end;
+    }
+
+    *result = lhs * rhs / 10;
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
 sixel_decode_raw_impl(
@@ -532,11 +552,31 @@ sixel_decode_raw_impl(
 
                 if (context->nparams > 2) {
                     /* Pn3 */
+                    int scaled_pan;
+                    int scaled_pad;
+
                     if (context->params[2] == 0) {
                         context->params[2] = 10;
                     }
-                    context->attributed_pan = context->attributed_pan * context->params[2] / 10;
-                    context->attributed_pad = context->attributed_pad * context->params[2] / 10;
+
+                    status = safe_multiply_by_params_div10(
+                        context->attributed_pan,
+                        context->params[2],
+                        &scaled_pan);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+
+                    status = safe_multiply_by_params_div10(
+                        context->attributed_pad,
+                        context->params[2],
+                        &scaled_pad);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+
+                    context->attributed_pan = scaled_pan;
+                    context->attributed_pad = scaled_pad;
                     if (context->attributed_pan <= 0) {
                         context->attributed_pan = 1;
                     }

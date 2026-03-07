@@ -107,6 +107,7 @@ issue-200:
 
 issue-220:
 	converters/img2sixel -B '#000000' tests/issue/220/poc1_gif_oob.gif -o /dev/null
+	converters/sixel2png -i tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel -o /dev/null; test $$? = 255 -o $$? = 127
 
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
