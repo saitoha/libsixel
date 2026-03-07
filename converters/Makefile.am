@@ -276,6 +276,7 @@ if WANT_SIXEL2PNG
 	$(WINE) $(builddir)/sixel2png$(WINEEXT) < $(builddir)/tmp/snake2.sixel > $(builddir)/tmp/snake2.png
 	$(WINE) $(builddir)/sixel2png$(WINEEXT) - - < $(builddir)/tmp/snake3.sixel > $(builddir)/tmp/snake3.png
 	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
+	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(top_srcdir)/tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel -o/dev/null; test $$? = 255 -o $$? = 127
 endif
 	@echo '[test13] regression test'
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
