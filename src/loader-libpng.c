@@ -2039,6 +2039,9 @@ load_apng_frames(
     sixel_load_image_function  fn_load,
     void                      *context)
 {
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
     SIXELSTATUS status;
     sixel_apng_state_t state;
     sixel_apng_frame_control_t control;
@@ -2084,6 +2087,20 @@ load_apng_frames(
     canvas_bytes = 0;
     sequence_no = 0;
     fd_sequence = 0;
+
+    /*
+     * APNG parsing starts after the PNG signature. Guard against short
+     * buffers so size_t subtraction cannot underflow.
+     */
+    if (pchunk == NULL || pchunk->buffer == NULL ||
+        pchunk->size < sizeof(png_signature)) {
+        status = SIXEL_FALSE;
+        goto end;
+    }
+    if (memcmp(pchunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+        status = SIXEL_FALSE;
+        goto end;
+    }
 
     apng_decode_trace_message(
         "load_apng_frames: input_size=%lu static=%d loop_control=%d "
