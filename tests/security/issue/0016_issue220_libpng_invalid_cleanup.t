@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 printf '1..1\n'
 set -v
 
-issue220="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc4_libpng_invalid_header.png"
+issue220="${TOP_SRCDIR}/tests/data/security/issue/data/220/crash_w3_1161_AddressSanitizer_1772622371.bmp"
 
 set +e
 run_img2sixel -Llibpng! "${issue220}" -o /dev/null
