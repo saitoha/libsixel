@@ -462,6 +462,36 @@ lookup_mono_lightbg(unsigned char const * const pixel,
     return distant < 128 * reqcolor ? 1: 0;
 }
 
+static SIXELSTATUS
+sixel_dither_validate_complexion_limit(int depth, int complexion)
+{
+    enum { max_channel_diff_sq = 255 * 255 };
+    int non_weighted_components;
+    long long weighted_budget;
+    long long max_complexion;
+
+    if (complexion <= 1) {
+        return SIXEL_OK;
+    }
+
+    non_weighted_components = (depth > 1) ? (depth - 1) : 0;
+    weighted_budget = (long long)INT_MAX
+        - (long long)max_channel_diff_sq * (long long)non_weighted_components;
+    if (weighted_budget <= 0) {
+        max_complexion = 0;
+    } else {
+        max_complexion = weighted_budget / (long long)max_channel_diff_sq;
+    }
+
+    if ((long long)complexion > max_complexion) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_map_pixels: complexion parameter is too large.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return SIXEL_OK;
+}
+
 /*
  * Apply the palette into the supplied pixel buffer while coordinating the
  * dithering strategy.  The routine performs the following steps:
@@ -628,6 +658,14 @@ sixel_dither_map_pixels(
     }
     if (lut_policy == SIXEL_LUT_POLICY_NONE) {
         f_lookup = lookup_normal;
+    }
+
+    if ((f_lookup == lookup_normal || f_lookup == lookup_fast_lut)
+            && !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        status = sixel_dither_validate_complexion_limit(depth, complexion);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     if (f_lookup == lookup_fast_lut) {
@@ -1035,6 +1073,10 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
 
     if (plan == NULL || plan->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_dither_validate_complexion_limit(3, plan->complexion);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     depth_bytes = (size_t)sixel_helper_compute_depth(plan->pixelformat);
@@ -2130,6 +2172,10 @@ sixel_dither_apply_palette(
         sixel_helper_set_additional_message(
             "sixel_dither_apply_palette: palette is null.");
         status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    status = sixel_dither_validate_complexion_limit(3, dither->complexion);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
