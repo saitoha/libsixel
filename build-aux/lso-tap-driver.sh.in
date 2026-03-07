@@ -124,7 +124,7 @@ if [ -z "$runtime_libdir" ]; then
   runtime_libdir="${TOP_BUILDDIR}/src/.libs"
 fi
 if [ "${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH-}" = "yes" ] && [ -n "$runtime_var" ]; then
-  eval "runtime_current=\${$runtime_var-}"
+  runtime_current=$(printenv "$runtime_var" 2>/dev/null || printf '')
   runtime_value="$runtime_libdir"
   if [ -n "$runtime_extra" ]; then
     runtime_value="${runtime_value}${runtime_sep}${runtime_extra}"
@@ -134,9 +134,6 @@ if [ "${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH-}" = "yes" ] && [ -n "$runtime_var" ];
   fi
   LSO_RUNTIME_SHLIBPATH_VALUE=$runtime_value
   runtime_inject_active=yes
-  export LSO_RUNTIME_SHLIBPATH_VALUE
-  eval "$runtime_var=\$runtime_value"
-  eval "export $runtime_var"
 fi
 
 timestamp_millis() {
@@ -249,15 +246,13 @@ EOF
       ;;
     *)
       run_desc="shell ${test_path}"
-      if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
-        set -- "$SIXEL_TEST_SHELL" -c \
-          'eval "${RUNTIME_SHLIBPATH_VAR}=${LSO_RUNTIME_SHLIBPATH_VALUE}"; eval "export ${RUNTIME_SHLIBPATH_VAR}"; script=$0; . "$script"' \
-          "$test_path" "$@"
-      else
-        set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
-      fi
+      set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
       ;;
   esac
+
+  if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
+    set -- env "${runtime_var}=${LSO_RUNTIME_SHLIBPATH_VALUE}" "$@"
+  fi
 
   echo "# lso-tap-driver: ${run_desc}"
 
