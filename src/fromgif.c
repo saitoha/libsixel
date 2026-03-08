@@ -712,13 +712,12 @@ load_gif(
     unsigned char bg_r;
     unsigned char bg_g;
     unsigned char bg_b;
+    int frame_no;
+    int loop_no;
 
+    frame = NULL;
     fnp.p = fn_load;
 
-    status = sixel_frame_new(&frame, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
     s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
     s.img_buffer_end = (unsigned char *)buffer + size;
     memset(&g, 0, sizeof(g));
@@ -779,11 +778,11 @@ load_gif(
     }
     memset(g.history, 0, pcount);
 
-    frame->loop_count = 0;
+    loop_no = 0;
 
     for (;;) { /* per loop */
 
-        frame->frame_no = 0;
+        frame_no = 0;
 
         s.img_buffer = s.img_buffer_original;
         status = gif_load_header(&s, &g);
@@ -837,6 +836,12 @@ load_gif(
                 break;
             }
 
+            status = sixel_frame_new(&frame, allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            frame->loop_count = loop_no;
+            frame->frame_no = frame_no;
             frame->width = g.actual_width;
             frame->height = g.actual_height;
             status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
@@ -845,6 +850,8 @@ load_gif(
             }
 
             status = fnp.fn(frame, context);
+            sixel_frame_unref(frame);
+            frame = NULL;
             if (status != SIXEL_OK) {
                 goto end;
             }
@@ -852,41 +859,132 @@ load_gif(
             if (fstatic) {
                 goto end;
             }
-            ++frame->frame_no;
+            ++frame_no;
         }
 
-        ++frame->loop_count;
+        ++loop_no;
 
         if (g.loop_count < 0) {
             break;
         }
-        if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+        if (loop_control == SIXEL_LOOP_DISABLE || frame_no == 1) {
             break;
         }
         if (loop_control == SIXEL_LOOP_AUTO) {
-            if (frame->loop_count == g.loop_count) {
+            if (loop_no == g.loop_count) {
                 break;
             }
         }
     }
 
 end:
-    sixel_allocator_free(frame->allocator, g.out);
-    sixel_allocator_free(frame->allocator, g.prev_out);
-    sixel_allocator_free(frame->allocator, g.history);
-    sixel_frame_unref(frame);
+    sixel_allocator_free(allocator, g.out);
+    sixel_allocator_free(allocator, g.prev_out);
+    sixel_allocator_free(allocator, g.history);
+    if (frame != NULL) {
+        sixel_frame_unref(frame);
+    }
 
     return status;
 }
 
 
 #if HAVE_TESTS
+static unsigned char const test1_gif[] = {
+  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x02, 0x00, 0x02, 0x00, 0x81, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x21, 0xff, 0x0b, 0x4e, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45,
+  0x32, 0x2e, 0x30, 0x03, 0x01, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x00,
+  0x0a, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x02,
+  0x00, 0x00, 0x08, 0x06, 0x00, 0x01, 0x08, 0x04, 0x10, 0x10, 0x00, 0x21,
+  0xf9, 0x04, 0x01, 0x0a, 0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00,
+  0x02, 0x00, 0x02, 0x00, 0x81, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x06, 0x00, 0x01, 0x08, 0x04, 0x10,
+  0x10, 0x00, 0x3b
+};
+
+typedef struct {
+    sixel_frame_t *retained_frame;
+    unsigned char const *retained_pixels;
+    int callback_count;
+    int reused_frame_ptr;
+} test1_context_t;
+
+static SIXELSTATUS
+test1_on_frame(
+    sixel_frame_t *frame,
+    void *context)
+{
+    test1_context_t *ctx = (test1_context_t *)context;
+
+    if (ctx->callback_count == 0) {
+        ctx->retained_frame = frame;
+        sixel_frame_ref(frame);
+        ctx->retained_pixels = sixel_frame_get_pixels(frame);
+    } else {
+        volatile unsigned char sink = 0;
+        if (frame == ctx->retained_frame) {
+            ctx->reused_frame_ptr = 1;
+        }
+        sink = ctx->retained_pixels[0];
+        (void)sink;
+    }
+
+    ++ctx->callback_count;
+    return SIXEL_OK;
+}
+
 static int
 test1(void)
 {
+    SIXELSTATUS status;
     int nret = EXIT_FAILURE;
+    sixel_allocator_t *allocator = NULL;
+    test1_context_t ctx;
+
+    memset(&ctx, 0, sizeof(ctx));
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = load_gif((unsigned char *)test1_gif,
+                      sizeof(test1_gif),
+                      NULL,
+                      SIXEL_PALETTE_MAX,
+                      1,
+                      0,
+                      SIXEL_LOOP_DISABLE,
+                      (void *)test1_on_frame,
+                      &ctx,
+                      allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    if (ctx.callback_count < 2 || ctx.retained_frame == NULL) {
+        goto end;
+    }
+    if (ctx.reused_frame_ptr) {
+        goto end;
+    }
+    if (sixel_frame_get_frame_no(ctx.retained_frame) != 0) {
+        goto end;
+    }
+    if (sixel_frame_get_loop_no(ctx.retained_frame) != 0) {
+        goto end;
+    }
 
     nret = EXIT_SUCCESS;
+
+end:
+    if (ctx.retained_frame != NULL) {
+        sixel_frame_unref(ctx.retained_frame);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
 
     return nret;
 }
