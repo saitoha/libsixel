@@ -30,6 +30,7 @@ lsqa_bin = executable('lsqa',
            build_rpath: lsqa_rpath,
            dependencies: lsqa_dependencies,
             c_args: lsqa_c_args,
+            objc_args: lsqa_objc_args,
             install: true)
 if shebang_enabled
   shebang_targets += [custom_target('lsqa_shebang',
