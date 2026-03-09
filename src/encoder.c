@@ -2005,10 +2005,77 @@ sixel_encoder_encode_bytes(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame = NULL;
+    unsigned char *owned_pixels = NULL;
+    unsigned char *owned_palette = NULL;
+    size_t pixel_bytes;
+    size_t pixel_total;
+    size_t palette_bytes;
+    int depth;
 
     if (encoder == NULL || bytes == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
+    }
+
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: invalid pixelformat depth.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    pixel_total = (size_t)width * (size_t)height;
+    if (width <= 0 || height <= 0 ||
+            pixel_total / (size_t)width != (size_t)height) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: invalid frame dimensions.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT || height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: frame dimensions exceed limits.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (pixel_total > SIZE_MAX / (size_t)depth) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: buffer size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    pixel_bytes = pixel_total * (size_t)depth;
+    owned_pixels = (unsigned char *)sixel_allocator_malloc(
+        encoder->allocator, pixel_bytes);
+    if (owned_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(owned_pixels, bytes, pixel_bytes);
+
+    palette_bytes = 0u;
+    if (palette != NULL && ncolors > 0) {
+        palette_bytes = (size_t)ncolors * 3u;
+        if (palette_bytes / 3u != (size_t)ncolors) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_bytes: palette size overflow.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        owned_palette = (unsigned char *)sixel_allocator_malloc(
+            encoder->allocator, palette_bytes);
+        if (owned_palette == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_bytes: "
+                "sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(owned_palette, palette, palette_bytes);
     }
 
     status = sixel_frame_new(&frame, encoder->allocator);
@@ -2016,11 +2083,13 @@ sixel_encoder_encode_bytes(
         goto end;
     }
 
-    status = sixel_frame_init(frame, bytes, width, height,
-                              pixelformat, palette, ncolors);
+    status = sixel_frame_init(frame, owned_pixels, width, height,
+                              pixelformat, owned_palette, ncolors);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    owned_pixels = NULL;
+    owned_palette = NULL;
 
     status = sixel_encoder_encode_frame(encoder, frame, NULL);
     if (SIXEL_FAILED(status)) {
@@ -2030,17 +2099,21 @@ sixel_encoder_encode_bytes(
     status = SIXEL_OK;
 
 end:
-    /* we need to free the frame before exiting, but we can't use the
-       sixel_frame_destroy function, because that will also attempt to
-       free the pixels and palette, which we don't own */
-    if (frame != NULL && encoder->allocator != NULL) {
-        sixel_allocator_free(encoder->allocator, frame);
-        sixel_allocator_unref(encoder->allocator);
+    if (encoder != NULL && encoder->allocator != NULL && owned_palette != NULL) {
+        sixel_allocator_free(encoder->allocator, owned_palette);
+    }
+    if (encoder != NULL && encoder->allocator != NULL && owned_pixels != NULL) {
+        sixel_allocator_free(encoder->allocator, owned_pixels);
+    }
+    if (frame != NULL) {
+        /*
+         * The encoder owns the copied buffers above, so a single frame unref
+         * releases both the frame and any owned heap storage.
+         */
+        sixel_frame_unref(frame);
     }
     return status;
 }
-
-
 #if HAVE_TESTS
 static int
 test1(void)
