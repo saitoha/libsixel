@@ -405,17 +405,32 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels = NULL;
     size_t size;
+    size_t pixel_count;
     unsigned char *dst;
     unsigned char *src;
     unsigned char *p;
 
     sixel_frame_ref(frame);
 
+    if (frame->height != 0 && frame->width > INT_MAX / frame->height) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_convert_to_rgb888: image dimensions are too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        size = (size_t)(frame->width * frame->height * 4);
+        if (pixel_count > (size_t)INT_MAX / 4u) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_convert_to_rgb888: image dimensions are too huge.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        size = pixel_count * 4u;
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -423,7 +438,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        src = normalized_pixels + frame->width * frame->height * 3;
+        src = normalized_pixels + pixel_count * 3u;
         dst = normalized_pixels;
         status = sixel_helper_normalize_pixelformat(src,
                                                     &frame->pixelformat,
@@ -445,7 +460,13 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_PAL8:
-        size = (size_t)(frame->width * frame->height * 3);
+        if (pixel_count > (size_t)INT_MAX / 3u) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_convert_to_rgb888: image dimensions are too huge.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        size = pixel_count * 3u;
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -476,7 +497,13 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
         /* normalize pixelformat */
-        size = (size_t)(frame->width * frame->height * 3);
+        if (pixel_count > (size_t)INT_MAX / 3u) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_convert_to_rgb888: image dimensions are too huge.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        size = pixel_count * 3u;
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
