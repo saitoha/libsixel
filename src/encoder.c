@@ -2058,7 +2058,13 @@ sixel_encoder_encode_bytes(
     memcpy(owned_pixels, bytes, pixel_bytes);
 
     palette_bytes = 0u;
-    if (palette != NULL && ncolors > 0) {
+    if (pixelformat & SIXEL_FORMATTYPE_PALETTE) {
+        if (palette == NULL || ncolors <= 0) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_bytes: missing palette data.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
         palette_bytes = (size_t)ncolors * 3u;
         if (palette_bytes / 3u != (size_t)ncolors) {
             sixel_helper_set_additional_message(
