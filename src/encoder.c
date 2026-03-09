@@ -852,20 +852,18 @@ sixel_encoder_do_clip(
     clip_w = encoder->clipwidth;
     clip_h = encoder->clipheight;
 
-    /* adjust clipping width with comparing it to frame width */
-    if (clip_w + clip_x > src_width) {
-        if (clip_x > src_width) {
-            clip_w = 0;
-        } else {
+    /*
+     * Keep clipping math overflow-safe by comparing against
+     * (dimension - offset) instead of evaluating (size + offset).
+     */
+    if (clip_x >= src_width || clip_y >= src_height) {
+        clip_w = 0;
+        clip_h = 0;
+    } else {
+        if (clip_w > src_width - clip_x) {
             clip_w = src_width - clip_x;
         }
-    }
-
-    /* adjust clipping height with comparing it to frame height */
-    if (clip_h + clip_y > src_height) {
-        if (clip_y > src_height) {
-            clip_h = 0;
-        } else {
+        if (clip_h > src_height - clip_y) {
             clip_h = src_height - clip_y;
         }
     }
