@@ -398,6 +398,73 @@ echo "python coverage exported to $build_root/python-coverage.info"
             meson.project_build_root()],
   depends: test_deps)
 
+run_target('test-ruby',
+  command: [sh, '-c', '''
+set -eu
+
+ruby_bin="$1"
+source_root="$2"
+build_root="$3"
+
+if test -z "$ruby_bin"; then
+  echo "test-ruby: skipped because Ruby test interpreter is unavailable"
+  exit 0
+fi
+
+ruby_venv_exports="$($source_root/build-aux/resolve-ruby-test-venv.sh 1 "$ruby_bin" "$build_root/ruby/dist" "$build_root/tests/.ruby-test-venv")"
+eval "$ruby_venv_exports"
+if test -z "${SIXEL_TEST_RUBY:-}"; then
+  echo "test-ruby: skipped because Ruby test interpreter is unavailable"
+  exit 0
+fi
+
+if test -n "${SIXEL_TEST_RUBY_GEM_HOME:-}"; then
+  GEM_HOME="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_HOME
+  GEM_PATH="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_PATH
+fi
+if test -n "${SIXEL_TEST_RUBYLIB:-}"; then
+  if test -n "${RUBYLIB:-}"; then
+    RUBYLIB="$SIXEL_TEST_RUBYLIB:$RUBYLIB" export RUBYLIB
+  else
+    RUBYLIB="$SIXEL_TEST_RUBYLIB" export RUBYLIB
+  fi
+fi
+
+artifact_root="$build_root/tests/_artifacts/ruby/tap"
+mkdir -p "$artifact_root"
+status=0
+
+for test_path in $(find "$source_root/tests/bindings/ruby" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort); do
+  test_name=$(basename "$test_path" .rb)
+  artifact_dir="$artifact_root/$test_name"
+  log_path="$artifact_root/$test_name.log"
+  mkdir -p "$artifact_dir"
+  echo "==> $test_name.rb"
+  if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_RUBY" "$test_path" >"$log_path" 2>&1; then
+    if grep -Eq '^not ok([[:space:]]|$)' "$log_path"; then
+      echo "not ok - $test_name.rb (TAP not ok found)"
+      sed -n '1,120p' "$log_path"
+      status=1
+    fi
+  else
+    echo "not ok - $test_name.rb (ruby exit code != 0)"
+    sed -n '1,120p' "$log_path"
+    status=1
+  fi
+done
+
+if test "$status" -ne 0; then
+  exit "$status"
+fi
+
+echo "ruby TAP logs exported to $artifact_root"
+''',
+            'sh',
+            ruby_for_tests_path,
+            meson.project_source_root(),
+            meson.project_build_root()],
+  depends: test_deps)
+
 staticcheck_cases = [
   [
     'staticcheck-actionlint',
