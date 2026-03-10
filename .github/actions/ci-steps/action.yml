@@ -913,6 +913,9 @@ runs:
           **/_artifacts/**
           coverage.info
           python-coverage.info
+          ruby-coverage.info
+          builddir/python-coverage.info
+          builddir/ruby-coverage.info
           pkg_install-err.log
           builddir/meson-dist/**
           builddir/meson-logs/**
@@ -958,6 +961,39 @@ runs:
 
         if ! test -n "$COVERAGE_FILE"; then
           echo "python coverage info file was not found"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        if ! test -s "$COVERAGE_FILE"; then
+          echo "$COVERAGE_FILE is empty; skip Coveralls upload"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        if ! grep -q '^SF:' "$COVERAGE_FILE"; then
+          echo "$COVERAGE_FILE does not contain SF records; skip Coveralls upload"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        echo "coverage_file=$COVERAGE_FILE" >> "$GITHUB_OUTPUT"
+        echo "upload_ready=true" >> "$GITHUB_OUTPUT"
+
+    - name: Validate ruby-coverage.info
+      id: ruby_coverage_info_check
+      if: ${{ hashFiles('ruby-coverage.info', 'builddir/ruby-coverage.info') != '' }}
+      shell: bash
+      run: |
+        COVERAGE_FILE=""
+        if test -f ruby-coverage.info; then
+          COVERAGE_FILE="ruby-coverage.info"
+        elif test -f builddir/ruby-coverage.info; then
+          COVERAGE_FILE="builddir/ruby-coverage.info"
+        fi
+
+        if ! test -n "$COVERAGE_FILE"; then
+          echo "ruby coverage info file was not found"
           echo "upload_ready=false" >> "$GITHUB_OUTPUT"
           exit 0
         fi
@@ -1071,5 +1107,54 @@ runs:
         files: ${{ steps.python_coverage_info_check.outputs.coverage_file }}
         flags: >-
           ${{ format('python,{0}', fromJSON(inputs.matrix_json).label || '') }}
+        fail_ci_if_error: false
+        verbose: true
+
+    - name: Upload Ruby coverage to Coveralls (per-flag, parallel)
+      id: coveralls_upload_ruby
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      if: >-
+        ${{ hashFiles('ruby-coverage.info', 'builddir/ruby-coverage.info') != ''
+            && steps.ruby_coverage_info_check.outputs.upload_ready == 'true' }}
+      with:
+        github-token: ${{ inputs.github_token }}
+        path-to-lcov: ${{ steps.ruby_coverage_info_check.outputs.coverage_file }}
+        flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
+        parallel: true
+
+    - name: Wait before Coveralls retry (ruby per-flag)
+      if: >-
+        ${{ hashFiles('ruby-coverage.info', 'builddir/ruby-coverage.info') != ''
+            && steps.ruby_coverage_info_check.outputs.upload_ready == 'true'
+            && steps.coveralls_upload_ruby.outcome == 'failure' }}
+      shell: bash
+      run: sleep 5
+
+    - name: Upload Ruby coverage to Coveralls (per-flag, retry)
+      if: >-
+        ${{ hashFiles('ruby-coverage.info', 'builddir/ruby-coverage.info') != ''
+            && steps.ruby_coverage_info_check.outputs.upload_ready == 'true'
+            && steps.coveralls_upload_ruby.outcome == 'failure' }}
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ inputs.github_token }}
+        path-to-lcov: ${{ steps.ruby_coverage_info_check.outputs.coverage_file }}
+        flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
+        parallel: true
+
+    - name: Upload Ruby coverage to Codecov (per-flag)
+      continue-on-error: true
+      uses: codecov/codecov-action@v5
+      if: >-
+        ${{ inputs.codecov_token != ''
+            && hashFiles('ruby-coverage.info', 'builddir/ruby-coverage.info') != ''
+            && steps.ruby_coverage_info_check.outputs.upload_ready == 'true' }}
+      with:
+        token: ${{ inputs.codecov_token }}
+        files: ${{ steps.ruby_coverage_info_check.outputs.coverage_file }}
+        flags: >-
+          ${{ format('ruby,{0}', fromJSON(inputs.matrix_json).label || '') }}
         fail_ci_if_error: false
         verbose: true
