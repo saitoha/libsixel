@@ -579,8 +579,15 @@ all-local:
 	  $(MAKE) $(AM_MAKEFLAGS) "$(RUBY_GEM_STAMP)"; \
 	fi
 
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
+.PHONY: check-ruby
+
+# Keep ruby unit tests opt-in so top-level "make check" only runs
+# TAP tests under tests/bindings/ruby.
 check-local:
+	@:
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+check-ruby:
 	@if test -x "$(RUBY)"; then \
 	  echo "Running Ruby tests..."; \
 	  LD_LIBRARY_PATH=$(top_builddir)/src/.libs:$$LD_LIBRARY_PATH \
