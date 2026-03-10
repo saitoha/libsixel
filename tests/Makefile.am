@@ -29,7 +29,9 @@ TEST_EXTENSIONS = .t .py .rb
 HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
-    bindings/python/_taptest.py
+    bindings/python/_taptest.py \
+    bindings/ruby/_coverage_runner.rb \
+    bindings/ruby/_coverage_to_lcov.rb
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
@@ -490,19 +492,26 @@ check-ruby:
 	    fi; \
 	fi; \
 	artifact_root='$(abs_top_builddir)/tests/_artifacts/ruby/tap'; \
+	coverage_root='$(abs_top_builddir)/tests/_artifacts/ruby/coverage'; \
+	coverage_runner='$(abs_top_srcdir)/tests/bindings/ruby/_coverage_runner.rb'; \
+	coverage_converter='$(abs_top_srcdir)/tests/bindings/ruby/_coverage_to_lcov.rb'; \
+	lcov_path='$(abs_top_builddir)/ruby-coverage.info'; \
 	mkdir -p "$$artifact_root"; \
+	rm -rf "$$coverage_root"; \
+	mkdir -p "$$coverage_root"; \
 	status=0; \
 	for test_path in `find '$(abs_top_srcdir)/tests/bindings/ruby' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort`; do \
 	    test_name=`basename "$$test_path" .rb`; \
 	    artifact_dir="$$artifact_root/$$test_name"; \
 	    log_path="$$artifact_root/$$test_name.log"; \
+	    coverage_path="$$coverage_root/$$test_name.marshal"; \
 	    mkdir -p "$$artifact_dir"; \
 	    echo "==> $$test_name.rb"; \
 	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
 	        TOP_SRCDIR='$(abs_top_srcdir)' \
 	        TOP_BUILDDIR='$(abs_top_builddir)' \
 	        LIBSIXEL_LIBDIR='$(abs_top_builddir)/src' \
-	        "$$SIXEL_TEST_RUBY" "$$test_path" >"$$log_path" 2>&1; then \
+	        "$$SIXEL_TEST_RUBY" "$$coverage_runner" "$$test_path" "$$coverage_path" >"$$log_path" 2>&1; then \
 	        if grep -Eq '^not ok([[:space:]]|$$)' "$$log_path"; then \
 	            echo "not ok - $$test_name.rb (TAP not ok found)"; \
 	            sed -n '1,120p' "$$log_path"; \
@@ -514,6 +523,8 @@ check-ruby:
 	        status=1; \
 	    fi; \
 	done; \
+	"$$SIXEL_TEST_RUBY" "$$coverage_converter" "$$coverage_root" "$$lcov_path" '$(abs_top_srcdir)' || status=1; \
+	echo "ruby coverage exported to $$lcov_path"; \
 	if test "$$status" -ne 0; then \
 	    exit "$$status"; \
 	fi; \
