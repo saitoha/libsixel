@@ -443,7 +443,7 @@ check-TESTS: $(check_PROGRAMS)
 	    $$ruby_make_arg; \
 	exit $$?;
 
-.PHONY: check-python
+.PHONY: check-python check-ruby
 check-python:
 	@set -eu; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
@@ -467,6 +467,57 @@ check-python:
 	    '$(abs_top_srcdir)/tests/bindings/python'; \
 	"$$SIXEL_TEST_PYTHON" -m coverage lcov -o '$(abs_top_builddir)/python-coverage.info'; \
 	echo "python coverage exported to $(abs_top_builddir)/python-coverage.info"
+
+check-ruby:
+	@set -eu; \
+	ruby_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-ruby-test-venv.sh" \
+	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
+	    "$(abs_top_builddir)/tests/.ruby-test-venv" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
+	eval "$$ruby_venv_exports"; \
+	if test -z "$$SIXEL_TEST_RUBY"; then \
+	    echo "check-ruby: skipped because Ruby test interpreter is unavailable"; \
+	    exit 0; \
+	fi; \
+	if test -n "$$SIXEL_TEST_RUBY_GEM_HOME"; then \
+	    GEM_HOME="$$SIXEL_TEST_RUBY_GEM_HOME" export GEM_HOME; \
+	    GEM_PATH="$$SIXEL_TEST_RUBY_GEM_HOME" export GEM_PATH; \
+	fi; \
+	if test -n "$$SIXEL_TEST_RUBYLIB"; then \
+	    if test -n "$${RUBYLIB:-}"; then \
+	        RUBYLIB="$$SIXEL_TEST_RUBYLIB:$${RUBYLIB}" export RUBYLIB; \
+	    else \
+	        RUBYLIB="$$SIXEL_TEST_RUBYLIB" export RUBYLIB; \
+	    fi; \
+	fi; \
+	artifact_root='$(abs_top_builddir)/tests/_artifacts/ruby/tap'; \
+	mkdir -p "$$artifact_root"; \
+	status=0; \
+	for test_path in `find '$(abs_top_srcdir)/tests/bindings/ruby' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort`; do \
+	    test_name=`basename "$$test_path" .rb`; \
+	    artifact_dir="$$artifact_root/$$test_name"; \
+	    log_path="$$artifact_root/$$test_name.log"; \
+	    mkdir -p "$$artifact_dir"; \
+	    echo "==> $$test_name.rb"; \
+	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
+	        TOP_SRCDIR='$(abs_top_srcdir)' \
+	        TOP_BUILDDIR='$(abs_top_builddir)' \
+	        LIBSIXEL_LIBDIR='$(abs_top_builddir)/src' \
+	        "$$SIXEL_TEST_RUBY" "$$test_path" >"$$log_path" 2>&1; then \
+	        if grep -Eq '^not ok([[:space:]]|$$)' "$$log_path"; then \
+	            echo "not ok - $$test_name.rb (TAP not ok found)"; \
+	            sed -n '1,120p' "$$log_path"; \
+	            status=1; \
+	        fi; \
+	    else \
+	        echo "not ok - $$test_name.rb (ruby exit code != 0)"; \
+	        sed -n '1,120p' "$$log_path"; \
+	        status=1; \
+	    fi; \
+	done; \
+	if test "$$status" -ne 0; then \
+	    exit "$$status"; \
+	fi; \
+	echo "ruby TAP logs exported to $$artifact_root"
 
 # Collect all test fixture files under tests/data automatically so
 # EXTRA_DIST stays in sync when fixtures are added, removed, or moved.
