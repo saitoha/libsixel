@@ -431,16 +431,23 @@ if test -n "${SIXEL_TEST_RUBYLIB:-}"; then
 fi
 
 artifact_root="$build_root/tests/_artifacts/ruby/tap"
+coverage_root="$build_root/tests/_artifacts/ruby/coverage"
+coverage_runner="$source_root/tests/bindings/ruby/_coverage_runner.rb"
+coverage_converter="$source_root/tests/bindings/ruby/_coverage_to_lcov.rb"
+lcov_path="$build_root/ruby-coverage.info"
 mkdir -p "$artifact_root"
+rm -rf "$coverage_root"
+mkdir -p "$coverage_root"
 status=0
 
 for test_path in $(find "$source_root/tests/bindings/ruby" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort); do
   test_name=$(basename "$test_path" .rb)
   artifact_dir="$artifact_root/$test_name"
   log_path="$artifact_root/$test_name.log"
+  coverage_path="$coverage_root/$test_name.marshal"
   mkdir -p "$artifact_dir"
   echo "==> $test_name.rb"
-  if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_RUBY" "$test_path" >"$log_path" 2>&1; then
+  if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_RUBY" "$coverage_runner" "$test_path" "$coverage_path" >"$log_path" 2>&1; then
     if grep -Eq '^not ok([[:space:]]|$)' "$log_path"; then
       echo "not ok - $test_name.rb (TAP not ok found)"
       sed -n '1,120p' "$log_path"
@@ -452,6 +459,9 @@ for test_path in $(find "$source_root/tests/bindings/ruby" -maxdepth 1 -type f -
     status=1
   fi
 done
+
+"$SIXEL_TEST_RUBY" "$coverage_converter" "$coverage_root" "$lcov_path" "$source_root" || status=1
+echo "ruby coverage exported to $lcov_path"
 
 if test "$status" -ne 0; then
   exit "$status"

@@ -61,10 +61,13 @@ AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAUL
 
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
-	fuzz-cli-img2sixel check-python
+	fuzz-cli-img2sixel check-python check-ruby
 
 check-python:
 	$(MAKE) -C tests check-python
+
+check-ruby:
+	$(MAKE) -C tests check-ruby
 
 FUZZ_AFL ?= afl-fuzz
 FUZZ_TIMEOUT ?= 0
