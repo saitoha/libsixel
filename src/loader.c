@@ -1183,9 +1183,7 @@ end:
     if (frame) {
         gdk_pixbuf_loader_close(loader, NULL);
         g_object_unref(loader);
-        sixel_allocator_free(pchunk->allocator, frame->pixels);
-        sixel_allocator_free(pchunk->allocator, frame->palette);
-        sixel_allocator_free(pchunk->allocator, frame);
+        sixel_frame_unref(frame);
     }
 
     return status;
@@ -1484,6 +1482,27 @@ end:
 
 
 #if HAVE_TESTS
+static sixel_frame_t *test2_saved_frame = NULL;
+static int test2_frame_freed = 0;
+
+static void
+test2_tracking_free(void *ptr)
+{
+    if (ptr == (void *)test2_saved_frame) {
+        test2_frame_freed = 1;
+    }
+    free(ptr);
+}
+
+static SIXELSTATUS
+test2_on_frame(sixel_frame_t *frame, void *context)
+{
+    (void)context;
+    sixel_frame_ref(frame);
+    test2_saved_frame = frame;
+    return SIXEL_OK;
+}
+
 static int
 test1(void)
 {
@@ -1500,6 +1519,90 @@ error:
     return nret;
 }
 
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+#if HAVE_GDK_PIXBUF2
+    size_t i;
+    FILE *fp;
+    char const *filename = NULL;
+    unsigned char *pixels = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+    static char const * const candidates[] = {
+        "../images/snake.png",
+        "images/snake.png",
+        "../../images/snake.png",
+    };
+
+    test2_saved_frame = NULL;
+    test2_frame_freed = 0;
+
+    for (i = 0; i < sizeof(candidates) / sizeof(candidates[0]); ++i) {
+        fp = fopen(candidates[i], "rb");
+        if (fp != NULL) {
+            fclose(fp);
+            filename = candidates[i];
+            break;
+        }
+    }
+    if (filename == NULL) {
+        goto end;
+    }
+
+    status = sixel_allocator_new(&allocator,
+                                 malloc,
+                                 calloc,
+                                 realloc,
+                                 test2_tracking_free);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_helper_load_image_file(filename,
+                                          1,
+                                          1,
+                                          SIXEL_PALETTE_MAX,
+                                          NULL,
+                                          SIXEL_LOOP_AUTO,
+                                          test2_on_frame,
+                                          0,
+                                          NULL,
+                                          NULL,
+                                          allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (test2_saved_frame == NULL || test2_frame_freed) {
+        goto end;
+    }
+
+    pixels = sixel_frame_get_pixels(test2_saved_frame);
+    if (pixels == NULL) {
+        goto end;
+    }
+
+    sixel_frame_unref(test2_saved_frame);
+    test2_saved_frame = NULL;
+    if (!test2_frame_freed) {
+        goto end;
+    }
+#endif  /* HAVE_GDK_PIXBUF2 */
+
+    nret = EXIT_SUCCESS;
+
+end:
+    if (test2_saved_frame != NULL) {
+        sixel_frame_unref(test2_saved_frame);
+        test2_saved_frame = NULL;
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return nret;
+}
+
 
 SIXELAPI int
 sixel_loader_tests_main(void)
@@ -1510,6 +1613,7 @@ sixel_loader_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
