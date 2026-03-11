@@ -6,16 +6,12 @@ puts '1..1'
 begin
   require 'libsixel'
 
-  out = Libsixel::API::Util.make_outptr
-  status = Libsixel::API.sixel_decoder_new(out, 0)
-  raise RuntimeError, "sixel_decoder_new failed: #{status}" if Libsixel::API.failed?(status)
+  decoder = Decoder.new
+  decoder.unref
+  decoder.unref
 
-  decoder = Libsixel::API::Util.read_outptr(out)
-  Libsixel::API.sixel_decoder_unref(decoder)
-  Libsixel::API.sixel_decoder_unref(decoder)
-
-  puts 'ok 1 - raw decoder unref is callable twice without raising'
+  puts 'ok 1 - decoder unref is idempotent'
 rescue StandardError => e
-  puts 'not ok 1 - raw decoder unref idempotent check failed'
+  puts 'not ok 1 - decoder unref idempotent check failed'
   puts "# #{e.class}: #{e.message}"
 end
