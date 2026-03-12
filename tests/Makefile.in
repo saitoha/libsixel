@@ -536,7 +536,10 @@ AM_TESTSUITE_SUMMARY_HEADER = ' for $(PACKAGE_STRING)'
 RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
 TEST_SUITE_LOG = test-suite.log
-LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
+am__test_logs1 = $(TESTS:=.log)
+am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
+am__test_logs3 = $(am__test_logs2:.t.log=.log)
+T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
 am__set_b = \
   case '$@' in \
     */*) \
@@ -547,10 +550,6 @@ am__set_b = \
     *) \
       b='$*';; \
   esac
-am__test_logs1 = $(TESTS:=.log)
-am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
-am__test_logs3 = $(am__test_logs2:.t.log=.log)
-T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
 am__test_logs4 = $(am__test_logs3:.py.log=.log)
 PY_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 PY_LOG_COMPILE = $(PY_LOG_COMPILER) $(AM_PY_LOG_FLAGS) $(PY_LOG_FLAGS)
@@ -798,8 +797,7 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-SIXEL_CHECK_TESTS_LIST = @SIXEL_CHECK_TESTS@
-TESTS = $(filter-out .perl-test-venv/% .python-test-venv/% .ruby-test-venv/% _artifacts/%,$(SIXEL_CHECK_TESTS_LIST))
+TESTS = @SIXEL_CHECK_TESTS@
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
 
@@ -2235,41 +2233,6 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
-$(filter-out.log: $(filter-out
-	@p='$(filter-out'; \
-	b='$(filter-out'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-.perl-test-venv/%.log: .perl-test-venv/%
-	@p='.perl-test-venv/%'; \
-	b='.perl-test-venv/%'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-.python-test-venv/%.log: .python-test-venv/%
-	@p='.python-test-venv/%'; \
-	b='.python-test-venv/%'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-.ruby-test-venv/%.log: .ruby-test-venv/%
-	@p='.ruby-test-venv/%'; \
-	b='.ruby-test-venv/%'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-_artifacts/%,$(SIXEL_CHECK_TESTS_LIST)).log: _artifacts/%,$(SIXEL_CHECK_TESTS_LIST))
-	@p='_artifacts/%,$(SIXEL_CHECK_TESTS_LIST))'; \
-	b='_artifacts/%,$(SIXEL_CHECK_TESTS_LIST))'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .t.log:
 	@p='$<'; \
 	$(am__set_b); \
