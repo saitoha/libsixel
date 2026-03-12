@@ -4270,12 +4270,18 @@ AS_IF([test "x$enable_ruby" != xno -a "x$have_ruby" = xyes], [
   ENABLE_RUBY=1
 ])
 
+ENABLE_PERL=0
+AS_IF([test "x$enable_perl" != xno], [
+  ENABLE_PERL=1
+])
+
 sixel_ruby_tests_mode=include
 SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
     tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
 AC_SUBST([SIXEL_CHECK_TESTS])
 
 AC_SUBST([ENABLE_RUBY])
+AC_SUBST([ENABLE_PERL])
 AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x])
 
 AC_ARG_VAR([BASH], [Path to the Bash shell for converter tests])

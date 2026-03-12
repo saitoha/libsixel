@@ -47,6 +47,7 @@ option('zshcompletiondir', type: 'string', value: 'disabled', description: 'Dire
 option('simd', type: 'feature', value: 'enabled', description: 'Use SIMD')
 option('python', type: 'feature', value: 'disabled', description: 'Build libsixel_wheel Python package')
 option('ruby', type: 'feature', value: 'disabled', description: 'Install Ruby bindings')
+option('perl', type: 'feature', value: 'disabled', description: 'Enable Perl binding tests')
 option('tests', type: 'boolean', value: true, description: 'Build tests')
 option('amalgamated_lib', type: 'boolean', value: false,
        description: 'Build libsixel from the amalgamated translation unit')

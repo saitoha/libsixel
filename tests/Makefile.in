@@ -604,6 +604,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 ENABLE_PYTHON = @ENABLE_PYTHON@
+ENABLE_PERL = @ENABLE_PERL@
 ENABLE_RUBY = @ENABLE_RUBY@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
@@ -824,7 +825,8 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	export SIXEL_MSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; \
 	export CROSS_COMPILING; ENABLE_PYTHON='@ENABLE_PYTHON@'; \
 	export ENABLE_PYTHON; ENABLE_RUBY='@ENABLE_RUBY@'; export \
-	ENABLE_RUBY; SIXEL_CONFIGURED_RUBY='@RUBY@'; export \
+	ENABLE_RUBY; ENABLE_PERL='@ENABLE_PERL@'; export ENABLE_PERL; \
+	SIXEL_CONFIGURED_RUBY='@RUBY@'; export \
 	SIXEL_CONFIGURED_RUBY; \
 	RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; export \
 	RUNTIME_SHLIBPATH_VAR; \
@@ -2714,7 +2716,7 @@ check-TESTS: $(check_PROGRAMS)
 	eval "$$ruby_venv_exports"; \
 	perl_bin=`command -v perl 2>/dev/null || printf "";`; \
 	perl_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-perl-test-venv.sh" \
-	    1 "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
+	    "@ENABLE_PERL@" "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
 	    "$(abs_top_builddir)/tests/.perl-test-venv" 2>$(top_builddir)/resolve-perl-test-venv.log`; \
 	eval "$$perl_venv_exports"; \
 	python_make_arg=; \

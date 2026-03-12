@@ -50,6 +50,7 @@ AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
        export CROSS_COMPILING;
 AM_TESTS_ENVIRONMENT += ENABLE_PYTHON='@ENABLE_PYTHON@'; export ENABLE_PYTHON;
 AM_TESTS_ENVIRONMENT += ENABLE_RUBY='@ENABLE_RUBY@'; export ENABLE_RUBY;
+AM_TESTS_ENVIRONMENT += ENABLE_PERL='@ENABLE_PERL@'; export ENABLE_PERL;
 AM_TESTS_ENVIRONMENT += SIXEL_CONFIGURED_RUBY='@RUBY@'; export SIXEL_CONFIGURED_RUBY;
 AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; \
        export RUNTIME_SHLIBPATH_VAR;
@@ -430,7 +431,7 @@ check-TESTS: $(check_PROGRAMS)
 	eval "$$ruby_venv_exports"; \
 	perl_bin=`command -v perl 2>/dev/null || printf "";`; \
 	perl_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-perl-test-venv.sh" \
-	    1 "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
+	    "@ENABLE_PERL@" "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
 	    "$(abs_top_builddir)/tests/.perl-test-venv" 2>$(top_builddir)/resolve-perl-test-venv.log`; \
 	eval "$$perl_venv_exports"; \
 	python_make_arg=; \

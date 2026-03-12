@@ -653,6 +653,8 @@ jobs:
           - label: Meson-ubuntu-x86_64-gcc-perl
             buildtool: meson
             runner: ubuntu-latest
+            setup_options: >-
+              -Dperl=enabled
             extra_packages: >-
               meson
             exec_type: bash
@@ -667,6 +669,8 @@ jobs:
           - label: Meson-macos-aarch64-gcc-perl
             buildtool: meson
             runner: macos-latest
+            setup_options: >-
+              -Dperl=enabled
             extra_packages: >-
               meson
             exec_type: bash
@@ -674,6 +678,8 @@ jobs:
           - label: Meson-cmd-x86_64-msvc-x86_64-perl
             buildtool: meson
             runner: windows-latest
+            setup_options: >-
+              -Dperl=enabled
             exec_type: cmd
 
     steps:
@@ -732,6 +738,8 @@ jobs:
           - label: Meson-ubuntu-x86_64-gcc-perl-coverage
             buildtool: meson
             runner: ubuntu-latest
+            setup_options: >-
+              -Dperl=enabled
             extra_packages: >-
               meson
             check_target: test
@@ -748,6 +756,8 @@ jobs:
           - label: Meson-macos-aarch64-gcc-perl-coverage
             buildtool: meson
             runner: macos-latest
+            setup_options: >-
+              -Dperl=enabled
             extra_packages: >-
               meson
             check_target: test
