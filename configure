@@ -683,6 +683,7 @@ BASH
 HAVE_RUBY_FALSE
 HAVE_RUBY_TRUE
 ENABLE_RUBY
+ENABLE_PERL
 SIXEL_CHECK_TESTS
 RUBY_SITE_LIBDIR
 RUBY_EXT_DLEXT
@@ -28466,6 +28467,12 @@ then :
 
 fi
 
+ENABLE_PERL=0
+if test "x$enable_perl" != xno
+then :
+  ENABLE_PERL=1
+fi
+
 sixel_ruby_tests_mode=include
 SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
     tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
@@ -31559,4 +31566,3 @@ echo "       debugging               : $enable_debug"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
-
