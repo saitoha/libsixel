@@ -33,6 +33,12 @@ set -u
 : "${SIXEL_TEST_RUBY:=}"
 : "${SIXEL_TEST_RUBY_GEM_HOME:=}"
 : "${SIXEL_TEST_RUBYLIB:=}"
+: "${SIXEL_TEST_PERL:=}"
+: "${SIXEL_TEST_PERL_CPANM:=}"
+: "${SIXEL_TEST_PERL5LIB:=}"
+: "${SIXEL_TEST_PERL_LOCAL_LIB_ROOT:=}"
+: "${SIXEL_TEST_PERL_MB_OPT:=}"
+: "${SIXEL_TEST_PERL_MM_OPT:=}"
 
 test_name=
 log_file=
