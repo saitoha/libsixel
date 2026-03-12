@@ -15,8 +15,7 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
-SIXEL_CHECK_TESTS_LIST = @SIXEL_CHECK_TESTS@
-TESTS = $(filter-out .perl-test-venv/% .python-test-venv/% .ruby-test-venv/% _artifacts/%,$(SIXEL_CHECK_TESTS_LIST))
+TESTS = @SIXEL_CHECK_TESTS@
 
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
