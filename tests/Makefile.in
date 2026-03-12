@@ -536,10 +536,7 @@ AM_TESTSUITE_SUMMARY_HEADER = ' for $(PACKAGE_STRING)'
 RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
 TEST_SUITE_LOG = test-suite.log
-am__test_logs1 = $(TESTS:=.log)
-am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
-am__test_logs3 = $(am__test_logs2:.t.log=.log)
-T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
+LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
 am__set_b = \
   case '$@' in \
     */*) \
@@ -550,12 +547,19 @@ am__set_b = \
     *) \
       b='$*';; \
   esac
+am__test_logs1 = $(TESTS:=.log)
+am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
+am__test_logs3 = $(am__test_logs2:.t.log=.log)
+T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
 am__test_logs4 = $(am__test_logs3:.py.log=.log)
 PY_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 PY_LOG_COMPILE = $(PY_LOG_COMPILER) $(AM_PY_LOG_FLAGS) $(PY_LOG_FLAGS)
-TEST_LOGS = $(am__test_logs4:.rb.log=.log)
+am__test_logs5 = $(am__test_logs4:.rb.log=.log)
 RB_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 RB_LOG_COMPILE = $(RB_LOG_COMPILER) $(AM_RB_LOG_FLAGS) $(RB_LOG_FLAGS)
+TEST_LOGS = $(am__test_logs5:.pl.log=.log)
+PL_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
+PL_LOG_COMPILE = $(PL_LOG_COMPILER) $(AM_PL_LOG_FLAGS) $(PL_LOG_FLAGS)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/test-driver
@@ -794,18 +798,20 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-TESTS = @SIXEL_CHECK_TESTS@
+SIXEL_CHECK_TESTS_LIST = @SIXEL_CHECK_TESTS@
+TESTS = $(filter-out .perl-test-venv/% .python-test-venv/% .ruby-test-venv/% _artifacts/%,$(SIXEL_CHECK_TESTS_LIST))
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
 
 COPY_TESTS = $(TESTS)
-TEST_EXTENSIONS = .t .py .rb
+TEST_EXTENSIONS = .t .py .rb .pl
 HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
     bindings/python/_taptest.py \
     bindings/ruby/_coverage_runner.rb \
-    bindings/ruby/_coverage_to_lcov.rb
+    bindings/ruby/_coverage_to_lcov.rb \
+    bindings/perl/_coverage_to_lcov.pl
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
@@ -1068,7 +1074,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .log .o .obj .py .py$(EXEEXT) .rb .rb$(EXEEXT) .t .t$(EXEEXT) .trs
+.SUFFIXES: .c .lo .log .o .obj .pl .pl$(EXEEXT) .py .py$(EXEEXT) .rb .rb$(EXEEXT) .t .t$(EXEEXT) .trs
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -2229,6 +2235,41 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+$(filter-out.log: $(filter-out
+	@p='$(filter-out'; \
+	b='$(filter-out'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+.perl-test-venv/%.log: .perl-test-venv/%
+	@p='.perl-test-venv/%'; \
+	b='.perl-test-venv/%'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+.python-test-venv/%.log: .python-test-venv/%
+	@p='.python-test-venv/%'; \
+	b='.python-test-venv/%'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+.ruby-test-venv/%.log: .ruby-test-venv/%
+	@p='.ruby-test-venv/%'; \
+	b='.ruby-test-venv/%'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+_artifacts/%,$(SIXEL_CHECK_TESTS_LIST)).log: _artifacts/%,$(SIXEL_CHECK_TESTS_LIST))
+	@p='_artifacts/%,$(SIXEL_CHECK_TESTS_LIST))'; \
+	b='_artifacts/%,$(SIXEL_CHECK_TESTS_LIST))'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .t.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -2256,6 +2297,13 @@ recheck: all $(check_PROGRAMS)
 @am__EXEEXT_TRUE@	$(am__check_pre) $(RB_LOG_DRIVER) --test-name "$$f" \
 @am__EXEEXT_TRUE@	--log-file $$b.log --trs-file $$b.trs \
 @am__EXEEXT_TRUE@	$(am__common_driver_flags) $(AM_RB_LOG_DRIVER_FLAGS) $(RB_LOG_DRIVER_FLAGS) -- $(RB_LOG_COMPILE) \
+@am__EXEEXT_TRUE@	"$$tst" $(AM_TESTS_FD_REDIRECT)
+@am__EXEEXT_TRUE@.pl$(EXEEXT).log:
+@am__EXEEXT_TRUE@	@p='$<'; \
+@am__EXEEXT_TRUE@	$(am__set_b); \
+@am__EXEEXT_TRUE@	$(am__check_pre) $(PL_LOG_DRIVER) --test-name "$$f" \
+@am__EXEEXT_TRUE@	--log-file $$b.log --trs-file $$b.trs \
+@am__EXEEXT_TRUE@	$(am__common_driver_flags) $(AM_PL_LOG_DRIVER_FLAGS) $(PL_LOG_DRIVER_FLAGS) -- $(PL_LOG_COMPILE) \
 @am__EXEEXT_TRUE@	"$$tst" $(AM_TESTS_FD_REDIRECT)
 
 distdir: $(BUILT_SOURCES)
@@ -2656,6 +2704,16 @@ staticcheck-build-doc-meson-options:
 	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
 	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
 
+# Route Perl TAP tests through the same driver so Python/Ruby/Perl
+# bindings share identical timeout and result formatting behavior.
+.pl.log:
+	@p='$<'; \
+	$(am__set_b); \
+	$(am__check_pre) $(T_LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
+	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
+
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
@@ -2691,8 +2749,14 @@ check-TESTS: $(check_PROGRAMS)
 	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
 	    "$(abs_top_builddir)/tests/.ruby-test-venv" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
 	eval "$$ruby_venv_exports"; \
+	perl_bin=`command -v perl 2>/dev/null || printf "";`; \
+	perl_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-perl-test-venv.sh" \
+	    1 "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
+	    "$(abs_top_builddir)/tests/.perl-test-venv" 2>$(top_builddir)/resolve-perl-test-venv.log`; \
+	eval "$$perl_venv_exports"; \
 	python_make_arg=; \
 	ruby_make_arg=; \
+	perl_make_arg=; \
 	if test -n "$$SIXEL_TEST_PYTHON"; then \
 	    export SIXEL_TEST_PYTHON; \
 	    python_make_arg="SIXEL_TEST_PYTHON=$$SIXEL_TEST_PYTHON"; \
@@ -2709,6 +2773,30 @@ check-TESTS: $(check_PROGRAMS)
 	    export SIXEL_TEST_RUBYLIB; \
 	    ruby_make_arg="$$ruby_make_arg SIXEL_TEST_RUBYLIB=$$SIXEL_TEST_RUBYLIB"; \
 	fi; \
+	if test -n "$$SIXEL_TEST_PERL"; then \
+	    export SIXEL_TEST_PERL; \
+	    perl_make_arg="SIXEL_TEST_PERL=$$SIXEL_TEST_PERL"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL_CPANM"; then \
+	    export SIXEL_TEST_PERL_CPANM; \
+	    perl_make_arg="$$perl_make_arg SIXEL_TEST_PERL_CPANM=$$SIXEL_TEST_PERL_CPANM"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT"; then \
+	    export SIXEL_TEST_PERL_LOCAL_LIB_ROOT; \
+	    perl_make_arg="$$perl_make_arg SIXEL_TEST_PERL_LOCAL_LIB_ROOT=$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL5LIB"; then \
+	    export SIXEL_TEST_PERL5LIB; \
+	    perl_make_arg="$$perl_make_arg SIXEL_TEST_PERL5LIB=$$SIXEL_TEST_PERL5LIB"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL_MB_OPT"; then \
+	    export SIXEL_TEST_PERL_MB_OPT; \
+	    perl_make_arg="$$perl_make_arg SIXEL_TEST_PERL_MB_OPT=$$SIXEL_TEST_PERL_MB_OPT"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL_MM_OPT"; then \
+	    export SIXEL_TEST_PERL_MM_OPT; \
+	    perl_make_arg="$$perl_make_arg SIXEL_TEST_PERL_MM_OPT=$$SIXEL_TEST_PERL_MM_OPT"; \
+	fi; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=`echo $(TEST_LOGS)`; \
@@ -2716,10 +2804,11 @@ check-TESTS: $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
 	    $$python_make_arg \
-	    $$ruby_make_arg; \
+	    $$ruby_make_arg \
+	    $$perl_make_arg; \
 	exit $$?;
 
-.PHONY: check-python check-ruby
+.PHONY: check-python check-ruby check-perl
 check-python:
 	@set -eu; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
@@ -2804,6 +2893,85 @@ check-ruby:
 	fi; \
 	echo "ruby TAP logs exported to $$artifact_root"
 
+check-perl:
+	@set -eu; \
+	perl_bin=`command -v perl 2>/dev/null || printf "";`; \
+	perl_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-perl-test-venv.sh" \
+	    1 "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
+	    "$(abs_top_builddir)/tests/.perl-test-venv" 2>$(top_builddir)/resolve-perl-test-venv.log`; \
+	eval "$$perl_venv_exports"; \
+	if test -z "$$SIXEL_TEST_PERL"; then \
+	    echo "check-perl: skipped because Perl test interpreter is unavailable"; \
+	    exit 0; \
+	fi; \
+	if test -z "$$SIXEL_TEST_PERL_CPANM"; then \
+	    echo "check-perl: skipped because cpanm is unavailable for Perl test venv"; \
+	    exit 0; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL5LIB"; then \
+	    if test -n "$${PERL5LIB:-}"; then \
+	        PERL5LIB="$$SIXEL_TEST_PERL5LIB:$${PERL5LIB}" export PERL5LIB; \
+	    else \
+	        PERL5LIB="$$SIXEL_TEST_PERL5LIB" export PERL5LIB; \
+	    fi; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT"; then \
+	    PERL_LOCAL_LIB_ROOT="$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT" export PERL_LOCAL_LIB_ROOT; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL_MB_OPT"; then \
+	    PERL_MB_OPT="$$SIXEL_TEST_PERL_MB_OPT" export PERL_MB_OPT; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PERL_MM_OPT"; then \
+	    PERL_MM_OPT="$$SIXEL_TEST_PERL_MM_OPT" export PERL_MM_OPT; \
+	fi; \
+	"$$SIXEL_TEST_PERL" "$$SIXEL_TEST_PERL_CPANM" --quiet --notest --skip-satisfied \
+	    --local-lib-contained "$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT" Devel::Cover; \
+	cover_bin="$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT/bin/cover"; \
+	if test ! -x "$$cover_bin"; then \
+	    echo "check-perl: expected cover executable was not found at $$cover_bin" >&2; \
+	    exit 1; \
+	fi; \
+	artifact_root='$(abs_top_builddir)/tests/_artifacts/perl/tap'; \
+	coverage_root='$(abs_top_builddir)/tests/_artifacts/perl/coverage'; \
+	coverage_converter='$(abs_top_srcdir)/tests/bindings/perl/_coverage_to_lcov.pl'; \
+	lcov_path='$(abs_top_builddir)/perl-coverage.info'; \
+	mkdir -p "$$artifact_root"; \
+	rm -rf "$$coverage_root"; \
+	mkdir -p "$$coverage_root"; \
+	status=0; \
+	for test_path in `find '$(abs_top_srcdir)/tests/bindings/perl' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.pl' | LC_ALL=C sort`; do \
+	    test_name=`basename "$$test_path" .pl`; \
+	    artifact_dir="$$artifact_root/$$test_name"; \
+	    log_path="$$artifact_root/$$test_name.log"; \
+	    mkdir -p "$$artifact_dir"; \
+	    echo "==> $$test_name.pl"; \
+	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
+	        TOP_SRCDIR='$(abs_top_srcdir)' \
+	        TOP_BUILDDIR='$(abs_top_builddir)' \
+	        LIBSIXEL_LIBDIR='$(abs_top_builddir)/src' \
+	        "$$SIXEL_TEST_PERL" \
+	            -MDevel::Cover=-db,$$coverage_root,-silent,1 \
+	            "$$test_path" >"$$log_path" 2>&1; then \
+	        if grep -Eq '^not ok([[:space:]]|$$)' "$$log_path"; then \
+	            echo "not ok - $$test_name.pl (TAP not ok found)"; \
+	            sed -n '1,120p' "$$log_path"; \
+	            status=1; \
+	        fi; \
+	    else \
+	        echo "not ok - $$test_name.pl (perl exit code != 0)"; \
+	        sed -n '1,120p' "$$log_path"; \
+	        status=1; \
+	    fi; \
+	done; \
+	"$$cover_bin" "$$coverage_root" -silent 1 > /dev/null 2>&1 || status=1; \
+	"$$SIXEL_TEST_PERL" "$$coverage_converter" "$$coverage_root" "$$lcov_path" \
+	    '$(abs_top_srcdir)' "$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT" || status=1; \
+	echo "perl coverage exported to $$lcov_path"; \
+	if test "$$status" -ne 0; then \
+	    exit "$$status"; \
+	fi; \
+	echo "perl TAP logs exported to $$artifact_root"
+
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
 # distributed sources remain intact for developers and package builds.
@@ -2816,6 +2984,7 @@ clean-local:
 	rm -rf $(ARTIFACT_ROOT)
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
 	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv
+	rm -rf $(abs_top_builddir)/tests/.perl-test-venv
 	rm -f $(builddir)/*_metrics.json
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.

@@ -44,6 +44,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-config-h-exports.sh \
 	build-aux/resolve-python-test-venv.sh \
 	build-aux/resolve-ruby-test-venv.sh \
+	build-aux/resolve-perl-test-venv.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/gen_perl_constants.pl \
@@ -61,13 +62,16 @@ AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAUL
 
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
-	fuzz-cli-img2sixel check-python check-ruby
+	fuzz-cli-img2sixel check-python check-ruby check-perl
 
 check-python:
 	$(MAKE) -C tests check-python
 
 check-ruby:
 	$(MAKE) -C tests check-ruby
+
+check-perl:
+	$(MAKE) -C tests check-perl
 
 FUZZ_AFL ?= afl-fuzz
 FUZZ_TIMEOUT ?= 0

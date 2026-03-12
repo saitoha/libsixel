@@ -256,6 +256,42 @@ EOF
         return 0
       fi
       ;;
+    *.pl)
+      run_desc="perl ${test_path}"
+      if [ -n "${SIXEL_TEST_PERL}" ] && [ -x "${SIXEL_TEST_PERL}" ]; then
+        if [ -n "${SIXEL_TEST_PERL5LIB}" ]; then
+          if [ -n "${PERL5LIB:-}" ]; then
+            PERL5LIB="${SIXEL_TEST_PERL5LIB}:${PERL5LIB}" \
+              export PERL5LIB
+          else
+            PERL5LIB="${SIXEL_TEST_PERL5LIB}" \
+              export PERL5LIB
+          fi
+        fi
+        if [ -n "${SIXEL_TEST_PERL_LOCAL_LIB_ROOT}" ]; then
+          PERL_LOCAL_LIB_ROOT="${SIXEL_TEST_PERL_LOCAL_LIB_ROOT}" \
+            export PERL_LOCAL_LIB_ROOT
+        fi
+        if [ -n "${SIXEL_TEST_PERL_MB_OPT}" ]; then
+          PERL_MB_OPT="${SIXEL_TEST_PERL_MB_OPT}" \
+            export PERL_MB_OPT
+        fi
+        if [ -n "${SIXEL_TEST_PERL_MM_OPT}" ]; then
+          PERL_MM_OPT="${SIXEL_TEST_PERL_MM_OPT}" \
+            export PERL_MM_OPT
+        fi
+        set -- "$SIXEL_TEST_PERL" "$test_path" "$@"
+      else
+        printf '%s\n' '1..0 # SKIP perl test interpreter is unavailable' >"$log_file"
+        cat >"$trs_file" <<'EOF'
+:test-result: SKIP
+:global-test-result: SKIP
+:recheck: yes
+:copy-in-global-log: no
+EOF
+        return 0
+      fi
+      ;;
     *)
       run_desc="shell ${test_path}"
       if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then

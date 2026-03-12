@@ -42,11 +42,19 @@ esac
 # from leaking into Meson test names where ':' is deprecated.
 (
     cd "$tests_dir"
-    find . -type f \( \
+    find . \
+        \( \
+            -path './.perl-test-venv' -o \
+            -path './.python-test-venv' -o \
+            -path './.ruby-test-venv' -o \
+            -path './_artifacts' \
+        \) -prune -o \
+        -type f \( \
         -name '*.t' -o \
         -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' -o \
-        -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' \
-    \) -print
+        -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' -o \
+        -path './bindings/perl/[0-9][0-9][0-9][0-9]_*.pl' \
+        \) -print
 ) |
     LC_ALL=C sort |
     awk -v ruby_tests_mode="$ruby_tests_mode" '
