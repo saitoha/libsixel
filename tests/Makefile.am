@@ -511,6 +511,10 @@ check-python:
 	    -m pytest -q -o python_files='[0-9][0-9][0-9][0-9]_*.py' \
 	    '$(abs_top_srcdir)/tests/bindings/python'; \
 	"$$SIXEL_TEST_PYTHON" -m coverage lcov -o '$(abs_top_builddir)/python-coverage.info'; \
+	python_cov_tmp='$(abs_top_builddir)/python-coverage.info.tmp'; \
+	sed -E 's#^SF:.*site-packages/libsixel_wheel/#SF:python/libsixel/#' \
+	    '$(abs_top_builddir)/python-coverage.info' > "$$python_cov_tmp"; \
+	mv "$$python_cov_tmp" '$(abs_top_builddir)/python-coverage.info'; \
 	echo "python coverage exported to $(abs_top_builddir)/python-coverage.info"
 
 check-ruby:
