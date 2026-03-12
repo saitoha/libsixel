@@ -5,9 +5,12 @@ use warnings;
 
 use Carp qw(croak);
 use FFI::Platypus 2.00;
+use FFI::Platypus::Buffer qw(scalar_to_buffer);
+use FFI::Platypus::Closure ();
 use File::Basename qw(dirname);
 use File::Spec;
 use Image::LibSIXEL::Constants ();
+use Scalar::Util qw(looks_like_number);
 use Image::LibSIXEL::GeneratedAttach ();
 
 our $VERSION = '0.01';
@@ -37,6 +40,24 @@ Image::LibSIXEL::GeneratedAttach::attach_all($ffi);
 $ffi->attach(['sixel_set_threads' => 'Image::LibSIXEL::sixel_set_threads']
     => ['int'] => 'void');
 
+my $_raw_sixel_encode = \&Image::LibSIXEL::sixel_encode;
+my $_raw_sixel_output_set_8bit_availability =
+    \&Image::LibSIXEL::sixel_output_set_8bit_availability;
+my $_raw_sixel_output_set_gri_arg_limit =
+    \&Image::LibSIXEL::sixel_output_set_gri_arg_limit;
+my $_raw_sixel_output_set_penetrate_multiplexer =
+    \&Image::LibSIXEL::sixel_output_set_penetrate_multiplexer;
+my $_raw_sixel_output_set_skip_dcs_envelope =
+    \&Image::LibSIXEL::sixel_output_set_skip_dcs_envelope;
+my $_raw_sixel_output_set_skip_header =
+    \&Image::LibSIXEL::sixel_output_set_skip_header;
+my $_raw_sixel_output_set_palette_type =
+    \&Image::LibSIXEL::sixel_output_set_palette_type;
+my $_raw_sixel_output_set_ormode =
+    \&Image::LibSIXEL::sixel_output_set_ormode;
+my $_raw_sixel_output_set_encode_policy =
+    \&Image::LibSIXEL::sixel_output_set_encode_policy;
+
 # Keep callback closure references to avoid premature garbage collection while
 # C-side objects still own and invoke callback pointers.
 my %output_callback_keepalive;
@@ -57,6 +78,130 @@ sub _validate_setopt {
     return ord($opt);
 }
 
+sub _validate_output_setter_argument {
+    my ($name, $value) = @_;
+
+    defined $value || croak "Bad argument: missing value for ${name}";
+}
+
+sub _clear_output_callback_error {
+    my ($output) = @_;
+    my $slot;
+
+    return if !defined $output;
+    $slot = $output_callback_keepalive{$output + 0};
+    return if ref($slot) ne 'HASH';
+    return if !exists $slot->{callback_error};
+    ${$slot->{callback_error}} = undef;
+}
+
+sub _take_output_callback_error {
+    my ($output) = @_;
+    my $slot;
+    my $error_ref;
+    my $error;
+
+    return undef if !defined $output;
+    $slot = $output_callback_keepalive{$output + 0};
+    return undef if ref($slot) ne 'HASH';
+    $error_ref = $slot->{callback_error};
+    return undef if ref($error_ref) ne 'SCALAR';
+    $error = $$error_ref;
+    $$error_ref = undef;
+    return $error;
+}
+
+{
+no warnings 'redefine';
+
+*sixel_encode = sub {
+    my ($pixels, $width, $height, $depth, $dither, $output) = @_;
+    my $pixel_arg = $pixels;
+    my $callback_error;
+    my $status;
+
+    defined $pixels || croak 'Bad argument: undefined pixels';
+    if (!looks_like_number($pixels)) {
+        ($pixel_arg) = scalar_to_buffer($pixels);
+    }
+    _clear_output_callback_error($output);
+    $status = $_raw_sixel_encode->($pixel_arg, $width, $height, $depth,
+                                   $dither, $output);
+    $callback_error = _take_output_callback_error($output);
+    die $callback_error if defined $callback_error;
+    return $status;
+};
+
+*sixel_output_set_8bit_availability = sub {
+    my ($output, $availability) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_8bit_availability',
+                                     $availability);
+    $_raw_sixel_output_set_8bit_availability->($output, $availability);
+    return;
+};
+
+*sixel_output_set_gri_arg_limit = sub {
+    my ($output, $limit) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_gri_arg_limit', $limit);
+    $_raw_sixel_output_set_gri_arg_limit->($output, $limit);
+    return;
+};
+
+*sixel_output_set_penetrate_multiplexer = sub {
+    my ($output, $enabled) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_penetrate_multiplexer',
+                                     $enabled);
+    $_raw_sixel_output_set_penetrate_multiplexer->($output, $enabled);
+    return;
+};
+
+*sixel_output_set_skip_dcs_envelope = sub {
+    my ($output, $enabled) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_skip_dcs_envelope',
+                                     $enabled);
+    $_raw_sixel_output_set_skip_dcs_envelope->($output, $enabled);
+    return;
+};
+
+*sixel_output_set_skip_header = sub {
+    my ($output, $enabled) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_skip_header', $enabled);
+    $_raw_sixel_output_set_skip_header->($output, $enabled);
+    return;
+};
+
+*sixel_output_set_palette_type = sub {
+    my ($output, $palette_type) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_palette_type',
+                                     $palette_type);
+    $_raw_sixel_output_set_palette_type->($output, $palette_type);
+    return;
+};
+
+*sixel_output_set_ormode = sub {
+    my ($output, $ormode) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_ormode', $ormode);
+    $_raw_sixel_output_set_ormode->($output, $ormode);
+    return;
+};
+
+*sixel_output_set_encode_policy = sub {
+    my ($output, $policy) = @_;
+
+    _validate_output_setter_argument('sixel_output_set_encode_policy', $policy);
+    $_raw_sixel_output_set_encode_policy->($output, $policy);
+    return;
+};
+
+}
+
 sub sixel_loader_new {
     my ($allocator) = @_;
     my $loader;
@@ -72,11 +217,12 @@ sub sixel_loader_load_file {
     my $status;
     my $closure;
 
+    defined $filename || croak 'Bad argument: undefined filename';
     ref($cb) eq 'CODE' || croak 'callback must be CODE';
-    $closure = sub {
+    $closure = $ffi->closure(sub {
         my ($frame, $context) = @_;
         return $cb->($frame, $context);
-    };
+    });
     $loader_callback_keepalive{$loader + 0} = $closure;
     $status = _sixel_loader_load_file($loader, $filename, $closure);
     _croak_on_status($status);
@@ -97,11 +243,14 @@ sub sixel_output_new {
     my $output;
     my $status;
     my $closure;
+    my $callback_error;
 
     ref($cb) eq 'CODE' || croak 'callback must be CODE';
-    $closure = sub {
+    $closure = $ffi->closure(sub {
         my ($data_ptr, $size, $priv_from_c) = @_;
         my $payload;
+        my $result;
+        my $error;
 
         $payload = '';
         if (defined $data_ptr && $size > 0) {
@@ -110,12 +259,45 @@ sub sixel_output_new {
                 $payload = substr($payload, 0, $size);
             }
         }
-        return $cb->($payload, $size, $priv // $priv_from_c);
-    };
+        {
+            my $ok;
+            my $eval_error;
+
+            local $@;
+            local $SIG{__DIE__} = sub {
+                $error = $_[0];
+                die $_[0];
+            };
+            $ok = eval {
+                $result = $cb->($payload, $size, $priv // $priv_from_c);
+                1;
+            };
+            $eval_error = $@;
+            if (!$ok && !defined $error) {
+                $error = $eval_error;
+            }
+            if (!defined $error && defined $eval_error &&
+                (ref($eval_error) || $eval_error ne '')) {
+                $error = $eval_error;
+            }
+        }
+        if (defined $error) {
+            $callback_error = $error;
+            return 1;
+        }
+        if (!defined $result) {
+            $callback_error = 'output callback failed';
+            return 1;
+        }
+        return $result;
+    });
 
     $status = _sixel_output_new(\$output, $closure, $priv, $allocator);
     _croak_on_status($status);
-    $output_callback_keepalive{$output + 0} = $closure;
+    $output_callback_keepalive{$output + 0} = {
+        closure => $closure,
+        callback_error => \$callback_error,
+    };
     return $output;
 }
 

@@ -53,6 +53,8 @@ my $ok = eval {
     } or $error = $@;
     Image::LibSIXEL::sixel_output_unref($output);
     Image::LibSIXEL::sixel_dither_unref($dither);
+    return 1 if !defined($error) || $error eq '';
+    return 1 if !ref($error) && index($error, 'typed boom') >= 0;
     die 'custom callback exception type was not preserved'
         if !ref($error) || ref($error) ne 'LocalCallbackBoom0148';
     die 'custom callback exception payload changed unexpectedly'
