@@ -13,6 +13,12 @@ if have_ruby
   ruby_for_tests_path = ruby.full_path()
 endif
 
+perl_for_tests = find_program('perl', required: false)
+perl_for_tests_path = ''
+if perl_for_tests.found()
+  perl_for_tests_path = perl_for_tests.full_path()
+endif
+
 # Keep Meson test-time Python resolution aligned with the interpreter selected
 # in the project root. Using a different binary here can make wheel builds pass
 # while Python TAP tests are skipped because the fallback interpreter lacks
@@ -58,6 +64,8 @@ base_env_settings = [
   ['SIXEL_CONFIGURED_PYTHON', python_for_tests_path],
   ['ENABLE_RUBY', (get_option('ruby').disabled() ? '0' : '1')],
   ['SIXEL_CONFIGURED_RUBY', ruby_for_tests_path],
+  ['ENABLE_PERL', (perl_for_tests_path == '' ? '0' : '1')],
+  ['SIXEL_CONFIGURED_PERL', perl_for_tests_path],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
   # Ensure Python TAP tests can locate the freshly built shared library when
@@ -231,7 +239,9 @@ fi
 
 if test "${test_script##*.}" != "py"; then
   if test "${test_script##*.}" != "rb"; then
-    exec sh "$test_script" "$@"
+    if test "${test_script##*.}" != "pl"; then
+      exec sh "$test_script" "$@"
+    fi
   fi
 fi
 
@@ -276,27 +286,81 @@ if test "${test_script##*.}" = "py"; then
   exec "$SIXEL_TEST_PYTHON" "$test_script" "$@"
 fi
 
-ruby_venv_state_dir="$MESON_BUILD_ROOT/tests"
-ruby_venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
-ruby_venv_exports_file="$ruby_venv_state_dir/.ruby-test-venv.$ruby_venv_run_id.exports"
-ruby_venv_lock_dir="$ruby_venv_state_dir/.ruby-test-venv.$ruby_venv_run_id.lock"
+if test "${test_script##*.}" = "rb"; then
+  ruby_venv_state_dir="$MESON_BUILD_ROOT/tests"
+  ruby_venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
+  ruby_venv_exports_file="$ruby_venv_state_dir/.ruby-test-venv.$ruby_venv_run_id.exports"
+  ruby_venv_lock_dir="$ruby_venv_state_dir/.ruby-test-venv.$ruby_venv_run_id.lock"
 
-if test ! -f "$ruby_venv_exports_file"; then
-  if mkdir "$ruby_venv_lock_dir" 2>/dev/null; then
-    ruby_venv_exports="$($TOP_SRCDIR/build-aux/resolve-ruby-test-venv.sh \
-      "${ENABLE_RUBY:-0}" "${SIXEL_CONFIGURED_RUBY:-}" \
-      "$MESON_BUILD_ROOT/ruby/dist" \
-      "$MESON_BUILD_ROOT/tests/.ruby-test-venv")"
-    printf '%s\n' "$ruby_venv_exports" > "$ruby_venv_exports_file"
-    rmdir "$ruby_venv_lock_dir"
+  if test ! -f "$ruby_venv_exports_file"; then
+    if mkdir "$ruby_venv_lock_dir" 2>/dev/null; then
+      ruby_venv_exports="$($TOP_SRCDIR/build-aux/resolve-ruby-test-venv.sh \
+        "${ENABLE_RUBY:-0}" "${SIXEL_CONFIGURED_RUBY:-}" \
+        "$MESON_BUILD_ROOT/ruby/dist" \
+        "$MESON_BUILD_ROOT/tests/.ruby-test-venv")"
+      printf '%s\n' "$ruby_venv_exports" > "$ruby_venv_exports_file"
+      rmdir "$ruby_venv_lock_dir"
+    else
+      wait_count=0
+      while test ! -f "$ruby_venv_exports_file"; do
+        wait_count=$((wait_count + 1))
+        if test "$wait_count" -gt 600; then
+          printf '%s\n' 'SIXEL_TEST_RUBY=' > "$ruby_venv_exports_file"
+          printf '%s\n' 'SIXEL_TEST_RUBY_GEM_HOME=' >> "$ruby_venv_exports_file"
+          printf '%s\n' 'SIXEL_TEST_RUBYLIB=' >> "$ruby_venv_exports_file"
+          break
+        fi
+        sleep 0.05
+      done
+    fi
+  fi
+
+  # shellcheck disable=SC1090
+  . "$ruby_venv_exports_file"
+
+  if test -z "${SIXEL_TEST_RUBY:-}"; then
+    printf '%s\n' '1..0 # SKIP ruby test interpreter is unavailable'
+    exit 0
+  fi
+
+  if test -n "${SIXEL_TEST_RUBY_GEM_HOME:-}"; then
+    if test -n "${SIXEL_TEST_RUBYLIB:-}"; then
+      if test -n "${RUBYLIB:-}"; then
+        RUBYLIB="${SIXEL_TEST_RUBYLIB}:${RUBYLIB}" export RUBYLIB
+      else
+        RUBYLIB="${SIXEL_TEST_RUBYLIB}" export RUBYLIB
+      fi
+    fi
+    GEM_HOME="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_HOME
+    GEM_PATH="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_PATH
+  fi
+
+  exec "$SIXEL_TEST_RUBY" "$test_script" "$@"
+fi
+
+perl_venv_state_dir="$MESON_BUILD_ROOT/tests"
+perl_venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
+perl_venv_exports_file="$perl_venv_state_dir/.perl-test-venv.$perl_venv_run_id.exports"
+perl_venv_lock_dir="$perl_venv_state_dir/.perl-test-venv.$perl_venv_run_id.lock"
+
+if test ! -f "$perl_venv_exports_file"; then
+  if mkdir "$perl_venv_lock_dir" 2>/dev/null; then
+    perl_venv_exports="$($TOP_SRCDIR/build-aux/resolve-perl-test-venv.sh \
+      "${ENABLE_PERL:-0}" "${SIXEL_CONFIGURED_PERL:-}" \
+      "$TOP_SRCDIR/perl" "$MESON_BUILD_ROOT/src/.libs" \
+      "$MESON_BUILD_ROOT/tests/.perl-test-venv")"
+    printf '%s\n' "$perl_venv_exports" > "$perl_venv_exports_file"
+    rmdir "$perl_venv_lock_dir"
   else
     wait_count=0
-    while test ! -f "$ruby_venv_exports_file"; do
+    while test ! -f "$perl_venv_exports_file"; do
       wait_count=$((wait_count + 1))
       if test "$wait_count" -gt 600; then
-        printf '%s\n' 'SIXEL_TEST_RUBY=' > "$ruby_venv_exports_file"
-        printf '%s\n' 'SIXEL_TEST_RUBY_GEM_HOME=' >> "$ruby_venv_exports_file"
-        printf '%s\n' 'SIXEL_TEST_RUBYLIB=' >> "$ruby_venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_PERL=' > "$perl_venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_PERL5LIB=' >> "$perl_venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_PERL_LOCAL_LIB_ROOT=' >> "$perl_venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_PERL_MB_OPT=' >> "$perl_venv_exports_file"
+        printf '%s\n' 'SIXEL_TEST_PERL_MM_OPT=' >> "$perl_venv_exports_file"
         break
       fi
       sleep 0.05
@@ -305,26 +369,31 @@ if test ! -f "$ruby_venv_exports_file"; then
 fi
 
 # shellcheck disable=SC1090
-. "$ruby_venv_exports_file"
+. "$perl_venv_exports_file"
 
-if test -z "${SIXEL_TEST_RUBY:-}"; then
-  printf '%s\n' '1..0 # SKIP ruby test interpreter is unavailable'
+if test -z "${SIXEL_TEST_PERL:-}"; then
+  printf '%s\n' '1..0 # SKIP perl test interpreter is unavailable'
   exit 0
 fi
 
-if test -n "${SIXEL_TEST_RUBY_GEM_HOME:-}"; then
-  if test -n "${SIXEL_TEST_RUBYLIB:-}"; then
-    if test -n "${RUBYLIB:-}"; then
-      RUBYLIB="${SIXEL_TEST_RUBYLIB}:${RUBYLIB}" export RUBYLIB
-    else
-      RUBYLIB="${SIXEL_TEST_RUBYLIB}" export RUBYLIB
-    fi
+if test -n "${SIXEL_TEST_PERL5LIB:-}"; then
+  if test -n "${PERL5LIB:-}"; then
+    PERL5LIB="${SIXEL_TEST_PERL5LIB}:${PERL5LIB}" export PERL5LIB
+  else
+    PERL5LIB="${SIXEL_TEST_PERL5LIB}" export PERL5LIB
   fi
-  GEM_HOME="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_HOME
-  GEM_PATH="$SIXEL_TEST_RUBY_GEM_HOME" export GEM_PATH
+fi
+if test -n "${SIXEL_TEST_PERL_LOCAL_LIB_ROOT:-}"; then
+  PERL_LOCAL_LIB_ROOT="${SIXEL_TEST_PERL_LOCAL_LIB_ROOT}" export PERL_LOCAL_LIB_ROOT
+fi
+if test -n "${SIXEL_TEST_PERL_MB_OPT:-}"; then
+  PERL_MB_OPT="${SIXEL_TEST_PERL_MB_OPT}" export PERL_MB_OPT
+fi
+if test -n "${SIXEL_TEST_PERL_MM_OPT:-}"; then
+  PERL_MM_OPT="${SIXEL_TEST_PERL_MM_OPT}" export PERL_MM_OPT
 fi
 
-exec "$SIXEL_TEST_RUBY" "$test_script" "$@"
+exec "$SIXEL_TEST_PERL" "$test_script" "$@"
 '''
 
 foreach t : tests
