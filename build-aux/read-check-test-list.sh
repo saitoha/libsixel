@@ -45,12 +45,14 @@ esac
     find . \
         \( \
             -path './.perl-test-venv' -o \
+            -path './.php-test-venv' -o \
             -path './.python-test-venv' -o \
             -path './.ruby-test-venv' -o \
             -path './_artifacts' \
         \) -prune -o \
         -type f \( \
         -name '*.t' -o \
+        -path './bindings/php/[0-9][0-9][0-9][0-9]_*.php' -o \
         -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' -o \
         -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' -o \
         -path './bindings/perl/[0-9][0-9][0-9][0-9]_*.pl' \
