@@ -4297,6 +4297,7 @@ jobs:
             cp_os: haiku
             cp_arch: x86-64
             cp_version: r1beta5
+            check_target: test --num-processes 1
             extra_packages: >-
               meson
             exec_type: cross-platform-vms
