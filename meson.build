@@ -150,6 +150,8 @@ endif
 if get_option('tests')
   conf.set('HAVE_TESTS', 1)
 endif
+fuzz_enabled = get_option('fuzz')
+fuzz_message = fuzz_enabled ? 'yes' : 'no'
 
 if host_system == 'emscripten'
   # Emscripten -s settings below are link-time settings.
@@ -1884,6 +1886,21 @@ if ruby_opt.enabled()
   endif
 endif
 
+php_message = 'no'
+have_php = false
+php_package_target = disabler()
+php_opt = get_option('php')
+if get_option('default_library') == 'static' and php_opt.enabled()
+  error('php bindings require shared library builds; set -Dphp=disabled or avoid -Ddefault_library=static')
+endif
+if php_opt.enabled()
+  php = find_program('php', required: true)
+  if php.found()
+    have_php = true
+    php_message = 'yes: libsixel-php'
+  endif
+endif
+
 # Build the embedded completion header once so both the converter targets and
 # the amalgamated translation unit can consume the same generated artifact.
 sh = find_program('sh')
@@ -1981,12 +1998,19 @@ python_wheel_target = disabler()
 if have_python
   subdir('python')
 endif
+if have_php
+  subdir('php')
+endif
 subdir('examples')
 subdir('images')
 
 
 if get_option('tests')
   subdir('tests')
+endif
+
+if fuzz_enabled
+  subdir('fuzz')
 endif
 
 pkgconfig_dir_rel = join_paths(get_option('libdir'), 'pkgconfig')
@@ -2050,6 +2074,7 @@ message('       QuickLook extension     : ' + quicklook_extension_message)
 message('       WIC codec               : ' + wiccodec_message)
 message('       python package          : ' + python_message)
 message('       ruby bindings           : ' + ruby_message)
+message('       php bindings            : ' + php_message)
 message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)
 message('       libtiff                 : ' + tiff_message)
@@ -2062,6 +2087,7 @@ message('       analyzer                : ' + analyzer_summary)
 message('       msvc pgo                : ' + msvc_pgo_summary)
 message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging               : ' + (get_option('debug') ? 'yes' : 'no'))
+message('       fuzz targets            : ' + fuzz_message)
 message('       tests                   : ' + (get_option('tests') ? 'yes' : 'no'))
 message('')
 # vim: set et ts=2:

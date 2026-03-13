@@ -76,7 +76,7 @@ or provide the desired directory path explicitly.
 | `--enable-python` | `no` | Build and install the Python bindings. |
 | `--enable-ruby` | `no` | Build and install the Ruby bindings. |
 | `--enable-perl` | `no` | Enable the Perl binding compatibility checks used by build scripts. |
-| `--enable-php` | `no` | Enable the PHP binding compatibility checks used by build scripts. |
+| `--enable-php` | `no` | Build the bundled PHP FFI package artifact under `php/dist/`. |
 | `--enable-debug` | `no` | Enable debug macros and apply extra diagnostic compiler flags. |
 | `--enable-coverage` | `no` | Compile with compiler coverage instrumentation. |
 | `--enable-gcov` | `no` | Deprecated alias for `--enable-coverage`. |
@@ -88,6 +88,7 @@ or provide the desired directory path explicitly.
 | `--enable-pgo=<mode>` | `no` | Enable profile-guided optimization (`generate` or `use`). |
 | `--with-pgo-data=PATH` | empty | Profile data directory/path used by PGO generate/use mode. |
 | `--with-pgo-profdata=FILE` | empty | LLVM merged profile used by `--enable-pgo=use` (GNU/LLVM toolchains). |
+| `--enable-fuzz` | `no` | Build libFuzzer targets under `fuzz/`. |
 | `--enable-tests` | `no` | Build the optional test suites. |
 | `--enable-xsave-probe` / `--disable-xsave-probe` | `auto` | Control `_xgetbv` probing during AVX capability detection. |
 | `--with-shebang-file=PATH` | disabled | Prepend the contents of `PATH` to generated executables (skips files that already start with a shebang) and mark them executable. |
@@ -263,6 +264,8 @@ meson setup builddir
 | `-Dsimd=` | feature, `enabled` | Control SIMD acceleration; `auto` defers to detection, `disabled` forces off. |
 | `-Dpython=` | feature, `disabled` | Build and install the Python bindings. |
 | `-Druby=` | feature, `disabled` | Build and install the Ruby bindings. |
+| `-Dphp=` | feature, `disabled` | Build the bundled PHP FFI package artifact under `build/php/dist/`. |
+| `-Dfuzz=` | boolean, `false` | Build libFuzzer targets under `fuzz/`. |
 | `-Dtests=` | boolean, `true` | Build the test suites. |
 | `-Damalgamated_lib=` | boolean, `false` | Build `libsixel` from the amalgamated translation unit. |
 | `-Damalgamated_tools=` | boolean, `false` | Build CLI tools from the amalgamated translation unit. |

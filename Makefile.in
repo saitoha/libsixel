@@ -92,16 +92,20 @@ host_triplet = @host@
 @WANT_AMALGAMATED_SOURCES_TRUE@am__append_1 = amalgamation
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader
 @HAVE_RUBY_TRUE@am__append_3 = ruby
-@HAVE_WICCODEC_TRUE@am__append_4 = wic
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_5 = quicklook-extension
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_6 = all-gdk-pixbuf-loader
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_7 = all-gdk-pixbuf-loader
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_8 = all-quicklook-extension
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_9 = all-quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_10 = all-wic
-@HAVE_WICCODEC_TRUE@am__append_11 = all-wic
-@HAVE_RUBY_TRUE@am__append_12 = all-ruby
-@HAVE_RUBY_TRUE@am__append_13 = all-ruby
+@HAVE_PHP_TRUE@am__append_4 = php
+@HAVE_WICCODEC_TRUE@am__append_5 = wic
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_6 = quicklook-extension
+@COND_FUZZ_TRUE@am__append_7 = fuzz
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_8 = all-gdk-pixbuf-loader
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_9 = all-gdk-pixbuf-loader
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_10 = all-quicklook-extension
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_11 = all-quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_12 = all-wic
+@HAVE_WICCODEC_TRUE@am__append_13 = all-wic
+@HAVE_RUBY_TRUE@am__append_14 = all-ruby
+@HAVE_RUBY_TRUE@am__append_15 = all-ruby
+@HAVE_PHP_TRUE@am__append_16 = all-php
+@HAVE_PHP_TRUE@am__append_17 = all-php
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -231,8 +235,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/missing build-aux/py-compile
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -321,6 +325,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 ENABLE_PERL = @ENABLE_PERL@
+ENABLE_PHP = @ENABLE_PHP@
 ENABLE_PYTHON = @ENABLE_PYTHON@
 ENABLE_RUBY = @ENABLE_RUBY@
 ETAGS = @ETAGS@
@@ -328,6 +333,8 @@ EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 FILECMD = @FILECMD@
 FILE_CMD = @FILE_CMD@
+FUZZ_CFLAGS = @FUZZ_CFLAGS@
+FUZZ_LDFLAGS = @FUZZ_LDFLAGS@
 GDK_PIXBUF_BINARY_VERSION = @GDK_PIXBUF_BINARY_VERSION@
 GDK_PIXBUF_CFLAGS = @GDK_PIXBUF_CFLAGS@
 GDK_PIXBUF_LIBS = @GDK_PIXBUF_LIBS@
@@ -394,6 +401,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PHP = @PHP@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -519,7 +527,8 @@ zshcompletiondir = @zshcompletiondir@
 #
 SUBDIRS = include . src converters assessment tools python examples \
 	images $(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4) $(am__append_5) tests
+	$(am__append_4) $(am__append_5) $(am__append_6) \
+	$(am__append_7) tests
 DIST_SUBDIRS = \
         include \
         src \
@@ -529,7 +538,9 @@ DIST_SUBDIRS = \
         python \
         examples \
         images \
+        fuzz \
         ruby \
+        php \
         wic \
         gdk-pixbuf-loader \
         quicklook-extension \
@@ -566,11 +577,11 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json $(builddir)/*.log
 PHASE2_ALL_TARGETS = all-converters-objs all-assessment-objs all-tools \
-	all-python $(am__append_6) $(am__append_8) $(am__append_10) \
-	$(am__append_12)
+	all-python $(am__append_8) $(am__append_10) $(am__append_12) \
+	$(am__append_14) $(am__append_16)
 PHASE3_ALL_TARGETS = all-converters all-assessment all-tools \
-	all-python $(am__append_7) $(am__append_9) $(am__append_11) \
-	$(am__append_13)
+	all-python $(am__append_9) $(am__append_11) $(am__append_13) \
+	$(am__append_15) $(am__append_17)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1118,7 +1129,8 @@ uninstall-am: uninstall-local uninstall-pkgconfigDATA
 
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
-	fuzz-cli-img2sixel check-python check-ruby check-perl
+	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \
+	check-python check-ruby check-perl check-php
 
 check-python:
 	$(MAKE) -C tests check-python
@@ -1129,12 +1141,18 @@ check-ruby:
 check-perl:
 	$(MAKE) -C tests check-perl
 
+check-php:
+@HAVE_PHP_TRUE@	$(MAKE) -C php check
+@HAVE_PHP_FALSE@	@echo "PHP bindings are not enabled; skipping PHP tests"
+
 FUZZ_AFL ?= afl-fuzz
 FUZZ_TIMEOUT ?= 0
 FUZZ_INPUT_DIR ?= $(top_srcdir)/images
 FUZZ_OUTPUT_DIR ?= $(abs_top_builddir)/afl-out/img2sixel
 FUZZ_IMG2SIXEL ?= $(abs_top_builddir)/converters/img2sixel$(EXEEXT)
 FUZZ_IMG2SIXEL_BASE_ARGS ?=
+FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
+FUZZ_BUILTIN_ARGS ?=
 
 install-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
@@ -1193,6 +1211,16 @@ fuzz-cli-img2sixel: all
 		FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)" \
 		"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@
 
+fuzz-loader-builtin:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) fuzz-loader-builtin-libfuzzer$(EXEEXT)
+	@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-loader-builtin:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin \
+		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
+		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
+	@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
 # Build a selected group of subdirectories in parallel after src has completed.
 #
 # Execution flow for recursive all/check with SUBDIRS containing '.':
@@ -1223,6 +1251,7 @@ fuzz-cli-img2sixel: all
 	all-quicklook-extension \
 	all-wic \
 	all-ruby \
+	all-php \
 	all-python \
 	staticcheck
 
@@ -1285,6 +1314,10 @@ all-wic:
 all-ruby:
 	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
 	$(MAKE) -C ruby $(AM_MAKEFLAGS) all
+
+all-php:
+	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+	$(MAKE) -C php $(AM_MAKEFLAGS) all
 
 # Keep the src/lib link step serialized at the top level to avoid
 # duplicate "make -C src all" recursion from language bindings.
