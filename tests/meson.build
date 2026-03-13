@@ -462,8 +462,7 @@ mkdir -p "$build_root/tests/_artifacts/python/pytest"
 ARTIFACT_LOCAL_DIR="$build_root/tests/_artifacts/python/pytest" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_PYTHON" -m coverage run --source=libsixel_wheel -m pytest -q -o python_files='[0-9][0-9][0-9][0-9]_*.py' "$source_root/tests/bindings/python"
 "$SIXEL_TEST_PYTHON" -m coverage lcov -o "$build_root/python-coverage.info"
 python_cov_tmp="$build_root/python-coverage.info.tmp"
-sed -E 's#^SF:.*site-packages/libsixel_wheel/#SF:python/libsixel/#' \
-  "$build_root/python-coverage.info" > "$python_cov_tmp"
+sed -E 's#^SF:.*site-packages/libsixel_wheel/#SF:python/libsixel/#' "$build_root/python-coverage.info" > "$python_cov_tmp"
 mv "$python_cov_tmp" "$build_root/python-coverage.info"
 echo "python coverage exported to $build_root/python-coverage.info"
 ''',
