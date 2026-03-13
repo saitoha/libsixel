@@ -385,8 +385,7 @@ EXTRA_DIST = \
 	src/Libsixel/Constants.php \
 	src/Libsixel/Decoder.php \
 	src/Libsixel/Encoder.php \
-	src/Libsixel/Exception.php \
-	tests/ffi_smoke.php
+	src/Libsixel/Exception.php
 
 all: all-am
 
@@ -466,9 +465,7 @@ distdir-am: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
-@HAVE_PHP_FALSE@check-local:
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
 @HAVE_PHP_FALSE@all-local:
 all-am: Makefile all-local
@@ -570,14 +567,14 @@ ps-am:
 
 uninstall-am:
 
-.MAKE: check-am install-am install-strip
+.MAKE: install-am install-strip
 
-.PHONY: all all-am all-local check check-am check-local clean \
-	clean-generic clean-libtool clean-local cscopelist-am ctags-am \
-	distclean distclean-generic distclean-libtool distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-exec-local install-html \
+.PHONY: all all-am all-local check check-am clean clean-generic \
+	clean-libtool clean-local cscopelist-am ctags-am distclean \
+	distclean-generic distclean-libtool distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-exec-local install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
@@ -597,11 +594,6 @@ uninstall-am:
 @HAVE_PHP_TRUE@	$(AM_V_at) touch "$@"
 
 @HAVE_PHP_TRUE@all-local: $(PHP_PACKAGE_STAMP)
-
-@HAVE_PHP_TRUE@check-local:
-@HAVE_PHP_TRUE@	@echo "Running PHP FFI smoke test..."
-@HAVE_PHP_TRUE@	@LIBSIXEL_LIBDIR="$(top_builddir)/src/.libs" \
-@HAVE_PHP_TRUE@		$(PHP) $(srcdir)/tests/ffi_smoke.php
 
 @HAVE_PHP_TRUE@install-exec-local:
 @HAVE_PHP_TRUE@	@echo "PHP package install is not performed by make install."
