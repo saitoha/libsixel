@@ -680,11 +680,15 @@ ACTIONLINT
 HAVE_BASH_FALSE
 HAVE_BASH_TRUE
 BASH
+HAVE_PHP_FALSE
+HAVE_PHP_TRUE
 HAVE_RUBY_FALSE
 HAVE_RUBY_TRUE
 ENABLE_PERL
+ENABLE_PHP
 ENABLE_RUBY
 SIXEL_CHECK_TESTS
+PHP
 RUBY_SITE_LIBDIR
 RUBY_EXT_DLEXT
 RUBY_EXT_LDFLAGS
@@ -771,6 +775,10 @@ attr_var_deprecated
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+COND_FUZZ_FALSE
+COND_FUZZ_TRUE
+FUZZ_LDFLAGS
+FUZZ_CFLAGS
 COND_TESTS_FALSE
 COND_TESTS_TRUE
 CFLAGS_HAVE_COVERAGE_FALSE
@@ -1033,6 +1041,7 @@ enable_debug
 enable_coverage
 enable_gcov
 enable_tests
+enable_fuzz
 with_python_sys_prefix
 with_python_prefix
 with_python_exec_prefix
@@ -1051,6 +1060,8 @@ SIXEL_TEST_ADDITIONAL_PATH
 OBJC
 OBJCFLAGS
 CPP
+FUZZ_CFLAGS
+FUZZ_LDFLAGS
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
@@ -1797,6 +1808,7 @@ Optional Features:
   --enable-coverage       Enable compiler coverage instrumentation
   --enable-gcov           Deprecated alias for --enable-coverage
   --enable-tests          Build tests
+  --enable-fuzz           Build libFuzzer targets under fuzz/ (default: no)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1867,6 +1879,9 @@ Some influential environment variables:
   OBJC        Objective C compiler command
   OBJCFLAGS   Objective C compiler flags
   CPP         C preprocessor
+  FUZZ_CFLAGS C compiler flags used for fuzz targets when --enable-fuzz=yes
+  FUZZ_LDFLAGS
+              linker flags used for fuzz targets when --enable-fuzz=yes
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
               directories to add to pkg-config's search path
@@ -19248,6 +19263,91 @@ else
 fi
 
 
+# Check whether --enable-fuzz was given.
+if test ${enable_fuzz+y}
+then :
+  enableval=$enable_fuzz; enable_fuzz="$enableval"
+else case e in #(
+  e) enable_fuzz=no ;;
+esac
+fi
+
+case $enable_fuzz in #(
+  yes|no) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid value for --enable-fuzz: $enable_fuzz" "$LINENO" 5 ;;
+esac
+
+
+
+
+if test "x$enable_fuzz" = "xyes"
+then :
+
+  if test "x$FUZZ_CFLAGS" = "x"; then
+    FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
+  fi
+  if test "x$FUZZ_LDFLAGS" = "x"; then
+    FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
+  fi
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $CC supports requested libFuzzer flags" >&5
+printf %s "checking whether $CC supports requested libFuzzer flags... " >&6; }
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LDFLAGS="$LDFLAGS"
+  CFLAGS="$CFLAGS $FUZZ_CFLAGS"
+  LDFLAGS="$LDFLAGS $FUZZ_LDFLAGS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <stddef.h>
+      int LLVMFuzzerTestOneInput(unsigned char const *data, size_t size) {
+          (void)data;
+          (void)size;
+          return 0;
+      }
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_sixel_fuzz_flags=yes
+else case e in #(
+  e) ac_cv_sixel_fuzz_flags=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+  LDFLAGS="$ac_save_LDFLAGS"
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_fuzz_flags" >&5
+printf "%s\n" "$ac_cv_sixel_fuzz_flags" >&6; }
+
+  if test "x$ac_cv_sixel_fuzz_flags" != "xyes"
+then :
+
+    as_fn_error $? "--enable-fuzz requested, but libFuzzer flags are unsupported; override FUZZ_CFLAGS/FUZZ_LDFLAGS for your toolchain" "$LINENO" 5
+
+fi
+
+else case e in #(
+  e)
+  FUZZ_CFLAGS=""
+  FUZZ_LDFLAGS=""
+ ;;
+esac
+fi
+
+
+ if test x$enable_fuzz != xno; then
+  COND_FUZZ_TRUE=
+  COND_FUZZ_FALSE='#'
+else
+  COND_FUZZ_TRUE='#'
+  COND_FUZZ_FALSE=
+fi
+
+
 if test x$cross_compile != xyes
 then :
 
@@ -28467,6 +28567,111 @@ then :
 
 fi
 
+message_php=no
+PHP=
+have_php=no
+ENABLE_PHP=0
+if test "x$enable_php" != xno
+then :
+
+  # Extract the first word of "php", so it can be a program name with args.
+set dummy php; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_PHP+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $PHP in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PHP="$PHP" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_PHP="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+PHP=$ac_cv_path_PHP
+if test -n "$PHP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PHP" >&5
+printf "%s\n" "$PHP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  if test "x$PHP" != x
+then :
+  have_php=yes
+else case e in #(
+  e) have_php=no ;;
+esac
+fi
+  if test "x$have_php" = xno
+then :
+
+    if test "x$enable_php" = xyes
+then :
+
+      as_fn_error $? "php was not found, but --enable-php was specified" "$LINENO" 5
+
+fi
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for PHP FFI extension" >&5
+printf %s "checking for PHP FFI extension... " >&6; }
+    if $PHP -m 2>/dev/null | grep -Eq '^FFI$'; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+      if test "x$enable_php" = xyes
+then :
+
+        as_fn_error $? "PHP FFI extension is required (enable ext-ffi)" "$LINENO" 5
+
+else case e in #(
+  e)
+        have_php=no
+       ;;
+esac
+fi
+    fi
+   ;;
+esac
+fi
+
+fi
+if test "x$enable_php" != xno -a "x$have_php" = xyes
+then :
+
+  ENABLE_PHP=1
+  message_php="yes: libsixel-php"
+
+fi
+
 ENABLE_PERL=0
 if test "x$enable_perl" != xno
 then :
@@ -28482,12 +28687,21 @@ SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
 
 
 
+
  if test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x; then
   HAVE_RUBY_TRUE=
   HAVE_RUBY_FALSE='#'
 else
   HAVE_RUBY_TRUE='#'
   HAVE_RUBY_FALSE=
+fi
+
+ if test "x$enable_php" != xno -a "x$have_php" = xyes; then
+  HAVE_PHP_TRUE=
+  HAVE_PHP_FALSE='#'
+else
+  HAVE_PHP_TRUE='#'
+  HAVE_PHP_FALSE=
 fi
 
 
@@ -28931,7 +29145,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in build-aux/resolve-test-tool-paths.sh:build-aux/resolve-test-tool-paths.sh.in examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile tests/Makefile tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in build-aux/resolve-test-tool-paths.sh:build-aux/resolve-test-tool-paths.sh.in examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile fuzz/Makefile tests/Makefile tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in python/Makefile ruby/Makefile php/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
 
 
 # Always generate the amalgamation Makefile so "make dist" can stage the
@@ -29182,6 +29396,10 @@ if test -z "${COND_TESTS_TRUE}" && test -z "${COND_TESTS_FALSE}"; then
   as_fn_error $? "conditional \"COND_TESTS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${COND_FUZZ_TRUE}" && test -z "${COND_FUZZ_FALSE}"; then
+  as_fn_error $? "conditional \"COND_FUZZ\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${ENABLE_GDK_PIXBUF_LOADER_TRUE}" && test -z "${ENABLE_GDK_PIXBUF_LOADER_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_GDK_PIXBUF_LOADER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -29216,6 +29434,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_RUBY_TRUE}" && test -z "${HAVE_RUBY_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_RUBY\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PHP_TRUE}" && test -z "${HAVE_PHP_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_PHP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_BASH_TRUE}" && test -z "${HAVE_BASH_FALSE}"; then
@@ -30154,11 +30376,13 @@ do
     "examples/ruby/Makefile") CONFIG_FILES="$CONFIG_FILES examples/ruby/Makefile" ;;
     "examples/windows/Makefile") CONFIG_FILES="$CONFIG_FILES examples/windows/Makefile" ;;
     "images/Makefile") CONFIG_FILES="$CONFIG_FILES images/Makefile" ;;
+    "fuzz/Makefile") CONFIG_FILES="$CONFIG_FILES fuzz/Makefile" ;;
     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
     "tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer") CONFIG_FILES="$CONFIG_FILES tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in" ;;
     "tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer") CONFIG_FILES="$CONFIG_FILES tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "ruby/Makefile") CONFIG_FILES="$CONFIG_FILES ruby/Makefile" ;;
+    "php/Makefile") CONFIG_FILES="$CONFIG_FILES php/Makefile" ;;
     "ruby/lib/libsixel/version_runtime.rb") CONFIG_FILES="$CONFIG_FILES ruby/lib/libsixel/version_runtime.rb" ;;
     "gdk-pixbuf-loader/Makefile") CONFIG_FILES="$CONFIG_FILES gdk-pixbuf-loader/Makefile" ;;
     "quicklook-extension/Makefile") CONFIG_FILES="$CONFIG_FILES quicklook-extension/Makefile" ;;
@@ -31560,12 +31784,14 @@ echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"
 echo "       Thumbnailer command     : $message_thumbnailer"
 echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
+echo "       php bindings            : $message_php"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
 echo "       analyzer                : $sixel_analyzer_status"
 echo "       pgo                     : $sixel_pgo_status"
 echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"
+echo "       fuzz targets            : $enable_fuzz"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""

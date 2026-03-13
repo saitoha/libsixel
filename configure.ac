@@ -1883,7 +1883,7 @@ AC_ARG_ENABLE([perl],
               [],
               [enable_perl=no])
 
-# PHP bindings option (reserved for compatibility checks in build scripts)
+# PHP bindings option
 AC_ARG_ENABLE([php],
               [AS_HELP_STRING([--enable-php],
                               [PHP interface (default: no)])],
@@ -1954,6 +1954,60 @@ AC_ARG_ENABLE([tests],
               [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
               [enable_tests=no])
 AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
+
+AC_ARG_ENABLE([fuzz],
+              [AS_HELP_STRING([--enable-fuzz],
+                              [Build libFuzzer targets under fuzz/ (default: no)])],
+              [enable_fuzz="$enableval"],
+              [enable_fuzz=no])
+AS_CASE([$enable_fuzz],
+        [yes|no],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-fuzz: $enable_fuzz])])
+
+AC_ARG_VAR([FUZZ_CFLAGS],
+           [C compiler flags used for fuzz targets when --enable-fuzz=yes])
+AC_ARG_VAR([FUZZ_LDFLAGS],
+           [linker flags used for fuzz targets when --enable-fuzz=yes])
+
+AS_IF([test "x$enable_fuzz" = "xyes"], [
+  if test "x$FUZZ_CFLAGS" = "x"; then
+    FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
+  fi
+  if test "x$FUZZ_LDFLAGS" = "x"; then
+    FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
+  fi
+
+  AC_MSG_CHECKING([whether $CC supports requested libFuzzer flags])
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LDFLAGS="$LDFLAGS"
+  CFLAGS="$CFLAGS $FUZZ_CFLAGS"
+  LDFLAGS="$LDFLAGS $FUZZ_LDFLAGS"
+  AC_LINK_IFELSE(
+    [AC_LANG_SOURCE([[
+      #include <stddef.h>
+      int LLVMFuzzerTestOneInput(unsigned char const *data, size_t size) {
+          (void)data;
+          (void)size;
+          return 0;
+      }
+    ]])],
+    [ac_cv_sixel_fuzz_flags=yes],
+    [ac_cv_sixel_fuzz_flags=no])
+  CFLAGS="$ac_save_CFLAGS"
+  LDFLAGS="$ac_save_LDFLAGS"
+  AC_MSG_RESULT([$ac_cv_sixel_fuzz_flags])
+
+  AS_IF([test "x$ac_cv_sixel_fuzz_flags" != "xyes"], [
+    AC_MSG_ERROR([--enable-fuzz requested, but libFuzzer flags are unsupported; override FUZZ_CFLAGS/FUZZ_LDFLAGS for your toolchain])
+  ])
+], [
+  FUZZ_CFLAGS=""
+  FUZZ_LDFLAGS=""
+])
+AC_SUBST([FUZZ_CFLAGS])
+AC_SUBST([FUZZ_LDFLAGS])
+AM_CONDITIONAL([COND_FUZZ], [test x$enable_fuzz != xno])
 
 AS_IF([test x$cross_compile != xyes],
       [PKG_PROG_PKG_CONFIG()
@@ -4270,6 +4324,36 @@ AS_IF([test "x$enable_ruby" != xno -a "x$have_ruby" = xyes], [
   ENABLE_RUBY=1
 ])
 
+message_php=no
+PHP=
+have_php=no
+ENABLE_PHP=0
+AS_IF([test "x$enable_php" != xno], [
+  AC_PATH_PROG([PHP], [php], [])
+  AS_IF([test "x$PHP" != x], [have_php=yes], [have_php=no])
+  AS_IF([test "x$have_php" = xno], [
+    AS_IF([test "x$enable_php" = xyes], [
+      AC_MSG_ERROR([php was not found, but --enable-php was specified])
+    ])
+  ], [
+    AC_MSG_CHECKING([for PHP FFI extension])
+    if $PHP -m 2>/dev/null | grep -Eq '^FFI$'; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+      AS_IF([test "x$enable_php" = xyes], [
+        AC_MSG_ERROR([PHP FFI extension is required (enable ext-ffi)])
+      ], [
+        have_php=no
+      ])
+    fi
+  ])
+])
+AS_IF([test "x$enable_php" != xno -a "x$have_php" = xyes], [
+  ENABLE_PHP=1
+  message_php="yes: libsixel-php"
+])
+
 ENABLE_PERL=0
 AS_IF([test "x$enable_perl" != xno], [
   ENABLE_PERL=1
@@ -4281,8 +4365,10 @@ SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
 AC_SUBST([SIXEL_CHECK_TESTS])
 
 AC_SUBST([ENABLE_RUBY])
+AC_SUBST([ENABLE_PHP])
 AC_SUBST([ENABLE_PERL])
 AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x])
+AM_CONDITIONAL([HAVE_PHP], [test "x$enable_php" != xno -a "x$have_php" = xyes])
 
 AC_ARG_VAR([BASH], [Path to the Bash shell for converter tests])
 AC_PATH_PROG([BASH], [bash], [no])
@@ -4386,11 +4472,13 @@ AC_CONFIG_FILES([Makefile
                  examples/ruby/Makefile
                  examples/windows/Makefile
                  images/Makefile
+                 fuzz/Makefile
                  tests/Makefile
                  tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in
                  tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in
                  python/Makefile
                  ruby/Makefile
+                 php/Makefile
                  ruby/lib/libsixel/version_runtime.rb
                  gdk-pixbuf-loader/Makefile
                  quicklook-extension/Makefile
@@ -4457,12 +4545,14 @@ echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"
 echo "       Thumbnailer command     : $message_thumbnailer"
 echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
+echo "       php bindings            : $message_php"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
 echo "       analyzer                : $sixel_analyzer_status"
 echo "       pgo                     : $sixel_pgo_status"
 echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"
+echo "       fuzz targets            : $enable_fuzz"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""

@@ -11,11 +11,17 @@ endif
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
+if HAVE_PHP
+SUBDIRS += php
+endif
 if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 if HAVE_APPLE_QUICKLOOK_EXTENSION
 SUBDIRS += quicklook-extension
+endif
+if COND_FUZZ
+SUBDIRS += fuzz
 endif
 SUBDIRS += tests
 
@@ -28,7 +34,9 @@ DIST_SUBDIRS = \
         python \
         examples \
         images \
+        fuzz \
         ruby \
+        php \
         wic \
         gdk-pixbuf-loader \
         quicklook-extension \
@@ -62,7 +70,8 @@ AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAUL
 
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
-	fuzz-cli-img2sixel check-python check-ruby check-perl
+	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \
+	check-python check-ruby check-perl check-php
 
 check-python:
 	$(MAKE) -C tests check-python
@@ -73,12 +82,21 @@ check-ruby:
 check-perl:
 	$(MAKE) -C tests check-perl
 
+check-php:
+if HAVE_PHP
+	$(MAKE) -C php check
+else
+	@echo "PHP bindings are not enabled; skipping PHP tests"
+endif
+
 FUZZ_AFL ?= afl-fuzz
 FUZZ_TIMEOUT ?= 0
 FUZZ_INPUT_DIR ?= $(top_srcdir)/images
 FUZZ_OUTPUT_DIR ?= $(abs_top_builddir)/afl-out/img2sixel
 FUZZ_IMG2SIXEL ?= $(abs_top_builddir)/converters/img2sixel$(EXEEXT)
 FUZZ_IMG2SIXEL_BASE_ARGS ?=
+FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
+FUZZ_BUILTIN_ARGS ?=
 
 install-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
@@ -137,6 +155,16 @@ fuzz-cli-img2sixel: all
 		FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)" \
 		"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@
 
+fuzz-loader-builtin:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) fuzz-loader-builtin-libfuzzer$(EXEEXT)
+	@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-loader-builtin:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin \
+		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
+		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
+	@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 srcdir = @srcdir@
@@ -178,6 +206,7 @@ CLEANFILES = $(builddir)/package.json $(builddir)/*.log
 	all-quicklook-extension \
 	all-wic \
 	all-ruby \
+	all-php \
 	all-python \
 	staticcheck
 
@@ -207,6 +236,10 @@ endif
 if HAVE_RUBY
 PHASE2_ALL_TARGETS += all-ruby
 PHASE3_ALL_TARGETS += all-ruby
+endif
+if HAVE_PHP
+PHASE2_ALL_TARGETS += all-php
+PHASE3_ALL_TARGETS += all-php
 endif
 
 prepare-amalgamation-all:
@@ -270,6 +303,10 @@ all-wic:
 all-ruby:
 	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
 	$(MAKE) -C ruby $(AM_MAKEFLAGS) all
+
+all-php:
+	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+	$(MAKE) -C php $(AM_MAKEFLAGS) all
 
 # Keep the src/lib link step serialized at the top level to avoid
 # duplicate "make -C src all" recursion from language bindings.

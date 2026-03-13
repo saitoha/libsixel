@@ -47,8 +47,11 @@ option('zshcompletiondir', type: 'string', value: 'disabled', description: 'Dire
 option('simd', type: 'feature', value: 'enabled', description: 'Use SIMD')
 option('python', type: 'feature', value: 'disabled', description: 'Build libsixel_wheel Python package')
 option('ruby', type: 'feature', value: 'disabled', description: 'Install Ruby bindings')
+option('php', type: 'feature', value: 'disabled', description: 'Build libsixel-php FFI package')
 option('perl', type: 'feature', value: 'disabled', description: 'Enable Perl binding tests')
 option('tests', type: 'boolean', value: true, description: 'Build tests')
+option('fuzz', type: 'boolean', value: false,
+       description: 'Build libFuzzer targets under fuzz/')
 option('amalgamated_lib', type: 'boolean', value: false,
        description: 'Build libsixel from the amalgamated translation unit')
 option('amalgamated_tools', type: 'boolean', value: false,
