@@ -32,7 +32,9 @@ HELPER_FILES = \
     bindings/python/_taptest.py \
     bindings/ruby/_coverage_runner.rb \
     bindings/ruby/_coverage_to_lcov.rb \
-    bindings/perl/_coverage_to_lcov.pl
+    bindings/perl/_coverage_to_lcov.pl \
+    bindings/php/_coverage_runner.php \
+    bindings/php/_coverage_to_lcov.php
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
@@ -401,6 +403,13 @@ staticcheck-build-doc-meson-options:
 .php.log:
 	@p='$<'; \
 	$(am__set_b); \
+	SIXEL_TEST_PHP='$(SIXEL_TEST_PHP)' export SIXEL_TEST_PHP; \
+	SIXEL_TEST_PHP_BINDING_ROOT='$(SIXEL_TEST_PHP_BINDING_ROOT)' \
+	    export SIXEL_TEST_PHP_BINDING_ROOT; \
+	SIXEL_TEST_PHP_LIBDIR='$(SIXEL_TEST_PHP_LIBDIR)' \
+	    export SIXEL_TEST_PHP_LIBDIR; \
+	SIXEL_TEST_PHP_LIBPATH='$(SIXEL_TEST_PHP_LIBPATH)' \
+	    export SIXEL_TEST_PHP_LIBPATH; \
 	$(am__check_pre) $(T_LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
@@ -508,6 +517,10 @@ check-TESTS: $(check_PROGRAMS)
 	if test -n "$$SIXEL_TEST_PHP"; then \
 	    export SIXEL_TEST_PHP; \
 	    php_make_arg="SIXEL_TEST_PHP=$$SIXEL_TEST_PHP"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PHPDBG"; then \
+	    export SIXEL_TEST_PHPDBG; \
+	    php_make_arg="$$php_make_arg SIXEL_TEST_PHPDBG=$$SIXEL_TEST_PHPDBG"; \
 	fi; \
 	if test -n "$$SIXEL_TEST_PHP_BINDING_ROOT"; then \
 	    export SIXEL_TEST_PHP_BINDING_ROOT; \
@@ -807,17 +820,28 @@ check-php:
 	    echo "check-php: failed because venv PHP interpreter is unavailable (system fallback is disabled)" >&2; \
 	    exit 1; \
 	fi; \
+	if test -z "$$SIXEL_TEST_PHPDBG"; then \
+	    echo "check-php: failed because phpdbg is unavailable in the PHP test venv" >&2; \
+	    exit 1; \
+	fi; \
 	if test -z "$$SIXEL_TEST_PHP_BINDING_ROOT" || test -z "$$SIXEL_TEST_PHP_LIBPATH"; then \
 	    echo "check-php: failed because packaged PHP binding payload is unavailable in the venv" >&2; \
 	    exit 1; \
 	fi; \
 	status=0; \
 	artifact_root='$(abs_top_builddir)/tests/_artifacts/php/tap'; \
+	coverage_root='$(abs_top_builddir)/tests/_artifacts/php/coverage'; \
+	coverage_runner='$(abs_top_srcdir)/tests/bindings/php/_coverage_runner.php'; \
+	coverage_converter='$(abs_top_srcdir)/tests/bindings/php/_coverage_to_lcov.php'; \
+	lcov_path='$(abs_top_builddir)/php-coverage.info'; \
 	mkdir -p "$$artifact_root"; \
+	rm -rf "$$coverage_root"; \
+	mkdir -p "$$coverage_root"; \
 	for test_path in `find '$(abs_top_srcdir)/tests/bindings/php' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.php' | LC_ALL=C sort`; do \
 	    test_name=`basename "$$test_path" .php`; \
 	    artifact_dir="$$artifact_root/$$test_name"; \
 	    log_path="$$artifact_root/$$test_name.log"; \
+	    coverage_path="$$coverage_root/$$test_name.json"; \
 	    mkdir -p "$$artifact_dir"; \
 	    echo "==> $$test_name.php"; \
 	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
@@ -826,18 +850,21 @@ check-php:
 	        LIBSIXEL_LIBDIR="$$SIXEL_TEST_PHP_LIBDIR" \
 	        LIBSIXEL_LIBPATH="$$SIXEL_TEST_PHP_LIBPATH" \
 	        SIXEL_TEST_PHP_BINDING_ROOT="$$SIXEL_TEST_PHP_BINDING_ROOT" \
-	        "$$SIXEL_TEST_PHP" "$$test_path" >"$$log_path" 2>&1; then \
+	        "$$SIXEL_TEST_PHPDBG" -d ffi.enable=true -qrr "$$coverage_runner" "$$test_path" "$$coverage_path" >"$$log_path" 2>&1; then \
 	        if grep -Eq '^not ok([[:space:]]|$$)' "$$log_path"; then \
 	            echo "not ok - $$test_name.php (TAP not ok found)"; \
 	            sed -n '1,120p' "$$log_path"; \
 	            status=1; \
 	        fi; \
 	    else \
-	        echo "not ok - $$test_name.php (php exit code != 0)"; \
+	        echo "not ok - $$test_name.php (phpdbg exit code != 0)"; \
 	        sed -n '1,120p' "$$log_path"; \
 	        status=1; \
 	    fi; \
 	done; \
+	"$$SIXEL_TEST_PHP" "$$coverage_converter" "$$coverage_root" "$$lcov_path" \
+	    '$(abs_top_srcdir)' || status=1; \
+	echo "php coverage exported to $$lcov_path"; \
 	if test "$$status" -ne 0; then \
 	    exit "$$status"; \
 	fi; \
