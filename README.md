@@ -1394,16 +1394,28 @@ $ easy_install libsixel-wheel
 
 ## PHP interface
 
-This package includes a PHP module `sixel`.
+This package includes pure PHP FFI bindings for libsixel.
 
 ### Build and install PHP interface
 
 ```
-$ cd php/sixel
-$ phpize
-$ ./configure
-$ make install
+$ ./configure --enable-php
+$ make
+$ ls php/dist/libsixel-php-*
 ```
+
+Meson users can build the same package artifact with:
+
+```
+$ meson setup build -D php=enabled
+$ meson compile -C build
+$ ls build/php/dist/libsixel-php-*
+```
+
+Requirements:
+
+- PHP with `ext-ffi` enabled
+- shared libsixel library (bundled into the generated package artifact)
 
 ## Ruby interface
 
