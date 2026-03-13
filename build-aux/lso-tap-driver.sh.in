@@ -340,7 +340,7 @@ if test "${reduce_fork-}" != yes; then
 # Generate .trs (reStructuredText fields), at minimum :test-result: fields. :contentReference[oaicite:4]{index=4}
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
 # (Automake recognizes these fields). :contentReference[oaicite:5]{index=5}
-"$AM_TAP_AWK" < "$log_file" \
+LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
   -v test_name="$test_name" \
   -v rc="$rc" \
   -v ignore_exit="$ignore_exit" \
