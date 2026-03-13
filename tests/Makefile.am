@@ -394,6 +394,12 @@ staticcheck-build-doc-meson-options:
 	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
 	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
 
+# Build all test logs through a phony target so recursive make does not need
+# to receive thousands of .log paths as command-line arguments.
+.PHONY: sixel-check-test-logs
+sixel-check-test-logs: $(TEST_LOGS)
+	@:
+
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
@@ -479,16 +485,108 @@ check-TESTS: $(check_PROGRAMS)
 	fi; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
-	log_list=`echo $(TEST_LOGS)`; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
-	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
-	    TEST_LOGS="$$log_list" \
+	trs_manifest="$(abs_builddir)/.check-test-trs.list"; \
+	testsuite_tmp="$(TEST_SUITE_LOG).tmp"; \
+	rm -f "$$trs_manifest"; \
+	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +; \
+	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
 	    $$ruby_make_arg \
-	    $$perl_make_arg; \
-	exit $$?;
+	    $$perl_make_arg || exit $$?; \
+	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
+	all=0; \
+	pass=0; \
+	fail=0; \
+	skip=0; \
+	xfail=0; \
+	xpass=0; \
+	error=0; \
+	{ \
+	  echo "$(PACKAGE_STRING): $(subdir)/$(TEST_SUITE_LOG)"; \
+	  echo; \
+	} > "$$testsuite_tmp"; \
+	while IFS= read -r trs_path; do \
+	    test -n "$$trs_path" || continue; \
+	    log_path="$${trs_path%.trs}.log"; \
+	    rel_name="$${trs_path#$(abs_builddir)/}"; \
+	    rel_name="$${rel_name%.trs}"; \
+	    global_result=RUN; \
+	    copy_in_global_log=yes; \
+	    if test ! -r "$$trs_path"; then \
+	        error=$$((error + 1)); \
+	        printf '%s\n' "ERROR: missing $$trs_path" >> "$$testsuite_tmp"; \
+	        continue; \
+	    fi; \
+	    while IFS= read -r trs_line || test -n "$$trs_line"; do \
+	        case "$$trs_line" in \
+	            :test-result:*) \
+	                all=$$((all + 1)); \
+	                set -- $${trs_line#*:test-result:}; \
+	                case "$${1-}" in \
+	                    PASS) pass=$$((pass + 1)) ;; \
+	                    FAIL) fail=$$((fail + 1)) ;; \
+	                    SKIP) skip=$$((skip + 1)) ;; \
+	                    XFAIL) xfail=$$((xfail + 1)) ;; \
+	                    XPASS) xpass=$$((xpass + 1)) ;; \
+	                    ERROR) error=$$((error + 1)) ;; \
+	                esac \
+	                ;; \
+	            :global-test-result:*) \
+	                set -- $${trs_line#*:global-test-result:}; \
+	                global_result=$${1-RUN} \
+	                ;; \
+	            :copy-in-global-log:*) \
+	                set -- $${trs_line#*:copy-in-global-log:}; \
+	                case "$${1-}" in \
+	                    [Nn][Oo]) copy_in_global_log=no ;; \
+	                esac \
+	                ;; \
+	        esac; \
+	    done < "$$trs_path"; \
+	    if test "$$copy_in_global_log" = yes; then \
+	        { \
+	            printf '%s\n' "$$global_result: $$rel_name"; \
+	            if test -r "$$log_path"; then \
+	                cat "$$log_path"; \
+	            else \
+	                printf '%s\n' "missing log file: $$log_path"; \
+	                error=$$((error + 1)); \
+	            fi; \
+	            echo; \
+	        } >> "$$testsuite_tmp"; \
+	    fi; \
+	done < "$$trs_manifest"; \
+	{ \
+	  echo "TOTAL: $$all"; \
+	  echo "PASS: $$pass"; \
+	  echo "SKIP: $$skip"; \
+	  echo "XFAIL: $$xfail"; \
+	  echo "FAIL: $$fail"; \
+	  echo "XPASS: $$xpass"; \
+	  echo "ERROR: $$error"; \
+	} >> "$$testsuite_tmp"; \
+	mv "$$testsuite_tmp" "$(TEST_SUITE_LOG)"; \
+	echo "================================================================"; \
+	echo "Testsuite summary$(AM_TESTSUITE_SUMMARY_HEADER)"; \
+	echo "================================================================"; \
+	echo "# TOTAL: $$all"; \
+	echo "# PASS:  $$pass"; \
+	echo "# SKIP:  $$skip"; \
+	echo "# XFAIL: $$xfail"; \
+	echo "# FAIL:  $$fail"; \
+	echo "# XPASS: $$xpass"; \
+	echo "# ERROR: $$error"; \
+	if test $$((fail + xpass + error)) -ne 0; then \
+	    test x"$$VERBOSE" = x || cat "$(TEST_SUITE_LOG)"; \
+	    echo "See $(subdir)/$(TEST_SUITE_LOG) for debugging."; \
+	    rm -f "$$trs_manifest"; \
+	    exit 1; \
+	fi; \
+	rm -f "$$trs_manifest"; \
+	exit 0
 
-.PHONY: check-python check-ruby check-perl
+.PHONY: check-python check-ruby check-perl sixel-check-test-logs
 check-python:
 	@set -eu; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
