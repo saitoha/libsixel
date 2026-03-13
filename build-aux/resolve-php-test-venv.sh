@@ -16,6 +16,7 @@ configured_php=$2
 package_dir=$3
 shared_php_venv=$4
 php_bin=
+phpdbg_bin=
 binding_root=
 lib_dir=
 lib_path=
@@ -41,6 +42,7 @@ emit_assignment() {
 }
 
 emit_assignment "SIXEL_TEST_PHP" ""
+emit_assignment "SIXEL_TEST_PHPDBG" ""
 emit_assignment "SIXEL_TEST_PHP_BINDING_ROOT" ""
 emit_assignment "SIXEL_TEST_PHP_LIBDIR" ""
 emit_assignment "SIXEL_TEST_PHP_LIBPATH" ""
@@ -49,32 +51,49 @@ if [ "$enable_php" != "1" ]; then
     exit 0
 fi
 
-resolve_php_bin() {
-    if [ -x "$shared_php_venv/bin/php" ]; then
-        printf "%s\n" "$shared_php_venv/bin/php"
+resolve_executable() {
+    candidate=$1
+    if [ -z "$candidate" ]; then
+        printf "%s\n" ""
         return 0
     fi
-
-    if [ -x "$shared_php_venv/Scripts/php.exe" ]; then
-        printf "%s\n" "$shared_php_venv/Scripts/php.exe"
+    if [ -x "$candidate" ]; then
+        printf "%s\n" "$candidate"
         return 0
     fi
-
-    if [ -x "$shared_php_venv/php/bin/php" ]; then
-        printf "%s\n" "$shared_php_venv/php/bin/php"
+    resolved=$(command -v "$candidate" 2>/dev/null || printf "")
+    if [ -n "$resolved" ] && [ -x "$resolved" ]; then
+        printf "%s\n" "$resolved"
         return 0
     fi
-
-    case "$configured_php" in
-        "$shared_php_venv"/*)
-            if [ -x "$configured_php" ]; then
-                printf "%s\n" "$configured_php"
-                return 0
-            fi
-            ;;
-    esac
-
     printf "%s\n" ""
+}
+
+resolve_phpdbg_candidate() {
+    base_php=$1
+    for candidate in \
+        "$(dirname "$base_php")/phpdbg" \
+        "$(dirname "$base_php")/phpdbg.exe" \
+        "$(command -v phpdbg 2>/dev/null || printf '')"; do
+        if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+            printf "%s\n" "$candidate"
+            return 0
+        fi
+    done
+    printf "%s\n" ""
+}
+
+write_wrapper() {
+    wrapper_path=$1
+    target_path=$2
+    mkdir -p "$(dirname "$wrapper_path")"
+    rm -f "$wrapper_path"
+    cat > "$wrapper_path" <<WRAPPER
+#!/bin/sh
+set -eu
+exec '$target_path' "\$@"
+WRAPPER
+    chmod +x "$wrapper_path" 2>/dev/null || true
 }
 
 find_archive() {
@@ -133,9 +152,25 @@ resolve_libpath() {
         2>/dev/null | LC_ALL=C sort | head -n 1
 }
 
-php_bin=$(resolve_php_bin)
-if [ -z "$php_bin" ] || [ ! -x "$php_bin" ]; then
+configured_php_bin=$(resolve_executable "$configured_php")
+if [ -z "$configured_php_bin" ]; then
     exit 0
+fi
+
+php_wrapper="$shared_php_venv/bin/php"
+write_wrapper "$php_wrapper" "$configured_php_bin"
+if [ ! -x "$php_wrapper" ]; then
+    exit 0
+fi
+php_bin="$php_wrapper"
+
+phpdbg_real=$(resolve_phpdbg_candidate "$configured_php_bin")
+if [ -n "$phpdbg_real" ]; then
+    phpdbg_wrapper="$shared_php_venv/bin/phpdbg"
+    write_wrapper "$phpdbg_wrapper" "$phpdbg_real"
+    if [ -x "$phpdbg_wrapper" ]; then
+        phpdbg_bin="$phpdbg_wrapper"
+    fi
 fi
 
 if ! "$php_bin" -m 2>/dev/null | grep -Eq '^FFI$'; then
@@ -188,6 +223,7 @@ mkdir -p "$shared_php_venv"
 printf "%s\n" "$archive_signature" > "$archive_marker"
 
 emit_assignment "SIXEL_TEST_PHP" "$php_bin"
+emit_assignment "SIXEL_TEST_PHPDBG" "$phpdbg_bin"
 emit_assignment "SIXEL_TEST_PHP_BINDING_ROOT" "$binding_root"
 emit_assignment "SIXEL_TEST_PHP_LIBDIR" "$lib_dir"
 emit_assignment "SIXEL_TEST_PHP_LIBPATH" "$lib_path"
