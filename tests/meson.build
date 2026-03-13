@@ -199,6 +199,9 @@ endif
 if not get_option('ruby').disabled()
   test_deps += [ruby_gem_target]
 endif
+if not get_option('php').disabled()
+  test_deps += [php_package_target]
+endif
 
 is_windows = host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 if is_windows

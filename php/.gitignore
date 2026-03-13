@@ -42,3 +42,5 @@ Release_TSDbg
 Release_TS_inline
 Debug_TS
 sixel*.tgz
+dist
+src/_libs
