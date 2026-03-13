@@ -22,11 +22,6 @@ $(PHP_PACKAGE_STAMP): $(PHP_PACKAGE_INPUTS)
 
 all-local: $(PHP_PACKAGE_STAMP)
 
-check-local:
-	@echo "Running PHP FFI smoke test..."
-	@LIBSIXEL_LIBDIR="$(top_builddir)/src/.libs" \
-		$(PHP) $(srcdir)/tests/ffi_smoke.php
-
 install-exec-local:
 	@echo "PHP package install is not performed by make install."
 	@echo "Use Composer or extract php/dist/libsixel-php-* archive."
@@ -52,5 +47,4 @@ EXTRA_DIST = \
 	src/Libsixel/Constants.php \
 	src/Libsixel/Decoder.php \
 	src/Libsixel/Encoder.php \
-	src/Libsixel/Exception.php \
-	tests/ffi_smoke.php
+	src/Libsixel/Exception.php

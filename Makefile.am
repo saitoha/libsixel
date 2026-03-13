@@ -53,6 +53,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-python-test-venv.sh \
 	build-aux/resolve-ruby-test-venv.sh \
 	build-aux/resolve-perl-test-venv.sh \
+	build-aux/resolve-php-test-venv.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/gen_perl_constants.pl \

@@ -39,6 +39,10 @@ set -u
 : "${SIXEL_TEST_PERL_LOCAL_LIB_ROOT:=}"
 : "${SIXEL_TEST_PERL_MB_OPT:=}"
 : "${SIXEL_TEST_PERL_MM_OPT:=}"
+: "${SIXEL_TEST_PHP:=}"
+: "${SIXEL_TEST_PHP_BINDING_ROOT:=}"
+: "${SIXEL_TEST_PHP_LIBDIR:=}"
+: "${SIXEL_TEST_PHP_LIBPATH:=}"
 
 test_name=
 log_file=
@@ -289,6 +293,33 @@ EOF
         set -- "$SIXEL_TEST_PERL" "$test_path" "$@"
       else
         printf '%s\n' '1..0 # SKIP perl test interpreter is unavailable' >"$log_file"
+        cat >"$trs_file" <<'EOF'
+:test-result: SKIP
+:global-test-result: SKIP
+:recheck: yes
+:copy-in-global-log: no
+EOF
+        return 0
+      fi
+      ;;
+    *.php)
+      run_desc="php ${test_path}"
+      if [ -n "${SIXEL_TEST_PHP}" ] && [ -x "${SIXEL_TEST_PHP}" ]; then
+        if [ -n "${SIXEL_TEST_PHP_BINDING_ROOT}" ]; then
+          SIXEL_TEST_PHP_BINDING_ROOT="${SIXEL_TEST_PHP_BINDING_ROOT}" \
+            export SIXEL_TEST_PHP_BINDING_ROOT
+        fi
+        if [ -n "${SIXEL_TEST_PHP_LIBDIR}" ]; then
+          LIBSIXEL_LIBDIR="${SIXEL_TEST_PHP_LIBDIR}" \
+            export LIBSIXEL_LIBDIR
+        fi
+        if [ -n "${SIXEL_TEST_PHP_LIBPATH}" ]; then
+          LIBSIXEL_LIBPATH="${SIXEL_TEST_PHP_LIBPATH}" \
+            export LIBSIXEL_LIBPATH
+        fi
+        set -- "$SIXEL_TEST_PHP" "$test_path" "$@"
+      else
+        printf '%s\n' '1..0 # SKIP php test interpreter is unavailable' >"$log_file"
         cat >"$trs_file" <<'EOF'
 :test-result: SKIP
 :global-test-result: SKIP

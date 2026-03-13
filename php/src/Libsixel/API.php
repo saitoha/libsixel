@@ -73,8 +73,9 @@ CDEF;
         }
 
         throw new Exception(
-            "libsixel shared library not found. Set LIBSIXEL_LIBDIR to the "
-            . "directory containing libsixel.\nTried:\n - "
+            "libsixel shared library not found in bundled package paths. "
+            . "Set LIBSIXEL_LIBPATH or LIBSIXEL_LIBDIR to an explicit bundled path.\n"
+            . "Tried:\n - "
             . implode("\n - ", $errors)
         );
     }
@@ -215,10 +216,6 @@ CDEF;
         $envLibDir = getenv('LIBSIXEL_LIBDIR');
         if (is_string($envLibDir) && $envLibDir !== '') {
             $candidates = array_merge($candidates, self::findLibrariesInDir($envLibDir));
-        }
-
-        foreach (self::LIB_NAMES as $name) {
-            $candidates[] = $name;
         }
 
         $seen = [];

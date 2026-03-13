@@ -20,6 +20,10 @@ if perl_for_tests.found()
   perl_for_tests_path = perl_for_tests.full_path()
 endif
 perl_tests_enabled = not perl_opt.disabled() and perl_for_tests_path != ''
+php_for_tests_path = ''
+if have_php
+  php_for_tests_path = php.full_path()
+endif
 
 # Keep Meson test-time Python resolution aligned with the interpreter selected
 # in the project root. Using a different binary here can make wheel builds pass
@@ -68,6 +72,8 @@ base_env_settings = [
   ['SIXEL_CONFIGURED_RUBY', ruby_for_tests_path],
   ['ENABLE_PERL', (perl_tests_enabled ? '1' : '0')],
   ['SIXEL_CONFIGURED_PERL', perl_for_tests_path],
+  ['ENABLE_PHP', (get_option('php').disabled() ? '0' : '1')],
+  ['SIXEL_CONFIGURED_PHP', php_for_tests_path],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
   # Ensure Python TAP tests can locate the freshly built shared library when
@@ -161,7 +167,8 @@ test_runner_tests_sources_text = run_command(
   'set -eu; cd "$1"; ' +
   'find . ' +
   '\\( -path "./.perl-test-venv" -o -path "./.python-test-venv" ' +
-  '-o -path "./.ruby-test-venv" -o -path "./_artifacts" \\) ' +
+  '-o -path "./.ruby-test-venv" -o -path "./.php-test-venv" ' +
+  '-o -path "./_artifacts" \\) ' +
   '-prune -o -type f \\( -name "*.c" -o -name "*.h" \\) -print | ' +
   'LC_ALL=C sort | sed "s|^\\./||"',
   'meson-test-runner-sources',
@@ -245,13 +252,13 @@ else
   test_script=$0
 fi
 
-if test "${test_script##*.}" != "py"; then
-  if test "${test_script##*.}" != "rb"; then
-    if test "${test_script##*.}" != "pl"; then
-      exec sh "$test_script" "$@"
-    fi
-  fi
-fi
+case "${test_script##*.}" in
+  py|rb|pl|php)
+    ;;
+  *)
+    exec sh "$test_script" "$@"
+    ;;
+esac
 
 if test "${test_script##*.}" = "py"; then
   # Resolve Python test venv once per meson test invocation. The first
@@ -344,6 +351,62 @@ if test "${test_script##*.}" = "rb"; then
   fi
 
   exec "$SIXEL_TEST_RUBY" "$test_script" "$@"
+fi
+
+if test "${test_script##*.}" = "php"; then
+  php_venv_state_dir="$MESON_BUILD_ROOT/tests"
+  php_venv_run_id="${MESON_TEST_RUN_ID:-$PPID}"
+  php_venv_exports_file="$php_venv_state_dir/.php-test-venv.$php_venv_run_id.exports"
+  php_venv_lock_dir="$php_venv_state_dir/.php-test-venv.$php_venv_run_id.lock"
+
+  if test ! -f "$php_venv_exports_file"; then
+    if mkdir "$php_venv_lock_dir" 2>/dev/null; then
+      php_venv_exports="$($TOP_SRCDIR/build-aux/resolve-php-test-venv.sh \
+        "${ENABLE_PHP:-0}" "${SIXEL_CONFIGURED_PHP:-}" \
+        "$MESON_BUILD_ROOT/php/dist" \
+        "$MESON_BUILD_ROOT/tests/.php-test-venv")"
+      printf '%s\n' "$php_venv_exports" > "$php_venv_exports_file"
+      rmdir "$php_venv_lock_dir"
+    else
+      wait_count=0
+      while test ! -f "$php_venv_exports_file"; do
+        wait_count=$((wait_count + 1))
+        if test "$wait_count" -gt 600; then
+          printf '%s\n' 'SIXEL_TEST_PHP=' > "$php_venv_exports_file"
+          printf '%s\n' 'SIXEL_TEST_PHP_BINDING_ROOT=' >> "$php_venv_exports_file"
+          printf '%s\n' 'SIXEL_TEST_PHP_LIBDIR=' >> "$php_venv_exports_file"
+          printf '%s\n' 'SIXEL_TEST_PHP_LIBPATH=' >> "$php_venv_exports_file"
+          break
+        fi
+        sleep 0.05
+      done
+    fi
+  fi
+
+  # shellcheck disable=SC1090
+  . "$php_venv_exports_file"
+
+  if test -z "${SIXEL_TEST_PHP:-}"; then
+    if test "${ENABLE_PHP:-0}" = "1"; then
+      printf '%s\n' '1..1'
+      printf '%s\n' 'not ok 1 - php venv interpreter is unavailable (system fallback disabled)'
+      exit 1
+    fi
+    printf '%s\n' '1..0 # SKIP php test interpreter is unavailable'
+    exit 0
+  fi
+
+  if test -n "${SIXEL_TEST_PHP_BINDING_ROOT:-}"; then
+    SIXEL_TEST_PHP_BINDING_ROOT="${SIXEL_TEST_PHP_BINDING_ROOT}" export SIXEL_TEST_PHP_BINDING_ROOT
+  fi
+  if test -n "${SIXEL_TEST_PHP_LIBDIR:-}"; then
+    LIBSIXEL_LIBDIR="${SIXEL_TEST_PHP_LIBDIR}" export LIBSIXEL_LIBDIR
+  fi
+  if test -n "${SIXEL_TEST_PHP_LIBPATH:-}"; then
+    LIBSIXEL_LIBPATH="${SIXEL_TEST_PHP_LIBPATH}" export LIBSIXEL_LIBPATH
+  fi
+
+  exec "$SIXEL_TEST_PHP" "$test_script" "$@"
 fi
 
 perl_venv_state_dir="$MESON_BUILD_ROOT/tests"

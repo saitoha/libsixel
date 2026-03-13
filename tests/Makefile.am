@@ -23,7 +23,7 @@ SERIAL_TESTS = \
 COPY_TESTS = $(TESTS)
 check_PROGRAMS = test_runner
 
-TEST_EXTENSIONS = .t .py .rb .pl
+TEST_EXTENSIONS = .t .py .rb .pl .php
 
 
 HELPER_FILES = \
@@ -51,7 +51,9 @@ AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
 AM_TESTS_ENVIRONMENT += ENABLE_PYTHON='@ENABLE_PYTHON@'; export ENABLE_PYTHON;
 AM_TESTS_ENVIRONMENT += ENABLE_RUBY='@ENABLE_RUBY@'; export ENABLE_RUBY;
 AM_TESTS_ENVIRONMENT += ENABLE_PERL='@ENABLE_PERL@'; export ENABLE_PERL;
+AM_TESTS_ENVIRONMENT += ENABLE_PHP='@ENABLE_PHP@'; export ENABLE_PHP;
 AM_TESTS_ENVIRONMENT += SIXEL_CONFIGURED_RUBY='@RUBY@'; export SIXEL_CONFIGURED_RUBY;
+AM_TESTS_ENVIRONMENT += SIXEL_CONFIGURED_PHP='@PHP@'; export SIXEL_CONFIGURED_PHP;
 AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; \
        export RUNTIME_SHLIBPATH_VAR;
 AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_SEP='@SIXEL_LIBTOOL_PATH_SEPARATOR@'; \
@@ -394,6 +396,16 @@ staticcheck-build-doc-meson-options:
 	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
 	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
 
+# Route PHP TAP tests through the same driver so bindings share one
+# timeout and result formatting path.
+.php.log:
+	@p='$<'; \
+	$(am__set_b); \
+	$(am__check_pre) $(T_LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_T_LOG_DRIVER_FLAGS) \
+	$(T_LOG_DRIVER_FLAGS) -- "$$tst" $(AM_TESTS_FD_REDIRECT)
+
 # Build all test logs through a phony target so recursive make does not need
 # to receive thousands of .log paths as command-line arguments.
 .PHONY: sixel-check-test-logs
@@ -440,9 +452,19 @@ check-TESTS: $(check_PROGRAMS)
 	    "@ENABLE_PERL@" "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
 	    "$(abs_top_builddir)/tests/.perl-test-venv" 2>$(top_builddir)/resolve-perl-test-venv.log`; \
 	eval "$$perl_venv_exports"; \
+	php_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-php-test-venv.sh" \
+	    "@ENABLE_PHP@" "@PHP@" "$(abs_top_builddir)/php/dist" \
+	    "$(abs_top_builddir)/tests/.php-test-venv" 2>$(top_builddir)/resolve-php-test-venv.log`; \
+	eval "$$php_venv_exports"; \
+	if test "@ENABLE_PHP@" = "1" && test -z "$$SIXEL_TEST_PHP"; then \
+	    echo "error: PHP bindings are enabled but no venv PHP interpreter was resolved at $(abs_top_builddir)/tests/.php-test-venv" >&2; \
+	    echo "error: system PHP fallback is disabled for PHP TAP tests" >&2; \
+	    exit 1; \
+	fi; \
 	python_make_arg=; \
 	ruby_make_arg=; \
 	perl_make_arg=; \
+	php_make_arg=; \
 	if test -n "$$SIXEL_TEST_PYTHON"; then \
 	    export SIXEL_TEST_PYTHON; \
 	    python_make_arg="SIXEL_TEST_PYTHON=$$SIXEL_TEST_PYTHON"; \
@@ -483,6 +505,22 @@ check-TESTS: $(check_PROGRAMS)
 	    export SIXEL_TEST_PERL_MM_OPT; \
 	    perl_make_arg="$$perl_make_arg SIXEL_TEST_PERL_MM_OPT=$$SIXEL_TEST_PERL_MM_OPT"; \
 	fi; \
+	if test -n "$$SIXEL_TEST_PHP"; then \
+	    export SIXEL_TEST_PHP; \
+	    php_make_arg="SIXEL_TEST_PHP=$$SIXEL_TEST_PHP"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PHP_BINDING_ROOT"; then \
+	    export SIXEL_TEST_PHP_BINDING_ROOT; \
+	    php_make_arg="$$php_make_arg SIXEL_TEST_PHP_BINDING_ROOT=$$SIXEL_TEST_PHP_BINDING_ROOT"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PHP_LIBDIR"; then \
+	    export SIXEL_TEST_PHP_LIBDIR; \
+	    php_make_arg="$$php_make_arg SIXEL_TEST_PHP_LIBDIR=$$SIXEL_TEST_PHP_LIBDIR"; \
+	fi; \
+	if test -n "$$SIXEL_TEST_PHP_LIBPATH"; then \
+	    export SIXEL_TEST_PHP_LIBPATH; \
+	    php_make_arg="$$php_make_arg SIXEL_TEST_PHP_LIBPATH=$$SIXEL_TEST_PHP_LIBPATH"; \
+	fi; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
@@ -493,7 +531,8 @@ check-TESTS: $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
 	    $$ruby_make_arg \
-	    $$perl_make_arg || exit $$?; \
+	    $$perl_make_arg \
+	    $$php_make_arg || exit $$?; \
 	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
 	all=0; \
 	pass=0; \
@@ -586,7 +625,7 @@ check-TESTS: $(check_PROGRAMS)
 	rm -f "$$trs_manifest"; \
 	exit 0
 
-.PHONY: check-python check-ruby check-perl sixel-check-test-logs
+.PHONY: check-python check-ruby check-perl check-php sixel-check-test-logs
 check-python:
 	@set -eu; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
@@ -754,6 +793,56 @@ check-perl:
 	fi; \
 	echo "perl TAP logs exported to $$artifact_root"
 
+check-php:
+	@set -eu; \
+	php_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-php-test-venv.sh" \
+	    "@ENABLE_PHP@" "@PHP@" "$(abs_top_builddir)/php/dist" \
+	    "$(abs_top_builddir)/tests/.php-test-venv" 2>$(top_builddir)/resolve-php-test-venv.log`; \
+	eval "$$php_venv_exports"; \
+	if test "@ENABLE_PHP@" != "1"; then \
+	    echo "check-php: skipped because PHP bindings are disabled"; \
+	    exit 0; \
+	fi; \
+	if test -z "$$SIXEL_TEST_PHP"; then \
+	    echo "check-php: failed because venv PHP interpreter is unavailable (system fallback is disabled)" >&2; \
+	    exit 1; \
+	fi; \
+	if test -z "$$SIXEL_TEST_PHP_BINDING_ROOT" || test -z "$$SIXEL_TEST_PHP_LIBPATH"; then \
+	    echo "check-php: failed because packaged PHP binding payload is unavailable in the venv" >&2; \
+	    exit 1; \
+	fi; \
+	status=0; \
+	artifact_root='$(abs_top_builddir)/tests/_artifacts/php/tap'; \
+	mkdir -p "$$artifact_root"; \
+	for test_path in `find '$(abs_top_srcdir)/tests/bindings/php' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.php' | LC_ALL=C sort`; do \
+	    test_name=`basename "$$test_path" .php`; \
+	    artifact_dir="$$artifact_root/$$test_name"; \
+	    log_path="$$artifact_root/$$test_name.log"; \
+	    mkdir -p "$$artifact_dir"; \
+	    echo "==> $$test_name.php"; \
+	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
+	        TOP_SRCDIR='$(abs_top_srcdir)' \
+	        TOP_BUILDDIR='$(abs_top_builddir)' \
+	        LIBSIXEL_LIBDIR="$$SIXEL_TEST_PHP_LIBDIR" \
+	        LIBSIXEL_LIBPATH="$$SIXEL_TEST_PHP_LIBPATH" \
+	        SIXEL_TEST_PHP_BINDING_ROOT="$$SIXEL_TEST_PHP_BINDING_ROOT" \
+	        "$$SIXEL_TEST_PHP" "$$test_path" >"$$log_path" 2>&1; then \
+	        if grep -Eq '^not ok([[:space:]]|$$)' "$$log_path"; then \
+	            echo "not ok - $$test_name.php (TAP not ok found)"; \
+	            sed -n '1,120p' "$$log_path"; \
+	            status=1; \
+	        fi; \
+	    else \
+	        echo "not ok - $$test_name.php (php exit code != 0)"; \
+	        sed -n '1,120p' "$$log_path"; \
+	        status=1; \
+	    fi; \
+	done; \
+	if test "$$status" -ne 0; then \
+	    exit "$$status"; \
+	fi; \
+	echo "php TAP logs exported to $$artifact_root"
+
 # Collect all test fixture files under tests/data automatically so
 # EXTRA_DIST stays in sync when fixtures are added, removed, or moved.
 # LC_ALL=C keeps path ordering deterministic across locales.
@@ -788,6 +877,7 @@ clean-local:
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
 	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv
 	rm -rf $(abs_top_builddir)/tests/.perl-test-venv
+	rm -rf $(abs_top_builddir)/tests/.php-test-venv
 	rm -f $(builddir)/*_metrics.json
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
