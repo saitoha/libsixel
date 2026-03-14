@@ -8,14 +8,10 @@ use Libsixel\Encoder;
 
 echo "1..1\n";
 
-$bindingRoot = getenv('SIXEL_TEST_PHP_BINDING_ROOT');
-$artifactLocalDir = getenv('ARTIFACT_LOCAL_DIR');
-$sourceRoot = getenv('TOP_SRCDIR');
+$bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
+$artifactLocalDir = (string) getenv('ARTIFACT_LOCAL_DIR');
+$sourceRoot = (string) getenv('TOP_SRCDIR');
 
-if (!is_string($bindingRoot) || $bindingRoot === '' || !is_string($sourceRoot) || $sourceRoot === '') {
-    echo "not ok 1 - required test environment variables are missing\n";
-    exit(1);
-}
 
 if (!is_string($artifactLocalDir) || $artifactLocalDir === '') {
     $artifactLocalDir = sys_get_temp_dir() . '/libsixel-php-artifacts';

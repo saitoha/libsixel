@@ -799,6 +799,170 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  php:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-gcc-php
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_options: >-
+              --enable-php
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-gcc-php
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_options: >-
+              -Dphp=enabled
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-gcc-php
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-php
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-gcc-php
+            buildtool: meson
+            runner: macos-latest
+            setup_options: >-
+              -Dphp=enabled
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Meson-cmd-x86_64-msvc-x86_64-php
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              -Dphp=enabled
+            exec_type: cmd
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  php-coverage:
+    needs: [php]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-gcc-php-coverage
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_options: >-
+              --enable-php
+            extra_packages: >-
+              clang
+            check_target: check-php
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-gcc-php-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_options: >-
+              -Dphp=enabled
+            extra_packages: >-
+              meson
+            check_target: test
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-gcc-php-coverage
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-php
+            check_target: check-php
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-gcc-php-coverage
+            buildtool: meson
+            runner: macos-latest
+            setup_options: >-
+              -Dphp=enabled
+            extra_packages: >-
+              meson
+            check_target: test
+            exec_type: bash
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
   autotools-out_of_tree:
     needs: [smoke]
     name: ${{ matrix.label }}
@@ -2740,7 +2904,7 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   coveralls:
-    needs: [coverage-autotools, coverage-meson, emscripten-coverage, python-coverage, ruby-coverage, perl-coverage]
+    needs: [coverage-autotools, coverage-meson, emscripten-coverage, python-coverage, ruby-coverage, perl-coverage, php-coverage]
     runs-on: ubuntu-latest
     steps:
       - name: Finalize Coveralls

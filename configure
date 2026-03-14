@@ -19113,7 +19113,7 @@ esac
 fi
 
 
-# PHP bindings option (reserved for compatibility checks in build scripts)
+# PHP bindings option
 # Check whether --enable-php was given.
 if test ${enable_php+y}
 then :

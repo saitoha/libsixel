@@ -8,13 +8,9 @@ use Libsixel\Decoder;
 
 echo "1..1\n";
 
-$bindingRoot = getenv('SIXEL_TEST_PHP_BINDING_ROOT');
+$bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
 $devNull = DIRECTORY_SEPARATOR === '\\' ? 'NUL' : '/dev/null';
 
-if (!is_string($bindingRoot) || $bindingRoot === '') {
-    echo "not ok 1 - SIXEL_TEST_PHP_BINDING_ROOT is not set\n";
-    exit(1);
-}
 
 require_once $bindingRoot . '/src/autoload.php';
 

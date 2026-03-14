@@ -8,14 +8,10 @@ use Libsixel\Decoder;
 
 echo "1..1\n";
 
-$bindingRoot = getenv('SIXEL_TEST_PHP_BINDING_ROOT');
-$sourceRoot = getenv('TOP_SRCDIR');
+$bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
+$sourceRoot = (string) getenv('TOP_SRCDIR');
 $devNull = DIRECTORY_SEPARATOR === '\\' ? 'NUL' : '/dev/null';
 
-if (!is_string($bindingRoot) || $bindingRoot === '' || !is_string($sourceRoot) || $sourceRoot === '') {
-    echo "not ok 1 - required test environment variables are missing\n";
-    exit(1);
-}
 
 require_once $bindingRoot . '/src/autoload.php';
 

@@ -18,19 +18,9 @@ function tap_fail(int $n, string $message): void
 
 echo "1..3\n";
 
-$bindingRoot = getenv('SIXEL_TEST_PHP_BINDING_ROOT');
-$libDir = getenv('LIBSIXEL_LIBDIR');
-$libPath = getenv('LIBSIXEL_LIBPATH');
-
-if (!is_string($bindingRoot) || $bindingRoot === '') {
-    tap_fail(1, 'SIXEL_TEST_PHP_BINDING_ROOT is not set');
-}
-if (!is_string($libDir) || $libDir === '') {
-    tap_fail(1, 'LIBSIXEL_LIBDIR is not set');
-}
-if (!is_string($libPath) || $libPath === '') {
-    tap_fail(1, 'LIBSIXEL_LIBPATH is not set');
-}
+$bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
+$libDir = (string) getenv('LIBSIXEL_LIBDIR');
+$libPath = (string) getenv('LIBSIXEL_LIBPATH');
 
 $resolvedBindingRoot = realpath($bindingRoot);
 $resolvedLibDir = realpath($libDir);
@@ -57,18 +47,15 @@ try {
 }
 
 try {
-    $artifactLocalDir = getenv('ARTIFACT_LOCAL_DIR');
-    if (!is_string($artifactLocalDir) || $artifactLocalDir === '') {
+    $artifactLocalDir = (string) getenv('ARTIFACT_LOCAL_DIR');
+    if ($artifactLocalDir === '') {
         $artifactLocalDir = sys_get_temp_dir() . '/libsixel-php-artifacts';
     }
     if (!is_dir($artifactLocalDir) && !mkdir($artifactLocalDir, 0777, true)) {
         throw new RuntimeException('failed to create artifact directory: ' . $artifactLocalDir);
     }
 
-    $sourceRoot = getenv('TOP_SRCDIR');
-    if (!is_string($sourceRoot) || $sourceRoot === '') {
-        throw new RuntimeException('TOP_SRCDIR is not set');
-    }
+    $sourceRoot = (string) getenv('TOP_SRCDIR');
 
     $source = $sourceRoot . '/tests/data/inputs/snake_64.png';
     $output = $artifactLocalDir . '/php_bindings_smoke.six';

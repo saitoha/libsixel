@@ -8,14 +8,10 @@ use Libsixel\Constants;
 
 echo "1..1\n";
 
-$bindingRoot = getenv('SIXEL_TEST_PHP_BINDING_ROOT');
-$libPath = getenv('LIBSIXEL_LIBPATH');
+$bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
+$libPath = (string) getenv('LIBSIXEL_LIBPATH');
 $devNull = DIRECTORY_SEPARATOR === '\\' ? 'NUL' : '/dev/null';
 
-if (!is_string($bindingRoot) || $bindingRoot === '' || !is_string($libPath) || $libPath === '') {
-    echo "not ok 1 - required test environment variables are missing\n";
-    exit(1);
-}
 
 require_once $bindingRoot . '/src/autoload.php';
 
