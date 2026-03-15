@@ -756,10 +756,15 @@ runs:
           rm -f coverage.profdata
           "$LLVM_PROFDATA" merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata || true
           COV_OBJECTS=()
+          # Prefer instrumented local build artifacts and skip external toolchain
+          # trees (for example emsdk) that flood logs with non-instrumented files.
           while IFS= read -r cov_object; do
             COV_OBJECTS+=("$cov_object")
-          done < <(find . -type f \
-            \( -name '*.wasm' -o -name '*.so' -o -name '*.a' \))
+          done < <(
+            find . \
+              \( -path './emsdk' -o -path './.venv' \) -prune -o \
+              -type f \( -name '*.o' -o -name '*.wasm' -o -name '*.so' -o -name '*.a' \) -print
+          )
           if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
             echo "No coverage objects found for llvm-cov; skipping coverage capture"
             exit 0
