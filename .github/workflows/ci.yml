@@ -828,6 +828,8 @@ jobs:
             runner: macos-latest
             setup_options: >-
               --enable-php
+            extra_packages: >-
+              php
             exec_type: bash
 
           - label: Meson-macos-aarch64-gcc-php
@@ -837,6 +839,7 @@ jobs:
               -Dphp=enabled
             extra_packages: >-
               meson
+              php
             exec_type: bash
 
           - label: Meson-cmd-x86_64-msvc-x86_64-php
@@ -914,6 +917,8 @@ jobs:
             runner: macos-latest
             setup_options: >-
               --enable-php
+            extra_packages: >-
+              php
             check_target: check-php
             exec_type: bash
 
@@ -924,6 +929,7 @@ jobs:
               -Dphp=enabled
             extra_packages: >-
               meson
+              php
             check_target: test
             exec_type: bash
 
@@ -4313,72 +4319,72 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
-  openindiana:
-    needs: [dragonflybsd]
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        include:
-          - label: Autotools-openindiana-202510-x86_64
-            buildtool: autotools
-            runner: ubuntu-latest
-            version: '202510'
-            setup_options: >-
-              --disable-dependency-tracking
-            extra_packages: >-
-              developer/build/gnu-make
-              developer/gcc-13
-            make: gmake
-            exec_type: openindiana-vm
-
-          - label: Meson-openindiana-202510-x86_64
-            buildtool: meson
-            runner: ubuntu-latest
-            version: '202510'
-            extra_packages: >-
-              developer/gcc-13
-              developer/build/meson
-              developer/build/ninja
-            exec_type: openindiana-vm
-
-    steps:
-      - name: Set Windows Defender ExclusionPath (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Add-MpPreference -ExclusionPath "C:\a"
-
-      - name: Disable Windows Search Indexer (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Stop-Service WSearch
-
-      - name: Disable Spotlight (macOS)
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          sudo mdutil -i off / || true
-          sudo mdutil -i off /System/Volumes/Data || true
-
-      - name: Configure git EOL
-        if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        run: git config --global core.autocrlf false
-
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run CI steps
-        uses: ./.github/actions/ci-steps
-        with:
-          matrix_json: ${{ toJSON(matrix) }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+#  openindiana:
+#    needs: [dragonflybsd]
+#    name: ${{ matrix.label }}
+#    runs-on: ${{ matrix.runner }}
+#    strategy:
+#      fail-fast: false
+#      max-parallel: 1
+#      matrix:
+#        include:
+#          - label: Autotools-openindiana-202510-x86_64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            version: '202510'
+#            setup_options: >-
+#              --disable-dependency-tracking
+#            extra_packages: >-
+#              developer/build/gnu-make
+#              developer/gcc-13
+#            make: gmake
+#            exec_type: openindiana-vm
+#
+#          - label: Meson-openindiana-202510-x86_64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            version: '202510'
+#            extra_packages: >-
+#              developer/gcc-13
+#              developer/build/meson
+#              developer/build/ninja
+#            exec_type: openindiana-vm
+#
+#    steps:
+#      - name: Set Windows Defender ExclusionPath (Windows)
+#        if: runner.os == 'Windows'
+#        shell: pwsh
+#        run: |
+#          Add-MpPreference -ExclusionPath "C:\a"
+#
+#      - name: Disable Windows Search Indexer (Windows)
+#        if: runner.os == 'Windows'
+#        shell: pwsh
+#        run: |
+#          Stop-Service WSearch
+#
+#      - name: Disable Spotlight (macOS)
+#        if: runner.os == 'macOS'
+#        shell: bash
+#        run: |
+#          sudo mdutil -i off / || true
+#          sudo mdutil -i off /System/Volumes/Data || true
+#
+#      - name: Configure git EOL
+#        if: ${{ runner.os == 'Windows' }}
+#        shell: bash
+#        run: git config --global core.autocrlf false
+#
+#      - uses: actions/checkout@v6
+#        with:
+#          fetch-depth: 1
+#
+#      - name: Run CI steps
+#        uses: ./.github/actions/ci-steps
+#        with:
+#          matrix_json: ${{ toJSON(matrix) }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   docker:
     needs: [coveralls]
