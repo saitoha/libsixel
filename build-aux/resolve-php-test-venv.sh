@@ -63,7 +63,7 @@ is_windows_absolute_path() {
 }
 
 to_shell_path() {
-    input_path=$1
+    input_path=$(printf "%s" "$1" | tr -d '\r')
     if [ -z "$input_path" ]; then
         printf "%s\n" ""
         return 0
@@ -85,7 +85,7 @@ to_shell_path() {
 }
 
 to_php_path() {
-    input_path=$1
+    input_path=$(printf "%s" "$1" | tr -d '\r')
     if [ -z "$input_path" ]; then
         printf "%s\n" ""
         return 0
@@ -108,7 +108,7 @@ to_php_path() {
 }
 
 resolve_executable() {
-    candidate=$1
+    candidate=$(printf "%s" "$1" | tr -d '\r')
     if [ -z "$candidate" ]; then
         printf "%s\n" ""
         return 0
@@ -122,6 +122,19 @@ resolve_executable() {
         if [ -x "$probe" ] || [ -f "$probe" ]; then
             printf "%s\n" "$probe"
             return 0
+        fi
+        resolved=$(command -v "$probe" 2>/dev/null || printf "")
+        if [ -n "$resolved" ] && { [ -x "$resolved" ] || [ -f "$resolved" ]; }; then
+            printf "%s\n" "$resolved"
+            return 0
+        fi
+    done
+
+    candidate_forward=$(printf "%s" "$candidate" | sed 's#\\#/#g')
+    candidate_basename=${candidate_forward##*/}
+    for probe in "$candidate_basename" "php" "php.exe"; do
+        if [ -z "$probe" ]; then
+            continue
         fi
         resolved=$(command -v "$probe" 2>/dev/null || printf "")
         if [ -n "$resolved" ] && { [ -x "$resolved" ] || [ -f "$resolved" ]; }; then
@@ -150,14 +163,76 @@ resolve_phpdbg_candidate() {
 write_wrapper() {
     wrapper_path=$1
     target_path=$2
+    shift 2
     mkdir -p "$(dirname "$wrapper_path")"
     rm -f "$wrapper_path"
-    cat > "$wrapper_path" <<WRAPPER
-#!/bin/sh
-set -eu
-exec '$target_path' -d ffi.enable=1 "\$@"
-WRAPPER
+    {
+        printf "%s\n" "#!/bin/sh"
+        printf "%s\n" "set -eu"
+        printf "%s" "exec $(quote_single "$target_path")"
+        while [ "$#" -gt 0 ]; do
+            printf " %s" "$(quote_single "$1")"
+            shift
+        done
+        printf " \"\$@\"\n"
+    } > "$wrapper_path"
     chmod +x "$wrapper_path" 2>/dev/null || true
+}
+
+probe_ffi_with_php() {
+    probe_php=$1
+    shift
+    "$probe_php" "$@" -r 'try { if (!class_exists("FFI", false)) { exit(1); } FFI::cdef("typedef int libsixel_probe_t;"); exit(0); } catch (Throwable $e) { exit(1); }' \
+        >/dev/null 2>&1
+}
+
+resolve_php_ext_dir() {
+    base_php=$1
+    ext_dir1=$(dirname "$base_php")/ext
+    ext_dir2=$(to_shell_path "$ext_dir1")
+    for candidate in "$ext_dir1" "$ext_dir2"; do
+        if [ -n "$candidate" ] && [ -d "$candidate" ]; then
+            printf "%s\n" "$candidate"
+            return 0
+        fi
+    done
+    printf "%s\n" ""
+}
+
+setup_php_wrapper() {
+    wrapper_path=$1
+    target_php=$2
+
+    if probe_ffi_with_php "$target_php" -d ffi.enable=1; then
+        write_wrapper "$wrapper_path" "$target_php" -d ffi.enable=1
+        return 0
+    fi
+    if probe_ffi_with_php "$target_php" -d extension=ffi -d ffi.enable=1; then
+        write_wrapper "$wrapper_path" "$target_php" -d extension=ffi -d ffi.enable=1
+        return 0
+    fi
+    if probe_ffi_with_php "$target_php" -d extension=php_ffi -d ffi.enable=1; then
+        write_wrapper "$wrapper_path" "$target_php" -d extension=php_ffi -d ffi.enable=1
+        return 0
+    fi
+    if probe_ffi_with_php "$target_php" -d extension=php_ffi.dll -d ffi.enable=1; then
+        write_wrapper "$wrapper_path" "$target_php" -d extension=php_ffi.dll -d ffi.enable=1
+        return 0
+    fi
+
+    php_ext_dir=$(resolve_php_ext_dir "$target_php")
+    if [ -n "$php_ext_dir" ]; then
+        if probe_ffi_with_php "$target_php" -d "extension_dir=$php_ext_dir" -d extension=ffi -d ffi.enable=1; then
+            write_wrapper "$wrapper_path" "$target_php" -d "extension_dir=$php_ext_dir" -d extension=ffi -d ffi.enable=1
+            return 0
+        fi
+        if probe_ffi_with_php "$target_php" -d "extension_dir=$php_ext_dir" -d extension=php_ffi.dll -d ffi.enable=1; then
+            write_wrapper "$wrapper_path" "$target_php" -d "extension_dir=$php_ext_dir" -d extension=php_ffi.dll -d ffi.enable=1
+            return 0
+        fi
+    fi
+
+    return 1
 }
 
 find_archive() {
@@ -225,8 +300,10 @@ if [ -z "$configured_php_bin" ]; then
 fi
 
 php_wrapper="$shared_php_venv/bin/php"
-write_wrapper "$php_wrapper" "$configured_php_bin"
-if [ ! -x "$php_wrapper" ]; then
+if ! setup_php_wrapper "$php_wrapper" "$configured_php_bin"; then
+    exit 0
+fi
+if [ ! -f "$php_wrapper" ]; then
     exit 0
 fi
 php_bin="$php_wrapper"
@@ -234,14 +311,9 @@ php_bin="$php_wrapper"
 phpdbg_real=$(resolve_phpdbg_candidate "$configured_php_bin")
 if [ -n "$phpdbg_real" ]; then
     phpdbg_wrapper="$shared_php_venv/bin/phpdbg"
-    write_wrapper "$phpdbg_wrapper" "$phpdbg_real"
-    if [ -x "$phpdbg_wrapper" ]; then
+    if setup_php_wrapper "$phpdbg_wrapper" "$phpdbg_real"; then
         phpdbg_bin="$phpdbg_wrapper"
     fi
-fi
-
-if ! "$php_bin" -m 2>/dev/null | tr -d '\r' | grep -Eq '^FFI$'; then
-    exit 0
 fi
 
 archive_path=$(find_archive)
