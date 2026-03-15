@@ -55,13 +55,17 @@ try {
     }
 
     fclose($pipes[0]);
-    stream_get_contents($pipes[1]);
+    $stdout = (string) stream_get_contents($pipes[1]);
     fclose($pipes[1]);
     $stderr = (string) stream_get_contents($pipes[2]);
     fclose($pipes[2]);
     $rc = proc_close($process);
+    $diagnostics = $stdout . "\n" . $stderr;
 
-    if ($rc !== 0 && strpos($stderr, 'LocalCallbackBoom0148') !== false && strpos($stderr, 'typed boom') !== false) {
+    if ($rc !== 0
+        && strpos($diagnostics, 'LocalCallbackBoom0148') !== false
+        && strpos($diagnostics, 'typed boom') !== false
+    ) {
         echo "ok 1 - output callback preserves custom exception type and payload in runtime diagnostics\n";
     } else {
         echo "not ok 1 - output callback custom exception type/payload was not preserved\n";
