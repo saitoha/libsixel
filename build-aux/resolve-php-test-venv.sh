@@ -51,21 +51,85 @@ if [ "$enable_php" != "1" ]; then
     exit 0
 fi
 
+is_windows_absolute_path() {
+    case "$1" in
+        [A-Za-z]:[\\/]*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+to_shell_path() {
+    input_path=$1
+    if [ -z "$input_path" ]; then
+        printf "%s\n" ""
+        return 0
+    fi
+
+    if is_windows_absolute_path "$input_path"; then
+        if command -v cygpath >/dev/null 2>&1; then
+            converted_path=$(cygpath -u "$input_path" 2>/dev/null || printf "")
+            if [ -n "$converted_path" ]; then
+                printf "%s\n" "$converted_path"
+                return 0
+            fi
+        fi
+        printf "%s\n" "$input_path" | sed 's#\\#/#g'
+        return 0
+    fi
+
+    printf "%s\n" "$input_path"
+}
+
+to_php_path() {
+    input_path=$1
+    if [ -z "$input_path" ]; then
+        printf "%s\n" ""
+        return 0
+    fi
+
+    if command -v cygpath >/dev/null 2>&1; then
+        converted_path=$(cygpath -m "$input_path" 2>/dev/null || printf "")
+        if [ -n "$converted_path" ]; then
+            printf "%s\n" "$converted_path"
+            return 0
+        fi
+    fi
+
+    if is_windows_absolute_path "$input_path"; then
+        printf "%s\n" "$input_path" | sed 's#\\#/#g'
+        return 0
+    fi
+
+    printf "%s\n" "$input_path"
+}
+
 resolve_executable() {
     candidate=$1
     if [ -z "$candidate" ]; then
         printf "%s\n" ""
         return 0
     fi
-    if [ -x "$candidate" ]; then
-        printf "%s\n" "$candidate"
-        return 0
-    fi
-    resolved=$(command -v "$candidate" 2>/dev/null || printf "")
-    if [ -n "$resolved" ] && [ -x "$resolved" ]; then
-        printf "%s\n" "$resolved"
-        return 0
-    fi
+
+    normalized_candidate=$(to_shell_path "$candidate")
+    for probe in "$normalized_candidate" "$candidate"; do
+        if [ -z "$probe" ]; then
+            continue
+        fi
+        if [ -x "$probe" ] || [ -f "$probe" ]; then
+            printf "%s\n" "$probe"
+            return 0
+        fi
+        resolved=$(command -v "$probe" 2>/dev/null || printf "")
+        if [ -n "$resolved" ] && { [ -x "$resolved" ] || [ -f "$resolved" ]; }; then
+            printf "%s\n" "$resolved"
+            return 0
+        fi
+    done
+
     printf "%s\n" ""
 }
 
@@ -91,7 +155,7 @@ write_wrapper() {
     cat > "$wrapper_path" <<WRAPPER
 #!/bin/sh
 set -eu
-exec '$target_path' "\$@"
+exec '$target_path' -d ffi.enable=1 "\$@"
 WRAPPER
     chmod +x "$wrapper_path" 2>/dev/null || true
 }
@@ -152,6 +216,9 @@ resolve_libpath() {
         2>/dev/null | LC_ALL=C sort | head -n 1
 }
 
+package_dir=$(to_shell_path "$package_dir")
+shared_php_venv=$(to_shell_path "$shared_php_venv")
+
 configured_php_bin=$(resolve_executable "$configured_php")
 if [ -z "$configured_php_bin" ]; then
     exit 0
@@ -173,7 +240,7 @@ if [ -n "$phpdbg_real" ]; then
     fi
 fi
 
-if ! "$php_bin" -m 2>/dev/null | grep -Eq '^FFI$'; then
+if ! "$php_bin" -m 2>/dev/null | tr -d '\r' | grep -Eq '^FFI$'; then
     exit 0
 fi
 
@@ -224,6 +291,6 @@ printf "%s\n" "$archive_signature" > "$archive_marker"
 
 emit_assignment "SIXEL_TEST_PHP" "$php_bin"
 emit_assignment "SIXEL_TEST_PHPDBG" "$phpdbg_bin"
-emit_assignment "SIXEL_TEST_PHP_BINDING_ROOT" "$binding_root"
-emit_assignment "SIXEL_TEST_PHP_LIBDIR" "$lib_dir"
-emit_assignment "SIXEL_TEST_PHP_LIBPATH" "$lib_path"
+emit_assignment "SIXEL_TEST_PHP_BINDING_ROOT" "$(to_php_path "$binding_root")"
+emit_assignment "SIXEL_TEST_PHP_LIBDIR" "$(to_php_path "$lib_dir")"
+emit_assignment "SIXEL_TEST_PHP_LIBPATH" "$(to_php_path "$lib_path")"
