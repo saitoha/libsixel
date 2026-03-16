@@ -929,6 +929,17 @@ runs:
         elif [ "$coverage_captured" -ne 1 ]; then
           echo "No gcovr, lcov, or llvm-cov found; skipping coverage capture"
         fi
+        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
+          if ! test -s coverage.info || ! grep -q '^SF:' coverage.info 2>/dev/null; then
+            if command -v lcov >/dev/null 2>&1; then
+              echo "coverage.info is empty for emscripten; retrying lcov initial capture"
+              lcov -c -i \
+                -d "$PWD" \
+                --rc branch_coverage=1 \
+                -o coverage.info || true
+            fi
+          fi
+        fi
         # Normalize absolute paths so Coveralls can map files to the repo tree.
         # Meson may emit builddir paths, so strip builddir before the repo root.
         if test -f coverage.info; then
