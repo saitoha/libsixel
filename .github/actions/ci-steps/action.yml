@@ -317,6 +317,17 @@ runs:
           echo "$VENV_BIN_DIR" >> "$GITHUB_PATH"
         fi
 
+    - name: Setup PHP runtime (Windows, PHP matrices)
+      if: >-
+        ${{ runner.os == 'Windows'
+            && contains(fromJSON(inputs.matrix_json).label, '-php') }}
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: ffi
+        ini-values: ffi.enable=1
+        coverage: none
+
     - name: Build and test (Autotools, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
