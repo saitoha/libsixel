@@ -106,7 +106,7 @@ sixel_output_new(
     (*output)->penetrate_multiplexer = 0;
     (*output)->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
     (*output)->ormode = 0;
-    (*output)->last_clock = 0;
+    (*output)->last_frame_time_usec = 0;
     (*output)->allocator = allocator;
 
     status = SIXEL_OK;

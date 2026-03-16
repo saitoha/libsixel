@@ -142,6 +142,7 @@
 #include "filter-resize.h"
 #include "filter-sample.h"
 #include "sleep.h"
+#include "timer.h"
 #include "threading.h"
 #include "planner.h"
 #include "sixel_atomic.h"
@@ -347,30 +348,101 @@ static SIXELSTATUS sixel_encoder_emit_drcsmmv2_chars(
 #   include <time.h>
 # endif
 
-# if defined(CLOCKS_PER_SEC)
-#  undef CLOCKS_PER_SEC
-# endif
-# define CLOCKS_PER_SEC 1000
-
-# if !defined(HAVE_CLOCK)
-# define HAVE_CLOCK_WIN 1
-static sixel_clock_t
-clock_win(void)
-{
-    FILETIME ct, et, kt, ut;
-    ULARGE_INTEGER u, k;
-
-    if (! GetProcessTimes(GetCurrentProcess(), &ct, &et, &kt, &ut)) {
-        return (sixel_clock_t)(-1);
-    }
-    u.LowPart = ut.dwLowDateTime; u.HighPart = ut.dwHighDateTime;
-    k.LowPart = kt.dwLowDateTime; k.HighPart = kt.dwHighDateTime;
-    /* 100ns -> ms */
-    return (sixel_clock_t)((u.QuadPart + k.QuadPart) / 10000ULL);
-}
-# endif  /* HAVE_CLOCK */
-
 #endif /* _WIN32 */
+
+#define SIXEL_ENCODER_USEC_PER_SECOND 1000000ULL
+#define SIXEL_ENCODER_USEC_PER_CENTISECOND 10000ULL
+
+static long long
+sixel_encoder_monotonic_now_usec(void)
+{
+    double seconds;
+    double usec;
+
+    seconds = sixel_timer_now();
+    if (seconds <= 0.0) {
+        return (-1);
+    }
+    if (seconds >=
+            ((double)LLONG_MAX / (double)SIXEL_ENCODER_USEC_PER_SECOND)) {
+        return (-1);
+    }
+
+    usec = seconds * (double)SIXEL_ENCODER_USEC_PER_SECOND;
+    if (usec >= (double)LLONG_MAX) {
+        return (-1);
+    }
+    return (long long)usec;
+}
+
+static unsigned int
+sixel_encoder_compute_remaining_delay_usec(
+    sixel_output_t *output,
+    int delay_cs,
+    int *elapsed_usec_out,
+    unsigned int *target_usec_out)
+{
+    unsigned long long target_usec64;
+    unsigned long long remaining_usec64;
+    long long now_usec;
+    long long elapsed_usec64;
+
+    if (elapsed_usec_out != NULL) {
+        *elapsed_usec_out = 0;
+    }
+    if (target_usec_out != NULL) {
+        *target_usec_out = 0U;
+    }
+    if (output == NULL || delay_cs <= 0) {
+        return 0U;
+    }
+
+    target_usec64 =
+        (unsigned long long)delay_cs * SIXEL_ENCODER_USEC_PER_CENTISECOND;
+    if (target_usec64 > (unsigned long long)UINT_MAX) {
+        target_usec64 = (unsigned long long)UINT_MAX;
+    }
+    if (target_usec_out != NULL) {
+        *target_usec_out = (unsigned int)target_usec64;
+    }
+
+    now_usec = sixel_encoder_monotonic_now_usec();
+    if (now_usec < 0) {
+        output->last_frame_time_usec = 0;
+        return (unsigned int)target_usec64;
+    }
+
+    if (output->last_frame_time_usec <= 0) {
+        elapsed_usec64 = 0;
+    } else {
+        elapsed_usec64 = now_usec - output->last_frame_time_usec;
+        if (elapsed_usec64 < 0) {
+            elapsed_usec64 = 0;
+        }
+    }
+    output->last_frame_time_usec = now_usec;
+
+    if (elapsed_usec_out != NULL) {
+        if (elapsed_usec64 > INT_MAX) {
+            *elapsed_usec_out = INT_MAX;
+        } else {
+            *elapsed_usec_out = (int)elapsed_usec64;
+        }
+    }
+
+    if ((unsigned long long)elapsed_usec64 >= target_usec64) {
+        return 0U;
+    }
+
+    remaining_usec64 = target_usec64 - (unsigned long long)elapsed_usec64;
+    if (remaining_usec64 > target_usec64) {
+        remaining_usec64 = target_usec64;
+    }
+    if (remaining_usec64 > (unsigned long long)UINT_MAX) {
+        remaining_usec64 = (unsigned long long)UINT_MAX;
+    }
+    return (unsigned int)remaining_usec64;
+}
 
 
 static sixel_option_choice_t const g_option_choices_builtin_palette[] = {
@@ -5413,6 +5485,7 @@ sixel_encoder_output_without_macro(
     int dulation;
     int delay;
     unsigned int remaining_delay;
+    unsigned int target_delay;
     unsigned char *pixbuf;
     int width = 0;
     int height = 0;
@@ -5420,9 +5493,6 @@ sixel_encoder_output_without_macro(
     size_t size;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     sixel_encoding_planner_t *planner;
-#if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
-    sixel_clock_t last_clock;
-#endif
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -5485,15 +5555,6 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-#if defined(HAVE_CLOCK)
-    if (output->last_clock == 0) {
-        output->last_clock = clock();
-    }
-#elif defined(HAVE_CLOCK_WIN)
-    if (output->last_clock == 0) {
-        output->last_clock = clock_win();
-    }
-#endif
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
         sixel_trace_topic_message(
@@ -5504,35 +5565,19 @@ sixel_encoder_output_without_macro(
             delay,
             encoder->fignore_delay,
             encoder->fstatic);
-# if defined(HAVE_CLOCK)
-        last_clock = clock();
-/* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
-#  if defined(__APPLE__)
-        dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
-                          / 100000);
-#  else
-        dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
-                          / CLOCKS_PER_SEC);
-#  endif
-        output->last_clock = last_clock;
-# elif defined(HAVE_CLOCK_WIN)
-        last_clock = clock_win();
-        dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
-                          / CLOCKS_PER_SEC);
-        output->last_clock = last_clock;
-# else
-        dulation = 0;
-# endif
+        remaining_delay = sixel_encoder_compute_remaining_delay_usec(
+            output,
+            delay,
+            &dulation,
+            &target_delay);
         sixel_trace_topic_message(
             "lifecycle",
             "frame delay timing: frame_no=%d loop_no=%d measured_usec=%d target_usec=%u",
             sixel_frame_get_frame_no(frame),
             sixel_frame_get_loop_no(frame),
             dulation,
-            (unsigned int)(1000 * 10 * delay));
-        if (dulation < 1000 * 10 * delay) {
-            remaining_delay =
-                (unsigned int)(1000 * 10 * delay - dulation);
+            target_delay);
+        if (remaining_delay > 0U) {
             sixel_trace_topic_message(
                 "lifecycle",
                 "frame delay sleep: frame_no=%d loop_no=%d sleep_usec=%u",
@@ -5606,6 +5651,7 @@ sixel_encoder_output_with_macro(
     int dulation;
     int delay;
     unsigned int remaining_delay;
+    unsigned int target_delay;
     int width;
     int height;
     int pixelformat;
@@ -5615,25 +5661,12 @@ sixel_encoder_output_with_macro(
     unsigned char *converted = NULL;
     sixel_encoding_planner_t *planner;
     sixel_allocator_t *allocator;
-#if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
-    sixel_clock_t last_clock;
-#endif
 
     if (frame == NULL || output == NULL || encoder == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     allocator = encoder->allocator;
     planner = &encoder->planner;
-
-#if defined(HAVE_CLOCK)
-    if (output->last_clock == 0) {
-        output->last_clock = clock();
-    }
-#elif defined(HAVE_CLOCK_WIN)
-    if (output->last_clock == 0) {
-        output->last_clock = clock_win();
-    }
-#endif
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
@@ -5738,8 +5771,8 @@ sixel_encoder_output_with_macro(
                 "sixel_write_callback() failed.");
             goto end;
         }
-    delay = sixel_frame_get_delay(frame);
-    if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
+        delay = sixel_frame_get_delay(frame);
+        if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
             sixel_trace_topic_message(
                 "lifecycle",
                 "frame delay check: frame_no=%d loop_no=%d delay_cs=%d ignore=%d static=%d",
@@ -5748,35 +5781,19 @@ sixel_encoder_output_with_macro(
                 delay,
                 encoder->fignore_delay,
                 encoder->fstatic);
-# if defined(HAVE_CLOCK)
-            last_clock = clock();
-/* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
-#  if defined(__APPLE__)
-            dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
-                             / 100000);
-#  else
-            dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
-                             / CLOCKS_PER_SEC);
-#  endif
-            output->last_clock = last_clock;
-# elif defined(HAVE_CLOCK_WIN)
-            last_clock = clock_win();
-            dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
-                             / CLOCKS_PER_SEC);
-            output->last_clock = last_clock;
-# else
-            dulation = 0;
-# endif
+            remaining_delay = sixel_encoder_compute_remaining_delay_usec(
+                output,
+                delay,
+                &dulation,
+                &target_delay);
             sixel_trace_topic_message(
                 "lifecycle",
                 "frame delay timing: frame_no=%d loop_no=%d measured_usec=%d target_usec=%u",
                 sixel_frame_get_frame_no(frame),
                 sixel_frame_get_loop_no(frame),
                 dulation,
-                (unsigned int)(1000 * 10 * delay));
-            if (dulation < 1000 * 10 * delay) {
-                remaining_delay =
-                    (unsigned int)(1000 * 10 * delay - dulation);
+                target_delay);
+            if (remaining_delay > 0U) {
                 sixel_trace_topic_message(
                     "lifecycle",
                     "frame delay sleep: frame_no=%d loop_no=%d sleep_usec=%u",

@@ -13,13 +13,11 @@ if have_ruby
   ruby_for_tests_path = ruby.full_path()
 endif
 
-perl_opt = get_option('perl')
-perl_for_tests = find_program('perl', required: perl_opt.enabled())
 perl_for_tests_path = ''
-if perl_for_tests.found()
-  perl_for_tests_path = perl_for_tests.full_path()
+if have_perl
+  perl_for_tests_path = perl.full_path()
 endif
-perl_tests_enabled = not perl_opt.disabled() and perl_for_tests_path != ''
+perl_tests_enabled = have_perl
 php_for_tests_path = ''
 if have_php
   php_for_tests_path = php.full_path()
@@ -68,11 +66,11 @@ base_env_settings = [
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
   ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
   ['SIXEL_CONFIGURED_PYTHON', python_for_tests_path],
-  ['ENABLE_RUBY', (get_option('ruby').disabled() ? '0' : '1')],
+  ['ENABLE_RUBY', (have_ruby ? '1' : '0')],
   ['SIXEL_CONFIGURED_RUBY', ruby_for_tests_path],
   ['ENABLE_PERL', (perl_tests_enabled ? '1' : '0')],
   ['SIXEL_CONFIGURED_PERL', perl_for_tests_path],
-  ['ENABLE_PHP', (get_option('php').disabled() ? '0' : '1')],
+  ['ENABLE_PHP', (have_php ? '1' : '0')],
   ['SIXEL_CONFIGURED_PHP', php_for_tests_path],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.

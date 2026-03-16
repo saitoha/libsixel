@@ -456,7 +456,10 @@ check-TESTS: $(check_PROGRAMS)
 	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
 	    "$(abs_top_builddir)/tests/.ruby-test-venv" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
 	eval "$$ruby_venv_exports"; \
-	perl_bin=`command -v perl 2>/dev/null || printf "";`; \
+	perl_bin='@PERL@'; \
+	if test -z "$$perl_bin"; then \
+	    perl_bin=`command -v perl 2>/dev/null || printf "";`; \
+	fi; \
 	perl_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-perl-test-venv.sh" \
 	    "@ENABLE_PERL@" "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
 	    "$(abs_top_builddir)/tests/.perl-test-venv" 2>$(top_builddir)/resolve-perl-test-venv.log`; \
@@ -729,7 +732,10 @@ check-ruby:
 
 check-perl:
 	@set -eu; \
-	perl_bin=`command -v perl 2>/dev/null || printf "";`; \
+	perl_bin='@PERL@'; \
+	if test -z "$$perl_bin"; then \
+	    perl_bin=`command -v perl 2>/dev/null || printf "";`; \
+	fi; \
 	perl_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-perl-test-venv.sh" \
 	    1 "$$perl_bin" "$(abs_top_srcdir)/perl" "$(abs_top_builddir)/src/.libs" \
 	    "$(abs_top_builddir)/tests/.perl-test-venv" 2>$(top_builddir)/resolve-perl-test-venv.log`; \

@@ -124,17 +124,6 @@ resolve_cpanm_path() {
         return 0
     fi
 
-    if command -v curl >/dev/null 2>&1; then
-        mkdir -p "$perl_local_lib_root/bin"
-        if curl -fsSL https://cpanmin.us -o "$local_cpanm" >/dev/null 2>&1; then
-            chmod +x "$local_cpanm" 2>/dev/null || true
-            if [ -x "$local_cpanm" ]; then
-                printf "%s\n" "$local_cpanm"
-                return 0
-            fi
-        fi
-    fi
-
     printf "%s\n" ""
 }
 
@@ -163,22 +152,38 @@ deps_are_usable() {
     PERL_LOCAL_LIB_ROOT="$perl_local_lib_root" \
     PERL_MB_OPT="$perl_mb_opt" \
     PERL_MM_OPT="$perl_mm_opt" \
-    "$perl_bin" -MFFI::Platypus -e 'exit 0' >/dev/null 2>&1
+    "$perl_bin" -MFFI::Platypus -MFFI::Platypus::Buffer \
+        -MFFI::Platypus::Closure -e 'exit 0' >/dev/null 2>&1
 }
 
 install_perl_dependencies() {
+    cpanm_timeout=${SIXEL_TEST_PERL_CPANM_TIMEOUT-300}
+
     if [ -z "$cpanm_path" ]; then
         return 1
     fi
-    PERL_CPANM_HOME="$perl_local_lib_root/.cpanm" \
-    PERL5LIB="$perl5lib" \
-    PERL_LOCAL_LIB_ROOT="$perl_local_lib_root" \
-    PERL_MB_OPT="$perl_mb_opt" \
-    PERL_MM_OPT="$perl_mm_opt" \
-    "$perl_bin" "$cpanm_path" \
-        --quiet --notest --skip-satisfied \
-        --local-lib-contained "$perl_local_lib_root" \
-        FFI::Platypus >/dev/null 2>&1 || true
+    if command -v timeout >/dev/null 2>&1 &&
+            printf '%s' "$cpanm_timeout" | grep -Eq '^[1-9][0-9]*$'; then
+        PERL_CPANM_HOME="$perl_local_lib_root/.cpanm" \
+        PERL5LIB="$perl5lib" \
+        PERL_LOCAL_LIB_ROOT="$perl_local_lib_root" \
+        PERL_MB_OPT="$perl_mb_opt" \
+        PERL_MM_OPT="$perl_mm_opt" \
+        timeout "$cpanm_timeout" "$perl_bin" "$cpanm_path" \
+            --quiet --notest --skip-satisfied \
+            --local-lib-contained "$perl_local_lib_root" \
+            FFI::Platypus >/dev/null 2>&1 || true
+    else
+        PERL_CPANM_HOME="$perl_local_lib_root/.cpanm" \
+        PERL5LIB="$perl5lib" \
+        PERL_LOCAL_LIB_ROOT="$perl_local_lib_root" \
+        PERL_MB_OPT="$perl_mb_opt" \
+        PERL_MM_OPT="$perl_mm_opt" \
+        "$perl_bin" "$cpanm_path" \
+            --quiet --notest --skip-satisfied \
+            --local-lib-contained "$perl_local_lib_root" \
+            FFI::Platypus >/dev/null 2>&1 || true
+    fi
     deps_are_usable
 }
 
@@ -255,12 +260,15 @@ if [ "$installed_source_signature" != "$combined_signature" ]; then
     mkdir -p "$perl_local_lib_root"
 fi
 
-cpanm_path=$(resolve_cpanm_path)
-
 if ! deps_are_usable; then
+    cpanm_path=$(resolve_cpanm_path)
     if ! install_perl_dependencies; then
         exit 0
     fi
+fi
+
+if [ -z "$cpanm_path" ]; then
+    cpanm_path=$(resolve_cpanm_path)
 fi
 
 if ! module_is_usable; then
