@@ -317,6 +317,70 @@ runs:
           echo "$VENV_BIN_DIR" >> "$GITHUB_PATH"
         fi
 
+    - name: Install Perl modules (Perl matrices)
+      if: ${{ contains(fromJSON(inputs.matrix_json).label, '-perl') }}
+      shell: bash
+      run: |
+        set -exv
+        cpanm_bin="$(command -v cpanm || true)"
+        use_sudo=0
+        if test -n "$cpanm_bin" && command -v sudo >/dev/null 2>&1; then
+          use_sudo=1
+        fi
+
+        cpan_install() {
+          module_name=$1
+          for attempt in 1 2 3; do
+            if test "$use_sudo" -eq 1; then
+              if sudo "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
+                return 0
+              fi
+            else
+              if "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
+                return 0
+              fi
+            fi
+            if test "$attempt" -eq 3; then
+              return 1
+            fi
+            sleep $((attempt * 5))
+          done
+        }
+
+        if test -n "$cpanm_bin"; then
+          cpan_install FFI::Platypus
+          cpan_install FFI::Platypus::Buffer
+          cpan_install FFI::Platypus::Closure
+          if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"-perl-coverage"* ]]; then
+            cpan_install Devel::Cover
+          fi
+        fi
+
+        if ! perl -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure -e 'exit 0'; then
+          if test -d "$HOME/perl5/lib/perl5"; then
+            archname="$(perl -MConfig -e 'print $Config{archname}')"
+            path_sep="$(perl -MConfig -e 'print $Config{path_sep}')"
+            if test -z "$path_sep"; then
+              path_sep=':'
+            fi
+            perl5lib="$HOME/perl5/lib/perl5"
+            if test -n "$archname" && test -d "$HOME/perl5/lib/perl5/$archname"; then
+              perl5lib="$HOME/perl5/lib/perl5/$archname${path_sep}$perl5lib"
+            fi
+            {
+              echo "PERL5LIB=$perl5lib"
+              echo "PERL_LOCAL_LIB_ROOT=$HOME/perl5"
+              echo "PERL_MB_OPT=--install_base $HOME/perl5"
+              echo "PERL_MM_OPT=INSTALL_BASE=$HOME/perl5"
+            } >> "$GITHUB_ENV"
+          fi
+        fi
+
+        perl -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure -e 'exit 0'
+        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"-perl-coverage"* ]]; then
+          perl -MDevel::Cover -e 'exit 0'
+        fi
+
     - name: Setup PHP runtime (Windows, PHP matrices)
       if: >-
         ${{ runner.os == 'Windows'
