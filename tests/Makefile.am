@@ -764,6 +764,10 @@ check-perl:
 	if test -n "$$SIXEL_TEST_PERL_MM_OPT"; then \
 	    PERL_MM_OPT="$$SIXEL_TEST_PERL_MM_OPT" export PERL_MM_OPT; \
 	fi; \
+	if test -n "$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT"; then \
+	    PERL_CPANM_HOME="$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT/.cpanm" export PERL_CPANM_HOME; \
+	    mkdir -p "$$PERL_CPANM_HOME"; \
+	fi; \
 	"$$SIXEL_TEST_PERL" "$$SIXEL_TEST_PERL_CPANM" --quiet --notest --skip-satisfied \
 	    --local-lib-contained "$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT" Devel::Cover; \
 	cover_bin="$$SIXEL_TEST_PERL_LOCAL_LIB_ROOT/bin/cover"; \
