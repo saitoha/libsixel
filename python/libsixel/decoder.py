@@ -71,22 +71,6 @@ class Decoder(object):
             raise RuntimeError("decoder has been closed")
         sixel_decoder_decode(self._decoder, infile)
 
-    def test(self, infile=None, outfile=None):
-        import threading
-
-        if infile:
-            self.setopt(SIXEL_OPTFLAG_INPUT, infile)
-        if outfile:
-            self.setopt(SIXEL_OPTFLAG_OUTPUT, outfile)
-        t = threading.Thread(target=self.decode)
-        t.daemon = True
-        t.start()
-        try:
-            while t.is_alive():
-                t.join(1)
-        except KeyboardInterrupt:
-            print("\033\\\033[Jcanceled.")
-
 
 if __name__ == '__main__':
     import sys

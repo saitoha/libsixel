@@ -64,21 +64,6 @@ class Encoder(object):
             raise RuntimeError("encoder has been closed")
         sixel_encoder_encode_bytes(self._encoder, buf, width, height, pixelformat, palette)
 
-    def test(self, filename):
-        import threading
-
-        self.setopt(SIXEL_OPTFLAG_COLORS, 16)
-        self.setopt(SIXEL_OPTFLAG_DIFFUSION, "atkinson")
-        self.setopt(SIXEL_OPTFLAG_WIDTH, 200)
-        t = threading.Thread(target=self.encode, args=[filename])
-        t.daemon = True
-        t.start()
-        try:
-            while t.is_alive():
-                t.join(1)
-        except KeyboardInterrupt:
-            print("\033\\\033[Jcanceled.")
-
 
 if __name__ == '__main__':
     import sys
