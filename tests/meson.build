@@ -394,6 +394,174 @@ echo "ruby TAP logs exported to $artifact_root"
             meson.project_build_root()],
   depends: test_deps)
 
+run_target('test-perl',
+  command: [sh, '-c', '''
+set -eu
+
+perl_bin="$1"
+source_root="$2"
+build_root="$3"
+
+if test -z "$perl_bin"; then
+  echo "test-perl: skipped because Perl test interpreter is unavailable"
+  exit 0
+fi
+
+perl_venv_exports="$($source_root/build-aux/resolve-perl-test-venv.sh 1 "$perl_bin" "$source_root/perl" "$build_root/src" "$build_root/tests/.perl-test-venv")"
+eval "$perl_venv_exports"
+if test -z "${SIXEL_TEST_PERL:-}"; then
+  echo "test-perl: skipped because Perl test interpreter is unavailable"
+  exit 0
+fi
+if test -z "${SIXEL_TEST_PERL_CPANM:-}"; then
+  echo "test-perl: skipped because cpanm is unavailable for Perl test venv"
+  exit 0
+fi
+if test -n "${SIXEL_TEST_PERL5LIB:-}"; then
+  if test -n "${PERL5LIB:-}"; then
+    PERL5LIB="$SIXEL_TEST_PERL5LIB:$PERL5LIB" export PERL5LIB
+  else
+    PERL5LIB="$SIXEL_TEST_PERL5LIB" export PERL5LIB
+  fi
+fi
+if test -n "${SIXEL_TEST_PERL_LOCAL_LIB_ROOT:-}"; then
+  PERL_LOCAL_LIB_ROOT="$SIXEL_TEST_PERL_LOCAL_LIB_ROOT" export PERL_LOCAL_LIB_ROOT
+fi
+if test -n "${SIXEL_TEST_PERL_MB_OPT:-}"; then
+  PERL_MB_OPT="$SIXEL_TEST_PERL_MB_OPT" export PERL_MB_OPT
+fi
+if test -n "${SIXEL_TEST_PERL_MM_OPT:-}"; then
+  PERL_MM_OPT="$SIXEL_TEST_PERL_MM_OPT" export PERL_MM_OPT
+fi
+if test -n "${SIXEL_TEST_PERL_LOCAL_LIB_ROOT:-}"; then
+  PERL_CPANM_HOME="$SIXEL_TEST_PERL_LOCAL_LIB_ROOT/.cpanm" export PERL_CPANM_HOME
+  mkdir -p "$PERL_CPANM_HOME"
+fi
+
+"$SIXEL_TEST_PERL" "$SIXEL_TEST_PERL_CPANM" --quiet --notest --skip-satisfied --local-lib-contained "$SIXEL_TEST_PERL_LOCAL_LIB_ROOT" Devel::Cover
+cover_bin="$SIXEL_TEST_PERL_LOCAL_LIB_ROOT/bin/cover"
+if test ! -x "$cover_bin"; then
+  echo "test-perl: expected cover executable was not found at $cover_bin" >&2
+  exit 1
+fi
+
+artifact_root="$build_root/tests/_artifacts/perl/tap"
+coverage_root="$build_root/tests/_artifacts/perl/coverage"
+coverage_converter="$source_root/tests/bindings/perl/_coverage_to_lcov.pl"
+lcov_path="$build_root/perl-coverage.info"
+mkdir -p "$artifact_root"
+rm -rf "$coverage_root"
+mkdir -p "$coverage_root"
+status=0
+
+for test_path in $(find "$source_root/tests/bindings/perl" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.pl' | LC_ALL=C sort); do
+  test_name=$(basename "$test_path" .pl)
+  artifact_dir="$artifact_root/$test_name"
+  log_path="$artifact_root/$test_name.log"
+  mkdir -p "$artifact_dir"
+  echo "==> $test_name.pl"
+  if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_PERL" -MDevel::Cover=-db,$coverage_root,-silent,1 "$test_path" >"$log_path" 2>&1; then
+    if grep -Eq '^not ok([[:space:]]|$)' "$log_path"; then
+      echo "not ok - $test_name.pl (TAP not ok found)"
+      sed -n '1,120p' "$log_path"
+      status=1
+    fi
+  else
+    echo "not ok - $test_name.pl (perl exit code != 0)"
+    sed -n '1,120p' "$log_path"
+    status=1
+  fi
+done
+
+"$cover_bin" "$coverage_root" -silent 1 > /dev/null 2>&1 || status=1
+"$SIXEL_TEST_PERL" "$coverage_converter" "$coverage_root" "$lcov_path" "$source_root" "$SIXEL_TEST_PERL_LOCAL_LIB_ROOT" || status=1
+echo "perl coverage exported to $lcov_path"
+
+if test "$status" -ne 0; then
+  exit "$status"
+fi
+
+echo "perl TAP logs exported to $artifact_root"
+''',
+            'sh',
+            perl_for_tests_path,
+            meson.project_source_root(),
+            meson.project_build_root()],
+  depends: test_deps)
+
+run_target('test-php',
+  command: [sh, '-c', '''
+set -eu
+
+php_bin="$1"
+source_root="$2"
+build_root="$3"
+
+if test -z "$php_bin"; then
+  echo "test-php: skipped because PHP test interpreter is unavailable"
+  exit 0
+fi
+
+php_venv_exports="$($source_root/build-aux/resolve-php-test-venv.sh 1 "$php_bin" "$build_root/php/dist" "$build_root/tests/.php-test-venv")"
+eval "$php_venv_exports"
+if test -z "${SIXEL_TEST_PHP:-}"; then
+  echo "test-php: failed because venv PHP interpreter is unavailable (system fallback is disabled)" >&2
+  exit 1
+fi
+if test -z "${SIXEL_TEST_PHPDBG:-}"; then
+  echo "test-php: failed because phpdbg is unavailable in the PHP test venv" >&2
+  exit 1
+fi
+if test -z "${SIXEL_TEST_PHP_BINDING_ROOT:-}" || test -z "${SIXEL_TEST_PHP_LIBPATH:-}"; then
+  echo "test-php: failed because packaged PHP binding payload is unavailable in the venv" >&2
+  exit 1
+fi
+
+status=0
+artifact_root="$build_root/tests/_artifacts/php/tap"
+coverage_root="$build_root/tests/_artifacts/php/coverage"
+coverage_runner="$source_root/tests/bindings/php/_coverage_runner.php"
+coverage_converter="$source_root/tests/bindings/php/_coverage_to_lcov.php"
+lcov_path="$build_root/php-coverage.info"
+mkdir -p "$artifact_root"
+rm -rf "$coverage_root"
+mkdir -p "$coverage_root"
+
+for test_path in $(find "$source_root/tests/bindings/php" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.php' | LC_ALL=C sort); do
+  test_name=$(basename "$test_path" .php)
+  artifact_dir="$artifact_root/$test_name"
+  log_path="$artifact_root/$test_name.log"
+  coverage_path="$coverage_root/$test_name.json"
+  mkdir -p "$artifact_dir"
+  echo "==> $test_name.php"
+  if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$SIXEL_TEST_PHP_LIBDIR" LIBSIXEL_LIBPATH="$SIXEL_TEST_PHP_LIBPATH" SIXEL_TEST_PHP_BINDING_ROOT="$SIXEL_TEST_PHP_BINDING_ROOT" "$SIXEL_TEST_PHPDBG" -d ffi.enable=true -qrr "$coverage_runner" "$test_path" "$coverage_path" >"$log_path" 2>&1; then
+    if grep -Eq '^not ok([[:space:]]|$)' "$log_path"; then
+      echo "not ok - $test_name.php (TAP not ok found)"
+      sed -n '1,120p' "$log_path"
+      status=1
+    fi
+  else
+    echo "not ok - $test_name.php (phpdbg exit code != 0)"
+    sed -n '1,120p' "$log_path"
+    status=1
+  fi
+done
+
+"$SIXEL_TEST_PHP" "$coverage_converter" "$coverage_root" "$lcov_path" "$source_root" || status=1
+echo "php coverage exported to $lcov_path"
+
+if test "$status" -ne 0; then
+  exit "$status"
+fi
+
+echo "php TAP logs exported to $artifact_root"
+''',
+            'sh',
+            php_for_tests_path,
+            meson.project_source_root(),
+            meson.project_build_root()],
+  depends: test_deps)
+
 staticcheck_cases = [
   [
     'staticcheck-actionlint',

@@ -86,6 +86,7 @@ check-perl:
 check-php:
 if HAVE_PHP
 	$(MAKE) -C php check
+	$(MAKE) -C tests check-php
 else
 	@echo "PHP bindings are not enabled; skipping PHP tests"
 endif

@@ -749,7 +749,7 @@ jobs:
             extra_packages: >-
               meson
               cpanminus
-            check_target: test
+            check_target: compile test-perl
             exec_type: bash
 
           - label: Autotools-macos-aarch64-gcc-perl-coverage
@@ -770,7 +770,7 @@ jobs:
             extra_packages: >-
               meson
               cpanminus
-            check_target: test
+            check_target: compile test-perl
             exec_type: bash
 
     steps:
@@ -919,7 +919,7 @@ jobs:
               -Dphp=enabled
             extra_packages: >-
               meson
-            check_target: test
+            check_target: compile test-php
             exec_type: bash
 
           - label: Autotools-macos-aarch64-gcc-php-coverage
@@ -940,7 +940,7 @@ jobs:
             extra_packages: >-
               meson
               php
-            check_target: test
+            check_target: compile test-php
             exec_type: bash
 
     steps:
