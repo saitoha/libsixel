@@ -4275,7 +4275,7 @@ if test x$enable_python != xno; then
         AC_MSG_ERROR([python build module was not found])
     fi
     AC_MSG_CHECKING([for Python venv and ensurepip modules])
-    if $PYTHON -c "import importlib.util,sys; missing=[m for m in ('venv','ensurepip') if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)" >/dev/null 2>&1; then
+    if $PYTHON -c "import importlib.util,sys; missing=any(importlib.util.find_spec(m) is None for m in ('venv','ensurepip')); sys.exit(1 if missing else 0)" >/dev/null 2>&1; then
         AC_MSG_RESULT([yes])
     else
         AC_MSG_RESULT([no])

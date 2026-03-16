@@ -28298,7 +28298,7 @@ printf "%s\n" "no" >&6; }
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python venv and ensurepip modules" >&5
 printf %s "checking for Python venv and ensurepip modules... " >&6; }
-    if $PYTHON -c "import importlib.util,sys; missing=m for m in ('venv','ensurepip') if importlib.util.find_spec(m) is None; sys.exit(0 if not missing else 1)" >/dev/null 2>&1; then
+    if $PYTHON -c "import importlib.util,sys; missing=any(importlib.util.find_spec(m) is None for m in ('venv','ensurepip')); sys.exit(1 if missing else 0)" >/dev/null 2>&1; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
     else
