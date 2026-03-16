@@ -182,8 +182,34 @@ write_wrapper() {
 probe_ffi_with_php() {
     probe_php=$1
     shift
-    "$probe_php" "$@" -r 'try { if (!class_exists("FFI", false)) { exit(1); } FFI::cdef("typedef int libsixel_probe_t;"); exit(0); } catch (Throwable $e) { exit(1); }' \
-        >/dev/null 2>&1
+    probe_timeout=${SIXEL_TEST_PHP_PROBE_TIMEOUT-10}
+    probe_basename=$(basename "$probe_php")
+    probe_code='try { if (!class_exists("FFI", false)) { exit(1); } FFI::cdef("typedef int libsixel_probe_t;"); exit(0); } catch (Throwable $e) { exit(1); }'
+
+    run_with_timeout() {
+        if command -v timeout >/dev/null 2>&1 &&
+                printf '%s' "$probe_timeout" | grep -Eq '^[1-9][0-9]*$'; then
+            timeout "$probe_timeout" "$@" >/dev/null 2>&1
+        else
+            "$@" >/dev/null 2>&1
+        fi
+    }
+
+    case "$probe_basename" in
+        phpdbg|phpdbg.exe)
+            probe_file="${TMPDIR:-/tmp}/libsixel-php-ffi-probe-$$-$(date +%s).php"
+            if ! printf '%s\n' "<?php $probe_code" > "$probe_file"; then
+                return 1
+            fi
+            run_with_timeout "$probe_php" "$@" -qrr "$probe_file"
+            probe_status=$?
+            rm -f "$probe_file"
+            return "$probe_status"
+            ;;
+        *)
+            run_with_timeout "$probe_php" "$@" -r "$probe_code"
+            ;;
+    esac
 }
 
 resolve_php_ext_dir() {
