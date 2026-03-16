@@ -648,6 +648,7 @@ jobs:
               --enable-perl
             extra_packages: >-
               clang
+              cpanminus
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-gcc-perl
@@ -657,6 +658,7 @@ jobs:
               -Dperl=enabled
             extra_packages: >-
               meson
+              cpanminus
             exec_type: bash
 
           - label: Autotools-macos-aarch64-gcc-perl
@@ -664,6 +666,8 @@ jobs:
             runner: macos-latest
             setup_options: >-
               --enable-perl
+            extra_packages: >-
+              cpanminus
             exec_type: bash
 
           - label: Meson-macos-aarch64-gcc-perl
@@ -673,6 +677,7 @@ jobs:
               -Dperl=enabled
             extra_packages: >-
               meson
+              cpanminus
             exec_type: bash
 
           - label: Meson-cmd-x86_64-msvc-x86_64-perl
@@ -732,6 +737,7 @@ jobs:
               --enable-perl
             extra_packages: >-
               clang
+              cpanminus
             check_target: check-perl
             exec_type: bash
 
@@ -742,6 +748,7 @@ jobs:
               -Dperl=enabled
             extra_packages: >-
               meson
+              cpanminus
             check_target: test
             exec_type: bash
 
@@ -750,6 +757,8 @@ jobs:
             runner: macos-latest
             setup_options: >-
               --enable-perl
+            extra_packages: >-
+              cpanminus
             check_target: check-perl
             exec_type: bash
 
@@ -760,6 +769,7 @@ jobs:
               -Dperl=enabled
             extra_packages: >-
               meson
+              cpanminus
             check_target: test
             exec_type: bash
 
