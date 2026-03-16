@@ -4274,6 +4274,13 @@ if test x$enable_python != xno; then
         AC_MSG_RESULT([no])
         AC_MSG_ERROR([python build module was not found])
     fi
+    AC_MSG_CHECKING([for Python venv and ensurepip modules])
+    if $PYTHON -c "import importlib.util,sys; missing=[m for m in ('venv','ensurepip') if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)" >/dev/null 2>&1; then
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_RESULT([no])
+        AC_MSG_ERROR([python venv/ensurepip modules were not found])
+    fi
 fi
 
 ENABLE_PYTHON=0
@@ -4310,6 +4317,18 @@ AS_IF([test "x$enable_ruby" != xno], [
     ])
   ], [
     AC_MSG_NOTICE([ruby found: $RUBY])
+    AC_MSG_CHECKING([for Ruby Fiddle library])
+    if $RUBY -e 'begin; require "fiddle"; exit 0; rescue LoadError; exit 1; end' >/dev/null 2>&1; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+      AS_IF([test "x$enable_ruby" = xyes], [
+        AC_MSG_ERROR([ruby standard Fiddle library was not found])
+      ], [
+        have_ruby=no
+      ])
+    fi
+    AS_IF([test "x$have_ruby" = xyes], [
     dnl Derive Ruby site library directory. Prefer RbConfig query for robustness.
     RUBY_SITE_LIBDIR=`$RUBY -rrbconfig -e 'c = ::RbConfig.const_defined?(:CONFIG) ? ::RbConfig::CONFIG : {}; print( c.fetch(%q{sitelibdir}, nil) || c.fetch(%q{vendorlibdir}, nil) || c.fetch(%q{rubylibdir}, nil) || %q{} )'`
     AC_SUBST([RUBY_SITE_LIBDIR])
@@ -4317,6 +4336,7 @@ AS_IF([test "x$enable_ruby" != xno], [
       message_ruby="yes: ${RUBY_SITE_LIBDIR}"
     ], [
       AS_IF([test "x$enable_ruby" = xyes], [AC_MSG_ERROR([failed to detect Ruby sitelibdir])])
+    ])
     ])
     ])
 ])
