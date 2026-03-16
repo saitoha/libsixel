@@ -323,6 +323,7 @@ runs:
       run: |
         set -exv
         cpanm_bin="$(command -v cpanm || true)"
+        perl_bin="$(command -v perl || true)"
         use_sudo=0
         if test -n "$cpanm_bin" && command -v sudo >/dev/null 2>&1; then
           use_sudo=1
@@ -334,15 +335,30 @@ runs:
           chmod +x "$cpanm_bin" || true
         fi
 
+        # In Git Bash on Windows, `perl` can resolve to /usr/bin/perl even when
+        # Strawberry Perl is available and selected by `cpanm`. Prefer a Perl
+        # executable colocated with the chosen cpanm to keep @INC consistent.
+        cpanm_dir="$(dirname "$cpanm_bin")"
+        if test -x "$cpanm_dir/perl"; then
+          perl_bin="$cpanm_dir/perl"
+        elif test -x "$cpanm_dir/perl.exe"; then
+          perl_bin="$cpanm_dir/perl.exe"
+        fi
+
+        if test -z "$perl_bin"; then
+          echo "::error::perl executable was not found for CPAN installation"
+          exit 1
+        fi
+
         cpan_install() {
           module_name=$1
           for attempt in 1 2 3; do
             if test "$use_sudo" -eq 1; then
-              if sudo perl "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
+              if sudo "$perl_bin" "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
                 return 0
               fi
             else
-              if perl "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
+              if "$perl_bin" "$cpanm_bin" --quiet --notest --skip-satisfied "$module_name"; then
                 return 0
               fi
             fi
@@ -360,10 +376,10 @@ runs:
           cpan_install Devel::Cover
         fi
 
-        if ! perl -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure -e 'exit 0'; then
+        if ! "$perl_bin" -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure -e 'exit 0'; then
           if test -d "$HOME/perl5/lib/perl5"; then
-            archname="$(perl -MConfig -e 'print $Config{archname}')"
-            path_sep="$(perl -MConfig -e 'print $Config{path_sep}')"
+            archname="$("$perl_bin" -MConfig -e 'print $Config{archname}')"
+            path_sep="$("$perl_bin" -MConfig -e 'print $Config{path_sep}')"
             if test -z "$path_sep"; then
               path_sep=':'
             fi
@@ -387,9 +403,9 @@ runs:
           fi
         fi
 
-        perl -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure -e 'exit 0'
+        "$perl_bin" -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure -e 'exit 0'
         if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"-perl-coverage"* ]]; then
-          perl -MDevel::Cover -e 'exit 0'
+          "$perl_bin" -MDevel::Cover -e 'exit 0'
         fi
     - name: Setup PHP runtime (Windows, PHP matrices)
       if: >-
