@@ -1852,9 +1852,18 @@ ruby_opt = get_option('ruby')
 if get_option('default_library') == 'static' and ruby_opt.enabled()
   error('ruby bindings require shared library builds; set -Druby=disabled or avoid -Ddefault_library=static')
 endif
-if ruby_opt.enabled()
-  ruby = find_program('ruby', required: ruby_opt.enabled())
-  if ruby.found()
+ruby = find_program('ruby', required: ruby_opt.enabled())
+if ruby_opt.enabled() and ruby.found()
+  ruby_fiddle_check = run_command(
+    ruby, '-e',
+    'begin; require "fiddle"; exit 0; rescue LoadError; exit 1; end',
+    check: false,
+  )
+  if ruby_fiddle_check.returncode() != 0
+    if ruby_opt.enabled()
+      error('ruby bindings require the standard Fiddle library')
+    endif
+  else
     have_ruby = true
     ruby_gem_script = files('ruby/gem_builder.rb')
     # Generate Ruby constants from the configured public header.
@@ -1893,11 +1902,43 @@ php_opt = get_option('php')
 if get_option('default_library') == 'static' and php_opt.enabled()
   error('php bindings require shared library builds; set -Dphp=disabled or avoid -Ddefault_library=static')
 endif
-if php_opt.enabled()
-  php = find_program('php', required: true)
-  if php.found()
+php = find_program('php', required: php_opt.enabled())
+if php_opt.enabled() and php.found()
+  php_ffi_check = run_command(php, '-m', check: false)
+  php_ffi_available = false
+  if php_ffi_check.returncode() == 0
+    php_ffi_available = ('\n' + php_ffi_check.stdout() + '\n').contains('\nFFI\n')
+  endif
+  if not php_ffi_available
+    error('PHP FFI extension is required (enable ext-ffi)')
+  else
     have_php = true
     php_message = 'yes: libsixel-php'
+  endif
+endif
+
+perl_message = 'no'
+have_perl = false
+perl_opt = get_option('perl')
+if get_option('default_library') == 'static' and perl_opt.enabled()
+  error('perl bindings require shared library builds; set -Dperl=disabled or avoid -Ddefault_library=static')
+endif
+perl = find_program('perl', required: perl_opt.enabled())
+if perl_opt.enabled() and perl.found()
+  perl_ffi_check = run_command(
+    perl,
+    '-MFFI::Platypus',
+    '-MFFI::Platypus::Buffer',
+    '-MFFI::Platypus::Closure',
+    '-e',
+    'exit 0',
+    check: false,
+  )
+  if perl_ffi_check.returncode() != 0
+    error('Perl bindings require FFI::Platypus, FFI::Platypus::Buffer, and FFI::Platypus::Closure')
+  else
+    have_perl = true
+    perl_message = 'yes: perl binding tests'
   endif
 endif
 
@@ -2075,6 +2116,7 @@ message('       WIC codec               : ' + wiccodec_message)
 message('       python package          : ' + python_message)
 message('       ruby bindings           : ' + ruby_message)
 message('       php bindings            : ' + php_message)
+message('       perl bindings           : ' + perl_message)
 message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)
 message('       libtiff                 : ' + tiff_message)

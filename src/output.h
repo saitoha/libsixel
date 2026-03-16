@@ -97,7 +97,7 @@ struct sixel_output {
     int penetrate_multiplexer;
     int encode_policy;
     int ormode;
-    sixel_clock_t last_clock;
+    long long last_frame_time_usec;
 
     void *priv;
     int pos;

@@ -4354,8 +4354,34 @@ AS_IF([test "x$enable_php" != xno -a "x$have_php" = xyes], [
   message_php="yes: libsixel-php"
 ])
 
+message_perl=no
+PERL=
+have_perl=no
 ENABLE_PERL=0
 AS_IF([test "x$enable_perl" != xno], [
+  AC_PATH_PROG([PERL], [perl], [])
+  AS_IF([test "x$PERL" != x], [have_perl=yes], [have_perl=no])
+  AS_IF([test "x$have_perl" = xno], [
+    AS_IF([test "x$enable_perl" = xyes], [
+      AC_MSG_ERROR([perl was not found, but --enable-perl was specified])
+    ])
+  ], [
+    AC_MSG_CHECKING([for Perl FFI::Platypus modules])
+    if $PERL -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure \
+        -e 'exit 0' >/dev/null 2>&1; then
+      AC_MSG_RESULT([yes])
+      message_perl="yes: perl binding tests"
+    else
+      AC_MSG_RESULT([no])
+      AS_IF([test "x$enable_perl" = xyes], [
+        AC_MSG_ERROR([Perl modules FFI::Platypus, FFI::Platypus::Buffer, and FFI::Platypus::Closure are required])
+      ], [
+        have_perl=no
+      ])
+    fi
+  ])
+])
+AS_IF([test "x$enable_perl" != xno -a "x$have_perl" = xyes], [
   ENABLE_PERL=1
 ])
 
@@ -4367,6 +4393,7 @@ AC_SUBST([SIXEL_CHECK_TESTS])
 AC_SUBST([ENABLE_RUBY])
 AC_SUBST([ENABLE_PHP])
 AC_SUBST([ENABLE_PERL])
+AC_SUBST([PERL])
 AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x])
 AM_CONDITIONAL([HAVE_PHP], [test "x$enable_php" != xno -a "x$have_php" = xyes])
 
@@ -4546,6 +4573,7 @@ echo "       Thumbnailer command     : $message_thumbnailer"
 echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       php bindings            : $message_php"
+echo "       perl bindings           : $message_perl"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
 echo "       analyzer                : $sixel_analyzer_status"
