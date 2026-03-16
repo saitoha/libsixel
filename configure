@@ -28296,6 +28296,16 @@ printf "%s\n" "yes" >&6; }
 printf "%s\n" "no" >&6; }
         as_fn_error $? "python build module was not found" "$LINENO" 5
     fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python venv and ensurepip modules" >&5
+printf %s "checking for Python venv and ensurepip modules... " >&6; }
+    if $PYTHON -c "import importlib.util,sys; missing=m for m in ('venv','ensurepip') if importlib.util.find_spec(m) is None; sys.exit(0 if not missing else 1)" >/dev/null 2>&1; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        as_fn_error $? "python venv/ensurepip modules were not found" "$LINENO" 5
+    fi
 fi
 
 ENABLE_PYTHON=0
@@ -28540,6 +28550,29 @@ else case e in #(
   e)
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ruby found: $RUBY" >&5
 printf "%s\n" "$as_me: ruby found: $RUBY" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Ruby Fiddle library" >&5
+printf %s "checking for Ruby Fiddle library... " >&6; }
+    if $RUBY -e 'begin; require "fiddle"; exit 0; rescue LoadError; exit 1; end' >/dev/null 2>&1; then
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+      if test "x$enable_ruby" = xyes
+then :
+
+        as_fn_error $? "ruby standard Fiddle library was not found" "$LINENO" 5
+
+else case e in #(
+  e)
+        have_ruby=no
+       ;;
+esac
+fi
+    fi
+    if test "x$have_ruby" = xyes
+then :
+
         RUBY_SITE_LIBDIR=`$RUBY -rrbconfig -e 'c = ::RbConfig.const_defined?(:CONFIG) ? ::RbConfig::CONFIG : {}; print( c.fetch(%q{sitelibdir}, nil) || c.fetch(%q{vendorlibdir}, nil) || c.fetch(%q{rubylibdir}, nil) || %q{} )'`
 
     if test "x$RUBY_SITE_LIBDIR" != x
@@ -28555,6 +28588,8 @@ then :
 fi
      ;;
 esac
+fi
+
 fi
      ;;
 esac

@@ -1835,6 +1835,14 @@ if py_opt.enabled()
   if py_check.returncode() != 0
     error('Python package support requires the build module')
   endif
+  py_venv_check = run_command(
+    py, '-c',
+    'import importlib.util,sys; missing=[m for m in ("venv","ensurepip") if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)',
+    check: false,
+  )
+  if py_venv_check.returncode() != 0
+    error('Python test environment requires venv and ensurepip modules')
+  endif
   python_message = 'yes: libsixel_wheel'
 endif
 
