@@ -1145,6 +1145,7 @@ check-perl:
 
 check-php:
 @HAVE_PHP_TRUE@	$(MAKE) -C php check
+@HAVE_PHP_TRUE@	$(MAKE) -C tests check-php
 @HAVE_PHP_FALSE@	@echo "PHP bindings are not enabled; skipping PHP tests"
 
 FUZZ_AFL ?= afl-fuzz
