@@ -258,6 +258,12 @@ case "${test_script##*.}" in
     ;;
 esac
 
+venv_progress() {
+  venv_name=$1
+  shift
+  printf '%s\n' "# [venv:${venv_name}] $*" >&2
+}
+
 if test "${test_script##*.}" = "py"; then
   # Resolve Python test venv once per meson test invocation. The first
   # Python TAP worker initializes the venv and writes exported variables,
@@ -269,22 +275,32 @@ if test "${test_script##*.}" = "py"; then
 
   if test ! -f "$venv_exports_file"; then
     if mkdir "$venv_lock_dir" 2>/dev/null; then
+      venv_progress python "acquired lock; resolving test venv"
       venv_exports="$($TOP_SRCDIR/build-aux/resolve-python-test-venv.sh \
         "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" \
         "$MESON_BUILD_ROOT/python/dist" \
         "$MESON_BUILD_ROOT/tests/.python-test-venv")"
       printf '%s\n' "$venv_exports" > "$venv_exports_file"
       rmdir "$venv_lock_dir"
+      venv_progress python "venv resolve completed"
     else
+      venv_progress python "waiting for another worker to finish shared venv setup"
       wait_count=0
       while test ! -f "$venv_exports_file"; do
         wait_count=$((wait_count + 1))
+        if test "$wait_count" -eq 1 || test $((wait_count % 100)) -eq 0; then
+          venv_progress python "still waiting for shared venv exports (${wait_count}/600)"
+        fi
         if test "$wait_count" -gt 600; then
+          venv_progress python "timeout waiting for shared venv exports; marking interpreter unavailable"
           printf '%s\n' 'SIXEL_TEST_PYTHON=' > "$venv_exports_file"
           break
         fi
         sleep 0.05
       done
+      if test -f "$venv_exports_file"; then
+        venv_progress python "detected shared venv exports file"
+      fi
     fi
   fi
 
@@ -307,17 +323,24 @@ if test "${test_script##*.}" = "rb"; then
 
   if test ! -f "$ruby_venv_exports_file"; then
     if mkdir "$ruby_venv_lock_dir" 2>/dev/null; then
+      venv_progress ruby "acquired lock; resolving test venv"
       ruby_venv_exports="$($TOP_SRCDIR/build-aux/resolve-ruby-test-venv.sh \
         "${ENABLE_RUBY:-0}" "${SIXEL_CONFIGURED_RUBY:-}" \
         "$MESON_BUILD_ROOT/ruby/dist" \
         "$MESON_BUILD_ROOT/tests/.ruby-test-venv")"
       printf '%s\n' "$ruby_venv_exports" > "$ruby_venv_exports_file"
       rmdir "$ruby_venv_lock_dir"
+      venv_progress ruby "venv resolve completed"
     else
+      venv_progress ruby "waiting for another worker to finish shared venv setup"
       wait_count=0
       while test ! -f "$ruby_venv_exports_file"; do
         wait_count=$((wait_count + 1))
+        if test "$wait_count" -eq 1 || test $((wait_count % 100)) -eq 0; then
+          venv_progress ruby "still waiting for shared venv exports (${wait_count}/600)"
+        fi
         if test "$wait_count" -gt 600; then
+          venv_progress ruby "timeout waiting for shared venv exports; marking interpreter unavailable"
           printf '%s\n' 'SIXEL_TEST_RUBY=' > "$ruby_venv_exports_file"
           printf '%s\n' 'SIXEL_TEST_RUBY_GEM_HOME=' >> "$ruby_venv_exports_file"
           printf '%s\n' 'SIXEL_TEST_RUBYLIB=' >> "$ruby_venv_exports_file"
@@ -325,6 +348,9 @@ if test "${test_script##*.}" = "rb"; then
         fi
         sleep 0.05
       done
+      if test -f "$ruby_venv_exports_file"; then
+        venv_progress ruby "detected shared venv exports file"
+      fi
     fi
   fi
 
@@ -359,17 +385,24 @@ if test "${test_script##*.}" = "php"; then
 
   if test ! -f "$php_venv_exports_file"; then
     if mkdir "$php_venv_lock_dir" 2>/dev/null; then
+      venv_progress php "acquired lock; resolving test venv"
       php_venv_exports="$($TOP_SRCDIR/build-aux/resolve-php-test-venv.sh \
         "${ENABLE_PHP:-0}" "${SIXEL_CONFIGURED_PHP:-}" \
         "$MESON_BUILD_ROOT/php/dist" \
         "$MESON_BUILD_ROOT/tests/.php-test-venv")"
       printf '%s\n' "$php_venv_exports" > "$php_venv_exports_file"
       rmdir "$php_venv_lock_dir"
+      venv_progress php "venv resolve completed"
     else
+      venv_progress php "waiting for another worker to finish shared venv setup"
       wait_count=0
       while test ! -f "$php_venv_exports_file"; do
         wait_count=$((wait_count + 1))
+        if test "$wait_count" -eq 1 || test $((wait_count % 100)) -eq 0; then
+          venv_progress php "still waiting for shared venv exports (${wait_count}/600)"
+        fi
         if test "$wait_count" -gt 600; then
+          venv_progress php "timeout waiting for shared venv exports; marking interpreter unavailable"
           printf '%s\n' 'SIXEL_TEST_PHP=' > "$php_venv_exports_file"
           printf '%s\n' 'SIXEL_TEST_PHP_BINDING_ROOT=' >> "$php_venv_exports_file"
           printf '%s\n' 'SIXEL_TEST_PHP_LIBDIR=' >> "$php_venv_exports_file"
@@ -378,6 +411,9 @@ if test "${test_script##*.}" = "php"; then
         fi
         sleep 0.05
       done
+      if test -f "$php_venv_exports_file"; then
+        venv_progress php "detected shared venv exports file"
+      fi
     fi
   fi
 
@@ -414,17 +450,24 @@ perl_venv_lock_dir="$perl_venv_state_dir/.perl-test-venv.$perl_venv_run_id.lock"
 
 if test ! -f "$perl_venv_exports_file"; then
   if mkdir "$perl_venv_lock_dir" 2>/dev/null; then
+    venv_progress perl "acquired lock; resolving test venv"
     perl_venv_exports="$($TOP_SRCDIR/build-aux/resolve-perl-test-venv.sh \
       "${ENABLE_PERL:-0}" "${SIXEL_CONFIGURED_PERL:-}" \
       "$TOP_SRCDIR/perl" "$MESON_BUILD_ROOT/src/.libs" \
       "$MESON_BUILD_ROOT/tests/.perl-test-venv")"
     printf '%s\n' "$perl_venv_exports" > "$perl_venv_exports_file"
     rmdir "$perl_venv_lock_dir"
+    venv_progress perl "venv resolve completed"
   else
+    venv_progress perl "waiting for another worker to finish shared venv setup"
     wait_count=0
     while test ! -f "$perl_venv_exports_file"; do
       wait_count=$((wait_count + 1))
+      if test "$wait_count" -eq 1 || test $((wait_count % 100)) -eq 0; then
+        venv_progress perl "still waiting for shared venv exports (${wait_count}/600)"
+      fi
       if test "$wait_count" -gt 600; then
+        venv_progress perl "timeout waiting for shared venv exports; marking interpreter unavailable"
         printf '%s\n' 'SIXEL_TEST_PERL=' > "$perl_venv_exports_file"
         printf '%s\n' 'SIXEL_TEST_PERL5LIB=' >> "$perl_venv_exports_file"
         printf '%s\n' 'SIXEL_TEST_PERL_LOCAL_LIB_ROOT=' >> "$perl_venv_exports_file"
@@ -434,6 +477,9 @@ if test ! -f "$perl_venv_exports_file"; then
       fi
       sleep 0.05
     done
+    if test -f "$perl_venv_exports_file"; then
+      venv_progress perl "detected shared venv exports file"
+    fi
   fi
 fi
 
