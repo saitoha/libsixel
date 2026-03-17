@@ -56,6 +56,8 @@ int test_loader_0018_loader_libwebp_animation_frames(int argc, char **argv);
 int test_loader_0019_loader_libwebp_palette_promotion_guard(int argc,
                                                              char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
+int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
+                                                                    char **argv);
 
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
 int test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv);
@@ -122,6 +124,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0019_loader_libwebp_palette_promotion_guard },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
+    { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
+      test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback },
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
     { "gdk-pixbuf-loader/0001_gdk_pixbuf_loader",
       test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader },
