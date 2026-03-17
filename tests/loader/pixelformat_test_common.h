@@ -312,12 +312,16 @@ create_loader_component_by_name(char const *name,
 }
 
 static SIXEL_TEST_UNUSED int
-run_loader_component_case(char const *label,
-                          char const *relative_path,
-                          int expected_pixelformat,
-                          int expected_width,
-                          int expected_height,
-                          loader_component_new_fn new_component)
+run_loader_component_case_with_options(
+    char const *label,
+    char const *relative_path,
+    int expected_pixelformat,
+    int expected_width,
+    int expected_height,
+    int require_static,
+    int use_palette,
+    int reqcolors,
+    loader_component_new_fn new_component)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -332,9 +336,6 @@ run_loader_component_case(char const *label,
     char image_path[PATH_MAX];
     int cancel_flag;
     int result;
-    int require_static;
-    int use_palette;
-    int reqcolors;
     loader_probe_callback_state_t callback_state;
 
     status = SIXEL_FALSE;
@@ -343,9 +344,6 @@ run_loader_component_case(char const *label,
     component = NULL;
     cancel_flag = 0;
     result = 1;
-    require_static = 1;
-    use_palette = 0;
-    reqcolors = 256;
 #if defined(_MSC_VER)
     source_root = NULL;
     source_root_dupe = NULL;
@@ -487,6 +485,25 @@ cleanup:
 #endif
 
     return result;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case(char const *label,
+                          char const *relative_path,
+                          int expected_pixelformat,
+                          int expected_width,
+                          int expected_height,
+                          loader_component_new_fn new_component)
+{
+    return run_loader_component_case_with_options(label,
+                                                  relative_path,
+                                                  expected_pixelformat,
+                                                  expected_width,
+                                                  expected_height,
+                                                  1,
+                                                  0,
+                                                  256,
+                                                  new_component);
 }
 
 static SIXEL_TEST_UNUSED int
