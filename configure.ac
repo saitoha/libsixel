@@ -1969,16 +1969,20 @@ AC_ARG_VAR([FUZZ_CFLAGS],
            [C compiler flags used for fuzz targets when --enable-fuzz=yes])
 AC_ARG_VAR([FUZZ_LDFLAGS],
            [linker flags used for fuzz targets when --enable-fuzz=yes])
+sixel_default_fuzz_cflags="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
+sixel_default_fuzz_ldflags="-fsanitize=fuzzer,address,undefined"
 
 AS_IF([test "x$enable_fuzz" = "xyes"], [
   if test "x$FUZZ_CFLAGS" = "x"; then
-    FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
+    FUZZ_CFLAGS="$sixel_default_fuzz_cflags"
+    AC_MSG_NOTICE([FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS])
   fi
   if test "x$FUZZ_LDFLAGS" = "x"; then
-    FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
+    FUZZ_LDFLAGS="$sixel_default_fuzz_ldflags"
+    AC_MSG_NOTICE([FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS])
   fi
 
-  AC_MSG_CHECKING([whether $CC supports requested libFuzzer flags])
+  AC_MSG_CHECKING([whether $CC can link a minimal libFuzzer harness])
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LDFLAGS="$LDFLAGS"
   CFLAGS="$CFLAGS $FUZZ_CFLAGS"
@@ -1999,7 +2003,17 @@ AS_IF([test "x$enable_fuzz" = "xyes"], [
   AC_MSG_RESULT([$ac_cv_sixel_fuzz_flags])
 
   AS_IF([test "x$ac_cv_sixel_fuzz_flags" != "xyes"], [
-    AC_MSG_ERROR([--enable-fuzz requested, but libFuzzer flags are unsupported; override FUZZ_CFLAGS/FUZZ_LDFLAGS for your toolchain])
+    AC_MSG_ERROR([--enable-fuzz was requested, but configure could not link a minimal libFuzzer target.
+CC='$CC'
+FUZZ_CFLAGS='$FUZZ_CFLAGS'
+FUZZ_LDFLAGS='$FUZZ_LDFLAGS'
+
+Hints:
+  1) use a clang-based toolchain (e.g. CC=clang; gcc usually lacks -fsanitize=fuzzer)
+  2) override FUZZ_CFLAGS/FUZZ_LDFLAGS for your environment
+  3) disable fuzz targets via --disable-fuzz
+
+See config.log for the exact compiler/linker error from this probe.])
   ])
 ], [
   FUZZ_CFLAGS=""
