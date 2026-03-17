@@ -209,7 +209,7 @@ runs:
       with:
         check-hash: 'false'
         check-installer-sig: 'false'
-        site: https://mirror.fcix.net/cygwin/
+        site: https://mirrors.sonic.net/cygwin/
         packages: ${{ steps.cygwin_packages.outputs.packages }}
 
     - name: Wait before Cygwin mirror fallback
@@ -218,7 +218,7 @@ runs:
             && steps.cygwin_setup_primary.outcome == 'failure' }}
       shell: pwsh
       run: |
-        Start-Sleep -Seconds 180
+        Start-Sleep -Seconds 10
 
     - name: Setup Cygwin (mirror fallback #1)
       id: cygwin_setup_fallback_1
