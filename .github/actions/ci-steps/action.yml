@@ -842,52 +842,66 @@ runs:
           [ -n "$LLVM_PROFDATA" ] || LLVM_PROFDATA="$(xcrun --find llvm-profdata 2>/dev/null || true)"
           [ -n "$LLVM_COV" ] || LLVM_COV="$(xcrun --find llvm-cov 2>/dev/null || true)"
           profraw_count=$(find . -type f -name '*.profraw' | wc -l | tr -d '[:space:]')
+          profraw_nonempty_count=$(find . -type f -name '*.profraw' -size +0c | wc -l | tr -d '[:space:]')
           gcda_count=$(find . -type f -name '*.gcda' | wc -l | tr -d '[:space:]')
-          echo "Coverage probe (emscripten): profraw=$profraw_count gcda=$gcda_count"
+          echo "Coverage probe (emscripten): profraw=$profraw_count profraw_nonempty=$profraw_nonempty_count gcda=$gcda_count"
           if [ -n "$LLVM_PROFDATA" ] && [ -n "$LLVM_COV" ]; then
             echo "Using llvm-profdata: $LLVM_PROFDATA"
             echo "Using llvm-cov: $LLVM_COV"
             PROFRAW_FILES=()
             while IFS= read -r profraw_file; do
               PROFRAW_FILES+=("$profraw_file")
-            done < <(find . -type f -name '*.profraw')
+            done < <(find . -type f -name '*.profraw' -size +0c)
             if [ "${#PROFRAW_FILES[@]}" -eq 0 ]; then
-              echo "No .profraw files found for llvm-cov; trying gcovr/lcov fallback"
+              echo "No non-empty .profraw files found for llvm-cov; trying gcovr/lcov fallback"
             else
               rm -f coverage.profdata
-              "$LLVM_PROFDATA" merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata || true
-              COV_OBJECTS=()
-              # Prefer instrumented local build artifacts and skip external toolchain
-              # trees (for example emsdk) that flood logs with non-instrumented files.
-              while IFS= read -r cov_object; do
-                COV_OBJECTS+=("$cov_object")
-              done < <(
-                find . \
-                  \( -path './emsdk' -o -path './.venv' \) -prune -o \
-                  -type f \( -name '*.o' -o -name '*.wasm' -o -name '*.so' -o -name '*.a' \) -print
-              )
-              if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
-                echo "No coverage objects found for llvm-cov; trying gcovr/lcov fallback"
+              if ! "$LLVM_PROFDATA" merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata; then
+                echo "llvm-profdata merge failed; trying gcovr/lcov fallback"
               else
-                rm -f coverage.info coverage.info.tmp
-                : > coverage.info.tmp
-                COVERAGE_OBJECTS_EXPORTED=0
-                for cov_object in "${COV_OBJECTS[@]}"; do
-                  if "$LLVM_COV" export -format=lcov \
-                    -instr-profile=coverage.profdata \
-                    "$cov_object" >> coverage.info.tmp 2>/dev/null; then
-                    COVERAGE_OBJECTS_EXPORTED=$((COVERAGE_OBJECTS_EXPORTED + 1))
-                  else
-                    echo "Skipping non-instrumented coverage object: $cov_object"
-                  fi
-                done
-                if [ "$COVERAGE_OBJECTS_EXPORTED" -eq 0 ]; then
-                  echo "No instrumented coverage objects found for llvm-cov; trying gcovr/lcov fallback"
-                  rm -f coverage.info.tmp
+                COV_OBJECTS=()
+                # Prefer instrumented local .wasm artifacts and skip external
+                # toolchain trees (for example emsdk) that flood logs with
+                # non-instrumented files.
+                while IFS= read -r cov_object; do
+                  COV_OBJECTS+=("$cov_object")
+                done < <(
+                  find . \
+                    \( -path './emsdk' -o -path './.venv' \) -prune -o \
+                    -type f -name '*.wasm' -print
+                )
+                if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
+                  while IFS= read -r cov_object; do
+                    COV_OBJECTS+=("$cov_object")
+                  done < <(
+                    find . \
+                      \( -path './emsdk' -o -path './.venv' \) -prune -o \
+                      -type f \( -name '*.o' -o -name '*.so' -o -name '*.a' \) -print
+                  )
+                fi
+                if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
+                  echo "No coverage objects found for llvm-cov; trying gcovr/lcov fallback"
                 else
-                  mv coverage.info.tmp coverage.info
-                  coverage_captured=1
-                  echo "Captured coverage via llvm-cov from $COVERAGE_OBJECTS_EXPORTED object(s)"
+                  rm -f coverage.info coverage.info.tmp
+                  : > coverage.info.tmp
+                  COVERAGE_OBJECTS_EXPORTED=0
+                  for cov_object in "${COV_OBJECTS[@]}"; do
+                    if "$LLVM_COV" export -format=lcov \
+                      -instr-profile=coverage.profdata \
+                      "$cov_object" >> coverage.info.tmp 2>/dev/null; then
+                      COVERAGE_OBJECTS_EXPORTED=$((COVERAGE_OBJECTS_EXPORTED + 1))
+                    else
+                      echo "Skipping non-instrumented coverage object: $cov_object"
+                    fi
+                  done
+                  if [ "$COVERAGE_OBJECTS_EXPORTED" -eq 0 ]; then
+                    echo "No instrumented coverage objects found for llvm-cov; trying gcovr/lcov fallback"
+                    rm -f coverage.info.tmp
+                  else
+                    mv coverage.info.tmp coverage.info
+                    coverage_captured=1
+                    echo "Captured coverage via llvm-cov from $COVERAGE_OBJECTS_EXPORTED object(s)"
+                  fi
                 fi
               fi
             fi
