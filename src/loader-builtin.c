@@ -2388,39 +2388,51 @@ load_with_builtin(
                                             &palette_colors,
                                             &ri);
             if (pixels != NULL && palette != NULL) {
-                status = convert_palette_to_rgb(&frame->palette,
+                if (palette_colors > reqcolors) {
+                    /*
+                     * Match libpng behavior: when the source palette exceeds
+                     * reqcolors, drop indexed output and fall back to the
+                     * non-indexed RGB path below.
+                     */
+                    sixel_allocator_free(pchunk->allocator, pixels);
+                    stbi_free(palette);
+                    pixels = NULL;
+                    palette = NULL;
+                } else {
+                    status = convert_palette_to_rgb(&frame->palette,
                                                 palette,
                                                 palette_colors,
                                                 palette_comp,
                                                 bgcolor,
                                                 pchunk->allocator);
-                if (SIXEL_FAILED(status)) {
-                    stbi_free(palette);
-                    sixel_allocator_free(pchunk->allocator, pixels);
-                    goto end;
-                }
-                frame->ncolors = palette_colors;
-                frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+                    if (SIXEL_FAILED(status)) {
+                        stbi_free(palette);
+                        sixel_allocator_free(pchunk->allocator, pixels);
+                        goto end;
+                    }
+                    frame->ncolors = palette_colors;
+                    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
 #if HAVE_LCMS2
-                /*
-                 * Indexed PNG keeps palette entries in RGB triplets. Follow
-                 * PNG colorspace fallback rules (iCCP > sRGB > cHRM/gAMA)
-                 * before exposing PAL8 output.
-                 */
-                if (enable_cms) {
-                    sixel_frompng_apply_colorspace_fallback(
-                        frame->palette,
-                        palette_colors,
-                        1,
-                        pchunk->buffer,
-                        pchunk->size,
-                        pchunk->allocator);
-                }
+                    /*
+                     * Indexed PNG keeps palette entries in RGB triplets. Follow
+                     * PNG colorspace fallback rules (iCCP > sRGB > cHRM/gAMA)
+                     * before exposing PAL8 output.
+                     */
+                    if (enable_cms) {
+                        sixel_frompng_apply_colorspace_fallback(
+                            frame->palette,
+                            palette_colors,
+                            1,
+                            pchunk->buffer,
+                            pchunk->size,
+                            pchunk->allocator);
+                    }
 #endif
-                sixel_frame_set_pixels(frame, pixels);
-                frame->loop_count = 1;
-                goto done;
+                    sixel_frame_set_pixels(frame, pixels);
+                    frame->loop_count = 1;
+                    goto done;
+                }
             }
             pixels = NULL;
             palette = NULL;
