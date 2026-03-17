@@ -19,6 +19,7 @@ MESON_ENV="$PREFIX/meson-env"
 MIRROR_BASE="https://ftp.jaist.ac.jp/pub/GNU"
 CLEAN=0
 VERIFY=0
+PERL_BIN="${PERL_BIN:-$(command -v perl || true)}"
 
 # === Read args or fallback to environment vars ===
 M4_VER="${M4_VER:-1.4.21}"
@@ -83,6 +84,11 @@ for arg in "$@"; do
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
+
+if [ -z "${PERL_BIN}" ] || [ ! -x "${PERL_BIN}" ]; then
+  echo "❌ perl was not found. Please install perl or set PERL_BIN=/path/to/perl" >&2
+  exit 1
+fi
 
 SRC_DIR="$PREFIX/src"
 MESON_ENV="$PREFIX/meson-env"
@@ -173,7 +179,7 @@ install_gnu() {
 
   echo "  🔧 Configuring..."
   cd "${name}-${ver}"
-  ./configure --prefix="$PREFIX" >/dev/null
+  PERL="$PERL_BIN" ./configure --prefix="$PREFIX" >/dev/null
 
   echo "  🏗️  Building..."
   make -s -j"$(nproc)"
@@ -185,11 +191,33 @@ install_gnu() {
   cd ..
 }
 
+repair_perl_shebangs() {
+  local bindir=$1
+  local file
+  local first
+
+  for file in "$bindir"/*; do
+    [ -f "$file" ] || continue
+    [ -x "$file" ] || continue
+    first=$(head -n 1 "$file" 2>/dev/null || true)
+    case "$first" in
+      '#!'*'/perl'*)
+        if [ "$first" != "#!$PERL_BIN" ]; then
+          "$PERL_BIN" -i -pe \
+            'if ($. == 1 && /^#!.*\/perl(?:\s|$)/) { $_ = "#!'"$PERL_BIN"'\\n"; }' \
+            "$file"
+        fi
+        ;;
+    esac
+  done
+}
+
 # === Install tools ===
 [ -n "$M4_VER" ] && install_gnu "m4" "$M4_VER"
 [ -n "$AUTOCONF_VER" ] && install_gnu "autoconf" "$AUTOCONF_VER"
 [ -n "$AUTOMAKE_VER" ] && install_gnu "automake" "$AUTOMAKE_VER"
 [ -n "$LIBTOOL_VER" ] && install_gnu "libtool" "$LIBTOOL_VER"
+repair_perl_shebangs "$PREFIX/bin"
 
 # === Meson installer ===
 if [ -n "$MESON_VER" ]; then
