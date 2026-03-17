@@ -19280,21 +19280,26 @@ case $enable_fuzz in #(
     as_fn_error $? "invalid value for --enable-fuzz: $enable_fuzz" "$LINENO" 5 ;;
 esac
 
-
+sixel_default_fuzz_cflags="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
+sixel_default_fuzz_ldflags="-fsanitize=fuzzer,address,undefined"
 
 
 if test "x$enable_fuzz" = "xyes"
 then :
 
   if test "x$FUZZ_CFLAGS" = "x"; then
-    FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
+    FUZZ_CFLAGS="$sixel_default_fuzz_cflags"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS" >&5
+printf "%s\n" "$as_me: FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS" >&6; }
   fi
   if test "x$FUZZ_LDFLAGS" = "x"; then
-    FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
+    FUZZ_LDFLAGS="$sixel_default_fuzz_ldflags"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS" >&5
+printf "%s\n" "$as_me: FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS" >&6; }
   fi
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $CC supports requested libFuzzer flags" >&5
-printf %s "checking whether $CC supports requested libFuzzer flags... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $CC can link a minimal libFuzzer harness" >&5
+printf %s "checking whether $CC can link a minimal libFuzzer harness... " >&6; }
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LDFLAGS="$LDFLAGS"
   CFLAGS="$CFLAGS $FUZZ_CFLAGS"
@@ -19327,7 +19332,17 @@ printf "%s\n" "$ac_cv_sixel_fuzz_flags" >&6; }
   if test "x$ac_cv_sixel_fuzz_flags" != "xyes"
 then :
 
-    as_fn_error $? "--enable-fuzz requested, but libFuzzer flags are unsupported; override FUZZ_CFLAGS/FUZZ_LDFLAGS for your toolchain" "$LINENO" 5
+    as_fn_error $? "--enable-fuzz was requested, but configure could not link a minimal libFuzzer target.
+CC='$CC'
+FUZZ_CFLAGS='$FUZZ_CFLAGS'
+FUZZ_LDFLAGS='$FUZZ_LDFLAGS'
+
+Hints:
+  1) use a clang-based toolchain (e.g. CC=clang; gcc usually lacks -fsanitize=fuzzer)
+  2) override FUZZ_CFLAGS/FUZZ_LDFLAGS for your environment
+  3) disable fuzz targets via --disable-fuzz
+
+See config.log for the exact compiler/linker error from this probe." "$LINENO" 5
 
 fi
 
@@ -31931,4 +31946,3 @@ echo "       fuzz targets            : $enable_fuzz"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
-
