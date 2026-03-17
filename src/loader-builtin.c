@@ -2478,7 +2478,10 @@ load_with_builtin(
         }
 
         if (chunk_is_png(pchunk)) {
-            status = sixel_frompng_load_nonindexed(pchunk, frame, enable_cms);
+            status = sixel_frompng_load_nonindexed(pchunk,
+                                                   frame,
+                                                   enable_cms,
+                                                   bgcolor);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }

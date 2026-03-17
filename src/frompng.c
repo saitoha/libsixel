@@ -49,54 +49,6 @@ char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
 #define SIZE_MAX ((size_t)-1)
 #endif
 
-static SIXELSTATUS
-sixel_frompng_convert_rgb16_to_rgbfloat32(unsigned char **result,
-                                           uint16_t const *src16,
-                                           int width,
-                                           int height,
-                                           sixel_allocator_t *allocator)
-{
-    float *dst;
-    size_t pixel_count;
-    size_t total_bytes;
-    size_t index;
-    size_t src_offset;
-    size_t dst_offset;
-
-    if (result == NULL || src16 == NULL || allocator == NULL
-            || width <= 0 || height <= 0) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if ((size_t)width > SIZE_MAX / (size_t)height) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-
-    pixel_count = (size_t)width * (size_t)height;
-    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-
-    total_bytes = pixel_count * 3u * sizeof(float);
-    dst = (float *)sixel_allocator_malloc(allocator, total_bytes);
-    if (dst == NULL) {
-        sixel_helper_set_additional_message(
-            "load_with_builtin: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    for (index = 0u; index < pixel_count; ++index) {
-        src_offset = index * 3u;
-        dst_offset = index * 3u;
-        dst[dst_offset + 0u] = (float)src16[src_offset + 0u] / 65535.0f;
-        dst[dst_offset + 1u] = (float)src16[src_offset + 1u] / 65535.0f;
-        dst[dst_offset + 2u] = (float)src16[src_offset + 2u] / 65535.0f;
-    }
-
-    *result = (unsigned char *)dst;
-
-    return SIXEL_OK;
-}
-
 #if HAVE_LCMS2
 static int
 sixel_frompng_convert_profile_to_srgb(unsigned char *pixels,
@@ -249,6 +201,353 @@ sixel_frompng_read_be32(unsigned char const *p)
         | ((uint32_t)p[1] << 16)
         | ((uint32_t)p[2] << 8)
         | (uint32_t)p[3];
+}
+
+static uint16_t
+sixel_frompng_read_be16(unsigned char const *p)
+{
+    return (uint16_t)(((uint16_t)p[0] << 8) | (uint16_t)p[1]);
+}
+
+static int
+sixel_frompng_parse_ihdr(unsigned char const *buffer,
+                         size_t size,
+                         unsigned char *bitdepth,
+                         unsigned char *color_type)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    if (buffer == NULL || bitdepth == NULL || color_type == NULL) {
+        return 0;
+    }
+    if (size < 8u + 12u + 13u) {
+        return 0;
+    }
+    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+    if (sixel_frompng_read_be32(buffer + 8u) != 13u) {
+        return 0;
+    }
+    if (memcmp(buffer + 12u, "IHDR", 4u) != 0) {
+        return 0;
+    }
+
+    *bitdepth = buffer[24u];
+    *color_type = buffer[25u];
+    return 1;
+}
+
+static void
+sixel_frompng_expand_sample_to_bg(uint16_t sample,
+                                  unsigned char bitdepth,
+                                  unsigned char *out8,
+                                  uint16_t *out16)
+{
+    unsigned int max_value;
+    unsigned int value8;
+    unsigned int value16;
+
+    value8 = 0u;
+    value16 = 0u;
+    if (bitdepth == 16u) {
+        value16 = (unsigned int)sample;
+        value8 = value16 >> 8;
+    } else {
+        max_value = (1u << bitdepth) - 1u;
+        if (max_value == 0u) {
+            value8 = 0u;
+            value16 = 0u;
+        } else {
+            value8 = ((unsigned int)sample * 255u + max_value / 2u) / max_value;
+            value16 = ((unsigned int)sample * 65535u + max_value / 2u) / max_value;
+        }
+    }
+    *out8 = (unsigned char)value8;
+    *out16 = (uint16_t)value16;
+}
+
+static int
+sixel_frompng_parse_bkgd(unsigned char const *buffer,
+                         size_t size,
+                         unsigned char bg8[3],
+                         uint16_t bg16[3])
+{
+    unsigned char bitdepth;
+    unsigned char color_type;
+    size_t offset;
+    uint32_t chunk_length;
+    size_t chunk_total;
+    unsigned char const *chunk_type;
+    unsigned char const *chunk_data;
+    unsigned char const *plte_data;
+    size_t plte_entries;
+    unsigned char const *bkgd_data;
+    uint32_t bkgd_length;
+    unsigned int index;
+    uint16_t gray16;
+    uint16_t red16;
+    uint16_t green16;
+    uint16_t blue16;
+    unsigned char gray8;
+    unsigned char red8;
+    unsigned char green8;
+    unsigned char blue8;
+
+    bitdepth = 0u;
+    color_type = 0u;
+    offset = 0u;
+    chunk_length = 0u;
+    chunk_total = 0u;
+    chunk_type = NULL;
+    chunk_data = NULL;
+    plte_data = NULL;
+    plte_entries = 0u;
+    bkgd_data = NULL;
+    bkgd_length = 0u;
+    index = 0u;
+    gray16 = 0u;
+    red16 = 0u;
+    green16 = 0u;
+    blue16 = 0u;
+    gray8 = 0u;
+    red8 = 0u;
+    green8 = 0u;
+    blue8 = 0u;
+
+    if (bg8 == NULL || bg16 == NULL) {
+        return 0;
+    }
+    if (!sixel_frompng_parse_ihdr(buffer, size, &bitdepth, &color_type)) {
+        return 0;
+    }
+    if (bitdepth != 1u &&
+        bitdepth != 2u &&
+        bitdepth != 4u &&
+        bitdepth != 8u &&
+        bitdepth != 16u) {
+        return 0;
+    }
+
+    offset = 8u;
+    while (offset + 12u <= size) {
+        chunk_length = sixel_frompng_read_be32(buffer + offset);
+        chunk_total = (size_t)chunk_length + 12u;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+        chunk_type = buffer + offset + 4u;
+        chunk_data = buffer + offset + 8u;
+
+        if (memcmp(chunk_type, "PLTE", 4u) == 0) {
+            plte_data = chunk_data;
+            plte_entries = (size_t)chunk_length / 3u;
+        } else if (memcmp(chunk_type, "bKGD", 4u) == 0) {
+            bkgd_data = chunk_data;
+            bkgd_length = chunk_length;
+        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+        offset += chunk_total;
+    }
+
+    if (bkgd_data == NULL) {
+        return 0;
+    }
+
+    switch (color_type) {
+    case 0u: /* grayscale */
+    case 4u: /* grayscale + alpha */
+        if (bkgd_length < 2u) {
+            return 0;
+        }
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data),
+                                          bitdepth,
+                                          &gray8,
+                                          &gray16);
+        bg8[0] = gray8;
+        bg8[1] = gray8;
+        bg8[2] = gray8;
+        bg16[0] = gray16;
+        bg16[1] = gray16;
+        bg16[2] = gray16;
+        return 1;
+    case 2u: /* rgb */
+    case 6u: /* rgba */
+        if (bkgd_length < 6u) {
+            return 0;
+        }
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 0u),
+                                          bitdepth,
+                                          &red8,
+                                          &red16);
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 2u),
+                                          bitdepth,
+                                          &green8,
+                                          &green16);
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 4u),
+                                          bitdepth,
+                                          &blue8,
+                                          &blue16);
+        bg8[0] = red8;
+        bg8[1] = green8;
+        bg8[2] = blue8;
+        bg16[0] = red16;
+        bg16[1] = green16;
+        bg16[2] = blue16;
+        return 1;
+    case 3u: /* indexed */
+        if (bkgd_length < 1u || plte_data == NULL) {
+            return 0;
+        }
+        index = (unsigned int)bkgd_data[0];
+        if ((size_t)index >= plte_entries) {
+            return 0;
+        }
+        red8 = plte_data[(size_t)index * 3u + 0u];
+        green8 = plte_data[(size_t)index * 3u + 1u];
+        blue8 = plte_data[(size_t)index * 3u + 2u];
+        bg8[0] = red8;
+        bg8[1] = green8;
+        bg8[2] = blue8;
+        bg16[0] = (uint16_t)((unsigned int)red8 * 257u);
+        bg16[1] = (uint16_t)((unsigned int)green8 * 257u);
+        bg16[2] = (uint16_t)((unsigned int)blue8 * 257u);
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static void
+sixel_frompng_resolve_background(unsigned char const *buffer,
+                                 size_t size,
+                                 unsigned char const *bgcolor,
+                                 unsigned char bg8[3],
+                                 uint16_t bg16[3])
+{
+    if (bgcolor != NULL) {
+        bg8[0] = bgcolor[0];
+        bg8[1] = bgcolor[1];
+        bg8[2] = bgcolor[2];
+        bg16[0] = (uint16_t)((unsigned int)bgcolor[0] * 257u);
+        bg16[1] = (uint16_t)((unsigned int)bgcolor[1] * 257u);
+        bg16[2] = (uint16_t)((unsigned int)bgcolor[2] * 257u);
+        return;
+    }
+    if (sixel_frompng_parse_bkgd(buffer, size, bg8, bg16)) {
+        return;
+    }
+
+    bg8[0] = 0u;
+    bg8[1] = 0u;
+    bg8[2] = 0u;
+    bg16[0] = 0u;
+    bg16[1] = 0u;
+    bg16[2] = 0u;
+}
+
+static void
+sixel_frompng_blend_rgba8_to_rgb_inplace(unsigned char *pixels,
+                                         int width,
+                                         int height,
+                                         unsigned char const bg[3])
+{
+    size_t pixel_count;
+    size_t i;
+    unsigned char *src;
+    unsigned char *dst;
+    unsigned int alpha;
+
+    pixel_count = (size_t)width * (size_t)height;
+    src = pixels;
+    dst = pixels;
+    alpha = 0u;
+
+    for (i = 0u; i < pixel_count; ++i) {
+        alpha = src[3u];
+        dst[0u] = (unsigned char)(((255u - alpha) * bg[0u] + alpha * src[0u]) / 255u);
+        dst[1u] = (unsigned char)(((255u - alpha) * bg[1u] + alpha * src[1u]) / 255u);
+        dst[2u] = (unsigned char)(((255u - alpha) * bg[2u] + alpha * src[2u]) / 255u);
+        src += 4;
+        dst += 3;
+    }
+}
+
+static SIXELSTATUS
+sixel_frompng_convert_rgba16_to_rgbfloat32(unsigned char **result,
+                                            uint16_t const *src16,
+                                            int width,
+                                            int height,
+                                            uint16_t const bg16[3],
+                                            sixel_allocator_t *allocator)
+{
+    float *dst;
+    size_t pixel_count;
+    size_t total_bytes;
+    size_t index;
+    size_t src_offset;
+    size_t dst_offset;
+    uint16_t alpha16;
+    uint64_t blended;
+    uint16_t out16;
+
+    dst = NULL;
+    pixel_count = 0u;
+    total_bytes = 0u;
+    index = 0u;
+    src_offset = 0u;
+    dst_offset = 0u;
+    alpha16 = 0u;
+    blended = 0u;
+    out16 = 0u;
+
+    if (result == NULL || src16 == NULL || bg16 == NULL ||
+        allocator == NULL || width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    total_bytes = pixel_count * 3u * sizeof(float);
+    dst = (float *)sixel_allocator_malloc(allocator, total_bytes);
+    if (dst == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_builtin: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        src_offset = index * 4u;
+        dst_offset = index * 3u;
+        alpha16 = src16[src_offset + 3u];
+
+        blended = (uint64_t)(65535u - (unsigned int)alpha16) * (uint64_t)bg16[0u]
+            + (uint64_t)alpha16 * (uint64_t)src16[src_offset + 0u];
+        out16 = (uint16_t)((blended + 32767u) / 65535u);
+        dst[dst_offset + 0u] = (float)out16 / 65535.0f;
+
+        blended = (uint64_t)(65535u - (unsigned int)alpha16) * (uint64_t)bg16[1u]
+            + (uint64_t)alpha16 * (uint64_t)src16[src_offset + 1u];
+        out16 = (uint16_t)((blended + 32767u) / 65535u);
+        dst[dst_offset + 1u] = (float)out16 / 65535.0f;
+
+        blended = (uint64_t)(65535u - (unsigned int)alpha16) * (uint64_t)bg16[2u]
+            + (uint64_t)alpha16 * (uint64_t)src16[src_offset + 2u];
+        out16 = (uint16_t)((blended + 32767u) / 65535u);
+        dst[dst_offset + 2u] = (float)out16 / 65535.0f;
+    }
+
+    *result = (unsigned char *)dst;
+
+    return SIXEL_OK;
 }
 
 static int
@@ -638,10 +937,369 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
 }
 #endif  /* HAVE_LCMS2 */
 
+#if !HAVE_LCMS2
+static uint32_t
+sixel_frompng_read_be32(unsigned char const *p)
+{
+    return ((uint32_t)p[0] << 24)
+        | ((uint32_t)p[1] << 16)
+        | ((uint32_t)p[2] << 8)
+        | (uint32_t)p[3];
+}
+
+static uint16_t
+sixel_frompng_read_be16(unsigned char const *p)
+{
+    return (uint16_t)(((uint16_t)p[0] << 8) | (uint16_t)p[1]);
+}
+
+static int
+sixel_frompng_parse_ihdr(unsigned char const *buffer,
+                         size_t size,
+                         unsigned char *bitdepth,
+                         unsigned char *color_type)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    if (buffer == NULL || bitdepth == NULL || color_type == NULL) {
+        return 0;
+    }
+    if (size < 8u + 12u + 13u) {
+        return 0;
+    }
+    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+    if (sixel_frompng_read_be32(buffer + 8u) != 13u) {
+        return 0;
+    }
+    if (memcmp(buffer + 12u, "IHDR", 4u) != 0) {
+        return 0;
+    }
+
+    *bitdepth = buffer[24u];
+    *color_type = buffer[25u];
+    return 1;
+}
+
+static void
+sixel_frompng_expand_sample_to_bg(uint16_t sample,
+                                  unsigned char bitdepth,
+                                  unsigned char *out8,
+                                  uint16_t *out16)
+{
+    unsigned int max_value;
+    unsigned int value8;
+    unsigned int value16;
+
+    value8 = 0u;
+    value16 = 0u;
+    if (bitdepth == 16u) {
+        value16 = (unsigned int)sample;
+        value8 = value16 >> 8;
+    } else {
+        max_value = (1u << bitdepth) - 1u;
+        if (max_value == 0u) {
+            value8 = 0u;
+            value16 = 0u;
+        } else {
+            value8 = ((unsigned int)sample * 255u + max_value / 2u) / max_value;
+            value16 = ((unsigned int)sample * 65535u + max_value / 2u) / max_value;
+        }
+    }
+    *out8 = (unsigned char)value8;
+    *out16 = (uint16_t)value16;
+}
+
+static int
+sixel_frompng_parse_bkgd(unsigned char const *buffer,
+                         size_t size,
+                         unsigned char bg8[3],
+                         uint16_t bg16[3])
+{
+    unsigned char bitdepth;
+    unsigned char color_type;
+    size_t offset;
+    uint32_t chunk_length;
+    size_t chunk_total;
+    unsigned char const *chunk_type;
+    unsigned char const *chunk_data;
+    unsigned char const *plte_data;
+    size_t plte_entries;
+    unsigned char const *bkgd_data;
+    uint32_t bkgd_length;
+    unsigned int index;
+    uint16_t gray16;
+    uint16_t red16;
+    uint16_t green16;
+    uint16_t blue16;
+    unsigned char gray8;
+    unsigned char red8;
+    unsigned char green8;
+    unsigned char blue8;
+
+    bitdepth = 0u;
+    color_type = 0u;
+    offset = 0u;
+    chunk_length = 0u;
+    chunk_total = 0u;
+    chunk_type = NULL;
+    chunk_data = NULL;
+    plte_data = NULL;
+    plte_entries = 0u;
+    bkgd_data = NULL;
+    bkgd_length = 0u;
+    index = 0u;
+    gray16 = 0u;
+    red16 = 0u;
+    green16 = 0u;
+    blue16 = 0u;
+    gray8 = 0u;
+    red8 = 0u;
+    green8 = 0u;
+    blue8 = 0u;
+
+    if (bg8 == NULL || bg16 == NULL) {
+        return 0;
+    }
+    if (!sixel_frompng_parse_ihdr(buffer, size, &bitdepth, &color_type)) {
+        return 0;
+    }
+    if (bitdepth != 1u &&
+        bitdepth != 2u &&
+        bitdepth != 4u &&
+        bitdepth != 8u &&
+        bitdepth != 16u) {
+        return 0;
+    }
+
+    offset = 8u;
+    while (offset + 12u <= size) {
+        chunk_length = sixel_frompng_read_be32(buffer + offset);
+        chunk_total = (size_t)chunk_length + 12u;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+        chunk_type = buffer + offset + 4u;
+        chunk_data = buffer + offset + 8u;
+
+        if (memcmp(chunk_type, "PLTE", 4u) == 0) {
+            plte_data = chunk_data;
+            plte_entries = (size_t)chunk_length / 3u;
+        } else if (memcmp(chunk_type, "bKGD", 4u) == 0) {
+            bkgd_data = chunk_data;
+            bkgd_length = chunk_length;
+        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+        offset += chunk_total;
+    }
+
+    if (bkgd_data == NULL) {
+        return 0;
+    }
+
+    switch (color_type) {
+    case 0u: /* grayscale */
+    case 4u: /* grayscale + alpha */
+        if (bkgd_length < 2u) {
+            return 0;
+        }
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data),
+                                          bitdepth,
+                                          &gray8,
+                                          &gray16);
+        bg8[0] = gray8;
+        bg8[1] = gray8;
+        bg8[2] = gray8;
+        bg16[0] = gray16;
+        bg16[1] = gray16;
+        bg16[2] = gray16;
+        return 1;
+    case 2u: /* rgb */
+    case 6u: /* rgba */
+        if (bkgd_length < 6u) {
+            return 0;
+        }
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 0u),
+                                          bitdepth,
+                                          &red8,
+                                          &red16);
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 2u),
+                                          bitdepth,
+                                          &green8,
+                                          &green16);
+        sixel_frompng_expand_sample_to_bg(sixel_frompng_read_be16(bkgd_data + 4u),
+                                          bitdepth,
+                                          &blue8,
+                                          &blue16);
+        bg8[0] = red8;
+        bg8[1] = green8;
+        bg8[2] = blue8;
+        bg16[0] = red16;
+        bg16[1] = green16;
+        bg16[2] = blue16;
+        return 1;
+    case 3u: /* indexed */
+        if (bkgd_length < 1u || plte_data == NULL) {
+            return 0;
+        }
+        index = (unsigned int)bkgd_data[0];
+        if ((size_t)index >= plte_entries) {
+            return 0;
+        }
+        red8 = plte_data[(size_t)index * 3u + 0u];
+        green8 = plte_data[(size_t)index * 3u + 1u];
+        blue8 = plte_data[(size_t)index * 3u + 2u];
+        bg8[0] = red8;
+        bg8[1] = green8;
+        bg8[2] = blue8;
+        bg16[0] = (uint16_t)((unsigned int)red8 * 257u);
+        bg16[1] = (uint16_t)((unsigned int)green8 * 257u);
+        bg16[2] = (uint16_t)((unsigned int)blue8 * 257u);
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static void
+sixel_frompng_resolve_background(unsigned char const *buffer,
+                                 size_t size,
+                                 unsigned char const *bgcolor,
+                                 unsigned char bg8[3],
+                                 uint16_t bg16[3])
+{
+    if (bgcolor != NULL) {
+        bg8[0] = bgcolor[0];
+        bg8[1] = bgcolor[1];
+        bg8[2] = bgcolor[2];
+        bg16[0] = (uint16_t)((unsigned int)bgcolor[0] * 257u);
+        bg16[1] = (uint16_t)((unsigned int)bgcolor[1] * 257u);
+        bg16[2] = (uint16_t)((unsigned int)bgcolor[2] * 257u);
+        return;
+    }
+    if (sixel_frompng_parse_bkgd(buffer, size, bg8, bg16)) {
+        return;
+    }
+
+    bg8[0] = 0u;
+    bg8[1] = 0u;
+    bg8[2] = 0u;
+    bg16[0] = 0u;
+    bg16[1] = 0u;
+    bg16[2] = 0u;
+}
+
+static void
+sixel_frompng_blend_rgba8_to_rgb_inplace(unsigned char *pixels,
+                                         int width,
+                                         int height,
+                                         unsigned char const bg[3])
+{
+    size_t pixel_count;
+    size_t i;
+    unsigned char *src;
+    unsigned char *dst;
+    unsigned int alpha;
+
+    pixel_count = (size_t)width * (size_t)height;
+    src = pixels;
+    dst = pixels;
+    alpha = 0u;
+
+    for (i = 0u; i < pixel_count; ++i) {
+        alpha = src[3u];
+        dst[0u] = (unsigned char)(((255u - alpha) * bg[0u] + alpha * src[0u]) / 255u);
+        dst[1u] = (unsigned char)(((255u - alpha) * bg[1u] + alpha * src[1u]) / 255u);
+        dst[2u] = (unsigned char)(((255u - alpha) * bg[2u] + alpha * src[2u]) / 255u);
+        src += 4;
+        dst += 3;
+    }
+}
+
+static SIXELSTATUS
+sixel_frompng_convert_rgba16_to_rgbfloat32(unsigned char **result,
+                                            uint16_t const *src16,
+                                            int width,
+                                            int height,
+                                            uint16_t const bg16[3],
+                                            sixel_allocator_t *allocator)
+{
+    float *dst;
+    size_t pixel_count;
+    size_t total_bytes;
+    size_t index;
+    size_t src_offset;
+    size_t dst_offset;
+    uint16_t alpha16;
+    uint64_t blended;
+    uint16_t out16;
+
+    dst = NULL;
+    pixel_count = 0u;
+    total_bytes = 0u;
+    index = 0u;
+    src_offset = 0u;
+    dst_offset = 0u;
+    alpha16 = 0u;
+    blended = 0u;
+    out16 = 0u;
+
+    if (result == NULL || src16 == NULL || bg16 == NULL ||
+        allocator == NULL || width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    total_bytes = pixel_count * 3u * sizeof(float);
+    dst = (float *)sixel_allocator_malloc(allocator, total_bytes);
+    if (dst == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_builtin: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        src_offset = index * 4u;
+        dst_offset = index * 3u;
+        alpha16 = src16[src_offset + 3u];
+
+        blended = (uint64_t)(65535u - (unsigned int)alpha16) * (uint64_t)bg16[0u]
+            + (uint64_t)alpha16 * (uint64_t)src16[src_offset + 0u];
+        out16 = (uint16_t)((blended + 32767u) / 65535u);
+        dst[dst_offset + 0u] = (float)out16 / 65535.0f;
+
+        blended = (uint64_t)(65535u - (unsigned int)alpha16) * (uint64_t)bg16[1u]
+            + (uint64_t)alpha16 * (uint64_t)src16[src_offset + 1u];
+        out16 = (uint16_t)((blended + 32767u) / 65535u);
+        dst[dst_offset + 1u] = (float)out16 / 65535.0f;
+
+        blended = (uint64_t)(65535u - (unsigned int)alpha16) * (uint64_t)bg16[2u]
+            + (uint64_t)alpha16 * (uint64_t)src16[src_offset + 2u];
+        out16 = (uint16_t)((blended + 32767u) / 65535u);
+        dst[dst_offset + 2u] = (float)out16 / 65535.0f;
+    }
+
+    *result = (unsigned char *)dst;
+
+    return SIXEL_OK;
+}
+#endif  /* !HAVE_LCMS2 */
+
 SIXELSTATUS
 sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                               sixel_frame_t *frame,
-                              int enable_cms)
+                              int enable_cms,
+                              unsigned char const *bgcolor)
 {
     SIXELSTATUS status;
     int png_is_16bit;
@@ -651,6 +1309,8 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     unsigned char *pixels_float32;
     int cms_applied;
     int target_pixelformat;
+    unsigned char background8[3];
+    uint16_t background16[3];
 
     status = SIXEL_FALSE;
     png_is_16bit = 0;
@@ -660,10 +1320,21 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     pixels_float32 = NULL;
     cms_applied = 0;
     target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    background8[0] = 0u;
+    background8[1] = 0u;
+    background8[2] = 0u;
+    background16[0] = 0u;
+    background16[1] = 0u;
+    background16[2] = 0u;
 
     if (pchunk == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    sixel_frompng_resolve_background(pchunk->buffer,
+                                     pchunk->size,
+                                     bgcolor,
+                                     background8,
+                                     background16);
 
     png_is_16bit = stbi_is_16_bit_from_memory(pchunk->buffer, (int)pchunk->size);
     if (png_is_16bit != 0) {
@@ -672,16 +1343,17 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                                             &frame->width,
                                             &frame->height,
                                             &depth,
-                                            3);
+                                            4);
         if (pixels16 == NULL) {
             sixel_helper_set_additional_message(stbi_failure_reason());
             return SIXEL_STBI_ERROR;
         }
-        status = sixel_frompng_convert_rgb16_to_rgbfloat32(&pixels_float32,
-                                                            pixels16,
-                                                            frame->width,
-                                                            frame->height,
-                                                            pchunk->allocator);
+        status = sixel_frompng_convert_rgba16_to_rgbfloat32(&pixels_float32,
+                                                             pixels16,
+                                                             frame->width,
+                                                             frame->height,
+                                                             background16,
+                                                             pchunk->allocator);
         stbi_image_free(pixels16);
         pixels16 = NULL;
         if (SIXEL_FAILED(status)) {
@@ -718,11 +1390,15 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                                     &frame->width,
                                     &frame->height,
                                     &depth,
-                                    3);
+                                    4);
     if (pixels8 == NULL) {
         sixel_helper_set_additional_message(stbi_failure_reason());
         return SIXEL_STBI_ERROR;
     }
+    sixel_frompng_blend_rgba8_to_rgb_inplace(pixels8,
+                                             frame->width,
+                                             frame->height,
+                                             background8);
     sixel_frame_set_pixels(frame, pixels8);
     frame->loop_count = 1;
     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
