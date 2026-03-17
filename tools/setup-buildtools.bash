@@ -20,6 +20,7 @@ MIRROR_BASE="https://ftp.jaist.ac.jp/pub/GNU"
 CLEAN=0
 VERIFY=0
 PERL_BIN="${PERL_BIN:-$(command -v perl || true)}"
+M4_BIN="${M4_BIN:-$(command -v gm4 || command -v m4 || true)}"
 
 # === Read args or fallback to environment vars ===
 M4_VER="${M4_VER:-1.4.21}"
@@ -37,7 +38,6 @@ timeout() {
     timeout_duration=$1
     shift
 
-    # 実行
     (
         if command -v setsid >/dev/null 2>&1; then
             setsid "$@" &
@@ -166,6 +166,7 @@ fi
 # === GNU installer helper ===
 install_gnu() {
   local name=$1 ver=$2
+  local configure_m4="$M4_BIN"
   echo
   echo "🚀 Installing $name $ver"
   cd "$SRC_DIR"
@@ -179,7 +180,10 @@ install_gnu() {
 
   echo "  🔧 Configuring..."
   cd "${name}-${ver}"
-  PERL="$PERL_BIN" ./configure --prefix="$PREFIX" >/dev/null
+  if [ -x "$PREFIX/bin/m4" ]; then
+    configure_m4="$PREFIX/bin/m4"
+  fi
+  PERL="$PERL_BIN" M4="$configure_m4" ./configure --prefix="$PREFIX" >/dev/null
 
   echo "  🏗️  Building..."
   make -s -j"$(nproc)"
@@ -204,12 +208,27 @@ repair_perl_shebangs() {
       '#!'*'/perl'*)
         if [ "$first" != "#!$PERL_BIN" ]; then
           "$PERL_BIN" -i -pe \
-            'if ($. == 1 && /^#!.*\/perl(?:\s|$)/) { $_ = "#!'"$PERL_BIN"'\\n"; }' \
+            'if ($. == 1 && /^#!.*\/perl(?:\s|$)/) { $_ = "#!'"$PERL_BIN"'\n"; }' \
             "$file"
         fi
         ;;
     esac
   done
+}
+
+repair_autom4te_m4_path() {
+  local bindir=$1
+  local m4bin=$2
+  local autom4te_file="$bindir/autom4te"
+
+  [ -f "$autom4te_file" ] || return 0
+
+  M4_REWRITE_TARGET="$m4bin" "$PERL_BIN" -i -pe '
+    BEGIN { $target = $ENV{"M4_REWRITE_TARGET"}; }
+    if (/^my \$m4 = \$ENV\{"M4"\} \|\| /) {
+      $_ = "my \$m4 = \$ENV{\"M4\"} || '\''$target'\'';\n";
+    }
+  ' "$autom4te_file"
 }
 
 # === Install tools ===
@@ -218,6 +237,13 @@ repair_perl_shebangs() {
 [ -n "$AUTOMAKE_VER" ] && install_gnu "automake" "$AUTOMAKE_VER"
 [ -n "$LIBTOOL_VER" ] && install_gnu "libtool" "$LIBTOOL_VER"
 repair_perl_shebangs "$PREFIX/bin"
+if [ -x "$PREFIX/bin/m4" ]; then
+  M4_BIN="$PREFIX/bin/m4"
+elif [ -z "$M4_BIN" ] || [ ! -x "$M4_BIN" ]; then
+  echo "❌ m4 was not found. Please install m4 or set M4_BIN=/path/to/m4" >&2
+  exit 1
+fi
+repair_autom4te_m4_path "$PREFIX/bin" "$M4_BIN"
 
 # === Meson installer ===
 if [ -n "$MESON_VER" ]; then
@@ -240,6 +266,7 @@ cat > "$ENV_FILE" <<EOF
 # Environment for custom autotools and meson
 export PATH="$PREFIX/bin:\$PATH"
 export ACLOCAL_PATH="$PREFIX/share/aclocal:\$ACLOCAL_PATH"
+export M4="$M4_BIN"
 EOF
 
 echo
