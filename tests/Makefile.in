@@ -138,6 +138,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c \
 	loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
 	loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c \
+	loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	diagnostics/probe/0001_probe_parse.c \
@@ -181,6 +182,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libwebp/test_runner-0015_loader_libwebp_palette_promotion_guard.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
@@ -282,6 +284,7 @@ am__depfiles_remade =  \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
+	loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
 	loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po \
 	loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po \
@@ -967,6 +970,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_LOADER_LIBWEBP_PALETTE_PROMOTION_GUARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_LOADER_LIBRSVG_DETECT_SVG_LIKE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_LOADER_BUILTIN_INDEXED_PNG_REQCOLORS_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_LOADER_LIBPNG_INDEXED_PNG_REQCOLORS_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
@@ -1039,6 +1043,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -1289,6 +1294,9 @@ loader/librsvg/test_runner-0020_loader_librsvg_detect_svg_like.$(OBJEXT):  \
 loader/builtin/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.$(OBJEXT):  \
 	loader/builtin/$(am__dirstamp) \
 	loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.$(OBJEXT):  \
+	loader/libpng/$(am__dirstamp) \
+	loader/libpng/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1414,6 +1422,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po@am__quote@ # am--include-marker
@@ -1873,6 +1882,20 @@ loader/builtin/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.ob
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c' object='loader/builtin/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.obj `if test -f 'loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c'; then $(CYGPATH_W) 'loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c'; fi`
+
+loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.o: loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.o -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Tpo -c -o loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.o `test -f 'loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c' || echo '$(srcdir)/'`loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Tpo loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c' object='loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.o `test -f 'loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c' || echo '$(srcdir)/'`loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c
+
+loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.obj: loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.obj -MD -MP -MF loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Tpo -c -o loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.obj `if test -f 'loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c'; then $(CYGPATH_W) 'loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Tpo loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c' object='loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.obj `if test -f 'loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c'; then $(CYGPATH_W) 'loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c'; else $(CYGPATH_W) '$(srcdir)/loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -2455,6 +2478,7 @@ distclean: distclean-am
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
@@ -2542,6 +2566,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
+	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
 	-rm -f loader/gd/$(DEPDIR)/test_runner-0011_loader_gd_pixelformat.Po
 	-rm -f loader/gdk-pixbuf2/$(DEPDIR)/test_runner-0010_loader_gdk_pixbuf_pixelformat.Po
