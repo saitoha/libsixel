@@ -3841,8 +3841,8 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw";
-              CC=emcc CFLAGS="-O1 -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate"
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CC=emcc CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -3858,8 +3858,8 @@ jobs:
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw";
-              CFLAGS="-fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate"
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
@@ -3875,8 +3875,8 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw";
-              CFLAGS="-O1 -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate"
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -3891,8 +3891,8 @@ jobs:
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw";
-              CFLAGS="-fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate"
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
