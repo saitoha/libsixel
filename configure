@@ -19280,9 +19280,10 @@ case $enable_fuzz in #(
     as_fn_error $? "invalid value for --enable-fuzz: $enable_fuzz" "$LINENO" 5 ;;
 esac
 
+
+
 sixel_default_fuzz_cflags="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
 sixel_default_fuzz_ldflags="-fsanitize=fuzzer,address,undefined"
-
 
 if test "x$enable_fuzz" = "xyes"
 then :
@@ -19290,12 +19291,12 @@ then :
   if test "x$FUZZ_CFLAGS" = "x"; then
     FUZZ_CFLAGS="$sixel_default_fuzz_cflags"
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS" >&5
-printf "%s\n" "$as_me: FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS" >&6; }
+printf "%s\n" "$as_me: FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS" >&6;}
   fi
   if test "x$FUZZ_LDFLAGS" = "x"; then
     FUZZ_LDFLAGS="$sixel_default_fuzz_ldflags"
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS" >&5
-printf "%s\n" "$as_me: FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS" >&6; }
+printf "%s\n" "$as_me: FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS" >&6;}
   fi
 
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $CC can link a minimal libFuzzer harness" >&5
@@ -31946,3 +31947,4 @@ echo "       fuzz targets            : $enable_fuzz"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
+
