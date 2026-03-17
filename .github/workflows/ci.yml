@@ -1493,7 +1493,6 @@ jobs:
               --enable-gcov
             extra_packages: >-
               make
-              lcov
             exec_type: cygwin
 
     steps:
