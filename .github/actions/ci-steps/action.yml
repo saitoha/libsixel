@@ -1009,9 +1009,25 @@ runs:
         if command -v gcovr >/dev/null 2>&1; then
           gcovr -r . --lcov -o coverage.info || true
           cat coverage.info
-        elif command -v python3 >/dev/null 2>&1 && python3 -c "import gcovr" >/dev/null 2>&1; then
-          python3 -m gcovr -r . --lcov -o coverage.info || true
-          cat coverage.info
+        elif command -v python3 >/dev/null 2>&1; then
+          if ! python3 -c "import gcovr" >/dev/null 2>&1; then
+            python3 -m pip install --user gcovr || true
+          fi
+          if python3 -c "import gcovr" >/dev/null 2>&1; then
+            python3 -m gcovr -r . --lcov -o coverage.info || true
+            cat coverage.info
+          elif command -v lcov >/dev/null 2>&1; then
+            lcov -c \
+              -d "${PWD}" \
+              --rc branch_coverage=1 \
+              -o coverage.info || true
+            sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#; s#^SF:/#SF:#" \
+              coverage.info > coverage.info.tmp
+            mv coverage.info.tmp coverage.info
+            head -n40 coverage.info
+          else
+            echo "No gcovr or lcov found after python3 gcovr bootstrap; skipping coverage capture"
+          fi
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
             -d "${PWD}" \
