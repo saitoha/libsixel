@@ -3,7 +3,7 @@
 # setup-buildtools.sh
 #
 # Usage:
-#   ./setup-autotools.sh [--autoconf=2.72 --automake=1.18.1 --libtool=2.5.4 --meson=1.8.3]
+#   ./setup-autotools.sh [--m4=1.4.21 --autoconf=2.72 --automake=1.18.1 --libtool=2.5.4 --meson=1.8.3]
 #
 # Optional:
 #   --prefix=DIR    Install root (default: $PWD/.local)
@@ -21,13 +21,58 @@ CLEAN=0
 VERIFY=0
 
 # === Read args or fallback to environment vars ===
+M4_VER="${M4_VER:-1.4.21}"
 AUTOCONF_VER="${AUTOCONF_VER:-2.72}"
 AUTOMAKE_VER="${AUTOMAKE_VER:-1.18.1}"
 LIBTOOL_VER="${LIBTOOL_VER:-2.5.4}"
 MESON_VER="${MESON_VER:-1.8.3}"
 
+timeout() {
+    if [ $# -lt 2 ]; then
+        echo "usage: timeout SECONDS command [args...]" >&2
+        return 125
+    fi
+
+    timeout_duration=$1
+    shift
+
+    # 実行
+    (
+        if command -v setsid >/dev/null 2>&1; then
+            setsid "$@" &
+        else
+            "$@" &
+        fi
+
+        cmd_pid=$!
+
+        # watchdog
+        (
+            sleep "$timeout_duration"
+            kill -TERM -"$cmd_pid" 2>/dev/null
+            sleep 1
+            kill -KILL -"$cmd_pid" 2>/dev/null
+        ) &
+        watchdog_pid=$!
+        wait "$cmd_pid"
+        cmd_status=$?
+        kill "$watchdog_pid" 2>/dev/null
+        wait "$watchdog_pid" 2>/dev/null
+        case "$cmd_status" in
+            137|143)
+                exit 124
+                ;;
+            *)
+                exit "$cmd_status"
+                ;;
+        esac
+    )
+    return $?
+}
+
 for arg in "$@"; do
   case $arg in
+    --m4=*)       M4_VER="${arg#*=}" ;;
     --autoconf=*) AUTOCONF_VER="${arg#*=}" ;;
     --automake=*) AUTOMAKE_VER="${arg#*=}" ;;
     --libtool=*)  LIBTOOL_VER="${arg#*=}" ;;
@@ -95,7 +140,7 @@ download_with_fallback() {
 # === Verify-only mode ===
 if [ "$VERIFY" -eq 1 ]; then
   echo "🔍 Checking versions in $PREFIX/bin"
-  for tool in autoconf automake libtool meson; do
+  for tool in m4 autoconf automake libtool meson; do
     if command -v "$tool" >/dev/null 2>&1; then
       echo "  ✔️ $($tool --version | head -n1)"
     else
@@ -108,7 +153,7 @@ fi
 # === Clean old builds ===
 if [ "$CLEAN" -eq 1 ]; then
   echo "🧹 Cleaning $PREFIX..."
-  rm -rf "$SRC_DIR"/autoconf-* "$SRC_DIR"/automake-* "$SRC_DIR"/libtool-* "$MESON_ENV"
+  rm -rf "$SRC_DIR"/m4-* "$SRC_DIR"/autoconf-* "$SRC_DIR"/automake-* "$SRC_DIR"/libtool-* "$MESON_ENV"
   echo "✨ Clean complete."
 fi
 
@@ -141,6 +186,7 @@ install_gnu() {
 }
 
 # === Install tools ===
+[ -n "$M4_VER" ] && install_gnu "m4" "$M4_VER"
 [ -n "$AUTOCONF_VER" ] && install_gnu "autoconf" "$AUTOCONF_VER"
 [ -n "$AUTOMAKE_VER" ] && install_gnu "automake" "$AUTOMAKE_VER"
 [ -n "$LIBTOOL_VER" ] && install_gnu "libtool" "$LIBTOOL_VER"
@@ -175,6 +221,7 @@ echo "🔧 To activate the environment, run:"
 echo "  source \"$ENV_FILE\""
 echo
 echo "Then verify:"
+echo "  m4 --version"
 echo "  autoconf --version"
 echo "  automake --version"
 echo "  libtool --version"
