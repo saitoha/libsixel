@@ -39,6 +39,21 @@ from ctypes import (
 )
 from ctypes.util import find_library
 
+# locale.getencoding() is available on newer Python versions. Fall back to
+# getpreferredencoding() for Python 3.9/3.10 test environments.
+def _resolve_locale_encoding(default="utf-8"):
+    getencoding = getattr(locale, "getencoding", None)
+    if callable(getencoding):
+        encoding = getencoding()
+    else:
+        try:
+            encoding = locale.getpreferredencoding(False)
+        except TypeError:
+            encoding = locale.getpreferredencoding()
+    if not encoding:
+        encoding = default
+    return encoding
+
 # limitations
 SIXEL_OUTPUT_PACKET_SIZE     = 16384
 SIXEL_PALETTE_MIN            = 2
@@ -903,10 +918,7 @@ def sixel_loader_load_file(loader, filename, fn_load):
         _sixel_loader_callback_type,
     ]
 
-    _language, _encoding = locale.getlocale()
-    encoding = locale.getencoding()
-    if not encoding:
-        encoding = 'utf-8'
+    encoding = _resolve_locale_encoding(default="utf-8")
 
     # The C API expects a non-NULL filename pointer.
     # Reject None in the Python wrapper to avoid passing NULL and
@@ -1288,16 +1300,15 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
 # load source data from specified file and encode it to SIXEL format
 def sixel_encoder_encode(encoder, filename):
     import os
-    language, _encoding = locale.getlocale()
-    encoding = locale.getencoding()
-    if not encoding:
-        encoding = "ascii"
+    encoding = _resolve_locale_encoding(default="ascii")
 
     # Reject None before touching the codec path because the C API expects a
     # real string pointer. This keeps the exception class deterministic and
     # mirrors the explicit None guard used by sixel_loader_load_file().
     if filename is None:
         raise TypeError("filename must be str or bytes, not None")
+    if isinstance(filename, memoryview):
+        raise TypeError("filename must be str or bytes, not memoryview")
 
     # Proactively validate the input path on the Python side so callers get a
     # deterministic exception even if a platform-specific libc or loader fails
