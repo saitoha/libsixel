@@ -1,5 +1,5 @@
 /*
- * Verify GNOME thumbnailer path reports RGB output for RGBA sources.
+ * Verify GNOME thumbnailer path reports linear-float output for RGBA sources.
  */
 
 #include "tests/loader/pixelformat_test_common.h"
@@ -48,7 +48,7 @@ run_thumbnailer_loader_test(void)
 {
     return run_loader_component_case("GNOME thumbnailer",
                                      RGBA_IMAGE_PATH,
-                                     SIXEL_PIXELFORMAT_RGB888,
+                                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                                      GEOMETRY_ANY,
                                      GEOMETRY_ANY,
                                      new_gnome_thumbnailer_component);
