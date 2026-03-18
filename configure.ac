@@ -1971,14 +1971,18 @@ AC_ARG_VAR([FUZZ_LDFLAGS],
            [linker flags used for fuzz targets when --enable-fuzz=yes])
 sixel_default_fuzz_cflags="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
 sixel_default_fuzz_ldflags="-fsanitize=fuzzer,address,undefined"
+sixel_fuzz_used_default_flags=no
+sixel_fuzz_summary="$enable_fuzz"
 
 AS_IF([test "x$enable_fuzz" = "xyes"], [
   if test "x$FUZZ_CFLAGS" = "x"; then
     FUZZ_CFLAGS="$sixel_default_fuzz_cflags"
+    sixel_fuzz_used_default_flags=yes
     AC_MSG_NOTICE([FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS])
   fi
   if test "x$FUZZ_LDFLAGS" = "x"; then
     FUZZ_LDFLAGS="$sixel_default_fuzz_ldflags"
+    sixel_fuzz_used_default_flags=yes
     AC_MSG_NOTICE([FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS])
   fi
 
@@ -2003,21 +2007,42 @@ AS_IF([test "x$enable_fuzz" = "xyes"], [
   AC_MSG_RESULT([$ac_cv_sixel_fuzz_flags])
 
   AS_IF([test "x$ac_cv_sixel_fuzz_flags" != "xyes"], [
-    AC_MSG_ERROR([--enable-fuzz was requested, but configure could not link a minimal libFuzzer target.
+    AS_IF([test "x$sixel_fuzz_used_default_flags" = "xyes"], [
+      AC_MSG_WARN([--enable-fuzz was requested, but the default libFuzzer flags are unsupported for this toolchain.
 CC='$CC'
 FUZZ_CFLAGS='$FUZZ_CFLAGS'
 FUZZ_LDFLAGS='$FUZZ_LDFLAGS'
 
 Hints:
-  1) use a clang-based toolchain (e.g. CC=clang; gcc usually lacks -fsanitize=fuzzer)
+  1) install/use a clang toolchain with compiler-rt libFuzzer runtime
+  2) re-run with explicit FUZZ_CFLAGS/FUZZ_LDFLAGS
+  3) keep default behavior (fuzz auto-disabled for this configure run)
+
+See config.log for the exact compiler/linker error from this probe.])
+      enable_fuzz=no
+      FUZZ_CFLAGS=""
+      FUZZ_LDFLAGS=""
+      sixel_fuzz_summary="auto-disabled (default flags unsupported)"
+    ], [
+      AC_MSG_ERROR([--enable-fuzz was requested, but configure could not link a minimal libFuzzer target.
+CC='$CC'
+FUZZ_CFLAGS='$FUZZ_CFLAGS'
+FUZZ_LDFLAGS='$FUZZ_LDFLAGS'
+
+Hints:
+  1) install/use a clang toolchain with compiler-rt libFuzzer runtime
   2) override FUZZ_CFLAGS/FUZZ_LDFLAGS for your environment
   3) disable fuzz targets via --disable-fuzz
 
 See config.log for the exact compiler/linker error from this probe.])
+    ])
+  ], [
+    sixel_fuzz_summary="yes"
   ])
 ], [
   FUZZ_CFLAGS=""
   FUZZ_LDFLAGS=""
+  sixel_fuzz_summary="no"
 ])
 AC_SUBST([FUZZ_CFLAGS])
 AC_SUBST([FUZZ_LDFLAGS])
@@ -4614,7 +4639,7 @@ echo "       analyzer                : $sixel_analyzer_status"
 echo "       pgo                     : $sixel_pgo_status"
 echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"
-echo "       fuzz targets            : $enable_fuzz"
+echo "       fuzz targets            : $sixel_fuzz_summary"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
