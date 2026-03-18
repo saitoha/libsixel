@@ -331,9 +331,11 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
             return 1;
         }
 
+#if SIZE_MAX <= UINT32_MAX
         if ((size_t)count > (SIZE_MAX - 12u) / 2u) {
             return 0;
         }
+#endif
         if (tag_length < 12u + (size_t)count * 2u) {
             return 0;
         }
