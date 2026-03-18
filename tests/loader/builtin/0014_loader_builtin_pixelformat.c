@@ -7,8 +7,8 @@
 #include "tests/loader/pixelformat_test_common.h"
 
 static SIXELSTATUS
-new_builtin_component(sixel_allocator_t *allocator,
-                      sixel_loader_component_t **ppcomponent)
+new_builtin_component_for_pixelformat_test(sixel_allocator_t *allocator,
+                                           sixel_loader_component_t **ppcomponent)
 {
     return create_loader_component_by_name("builtin", allocator, ppcomponent);
 }
@@ -23,7 +23,7 @@ run_builtin_loader_test(void)
                                        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                                        2,
                                        1,
-                                       new_builtin_component);
+                                       new_builtin_component_for_pixelformat_test);
     if (result != 0) {
         return result;
     }
@@ -33,7 +33,7 @@ run_builtin_loader_test(void)
                                      SIXEL_PIXELFORMAT_RGBFLOAT32,
                                      GEOMETRY_ANY,
                                      GEOMETRY_ANY,
-                                     new_builtin_component);
+                                     new_builtin_component_for_pixelformat_test);
 }
 
 int
