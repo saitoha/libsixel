@@ -1103,8 +1103,8 @@ load_png(unsigned char      /* out */ **result,
         size_t src_index;
         size_t dst_index;
         unsigned char const *src_row;
-        int profile_conversion_kind;
 #if HAVE_LCMS2
+        int profile_conversion_kind;
         sixel_cms_profile_t *active_chunk_profile;
 #endif
 
@@ -1117,8 +1117,8 @@ load_png(unsigned char      /* out */ **result,
         src_index = 0u;
         dst_index = 0u;
         src_row = NULL;
-        profile_conversion_kind = 0;
 #if HAVE_LCMS2
+        profile_conversion_kind = 0;
         active_chunk_profile = NULL;
 #endif
         source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
@@ -1215,7 +1215,6 @@ load_png(unsigned char      /* out */ **result,
             double src_linear;
             double out_linear;
             unsigned int sample;
-            float bg_rgb_float[3];
             int channel;
 
             if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
@@ -1285,6 +1284,7 @@ load_png(unsigned char      /* out */ **result,
                 } else if (background_from_file) {
 #if HAVE_LCMS2
                     if (cms_converted && profile_conversion_kind != 0) {
+                        float bg_rgb_float[3];
                         bg_rgb_float[0] = (float)bg_unit[0];
                         bg_rgb_float[1] = (float)bg_unit[1];
                         bg_rgb_float[2] = (float)bg_unit[2];
