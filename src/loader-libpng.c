@@ -251,6 +251,18 @@ png_decode_srgb_unit(double value)
     return pow((value + 0.055) / 1.055, 2.4);
 }
 
+#if !HAVE_LCMS2
+static double
+png_encode_srgb_unit(double value)
+{
+    value = png_clamp_unit(value);
+    if (value <= 0.0031308) {
+        return value * 12.92;
+    }
+    return 1.055 * pow(value, 1.0 / 2.4) - 0.055;
+}
+#endif  /* !HAVE_LCMS2 */
+
 static double
 png_decode_source_unit(double value, int transfer_mode, double file_gamma)
 {
@@ -260,6 +272,48 @@ png_decode_source_unit(double value, int transfer_mode, double file_gamma)
     }
     return png_decode_srgb_unit(value);
 }
+
+#if !HAVE_LCMS2
+static void
+png_apply_gama_to_srgb_u8(unsigned char *samples,
+                          size_t sample_count,
+                          double file_gamma)
+{
+    size_t index;
+    double linear;
+    double srgb;
+
+    if (samples == NULL || file_gamma <= 0.0) {
+        return;
+    }
+    for (index = 0u; index < sample_count; ++index) {
+        linear = png_decode_source_unit((double)samples[index] / 255.0,
+                                        SIXEL_PNG_TRANSFER_GAMA,
+                                        file_gamma);
+        srgb = png_encode_srgb_unit(linear);
+        samples[index] = (unsigned char)(png_clamp_unit(srgb) * 255.0 + 0.5);
+    }
+}
+
+static void
+png_apply_gama_to_srgb_float32(float *samples,
+                               size_t sample_count,
+                               double file_gamma)
+{
+    size_t index;
+    double linear;
+
+    if (samples == NULL || file_gamma <= 0.0) {
+        return;
+    }
+    for (index = 0u; index < sample_count; ++index) {
+        linear = png_decode_source_unit((double)samples[index],
+                                        SIXEL_PNG_TRANSFER_GAMA,
+                                        file_gamma);
+        samples[index] = (float)png_encode_srgb_unit(linear);
+    }
+}
+#endif  /* !HAVE_LCMS2 */
 
 static SIXELSTATUS
 png_roundtrip_target_to_linear(float *pixels,
@@ -1335,9 +1389,11 @@ load_png(unsigned char      /* out */ **result,
             }
 #endif
 
-            if (cms_converted || has_srgb_chunk_any) {
+            if (enable_cms && (cms_converted || has_srgb_chunk_any)) {
                 source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-            } else if (has_gama_chunk_any && file_gamma_decode > 0.0) {
+            } else if (enable_cms &&
+                       has_gama_chunk_any &&
+                       file_gamma_decode > 0.0) {
                 source_transfer_mode = SIXEL_PNG_TRANSFER_GAMA;
             } else {
                 source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
@@ -1493,9 +1549,11 @@ load_png(unsigned char      /* out */ **result,
         }
 #endif
 
-        if (cms_converted || has_srgb_chunk_any) {
+        if (enable_cms && (cms_converted || has_srgb_chunk_any)) {
             source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
-        } else if (has_gama_chunk_any && file_gamma_decode > 0.0) {
+        } else if (enable_cms &&
+                   has_gama_chunk_any &&
+                   file_gamma_decode > 0.0) {
             source_transfer_mode = SIXEL_PNG_TRANSFER_GAMA;
         } else {
             source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
@@ -1989,6 +2047,69 @@ alpha_cleanup:
             }
         }
         sixel_cms_close_profile(chunk_profile);
+    }
+#endif
+#if !HAVE_LCMS2
+    if (enable_cms &&
+        !has_transparency &&
+        has_gama_chunk_any &&
+        !has_srgb_chunk_any &&
+        gamma_chunk_value > 0.0) {
+        switch (*pixelformat) {
+        case SIXEL_PIXELFORMAT_PAL1:
+        case SIXEL_PIXELFORMAT_PAL2:
+        case SIXEL_PIXELFORMAT_PAL4:
+        case SIXEL_PIXELFORMAT_PAL8:
+            if (ppalette != NULL &&
+                *ppalette != NULL &&
+                pncolors != NULL &&
+                *pncolors > 0 &&
+                (size_t)*pncolors <= SIZE_MAX / 3u) {
+                png_apply_gama_to_srgb_u8(*ppalette,
+                                          (size_t)*pncolors * 3u,
+                                          gamma_chunk_value);
+            }
+            break;
+        case SIXEL_PIXELFORMAT_G8:
+            if (*psx > 0 &&
+                *psy > 0 &&
+                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
+                png_apply_gama_to_srgb_u8(*result,
+                                          (size_t)*psx * (size_t)*psy,
+                                          gamma_chunk_value);
+            }
+            break;
+        case SIXEL_PIXELFORMAT_RGB888:
+            if (*psx > 0 &&
+                *psy > 0 &&
+                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
+                size_t pixel_count;
+
+                pixel_count = (size_t)*psx * (size_t)*psy;
+                if (pixel_count <= SIZE_MAX / 3u) {
+                    png_apply_gama_to_srgb_u8(*result,
+                                              pixel_count * 3u,
+                                              gamma_chunk_value);
+                }
+            }
+            break;
+        case SIXEL_PIXELFORMAT_RGBFLOAT32:
+            if (*psx > 0 &&
+                *psy > 0 &&
+                (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
+                size_t pixel_count;
+
+                pixel_count = (size_t)*psx * (size_t)*psy;
+                if (pixel_count <= SIZE_MAX / 3u) {
+                    png_apply_gama_to_srgb_float32((float *)*result,
+                                                   pixel_count * 3u,
+                                                   gamma_chunk_value);
+                }
+            }
+            break;
+        default:
+            break;
+        }
     }
 #endif
     if (cms_applied != NULL) {
