@@ -19284,17 +19284,21 @@ esac
 
 sixel_default_fuzz_cflags="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
 sixel_default_fuzz_ldflags="-fsanitize=fuzzer,address,undefined"
+sixel_fuzz_used_default_flags=no
+sixel_fuzz_summary="$enable_fuzz"
 
 if test "x$enable_fuzz" = "xyes"
 then :
 
   if test "x$FUZZ_CFLAGS" = "x"; then
     FUZZ_CFLAGS="$sixel_default_fuzz_cflags"
+    sixel_fuzz_used_default_flags=yes
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS" >&5
 printf "%s\n" "$as_me: FUZZ_CFLAGS was not set; using default: $FUZZ_CFLAGS" >&6;}
   fi
   if test "x$FUZZ_LDFLAGS" = "x"; then
     FUZZ_LDFLAGS="$sixel_default_fuzz_ldflags"
+    sixel_fuzz_used_default_flags=yes
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS" >&5
 printf "%s\n" "$as_me: FUZZ_LDFLAGS was not set; using default: $FUZZ_LDFLAGS" >&6;}
   fi
@@ -19333,24 +19337,65 @@ printf "%s\n" "$ac_cv_sixel_fuzz_flags" >&6; }
   if test "x$ac_cv_sixel_fuzz_flags" != "xyes"
 then :
 
-    as_fn_error $? "--enable-fuzz was requested, but configure could not link a minimal libFuzzer target.
+    if test "x$sixel_fuzz_used_default_flags" = "xyes"
+then :
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: --enable-fuzz was requested, but the default libFuzzer flags are unsupported for this toolchain.
 CC='$CC'
 FUZZ_CFLAGS='$FUZZ_CFLAGS'
 FUZZ_LDFLAGS='$FUZZ_LDFLAGS'
 
 Hints:
-  1) use a clang-based toolchain (e.g. CC=clang; gcc usually lacks -fsanitize=fuzzer)
+  1) install/use a clang toolchain with compiler-rt libFuzzer runtime
+  2) re-run with explicit FUZZ_CFLAGS/FUZZ_LDFLAGS
+  3) keep default behavior (fuzz auto-disabled for this configure run)
+
+See config.log for the exact compiler/linker error from this probe." >&5
+printf "%s\n" "$as_me: WARNING: --enable-fuzz was requested, but the default libFuzzer flags are unsupported for this toolchain.
+CC='$CC'
+FUZZ_CFLAGS='$FUZZ_CFLAGS'
+FUZZ_LDFLAGS='$FUZZ_LDFLAGS'
+
+Hints:
+  1) install/use a clang toolchain with compiler-rt libFuzzer runtime
+  2) re-run with explicit FUZZ_CFLAGS/FUZZ_LDFLAGS
+  3) keep default behavior (fuzz auto-disabled for this configure run)
+
+See config.log for the exact compiler/linker error from this probe." >&2;}
+      enable_fuzz=no
+      FUZZ_CFLAGS=""
+      FUZZ_LDFLAGS=""
+      sixel_fuzz_summary="auto-disabled (default flags unsupported)"
+
+else case e in #(
+  e)
+      as_fn_error $? "--enable-fuzz was requested, but configure could not link a minimal libFuzzer target.
+CC='$CC'
+FUZZ_CFLAGS='$FUZZ_CFLAGS'
+FUZZ_LDFLAGS='$FUZZ_LDFLAGS'
+
+Hints:
+  1) install/use a clang toolchain with compiler-rt libFuzzer runtime
   2) override FUZZ_CFLAGS/FUZZ_LDFLAGS for your environment
   3) disable fuzz targets via --disable-fuzz
 
 See config.log for the exact compiler/linker error from this probe." "$LINENO" 5
+     ;;
+esac
+fi
 
+else case e in #(
+  e)
+    sixel_fuzz_summary="yes"
+   ;;
+esac
 fi
 
 else case e in #(
   e)
   FUZZ_CFLAGS=""
   FUZZ_LDFLAGS=""
+  sixel_fuzz_summary="no"
  ;;
 esac
 fi
@@ -31943,7 +31988,7 @@ echo "       analyzer                : $sixel_analyzer_status"
 echo "       pgo                     : $sixel_pgo_status"
 echo "       coverage                : $enable_coverage"
 echo "       debugging               : $enable_debug"
-echo "       fuzz targets            : $enable_fuzz"
+echo "       fuzz targets            : $sixel_fuzz_summary"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
