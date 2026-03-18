@@ -891,6 +891,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "separated names as -L. Ignored when -L/--loaders is provided."
     },
     {
+        "SIXEL_LOADER_BACKGROUND_COLORSPACE",
+        "set how loader background colors are interpreted during alpha\n"
+        "composition. Accepts gamma (default) or linear."
+    },
+    {
         "SIXEL_LOADER_ANIMATION_START_FRAME_NO",
         "set the animation start frame index used by supported loaders.\n"
         "0 or positive values are absolute indexes. Negative values count\n"

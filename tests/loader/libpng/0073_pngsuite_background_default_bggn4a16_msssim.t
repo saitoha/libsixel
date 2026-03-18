@@ -2,18 +2,17 @@
 # TAP test: PNGSuite case for background/bggn4a16.png with direct LSQA comparison.
 
 # Reference image generation command:
-#   convert images/pngsuite/background/bggn4a16.png \
-#       -background '#2e2e2e' -alpha remove -alpha off -depth 8 \
+#   magick images/pngsuite/background/bggn4a16.png -colorspace RGB \
+#       -background '#ababab' -alpha remove -alpha off -colorspace sRGB -depth 8 \
 #       -define ppm:format=plain \
 #       PPM:tests/data/loader/pngsuite_expected/0065_pngsuite_background_default_bggn4a16_msssim.ppm
 #
-# Why '#2e2e2e'?
+# Why '#ababab'?
 # - bggn4a16.png is a GA16 PNG that carries gAMA and bKGD chunks.
-# - libpng's default background composition path for this file does not match
-#   ImageMagick's simple "-background green" flattening from the previous test.
-# - '#2e2e2e' is an ImageMagick-side approximation of the libpng default blend,
-#   which keeps this test independent from img2sixel output while preserving a
-#   strict quality gate (MS-SSIM >= 0.98).
+# - The file bKGD sample is 0xAB84 (16-bit gray), which maps to about 0xAB in 8-bit.
+# - '#ababab' tracks libpng's current default composition result while keeping this
+#   test independent from img2sixel output and preserving a strict quality gate
+#   (MS-SSIM >= 0.98).
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {

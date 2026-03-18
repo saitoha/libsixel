@@ -2,7 +2,7 @@
 # TAP test: PNGSuite case for basic/basn6a08.png with direct LSQA comparison.
 
 # Reference image generation command:
-#   magick images/pngsuite/basic/basn6a08.png -background "#000" -alpha remove -alpha off -resize 32x -depth 8 \
+#   magick images/pngsuite/basic/basn6a08.png -colorspace RGB -background "#000" -alpha remove -alpha off -colorspace sRGB -resize 32x -depth 8 \
 #       -define ppm:format=plain PPM:tests/data/loader/pngsuite_expected/0045_pngsuite_basic_width32_basn6a08_msssim.ppm
 set -eux
 

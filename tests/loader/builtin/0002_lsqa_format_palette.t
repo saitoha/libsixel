@@ -16,6 +16,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.99
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0004_palette_png_default_black_composite.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/palette.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "palette quality regressed"
@@ -23,7 +24,7 @@ run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
 }
 
 lsqa_err=$(
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${image_path}" "${output_sixel}" 2>&1
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${expected_ppm}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 lsqa_status=${lsqa_run_status-0}
