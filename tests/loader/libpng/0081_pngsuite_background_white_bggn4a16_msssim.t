@@ -2,7 +2,7 @@
 # TAP test: PNGSuite case for background/bggn4a16.png with direct LSQA comparison.
 
 # Reference image generation command:
-#   magick images/pngsuite/background/bggn4a16.png -background "#fff" -alpha remove -alpha off -depth 8 \
+#   magick images/pngsuite/background/bggn4a16.png -colorspace RGB -background "#fff" -alpha remove -alpha off -colorspace sRGB -depth 8 \
 #       -define ppm:format=plain PPM:tests/data/loader/pngsuite_expected/0073_pngsuite_background_white_bggn4a16_msssim.ppm
 set -eux
 

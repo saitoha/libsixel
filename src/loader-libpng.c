@@ -58,6 +58,9 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
 
 #include <png.h>
 
@@ -218,6 +221,160 @@ read_palette(png_structp png_ptr,
             palette[i * 3 + 1] = png_palette[i].green;
             palette[i * 3 + 2] = png_palette[i].blue;
         }
+    }
+}
+
+enum {
+    SIXEL_PNG_TRANSFER_SRGB = 0,
+    SIXEL_PNG_TRANSFER_GAMA = 1
+};
+
+static double
+png_clamp_unit(double value)
+{
+    if (value < 0.0) {
+        return 0.0;
+    }
+    if (value > 1.0) {
+        return 1.0;
+    }
+    return value;
+}
+
+static double
+png_decode_srgb_unit(double value)
+{
+    value = png_clamp_unit(value);
+    if (value <= 0.04045) {
+        return value / 12.92;
+    }
+    return pow((value + 0.055) / 1.055, 2.4);
+}
+
+static double
+png_decode_source_unit(double value, int transfer_mode, double file_gamma)
+{
+    value = png_clamp_unit(value);
+    if (transfer_mode == SIXEL_PNG_TRANSFER_GAMA && file_gamma > 0.0) {
+        return pow(value, 1.0 / file_gamma);
+    }
+    return png_decode_srgb_unit(value);
+}
+
+static void
+png_expand_background_sample_to_unit(png_uint_16 sample,
+                                     png_uint_32 bitdepth,
+                                     double *out)
+{
+    double max_value;
+
+    if (out == NULL) {
+        return;
+    }
+    if (bitdepth == 16u) {
+        *out = (double)sample / 65535.0;
+        return;
+    }
+    if (bitdepth == 0u || bitdepth > 16u) {
+        *out = 0.0;
+        return;
+    }
+    max_value = (double)((1u << bitdepth) - 1u);
+    if (max_value <= 0.0) {
+        *out = 0.0;
+        return;
+    }
+    *out = (double)sample / max_value;
+}
+
+static void
+png_resolve_background_unit(png_structp png_ptr,
+                            png_infop info_ptr,
+                            png_uint_32 color_type,
+                            png_uint_32 bitdepth,
+                            unsigned char const *bgcolor,
+                            double bg_unit[3],
+                            int *background_from_file)
+{
+    png_color_16p png_background;
+    png_colorp palette;
+    int ncolors;
+    unsigned int index;
+    double gray;
+
+    png_background = NULL;
+    palette = NULL;
+    ncolors = 0;
+    index = 0u;
+    gray = 0.0;
+
+    if (bg_unit == NULL || background_from_file == NULL) {
+        return;
+    }
+
+    *background_from_file = 0;
+    bg_unit[0] = 0.0;
+    bg_unit[1] = 0.0;
+    bg_unit[2] = 0.0;
+
+    if (bgcolor != NULL) {
+        bg_unit[0] = (double)bgcolor[0] / 255.0;
+        bg_unit[1] = (double)bgcolor[1] / 255.0;
+        bg_unit[2] = (double)bgcolor[2] / 255.0;
+        return;
+    }
+
+    if (png_get_bKGD(png_ptr, info_ptr, &png_background) != PNG_INFO_bKGD ||
+        png_background == NULL) {
+        return;
+    }
+
+    *background_from_file = 1;
+    if (color_type == PNG_COLOR_TYPE_PALETTE) {
+        if (png_get_PLTE(png_ptr, info_ptr, &palette, &ncolors) != PNG_INFO_PLTE ||
+            palette == NULL || ncolors <= 0) {
+            *background_from_file = 0;
+            return;
+        }
+        index = (unsigned int)png_background->index;
+        if ((int)index >= ncolors) {
+            index = 0u;
+        }
+        bg_unit[0] = (double)palette[index].red / 255.0;
+        bg_unit[1] = (double)palette[index].green / 255.0;
+        bg_unit[2] = (double)palette[index].blue / 255.0;
+        return;
+    }
+    if (color_type == PNG_COLOR_TYPE_GRAY ||
+        color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+        png_expand_background_sample_to_unit(png_background->gray,
+                                             bitdepth,
+                                             &gray);
+        bg_unit[0] = gray;
+        bg_unit[1] = gray;
+        bg_unit[2] = gray;
+        return;
+    }
+
+    png_expand_background_sample_to_unit(png_background->red, bitdepth, &bg_unit[0]);
+    png_expand_background_sample_to_unit(png_background->green, bitdepth, &bg_unit[1]);
+    png_expand_background_sample_to_unit(png_background->blue, bitdepth, &bg_unit[2]);
+}
+
+static int
+png_colorspace_from_pixelformat(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        return SIXEL_COLORSPACE_LINEAR;
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return SIXEL_COLORSPACE_OKLAB;
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return SIXEL_COLORSPACE_CIELAB;
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return SIXEL_COLORSPACE_DIN99D;
+    default:
+        return SIXEL_COLORSPACE_GAMMA;
     }
 }
 
@@ -693,7 +850,6 @@ load_png(unsigned char      /* out */ **result,
     unsigned char **rows = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
-    png_color_16p default_background;
 #if HAVE_LCMS2
     png_charp icc_name;
     int icc_compression_type;
@@ -709,7 +865,6 @@ load_png(unsigned char      /* out */ **result,
     int has_srgb_chunk_raw;
     int has_chrm_chunk_raw;
     int has_gama_chunk_raw;
-    int intent;
     double white_x;
     double white_y;
     double red_x;
@@ -718,10 +873,10 @@ load_png(unsigned char      /* out */ **result,
     double green_y;
     double blue_x;
     double blue_y;
-    double file_gamma;
 #endif
     png_uint_32 width;
     png_uint_32 height;
+    png_uint_32 color_type;
     png_uint_32 read_bitdepth;
     png_uint_32 read_channels;
     png_size_t rowbytes;
@@ -731,6 +886,19 @@ load_png(unsigned char      /* out */ **result,
     int i;
     int depth;
     int cms_converted;
+    int has_tRNS_chunk;
+    int has_alpha_chunk;
+    int has_transparency;
+    int background_colorspace;
+    int background_from_file;
+    int source_transfer_mode;
+    int has_srgb_chunk_any;
+    int has_gama_chunk_any;
+    int srgb_intent;
+    double gamma_chunk_value;
+    double bg_unit[3];
+    double bg_linear[3];
+    double file_gamma_decode;
 
 #if HAVE_SETJMP && HAVE_LONGJMP
     if (setjmp(jmpbuf) != 0) {
@@ -750,6 +918,24 @@ load_png(unsigned char      /* out */ **result,
     rowbytes = 0u;
     promote_to_float32 = 0;
     cms_converted = 0;
+    color_type = 0u;
+    has_tRNS_chunk = 0;
+    has_alpha_chunk = 0;
+    has_transparency = 0;
+    background_colorspace = SIXEL_COLORSPACE_GAMMA;
+    background_from_file = 0;
+    source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
+    has_srgb_chunk_any = 0;
+    has_gama_chunk_any = 0;
+    srgb_intent = 0;
+    gamma_chunk_value = 0.0;
+    bg_unit[0] = 0.0;
+    bg_unit[1] = 0.0;
+    bg_unit[2] = 0.0;
+    bg_linear[0] = 0.0;
+    bg_linear[1] = 0.0;
+    bg_linear[2] = 0.0;
+    file_gamma_decode = 0.0;
 #if HAVE_LCMS2
     icc_name = NULL;
     icc_compression_type = 0;
@@ -765,7 +951,6 @@ load_png(unsigned char      /* out */ **result,
     has_srgb_chunk_raw = 0;
     has_chrm_chunk_raw = 0;
     has_gama_chunk_raw = 0;
-    intent = 0;
     white_x = 0.0;
     white_y = 0.0;
     red_x = 0.0;
@@ -774,13 +959,15 @@ load_png(unsigned char      /* out */ **result,
     green_y = 0.0;
     blue_x = 0.0;
     blue_y = 0.0;
-    file_gamma = 0.0;
 #else
     (void)enable_cms;
     (void)cms_applied;
 #endif
     if (cms_applied != NULL) {
         *cms_applied = 0;
+    }
+    if (transparent != NULL) {
+        *transparent = -1;
     }
 
     png_ptr = png_create_read_struct(
@@ -824,6 +1011,9 @@ load_png(unsigned char      /* out */ **result,
 
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
+    has_srgb_chunk_any = png_get_sRGB(png_ptr, info_ptr, &srgb_intent) == PNG_INFO_sRGB;
+    has_gama_chunk_any = png_get_gAMA(png_ptr, info_ptr, &gamma_chunk_value) == PNG_INFO_gAMA;
+    (void)srgb_intent;
 #if HAVE_LCMS2
     if (png_get_iCCP(png_ptr,
                      info_ptr,
@@ -839,7 +1029,7 @@ load_png(unsigned char      /* out */ **result,
         icc_profile_length = 0u;
         has_embedded_icc = 0;
     }
-    has_srgb_chunk = png_get_sRGB(png_ptr, info_ptr, &intent) == PNG_INFO_sRGB;
+    has_srgb_chunk = has_srgb_chunk_any;
     has_chrm_chunk = png_get_cHRM(png_ptr,
                                   info_ptr,
                                   &white_x,
@@ -850,7 +1040,7 @@ load_png(unsigned char      /* out */ **result,
                                   &green_y,
                                   &blue_x,
                                   &blue_y) == PNG_INFO_cHRM;
-    has_gama_chunk = png_get_gAMA(png_ptr, info_ptr, &file_gamma) == PNG_INFO_gAMA;
+    has_gama_chunk = has_gama_chunk_any;
     has_raw_chunk_flags = png_detect_chunk_flags_raw(buffer,
                                                      size,
                                                      &has_embedded_icc_raw,
@@ -876,6 +1066,7 @@ load_png(unsigned char      /* out */ **result,
     *psx = (int)width;
     *psy = (int)height;
 
+    color_type = png_get_color_type(png_ptr, info_ptr);
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
     if (bitdepth == 16) {
 #  if HAVE_DEBUG
@@ -885,47 +1076,482 @@ load_png(unsigned char      /* out */ **result,
         promote_to_float32 = 1;
     }
 
-    if (bgcolor) {
-#  if HAVE_DEBUG
-        fprintf(stderr,
-                "background color is specified [%02x, %02x, %02x]\n",
-                bgcolor[0], bgcolor[1], bgcolor[2]);
-#  endif
-        if (bitdepth == 16) {
-            /*
-             * png_set_background() expects background samples in the source
-             * image precision. 16-bit PNG paths therefore require 8-bit CLI
-             * colors to be expanded into 0..65535 before alpha composition.
-             */
-            background.red = (png_uint_16)(bgcolor[0] * 257u);
-            background.green = (png_uint_16)(bgcolor[1] * 257u);
-            background.blue = (png_uint_16)(bgcolor[2] * 257u);
-            background.gray = (png_uint_16)(
-                ((unsigned int)bgcolor[0]
-                 + (unsigned int)bgcolor[1]
-                 + (unsigned int)bgcolor[2]) * 257u / 3u);
-        } else {
-            background.red = bgcolor[0];
-            background.green = bgcolor[1];
-            background.blue = bgcolor[2];
-            background.gray = (bgcolor[0] + bgcolor[1] + bgcolor[2]) / 3;
+    has_tRNS_chunk = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0;
+    has_alpha_chunk = (color_type & PNG_COLOR_MASK_ALPHA) != 0;
+    has_transparency = has_tRNS_chunk || has_alpha_chunk;
+    background_colorspace = loader_background_colorspace();
+    png_resolve_background_unit(png_ptr,
+                                info_ptr,
+                                color_type,
+                                bitdepth,
+                                bgcolor,
+                                bg_unit,
+                                &background_from_file);
+    background.red = (png_uint_16)(bg_unit[0] * 255.0 + 0.5);
+    background.green = (png_uint_16)(bg_unit[1] * 255.0 + 0.5);
+    background.blue = (png_uint_16)(bg_unit[2] * 255.0 + 0.5);
+    background.gray = (png_uint_16)((bg_unit[0] + bg_unit[1] + bg_unit[2])
+                                    * 255.0 / 3.0 + 0.5);
+
+    if (has_transparency) {
+        unsigned char *rgb8_pixels;
+        float *rgb16_pixels;
+        float *dst_float_pixels;
+        size_t pixel_count;
+        size_t y;
+        size_t x;
+        size_t src_index;
+        size_t dst_index;
+        unsigned char const *src_row;
+        int profile_conversion_kind;
+#if HAVE_LCMS2
+        sixel_cms_profile_t *active_chunk_profile;
+#endif
+
+        rgb8_pixels = NULL;
+        rgb16_pixels = NULL;
+        dst_float_pixels = NULL;
+        pixel_count = 0u;
+        y = 0u;
+        x = 0u;
+        src_index = 0u;
+        dst_index = 0u;
+        src_row = NULL;
+        profile_conversion_kind = 0;
+#if HAVE_LCMS2
+        active_chunk_profile = NULL;
+#endif
+        source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
+        file_gamma_decode = gamma_chunk_value;
+
+        if ((size_t)width > SIZE_MAX / (size_t)height) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto alpha_cleanup;
         }
-    } else if (png_get_bKGD(png_ptr, info_ptr, &default_background)
-            == PNG_INFO_bKGD) {
-        memcpy(&background, default_background, sizeof(background));
-#  if HAVE_DEBUG
-        fprintf(stderr,
-                "background color is found [%02x, %02x, %02x]\n",
-                background.red, background.green, background.blue);
-#  endif
-    } else {
-        background.red = 0;
-        background.green = 0;
-        background.blue = 0;
-        background.gray = 0;
+        pixel_count = (size_t)width * (size_t)height;
+
+        if (color_type == PNG_COLOR_TYPE_PALETTE) {
+            png_set_palette_to_rgb(png_ptr);
+        }
+        if (color_type == PNG_COLOR_TYPE_GRAY && bitdepth < 8u) {
+#if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+            png_set_expand_gray_1_2_4_to_8(png_ptr);
+#elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+            png_set_gray_1_2_4_to_8(png_ptr);
+#endif
+        }
+        if (color_type == PNG_COLOR_TYPE_GRAY ||
+            color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+            png_set_gray_to_rgb(png_ptr);
+        }
+        if (has_tRNS_chunk) {
+            png_set_tRNS_to_alpha(png_ptr);
+        }
+        if (!has_alpha_chunk && !has_tRNS_chunk) {
+            if (bitdepth == 16u) {
+                png_set_add_alpha(png_ptr, 0xffffu, PNG_FILLER_AFTER);
+            } else {
+                png_set_add_alpha(png_ptr, 0xffu, PNG_FILLER_AFTER);
+            }
+        }
+
+        png_read_update_info(png_ptr, info_ptr);
+        read_bitdepth = png_get_bit_depth(png_ptr, info_ptr);
+        read_channels = png_get_channels(png_ptr, info_ptr);
+        rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+        if (read_channels != 4u) {
+            sixel_helper_set_additional_message(
+                "load_png: unsupported alpha PNG channel layout.");
+            status = SIXEL_BAD_INPUT;
+            goto alpha_cleanup;
+        }
+        if ((size_t)*psy > 0u && (size_t)rowbytes > SIZE_MAX / (size_t)*psy) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto alpha_cleanup;
+        }
+
+        raw16_size = (size_t)rowbytes * (size_t)*psy;
+        raw16_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                               raw16_size);
+        if (raw16_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto alpha_cleanup;
+        }
+
+        rows = (unsigned char **)sixel_allocator_malloc(
+            allocator,
+            (size_t)*psy * sizeof(unsigned char *));
+        if (rows == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto alpha_cleanup;
+        }
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = raw16_pixels + (size_t)i * (size_t)rowbytes;
+        }
+        png_read_image(png_ptr, rows);
+
+#if HAVE_LCMS2
+        if (enable_cms && has_embedded_icc && has_srgb_chunk_raw && has_chrm_chunk_raw) {
+            /* keep original sRGB interpretation */
+        } else if (enable_cms && has_embedded_icc) {
+            profile_conversion_kind = 1;
+        } else if (enable_cms && has_srgb_chunk_raw) {
+            /* no profile conversion required */
+        } else if (enable_cms && has_gama_chunk_raw &&
+                   png_build_rgb_profile_from_chunks(png_ptr,
+                                                     info_ptr,
+                                                     &active_chunk_profile)) {
+            profile_conversion_kind = 2;
+        }
+#endif
+
+        if (read_bitdepth == 16u) {
+            double alpha;
+            double src_encoded;
+            double src_linear;
+            double out_linear;
+            unsigned int sample;
+            float bg_rgb_float[3];
+            int channel;
+
+            if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto alpha_cleanup;
+            }
+            rgb16_pixels = (float *)sixel_allocator_malloc(
+                allocator,
+                pixel_count * 3u * sizeof(float));
+            if (rgb16_pixels == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_png: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto alpha_cleanup;
+            }
+
+            for (y = 0u; y < (size_t)*psy; ++y) {
+                src_row = raw16_pixels + y * (size_t)rowbytes;
+                for (x = 0u; x < (size_t)*psx; ++x) {
+                    src_index = x * 8u;
+                    dst_index = (y * (size_t)*psx + x) * 3u;
+
+                    sample = ((unsigned int)src_row[src_index + 0u] << 8u)
+                           | (unsigned int)src_row[src_index + 1u];
+                    rgb16_pixels[dst_index + 0u] = (float)sample / 65535.0f;
+                    sample = ((unsigned int)src_row[src_index + 2u] << 8u)
+                           | (unsigned int)src_row[src_index + 3u];
+                    rgb16_pixels[dst_index + 1u] = (float)sample / 65535.0f;
+                    sample = ((unsigned int)src_row[src_index + 4u] << 8u)
+                           | (unsigned int)src_row[src_index + 5u];
+                    rgb16_pixels[dst_index + 2u] = (float)sample / 65535.0f;
+                }
+            }
+
+#if HAVE_LCMS2
+            if (profile_conversion_kind == 1) {
+                if (png_convert_embedded_icc_to_srgb((unsigned char *)rgb16_pixels,
+                                                     *psx,
+                                                     *psy,
+                                                     SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                                     icc_profile,
+                                                     icc_profile_length)) {
+                    cms_converted = 1;
+                }
+            } else if (profile_conversion_kind == 2 && active_chunk_profile != NULL) {
+                if (png_convert_profile_to_srgb((unsigned char *)rgb16_pixels,
+                                                *psx,
+                                                *psy,
+                                                SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                                active_chunk_profile)) {
+                    cms_converted = 1;
+                }
+            }
+#endif
+
+            if (cms_converted || has_srgb_chunk_any) {
+                source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
+            } else if (has_gama_chunk_any && file_gamma_decode > 0.0) {
+                source_transfer_mode = SIXEL_PNG_TRANSFER_GAMA;
+            } else {
+                source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
+            }
+
+            for (channel = 0; channel < 3; ++channel) {
+                if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
+                    bg_linear[channel] = png_clamp_unit(bg_unit[channel]);
+                } else if (background_from_file) {
+#if HAVE_LCMS2
+                    if (cms_converted && profile_conversion_kind != 0) {
+                        bg_rgb_float[0] = (float)bg_unit[0];
+                        bg_rgb_float[1] = (float)bg_unit[1];
+                        bg_rgb_float[2] = (float)bg_unit[2];
+                        if (profile_conversion_kind == 1) {
+                            (void)png_convert_embedded_icc_to_srgb(
+                                (unsigned char *)bg_rgb_float,
+                                1,
+                                1,
+                                SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                icc_profile,
+                                icc_profile_length);
+                        } else if (active_chunk_profile != NULL) {
+                            (void)png_convert_profile_to_srgb(
+                                (unsigned char *)bg_rgb_float,
+                                1,
+                                1,
+                                SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                active_chunk_profile);
+                        }
+                        bg_linear[channel] = png_decode_srgb_unit(
+                            (double)bg_rgb_float[channel]);
+                        continue;
+                    }
+#endif
+                    bg_linear[channel] = png_decode_source_unit(
+                        bg_unit[channel],
+                        source_transfer_mode,
+                        file_gamma_decode);
+                } else {
+                    bg_linear[channel] = png_decode_srgb_unit(bg_unit[channel]);
+                }
+            }
+
+            dst_float_pixels = (float *)sixel_allocator_malloc(
+                allocator,
+                pixel_count * 3u * sizeof(float));
+            if (dst_float_pixels == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_png: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto alpha_cleanup;
+            }
+
+            for (y = 0u; y < (size_t)*psy; ++y) {
+                src_row = raw16_pixels + y * (size_t)rowbytes;
+                for (x = 0u; x < (size_t)*psx; ++x) {
+                    src_index = x * 8u;
+                    dst_index = (y * (size_t)*psx + x) * 3u;
+                    sample = ((unsigned int)src_row[src_index + 6u] << 8u)
+                           | (unsigned int)src_row[src_index + 7u];
+                    alpha = (double)sample / 65535.0;
+
+                    src_encoded = (double)rgb16_pixels[dst_index + 0u];
+                    src_linear = png_decode_source_unit(src_encoded,
+                                                        source_transfer_mode,
+                                                        file_gamma_decode);
+                    out_linear = src_linear * alpha + bg_linear[0] * (1.0 - alpha);
+                    dst_float_pixels[dst_index + 0u] = (float)out_linear;
+
+                    src_encoded = (double)rgb16_pixels[dst_index + 1u];
+                    src_linear = png_decode_source_unit(src_encoded,
+                                                        source_transfer_mode,
+                                                        file_gamma_decode);
+                    out_linear = src_linear * alpha + bg_linear[1] * (1.0 - alpha);
+                    dst_float_pixels[dst_index + 1u] = (float)out_linear;
+
+                    src_encoded = (double)rgb16_pixels[dst_index + 2u];
+                    src_linear = png_decode_source_unit(src_encoded,
+                                                        source_transfer_mode,
+                                                        file_gamma_decode);
+                    out_linear = src_linear * alpha + bg_linear[2] * (1.0 - alpha);
+                    dst_float_pixels[dst_index + 2u] = (float)out_linear;
+                }
+            }
+
+            *result = (unsigned char *)dst_float_pixels;
+            dst_float_pixels = NULL;
+            *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            status = SIXEL_OK;
+            goto alpha_cleanup;
+        }
+
+        if (read_bitdepth != 8u) {
+            sixel_helper_set_additional_message(
+                "load_png: unsupported alpha PNG bit depth.");
+            status = SIXEL_BAD_INPUT;
+            goto alpha_cleanup;
+        }
+
+        if (pixel_count > SIZE_MAX / 3u) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto alpha_cleanup;
+        }
+
+        rgb8_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                              pixel_count * 3u);
+        if (rgb8_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto alpha_cleanup;
+        }
+
+        for (y = 0u; y < (size_t)*psy; ++y) {
+            src_row = raw16_pixels + y * (size_t)rowbytes;
+            for (x = 0u; x < (size_t)*psx; ++x) {
+                src_index = x * 4u;
+                dst_index = (y * (size_t)*psx + x) * 3u;
+                rgb8_pixels[dst_index + 0u] = src_row[src_index + 0u];
+                rgb8_pixels[dst_index + 1u] = src_row[src_index + 1u];
+                rgb8_pixels[dst_index + 2u] = src_row[src_index + 2u];
+            }
+        }
+
+#if HAVE_LCMS2
+        if (profile_conversion_kind == 1) {
+            if (png_convert_embedded_icc_to_srgb(rgb8_pixels,
+                                                 *psx,
+                                                 *psy,
+                                                 SIXEL_PIXELFORMAT_RGB888,
+                                                 icc_profile,
+                                                 icc_profile_length)) {
+                cms_converted = 1;
+            }
+        } else if (profile_conversion_kind == 2 && active_chunk_profile != NULL) {
+            if (png_convert_profile_to_srgb(rgb8_pixels,
+                                            *psx,
+                                            *psy,
+                                            SIXEL_PIXELFORMAT_RGB888,
+                                            active_chunk_profile)) {
+                cms_converted = 1;
+            }
+        }
+#endif
+
+        if (cms_converted || has_srgb_chunk_any) {
+            source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
+        } else if (has_gama_chunk_any && file_gamma_decode > 0.0) {
+            source_transfer_mode = SIXEL_PNG_TRANSFER_GAMA;
+        } else {
+            source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
+        }
+
+        if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
+            bg_linear[0] = png_clamp_unit(bg_unit[0]);
+            bg_linear[1] = png_clamp_unit(bg_unit[1]);
+            bg_linear[2] = png_clamp_unit(bg_unit[2]);
+        } else if (background_from_file) {
+#if HAVE_LCMS2
+            if (cms_converted && profile_conversion_kind != 0) {
+                unsigned char bg_rgb[3];
+                bg_rgb[0] = (unsigned char)(bg_unit[0] * 255.0 + 0.5);
+                bg_rgb[1] = (unsigned char)(bg_unit[1] * 255.0 + 0.5);
+                bg_rgb[2] = (unsigned char)(bg_unit[2] * 255.0 + 0.5);
+                if (profile_conversion_kind == 1) {
+                    (void)png_convert_embedded_icc_to_srgb(bg_rgb,
+                                                           1,
+                                                           1,
+                                                           SIXEL_PIXELFORMAT_RGB888,
+                                                           icc_profile,
+                                                           icc_profile_length);
+                } else if (active_chunk_profile != NULL) {
+                    (void)png_convert_profile_to_srgb(bg_rgb,
+                                                      1,
+                                                      1,
+                                                      SIXEL_PIXELFORMAT_RGB888,
+                                                      active_chunk_profile);
+                }
+                bg_linear[0] = png_decode_srgb_unit((double)bg_rgb[0] / 255.0);
+                bg_linear[1] = png_decode_srgb_unit((double)bg_rgb[1] / 255.0);
+                bg_linear[2] = png_decode_srgb_unit((double)bg_rgb[2] / 255.0);
+            } else
+#endif
+            {
+                bg_linear[0] = png_decode_source_unit(bg_unit[0],
+                                                      source_transfer_mode,
+                                                      file_gamma_decode);
+                bg_linear[1] = png_decode_source_unit(bg_unit[1],
+                                                      source_transfer_mode,
+                                                      file_gamma_decode);
+                bg_linear[2] = png_decode_source_unit(bg_unit[2],
+                                                      source_transfer_mode,
+                                                      file_gamma_decode);
+            }
+        } else {
+            bg_linear[0] = png_decode_srgb_unit(bg_unit[0]);
+            bg_linear[1] = png_decode_srgb_unit(bg_unit[1]);
+            bg_linear[2] = png_decode_srgb_unit(bg_unit[2]);
+        }
+
+        if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto alpha_cleanup;
+        }
+        dst_float_pixels = (float *)sixel_allocator_malloc(
+            allocator,
+            pixel_count * 3u * sizeof(float));
+        if (dst_float_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto alpha_cleanup;
+        }
+
+        for (y = 0u; y < (size_t)*psy; ++y) {
+            src_row = raw16_pixels + y * (size_t)rowbytes;
+            for (x = 0u; x < (size_t)*psx; ++x) {
+                double alpha;
+                double src_encoded;
+                double src_linear;
+                double out_linear;
+
+                src_index = x * 4u;
+                dst_index = (y * (size_t)*psx + x) * 3u;
+
+                alpha = (double)src_row[src_index + 3u] / 255.0;
+
+                src_encoded = (double)rgb8_pixels[dst_index + 0u] / 255.0;
+                src_linear = png_decode_source_unit(src_encoded,
+                                                    source_transfer_mode,
+                                                    file_gamma_decode);
+                out_linear = src_linear * alpha + bg_linear[0] * (1.0 - alpha);
+                dst_float_pixels[dst_index + 0u] = (float)out_linear;
+
+                src_encoded = (double)rgb8_pixels[dst_index + 1u] / 255.0;
+                src_linear = png_decode_source_unit(src_encoded,
+                                                    source_transfer_mode,
+                                                    file_gamma_decode);
+                out_linear = src_linear * alpha + bg_linear[1] * (1.0 - alpha);
+                dst_float_pixels[dst_index + 1u] = (float)out_linear;
+
+                src_encoded = (double)rgb8_pixels[dst_index + 2u] / 255.0;
+                src_linear = png_decode_source_unit(src_encoded,
+                                                    source_transfer_mode,
+                                                    file_gamma_decode);
+                out_linear = src_linear * alpha + bg_linear[2] * (1.0 - alpha);
+                dst_float_pixels[dst_index + 2u] = (float)out_linear;
+            }
+        }
+
+        *result = (unsigned char *)dst_float_pixels;
+        dst_float_pixels = NULL;
+        *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        status = SIXEL_OK;
+
+alpha_cleanup:
+        if (rgb8_pixels != NULL) {
+            sixel_allocator_free(allocator, rgb8_pixels);
+        }
+        if (rgb16_pixels != NULL) {
+            sixel_allocator_free(allocator, rgb16_pixels);
+        }
+        if (dst_float_pixels != NULL) {
+            sixel_allocator_free(allocator, dst_float_pixels);
+        }
+#if HAVE_LCMS2
+        if (active_chunk_profile != NULL) {
+            sixel_cms_close_profile(active_chunk_profile);
+        }
+#endif
+        if (cms_applied != NULL) {
+            *cms_applied = cms_converted;
+        }
+        goto cleanup;
     }
 
-    switch (png_get_color_type(png_ptr, info_ptr)) {
+    switch (color_type) {
     case PNG_COLOR_TYPE_PALETTE:
 #  if HAVE_DEBUG
         fprintf(stderr, "paletted PNG(PNG_COLOR_TYPE_PALETTE)\n");
@@ -948,8 +1574,6 @@ load_png(unsigned char      /* out */ **result,
                     reqcolors);
             fprintf(stderr, "expand to RGB format...\n");
 #  endif
-            png_set_background(png_ptr, &background,
-                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_palette_to_rgb(png_ptr);
             png_set_strip_alpha(png_ptr);
             *pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1024,8 +1648,6 @@ load_png(unsigned char      /* out */ **result,
                 *pixelformat = SIXEL_PIXELFORMAT_PAL8;
                 break;
             default:
-                png_set_background(png_ptr, &background,
-                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                 png_set_palette_to_rgb(png_ptr);
                 *pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 break;
@@ -1043,8 +1665,6 @@ load_png(unsigned char      /* out */ **result,
                     reqcolors);
             fprintf(stderr, "expand into RGB format...\n");
 #  endif
-            png_set_background(png_ptr, &background,
-                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_gray_to_rgb(png_ptr);
             *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         } else {
@@ -1071,14 +1691,10 @@ load_png(unsigned char      /* out */ **result,
 #   if HAVE_DEBUG
                     fprintf(stderr, "expand into RGB format...\n");
 #   endif
-                    png_set_background(png_ptr, &background,
-                                       PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                     png_set_gray_to_rgb(png_ptr);
                     *pixelformat = SIXEL_PIXELFORMAT_RGB888;
 #  endif
                 } else {
-                    png_set_background(png_ptr, &background,
-                                       PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                     png_set_gray_to_rgb(png_ptr);
                     *pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 }
@@ -1090,8 +1706,6 @@ load_png(unsigned char      /* out */ **result,
 #  if HAVE_DEBUG
                     fprintf(stderr, "expand into RGB format...\n");
 #  endif
-                    png_set_background(png_ptr, &background,
-                                       PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                     png_set_gray_to_rgb(png_ptr);
                     *pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 }
@@ -1100,8 +1714,6 @@ load_png(unsigned char      /* out */ **result,
 #  if HAVE_DEBUG
                 fprintf(stderr, "expand into RGB format...\n");
 #  endif
-                png_set_background(png_ptr, &background,
-                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                 png_set_gray_to_rgb(png_ptr);
                 *pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 break;
@@ -1114,8 +1726,6 @@ load_png(unsigned char      /* out */ **result,
         fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
         fprintf(stderr, "expand to RGB format...\n");
 #  endif
-        png_set_background(png_ptr, &background,
-                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         png_set_gray_to_rgb(png_ptr);
         *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
@@ -1125,8 +1735,6 @@ load_png(unsigned char      /* out */ **result,
         fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
         fprintf(stderr, "expand to RGB format...\n");
 #  endif
-        png_set_background(png_ptr, &background,
-                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
@@ -1134,8 +1742,6 @@ load_png(unsigned char      /* out */ **result,
         fprintf(stderr, "RGB PNG(PNG_COLOR_TYPE_RGB)\n");
         fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
-        png_set_background(png_ptr, &background,
-                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     default:
@@ -2568,9 +3174,13 @@ load_with_libpng(
         goto end;
     }
 
+    sixel_frame_set_colorspace(frame,
+                               png_colorspace_from_pixelformat(
+                                   frame->pixelformat));
     sixel_frame_set_pixels(frame, pixels);
     if (cms_applied
-            && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)) {
+            && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)
+            && frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         cms_target_pixelformat = loader_cms_target_pixelformat();
         status = sixel_frame_set_pixelformat(frame, cms_target_pixelformat);
         if (SIXEL_FAILED(status)) {

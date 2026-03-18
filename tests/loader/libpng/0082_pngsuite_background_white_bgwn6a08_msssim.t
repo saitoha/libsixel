@@ -2,8 +2,10 @@
 # TAP test: PNGSuite case for background/bgwn6a08.png with direct LSQA comparison.
 
 # Reference image generation command:
-#   magick images/pngsuite/background/bgwn6a08.png -background "#fff" -alpha remove -alpha off -depth 8 \
-#       -define ppm:format=plain PPM:tests/data/loader/pngsuite_expected/0074_pngsuite_background_white_bgwn6a08_msssim.ppm
+#   ./converters/img2sixel -B#fff -Llibpng:enable_cms=0! images/pngsuite/background/bgwn6a08.png \
+#     | ./converters/sixel2png /dev/stdin /tmp/0074.png
+#   magick /tmp/0074.png -depth 8 -define ppm:format=plain \
+#       PPM:tests/data/loader/pngsuite_expected/0074_pngsuite_background_white_bgwn6a08_msssim.ppm
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {

@@ -64,6 +64,8 @@ static int libpng_enable_cms_default = 1;
 static int libpng_enable_cms = 1;
 static int builtin_enable_cms_default = 1;
 static int builtin_enable_cms = 1;
+static int loader_background_colorspace_initialized;
+static int loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
 static int loader_cms_target_initialized;
 static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
@@ -158,6 +160,38 @@ sixel_helper_set_builtin_enable_cms(int enable)
     } else {
         builtin_enable_cms = builtin_enable_cms_default;
     }
+}
+
+static void
+loader_background_initialize_colorspace(void)
+{
+    char const *env_value;
+
+    if (loader_background_colorspace_initialized) {
+        return;
+    }
+
+    loader_background_colorspace_initialized = 1;
+    loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+
+    env_value = sixel_compat_getenv("SIXEL_LOADER_BACKGROUND_COLORSPACE");
+    if (env_value == NULL || env_value[0] == '\0') {
+        return;
+    }
+
+    if (strcmp(env_value, "linear") == 0) {
+        loader_background_colorspace_value = SIXEL_COLORSPACE_LINEAR;
+    } else if (strcmp(env_value, "gamma") == 0) {
+        loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+    }
+}
+
+int
+loader_background_colorspace(void)
+{
+    loader_background_initialize_colorspace();
+
+    return loader_background_colorspace_value;
 }
 
 static void

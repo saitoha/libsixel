@@ -18,10 +18,11 @@ printf '1..1\n'
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-# Baseline MS-SSIM measured from the current roundtrip output.
-lsqa_floor=0.9
+# Baseline against alpha-composited reference (default black background).
+lsqa_floor=0.99
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0005_rgba_png_default_black_composite.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 
@@ -37,7 +38,7 @@ run_sixel2png -i "${output_sixel}" -o "${output_png}" || {
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${image_path}" "${output_png}" 2>&1
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${expected_ppm}" "${output_png}" 2>&1
 ) || lsqa_run_status=$?
 
 lsqa_status=${lsqa_run_status-0}

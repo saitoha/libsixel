@@ -1,6 +1,6 @@
 /*
  * Verify builtin loader reports expected pixelformats:
- * - RGBA(8-bit)  -> RGB888
+ * - RGBA(8-bit)  -> LINEARRGBFLOAT32
  * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
  */
 
@@ -20,7 +20,7 @@ run_builtin_loader_test(void)
 
     result = run_loader_component_case("builtin loader rgba8",
                                        RGBA_IMAGE_PATH,
-                                       SIXEL_PIXELFORMAT_RGB888,
+                                       SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                                        2,
                                        1,
                                        new_builtin_component);
