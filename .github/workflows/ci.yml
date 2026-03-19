@@ -4095,6 +4095,8 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
+              command -v wine >/dev/null 2>&1 ||
+              brew install --cask --no-quarantine --skip-cask-deps wine@staging;
               wineboot -u || :;
               cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
               CC=x86_64-w64-mingw32-gcc
@@ -4102,7 +4104,6 @@ jobs:
               --host=x86_64-w64-mingw32
               --disable-shared
             extra_packages: >-
-              wine@staging
               mingw-w64
             make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
