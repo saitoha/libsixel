@@ -309,6 +309,8 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
 
     if (memcmp(tag_data + 0u, "curv", 4u) == 0) {
         uint32_t count;
+        size_t table_length;
+        size_t i;
 
         count = sixel_icc_read_be32(tag_data + 8u);
         if (count == 0u) {
@@ -339,15 +341,19 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
         if (tag_length < 12u + (size_t)count * 2u) {
             return 0;
         }
+        if ((size_t)count > SIZE_MAX / sizeof(uint16_t)) {
+            return 0;
+        }
+        table_length = (size_t)count;
 
-        out_curve->table = (uint16_t *)malloc((size_t)count * sizeof(uint16_t));
+        out_curve->table = (uint16_t *)malloc(table_length * sizeof(uint16_t));
         if (out_curve->table == NULL) {
             return 0;
         }
-        out_curve->table_length = (size_t)count;
+        out_curve->table_length = table_length;
         out_curve->kind = SIXEL_ICC_CURVE_TABLE;
-        for (count = 0u; count < (uint32_t)out_curve->table_length; ++count) {
-            out_curve->table[count] = sixel_icc_read_be16(tag_data + 12u + (size_t)count * 2u);
+        for (i = 0u; i < table_length; ++i) {
+            out_curve->table[i] = sixel_icc_read_be16(tag_data + 12u + i * 2u);
         }
         return 1;
     }
