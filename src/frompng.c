@@ -1463,7 +1463,7 @@ sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
 
 #if !HAVE_LCMS2
 static int
-sixel_frompng_invert_3x3(double const in[3][3], double out[3][3])
+sixel_frompng_invert_3x3(double in[3][3], double out[3][3])
 {
     double det;
     double inv_det;
@@ -1581,7 +1581,7 @@ sixel_frompng_build_chrm_to_srgb_matrix(double const chrm_xy[8],
 
 static void
 sixel_frompng_apply_linear_matrix_triplet(double rgb[3],
-                                          double const source_to_srgb[3][3])
+                                          double source_to_srgb[3][3])
 {
     double in_r;
     double in_g;
@@ -1614,7 +1614,7 @@ sixel_frompng_apply_linear_matrix_triplet(double rgb[3],
 static void
 sixel_frompng_apply_linear_matrix_float32(float *pixels,
                                           size_t pixel_count,
-                                          double const source_to_srgb[3][3])
+                                          double source_to_srgb[3][3])
 {
     size_t index;
     size_t offset;
@@ -1699,7 +1699,7 @@ sixel_frompng_apply_gama_to_srgb_float32(float *pixels,
                                          size_t pixel_count,
                                          double file_gamma,
                                          int apply_chrm_matrix,
-                                         double const source_to_srgb[3][3])
+                                         double source_to_srgb[3][3])
 {
     size_t index;
     size_t offset;
@@ -1733,7 +1733,7 @@ sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
                                     size_t pixel_count,
                                     double file_gamma,
                                     int apply_chrm_matrix,
-                                    double const source_to_srgb[3][3])
+                                    double source_to_srgb[3][3])
 {
     size_t index;
     size_t offset;
