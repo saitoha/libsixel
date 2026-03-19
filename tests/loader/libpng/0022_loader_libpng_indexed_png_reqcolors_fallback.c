@@ -7,8 +7,8 @@
 
 #if HAVE_LIBPNG
 static SIXELSTATUS
-new_libpng_component(sixel_allocator_t *allocator,
-                     sixel_loader_component_t **ppcomponent)
+new_libpng_component_0022(sixel_allocator_t *allocator,
+                          sixel_loader_component_t **ppcomponent)
 {
     return create_loader_component_by_name("libpng", allocator, ppcomponent);
 }
@@ -31,7 +31,7 @@ test_loader_0022_loader_libpng_indexed_png_reqcolors_fallback(int argc,
         1,
         1,
         253,
-        new_libpng_component);
+        new_libpng_component_0022);
 #else
     fprintf(stderr, "libpng loader unavailable\n");
     return SIXEL_TEST_SKIP;
