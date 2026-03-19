@@ -341,9 +341,11 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
         if (tag_length < 12u + (size_t)count * 2u) {
             return 0;
         }
+#if SIZE_MAX <= UINT32_MAX
         if ((size_t)count > SIZE_MAX / sizeof(uint16_t)) {
             return 0;
         }
+#endif
         table_length = (size_t)count;
 
         out_curve->table = (uint16_t *)malloc(table_length * sizeof(uint16_t));
