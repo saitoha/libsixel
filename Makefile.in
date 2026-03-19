@@ -577,7 +577,7 @@ LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=%
 AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
-CLEANFILES = $(builddir)/package.json $(builddir)/*.log
+CLEANFILES = ltmain.sh $(builddir)/package.json $(builddir)/*.log
 PHASE2_ALL_TARGETS = all-converters-objs all-assessment-objs all-tools \
 	all-python $(am__append_8) $(am__append_10) $(am__append_12) \
 	$(am__append_14) $(am__append_16)
@@ -1129,6 +1129,12 @@ uninstall-am: uninstall-local uninstall-pkgconfigDATA
 
 .PRECIOUS: Makefile
 
+
+# Automake/libtool may require a top-level ltmain.sh in DIST_COMMON even when
+# AC_CONFIG_AUX_DIR points at build-aux/.  Generate it from the canonical copy
+# so distcheck can always stage distribution files.
+ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
+	$(AM_V_GEN)$(INSTALL_DATA) $(top_srcdir)/build-aux/ltmain.sh $@
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
 	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \

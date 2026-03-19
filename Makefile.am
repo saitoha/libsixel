@@ -69,6 +69,12 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
 AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 
+# Automake/libtool may require a top-level ltmain.sh in DIST_COMMON even when
+# AC_CONFIG_AUX_DIR points at build-aux/.  Generate it from the canonical copy
+# so distcheck can always stage distribution files.
+ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
+	$(AM_V_GEN)$(INSTALL_DATA) $(top_srcdir)/build-aux/ltmain.sh $@
+
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
 	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \
@@ -176,7 +182,7 @@ VPATH = @srcdir@
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = $(builddir)/libsixel.pc
 
-CLEANFILES = $(builddir)/package.json $(builddir)/*.log
+CLEANFILES = ltmain.sh $(builddir)/package.json $(builddir)/*.log
 
 # Build a selected group of subdirectories in parallel after src has completed.
 #
