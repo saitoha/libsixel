@@ -17274,6 +17274,34 @@ printf %s "checking which sanitizer profile is enabled... " >&6; }
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_sanitizer" >&5
 printf "%s\n" "$enable_sanitizer" >&6; }
 
+if test "x$enable_sanitizer" != "xno"
+then :
+
+        if test "x$ac_env_CFLAGS_set" = "xset"
+then :
+
+    CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
+
+else case e in #(
+  e)
+    CFLAGS="$sixel_sanitizer_cflags"
+   ;;
+esac
+fi
+  if test "x$ac_env_LDFLAGS_set" = "xset"
+then :
+
+    LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
+
+else case e in #(
+  e)
+    LDFLAGS="$sixel_sanitizer_ldflags"
+   ;;
+esac
+fi
+
+fi
+
 # Check whether --enable-lto was given.
 if test ${enable_lto+y}
 then :
@@ -29206,14 +29234,6 @@ fi
 #                   tests/Makefile.in quicklook-extension/Makefile.in
 #          ])
 #LS_UPDATE_TIMESTAMP
-
-if test "x$enable_sanitizer" != "xno"
-then :
-
-        CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
-  LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
-
-fi
 
 if test "x$enable_lto" != "xno"
 then :
