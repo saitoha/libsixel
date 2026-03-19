@@ -1,11 +1,10 @@
 #!/bin/sh
 # TAP test: PNGSuite case for background/bgan6a08.png with direct LSQA comparison.
 
-# Reference image generation command:
-#   ./converters/img2sixel -B#fff -Llibpng:enable_cms=0! images/pngsuite/background/bgan6a08.png \
-#     | ./converters/sixel2png /dev/stdin /tmp/0070.png
-#   magick /tmp/0070.png -depth 8 -define ppm:format=plain \
-#       PPM:tests/data/loader/pngsuite_expected/0070_pngsuite_background_white_bgan6a08_msssim.ppm
+# Reference image generation command (independent from img2sixel):
+#   python3 tests/data/loader/pngsuite_expected/generate_png_rgba8_white_ref.py \
+#       images/pngsuite/background/bgan6a08.png \
+#       tests/data/loader/pngsuite_expected/0070_pngsuite_background_white_bgan6a08_msssim.ppm
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
