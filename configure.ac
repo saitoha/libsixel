@@ -862,6 +862,22 @@ AS_CASE([$enable_sanitizer],
 AC_MSG_CHECKING([which sanitizer profile is enabled])
 AC_MSG_RESULT([$enable_sanitizer])
 
+AS_IF([test "x$enable_sanitizer" != "xno"], [
+  dnl Apply sanitizer flags immediately so the effective scope matches
+  dnl the legacy CI path that passed CFLAGS/LDFLAGS via the environment.
+  dnl If users already set flags explicitly, append sanitizer options.
+  AS_IF([test "x$ac_env_CFLAGS_set" = "xset"], [
+    CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
+  ], [
+    CFLAGS="$sixel_sanitizer_cflags"
+  ])
+  AS_IF([test "x$ac_env_LDFLAGS_set" = "xset"], [
+    LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
+  ], [
+    LDFLAGS="$sixel_sanitizer_ldflags"
+  ])
+])
+
 AC_ARG_ENABLE([lto],
               [AS_HELP_STRING([--enable-lto=@<:@no|full|thin@:>@],
                               [enable link-time optimization profile
@@ -4481,14 +4497,6 @@ AC_SUBST([SIXEL_TEST_SHELL])
 #                   tests/Makefile.in quicklook-extension/Makefile.in
 #          ])
 #LS_UPDATE_TIMESTAMP
-
-AS_IF([test "x$enable_sanitizer" != "xno"], [
-  dnl Apply sanitizer flags after configure probes complete.
-  dnl This avoids polluting capability checks with sanitizer runtime
-  dnl requirements that are unrelated to feature detection.
-  CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
-  LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
-])
 
 AS_IF([test "x$enable_lto" != "xno"], [
   dnl Apply LTO profile flags after capability checks complete so probes
