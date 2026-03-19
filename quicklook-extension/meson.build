@@ -35,7 +35,10 @@ common_includes = [
 common_c_args = ['-DSIXEL_DISABLE_EXT_LIBS=1',
                  '-DSIXEL_STATUS_HAVE_TTY_HELPERS=0',
                  '-DHAVE_CONFIG_H']
-common_objc_args = ['-fobjc-arc', '-fmodules']
+# -fmodules is brittle with some sanitizer + Homebrew clang environments
+# (modulemap/header-search-path incompatibilities). Keep ARC enabled but rely
+# on textual framework headers for wider CI portability.
+common_objc_args = ['-fobjc-arc']
 extension_objc_args = common_objc_args + ['-fapplication-extension']
 
 # +----------------------------------------------+
