@@ -92,6 +92,13 @@ sixel_sleep(unsigned int usec)
             break;
         }
     }
+#else
+    /*
+     * No portable sleep primitive was detected for this toolchain.
+     * Keep the helper as a no-op and mark the argument as used so
+     * -Werror/-Wunused-parameter builds (for example emscripten) pass.
+     */
+    (void)usec;
 #endif
 }
 
