@@ -2952,9 +2952,8 @@ jobs:
             runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
             setup_options: >-
+              --enable-sanitizer=address,undefined
               --without-png
               --without-jpeg
               --without-tiff
@@ -2985,9 +2984,8 @@ jobs:
             runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
             setup_options: >-
+              --enable-sanitizer=address,undefined
               --without-png
               --without-jpeg
               --without-tiff
@@ -2997,55 +2995,6 @@ jobs:
             extra_packages: >-
               meson
               clang
-              liblcms2-dev
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
-            setup_options: >-
-              --with-png
-              --with-jpeg
-              --with-tiff
-              --with-webp
-              --with-librsvg
-              --without-lcms2
-            extra_packages: >-
-              meson
-              clang
-              libpng-dev
-              libjpeg-dev
-              libtiff-dev
-              libwebp-dev
-              librsvg2-dev
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg-lcms2
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
-            setup_options: >-
-              --with-png
-              --with-jpeg
-              --with-tiff
-              --with-webp
-              --with-librsvg
-              --with-lcms2
-            extra_packages: >-
-              meson
-              clang
-              libpng-dev
-              libjpeg-dev
-              libtiff-dev
-              libwebp-dev
-              librsvg2-dev
               liblcms2-dev
             exec_type: bash
 
@@ -3069,6 +3018,29 @@ jobs:
               meson
               clang
               liblcms2-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=address,undefined
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-librsvg
+              --without-lcms2
+            extra_packages: >-
+              meson
+              clang
+              libpng-dev
+              libjpeg-dev
+              libtiff-dev
+              libwebp-dev
+              librsvg2-dev
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg
@@ -3095,6 +3067,30 @@ jobs:
               libtiff-dev
               libwebp-dev
               librsvg2-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg-lcms2
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=address,undefined
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-librsvg
+              --with-lcms2
+            extra_packages: >-
+              meson
+              clang
+              libpng-dev
+              libjpeg-dev
+              libtiff-dev
+              libwebp-dev
+              librsvg2-dev
+              liblcms2-dev
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg-lcms2
@@ -3129,9 +3125,8 @@ jobs:
             runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
             setup_options: >-
+              --enable-sanitizer=address,undefined
               --without-png
               --without-jpeg
               --without-tiff
@@ -3166,9 +3161,8 @@ jobs:
             runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
             setup_options: >-
+              --enable-sanitizer=address,undefined
               --without-png
               --without-jpeg
               --without-tiff
@@ -3198,41 +3192,6 @@ jobs:
               meson
               clang
               libgd-dev
-            exec_type: bash
-
-          - label: Autotools-macos-aarch64-ASan-UBSan-gdk-pixbuf2
-            buildtool: autotools
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
-            setup_options: >-
-              --without-png
-              --without-jpeg
-              --without-tiff
-              --with-gdk-pixbuf2
-            extra_packages: >-
-              gdk-pixbuf
-            exec_type: bash
-
-          - label: Meson-macos-aarch64-ASan-UBSan-gdk-pixbuf2
-            buildtool: meson
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debugoptimized
-              -Db_sanitize=address,undefined
-              -Db_lundef=false
-              -Db_ndebug=false
-              -Dpng=disabled
-              -Djpeg=disabled
-              -Dtiff=disabled
-              -Dgdk_pixbuf2=enabled
-            extra_packages: >-
-              meson
-              gdk-pixbuf
             exec_type: bash
 
     steps:
@@ -3283,9 +3242,8 @@ jobs:
             runner: macos-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
             setup_options: >-
+              --enable-sanitizer=address,undefined
               --without-png
               --without-jpeg
               --without-tiff
@@ -3318,9 +3276,8 @@ jobs:
             runner: macos-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
             setup_options: >-
+              --enable-sanitizer=address,undefined
               --without-png
               --without-jpeg
               --without-tiff
@@ -3398,8 +3355,7 @@ jobs:
             setup_prefix: >-
               CC=clang
             setup_options: >-
-              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address,undefined"
+              --enable-sanitizer=address,undefined
             extra_packages: >-
               make
               mingw-w64-clang-x86_64-toolchain
@@ -3469,8 +3425,7 @@ jobs:
             runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=memory -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
-              LDFLAGS="-fsanitize=memory"
+              --enable-sanitizer=memory
             extra_packages: >-
               clang
             exec_type: bash
@@ -3541,9 +3496,8 @@ jobs:
             runner: ubuntu-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=thread -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
-              LDFLAGS="-fsanitize=thread"
             setup_options: >-
+              --enable-sanitizer=thread
               --without-png
               --without-jpeg
               --without-tiff
@@ -3574,9 +3528,8 @@ jobs:
             runner: macos-latest
             setup_prefix: >-
               CC=clang
-              CFLAGS="-fsanitize=thread -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=thread"
             setup_options: >-
+              --enable-sanitizer=thread
               --without-png
               --without-jpeg
               --without-tiff
@@ -3740,7 +3693,6 @@ jobs:
             runner: ubuntu-24.04-arm
             setup_prefix: >-
               CC=emcc
-              CFLAGS="-O1 -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -3767,8 +3719,6 @@ jobs:
           - label: Autotools-macos-aarch64-emscripten-ubsan-static
             buildtool: autotools
             runner: macos-latest
-            setup_prefix: >-
-              CFLAGS="-O1 -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
