@@ -186,7 +186,7 @@ sixel_icc_parse_xyz_tag(unsigned char const *profile_data,
 }
 
 static double
-sixel_icc_clamp_unit(double value)
+sixel_icc_parse_clamp_unit(double value)
 {
     if (value < 0.0) {
         return 0.0;
@@ -210,7 +210,7 @@ sixel_icc_eval_parametric(uint16_t function_type,
     if (ok != NULL) {
         *ok = 1;
     }
-    x = sixel_icc_clamp_unit(x);
+    x = sixel_icc_parse_clamp_unit(x);
 
     switch (function_type) {
     case 0u:
@@ -283,7 +283,7 @@ sixel_icc_eval_parametric(uint16_t function_type,
         return 0.0;
     }
 
-    return sixel_icc_clamp_unit(y);
+    return sixel_icc_parse_clamp_unit(y);
 }
 
 static int
@@ -425,7 +425,7 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
                 return 0;
             }
 
-            out_curve->table[i] = (uint16_t)(sixel_icc_clamp_unit(y) * 65535.0 + 0.5);
+            out_curve->table[i] = (uint16_t)(sixel_icc_parse_clamp_unit(y) * 65535.0 + 0.5);
         }
         return 1;
     }
