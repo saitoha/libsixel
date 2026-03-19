@@ -329,10 +329,20 @@ test_runner_setenv_portable(char const *name, char const *value)
     }
     return 0;
 #else
+# if defined(HAVE_SETENV)
+    extern int setenv(char const *name, char const *value, int overwrite);
+# endif
     if (name == NULL || value == NULL) {
         return -1;
     }
+# if defined(HAVE_SETENV)
     return setenv(name, value, 1);
+# else
+    (void)name;
+    (void)value;
+
+    return -1;
+# endif
 #endif
 }
 
