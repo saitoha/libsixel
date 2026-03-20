@@ -1,5 +1,5 @@
 /*
- * Verify libjpeg loader reports RGB output for JPEG sources.
+ * Verify libjpeg loader reports linear float output for JPEG sources.
  */
 
 #include "tests/loader/pixelformat_test_common.h"
@@ -17,7 +17,7 @@ run_libjpeg_loader_test(void)
 {
     return run_loader_component_case("libjpeg loader",
                                      JPEG_IMAGE_PATH,
-                                     SIXEL_PIXELFORMAT_RGB888,
+                                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                                      600,
                                      450,
                                      new_libjpeg_component);
