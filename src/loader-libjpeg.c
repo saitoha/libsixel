@@ -44,6 +44,9 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
 #include <jpeglib.h>
 
 #include <sixel.h>
@@ -199,68 +202,151 @@ cleanup:
     sixel_allocator_free(allocator, assembled);
     return *profile != NULL;
 }
+#endif
 
 static void
-jpeg_convert_icc_to_srgb(unsigned char *pixels,
-                         int width,
-                         int height,
-                         unsigned char const *profile,
-                         unsigned int profile_length)
+jpeg_unpack_rgb8_to_rgbf32(float *dst,
+                           unsigned char const *src,
+                           size_t pixel_count)
 {
-    sixel_cms_profile_t * src_profile;
-    sixel_cms_profile_t * dst_profile;
-    sixel_cms_transform_t * transform;
-    size_t pixel_count;
+    size_t index;
+    size_t base;
 
+    if (dst == NULL || src == NULL || pixel_count == 0u) {
+        return;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        base = index * 3u;
+        dst[base + 0u] = (float)src[base + 0u] / 255.0f;
+        dst[base + 1u] = (float)src[base + 1u] / 255.0f;
+        dst[base + 2u] = (float)src[base + 2u] / 255.0f;
+    }
+}
+
+static SIXELSTATUS
+jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
+                                      int width,
+                                      int height,
+                                      sixel_allocator_t *allocator
+#if HAVE_LCMS2
+                                      ,
+                                      unsigned char const *icc_profile,
+                                      unsigned int icc_profile_length
+#endif
+                                      )
+{
+    SIXELSTATUS status;
+    size_t pixel_count;
+    size_t float_bytes;
+    unsigned char *rgb_pixels;
+    float *float_pixels;
+#if HAVE_LCMS2
+    sixel_cms_profile_t *src_profile;
+    sixel_cms_profile_t *dst_profile;
+    sixel_cms_transform_t *transform;
+    int cms_converted;
+#endif
+
+    status = SIXEL_OK;
+    pixel_count = 0u;
+    float_bytes = 0u;
+    rgb_pixels = NULL;
+    float_pixels = NULL;
+#if HAVE_LCMS2
     src_profile = NULL;
     dst_profile = NULL;
     transform = NULL;
-    pixel_count = 0;
+    cms_converted = 0;
+#endif
 
-    if (pixels == NULL || width <= 0 || height <= 0 ||
-        profile == NULL || profile_length == 0u) {
-        return;
+    if (result == NULL || *result == NULL || allocator == NULL ||
+        width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
     }
-
-    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
-    if (src_profile == NULL) {
-        return;
-    }
-    dst_profile = sixel_cms_create_srgb_profile();
-    if (dst_profile == NULL) {
-        goto cleanup;
-    }
-    transform = sixel_cms_create_transform(src_profile,
-                                   SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                   dst_profile,
-                                   SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                   SIXEL_CMS_TRANSFORM_DEFAULT);
-    if (transform == NULL) {
-        goto cleanup;
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    float_bytes = pixel_count * 3u * sizeof(float);
 
-cleanup:
-    if (transform != NULL) {
-        sixel_cms_delete_transform(transform);
+    rgb_pixels = *result;
+    float_pixels = (float *)sixel_allocator_malloc(allocator, float_bytes);
+    if (float_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "jpeg_promote_rgb888_to_linear_float32: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
     }
-    if (dst_profile != NULL) {
-        sixel_cms_close_profile(dst_profile);
+
+#if HAVE_LCMS2
+    if (icc_profile != NULL && icc_profile_length > 0u) {
+        src_profile = sixel_cms_open_profile_from_mem(icc_profile,
+                                                      icc_profile_length);
+        if (src_profile != NULL) {
+            dst_profile = sixel_cms_create_srgb_profile();
+        }
+        if (src_profile != NULL && dst_profile != NULL) {
+            transform = sixel_cms_create_transform(src_profile,
+                                                   SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                                   dst_profile,
+                                                   SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                                                   SIXEL_CMS_TRANSFORM_DEFAULT);
+        }
+        if (transform != NULL &&
+            sixel_cms_do_transform(transform,
+                                   rgb_pixels,
+                                   float_pixels,
+                                   pixel_count)) {
+            cms_converted = 1;
+        }
     }
-    if (src_profile != NULL) {
-        sixel_cms_close_profile(src_profile);
-    }
-}
 #endif
+
+#if HAVE_LCMS2
+    if (!cms_converted) {
+        jpeg_unpack_rgb8_to_rgbf32(float_pixels, rgb_pixels, pixel_count);
+    }
+#else
+    jpeg_unpack_rgb8_to_rgbf32(float_pixels, rgb_pixels, pixel_count);
+#endif
+
+    status = sixel_helper_convert_colorspace((unsigned char *)float_pixels,
+                                             float_bytes,
+                                             SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                             SIXEL_COLORSPACE_GAMMA,
+                                             SIXEL_COLORSPACE_LINEAR);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, float_pixels);
+#if HAVE_LCMS2
+        sixel_cms_delete_transform(transform);
+        sixel_cms_close_profile(dst_profile);
+        sixel_cms_close_profile(src_profile);
+#endif
+        return status;
+    }
+
+    sixel_allocator_free(allocator, *result);
+    *result = (unsigned char *)float_pixels;
+
+#if HAVE_LCMS2
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(dst_profile);
+    sixel_cms_close_profile(src_profile);
+#endif
+    return SIXEL_OK;
+}
 
 /*
  * import from @uobikiemukot's sdump loader.h
  *
  * The helper keeps libjpeg-specific state localized so only this file needs
- * to include jpeglib.h. Callers receive raw RGB buffers and metadata filled
- * through the OUT parameters.
+ * to include jpeglib.h. Callers receive LINEARRGBFLOAT32 buffers and metadata
+ * filled through the OUT parameters.
  */
 static SIXELSTATUS
 load_jpeg(unsigned char **result,
@@ -273,6 +359,7 @@ load_jpeg(unsigned char **result,
 {
     SIXELSTATUS status;
     JDIMENSION row_stride;
+    size_t pixel_count;
     size_t size;
     JSAMPARRAY buffer;
     struct jpeg_decompress_struct cinfo;
@@ -314,7 +401,7 @@ load_jpeg(unsigned char **result,
         goto end;
     }
 
-    *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+    *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
 
     if (cinfo.output_width > INT_MAX || cinfo.output_height > INT_MAX) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -323,7 +410,16 @@ load_jpeg(unsigned char **result,
     *pwidth = (int)cinfo.output_width;
     *pheight = (int)cinfo.output_height;
 
-    size = (size_t)(*pwidth * *pheight * cinfo.output_components);
+    if ((size_t)cinfo.output_width > SIZE_MAX / (size_t)cinfo.output_height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    pixel_count = (size_t)cinfo.output_width * (size_t)cinfo.output_height;
+    if (pixel_count > SIZE_MAX / (size_t)cinfo.output_components) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    size = pixel_count * (size_t)cinfo.output_components;
     *result = (unsigned char *)
         sixel_allocator_malloc(allocator, size);
     if (*result == NULL) {
@@ -351,13 +447,19 @@ load_jpeg(unsigned char **result,
                row_stride);
     }
 
+    status = jpeg_promote_rgb888_to_linear_float32(result,
+                                                   *pwidth,
+                                                   *pheight,
+                                                   allocator
 #if HAVE_LCMS2
-    jpeg_convert_icc_to_srgb(*result,
-                             *pwidth,
-                             *pheight,
-                             icc_profile,
-                             icc_profile_length);
+                                                   ,
+                                                   icc_profile,
+                                                   icc_profile_length
 #endif
+                                                   );
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     status = SIXEL_OK;
 
