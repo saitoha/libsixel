@@ -891,6 +891,27 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                                            allocator);
 }
 #else
+static int
+sixel_frompng_parse_transfer_chunks(unsigned char const *buffer,
+                                    size_t size,
+                                    int *has_srgb,
+                                    int *has_gama,
+                                    double *file_gamma,
+                                    int *has_iccp,
+                                    int *has_chrm,
+                                    double chrm_xy[8]);
+
+static int
+sixel_frompng_build_chrm_to_srgb_matrix(double const chrm_xy[8],
+                                        double source_to_srgb[3][3]);
+
+static void
+sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
+                                    size_t pixel_count,
+                                    double file_gamma,
+                                    int apply_chrm_matrix,
+                                    double source_to_srgb[3][3]);
+
 void
 sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
                                   int width,
@@ -913,11 +934,82 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         size_t size,
                                         sixel_allocator_t *allocator)
 {
-    (void)pixels;
-    (void)width;
-    (void)height;
-    (void)buffer;
-    (void)size;
+    size_t pixel_count;
+    int has_srgb_chunk;
+    int has_gama_chunk;
+    int has_iccp_chunk;
+    int has_chrm_chunk;
+    double file_gamma;
+    int cms_applied;
+    double source_chrm_xy[8];
+    double source_to_srgb_matrix[3][3];
+    int apply_chrm_matrix;
+    sixel_icc_profile_t icc_profile;
+    int has_icc_profile;
+
+    if (pixels == NULL || width <= 0 || height <= 0 || buffer == NULL) {
+        return;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return;
+    }
+
+    has_srgb_chunk = 0;
+    has_gama_chunk = 0;
+    has_iccp_chunk = 0;
+    has_chrm_chunk = 0;
+    file_gamma = 0.0;
+    cms_applied = 0;
+    apply_chrm_matrix = 0;
+    has_icc_profile = 0;
+    memset(source_chrm_xy, 0, sizeof(source_chrm_xy));
+    memset(source_to_srgb_matrix, 0, sizeof(source_to_srgb_matrix));
+    memset(&icc_profile, 0, sizeof(icc_profile));
+
+    if (!sixel_frompng_parse_transfer_chunks(buffer,
+                                             size,
+                                             &has_srgb_chunk,
+                                             &has_gama_chunk,
+                                             &file_gamma,
+                                             &has_iccp_chunk,
+                                             &has_chrm_chunk,
+                                             source_chrm_xy)) {
+        return;
+    }
+
+    if (has_iccp_chunk &&
+        !(has_srgb_chunk && has_chrm_chunk) &&
+        sixel_icc_parse_png_iccp(buffer, size, &icc_profile)) {
+        has_icc_profile = 1;
+        if (sixel_icc_apply_rgb_u8(pixels, pixel_count, &icc_profile)) {
+            cms_applied = 1;
+        }
+    }
+    if (!cms_applied &&
+        !has_iccp_chunk &&
+        !has_srgb_chunk &&
+        has_gama_chunk &&
+        file_gamma > 0.0) {
+        if (has_chrm_chunk) {
+            apply_chrm_matrix =
+                sixel_frompng_build_chrm_to_srgb_matrix(source_chrm_xy,
+                                                        source_to_srgb_matrix);
+        }
+        sixel_frompng_apply_gama_to_srgb_u8(pixels,
+                                            pixel_count,
+                                            file_gamma,
+                                            apply_chrm_matrix,
+                                            source_to_srgb_matrix);
+    }
+
+    if (has_icc_profile) {
+        sixel_icc_profile_destroy(&icc_profile);
+    }
+
     (void)allocator;
 }
 #endif  /* HAVE_LCMS2 */
