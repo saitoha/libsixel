@@ -3423,7 +3423,7 @@ jobs:
           - label: Autotools-ubuntu-x86_64-clang-MSan
             buildtool: autotools
             runner: ubuntu-latest
-            setup_prefix: >-
+            setup_options: >-
               CC=clang
               --enable-sanitizer=memory
             extra_packages: >-
