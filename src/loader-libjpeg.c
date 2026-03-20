@@ -496,10 +496,12 @@ load_with_libjpeg(
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char *pixels;
+    int pixelformat;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
     (void)fstatic;
     (void)fuse_palette;
@@ -518,13 +520,21 @@ load_with_libjpeg(
                        pchunk->size,
                        &frame->width,
                        &frame->height,
-                       &frame->pixelformat,
+                       &pixelformat,
                        pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    sixel_frame_set_pixels(frame, pixels);
+    status = sixel_frame_set_pixelformat(frame, pixelformat);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        sixel_frame_set_pixels_float32(frame, (float *)pixels);
+    } else {
+        sixel_frame_set_pixels(frame, pixels);
+    }
 
     status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {
