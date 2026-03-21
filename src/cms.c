@@ -27,6 +27,8 @@ sixel_cms_map_format(sixel_cms_pixel_format_t format)
         return TYPE_GRAY_8;
     case SIXEL_CMS_PIXELFORMAT_RGBA_8:
         return TYPE_RGBA_8;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_8:
+        return TYPE_CMYK_8;
     case SIXEL_CMS_PIXELFORMAT_RGB_F32:
         return TYPE_RGB_FLT;
     case SIXEL_CMS_PIXELFORMAT_RGB_8:
@@ -305,6 +307,9 @@ sixel_cms_get_color_space(sixel_cms_profile_t const *profile)
     }
     if (signature == cmsSigRgbData) {
         return SIXEL_CMS_COLORSPACE_RGB;
+    }
+    if (signature == cmsSigCmykData) {
+        return SIXEL_CMS_COLORSPACE_CMYK;
     }
     return SIXEL_CMS_COLORSPACE_UNKNOWN;
 }
