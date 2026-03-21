@@ -2598,6 +2598,7 @@ typedef struct sixel_loader_gnome_thumbnailer_component {
     int loop_control;
     int start_frame_no_set;
     int start_frame_no;
+    int enable_cms;
 } sixel_loader_gnome_thumbnailer_component_t;
 
 static void
@@ -2695,6 +2696,10 @@ sixel_loader_gnome_thumbnailer_setopt(sixel_loader_component_t *component,
             self->start_frame_no_set = 0;
         }
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS:
+        int_value = (int const *)value;
+        self->enable_cms = (int_value != NULL && *int_value == 0) ? 0 : 1;
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }
@@ -2728,6 +2733,7 @@ sixel_loader_gnome_thumbnailer_load(sixel_loader_component_t *component,
                                        self->loop_control,
                                        self->start_frame_no_set,
                                        self->start_frame_no,
+                                       self->enable_cms,
                                        fn_load,
                                        context);
 }
@@ -2780,6 +2786,7 @@ sixel_loader_gnome_thumbnailer_new(sixel_allocator_t *allocator,
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no_set = 0;
     self->start_frame_no = INT_MIN;
+    self->enable_cms = 1;
 
     *ppcomponent = &self->base;
     return SIXEL_OK;
@@ -2830,6 +2837,7 @@ load_with_gnome_thumbnailer(
     int                       /* in */     loop_control,
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no,
+    int                       /* in */     enable_cms,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -3135,7 +3143,7 @@ load_with_gnome_thumbnailer(
                                loop_control,
                                start_frame_no_set,
                                start_frame_no,
-                               loader_builtin_get_enable_cms(),
+                               enable_cms,
                                fn_load,
                                context);
     if (SIXEL_FAILED(status)) {

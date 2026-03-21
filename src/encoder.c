@@ -6378,6 +6378,88 @@ sixel_encoder_parse_dimension_value(char const *value,
     return 1;
 }
 
+static SIXELSTATUS
+sixel_encoder_validate_quantize_model_resolution(
+    sixel_option_argument_resolution_t const *resolution)
+{
+    size_t index;
+    sixel_suboption_assignment_t const *assignment;
+    char const *key_name;
+    char *endptr;
+    double threshold;
+
+    index = 0u;
+    assignment = NULL;
+    key_name = NULL;
+    endptr = NULL;
+    threshold = 0.0;
+    if (resolution == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    while (index < resolution->assignment_count) {
+        assignment = resolution->assignments + index;
+        key_name = assignment->resolved_key_name;
+        if (key_name != NULL && strcmp(key_name, "threshold") == 0) {
+            errno = 0;
+            threshold = strtod(assignment->resolved_value_text, &endptr);
+            if (endptr == assignment->resolved_value_text ||
+                endptr == NULL ||
+                endptr[0] != '\0' ||
+                errno != 0 ||
+                threshold < 0.0 ||
+                threshold > 0.5) {
+                sixel_helper_set_additional_message(
+                    "-Q threshold must be in range 0.0-0.5.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        }
+        ++index;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_quantize_model_argument(
+    char const *value,
+    sixel_option_argument_list_resolution_t *resolution,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (resolution == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_list_with_suboptions(
+        value,
+        &g_schema_quantize_model,
+        resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (resolution->item_count != 1u || resolution->has_trailing_bang) {
+        sixel_helper_set_additional_message(
+            "-Q expects exactly one MODEL[:KEY=VALUE] item.");
+        sixel_option_free_argument_list_resolution(resolution);
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_encoder_validate_quantize_model_resolution(
+        &resolution->items[0].resolution);
+    if (SIXEL_FAILED(status)) {
+        sixel_option_free_argument_list_resolution(resolution);
+    }
+
+    return status;
+}
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -6409,7 +6491,8 @@ sixel_encoder_setopt(
     unsigned int drcs_charset_limit;
     sixel_option_choice_result_t match_result;
     int match_value;
-    sixel_option_argument_resolution_t q_resolution;
+    sixel_option_argument_list_resolution_t q_list_resolution;
+    sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
     char *q_endptr;
@@ -6449,10 +6532,8 @@ sixel_encoder_setopt(
     parsed_value = 0L;
     suffix = NULL;
     geometry_ok = 0;
-    q_resolution.resolved_base_value = 0;
-    q_resolution.base_def = NULL;
-    q_resolution.assignments = NULL;
-    q_resolution.assignment_count = 0u;
+    sixel_option_init_argument_list_resolution(&q_list_resolution);
+    q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
     q_endptr = NULL;
@@ -7074,27 +7155,27 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_QUANTIZE_MODEL:  /* Q */
         /*
-         * Parse MODEL[:KEY=VALUE]... in one pass so base value matching,
-         * suboption key matching, and value suggestion diagnostics stay
-         * consistent with the shared option matcher.
+         * Parse + validate quantize-model options through the list parser so
+         * canonicalization and diagnostics follow the same AST lifecycle as
+         * loader-order parsing.
          */
-        status = sixel_option_parse_argument_with_suboptions(
+        status = sixel_encoder_parse_quantize_model_argument(
             value,
-            &g_schema_quantize_model,
-            &q_resolution,
+            &q_list_resolution,
             match_detail,
             sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
 
-        encoder->quantize_model = q_resolution.resolved_base_value;
+        q_resolution = &q_list_resolution.items[0].resolution;
+        encoder->quantize_model = q_resolution->resolved_base_value;
         encoder->quantize_model_kmeans_init_override = 0;
         encoder->quantize_model_kmeans_threshold_override = 0;
 
         q_index = 0u;
-        while (q_index < q_resolution.assignment_count) {
-            q_assignment = q_resolution.assignments + q_index;
+        while (q_index < q_resolution->assignment_count) {
+            q_assignment = q_resolution->assignments + q_index;
             q_key = q_assignment->resolved_key_name;
             if (q_key != NULL && strcmp(q_key, "inittype") == 0) {
                 match_result = sixel_option_match_choice(
@@ -8028,7 +8109,7 @@ sixel_encoder_setopt(
     status = SIXEL_OK;
 
 end:
-    sixel_option_free_argument_resolution(&q_resolution);
+    sixel_option_free_argument_list_resolution(&q_list_resolution);
     if (opt_copy != NULL) {
         sixel_allocator_free(encoder->allocator, opt_copy);
     }

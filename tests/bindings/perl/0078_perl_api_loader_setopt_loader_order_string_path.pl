@@ -18,14 +18,19 @@ plan tests => 1;
 
 my $ok = eval {
     my $loader = Image::LibSIXEL::sixel_loader_new(undef);
-    Image::LibSIXEL::sixel_loader_setopt(
-        $loader,
-        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER(),
-        'builtin'
-    );
+    my $rejected = 0;
+    eval {
+        Image::LibSIXEL::sixel_loader_setopt(
+            $loader,
+            Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER(),
+            123
+        );
+        1;
+    } or $rejected = 1;
     Image::LibSIXEL::sixel_loader_unref($loader);
+    die 'loader-order unexpectedly accepted numeric input' if !$rejected;
     1;
 };
 
-ok($ok, 'loader setopt accepts loader-order string path safely');
+ok($ok, 'loader setopt rejects numeric loader-order input');
 diag($@) if !$ok && $@ ne '';

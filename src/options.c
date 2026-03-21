@@ -401,6 +401,210 @@ sixel_option_report_invalid_choice(
     sixel_helper_set_additional_message(base_message);
 }
 
+static void
+sixel_option_emit_candidate_list_from_subkeys(
+    sixel_suboption_key_t const *subkeys,
+    size_t subkey_count,
+    char *buffer,
+    size_t buffer_size)
+{
+    size_t index;
+    size_t offset;
+    size_t available;
+    size_t copy_length;
+    char const *name;
+
+    index = 0u;
+    offset = 0u;
+    available = 0u;
+    copy_length = 0u;
+    name = NULL;
+    if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+
+    buffer[0] = '\0';
+    if (subkeys == NULL || subkey_count == 0u) {
+        return;
+    }
+
+    while (index < subkey_count && offset + 1u < buffer_size) {
+        name = subkeys[index].name;
+        if (name == NULL || name[0] == '\0') {
+            ++index;
+            continue;
+        }
+        if (offset > 0u) {
+            available = buffer_size - offset;
+            if (available <= 2u) {
+                break;
+            }
+            buffer[offset++] = ',';
+            buffer[offset++] = ' ';
+            buffer[offset] = '\0';
+        }
+        available = buffer_size - offset;
+        if (available <= 1u) {
+            break;
+        }
+        copy_length = strlen(name);
+        if (copy_length > available - 1u) {
+            copy_length = available - 1u;
+        }
+        memcpy(buffer + offset, name, copy_length);
+        offset += copy_length;
+        buffer[offset] = '\0';
+        ++index;
+    }
+}
+
+static void
+sixel_option_emit_candidate_list_from_choices(
+    sixel_suboption_choice_t const *choices,
+    size_t choice_count,
+    char *buffer,
+    size_t buffer_size)
+{
+    size_t index;
+    size_t offset;
+    size_t available;
+    size_t copy_length;
+    char const *name;
+
+    index = 0u;
+    offset = 0u;
+    available = 0u;
+    copy_length = 0u;
+    name = NULL;
+    if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+
+    buffer[0] = '\0';
+    if (choices == NULL || choice_count == 0u) {
+        return;
+    }
+
+    while (index < choice_count && offset + 1u < buffer_size) {
+        name = choices[index].name;
+        if (name == NULL || name[0] == '\0') {
+            ++index;
+            continue;
+        }
+        if (offset > 0u) {
+            available = buffer_size - offset;
+            if (available <= 2u) {
+                break;
+            }
+            buffer[offset++] = ',';
+            buffer[offset++] = ' ';
+            buffer[offset] = '\0';
+        }
+        available = buffer_size - offset;
+        if (available <= 1u) {
+            break;
+        }
+        copy_length = strlen(name);
+        if (copy_length > available - 1u) {
+            copy_length = available - 1u;
+        }
+        memcpy(buffer + offset, name, copy_length);
+        offset += copy_length;
+        buffer[offset] = '\0';
+        ++index;
+    }
+}
+
+static void
+sixel_option_report_unknown_suboption_key(
+    char const *key_token,
+    char const *suggestions,
+    sixel_suboption_key_t const *subkeys,
+    size_t subkey_count,
+    char *buffer,
+    size_t buffer_size)
+{
+    char candidates[192];
+    int written;
+
+    candidates[0] = '\0';
+    written = 0;
+    sixel_option_emit_candidate_list_from_subkeys(subkeys,
+                                                  subkey_count,
+                                                  candidates,
+                                                  sizeof(candidates));
+    if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+
+    if (suggestions != NULL && suggestions[0] != '\0') {
+        written = snprintf(
+            buffer,
+            buffer_size,
+            "unknown suboption key \"%s\". valid keys: \\fB%s\\fP. "
+            "Did you mean: \\fW%s\\fP?",
+            key_token != NULL ? key_token : "",
+            candidates[0] != '\0' ? candidates : "(none)",
+            suggestions);
+    } else {
+        written = snprintf(
+            buffer,
+            buffer_size,
+            "unknown suboption key \"%s\". valid keys: \\fB%s\\fP.",
+            key_token != NULL ? key_token : "",
+            candidates[0] != '\0' ? candidates : "(none)");
+    }
+    (void)written;
+    sixel_helper_set_additional_message(buffer);
+}
+
+static void
+sixel_option_report_unknown_suboption_value(
+    char const *key_name,
+    char const *value_token,
+    char const *suggestions,
+    sixel_suboption_choice_t const *choices,
+    size_t choice_count,
+    char *buffer,
+    size_t buffer_size)
+{
+    char candidates[192];
+    int written;
+
+    candidates[0] = '\0';
+    written = 0;
+    sixel_option_emit_candidate_list_from_choices(choices,
+                                                  choice_count,
+                                                  candidates,
+                                                  sizeof(candidates));
+    if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+
+    if (suggestions != NULL && suggestions[0] != '\0') {
+        written = snprintf(
+            buffer,
+            buffer_size,
+            "unknown suboption value \"%s\" for key \"%s\". "
+            "valid values: \\fB%s\\fP. Did you mean: \\fW%s\\fP?",
+            value_token != NULL ? value_token : "",
+            key_name != NULL ? key_name : "",
+            candidates[0] != '\0' ? candidates : "(none)",
+            suggestions);
+    } else {
+        written = snprintf(
+            buffer,
+            buffer_size,
+            "unknown suboption value \"%s\" for key \"%s\". "
+            "valid values: \\fB%s\\fP.",
+            value_token != NULL ? value_token : "",
+            key_name != NULL ? key_name : "",
+            candidates[0] != '\0' ? candidates : "(none)");
+    }
+    (void)written;
+    sixel_helper_set_additional_message(buffer);
+}
+
 SIXELSTATUS
 sixel_option_parse_argument_with_suboptions(
     char const *argument,
@@ -524,9 +728,11 @@ sixel_option_parse_argument_with_suboptions(
             goto cleanup;
         }
         if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
-            sixel_option_report_invalid_choice(
-                "unknown suboption key.",
+            sixel_option_report_unknown_suboption_key(
+                cursor,
                 diagnostic,
+                resolution->base_def->subkeys,
+                resolution->base_def->subkey_count,
                 match_message,
                 sizeof(match_message));
             status = SIXEL_BAD_ARGUMENT;
@@ -552,9 +758,12 @@ sixel_option_parse_argument_with_suboptions(
                 goto cleanup;
             }
             if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
-                sixel_option_report_invalid_choice(
-                    "unknown suboption value.",
+                sixel_option_report_unknown_suboption_value(
+                    key_def->name,
+                    value_text,
                     diagnostic,
+                    key_def->choices,
+                    key_def->choice_count,
                     match_message,
                     sizeof(match_message));
                 status = SIXEL_BAD_ARGUMENT;

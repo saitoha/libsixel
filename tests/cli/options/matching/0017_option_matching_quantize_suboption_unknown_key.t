@@ -30,5 +30,16 @@ case "${msg}" in
         ;;
 esac
 
+case "${msg}" in
+    *"\"z\""*"valid keys"*"inittype"*)
+        ;;
+    *)
+        echo "not ok" 1 - "missing token/candidate details for unknown -Q suboption key"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
+
 echo "ok" 1 - "unknown -Q suboption key is rejected"
 exit 0
