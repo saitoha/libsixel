@@ -1,8 +1,22 @@
 # Ruby bindings: build helpers, tests, install/uninstall
 
 RUBY_GEM_STAMP = $(abs_top_builddir)/ruby/dist/.gem-stamp
+RUBY_GEM_SOURCE_FILES = \
+	$(srcdir)/gem_builder.rb \
+	$(srcdir)/libsixel-ruby.gemspec \
+	$(srcdir)/lib/libsixel.rb \
+	$(srcdir)/lib/libsixel/api.rb \
+	$(srcdir)/lib/libsixel/encoder.rb \
+	$(srcdir)/lib/libsixel/decoder.rb \
+	$(srcdir)/lib/libsixel/output.rb \
+	$(srcdir)/lib/libsixel/dither.rb \
+	$(srcdir)/lib/libsixel/helper.rb \
+	$(srcdir)/lib/libsixel/frame.rb \
+	$(srcdir)/lib/libsixel/version.rb
 
-$(RUBY_GEM_STAMP): $(srcdir)/gem_builder.rb $(srcdir)/libsixel-ruby.gemspec
+$(RUBY_GEM_STAMP): $(RUBY_GEM_SOURCE_FILES) \
+		$(top_builddir)/include/sixel.h \
+		$(top_builddir)/src/libsixel.la
 	$(AM_V_at) mkdir -p "$(abs_top_builddir)/ruby/dist"
 	$(AM_V_GEN) $(RUBY) $(srcdir)/gem_builder.rb \
 		--libdir "$(top_builddir)/src/.libs" \
