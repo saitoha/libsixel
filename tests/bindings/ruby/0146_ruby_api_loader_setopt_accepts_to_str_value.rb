@@ -8,7 +8,7 @@ begin
 
   to_str_value = Object.new
   def to_str_value.to_str
-    'stb,png'
+    'builtin'
   end
 
   out = Libsixel::API::Util.make_outptr

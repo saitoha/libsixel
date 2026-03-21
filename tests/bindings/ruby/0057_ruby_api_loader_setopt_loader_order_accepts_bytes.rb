@@ -15,7 +15,7 @@ begin
     status = Libsixel::API.sixel_loader_setopt(
       loader,
       Libsixel::API::SIXEL_LOADER_OPTION_LOADER_ORDER,
-      'stb,png'.b
+      'builtin'.b
     )
     if Libsixel::API.failed?(status)
       puts 'not ok 1 - loader setopt rejected bytes loader-order input'

@@ -21,7 +21,7 @@ def test_0127_python_api_loader_setopt_rejects_non_numeric_option() -> None:
     loader = sixel_loader_new()
 
     try:
-        sixel_loader_setopt(loader, 'loader-order', 'stb,png')
+        sixel_loader_setopt(loader, 'loader-order', 'builtin')
     except ValueError:
         sixel_loader_unref(loader)
         print('loader non-numeric option rejection verified')

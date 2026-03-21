@@ -20,7 +20,7 @@ def test_0032_python_api_loader_setopt() -> None:
 
     loader = sixel_loader_new()
     sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_REQCOLORS, 32)
-    sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER, "stb,png")
+    sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER, "builtin")
     sixel_loader_unref(loader)
 
     print("loader setopt verified")

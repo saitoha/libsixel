@@ -836,7 +836,7 @@ def sixel_loader_setopt(loader, option, value=None):
         | LOOP      | int or None               | SIXEL_LOOP_FORCE    |
         | INSECURE  | bool/int or None          | False               |
         | CANCEL    | ctypes pointer / address  | byref(c_int(0))     |
-        | ORDER     | str/bytes or None         | "stb,png"           |
+        | ORDER     | str/bytes/bytearray or None | "builtin"         |
         | CONTEXT   | ctypes pointer / address  | c_void_p(id(obj))   |
         | WIC SIZE  | int or None               | 64                  |
         +-----------+---------------------------+---------------------+
@@ -875,8 +875,14 @@ def sixel_loader_setopt(loader, option, value=None):
         if value is not None:
             if isinstance(value, bytes):
                 encoded = value
+            elif isinstance(value, bytearray):
+                encoded = bytes(value)
+            elif isinstance(value, str):
+                encoded = value.encode('utf-8')
             else:
-                encoded = str(value).encode('utf-8')
+                raise TypeError(
+                    "loader_order expects str, bytes, bytearray, or None"
+                )
             keepalive = c_char_p(encoded)
             pointer_value = cast(keepalive, c_void_p)
     elif option in (
