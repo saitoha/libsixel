@@ -6,6 +6,14 @@
 
 set -eu
 
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+common_helpers="$script_dir/resolve-binding-test-common.sh"
+if [ ! -r "$common_helpers" ]; then
+    echo "error: missing helper script: $common_helpers" >&2
+    exit 1
+fi
+. "$common_helpers"
+
 if [ "$#" -ne 4 ] && [ "$#" -ne 6 ]; then
     echo "Usage: $0 <enable_python> <python_bin> <wheel_dir> <venv_dir> [source_dir] [libsixel_lib_dir]" >&2
     exit 1
@@ -23,40 +31,10 @@ wheel_signature=
 source_signature=
 combined_signature=
 
-quote_single() {
-    if [ -z "$1" ]; then
-        printf "''"
-        return 0
-    fi
-    printf "%s" "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
-}
-
 emit_assignment() {
     value=$1
-    quoted_value=$(quote_single "$value")
+    quoted_value=$(sixel_quote_single "$value")
     printf "SIXEL_TEST_PYTHON=%s\n" "$quoted_value"
-}
-
-resolve_libsixel_shared_lib() {
-    lib_dir=$1
-    if [ -z "$lib_dir" ] || [ ! -d "$lib_dir" ]; then
-        printf "%s\n" ""
-        return 0
-    fi
-    for candidate in \
-        "$lib_dir/libsixel.so.1" \
-        "$lib_dir/libsixel.1.so" \
-        "$lib_dir/libsixel.so" \
-        "$lib_dir/libsixel.1.dylib" \
-        "$lib_dir/libsixel.dylib" \
-        "$lib_dir/libsixel.dll" \
-        "$lib_dir/libsixel-1.dll"; do
-        if [ -f "$candidate" ]; then
-            printf "%s\n" "$candidate"
-            return 0
-        fi
-    done
-    printf "%s\n" ""
 }
 
 compute_source_signature() {
@@ -93,7 +71,7 @@ compute_source_signature() {
         fi
     fi
 
-    src_lib=$(resolve_libsixel_shared_lib "$lib_dir")
+    src_lib=$(sixel_resolve_libsixel_shared_lib "$lib_dir")
     if [ -n "$src_lib" ]; then
         cksum "$src_lib" >> "$sig_file"
     fi
