@@ -224,10 +224,6 @@ sixel_option_match_schema_value(
     char *diagnostic,
     size_t diagnostic_size);
 
-static void
-sixel_option_reset_argument_list_resolution(
-    sixel_option_argument_list_resolution_t *resolution);
-
 static int
 sixel_option_take_argument_resolution(
     sixel_option_argument_list_resolution_t *list_resolution,
@@ -657,7 +653,7 @@ sixel_option_parse_argument_list_with_suboptions(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_option_reset_argument_list_resolution(resolution);
+    sixel_option_init_argument_list_resolution(resolution);
 
     if (argument == NULL || argument[0] == '\0') {
         return SIXEL_OK;
@@ -783,11 +779,11 @@ sixel_option_free_argument_list_resolution(
     }
     free(resolution->items);
     free(resolution->canonical_argument);
-    sixel_option_reset_argument_list_resolution(resolution);
+    sixel_option_init_argument_list_resolution(resolution);
 }
 
-static void
-sixel_option_reset_argument_list_resolution(
+void
+sixel_option_init_argument_list_resolution(
     sixel_option_argument_list_resolution_t *resolution)
 {
     if (resolution == NULL) {
@@ -798,6 +794,20 @@ sixel_option_reset_argument_list_resolution(
     resolution->has_trailing_bang = 0;
     resolution->items = NULL;
     resolution->item_count = 0u;
+}
+
+void
+sixel_option_move_argument_list_resolution(
+    sixel_option_argument_list_resolution_t *destination,
+    sixel_option_argument_list_resolution_t *source)
+{
+    if (destination == NULL || source == NULL || destination == source) {
+        return;
+    }
+
+    sixel_option_free_argument_list_resolution(destination);
+    *destination = *source;
+    sixel_option_init_argument_list_resolution(source);
 }
 
 static int
