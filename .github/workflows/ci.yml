@@ -115,6 +115,23 @@ jobs:
               curl
             exec_type: bash
 
+          - label: Meson-ubuntu-x86_64-gcc-staticcheck
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              mkdir -p "$HOME/.local/bin";
+              command -v actionlint >/dev/null 2>&1 ||
+              { curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash |
+              bash -s -- latest "$HOME/.local/bin"; };
+              PATH="$HOME/.local/bin:$PATH"
+            check_target: compile staticcheck
+            extra_packages: >-
+              meson
+              shellcheck
+              codespell
+              curl
+            exec_type: bash
+
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
         if: runner.os == 'Windows'
