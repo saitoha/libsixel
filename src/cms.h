@@ -30,7 +30,8 @@ typedef enum sixel_cms_pixel_format {
     SIXEL_CMS_PIXELFORMAT_RGB_8,
     SIXEL_CMS_PIXELFORMAT_RGBA_8,
     SIXEL_CMS_PIXELFORMAT_RGB_F32,
-    SIXEL_CMS_PIXELFORMAT_CMYK_8
+    SIXEL_CMS_PIXELFORMAT_CMYK_8,
+    SIXEL_CMS_PIXELFORMAT_CMYK_16
 } sixel_cms_pixel_format_t;
 
 enum {
