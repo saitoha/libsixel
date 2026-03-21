@@ -27,22 +27,41 @@ test -d "${repo_root}/tests" || {
 
 shellcheck_cmd=${SHELLCHECK_CMD:-shellcheck}
 if ! command -v "${shellcheck_cmd}" >/dev/null 2>&1; then
-    echo "skipped: shellcheck not found"
-    shellcheck_cmd=''
+    echo "ERROR: shellcheck not found: ${shellcheck_cmd}" >&2
+    exit 2
 fi
 
-test -n "${shellcheck_cmd}" && echo "Running ShellCheck for tests/*.t"
+tmpfile=$(mktemp "${TMPDIR:-/tmp}/libsixel-shellcheck-files-XXXXXX")
+cleanup() {
+    rm -f "$tmpfile"
+}
+trap cleanup EXIT HUP INT TERM
+
+find "${repo_root}/tests" -type f -name '*.t' | LC_ALL=C sort > "$tmpfile"
+total=$(wc -l < "$tmpfile" | awk '{print $1}')
+
+echo "Running ShellCheck for tests/*.t"
 ARTIFACT_LOCAL_DIR=${ARTIFACT_LOCAL_DIR:-"${repo_root}/tests/_artifacts"}
 TOP_SRCDIR=${TOP_SRCDIR:-"${repo_root}"}
 export ARTIFACT_LOCAL_DIR TOP_SRCDIR
-test -n "${shellcheck_cmd}" &&
-find "${repo_root}/tests" -type f -name '*.t' -exec \
-    "${shellcheck_cmd}" -x -P "${repo_root}" {} +
+
+failed=0
+index=0
+while IFS= read -r test_file; do
+    test -n "${test_file}" || continue
+    index=$((index + 1))
+    rel_file=${test_file#${repo_root}/}
+    echo "[shellcheck ${index}/${total}] ${rel_file}"
+    if ! "${shellcheck_cmd}" -x -P "${repo_root}" "${test_file}"; then
+        failed=1
+    fi
+done < "$tmpfile"
 
 target_files=${TEST_FILES:-}
 test -n "${target_files}" || {
     echo "Skipping custom checks: set TEST_FILES='tests/.../*.t'"
-    exit 0
+    test "${failed}" -eq 0
+    exit $?
 }
 
 resolved_files=''

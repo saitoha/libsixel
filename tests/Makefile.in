@@ -2688,6 +2688,7 @@ staticcheck-codespell:
 	$(T_LOG_DRIVER) --test-name "staticcheck-codespell" \
 		--log-file staticcheck-codespell.log \
 		--trs-file staticcheck-codespell.trs \
+		--timeout 600 \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-codespell.sh" \
 		"$(abs_top_srcdir)" "$(CODESPELL)"
