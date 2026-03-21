@@ -217,9 +217,8 @@ loader_manager_parse_loader_order(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return sixel_option_parse_argument_list_with_suboptions(
+    return sixel_loader_order_parse_and_validate(
         order,
-        sixel_loader_order_schema_get(),
         resolution,
         diagnostic,
         sizeof(diagnostic));
