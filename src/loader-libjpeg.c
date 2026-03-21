@@ -325,7 +325,7 @@ jpeg_unpack_cmyk16_to_rgbf32(float *dst,
     index = 0u;
     src_base = 0u;
     dst_base = 0u;
-    scale = 1.0f / 65535.0f;
+    scale = 1.0f / (float)MAXJ16SAMPLE;
     c = 0.0f;
     m = 0.0f;
     y = 0.0f;
