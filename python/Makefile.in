@@ -592,8 +592,10 @@ clean-local:
 	fi
 
 @HAVE_PYTHON_TRUE@$(WHEEL_STAMP): $(srcdir)/wheel_builder.py $(srcdir)/setup.py \
-@HAVE_PYTHON_TRUE@		$(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS)
+@HAVE_PYTHON_TRUE@		$(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS) \
+@HAVE_PYTHON_TRUE@		$(builddir)/Makefile
 @HAVE_PYTHON_TRUE@	$(AM_V_at) mkdir -p "$(abs_top_builddir)/python/dist"
+@HAVE_PYTHON_TRUE@	$(AM_V_at) rm -f "$(abs_top_builddir)/python/dist"/libsixel_wheel-*.whl
 @HAVE_PYTHON_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
 @HAVE_PYTHON_TRUE@		--libdir "$(top_builddir)/src/.libs" \
 @HAVE_PYTHON_TRUE@		--includedir "$(top_builddir)/include" \
