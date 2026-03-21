@@ -24,7 +24,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_rgb16_srgb_only_float32.sixel"
 planner_log=$(
     set +xv
     run_img2sixel --env SIXEL_THREADS=4 -v \
-                  -Llibpng:enable_cms=0! \
+                  -Llibpng:cms=0! \
                   -o "${output_sixel}" "${input_png}" 2>&1
 ) || {
     echo "not ok" 1 - "img2sixel failed"

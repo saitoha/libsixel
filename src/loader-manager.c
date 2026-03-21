@@ -333,15 +333,18 @@ loader_manager_resolve_loader_suboptions(
                 continue;
             }
 #endif
-            if (strcmp(key_name, "enable_cms") == 0 &&
+            if (strcmp(item->base_def->name, "libpng") == 0 &&
+                strcmp(key_name, "cms") == 0 &&
                 loader_manager_parse_bool_flag(value_text,
                                                value_length,
                                                &parsed_value)) {
-                if (strcmp(item->base_def->name, "libpng") == 0) {
-                    suboptions->libpng_enable_cms = parsed_value;
-                } else if (strcmp(item->base_def->name, "builtin") == 0) {
-                    suboptions->builtin_enable_cms = parsed_value;
-                }
+                suboptions->libpng_enable_cms = parsed_value;
+            } else if (strcmp(item->base_def->name, "builtin") == 0 &&
+                       strcmp(key_name, "enable_cms") == 0 &&
+                       loader_manager_parse_bool_flag(value_text,
+                                                      value_length,
+                                                      &parsed_value)) {
+                suboptions->builtin_enable_cms = parsed_value;
             }
             ++assignment_index;
         }
