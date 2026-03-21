@@ -224,6 +224,29 @@ sixel_option_match_schema_value(
     char *diagnostic,
     size_t diagnostic_size);
 
+static void
+sixel_option_reset_argument_list_resolution(
+    sixel_option_argument_list_resolution_t *resolution);
+
+static int
+sixel_option_take_argument_resolution(
+    sixel_option_argument_list_resolution_t *list_resolution,
+    sixel_option_argument_resolution_t *item_resolution);
+
+static size_t
+sixel_option_calculate_resolution_text_length(
+    sixel_option_argument_resolution_t const *resolution);
+
+static size_t
+sixel_option_emit_resolution_text(
+    char *buffer,
+    size_t offset,
+    sixel_option_argument_resolution_t const *resolution);
+
+static SIXELSTATUS
+sixel_option_build_canonical_argument(
+    sixel_option_argument_list_resolution_t *resolution);
+
 sixel_option_choice_result_t
 sixel_option_match_choice(
     char const *value,
@@ -594,6 +617,341 @@ sixel_option_free_argument_resolution(
     }
     free(resolution->assignments);
     sixel_option_reset_argument_resolution(resolution);
+}
+
+SIXELSTATUS
+sixel_option_parse_argument_list_with_suboptions(
+    char const *argument,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_argument_list_resolution_t *resolution,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    char const *cursor;
+    char const *token_start;
+    char const *token_end;
+    char const *argument_end;
+    size_t token_length;
+    int has_trailing_bang;
+    char *token_buffer;
+    sixel_option_argument_resolution_t item_resolution;
+
+    status = SIXEL_OK;
+    cursor = NULL;
+    token_start = NULL;
+    token_end = NULL;
+    argument_end = NULL;
+    token_length = 0u;
+    has_trailing_bang = 0;
+    token_buffer = NULL;
+    item_resolution.resolved_base_value = 0;
+    item_resolution.base_def = NULL;
+    item_resolution.assignments = NULL;
+    item_resolution.assignment_count = 0u;
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (schema == NULL || resolution == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_option_reset_argument_list_resolution(resolution);
+
+    if (argument == NULL || argument[0] == '\0') {
+        return SIXEL_OK;
+    }
+
+    argument_end = argument + strlen(argument);
+    while (argument_end > argument &&
+           isspace((unsigned char)argument_end[-1])) {
+        --argument_end;
+    }
+    if (argument_end > argument && argument_end[-1] == '!') {
+        has_trailing_bang = 1;
+        --argument_end;
+        while (argument_end > argument &&
+               isspace((unsigned char)argument_end[-1])) {
+            --argument_end;
+        }
+    }
+
+    if (argument_end == argument) {
+        sixel_helper_set_additional_message(
+            "option argument list requires at least one item.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (cursor = argument; cursor < argument_end; ++cursor) {
+        if (*cursor == '!') {
+            sixel_helper_set_additional_message(
+                "option argument list only accepts a trailing '!'.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+    }
+
+    cursor = argument;
+    token_start = argument;
+    while (cursor <= argument_end) {
+        if (cursor == argument_end || *cursor == ',') {
+            token_end = cursor;
+            while (token_start < token_end &&
+                   isspace((unsigned char)*token_start)) {
+                ++token_start;
+            }
+            while (token_end > token_start &&
+                   isspace((unsigned char)token_end[-1])) {
+                --token_end;
+            }
+            token_length = (size_t)(token_end - token_start);
+            if (token_length > 0u) {
+                token_buffer = (char *)malloc(token_length + 1u);
+                if (token_buffer == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_option_parse_argument_list_with_suboptions: "
+                        "malloc failed.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto cleanup;
+                }
+                memcpy(token_buffer, token_start, token_length);
+                token_buffer[token_length] = '\0';
+
+                status = sixel_option_parse_argument_with_suboptions(
+                    token_buffer,
+                    schema,
+                    &item_resolution,
+                    diagnostic,
+                    diagnostic_size);
+                free(token_buffer);
+                token_buffer = NULL;
+                if (SIXEL_FAILED(status)) {
+                    goto cleanup;
+                }
+
+                if (!sixel_option_take_argument_resolution(resolution,
+                                                           &item_resolution)) {
+                    sixel_helper_set_additional_message(
+                        "sixel_option_parse_argument_list_with_suboptions: "
+                        "failed to store parsed item.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto cleanup;
+                }
+            }
+            token_start = cursor + 1;
+        }
+        ++cursor;
+    }
+
+    if (resolution->item_count == 0u) {
+        sixel_helper_set_additional_message(
+            "option argument list requires at least one item.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    resolution->has_trailing_bang = has_trailing_bang;
+    status = sixel_option_build_canonical_argument(resolution);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+cleanup:
+    free(token_buffer);
+    sixel_option_free_argument_resolution(&item_resolution);
+    if (SIXEL_FAILED(status)) {
+        sixel_option_free_argument_list_resolution(resolution);
+    }
+    return status;
+}
+
+void
+sixel_option_free_argument_list_resolution(
+    sixel_option_argument_list_resolution_t *resolution)
+{
+    size_t index;
+
+    index = 0u;
+    if (resolution == NULL) {
+        return;
+    }
+
+    while (index < resolution->item_count) {
+        sixel_option_free_argument_resolution(
+            &resolution->items[index].resolution);
+        ++index;
+    }
+    free(resolution->items);
+    free(resolution->canonical_argument);
+    sixel_option_reset_argument_list_resolution(resolution);
+}
+
+static void
+sixel_option_reset_argument_list_resolution(
+    sixel_option_argument_list_resolution_t *resolution)
+{
+    if (resolution == NULL) {
+        return;
+    }
+
+    resolution->canonical_argument = NULL;
+    resolution->has_trailing_bang = 0;
+    resolution->items = NULL;
+    resolution->item_count = 0u;
+}
+
+static int
+sixel_option_take_argument_resolution(
+    sixel_option_argument_list_resolution_t *list_resolution,
+    sixel_option_argument_resolution_t *item_resolution)
+{
+    sixel_option_argument_list_item_t *grown;
+
+    grown = NULL;
+    if (list_resolution == NULL || item_resolution == NULL) {
+        return 0;
+    }
+
+    grown = (sixel_option_argument_list_item_t *)realloc(
+        list_resolution->items,
+        (list_resolution->item_count + 1u)
+            * sizeof(sixel_option_argument_list_item_t));
+    if (grown == NULL) {
+        return 0;
+    }
+    list_resolution->items = grown;
+    list_resolution->items[list_resolution->item_count].resolution =
+        *item_resolution;
+    list_resolution->item_count += 1u;
+    sixel_option_reset_argument_resolution(item_resolution);
+
+    return 1;
+}
+
+static size_t
+sixel_option_calculate_resolution_text_length(
+    sixel_option_argument_resolution_t const *resolution)
+{
+    size_t index;
+    size_t length;
+
+    index = 0u;
+    length = 0u;
+    if (resolution == NULL || resolution->base_def == NULL ||
+        resolution->base_def->name == NULL) {
+        return 0u;
+    }
+
+    length += strlen(resolution->base_def->name);
+    while (index < resolution->assignment_count) {
+        length += 2u;
+        length += strlen(resolution->assignments[index].resolved_key_name);
+        length += strlen(resolution->assignments[index].resolved_value_text);
+        ++index;
+    }
+
+    return length;
+}
+
+static size_t
+sixel_option_emit_resolution_text(
+    char *buffer,
+    size_t offset,
+    sixel_option_argument_resolution_t const *resolution)
+{
+    size_t index;
+    size_t length;
+
+    index = 0u;
+    length = 0u;
+    if (buffer == NULL || resolution == NULL || resolution->base_def == NULL) {
+        return offset;
+    }
+
+    length = strlen(resolution->base_def->name);
+    memcpy(buffer + offset, resolution->base_def->name, length);
+    offset += length;
+
+    while (index < resolution->assignment_count) {
+        buffer[offset] = ':';
+        ++offset;
+        length = strlen(resolution->assignments[index].resolved_key_name);
+        memcpy(buffer + offset,
+               resolution->assignments[index].resolved_key_name,
+               length);
+        offset += length;
+        buffer[offset] = '=';
+        ++offset;
+        length = strlen(resolution->assignments[index].resolved_value_text);
+        memcpy(buffer + offset,
+               resolution->assignments[index].resolved_value_text,
+               length);
+        offset += length;
+        ++index;
+    }
+
+    return offset;
+}
+
+static SIXELSTATUS
+sixel_option_build_canonical_argument(
+    sixel_option_argument_list_resolution_t *resolution)
+{
+    size_t index;
+    size_t length;
+    size_t offset;
+
+    index = 0u;
+    length = 0u;
+    offset = 0u;
+    if (resolution == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    free(resolution->canonical_argument);
+    resolution->canonical_argument = NULL;
+    if (resolution->item_count == 0u) {
+        return SIXEL_OK;
+    }
+
+    while (index < resolution->item_count) {
+        if (index > 0u) {
+            length += 1u;
+        }
+        length += sixel_option_calculate_resolution_text_length(
+            &resolution->items[index].resolution);
+        ++index;
+    }
+    if (resolution->has_trailing_bang) {
+        length += 1u;
+    }
+
+    resolution->canonical_argument = (char *)malloc(length + 1u);
+    if (resolution->canonical_argument == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_option_build_canonical_argument: malloc failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    index = 0u;
+    while (index < resolution->item_count) {
+        if (index > 0u) {
+            resolution->canonical_argument[offset] = ',';
+            ++offset;
+        }
+        offset = sixel_option_emit_resolution_text(
+            resolution->canonical_argument,
+            offset,
+            &resolution->items[index].resolution);
+        ++index;
+    }
+    if (resolution->has_trailing_bang) {
+        resolution->canonical_argument[offset] = '!';
+        ++offset;
+    }
+    resolution->canonical_argument[offset] = '\0';
+
+    return SIXEL_OK;
 }
 
 static void

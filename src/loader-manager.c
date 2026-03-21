@@ -98,9 +98,21 @@ g_schema_loader_values_loader[] = {
             / sizeof(g_subkeys_loader_enable_cms_loader[0])
     },
 #endif
+#if HAVE_JPEG
+    { "libjpeg", 1, NULL, 0u },
+#endif
+#if HAVE_WEBP
+    { "libwebp", 2, NULL, 0u },
+#endif
+#if HAVE_LIBTIFF
+    { "libtiff", 3, NULL, 0u },
+#endif
+#if HAVE_LIBRSVG
+    { "librsvg", 4, NULL, 0u },
+#endif
     {
         "builtin",
-        1,
+        5,
         g_subkeys_loader_enable_cms_loader,
         sizeof(g_subkeys_loader_enable_cms_loader)
             / sizeof(g_subkeys_loader_enable_cms_loader[0])
@@ -108,11 +120,26 @@ g_schema_loader_values_loader[] = {
 #if HAVE_WIC
     {
         "wic",
-        2,
+        6,
         g_subkeys_loader_wic_loader,
         sizeof(g_subkeys_loader_wic_loader)
             / sizeof(g_subkeys_loader_wic_loader[0])
     },
+#endif
+#if HAVE_COREGRAPHICS
+    { "coregraphics", 7, NULL, 0u },
+#endif
+#ifdef HAVE_GDK_PIXBUF2
+    { "gdk-pixbuf2", 8, NULL, 0u },
+#endif
+#if HAVE_GD
+    { "gd", 9, NULL, 0u },
+#endif
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+    { "quicklook", 10, NULL, 0u },
+#endif
+#if HAVE_FREEDESKTOP_THUMBNAILING
+    { "gnome-thumbnailer", 11, NULL, 0u },
 #endif
 };
 
@@ -274,36 +301,43 @@ loader_manager_lookup_token(char const *token,
     return NULL;
 }
 
+SIXELSTATUS
+loader_manager_parse_loader_order(
+    char const *order,
+    sixel_option_argument_list_resolution_t *resolution)
+{
+    char diagnostic[128];
+
+    diagnostic[0] = '\0';
+    if (resolution == NULL) {
+        sixel_helper_set_additional_message(
+            "loader_manager_parse_loader_order: resolution is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return sixel_option_parse_argument_list_with_suboptions(
+        order,
+        &g_schema_loaders_loader,
+        resolution,
+        diagnostic,
+        sizeof(diagnostic));
+}
 
 void
-loader_manager_apply_loader_suboptions(char const *order)
+loader_manager_apply_loader_suboptions_resolution(
+    sixel_option_argument_list_resolution_t const *resolution)
 {
-    char const *cursor;
-    char const *token_start;
-    char const *token_end;
-    char const *order_end;
-    size_t token_length;
-    char token_buffer[256];
-    char match_detail[128];
-    sixel_option_argument_resolution_t resolution;
+    size_t item_index;
     size_t assignment_index;
+    sixel_option_argument_resolution_t const *item;
     char const *key_name;
     char const *value_text;
     size_t value_length;
     int parsed_value;
 
-    cursor = order;
-    token_start = order;
-    token_end = order;
-    order_end = NULL;
-    token_length = 0u;
-    token_buffer[0] = '\0';
-    match_detail[0] = '\0';
-    resolution.resolved_base_value = 0;
-    resolution.base_def = NULL;
-    resolution.assignments = NULL;
-    resolution.assignment_count = 0u;
+    item_index = 0u;
     assignment_index = 0u;
+    item = NULL;
     key_name = NULL;
     value_text = NULL;
     value_length = 0u;
@@ -316,89 +350,80 @@ loader_manager_apply_loader_suboptions(char const *order)
     sixel_helper_set_libpng_enable_cms(-1);
     sixel_helper_set_builtin_enable_cms(-1);
 
-    if (order == NULL || order[0] == '\0') {
+    if (resolution == NULL) {
         return;
     }
 
-    order_end = order + strlen(order);
-    while (order_end > order && isspace((unsigned char)order_end[-1])) {
-        --order_end;
+    while (item_index < resolution->item_count) {
+        item = &resolution->items[item_index].resolution;
+        if (item->base_def == NULL) {
+            ++item_index;
+            continue;
+        }
+        assignment_index = 0u;
+        while (assignment_index < item->assignment_count) {
+            key_name = item->assignments[assignment_index].resolved_key_name;
+            value_text = item->assignments[assignment_index].resolved_value_text;
+            value_length = 0u;
+            if (value_text != NULL) {
+                value_length = strlen(value_text);
+            }
+            if (key_name == NULL || value_text == NULL) {
+                ++assignment_index;
+                continue;
+            }
+#if HAVE_WIC
+            if (strcmp(item->base_def->name, "wic") == 0 &&
+                strcmp(key_name, "ico_minsize") == 0 &&
+                loader_manager_parse_positive_int(value_text,
+                                                  value_length,
+                                                  &parsed_value)) {
+                sixel_helper_set_wic_ico_minsize(parsed_value);
+                ++assignment_index;
+                continue;
+            }
+#endif
+            if (strcmp(key_name, "enable_cms") == 0 &&
+                loader_manager_parse_bool_flag(value_text,
+                                               value_length,
+                                               &parsed_value)) {
+                if (strcmp(item->base_def->name, "libpng") == 0) {
+                    sixel_helper_set_libpng_enable_cms(parsed_value);
+                } else if (strcmp(item->base_def->name, "builtin") == 0) {
+                    sixel_helper_set_builtin_enable_cms(parsed_value);
+                }
+            }
+            ++assignment_index;
+        }
+        ++item_index;
     }
-    if (order_end > order && order_end[-1] == '!') {
-        --order_end;
+}
+
+void
+loader_manager_apply_loader_suboptions(char const *order)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_list_resolution_t resolution;
+
+    status = SIXEL_OK;
+    resolution.canonical_argument = NULL;
+    resolution.has_trailing_bang = 0;
+    resolution.items = NULL;
+    resolution.item_count = 0u;
+
+    if (order == NULL || order[0] == '\0') {
+        loader_manager_apply_loader_suboptions_resolution(NULL);
+        return;
     }
 
-    token_start = order;
-    cursor = order;
-    while (cursor <= order_end) {
-        if (cursor == order_end || *cursor == ',') {
-            token_end = cursor;
-            while (token_start < token_end &&
-                   isspace((unsigned char)*token_start)) {
-                ++token_start;
-            }
-            while (token_end > token_start &&
-                   isspace((unsigned char)token_end[-1])) {
-                --token_end;
-            }
-            token_length = (size_t)(token_end - token_start);
-            if (token_length > 0u && token_length < sizeof(token_buffer)) {
-                memcpy(token_buffer, token_start, token_length);
-                token_buffer[token_length] = '\0';
-                if (SIXEL_SUCCEEDED(
-                        sixel_option_parse_argument_with_suboptions(
-                            token_buffer,
-                            &g_schema_loaders_loader,
-                            &resolution,
-                            match_detail,
-                            sizeof(match_detail))) &&
-                    resolution.base_def != NULL) {
-                    for (assignment_index = 0u;
-                         assignment_index < resolution.assignment_count;
-                         ++assignment_index) {
-                        key_name = resolution.assignments[assignment_index]
-                            .resolved_key_name;
-                        value_text = resolution.assignments[assignment_index]
-                            .resolved_value_text;
-                        value_length = 0u;
-                        if (value_text != NULL) {
-                            value_length = strlen(value_text);
-                        }
-                        if (key_name == NULL || value_text == NULL) {
-                            continue;
-                        }
-#if HAVE_WIC
-                        if (strcmp(resolution.base_def->name, "wic") == 0 &&
-                            strcmp(key_name, "ico_minsize") == 0 &&
-                            loader_manager_parse_positive_int(
-                                value_text,
-                                value_length,
-                                &parsed_value)) {
-                            sixel_helper_set_wic_ico_minsize(parsed_value);
-                            continue;
-                        }
-#endif
-                        if (strcmp(key_name, "enable_cms") == 0 &&
-                            loader_manager_parse_bool_flag(
-                                value_text,
-                                value_length,
-                                &parsed_value)) {
-                            if (strcmp(resolution.base_def->name, "libpng")
-                                == 0) {
-                                sixel_helper_set_libpng_enable_cms(parsed_value);
-                            } else if (strcmp(resolution.base_def->name,
-                                              "builtin") == 0) {
-                                sixel_helper_set_builtin_enable_cms(parsed_value);
-                            }
-                        }
-                    }
-                }
-                sixel_option_free_argument_resolution(&resolution);
-            }
-            token_start = cursor + 1;
-        }
-        ++cursor;
+    status = loader_manager_parse_loader_order(order, &resolution);
+    if (SIXEL_FAILED(status)) {
+        loader_manager_apply_loader_suboptions_resolution(NULL);
+        return;
     }
+
+    loader_manager_apply_loader_suboptions_resolution(&resolution);
+    sixel_option_free_argument_list_resolution(&resolution);
 }
 
 size_t
