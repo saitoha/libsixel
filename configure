@@ -25738,9 +25738,100 @@ fi
         fi
     fi
     if test x$have_jpeg = xyes; then
+        have_jpeg12_api=no
+        have_jpeg16_api=no
+
+        JPEG_CHECK_CFLAGS_BACKUP=$CFLAGS
+        JPEG_CHECK_LIBS_BACKUP=$LIBS
+        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
+        LIBS="${LIBS} ${LIBJPEG_LIBS}"
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libjpeg 12-bit scanline API" >&5
+printf %s "checking for libjpeg 12-bit scanline API... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <jpeglib.h>
+
+int
+main (void)
+{
+
+#if !defined(J12SAMPLE) || !defined(MAXJ12SAMPLE)
+# error "missing J12SAMPLE/MAXJ12SAMPLE"
+#endif
+                    j_decompress_ptr cinfo = (j_decompress_ptr)0;
+                    J12SAMPARRAY scanlines = (J12SAMPARRAY)0;
+                    (void)jpeg12_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_jpeg12_api=yes
+else case e in #(
+  e) have_jpeg12_api=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_jpeg12_api" >&5
+printf "%s\n" "$have_jpeg12_api" >&6; }
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libjpeg 16-bit scanline API" >&5
+printf %s "checking for libjpeg 16-bit scanline API... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <jpeglib.h>
+
+int
+main (void)
+{
+
+#if !defined(J16SAMPLE) || !defined(MAXJ16SAMPLE)
+# error "missing J16SAMPLE/MAXJ16SAMPLE"
+#endif
+                    j_decompress_ptr cinfo = (j_decompress_ptr)0;
+                    J16SAMPARRAY scanlines = (J16SAMPARRAY)0;
+                    (void)jpeg16_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_jpeg16_api=yes
+else case e in #(
+  e) have_jpeg16_api=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_jpeg16_api" >&5
+printf "%s\n" "$have_jpeg16_api" >&6; }
+
+        CFLAGS=$JPEG_CHECK_CFLAGS_BACKUP
+        LIBS=$JPEG_CHECK_LIBS_BACKUP
+
 
 printf "%s\n" "#define HAVE_JPEG 1" >>confdefs.h
 
+        if test x$have_jpeg12_api = xyes; then
+
+printf "%s\n" "#define HAVE_JPEG12_API 1" >>confdefs.h
+
+        fi
+        if test x$have_jpeg16_api = xyes; then
+
+printf "%s\n" "#define HAVE_JPEG16_API 1" >>confdefs.h
+
+        fi
         loaders="${loaders} jpeg"
         if test x$LIBJPEG_PKG_NAME != x; then
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"

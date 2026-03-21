@@ -811,6 +811,46 @@ if not jpeg_opt.disabled()
 endif
 
 if jpeg_dep.found()
+  jpeg_has_12_api = cc.links(
+    '''
+#include <stdio.h>
+#include <jpeglib.h>
+#if !defined(J12SAMPLE) || !defined(MAXJ12SAMPLE)
+# error "missing J12SAMPLE/MAXJ12SAMPLE"
+#endif
+int main(void) {
+  j_decompress_ptr cinfo = (j_decompress_ptr)0;
+  J12SAMPARRAY scanlines = (J12SAMPARRAY)0;
+  (void)jpeg12_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
+  return 0;
+}
+''',
+    dependencies: jpeg_dep,
+    name: 'libjpeg 12-bit scanline api')
+  if jpeg_has_12_api
+    conf.set('HAVE_JPEG12_API', 1)
+  endif
+
+  jpeg_has_16_api = cc.links(
+    '''
+#include <stdio.h>
+#include <jpeglib.h>
+#if !defined(J16SAMPLE) || !defined(MAXJ16SAMPLE)
+# error "missing J16SAMPLE/MAXJ16SAMPLE"
+#endif
+int main(void) {
+  j_decompress_ptr cinfo = (j_decompress_ptr)0;
+  J16SAMPARRAY scanlines = (J16SAMPARRAY)0;
+  (void)jpeg16_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
+  return 0;
+}
+''',
+    dependencies: jpeg_dep,
+    name: 'libjpeg 16-bit scanline api')
+  if jpeg_has_16_api
+    conf.set('HAVE_JPEG16_API', 1)
+  endif
+
   deps += jpeg_dep
   reqs += jpeg_dep
   conf.set('HAVE_JPEG', 1)

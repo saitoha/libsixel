@@ -3547,7 +3547,64 @@ if test x$with_jpeg != xno; then
         fi
     fi
     if test x$have_jpeg = xyes; then
+        have_jpeg12_api=no
+        have_jpeg16_api=no
+
+        JPEG_CHECK_CFLAGS_BACKUP=$CFLAGS
+        JPEG_CHECK_LIBS_BACKUP=$LIBS
+        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
+        LIBS="${LIBS} ${LIBJPEG_LIBS}"
+
+        AC_MSG_CHECKING([for libjpeg 12-bit scanline API])
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM(
+                [[
+#include <stdio.h>
+#include <jpeglib.h>
+                ]],
+                [[
+#if !defined(J12SAMPLE) || !defined(MAXJ12SAMPLE)
+# error "missing J12SAMPLE/MAXJ12SAMPLE"
+#endif
+                    j_decompress_ptr cinfo = (j_decompress_ptr)0;
+                    J12SAMPARRAY scanlines = (J12SAMPARRAY)0;
+                    (void)jpeg12_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
+                ]])],
+            [have_jpeg12_api=yes],
+            [have_jpeg12_api=no])
+        AC_MSG_RESULT([$have_jpeg12_api])
+
+        AC_MSG_CHECKING([for libjpeg 16-bit scanline API])
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM(
+                [[
+#include <stdio.h>
+#include <jpeglib.h>
+                ]],
+                [[
+#if !defined(J16SAMPLE) || !defined(MAXJ16SAMPLE)
+# error "missing J16SAMPLE/MAXJ16SAMPLE"
+#endif
+                    j_decompress_ptr cinfo = (j_decompress_ptr)0;
+                    J16SAMPARRAY scanlines = (J16SAMPARRAY)0;
+                    (void)jpeg16_read_scanlines(cinfo, scanlines, (JDIMENSION)0);
+                ]])],
+            [have_jpeg16_api=yes],
+            [have_jpeg16_api=no])
+        AC_MSG_RESULT([$have_jpeg16_api])
+
+        CFLAGS=$JPEG_CHECK_CFLAGS_BACKUP
+        LIBS=$JPEG_CHECK_LIBS_BACKUP
+
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
+        if test x$have_jpeg12_api = xyes; then
+            AC_DEFINE(HAVE_JPEG12_API, 1,
+                      [whether libjpeg 12-bit scanline API is available])
+        fi
+        if test x$have_jpeg16_api = xyes; then
+            AC_DEFINE(HAVE_JPEG16_API, 1,
+                      [whether libjpeg 16-bit scanline API is available])
+        fi
         loaders="${loaders} jpeg"
         if test x$LIBJPEG_PKG_NAME != x; then
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"
