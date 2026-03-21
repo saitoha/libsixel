@@ -59,7 +59,7 @@ static sixel_suboption_key_t const g_subkeys_loader_wic[] = {
     {
         "ico_minsize",
         NULL,
-        "SIXEL_LODER_WIC_ICO_MINSIZE",
+        "SIXEL_LOADER_WIC_ICO_MINSIZE",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u

@@ -70,6 +70,8 @@ static int loader_cms_target_initialized;
 static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
 
+#define SIXEL_ENV_WIC_ICO_MINSIZE "SIXEL_LOADER_WIC_ICO_MINSIZE"
+#define SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY "SIXEL_LODER_WIC_ICO_MINSIZE"
 
 static void
 loader_wic_initialize_ico_minsize(void)
@@ -86,7 +88,10 @@ loader_wic_initialize_ico_minsize(void)
     wic_ico_minsize_default = 0;
     wic_ico_minsize = 0;
 
-    env_value = sixel_compat_getenv("SIXEL_LODER_WIC_ICO_MINSIZE");
+    env_value = sixel_compat_getenv(SIXEL_ENV_WIC_ICO_MINSIZE);
+    if (env_value == NULL || env_value[0] == '\0') {
+        env_value = sixel_compat_getenv(SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY);
+    }
     if (env_value == NULL || env_value[0] == '\0') {
         return;
     }
