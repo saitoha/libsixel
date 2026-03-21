@@ -132,7 +132,7 @@ RECENT REVISION HISTORY:
 // DOCUMENTATION
 //
 // Limitations:
-//    - no 12-bit-per-channel JPEG
+//    - no 12-bit-per-channel JPEG from `stbi_load` (8-bit API)
 //    - no JPEGs with arithmetic coding
 //    - GIF always returns *comp=4
 //
@@ -1978,6 +1978,7 @@ typedef struct
 
       int x,y,w2,h2;
       stbi_uc *data;
+      stbi__uint16 *data16;
       void *raw_data, *raw_coeff;
       stbi_uc *linebuf;
       short   *coeff;   // progressive only
@@ -1998,6 +1999,8 @@ typedef struct
    int            jfif;
    int            app14_color_transform; // Adobe APP14 tag
    int            rgb;
+   int            data_precision;
+   int            lossless;
 
    int scan_n, order[4];
    int restart_interval, todo;
@@ -2531,6 +2534,68 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
    }
 }
 
+static stbi__uint16 stbi__clamp_16(int x, int max_value)
+{
+   if ((unsigned int)x > (unsigned int)max_value) {
+      if (x < 0) return 0;
+      return (stbi__uint16)max_value;
+   }
+   return (stbi__uint16)x;
+}
+
+static void stbi__idct_block_16(stbi__uint16 *out, int out_stride, short data[64], int precision)
+{
+   int i,val[64],*v=val;
+   stbi__uint16 *o;
+   short *d = data;
+   int center;
+   int max_value;
+   int round_bias;
+
+   if (precision < 8 || precision > 12) {
+      precision = 8;
+   }
+   center = 1 << (precision - 1);
+   max_value = (1 << precision) - 1;
+   round_bias = 65536 + (center << 17);
+
+   // columns
+   for (i=0; i < 8; ++i,++d, ++v) {
+      if (d[ 8]==0 && d[16]==0 && d[24]==0 && d[32]==0
+           && d[40]==0 && d[48]==0 && d[56]==0) {
+         int dcterm = d[0]*4;
+         v[0] = v[8] = v[16] = v[24] = v[32] = v[40] = v[48] = v[56] = dcterm;
+      } else {
+         STBI__IDCT_1D(d[ 0],d[ 8],d[16],d[24],d[32],d[40],d[48],d[56])
+         x0 += 512; x1 += 512; x2 += 512; x3 += 512;
+         v[ 0] = (x0+t3) >> 10;
+         v[56] = (x0-t3) >> 10;
+         v[ 8] = (x1+t2) >> 10;
+         v[48] = (x1-t2) >> 10;
+         v[16] = (x2+t1) >> 10;
+         v[40] = (x2-t1) >> 10;
+         v[24] = (x3+t0) >> 10;
+         v[32] = (x3-t0) >> 10;
+      }
+   }
+
+   for (i=0, v=val, o=out; i < 8; ++i,v+=8,o+=out_stride) {
+      STBI__IDCT_1D(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7])
+      x0 += round_bias;
+      x1 += round_bias;
+      x2 += round_bias;
+      x3 += round_bias;
+      o[0] = stbi__clamp_16((x0+t3) >> 17, max_value);
+      o[7] = stbi__clamp_16((x0-t3) >> 17, max_value);
+      o[1] = stbi__clamp_16((x1+t2) >> 17, max_value);
+      o[6] = stbi__clamp_16((x1-t2) >> 17, max_value);
+      o[2] = stbi__clamp_16((x2+t1) >> 17, max_value);
+      o[5] = stbi__clamp_16((x2-t1) >> 17, max_value);
+      o[3] = stbi__clamp_16((x3+t0) >> 17, max_value);
+      o[4] = stbi__clamp_16((x3-t0) >> 17, max_value);
+   }
+}
+
 #ifdef STBI_SSE2
 // sse2 integer IDCT. not the fastest possible implementation but it
 // produces bit-identical results to the generic C version so it's
@@ -2954,9 +3019,197 @@ static void stbi__jpeg_reset(stbi__jpeg *j)
    // since we don't even allow 1<<30 pixels
 }
 
+static void stbi__jpeg_idct_store_block(stbi__jpeg *z, int n, int x, int y, short data[64])
+{
+   if (z->data_precision > 8) {
+      stbi__idct_block_16(z->img_comp[n].data16 + z->img_comp[n].w2 * y + x,
+                          z->img_comp[n].w2,
+                          data,
+                          z->data_precision);
+   } else {
+      z->idct_block_kernel(z->img_comp[n].data + z->img_comp[n].w2 * y + x,
+                           z->img_comp[n].w2,
+                           data);
+   }
+}
+
+static int stbi__jpeg_lossless_predictor(int selector, int ra, int rb, int rc)
+{
+   switch (selector) {
+      case 1: return ra;
+      case 2: return rb;
+      case 3: return rc;
+      case 4: return ra + rb - rc;
+      case 5: return ra + ((rb - rc) >> 1);
+      case 6: return rb + ((ra - rc) >> 1);
+      case 7: return (ra + rb) >> 1;
+      default: return ra;
+   }
+}
+
+static int stbi__jpeg_lossless_decode_sample(stbi__jpeg *z,
+                                             int comp,
+                                             int x,
+                                             int y,
+                                             int predictor_selector,
+                                             int point_transform)
+{
+   int precision;
+   int max_sample;
+   int ra;
+   int rb;
+   int rc;
+   int predictor;
+   int t;
+   int diff;
+   int sample;
+   stbi__uint16 *plane;
+   int stride;
+
+   precision = z->data_precision;
+   max_sample = (1 << precision) - 1;
+   plane = z->img_comp[comp].data16;
+   stride = z->img_comp[comp].w2;
+   if (plane == NULL) {
+      return 0;
+   }
+
+   if (x > 0) {
+      ra = (int)plane[y * stride + (x - 1)];
+   } else {
+      ra = 0;
+   }
+   if (y > 0) {
+      rb = (int)plane[(y - 1) * stride + x];
+   } else {
+      rb = 0;
+   }
+   if (x > 0 && y > 0) {
+      rc = (int)plane[(y - 1) * stride + (x - 1)];
+   } else {
+      rc = 0;
+   }
+
+   if (x == 0 && y == 0) {
+      predictor = 1 << (precision - 1);
+   } else if (y == 0) {
+      predictor = ra;
+   } else if (x == 0) {
+      predictor = rb;
+   } else {
+      predictor = stbi__jpeg_lossless_predictor(predictor_selector,
+                                                ra,
+                                                rb,
+                                                rc);
+   }
+
+   t = stbi__jpeg_huff_decode(z, z->huff_dc + z->img_comp[comp].hd);
+   if (t < 0 || t > 16) {
+      return 0;
+   }
+   if (t == 0) {
+      diff = 0;
+   } else {
+      diff = stbi__extend_receive(z, t);
+   }
+   diff <<= point_transform;
+
+   sample = predictor + diff;
+   if (sample < 0) {
+      sample = 0;
+   } else if (sample > max_sample) {
+      sample = max_sample;
+   }
+   plane[y * stride + x] = (stbi__uint16)sample;
+   return 1;
+}
+
+static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
+{
+   int i;
+   int j;
+   int k;
+   int x;
+   int y;
+   int sx;
+   int sy;
+   int mcu_x;
+   int mcu_y;
+   int mcu_w;
+   int mcu_h;
+   int n;
+   int predictor_selector;
+   int point_transform;
+
+   predictor_selector = z->spec_start;
+   point_transform = z->succ_low;
+
+   stbi__jpeg_reset(z);
+
+   if (z->scan_n == 1) {
+      n = z->order[0];
+      for (j = 0; j < z->img_comp[n].y; ++j) {
+         for (i = 0; i < z->img_comp[n].x; ++i) {
+            if (!stbi__jpeg_lossless_decode_sample(z,
+                                                   n,
+                                                   i,
+                                                   j,
+                                                   predictor_selector,
+                                                   point_transform)) {
+               return 0;
+            }
+            if (--z->todo <= 0) {
+               if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
+               if (!STBI__RESTART(z->marker)) return 1;
+               stbi__jpeg_reset(z);
+            }
+         }
+      }
+      return 1;
+   }
+
+   mcu_w = z->img_h_max;
+   mcu_h = z->img_v_max;
+   mcu_x = (z->s->img_x + mcu_w - 1) / mcu_w;
+   mcu_y = (z->s->img_y + mcu_h - 1) / mcu_h;
+
+   for (j = 0; j < mcu_y; ++j) {
+      for (i = 0; i < mcu_x; ++i) {
+         for (k = 0; k < z->scan_n; ++k) {
+            n = z->order[k];
+            for (y = 0; y < z->img_comp[n].v; ++y) {
+               for (x = 0; x < z->img_comp[n].h; ++x) {
+                  sx = i * z->img_comp[n].h + x;
+                  sy = j * z->img_comp[n].v + y;
+                  if (!stbi__jpeg_lossless_decode_sample(z,
+                                                         n,
+                                                         sx,
+                                                         sy,
+                                                         predictor_selector,
+                                                         point_transform)) {
+                     return 0;
+                  }
+               }
+            }
+         }
+
+         if (--z->todo <= 0) {
+            if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
+            if (!STBI__RESTART(z->marker)) return 1;
+            stbi__jpeg_reset(z);
+         }
+      }
+   }
+
+   return 1;
+}
+
 static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
 {
    stbi__jpeg_reset(z);
+   if (z->lossless) {
+      return stbi__parse_entropy_coded_data_lossless(z);
+   }
    if (!z->progressive) {
       if (z->scan_n == 1) {
          int i,j;
@@ -2972,7 +3225,7 @@ static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
             for (i=0; i < w; ++i) {
                int ha = z->img_comp[n].ha;
                if (!stbi__jpeg_decode_block(z, data, z->huff_dc+z->img_comp[n].hd, z->huff_ac+ha, z->fast_ac[ha], n, z->dequant[z->img_comp[n].tq])) return 0;
-               z->idct_block_kernel(z->img_comp[n].data+z->img_comp[n].w2*j*8+i*8, z->img_comp[n].w2, data);
+               stbi__jpeg_idct_store_block(z, n, i * 8, j * 8, data);
                // every data block is an MCU, so countdown the restart interval
                if (--z->todo <= 0) {
                   if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
@@ -3000,7 +3253,7 @@ static int stbi__parse_entropy_coded_data(stbi__jpeg *z)
                         int y2 = (j*z->img_comp[n].v + y)*8;
                         int ha = z->img_comp[n].ha;
                         if (!stbi__jpeg_decode_block(z, data, z->huff_dc+z->img_comp[n].hd, z->huff_ac+ha, z->fast_ac[ha], n, z->dequant[z->img_comp[n].tq])) return 0;
-                        z->idct_block_kernel(z->img_comp[n].data+z->img_comp[n].w2*y2+x2, z->img_comp[n].w2, data);
+                        stbi__jpeg_idct_store_block(z, n, x2, y2, data);
                      }
                   }
                }
@@ -3097,7 +3350,7 @@ static void stbi__jpeg_finish(stbi__jpeg *z)
             for (i=0; i < w; ++i) {
                short *data = z->img_comp[n].coeff + 64 * (i + j * z->img_comp[n].coeff_w);
                stbi__jpeg_dequantize(data, z->dequant[z->img_comp[n].tq]);
-               z->idct_block_kernel(z->img_comp[n].data+z->img_comp[n].w2*j*8+i*8, z->img_comp[n].w2, data);
+               stbi__jpeg_idct_store_block(z, n, i * 8, j * 8, data);
             }
          }
       }
@@ -3234,7 +3487,14 @@ static int stbi__process_scan_header(stbi__jpeg *z)
       aa = stbi__get8(z->s);
       z->succ_high = (aa >> 4);
       z->succ_low  = (aa & 15);
-      if (z->progressive) {
+      if (z->lossless) {
+         if (z->spec_start < 1 || z->spec_start > 7 || z->spec_end != 0)
+            return stbi__err("bad SOS", "Corrupt JPEG");
+         if (z->succ_high != 0)
+            return stbi__err("bad SOS", "Corrupt JPEG");
+         if (z->succ_low > 15 || z->succ_low >= z->data_precision)
+            return stbi__err("bad SOS", "Corrupt JPEG");
+      } else if (z->progressive) {
          if (z->spec_start > 63 || z->spec_end > 63  || z->spec_start > z->spec_end || z->succ_high > 13 || z->succ_low > 13)
             return stbi__err("bad SOS", "Corrupt JPEG");
       } else {
@@ -3255,6 +3515,7 @@ static int stbi__free_jpeg_components(stbi__jpeg *z, int ncomp, int why)
          STBI_FREE(z->img_comp[i].raw_data);
          z->img_comp[i].raw_data = NULL;
          z->img_comp[i].data = NULL;
+         z->img_comp[i].data16 = NULL;
       }
       if (z->img_comp[i].raw_coeff) {
          STBI_FREE(z->img_comp[i].raw_coeff);
@@ -3274,7 +3535,13 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
    stbi__context *s = z->s;
    int Lf,p,i,q, h_max=1,v_max=1,c;
    Lf = stbi__get16be(s);         if (Lf < 11) return stbi__err("bad SOF len","Corrupt JPEG"); // JPEG
-   p  = stbi__get8(s);            if (p != 8) return stbi__err("only 8-bit","JPEG format not supported: 8-bit only"); // JPEG baseline
+   p  = stbi__get8(s);
+   if (z->lossless) {
+      if (p < 2 || p > 16) return stbi__err("unsupported precision","JPEG lossless precision out of range");
+   } else {
+      if (p < 8 || p > 12) return stbi__err("unsupported precision","JPEG format not supported: only 8-12 bit precision");
+   }
+   z->data_precision = p;
    s->img_y = stbi__get16be(s);   if (s->img_y == 0) return stbi__err("no header height", "JPEG format not supported: delayed height"); // Legal, but we don't handle it--but neither does IJG
    s->img_x = stbi__get16be(s);   if (s->img_x == 0) return stbi__err("0 width","Corrupt JPEG"); // JPEG requires
    if (s->img_y > STBI_MAX_DIMENSIONS) return stbi__err("too large","Very large image (corrupt?)");
@@ -3284,6 +3551,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
    s->img_n = c;
    for (i=0; i < c; ++i) {
       z->img_comp[i].data = NULL;
+      z->img_comp[i].data16 = NULL;
       z->img_comp[i].linebuf = NULL;
    }
 
@@ -3342,11 +3610,26 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       z->img_comp[i].coeff = 0;
       z->img_comp[i].raw_coeff = 0;
       z->img_comp[i].linebuf = NULL;
-      z->img_comp[i].raw_data = stbi__malloc_mad2(z->img_comp[i].w2, z->img_comp[i].h2, 15);
+      if (z->data_precision > 8) {
+         z->img_comp[i].raw_data = stbi__malloc_mad3(z->img_comp[i].w2,
+                                                     z->img_comp[i].h2,
+                                                     sizeof(stbi__uint16),
+                                                     15);
+      } else {
+         z->img_comp[i].raw_data = stbi__malloc_mad2(z->img_comp[i].w2,
+                                                     z->img_comp[i].h2,
+                                                     15);
+      }
       if (z->img_comp[i].raw_data == NULL)
          return stbi__free_jpeg_components(z, i+1, stbi__err("outofmem", "Out of memory"));
       // align blocks for idct using mmx/sse
-      z->img_comp[i].data = (stbi_uc*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
+      if (z->data_precision > 8) {
+         z->img_comp[i].data = NULL;
+         z->img_comp[i].data16 = (stbi__uint16*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
+      } else {
+         z->img_comp[i].data = (stbi_uc*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
+         z->img_comp[i].data16 = NULL;
+      }
       if (z->progressive) {
          // w2, h2 are multiples of 8 (see above)
          z->img_comp[i].coeff_w = z->img_comp[i].w2 / 8;
@@ -3365,10 +3648,11 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
 #define stbi__DNL(x)         ((x) == 0xdc)
 #define stbi__SOI(x)         ((x) == 0xd8)
 #define stbi__EOI(x)         ((x) == 0xd9)
-#define stbi__SOF(x)         ((x) == 0xc0 || (x) == 0xc1 || (x) == 0xc2)
+#define stbi__SOF(x)         ((x) == 0xc0 || (x) == 0xc1 || (x) == 0xc2 || (x) == 0xc3)
 #define stbi__SOS(x)         ((x) == 0xda)
 
 #define stbi__SOF_progressive(x)   ((x) == 0xc2)
+#define stbi__SOF_lossless(x)      ((x) == 0xc3)
 
 static int stbi__decode_jpeg_header(stbi__jpeg *z, int scan)
 {
@@ -3390,6 +3674,7 @@ static int stbi__decode_jpeg_header(stbi__jpeg *z, int scan)
       }
    }
    z->progressive = stbi__SOF_progressive(m);
+   z->lossless = stbi__SOF_lossless(m);
    if (!stbi__process_frame_header(z, scan)) return 0;
    return 1;
 }
@@ -3422,8 +3707,12 @@ static int stbi__decode_jpeg_image(stbi__jpeg *j)
    int m;
    for (m = 0; m < 4; m++) {
       j->img_comp[m].raw_data = NULL;
+      j->img_comp[m].data = NULL;
+      j->img_comp[m].data16 = NULL;
       j->img_comp[m].raw_coeff = NULL;
    }
+   j->data_precision = 8;
+   j->lossless = 0;
    j->restart_interval = 0;
    if (!stbi__decode_jpeg_header(j, STBI__SCAN_load)) return 0;
    m = stbi__get_marker(j);
@@ -3917,6 +4206,10 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
 
    // load a jpeg image from whichever source, but leave in YCbCr format
    if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
+   if (z->data_precision > 8) {
+      stbi__cleanup_jpeg(z);
+      return stbi__errpuc("only 8-bit", "JPEG format not supported: use float API for >8-bit JPEG");
+   }
 
    // determine actual number of components to generate
    n = req_comp ? req_comp : z->s->img_n >= 3 ? 3 : 1;
@@ -4070,6 +4363,214 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
    }
 }
 
+static stbi__uint16 stbi__jpeg_sample_component_16(stbi__jpeg *z, int component, int x, int y)
+{
+   int hs;
+   int vs;
+   int sx;
+   int sy;
+
+   hs = z->img_h_max / z->img_comp[component].h;
+   vs = z->img_v_max / z->img_comp[component].v;
+   sx = x / hs;
+   sy = y / vs;
+   if (sx >= z->img_comp[component].x) sx = z->img_comp[component].x - 1;
+   if (sy >= z->img_comp[component].y) sy = z->img_comp[component].y - 1;
+   return z->img_comp[component].data16[sy * z->img_comp[component].w2 + sx];
+}
+
+static void stbi__jpeg_ycbcr16_to_rgbf32(stbi__uint16 y,
+                                         stbi__uint16 cb,
+                                         stbi__uint16 cr,
+                                         float center,
+                                         float scale,
+                                         float *r,
+                                         float *g,
+                                         float *b)
+{
+   float yf;
+   float cbf;
+   float crf;
+
+   yf = (float)y * scale;
+   cbf = ((float)cb - center) * scale;
+   crf = ((float)cr - center) * scale;
+   *r = stbi__clampf_0_1(yf + 1.40200f * crf);
+   *g = stbi__clampf_0_1(yf - 0.34414f * cbf - 0.71414f * crf);
+   *b = stbi__clampf_0_1(yf + 1.77200f * cbf);
+}
+
+static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
+                                                   int *out_x,
+                                                   int *out_y,
+                                                   int *comp,
+                                                   int req_comp)
+{
+   int n;
+   int decode_n;
+   int is_rgb;
+   int precision;
+   int max_value_int;
+   float scale;
+   float center;
+   unsigned int i;
+   unsigned int j;
+   float *output;
+   stbi__uint16 comps[4];
+
+   n = req_comp ? req_comp : z->s->img_n >= 3 ? 3 : 1;
+   is_rgb = z->s->img_n == 3 && (z->rgb == 3 || (z->app14_color_transform == 0 && !z->jfif));
+   if (z->s->img_n == 3 && n < 3 && !is_rgb)
+      decode_n = 1;
+   else
+      decode_n = z->s->img_n;
+   if (decode_n <= 0) {
+      stbi__cleanup_jpeg(z);
+      return NULL;
+   }
+
+   precision = z->data_precision;
+   if (precision < 8 ||
+       (!z->lossless && precision > 12) ||
+       (z->lossless && precision > 16)) {
+      stbi__cleanup_jpeg(z);
+      return stbi__errpf("unsupported precision", "JPEG precision is out of supported range");
+   }
+   max_value_int = (1 << precision) - 1;
+   scale = 1.0f / (float)max_value_int;
+   center = (float)(1 << (precision - 1));
+
+   output = (float *) stbi__malloc_mad4(n, z->s->img_x, z->s->img_y, sizeof(float), 0);
+   if (!output) {
+      stbi__cleanup_jpeg(z);
+      return stbi__errpf("outofmem", "Out of memory");
+   }
+
+   for (j = 0; j < (unsigned int)z->s->img_y; ++j) {
+      float *out = output + (size_t)n * (size_t)z->s->img_x * j;
+      for (i = 0; i < (unsigned int)z->s->img_x; ++i) {
+         float r;
+         float g;
+         float b;
+         float kf;
+         int k;
+
+         r = 0.0f;
+         g = 0.0f;
+         b = 0.0f;
+         kf = 1.0f;
+         for (k = 0; k < decode_n; ++k) {
+            comps[k] = stbi__jpeg_sample_component_16(z, k, (int)i, (int)j);
+         }
+         for (; k < 4; ++k) {
+            comps[k] = 0;
+         }
+
+         if (n >= 3) {
+            if (z->s->img_n == 3) {
+               if (is_rgb) {
+                  r = (float)comps[0] * scale;
+                  g = (float)comps[1] * scale;
+                  b = (float)comps[2] * scale;
+               } else {
+                  stbi__jpeg_ycbcr16_to_rgbf32(comps[0],
+                                               comps[1],
+                                               comps[2],
+                                               center,
+                                               scale,
+                                               &r,
+                                               &g,
+                                               &b);
+               }
+            } else if (z->s->img_n == 4) {
+               if (z->app14_color_transform == 0) { // CMYK
+                  kf = (float)comps[3] * scale;
+                  r = ((float)comps[0] * scale) * kf;
+                  g = ((float)comps[1] * scale) * kf;
+                  b = ((float)comps[2] * scale) * kf;
+               } else if (z->app14_color_transform == 2) { // YCCK
+                  stbi__jpeg_ycbcr16_to_rgbf32(comps[0],
+                                               comps[1],
+                                               comps[2],
+                                               center,
+                                               scale,
+                                               &r,
+                                               &g,
+                                               &b);
+                  kf = (float)comps[3] * scale;
+                  r = (1.0f - r) * kf;
+                  g = (1.0f - g) * kf;
+                  b = (1.0f - b) * kf;
+               } else { // YCbCr + alpha? ignore alpha
+                  stbi__jpeg_ycbcr16_to_rgbf32(comps[0],
+                                               comps[1],
+                                               comps[2],
+                                               center,
+                                               scale,
+                                               &r,
+                                               &g,
+                                               &b);
+               }
+            } else {
+               r = g = b = (float)comps[0] * scale;
+            }
+            out[0] = stbi__clampf_0_1(r);
+            out[1] = stbi__clampf_0_1(g);
+            out[2] = stbi__clampf_0_1(b);
+            if (n == 4) out[3] = 1.0f;
+            out += n;
+         } else {
+            if (z->s->img_n == 3) {
+               if (is_rgb) {
+                  r = (float)comps[0] * scale;
+                  g = (float)comps[1] * scale;
+                  b = (float)comps[2] * scale;
+               } else {
+                  stbi__jpeg_ycbcr16_to_rgbf32(comps[0],
+                                               comps[1],
+                                               comps[2],
+                                               center,
+                                               scale,
+                                               &r,
+                                               &g,
+                                               &b);
+               }
+            } else if (z->s->img_n == 4 && z->app14_color_transform == 0) {
+               kf = (float)comps[3] * scale;
+               r = ((float)comps[0] * scale) * kf;
+               g = ((float)comps[1] * scale) * kf;
+               b = ((float)comps[2] * scale) * kf;
+            } else if (z->s->img_n == 4 && z->app14_color_transform == 2) {
+               stbi__jpeg_ycbcr16_to_rgbf32(comps[0],
+                                            comps[1],
+                                            comps[2],
+                                            center,
+                                            scale,
+                                            &r,
+                                            &g,
+                                            &b);
+               kf = (float)comps[3] * scale;
+               r = (1.0f - r) * kf;
+               g = (1.0f - g) * kf;
+               b = (1.0f - b) * kf;
+            } else {
+               r = g = b = (float)comps[0] * scale;
+            }
+
+            out[0] = stbi__clampf_0_1(0.299f * r + 0.587f * g + 0.114f * b);
+            if (n == 2) out[1] = 1.0f;
+            out += n;
+         }
+      }
+   }
+
+   stbi__cleanup_jpeg(z);
+   *out_x = z->s->img_x;
+   *out_y = z->s->img_y;
+   if (comp) *comp = z->s->img_n >= 3 ? 3 : 1;
+   return output;
+}
+
 static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *comp, int req_comp)
 {
    int n, decode_n, is_rgb;
@@ -4080,6 +4581,13 @@ static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *
 
    // load a jpeg image from whichever source, but leave in YCbCr format
    if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
+   if (z->data_precision > 8) {
+      return load_jpeg_image_float_high_precision(z,
+                                                  out_x,
+                                                  out_y,
+                                                  comp,
+                                                  req_comp);
+   }
 
    // determine actual number of components to generate
    n = req_comp ? req_comp : z->s->img_n >= 3 ? 3 : 1;
