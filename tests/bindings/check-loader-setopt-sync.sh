@@ -8,7 +8,7 @@ bindings_root="$top_srcdir/tests/bindings"
 status=0
 
 COMMON_IDS="0032 0049 0056 0057 0060 0066 0078 0116 0122 0125 0127"
-RUBY_ONLY_IDS="0144 0146 0150"
+RUBY_ONLY_IDS="0144 0146 0150 0167 0168"
 
 binding_ext() {
     case "$1" in
