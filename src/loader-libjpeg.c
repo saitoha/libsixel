@@ -625,7 +625,7 @@ load_jpeg(unsigned char **result,
     struct jpeg_decompress_struct cinfo;
     sixel_loader_libjpeg_error_context_t jerr;
     int data_precision;
-    int jpeg_failed;
+    volatile int jpeg_failed;
 #if HAVE_LCMS2
     unsigned char *icc_profile;
     unsigned int icc_profile_length;
