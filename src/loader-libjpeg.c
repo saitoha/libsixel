@@ -308,6 +308,45 @@ jpeg_unpack_cmyk8_to_rgbf32(float *dst,
     }
 }
 
+static void
+jpeg_unpack_cmyk16_to_rgbf32(float *dst,
+                             uint16_t const *src,
+                             size_t pixel_count)
+{
+    size_t index;
+    size_t src_base;
+    size_t dst_base;
+    float scale;
+    float c;
+    float m;
+    float y;
+    float k;
+
+    index = 0u;
+    src_base = 0u;
+    dst_base = 0u;
+    scale = 1.0f / 65535.0f;
+    c = 0.0f;
+    m = 0.0f;
+    y = 0.0f;
+    k = 0.0f;
+    if (dst == NULL || src == NULL || pixel_count == 0u) {
+        return;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        src_base = index * 4u;
+        dst_base = index * 3u;
+        c = (float)src[src_base + 0u] * scale;
+        m = (float)src[src_base + 1u] * scale;
+        y = (float)src[src_base + 2u] * scale;
+        k = (float)src[src_base + 3u] * scale;
+        dst[dst_base + 0u] = c * k;
+        dst[dst_base + 1u] = m * k;
+        dst[dst_base + 2u] = y * k;
+    }
+}
+
 #if SIXEL_LIBJPEG_HAS_JPEG12
 static void
 jpeg_unpack_rgb12_to_rgbf32(float *dst,
@@ -462,6 +501,55 @@ jpeg_convert_icc_cmyk8_to_srgb_f32(float *dst_pixels,
     }
     transform = sixel_cms_create_transform(src_profile,
                                            SIXEL_CMS_PIXELFORMAT_CMYK_8,
+                                           dst_profile,
+                                           SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                                           SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+    converted = sixel_cms_do_transform(transform,
+                                       src_pixels,
+                                       dst_pixels,
+                                       pixel_count);
+
+cleanup:
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(dst_profile);
+    sixel_cms_close_profile(src_profile);
+    return converted;
+}
+
+static int
+jpeg_convert_icc_cmyk16_to_srgb_f32(float *dst_pixels,
+                                    uint16_t const *src_pixels,
+                                    size_t pixel_count,
+                                    unsigned char const *profile,
+                                    unsigned int profile_length)
+{
+    sixel_cms_profile_t *src_profile;
+    sixel_cms_profile_t *dst_profile;
+    sixel_cms_transform_t *transform;
+    int converted;
+
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    converted = 0;
+    if (dst_pixels == NULL || src_pixels == NULL || pixel_count == 0u ||
+        profile == NULL || profile_length == 0u) {
+        return 0;
+    }
+
+    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
+    if (src_profile == NULL) {
+        goto cleanup;
+    }
+    dst_profile = sixel_cms_create_srgb_profile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+    transform = sixel_cms_create_transform(src_profile,
+                                           SIXEL_CMS_PIXELFORMAT_CMYK_16,
                                            dst_profile,
                                            SIXEL_CMS_PIXELFORMAT_RGB_F32,
                                            SIXEL_CMS_TRANSFORM_DEFAULT);
@@ -685,6 +773,93 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
 }
 
 static SIXELSTATUS
+jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
+                                      int width,
+                                      int height,
+                                      sixel_allocator_t *allocator,
+                                      int enable_cms
+#if HAVE_LCMS2
+                                      ,
+                                      unsigned char const *icc_profile,
+                                      unsigned int icc_profile_length
+#endif
+                                      )
+{
+    SIXELSTATUS status;
+    size_t pixel_count;
+    size_t float_bytes;
+    uint16_t *cmyk_pixels;
+    float *float_pixels;
+#if HAVE_LCMS2
+    int cms_converted;
+#endif
+
+    status = SIXEL_OK;
+    pixel_count = 0u;
+    float_bytes = 0u;
+    cmyk_pixels = NULL;
+    float_pixels = NULL;
+#if HAVE_LCMS2
+    cms_converted = 0;
+#endif
+
+    if (result == NULL || *result == NULL || allocator == NULL ||
+        width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    float_bytes = pixel_count * 3u * sizeof(float);
+
+    cmyk_pixels = (uint16_t *)*result;
+    float_pixels = (float *)sixel_allocator_malloc(allocator, float_bytes);
+    if (float_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "jpeg_promote_cmyk16_to_linear_float32: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+#if HAVE_LCMS2
+    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+        if (jpeg_convert_icc_cmyk16_to_srgb_f32(float_pixels,
+                                                cmyk_pixels,
+                                                pixel_count,
+                                                icc_profile,
+                                                icc_profile_length)) {
+            cms_converted = 1;
+        }
+    }
+#endif
+
+#if HAVE_LCMS2
+    if (!cms_converted) {
+        jpeg_unpack_cmyk16_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
+    }
+#else
+    jpeg_unpack_cmyk16_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
+#endif
+
+    if (enable_cms) {
+        status = jpeg_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, float_pixels);
+            return status;
+        }
+    }
+
+    sixel_allocator_free(allocator, *result);
+    *result = (unsigned char *)float_pixels;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 jpeg_decode_to_float32_from_precision(struct jpeg_decompress_struct *cinfo,
                                       float *dst,
                                       int data_precision)
@@ -767,6 +942,113 @@ jpeg_decode_to_float32_from_precision(struct jpeg_decompress_struct *cinfo,
             jpeg_unpack_rgb16_to_rgbf32(dst + row_index * pixel_count * 3u,
                                         buffer16[0],
                                         pixel_count);
+        }
+        return SIXEL_OK;
+    }
+#endif
+
+#if !SIXEL_LIBJPEG_HAS_JPEG12 && !SIXEL_LIBJPEG_HAS_JPEG16
+    (void)data_precision;
+#endif
+    sixel_helper_set_additional_message(
+        "load_jpeg: unsupported JPEG precision for this build.");
+    return SIXEL_BAD_INPUT;
+}
+
+static SIXELSTATUS
+jpeg_decode_cmyk16_from_precision(struct jpeg_decompress_struct *cinfo,
+                                  uint16_t *dst,
+                                  int data_precision)
+{
+#if SIXEL_LIBJPEG_HAS_JPEG12 || SIXEL_LIBJPEG_HAS_JPEG16
+    JDIMENSION row_stride;
+    size_t row_index;
+    size_t row_sample_count;
+    size_t sample_index;
+    size_t row_base;
+    unsigned int sample;
+#endif
+#if SIXEL_LIBJPEG_HAS_JPEG12
+    J12SAMPARRAY buffer12;
+#endif
+#if SIXEL_LIBJPEG_HAS_JPEG16
+    J16SAMPARRAY buffer16;
+#endif
+
+#if SIXEL_LIBJPEG_HAS_JPEG12 || SIXEL_LIBJPEG_HAS_JPEG16
+    row_stride = 0u;
+    row_index = 0u;
+    row_sample_count = 0u;
+    sample_index = 0u;
+    row_base = 0u;
+    sample = 0u;
+#endif
+#if SIXEL_LIBJPEG_HAS_JPEG12
+    buffer12 = NULL;
+#endif
+#if SIXEL_LIBJPEG_HAS_JPEG16
+    buffer16 = NULL;
+#endif
+
+    if (cinfo == NULL || dst == NULL || cinfo->output_components != 4) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)cinfo->output_width > SIZE_MAX / (size_t)cinfo->output_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+#if SIXEL_LIBJPEG_HAS_JPEG12 || SIXEL_LIBJPEG_HAS_JPEG16
+    row_stride = cinfo->output_width * (unsigned int)cinfo->output_components;
+    row_sample_count = (size_t)cinfo->output_width * 4u;
+#endif
+
+#if SIXEL_LIBJPEG_HAS_JPEG12
+    if (data_precision > 8 && data_precision <= 12) {
+        buffer12 = (J12SAMPARRAY)(*cinfo->mem->alloc_sarray)((j_common_ptr)cinfo,
+                                                              JPOOL_IMAGE,
+                                                              row_stride,
+                                                              1);
+        while (cinfo->output_scanline < cinfo->output_height) {
+            if (jpeg12_read_scanlines(cinfo, buffer12, 1) != 1u) {
+                return SIXEL_JPEG_ERROR;
+            }
+            if (cinfo->err->num_warnings > 0) {
+                sixel_helper_set_additional_message(
+                    "jpeg12_read_scanlines: error/warning occuered.");
+                return SIXEL_BAD_INPUT;
+            }
+            row_index = (size_t)cinfo->output_scanline - 1u;
+            row_base = row_index * row_sample_count;
+            for (sample_index = 0u; sample_index < row_sample_count; ++sample_index) {
+                sample = (unsigned int)buffer12[0][sample_index];
+                dst[row_base + sample_index] = (uint16_t)(
+                    ((uint32_t)sample * 65535u + (uint32_t)MAXJ12SAMPLE / 2u)
+                    / (uint32_t)MAXJ12SAMPLE);
+            }
+        }
+        return SIXEL_OK;
+    }
+#endif
+
+#if SIXEL_LIBJPEG_HAS_JPEG16
+    if (data_precision > 12 && data_precision <= 16) {
+        buffer16 = (J16SAMPARRAY)(*cinfo->mem->alloc_sarray)((j_common_ptr)cinfo,
+                                                              JPOOL_IMAGE,
+                                                              row_stride,
+                                                              1);
+        while (cinfo->output_scanline < cinfo->output_height) {
+            if (jpeg16_read_scanlines(cinfo, buffer16, 1) != 1u) {
+                return SIXEL_JPEG_ERROR;
+            }
+            if (cinfo->err->num_warnings > 0) {
+                sixel_helper_set_additional_message(
+                    "jpeg16_read_scanlines: error/warning occuered.");
+                return SIXEL_BAD_INPUT;
+            }
+            row_index = (size_t)cinfo->output_scanline - 1u;
+            row_base = row_index * row_sample_count;
+            for (sample_index = 0u; sample_index < row_sample_count; ++sample_index) {
+                dst[row_base + sample_index] = (uint16_t)buffer16[0][sample_index];
+            }
         }
         return SIXEL_OK;
     }
@@ -952,43 +1234,73 @@ load_jpeg(unsigned char **result,
         }
     } else if (data_precision <= 16) {
         if (decode_cmyk) {
-            sixel_helper_set_additional_message(
-                "load_jpeg: unsupported CMYK precision.");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-        if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto end;
-        }
-        size = pixel_count * 3u * sizeof(float);
-        *result = (unsigned char *)sixel_allocator_malloc(allocator, size);
-        if (*result == NULL) {
-            sixel_helper_set_additional_message(
-                "load_jpeg: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
+            if (pixel_count > SIZE_MAX / (4u * sizeof(uint16_t))) {
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            size = pixel_count * 4u * sizeof(uint16_t);
+            *result = (unsigned char *)sixel_allocator_malloc(allocator, size);
+            if (*result == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_jpeg: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
 
-        status = jpeg_decode_to_float32_from_precision(&cinfo,
-                                                       (float *)*result,
+            status = jpeg_decode_cmyk16_from_precision(&cinfo,
+                                                       (uint16_t *)*result,
                                                        data_precision);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-#if HAVE_LCMS2
-        if (enable_cms) {
-            (void)jpeg_convert_icc_rgbf32_to_srgb((float *)*result,
-                                                  pixel_count,
-                                                  icc_profile,
-                                                  icc_profile_length);
-        }
-#endif
-        if (enable_cms) {
-            status = jpeg_convert_rgbf32_gamma_to_linear((float *)*result,
-                                                         pixel_count);
             if (SIXEL_FAILED(status)) {
                 goto end;
+            }
+            status = jpeg_promote_cmyk16_to_linear_float32(result,
+                                                           *pwidth,
+                                                           *pheight,
+                                                           allocator,
+                                                           enable_cms
+#if HAVE_LCMS2
+                                                           ,
+                                                           icc_profile,
+                                                           icc_profile_length
+#endif
+                                                           );
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        } else {
+            if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            size = pixel_count * 3u * sizeof(float);
+            *result = (unsigned char *)sixel_allocator_malloc(allocator, size);
+            if (*result == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_jpeg: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+
+            status = jpeg_decode_to_float32_from_precision(&cinfo,
+                                                           (float *)*result,
+                                                           data_precision);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+#if HAVE_LCMS2
+            if (enable_cms) {
+                (void)jpeg_convert_icc_rgbf32_to_srgb((float *)*result,
+                                                      pixel_count,
+                                                      icc_profile,
+                                                      icc_profile_length);
+            }
+#endif
+            if (enable_cms) {
+                status = jpeg_convert_rgbf32_gamma_to_linear((float *)*result,
+                                                             pixel_count);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
             }
         }
     } else {
