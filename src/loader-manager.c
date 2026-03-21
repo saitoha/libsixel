@@ -12,6 +12,7 @@
 #include "loader-manager.h"
 
 #include "loader-common.h"
+#include "loader-order-schema.h"
 #include "options.h"
 #include "sixel_atomic.h"
 
@@ -51,105 +52,6 @@ loader_manager_unref_singleton_ref(sixel_atomic_u32_t *ref)
     }
 }
 
-
-static sixel_suboption_choice_t const
-g_suboption_choices_loader_enable_cms_loader[] = {
-    { "0", 0 },
-    { "1", 1 }
-};
-
-static sixel_suboption_key_t const g_subkeys_loader_enable_cms_loader[] = {
-    {
-        "enable_cms",
-        "e",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_suboption_choices_loader_enable_cms_loader,
-        sizeof(g_suboption_choices_loader_enable_cms_loader)
-            / sizeof(g_suboption_choices_loader_enable_cms_loader[0])
-    }
-};
-
-#if HAVE_WIC
-/*
- * The loader option parser accepts free-form text for ico_minsize and
- * validates it later via loader_manager_parse_positive_int().
- */
-static sixel_suboption_key_t const g_subkeys_loader_wic_loader[] = {
-    {
-        "ico_minsize",
-        NULL,
-        NULL,
-        SIXEL_SUBOPTION_VALUE_FREE,
-        NULL,
-        0u
-    }
-};
-#endif
-
-static sixel_option_value_schema_t const
-g_schema_loader_values_loader[] = {
-#if HAVE_LIBPNG
-    {
-        "libpng",
-        0,
-        g_subkeys_loader_enable_cms_loader,
-        sizeof(g_subkeys_loader_enable_cms_loader)
-            / sizeof(g_subkeys_loader_enable_cms_loader[0])
-    },
-#endif
-#if HAVE_JPEG
-    { "libjpeg", 1, NULL, 0u },
-#endif
-#if HAVE_WEBP
-    { "libwebp", 2, NULL, 0u },
-#endif
-#if HAVE_LIBTIFF
-    { "libtiff", 3, NULL, 0u },
-#endif
-#if HAVE_LIBRSVG
-    { "librsvg", 4, NULL, 0u },
-#endif
-    {
-        "builtin",
-        5,
-        g_subkeys_loader_enable_cms_loader,
-        sizeof(g_subkeys_loader_enable_cms_loader)
-            / sizeof(g_subkeys_loader_enable_cms_loader[0])
-    },
-#if HAVE_WIC
-    {
-        "wic",
-        6,
-        g_subkeys_loader_wic_loader,
-        sizeof(g_subkeys_loader_wic_loader)
-            / sizeof(g_subkeys_loader_wic_loader[0])
-    },
-#endif
-#if HAVE_COREGRAPHICS
-    { "coregraphics", 7, NULL, 0u },
-#endif
-#ifdef HAVE_GDK_PIXBUF2
-    { "gdk-pixbuf2", 8, NULL, 0u },
-#endif
-#if HAVE_GD
-    { "gd", 9, NULL, 0u },
-#endif
-#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    { "quicklook", 10, NULL, 0u },
-#endif
-#if HAVE_FREEDESKTOP_THUMBNAILING
-    { "gnome-thumbnailer", 11, NULL, 0u },
-#endif
-};
-
-static sixel_option_argument_schema_t const g_schema_loaders_loader = {
-    SIXEL_OPTFLAG_LOADERS,
-    "--loaders",
-    g_schema_loader_values_loader,
-    sizeof(g_schema_loader_values_loader)
-        / sizeof(g_schema_loader_values_loader[0])
-};
 
 #if HAVE_WIC
 static int
@@ -317,7 +219,7 @@ loader_manager_parse_loader_order(
 
     return sixel_option_parse_argument_list_with_suboptions(
         order,
-        &g_schema_loaders_loader,
+        sixel_loader_order_schema_get(),
         resolution,
         diagnostic,
         sizeof(diagnostic));
@@ -424,6 +326,67 @@ loader_manager_apply_loader_suboptions(char const *order)
 
     loader_manager_apply_loader_suboptions_resolution(&resolution);
     sixel_option_free_argument_list_resolution(&resolution);
+}
+
+size_t
+loader_manager_build_plan_from_resolution(
+    sixel_option_argument_list_resolution_t const *resolution,
+    sixel_loader_entry_t const *entries,
+    size_t entry_count,
+    sixel_loader_entry_t const **plan,
+    size_t plan_capacity)
+{
+    size_t plan_length;
+    size_t index;
+    sixel_loader_entry_t const *entry;
+    size_t limit;
+    int allow_fallback;
+    sixel_option_argument_resolution_t const *item;
+
+    plan_length = 0u;
+    index = 0u;
+    entry = NULL;
+    limit = plan_capacity;
+    allow_fallback = 1;
+    item = NULL;
+
+    if (resolution != NULL) {
+        allow_fallback = !resolution->has_trailing_bang;
+    }
+
+    if (plan != NULL && plan_capacity > 0u && resolution != NULL) {
+        for (index = 0u; index < resolution->item_count; ++index) {
+            item = &resolution->items[index].resolution;
+            if (item->base_def == NULL || item->base_def->name == NULL) {
+                continue;
+            }
+            entry = loader_manager_lookup_token(item->base_def->name,
+                                                strlen(item->base_def->name),
+                                                entries,
+                                                entry_count);
+            if (entry != NULL &&
+                !loader_manager_plan_contains(plan, plan_length, entry) &&
+                plan_length < limit) {
+                plan[plan_length] = entry;
+                ++plan_length;
+            }
+        }
+    }
+
+    if (allow_fallback && plan != NULL && limit > 0u) {
+        for (index = 0u; index < entry_count && plan_length < limit; ++index) {
+            entry = &entries[index];
+            if (!entry->default_enabled) {
+                continue;
+            }
+            if (!loader_manager_plan_contains(plan, plan_length, entry)) {
+                plan[plan_length] = entry;
+                ++plan_length;
+            }
+        }
+    }
+
+    return plan_length;
 }
 
 size_t

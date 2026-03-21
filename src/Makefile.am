@@ -167,6 +167,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-common.c \
                 $(srcdir)/loader-chain.c \
                 $(srcdir)/loader-factory.c \
+                $(srcdir)/loader-order-schema.c \
                 $(srcdir)/loader-manager.c \
                 $(srcdir)/loader-component.c \
                 $(srcdir)/loader-registry.c \
@@ -176,6 +177,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-component.h \
                 $(srcdir)/loader-chain.h \
                 $(srcdir)/loader-factory.h \
+                $(srcdir)/loader-order-schema.h \
                 $(srcdir)/loader-manager.h \
                 $(srcdir)/loader-coregraphics.h \
                 $(srcdir)/loader-gd.h \

@@ -56,6 +56,14 @@ loader_manager_parse_loader_order(
     char const *order,
     sixel_option_argument_list_resolution_t *resolution);
 
+size_t
+loader_manager_build_plan_from_resolution(
+    sixel_option_argument_list_resolution_t const *resolution,
+    sixel_loader_entry_t const *entries,
+    size_t entry_count,
+    sixel_loader_entry_t const **plan,
+    size_t plan_capacity);
+
 void
 loader_manager_apply_loader_suboptions_resolution(
     sixel_option_argument_list_resolution_t const *resolution);
