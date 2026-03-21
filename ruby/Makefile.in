@@ -379,6 +379,7 @@ RUBY_GEM_SOURCE_FILES = \
 	$(srcdir)/lib/libsixel/helper.rb \
 	$(srcdir)/lib/libsixel/frame.rb \
 	$(srcdir)/lib/libsixel/version.rb
+
 EXTRA_DIST = gem_builder.rb
 all: all-am
 
