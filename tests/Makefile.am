@@ -452,6 +452,15 @@ check-TESTS: $(check_PROGRAMS)
 	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
 	eval "$$config_exports"; \
 	set +a; \
+	if test "@ENABLE_PYTHON@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/python" wheel-local || exit $$?; \
+	fi; \
+	if test "@ENABLE_RUBY@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/ruby" all-local || exit $$?; \
+	fi; \
+	if test "@ENABLE_PHP@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local || exit $$?; \
+	fi; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
@@ -648,6 +657,9 @@ check-TESTS: $(check_PROGRAMS)
 .PHONY: check-python check-ruby check-perl check-php sixel-check-test-logs
 check-python:
 	@set -eu; \
+	if test "@ENABLE_PYTHON@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/python" wheel-local; \
+	fi; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
@@ -676,6 +688,9 @@ check-python:
 
 check-ruby:
 	@set -eu; \
+	if test "@ENABLE_RUBY@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/ruby" all-local; \
+	fi; \
 	ruby_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-ruby-test-venv.sh" \
 	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
 	    "$(abs_top_builddir)/tests/.ruby-test-venv" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
@@ -822,6 +837,9 @@ check-perl:
 
 check-php:
 	@set -eu; \
+	if test "@ENABLE_PHP@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local; \
+	fi; \
 	php_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-php-test-venv.sh" \
 	    "@ENABLE_PHP@" "@PHP@" "$(abs_top_builddir)/php/dist" \
 	    "$(abs_top_builddir)/tests/.php-test-venv" 2>$(top_builddir)/resolve-php-test-venv.log`; \
