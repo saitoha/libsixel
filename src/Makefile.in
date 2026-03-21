@@ -218,15 +218,14 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-libpng.c $(srcdir)/loader-libtiff.c \
 	$(srcdir)/loader-librsvg.c $(srcdir)/loader-libjpeg.c \
 	$(srcdir)/loader-libwebp.c $(srcdir)/loader-builtin.c \
-		$(srcdir)/loader-common.c $(srcdir)/loader-chain.c \
-		$(srcdir)/loader-factory.c \
-		$(srcdir)/loader-order-schema.c $(srcdir)/loader-manager.c \
-	$(srcdir)/loader-component.c $(srcdir)/loader-registry.c \
-	$(srcdir)/loader.h $(srcdir)/loader-builtin.h \
-	$(srcdir)/loader-common.h $(srcdir)/loader-component.h \
-		$(srcdir)/loader-chain.h $(srcdir)/loader-factory.h \
-		$(srcdir)/loader-order-schema.h $(srcdir)/loader-manager.h \
-		$(srcdir)/loader-coregraphics.h \
+	$(srcdir)/loader-common.c $(srcdir)/loader-chain.c \
+	$(srcdir)/loader-factory.c $(srcdir)/loader-order-schema.c \
+	$(srcdir)/loader-manager.c $(srcdir)/loader-component.c \
+	$(srcdir)/loader-registry.c $(srcdir)/loader.h \
+	$(srcdir)/loader-builtin.h $(srcdir)/loader-common.h \
+	$(srcdir)/loader-component.h $(srcdir)/loader-chain.h \
+	$(srcdir)/loader-factory.h $(srcdir)/loader-order-schema.h \
+	$(srcdir)/loader-manager.h $(srcdir)/loader-coregraphics.h \
 	$(srcdir)/loader-gd.h $(srcdir)/loader-gdk-pixbuf2.h \
 	$(srcdir)/loader-gnome-thumbnailer.h \
 	$(srcdir)/loader-libjpeg.h $(srcdir)/loader-libpng.h \
@@ -438,11 +437,11 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo \
 	./$(DEPDIR)/libsixel_la-loader-libjpeg.Plo \
 	./$(DEPDIR)/libsixel_la-loader-libpng.Plo \
-		./$(DEPDIR)/libsixel_la-loader-librsvg.Plo \
-		./$(DEPDIR)/libsixel_la-loader-libtiff.Plo \
-		./$(DEPDIR)/libsixel_la-loader-libwebp.Plo \
-		./$(DEPDIR)/libsixel_la-loader-order-schema.Plo \
-		./$(DEPDIR)/libsixel_la-loader-manager.Plo \
+	./$(DEPDIR)/libsixel_la-loader-librsvg.Plo \
+	./$(DEPDIR)/libsixel_la-loader-libtiff.Plo \
+	./$(DEPDIR)/libsixel_la-loader-libwebp.Plo \
+	./$(DEPDIR)/libsixel_la-loader-manager.Plo \
+	./$(DEPDIR)/libsixel_la-loader-order-schema.Plo \
 	./$(DEPDIR)/libsixel_la-loader-quicklook.Plo \
 	./$(DEPDIR)/libsixel_la-loader-registry.Plo \
 	./$(DEPDIR)/libsixel_la-loader-wic.Plo \
@@ -1176,8 +1175,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-librsvg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-libtiff.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-libwebp.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-order-schema.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-manager.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-order-schema.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-quicklook.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-registry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-wic.Plo@am__quote@ # am--include-marker
@@ -2186,8 +2185,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-librsvg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-libtiff.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-libwebp.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-manager.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
@@ -2327,8 +2326,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-librsvg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-libtiff.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-libwebp.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-manager.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo

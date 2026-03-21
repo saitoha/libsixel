@@ -589,6 +589,11 @@ staticcheck_cases = [
       python_for_tests_path],
   ],
   [
+    'staticcheck-binding-loader-setopt-sync',
+    [meson.current_source_dir() / '_static/sh/staticcheck-binding-loader-setopt-sync.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-build-doc-configure-help',
     [meson.current_source_dir() / '_static/sh/staticcheck-build-doc-configure-help.sh',
       meson.project_source_root()],
@@ -609,7 +614,7 @@ run_target('staticcheck',
   command: [
     sh,
     '-c',
-    'set -eu; "$1" "$2" "$3"; "$4" "$5" "$6" "$7"; "$8" "$9" "${10}"; "${11}" "${12}" "${13}"; "${14}" "${15}"; "${16}" "${17}"',
+    'set -eu; "$1" "$2" "$3"; "$4" "$5" "$6" "$7"; "$8" "$9" "${10}"; "${11}" "${12}" "${13}"; "${14}" "${15}"; "${16}" "${17}"; "${18}" "${19}"',
     'sh',
     staticcheck_cases[0][1][0],
     staticcheck_cases[0][1][1],
@@ -628,4 +633,6 @@ run_target('staticcheck',
     staticcheck_cases[4][1][1],
     staticcheck_cases[5][1][0],
     staticcheck_cases[5][1][1],
+    staticcheck_cases[6][1][0],
+    staticcheck_cases[6][1][1],
   ])

@@ -1079,6 +1079,7 @@ TEST_DATA_FILES = $(shell cd $(srcdir) && find data -type f | LC_ALL=C sort)
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-actionlint.sh \
+    _static/sh/staticcheck-binding-loader-setopt-sync.sh \
     _static/sh/staticcheck-shellcheck.sh \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
@@ -2641,6 +2642,7 @@ uninstall-am:
 	staticcheck-shellcheck \
 	staticcheck-codespell \
 	staticcheck-python-compileall \
+	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options
 
@@ -2650,6 +2652,7 @@ staticcheck: \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
 	staticcheck-python-compileall \
+	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options
 
@@ -2698,6 +2701,16 @@ staticcheck-python-compileall:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-python-compileall.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-binding-loader-setopt-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-binding-loader-setopt-sync" \
+		--log-file staticcheck-binding-loader-setopt-sync.log \
+		--trs-file staticcheck-binding-loader-setopt-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-build-doc-configure-help:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -2775,7 +2788,7 @@ sixel-check-test-logs: $(TEST_LOGS)
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
-check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts check-binding-loader-setopt-sync
+check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
@@ -3012,7 +3025,7 @@ prepare-binding-artifacts:
 	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local; \
 	fi
 
-check-python: prepare-binding-artifacts check-binding-loader-setopt-sync
+check-python: prepare-binding-artifacts
 	@set -eu; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
@@ -3041,7 +3054,7 @@ check-python: prepare-binding-artifacts check-binding-loader-setopt-sync
 	mv "$$python_cov_tmp" '$(abs_top_builddir)/python-coverage.info'; \
 	echo "python coverage exported to $(abs_top_builddir)/python-coverage.info"
 
-check-ruby: prepare-binding-artifacts check-binding-loader-setopt-sync
+check-ruby: prepare-binding-artifacts
 	@set -eu; \
 	ruby_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-ruby-test-venv.sh" \
 	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
@@ -3102,7 +3115,7 @@ check-ruby: prepare-binding-artifacts check-binding-loader-setopt-sync
 	fi; \
 	echo "ruby TAP logs exported to $$artifact_root"
 
-check-perl: check-binding-loader-setopt-sync
+check-perl:
 	@set -eu; \
 	perl_bin='@PERL@'; \
 	if test -z "$$perl_bin"; then \
@@ -3188,7 +3201,7 @@ check-perl: check-binding-loader-setopt-sync
 	fi; \
 	echo "perl TAP logs exported to $$artifact_root"
 
-check-php: prepare-binding-artifacts check-binding-loader-setopt-sync
+check-php: prepare-binding-artifacts
 	@set -eu; \
 	php_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-php-test-venv.sh" \
 	    "@ENABLE_PHP@" "@PHP@" "$(abs_top_builddir)/php/dist" \
