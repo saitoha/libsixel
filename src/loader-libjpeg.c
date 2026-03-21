@@ -81,6 +81,7 @@ typedef struct sixel_loader_libjpeg_component {
     sixel_loader_component_t base;
     sixel_allocator_t *allocator;
     unsigned int ref;
+    int enable_cms;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -396,7 +397,8 @@ static SIXELSTATUS
 jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
                                       int width,
                                       int height,
-                                      sixel_allocator_t *allocator
+                                      sixel_allocator_t *allocator,
+                                      int enable_cms
 #if HAVE_LCMS2
                                       ,
                                       unsigned char const *icc_profile,
@@ -452,7 +454,7 @@ jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
     }
 
 #if HAVE_LCMS2
-    if (icc_profile != NULL && icc_profile_length > 0u) {
+    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
         src_profile = sixel_cms_open_profile_from_mem(icc_profile,
                                                       icc_profile_length);
         if (src_profile != NULL) {
@@ -483,15 +485,17 @@ jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
     jpeg_unpack_rgb8_to_rgbf32(float_pixels, rgb_pixels, pixel_count);
 #endif
 
-    status = jpeg_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
-    if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(allocator, float_pixels);
+    if (enable_cms) {
+        status = jpeg_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, float_pixels);
 #if HAVE_LCMS2
-        sixel_cms_delete_transform(transform);
-        sixel_cms_close_profile(dst_profile);
-        sixel_cms_close_profile(src_profile);
+            sixel_cms_delete_transform(transform);
+            sixel_cms_close_profile(dst_profile);
+            sixel_cms_close_profile(src_profile);
 #endif
-        return status;
+            return status;
+        }
     }
 
     sixel_allocator_free(allocator, *result);
@@ -615,7 +619,8 @@ load_jpeg(unsigned char **result,
           int *pwidth,
           int *pheight,
           int *ppixelformat,
-          sixel_allocator_t *allocator)
+          sixel_allocator_t *allocator,
+          int enable_cms)
 {
     SIXELSTATUS status;
     JDIMENSION row_stride;
@@ -680,7 +685,8 @@ load_jpeg(unsigned char **result,
         goto end;
     }
 
-    *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    *ppixelformat = enable_cms ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                               : SIXEL_PIXELFORMAT_RGBFLOAT32;
 
     if (cinfo.output_width > INT_MAX || cinfo.output_height > INT_MAX) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -733,7 +739,8 @@ load_jpeg(unsigned char **result,
         status = jpeg_promote_rgb888_to_linear_float32(result,
                                                        *pwidth,
                                                        *pheight,
-                                                       allocator
+                                                       allocator,
+                                                       enable_cms
 #if HAVE_LCMS2
                                                        ,
                                                        icc_profile,
@@ -764,15 +771,19 @@ load_jpeg(unsigned char **result,
             goto end;
         }
 #if HAVE_LCMS2
-        (void)jpeg_convert_icc_rgbf32_to_srgb((float *)*result,
-                                              pixel_count,
-                                              icc_profile,
-                                              icc_profile_length);
+        if (enable_cms) {
+            (void)jpeg_convert_icc_rgbf32_to_srgb((float *)*result,
+                                                  pixel_count,
+                                                  icc_profile,
+                                                  icc_profile_length);
+        }
 #endif
-        status = jpeg_convert_rgbf32_gamma_to_linear((float *)*result,
-                                                     pixel_count);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+        if (enable_cms) {
+            status = jpeg_convert_rgbf32_gamma_to_linear((float *)*result,
+                                                         pixel_count);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
     } else {
         sixel_helper_set_additional_message(
@@ -811,6 +822,7 @@ end:
 static SIXELSTATUS
 load_with_libjpeg(
     sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     enable_cms,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
@@ -849,7 +861,8 @@ load_with_libjpeg(
                        &frame->width,
                        &frame->height,
                        &pixelformat,
-                       pchunk->allocator);
+                       pchunk->allocator,
+                       enable_cms);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -941,6 +954,10 @@ sixel_loader_libjpeg_setopt(sixel_loader_component_t *component,
 
     self = (sixel_loader_libjpeg_component_t *)component;
     switch (option) {
+    case SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_CMS:
+        flag = (int const *)value;
+        self->enable_cms = (flag != NULL && *flag == 0) ? 0 : 1;
+        return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;
         self->fstatic = flag != NULL ? *flag : 0;
@@ -1008,6 +1025,7 @@ sixel_loader_libjpeg_load(sixel_loader_component_t *component,
     }
 
     return load_with_libjpeg(chunk,
+                             self->enable_cms,
                              self->fstatic,
                              self->fuse_palette,
                              self->reqcolors,
@@ -1056,6 +1074,7 @@ sixel_loader_libjpeg_new(sixel_allocator_t *allocator,
     self->base.vtbl = &g_sixel_loader_libjpeg_vtbl;
     self->allocator = allocator;
     self->ref = 1u;
+    self->enable_cms = 1;
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
     sixel_allocator_ref(allocator);
