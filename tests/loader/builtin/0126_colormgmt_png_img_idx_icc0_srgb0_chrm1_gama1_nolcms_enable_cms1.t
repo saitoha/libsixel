@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: builtin loader colormgmt parity (nolcms, enable_cms=1) for idx/img_idx_icc0_srgb0_chrm1_gama1.png
+# TAP test: builtin loader colormgmt parity (nolcms, cms=1) for idx/img_idx_icc0_srgb0_chrm1_gama1.png
 
 set -eux
 
@@ -21,14 +21,14 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/idx/img_idx_icc0_srgb0_chrm1_gama1.png"
 reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/idx/img_idx_icc0_srgb0_chrm1_gama1.six"
-output_six="${ARTIFACT_LOCAL_DIR}/img_idx_icc0_srgb0_chrm1_gama1_builtin_nolcms_enable_cms1.six"
+output_six="${ARTIFACT_LOCAL_DIR}/img_idx_icc0_srgb0_chrm1_gama1_builtin_nolcms_cms1.six"
 
 if [ ! -f "${input_png}" ] || [ ! -f "${reference_six}" ]; then
     echo "not ok" 1 - "missing test fixture"
     exit 0
 fi
 
-run_img2sixel -Lbuiltin:enable_cms=1! "${input_png}" >"${output_six}" || {
+run_img2sixel -Lbuiltin:cms=1! "${input_png}" >"${output_six}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
 }
@@ -38,5 +38,5 @@ lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.97" "${reference_six}" "${
     exit 0
 }
 
-echo "ok" 1 - "builtin colormgmt (nolcms, enable_cms=1) matches reference: idx/img_idx_icc0_srgb0_chrm1_gama1.png"
+echo "ok" 1 - "builtin colormgmt (nolcms, cms=1) matches reference: idx/img_idx_icc0_srgb0_chrm1_gama1.png"
 exit 0

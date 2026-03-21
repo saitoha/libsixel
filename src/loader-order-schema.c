@@ -52,8 +52,8 @@ static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
 
 static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
     {
-        "enable_cms",
-        "e",
+        "cms",
+        "c",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_enable_cms,

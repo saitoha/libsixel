@@ -27,7 +27,7 @@ run_img2sixel -B#fff -Llibpng:cms=0! "${input_png}" >"${expected_sixel}" || {
     exit 0
 }
 
-run_img2sixel -B#fff -Lbuiltin:enable_cms=0! "${input_png}" >"${output_sixel}" || {
+run_img2sixel -B#fff -Lbuiltin:cms=0! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin bKGD cli override conversion failed"
     exit 0
 }
