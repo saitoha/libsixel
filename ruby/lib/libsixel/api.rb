@@ -276,19 +276,136 @@ module Libsixel
       __raw_sixel_loader_load_file(loader, path, callback)
     end
 
+    def self.__loader_setopt_option_bucket(option)
+      case option
+      when 1, 2, 3, 5, 6, 10, 11
+        :int
+      when 4
+        :bgcolor
+      when 8
+        :loader_order
+      when 7, 9
+        :pointer
+      else
+        :legacy
+      end
+    end
+
+    def self.__loader_setopt_legacy_coerce(value)
+      if value.nil? || value.is_a?(String) || value.is_a?(Fiddle::Pointer)
+        value
+      elsif value.respond_to?(:to_path)
+        value.to_path
+      elsif value.respond_to?(:to_str)
+        value.to_str
+      else
+        raise TypeError, 'value must be nil, String-like, Path-like, or Fiddle::Pointer'
+      end
+    end
+
+    def self.__loader_setopt_int_pointer(value)
+      parsed = 0
+      pointer = nil
+      packed = nil
+
+      return nil if value.nil?
+
+      begin
+        parsed = Integer(value)
+      rescue TypeError, ArgumentError
+        raise TypeError, 'integer option value must be Integer-like or nil'
+      end
+
+      begin
+        packed = [parsed].pack('i!')
+      rescue RangeError
+        raise ArgumentError, 'integer option value is out of range for C int'
+      end
+
+      pointer = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT)
+      pointer[0, Fiddle::SIZEOF_INT] = packed
+      pointer
+    end
+
+    def self.__loader_setopt_bgcolor_pointer(value)
+      components = nil
+      packed = nil
+      pointer = nil
+
+      return nil if value.nil?
+
+      if !value.respond_to?(:to_ary)
+        raise TypeError, 'bgcolor must be [r, g, b] or nil'
+      end
+      components = value.to_ary
+      if !components.is_a?(Array) || components.length != 3
+        raise ArgumentError, 'bgcolor must contain exactly 3 components'
+      end
+
+      components = components.map do |component|
+        parsed = 0
+        begin
+          parsed = Integer(component)
+        rescue TypeError, ArgumentError
+          raise TypeError, 'bgcolor components must be integers in 0..255'
+        end
+        if parsed < 0 || parsed > 255
+          raise ArgumentError, 'bgcolor components must be in 0..255'
+        end
+        parsed
+      end
+
+      packed = components.pack('C3')
+      pointer = Fiddle::Pointer.malloc(3)
+      pointer[0, 3] = packed
+      pointer
+    end
+
+    def self.__loader_setopt_loader_order(value)
+      if value.nil? || value.is_a?(String)
+        value
+      elsif value.respond_to?(:to_path)
+        value.to_path
+      elsif value.respond_to?(:to_str)
+        value.to_str
+      else
+        raise TypeError, 'loader_order must be nil, String-like, or Path-like'
+      end
+    end
+
+    def self.__loader_setopt_pointer(value, label)
+      return nil if value.nil?
+      return value if value.is_a?(Fiddle::Pointer)
+      return Fiddle::Pointer.new(value) if value.is_a?(Integer)
+      raise TypeError, "#{label} must be nil, Integer, or Fiddle::Pointer"
+    end
+
     def self.sixel_loader_setopt(loader, option, value)
       raise TypeError, 'option must be an Integer' unless option.is_a?(Integer)
 
-      coerced =
-        if value.nil? || value.is_a?(String) || value.is_a?(Fiddle::Pointer)
-          value
-        elsif value.respond_to?(:to_path)
-          value.to_path
-        elsif value.respond_to?(:to_str)
-          value.to_str
+      keepalive = nil
+      coerced = nil
+      bucket = __loader_setopt_option_bucket(option)
+
+      case bucket
+      when :int
+        keepalive = __loader_setopt_int_pointer(value)
+        coerced = keepalive
+      when :bgcolor
+        keepalive = __loader_setopt_bgcolor_pointer(value)
+        coerced = keepalive
+      when :loader_order
+        coerced = __loader_setopt_loader_order(value)
+      when :pointer
+        if option == 7
+          keepalive = __loader_setopt_pointer(value, 'cancel_flag')
         else
-          raise TypeError, 'value must be nil, String-like, Path-like, or Fiddle::Pointer'
+          keepalive = __loader_setopt_pointer(value, 'context')
         end
+        coerced = keepalive
+      else
+        coerced = __loader_setopt_legacy_coerce(value)
+      end
 
       __raw_sixel_loader_setopt(loader, option, coerced)
     end
