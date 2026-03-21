@@ -926,9 +926,13 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_CMS_RENDERING_INTENT is unset."
     },
     {
-        "SIXEL_LODER_WIC_ICO_MINSIZE",
+        "SIXEL_LOADER_WIC_ICO_MINSIZE",
         "default minimum edge size used by wic:ico_minsize when no\n"
         "suboption is provided. Accepts positive integers."
+    },
+    {
+        "SIXEL_LODER_WIC_ICO_MINSIZE",
+        "legacy alias for SIXEL_LOADER_WIC_ICO_MINSIZE."
     },
     {
         "SIXEL_PALETTE_SAMPLE_TARGET",
