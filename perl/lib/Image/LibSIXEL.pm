@@ -232,8 +232,18 @@ sub sixel_loader_load_file {
 sub sixel_loader_setopt {
     my ($loader, $option, $value) = @_;
     my $status;
+    my $value_arg = $value;
 
-    $status = _sixel_loader_setopt($loader, $option, $value);
+    defined $option || croak 'Bad argument: undefined option';
+    looks_like_number($option) || croak 'Bad argument: option must be numeric';
+
+    if (defined $value &&
+        $option == Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER() &&
+        !looks_like_number($value)) {
+        ($value_arg) = scalar_to_buffer($value);
+    }
+
+    $status = _sixel_loader_setopt($loader, $option, $value_arg);
     _croak_on_status($status);
     return;
 }
