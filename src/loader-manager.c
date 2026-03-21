@@ -149,6 +149,25 @@ loader_manager_read_env_positive_int(char const *name,
 
     return (int)parsed;
 }
+
+static int
+loader_manager_read_wic_ico_minsize_from_env(int fallback_value)
+{
+    char const *primary_name;
+    char const *legacy_name;
+    char const *primary_value;
+
+    primary_name = "SIXEL_LOADER_WIC_ICO_MINSIZE";
+    legacy_name = "SIXEL_LODER_WIC_ICO_MINSIZE";
+    primary_value = sixel_compat_getenv(primary_name);
+
+    if (primary_value != NULL && primary_value[0] != '\0') {
+        return loader_manager_read_env_positive_int(primary_name,
+                                                    fallback_value);
+    }
+
+    return loader_manager_read_env_positive_int(legacy_name, fallback_value);
+}
 #endif
 
 static int
@@ -247,8 +266,7 @@ loader_manager_init_loader_suboptions(
     suboptions->libpng_enable_cms = 1;
     suboptions->builtin_enable_cms = 1;
 #if HAVE_WIC
-    suboptions->wic_ico_minsize = loader_manager_read_env_positive_int(
-        "SIXEL_LODER_WIC_ICO_MINSIZE",
+    suboptions->wic_ico_minsize = loader_manager_read_wic_ico_minsize_from_env(
         0);
 #else
     suboptions->wic_ico_minsize = 0;
