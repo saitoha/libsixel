@@ -265,6 +265,7 @@ meson setup builddir
 | `-Dpython=` | feature, `disabled` | Build and install the Python bindings. |
 | `-Druby=` | feature, `disabled` | Build and install the Ruby bindings. |
 | `-Dphp=` | feature, `disabled` | Build the bundled PHP FFI package artifact under `build/php/dist/`. |
+| `-Dperl=` | feature, `disabled` | Enable Perl binding tests. |
 | `-Dfuzz=` | boolean, `false` | Build libFuzzer targets under `fuzz/`. |
 | `-Dtests=` | boolean, `true` | Build the test suites. |
 | `-Damalgamated_lib=` | boolean, `false` | Build `libsixel` from the amalgamated translation unit. |
