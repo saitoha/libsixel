@@ -4,7 +4,7 @@
 # Reference generation command (ImageMagick):
 #   magick tests/data/inputs/formats/snake-jpeg-12bit.jpg \
 #       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/0006_snake_jpeg_12bit_reference.ppm
+#       PPM:tests/data/loader/builtin_expected/0006_jpeg_ycbcr_12bit_seq420_r0_reference.ppm
 
 set -eux
 
@@ -21,7 +21,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0006_snake_jpeg_12bit_reference.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0006_jpeg_ycbcr_12bit_seq420_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_12bit.six"
 
 run_img2sixel -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
