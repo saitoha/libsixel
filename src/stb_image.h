@@ -3052,7 +3052,8 @@ static int stbi__jpeg_lossless_decode_sample(stbi__jpeg *z,
                                              int x,
                                              int y,
                                              int predictor_selector,
-                                             int point_transform)
+                                             int point_transform,
+                                             int *first_in_restart)
 {
    int precision;
    int max_sample;
@@ -3062,7 +3063,8 @@ static int stbi__jpeg_lossless_decode_sample(stbi__jpeg *z,
    int predictor;
    int t;
    int diff;
-   int sample;
+   int64_t diff64;
+   int64_t sample64;
    stbi__uint16 *plane;
    int stride;
 
@@ -3090,7 +3092,10 @@ static int stbi__jpeg_lossless_decode_sample(stbi__jpeg *z,
       rc = 0;
    }
 
-   if (x == 0 && y == 0) {
+   if (*first_in_restart) {
+      predictor = 1 << (precision - 1);
+      *first_in_restart = 0;
+   } else if (x == 0 && y == 0) {
       predictor = 1 << (precision - 1);
    } else if (y == 0) {
       predictor = ra;
@@ -3112,15 +3117,18 @@ static int stbi__jpeg_lossless_decode_sample(stbi__jpeg *z,
    } else {
       diff = stbi__extend_receive(z, t);
    }
-   diff <<= point_transform;
-
-   sample = predictor + diff;
-   if (sample < 0) {
-      sample = 0;
-   } else if (sample > max_sample) {
-      sample = max_sample;
+   diff64 = (int64_t)diff;
+   if (point_transform > 0) {
+      diff64 *= ((int64_t)1 << point_transform);
    }
-   plane[y * stride + x] = (stbi__uint16)sample;
+
+   sample64 = (int64_t)predictor + diff64;
+   if (sample64 < 0) {
+      sample64 = 0;
+   } else if (sample64 > max_sample) {
+      sample64 = max_sample;
+   }
+   plane[y * stride + x] = (stbi__uint16)sample64;
    return 1;
 }
 
@@ -3140,9 +3148,14 @@ static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
    int n;
    int predictor_selector;
    int point_transform;
+   int first_in_restart[4];
 
    predictor_selector = z->spec_start;
    point_transform = z->succ_low;
+   first_in_restart[0] = 1;
+   first_in_restart[1] = 1;
+   first_in_restart[2] = 1;
+   first_in_restart[3] = 1;
 
    stbi__jpeg_reset(z);
 
@@ -3155,13 +3168,18 @@ static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
                                                    i,
                                                    j,
                                                    predictor_selector,
-                                                   point_transform)) {
+                                                   point_transform,
+                                                   &first_in_restart[n])) {
                return 0;
             }
             if (--z->todo <= 0) {
                if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
                if (!STBI__RESTART(z->marker)) return 1;
                stbi__jpeg_reset(z);
+               first_in_restart[0] = 1;
+               first_in_restart[1] = 1;
+               first_in_restart[2] = 1;
+               first_in_restart[3] = 1;
             }
          }
       }
@@ -3186,7 +3204,8 @@ static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
                                                          sx,
                                                          sy,
                                                          predictor_selector,
-                                                         point_transform)) {
+                                                         point_transform,
+                                                         &first_in_restart[n])) {
                      return 0;
                   }
                }
@@ -3197,6 +3216,10 @@ static int stbi__parse_entropy_coded_data_lossless(stbi__jpeg *z)
             if (z->code_bits < 24) stbi__grow_buffer_unsafe(z);
             if (!STBI__RESTART(z->marker)) return 1;
             stbi__jpeg_reset(z);
+            first_in_restart[0] = 1;
+            first_in_restart[1] = 1;
+            first_in_restart[2] = 1;
+            first_in_restart[3] = 1;
          }
       }
    }
@@ -3610,7 +3633,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       z->img_comp[i].coeff = 0;
       z->img_comp[i].raw_coeff = 0;
       z->img_comp[i].linebuf = NULL;
-      if (z->data_precision > 8) {
+      if (z->lossless || z->data_precision > 8) {
          z->img_comp[i].raw_data = stbi__malloc_mad3(z->img_comp[i].w2,
                                                      z->img_comp[i].h2,
                                                      sizeof(stbi__uint16),
@@ -3623,7 +3646,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       if (z->img_comp[i].raw_data == NULL)
          return stbi__free_jpeg_components(z, i+1, stbi__err("outofmem", "Out of memory"));
       // align blocks for idct using mmx/sse
-      if (z->data_precision > 8) {
+      if (z->lossless || z->data_precision > 8) {
          z->img_comp[i].data = NULL;
          z->img_comp[i].data16 = (stbi__uint16*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
       } else {
@@ -3951,6 +3974,102 @@ static stbi_uc *stbi__resample_row_generic(stbi_uc *out, stbi_uc *in_near, stbi_
    return out;
 }
 
+typedef stbi__uint16 *(*resample_row_func_16)(stbi__uint16 *out,
+                                               stbi__uint16 *in0,
+                                               stbi__uint16 *in1,
+                                               int w,
+                                               int hs);
+
+typedef struct
+{
+   resample_row_func_16 resample;
+   stbi__uint16 *line0, *line1, *linebuf;
+   int hs, vs;
+   int w_lores;
+   int ystep;
+   int ypos;
+} stbi__resample16;
+
+#define stbi__div4_16(x) ((stbi__uint16) ((x) >> 2))
+#define stbi__div16_16(x) ((stbi__uint16) ((x) >> 4))
+
+static stbi__uint16 *stbi__resample_row_1_16(stbi__uint16 *out, stbi__uint16 *in_near, stbi__uint16 *in_far, int w, int hs)
+{
+   STBI_NOTUSED(out);
+   STBI_NOTUSED(in_far);
+   STBI_NOTUSED(w);
+   STBI_NOTUSED(hs);
+   return in_near;
+}
+
+static stbi__uint16 *stbi__resample_row_v_2_16(stbi__uint16 *out, stbi__uint16 *in_near, stbi__uint16 *in_far, int w, int hs)
+{
+   int i;
+   STBI_NOTUSED(hs);
+   for (i = 0; i < w; ++i)
+      out[i] = stbi__div4_16(3 * in_near[i] + in_far[i] + 2);
+   return out;
+}
+
+static stbi__uint16 *stbi__resample_row_h_2_16(stbi__uint16 *out, stbi__uint16 *in_near, stbi__uint16 *in_far, int w, int hs)
+{
+   int i;
+   stbi__uint16 *input = in_near;
+
+   if (w == 1) {
+      out[0] = out[1] = input[0];
+      return out;
+   }
+
+   out[0] = input[0];
+   out[1] = stbi__div4_16(input[0] * 3 + input[1] + 2);
+   for (i = 1; i < w - 1; ++i) {
+      int n = 3 * input[i] + 2;
+      out[i * 2 + 0] = stbi__div4_16(n + input[i - 1]);
+      out[i * 2 + 1] = stbi__div4_16(n + input[i + 1]);
+   }
+   out[i * 2 + 0] = stbi__div4_16(input[w - 2] * 3 + input[w - 1] + 2);
+   out[i * 2 + 1] = input[w - 1];
+
+   STBI_NOTUSED(in_far);
+   STBI_NOTUSED(hs);
+
+   return out;
+}
+
+static stbi__uint16 *stbi__resample_row_hv_2_16(stbi__uint16 *out, stbi__uint16 *in_near, stbi__uint16 *in_far, int w, int hs)
+{
+   int i, t0, t1;
+   if (w == 1) {
+      out[0] = out[1] = stbi__div4_16(3 * in_near[0] + in_far[0] + 2);
+      return out;
+   }
+
+   t1 = 3 * in_near[0] + in_far[0];
+   out[0] = stbi__div4_16(t1 + 2);
+   for (i = 1; i < w; ++i) {
+      t0 = t1;
+      t1 = 3 * in_near[i] + in_far[i];
+      out[i * 2 - 1] = stbi__div16_16(3 * t0 + t1 + 8);
+      out[i * 2    ] = stbi__div16_16(3 * t1 + t0 + 8);
+   }
+   out[w * 2 - 1] = stbi__div4_16(t1 + 2);
+
+   STBI_NOTUSED(hs);
+
+   return out;
+}
+
+static stbi__uint16 *stbi__resample_row_generic_16(stbi__uint16 *out, stbi__uint16 *in_near, stbi__uint16 *in_far, int w, int hs)
+{
+   int i, j;
+   STBI_NOTUSED(in_far);
+   for (i = 0; i < w; ++i)
+      for (j = 0; j < hs; ++j)
+         out[i * hs + j] = in_near[i];
+   return out;
+}
+
 // this is a reduced-precision calculation of YCbCr-to-RGB introduced
 // to make sure the code produces the same results in both SIMD and scalar
 #define stbi__float2fixed(x)  (((int) ((x) * 4096.0f + 0.5f)) << 8)
@@ -4206,9 +4325,9 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
 
    // load a jpeg image from whichever source, but leave in YCbCr format
    if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
-   if (z->data_precision > 8) {
+   if (z->lossless || z->data_precision > 8) {
       stbi__cleanup_jpeg(z);
-      return stbi__errpuc("only 8-bit", "JPEG format not supported: use float API for >8-bit JPEG");
+      return stbi__errpuc("only 8-bit", "JPEG format not supported: use float API for lossless or >8-bit JPEG");
    }
 
    // determine actual number of components to generate
@@ -4363,22 +4482,6 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
    }
 }
 
-static stbi__uint16 stbi__jpeg_sample_component_16(stbi__jpeg *z, int component, int x, int y)
-{
-   int hs;
-   int vs;
-   int sx;
-   int sy;
-
-   hs = z->img_h_max / z->img_comp[component].h;
-   vs = z->img_v_max / z->img_comp[component].v;
-   sx = x / hs;
-   sy = y / vs;
-   if (sx >= z->img_comp[component].x) sx = z->img_comp[component].x - 1;
-   if (sy >= z->img_comp[component].y) sy = z->img_comp[component].y - 1;
-   return z->img_comp[component].data16[sy * z->img_comp[component].w2 + sx];
-}
-
 static void stbi__jpeg_ycbcr16_to_rgbf32(stbi__uint16 y,
                                          stbi__uint16 cb,
                                          stbi__uint16 cr,
@@ -4400,6 +4503,17 @@ static void stbi__jpeg_ycbcr16_to_rgbf32(stbi__uint16 y,
    *b = stbi__clampf_0_1(yf + 1.77200f * cbf);
 }
 
+static void stbi__jpeg_free_resample16_linebufs(stbi__resample16 *res_comp, int decode_n)
+{
+   int i;
+   for (i = 0; i < decode_n; ++i) {
+      if (res_comp[i].linebuf) {
+         STBI_FREE(res_comp[i].linebuf);
+         res_comp[i].linebuf = NULL;
+      }
+   }
+}
+
 static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
                                                    int *out_x,
                                                    int *out_y,
@@ -4413,9 +4527,12 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
    int max_value_int;
    float scale;
    float center;
+   int k;
    unsigned int i;
    unsigned int j;
    float *output;
+   stbi__uint16 *coutput[4] = { NULL, NULL, NULL, NULL };
+   stbi__resample16 res_comp[4];
    stbi__uint16 comps[4];
 
    n = req_comp ? req_comp : z->s->img_n >= 3 ? 3 : 1;
@@ -4440,27 +4557,71 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
    scale = 1.0f / (float)max_value_int;
    center = (float)(1 << (precision - 1));
 
+   memset(res_comp, 0, sizeof(res_comp));
+   for (k = 0; k < decode_n; ++k) {
+      stbi__resample16 *r = &res_comp[k];
+
+      r->linebuf = (stbi__uint16 *)stbi__malloc_mad2(z->s->img_x + 3,
+                                                     sizeof(stbi__uint16),
+                                                     0);
+      if (!r->linebuf) {
+         stbi__jpeg_free_resample16_linebufs(res_comp, decode_n);
+         stbi__cleanup_jpeg(z);
+         return stbi__errpf("outofmem", "Out of memory");
+      }
+
+      r->hs = z->img_h_max / z->img_comp[k].h;
+      r->vs = z->img_v_max / z->img_comp[k].v;
+      r->ystep = r->vs >> 1;
+      r->w_lores = (z->s->img_x + r->hs - 1) / r->hs;
+      r->ypos = 0;
+      r->line0 = r->line1 = z->img_comp[k].data16;
+
+      if      (r->hs == 1 && r->vs == 1) r->resample = stbi__resample_row_1_16;
+      else if (r->hs == 1 && r->vs == 2) r->resample = stbi__resample_row_v_2_16;
+      else if (r->hs == 2 && r->vs == 1) r->resample = stbi__resample_row_h_2_16;
+      else if (r->hs == 2 && r->vs == 2) r->resample = stbi__resample_row_hv_2_16;
+      else                               r->resample = stbi__resample_row_generic_16;
+   }
+
    output = (float *) stbi__malloc_mad4(n, z->s->img_x, z->s->img_y, sizeof(float), 0);
    if (!output) {
+      stbi__jpeg_free_resample16_linebufs(res_comp, decode_n);
       stbi__cleanup_jpeg(z);
       return stbi__errpf("outofmem", "Out of memory");
    }
 
    for (j = 0; j < (unsigned int)z->s->img_y; ++j) {
       float *out = output + (size_t)n * (size_t)z->s->img_x * j;
+
+      for (k = 0; k < decode_n; ++k) {
+         stbi__resample16 *r = &res_comp[k];
+         int y_bot = r->ystep >= (r->vs >> 1);
+         coutput[k] = r->resample(r->linebuf,
+                                  y_bot ? r->line1 : r->line0,
+                                  y_bot ? r->line0 : r->line1,
+                                  r->w_lores,
+                                  r->hs);
+         if (++r->ystep >= r->vs) {
+            r->ystep = 0;
+            r->line0 = r->line1;
+            if (++r->ypos < z->img_comp[k].y)
+               r->line1 += z->img_comp[k].w2;
+         }
+      }
+
       for (i = 0; i < (unsigned int)z->s->img_x; ++i) {
          float r;
          float g;
          float b;
          float kf;
-         int k;
 
          r = 0.0f;
          g = 0.0f;
          b = 0.0f;
          kf = 1.0f;
          for (k = 0; k < decode_n; ++k) {
-            comps[k] = stbi__jpeg_sample_component_16(z, k, (int)i, (int)j);
+            comps[k] = coutput[k][i];
          }
          for (; k < 4; ++k) {
             comps[k] = 0;
@@ -4526,14 +4687,8 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
                   g = (float)comps[1] * scale;
                   b = (float)comps[2] * scale;
                } else {
-                  stbi__jpeg_ycbcr16_to_rgbf32(comps[0],
-                                               comps[1],
-                                               comps[2],
-                                               center,
-                                               scale,
-                                               &r,
-                                               &g,
-                                               &b);
+                  /* decode_n can be 1 for luma-only requests on YCbCr JPEGs */
+                  r = g = b = (float)comps[0] * scale;
                }
             } else if (z->s->img_n == 4 && z->app14_color_transform == 0) {
                kf = (float)comps[3] * scale;
@@ -4564,6 +4719,7 @@ static float *load_jpeg_image_float_high_precision(stbi__jpeg *z,
       }
    }
 
+   stbi__jpeg_free_resample16_linebufs(res_comp, decode_n);
    stbi__cleanup_jpeg(z);
    *out_x = z->s->img_x;
    *out_y = z->s->img_y;
@@ -4581,7 +4737,7 @@ static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *
 
    // load a jpeg image from whichever source, but leave in YCbCr format
    if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
-   if (z->data_precision > 8) {
+   if (z->lossless || z->data_precision > 8) {
       return load_jpeg_image_float_high_precision(z,
                                                   out_x,
                                                   out_y,
