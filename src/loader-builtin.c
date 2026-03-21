@@ -2413,7 +2413,6 @@ load_with_builtin(
                     frame->ncolors = palette_colors;
                     frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
                     frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-#if HAVE_LCMS2
                     /*
                      * Indexed PNG keeps palette entries in RGB triplets. Follow
                      * PNG colorspace fallback rules (iCCP > sRGB > cHRM/gAMA)
@@ -2428,7 +2427,6 @@ load_with_builtin(
                             pchunk->size,
                             pchunk->allocator);
                     }
-#endif
                     sixel_frame_set_pixels(frame, pixels);
                     frame->loop_count = 1;
                     goto done;
