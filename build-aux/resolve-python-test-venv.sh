@@ -25,16 +25,57 @@ wheel_dir=$3
 shared_python_venv=$4
 source_dir=${5-}
 libsixel_lib_dir=${6-}
-wheel_path=
+wheel_candidates=
 wheel_marker=
-wheel_signature=
 source_signature=
-combined_signature=
 
 emit_assignment() {
     value=$1
     quoted_value=$(sixel_quote_single "$value")
     printf "SIXEL_TEST_PYTHON=%s\n" "$quoted_value"
+}
+
+venv_has_libsixel_wheel() {
+    "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' \
+        >/dev/null 2>&1
+}
+
+try_install_wheel_candidate() {
+    candidate=$1
+    src_signature=$2
+    installed_wheel_signature=
+    candidate_signature=
+    candidate_combined_signature=
+
+    if [ ! -f "$candidate" ]; then
+        return 1
+    fi
+
+    candidate_signature=$(cksum "$candidate" | sed 's/ .*//')
+    candidate_combined_signature="$candidate_signature"
+    if [ -n "$src_signature" ]; then
+        candidate_combined_signature="${candidate_signature}:${src_signature}"
+    fi
+
+    if [ -f "$wheel_marker" ]; then
+        IFS= read -r installed_wheel_signature < "$wheel_marker" || \
+            installed_wheel_signature=
+        if [ "$installed_wheel_signature" = "$candidate_combined_signature" ] &&
+                venv_has_libsixel_wheel; then
+            emit_assignment "$shared_python_venv/bin/python"
+            return 0
+        fi
+    fi
+
+    "$shared_python_venv/bin/python" -m pip install --no-deps --force-reinstall \
+        "$candidate" >/dev/null 2>&1 || return 1
+    if ! venv_has_libsixel_wheel; then
+        return 1
+    fi
+
+    printf "%s\n" "$candidate_combined_signature" >"$wheel_marker"
+    emit_assignment "$shared_python_venv/bin/python"
+    return 0
 }
 
 compute_source_signature() {
@@ -96,9 +137,9 @@ if [ -z "$python_bin" ]; then
     exit 0
 fi
 
-wheel_path=$(find "$wheel_dir" -maxdepth 1 -type f -name 'libsixel_wheel-*.whl' \
-    2>/dev/null | head -n 1)
-if [ -z "$wheel_path" ]; then
+wheel_candidates=$(find "$wheel_dir" -maxdepth 1 -type f -name 'libsixel_wheel-*.whl' \
+    2>/dev/null | LC_ALL=C sort)
+if [ -z "$wheel_candidates" ]; then
     exit 0
 fi
 
@@ -106,12 +147,7 @@ fi
 # Recreate the venv when the wheel payload changes so make check does not
 # keep executing stale package code after python/ sources were modified.
 wheel_marker="$shared_python_venv/.libsixel-wheel-path"
-wheel_signature=$(cksum "$wheel_path" | sed 's/ .*//')
 source_signature=$(compute_source_signature "$source_dir" "$libsixel_lib_dir")
-combined_signature="$wheel_signature"
-if [ -n "$source_signature" ]; then
-    combined_signature="${wheel_signature}:${source_signature}"
-fi
 
 if ! "$python_bin" -c 'import importlib.util,sys; missing=[m for m in ("venv","ensurepip") if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)' >/dev/null 2>&1; then
     exit 0
@@ -126,33 +162,20 @@ if [ ! -x "$shared_python_venv/bin/python" ]; then
     exit 0
 fi
 
-if [ -f "$wheel_marker" ]; then
-    IFS= read -r installed_wheel_signature < "$wheel_marker" || \
-        installed_wheel_signature=
-    if [ "$installed_wheel_signature" != "$combined_signature" ]; then
-        rm -rf "$shared_python_venv"
+for wheel_candidate in $wheel_candidates; do
+    if try_install_wheel_candidate "$wheel_candidate" "$source_signature"; then
+        exit 0
     fi
-fi
+done
 
+rm -rf "$shared_python_venv"
+"$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || true
 if [ ! -x "$shared_python_venv/bin/python" ]; then
-    "$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || true
+    exit 0
 fi
 
-if ! "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
-    "$shared_python_venv/bin/python" -m pip install --no-deps "$wheel_path" \
-        >/dev/null 2>&1 || true
-fi
-
-if ! "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
-    rm -rf "$shared_python_venv"
-    "$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || true
-    if [ -x "$shared_python_venv/bin/python" ]; then
-        "$shared_python_venv/bin/python" -m pip install --no-deps "$wheel_path" \
-            >/dev/null 2>&1 || true
+for wheel_candidate in $wheel_candidates; do
+    if try_install_wheel_candidate "$wheel_candidate" "$source_signature"; then
+        exit 0
     fi
-fi
-
-if "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
-    printf "%s\n" "$combined_signature" >"$wheel_marker"
-    emit_assignment "$shared_python_venv/bin/python"
-fi
+done
