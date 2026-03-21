@@ -7,6 +7,14 @@
 
 set -eu
 
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+common_helpers="$script_dir/resolve-binding-test-common.sh"
+if [ ! -r "$common_helpers" ]; then
+    echo "error: missing helper script: $common_helpers" >&2
+    exit 1
+fi
+. "$common_helpers"
+
 if [ "$#" -ne 5 ]; then
     echo "Usage: $0 <enable_perl> <perl_bin> <perl_source_dir> <libsixel_lib_dir> <venv_dir>" >&2
     exit 1
@@ -25,18 +33,10 @@ cpanm_path=
 libsixel_shared_lib=
 perl_wrapper=
 
-quote_single() {
-    if [ -z "$1" ]; then
-        printf "''"
-        return 0
-    fi
-    printf "%s" "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
-}
-
 emit_assignment() {
     key=$1
     value=$2
-    quoted_value=$(quote_single "$value")
+    quoted_value=$(sixel_quote_single "$value")
     printf "%s=%s\n" "$key" "$quoted_value"
 }
 
@@ -94,23 +94,6 @@ source_signature=$(
         | cksum | awk '{print $1}'
 )
 source_marker="$perl_local_lib_root/.libsixel-perl-source-signature"
-
-resolve_libsixel_shared_lib() {
-    for candidate in \
-        "$libsixel_lib_dir/libsixel.so.1" \
-        "$libsixel_lib_dir/libsixel.1.so" \
-        "$libsixel_lib_dir/libsixel.so" \
-        "$libsixel_lib_dir/libsixel.1.dylib" \
-        "$libsixel_lib_dir/libsixel.dylib" \
-        "$libsixel_lib_dir/libsixel.dll" \
-        "$libsixel_lib_dir/libsixel-1.dll"; do
-        if [ -f "$candidate" ]; then
-            printf "%s\n" "$candidate"
-            return 0
-        fi
-    done
-    printf "%s\n" ""
-}
 
 resolve_cpanm_path() {
     local_cpanm="$perl_local_lib_root/bin/cpanm"
@@ -241,7 +224,7 @@ if [ ! -d "$perl_local_lib_root" ]; then
     mkdir -p "$perl_local_lib_root"
 fi
 
-libsixel_shared_lib=$(resolve_libsixel_shared_lib)
+libsixel_shared_lib=$(sixel_resolve_libsixel_shared_lib "$libsixel_lib_dir")
 if [ -z "$libsixel_shared_lib" ]; then
     exit 0
 fi

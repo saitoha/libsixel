@@ -823,6 +823,7 @@ HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
     bindings/python/_taptest.py \
+    bindings/check-loader-setopt-sync.sh \
     bindings/ruby/_coverage_runner.rb \
     bindings/ruby/_coverage_to_lcov.rb \
     bindings/perl/_coverage_to_lcov.pl \
@@ -2774,7 +2775,7 @@ sixel-check-test-logs: $(TEST_LOGS)
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
-check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
+check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts check-binding-loader-setopt-sync
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
@@ -2994,7 +2995,11 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 	rm -f "$$trs_manifest"; \
 	exit 0
 
-.PHONY: prepare-binding-artifacts check-python check-ruby check-perl check-php sixel-check-test-logs
+.PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts check-python check-ruby check-perl check-php sixel-check-test-logs
+check-binding-loader-setopt-sync:
+	@set -eu; \
+	"$(SHELL)" "$(abs_top_srcdir)/tests/bindings/check-loader-setopt-sync.sh" "$(abs_top_srcdir)"
+
 prepare-binding-artifacts:
 	@set -eu; \
 	if test "@ENABLE_PYTHON@" = "1"; then \
@@ -3007,7 +3012,7 @@ prepare-binding-artifacts:
 	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local; \
 	fi
 
-check-python: prepare-binding-artifacts
+check-python: prepare-binding-artifacts check-binding-loader-setopt-sync
 	@set -eu; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
@@ -3036,7 +3041,7 @@ check-python: prepare-binding-artifacts
 	mv "$$python_cov_tmp" '$(abs_top_builddir)/python-coverage.info'; \
 	echo "python coverage exported to $(abs_top_builddir)/python-coverage.info"
 
-check-ruby: prepare-binding-artifacts
+check-ruby: prepare-binding-artifacts check-binding-loader-setopt-sync
 	@set -eu; \
 	ruby_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-ruby-test-venv.sh" \
 	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
@@ -3097,7 +3102,7 @@ check-ruby: prepare-binding-artifacts
 	fi; \
 	echo "ruby TAP logs exported to $$artifact_root"
 
-check-perl:
+check-perl: check-binding-loader-setopt-sync
 	@set -eu; \
 	perl_bin='@PERL@'; \
 	if test -z "$$perl_bin"; then \
@@ -3183,7 +3188,7 @@ check-perl:
 	fi; \
 	echo "perl TAP logs exported to $$artifact_root"
 
-check-php: prepare-binding-artifacts
+check-php: prepare-binding-artifacts check-binding-loader-setopt-sync
 	@set -eu; \
 	php_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-php-test-venv.sh" \
 	    "@ENABLE_PHP@" "@PHP@" "$(abs_top_builddir)/php/dist" \
