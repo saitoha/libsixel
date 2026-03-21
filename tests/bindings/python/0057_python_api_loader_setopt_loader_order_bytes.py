@@ -18,7 +18,7 @@ def test_0057_python_api_loader_setopt_loader_order_bytes() -> None:
         raise SystemExit(2)
 
     loader = sixel_loader_new()
-    sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER, b"stb,png")
+    sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER, b"builtin")
     sixel_loader_unref(loader)
 
     print("loader order bytes-input path verified")

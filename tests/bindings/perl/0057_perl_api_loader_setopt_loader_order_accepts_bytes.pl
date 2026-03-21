@@ -21,7 +21,7 @@ my $ok = eval {
     Image::LibSIXEL::sixel_loader_setopt(
         $loader,
         Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER(),
-        pack('C*', unpack('C*', 'stb,png'))
+        pack('C*', unpack('C*', 'builtin'))
     );
     Image::LibSIXEL::sixel_loader_unref($loader);
     1;

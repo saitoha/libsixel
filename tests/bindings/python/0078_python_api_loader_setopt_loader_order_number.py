@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""TAP test that loader setopt accepts numeric loader-order input."""
+"""TAP test that loader setopt rejects numeric loader-order input."""
 
 from __future__ import annotations
 
 from _taptest import run_embedded_tap_test
 
 
-DESCRIPTION = 'loader setopt accepts numeric loader-order input'
+DESCRIPTION = 'loader setopt rejects numeric loader-order input'
 
 
 def test_0078_python_api_loader_setopt_loader_order_number() -> None:
@@ -20,10 +20,15 @@ def test_0078_python_api_loader_setopt_loader_order_number() -> None:
         raise SystemExit(2)
 
     loader = sixel_loader_new()
-    sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER, 123)
-    sixel_loader_unref(loader)
+    try:
+        sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER, 123)
+    except TypeError:
+        sixel_loader_unref(loader)
+        print('loader-order numeric rejection path verified')
+        return
 
-    print('loader-order numeric conversion path verified')
+    sixel_loader_unref(loader)
+    raise AssertionError('loader-order unexpectedly accepted numeric input')
 
 
 if __name__ == '__main__':

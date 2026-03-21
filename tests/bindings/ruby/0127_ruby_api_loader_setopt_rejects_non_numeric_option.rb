@@ -13,7 +13,7 @@ begin
   loader = Libsixel::API::Util.read_outptr(out)
   begin
     begin
-      Libsixel::API.sixel_loader_setopt(loader, 'loader-order', 'stb,png')
+      Libsixel::API.sixel_loader_setopt(loader, 'loader-order', 'builtin')
       puts 'not ok 1 - loader accepted non-numeric option identifier'
     rescue TypeError, ArgumentError
       puts 'ok 1 - loader setopt rejects non-numeric option identifier'

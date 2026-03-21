@@ -15,7 +15,7 @@ begin
     status = Libsixel::API.sixel_loader_setopt(
       loader,
       Libsixel::API::SIXEL_LOADER_OPTION_LOADER_ORDER,
-      'stb,png'
+      'builtin'
     )
 
     if Libsixel::API.failed?(status)

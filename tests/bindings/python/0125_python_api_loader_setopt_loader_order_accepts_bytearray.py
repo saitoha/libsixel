@@ -23,7 +23,7 @@ def test_0125_python_api_loader_setopt_loader_order_accepts_bytearray() -> None:
     sixel_loader_setopt(
         loader,
         SIXEL_LOADER_OPTION_LOADER_ORDER,
-        bytearray(b'stb,png'),
+        bytearray(b'builtin'),
     )
     sixel_loader_unref(loader)
 

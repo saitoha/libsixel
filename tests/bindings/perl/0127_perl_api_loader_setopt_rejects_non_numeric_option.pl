@@ -21,7 +21,7 @@ my $ok = eval {
     my $status = Image::LibSIXEL::_sixel_loader_setopt(
         $loader,
         'loader-order',
-        'stb,png'
+        'builtin'
     );
     Image::LibSIXEL::sixel_loader_unref($loader);
     die 'loader accepted non-numeric option identifier'
