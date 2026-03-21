@@ -187,6 +187,15 @@ void
 sixel_option_free_argument_list_resolution(
     sixel_option_argument_list_resolution_t *resolution);
 
+void
+sixel_option_init_argument_list_resolution(
+    sixel_option_argument_list_resolution_t *resolution);
+
+void
+sixel_option_move_argument_list_resolution(
+    sixel_option_argument_list_resolution_t *destination,
+    sixel_option_argument_list_resolution_t *source);
+
 #endif /* !defined(LIBSIXEL_OPTIONS_H) */
 
 /* emacs Local Variables:      */

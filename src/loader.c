@@ -951,10 +951,7 @@ sixel_loader_new(
     sixel_logger_init(&loader->logger);
     (void)sixel_logger_prepare_env(&loader->logger);
     loader->loader_order = NULL;
-    loader->loader_order_resolution.canonical_argument = NULL;
-    loader->loader_order_resolution.has_trailing_bang = 0;
-    loader->loader_order_resolution.items = NULL;
-    loader->loader_order_resolution.item_count = 0u;
+    sixel_option_init_argument_list_resolution(&loader->loader_order_resolution);
     loader->allocator = local_allocator;
     loader->last_loader_name[0] = '\0';
     loader->last_source_path[0] = '\0';
@@ -1029,10 +1026,7 @@ sixel_loader_setopt(
     copy = NULL;
     allocator = NULL;
     match_detail[0] = '\0';
-    parsed_order.canonical_argument = NULL;
-    parsed_order.has_trailing_bang = 0;
-    parsed_order.items = NULL;
-    parsed_order.item_count = 0u;
+    sixel_option_init_argument_list_resolution(&parsed_order);
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -1131,13 +1125,13 @@ sixel_loader_setopt(
         sixel_allocator_free(allocator, loader->loader_order);
         loader->loader_order = copy;
         copy = NULL;
-        sixel_option_free_argument_list_resolution(&loader->loader_order_resolution);
         if (value != NULL) {
-            loader->loader_order_resolution = parsed_order;
-            parsed_order.canonical_argument = NULL;
-            parsed_order.has_trailing_bang = 0;
-            parsed_order.items = NULL;
-            parsed_order.item_count = 0u;
+            sixel_option_move_argument_list_resolution(
+                &loader->loader_order_resolution,
+                &parsed_order);
+        } else {
+            sixel_option_free_argument_list_resolution(
+                &loader->loader_order_resolution);
         }
         status = SIXEL_OK;
         break;
@@ -1293,10 +1287,7 @@ sixel_loader_load_file(
     env_order = NULL;
     active_order_resolution = NULL;
     selected_name = NULL;
-    order_resolution.canonical_argument = NULL;
-    order_resolution.has_trailing_bang = 0;
-    order_resolution.items = NULL;
-    order_resolution.item_count = 0u;
+    sixel_option_init_argument_list_resolution(&order_resolution);
     memset(&option_context, 0, sizeof(option_context));
     memset(&trace_context, 0, sizeof(trace_context));
 

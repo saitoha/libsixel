@@ -688,10 +688,7 @@ sixel_encoder_parse_loader_order(
     status = SIXEL_OK;
     match_detail[0] = '\0';
     output = NULL;
-    parsed.canonical_argument = NULL;
-    parsed.has_trailing_bang = 0;
-    parsed.items = NULL;
-    parsed.item_count = 0u;
+    sixel_option_init_argument_list_resolution(&parsed);
 
     if (order_out != NULL) {
         *order_out = NULL;
