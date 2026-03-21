@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -Lbuiltin:enable_cms=2 \
+msg=$(set +xv; run_img2sixel -Lbuiltin:cms=2 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "unknown -L suboption value unexpectedly succeeded"
     exit 0
@@ -31,7 +31,7 @@ case "${msg}" in
 esac
 
 case "${msg}" in
-    *"\"2\""*"\"enable_cms\""*"valid values"*"0, 1"*)
+    *"\"2\""*"\"cms\""*"valid values"*"0, 1"*)
         ;;
     *)
         echo "not ok" 1 - "missing token/candidate details for unknown -L suboption value"

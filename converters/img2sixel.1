@@ -498,10 +498,9 @@ show debugging info and print the planner DAG (Directed Acyclic Graph).
 .B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names. Each entry may be abbreviated by a unique prefix,
-and a trailing "!" disables fallback loaders. The libpng loader accepts
-\fBcms=0|1\fP (short form \fBc=0|1\fP, default 1), while the builtin loader
-accepts \fBenable_cms=0|1\fP (short form \fBe=0|1\fP, default 1). The WIC
-loader also accepts suboptions such as \fBwic:ico_minsize=SIZE\fP to pick
+and a trailing "!" disables fallback loaders. The libpng and builtin loaders
+accept \fBcms=0|1\fP (short form \fBc=0|1\fP, default 1). The WIC loader also
+accepts suboptions such as \fBwic:ico_minsize=SIZE\fP to pick
 the smallest ICO frame whose edge is at least SIZE.
 .br
 Recognized loader names (availability depends on the build):
