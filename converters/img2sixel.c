@@ -595,7 +595,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "-L LIST, --loaders=LIST    choose loader priority order\n"
         "                           LIST is a comma separated list of\n"
         "                           loader names (prefixes accepted).\n"
-        "                           libpng supports :cms=0|1\n"
+        "                           libpng/libjpeg support :cms=0|1\n"
         "                           (or :c=0|1, default 1).\n"
         "                           builtin supports :cms=0|1\n"
         "                           (or :c=0|1, default 1).\n"

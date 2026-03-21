@@ -19,6 +19,7 @@ typedef struct sixel_loader_manager sixel_loader_manager_t;
 
 typedef struct sixel_loader_suboptions {
     int wic_ico_minsize;
+    int libjpeg_enable_cms;
     int libpng_enable_cms;
     int builtin_enable_cms;
 } sixel_loader_suboptions_t;
