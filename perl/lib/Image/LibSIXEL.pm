@@ -84,6 +84,76 @@ sub _validate_output_setter_argument {
     defined $value || croak "Bad argument: missing value for ${name}";
 }
 
+sub _coerce_loader_int_option_value {
+    my ($value) = @_;
+    my $text;
+    my $packed;
+    my $pointer;
+
+    return (undef, undef) if !defined $value;
+    if (!looks_like_number($value)) {
+        croak 'Bad argument: integer loader option requires numeric value';
+    }
+    $text = "$value";
+    if ($text !~ /\A[+-]?[0-9]+\z/) {
+        croak 'Bad argument: integer loader option requires integer value';
+    }
+
+    $packed = pack('i!', 0 + $text);
+    ($pointer) = scalar_to_buffer($packed);
+    return ($pointer, $packed);
+}
+
+sub _coerce_loader_bgcolor_value {
+    my ($value) = @_;
+    my @components;
+    my @bytes;
+    my $packed;
+    my $pointer;
+    my $text;
+
+    return (undef, undef) if !defined $value;
+    ref($value) eq 'ARRAY'
+        || croak 'Bad argument: bgcolor must be an ARRAY reference';
+
+    @components = @{$value};
+    @components == 3
+        || croak 'Bad argument: bgcolor must contain exactly 3 components';
+
+    for my $component (@components) {
+        if (!defined $component || !looks_like_number($component)) {
+            croak 'Bad argument: bgcolor components must be integers in 0..255';
+        }
+        $text = "$component";
+        if ($text !~ /\A[+-]?[0-9]+\z/) {
+            croak 'Bad argument: bgcolor components must be integers in 0..255';
+        }
+        if ($text < 0 || $text > 255) {
+            croak 'Bad argument: bgcolor components must be in range 0..255';
+        }
+        push @bytes, 0 + $text;
+    }
+
+    $packed = pack('C3', @bytes);
+    ($pointer) = scalar_to_buffer($packed);
+    return ($pointer, $packed);
+}
+
+sub _coerce_loader_order_value {
+    my ($value) = @_;
+    my $pointer;
+    my $text;
+
+    return (undef, undef) if !defined $value;
+    if (looks_like_number($value)) {
+        croak 'Bad argument: loader_order must be string-like';
+    }
+
+    $text = "$value";
+    ($pointer) = scalar_to_buffer($text);
+    return ($pointer, $text);
+}
+
 sub _clear_output_callback_error {
     my ($output) = @_;
     my $slot;
@@ -233,16 +303,53 @@ sub sixel_loader_setopt {
     my ($loader, $option, $value) = @_;
     my $status;
     my $value_arg = $value;
+    my $value_keepalive;
+    my $opt_require_static;
+    my $opt_use_palette;
+    my $opt_reqcolors;
+    my $opt_loop_control;
+    my $opt_insecure;
+    my $opt_wic_ico_minsize;
+    my $opt_start_frame_no;
+    my $opt_bgcolor;
+    my $opt_loader_order;
 
     defined $option || croak 'Bad argument: undefined option';
     looks_like_number($option) || croak 'Bad argument: option must be numeric';
 
-    if (defined $value &&
-        $option == Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER()) {
-        if (looks_like_number($value)) {
-            croak 'Bad argument: loader_order must be string-like';
-        }
-        ($value_arg) = scalar_to_buffer($value);
+    $value_keepalive = undef;
+    $opt_require_static =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_REQUIRE_STATIC();
+    $opt_use_palette =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_USE_PALETTE();
+    $opt_reqcolors =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_REQCOLORS();
+    $opt_loop_control =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOOP_CONTROL();
+    $opt_insecure =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_INSECURE();
+    $opt_wic_ico_minsize =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE();
+    $opt_start_frame_no =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_START_FRAME_NO();
+    $opt_bgcolor =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_BGCOLOR();
+    $opt_loader_order =
+        Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER();
+
+    if ($option == $opt_require_static ||
+            $option == $opt_use_palette ||
+            $option == $opt_reqcolors ||
+            $option == $opt_loop_control ||
+            $option == $opt_insecure ||
+            $option == $opt_wic_ico_minsize ||
+            $option == $opt_start_frame_no) {
+        ($value_arg, $value_keepalive) =
+            _coerce_loader_int_option_value($value);
+    } elsif ($option == $opt_bgcolor) {
+        ($value_arg, $value_keepalive) = _coerce_loader_bgcolor_value($value);
+    } elsif ($option == $opt_loader_order) {
+        ($value_arg, $value_keepalive) = _coerce_loader_order_value($value);
     }
 
     $status = _sixel_loader_setopt($loader, $option, $value_arg);

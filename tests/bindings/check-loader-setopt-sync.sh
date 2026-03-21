@@ -9,6 +9,7 @@ status=0
 
 COMMON_IDS="0032 0049 0056 0057 0060 0066 0078 0116 0122 0125 0127"
 RUBY_ONLY_IDS="0144 0146 0150 0167 0168"
+PERL_ONLY_IDS="0167 0168"
 
 binding_ext() {
     case "$1" in
@@ -50,6 +51,10 @@ done
 
 for case_id in $RUBY_ONLY_IDS; do
     check_case ruby "$case_id" rb
+done
+
+for case_id in $PERL_ONLY_IDS; do
+    check_case perl "$case_id" pl
 done
 
 if [ "$status" -ne 0 ]; then
