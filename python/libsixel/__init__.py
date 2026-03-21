@@ -916,6 +916,8 @@ def sixel_loader_load_file(loader, filename, fn_load):
 
     if fn_load is None:
         raise ValueError("fn_load callback is required")
+    if not callable(fn_load):
+        raise TypeError("fn_load callback must be callable")
 
     _sixel.sixel_loader_load_file.restype = c_int
     _sixel.sixel_loader_load_file.argtypes = [
