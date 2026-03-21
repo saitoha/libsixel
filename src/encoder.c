@@ -6379,19 +6379,50 @@ sixel_encoder_parse_dimension_value(char const *value,
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_quantize_threshold_text(
+    char const *text,
+    double *threshold_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || threshold_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno != 0 ||
+            parsed < 0.0 ||
+            parsed > 0.5) {
+        sixel_helper_set_additional_message(
+            "-Q threshold must be in range 0.0-0.5.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *threshold_out = parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_quantize_model_resolution(
     sixel_option_argument_resolution_t const *resolution)
 {
     size_t index;
     sixel_suboption_assignment_t const *assignment;
     char const *key_name;
-    char *endptr;
+    SIXELSTATUS threshold_status;
     double threshold;
 
     index = 0u;
     assignment = NULL;
     key_name = NULL;
-    endptr = NULL;
+    threshold_status = SIXEL_OK;
     threshold = 0.0;
     if (resolution == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -6401,23 +6432,55 @@ sixel_encoder_validate_quantize_model_resolution(
         assignment = resolution->assignments + index;
         key_name = assignment->resolved_key_name;
         if (key_name != NULL && strcmp(key_name, "threshold") == 0) {
-            errno = 0;
-            threshold = strtod(assignment->resolved_value_text, &endptr);
-            if (endptr == assignment->resolved_value_text ||
-                endptr == NULL ||
-                endptr[0] != '\0' ||
-                errno != 0 ||
-                threshold < 0.0 ||
-                threshold > 0.5) {
-                sixel_helper_set_additional_message(
-                    "-Q threshold must be in range 0.0-0.5.");
-                return SIXEL_BAD_ARGUMENT;
+            threshold_status = sixel_encoder_parse_quantize_threshold_text(
+                assignment->resolved_value_text,
+                &threshold);
+            if (SIXEL_FAILED(threshold_status)) {
+                return threshold_status;
             }
         }
         ++index;
     }
 
     return SIXEL_OK;
+}
+
+static int
+sixel_encoder_resolve_suboption_choice_value(
+    sixel_suboption_assignment_t const *assignment,
+    int *value_out)
+{
+    size_t index;
+    sixel_suboption_key_t const *key_def;
+    sixel_suboption_choice_t const *choice;
+
+    index = 0u;
+    key_def = NULL;
+    choice = NULL;
+    if (assignment == NULL || value_out == NULL ||
+            assignment->key_def == NULL ||
+            assignment->resolved_value_text == NULL) {
+        return 0;
+    }
+
+    key_def = assignment->key_def;
+    if (key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE ||
+            key_def->choices == NULL ||
+            key_def->choice_count == 0u) {
+        return 0;
+    }
+
+    while (index < key_def->choice_count) {
+        choice = key_def->choices + index;
+        if (choice->name != NULL &&
+                strcmp(choice->name, assignment->resolved_value_text) == 0) {
+            *value_out = choice->value;
+            return 1;
+        }
+        ++index;
+    }
+
+    return 0;
 }
 
 static SIXELSTATUS
@@ -6495,7 +6558,6 @@ sixel_encoder_setopt(
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
-    char *q_endptr;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     char match_detail[128];
@@ -6536,7 +6598,6 @@ sixel_encoder_setopt(
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
-    q_endptr = NULL;
     q_assignment = NULL;
     q_key = NULL;
 
@@ -7178,16 +7239,11 @@ sixel_encoder_setopt(
             q_assignment = q_resolution->assignments + q_index;
             q_key = q_assignment->resolved_key_name;
             if (q_key != NULL && strcmp(q_key, "inittype") == 0) {
-                match_result = sixel_option_match_choice(
-                    q_assignment->resolved_value_text,
-                    (sixel_option_choice_t const *)
-                    g_option_choices_kmeans_init_type,
-                    sizeof(g_option_choices_kmeans_init_type)
-                    / sizeof(g_option_choices_kmeans_init_type[0]),
-                    &match_value,
-                    match_detail,
-                    sizeof(match_detail));
-                if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q inittype resolution.");
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
@@ -7195,18 +7251,10 @@ sixel_encoder_setopt(
                 encoder->quantize_model_kmeans_init_type = match_value;
             } else if (q_key != NULL
                     && strcmp(q_key, "threshold") == 0) {
-                errno = 0;
-                q_endptr = NULL;
-                q_threshold = strtod(q_assignment->resolved_value_text,
-                                     &q_endptr);
-                if (q_endptr == q_assignment->resolved_value_text
-                        || q_endptr == NULL
-                        || q_endptr[0] != '\0'
-                        || errno != 0
-                        || q_threshold < 0.0
-                        || q_threshold > 0.5) {
-                    sixel_helper_set_additional_message(
-                        "-Q threshold must be in range 0.0-0.5.");
+                status = sixel_encoder_parse_quantize_threshold_text(
+                    q_assignment->resolved_value_text,
+                    &q_threshold);
+                if (SIXEL_FAILED(status)) {
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
