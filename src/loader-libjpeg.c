@@ -44,6 +44,7 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#include <setjmp.h>
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
@@ -89,6 +90,33 @@ typedef struct sixel_loader_libjpeg_component {
     int has_start_frame_no;
     int start_frame_no;
 } sixel_loader_libjpeg_component_t;
+
+typedef struct sixel_loader_libjpeg_error_context {
+    struct jpeg_error_mgr pub;
+    jmp_buf jmpbuf;
+    char message[JMSG_LENGTH_MAX];
+} sixel_loader_libjpeg_error_context_t;
+
+static void
+sixel_loader_libjpeg_error_exit(j_common_ptr cinfo)
+{
+    sixel_loader_libjpeg_error_context_t *ctx;
+
+    ctx = NULL;
+    if (cinfo == NULL || cinfo->err == NULL) {
+        return;
+    }
+
+    ctx = (sixel_loader_libjpeg_error_context_t *)cinfo->err;
+    if (ctx != NULL) {
+        ctx->message[0] = '\0';
+        (*cinfo->err->format_message)(cinfo, ctx->message);
+        if (ctx->message[0] != '\0') {
+            sixel_helper_set_additional_message(ctx->message);
+        }
+        longjmp(ctx->jmpbuf, 1);
+    }
+}
 
 #if HAVE_LCMS2
 /*
@@ -595,8 +623,9 @@ load_jpeg(unsigned char **result,
     size_t size;
     JSAMPARRAY buffer;
     struct jpeg_decompress_struct cinfo;
-    struct jpeg_error_mgr pub;
+    sixel_loader_libjpeg_error_context_t jerr;
     int data_precision;
+    int jpeg_failed;
 #if HAVE_LCMS2
     unsigned char *icc_profile;
     unsigned int icc_profile_length;
@@ -608,12 +637,22 @@ load_jpeg(unsigned char **result,
     size = 0u;
     buffer = NULL;
     data_precision = 8;
+    jpeg_failed = 0;
     *result = NULL;
+    memset(&cinfo, 0, sizeof(cinfo));
+    memset(&jerr, 0, sizeof(jerr));
 #if HAVE_LCMS2
     icc_profile = NULL;
     icc_profile_length = 0u;
 #endif
-    cinfo.err = jpeg_std_error(&pub);
+    cinfo.err = jpeg_std_error(&jerr.pub);
+    jerr.pub.error_exit = sixel_loader_libjpeg_error_exit;
+
+    if (setjmp(jerr.jmpbuf) != 0) {
+        jpeg_failed = 1;
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     jpeg_create_decompress(&cinfo);
     jpeg_mem_src(&cinfo, data, datasize);
@@ -749,8 +788,12 @@ end:
         sixel_allocator_free(allocator, *result);
         *result = NULL;
     }
-    jpeg_finish_decompress(&cinfo);
-    jpeg_destroy_decompress(&cinfo);
+    if (cinfo.mem != NULL) {
+        if (!jpeg_failed) {
+            (void)jpeg_finish_decompress(&cinfo);
+        }
+        jpeg_destroy_decompress(&cinfo);
+    }
 #if HAVE_LCMS2
     sixel_allocator_free(allocator, icc_profile);
 #endif
