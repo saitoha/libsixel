@@ -21,14 +21,16 @@ typedef struct sixel_cms_transform sixel_cms_transform_t;
 typedef enum sixel_cms_color_space {
     SIXEL_CMS_COLORSPACE_UNKNOWN = 0,
     SIXEL_CMS_COLORSPACE_RGB,
-    SIXEL_CMS_COLORSPACE_GRAY
+    SIXEL_CMS_COLORSPACE_GRAY,
+    SIXEL_CMS_COLORSPACE_CMYK
 } sixel_cms_color_space_t;
 
 typedef enum sixel_cms_pixel_format {
     SIXEL_CMS_PIXELFORMAT_GRAY_8 = 1,
     SIXEL_CMS_PIXELFORMAT_RGB_8,
     SIXEL_CMS_PIXELFORMAT_RGBA_8,
-    SIXEL_CMS_PIXELFORMAT_RGB_F32
+    SIXEL_CMS_PIXELFORMAT_RGB_F32,
+    SIXEL_CMS_PIXELFORMAT_CMYK_8
 } sixel_cms_pixel_format_t;
 
 enum {
