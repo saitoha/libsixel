@@ -30,5 +30,16 @@ case "${msg}" in
         ;;
 esac
 
+case "${msg}" in
+    *"\"2\""*"\"enable_cms\""*"valid values"*"0, 1"*)
+        ;;
+    *)
+        echo "not ok" 1 - "missing token/candidate details for unknown -L suboption value"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
+
 echo "ok" 1 - "unknown -L suboption value is rejected"
 exit 0

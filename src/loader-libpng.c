@@ -90,6 +90,7 @@ typedef struct sixel_loader_libpng_component {
     unsigned char bgcolor[3];
     int has_start_frame_no;
     int start_frame_no;
+    int enable_cms;
 } sixel_loader_libpng_component_t;
 
 /*
@@ -3921,6 +3922,7 @@ load_with_libpng(
     int                       /* in */     loop_control,
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no_override,
+    int                       /* in */     enable_cms_override,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -3936,7 +3938,7 @@ load_with_libpng(
     frame = NULL;
     pixels = NULL;
     start_frame_no = INT_MIN;
-    enable_cms = 1;
+    enable_cms = enable_cms_override != 0 ? 1 : 0;
     cms_applied = 0;
     cms_target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
@@ -3952,7 +3954,6 @@ load_with_libpng(
         }
     }
 
-    enable_cms = loader_libpng_get_enable_cms();
     status = load_apng_frames(pchunk,
                               fstatic,
                               fuse_palette,
@@ -4127,6 +4128,10 @@ sixel_loader_libpng_setopt(sixel_loader_component_t *component,
         self->start_frame_no = *flag;
         self->has_start_frame_no = 1;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_CMS:
+        flag = (int const *)value;
+        self->enable_cms = (flag != NULL && *flag == 0) ? 0 : 1;
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }
@@ -4160,6 +4165,7 @@ sixel_loader_libpng_load(sixel_loader_component_t *component,
                             self->loop_control,
                             self->has_start_frame_no,
                             self->start_frame_no,
+                            self->enable_cms,
                             fn_load,
                             context);
 }
@@ -4203,6 +4209,7 @@ sixel_loader_libpng_new(sixel_allocator_t *allocator,
     self->ref = 1u;
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
+    self->enable_cms = 1;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;
     return SIXEL_OK;

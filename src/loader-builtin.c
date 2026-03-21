@@ -79,6 +79,7 @@ typedef struct sixel_loader_builtin_component {
     int loop_control;
     int start_frame_no_set;
     int start_frame_no;
+    int enable_cms;
 } sixel_loader_builtin_component_t;
 
 void *
@@ -2102,6 +2103,10 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
             self->start_frame_no_set = 0;
         }
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS:
+        int_value = (int const *)value;
+        self->enable_cms = (int_value != NULL && *int_value == 0) ? 0 : 1;
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }
@@ -2135,7 +2140,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                              self->loop_control,
                              self->start_frame_no_set,
                              self->start_frame_no,
-                             loader_builtin_get_enable_cms(),
+                             self->enable_cms,
                              fn_load,
                              context);
 }
@@ -2187,6 +2192,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no_set = 0;
     self->start_frame_no = INT_MIN;
+    self->enable_cms = 1;
 
     *ppcomponent = &self->base;
     return SIXEL_OK;

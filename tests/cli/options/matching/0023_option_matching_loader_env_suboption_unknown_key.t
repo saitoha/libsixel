@@ -33,5 +33,16 @@ case "${msg}" in
         ;;
 esac
 
+case "${msg}" in
+    *"\"z\""*"valid keys"*"enable_cms"*)
+        ;;
+    *)
+        echo "not ok" 1 - "missing token/candidate details for env loader suboption"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
+
 echo "ok" 1 - "invalid env loader suboption is rejected"
 exit 0

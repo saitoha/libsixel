@@ -88,6 +88,7 @@ typedef struct sixel_loader_wic_component {
     int loop_control;
     int has_start_frame_no;
     int start_frame_no;
+    int ico_minsize;
 } sixel_loader_wic_component_t;
 
 
@@ -202,6 +203,7 @@ load_with_wic(
                                                   /* loop_control */
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no_override,
+    int                       /* in */     ico_minsize_override,
     sixel_load_image_function /* in */     fn_load,      /* callback */
     void                      /* in/out */ *context      /* private */
                                                   /* data for callback */
@@ -259,7 +261,7 @@ load_with_wic(
     candidate_frame = NULL;
     memset(&container_format, 0, sizeof(container_format));
     is_ico_container = 0;
-    ico_minsize = 0;
+    ico_minsize = ico_minsize_override;
     decoded_frames_end = 0;
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
@@ -363,7 +365,6 @@ load_with_wic(
         }
     }
 
-    ico_minsize = loader_wic_get_ico_minsize();
     if (is_ico_container && ico_minsize > 0) {
         for (i = 0; i < frame_count; ++i) {
             hr = decoder->lpVtbl->GetFrame(decoder, i, &candidate_frame);
@@ -835,6 +836,10 @@ sixel_loader_wic_setopt(sixel_loader_component_t *component,
         self->start_frame_no = *flag;
         self->has_start_frame_no = 1;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_WIC_ICO_MINSIZE:
+        flag = (int const *)value;
+        self->ico_minsize = (flag != NULL && *flag > 0) ? *flag : 0;
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }
@@ -868,6 +873,7 @@ sixel_loader_wic_load(sixel_loader_component_t *component,
                          self->loop_control,
                          self->has_start_frame_no,
                          self->start_frame_no,
+                         self->ico_minsize,
                          fn_load,
                          context);
 }
@@ -912,6 +918,7 @@ sixel_loader_wic_new(sixel_allocator_t *allocator,
     self->reqcolors = SIXEL_PALETTE_MAX;
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no = INT_MIN;
+    self->ico_minsize = 0;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;
     return SIXEL_OK;

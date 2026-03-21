@@ -36,6 +36,14 @@
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
 
+/*
+ * Internal loader-component options used by the manager to pass resolved
+ * -L suboption values without relying on process-global mutable state.
+ */
+#define SIXEL_LOADER_COMPONENT_OPTION_WIC_ICO_MINSIZE      (0x10001)
+#define SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_CMS    (0x10002)
+#define SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS   (0x10003)
+
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
 int loader_thumbnailer_get_default_size_hint(void);

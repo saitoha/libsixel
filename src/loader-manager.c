@@ -11,6 +11,7 @@
 
 #include "loader-manager.h"
 
+#include "compat_stub.h"
 #include "loader-common.h"
 #include "loader-order-schema.h"
 #include "options.h"
@@ -18,6 +19,12 @@
 
 #include <ctype.h>
 #include <limits.h>
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -109,6 +116,41 @@ loader_manager_parse_bool_flag(char const *text,
     return 0;
 }
 
+#if HAVE_WIC
+static int
+loader_manager_read_env_positive_int(char const *name,
+                                     int fallback_value)
+{
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0;
+    if (name == NULL) {
+        return fallback_value;
+    }
+
+    env_value = sixel_compat_getenv(name);
+    if (env_value == NULL || env_value[0] == '\0') {
+        return fallback_value;
+    }
+
+    errno = 0;
+    parsed = strtol(env_value, &endptr, 10);
+    if (errno != 0 || endptr == env_value || endptr == NULL ||
+        endptr[0] != '\0' || parsed <= 0) {
+        return fallback_value;
+    }
+    if (parsed > (long)INT_MAX) {
+        parsed = (long)INT_MAX;
+    }
+
+    return (int)parsed;
+}
+#endif
+
 static int
 loader_manager_plan_contains(sixel_loader_entry_t const **plan,
                              size_t plan_length,
@@ -195,8 +237,28 @@ loader_manager_parse_loader_order(
 }
 
 void
-loader_manager_apply_loader_suboptions_resolution(
-    sixel_option_argument_list_resolution_t const *resolution)
+loader_manager_init_loader_suboptions(
+    sixel_loader_suboptions_t *suboptions)
+{
+    if (suboptions == NULL) {
+        return;
+    }
+
+    suboptions->libpng_enable_cms = 1;
+    suboptions->builtin_enable_cms = 1;
+#if HAVE_WIC
+    suboptions->wic_ico_minsize = loader_manager_read_env_positive_int(
+        "SIXEL_LODER_WIC_ICO_MINSIZE",
+        0);
+#else
+    suboptions->wic_ico_minsize = 0;
+#endif
+}
+
+void
+loader_manager_resolve_loader_suboptions(
+    sixel_option_argument_list_resolution_t const *resolution,
+    sixel_loader_suboptions_t *suboptions)
 {
     size_t item_index;
     size_t assignment_index;
@@ -214,12 +276,11 @@ loader_manager_apply_loader_suboptions_resolution(
     value_length = 0u;
     parsed_value = 0;
 
-    /* Reset overrides first so malformed tokens cannot leak previous state. */
-#if HAVE_WIC
-    sixel_helper_set_wic_ico_minsize(0);
-#endif
-    sixel_helper_set_libpng_enable_cms(-1);
-    sixel_helper_set_builtin_enable_cms(-1);
+    if (suboptions == NULL) {
+        return;
+    }
+
+    loader_manager_init_loader_suboptions(suboptions);
 
     if (resolution == NULL) {
         return;
@@ -249,7 +310,7 @@ loader_manager_apply_loader_suboptions_resolution(
                 loader_manager_parse_positive_int(value_text,
                                                   value_length,
                                                   &parsed_value)) {
-                sixel_helper_set_wic_ico_minsize(parsed_value);
+                suboptions->wic_ico_minsize = parsed_value;
                 ++assignment_index;
                 continue;
             }
@@ -259,9 +320,9 @@ loader_manager_apply_loader_suboptions_resolution(
                                                value_length,
                                                &parsed_value)) {
                 if (strcmp(item->base_def->name, "libpng") == 0) {
-                    sixel_helper_set_libpng_enable_cms(parsed_value);
+                    suboptions->libpng_enable_cms = parsed_value;
                 } else if (strcmp(item->base_def->name, "builtin") == 0) {
-                    sixel_helper_set_builtin_enable_cms(parsed_value);
+                    suboptions->builtin_enable_cms = parsed_value;
                 }
             }
             ++assignment_index;

@@ -17,6 +17,12 @@
 
 typedef struct sixel_loader_manager sixel_loader_manager_t;
 
+typedef struct sixel_loader_suboptions {
+    int wic_ico_minsize;
+    int libpng_enable_cms;
+    int builtin_enable_cms;
+} sixel_loader_suboptions_t;
+
 typedef SIXELSTATUS (*sixel_loader_manager_configure_component_fn)(
     sixel_loader_component_t *component,
     void *context);
@@ -34,10 +40,12 @@ typedef void (*sixel_loader_manager_trace_result_fn)(
  * Manager API boundary
  *
  * 1) parse_loader_order(): parse order text into a validated resolution.
- * 2) build_plan_from_resolution(): map resolution entries to factory entries.
- * 3) build_chain_from_plan(): ask factory for per-entry eligibility and
+ * 2) resolve_loader_suboptions(): resolve defaults + overrides into an
+ *    execution-local suboption context.
+ * 3) build_plan_from_resolution(): map resolution entries to factory entries.
+ * 4) build_chain_from_plan(): ask factory for per-entry eligibility and
  *    materialize components in plan order.
- * 4) execute_chain(): run configured components until one succeeds.
+ * 5) execute_chain(): run configured components until one succeeds.
  */
 
 SIXELSTATUS
@@ -63,8 +71,13 @@ loader_manager_build_plan_from_resolution(
     size_t plan_capacity);
 
 void
-loader_manager_apply_loader_suboptions_resolution(
-    sixel_option_argument_list_resolution_t const *resolution);
+loader_manager_init_loader_suboptions(
+    sixel_loader_suboptions_t *suboptions);
+
+void
+loader_manager_resolve_loader_suboptions(
+    sixel_option_argument_list_resolution_t const *resolution,
+    sixel_loader_suboptions_t *suboptions);
 
 SIXELSTATUS
 loader_manager_build_chain_from_plan(

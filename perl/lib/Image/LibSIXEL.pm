@@ -238,8 +238,10 @@ sub sixel_loader_setopt {
     looks_like_number($option) || croak 'Bad argument: option must be numeric';
 
     if (defined $value &&
-        $option == Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER() &&
-        !looks_like_number($value)) {
+        $option == Image::LibSIXEL::Constants::SIXEL_LOADER_OPTION_LOADER_ORDER()) {
+        if (looks_like_number($value)) {
+            croak 'Bad argument: loader_order must be string-like';
+        }
         ($value_arg) = scalar_to_buffer($value);
     }
 

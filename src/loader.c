@@ -159,6 +159,7 @@ typedef struct sixel_loader_callback_state {
 typedef struct sixel_loader_component_option_context {
     sixel_loader_t *loader;
     int reqcolors;
+    sixel_loader_suboptions_t suboptions;
 } sixel_loader_component_option_context_t;
 
 typedef struct sixel_loader_manager_trace_context {
@@ -324,7 +325,8 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
 static SIXELSTATUS
 loader_apply_component_options(sixel_loader_component_t *component,
                                sixel_loader_t const *loader,
-                               int reqcolors)
+                               int reqcolors,
+                               sixel_loader_suboptions_t const *suboptions)
 {
     typedef struct loader_component_option_entry {
         int option;
@@ -343,6 +345,7 @@ loader_apply_component_options(sixel_loader_component_t *component,
     char message[128];
     size_t index;
     SIXELSTATUS status;
+    int suboption_value;
 
     /*
      * Distribute common execution parameters to every loader component.
@@ -362,6 +365,7 @@ loader_apply_component_options(sixel_loader_component_t *component,
     message[0] = '\0';
     index = 0;
     value = NULL;
+    suboption_value = 0;
     if (component == NULL || loader == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -406,6 +410,48 @@ loader_apply_component_options(sixel_loader_component_t *component,
                 message);
             return status;
         }
+    }
+
+    if (suboptions == NULL) {
+        return SIXEL_OK;
+    }
+
+#if HAVE_WIC
+    suboption_value = suboptions->wic_ico_minsize;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_WIC_ICO_MINSIZE,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'wic-ico-minsize'.");
+        return status;
+    }
+#endif
+
+    suboption_value = suboptions->libpng_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'libpng-enable-cms'.");
+        return status;
+    }
+
+    suboption_value = suboptions->builtin_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'builtin-enable-cms'.");
+        return status;
     }
 
     return SIXEL_OK;
@@ -1215,7 +1261,8 @@ loader_manager_configure_component(sixel_loader_component_t *component,
 
     return loader_apply_component_options(component,
                                           options->loader,
-                                          options->reqcolors);
+                                          options->reqcolors,
+                                          &options->suboptions);
 }
 
 static void
@@ -1273,6 +1320,7 @@ sixel_loader_load_file(
     sixel_loader_component_option_context_t option_context;
     sixel_loader_manager_trace_context_t trace_context;
     sixel_option_argument_list_resolution_t order_resolution;
+    sixel_loader_suboptions_t active_suboptions;
 
     pchunk = NULL;
     plan = NULL;
@@ -1288,6 +1336,7 @@ sixel_loader_load_file(
     active_order_resolution = NULL;
     selected_name = NULL;
     sixel_option_init_argument_list_resolution(&order_resolution);
+    loader_manager_init_loader_suboptions(&active_suboptions);
     memset(&option_context, 0, sizeof(option_context));
     memset(&trace_context, 0, sizeof(trace_context));
 
@@ -1375,7 +1424,8 @@ sixel_loader_load_file(
             active_order_resolution = &order_resolution;
         }
     }
-    loader_manager_apply_loader_suboptions_resolution(active_order_resolution);
+    loader_manager_resolve_loader_suboptions(active_order_resolution,
+                                             &active_suboptions);
 
     plan = sixel_allocator_malloc(loader->allocator,
                                   entry_count * sizeof(*plan));
@@ -1423,6 +1473,7 @@ sixel_loader_load_file(
 
     option_context.loader = loader;
     option_context.reqcolors = reqcolors;
+    option_context.suboptions = active_suboptions;
     trace_context.loader = loader;
     trace_context.input_bytes = pchunk->size;
     status = loader_manager_execute_chain(
