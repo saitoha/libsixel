@@ -13,6 +13,7 @@
 #include "chunk.h"
 #include "loader-chain.h"
 #include "loader-factory.h"
+#include "options.h"
 
 typedef struct sixel_loader_manager sixel_loader_manager_t;
 
@@ -49,6 +50,15 @@ loader_manager_unref(sixel_loader_manager_t *manager);
 
 void
 loader_manager_apply_loader_suboptions(char const *order);
+
+SIXELSTATUS
+loader_manager_parse_loader_order(
+    char const *order,
+    sixel_option_argument_list_resolution_t *resolution);
+
+void
+loader_manager_apply_loader_suboptions_resolution(
+    sixel_option_argument_list_resolution_t const *resolution);
 
 size_t
 loader_manager_build_plan(

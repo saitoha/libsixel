@@ -1232,11 +1232,13 @@ sixel_loader_load_file(
     size_t plan_length;
     int reqcolors;
     char const *order_override;
+    char const *plan_order;
     char const *env_order;
     char const *selected_name;
     sixel_loader_callback_state_t callback_state;
     sixel_loader_component_option_context_t option_context;
     sixel_loader_manager_trace_context_t trace_context;
+    sixel_option_argument_list_resolution_t order_resolution;
 
     pchunk = NULL;
     plan = NULL;
@@ -1248,8 +1250,13 @@ sixel_loader_load_file(
     plan_length = 0;
     reqcolors = 0;
     order_override = NULL;
+    plan_order = NULL;
     env_order = NULL;
     selected_name = NULL;
+    order_resolution.canonical_argument = NULL;
+    order_resolution.has_trailing_bang = 0;
+    order_resolution.items = NULL;
+    order_resolution.item_count = 0u;
     memset(&option_context, 0, sizeof(option_context));
     memset(&trace_context, 0, sizeof(trace_context));
 
@@ -1325,8 +1332,16 @@ sixel_loader_load_file(
             order_override = env_order;
         }
     }
-
-    loader_manager_apply_loader_suboptions(order_override);
+    plan_order = order_override;
+    if (order_override != NULL && order_override[0] != '\0') {
+        status = loader_manager_parse_loader_order(order_override,
+                                                   &order_resolution);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        plan_order = order_resolution.canonical_argument;
+    }
+    loader_manager_apply_loader_suboptions_resolution(&order_resolution);
 
     plan = sixel_allocator_malloc(loader->allocator,
                                   entry_count * sizeof(*plan));
@@ -1335,13 +1350,13 @@ sixel_loader_load_file(
         goto end;
     }
 
-    plan_length = loader_manager_build_plan(order_override,
+    plan_length = loader_manager_build_plan(plan_order,
                                     entries,
                                     entry_count,
                                     plan,
                                     entry_count);
     if (plan_length == 0u) {
-        if (order_override != NULL && order_override[0] != '\0') {
+        if (plan_order != NULL && plan_order[0] != '\0') {
             sixel_helper_set_additional_message(
                 "sixel_loader_load_file: no supported loader in loader "
                 "order.");
@@ -1435,6 +1450,7 @@ end:
     loader_factory_unref(factory);
     factory = NULL;
     sixel_chunk_destroy(pchunk);
+    sixel_option_free_argument_list_resolution(&order_resolution);
     sixel_loader_unref(loader);
 
 end0:

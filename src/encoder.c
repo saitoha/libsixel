@@ -897,41 +897,19 @@ sixel_encoder_parse_loader_order(
     char              /* out */ **order_out)
 {
     SIXELSTATUS status;
-    char const *cursor;
-    char const *token_start;
-    char const *token_end;
-    char const *order_end;
-    size_t token_length;
-    size_t output_length;
-    size_t output_used;
-    int fallback_disabled;
-    int saw_token;
-    char token_buffer[256];
+    size_t index;
     char match_detail[128];
-    sixel_option_argument_resolution_t loader_resolution;
-    size_t assignment_index;
-    size_t text_length;
     char *output;
+    sixel_option_argument_list_resolution_t parsed;
 
     status = SIXEL_OK;
-    cursor = NULL;
-    token_start = NULL;
-    token_end = NULL;
-    order_end = NULL;
-    token_length = 0u;
-    output_length = 0u;
-    output_used = 0u;
-    fallback_disabled = 0;
-    saw_token = 0;
-    token_buffer[0] = '\0';
+    index = 0u;
     match_detail[0] = '\0';
-    loader_resolution.resolved_base_value = 0;
-    loader_resolution.base_def = NULL;
-    loader_resolution.assignments = NULL;
-    loader_resolution.assignment_count = 0u;
-    assignment_index = 0u;
-    text_length = 0u;
     output = NULL;
+    parsed.canonical_argument = NULL;
+    parsed.has_trailing_bang = 0;
+    parsed.items = NULL;
+    parsed.item_count = 0u;
 
     if (order_out != NULL) {
         *order_out = NULL;
@@ -941,106 +919,26 @@ sixel_encoder_parse_loader_order(
         return SIXEL_OK;
     }
 
-    order_end = value + strlen(value);
-    while (order_end > value &&
-           isspace((unsigned char)order_end[-1])) {
-        --order_end;
-    }
-    if (order_end > value && order_end[-1] == '!') {
-        fallback_disabled = 1;
-        --order_end;
-        while (order_end > value &&
-               isspace((unsigned char)order_end[-1])) {
-            --order_end;
-        }
-    }
-    if (order_end == value) {
-        sixel_helper_set_additional_message(
-            "loaders option requires at least one loader name.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    for (cursor = value; cursor < order_end; ++cursor) {
-        if (*cursor == '!') {
-            sixel_helper_set_additional_message(
-                "loaders option only accepts a trailing '!'.");
-            return SIXEL_BAD_ARGUMENT;
-        }
-    }
-
-    cursor = value;
-    token_start = value;
-    while (cursor <= order_end) {
-        if (cursor == order_end || *cursor == ',') {
-            token_end = cursor;
-            while (token_start < token_end &&
-                   isspace((unsigned char)*token_start)) {
-                ++token_start;
-            }
-            while (token_end > token_start &&
-                   isspace((unsigned char)token_end[-1])) {
-                --token_end;
-            }
-            token_length = (size_t)(token_end - token_start);
-            if (token_length > 0u) {
-                if (token_length >= sizeof(token_buffer)) {
-                    sixel_helper_set_additional_message(
-                        "loader token is too long.");
-                    status = SIXEL_BAD_ARGUMENT;
-                    goto cleanup;
-                }
-                memcpy(token_buffer, token_start, token_length);
-                token_buffer[token_length] = '\0';
-                status = sixel_option_parse_argument_with_suboptions(
-                    token_buffer,
-                    &g_schema_loaders,
-                    &loader_resolution,
-                    match_detail,
-                    sizeof(match_detail));
-                if (SIXEL_FAILED(status)) {
-                    goto cleanup;
-                }
-                status = sixel_encoder_validate_loader_suboptions(
-                    &loader_resolution);
-                if (SIXEL_FAILED(status)) {
-                    goto cleanup;
-                }
-
-                if (saw_token) {
-                    output_length += 1u;
-                }
-                output_length += strlen(loader_resolution.base_def->name);
-                assignment_index = 0u;
-                while (assignment_index < loader_resolution.assignment_count) {
-                    output_length += 2u;
-                    output_length += strlen(
-                        loader_resolution.assignments
-                        [assignment_index].resolved_key_name);
-                    output_length += strlen(
-                        loader_resolution.assignments
-                        [assignment_index].resolved_value_text);
-                    ++assignment_index;
-                }
-                saw_token = 1;
-                sixel_option_free_argument_resolution(&loader_resolution);
-            }
-            token_start = cursor + 1;
-        }
-        ++cursor;
-    }
-
-    if (!saw_token) {
-        sixel_helper_set_additional_message(
-            "loaders option requires at least one loader name.");
-        status = SIXEL_BAD_ARGUMENT;
+    status = sixel_option_parse_argument_list_with_suboptions(
+        value,
+        &g_schema_loaders,
+        &parsed,
+        match_detail,
+        sizeof(match_detail));
+    if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
-    if (fallback_disabled) {
-        output_length += 1u;
+    while (index < parsed.item_count) {
+        status = sixel_encoder_validate_loader_suboptions(
+            &parsed.items[index].resolution);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        ++index;
     }
 
-    output = (char *)sixel_allocator_malloc(allocator, output_length + 1u);
+    output = arg_strdup(parsed.canonical_argument, allocator);
     if (output == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_parse_loader_order: "
@@ -1049,88 +947,13 @@ sixel_encoder_parse_loader_order(
         goto cleanup;
     }
 
-    cursor = value;
-    token_start = value;
-    output_used = 0u;
-    saw_token = 0;
-    while (cursor <= order_end) {
-        if (cursor == order_end || *cursor == ',') {
-            token_end = cursor;
-            while (token_start < token_end &&
-                   isspace((unsigned char)*token_start)) {
-                ++token_start;
-            }
-            while (token_end > token_start &&
-                   isspace((unsigned char)token_end[-1])) {
-                --token_end;
-            }
-            token_length = (size_t)(token_end - token_start);
-            if (token_length > 0u) {
-                memcpy(token_buffer, token_start, token_length);
-                token_buffer[token_length] = '\0';
-                status = sixel_option_parse_argument_with_suboptions(
-                    token_buffer,
-                    &g_schema_loaders,
-                    &loader_resolution,
-                    match_detail,
-                    sizeof(match_detail));
-                if (SIXEL_FAILED(status)) {
-                    goto cleanup;
-                }
-                if (saw_token) {
-                    output[output_used] = ',';
-                    ++output_used;
-                }
-                text_length = strlen(loader_resolution.base_def->name);
-                memcpy(output + output_used,
-                       loader_resolution.base_def->name,
-                       text_length);
-                output_used += text_length;
-                assignment_index = 0u;
-                while (assignment_index < loader_resolution.assignment_count) {
-                    output[output_used] = ':';
-                    ++output_used;
-                    text_length = strlen(
-                        loader_resolution.assignments
-                        [assignment_index].resolved_key_name);
-                    memcpy(output + output_used,
-                           loader_resolution.assignments
-                           [assignment_index].resolved_key_name,
-                           text_length);
-                    output_used += text_length;
-                    output[output_used] = '=';
-                    ++output_used;
-                    text_length = strlen(
-                        loader_resolution.assignments
-                        [assignment_index].resolved_value_text);
-                    memcpy(output + output_used,
-                           loader_resolution.assignments
-                           [assignment_index].resolved_value_text,
-                           text_length);
-                    output_used += text_length;
-                    ++assignment_index;
-                }
-                saw_token = 1;
-                sixel_option_free_argument_resolution(&loader_resolution);
-            }
-            token_start = cursor + 1;
-        }
-        ++cursor;
-    }
-
-    if (fallback_disabled) {
-        output[output_used] = '!';
-        ++output_used;
-    }
-    output[output_used] = '\0';
-
     if (order_out != NULL) {
         *order_out = output;
         output = NULL;
     }
 
 cleanup:
-    sixel_option_free_argument_resolution(&loader_resolution);
+    sixel_option_free_argument_list_resolution(&parsed);
     if (output != NULL) {
         sixel_allocator_free(allocator, output);
     }

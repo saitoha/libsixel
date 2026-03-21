@@ -108,6 +108,12 @@ typedef struct sixel_option_argument_list_item {
     sixel_option_argument_resolution_t resolution;
 } sixel_option_argument_list_item_t;
 
+/*
+ * Parsed argument-list tree for options that accept
+ * ITEM[:KEY=VALUE][,ITEM[:KEY=VALUE]...][!].
+ * The structure acts as a reusable AST shared across validation and
+ * downstream option application paths.
+ */
 typedef struct sixel_option_argument_list_resolution {
     char *canonical_argument;
     int has_trailing_bang;
