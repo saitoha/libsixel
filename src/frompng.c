@@ -929,6 +929,56 @@ sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
                                     int apply_chrm_matrix,
                                     double source_to_srgb[3][3]);
 
+static void
+sixel_frompng_convert_icc_to_srgb_internal_nolcms(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile_data,
+    size_t profile_length)
+{
+    size_t pixel_count;
+    sixel_icc_profile_t profile;
+    int has_profile;
+
+    pixel_count = 0u;
+    has_profile = 0;
+    memset(&profile, 0, sizeof(profile));
+    if (pixels == NULL || width <= 0 || height <= 0
+            || profile_data == NULL || profile_length == 0u) {
+        return;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (!sixel_icc_parse_profile(profile_data, profile_length, &profile)) {
+        return;
+    }
+    has_profile = 1;
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        (void)sixel_icc_apply_rgb_u8(pixels, pixel_count, &profile);
+        break;
+    case SIXEL_PIXELFORMAT_G8:
+        (void)sixel_icc_apply_gray_u8(pixels, pixel_count, &profile);
+        break;
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        (void)sixel_icc_apply_rgb_float32((float *)pixels, pixel_count, &profile);
+        break;
+    default:
+        break;
+    }
+
+    if (has_profile) {
+        sixel_icc_profile_destroy(&profile);
+    }
+}
+
 void
 sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
                                   int width,
@@ -936,11 +986,13 @@ sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
                                   unsigned char const *profile,
                                   size_t profile_length)
 {
-    (void)pixels;
-    (void)width;
-    (void)height;
-    (void)profile;
-    (void)profile_length;
+    sixel_frompng_convert_icc_to_srgb_internal_nolcms(
+        pixels,
+        width,
+        height,
+        SIXEL_PIXELFORMAT_RGB888,
+        profile,
+        profile_length);
 }
 
 void
@@ -952,12 +1004,13 @@ sixel_frompng_convert_icc_to_srgb_with_pixelformat(
     unsigned char const *profile,
     size_t profile_length)
 {
-    (void)pixels;
-    (void)width;
-    (void)height;
-    (void)pixelformat;
-    (void)profile;
-    (void)profile_length;
+    sixel_frompng_convert_icc_to_srgb_internal_nolcms(
+        pixels,
+        width,
+        height,
+        pixelformat,
+        profile,
+        profile_length);
 }
 
 void
