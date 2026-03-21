@@ -199,6 +199,23 @@ sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
                                                      profile_length);
 }
 
+void
+sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length)
+{
+    (void)sixel_frompng_convert_icc_to_srgb_internal(pixels,
+                                                     width,
+                                                     height,
+                                                     pixelformat,
+                                                     profile,
+                                                     profile_length);
+}
+
 static uint32_t
 sixel_frompng_read_be32(unsigned char const *p)
 {
@@ -922,6 +939,23 @@ sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
     (void)pixels;
     (void)width;
     (void)height;
+    (void)profile;
+    (void)profile_length;
+}
+
+void
+sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length)
+{
+    (void)pixels;
+    (void)width;
+    (void)height;
+    (void)pixelformat;
     (void)profile;
     (void)profile_length;
 }
