@@ -18,14 +18,13 @@ plan tests => 1;
 
 my $ok = eval {
     my $loader = Image::LibSIXEL::sixel_loader_new(undef);
-    my $status = Image::LibSIXEL::_sixel_loader_setopt(
-        $loader,
-        'loader-order',
-        'builtin'
-    );
+    my $rejected = 0;
+    eval {
+        Image::LibSIXEL::sixel_loader_setopt($loader, 'loader-order', 'builtin');
+        1;
+    } or $rejected = 1;
     Image::LibSIXEL::sixel_loader_unref($loader);
-    die 'loader accepted non-numeric option identifier'
-        if $status == Image::LibSIXEL::Constants::SIXEL_OK();
+    die 'loader accepted non-numeric option identifier' if !$rejected;
     1;
 };
 
