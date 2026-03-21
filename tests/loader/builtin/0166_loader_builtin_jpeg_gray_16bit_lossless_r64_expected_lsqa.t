@@ -4,7 +4,7 @@
 # Reference generation command (ImageMagick):
 #   magick tests/data/inputs/formats/snake-jpeg-16bit-lossless-gray-restart.jpg \
 #       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/0008_snake_jpeg_16bit_lossless_gray_restart_reference.ppm
+#       PPM:tests/data/loader/builtin_expected/0008_jpeg_gray_16bit_lossless_r64_reference.ppm
 
 set -eux
 
@@ -21,7 +21,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-16bit-lossless-gray-restart.jpg"
-reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0008_snake_jpeg_16bit_lossless_gray_restart_reference.ppm"
+reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0008_jpeg_gray_16bit_lossless_r64_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_16bit_lossless_restart.six"
 
 run_img2sixel -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
