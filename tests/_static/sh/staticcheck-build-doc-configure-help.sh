@@ -45,15 +45,39 @@ if test -s "$tmpdir/missing_in_doc.txt" || test -s "$tmpdir/missing_in_help.txt"
     echo "not ok 1 - build.md and ./configure --help option consistency"
     if test -s "$tmpdir/missing_in_doc.txt"; then
         echo "# Missing in build.md Autotools table:"
-        sed 's/^/#   /' "$tmpdir/missing_in_doc.txt"
+        while IFS= read -r opt; do
+            test -n "$opt" || continue
+            line_no=`grep -nE "AC_ARG_(ENABLE|WITH)\\(\\[?$opt\\]?" "$configure_ac" | sed -n '1s/:.*//p' || true`
+            if test -n "$line_no"; then
+                echo "#   $opt (defined at configure.ac:$line_no)"
+            else
+                echo "#   $opt (defined in configure.ac)"
+            fi
+        done < "$tmpdir/missing_in_doc.txt"
     fi
     if test -s "$tmpdir/missing_in_help.txt"; then
         echo "# Missing in ./configure --help output:"
-        sed 's/^/#   /' "$tmpdir/missing_in_help.txt"
+        while IFS= read -r opt; do
+            test -n "$opt" || continue
+            line_no=`grep -nE "AC_ARG_(ENABLE|WITH)\\(\\[?$opt\\]?" "$configure_ac" | sed -n '1s/:.*//p' || true`
+            if test -n "$line_no"; then
+                echo "#   $opt (defined at configure.ac:$line_no)"
+            else
+                echo "#   $opt (defined in configure.ac)"
+            fi
+        done < "$tmpdir/missing_in_help.txt"
     fi
     if test -s "$tmpdir/doc_not_in_ac.txt"; then
         echo "# Documented in build.md but not defined by AC_ARG_*:"
-        sed 's/^/#   /' "$tmpdir/doc_not_in_ac.txt"
+        while IFS= read -r opt; do
+            test -n "$opt" || continue
+            line_no=`grep -nF -- "$opt" "$build_md" | sed -n '1s/:.*//p' || true`
+            if test -n "$line_no"; then
+                echo "#   $opt (documented at build.md:$line_no)"
+            else
+                echo "#   $opt (documented in build.md)"
+            fi
+        done < "$tmpdir/doc_not_in_ac.txt"
     fi
     exit 1
 fi

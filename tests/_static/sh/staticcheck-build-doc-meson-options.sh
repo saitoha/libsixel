@@ -43,11 +43,27 @@ if test -s "$tmpdir/missing_in_doc.txt" || test -s "$tmpdir/doc_not_in_meson.txt
     echo "not ok 1 - build.md and meson_options.txt option consistency"
     if test -s "$tmpdir/missing_in_doc.txt"; then
         echo "# Missing in build.md Meson table:"
-        sed 's/^/#   /' "$tmpdir/missing_in_doc.txt"
+        while IFS= read -r opt; do
+            test -n "$opt" || continue
+            line_no=`grep -nE "^option\\('$opt'" "$meson_opts" | sed -n '1s/:.*//p' || true`
+            if test -n "$line_no"; then
+                echo "#   $opt (defined at meson_options.txt:$line_no)"
+            else
+                echo "#   $opt (defined in meson_options.txt)"
+            fi
+        done < "$tmpdir/missing_in_doc.txt"
     fi
     if test -s "$tmpdir/doc_not_in_meson.txt"; then
         echo "# Documented in build.md but not defined in meson_options.txt:"
-        sed 's/^/#   /' "$tmpdir/doc_not_in_meson.txt"
+        while IFS= read -r opt; do
+            test -n "$opt" || continue
+            line_no=`grep -nF -- "-D$opt" "$build_md" | sed -n '1s/:.*//p' || true`
+            if test -n "$line_no"; then
+                echo "#   $opt (documented at build.md:$line_no)"
+            else
+                echo "#   $opt (documented in build.md)"
+            fi
+        done < "$tmpdir/doc_not_in_meson.txt"
     fi
     exit 1
 fi
