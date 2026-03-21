@@ -39,5 +39,16 @@ case "${msg}" in
         ;;
 esac
 
+case "${msg}" in
+    *"\"abc\""*"\"ico_minsize\""*"positive integer"*)
+        ;;
+    *)
+        echo "not ok" 1 - "missing token/expectation details for invalid env WIC suboption"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
+
 echo "ok" 1 - "invalid env WIC suboption is rejected"
 exit 0

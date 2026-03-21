@@ -11,6 +11,9 @@
 #include "loader-order-schema.h"
 
 #include <limits.h>
+#if HAVE_STDIO_H
+# include <stdio.h>
+#endif
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -181,6 +184,7 @@ sixel_loader_order_validate_resolution(
     sixel_suboption_assignment_t const *assignment;
     char const *base_name;
     int parsed_value;
+    char message[160];
 
     item_index = 0u;
     assignment_index = 0u;
@@ -188,6 +192,7 @@ sixel_loader_order_validate_resolution(
     assignment = NULL;
     base_name = NULL;
     parsed_value = 0;
+    message[0] = '\0';
 
     if (resolution == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -222,8 +227,13 @@ sixel_loader_order_validate_resolution(
                         assignment->resolved_value_text,
                         strlen(assignment->resolved_value_text),
                         &parsed_value)) {
-                    sixel_helper_set_additional_message(
-                        "invalid wic suboption; expected :ico_minsize=SIZE.");
+                    (void)snprintf(
+                        message,
+                        sizeof(message),
+                        "invalid wic suboption value \"%s\" for key "
+                        "\"ico_minsize\"; expected a positive integer.",
+                        assignment->resolved_value_text);
+                    sixel_helper_set_additional_message(message);
                     return SIXEL_BAD_ARGUMENT;
                 }
             }
