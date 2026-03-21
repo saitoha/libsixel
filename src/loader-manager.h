@@ -33,10 +33,11 @@ typedef void (*sixel_loader_manager_trace_result_fn)(
 /*
  * Manager API boundary
  *
- * 1) build_plan(): parse order text into prioritized entry pointers.
- * 2) build_chain_from_plan(): ask factory for per-entry eligibility and
+ * 1) parse_loader_order(): parse order text into a validated resolution.
+ * 2) build_plan_from_resolution(): map resolution entries to factory entries.
+ * 3) build_chain_from_plan(): ask factory for per-entry eligibility and
  *    materialize components in plan order.
- * 3) execute_chain(): run configured components until one succeeds.
+ * 4) execute_chain(): run configured components until one succeeds.
  */
 
 SIXELSTATUS
@@ -47,9 +48,6 @@ loader_manager_ref(sixel_loader_manager_t *manager);
 
 void
 loader_manager_unref(sixel_loader_manager_t *manager);
-
-void
-loader_manager_apply_loader_suboptions(char const *order);
 
 SIXELSTATUS
 loader_manager_parse_loader_order(
@@ -67,14 +65,6 @@ loader_manager_build_plan_from_resolution(
 void
 loader_manager_apply_loader_suboptions_resolution(
     sixel_option_argument_list_resolution_t const *resolution);
-
-size_t
-loader_manager_build_plan(
-    char const *order,
-    sixel_loader_entry_t const *entries,
-    size_t entry_count,
-    sixel_loader_entry_t const **plan,
-    size_t plan_capacity);
 
 SIXELSTATUS
 loader_manager_build_chain_from_plan(
