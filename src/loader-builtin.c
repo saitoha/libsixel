@@ -292,7 +292,6 @@ end:
     return status;
 }
 
-#if HAVE_LCMS2
 static int
 sixel_builtin_extract_jpeg_icc(unsigned char const *buffer,
                                size_t size,
@@ -466,7 +465,7 @@ cleanup:
     return *profile != NULL;
 }
 
-
+#if HAVE_LCMS2
 static int
 sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                               size_t size,
@@ -2227,9 +2226,9 @@ load_with_builtin(
     int start_frame_no;
     int resolved_start_frame_no;
     int gif_frame_count;
-#if HAVE_LCMS2
     unsigned char *icc_profile;
     size_t icc_profile_length;
+#if HAVE_LCMS2
     uint16_t tiff_photometric;
 #endif
 
@@ -2247,12 +2246,10 @@ load_with_builtin(
     start_frame_no = INT_MIN;
     resolved_start_frame_no = -1;
     gif_frame_count = 0;
-#if HAVE_LCMS2
     icc_profile = NULL;
     icc_profile_length = 0u;
+#if HAVE_LCMS2
     tiff_photometric = (uint16_t)0xffffu;
-#else
-    (void)enable_cms;
 #endif
 
     if (start_frame_no_set) {
@@ -2510,7 +2507,6 @@ load_with_builtin(
                 pixels = (unsigned char *)float_pixels;
                 sixel_frame_set_pixels(frame, pixels);
                 frame->loop_count = 1;
-#if HAVE_LCMS2
                 if (enable_cms) {
                     if (sixel_builtin_extract_jpeg_icc(pchunk->buffer,
                                                        pchunk->size,
@@ -2526,7 +2522,6 @@ load_with_builtin(
                             icc_profile_length);
                     }
                 }
-#endif
                 frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
                 frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             } else {
@@ -2611,11 +2606,9 @@ done:
     status = SIXEL_OK;
 
 end:
-#if HAVE_LCMS2
     if (icc_profile != NULL) {
         sixel_allocator_free(pchunk->allocator, icc_profile);
     }
-#endif
     sixel_frame_unref(frame);
 
     return status;

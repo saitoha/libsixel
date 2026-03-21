@@ -22,7 +22,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-64-builtin-jpeg-icc.sixel"
 
-run_img2sixel -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
+run_img2sixel -Lbuiltin:cms=1! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
 }
