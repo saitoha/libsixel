@@ -102,6 +102,7 @@
 #include "loader-libjpeg.h"
 #include "loader-libpng.h"
 #include "loader-librsvg.h"
+#include "loader-order-schema.h"
 #include "loader-quicklook.h"
 #include "loader-registry.h"
 #include "loader-factory.h"
@@ -137,6 +138,7 @@ struct sixel_loader {
     void *context;
     sixel_logger_t logger;
     char *loader_order;
+    sixel_option_argument_list_resolution_t loader_order_resolution;
     sixel_allocator_t *allocator;
     char last_loader_name[64];
     char last_source_path[PATH_MAX];
@@ -949,6 +951,10 @@ sixel_loader_new(
     sixel_logger_init(&loader->logger);
     (void)sixel_logger_prepare_env(&loader->logger);
     loader->loader_order = NULL;
+    loader->loader_order_resolution.canonical_argument = NULL;
+    loader->loader_order_resolution.has_trailing_bang = 0;
+    loader->loader_order_resolution.items = NULL;
+    loader->loader_order_resolution.item_count = 0u;
     loader->allocator = local_allocator;
     loader->last_loader_name[0] = '\0';
     loader->last_source_path[0] = '\0';
@@ -993,6 +999,8 @@ sixel_loader_unref(
         allocator = loader->allocator;
         sixel_logger_close(&loader->logger);
         sixel_allocator_free(allocator, loader->loader_order);
+        sixel_option_free_argument_list_resolution(
+            &loader->loader_order_resolution);
         sixel_allocator_free(allocator, loader);
         sixel_allocator_unref(allocator);
     }
@@ -1008,14 +1016,23 @@ sixel_loader_setopt(
     int const *flag;
     unsigned char const *color;
     char const *order;
+    char const *canonical_order;
     char *copy;
     sixel_allocator_t *allocator;
+    char match_detail[128];
+    sixel_option_argument_list_resolution_t parsed_order;
 
     flag = NULL;
     color = NULL;
     order = NULL;
+    canonical_order = NULL;
     copy = NULL;
     allocator = NULL;
+    match_detail[0] = '\0';
+    parsed_order.canonical_argument = NULL;
+    parsed_order.has_trailing_bang = 0;
+    parsed_order.items = NULL;
+    parsed_order.item_count = 0u;
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -1090,18 +1107,37 @@ sixel_loader_setopt(
         break;
     case SIXEL_LOADER_OPTION_LOADER_ORDER:
         allocator = loader->allocator;
-        sixel_allocator_free(allocator, loader->loader_order);
-        loader->loader_order = NULL;
         if (value != NULL) {
             order = (char const *)value;
-            copy = loader_strdup(order, allocator);
+            status = sixel_loader_order_parse_and_validate(order,
+                                                           &parsed_order,
+                                                           match_detail,
+                                                           sizeof(match_detail));
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            canonical_order = parsed_order.canonical_argument;
+            if (canonical_order == NULL) {
+                canonical_order = "";
+            }
+            copy = loader_strdup(canonical_order, allocator);
             if (copy == NULL) {
                 sixel_helper_set_additional_message(
                     "sixel_loader_setopt: loader_strdup() failed.");
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
-            loader->loader_order = copy;
+        }
+        sixel_allocator_free(allocator, loader->loader_order);
+        loader->loader_order = copy;
+        copy = NULL;
+        sixel_option_free_argument_list_resolution(&loader->loader_order_resolution);
+        if (value != NULL) {
+            loader->loader_order_resolution = parsed_order;
+            parsed_order.canonical_argument = NULL;
+            parsed_order.has_trailing_bang = 0;
+            parsed_order.items = NULL;
+            parsed_order.item_count = 0u;
         }
         status = SIXEL_OK;
         break;
@@ -1117,6 +1153,10 @@ sixel_loader_setopt(
     }
 
 end:
+    if (copy != NULL) {
+        sixel_allocator_free(loader->allocator, copy);
+    }
+    sixel_option_free_argument_list_resolution(&parsed_order);
     sixel_loader_unref(loader);
 
 end0:
@@ -1234,6 +1274,7 @@ sixel_loader_load_file(
     char const *order_override;
     char const *plan_order;
     char const *env_order;
+    sixel_option_argument_list_resolution_t const *active_order_resolution;
     char const *selected_name;
     sixel_loader_callback_state_t callback_state;
     sixel_loader_component_option_context_t option_context;
@@ -1252,6 +1293,7 @@ sixel_loader_load_file(
     order_override = NULL;
     plan_order = NULL;
     env_order = NULL;
+    active_order_resolution = NULL;
     selected_name = NULL;
     order_resolution.canonical_argument = NULL;
     order_resolution.has_trailing_bang = 0;
@@ -1334,14 +1376,20 @@ sixel_loader_load_file(
     }
     plan_order = order_override;
     if (order_override != NULL && order_override[0] != '\0') {
-        status = loader_manager_parse_loader_order(order_override,
-                                                   &order_resolution);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+        if (order_override == loader->loader_order) {
+            active_order_resolution = &loader->loader_order_resolution;
+            plan_order = loader->loader_order_resolution.canonical_argument;
+        } else {
+            status = loader_manager_parse_loader_order(order_override,
+                                                       &order_resolution);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            active_order_resolution = &order_resolution;
+            plan_order = order_resolution.canonical_argument;
         }
-        plan_order = order_resolution.canonical_argument;
     }
-    loader_manager_apply_loader_suboptions_resolution(&order_resolution);
+    loader_manager_apply_loader_suboptions_resolution(active_order_resolution);
 
     plan = sixel_allocator_malloc(loader->allocator,
                                   entry_count * sizeof(*plan));
@@ -1350,8 +1398,8 @@ sixel_loader_load_file(
         goto end;
     }
 
-    if (order_override != NULL && order_override[0] != '\0') {
-        plan_length = loader_manager_build_plan_from_resolution(&order_resolution,
+    if (active_order_resolution != NULL) {
+        plan_length = loader_manager_build_plan_from_resolution(active_order_resolution,
                                                                 entries,
                                                                 entry_count,
                                                                 plan,

@@ -674,97 +674,6 @@ arg_strdup(
     return p;
 }
 
-/*
- * Parse the loader order list:
- *
- *   input := token[,token...][!]
- *
- * The steps are:
- *  1. Trim trailing whitespace and detect the optional "!" suffix.
- *  2. Match each token against the loader choice list (prefix-friendly).
- *  3. Preserve loader suboptions while canonicalizing loader names.
- *  4. Emit the canonical loader order string for the loader registry.
- */
-static int
-sixel_loader_parse_positive_int(char const *text,
-                                size_t length,
-                                int *value_out)
-{
-    size_t index;
-    int value;
-    unsigned char digit;
-
-    index = 0u;
-    value = 0;
-
-    if (text == NULL || value_out == NULL || length == 0u) {
-        return 0;
-    }
-
-    while (index < length) {
-        digit = (unsigned char)text[index];
-        if (digit < (unsigned char)'0' || digit > (unsigned char)'9') {
-            return 0;
-        }
-        if (value > (INT_MAX - 9) / 10) {
-            return 0;
-        }
-        value = value * 10 + (digit - (unsigned char)'0');
-        ++index;
-    }
-
-    if (value <= 0) {
-        return 0;
-    }
-
-    *value_out = value;
-    return 1;
-}
-
-static SIXELSTATUS
-sixel_encoder_validate_loader_suboptions(
-    sixel_option_argument_resolution_t const *resolution)
-{
-    size_t index;
-    sixel_suboption_assignment_t const *assignment;
-    int parsed_value;
-
-    index = 0u;
-    assignment = NULL;
-    parsed_value = 0;
-
-    if (resolution == NULL || resolution->base_def == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (strcmp(resolution->base_def->name, "wic") != 0 &&
-        strcmp(resolution->base_def->name, "libpng") != 0 &&
-        strcmp(resolution->base_def->name, "builtin") != 0 &&
-        resolution->assignment_count > 0u) {
-        sixel_helper_set_additional_message(
-            "specified loader does not support suboptions.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    while (index < resolution->assignment_count) {
-        assignment = resolution->assignments + index;
-        if (strcmp(resolution->base_def->name, "wic") == 0 &&
-            strcmp(assignment->resolved_key_name, "ico_minsize") == 0) {
-            if (!sixel_loader_parse_positive_int(
-                    assignment->resolved_value_text,
-                    strlen(assignment->resolved_value_text),
-                    &parsed_value)) {
-                sixel_helper_set_additional_message(
-                    "invalid wic suboption; expected :ico_minsize=SIZE.");
-                return SIXEL_BAD_ARGUMENT;
-            }
-        }
-        ++index;
-    }
-
-    return SIXEL_OK;
-}
-
 static SIXELSTATUS
 sixel_encoder_parse_loader_order(
     sixel_allocator_t /* in */ *allocator,
@@ -772,13 +681,11 @@ sixel_encoder_parse_loader_order(
     char              /* out */ **order_out)
 {
     SIXELSTATUS status;
-    size_t index;
     char match_detail[128];
     char *output;
     sixel_option_argument_list_resolution_t parsed;
 
     status = SIXEL_OK;
-    index = 0u;
     match_detail[0] = '\0';
     output = NULL;
     parsed.canonical_argument = NULL;
@@ -794,23 +701,13 @@ sixel_encoder_parse_loader_order(
         return SIXEL_OK;
     }
 
-    status = sixel_option_parse_argument_list_with_suboptions(
+    status = sixel_loader_order_parse_and_validate(
         value,
-        sixel_loader_order_schema_get(),
         &parsed,
         match_detail,
         sizeof(match_detail));
     if (SIXEL_FAILED(status)) {
         goto cleanup;
-    }
-
-    while (index < parsed.item_count) {
-        status = sixel_encoder_validate_loader_suboptions(
-            &parsed.items[index].resolution);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-        ++index;
     }
 
     output = arg_strdup(parsed.canonical_argument, allocator);
