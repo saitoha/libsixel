@@ -303,6 +303,12 @@
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
 
+/* whether libjpeg 12-bit scanline API is available */
+#undef HAVE_JPEG12_API
+
+/* whether libjpeg 16-bit scanline API is available */
+#undef HAVE_JPEG16_API
+
 /* whether lcms2 is available */
 #undef HAVE_LCMS2
 
