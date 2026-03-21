@@ -38,7 +38,19 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_enable_cms[] = 
     { "1", 1 }
 };
 
-static sixel_suboption_key_t const g_subkeys_loader_enable_cms[] = {
+static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
+    {
+        "cms",
+        "c",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_enable_cms,
+        sizeof(g_suboption_choices_loader_enable_cms)
+            / sizeof(g_suboption_choices_loader_enable_cms[0])
+    }
+};
+
+static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
     {
         "enable_cms",
         "e",
@@ -72,9 +84,9 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
     {
         "libpng",
         SIXEL_LOADER_SCHEMA_CHOICE_LIBPNG,
-        g_subkeys_loader_enable_cms,
-        sizeof(g_subkeys_loader_enable_cms)
-            / sizeof(g_subkeys_loader_enable_cms[0])
+        g_subkeys_loader_libpng_cms,
+        sizeof(g_subkeys_loader_libpng_cms)
+            / sizeof(g_subkeys_loader_libpng_cms[0])
     },
 #endif
 #if HAVE_JPEG
@@ -92,9 +104,9 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
     {
         "builtin",
         SIXEL_LOADER_SCHEMA_CHOICE_BUILTIN,
-        g_subkeys_loader_enable_cms,
-        sizeof(g_subkeys_loader_enable_cms)
-            / sizeof(g_subkeys_loader_enable_cms[0])
+        g_subkeys_loader_builtin_enable_cms,
+        sizeof(g_subkeys_loader_builtin_enable_cms)
+            / sizeof(g_subkeys_loader_builtin_enable_cms[0])
     },
 #if HAVE_WIC
     {

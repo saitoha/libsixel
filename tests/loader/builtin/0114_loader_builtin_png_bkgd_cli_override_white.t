@@ -22,7 +22,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png"
 expected_sixel="${ARTIFACT_LOCAL_DIR}/libpng_bgan6a08_white.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_bgan6a08_white.six"
 
-run_img2sixel -B#fff -Llibpng:enable_cms=0! "${input_png}" >"${expected_sixel}" || {
+run_img2sixel -B#fff -Llibpng:cms=0! "${input_png}" >"${expected_sixel}" || {
     echo "not ok" 1 - "libpng baseline conversion failed"
     exit 0
 }
