@@ -7,9 +7,10 @@ top_srcdir=${1:-$(pwd)}
 bindings_root="$top_srcdir/tests/bindings"
 status=0
 
-COMMON_IDS="0032 0049 0056 0057 0060 0066 0078 0116 0122 0125 0127"
-RUBY_ONLY_IDS="0144 0146 0150 0167 0168"
-PERL_ONLY_IDS="0167 0168"
+COMMON_IDS="0049 0056 0057 0060 0066 0078 0116 0122 0125 0127"
+PYTHON_RUBY_PHP_IDS="0032"
+PYTHON_RUBY_PERL_IDS="0167 0168"
+RUBY_ONLY_IDS="0144 0146 0150"
 
 binding_ext() {
     case "$1" in
@@ -53,7 +54,15 @@ for case_id in $RUBY_ONLY_IDS; do
     check_case ruby "$case_id" rb
 done
 
-for case_id in $PERL_ONLY_IDS; do
+for case_id in $PYTHON_RUBY_PHP_IDS; do
+    check_case python "$case_id" py
+    check_case ruby "$case_id" rb
+    check_case php "$case_id" php
+done
+
+for case_id in $PYTHON_RUBY_PERL_IDS; do
+    check_case python "$case_id" py
+    check_case ruby "$case_id" rb
     check_case perl "$case_id" pl
 done
 
