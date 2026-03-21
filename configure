@@ -28924,14 +28924,27 @@ else case e in #(
   e)
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Perl FFI::Platypus modules" >&5
 printf %s "checking for Perl FFI::Platypus modules... " >&6; }
-    if $PERL -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure \
-        -e 'exit 0' >/dev/null 2>&1; then
+    perl_ffi_check_output=
+    perl_ffi_check_status=1
+    perl_ffi_check_output=`$PERL -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure \
+        -e 'exit 0' 2>&1`
+    perl_ffi_check_status=$?
+    if test "x$perl_ffi_check_status" = x0; then
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
       message_perl="yes: perl binding tests"
     else
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Perl module probe failed: $PERL" >&5
+printf "%s\n" "$as_me: Perl module probe failed: $PERL" >&6;}
+      if test "x$perl_ffi_check_output" != x
+then :
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Perl probe output: $perl_ffi_check_output" >&5
+printf "%s\n" "$as_me: Perl probe output: $perl_ffi_check_output" >&6;}
+
+fi
       if test "x$enable_perl" = xyes
 then :
 

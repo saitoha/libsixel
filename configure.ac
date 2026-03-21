@@ -4478,12 +4478,20 @@ AS_IF([test "x$enable_perl" != xno], [
     ])
   ], [
     AC_MSG_CHECKING([for Perl FFI::Platypus modules])
-    if $PERL -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure \
-        -e 'exit 0' >/dev/null 2>&1; then
+    perl_ffi_check_output=
+    perl_ffi_check_status=1
+    perl_ffi_check_output=`$PERL -MFFI::Platypus -MFFI::Platypus::Buffer -MFFI::Platypus::Closure \
+        -e 'exit 0' 2>&1`
+    perl_ffi_check_status=$?
+    if test "x$perl_ffi_check_status" = x0; then
       AC_MSG_RESULT([yes])
       message_perl="yes: perl binding tests"
     else
       AC_MSG_RESULT([no])
+      AC_MSG_NOTICE([Perl module probe failed: $PERL])
+      AS_IF([test "x$perl_ffi_check_output" != x], [
+        AC_MSG_NOTICE([Perl probe output: $perl_ffi_check_output])
+      ])
       AS_IF([test "x$enable_perl" = xyes], [
         AC_MSG_ERROR([Perl modules FFI::Platypus, FFI::Platypus::Buffer, and FFI::Platypus::Closure are required])
       ], [
