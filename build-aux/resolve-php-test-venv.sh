@@ -2,12 +2,12 @@
 # Prepare an isolated PHP test environment from the packaged archive.
 #
 # Usage:
-#   resolve-php-test-venv.sh <enable_php> <php_bin> <package_dir> <venv_dir>
+#   resolve-php-test-venv.sh <enable_php> <php_bin> <package_dir> <venv_dir> [source_dir] [libsixel_lib_dir]
 
 set -eu
 
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 <enable_php> <php_bin> <package_dir> <venv_dir>" >&2
+if [ "$#" -ne 4 ] && [ "$#" -ne 6 ]; then
+    echo "Usage: $0 <enable_php> <php_bin> <package_dir> <venv_dir> [source_dir] [libsixel_lib_dir]" >&2
     exit 1
 fi
 
@@ -15,6 +15,8 @@ enable_php=$1
 configured_php=$2
 package_dir=$3
 shared_php_venv=$4
+source_dir=${5-}
+libsixel_lib_dir=${6-}
 php_bin=
 phpdbg_bin=
 binding_root=
@@ -23,6 +25,8 @@ lib_path=
 archive_path=
 archive_marker=
 archive_signature=
+source_signature=
+combined_signature=
 extract_root=
 stage_root=
 
@@ -225,6 +229,71 @@ resolve_php_ext_dir() {
     printf "%s\n" ""
 }
 
+resolve_libsixel_shared_lib() {
+    lib_dir=$1
+    if [ -z "$lib_dir" ] || [ ! -d "$lib_dir" ]; then
+        printf "%s\n" ""
+        return 0
+    fi
+    for candidate in \
+        "$lib_dir/libsixel.so.1" \
+        "$lib_dir/libsixel.1.so" \
+        "$lib_dir/libsixel.so" \
+        "$lib_dir/libsixel.1.dylib" \
+        "$lib_dir/libsixel.dylib" \
+        "$lib_dir/libsixel.dll" \
+        "$lib_dir/libsixel-1.dll"; do
+        if [ -f "$candidate" ]; then
+            printf "%s\n" "$candidate"
+            return 0
+        fi
+    done
+    printf "%s\n" ""
+}
+
+compute_source_signature() {
+    src_dir=$1
+    lib_dir=$2
+    sig_file="${TMPDIR:-/tmp}/libsixel-php-source-signature-$$.tmp"
+    src_lib=
+
+    rm -f "$sig_file"
+    : > "$sig_file"
+
+    if [ -n "$src_dir" ] && [ -d "$src_dir" ]; then
+        for path in \
+            "$src_dir/composer.json" \
+            "$src_dir/package_builder.php" \
+            "$src_dir/README" \
+            "$src_dir/README.md"; do
+            if [ -f "$path" ]; then
+                cksum "$path" >> "$sig_file"
+            fi
+        done
+        if [ -d "$src_dir/src" ]; then
+            find "$src_dir/src" -type f -name '*.php' \
+                | LC_ALL=C sort \
+                | while IFS= read -r path; do
+                    cksum "$path"
+                done >> "$sig_file"
+        fi
+    fi
+
+    src_lib=$(resolve_libsixel_shared_lib "$lib_dir")
+    if [ -n "$src_lib" ]; then
+        cksum "$src_lib" >> "$sig_file"
+    fi
+
+    if [ ! -s "$sig_file" ]; then
+        rm -f "$sig_file"
+        printf "%s\n" ""
+        return 0
+    fi
+
+    cksum "$sig_file" | awk '{print $1}'
+    rm -f "$sig_file"
+}
+
 setup_php_wrapper() {
     wrapper_path=$1
     target_php=$2
@@ -319,6 +388,8 @@ resolve_libpath() {
 
 package_dir=$(to_shell_path "$package_dir")
 shared_php_venv=$(to_shell_path "$shared_php_venv")
+source_dir=$(to_shell_path "$source_dir")
+libsixel_lib_dir=$(to_shell_path "$libsixel_lib_dir")
 
 configured_php_bin=$(resolve_executable "$configured_php")
 if [ -z "$configured_php_bin" ]; then
@@ -348,6 +419,11 @@ if [ -z "$archive_path" ] || [ ! -f "$archive_path" ]; then
 fi
 
 archive_signature=$(cksum "$archive_path" | sed 's/ .*//')
+source_signature=$(compute_source_signature "$source_dir" "$libsixel_lib_dir")
+combined_signature="$archive_signature"
+if [ -n "$source_signature" ]; then
+    combined_signature="${archive_signature}:${source_signature}"
+fi
 archive_marker="$shared_php_venv/.libsixel-php-package-signature"
 stage_root="$shared_php_venv/libsixel-php-package"
 extract_root="$stage_root/extracted"
@@ -357,7 +433,7 @@ if [ -f "$archive_marker" ]; then
     IFS= read -r installed_signature < "$archive_marker" || installed_signature=
 fi
 
-if [ ! -d "$extract_root" ] || [ "$installed_signature" != "$archive_signature" ]; then
+if [ ! -d "$extract_root" ] || [ "$installed_signature" != "$combined_signature" ]; then
     if ! extract_archive "$archive_path"; then
         exit 0
     fi
@@ -385,7 +461,7 @@ if [ -z "$lib_path" ] || [ ! -f "$lib_path" ]; then
 fi
 
 mkdir -p "$shared_php_venv"
-printf "%s\n" "$archive_signature" > "$archive_marker"
+printf "%s\n" "$combined_signature" > "$archive_marker"
 
 emit_assignment "SIXEL_TEST_PHP" "$php_bin"
 emit_assignment "SIXEL_TEST_PHPDBG" "$phpdbg_bin"

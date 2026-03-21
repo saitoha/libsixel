@@ -428,7 +428,7 @@ sixel-check-test-logs: $(TEST_LOGS)
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
-check-TESTS: $(check_PROGRAMS)
+check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
@@ -452,22 +452,15 @@ check-TESTS: $(check_PROGRAMS)
 	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
 	eval "$$config_exports"; \
 	set +a; \
-	if test "@ENABLE_PYTHON@" = "1"; then \
-	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/python" wheel-local || exit $$?; \
-	fi; \
-	if test "@ENABLE_RUBY@" = "1"; then \
-	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/ruby" all-local || exit $$?; \
-	fi; \
-	if test "@ENABLE_PHP@" = "1"; then \
-	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local || exit $$?; \
-	fi; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
-	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
+	    "$(abs_top_builddir)/tests/.python-test-venv" "$(abs_top_srcdir)/python" \
+	    "$(abs_top_builddir)/src/.libs" 2>$(top_builddir)/resolve-python-test-venv.log`; \
 	eval "$$python_venv_exports"; \
 	ruby_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-ruby-test-venv.sh" \
 	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
-	    "$(abs_top_builddir)/tests/.ruby-test-venv" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
+	    "$(abs_top_builddir)/tests/.ruby-test-venv" "$(abs_top_srcdir)/ruby" \
+	    "$(abs_top_builddir)/src/.libs" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
 	eval "$$ruby_venv_exports"; \
 	perl_bin='@PERL@'; \
 	if test -z "$$perl_bin"; then \
@@ -479,7 +472,8 @@ check-TESTS: $(check_PROGRAMS)
 	eval "$$perl_venv_exports"; \
 	php_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-php-test-venv.sh" \
 	    "@ENABLE_PHP@" "@PHP@" "$(abs_top_builddir)/php/dist" \
-	    "$(abs_top_builddir)/tests/.php-test-venv" 2>$(top_builddir)/resolve-php-test-venv.log`; \
+	    "$(abs_top_builddir)/tests/.php-test-venv" "$(abs_top_srcdir)/php" \
+	    "$(abs_top_builddir)/src/.libs" 2>$(top_builddir)/resolve-php-test-venv.log`; \
 	eval "$$php_venv_exports"; \
 	if test "@ENABLE_PHP@" = "1" && test -z "$$SIXEL_TEST_PHP"; then \
 	    echo "error: PHP bindings are enabled but no venv PHP interpreter was resolved at $(abs_top_builddir)/tests/.php-test-venv" >&2; \
@@ -654,15 +648,25 @@ check-TESTS: $(check_PROGRAMS)
 	rm -f "$$trs_manifest"; \
 	exit 0
 
-.PHONY: check-python check-ruby check-perl check-php sixel-check-test-logs
-check-python:
+.PHONY: prepare-binding-artifacts check-python check-ruby check-perl check-php sixel-check-test-logs
+prepare-binding-artifacts:
 	@set -eu; \
 	if test "@ENABLE_PYTHON@" = "1"; then \
 	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/python" wheel-local; \
 	fi; \
+	if test "@ENABLE_RUBY@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/ruby" all-local; \
+	fi; \
+	if test "@ENABLE_PHP@" = "1"; then \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local; \
+	fi
+
+check-python: prepare-binding-artifacts
+	@set -eu; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
-	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
+	    "$(abs_top_builddir)/tests/.python-test-venv" "$(abs_top_srcdir)/python" \
+	    "$(abs_top_builddir)/src/.libs" 2>$(top_builddir)/resolve-python-test-venv.log`; \
 	eval "$$python_venv_exports"; \
 	if test -z "$$SIXEL_TEST_PYTHON"; then \
 	    echo "check-python: skipped because Python test interpreter is unavailable"; \
@@ -686,14 +690,12 @@ check-python:
 	mv "$$python_cov_tmp" '$(abs_top_builddir)/python-coverage.info'; \
 	echo "python coverage exported to $(abs_top_builddir)/python-coverage.info"
 
-check-ruby:
+check-ruby: prepare-binding-artifacts
 	@set -eu; \
-	if test "@ENABLE_RUBY@" = "1"; then \
-	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/ruby" all-local; \
-	fi; \
 	ruby_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-ruby-test-venv.sh" \
 	    "@ENABLE_RUBY@" "@RUBY@" "$(abs_top_builddir)/ruby/dist" \
-	    "$(abs_top_builddir)/tests/.ruby-test-venv" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
+	    "$(abs_top_builddir)/tests/.ruby-test-venv" "$(abs_top_srcdir)/ruby" \
+	    "$(abs_top_builddir)/src/.libs" 2>$(top_builddir)/resolve-ruby-test-venv.log`; \
 	eval "$$ruby_venv_exports"; \
 	if test -z "$$SIXEL_TEST_RUBY"; then \
 	    echo "check-ruby: skipped because Ruby test interpreter is unavailable"; \
@@ -835,14 +837,12 @@ check-perl:
 	fi; \
 	echo "perl TAP logs exported to $$artifact_root"
 
-check-php:
+check-php: prepare-binding-artifacts
 	@set -eu; \
-	if test "@ENABLE_PHP@" = "1"; then \
-	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local; \
-	fi; \
 	php_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-php-test-venv.sh" \
 	    "@ENABLE_PHP@" "@PHP@" "$(abs_top_builddir)/php/dist" \
-	    "$(abs_top_builddir)/tests/.php-test-venv" 2>$(top_builddir)/resolve-php-test-venv.log`; \
+	    "$(abs_top_builddir)/tests/.php-test-venv" "$(abs_top_srcdir)/php" \
+	    "$(abs_top_builddir)/src/.libs" 2>$(top_builddir)/resolve-php-test-venv.log`; \
 	eval "$$php_venv_exports"; \
 	if test "@ENABLE_PHP@" != "1"; then \
 	    echo "check-php: skipped because PHP bindings are disabled"; \
