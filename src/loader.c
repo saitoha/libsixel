@@ -1350,11 +1350,19 @@ sixel_loader_load_file(
         goto end;
     }
 
-    plan_length = loader_manager_build_plan(plan_order,
-                                    entries,
-                                    entry_count,
-                                    plan,
-                                    entry_count);
+    if (order_override != NULL && order_override[0] != '\0') {
+        plan_length = loader_manager_build_plan_from_resolution(&order_resolution,
+                                                                entries,
+                                                                entry_count,
+                                                                plan,
+                                                                entry_count);
+    } else {
+        plan_length = loader_manager_build_plan(plan_order,
+                                                entries,
+                                                entry_count,
+                                                plan,
+                                                entry_count);
+    }
     if (plan_length == 0u) {
         if (plan_order != NULL && plan_order[0] != '\0') {
             sixel_helper_set_additional_message(
