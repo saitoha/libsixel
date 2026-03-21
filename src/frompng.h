@@ -24,6 +24,15 @@ sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
                                   size_t profile_length);
 
 void
+sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length);
+
+void
 sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         int width,
                                         int height,

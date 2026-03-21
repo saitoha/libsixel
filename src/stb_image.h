@@ -3690,6 +3690,43 @@ static void stbi__YCbCr_to_RGB_row(stbi_uc *out, const stbi_uc *y, const stbi_uc
    }
 }
 
+static float stbi__clampf_0_1(float x)
+{
+   if (x < 0.0f) return 0.0f;
+   if (x > 1.0f) return 1.0f;
+   return x;
+}
+
+static void stbi__YCbCr_to_RGB_row_f32(float *out, const stbi_uc *y, const stbi_uc *pcb, const stbi_uc *pcr, int count, int step)
+{
+   int i;
+   float scale;
+
+   scale = 1.0f / 255.0f;
+   for (i=0; i < count; ++i) {
+      float yf;
+      float cb;
+      float cr;
+      float r;
+      float g;
+      float b;
+
+      yf = (float)y[i];
+      cb = (float)pcb[i] - 128.0f;
+      cr = (float)pcr[i] - 128.0f;
+
+      r = yf + 1.40200f * cr;
+      g = yf - 0.34414f * cb - 0.71414f * cr;
+      b = yf + 1.77200f * cb;
+
+      out[0] = stbi__clampf_0_1(r * scale);
+      out[1] = stbi__clampf_0_1(g * scale);
+      out[2] = stbi__clampf_0_1(b * scale);
+      if (step == 4) out[3] = 1.0f;
+      out += step;
+   }
+}
+
 #if defined(STBI_SSE2) || defined(STBI_NEON)
 static void stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc const *pcb, stbi_uc const *pcr, int count, int step)
 {
@@ -4033,6 +4070,202 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
    }
 }
 
+static float *load_jpeg_image_float(stbi__jpeg *z, int *out_x, int *out_y, int *comp, int req_comp)
+{
+   int n, decode_n, is_rgb;
+   z->s->img_n = 0; // make stbi__cleanup_jpeg safe
+
+   // validate req_comp
+   if (req_comp < 0 || req_comp > 4) return stbi__errpf("bad req_comp", "Internal error");
+
+   // load a jpeg image from whichever source, but leave in YCbCr format
+   if (!stbi__decode_jpeg_image(z)) { stbi__cleanup_jpeg(z); return NULL; }
+
+   // determine actual number of components to generate
+   n = req_comp ? req_comp : z->s->img_n >= 3 ? 3 : 1;
+
+   is_rgb = z->s->img_n == 3 && (z->rgb == 3 || (z->app14_color_transform == 0 && !z->jfif));
+
+   if (z->s->img_n == 3 && n < 3 && !is_rgb)
+      decode_n = 1;
+   else
+      decode_n = z->s->img_n;
+
+   // nothing to do if no components requested; check this now to avoid
+   // accessing uninitialized coutput[0] later
+   if (decode_n <= 0) { stbi__cleanup_jpeg(z); return NULL; }
+
+   // resample and color-convert
+   {
+      int k;
+      unsigned int i,j;
+      float *output;
+      stbi_uc *coutput[4] = { NULL, NULL, NULL, NULL };
+      stbi__resample res_comp[4];
+      float scale;
+
+      scale = 1.0f / 255.0f;
+
+      for (k=0; k < decode_n; ++k) {
+         stbi__resample *r = &res_comp[k];
+
+         // allocate line buffer big enough for upsampling off the edges
+         // with upsample factor of 4
+         z->img_comp[k].linebuf = (stbi_uc *) stbi__malloc(z->s->img_x + 3);
+         if (!z->img_comp[k].linebuf) { stbi__cleanup_jpeg(z); return stbi__errpf("outofmem", "Out of memory"); }
+
+         r->hs      = z->img_h_max / z->img_comp[k].h;
+         r->vs      = z->img_v_max / z->img_comp[k].v;
+         r->ystep   = r->vs >> 1;
+         r->w_lores = (z->s->img_x + r->hs-1) / r->hs;
+         r->ypos    = 0;
+         r->line0   = r->line1 = z->img_comp[k].data;
+
+         if      (r->hs == 1 && r->vs == 1) r->resample = resample_row_1;
+         else if (r->hs == 1 && r->vs == 2) r->resample = stbi__resample_row_v_2;
+         else if (r->hs == 2 && r->vs == 1) r->resample = stbi__resample_row_h_2;
+         else if (r->hs == 2 && r->vs == 2) r->resample = z->resample_row_hv_2_kernel;
+         else                               r->resample = stbi__resample_row_generic;
+      }
+
+      // can't error after this so, this is safe
+      output = (float *) stbi__malloc_mad4(n, z->s->img_x, z->s->img_y, sizeof(float), 0);
+      if (!output) { stbi__cleanup_jpeg(z); return stbi__errpf("outofmem", "Out of memory"); }
+
+      // now go ahead and resample
+      for (j=0; j < z->s->img_y; ++j) {
+         float *out = output + (size_t)n * (size_t)z->s->img_x * j;
+         for (k=0; k < decode_n; ++k) {
+            stbi__resample *r = &res_comp[k];
+            int y_bot = r->ystep >= (r->vs >> 1);
+            coutput[k] = r->resample(z->img_comp[k].linebuf,
+                                     y_bot ? r->line1 : r->line0,
+                                     y_bot ? r->line0 : r->line1,
+                                     r->w_lores, r->hs);
+            if (++r->ystep >= r->vs) {
+               r->ystep = 0;
+               r->line0 = r->line1;
+               if (++r->ypos < z->img_comp[k].y)
+                  r->line1 += z->img_comp[k].w2;
+            }
+         }
+         if (n >= 3) {
+            stbi_uc *y = coutput[0];
+            if (z->s->img_n == 3) {
+               if (is_rgb) {
+                  for (i=0; i < z->s->img_x; ++i) {
+                     out[0] = (float)coutput[0][i] * scale;
+                     out[1] = (float)coutput[1][i] * scale;
+                     out[2] = (float)coutput[2][i] * scale;
+                     if (n == 4) out[3] = 1.0f;
+                     out += n;
+                  }
+               } else {
+                  stbi__YCbCr_to_RGB_row_f32(out, y, coutput[1], coutput[2], z->s->img_x, n);
+               }
+            } else if (z->s->img_n == 4) {
+               if (z->app14_color_transform == 0) { // CMYK
+                  for (i=0; i < z->s->img_x; ++i) {
+                     float kf = (float)coutput[3][i] * scale;
+                     out[0] = ((float)coutput[0][i] * scale) * kf;
+                     out[1] = ((float)coutput[1][i] * scale) * kf;
+                     out[2] = ((float)coutput[2][i] * scale) * kf;
+                     if (n == 4) out[3] = 1.0f;
+                     out += n;
+                  }
+               } else if (z->app14_color_transform == 2) { // YCCK
+                  for (i=0; i < z->s->img_x; ++i) {
+                     float yf = (float)y[i];
+                     float cb = (float)coutput[1][i] - 128.0f;
+                     float cr = (float)coutput[2][i] - 128.0f;
+                     float kf = (float)coutput[3][i] * scale;
+                     float r = stbi__clampf_0_1((yf + 1.40200f * cr) * scale);
+                     float g = stbi__clampf_0_1((yf - 0.34414f * cb - 0.71414f * cr) * scale);
+                     float b = stbi__clampf_0_1((yf + 1.77200f * cb) * scale);
+                     out[0] = (1.0f - r) * kf;
+                     out[1] = (1.0f - g) * kf;
+                     out[2] = (1.0f - b) * kf;
+                     if (n == 4) out[3] = 1.0f;
+                     out += n;
+                  }
+               } else { // YCbCr + alpha? Ignore the fourth channel for now
+                  stbi__YCbCr_to_RGB_row_f32(out, y, coutput[1], coutput[2], z->s->img_x, n);
+               }
+            } else {
+               for (i=0; i < z->s->img_x; ++i) {
+                  float yf = (float)y[i] * scale;
+                  out[0] = yf;
+                  out[1] = yf;
+                  out[2] = yf;
+                  if (n == 4) out[3] = 1.0f;
+                  out += n;
+               }
+            }
+         } else {
+            if (is_rgb) {
+               if (n == 1) {
+                  for (i=0; i < z->s->img_x; ++i) {
+                     float r = (float)coutput[0][i] * scale;
+                     float g = (float)coutput[1][i] * scale;
+                     float b = (float)coutput[2][i] * scale;
+                     *out++ = stbi__clampf_0_1(0.299f * r + 0.587f * g + 0.114f * b);
+                  }
+               } else {
+                  for (i=0; i < z->s->img_x; ++i, out += 2) {
+                     float r = (float)coutput[0][i] * scale;
+                     float g = (float)coutput[1][i] * scale;
+                     float b = (float)coutput[2][i] * scale;
+                     out[0] = stbi__clampf_0_1(0.299f * r + 0.587f * g + 0.114f * b);
+                     out[1] = 1.0f;
+                  }
+               }
+            } else if (z->s->img_n == 4 && z->app14_color_transform == 0) {
+               for (i=0; i < z->s->img_x; ++i) {
+                  float kf = (float)coutput[3][i] * scale;
+                  float r = ((float)coutput[0][i] * scale) * kf;
+                  float g = ((float)coutput[1][i] * scale) * kf;
+                  float b = ((float)coutput[2][i] * scale) * kf;
+                  out[0] = stbi__clampf_0_1(0.299f * r + 0.587f * g + 0.114f * b);
+                  if (n == 2) out[1] = 1.0f;
+                  out += n;
+               }
+            } else if (z->s->img_n == 4 && z->app14_color_transform == 2) {
+               for (i=0; i < z->s->img_x; ++i) {
+                  float yf = (float)coutput[0][i];
+                  float cb = (float)coutput[1][i] - 128.0f;
+                  float cr = (float)coutput[2][i] - 128.0f;
+                  float kf = (float)coutput[3][i] * scale;
+                  float r = stbi__clampf_0_1((yf + 1.40200f * cr) * scale);
+                  float g = stbi__clampf_0_1((yf - 0.34414f * cb - 0.71414f * cr) * scale);
+                  float b = stbi__clampf_0_1((yf + 1.77200f * cb) * scale);
+                  r = (1.0f - r) * kf;
+                  g = (1.0f - g) * kf;
+                  b = (1.0f - b) * kf;
+                  out[0] = stbi__clampf_0_1(0.299f * r + 0.587f * g + 0.114f * b);
+                  if (n == 2) out[1] = 1.0f;
+                  out += n;
+               }
+            } else {
+               stbi_uc *y = coutput[0];
+               if (n == 1) {
+                  for (i=0; i < z->s->img_x; ++i) out[i] = (float)y[i] * scale;
+               } else {
+                  for (i=0; i < z->s->img_x; ++i) {
+                     *out++ = (float)y[i] * scale;
+                     *out++ = 1.0f;
+                  }
+               }
+            }
+         }
+      }
+      stbi__cleanup_jpeg(z);
+      *out_x = z->s->img_x;
+      *out_y = z->s->img_y;
+      if (comp) *comp = z->s->img_n >= 3 ? 3 : 1; // report original components, not output
+      return output;
+   }
+}
+
 static void *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)
 {
    unsigned char* result;
@@ -4043,6 +4276,20 @@ static void *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int re
    j->s = s;
    stbi__setup_jpeg(j);
    result = load_jpeg_image(j, x,y,comp,req_comp);
+   STBI_FREE(j);
+   return result;
+}
+
+static float *stbi__jpeg_loadf(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)
+{
+   float* result;
+   stbi__jpeg* j = (stbi__jpeg*) stbi__malloc(sizeof(stbi__jpeg));
+   if (!j) return stbi__errpf("outofmem", "Out of memory");
+   memset(j, 0, sizeof(stbi__jpeg));
+   STBI_NOTUSED(ri);
+   j->s = s;
+   stbi__setup_jpeg(j);
+   result = load_jpeg_image_float(j, x,y,comp,req_comp);
    STBI_FREE(j);
    return result;
 }

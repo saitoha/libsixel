@@ -2493,79 +2493,106 @@ load_with_builtin(
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
                             (int)pchunk->size);
-            pixels = stbi__load_and_postprocess_8bit(&stb_context,
-                                                     &frame->width,
-                                                     &frame->height,
-                                                     &depth,
-                                                     3);
-            if (pixels == NULL) {
-                sixel_helper_set_additional_message(stbi_failure_reason());
-                status = SIXEL_STBI_ERROR;
-                goto end;
-            }
-            sixel_frame_set_pixels(frame, pixels);
-            frame->loop_count = 1;
+            if (chunk_is_jpeg(pchunk)) {
+                float *float_pixels;
+
+                float_pixels = stbi__jpeg_loadf(&stb_context,
+                                                &frame->width,
+                                                &frame->height,
+                                                &depth,
+                                                3,
+                                                &ri);
+                if (float_pixels == NULL) {
+                    sixel_helper_set_additional_message(stbi_failure_reason());
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+                pixels = (unsigned char *)float_pixels;
+                sixel_frame_set_pixels(frame, pixels);
+                frame->loop_count = 1;
 #if HAVE_LCMS2
-            if (enable_cms && chunk_is_jpeg(pchunk)) {
-                if (sixel_builtin_extract_jpeg_icc(pchunk->buffer,
-                                                   pchunk->size,
-                                                   &icc_profile,
-                                                   &icc_profile_length,
-                                                   pchunk->allocator)) {
-                    sixel_frompng_convert_icc_to_srgb(pixels,
-                                                      frame->width,
-                                                      frame->height,
-                                                      icc_profile,
-                                                      icc_profile_length);
+                if (enable_cms) {
+                    if (sixel_builtin_extract_jpeg_icc(pchunk->buffer,
+                                                       pchunk->size,
+                                                       &icc_profile,
+                                                       &icc_profile_length,
+                                                       pchunk->allocator)) {
+                        sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+                            (unsigned char *)float_pixels,
+                            frame->width,
+                            frame->height,
+                            SIXEL_PIXELFORMAT_RGBFLOAT32,
+                            icc_profile,
+                            icc_profile_length);
+                    }
                 }
-            } else if (enable_cms && chunk_is_psd(pchunk)) {
-                if (sixel_builtin_extract_psd_icc(pchunk->buffer,
-                                                  pchunk->size,
-                                                  &icc_profile,
-                                                  &icc_profile_length,
-                                                  pchunk->allocator)) {
-                    sixel_frompng_convert_icc_to_srgb(pixels,
-                                                      frame->width,
-                                                      frame->height,
-                                                      icc_profile,
-                                                      icc_profile_length);
+#endif
+                frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            } else {
+                pixels = stbi__load_and_postprocess_8bit(&stb_context,
+                                                         &frame->width,
+                                                         &frame->height,
+                                                         &depth,
+                                                         3);
+                if (pixels == NULL) {
+                    sixel_helper_set_additional_message(stbi_failure_reason());
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
                 }
-            } else if (enable_cms && chunk_is_tiff(pchunk)) {
-                if (sixel_builtin_extract_tiff_icc(pchunk->buffer,
-                                                   pchunk->size,
-                                                   &icc_profile,
-                                                   &icc_profile_length,
-                                                   &tiff_photometric,
-                                                   pchunk->allocator)) {
-                    if (sixel_builtin_tiff_photometric_supports_icc(
-                            tiff_photometric)) {
+                sixel_frame_set_pixels(frame, pixels);
+                frame->loop_count = 1;
+#if HAVE_LCMS2
+                if (enable_cms && chunk_is_psd(pchunk)) {
+                    if (sixel_builtin_extract_psd_icc(pchunk->buffer,
+                                                      pchunk->size,
+                                                      &icc_profile,
+                                                      &icc_profile_length,
+                                                      pchunk->allocator)) {
                         sixel_frompng_convert_icc_to_srgb(pixels,
                                                           frame->width,
                                                           frame->height,
                                                           icc_profile,
                                                           icc_profile_length);
                     }
+                } else if (enable_cms && chunk_is_tiff(pchunk)) {
+                    if (sixel_builtin_extract_tiff_icc(
+                            pchunk->buffer,
+                            pchunk->size,
+                            &icc_profile,
+                            &icc_profile_length,
+                            &tiff_photometric,
+                            pchunk->allocator)) {
+                        if (sixel_builtin_tiff_photometric_supports_icc(
+                                tiff_photometric)) {
+                            sixel_frompng_convert_icc_to_srgb(pixels,
+                                                              frame->width,
+                                                              frame->height,
+                                                              icc_profile,
+                                                              icc_profile_length);
+                        }
+                    }
                 }
-            }
 #endif
-            switch (depth) {
-            case 1:
-            case 3:
-            case 4:
-                frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-                break;
-            default:
-                nwrite = snprintf(message,
-                                  sizeof(message),
-                                  "load_with_builtin() failed.\n"
-                                  "reason: unknown pixel-format.(depth: %d)\n",
-                                  depth);
-                if (nwrite > 0) {
-                    sixel_helper_set_additional_message(message);
+                switch (depth) {
+                case 1:
+                case 3:
+                case 4:
+                    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+                    break;
+                default:
+                    nwrite = snprintf(message,
+                                      sizeof(message),
+                                      "load_with_builtin() failed.\n"
+                                      "reason: unknown pixel-format.(depth: %d)\n",
+                                      depth);
+                    if (nwrite > 0) {
+                        sixel_helper_set_additional_message(message);
+                    }
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
                 }
-                status = SIXEL_STBI_ERROR;
-                goto end;
             }
         }
     }
