@@ -309,6 +309,9 @@
 /* whether libjpeg 16-bit scanline API is available */
 #undef HAVE_JPEG16_API
 
+/* whether libjpeg arithmetic decode support is available */
+#undef HAVE_JPEG_ARITH_DECODER
+
 /* whether lcms2 is available */
 #undef HAVE_LCMS2
 

@@ -851,6 +851,23 @@ int main(void) {
     conf.set('HAVE_JPEG16_API', 1)
   endif
 
+  jpeg_has_arith_decoder = cc.links(
+    '''
+#include <stdio.h>
+#include <jpeglib.h>
+#ifndef D_ARITH_CODING_SUPPORTED
+# error "missing D_ARITH_CODING_SUPPORTED"
+#endif
+int main(void) {
+  return 0;
+}
+''',
+    dependencies: jpeg_dep,
+    name: 'libjpeg arithmetic decode support')
+  if jpeg_has_arith_decoder
+    conf.set('HAVE_JPEG_ARITH_DECODER', 1)
+  endif
+
   deps += jpeg_dep
   reqs += jpeg_dep
   conf.set('HAVE_JPEG', 1)

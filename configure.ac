@@ -3549,6 +3549,7 @@ if test x$with_jpeg != xno; then
     if test x$have_jpeg = xyes; then
         have_jpeg12_api=no
         have_jpeg16_api=no
+        have_jpeg_arith_decoder=no
 
         JPEG_CHECK_CFLAGS_BACKUP=$CFLAGS
         JPEG_CHECK_LIBS_BACKUP=$LIBS
@@ -3593,6 +3594,23 @@ if test x$with_jpeg != xno; then
             [have_jpeg16_api=no])
         AC_MSG_RESULT([$have_jpeg16_api])
 
+        AC_MSG_CHECKING([for libjpeg arithmetic decode support])
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM(
+                [[
+#include <stdio.h>
+#include <jpeglib.h>
+                ]],
+                [[
+#ifndef D_ARITH_CODING_SUPPORTED
+# error "missing D_ARITH_CODING_SUPPORTED"
+#endif
+                    return 0;
+                ]])],
+            [have_jpeg_arith_decoder=yes],
+            [have_jpeg_arith_decoder=no])
+        AC_MSG_RESULT([$have_jpeg_arith_decoder])
+
         CFLAGS=$JPEG_CHECK_CFLAGS_BACKUP
         LIBS=$JPEG_CHECK_LIBS_BACKUP
 
@@ -3604,6 +3622,10 @@ if test x$with_jpeg != xno; then
         if test x$have_jpeg16_api = xyes; then
             AC_DEFINE(HAVE_JPEG16_API, 1,
                       [whether libjpeg 16-bit scanline API is available])
+        fi
+        if test x$have_jpeg_arith_decoder = xyes; then
+            AC_DEFINE(HAVE_JPEG_ARITH_DECODER, 1,
+                      [whether libjpeg arithmetic decode support is available])
         fi
         loaders="${loaders} jpeg"
         if test x$LIBJPEG_PKG_NAME != x; then
