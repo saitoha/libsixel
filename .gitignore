@@ -41,7 +41,7 @@ stamp-h1
 .deps
 .dirstamp
 configure~
-tests/_artifacts
+ltmain.sh
 
 # coverage
 *.info
@@ -77,14 +77,24 @@ amalgamation/sixel.c
 converters/completion_embed.h
 afl-out
 .local
+tests/_artifacts
 tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer
 tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer
 libsixel-*.tar.gz
 libsixel-*.zip
 libsixel-*.xz
+build-aux/lso-tap-driver.sh
+build-aux/resolve-test-tool-paths.sh
 build-examples/emsdk*
+ruby/lib/libsixel/version_runtime.rb
 tests/.perl-test-venv/
 tests/.php-test-venv/
 tests/.python-test-venv/
 tests/.ruby-test-venv/
 *.log
+python/build/
+python/dist/
+python/libsixel_wheel.egg-info/
+ruby/dist/
+converters/jpegref
+tests/snake_64_metrics.json

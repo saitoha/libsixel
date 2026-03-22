@@ -212,8 +212,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/cms.h $(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
 	$(srcdir)/icc-apply.c $(srcdir)/icc-apply.h \
 	$(srcdir)/icc-convert.c $(srcdir)/icc-convert.h \
-	$(srcdir)/icc-convert-internal.h \
-	$(srcdir)/loader.c $(srcdir)/loader-gdk-pixbuf2.c \
+	$(srcdir)/icc-convert-internal.h $(srcdir)/loader.c \
+	$(srcdir)/loader-gdk-pixbuf2.c \
 	$(srcdir)/loader-gnome-thumbnailer.c \
 	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
 	$(srcdir)/loader-wic.c $(srcdir)/loader-gd.c \
