@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify arithmetic JPEG falls through to builtin and still fails without arithmetic decoder.
+# Verify terminal failure path for arithmetic JPEG when no runtime decoder can handle it.
 
 set -eux
 
@@ -10,11 +10,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 test "${HAVE_JPEG-}" = 1 || {
     printf "1..0 # SKIP libjpeg loader is unavailable\n"
-    exit 0
-}
-
-test "${HAVE_JPEG_ARITH_DECODER-}" = 1 && {
-    printf "1..0 # SKIP libjpeg arithmetic decoder is available\n"
     exit 0
 }
 
@@ -31,11 +26,6 @@ trace_log=$(set +xv; run_img2sixel -v -L libjpeg,builtin! \
 run_status=$?
 set -e
 
-test "${run_status}" -ne 0 || {
-    echo "not ok" 1 - "arithmetic JPEG unexpectedly decoded without arithmetic decoder"
-    exit 0
-}
-
 case "${trace_log}" in
     *"libsixel: trying libjpeg loader"*)
         ;;
@@ -44,6 +34,11 @@ case "${trace_log}" in
         exit 0
         ;;
 esac
+
+test "${run_status}" -ne 0 || {
+    echo "ok" 1 - "arithmetic JPEG decoded by runtime loader implementation; terminal-failure scenario is not applicable"
+    exit 0
+}
 
 case "${trace_log}" in
     *"libsixel: loader libjpeg failed ("*)

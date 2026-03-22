@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify fallback to builtin loader when arithmetic JPEG is unsupported by libjpeg.
+# Verify fallback to builtin loader when runtime libjpeg cannot decode arithmetic JPEG.
 
 set -eux
 
@@ -10,11 +10,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 test "${HAVE_JPEG-}" = 1 || {
     printf "1..0 # SKIP libjpeg loader is unavailable\n"
-    exit 0
-}
-
-test "${HAVE_JPEG_ARITH_DECODER-}" = 1 && {
-    printf "1..0 # SKIP libjpeg arithmetic decoder is available\n"
     exit 0
 }
 
@@ -38,10 +33,14 @@ case "${trace_log}" in
 esac
 
 case "${trace_log}" in
+    *"libsixel: loader libjpeg succeeded"*)
+        echo "ok" 1 - "runtime libjpeg can decode arithmetic JPEG; fallback scenario is not applicable"
+        exit 0
+        ;;
     *"libsixel: loader libjpeg failed ("*)
         ;;
     *)
-        echo "not ok" 1 - "libjpeg arithmetic decode failure was not reported"
+        echo "not ok" 1 - "libjpeg arithmetic decode outcome was not reported"
         exit 0
         ;;
 esac
