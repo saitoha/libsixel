@@ -727,7 +727,7 @@ sixel_option_parse_argument_with_suboptions(
     sixel_suboption_key_t const *key_def;
     char const *value_text;
     char const *resolved_text;
-    char match_message[256];
+    char match_message[512];
 
     status = SIXEL_OK;
     work = NULL;
