@@ -454,6 +454,18 @@ loader_apply_component_options(sixel_loader_component_t *component,
         return status;
     }
 
+    suboption_value = suboptions->libtiff_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'libtiff-enable-cms'.");
+        return status;
+    }
+
     suboption_value = suboptions->builtin_enable_cms;
     status = sixel_loader_component_setopt(
         component,
