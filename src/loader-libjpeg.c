@@ -55,6 +55,8 @@
 #include "allocator.h"
 #include "cms.h"
 #include "chunk.h"
+#include "icc-apply.h"
+#include "icc-parse.h"
 #include "loader-common.h"
 #include "loader-component.h"
 #include "frame.h"
@@ -576,6 +578,82 @@ cleanup:
 }
 #endif
 
+#if !HAVE_LCMS2
+static int
+jpeg_convert_icc_cmyk8_to_srgb_f32_nolcms(float *dst_pixels,
+                                          unsigned char const *src_pixels,
+                                          size_t pixel_count,
+                                          unsigned char const *profile_data,
+                                          size_t profile_length)
+{
+    sixel_icc_profile_t profile;
+    int parsed;
+    int converted;
+
+    memset(&profile, 0, sizeof(profile));
+    parsed = 0;
+    converted = 0;
+    if (dst_pixels == NULL || src_pixels == NULL ||
+        pixel_count == 0u || profile_data == NULL || profile_length == 0u) {
+        return 0;
+    }
+
+    if (!sixel_icc_parse_profile(profile_data, profile_length, &profile)) {
+        goto cleanup;
+    }
+    parsed = 1;
+    if (profile.kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
+        converted = sixel_icc_apply_cmyk_u8_to_rgb_float32(dst_pixels,
+                                                            src_pixels,
+                                                            pixel_count,
+                                                            &profile);
+    }
+
+cleanup:
+    if (parsed) {
+        sixel_icc_profile_destroy(&profile);
+    }
+    return converted;
+}
+
+static int
+jpeg_convert_icc_cmyk16_to_srgb_f32_nolcms(float *dst_pixels,
+                                           uint16_t const *src_pixels,
+                                           size_t pixel_count,
+                                           unsigned char const *profile_data,
+                                           size_t profile_length)
+{
+    sixel_icc_profile_t profile;
+    int parsed;
+    int converted;
+
+    memset(&profile, 0, sizeof(profile));
+    parsed = 0;
+    converted = 0;
+    if (dst_pixels == NULL || src_pixels == NULL ||
+        pixel_count == 0u || profile_data == NULL || profile_length == 0u) {
+        return 0;
+    }
+
+    if (!sixel_icc_parse_profile(profile_data, profile_length, &profile)) {
+        goto cleanup;
+    }
+    parsed = 1;
+    if (profile.kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
+        converted = sixel_icc_apply_cmyk_u16_to_rgb_float32(dst_pixels,
+                                                             src_pixels,
+                                                             pixel_count,
+                                                             &profile);
+    }
+
+cleanup:
+    if (parsed) {
+        sixel_icc_profile_destroy(&profile);
+    }
+    return converted;
+}
+#endif
+
 static SIXELSTATUS
 jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
                                       int width,
@@ -716,18 +794,14 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
     size_t float_bytes;
     unsigned char *cmyk_pixels;
     float *float_pixels;
-#if HAVE_LCMS2
     int cms_converted;
-#endif
 
     status = SIXEL_OK;
     pixel_count = 0u;
     float_bytes = 0u;
     cmyk_pixels = NULL;
     float_pixels = NULL;
-#if HAVE_LCMS2
     cms_converted = 0;
-#endif
 
     if (result == NULL || *result == NULL || allocator == NULL ||
         width <= 0 || height <= 0) {
@@ -764,16 +838,25 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
     }
 #endif
 
-#if HAVE_LCMS2
+#if !HAVE_LCMS2
+    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+        if (jpeg_convert_icc_cmyk8_to_srgb_f32_nolcms(float_pixels,
+                                                      cmyk_pixels,
+                                                      pixel_count,
+                                                      icc_profile,
+                                                      (size_t)icc_profile_length)) {
+            cms_converted = 1;
+        }
+    }
+#endif
+
     if (!cms_converted) {
         jpeg_unpack_cmyk8_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
     }
-#else
-    jpeg_unpack_cmyk8_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
-#endif
 
 #if !HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+    if (!cms_converted &&
+        enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
         sixel_frompng_convert_icc_to_srgb_with_pixelformat(
             (unsigned char *)float_pixels,
             width,
@@ -812,18 +895,14 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
     size_t float_bytes;
     uint16_t *cmyk_pixels;
     float *float_pixels;
-#if HAVE_LCMS2
     int cms_converted;
-#endif
 
     status = SIXEL_OK;
     pixel_count = 0u;
     float_bytes = 0u;
     cmyk_pixels = NULL;
     float_pixels = NULL;
-#if HAVE_LCMS2
     cms_converted = 0;
-#endif
 
     if (result == NULL || *result == NULL || allocator == NULL ||
         width <= 0 || height <= 0) {
@@ -860,16 +939,25 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
     }
 #endif
 
-#if HAVE_LCMS2
+#if !HAVE_LCMS2
+    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+        if (jpeg_convert_icc_cmyk16_to_srgb_f32_nolcms(float_pixels,
+                                                       cmyk_pixels,
+                                                       pixel_count,
+                                                       icc_profile,
+                                                       (size_t)icc_profile_length)) {
+            cms_converted = 1;
+        }
+    }
+#endif
+
     if (!cms_converted) {
         jpeg_unpack_cmyk16_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
     }
-#else
-    jpeg_unpack_cmyk16_to_rgbf32(float_pixels, cmyk_pixels, pixel_count);
-#endif
 
 #if !HAVE_LCMS2
-    if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
+    if (!cms_converted &&
+        enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
         sixel_frompng_convert_icc_to_srgb_with_pixelformat(
             (unsigned char *)float_pixels,
             width,

@@ -6,6 +6,9 @@
 #define LIBSIXEL_ICC_APPLY_H
 
 #include <stddef.h>
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
 
 #include "icc-parse.h"
 
@@ -27,5 +30,17 @@ sixel_icc_apply_gray_u8(unsigned char *pixels,
 int
 sixel_icc_apply_rgb_triplet_unit(double rgb[3],
                                  sixel_icc_profile_t const *profile);
+
+int
+sixel_icc_apply_cmyk_u8_to_rgb_float32(float *dst_pixels,
+                                       unsigned char const *src_pixels,
+                                       size_t pixel_count,
+                                       sixel_icc_profile_t const *profile);
+
+int
+sixel_icc_apply_cmyk_u16_to_rgb_float32(float *dst_pixels,
+                                        uint16_t const *src_pixels,
+                                        size_t pixel_count,
+                                        sixel_icc_profile_t const *profile);
 
 #endif
