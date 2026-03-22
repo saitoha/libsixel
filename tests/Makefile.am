@@ -920,10 +920,9 @@ check-php: prepare-binding-artifacts
 	fi; \
 	echo "php TAP logs exported to $$artifact_root"
 
-# Collect all test fixture files under tests/data automatically so
-# EXTRA_DIST stays in sync when fixtures are added, removed, or moved.
-# LC_ALL=C keeps path ordering deterministic across locales.
-TEST_DATA_FILES = $(shell cd $(srcdir) && find data -type f | LC_ALL=C sort)
+# Distribute fixture trees as directories so DISTFILES remains short and
+# distdir does not hit shell ARG_MAX limits on some platforms.
+TEST_DATA_DIRS = data
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
@@ -935,7 +934,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
     check-test-exports.list \
-    $(TEST_DATA_FILES)
+    $(TEST_DATA_DIRS)
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
