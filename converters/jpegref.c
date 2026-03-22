@@ -256,20 +256,11 @@ jpegref_print_usage(char const *prog)
     fprintf(stderr, "usage: %s <input.jpg> <output.ppm|->\n", prog);
 }
 
-int
-main(int argc, char **argv)
+static int
+jpegref_decode(FILE *input_fp, FILE *output_fp)
 {
-    char const *input_path;
-    char const *output_path;
-    FILE *input_fp;
-    FILE *output_fp;
     struct jpeg_decompress_struct cinfo;
     jpegref_error_mgr_t jerr;
-    unsigned char *row_rgb;
-    int status;
-    int started;
-    int decoded;
-
 #if JPEGREF_HAS_JPEG12
     J12SAMPARRAY row12;
 #endif
@@ -277,18 +268,14 @@ main(int argc, char **argv)
     J16SAMPARRAY row16;
 #endif
     JSAMPARRAY row8;
+    JSAMPARRAY row_rgb;
     JDIMENSION row_stride;
+    JDIMENSION row_rgb_stride;
+    JDIMENSION jdimension_max;
+    size_t row_rgb_bytes;
 
-    input_path = NULL;
-    output_path = NULL;
-    input_fp = NULL;
-    output_fp = NULL;
     memset(&cinfo, 0, sizeof(cinfo));
     memset(&jerr, 0, sizeof(jerr));
-    row_rgb = NULL;
-    status = 1;
-    started = 0;
-    decoded = 0;
 #if JPEGREF_HAS_JPEG12
     row12 = NULL;
 #endif
@@ -296,7 +283,203 @@ main(int argc, char **argv)
     row16 = NULL;
 #endif
     row8 = NULL;
+    row_rgb = NULL;
     row_stride = 0u;
+    row_rgb_stride = 0u;
+    jdimension_max = (JDIMENSION)~(JDIMENSION)0;
+    row_rgb_bytes = 0u;
+
+    cinfo.err = jpeg_std_error(&jerr.base);
+    jerr.base.error_exit = jpegref_error_exit;
+    if (setjmp(jerr.jmpbuf) != 0) {
+        if (jerr.message[0] != '\0') {
+            fprintf(stderr, "jpegref: %s\n", jerr.message);
+        } else {
+            fprintf(stderr, "jpegref: libjpeg decode error\n");
+        }
+        if (cinfo.mem != NULL) {
+            jpeg_destroy_decompress(&cinfo);
+        }
+        return 1;
+    }
+
+    jpeg_create_decompress(&cinfo);
+    jpeg_stdio_src(&cinfo, input_fp);
+    (void)jpeg_read_header(&cinfo, TRUE);
+
+    if (cinfo.jpeg_color_space == JCS_CMYK ||
+        cinfo.jpeg_color_space == JCS_YCCK) {
+        cinfo.out_color_space = JCS_CMYK;
+    } else if (cinfo.jpeg_color_space == JCS_GRAYSCALE) {
+        cinfo.out_color_space = JCS_GRAYSCALE;
+    } else {
+        cinfo.out_color_space = JCS_RGB;
+    }
+
+    (void)jpeg_start_decompress(&cinfo);
+    if (cinfo.output_width == 0u || cinfo.output_height == 0u) {
+        fprintf(stderr, "jpegref: empty JPEG image\n");
+        jpeg_destroy_decompress(&cinfo);
+        return 1;
+    }
+    if (cinfo.output_components != 1u &&
+        cinfo.output_components != 3u &&
+        cinfo.output_components != 4u) {
+        fprintf(stderr, "jpegref: unsupported output component count: %u\n",
+                cinfo.output_components);
+        jpeg_destroy_decompress(&cinfo);
+        return 1;
+    }
+
+    if (cinfo.output_width > jdimension_max / 3u) {
+        fprintf(stderr, "jpegref: width overflow\n");
+        jpeg_destroy_decompress(&cinfo);
+        return 1;
+    }
+    row_rgb_stride = cinfo.output_width * 3u;
+    row_rgb_bytes = (size_t)row_rgb_stride;
+    row_rgb = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
+                                         JPOOL_IMAGE,
+                                         row_rgb_stride,
+                                         1u);
+
+    fprintf(output_fp, "P6\n%u %u\n255\n", cinfo.output_width, cinfo.output_height);
+
+    if (cinfo.output_width > jdimension_max / cinfo.output_components) {
+        fprintf(stderr, "jpegref: row stride overflow\n");
+        jpeg_destroy_decompress(&cinfo);
+        return 1;
+    }
+    row_stride = cinfo.output_width * cinfo.output_components;
+    if (cinfo.data_precision <= 8) {
+        row8 = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
+                                          JPOOL_IMAGE,
+                                          row_stride,
+                                          1u);
+        while (cinfo.output_scanline < cinfo.output_height) {
+            if (jpeg_read_scanlines(&cinfo, row8, 1u) != 1u) {
+                fprintf(stderr, "jpegref: jpeg_read_scanlines failed\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+            if (!jpegref_convert_row_u8(row8[0],
+                                        row_rgb[0],
+                                        (size_t)cinfo.output_width,
+                                        (int)cinfo.output_components)) {
+                fprintf(stderr, "jpegref: row conversion failed\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+            if (fwrite(row_rgb[0], 1u, row_rgb_bytes, output_fp) != row_rgb_bytes) {
+                fprintf(stderr, "jpegref: failed to write output row\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+        }
+    } else if (cinfo.data_precision <= 12) {
+#if JPEGREF_HAS_JPEG12
+        unsigned int max_sample12;
+
+        row12 = (J12SAMPARRAY)(*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
+                                                         JPOOL_IMAGE,
+                                                         row_stride,
+                                                         1u);
+# if defined(MAXJ12SAMPLE)
+        max_sample12 = (unsigned int)MAXJ12SAMPLE;
+# else
+        max_sample12 = (1u << 12u) - 1u;
+# endif
+        while (cinfo.output_scanline < cinfo.output_height) {
+            if (jpeg12_read_scanlines(&cinfo, row12, 1u) != 1u) {
+                fprintf(stderr, "jpegref: jpeg12_read_scanlines failed\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+            if (!jpegref_convert_row_u16((jpegref_sample_t const *)row12[0],
+                                         row_rgb[0],
+                                         (size_t)cinfo.output_width,
+                                         (int)cinfo.output_components,
+                                         max_sample12)) {
+                fprintf(stderr, "jpegref: row conversion failed\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+            if (fwrite(row_rgb[0], 1u, row_rgb_bytes, output_fp) != row_rgb_bytes) {
+                fprintf(stderr, "jpegref: failed to write output row\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+        }
+#else
+        fprintf(stderr, "jpegref: 12-bit JPEG API is unavailable in this build\n");
+        jpeg_destroy_decompress(&cinfo);
+        return 1;
+#endif
+    } else if (cinfo.data_precision <= 16) {
+#if JPEGREF_HAS_JPEG16
+        unsigned int max_sample16;
+
+        row16 = (J16SAMPARRAY)(*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
+                                                         JPOOL_IMAGE,
+                                                         row_stride,
+                                                         1u);
+# if defined(MAXJ16SAMPLE)
+        max_sample16 = (unsigned int)MAXJ16SAMPLE;
+# else
+        max_sample16 = 65535u;
+# endif
+        while (cinfo.output_scanline < cinfo.output_height) {
+            if (jpeg16_read_scanlines(&cinfo, row16, 1u) != 1u) {
+                fprintf(stderr, "jpegref: jpeg16_read_scanlines failed\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+            if (!jpegref_convert_row_u16((jpegref_sample_t const *)row16[0],
+                                         row_rgb[0],
+                                         (size_t)cinfo.output_width,
+                                         (int)cinfo.output_components,
+                                         max_sample16)) {
+                fprintf(stderr, "jpegref: row conversion failed\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+            if (fwrite(row_rgb[0], 1u, row_rgb_bytes, output_fp) != row_rgb_bytes) {
+                fprintf(stderr, "jpegref: failed to write output row\n");
+                jpeg_destroy_decompress(&cinfo);
+                return 1;
+            }
+        }
+#else
+        fprintf(stderr, "jpegref: 16-bit JPEG API is unavailable in this build\n");
+        jpeg_destroy_decompress(&cinfo);
+        return 1;
+#endif
+    } else {
+        fprintf(stderr, "jpegref: unsupported JPEG precision: %u\n",
+                cinfo.data_precision);
+        jpeg_destroy_decompress(&cinfo);
+        return 1;
+    }
+
+    (void)jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+    return 0;
+}
+
+int
+main(int argc, char **argv)
+{
+    char const *input_path;
+    char const *output_path;
+    FILE *input_fp;
+    FILE *output_fp;
+    int status;
+
+    input_path = NULL;
+    output_path = NULL;
+    input_fp = NULL;
+    output_fp = NULL;
+    status = 1;
 
     if (argc != 3) {
         jpegref_print_usage(argv[0]);
@@ -326,181 +509,9 @@ main(int argc, char **argv)
         }
     }
 
-    cinfo.err = jpeg_std_error(&jerr.base);
-    jerr.base.error_exit = jpegref_error_exit;
-    if (setjmp(jerr.jmpbuf) != 0) {
-        if (jerr.message[0] != '\0') {
-            fprintf(stderr, "jpegref: %s\n", jerr.message);
-        } else {
-            fprintf(stderr, "jpegref: libjpeg decode error\n");
-        }
-        goto cleanup;
-    }
-
-    jpeg_create_decompress(&cinfo);
-    jpeg_stdio_src(&cinfo, input_fp);
-    (void)jpeg_read_header(&cinfo, TRUE);
-
-    if (cinfo.jpeg_color_space == JCS_CMYK ||
-        cinfo.jpeg_color_space == JCS_YCCK) {
-        cinfo.out_color_space = JCS_CMYK;
-    } else if (cinfo.jpeg_color_space == JCS_GRAYSCALE) {
-        cinfo.out_color_space = JCS_GRAYSCALE;
-    } else {
-        cinfo.out_color_space = JCS_RGB;
-    }
-
-    (void)jpeg_start_decompress(&cinfo);
-    started = 1;
-    if (cinfo.output_width == 0u || cinfo.output_height == 0u) {
-        fprintf(stderr, "jpegref: empty JPEG image\n");
-        goto cleanup;
-    }
-    if (cinfo.output_components != 1u &&
-        cinfo.output_components != 3u &&
-        cinfo.output_components != 4u) {
-        fprintf(stderr, "jpegref: unsupported output component count: %u\n",
-                cinfo.output_components);
-        goto cleanup;
-    }
-
-    if ((size_t)cinfo.output_width > SIZE_MAX / 3u) {
-        fprintf(stderr, "jpegref: width overflow\n");
-        goto cleanup;
-    }
-    row_rgb = (unsigned char *)malloc((size_t)cinfo.output_width * 3u);
-    if (row_rgb == NULL) {
-        fprintf(stderr, "jpegref: out of memory\n");
-        goto cleanup;
-    }
-
-    fprintf(output_fp, "P6\n%u %u\n255\n", cinfo.output_width, cinfo.output_height);
-
-    row_stride = cinfo.output_width * cinfo.output_components;
-    if (cinfo.data_precision <= 8) {
-        row8 = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
-                                          JPOOL_IMAGE,
-                                          row_stride,
-                                          1u);
-        while (cinfo.output_scanline < cinfo.output_height) {
-            if (jpeg_read_scanlines(&cinfo, row8, 1u) != 1u) {
-                fprintf(stderr, "jpegref: jpeg_read_scanlines failed\n");
-                goto cleanup;
-            }
-            if (!jpegref_convert_row_u8(row8[0],
-                                        row_rgb,
-                                        (size_t)cinfo.output_width,
-                                        (int)cinfo.output_components)) {
-                fprintf(stderr, "jpegref: row conversion failed\n");
-                goto cleanup;
-            }
-            if (fwrite(row_rgb,
-                       1u,
-                       (size_t)cinfo.output_width * 3u,
-                       output_fp) != (size_t)cinfo.output_width * 3u) {
-                fprintf(stderr, "jpegref: failed to write output row\n");
-                goto cleanup;
-            }
-        }
-    } else if (cinfo.data_precision <= 12) {
-#if JPEGREF_HAS_JPEG12
-        unsigned int max_sample12;
-
-        row12 = (J12SAMPARRAY)(*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
-                                                         JPOOL_IMAGE,
-                                                         row_stride,
-                                                         1u);
-# if defined(MAXJ12SAMPLE)
-        max_sample12 = (unsigned int)MAXJ12SAMPLE;
-# else
-        max_sample12 = (1u << 12u) - 1u;
-# endif
-        while (cinfo.output_scanline < cinfo.output_height) {
-            if (jpeg12_read_scanlines(&cinfo, row12, 1u) != 1u) {
-                fprintf(stderr, "jpegref: jpeg12_read_scanlines failed\n");
-                goto cleanup;
-            }
-            if (!jpegref_convert_row_u16((jpegref_sample_t const *)row12[0],
-                                         row_rgb,
-                                         (size_t)cinfo.output_width,
-                                         (int)cinfo.output_components,
-                                         max_sample12)) {
-                fprintf(stderr, "jpegref: row conversion failed\n");
-                goto cleanup;
-            }
-            if (fwrite(row_rgb,
-                       1u,
-                       (size_t)cinfo.output_width * 3u,
-                       output_fp) != (size_t)cinfo.output_width * 3u) {
-                fprintf(stderr, "jpegref: failed to write output row\n");
-                goto cleanup;
-            }
-        }
-#else
-        fprintf(stderr, "jpegref: 12-bit JPEG API is unavailable in this build\n");
-        goto cleanup;
-#endif
-    } else if (cinfo.data_precision <= 16) {
-#if JPEGREF_HAS_JPEG16
-        unsigned int max_sample16;
-
-        row16 = (J16SAMPARRAY)(*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
-                                                         JPOOL_IMAGE,
-                                                         row_stride,
-                                                         1u);
-# if defined(MAXJ16SAMPLE)
-        max_sample16 = (unsigned int)MAXJ16SAMPLE;
-# else
-        max_sample16 = 65535u;
-# endif
-        while (cinfo.output_scanline < cinfo.output_height) {
-            if (jpeg16_read_scanlines(&cinfo, row16, 1u) != 1u) {
-                fprintf(stderr, "jpegref: jpeg16_read_scanlines failed\n");
-                goto cleanup;
-            }
-            if (!jpegref_convert_row_u16((jpegref_sample_t const *)row16[0],
-                                         row_rgb,
-                                         (size_t)cinfo.output_width,
-                                         (int)cinfo.output_components,
-                                         max_sample16)) {
-                fprintf(stderr, "jpegref: row conversion failed\n");
-                goto cleanup;
-            }
-            if (fwrite(row_rgb,
-                       1u,
-                       (size_t)cinfo.output_width * 3u,
-                       output_fp) != (size_t)cinfo.output_width * 3u) {
-                fprintf(stderr, "jpegref: failed to write output row\n");
-                goto cleanup;
-            }
-        }
-#else
-        fprintf(stderr, "jpegref: 16-bit JPEG API is unavailable in this build\n");
-        goto cleanup;
-#endif
-    } else {
-        fprintf(stderr, "jpegref: unsupported JPEG precision: %u\n",
-                cinfo.data_precision);
-        goto cleanup;
-    }
-
-    decoded = 1;
-    status = 0;
+    status = jpegref_decode(input_fp, output_fp);
 
 cleanup:
-    if (cinfo.mem != NULL) {
-        if (started) {
-            if (decoded) {
-                (void)jpeg_finish_decompress(&cinfo);
-            } else {
-                jpeg_abort_decompress(&cinfo);
-            }
-        }
-        jpeg_destroy_decompress(&cinfo);
-    }
-    if (row_rgb != NULL) {
-        free(row_rgb);
-    }
     if (output_fp != NULL && output_fp != stdout) {
         fclose(output_fp);
     }
