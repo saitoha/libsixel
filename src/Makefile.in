@@ -212,6 +212,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/cms.h $(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
 	$(srcdir)/icc-apply.c $(srcdir)/icc-apply.h \
 	$(srcdir)/icc-convert.c $(srcdir)/icc-convert.h \
+	$(srcdir)/icc-convert-internal.h \
 	$(srcdir)/loader.c $(srcdir)/loader-gdk-pixbuf2.c \
 	$(srcdir)/loader-gnome-thumbnailer.c \
 	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
@@ -900,6 +901,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-apply.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-convert.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-convert.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-convert-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gdk-pixbuf2.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gnome-thumbnailer.c \
