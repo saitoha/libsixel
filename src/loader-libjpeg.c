@@ -323,7 +323,16 @@ jpeg_unpack_cmyk16_to_rgbf32(float *dst,
     index = 0u;
     src_base = 0u;
     dst_base = 0u;
+#if defined(MAXJ16SAMPLE)
     scale = 1.0f / (float)MAXJ16SAMPLE;
+#else
+    /*
+     * jpeg_decode_cmyk16_from_precision() normalizes 12-bit samples into the
+     * full uint16_t range. Use 16-bit full-scale when libjpeg16 constants are
+     * unavailable at compile time.
+     */
+    scale = 1.0f / 65535.0f;
+#endif
     c = 0.0f;
     m = 0.0f;
     y = 0.0f;
