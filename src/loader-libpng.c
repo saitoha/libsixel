@@ -1438,6 +1438,9 @@ load_png(unsigned char      /* out */ **result,
     read_chunk.size = size;
 
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
+#if defined(PNG_SET_OPTION_SUPPORTED) && defined(PNG_SKIP_sRGB_CHECK_PROFILE)
+    png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON);
+#endif
     png_read_info(png_ptr, info_ptr);
     has_srgb_chunk_any = png_get_sRGB(png_ptr, info_ptr, &srgb_intent) == PNG_INFO_sRGB;
     has_gama_chunk_any = png_get_gAMA(png_ptr, info_ptr, &gamma_chunk_value) == PNG_INFO_gAMA;
