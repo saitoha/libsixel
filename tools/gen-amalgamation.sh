@@ -541,7 +541,7 @@ emit_all_units() {
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_LSQA) || defined(BUILD_${guard})"
                 ;;
-            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c)
+            converters/img2sixel.c|converters/sixel2png.c|converters/jpegref.c|assessment/lsqa.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_${guard})"
                 ;;

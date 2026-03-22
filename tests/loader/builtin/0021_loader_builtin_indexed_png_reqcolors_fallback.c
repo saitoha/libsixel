@@ -23,12 +23,18 @@ typedef struct loader_parallel_job {
     uint64_t expected_hash;
     int expected_frame_count;
     int iterations;
-    volatile int *start_flag;
+    struct loader_parallel_start_sync *start_sync;
     SIXELSTATUS status;
     int mismatch_iteration;
     uint64_t actual_hash;
     int actual_frame_count;
 } loader_parallel_job_t;
+
+typedef struct loader_parallel_start_sync {
+    sixel_mutex_t mutex;
+    sixel_cond_t cond;
+    int started;
+} loader_parallel_start_sync_t;
 
 static uint64_t
 hash_bytes(uint64_t hash, void const *data, size_t length)
@@ -265,13 +271,15 @@ loader_parallel_worker(void *arg)
     hash = 0u;
     frame_count = 0;
     iteration = 0;
-    if (job == NULL || job->start_flag == NULL) {
+    if (job == NULL || job->start_sync == NULL) {
         return 1;
     }
 
-    while (*(job->start_flag) == 0) {
-        /* Busy wait for synchronized start. */
+    sixel_mutex_lock(&job->start_sync->mutex);
+    while (job->start_sync->started == 0) {
+        sixel_cond_wait(&job->start_sync->cond, &job->start_sync->mutex);
     }
+    sixel_mutex_unlock(&job->start_sync->mutex);
 
     while (iteration < job->iterations) {
         status = compute_loader_digest(job->image_path,
@@ -317,7 +325,7 @@ run_loader_suboption_parallel_isolation_test(void)
     int frames_zero;
     int frames_one;
     int found_sensitive_case;
-    volatile int start_flag;
+    loader_parallel_start_sync_t start_sync;
     loader_parallel_job_t job_zero;
     loader_parallel_job_t job_one;
     sixel_thread_t thread_zero;
@@ -336,7 +344,7 @@ run_loader_suboption_parallel_isolation_test(void)
     frames_zero = 0;
     frames_one = 0;
     found_sensitive_case = 0;
-    start_flag = 0;
+    memset(&start_sync, 0, sizeof(start_sync));
     memset(&job_zero, 0, sizeof(job_zero));
     memset(&job_one, 0, sizeof(job_one));
     memset(&thread_zero, 0, sizeof(thread_zero));
@@ -383,6 +391,19 @@ run_loader_suboption_parallel_isolation_test(void)
         return SIXEL_TEST_SKIP;
     }
 
+    if (sixel_mutex_init(&start_sync.mutex) != 0) {
+        fprintf(stderr,
+                "parallel loader suboption isolation: mutex unavailable\n");
+        return SIXEL_TEST_SKIP;
+    }
+    if (sixel_cond_init(&start_sync.cond) != 0) {
+        sixel_mutex_destroy(&start_sync.mutex);
+        fprintf(stderr,
+                "parallel loader suboption isolation: condition variable unavailable\n");
+        return SIXEL_TEST_SKIP;
+    }
+    start_sync.started = 0;
+
     memcpy(job_zero.image_path, image_path, strlen(image_path) + 1u);
     memcpy(job_one.image_path, image_path, strlen(image_path) + 1u);
     job_zero.order = order_zero;
@@ -393,8 +414,8 @@ run_loader_suboption_parallel_isolation_test(void)
     job_one.expected_frame_count = frames_one;
     job_zero.iterations = SUBOPTION_PARALLEL_ITERATIONS;
     job_one.iterations = SUBOPTION_PARALLEL_ITERATIONS;
-    job_zero.start_flag = &start_flag;
-    job_one.start_flag = &start_flag;
+    job_zero.start_sync = &start_sync;
+    job_one.start_sync = &start_sync;
     job_zero.status = SIXEL_OK;
     job_one.status = SIXEL_OK;
     job_zero.mismatch_iteration = -1;
@@ -406,6 +427,8 @@ run_loader_suboption_parallel_isolation_test(void)
     if (SIXEL_FAILED(create_status)) {
         fprintf(stderr,
                 "parallel loader suboption isolation: thread creation unavailable\n");
+        sixel_cond_destroy(&start_sync.cond);
+        sixel_mutex_destroy(&start_sync.mutex);
         return SIXEL_TEST_SKIP;
     }
     thread_zero_started = 1;
@@ -415,13 +438,21 @@ run_loader_suboption_parallel_isolation_test(void)
     if (SIXEL_FAILED(create_status)) {
         fprintf(stderr,
                 "parallel loader suboption isolation: second thread creation unavailable\n");
-        start_flag = 1;
+        sixel_mutex_lock(&start_sync.mutex);
+        start_sync.started = 1;
+        sixel_cond_broadcast(&start_sync.cond);
+        sixel_mutex_unlock(&start_sync.mutex);
         sixel_thread_join(&thread_zero);
+        sixel_cond_destroy(&start_sync.cond);
+        sixel_mutex_destroy(&start_sync.mutex);
         return SIXEL_TEST_SKIP;
     }
     thread_one_started = 1;
 
-    start_flag = 1;
+    sixel_mutex_lock(&start_sync.mutex);
+    start_sync.started = 1;
+    sixel_cond_broadcast(&start_sync.cond);
+    sixel_mutex_unlock(&start_sync.mutex);
     if (thread_zero_started) {
         sixel_thread_join(&thread_zero);
     }
@@ -440,6 +471,8 @@ run_loader_suboption_parallel_isolation_test(void)
                 (unsigned long long)job_zero.actual_hash,
                 job_zero.expected_frame_count,
                 job_zero.actual_frame_count);
+        sixel_cond_destroy(&start_sync.cond);
+        sixel_mutex_destroy(&start_sync.mutex);
         return 1;
     }
     if (SIXEL_FAILED(job_one.status)) {
@@ -453,9 +486,13 @@ run_loader_suboption_parallel_isolation_test(void)
                 (unsigned long long)job_one.actual_hash,
                 job_one.expected_frame_count,
                 job_one.actual_frame_count);
+        sixel_cond_destroy(&start_sync.cond);
+        sixel_mutex_destroy(&start_sync.mutex);
         return 1;
     }
 
+    sixel_cond_destroy(&start_sync.cond);
+    sixel_mutex_destroy(&start_sync.mutex);
     return 0;
 }
 

@@ -6917,7 +6917,6 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    int palette_entry_bytes;
    int pixel_count;
    int i;
-   int j;
    int rle_count;
    int rle_repeating;
    int read_next_pixel;
@@ -6947,7 +6946,6 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    palette_entry_bytes = 0;
    pixel_count = 0;
    i = 0;
-   j = 0;
    rle_count = 0;
    rle_repeating = 0;
    read_next_pixel = 1;
