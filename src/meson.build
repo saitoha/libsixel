@@ -99,6 +99,8 @@ srcs = [
   'icc-parse.h',
   'icc-apply.c',
   'icc-apply.h',
+  'icc-convert.c',
+  'icc-convert.h',
   'loader.c',
   'loader-gdk-pixbuf2.c',
   'loader-gnome-thumbnailer.c',

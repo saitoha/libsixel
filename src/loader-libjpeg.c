@@ -55,12 +55,12 @@
 #include "allocator.h"
 #include "cms.h"
 #include "chunk.h"
+#include "icc-convert.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "loader-common.h"
 #include "loader-component.h"
 #include "frame.h"
-#include "frompng.h"
 #include "loader-libjpeg.h"
 #include "logger.h"
 
@@ -745,7 +745,7 @@ jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
 
 #if !HAVE_LCMS2
     if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+        sixel_icc_convert_to_srgb_with_pixelformat(
             (unsigned char *)float_pixels,
             width,
             height,
@@ -857,7 +857,7 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
 #if !HAVE_LCMS2
     if (!cms_converted &&
         enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+        sixel_icc_convert_to_srgb_with_pixelformat(
             (unsigned char *)float_pixels,
             width,
             height,
@@ -958,7 +958,7 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
 #if !HAVE_LCMS2
     if (!cms_converted &&
         enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+        sixel_icc_convert_to_srgb_with_pixelformat(
             (unsigned char *)float_pixels,
             width,
             height,
@@ -1413,7 +1413,7 @@ load_jpeg(unsigned char **result,
             }
 #else
             if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-                sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+                sixel_icc_convert_to_srgb_with_pixelformat(
                     *result,
                     *pwidth,
                     *pheight,

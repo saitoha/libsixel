@@ -23,6 +23,7 @@
 
 #include "allocator.h"
 #include "cms.h"
+#include "icc-convert.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "compat_stub.h"
@@ -55,167 +56,6 @@ char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
 #endif
 
 #if HAVE_LCMS2
-static int
-sixel_frompng_convert_profile_to_srgb(unsigned char *pixels,
-                                      int width,
-                                      int height,
-                                      int pixelformat,
-                                      sixel_cms_profile_t *src_profile)
-{
-    sixel_cms_profile_t *dst_profile;
-    sixel_cms_transform_t *transform;
-    sixel_cms_color_space_t src_colorspace;
-    sixel_cms_pixel_format_t src_type;
-    sixel_cms_pixel_format_t dst_type;
-    size_t pixel_count;
-    unsigned char *gray_in;
-    unsigned char *rgb_out;
-    size_t i;
-    int converted;
-
-    dst_profile = NULL;
-    transform = NULL;
-    src_colorspace = SIXEL_CMS_COLORSPACE_RGB;
-    src_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
-    dst_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
-    pixel_count = 0u;
-    gray_in = NULL;
-    rgb_out = NULL;
-    i = 0u;
-    converted = 0;
-
-    if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
-        return 0;
-    }
-    if (pixelformat != SIXEL_PIXELFORMAT_RGB888
-            && pixelformat != SIXEL_PIXELFORMAT_G8
-            && pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
-        return 0;
-    }
-
-    src_colorspace = sixel_cms_get_color_space(src_profile);
-    dst_profile = sixel_cms_create_srgb_profile();
-    if (dst_profile == NULL) {
-        return 0;
-    }
-
-    pixel_count = (size_t)width * (size_t)height;
-    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
-        src_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
-        dst_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
-    }
-    if (src_colorspace == SIXEL_CMS_COLORSPACE_GRAY) {
-        if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
-            goto cleanup;
-        }
-        gray_in = (unsigned char *)malloc(pixel_count);
-        rgb_out = (unsigned char *)malloc(pixel_count * 3u);
-        if (gray_in == NULL || rgb_out == NULL) {
-            goto cleanup;
-        }
-        for (i = 0u; i < pixel_count; ++i) {
-            gray_in[i] = pixels[i * 3u];
-        }
-        transform = sixel_cms_create_transform(src_profile,
-                                               SIXEL_CMS_PIXELFORMAT_GRAY_8,
-                                               dst_profile,
-                                               SIXEL_CMS_PIXELFORMAT_RGB_8,
-                                               SIXEL_CMS_TRANSFORM_DEFAULT);
-        if (transform == NULL) {
-            goto cleanup;
-        }
-        sixel_cms_do_transform(transform, gray_in, rgb_out, pixel_count);
-        memcpy(pixels, rgb_out, pixel_count * 3u);
-        converted = 1;
-    } else {
-        transform = sixel_cms_create_transform(src_profile,
-                                               src_type,
-                                               dst_profile,
-                                               dst_type,
-                                               SIXEL_CMS_TRANSFORM_DEFAULT);
-        if (transform == NULL) {
-            goto cleanup;
-        }
-        if (sixel_cms_do_transform(transform, pixels, pixels, pixel_count)) {
-            converted = 1;
-        }
-    }
-
-cleanup:
-    free(rgb_out);
-    free(gray_in);
-    if (transform != NULL) {
-        sixel_cms_delete_transform(transform);
-    }
-    if (dst_profile != NULL) {
-        sixel_cms_close_profile(dst_profile);
-    }
-    return converted;
-}
-
-static int
-sixel_frompng_convert_icc_to_srgb_internal(unsigned char *pixels,
-                                           int width,
-                                           int height,
-                                           int pixelformat,
-                                           unsigned char const *profile,
-                                           size_t profile_length)
-{
-    sixel_cms_profile_t *src_profile;
-    int converted;
-
-    src_profile = NULL;
-    converted = 0;
-    if (pixels == NULL || width <= 0 || height <= 0
-            || profile == NULL || profile_length == 0u) {
-        return 0;
-    }
-
-    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
-    if (src_profile == NULL) {
-        return 0;
-    }
-    converted = sixel_frompng_convert_profile_to_srgb(pixels,
-                                                      width,
-                                                      height,
-                                                      pixelformat,
-                                                      src_profile);
-    sixel_cms_close_profile(src_profile);
-    return converted;
-}
-
-void
-sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
-                                  int width,
-                                  int height,
-                                  unsigned char const *profile,
-                                  size_t profile_length)
-{
-    (void)sixel_frompng_convert_icc_to_srgb_internal(pixels,
-                                                     width,
-                                                     height,
-                                                     SIXEL_PIXELFORMAT_RGB888,
-                                                     profile,
-                                                     profile_length);
-}
-
-void
-sixel_frompng_convert_icc_to_srgb_with_pixelformat(
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char const *profile,
-    size_t profile_length)
-{
-    (void)sixel_frompng_convert_icc_to_srgb_internal(pixels,
-                                                     width,
-                                                     height,
-                                                     pixelformat,
-                                                     profile,
-                                                     profile_length);
-}
-
 static uint32_t
 sixel_frompng_read_be32(unsigned char const *p)
 {
@@ -864,7 +704,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                                       size,
                                       &icc_profile,
                                       &icc_profile_length)) {
-            converted = sixel_frompng_convert_icc_to_srgb_internal(
+            converted = sixel_icc_convert_to_srgb_with_pixelformat(
                 pixels,
                 width,
                 height,
@@ -878,11 +718,11 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                && sixel_frompng_build_profile_from_chunks(buffer,
                                                           size,
                                                           &chunk_profile)) {
-        converted = sixel_frompng_convert_profile_to_srgb(pixels,
-                                                          width,
-                                                          height,
-                                                          pixelformat,
-                                                          chunk_profile);
+        converted = sixel_icc_convert_profile_to_srgb(pixels,
+                                                      width,
+                                                      height,
+                                                      pixelformat,
+                                                      chunk_profile);
         sixel_cms_close_profile(chunk_profile);
     }
     if (icc_profile != NULL) {
@@ -928,90 +768,6 @@ sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
                                     double file_gamma,
                                     int apply_chrm_matrix,
                                     double source_to_srgb[3][3]);
-
-static void
-sixel_frompng_convert_icc_to_srgb_internal_nolcms(
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char const *profile_data,
-    size_t profile_length)
-{
-    size_t pixel_count;
-    sixel_icc_profile_t profile;
-    int has_profile;
-
-    pixel_count = 0u;
-    has_profile = 0;
-    memset(&profile, 0, sizeof(profile));
-    if (pixels == NULL || width <= 0 || height <= 0
-            || profile_data == NULL || profile_length == 0u) {
-        return;
-    }
-    if ((size_t)width > SIZE_MAX / (size_t)height) {
-        return;
-    }
-
-    pixel_count = (size_t)width * (size_t)height;
-    if (!sixel_icc_parse_profile(profile_data, profile_length, &profile)) {
-        return;
-    }
-    has_profile = 1;
-
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_RGB888:
-        (void)sixel_icc_apply_rgb_u8(pixels, pixel_count, &profile);
-        break;
-    case SIXEL_PIXELFORMAT_G8:
-        (void)sixel_icc_apply_gray_u8(pixels, pixel_count, &profile);
-        break;
-    case SIXEL_PIXELFORMAT_RGBFLOAT32:
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        (void)sixel_icc_apply_rgb_float32((float *)pixels, pixel_count, &profile);
-        break;
-    default:
-        break;
-    }
-
-    if (has_profile) {
-        sixel_icc_profile_destroy(&profile);
-    }
-}
-
-void
-sixel_frompng_convert_icc_to_srgb(unsigned char *pixels,
-                                  int width,
-                                  int height,
-                                  unsigned char const *profile,
-                                  size_t profile_length)
-{
-    sixel_frompng_convert_icc_to_srgb_internal_nolcms(
-        pixels,
-        width,
-        height,
-        SIXEL_PIXELFORMAT_RGB888,
-        profile,
-        profile_length);
-}
-
-void
-sixel_frompng_convert_icc_to_srgb_with_pixelformat(
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char const *profile,
-    size_t profile_length)
-{
-    sixel_frompng_convert_icc_to_srgb_internal_nolcms(
-        pixels,
-        width,
-        height,
-        pixelformat,
-        profile,
-        profile_length);
-}
 
 void
 sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,

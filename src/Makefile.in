@@ -210,8 +210,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter.h $(srcdir)/scale.c $(srcdir)/scale.h \
 	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/cms.c \
 	$(srcdir)/cms.h $(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
-	$(srcdir)/icc-apply.c $(srcdir)/icc-apply.h $(srcdir)/loader.c \
-	$(srcdir)/loader-gdk-pixbuf2.c \
+	$(srcdir)/icc-apply.c $(srcdir)/icc-apply.h \
+	$(srcdir)/icc-convert.c $(srcdir)/icc-convert.h \
+	$(srcdir)/loader.c $(srcdir)/loader-gdk-pixbuf2.c \
 	$(srcdir)/loader-gnome-thumbnailer.c \
 	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
 	$(srcdir)/loader-wic.c $(srcdir)/loader-gd.c \
@@ -309,6 +310,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-cms.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-icc-parse.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-icc-apply.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-icc-convert.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-gdk-pixbuf2.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-gnome-thumbnailer.lo \
@@ -425,6 +427,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-frompnm.Plo \
 	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
 	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
+	./$(DEPDIR)/libsixel_la-icc-convert.Plo \
 	./$(DEPDIR)/libsixel_la-icc-parse.Plo \
 	./$(DEPDIR)/libsixel_la-loader-builtin.Plo \
 	./$(DEPDIR)/libsixel_la-loader-chain.Plo \
@@ -895,6 +898,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-parse.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-apply.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-apply.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-convert.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-convert.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gdk-pixbuf2.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gnome-thumbnailer.c \
@@ -1160,6 +1165,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-convert.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-parse.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-builtin.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-chain.Plo@am__quote@ # am--include-marker
@@ -1601,6 +1607,13 @@ libsixel_la-icc-apply.lo: icc-apply.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='icc-apply.c' object='libsixel_la-icc-apply.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-icc-apply.lo `test -f 'icc-apply.c' || echo '$(srcdir)/'`icc-apply.c
+
+libsixel_la-icc-convert.lo: icc-convert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-icc-convert.lo -MD -MP -MF $(DEPDIR)/libsixel_la-icc-convert.Tpo -c -o libsixel_la-icc-convert.lo `test -f 'icc-convert.c' || echo '$(srcdir)/'`icc-convert.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-icc-convert.Tpo $(DEPDIR)/libsixel_la-icc-convert.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='icc-convert.c' object='libsixel_la-icc-convert.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-icc-convert.lo `test -f 'icc-convert.c' || echo '$(srcdir)/'`icc-convert.c
 
 libsixel_la-loader.lo: loader.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader.Tpo -c -o libsixel_la-loader.lo `test -f 'loader.c' || echo '$(srcdir)/'`loader.c
@@ -2170,6 +2183,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-icc-convert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
@@ -2311,6 +2325,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-icc-convert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
