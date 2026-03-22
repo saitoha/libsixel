@@ -1,6 +1,9 @@
 #!/bin/sh
 # Verify builtin loader decodes 12-bit CMYK JPEG (sequential 4:4:4)
 # with stable quality against expected PNM reference.
+# Reference generation command (libjpeg tool path):
+#   ./converters/jpegref tests/data/inputs/formats/snake-jpeg-12bit-cmyk-seq444.jpg \
+#       tests/data/loader/builtin_expected/0015_jpeg_cmyk_12bit_seq444_r0_reference.ppm
 
 set -eux
 
