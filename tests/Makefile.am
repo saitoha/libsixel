@@ -297,7 +297,8 @@ AM_LOG_FLAGS =
 	staticcheck-python-compileall \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
-	staticcheck-build-doc-meson-options
+	staticcheck-build-doc-meson-options \
+	staticcheck-c-header-modeline
 
 staticcheck: \
 	staticcheck-clean \
@@ -307,7 +308,8 @@ staticcheck: \
 	staticcheck-python-compileall \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
-	staticcheck-build-doc-meson-options
+	staticcheck-build-doc-meson-options \
+	staticcheck-c-header-modeline
 
 .PHONY: staticcheck-clean
 
@@ -384,6 +386,16 @@ staticcheck-build-doc-meson-options:
 		--trs-file staticcheck-build-doc-meson-options.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-build-doc-meson-options.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-c-header-modeline:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-c-header-modeline" \
+		--log-file staticcheck-c-header-modeline.log \
+		--trs-file staticcheck-c-header-modeline.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-c-header-modeline.sh" \
 		"$(abs_top_srcdir)"
 
 # Route Python TAP tests through the same driver as shell TAP tests so
@@ -933,6 +945,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
+    _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \
     $(TEST_DATA_DIRS)
 
