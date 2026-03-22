@@ -6926,9 +6926,6 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    stbi_uc g;
    stbi_uc r;
    stbi_uc a;
-   stbi_uc temp;
-   int index1;
-   int index2;
    int rle_cmd;
 
    result = NULL;
@@ -6959,9 +6956,6 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    g = 0;
    r = 0;
    a = 0;
-   temp = 0;
-   index1 = 0;
-   index2 = 0;
    rle_cmd = 0;
 
    tga_offset = stbi__get8(s);
@@ -7113,15 +7107,7 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
 
    tga_inverted = 1 - ((tga_inverted >> 5) & 1);
    if (tga_inverted) {
-      for (j = 0; j * 2 < tga_height; ++j) {
-         index1 = j * tga_width;
-         index2 = (tga_height - 1 - j) * tga_width;
-         for (i = 0; i < tga_width; ++i) {
-            temp = result[index1 + i];
-            result[index1 + i] = result[index2 + i];
-            result[index2 + i] = temp;
-         }
-      }
+      stbi__vertical_flip(result, tga_width, tga_height, 1);
    }
 
    if (x) *x = tga_width;
