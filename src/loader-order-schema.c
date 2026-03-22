@@ -66,6 +66,20 @@ static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
 };
 #endif
 
+#if HAVE_LIBTIFF
+static sixel_suboption_key_t const g_subkeys_loader_libtiff_cms[] = {
+    {
+        "cms",
+        "c",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_enable_cms,
+        sizeof(g_suboption_choices_loader_enable_cms)
+            / sizeof(g_suboption_choices_loader_enable_cms[0])
+    }
+};
+#endif
+
 static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
     {
         "cms",
@@ -118,7 +132,13 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
     { "libwebp", SIXEL_LOADER_SCHEMA_CHOICE_LIBWEBP, NULL, 0u },
 #endif
 #if HAVE_LIBTIFF
-    { "libtiff", SIXEL_LOADER_SCHEMA_CHOICE_LIBTIFF, NULL, 0u },
+    {
+        "libtiff",
+        SIXEL_LOADER_SCHEMA_CHOICE_LIBTIFF,
+        g_subkeys_loader_libtiff_cms,
+        sizeof(g_subkeys_loader_libtiff_cms)
+            / sizeof(g_subkeys_loader_libtiff_cms[0])
+    },
 #endif
 #if HAVE_LIBRSVG
     { "librsvg", SIXEL_LOADER_SCHEMA_CHOICE_LIBRSVG, NULL, 0u },
@@ -242,6 +262,7 @@ sixel_loader_order_validate_resolution(
         if (strcmp(base_name, "wic") != 0 &&
             strcmp(base_name, "libpng") != 0 &&
             strcmp(base_name, "libjpeg") != 0 &&
+            strcmp(base_name, "libtiff") != 0 &&
             strcmp(base_name, "builtin") != 0 &&
             item->assignment_count > 0u) {
             sixel_helper_set_additional_message(

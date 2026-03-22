@@ -800,6 +800,8 @@ steps.
                            loader names such as 'gd,builtin'.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
+                           libpng/libjpeg/libtiff/builtin accept
+                           :cms=0|1 (or :c=0|1, default 1).
                            WIC accepts :ico_minsize=SIZE to select
                            the smallest ICO frame whose edge is
                            greater than or equal to SIZE.
