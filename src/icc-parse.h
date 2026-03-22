@@ -25,17 +25,44 @@ typedef struct sixel_icc_curve {
     size_t table_length;
 } sixel_icc_curve_t;
 
+typedef enum sixel_icc_lut_kind {
+    SIXEL_ICC_LUT_INVALID = 0,
+    SIXEL_ICC_LUT_MFT1,
+    SIXEL_ICC_LUT_MFT2
+} sixel_icc_lut_kind_t;
+
+typedef struct sixel_icc_lut {
+    sixel_icc_lut_kind_t kind;
+    uint8_t input_channels;
+    uint8_t output_channels;
+    uint8_t clut_grid_points;
+    uint16_t input_entries;
+    uint16_t output_entries;
+    uint16_t *input_tables;
+    uint16_t *clut_values;
+    uint16_t *output_tables;
+} sixel_icc_lut_t;
+
+typedef enum sixel_icc_profile_pcs {
+    SIXEL_ICC_PROFILE_PCS_INVALID = 0,
+    SIXEL_ICC_PROFILE_PCS_XYZ,
+    SIXEL_ICC_PROFILE_PCS_LAB
+} sixel_icc_profile_pcs_t;
+
 typedef enum sixel_icc_profile_kind {
     SIXEL_ICC_PROFILE_KIND_INVALID = 0,
     SIXEL_ICC_PROFILE_KIND_RGB,
-    SIXEL_ICC_PROFILE_KIND_GRAY
+    SIXEL_ICC_PROFILE_KIND_GRAY,
+    SIXEL_ICC_PROFILE_KIND_CMYK
 } sixel_icc_profile_kind_t;
 
 typedef struct sixel_icc_profile {
     sixel_icc_profile_kind_t kind;
+    sixel_icc_profile_pcs_t pcs;
     double matrix_to_xyz_d50[3][3];
     double gray_white_xyz_d50[3];
     sixel_icc_curve_t curves[3];
+    sixel_icc_lut_t a2b0_lut;
 } sixel_icc_profile_t;
 
 int
