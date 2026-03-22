@@ -38,6 +38,7 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_enable_cms[] = 
     { "1", 1 }
 };
 
+#if HAVE_LIBPNG
 static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
     {
         "cms",
@@ -49,7 +50,9 @@ static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
             / sizeof(g_suboption_choices_loader_enable_cms[0])
     }
 };
+#endif
 
+#if HAVE_JPEG
 static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
     {
         "cms",
@@ -61,6 +64,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
             / sizeof(g_suboption_choices_loader_enable_cms[0])
     }
 };
+#endif
 
 static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
     {
