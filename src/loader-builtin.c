@@ -57,6 +57,7 @@
 #include "compat_stub.h"
 #include "frame.h"
 #include "fromgif.h"
+#include "icc-convert.h"
 #include "frompng.h"
 #include "frompnm.h"
 #include "pixelformat.h"
@@ -2536,7 +2537,7 @@ load_with_builtin(
                                                        &icc_profile,
                                                        &icc_profile_length,
                                                        pchunk->allocator)) {
-                        sixel_frompng_convert_icc_to_srgb_with_pixelformat(
+                        sixel_icc_convert_to_srgb_with_pixelformat(
                             (unsigned char *)float_pixels,
                             frame->width,
                             frame->height,
@@ -2567,11 +2568,11 @@ load_with_builtin(
                                                       &icc_profile,
                                                       &icc_profile_length,
                                                       pchunk->allocator)) {
-                        sixel_frompng_convert_icc_to_srgb(pixels,
-                                                          frame->width,
-                                                          frame->height,
-                                                          icc_profile,
-                                                          icc_profile_length);
+                        sixel_icc_convert_to_srgb(pixels,
+                                                  frame->width,
+                                                  frame->height,
+                                                  icc_profile,
+                                                  icc_profile_length);
                     }
                 } else if (enable_cms && chunk_is_tiff(pchunk)) {
                     if (sixel_builtin_extract_tiff_icc(
@@ -2583,11 +2584,11 @@ load_with_builtin(
                             pchunk->allocator)) {
                         if (sixel_builtin_tiff_photometric_supports_icc(
                                 tiff_photometric)) {
-                            sixel_frompng_convert_icc_to_srgb(pixels,
-                                                              frame->width,
-                                                              frame->height,
-                                                              icc_profile,
-                                                              icc_profile_length);
+                            sixel_icc_convert_to_srgb(pixels,
+                                                      frame->width,
+                                                      frame->height,
+                                                      icc_profile,
+                                                      icc_profile_length);
                         }
                     }
                 }
