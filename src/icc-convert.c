@@ -166,21 +166,6 @@ sixel_icc_convert_profile_to_srgb(unsigned char *pixels,
 #endif  /* HAVE_LCMS2 */
 
 int
-sixel_icc_convert_to_srgb(unsigned char *pixels,
-                          int width,
-                          int height,
-                          unsigned char const *profile,
-                          size_t profile_length)
-{
-    return sixel_icc_convert_to_srgb_with_pixelformat(pixels,
-                                                      width,
-                                                      height,
-                                                      SIXEL_PIXELFORMAT_RGB888,
-                                                      profile,
-                                                      profile_length);
-}
-
-int
 sixel_icc_convert_to_srgb_with_pixelformat(
     unsigned char *pixels,
     int width,
