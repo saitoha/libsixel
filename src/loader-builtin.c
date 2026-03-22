@@ -65,7 +65,20 @@
 #include "loader.h"
 #include "sixel_atomic.h"
 
-static sixel_allocator_t *stbi_allocator;
+#if defined(_MSC_VER)
+# define SIXEL_STBI_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__STDC_NO_THREADS__)
+# define SIXEL_STBI_TLS _Thread_local
+#elif defined(__GNUC__)
+# define SIXEL_STBI_TLS __thread
+#else
+# define SIXEL_STBI_TLS
+#endif
+
+static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
+
+#undef SIXEL_STBI_TLS
 
 typedef struct sixel_loader_builtin_component {
     sixel_loader_component_t base;
