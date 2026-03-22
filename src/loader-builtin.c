@@ -2568,11 +2568,13 @@ load_with_builtin(
                                                       &icc_profile,
                                                       &icc_profile_length,
                                                       pchunk->allocator)) {
-                        sixel_icc_convert_to_srgb(pixels,
-                                                  frame->width,
-                                                  frame->height,
-                                                  icc_profile,
-                                                  icc_profile_length);
+                        sixel_icc_convert_to_srgb_with_pixelformat(
+                            pixels,
+                            frame->width,
+                            frame->height,
+                            SIXEL_PIXELFORMAT_RGB888,
+                            icc_profile,
+                            icc_profile_length);
                     }
                 } else if (enable_cms && chunk_is_tiff(pchunk)) {
                     if (sixel_builtin_extract_tiff_icc(
@@ -2584,11 +2586,13 @@ load_with_builtin(
                             pchunk->allocator)) {
                         if (sixel_builtin_tiff_photometric_supports_icc(
                                 tiff_photometric)) {
-                            sixel_icc_convert_to_srgb(pixels,
-                                                      frame->width,
-                                                      frame->height,
-                                                      icc_profile,
-                                                      icc_profile_length);
+                            sixel_icc_convert_to_srgb_with_pixelformat(
+                                pixels,
+                                frame->width,
+                                frame->height,
+                                SIXEL_PIXELFORMAT_RGB888,
+                                icc_profile,
+                                icc_profile_length);
                         }
                     }
                 }

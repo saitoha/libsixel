@@ -19,13 +19,6 @@ sixel_icc_convert_profile_to_srgb(unsigned char *pixels,
                                   sixel_cms_profile_t *src_profile);
 
 int
-sixel_icc_convert_to_srgb(unsigned char *pixels,
-                          int width,
-                          int height,
-                          unsigned char const *profile,
-                          size_t profile_length);
-
-int
 sixel_icc_convert_to_srgb_with_pixelformat(
     unsigned char *pixels,
     int width,
