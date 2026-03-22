@@ -539,9 +539,6 @@ sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
     size_t output_count;
     size_t total_sample_count;
     size_t required_length;
-    size_t input_table_bytes;
-    size_t clut_table_bytes;
-    size_t output_table_bytes;
     size_t offset;
     size_t i;
 
@@ -557,9 +554,6 @@ sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
     output_count = 0u;
     total_sample_count = 0u;
     required_length = 0u;
-    input_table_bytes = 0u;
-    clut_table_bytes = 0u;
-    output_table_bytes = 0u;
     offset = 0u;
     i = 0u;
 
@@ -601,21 +595,15 @@ sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
         return 0;
     }
 
-    if (!sixel_icc_size_multiply(input_count,
-                                 sizeof(uint16_t),
-                                 &input_table_bytes) ||
-        !sixel_icc_size_multiply(clut_count,
-                                 sizeof(uint16_t),
-                                 &clut_table_bytes) ||
-        !sixel_icc_size_multiply(output_count,
-                                 sizeof(uint16_t),
-                                 &output_table_bytes)) {
+    if (input_count > SIZE_MAX / sizeof(*parsed.input_tables) ||
+        clut_count > SIZE_MAX / sizeof(*parsed.clut_values) ||
+        output_count > SIZE_MAX / sizeof(*parsed.output_tables)) {
         return 0;
     }
 
-    parsed.input_tables = (uint16_t *)malloc(input_table_bytes);
-    parsed.clut_values = (uint16_t *)malloc(clut_table_bytes);
-    parsed.output_tables = (uint16_t *)malloc(output_table_bytes);
+    parsed.input_tables = (uint16_t *)malloc(input_count * sizeof(*parsed.input_tables));
+    parsed.clut_values = (uint16_t *)malloc(clut_count * sizeof(*parsed.clut_values));
+    parsed.output_tables = (uint16_t *)malloc(output_count * sizeof(*parsed.output_tables));
     if (parsed.input_tables == NULL ||
         parsed.clut_values == NULL ||
         parsed.output_tables == NULL) {
@@ -671,9 +659,6 @@ sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
     size_t total_sample_count;
     size_t total_sample_bytes;
     size_t required_length;
-    size_t input_table_bytes;
-    size_t clut_table_bytes;
-    size_t output_table_bytes;
     size_t offset;
     size_t i;
 
@@ -690,9 +675,6 @@ sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
     total_sample_count = 0u;
     total_sample_bytes = 0u;
     required_length = 0u;
-    input_table_bytes = 0u;
-    clut_table_bytes = 0u;
-    output_table_bytes = 0u;
     offset = 0u;
     i = 0u;
 
@@ -739,21 +721,15 @@ sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
         return 0;
     }
 
-    if (!sixel_icc_size_multiply(input_count,
-                                 sizeof(uint16_t),
-                                 &input_table_bytes) ||
-        !sixel_icc_size_multiply(clut_count,
-                                 sizeof(uint16_t),
-                                 &clut_table_bytes) ||
-        !sixel_icc_size_multiply(output_count,
-                                 sizeof(uint16_t),
-                                 &output_table_bytes)) {
+    if (input_count > SIZE_MAX / sizeof(*parsed.input_tables) ||
+        clut_count > SIZE_MAX / sizeof(*parsed.clut_values) ||
+        output_count > SIZE_MAX / sizeof(*parsed.output_tables)) {
         return 0;
     }
 
-    parsed.input_tables = (uint16_t *)malloc(input_table_bytes);
-    parsed.clut_values = (uint16_t *)malloc(clut_table_bytes);
-    parsed.output_tables = (uint16_t *)malloc(output_table_bytes);
+    parsed.input_tables = (uint16_t *)malloc(input_count * sizeof(*parsed.input_tables));
+    parsed.clut_values = (uint16_t *)malloc(clut_count * sizeof(*parsed.clut_values));
+    parsed.output_tables = (uint16_t *)malloc(output_count * sizeof(*parsed.output_tables));
     if (parsed.input_tables == NULL ||
         parsed.clut_values == NULL ||
         parsed.output_tables == NULL) {
