@@ -9,15 +9,6 @@
 
 #include <sixel.h>
 
-#include "cms.h"
-
-int
-sixel_icc_convert_profile_to_srgb(unsigned char *pixels,
-                                  int width,
-                                  int height,
-                                  int pixelformat,
-                                  sixel_cms_profile_t *src_profile);
-
 int
 sixel_icc_convert_to_srgb_with_pixelformat(
     unsigned char *pixels,

@@ -101,6 +101,7 @@ srcs = [
   'icc-apply.h',
   'icc-convert.c',
   'icc-convert.h',
+  'icc-convert-internal.h',
   'loader.c',
   'loader-gdk-pixbuf2.c',
   'loader-gnome-thumbnailer.c',

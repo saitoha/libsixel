@@ -7,6 +7,7 @@
 #endif
 
 #include "icc-convert.h"
+#include "icc-convert-internal.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -24,11 +25,11 @@
 
 #if HAVE_LCMS2
 int
-sixel_icc_convert_profile_to_srgb(unsigned char *pixels,
-                                  int width,
-                                  int height,
-                                  int pixelformat,
-                                  sixel_cms_profile_t *src_profile)
+sixel_icc_convert_profile_to_srgb_internal(unsigned char *pixels,
+                                           int width,
+                                           int height,
+                                           int pixelformat,
+                                           sixel_cms_profile_t *src_profile)
 {
     sixel_cms_profile_t *dst_profile;
     sixel_cms_transform_t *transform;
@@ -150,11 +151,11 @@ cleanup:
 }
 #else
 int
-sixel_icc_convert_profile_to_srgb(unsigned char *pixels,
-                                  int width,
-                                  int height,
-                                  int pixelformat,
-                                  sixel_cms_profile_t *src_profile)
+sixel_icc_convert_profile_to_srgb_internal(unsigned char *pixels,
+                                           int width,
+                                           int height,
+                                           int pixelformat,
+                                           sixel_cms_profile_t *src_profile)
 {
     (void)pixels;
     (void)width;
@@ -189,11 +190,11 @@ sixel_icc_convert_to_srgb_with_pixelformat(
     if (src_profile == NULL) {
         return 0;
     }
-    converted = sixel_icc_convert_profile_to_srgb(pixels,
-                                                  width,
-                                                  height,
-                                                  pixelformat,
-                                                  src_profile);
+    converted = sixel_icc_convert_profile_to_srgb_internal(pixels,
+                                                           width,
+                                                           height,
+                                                           pixelformat,
+                                                           src_profile);
     sixel_cms_close_profile(src_profile);
     return converted;
 #else
