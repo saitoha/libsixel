@@ -46,6 +46,9 @@ tests/_artifacts
 # coverage
 *.info
 
+# python
+__pycache__
+
 # OSX
 .DS_Store
 
@@ -80,3 +83,8 @@ libsixel-*.tar.gz
 libsixel-*.zip
 libsixel-*.xz
 build-examples/emsdk*
+tests/.perl-test-venv/
+tests/.php-test-venv/
+tests/.python-test-venv/
+tests/.ruby-test-venv/
+*.log
