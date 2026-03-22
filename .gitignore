@@ -40,6 +40,11 @@ stamp-h1
 .libs
 .deps
 .dirstamp
+configure~
+tests/_artifacts
+
+# coverage
+*.info
 
 # OSX
 .DS_Store
@@ -58,8 +63,20 @@ package.json.in
 include/*.h
 converters/img2sixel
 converters/sixel2png
-converters/*.sixel
-converters/*.png
+assessment/lsqa
+tests/test_runner
+tools/lso-timeout
+tools/lso-timer
 tools/libsixel-config
-amalgamation/Makefile
+package.json
+tools/emsdk*
 amalgamation/sixel.c
+converters/completion_embed.h
+afl-out
+.local
+tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer
+tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer
+libsixel-*.tar.gz
+libsixel-*.zip
+libsixel-*.xz
+build-examples/emsdk*
