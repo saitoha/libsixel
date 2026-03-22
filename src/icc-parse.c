@@ -62,6 +62,43 @@ sixel_icc_curve_reset(sixel_icc_curve_t *curve)
 }
 
 static void
+sixel_icc_lut_reset(sixel_icc_lut_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    lut->kind = SIXEL_ICC_LUT_INVALID;
+    lut->input_channels = 0u;
+    lut->output_channels = 0u;
+    lut->clut_grid_points = 0u;
+    lut->input_entries = 0u;
+    lut->output_entries = 0u;
+    lut->input_tables = NULL;
+    lut->clut_values = NULL;
+    lut->output_tables = NULL;
+}
+
+static void
+sixel_icc_lut_destroy(sixel_icc_lut_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    if (lut->input_tables != NULL) {
+        free(lut->input_tables);
+    }
+    if (lut->clut_values != NULL) {
+        free(lut->clut_values);
+    }
+    if (lut->output_tables != NULL) {
+        free(lut->output_tables);
+    }
+    sixel_icc_lut_reset(lut);
+}
+
+static void
 sixel_icc_profile_reset(sixel_icc_profile_t *profile)
 {
     if (profile == NULL) {
@@ -70,9 +107,11 @@ sixel_icc_profile_reset(sixel_icc_profile_t *profile)
 
     memset(profile, 0, sizeof(*profile));
     profile->kind = SIXEL_ICC_PROFILE_KIND_INVALID;
+    profile->pcs = SIXEL_ICC_PROFILE_PCS_INVALID;
     sixel_icc_curve_reset(&profile->curves[0]);
     sixel_icc_curve_reset(&profile->curves[1]);
     sixel_icc_curve_reset(&profile->curves[2]);
+    sixel_icc_lut_reset(&profile->a2b0_lut);
 }
 
 void
@@ -93,8 +132,10 @@ sixel_icc_profile_destroy(sixel_icc_profile_t *profile)
         profile->curves[i].kind = SIXEL_ICC_CURVE_INVALID;
         profile->curves[i].gamma = 1.0;
     }
+    sixel_icc_lut_destroy(&profile->a2b0_lut);
 
     profile->kind = SIXEL_ICC_PROFILE_KIND_INVALID;
+    profile->pcs = SIXEL_ICC_PROFILE_PCS_INVALID;
     memset(profile->matrix_to_xyz_d50, 0, sizeof(profile->matrix_to_xyz_d50));
     memset(profile->gray_white_xyz_d50, 0, sizeof(profile->gray_white_xyz_d50));
 }
@@ -433,6 +474,353 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
     return 0;
 }
 
+static int
+sixel_icc_size_add(size_t a, size_t b, size_t *out)
+{
+    if (out == NULL) {
+        return 0;
+    }
+    if (a > SIZE_MAX - b) {
+        return 0;
+    }
+    *out = a + b;
+    return 1;
+}
+
+static int
+sixel_icc_size_multiply(size_t a, size_t b, size_t *out)
+{
+    if (out == NULL) {
+        return 0;
+    }
+    if (a != 0u && b > SIZE_MAX / a) {
+        return 0;
+    }
+    *out = a * b;
+    return 1;
+}
+
+static int
+sixel_icc_size_pow(unsigned int base, unsigned int exponent, size_t *out)
+{
+    size_t value;
+    unsigned int i;
+
+    if (out == NULL) {
+        return 0;
+    }
+
+    value = 1u;
+    for (i = 0u; i < exponent; ++i) {
+        if (base != 0u && value > SIZE_MAX / (size_t)base) {
+            return 0;
+        }
+        value *= (size_t)base;
+    }
+
+    *out = value;
+    return 1;
+}
+
+static int
+sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
+                         size_t tag_length,
+                         sixel_icc_lut_t *out_lut)
+{
+    sixel_icc_lut_t parsed;
+    unsigned char input_channels;
+    unsigned char output_channels;
+    unsigned char clut_grid_points;
+    uint16_t input_entries;
+    uint16_t output_entries;
+    size_t input_count;
+    size_t clut_points;
+    size_t clut_count;
+    size_t output_count;
+    size_t total_sample_count;
+    size_t required_length;
+    size_t input_table_bytes;
+    size_t clut_table_bytes;
+    size_t output_table_bytes;
+    size_t offset;
+    size_t i;
+
+    sixel_icc_lut_reset(&parsed);
+    input_channels = 0u;
+    output_channels = 0u;
+    clut_grid_points = 0u;
+    input_entries = 0u;
+    output_entries = 0u;
+    input_count = 0u;
+    clut_points = 0u;
+    clut_count = 0u;
+    output_count = 0u;
+    total_sample_count = 0u;
+    required_length = 0u;
+    input_table_bytes = 0u;
+    clut_table_bytes = 0u;
+    output_table_bytes = 0u;
+    offset = 0u;
+    i = 0u;
+
+    if (tag_data == NULL || out_lut == NULL || tag_length < 48u) {
+        return 0;
+    }
+    if (memcmp(tag_data + 0u, "mft1", 4u) != 0) {
+        return 0;
+    }
+
+    input_channels = tag_data[8u];
+    output_channels = tag_data[9u];
+    clut_grid_points = tag_data[10u];
+    input_entries = 256u;
+    output_entries = 256u;
+
+    if (input_channels == 0u || output_channels == 0u || clut_grid_points == 0u) {
+        return 0;
+    }
+
+    if (!sixel_icc_size_multiply((size_t)input_channels,
+                                 (size_t)input_entries,
+                                 &input_count) ||
+        !sixel_icc_size_pow((unsigned int)clut_grid_points,
+                            (unsigned int)input_channels,
+                            &clut_points) ||
+        !sixel_icc_size_multiply(clut_points,
+                                 (size_t)output_channels,
+                                 &clut_count) ||
+        !sixel_icc_size_multiply((size_t)output_channels,
+                                 (size_t)output_entries,
+                                 &output_count) ||
+        !sixel_icc_size_add(input_count, clut_count, &total_sample_count) ||
+        !sixel_icc_size_add(total_sample_count,
+                            output_count,
+                            &total_sample_count) ||
+        !sixel_icc_size_add(48u, total_sample_count, &required_length) ||
+        required_length > tag_length) {
+        return 0;
+    }
+
+    if (!sixel_icc_size_multiply(input_count,
+                                 sizeof(uint16_t),
+                                 &input_table_bytes) ||
+        !sixel_icc_size_multiply(clut_count,
+                                 sizeof(uint16_t),
+                                 &clut_table_bytes) ||
+        !sixel_icc_size_multiply(output_count,
+                                 sizeof(uint16_t),
+                                 &output_table_bytes)) {
+        return 0;
+    }
+
+    parsed.input_tables = (uint16_t *)malloc(input_table_bytes);
+    parsed.clut_values = (uint16_t *)malloc(clut_table_bytes);
+    parsed.output_tables = (uint16_t *)malloc(output_table_bytes);
+    if (parsed.input_tables == NULL ||
+        parsed.clut_values == NULL ||
+        parsed.output_tables == NULL) {
+        goto fail;
+    }
+
+    offset = 48u;
+    for (i = 0u; i < input_count; ++i) {
+        parsed.input_tables[i] = (uint16_t)((unsigned int)tag_data[offset + i] * 257u);
+    }
+    offset += input_count;
+
+    for (i = 0u; i < clut_count; ++i) {
+        parsed.clut_values[i] = (uint16_t)((unsigned int)tag_data[offset + i] * 257u);
+    }
+    offset += clut_count;
+
+    for (i = 0u; i < output_count; ++i) {
+        parsed.output_tables[i] = (uint16_t)((unsigned int)tag_data[offset + i] * 257u);
+    }
+
+    parsed.kind = SIXEL_ICC_LUT_MFT1;
+    parsed.input_channels = input_channels;
+    parsed.output_channels = output_channels;
+    parsed.clut_grid_points = clut_grid_points;
+    parsed.input_entries = input_entries;
+    parsed.output_entries = output_entries;
+
+    sixel_icc_lut_destroy(out_lut);
+    *out_lut = parsed;
+    return 1;
+
+fail:
+    sixel_icc_lut_destroy(&parsed);
+    return 0;
+}
+
+static int
+sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
+                          size_t tag_length,
+                          sixel_icc_lut_t *out_lut)
+{
+    sixel_icc_lut_t parsed;
+    unsigned char input_channels;
+    unsigned char output_channels;
+    unsigned char clut_grid_points;
+    uint16_t input_entries;
+    uint16_t output_entries;
+    size_t input_count;
+    size_t clut_points;
+    size_t clut_count;
+    size_t output_count;
+    size_t total_sample_count;
+    size_t total_sample_bytes;
+    size_t required_length;
+    size_t input_table_bytes;
+    size_t clut_table_bytes;
+    size_t output_table_bytes;
+    size_t offset;
+    size_t i;
+
+    sixel_icc_lut_reset(&parsed);
+    input_channels = 0u;
+    output_channels = 0u;
+    clut_grid_points = 0u;
+    input_entries = 0u;
+    output_entries = 0u;
+    input_count = 0u;
+    clut_points = 0u;
+    clut_count = 0u;
+    output_count = 0u;
+    total_sample_count = 0u;
+    total_sample_bytes = 0u;
+    required_length = 0u;
+    input_table_bytes = 0u;
+    clut_table_bytes = 0u;
+    output_table_bytes = 0u;
+    offset = 0u;
+    i = 0u;
+
+    if (tag_data == NULL || out_lut == NULL || tag_length < 52u) {
+        return 0;
+    }
+    if (memcmp(tag_data + 0u, "mft2", 4u) != 0) {
+        return 0;
+    }
+
+    input_channels = tag_data[8u];
+    output_channels = tag_data[9u];
+    clut_grid_points = tag_data[10u];
+    input_entries = sixel_icc_read_be16(tag_data + 48u);
+    output_entries = sixel_icc_read_be16(tag_data + 50u);
+
+    if (input_channels == 0u ||
+        output_channels == 0u ||
+        clut_grid_points == 0u ||
+        input_entries == 0u ||
+        output_entries == 0u) {
+        return 0;
+    }
+
+    if (!sixel_icc_size_multiply((size_t)input_channels,
+                                 (size_t)input_entries,
+                                 &input_count) ||
+        !sixel_icc_size_pow((unsigned int)clut_grid_points,
+                            (unsigned int)input_channels,
+                            &clut_points) ||
+        !sixel_icc_size_multiply(clut_points,
+                                 (size_t)output_channels,
+                                 &clut_count) ||
+        !sixel_icc_size_multiply((size_t)output_channels,
+                                 (size_t)output_entries,
+                                 &output_count) ||
+        !sixel_icc_size_add(input_count, clut_count, &total_sample_count) ||
+        !sixel_icc_size_add(total_sample_count,
+                            output_count,
+                            &total_sample_count) ||
+        !sixel_icc_size_multiply(total_sample_count, 2u, &total_sample_bytes) ||
+        !sixel_icc_size_add(52u, total_sample_bytes, &required_length) ||
+        required_length > tag_length) {
+        return 0;
+    }
+
+    if (!sixel_icc_size_multiply(input_count,
+                                 sizeof(uint16_t),
+                                 &input_table_bytes) ||
+        !sixel_icc_size_multiply(clut_count,
+                                 sizeof(uint16_t),
+                                 &clut_table_bytes) ||
+        !sixel_icc_size_multiply(output_count,
+                                 sizeof(uint16_t),
+                                 &output_table_bytes)) {
+        return 0;
+    }
+
+    parsed.input_tables = (uint16_t *)malloc(input_table_bytes);
+    parsed.clut_values = (uint16_t *)malloc(clut_table_bytes);
+    parsed.output_tables = (uint16_t *)malloc(output_table_bytes);
+    if (parsed.input_tables == NULL ||
+        parsed.clut_values == NULL ||
+        parsed.output_tables == NULL) {
+        goto fail;
+    }
+
+    offset = 52u;
+    for (i = 0u; i < input_count; ++i) {
+        parsed.input_tables[i] = sixel_icc_read_be16(tag_data + offset + i * 2u);
+    }
+    offset += input_count * 2u;
+
+    for (i = 0u; i < clut_count; ++i) {
+        parsed.clut_values[i] = sixel_icc_read_be16(tag_data + offset + i * 2u);
+    }
+    offset += clut_count * 2u;
+
+    for (i = 0u; i < output_count; ++i) {
+        parsed.output_tables[i] = sixel_icc_read_be16(tag_data + offset + i * 2u);
+    }
+
+    parsed.kind = SIXEL_ICC_LUT_MFT2;
+    parsed.input_channels = input_channels;
+    parsed.output_channels = output_channels;
+    parsed.clut_grid_points = clut_grid_points;
+    parsed.input_entries = input_entries;
+    parsed.output_entries = output_entries;
+
+    sixel_icc_lut_destroy(out_lut);
+    *out_lut = parsed;
+    return 1;
+
+fail:
+    sixel_icc_lut_destroy(&parsed);
+    return 0;
+}
+
+static int
+sixel_icc_parse_lut_tag(unsigned char const *profile_data,
+                        size_t profile_size,
+                        size_t tag_offset,
+                        size_t tag_length,
+                        sixel_icc_lut_t *out_lut)
+{
+    unsigned char const *tag_data;
+
+    if (profile_data == NULL || out_lut == NULL) {
+        return 0;
+    }
+    if (tag_offset > profile_size || tag_length > profile_size - tag_offset) {
+        return 0;
+    }
+    if (tag_length < 4u) {
+        return 0;
+    }
+
+    tag_data = profile_data + tag_offset;
+    if (memcmp(tag_data + 0u, "mft1", 4u) == 0) {
+        return sixel_icc_parse_lut8_tag(tag_data, tag_length, out_lut);
+    }
+    if (memcmp(tag_data + 0u, "mft2", 4u) == 0) {
+        return sixel_icc_parse_lut16_tag(tag_data, tag_length, out_lut);
+    }
+
+    return 0;
+}
+
 int
 sixel_icc_parse_profile(void const *data,
                         size_t length,
@@ -460,6 +848,8 @@ sixel_icc_parse_profile(void const *data,
     size_t wtpt_length;
     size_t ktrc_offset;
     size_t ktrc_length;
+    size_t a2b0_offset;
+    size_t a2b0_length;
     double rxyz[3];
     double gxyz[3];
     double bxyz[3];
@@ -481,11 +871,18 @@ sixel_icc_parse_profile(void const *data,
 
     color_space = profile_data + 16u;
     pcs = profile_data + 20u;
-    if (memcmp(pcs, "XYZ ", 4u) != 0) {
+    if (memcmp(pcs, "XYZ ", 4u) == 0) {
+        parsed.pcs = SIXEL_ICC_PROFILE_PCS_XYZ;
+    } else if (memcmp(pcs, "Lab ", 4u) == 0) {
+        parsed.pcs = SIXEL_ICC_PROFILE_PCS_LAB;
+    } else {
         return 0;
     }
 
     if (memcmp(color_space, "RGB ", 4u) == 0) {
+        if (parsed.pcs != SIXEL_ICC_PROFILE_PCS_XYZ) {
+            goto fail;
+        }
         if (!sixel_icc_find_tag(profile_data, profile_size,
                                 "rXYZ", &rxyz_offset, &rxyz_length) ||
             !sixel_icc_find_tag(profile_data, profile_size,
@@ -551,6 +948,9 @@ sixel_icc_parse_profile(void const *data,
 
         parsed.kind = SIXEL_ICC_PROFILE_KIND_RGB;
     } else if (memcmp(color_space, "GRAY", 4u) == 0) {
+        if (parsed.pcs != SIXEL_ICC_PROFILE_PCS_XYZ) {
+            goto fail;
+        }
         if (!sixel_icc_find_tag(profile_data,
                                 profile_size,
                                 "wtpt",
@@ -578,6 +978,28 @@ sixel_icc_parse_profile(void const *data,
         }
 
         parsed.kind = SIXEL_ICC_PROFILE_KIND_GRAY;
+    } else if (memcmp(color_space, "CMYK", 4u) == 0) {
+        if (!sixel_icc_find_tag(profile_data,
+                                profile_size,
+                                "A2B0",
+                                &a2b0_offset,
+                                &a2b0_length)) {
+            goto fail;
+        }
+
+        if (!sixel_icc_parse_lut_tag(profile_data,
+                                     profile_size,
+                                     a2b0_offset,
+                                     a2b0_length,
+                                     &parsed.a2b0_lut)) {
+            goto fail;
+        }
+        if (parsed.a2b0_lut.input_channels != 4u ||
+            parsed.a2b0_lut.output_channels != 3u) {
+            goto fail;
+        }
+
+        parsed.kind = SIXEL_ICC_PROFILE_KIND_CMYK;
     } else {
         goto fail;
     }
