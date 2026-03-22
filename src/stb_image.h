@@ -7078,6 +7078,7 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
    }
 
    pixel_count = tga_width * tga_height;
+   memset(result, 0, (size_t)pixel_count);
    for (i = 0; i < pixel_count; ++i) {
       if (tga_is_rle) {
          if (rle_count == 0) {
