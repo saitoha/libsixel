@@ -1209,11 +1209,13 @@ load_jpeg(unsigned char **result,
     struct jpeg_decompress_struct cinfo;
     sixel_loader_libjpeg_error_context_t jerr;
     int data_precision;
-    int decode_cmyk;
+    volatile int decode_cmyk;
     unsigned int output_components;
     volatile int jpeg_failed;
-    unsigned char *icc_profile;
-    unsigned int icc_profile_length;
+    unsigned char * volatile icc_profile;
+    volatile unsigned int icc_profile_length;
+    unsigned char *icc_profile_tmp;
+    unsigned int icc_profile_length_tmp;
 
     status = SIXEL_JPEG_ERROR;
     row_stride = 0u;
@@ -1224,6 +1226,8 @@ load_jpeg(unsigned char **result,
     decode_cmyk = 0;
     output_components = 0u;
     jpeg_failed = 0;
+    icc_profile_tmp = NULL;
+    icc_profile_length_tmp = 0u;
     *result = NULL;
     memset(&cinfo, 0, sizeof(cinfo));
     memset(&jerr, 0, sizeof(jerr));
@@ -1245,10 +1249,14 @@ load_jpeg(unsigned char **result,
     }
     jpeg_read_header(&cinfo, TRUE);
     if (enable_cms) {
+        icc_profile_tmp = NULL;
+        icc_profile_length_tmp = 0u;
         (void)jpeg_collect_icc_profile(&cinfo,
-                                       &icc_profile,
-                                       &icc_profile_length,
+                                       &icc_profile_tmp,
+                                       &icc_profile_length_tmp,
                                        allocator);
+        icc_profile = icc_profile_tmp;
+        icc_profile_length = icc_profile_length_tmp;
     }
 
     /* disable colormap (indexed color), grayscale -> rgb */
