@@ -1511,30 +1511,12 @@ load_png(unsigned char      /* out */ **result,
     if (enable_cms &&
         has_iccp_chunk_any &&
         !(has_srgb_chunk_any && has_chrm_chunk_any)) {
-        png_charp icc_name_nolcms;
-        int icc_compression_type_nolcms;
-        png_bytep icc_profile_nolcms_data;
-        png_uint_32 icc_profile_nolcms_length;
-
-        icc_name_nolcms = NULL;
-        icc_compression_type_nolcms = 0;
-        icc_profile_nolcms_data = NULL;
-        icc_profile_nolcms_length = 0u;
-        if (png_get_iCCP(png_ptr,
-                         info_ptr,
-                         &icc_name_nolcms,
-                         &icc_compression_type_nolcms,
-                         &icc_profile_nolcms_data,
-                         &icc_profile_nolcms_length) == PNG_INFO_iCCP) {
-            (void)icc_name_nolcms;
-            (void)icc_compression_type_nolcms;
-            if (icc_profile_nolcms_data != NULL &&
-                icc_profile_nolcms_length > 0u &&
-                sixel_icc_parse_profile(icc_profile_nolcms_data,
-                                        (size_t)icc_profile_nolcms_length,
-                                        &icc_profile_nolcms)) {
-                has_icc_profile_nolcms = 1;
-            }
+        /*
+         * Parse iCCP from the original PNG stream so behavior does not depend
+         * on libpng's profile validation policy.
+         */
+        if (sixel_icc_parse_png_iccp(buffer, size, &icc_profile_nolcms)) {
+            has_icc_profile_nolcms = 1;
         }
     }
 #endif

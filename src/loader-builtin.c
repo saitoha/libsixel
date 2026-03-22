@@ -98,18 +98,28 @@ typedef struct sixel_loader_builtin_component {
 void *
 stbi_malloc(size_t n)
 {
+    if (stbi_allocator == NULL) {
+        return malloc(n);
+    }
     return sixel_allocator_malloc(stbi_allocator, n);
 }
 
 void *
 stbi_realloc(void *p, size_t n)
 {
+    if (stbi_allocator == NULL) {
+        return realloc(p, n);
+    }
     return sixel_allocator_realloc(stbi_allocator, p, n);
 }
 
 void
 stbi_free(void *p)
 {
+    if (stbi_allocator == NULL) {
+        free(p);
+        return;
+    }
     sixel_allocator_free(stbi_allocator, p);
 }
 
