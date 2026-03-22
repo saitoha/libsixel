@@ -1286,6 +1286,8 @@ load_png(unsigned char      /* out */ **result,
     int has_iccp_chunk_any;
     int has_chrm_chunk_any;
 #if !HAVE_LCMS2
+    int has_srgb_chunk_raw_nolcms;
+    int has_chrm_chunk_raw_nolcms;
     int has_icc_profile_nolcms;
     sixel_icc_profile_t icc_profile_nolcms;
 #endif
@@ -1353,6 +1355,8 @@ load_png(unsigned char      /* out */ **result,
     has_iccp_chunk_any = 0;
     has_chrm_chunk_any = 0;
 #if !HAVE_LCMS2
+    has_srgb_chunk_raw_nolcms = 0;
+    has_chrm_chunk_raw_nolcms = 0;
     has_icc_profile_nolcms = 0;
     memset(&icc_profile_nolcms, 0, sizeof(icc_profile_nolcms));
 #endif
@@ -1497,12 +1501,17 @@ load_png(unsigned char      /* out */ **result,
         raw_srgb = 0;
         raw_chrm = 0;
         raw_gama = 0;
-        if (!png_detect_chunk_flags_raw_nolcms(buffer,
-                                               size,
-                                               &has_iccp_chunk_any,
-                                               &raw_srgb,
-                                               &raw_chrm,
-                                               &raw_gama)) {
+        has_srgb_chunk_raw_nolcms = has_srgb_chunk_any;
+        has_chrm_chunk_raw_nolcms = has_chrm_chunk_any;
+        if (png_detect_chunk_flags_raw_nolcms(buffer,
+                                              size,
+                                              &has_iccp_chunk_any,
+                                              &raw_srgb,
+                                              &raw_chrm,
+                                              &raw_gama)) {
+            has_srgb_chunk_raw_nolcms = raw_srgb;
+            has_chrm_chunk_raw_nolcms = raw_chrm;
+        } else {
             has_iccp_chunk_any = 0;
         }
     }
@@ -1510,7 +1519,7 @@ load_png(unsigned char      /* out */ **result,
 #if !HAVE_LCMS2
     if (enable_cms &&
         has_iccp_chunk_any &&
-        !(has_srgb_chunk_any && has_chrm_chunk_any)) {
+        !(has_srgb_chunk_raw_nolcms && has_chrm_chunk_raw_nolcms)) {
         /*
          * Parse iCCP from the original PNG stream so behavior does not depend
          * on libpng's profile validation policy.
