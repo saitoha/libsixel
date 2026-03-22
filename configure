@@ -25740,6 +25740,7 @@ fi
     if test x$have_jpeg = xyes; then
         have_jpeg12_api=no
         have_jpeg16_api=no
+        have_jpeg_arith_decoder=no
 
         JPEG_CHECK_CFLAGS_BACKUP=$CFLAGS
         JPEG_CHECK_LIBS_BACKUP=$LIBS
@@ -25816,6 +25817,39 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_jpeg16_api" >&5
 printf "%s\n" "$have_jpeg16_api" >&6; }
 
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libjpeg arithmetic decode support" >&5
+printf %s "checking for libjpeg arithmetic decode support... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <jpeglib.h>
+
+int
+main (void)
+{
+
+#ifndef D_ARITH_CODING_SUPPORTED
+# error "missing D_ARITH_CODING_SUPPORTED"
+#endif
+                    return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_jpeg_arith_decoder=yes
+else case e in #(
+  e) have_jpeg_arith_decoder=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_jpeg_arith_decoder" >&5
+printf "%s\n" "$have_jpeg_arith_decoder" >&6; }
+
         CFLAGS=$JPEG_CHECK_CFLAGS_BACKUP
         LIBS=$JPEG_CHECK_LIBS_BACKUP
 
@@ -25830,6 +25864,11 @@ printf "%s\n" "#define HAVE_JPEG12_API 1" >>confdefs.h
         if test x$have_jpeg16_api = xyes; then
 
 printf "%s\n" "#define HAVE_JPEG16_API 1" >>confdefs.h
+
+        fi
+        if test x$have_jpeg_arith_decoder = xyes; then
+
+printf "%s\n" "#define HAVE_JPEG_ARITH_DECODER 1" >>confdefs.h
 
         fi
         loaders="${loaders} jpeg"
