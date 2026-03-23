@@ -63,6 +63,7 @@
 #include "assessment.h"
 #include "getopt_stub.h"
 #include "cli.h"
+#include "options.h"
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -786,6 +787,114 @@ typedef enum LsqaComparePrecision {
     LSQA_COMPARE_PRECISION_FLOAT32 = 2
 } LsqaComparePrecision;
 
+static sixel_option_choice_t const g_lsqa_compare_colorspace_choices[] = {
+    { "reference", LSQA_COMPARE_COLORSPACE_REFERENCE },
+    { "gamma", SIXEL_COLORSPACE_GAMMA },
+    { "linear", SIXEL_COLORSPACE_LINEAR },
+    { "oklab", SIXEL_COLORSPACE_OKLAB },
+    { "cielab", SIXEL_COLORSPACE_CIELAB },
+    { "din99d", SIXEL_COLORSPACE_DIN99D }
+};
+
+static sixel_option_choice_t const g_lsqa_compare_precision_choices[] = {
+    { "reference", LSQA_COMPARE_PRECISION_REFERENCE },
+    { "8bit", LSQA_COMPARE_PRECISION_8BIT },
+    { "float32", LSQA_COMPARE_PRECISION_FLOAT32 }
+};
+
+static char const g_lsqa_compare_colorspace_detail[] =
+    "compare-colorspace accepts reference, gamma, linear, oklab, "
+    "cielab, or din99d.";
+
+static char const g_lsqa_compare_precision_detail[] =
+    "compare-precision accepts reference, 8bit, or float32.";
+
+static void
+lsqa_copy_parse_detail(char *detail,
+                       size_t detail_size,
+                       char const *fallback)
+{
+    char const *source;
+    int written;
+
+    if (detail == NULL || detail_size == 0u) {
+        return;
+    }
+    detail[0] = '\0';
+
+    source = sixel_helper_get_additional_message();
+    if ((source == NULL || source[0] == '\0')
+            && fallback != NULL
+            && fallback[0] != '\0') {
+        source = fallback;
+    }
+    if (source == NULL || source[0] == '\0') {
+        return;
+    }
+    written = snprintf(detail, detail_size, "%s", source);
+    if (written < 0) {
+        detail[0] = '\0';
+    }
+}
+
+static int
+lsqa_parse_choice_argument(char const *argument,
+                           sixel_option_choice_t const *choices,
+                           size_t choice_count,
+                           char const *invalid_detail,
+                           int *out_value,
+                           char *detail,
+                           size_t detail_size)
+{
+    sixel_option_choice_result_t match_result;
+    int matched_value;
+    char match_detail[256];
+    char message[256];
+
+    if (detail != NULL && detail_size > 0u) {
+        detail[0] = '\0';
+    }
+    if (argument == NULL || argument[0] == '\0'
+            || out_value == NULL
+            || choices == NULL
+            || choice_count == 0u) {
+        if (detail != NULL && detail_size > 0u
+                && invalid_detail != NULL
+                && invalid_detail[0] != '\0') {
+            (void) snprintf(detail, detail_size, "%s", invalid_detail);
+        }
+        return -1;
+    }
+
+    matched_value = 0;
+    match_detail[0] = '\0';
+    message[0] = '\0';
+    match_result = sixel_option_match_choice(argument,
+                                             choices,
+                                             choice_count,
+                                             &matched_value,
+                                             match_detail,
+                                             sizeof(match_detail));
+    if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+        *out_value = matched_value;
+        return 0;
+    }
+
+    if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+        sixel_option_report_ambiguous_prefix(argument,
+                                             match_detail,
+                                             message,
+                                             sizeof(message));
+    } else {
+        sixel_option_report_invalid_choice(invalid_detail,
+                                           match_detail,
+                                           message,
+                                           sizeof(message));
+    }
+    lsqa_copy_parse_detail(detail, detail_size, message);
+    return -1;
+}
+
 static int
 lsqa_precision_from_pixelformat(int pixelformat)
 {
@@ -999,73 +1108,34 @@ lsqa_prepare_frame_for_comparison(sixel_frame_t *frame,
 
 static int
 lsqa_parse_compare_colorspace(char const *argument,
-                              int *out_colorspace)
+                              int *out_colorspace,
+                              char *detail,
+                              size_t detail_size)
 {
-    if (argument == NULL || argument[0] == '\0' || out_colorspace == NULL) {
-        return -1;
-    }
-
-    if (metric_name_matches(argument, "reference")
-            || metric_name_matches(argument, "ref")
-            || metric_name_matches(argument, "auto")) {
-        *out_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
-        return 0;
-    }
-    if (metric_name_matches(argument, "gamma")
-            || metric_name_matches(argument, "srgb")) {
-        *out_colorspace = SIXEL_COLORSPACE_GAMMA;
-        return 0;
-    }
-    if (metric_name_matches(argument, "linear")) {
-        *out_colorspace = SIXEL_COLORSPACE_LINEAR;
-        return 0;
-    }
-    if (metric_name_matches(argument, "oklab")) {
-        *out_colorspace = SIXEL_COLORSPACE_OKLAB;
-        return 0;
-    }
-    if (metric_name_matches(argument, "cielab")) {
-        *out_colorspace = SIXEL_COLORSPACE_CIELAB;
-        return 0;
-    }
-    if (metric_name_matches(argument, "din99d")) {
-        *out_colorspace = SIXEL_COLORSPACE_DIN99D;
-        return 0;
-    }
-
-    return -1;
+    return lsqa_parse_choice_argument(argument,
+                                      g_lsqa_compare_colorspace_choices,
+                                      sizeof(g_lsqa_compare_colorspace_choices)
+                                      / sizeof(g_lsqa_compare_colorspace_choices[0]),
+                                      g_lsqa_compare_colorspace_detail,
+                                      out_colorspace,
+                                      detail,
+                                      detail_size);
 }
 
 static int
 lsqa_parse_compare_precision(char const *argument,
-                             int *out_precision)
+                             int *out_precision,
+                             char *detail,
+                             size_t detail_size)
 {
-    if (argument == NULL || argument[0] == '\0' || out_precision == NULL) {
-        return -1;
-    }
-
-    if (metric_name_matches(argument, "reference")
-            || metric_name_matches(argument, "ref")
-            || metric_name_matches(argument, "auto")) {
-        *out_precision = LSQA_COMPARE_PRECISION_REFERENCE;
-        return 0;
-    }
-    if (metric_name_matches(argument, "8bit")
-            || metric_name_matches(argument, "u8")
-            || metric_name_matches(argument, "byte")
-            || metric_name_matches(argument, "uint8")) {
-        *out_precision = LSQA_COMPARE_PRECISION_8BIT;
-        return 0;
-    }
-    if (metric_name_matches(argument, "float32")
-            || metric_name_matches(argument, "f32")
-            || metric_name_matches(argument, "float")
-            || metric_name_matches(argument, "fp32")) {
-        *out_precision = LSQA_COMPARE_PRECISION_FLOAT32;
-        return 0;
-    }
-
-    return -1;
+    return lsqa_parse_choice_argument(argument,
+                                      g_lsqa_compare_precision_choices,
+                                      sizeof(g_lsqa_compare_precision_choices)
+                                      / sizeof(g_lsqa_compare_precision_choices[0]),
+                                      g_lsqa_compare_precision_detail,
+                                      out_precision,
+                                      detail,
+                                      detail_size);
 }
 
 static int
@@ -1160,6 +1230,7 @@ lsqa_apply_env_overrides(Options *opts)
     const MetricSpec *metric_spec;
     int boolean_value;
     int status;
+    char option_detail[256];
 
     if (opts == NULL) {
         return -1;
@@ -1174,6 +1245,7 @@ lsqa_apply_env_overrides(Options *opts)
     metric_spec = NULL;
     boolean_value = 0;
     status = 0;
+    option_detail[0] = '\0';
 
     metrics_env = lsqa_getenv_dup("LSQA_METRICS");
     baseline_env = lsqa_getenv_dup("LSQA_BASELINE");
@@ -1234,11 +1306,15 @@ lsqa_apply_env_overrides(Options *opts)
     if (colorspace_env != NULL && colorspace_env[0] != '\0'
             && !opts->compare_colorspace_specified) {
         if (lsqa_parse_compare_colorspace(colorspace_env,
-                                          &opts->compare_colorspace) != 0) {
+                                          &opts->compare_colorspace,
+                                          option_detail,
+                                          sizeof(option_detail)) != 0) {
             lsqa_report_invalid_argument(
                 'W',
                 colorspace_env,
-                "Expected reference/gamma/linear/oklab/cielab/din99d.");
+                option_detail[0] != '\0'
+                    ? option_detail
+                    : g_lsqa_compare_colorspace_detail);
             status = -1;
             goto cleanup;
         }
@@ -1247,11 +1323,15 @@ lsqa_apply_env_overrides(Options *opts)
     if (precision_env != NULL && precision_env[0] != '\0'
             && !opts->compare_precision_specified) {
         if (lsqa_parse_compare_precision(precision_env,
-                                         &opts->compare_precision) != 0) {
+                                         &opts->compare_precision,
+                                         option_detail,
+                                         sizeof(option_detail)) != 0) {
             lsqa_report_invalid_argument(
                 'P',
                 precision_env,
-                "Expected reference/8bit/float32.");
+                option_detail[0] != '\0'
+                    ? option_detail
+                    : g_lsqa_compare_precision_detail);
             status = -1;
             goto cleanup;
         }
@@ -1921,12 +2001,15 @@ parse_args(int argc, char **argv, Options *opts)
     scan_argc = 0;
     opt = 0;
     verbose_value = 0;
+    detail_buffer[0] = '\0';
     verbose_env = NULL;
     prefix_env = NULL;
 #if HAVE_GETOPT_LONG
     long_opt = 0;
     option_index = 0;
 #endif
+
+    sixel_option_apply_cli_suggestion_defaults();
 
     if (lsqa_build_reordered_argv(argc, argv,
                                   &scan_argv,
@@ -1993,11 +2076,15 @@ parse_args(int argc, char **argv, Options *opts)
         case 'W':
             if (lsqa_parse_compare_colorspace(
                         optarg,
-                        &opts->compare_colorspace) != 0) {
+                        &opts->compare_colorspace,
+                        detail_buffer,
+                        sizeof(detail_buffer)) != 0) {
                 lsqa_report_invalid_argument(
                     'W',
                     optarg,
-                    "Expected reference/gamma/linear/oklab/cielab/din99d.");
+                    detail_buffer[0] != '\0'
+                        ? detail_buffer
+                        : g_lsqa_compare_colorspace_detail);
                 parse_status = -1;
                 goto cleanup;
             }
@@ -2006,11 +2093,15 @@ parse_args(int argc, char **argv, Options *opts)
         case 'P':
             if (lsqa_parse_compare_precision(
                         optarg,
-                        &opts->compare_precision) != 0) {
+                        &opts->compare_precision,
+                        detail_buffer,
+                        sizeof(detail_buffer)) != 0) {
                 lsqa_report_invalid_argument(
                     'P',
                     optarg,
-                    "Expected reference/8bit/float32.");
+                    detail_buffer[0] != '\0'
+                        ? detail_buffer
+                        : g_lsqa_compare_precision_detail);
                 parse_status = -1;
                 goto cleanup;
             }
