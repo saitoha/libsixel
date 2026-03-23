@@ -12,30 +12,77 @@ typedef struct animated_probe_context {
     int second_rgb[3];
 } animated_probe_context_t;
 
+static int
+capture_first_rgb_sample(sixel_frame_t *frame, int rgb[3])
+{
+    int pixelformat;
+    unsigned char const *pixels_u8;
+    float const *pixels_f32;
+    int channel;
+    float channel_value;
+
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixels_u8 = NULL;
+    pixels_f32 = NULL;
+    channel = 0;
+    channel_value = 0.0f;
+    if (rgb == NULL || frame == NULL) {
+        return 0;
+    }
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        pixels_u8 = sixel_frame_get_pixels(frame);
+        if (pixels_u8 == NULL) {
+            return 0;
+        }
+        rgb[0] = pixels_u8[0];
+        rgb[1] = pixels_u8[1];
+        rgb[2] = pixels_u8[2];
+        return 1;
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        pixels_f32 = sixel_frame_get_pixels_float32(frame);
+        if (pixels_f32 == NULL) {
+            return 0;
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            channel_value = pixels_f32[channel];
+            if (channel_value < 0.0f) {
+                channel_value = 0.0f;
+            } else if (channel_value > 1.0f) {
+                channel_value = 1.0f;
+            }
+            rgb[channel] = (int)(channel_value * 255.0f + 0.5f);
+        }
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 static SIXELSTATUS
 capture_animated_frames(sixel_frame_t *frame, void *data)
 {
     animated_probe_context_t *context;
-    unsigned char const *pixels;
+    int rgb[3];
 
     context = (animated_probe_context_t *)data;
-    if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    pixels = sixel_frame_get_pixels(frame);
-    if (pixels == NULL) {
+    rgb[0] = 0;
+    rgb[1] = 0;
+    rgb[2] = 0;
+    if (!capture_first_rgb_sample(frame, rgb)) {
         return SIXEL_BAD_INPUT;
     }
 
     if (context->callback_count == 0) {
-        context->first_rgb[0] = pixels[0];
-        context->first_rgb[1] = pixels[1];
-        context->first_rgb[2] = pixels[2];
+        context->first_rgb[0] = rgb[0];
+        context->first_rgb[1] = rgb[1];
+        context->first_rgb[2] = rgb[2];
     } else if (context->callback_count == 1) {
-        context->second_rgb[0] = pixels[0];
-        context->second_rgb[1] = pixels[1];
-        context->second_rgb[2] = pixels[2];
+        context->second_rgb[0] = rgb[0];
+        context->second_rgb[1] = rgb[1];
+        context->second_rgb[2] = rgb[2];
     }
 
     context->callback_count++;

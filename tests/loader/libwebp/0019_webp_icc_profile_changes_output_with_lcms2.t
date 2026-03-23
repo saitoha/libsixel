@@ -1,15 +1,10 @@
 #!/bin/sh
-# Verify lcms2-enabled libwebp decodes embedded ICC differently from builtin.
+# Verify libwebp cms=1 decodes embedded ICC differently from non-ICC input.
 
 set -eux
 
 test "${HAVE_WEBP-}" = 1 || {
     printf "1..0 # SKIP libwebp support is disabled in this build\n"
-    exit 0
-}
-
-test "${HAVE_LCMS2-}" = 1 || {
-    printf "1..0 # SKIP lcms2 support is disabled in this build\n"
     exit 0
 }
 
@@ -28,12 +23,12 @@ input_webp_icc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedde
 output_noicc="${ARTIFACT_LOCAL_DIR}/webp-noicc.sixel"
 output_icc="${ARTIFACT_LOCAL_DIR}/webp-icc.sixel"
 
-run_img2sixel -Llibwebp! "${input_webp_noicc}" >"${output_noicc}" || {
+run_img2sixel -Llibwebp:cms=1! "${input_webp_noicc}" >"${output_noicc}" || {
     echo "not ok" 1 - "libwebp decode failed for non-ICC input"
     exit 0
 }
 
-run_img2sixel -Llibwebp! "${input_webp_icc}" >"${output_icc}" || {
+run_img2sixel -Llibwebp:cms=1! "${input_webp_icc}" >"${output_icc}" || {
     echo "not ok" 1 - "libwebp decode failed for ICC input"
     exit 0
 }
@@ -45,5 +40,5 @@ test "${lsqa_status-0}" -eq 5 || {
     exit 0
 }
 
-echo "ok" 1 - "lcms2 changes libwebp output when ICC chunk is present"
+echo "ok" 1 - "cms=1 changes libwebp output when ICC chunk is present"
 exit 0

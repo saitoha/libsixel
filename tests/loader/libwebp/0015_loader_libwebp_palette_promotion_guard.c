@@ -131,7 +131,7 @@ run_libwebp_palette_guard_test(void)
     status = run_libwebp_component_case(
         "libwebp non-indexed static webp keeps rgb",
         WEBP_IMAGE_PATH,
-        SIXEL_PIXELFORMAT_RGB888,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
         64,
         64,
         1,
@@ -144,7 +144,7 @@ run_libwebp_palette_guard_test(void)
     return run_libwebp_component_case(
         "libwebp non-indexed animated webp keeps rgb",
         "/tests/data/inputs/formats/animated-lossy-8x8-2frame-min.webp",
-        SIXEL_PIXELFORMAT_RGB888,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
         8,
         8,
         1,

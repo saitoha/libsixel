@@ -45,6 +45,7 @@
 #define SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS   (0x10003)
 #define SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_CMS   (0x10004)
 #define SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS   (0x10005)
+#define SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS   (0x10006)
 
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
