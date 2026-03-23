@@ -31,7 +31,9 @@ from PIL import Image
 
 RGB_NAME = "rgb"
 LAB_NAME = "lab"
-SPACES = (RGB_NAME, LAB_NAME)
+GRAYSCALE_NAME = "grayscale"
+PALETTE_NAME = "palette"
+SPACES = (RGB_NAME, LAB_NAME, GRAYSCALE_NAME, PALETTE_NAME)
 
 
 def detect_icc_profile() -> Path | None:
@@ -73,6 +75,9 @@ def generate_inputs(
     icc_bytes: bytes,
     base_rgb: np.ndarray,
     base_lab: np.ndarray,
+    base_grayscale: np.ndarray,
+    base_palette: np.ndarray,
+    palette_colormap: np.ndarray,
 ) -> None:
     input_root = repo_root / "tests/data/colormgmt/input/tiff"
     for space in SPACES:
@@ -87,11 +92,14 @@ def generate_inputs(
 
     x = np.linspace(0.0, 1.0, 256)
     tr = np.clip(np.round((x ** (1.0 / 1.8)) * 65535.0), 0, 65535).astype(np.uint16)
-    transfer = np.concatenate([tr, tr, tr])
+    transfer_rgb = np.concatenate([tr, tr, tr])
+    transfer_gray = tr
 
-    for space, base, photometric in (
-        (RGB_NAME, base_rgb, "rgb"),
-        (LAB_NAME, base_lab, "cielab"),
+    for space, base, photometric, transfer in (
+        (RGB_NAME, base_rgb, "rgb", transfer_rgb),
+        (LAB_NAME, base_lab, "cielab", transfer_rgb),
+        (GRAYSCALE_NAME, base_grayscale, "miniswhite", transfer_gray),
+        (PALETTE_NAME, base_palette, "palette", transfer_rgb),
     ):
         out_dir = input_root / space
         for icc, wp, pc, tf in itertools.product([0, 1], [0, 1], [0, 1], [0, 1]):
@@ -102,15 +110,20 @@ def generate_inputs(
             if pc:
                 tags.append((319, "2I", 6, prim, False))
             if tf:
-                tags.append((301, "H", 768, transfer, False))
+                tags.append((301, "H", len(transfer), transfer, False))
             if icc:
                 tags.append((34675, "B", len(icc_bytes), icc_bytes, False))
+            write_kwargs = {
+                "photometric": photometric,
+                "compression": "deflate",
+                "extratags": tags,
+            }
+            if space == PALETTE_NAME:
+                write_kwargs["colormap"] = palette_colormap
             tifffile.imwrite(
                 out_dir / name,
                 base,
-                photometric=photometric,
-                compression="deflate",
-                extratags=tags,
+                **write_kwargs,
             )
 
 
@@ -141,6 +154,26 @@ def build_lab_source(repo_root: Path, tmp_path: Path) -> np.ndarray:
         return tifffile.imread(tmp_path)
     finally:
         tmp_path.unlink(missing_ok=True)
+
+
+def build_grayscale_source(base_rgb: np.ndarray) -> np.ndarray:
+    image = Image.fromarray(base_rgb, mode="RGB")
+    return np.array(image.convert("L"), dtype=np.uint8)
+
+
+def build_palette_source(base_rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    image = Image.fromarray(base_rgb, mode="RGB")
+    paletted = image.quantize(colors=256, method=Image.MEDIANCUT)
+    indexed = np.array(paletted, dtype=np.uint8)
+    palette = list(paletted.getpalette() or [])
+    if len(palette) < 256 * 3:
+        palette.extend([0] * (256 * 3 - len(palette)))
+    colormap = np.zeros((3, 256), dtype=np.uint16)
+    for idx in range(256):
+        colormap[0, idx] = int(palette[idx * 3 + 0]) * 257
+        colormap[1, idx] = int(palette[idx * 3 + 1]) * 257
+        colormap[2, idx] = int(palette[idx * 3 + 2]) * 257
+    return indexed, colormap
 
 
 def main() -> int:
@@ -190,8 +223,16 @@ def main() -> int:
         return 1
     base_rgb = np.array(Image.open(base_rgb_path).convert("RGB"), dtype=np.uint8)
     base_lab = build_lab_source(repo_root, repo_root / "tests/data/colormgmt/input/tiff/.tmp_lab_source.tiff")
+    base_grayscale = build_grayscale_source(base_rgb)
+    base_palette, palette_colormap = build_palette_source(base_rgb)
 
-    generate_inputs(repo_root, icc_bytes, base_rgb, base_lab)
+    generate_inputs(repo_root,
+                    icc_bytes,
+                    base_rgb,
+                    base_lab,
+                    base_grayscale,
+                    base_palette,
+                    palette_colormap)
     print("generated TIFF input matrix under tests/data/colormgmt/input/tiff")
 
     if args.with_reference:
