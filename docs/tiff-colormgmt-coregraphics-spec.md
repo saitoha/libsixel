@@ -90,6 +90,23 @@ Observed result on current fixtures:
 - Lab: all combinations collapse to one group, so `cms=0/1` both match the
   single Lab reference group.
 
+## Gamma Notes
+
+- Internal gamma-like axis in this spec is `TransferFunction` (tag 301).
+  - In current CoreGraphics observations, this tag does not change output.
+- EXIF Gamma (`0xA500`, tag 42240):
+  - A generated TIFF carrying this tag as a RATIONAL value in IFD0
+    (`2.2`) produced identical CoreGraphics output to the no-gamma case.
+  - libsixel/libtiff output also stayed identical for this case.
+- `DCSGAMMA` (`65554`) is a libtiff pseudo-tag and not a valid on-disk TIFF
+  tag id for fixture generation.
+
+Implication:
+
+- There is currently no confirmed CoreGraphics-observable gamma axis in our
+  TIFF fixtures that would require a special libsixel-side gamma application
+  path.
+
 ## Not Covered Yet
 
 - EXIF IFD color tags (for example `ColorSpace` 0xA001, `Gamma` 0xA500)
