@@ -32,7 +32,7 @@ run_img2sixel -Llibwebp:cms=0! "${input_webp}" >"${output_cms0}" || {
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.995" "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
     echo "not ok" 1 - "lossy ICC cms=1 and cms=0 outputs were not distinguishable: ${lsqa_msg-}"
