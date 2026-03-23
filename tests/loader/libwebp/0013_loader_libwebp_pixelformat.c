@@ -118,6 +118,16 @@ run_libwebp_loader_case_with_options(char const *label,
         context.pixelformat != expected_pixelformat ||
         context.width != expected_width ||
         context.height != expected_height) {
+        fprintf(stderr,
+                "%s expected pixelformat=%d size=%dx%d got pixelformat=%d size=%dx%d callbacks=%d\n",
+                label,
+                expected_pixelformat,
+                expected_width,
+                expected_height,
+                context.pixelformat,
+                context.width,
+                context.height,
+                context.callback_count);
         goto cleanup;
     }
 
@@ -137,6 +147,9 @@ static int
 run_libwebp_loader_test(void)
 {
     int status;
+    int cms_target_pixelformat;
+
+    cms_target_pixelformat = loader_cms_target_pixelformat();
 
     status = run_libwebp_loader_case_with_options("libwebp loader cms=0",
                                                   WEBP_IMAGE_PATH,
@@ -166,10 +179,10 @@ run_libwebp_loader_test(void)
 
     status = run_libwebp_loader_case_with_options(
         "libwebp embedded ICC cms=0",
-        "/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp",
+        "/tests/data/inputs/snake_64_embedded_a98_icc.webp",
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        93,
-        14,
+        64,
+        64,
         0,
         1,
         0,
@@ -180,10 +193,10 @@ run_libwebp_loader_test(void)
 
     status = run_libwebp_loader_case_with_options(
         "libwebp embedded ICC cms=1",
-        "/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp",
-        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        93,
-        14,
+        "/tests/data/inputs/snake_64_embedded_a98_icc.webp",
+        cms_target_pixelformat,
+        64,
+        64,
         1,
         1,
         0,
