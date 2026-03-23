@@ -3,11 +3,6 @@
 
 set -eux
 
-test "${HAVE_LCMS2-}" = 1 || {
-    printf "1..0 # SKIP lcms2 support is disabled in this build\n"
-    exit 0
-}
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
@@ -33,7 +28,7 @@ run_img2sixel -Lbuiltin! "${input_png}" >"${output_six}" || {
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.975" "${reference_six}" "${output_six}" 2>&1) || {
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.97" "${reference_six}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }
