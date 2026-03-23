@@ -44,6 +44,9 @@
 #if HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
 #include <webp/decode.h>
 #include <webp/demux.h>
 
@@ -94,6 +97,128 @@ webp_clamp_unit_float(float value)
     return value;
 }
 
+static float
+webp_decode_srgb_unit(float value)
+{
+    value = webp_clamp_unit_float(value);
+    if (value <= 0.04045f) {
+        return value / 12.92f;
+    }
+#if HAVE_MATH_H
+    return powf((value + 0.055f) / 1.055f, 2.4f);
+#else
+    return value;
+#endif
+}
+
+static void
+webp_resolve_background_linear(float bg_linear[3], unsigned char *bgcolor)
+{
+    int background_colorspace;
+
+    background_colorspace = loader_background_colorspace();
+    bg_linear[0] = 0.0f;
+    bg_linear[1] = 0.0f;
+    bg_linear[2] = 0.0f;
+    if (bgcolor == NULL) {
+        return;
+    }
+
+    if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
+        bg_linear[0] = (float)bgcolor[0] / 255.0f;
+        bg_linear[1] = (float)bgcolor[1] / 255.0f;
+        bg_linear[2] = (float)bgcolor[2] / 255.0f;
+        return;
+    }
+
+    bg_linear[0] = webp_decode_srgb_unit((float)bgcolor[0] / 255.0f);
+    bg_linear[1] = webp_decode_srgb_unit((float)bgcolor[1] / 255.0f);
+    bg_linear[2] = webp_decode_srgb_unit((float)bgcolor[2] / 255.0f);
+}
+
+static SIXELSTATUS
+webp_blend_rgba_background_linear(sixel_frame_t *frame,
+                                  unsigned char *bgcolor,
+                                  sixel_allocator_t *allocator)
+{
+    unsigned char *src;
+    float *dst;
+    size_t pixel_count;
+    size_t bytes;
+    size_t i;
+    size_t src_offset;
+    size_t dst_offset;
+    float alpha;
+    float bg_linear[3];
+
+    src = NULL;
+    dst = NULL;
+    pixel_count = 0u;
+    bytes = 0u;
+    i = 0u;
+    src_offset = 0u;
+    dst_offset = 0u;
+    alpha = 0.0f;
+    bg_linear[0] = 0.0f;
+    bg_linear[1] = 0.0f;
+    bg_linear[2] = 0.0f;
+
+    if (frame == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (bgcolor == NULL) {
+        return SIXEL_OK;
+    }
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        return SIXEL_OK;
+    }
+    if (frame->width <= 0 || frame->height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    bytes = pixel_count * 3u * sizeof(float);
+    dst = (float *)sixel_allocator_malloc(allocator, bytes);
+    if (dst == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    src = frame->pixels.u8ptr;
+    if (src == NULL) {
+        sixel_allocator_free(allocator, dst);
+        return SIXEL_BAD_INPUT;
+    }
+    webp_resolve_background_linear(bg_linear, bgcolor);
+    for (i = 0u; i < pixel_count; ++i) {
+        src_offset = i * 4u;
+        dst_offset = i * 3u;
+        alpha = (float)src[src_offset + 3u] / 255.0f;
+
+        dst[dst_offset + 0u] =
+            webp_decode_srgb_unit((float)src[src_offset + 0u] / 255.0f)
+            * alpha + bg_linear[0] * (1.0f - alpha);
+        dst[dst_offset + 1u] =
+            webp_decode_srgb_unit((float)src[src_offset + 1u] / 255.0f)
+            * alpha + bg_linear[1] * (1.0f - alpha);
+        dst[dst_offset + 2u] =
+            webp_decode_srgb_unit((float)src[src_offset + 2u] / 255.0f)
+            * alpha + bg_linear[2] * (1.0f - alpha);
+    }
+
+    sixel_allocator_free(allocator, frame->pixels.u8ptr);
+    frame->pixels.u8ptr = NULL;
+    sixel_frame_set_pixels_float32(frame, dst);
+    frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 webp_decode_lossy_to_float32(unsigned char **result,
                              unsigned char *data,
@@ -133,10 +258,9 @@ webp_decode_lossy_to_float32(unsigned char **result,
     float g;
     float b;
     float alpha;
-    float bg_r;
-    float bg_g;
-    float bg_b;
+    float bg_linear[3];
     int has_bgcolor;
+    int blended_in_linear;
     int config_initialized;
     int cms_converted;
 
@@ -164,10 +288,11 @@ webp_decode_lossy_to_float32(unsigned char **result,
     g = 0.0f;
     b = 0.0f;
     alpha = 0.0f;
-    bg_r = 0.0f;
-    bg_g = 0.0f;
-    bg_b = 0.0f;
+    bg_linear[0] = 0.0f;
+    bg_linear[1] = 0.0f;
+    bg_linear[2] = 0.0f;
     has_bgcolor = 0;
+    blended_in_linear = 0;
     config_initialized = 0;
     cms_converted = 0;
 
@@ -239,11 +364,6 @@ webp_decode_lossy_to_float32(unsigned char **result,
     }
 
     has_bgcolor = (bgcolor != NULL);
-    if (has_bgcolor) {
-        bg_r = (float)bgcolor[0] / 255.0f;
-        bg_g = (float)bgcolor[1] / 255.0f;
-        bg_b = (float)bgcolor[2] / 255.0f;
-    }
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
@@ -266,14 +386,6 @@ webp_decode_lossy_to_float32(unsigned char **result,
             g = webp_clamp_unit_float(g);
             b = webp_clamp_unit_float(b);
 
-            if (has_alpha && a_plane != NULL && has_bgcolor) {
-                alpha = (float)a_plane[(size_t)y * (size_t)a_stride + (size_t)x]
-                      / 255.0f;
-                r = r * alpha + bg_r * (1.0f - alpha);
-                g = g * alpha + bg_g * (1.0f - alpha);
-                b = b * alpha + bg_b * (1.0f - alpha);
-            }
-
             offset = ((size_t)y * (size_t)width + (size_t)x) * 3u;
             float_pixels[offset + 0u] = r;
             float_pixels[offset + 1u] = g;
@@ -291,12 +403,37 @@ webp_decode_lossy_to_float32(unsigned char **result,
             icc_profile,
             icc_profile_length);
     }
+
+    if (has_alpha && a_plane != NULL && has_bgcolor) {
+        webp_resolve_background_linear(bg_linear, bgcolor);
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
+                offset = ((size_t)y * (size_t)width + (size_t)x) * 3u;
+                alpha = (float)a_plane[(size_t)y * (size_t)a_stride + (size_t)x]
+                      / 255.0f;
+                float_pixels[offset + 0u] =
+                    webp_decode_srgb_unit(float_pixels[offset + 0u]) * alpha
+                    + bg_linear[0] * (1.0f - alpha);
+                float_pixels[offset + 1u] =
+                    webp_decode_srgb_unit(float_pixels[offset + 1u]) * alpha
+                    + bg_linear[1] * (1.0f - alpha);
+                float_pixels[offset + 2u] =
+                    webp_decode_srgb_unit(float_pixels[offset + 2u]) * alpha
+                    + bg_linear[2] * (1.0f - alpha);
+            }
+        }
+        blended_in_linear = 1;
+    }
     if (pcms_converted != NULL) {
         *pcms_converted = cms_converted;
     }
 
     *result = (unsigned char *)float_pixels;
-    *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    if (blended_in_linear) {
+        *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    } else {
+        *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    }
     float_pixels = NULL;
     status = SIXEL_OK;
 
@@ -1192,6 +1329,11 @@ webp_finalize_frame_output(sixel_frame_t *frame,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    status = webp_blend_rgba_background_linear(frame, bgcolor, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
     status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1209,8 +1351,7 @@ webp_finalize_frame_output(sixel_frame_t *frame,
     }
 
     if (frame->pixelformat == SIXEL_PIXELFORMAT_RGB888
-            || frame->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
-            || frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+            || frame->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         status = sixel_frame_set_pixelformat(frame, target_pixelformat);
         if (SIXEL_FAILED(status)) {
             return status;
