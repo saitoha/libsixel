@@ -71,6 +71,25 @@ Resulting precedence rule:
     `(x=0.34567, y=0.35850)` before libtiff RGBA decode so output grouping
     matches CoreGraphics expectations.
 
+## `cms` Axis Policy
+
+Tests are split per case and include both `cms=1` and `cms=0`.
+
+- `cms=1`:
+  - Compare against same-name CoreGraphics reference
+    (`img_tiff_*_iccX_*` -> same `iccX`).
+- `cms=0`:
+  - Treat embedded ICC as disabled.
+  - Compare against `icc0` CoreGraphics reference for the same non-ICC axes:
+    - `img_tiff_*_icc0_*` -> `icc0` reference
+    - `img_tiff_*_icc1_*` -> corresponding `icc0` reference
+
+Observed result on current fixtures:
+
+- RGB: `cms=0` outputs align with `icc0` reference behavior.
+- Lab: all combinations collapse to one group, so `cms=0/1` both match the
+  single Lab reference group.
+
 ## Not Covered Yet
 
 - EXIF IFD color tags (for example `ColorSpace` 0xA001, `Gamma` 0xA500)
