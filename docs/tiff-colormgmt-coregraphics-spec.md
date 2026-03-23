@@ -8,6 +8,8 @@ CoreGraphics/ImageIO output for a controlled matrix of metadata tags.
 - Input formats:
   - TIFF `PhotometricInterpretation=RGB`
   - TIFF `PhotometricInterpretation=CIELab`
+  - TIFF `PhotometricInterpretation=MINISWHITE` (grayscale)
+  - TIFF `PhotometricInterpretation=PALETTE` (indexed + ColorMap)
 - Matrix axes (on/off):
   - ICC profile (`ICCProfile`, tag 34675)
   - `WhitePoint` (tag 318)
@@ -20,11 +22,13 @@ CoreGraphics/ImageIO output for a controlled matrix of metadata tags.
 
 Fixtures and grouped outputs:
 
-- Inputs: `tests/data/colormgmt/input/tiff/{rgb,lab}`
-- References: `tests/data/colormgmt/reference/tiff/{rgb,lab}`
+- Inputs: `tests/data/colormgmt/input/tiff/{rgb,lab,grayscale,palette}`
+- References: `tests/data/colormgmt/reference/tiff/{rgb,lab,grayscale,palette}`
 - Group reports:
   - `tests/data/colormgmt/reference/tiff/rgb_groups.tsv`
   - `tests/data/colormgmt/reference/tiff/lab_groups.tsv`
+  - `tests/data/colormgmt/reference/tiff/grayscale_groups.tsv`
+  - `tests/data/colormgmt/reference/tiff/palette_groups.tsv`
 
 ## Observed CoreGraphics Rules
 
@@ -56,6 +60,35 @@ Resulting precedence rule:
 
 1. ImageIO CoreGraphics conversion for this Lab fixture behaves as if these tags
    are not independently selecting alternate output variants.
+
+### Grayscale photometric
+
+- All 16 combinations collapse to one output group.
+- Output is invariant to presence/absence of:
+  - ICC
+  - WhitePoint
+  - PrimaryChromaticities
+  - TransferFunction
+
+Resulting precedence rule:
+
+1. For this grayscale fixture matrix, CoreGraphics/ImageIO output is stable and
+   does not branch on these metadata tags.
+
+### Palette photometric
+
+- Two output groups only:
+  - `icc=0`: one common output
+  - `icc=1`: one common output
+- `WhitePoint` / `PrimaryChromaticities` / `TransferFunction` do not change output
+  in this matrix.
+
+Resulting precedence rule:
+
+1. Embedded ICC affects output when present.
+2. Otherwise, output follows ImageIO default palette decode handling.
+3. `WhitePoint`, `PrimaryChromaticities`, `TransferFunction` are ignored for
+   this decode path.
 
 ## libsixel Mapping
 
@@ -89,6 +122,9 @@ Observed result on current fixtures:
 - RGB: `cms=0` outputs align with `icc0` reference behavior.
 - Lab: all combinations collapse to one group, so `cms=0/1` both match the
   single Lab reference group.
+- Grayscale: all combinations collapse to one group, so `cms=0/1` both match the
+  single grayscale reference group.
+- Palette: `cms=0` outputs align with `icc0` reference behavior.
 
 ## Gamma Notes
 
