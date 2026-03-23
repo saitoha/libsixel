@@ -1,9 +1,10 @@
 /*
- * Verify libwebp loader reports RGB output by default and PAL8 when
+ * Verify libwebp loader reports float32 RGB output by default and PAL8 when
  * palette promotion is requested for indexed sources.
  */
 
 #include "tests/loader/pixelformat_test_common.h"
+#include "src/loader-common.h"
 
 #if HAVE_WEBP
 static int
@@ -12,6 +13,7 @@ run_libwebp_loader_case_with_options(char const *label,
                                      int expected_pixelformat,
                                      int expected_width,
                                      int expected_height,
+                                     int enable_cms,
                                      int fstatic,
                                      int fuse_palette,
                                      int reqcolors)
@@ -84,6 +86,13 @@ run_libwebp_loader_case_with_options(char const *label,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS,
+        &enable_cms);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
     status = sixel_loader_component_setopt(component,
                                            SIXEL_LOADER_OPTION_USE_PALETTE,
                                            &fuse_palette);
@@ -129,14 +138,56 @@ run_libwebp_loader_test(void)
 {
     int status;
 
-    status = run_libwebp_loader_case_with_options("libwebp loader",
+    status = run_libwebp_loader_case_with_options("libwebp loader cms=0",
                                                   WEBP_IMAGE_PATH,
-                                                  SIXEL_PIXELFORMAT_RGB888,
+                                                  SIXEL_PIXELFORMAT_RGBFLOAT32,
                                                   64,
                                                   64,
+                                                  0,
                                                   1,
                                                   0,
                                                   256);
+    if (status != 0) {
+        return status;
+    }
+
+    status = run_libwebp_loader_case_with_options("libwebp loader cms=1",
+                                                  WEBP_IMAGE_PATH,
+                                                  SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                                  64,
+                                                  64,
+                                                  1,
+                                                  1,
+                                                  0,
+                                                  256);
+    if (status != 0) {
+        return status;
+    }
+
+    status = run_libwebp_loader_case_with_options(
+        "libwebp embedded ICC cms=0",
+        "/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp",
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        93,
+        14,
+        0,
+        1,
+        0,
+        256);
+    if (status != 0) {
+        return status;
+    }
+
+    status = run_libwebp_loader_case_with_options(
+        "libwebp embedded ICC cms=1",
+        "/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        93,
+        14,
+        1,
+        1,
+        0,
+        256);
     if (status != 0) {
         return status;
     }
@@ -147,6 +198,7 @@ run_libwebp_loader_test(void)
         SIXEL_PIXELFORMAT_PAL8,
         8,
         8,
+        1,
         1,
         1,
         8);

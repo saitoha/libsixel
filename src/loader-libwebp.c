@@ -53,6 +53,7 @@
 #include "cms.h"
 #include "chunk.h"
 #include "frame.h"
+#include "icc-convert.h"
 #include "loader-common.h"
 #include "loader-libwebp.h"
 #include "logger.h"
@@ -65,6 +66,7 @@ typedef struct sixel_loader_libwebp_component {
     int fstatic;
     int fuse_palette;
     int reqcolors;
+    int enable_cms;
     int loop_control;
     int has_bgcolor;
     unsigned char bgcolor[3];
@@ -72,15 +74,241 @@ typedef struct sixel_loader_libwebp_component {
     int start_frame_no;
 } sixel_loader_libwebp_component_t;
 
-#if HAVE_LCMS2
-static void
+static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
                                   int width,
                                   int height,
                                   int pixelformat,
                                   unsigned char const *icc_profile,
                                   size_t icc_profile_length);
-#endif
+
+static float
+webp_clamp_unit_float(float value)
+{
+    if (value < 0.0f) {
+        return 0.0f;
+    }
+    if (value > 1.0f) {
+        return 1.0f;
+    }
+    return value;
+}
+
+static SIXELSTATUS
+webp_decode_lossy_to_float32(unsigned char **result,
+                             unsigned char *data,
+                             size_t datasize,
+                             int width,
+                             int height,
+                             int has_alpha,
+                             int *ppixelformat,
+                             int enable_cms,
+                             unsigned char const *icc_profile,
+                             size_t icc_profile_length,
+                             int *pcms_converted,
+                             unsigned char *bgcolor,
+                             sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    WebPDecoderConfig config;
+    VP8StatusCode decode_status;
+    float *float_pixels;
+    size_t pixel_count;
+    size_t float_bytes;
+    uint8_t *y_plane;
+    uint8_t *u_plane;
+    uint8_t *v_plane;
+    uint8_t *a_plane;
+    int y_stride;
+    int u_stride;
+    int v_stride;
+    int a_stride;
+    int x;
+    int y;
+    size_t offset;
+    float y_sample;
+    float u_sample;
+    float v_sample;
+    float r;
+    float g;
+    float b;
+    float alpha;
+    float bg_r;
+    float bg_g;
+    float bg_b;
+    int has_bgcolor;
+    int config_initialized;
+    int cms_converted;
+
+    status = SIXEL_BAD_INPUT;
+    memset(&config, 0, sizeof(config));
+    decode_status = VP8_STATUS_OK;
+    float_pixels = NULL;
+    pixel_count = 0u;
+    float_bytes = 0u;
+    y_plane = NULL;
+    u_plane = NULL;
+    v_plane = NULL;
+    a_plane = NULL;
+    y_stride = 0;
+    u_stride = 0;
+    v_stride = 0;
+    a_stride = 0;
+    x = 0;
+    y = 0;
+    offset = 0u;
+    y_sample = 0.0f;
+    u_sample = 0.0f;
+    v_sample = 0.0f;
+    r = 0.0f;
+    g = 0.0f;
+    b = 0.0f;
+    alpha = 0.0f;
+    bg_r = 0.0f;
+    bg_g = 0.0f;
+    bg_b = 0.0f;
+    has_bgcolor = 0;
+    config_initialized = 0;
+    cms_converted = 0;
+
+    if (result == NULL || ppixelformat == NULL || allocator == NULL ||
+        data == NULL || datasize == 0u || width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (!WebPInitDecoderConfig(&config)) {
+        sixel_helper_set_additional_message(
+            "webp_decode_lossy_to_float32: WebPInitDecoderConfig failed.");
+        return SIXEL_WEBP_ERROR;
+    }
+    config_initialized = 1;
+    config.output.colorspace = has_alpha ? MODE_YUVA : MODE_YUV;
+
+    decode_status = WebPDecode(data, datasize, &config);
+    if (decode_status != VP8_STATUS_OK) {
+        sixel_helper_set_additional_message(
+            "webp_decode_lossy_to_float32: WebPDecode failed.");
+        status = SIXEL_WEBP_ERROR;
+        goto end;
+    }
+
+    y_plane = config.output.u.YUVA.y;
+    u_plane = config.output.u.YUVA.u;
+    v_plane = config.output.u.YUVA.v;
+    a_plane = config.output.u.YUVA.a;
+    y_stride = config.output.u.YUVA.y_stride;
+    u_stride = config.output.u.YUVA.u_stride;
+    v_stride = config.output.u.YUVA.v_stride;
+    a_stride = config.output.u.YUVA.a_stride;
+    if (y_plane == NULL || u_plane == NULL || v_plane == NULL) {
+        sixel_helper_set_additional_message(
+            "webp_decode_lossy_to_float32: YUV plane is missing.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (config.output.width != width || config.output.height != height) {
+        sixel_helper_set_additional_message(
+            "webp_decode_lossy_to_float32: decoded dimensions mismatch.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (y_stride <= 0 || u_stride <= 0 || v_stride <= 0 ||
+        (has_alpha && a_plane != NULL && a_stride <= 0)) {
+        sixel_helper_set_additional_message(
+            "webp_decode_lossy_to_float32: YUV plane stride is invalid.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    float_bytes = pixel_count * 3u * sizeof(float);
+    float_pixels = (float *)sixel_allocator_malloc(allocator, float_bytes);
+    if (float_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "webp_decode_lossy_to_float32: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    has_bgcolor = (bgcolor != NULL);
+    if (has_bgcolor) {
+        bg_r = (float)bgcolor[0] / 255.0f;
+        bg_g = (float)bgcolor[1] / 255.0f;
+        bg_b = (float)bgcolor[2] / 255.0f;
+    }
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            y_sample = (float)y_plane[(size_t)y * (size_t)y_stride + (size_t)x]
+                     - 16.0f;
+            if (y_sample < 0.0f) {
+                y_sample = 0.0f;
+            }
+            u_sample = (float)u_plane[(size_t)(y >> 1) * (size_t)u_stride
+                                      + (size_t)(x >> 1)] - 128.0f;
+            v_sample = (float)v_plane[(size_t)(y >> 1) * (size_t)v_stride
+                                      + (size_t)(x >> 1)] - 128.0f;
+
+            r = (1.16438356f * y_sample + 1.59602678f * v_sample) / 255.0f;
+            g = (1.16438356f * y_sample - 0.39176229f * u_sample
+                 - 0.81296765f * v_sample) / 255.0f;
+            b = (1.16438356f * y_sample + 2.01723214f * u_sample) / 255.0f;
+
+            r = webp_clamp_unit_float(r);
+            g = webp_clamp_unit_float(g);
+            b = webp_clamp_unit_float(b);
+
+            if (has_alpha && a_plane != NULL && has_bgcolor) {
+                alpha = (float)a_plane[(size_t)y * (size_t)a_stride + (size_t)x]
+                      / 255.0f;
+                r = r * alpha + bg_r * (1.0f - alpha);
+                g = g * alpha + bg_g * (1.0f - alpha);
+                b = b * alpha + bg_b * (1.0f - alpha);
+            }
+
+            offset = ((size_t)y * (size_t)width + (size_t)x) * 3u;
+            float_pixels[offset + 0u] = r;
+            float_pixels[offset + 1u] = g;
+            float_pixels[offset + 2u] = b;
+        }
+    }
+
+    cms_converted = 0;
+    if (enable_cms) {
+        cms_converted = webp_convert_embedded_icc_to_srgb(
+            (unsigned char *)float_pixels,
+            width,
+            height,
+            SIXEL_PIXELFORMAT_RGBFLOAT32,
+            icc_profile,
+            icc_profile_length);
+    }
+    if (pcms_converted != NULL) {
+        *pcms_converted = cms_converted;
+    }
+
+    *result = (unsigned char *)float_pixels;
+    *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    float_pixels = NULL;
+    status = SIXEL_OK;
+
+end:
+    if (float_pixels != NULL) {
+        sixel_allocator_free(allocator, float_pixels);
+    }
+    if (config_initialized) {
+        WebPFreeDecBuffer(&config.output);
+    }
+    return status;
+}
 
 /*
  * Decode a WebP buffer into an RGB(A) pixel buffer managed by libsixel.
@@ -88,7 +316,8 @@ webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
  * The steps are:
  *   1) Probe the WebP bitstream for dimensions and alpha flags.
  *   2) Allocate the output buffer from the sixel allocator.
- *   3) Decode into RGB or RGBA depending on the alpha information.
+ *   3) Decode lossy streams as YUV(A) and convert to RGB float32.
+ *   4) Decode remaining streams into RGB/RGBA bytes.
  */
 static SIXELSTATUS
 load_webp(unsigned char **result,
@@ -97,17 +326,26 @@ load_webp(unsigned char **result,
           int *pwidth,
           int *pheight,
           int *ppixelformat,
+          int enable_cms,
           unsigned char const *icc_profile,
           size_t icc_profile_length,
+          int *pcms_converted,
+          unsigned char *bgcolor,
           sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
     WebPBitstreamFeatures features;
     int bytes_per_pixel;
+    int cms_converted;
+    char const *force_rgb_env;
+    int force_rgb_decode;
     size_t stride;
     size_t size;
 
     status = SIXEL_BAD_INPUT;
+    cms_converted = 0;
+    force_rgb_env = NULL;
+    force_rgb_decode = 0;
 
     if (WebPGetFeatures(data, datasize, &features) != VP8_STATUS_OK) {
         sixel_helper_set_additional_message(
@@ -127,6 +365,35 @@ load_webp(unsigned char **result,
 
     *pwidth = features.width;
     *pheight = features.height;
+
+    /*
+     * Keep a test/debug escape hatch so regression tests can compare the
+     * lossy YUV path against the legacy RGB decode path.
+     */
+    force_rgb_env = sixel_compat_getenv(
+        "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE");
+    if (force_rgb_env != NULL &&
+        (force_rgb_env[0] == '1' || force_rgb_env[0] == 'y' ||
+         force_rgb_env[0] == 'Y' || force_rgb_env[0] == 't' ||
+         force_rgb_env[0] == 'T')) {
+        force_rgb_decode = 1;
+    }
+
+    if (features.format == 1 && !force_rgb_decode) {
+        return webp_decode_lossy_to_float32(result,
+                                            data,
+                                            datasize,
+                                            *pwidth,
+                                            *pheight,
+                                            features.has_alpha,
+                                            ppixelformat,
+                                            enable_cms,
+                                            icc_profile,
+                                            icc_profile_length,
+                                            pcms_converted,
+                                            bgcolor,
+                                            allocator);
+    }
 
     bytes_per_pixel = features.has_alpha ? 4 : 3;
     *ppixelformat = features.has_alpha ?
@@ -165,24 +432,23 @@ load_webp(unsigned char **result,
         }
     }
 
-#if HAVE_LCMS2
-    webp_convert_embedded_icc_to_srgb(*result,
-                                      *pwidth,
-                                      *pheight,
-                                      *ppixelformat,
-                                      icc_profile,
-                                      icc_profile_length);
-#else
-    (void)icc_profile;
-    (void)icc_profile_length;
-#endif
+    if (enable_cms) {
+        cms_converted = webp_convert_embedded_icc_to_srgb(*result,
+                                                          *pwidth,
+                                                          *pheight,
+                                                          *ppixelformat,
+                                                          icc_profile,
+                                                          icc_profile_length);
+    }
+    if (pcms_converted != NULL) {
+        *pcms_converted = cms_converted;
+    }
 
     status = SIXEL_OK;
 
     return status;
 }
 
-#if HAVE_LCMS2
 /*
  * Extract embedded ICC profile bytes from a WebP container if present.
  *
@@ -258,7 +524,7 @@ cleanup:
  * The alpha channel is preserved when RGBA pixels are provided. If ICC data
  * is missing or invalid, the decoded pixels remain unchanged.
  */
-static void
+static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
                                   int width,
                                   int height,
@@ -266,12 +532,14 @@ webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
                                   unsigned char const *icc_profile,
                                   size_t icc_profile_length)
 {
+#if HAVE_LCMS2
     sixel_cms_profile_t * src_profile;
     sixel_cms_profile_t * dst_profile;
     sixel_cms_transform_t * transform;
     sixel_cms_pixel_format_t src_type;
     sixel_cms_pixel_format_t dst_type;
     int transform_flags;
+    int converted;
     size_t pixel_count;
 
     src_profile = NULL;
@@ -280,24 +548,29 @@ webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
     src_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
     dst_type = SIXEL_CMS_PIXELFORMAT_RGB_8;
     transform_flags = 0U;
+    converted = 0;
     pixel_count = 0U;
 
     if (pixels == NULL || width <= 0 || height <= 0 ||
         icc_profile == NULL || icc_profile_length == 0U) {
-        return;
+        return 0;
     }
 
     if (pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
         src_type = SIXEL_CMS_PIXELFORMAT_RGBA_8;
         dst_type = SIXEL_CMS_PIXELFORMAT_RGBA_8;
         transform_flags = SIXEL_CMS_TRANSFORM_COPY_ALPHA;
+    } else if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
+               || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        src_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
+        dst_type = SIXEL_CMS_PIXELFORMAT_RGB_F32;
     } else if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
-        return;
+        return 0;
     }
 
     src_profile = sixel_cms_open_profile_from_mem(icc_profile, icc_profile_length);
     if (src_profile == NULL) {
-        return;
+        return 0;
     }
     dst_profile = sixel_cms_create_srgb_profile();
     if (dst_profile == NULL) {
@@ -314,7 +587,7 @@ webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
+    converted = sixel_cms_do_transform(transform, pixels, pixels, pixel_count);
 
 cleanup:
     if (transform != NULL) {
@@ -326,8 +599,85 @@ cleanup:
     if (src_profile != NULL) {
         sixel_cms_close_profile(src_profile);
     }
-}
+    return converted;
+#else
+    unsigned char *rgb_pixels;
+    size_t pixel_count;
+    size_t rgb_bytes;
+    size_t i;
+    size_t src_offset;
+    size_t dst_offset;
+    int converted;
+
+    rgb_pixels = NULL;
+    pixel_count = 0u;
+    rgb_bytes = 0u;
+    i = 0u;
+    src_offset = 0u;
+    dst_offset = 0u;
+    converted = 0;
+
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        icc_profile == NULL || icc_profile_length == 0u) {
+        return 0;
+    }
+
+    if (pixelformat == SIXEL_PIXELFORMAT_RGB888
+            || pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
+            || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        return sixel_icc_convert_to_srgb_with_pixelformat(
+            pixels,
+            width,
+            height,
+            pixelformat,
+            icc_profile,
+            icc_profile_length);
+    }
+    if (pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        return 0;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return 0;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return 0;
+    }
+    rgb_bytes = pixel_count * 3u;
+    rgb_pixels = (unsigned char *)malloc(rgb_bytes);
+    if (rgb_pixels == NULL) {
+        return 0;
+    }
+
+    for (i = 0u; i < pixel_count; ++i) {
+        src_offset = i * 4u;
+        dst_offset = i * 3u;
+        rgb_pixels[dst_offset + 0u] = pixels[src_offset + 0u];
+        rgb_pixels[dst_offset + 1u] = pixels[src_offset + 1u];
+        rgb_pixels[dst_offset + 2u] = pixels[src_offset + 2u];
+    }
+
+    converted = sixel_icc_convert_to_srgb_with_pixelformat(
+        rgb_pixels,
+        width,
+        height,
+        SIXEL_PIXELFORMAT_RGB888,
+        icc_profile,
+        icc_profile_length);
+    if (converted) {
+        for (i = 0u; i < pixel_count; ++i) {
+            src_offset = i * 3u;
+            dst_offset = i * 4u;
+            pixels[dst_offset + 0u] = rgb_pixels[src_offset + 0u];
+            pixels[dst_offset + 1u] = rgb_pixels[src_offset + 1u];
+            pixels[dst_offset + 2u] = rgb_pixels[src_offset + 2u];
+        }
+    }
+
+    free(rgb_pixels);
+    return converted;
 #endif
+}
 
 
 /*
@@ -824,6 +1174,52 @@ loader_try_promote_pal8(
 #undef PAL8_HASH_EMPTY_KEY
 }
 
+static SIXELSTATUS
+webp_finalize_frame_output(sixel_frame_t *frame,
+                           int enable_cms,
+                           int cms_converted,
+                           int allow_palette_promotion,
+                           int reqcolors,
+                           unsigned char *bgcolor,
+                           sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    int target_pixelformat;
+
+    status = SIXEL_FALSE;
+    target_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    if (frame == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (allow_palette_promotion) {
+        status = loader_try_promote_pal8(frame, reqcolors, allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    if (enable_cms && cms_converted) {
+        target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    }
+
+    if (frame->pixelformat == SIXEL_PIXELFORMAT_RGB888
+            || frame->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
+            || frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
 /*
  * Dedicated libwebp loader wiring minimal pipeline.
  *
@@ -834,6 +1230,7 @@ loader_try_promote_pal8(
 static SIXELSTATUS
 load_with_libwebp(
     sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     enable_cms,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
@@ -863,6 +1260,7 @@ load_with_libwebp(
     int resolved_start_frame_no;
     int decode_start_frame_no;
     int emitted_frame_no;
+    int cms_converted;
     unsigned char *icc_profile;
     size_t icc_profile_length;
 
@@ -884,6 +1282,7 @@ load_with_libwebp(
     resolved_start_frame_no = 0;
     decode_start_frame_no = 0;
     emitted_frame_no = 0;
+    cms_converted = 0;
     icc_profile = NULL;
     icc_profile_length = 0U;
 
@@ -903,13 +1302,13 @@ load_with_libwebp(
     webp_data.bytes = pchunk->buffer;
     webp_data.size = pchunk->size;
 
-#if HAVE_LCMS2
-    webp_extract_icc_profile(pchunk->buffer,
-                             pchunk->size,
-                             &icc_profile,
-                             &icc_profile_length,
-                             pchunk->allocator);
-#endif
+    if (enable_cms) {
+        webp_extract_icc_profile(pchunk->buffer,
+                                 pchunk->size,
+                                 &icc_profile,
+                                 &icc_profile_length,
+                                 pchunk->allocator);
+    }
 
     if (!WebPAnimDecoderOptionsInit(&decoder_options)) {
         sixel_helper_set_additional_message(
@@ -956,27 +1355,30 @@ load_with_libwebp(
                            &frame->width,
                            &frame->height,
                            &frame->pixelformat,
+                           enable_cms,
                            icc_profile,
                            icc_profile_length,
+                           &cms_converted,
+                           bgcolor,
                            pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
 
-        sixel_frame_set_pixels(frame, pixels);
-
-        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+            sixel_frame_set_pixels_float32(frame, (float *)pixels);
+        } else {
+            sixel_frame_set_pixels(frame, pixels);
+        }
+        status = webp_finalize_frame_output(frame,
+                                            enable_cms,
+                                            cms_converted,
+                                            allow_palette_promotion,
+                                            reqcolors,
+                                            bgcolor,
+                                            pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
-        }
-
-        if (allow_palette_promotion) {
-            status = loader_try_promote_pal8(frame,
-                                             reqcolors,
-                                             pchunk->allocator);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
         }
 
         status = fn_load(frame, context);
@@ -1049,28 +1451,26 @@ load_with_libwebp(
             goto end;
         }
         memcpy(pixels, decoded_frame, frame_bytes);
-#if HAVE_LCMS2
-        webp_convert_embedded_icc_to_srgb(pixels,
-                                          frame->width,
-                                          frame->height,
-                                          frame->pixelformat,
-                                          icc_profile,
-                                          icc_profile_length);
-#endif
+        cms_converted = 0;
+        if (enable_cms) {
+            cms_converted = webp_convert_embedded_icc_to_srgb(
+                pixels,
+                frame->width,
+                frame->height,
+                frame->pixelformat,
+                icc_profile,
+                icc_profile_length);
+        }
         sixel_frame_set_pixels(frame, pixels);
-
-        status = sixel_frame_strip_alpha(frame, bgcolor);
+        status = webp_finalize_frame_output(frame,
+                                            enable_cms,
+                                            cms_converted,
+                                            allow_palette_promotion,
+                                            reqcolors,
+                                            bgcolor,
+                                            pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
-        }
-
-        if (allow_palette_promotion) {
-            status = loader_try_promote_pal8(frame,
-                                             reqcolors,
-                                             pchunk->allocator);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
         }
 
         status = fn_load(frame, context);
@@ -1164,14 +1564,16 @@ load_with_libwebp(
             }
 
             memcpy(pixels, decoded_frame, frame_bytes);
-#if HAVE_LCMS2
-            webp_convert_embedded_icc_to_srgb(pixels,
-                                              (int)anim_info.canvas_width,
-                                              (int)anim_info.canvas_height,
-                                              SIXEL_PIXELFORMAT_RGBA8888,
-                                              icc_profile,
-                                              icc_profile_length);
-#endif
+            cms_converted = 0;
+            if (enable_cms) {
+                cms_converted = webp_convert_embedded_icc_to_srgb(
+                    pixels,
+                    (int)anim_info.canvas_width,
+                    (int)anim_info.canvas_height,
+                    SIXEL_PIXELFORMAT_RGBA8888,
+                    icc_profile,
+                    icc_profile_length);
+            }
             sixel_frame_set_pixels(frame, pixels);
             pixels = NULL;
 
@@ -1189,18 +1591,15 @@ load_with_libwebp(
             }
             frame->delay = next_delay / 10;
 
-            status = sixel_frame_strip_alpha(frame, bgcolor);
+            status = webp_finalize_frame_output(frame,
+                                                enable_cms,
+                                                cms_converted,
+                                                allow_palette_promotion,
+                                                reqcolors,
+                                                bgcolor,
+                                                pchunk->allocator);
             if (SIXEL_FAILED(status)) {
                 goto end;
-            }
-
-            if (allow_palette_promotion) {
-                status = loader_try_promote_pal8(frame,
-                                                 reqcolors,
-                                                 pchunk->allocator);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
             }
 
             status = fn_load(frame, context);
@@ -1239,9 +1638,7 @@ end:
     if (decoder != NULL) {
         WebPAnimDecoderDelete(decoder);
     }
-#if HAVE_LCMS2
     sixel_allocator_free(pchunk->allocator, icc_profile);
-#endif
     sixel_frame_unref(frame);
 
     return status;
@@ -1307,6 +1704,10 @@ sixel_loader_libwebp_setopt(sixel_loader_component_t *component,
 
     self = (sixel_loader_libwebp_component_t *)component;
     switch (option) {
+    case SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS:
+        flag = (int const *)value;
+        self->enable_cms = (flag != NULL && *flag == 0) ? 0 : 1;
+        return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;
         self->fstatic = flag != NULL ? *flag : 0;
@@ -1374,6 +1775,7 @@ sixel_loader_libwebp_load(sixel_loader_component_t *component,
     }
 
     return load_with_libwebp(chunk,
+                             self->enable_cms,
                              self->fstatic,
                              self->fuse_palette,
                              self->reqcolors,
@@ -1422,6 +1824,7 @@ sixel_loader_libwebp_new(sixel_allocator_t *allocator,
     self->base.vtbl = &g_sixel_loader_libwebp_vtbl;
     self->allocator = allocator;
     self->ref = 1u;
+    self->enable_cms = 1;
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
     sixel_allocator_ref(allocator);
