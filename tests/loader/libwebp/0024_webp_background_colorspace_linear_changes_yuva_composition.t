@@ -47,10 +47,12 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
     exit 0
 }
 
-if cmp -s "${output_gamma}" "${output_linear}"; then
-    echo "not ok" 1 - "gamma and linear YUVA composition produced identical output"
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" "${output_gamma}" "${output_linear}" 2>&1) || lsqa_status=$?
+
+test "${lsqa_status-0}" -eq 5 || {
+    echo "not ok" 1 - "gamma and linear YUVA composition were not distinguishable: ${lsqa_msg-}"
     exit 0
-fi
+}
 
 echo "ok" 1 - "linear background interpretation changes libwebp YUVA composition"
 exit 0

@@ -150,6 +150,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     size_t dst_offset;
     float alpha;
     float bg_linear[3];
+    int has_transparency;
 
     src = NULL;
     dst = NULL;
@@ -162,6 +163,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     bg_linear[0] = 0.0f;
     bg_linear[1] = 0.0f;
     bg_linear[2] = 0.0f;
+    has_transparency = 0;
 
     if (frame == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -193,6 +195,16 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     if (src == NULL) {
         sixel_allocator_free(allocator, dst);
         return SIXEL_BAD_INPUT;
+    }
+    for (i = 0u; i < pixel_count; ++i) {
+        if (src[i * 4u + 3u] != 255u) {
+            has_transparency = 1;
+            break;
+        }
+    }
+    if (!has_transparency) {
+        sixel_allocator_free(allocator, dst);
+        return SIXEL_OK;
     }
     webp_resolve_background_linear(bg_linear, bgcolor);
     for (i = 0u; i < pixel_count; ++i) {
@@ -261,6 +273,7 @@ webp_decode_lossy_to_float32(unsigned char **result,
     float bg_linear[3];
     int has_bgcolor;
     int blended_in_linear;
+    int has_transparency;
     int config_initialized;
     int cms_converted;
 
@@ -293,6 +306,7 @@ webp_decode_lossy_to_float32(unsigned char **result,
     bg_linear[2] = 0.0f;
     has_bgcolor = 0;
     blended_in_linear = 0;
+    has_transparency = 0;
     config_initialized = 0;
     cms_converted = 0;
 
@@ -405,6 +419,20 @@ webp_decode_lossy_to_float32(unsigned char **result,
     }
 
     if (has_alpha && a_plane != NULL && has_bgcolor) {
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
+                if (a_plane[(size_t)y * (size_t)a_stride + (size_t)x] != 255u) {
+                    has_transparency = 1;
+                    break;
+                }
+            }
+            if (has_transparency) {
+                break;
+            }
+        }
+    }
+
+    if (has_transparency) {
         webp_resolve_background_linear(bg_linear, bgcolor);
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
@@ -1389,6 +1417,7 @@ load_with_libwebp(
     WebPAnimDecoderOptions decoder_options;
     WebPAnimDecoder *decoder;
     WebPAnimInfo anim_info;
+    WebPDemuxer const *anim_demuxer;
     uint8_t *decoded_frame;
     int timestamp;
     int previous_timestamp;
@@ -1402,6 +1431,9 @@ load_with_libwebp(
     int decode_start_frame_no;
     int emitted_frame_no;
     int cms_converted;
+    unsigned int webp_format_flags;
+    unsigned char anim_bgcolor[3];
+    unsigned char *resolved_bgcolor;
     unsigned char *icc_profile;
     size_t icc_profile_length;
 
@@ -1411,6 +1443,7 @@ load_with_libwebp(
     webp_data = (WebPData){ 0 };
     decoder = NULL;
     anim_info = (WebPAnimInfo){ 0 };
+    anim_demuxer = NULL;
     decoded_frame = NULL;
     timestamp = 0;
     previous_timestamp = 0;
@@ -1424,6 +1457,11 @@ load_with_libwebp(
     decode_start_frame_no = 0;
     emitted_frame_no = 0;
     cms_converted = 0;
+    webp_format_flags = 0U;
+    anim_bgcolor[0] = 0u;
+    anim_bgcolor[1] = 0u;
+    anim_bgcolor[2] = 0u;
+    resolved_bgcolor = bgcolor;
     icc_profile = NULL;
     icc_profile_length = 0U;
 
@@ -1473,6 +1511,20 @@ load_with_libwebp(
         goto end;
     }
 
+    if (bgcolor == NULL) {
+        anim_demuxer = WebPAnimDecoderGetDemuxer(decoder);
+        if (anim_demuxer != NULL) {
+            webp_format_flags = WebPDemuxGetI(anim_demuxer, WEBP_FF_FORMAT_FLAGS);
+            if ((webp_format_flags & ANIMATION_FLAG) != 0u &&
+                (webp_format_flags & ALPHA_FLAG) != 0u) {
+                anim_bgcolor[0] = (unsigned char)((anim_info.bgcolor >> 8u) & 0xffu);
+                anim_bgcolor[1] = (unsigned char)((anim_info.bgcolor >> 16u) & 0xffu);
+                anim_bgcolor[2] = (unsigned char)((anim_info.bgcolor >> 24u) & 0xffu);
+                resolved_bgcolor = anim_bgcolor;
+            }
+        }
+    }
+
     if (anim_info.frame_count <= 1) {
         if (start_frame_no != INT_MIN) {
             status = webp_resolve_animation_start_frame_no(start_frame_no,
@@ -1500,7 +1552,7 @@ load_with_libwebp(
                            icc_profile,
                            icc_profile_length,
                            &cms_converted,
-                           bgcolor,
+                           resolved_bgcolor,
                            pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -1516,7 +1568,7 @@ load_with_libwebp(
                                             cms_converted,
                                             allow_palette_promotion,
                                             reqcolors,
-                                            bgcolor,
+                                            resolved_bgcolor,
                                             pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -1608,7 +1660,7 @@ load_with_libwebp(
                                             cms_converted,
                                             allow_palette_promotion,
                                             reqcolors,
-                                            bgcolor,
+                                            resolved_bgcolor,
                                             pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -1737,7 +1789,7 @@ load_with_libwebp(
                                                 cms_converted,
                                                 allow_palette_promotion,
                                                 reqcolors,
-                                                bgcolor,
+                                                resolved_bgcolor,
                                                 pchunk->allocator);
             if (SIXEL_FAILED(status)) {
                 goto end;
