@@ -955,6 +955,14 @@ load_tiff(unsigned char      /* out */ **result,
     pixel_count = (size_t)width * (size_t)height;
 
     (void)TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photometric);
+    if (photometric == PHOTOMETRIC_CIELAB) {
+        float cie_ref_white[2];
+
+        /* Align Lab decode baseline with CoreGraphics/ImageIO behavior. */
+        cie_ref_white[0] = 0.34567f;
+        cie_ref_white[1] = 0.35850f;
+        (void)TIFFSetField(tif, TIFFTAG_WHITEPOINT, cie_ref_white);
+    }
     if (enable_cms) {
         (void)TIFFGetField(tif,
                            TIFFTAG_ICCPROFILE,
