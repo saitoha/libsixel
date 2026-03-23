@@ -53,12 +53,14 @@ test_timeout=
 color_tests=
 expect_failure=
 hard_errors=no
+stream_output=auto
 
 usage() {
   cat <<'EOF' >&2
 Usage:
   lso-tap-driver.sh --test-name NAME --log-file PATH.log --trs-file PATH.trs
     [--ignore-exit] [--comments] [--timeout SECONDS]
+    [--stream-output {yes|no|auto}]
     [--] TEST-SCRIPT [ARGS...]
 EOF
   exit 2
@@ -76,6 +78,8 @@ while [ $# -gt 0 ]; do
     --comments) comments=yes ;;
     --timeout) test_timeout=${2-}; shift ;;
     --timeout=*) test_timeout=${1#*=} ;;
+    --stream-output) stream_output=${2-}; shift ;;
+    --stream-output=*) stream_output=${1#*=} ;;
     --color-tests) color_tests=${2-}; shift ;;
     --color-tests=*) color_tests=${1#*=} ;;
     --enable-hard-errors)
@@ -98,6 +102,24 @@ done
 [ -n "${log_file}" ]  || { echo "lso-tap-driver.sh: missing --log-file" >&2; usage; }
 [ -n "${trs_file}" ]  || { echo "lso-tap-driver.sh: missing --trs-file" >&2; usage; }
 [ $# -ge 1 ] || { echo "lso-tap-driver.sh: missing TEST-SCRIPT" >&2; usage; }
+
+if [ "$stream_output" = auto ] && [ -n "${LSO_TAP_STREAM_LOG-}" ]; then
+  stream_output=${LSO_TAP_STREAM_LOG}
+fi
+
+case "$stream_output" in
+  auto)
+    case "$test_name" in
+      staticcheck-*) stream_output=yes ;;
+      *) stream_output=no ;;
+    esac
+    ;;
+  yes|no) ;;
+  *)
+    echo "lso-tap-driver.sh: invalid --stream-output value: $stream_output" >&2
+    usage
+    ;;
+esac
 
 : "${TOP_SRCDIR:=@top_srcdir@}"
 : "${AM_TAP_AWK:=awk}"
@@ -352,17 +374,45 @@ EOF
   return $?
 }
 
+run_and_capture() {
+  if [ "$stream_output" = "yes" ]; then
+    stream_fifo=$(mktemp "${TMPDIR:-/tmp}/libsixel-tap-stream-XXXXXX")
+    rm -f "$stream_fifo"
+    if ! mkfifo "$stream_fifo"; then
+      run_with_timeout "$@" >"$log_file" 2>&1
+      return $?
+    fi
+
+    tee "$log_file" <"$stream_fifo" &
+    tee_pid=$!
+    run_with_timeout "$@" >"$stream_fifo" 2>&1
+    capture_status=$?
+    rm -f "$stream_fifo"
+    wait "$tee_pid" >/dev/null 2>&1 || true
+    return "$capture_status"
+  fi
+
+  run_with_timeout "$@" >"$log_file" 2>&1
+  return $?
+}
+
 # Run the test script, capture all output in .log (format free). :contentReference[oaicite:3]{index=3}
-# We don't stream to console; Automake shows progress separately.
-# If you want streaming, do it in the test itself (or add tee here).
-if test "$(command -v time)" = time; then
+# Staticcheck targets stream output to console while preserving .log files.
+if [ "$stream_output" = "yes" ]; then
+    # Streaming output cannot be wrapped in command substitution because that
+    # would swallow progress lines; use timestamp helper instead.
+    time_begin=$(timestamp_millis)
+    run_and_capture "$@"
+    rc=$?
+    time_end=$(timestamp_millis)
+elif test "$(command -v time)" = time; then
     # use builtin time
     time_begin=0.000
-    time_end=$( TIMEFORMAT='%R'; { time run_with_timeout "$@" >"$log_file" 2>&1; } 2>&1 )
+    time_end=$( TIMEFORMAT='%R'; { time run_and_capture "$@"; } 2>&1 )
     rc=$?
 else
     time_begin=$(timestamp_millis)
-    run_with_timeout "$@" >"$log_file" 2>&1
+    run_and_capture "$@"
     rc=$?
     time_end=$(timestamp_millis)
 fi
