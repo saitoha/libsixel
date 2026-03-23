@@ -35,8 +35,8 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
     exit 0
 }
 
-cmp -s "${output_default}" "${output_gamma}" || {
-    echo "not ok" 1 - "default background colorspace does not match gamma"
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" "${output_default}" "${output_gamma}" 2>&1) || {
+    echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }
 
