@@ -1029,7 +1029,7 @@ static void *xcalloc(size_t nmemb, size_t size)
 }
 
 /*
- * Loader bridge (libsixel -> float RGB)
+ * Loader bridge (libsixel frame -> float triplets)
  */
 static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
                                      unsigned char **pixels,
@@ -1091,8 +1091,10 @@ frame_to_rgb_float(sixel_frame_t *frame,
 {
     SIXELSTATUS status;
     unsigned char *pixels;
+    float const *float_pixels;
     int width;
     int height;
+    int pixelformat;
     float *converted;
     size_t count;
     size_t index;
@@ -1101,6 +1103,8 @@ frame_to_rgb_float(sixel_frame_t *frame,
     pixels = NULL;
     width = 0;
     height = 0;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    float_pixels = NULL;
     converted = NULL;
     count = 0;
     index = 0;
@@ -1114,15 +1118,39 @@ frame_to_rgb_float(sixel_frame_t *frame,
     *width_out = 0;
     *height_out = 0;
 
-    status = copy_frame_to_rgb(frame, &pixels, &width, &height);
+    status = sixel_frame_strip_alpha(frame, NULL);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    count = (size_t)width * (size_t)height *
-            (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS;
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    count = (size_t)width * (size_t)height;
+    if (height != 0 && count / (size_t)height != (size_t)width) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (count > SIZE_MAX / (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    count *= (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS;
     converted = (float *)xmalloc(count * sizeof(float));
-    for (index = 0; index < count; ++index) {
-        converted[index] = pixels[index] / 255.0f;
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        float_pixels = sixel_frame_get_pixels_float32(frame);
+        if (float_pixels == NULL) {
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+        memcpy(converted, float_pixels, count * sizeof(float));
+    } else {
+        status = copy_frame_to_rgb(frame, &pixels, &width, &height);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        for (index = 0; index < count; ++index) {
+            converted[index] = pixels[index] / 255.0f;
+        }
     }
     *pixels_out = converted;
     *width_out = width;
@@ -3711,6 +3739,7 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     int ref_height;
     int out_width;
     int out_height;
+    int reference_pixelformat;
 
     if (assessment == NULL || reference == NULL || output == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3722,6 +3751,7 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     ref_height = 0;
     out_width = 0;
     out_height = 0;
+    reference_pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
     assessment->last_error = SIXEL_OK;
     assessment->error_message[0] = '\0';
@@ -3734,6 +3764,22 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     if (bail != 0) {
         status = assessment->last_error;
         goto cleanup;
+    }
+
+    status = sixel_frame_strip_alpha(reference, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_frame_strip_alpha(output, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    reference_pixelformat = sixel_frame_get_pixelformat(reference);
+    if (sixel_frame_get_pixelformat(output) != reference_pixelformat) {
+        status = sixel_frame_set_pixelformat(output, reference_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
     }
 
     status = frame_to_rgb_float(reference,
