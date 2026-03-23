@@ -904,6 +904,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "Applied only on the first loop; later loops decode from frame 0."
     },
     {
+        "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
+        "force lossy WebP inputs through the legacy RGB decode path instead\n"
+        "of the default YUV float32 pipeline. Intended for tests and\n"
+        "regression debugging; values beginning with 1/y/t enable it."
+    },
+    {
         "SIXEL_LOADER_CMS_RENDERING_INTENT",
         "override the lcms2 rendering-intent fallback order used by PNG\n"
         "loader CMS conversion. Accepts comma-separated values from\n"
