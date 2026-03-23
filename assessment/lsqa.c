@@ -48,6 +48,9 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
 #if HAVE_MATH_H
 # include <math.h>
 #endif
@@ -208,6 +211,7 @@ capture_first_frame(sixel_frame_t *frame, void *context)
 
 static int
 load_frame(char const *path, sixel_allocator_t *allocator,
+           char const *loader_order,
            sixel_frame_t **out_frame)
 {
     LoaderCapture capture;
@@ -267,6 +271,15 @@ load_frame(char const *path, sixel_allocator_t *allocator,
         goto error;
     }
 
+    if (loader_order != NULL && loader_order[0] != '\0') {
+        status = sixel_loader_setopt(loader,
+                                     SIXEL_LOADER_OPTION_LOADER_ORDER,
+                                     loader_order);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
+    }
+
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_CONTEXT,
                                  &capture);
@@ -277,11 +290,13 @@ load_frame(char const *path, sixel_allocator_t *allocator,
     status = sixel_loader_load_file(loader,
                                     path,
                                     capture_first_frame);
-    if (SIXEL_FAILED(status) || capture.frame == NULL) {
-        fprintf(stderr,
-                "libsixel loader failed for %s: %s\n",
-                path,
-                sixel_helper_format_error(status));
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (capture.frame == NULL) {
+        sixel_helper_set_additional_message(
+            "loader did not produce any frame.");
+        status = SIXEL_RUNTIME_ERROR;
         goto error;
     }
 
@@ -290,6 +305,23 @@ load_frame(char const *path, sixel_allocator_t *allocator,
     return 0;
 
 error:
+    if (SIXEL_FAILED(status)) {
+        char const *detail;
+
+        detail = sixel_helper_get_additional_message();
+        if (detail != NULL && detail[0] != '\0') {
+            fprintf(stderr,
+                    "libsixel loader failed for %s: %s (%s)\n",
+                    path,
+                    sixel_helper_format_error(status),
+                    detail);
+        } else {
+            fprintf(stderr,
+                    "libsixel loader failed for %s: %s\n",
+                    path,
+                    sixel_helper_format_error(status));
+        }
+    }
     sixel_loader_unref(loader);
     if (capture.frame != NULL) {
         sixel_frame_unref(capture.frame);
@@ -744,6 +776,286 @@ json_collect_callback(char const *chunk, size_t length, void *user_data)
     metrics_set_value(collector->metrics, name, value, is_valid);
 }
 
+enum {
+    LSQA_COMPARE_COLORSPACE_REFERENCE = (-1)
+};
+
+typedef enum LsqaComparePrecision {
+    LSQA_COMPARE_PRECISION_REFERENCE = 0,
+    LSQA_COMPARE_PRECISION_8BIT = 1,
+    LSQA_COMPARE_PRECISION_FLOAT32 = 2
+} LsqaComparePrecision;
+
+static int
+lsqa_precision_from_pixelformat(int pixelformat)
+{
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        return LSQA_COMPARE_PRECISION_FLOAT32;
+    }
+    return LSQA_COMPARE_PRECISION_8BIT;
+}
+
+static int
+lsqa_float32_pixelformat_for_colorspace(int colorspace)
+{
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_LINEAR:
+        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    default:
+        return SIXEL_PIXELFORMAT_RGBFLOAT32;
+    }
+}
+
+static int
+lsqa_target_pixelformat(int colorspace, int precision)
+{
+    if (precision == LSQA_COMPARE_PRECISION_FLOAT32) {
+        return lsqa_float32_pixelformat_for_colorspace(colorspace);
+    }
+    return SIXEL_PIXELFORMAT_RGB888;
+}
+
+static SIXELSTATUS
+lsqa_convert_frame_colorspace(sixel_frame_t *frame,
+                              int target_colorspace)
+{
+    SIXELSTATUS status;
+    int source_colorspace;
+    int pixelformat;
+    int width;
+    int height;
+    int depth;
+    size_t size;
+    unsigned char *pixels;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    source_colorspace = sixel_frame_get_colorspace(frame);
+    if (source_colorspace == target_colorspace) {
+        return SIXEL_OK;
+    }
+
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    size = (size_t)width * (size_t)height;
+    if (size / (size_t)width != (size_t)height) {
+        return SIXEL_BAD_INPUT;
+    }
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (size > SIZE_MAX / (size_t)depth) {
+        return SIXEL_BAD_INPUT;
+    }
+    size *= (size_t)depth;
+
+    pixels = sixel_frame_get_pixels(frame);
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        pixels = (unsigned char *)sixel_frame_get_pixels_float32(frame);
+    }
+    if (pixels == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    status = sixel_helper_convert_colorspace(pixels,
+                                             size,
+                                             pixelformat,
+                                             source_colorspace,
+                                             target_colorspace);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    sixel_frame_set_colorspace(frame, target_colorspace);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+lsqa_apply_grayscale(sixel_frame_t *frame)
+{
+    int width;
+    int height;
+    int pixelformat;
+    size_t pixels;
+    size_t i;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    pixels = (size_t)width * (size_t)height;
+    if (pixels / (size_t)width != (size_t)height) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        float *values;
+
+        values = sixel_frame_get_pixels_float32(frame);
+        if (values == NULL) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i < pixels; ++i) {
+            size_t base;
+            float y;
+
+            base = i * 3u;
+            y = 0.2126f * values[base + 0u]
+              + 0.7152f * values[base + 1u]
+              + 0.0722f * values[base + 2u];
+            values[base + 0u] = y;
+            values[base + 1u] = y;
+            values[base + 2u] = y;
+        }
+    } else {
+        unsigned char *values;
+
+        values = sixel_frame_get_pixels(frame);
+        if (values == NULL) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i < pixels; ++i) {
+            size_t base;
+            unsigned int r;
+            unsigned int g;
+            unsigned int b;
+            unsigned int y;
+
+            base = i * 3u;
+            r = (unsigned int)values[base + 0u];
+            g = (unsigned int)values[base + 1u];
+            b = (unsigned int)values[base + 2u];
+            y = (2126u * r + 7152u * g + 722u * b + 5000u) / 10000u;
+            if (y > 255u) {
+                y = 255u;
+            }
+            values[base + 0u] = (unsigned char)y;
+            values[base + 1u] = (unsigned char)y;
+            values[base + 2u] = (unsigned char)y;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+lsqa_prepare_frame_for_comparison(sixel_frame_t *frame,
+                                  int target_colorspace,
+                                  int target_precision,
+                                  int grayscale_enabled)
+{
+    SIXELSTATUS status;
+    int target_pixelformat;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_frame_strip_alpha(frame, NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    target_pixelformat = lsqa_target_pixelformat(target_colorspace,
+                                                 target_precision);
+    status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = lsqa_convert_frame_colorspace(frame, target_colorspace);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (grayscale_enabled != 0) {
+        status = lsqa_apply_grayscale(frame);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+lsqa_parse_compare_colorspace(char const *argument,
+                              int *out_colorspace)
+{
+    if (argument == NULL || argument[0] == '\0' || out_colorspace == NULL) {
+        return -1;
+    }
+
+    if (metric_name_matches(argument, "reference")
+            || metric_name_matches(argument, "ref")
+            || metric_name_matches(argument, "auto")) {
+        *out_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
+        return 0;
+    }
+    if (metric_name_matches(argument, "gamma")
+            || metric_name_matches(argument, "srgb")) {
+        *out_colorspace = SIXEL_COLORSPACE_GAMMA;
+        return 0;
+    }
+    if (metric_name_matches(argument, "linear")) {
+        *out_colorspace = SIXEL_COLORSPACE_LINEAR;
+        return 0;
+    }
+    if (metric_name_matches(argument, "smpte-c")
+            || metric_name_matches(argument, "smptec")
+            || metric_name_matches(argument, "smpte")) {
+        *out_colorspace = SIXEL_COLORSPACE_SMPTEC;
+        return 0;
+    }
+
+    return -1;
+}
+
+static int
+lsqa_parse_compare_precision(char const *argument,
+                             int *out_precision)
+{
+    if (argument == NULL || argument[0] == '\0' || out_precision == NULL) {
+        return -1;
+    }
+
+    if (metric_name_matches(argument, "reference")
+            || metric_name_matches(argument, "ref")
+            || metric_name_matches(argument, "auto")) {
+        *out_precision = LSQA_COMPARE_PRECISION_REFERENCE;
+        return 0;
+    }
+    if (metric_name_matches(argument, "8bit")
+            || metric_name_matches(argument, "u8")
+            || metric_name_matches(argument, "byte")
+            || metric_name_matches(argument, "uint8")) {
+        *out_precision = LSQA_COMPARE_PRECISION_8BIT;
+        return 0;
+    }
+    if (metric_name_matches(argument, "float32")
+            || metric_name_matches(argument, "f32")
+            || metric_name_matches(argument, "float")
+            || metric_name_matches(argument, "fp32")) {
+        *out_precision = LSQA_COMPARE_PRECISION_FLOAT32;
+        return 0;
+    }
+
+    return -1;
+}
+
 typedef struct Options {
     const char *ref_path;
     const char *out_path;
@@ -758,6 +1070,10 @@ typedef struct Options {
     int metrics_filtered;
     int baseline_enabled;
     int verbose;
+    int grayscale_compare;
+    int compare_colorspace;
+    int compare_precision;
+    const char *loader_order;
     char baseline_name[64];
 } Options;
 
@@ -786,6 +1102,31 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           before assessment. Repeatable.\n"
     },
     {
+        'g',
+        "grayscale",
+        "-g, --grayscale            compare using grayscale luminance.\n"
+    },
+    {
+        'U',
+        "compare-colorspace",
+        "-U COLORSPACE, --compare-colorspace=COLORSPACE\n"
+        "                           comparison colorspace (reference,\n"
+        "                           gamma, linear, smpte-c).\n"
+    },
+    {
+        'P',
+        "compare-precision",
+        "-P PRECISION, --compare-precision=PRECISION\n"
+        "                           comparison precision (reference,\n"
+        "                           8bit, float32).\n"
+    },
+    {
+        'L',
+        "loaders",
+        "-L LIST, --loaders=LIST    override loader order (same syntax\n"
+        "                           as img2sixel -L).\n"
+    },
+    {
         'H',
         "help",
         "-H, --help                 show this help.\n"
@@ -802,7 +1143,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:b:%:Hh";
+static char const g_lsqa_optstring[] = "m:b:%:gU:P:L:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -973,13 +1314,19 @@ static void
 print_usage(const char *prog)
 {
     fprintf(stderr,
-            "Usage: %s [-m NAME] [-b METRIC:VALUE] <reference> [output]\n",
+            "Usage: %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "             [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             <reference> [output]\n",
             prog);
     fprintf(stderr,
-            "       %s [-m NAME] [-b METRIC:VALUE] <reference> < output\n",
+            "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "             [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             <reference> < output\n",
             prog);
     fprintf(stderr,
-            "       %s [-m NAME] [-b METRIC:VALUE] <reference> - < output\n",
+            "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "             [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             <reference> - < output\n",
             prog);
     fprintf(stderr,
     "  -m, --metrics NAME  limit computation to a single metric\n");
@@ -989,6 +1336,18 @@ print_usage(const char *prog)
             "  -b, --baseline METRIC:VALUE\n");
     fprintf(stderr,
             "                        exit nonzero if METRIC is below VALUE\n");
+    fprintf(stderr,
+            "  -g, --grayscale     compare in grayscale\n");
+    fprintf(stderr,
+            "  -U, --compare-colorspace COLORSPACE\n");
+    fprintf(stderr,
+            "                        reference/gamma/linear/smpte-c\n");
+    fprintf(stderr,
+            "  -P, --compare-precision PRECISION\n");
+    fprintf(stderr,
+            "                        reference/8bit/float32\n");
+    fprintf(stderr,
+            "  -L, --loaders LIST  loader order (img2sixel -L syntax)\n");
 }
 
 static void
@@ -998,9 +1357,15 @@ show_help(void)
      * Help text must go to stdout to match converter tools and allow piping.
      */
     fprintf(stdout,
-            "Usage: lsqa [-m NAME] [-b METRIC:VALUE] <reference> [output]\n"
-            "       lsqa [-m NAME] [-b METRIC:VALUE] <reference> < output\n"
-            "       lsqa [-m NAME] [-b METRIC:VALUE] <reference> - < output\n"
+            "Usage: lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "            [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            <reference> [output]\n"
+            "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "            [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            <reference> < output\n"
+            "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "            [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            <reference> - < output\n"
             "\n"
             "Options:\n");
     lsqa_print_option_help(stdout);
@@ -1321,6 +1686,10 @@ parse_args(int argc, char **argv, Options *opts)
     opts->metrics_filtered = 0;
     opts->baseline_enabled = 0;
     opts->verbose = 0;
+    opts->grayscale_compare = 0;
+    opts->compare_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
+    opts->compare_precision = LSQA_COMPARE_PRECISION_REFERENCE;
+    opts->loader_order = NULL;
     opts->prefix_buffer[0] = '\0';
     opts->baseline_name[0] = '\0';
 
@@ -1351,6 +1720,10 @@ parse_args(int argc, char **argv, Options *opts)
             {"metrics", required_argument, &long_opt, 'm'},
             {"baseline", required_argument, &long_opt, 'b'},
             {"env", required_argument, &long_opt, '%'},
+            {"grayscale", no_argument, &long_opt, 'g'},
+            {"compare-colorspace", required_argument, &long_opt, 'U'},
+            {"compare-precision", required_argument, &long_opt, 'P'},
+            {"loaders", required_argument, &long_opt, 'L'},
             {"help", no_argument, &long_opt, 'H'},
             {0, 0, 0, 0}
         };
@@ -1389,6 +1762,42 @@ parse_args(int argc, char **argv, Options *opts)
                 parse_status = -1;
                 goto cleanup;
             }
+            break;
+        case 'g':
+            opts->grayscale_compare = 1;
+            break;
+        case 'U':
+            if (lsqa_parse_compare_colorspace(
+                        optarg,
+                        &opts->compare_colorspace) != 0) {
+                lsqa_report_invalid_argument(
+                    'U',
+                    optarg,
+                    "Expected reference/gamma/linear/smpte-c.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            break;
+        case 'P':
+            if (lsqa_parse_compare_precision(
+                        optarg,
+                        &opts->compare_precision) != 0) {
+                lsqa_report_invalid_argument(
+                    'P',
+                    optarg,
+                    "Expected reference/8bit/float32.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            break;
+        case 'L':
+            if (opts->loader_order != NULL) {
+                lsqa_set_parse_error(
+                    "lsqa: loader order already specified.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            opts->loader_order = optarg;
             break;
         case 'b':
             if (opts->baseline_enabled) {
@@ -1561,6 +1970,10 @@ main(int argc, char **argv)
     float baseline_value;
     char const *parse_message;
     int parse_status;
+    int reference_colorspace;
+    int reference_precision;
+    int target_colorspace;
+    int target_precision;
 
     allocator = NULL;
     assessment = NULL;
@@ -1575,6 +1988,10 @@ main(int argc, char **argv)
     baseline_value = 0.0f;
     parse_message = NULL;
     parse_status = 0;
+    reference_colorspace = SIXEL_COLORSPACE_GAMMA;
+    reference_precision = LSQA_COMPARE_PRECISION_8BIT;
+    target_colorspace = SIXEL_COLORSPACE_GAMMA;
+    target_precision = LSQA_COMPARE_PRECISION_8BIT;
 
     parse_status = parse_args(argc, argv, &opts);
     if (parse_status != 0) {
@@ -1602,14 +2019,81 @@ main(int argc, char **argv)
         return LSQA_EXIT_RUNTIME_FAILED;
     }
 
-    if (load_frame(opts.ref_path, allocator, &ref_frame) != 0) {
+    if (load_frame(opts.ref_path,
+                   allocator,
+                   opts.loader_order,
+                   &ref_frame) != 0) {
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
     }
-    if (load_frame(opts.out_path, allocator, &out_frame) != 0) {
+    if (load_frame(opts.out_path,
+                   allocator,
+                   opts.loader_order,
+                   &out_frame) != 0) {
         sixel_frame_unref(ref_frame);
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
+    }
+
+    reference_colorspace = sixel_frame_get_colorspace(ref_frame);
+    reference_precision = lsqa_precision_from_pixelformat(
+        sixel_frame_get_pixelformat(ref_frame));
+    if (opts.compare_colorspace == LSQA_COMPARE_COLORSPACE_REFERENCE) {
+        target_colorspace = reference_colorspace;
+    } else {
+        target_colorspace = opts.compare_colorspace;
+    }
+    if (opts.compare_precision == LSQA_COMPARE_PRECISION_REFERENCE) {
+        target_precision = reference_precision;
+    } else {
+        target_precision = opts.compare_precision;
+    }
+
+    status = lsqa_prepare_frame_for_comparison(ref_frame,
+                                               target_colorspace,
+                                               target_precision,
+                                               opts.grayscale_compare);
+    if (SIXEL_FAILED(status)) {
+        char const *detail;
+
+        detail = sixel_helper_get_additional_message();
+        if (detail != NULL && detail[0] != '\0') {
+            fprintf(stderr,
+                    "Failed to normalize reference frame: %s (%s)\n",
+                    sixel_helper_format_error(status),
+                    detail);
+        } else {
+            fprintf(stderr,
+                    "Failed to normalize reference frame: %s\n",
+                    sixel_helper_format_error(status));
+        }
+        sixel_frame_unref(ref_frame);
+        sixel_frame_unref(out_frame);
+        sixel_allocator_unref(allocator);
+        return LSQA_EXIT_RUNTIME_FAILED;
+    }
+    status = lsqa_prepare_frame_for_comparison(out_frame,
+                                               target_colorspace,
+                                               target_precision,
+                                               opts.grayscale_compare);
+    if (SIXEL_FAILED(status)) {
+        char const *detail;
+
+        detail = sixel_helper_get_additional_message();
+        if (detail != NULL && detail[0] != '\0') {
+            fprintf(stderr,
+                    "Failed to normalize output frame: %s (%s)\n",
+                    sixel_helper_format_error(status),
+                    detail);
+        } else {
+            fprintf(stderr,
+                    "Failed to normalize output frame: %s\n",
+                    sixel_helper_format_error(status));
+        }
+        sixel_frame_unref(ref_frame);
+        sixel_frame_unref(out_frame);
+        sixel_allocator_unref(allocator);
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
 
     status = sixel_assessment_new(&assessment, allocator);
