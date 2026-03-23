@@ -801,6 +801,12 @@ lsqa_float32_pixelformat_for_colorspace(int colorspace)
     switch (colorspace) {
     case SIXEL_COLORSPACE_LINEAR:
         return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    case SIXEL_COLORSPACE_OKLAB:
+        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    case SIXEL_COLORSPACE_CIELAB:
+        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
+    case SIXEL_COLORSPACE_DIN99D:
+        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
     default:
         return SIXEL_PIXELFORMAT_RGBFLOAT32;
     }
@@ -1014,10 +1020,16 @@ lsqa_parse_compare_colorspace(char const *argument,
         *out_colorspace = SIXEL_COLORSPACE_LINEAR;
         return 0;
     }
-    if (metric_name_matches(argument, "smpte-c")
-            || metric_name_matches(argument, "smptec")
-            || metric_name_matches(argument, "smpte")) {
-        *out_colorspace = SIXEL_COLORSPACE_SMPTEC;
+    if (metric_name_matches(argument, "oklab")) {
+        *out_colorspace = SIXEL_COLORSPACE_OKLAB;
+        return 0;
+    }
+    if (metric_name_matches(argument, "cielab")) {
+        *out_colorspace = SIXEL_COLORSPACE_CIELAB;
+        return 0;
+    }
+    if (metric_name_matches(argument, "din99d")) {
+        *out_colorspace = SIXEL_COLORSPACE_DIN99D;
         return 0;
     }
 
@@ -1056,11 +1068,55 @@ lsqa_parse_compare_precision(char const *argument,
     return -1;
 }
 
+static int
+lsqa_parse_boolean(char const *argument,
+                   int *out_value)
+{
+    if (argument == NULL || argument[0] == '\0' || out_value == NULL) {
+        return -1;
+    }
+
+    if (metric_name_matches(argument, "1")
+            || metric_name_matches(argument, "true")
+            || metric_name_matches(argument, "yes")
+            || metric_name_matches(argument, "on")) {
+        *out_value = 1;
+        return 0;
+    }
+    if (metric_name_matches(argument, "0")
+            || metric_name_matches(argument, "false")
+            || metric_name_matches(argument, "no")
+            || metric_name_matches(argument, "off")) {
+        *out_value = 0;
+        return 0;
+    }
+
+    return -1;
+}
+
+static int
+lsqa_copy_option_text(char *buffer,
+                      size_t buffer_size,
+                      char const *value)
+{
+    int written;
+
+    if (buffer == NULL || buffer_size == 0u || value == NULL) {
+        return -1;
+    }
+    written = snprintf(buffer, buffer_size, "%s", value);
+    if (written < 0 || (size_t)written >= buffer_size) {
+        return -1;
+    }
+    return 0;
+}
+
 typedef struct Options {
     const char *ref_path;
     const char *out_path;
     const char *prefix;
     char prefix_buffer[PATH_MAX];
+    char loader_order_buffer[PATH_MAX];
     const MetricSpec *metric_spec;
     const char *metric_key;
     const MetricSpec *baseline_spec;
@@ -1074,8 +1130,156 @@ typedef struct Options {
     int compare_colorspace;
     int compare_precision;
     const char *loader_order;
+    int grayscale_specified;
+    int compare_colorspace_specified;
+    int compare_precision_specified;
+    int loader_order_specified;
     char baseline_name[64];
 } Options;
+
+static void
+lsqa_report_invalid_argument(int short_opt,
+                             char const *value,
+                             char const *detail);
+
+static void
+lsqa_set_parse_error(char const *message);
+
+static int
+lsqa_parse_baseline(const char *arg, Options *opts);
+
+static int
+lsqa_apply_env_overrides(Options *opts)
+{
+    char *metrics_env;
+    char *baseline_env;
+    char *grayscale_env;
+    char *colorspace_env;
+    char *precision_env;
+    char *loaders_env;
+    const MetricSpec *metric_spec;
+    int boolean_value;
+    int status;
+
+    if (opts == NULL) {
+        return -1;
+    }
+
+    metrics_env = NULL;
+    baseline_env = NULL;
+    grayscale_env = NULL;
+    colorspace_env = NULL;
+    precision_env = NULL;
+    loaders_env = NULL;
+    metric_spec = NULL;
+    boolean_value = 0;
+    status = 0;
+
+    metrics_env = lsqa_getenv_dup("LSQA_METRICS");
+    baseline_env = lsqa_getenv_dup("LSQA_BASELINE");
+    grayscale_env = lsqa_getenv_dup("LSQA_GRAYSCALE");
+    colorspace_env = lsqa_getenv_dup("LSQA_COMPARE_COLORSPACE");
+    precision_env = lsqa_getenv_dup("LSQA_COMPARE_PRECISION");
+    loaders_env = lsqa_getenv_dup("LSQA_LOADERS");
+
+    if (metrics_env != NULL && metrics_env[0] != '\0'
+            && opts->metric_spec == NULL) {
+        metric_spec = metric_spec_from_name(metrics_env);
+        if (metric_spec == NULL) {
+            lsqa_report_invalid_argument('m',
+                                         metrics_env,
+                                         "Unknown metric name.");
+            status = -1;
+            goto cleanup;
+        }
+        opts->metric_spec = metric_spec;
+        opts->metric_key = metric_spec->json_key;
+        opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK(
+            metric_spec->metric_id);
+        opts->metrics_filtered = 1;
+        if (opts->baseline_spec != NULL
+                && opts->baseline_spec != opts->metric_spec) {
+            lsqa_set_parse_error("lsqa: baseline metric must match -m.");
+            status = -1;
+            goto cleanup;
+        }
+    }
+
+    if (baseline_env != NULL && baseline_env[0] != '\0'
+            && !opts->baseline_enabled) {
+        if (lsqa_parse_baseline(baseline_env, opts) != 0) {
+            status = -1;
+            goto cleanup;
+        }
+        if (opts->metric_spec != NULL
+                && opts->metric_spec != opts->baseline_spec) {
+            lsqa_set_parse_error("lsqa: baseline metric must match -m.");
+            status = -1;
+            goto cleanup;
+        }
+    }
+
+    if (grayscale_env != NULL && grayscale_env[0] != '\0'
+            && !opts->grayscale_specified) {
+        if (lsqa_parse_boolean(grayscale_env, &boolean_value) != 0) {
+            lsqa_report_invalid_argument('g',
+                                         grayscale_env,
+                                         "Expected 0/1 or false/true.");
+            status = -1;
+            goto cleanup;
+        }
+        opts->grayscale_compare = boolean_value;
+    }
+
+    if (colorspace_env != NULL && colorspace_env[0] != '\0'
+            && !opts->compare_colorspace_specified) {
+        if (lsqa_parse_compare_colorspace(colorspace_env,
+                                          &opts->compare_colorspace) != 0) {
+            lsqa_report_invalid_argument(
+                'W',
+                colorspace_env,
+                "Expected reference/gamma/linear/oklab/cielab/din99d.");
+            status = -1;
+            goto cleanup;
+        }
+    }
+
+    if (precision_env != NULL && precision_env[0] != '\0'
+            && !opts->compare_precision_specified) {
+        if (lsqa_parse_compare_precision(precision_env,
+                                         &opts->compare_precision) != 0) {
+            lsqa_report_invalid_argument(
+                'P',
+                precision_env,
+                "Expected reference/8bit/float32.");
+            status = -1;
+            goto cleanup;
+        }
+    }
+
+    if (loaders_env != NULL && loaders_env[0] != '\0'
+            && !opts->loader_order_specified) {
+        if (lsqa_copy_option_text(opts->loader_order_buffer,
+                                  sizeof(opts->loader_order_buffer),
+                                  loaders_env) != 0) {
+            lsqa_report_invalid_argument('L',
+                                         loaders_env,
+                                         "Loader list is too long.");
+            status = -1;
+            goto cleanup;
+        }
+        opts->loader_order = opts->loader_order_buffer;
+    }
+
+cleanup:
+    free(loaders_env);
+    free(precision_env);
+    free(colorspace_env);
+    free(grayscale_env);
+    free(baseline_env);
+    free(metrics_env);
+    return status;
+}
 
 /*
  * Per-option help text for --help output and contextual errors.
@@ -1107,11 +1311,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "-g, --grayscale            compare using grayscale luminance.\n"
     },
     {
-        'U',
+        'W',
         "compare-colorspace",
-        "-U COLORSPACE, --compare-colorspace=COLORSPACE\n"
+        "-W COLORSPACE, --compare-colorspace=COLORSPACE\n"
         "                           comparison colorspace (reference,\n"
-        "                           gamma, linear, smpte-c).\n"
+        "                           gamma, linear, oklab,\n"
+        "                           cielab, din99d).\n"
     },
     {
         'P',
@@ -1143,7 +1348,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:b:%:gU:P:L:Hh";
+static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -1315,17 +1520,17 @@ print_usage(const char *prog)
 {
     fprintf(stderr,
             "Usage: %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
             "             <reference> [output]\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
             "             <reference> < output\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
             "             <reference> - < output\n",
             prog);
     fprintf(stderr,
@@ -1339,9 +1544,10 @@ print_usage(const char *prog)
     fprintf(stderr,
             "  -g, --grayscale     compare in grayscale\n");
     fprintf(stderr,
-            "  -U, --compare-colorspace COLORSPACE\n");
+            "  -W, --compare-colorspace COLORSPACE\n");
     fprintf(stderr,
-            "                        reference/gamma/linear/smpte-c\n");
+            "                        reference/gamma/linear/oklab/\n"
+            "                        cielab/din99d\n");
     fprintf(stderr,
             "  -P, --compare-precision PRECISION\n");
     fprintf(stderr,
@@ -1358,18 +1564,28 @@ show_help(void)
      */
     fprintf(stdout,
             "Usage: lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "            [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
             "            <reference> [output]\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "            [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
             "            <reference> < output\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "            [-U COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
             "            <reference> - < output\n"
             "\n"
             "Options:\n");
     lsqa_print_option_help(stdout);
     fprintf(stdout,
+            "\n"
+            "Environment overrides:\n"
+            "  LSQA_METRICS=NAME\n"
+            "  LSQA_BASELINE=METRIC:VALUE\n"
+            "  LSQA_GRAYSCALE=0|1\n"
+            "  LSQA_COMPARE_COLORSPACE=reference|gamma|linear|oklab|cielab|din99d\n"
+            "  LSQA_COMPARE_PRECISION=reference|8bit|float32\n"
+            "  LSQA_LOADERS=LIST\n"
+            "  LSQA_PREFIX=NAME\n"
+            "  LSQA_VERBOSE=0|1\n"
             "\n"
             "Exit codes:\n"
             "  0  success\n"
@@ -1668,6 +1884,7 @@ parse_args(int argc, char **argv, Options *opts)
     char **scan_argv;
     int scan_argc;
     int opt;
+    int verbose_value;
     char detail_buffer[256];
 #if HAVE_GETOPT_LONG
     int long_opt;
@@ -1690,7 +1907,12 @@ parse_args(int argc, char **argv, Options *opts)
     opts->compare_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
     opts->compare_precision = LSQA_COMPARE_PRECISION_REFERENCE;
     opts->loader_order = NULL;
+    opts->grayscale_specified = 0;
+    opts->compare_colorspace_specified = 0;
+    opts->compare_precision_specified = 0;
+    opts->loader_order_specified = 0;
     opts->prefix_buffer[0] = '\0';
+    opts->loader_order_buffer[0] = '\0';
     opts->baseline_name[0] = '\0';
 
     argi = 1;
@@ -1698,6 +1920,7 @@ parse_args(int argc, char **argv, Options *opts)
     scan_argv = NULL;
     scan_argc = 0;
     opt = 0;
+    verbose_value = 0;
     verbose_env = NULL;
     prefix_env = NULL;
 #if HAVE_GETOPT_LONG
@@ -1721,7 +1944,7 @@ parse_args(int argc, char **argv, Options *opts)
             {"baseline", required_argument, &long_opt, 'b'},
             {"env", required_argument, &long_opt, '%'},
             {"grayscale", no_argument, &long_opt, 'g'},
-            {"compare-colorspace", required_argument, &long_opt, 'U'},
+            {"compare-colorspace", required_argument, &long_opt, 'W'},
             {"compare-precision", required_argument, &long_opt, 'P'},
             {"loaders", required_argument, &long_opt, 'L'},
             {"help", no_argument, &long_opt, 'H'},
@@ -1765,18 +1988,20 @@ parse_args(int argc, char **argv, Options *opts)
             break;
         case 'g':
             opts->grayscale_compare = 1;
+            opts->grayscale_specified = 1;
             break;
-        case 'U':
+        case 'W':
             if (lsqa_parse_compare_colorspace(
                         optarg,
                         &opts->compare_colorspace) != 0) {
                 lsqa_report_invalid_argument(
-                    'U',
+                    'W',
                     optarg,
-                    "Expected reference/gamma/linear/smpte-c.");
+                    "Expected reference/gamma/linear/oklab/cielab/din99d.");
                 parse_status = -1;
                 goto cleanup;
             }
+            opts->compare_colorspace_specified = 1;
             break;
         case 'P':
             if (lsqa_parse_compare_precision(
@@ -1789,6 +2014,7 @@ parse_args(int argc, char **argv, Options *opts)
                 parse_status = -1;
                 goto cleanup;
             }
+            opts->compare_precision_specified = 1;
             break;
         case 'L':
             if (opts->loader_order != NULL) {
@@ -1798,6 +2024,7 @@ parse_args(int argc, char **argv, Options *opts)
                 goto cleanup;
             }
             opts->loader_order = optarg;
+            opts->loader_order_specified = 1;
             break;
         case 'b':
             if (opts->baseline_enabled) {
@@ -1882,6 +2109,11 @@ parse_args(int argc, char **argv, Options *opts)
         }
     }
 
+    if (lsqa_apply_env_overrides(opts) != 0) {
+        parse_status = -1;
+        goto cleanup;
+    }
+
     base_start = opts->out_path;
     if (strcmp(opts->out_path, "-") == 0) {
         base_start = ref_arg;
@@ -1937,7 +2169,13 @@ parse_args(int argc, char **argv, Options *opts)
 
     verbose_env = lsqa_getenv_dup("LSQA_VERBOSE");
     if (verbose_env != NULL && verbose_env[0] != '\0') {
-        opts->verbose = 1;
+        if (lsqa_parse_boolean(verbose_env, &verbose_value) != 0) {
+            lsqa_set_parse_error(
+                "lsqa: LSQA_VERBOSE expects 0/1 or false/true.");
+            parse_status = -1;
+            goto cleanup;
+        }
+        opts->verbose = verbose_value;
     }
 
     parse_status = 0;
