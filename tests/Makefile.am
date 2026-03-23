@@ -298,6 +298,7 @@ AM_LOG_FLAGS =
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
+	staticcheck-docs-envvars-help-table \
 	staticcheck-c-header-modeline
 
 staticcheck: \
@@ -309,6 +310,7 @@ staticcheck: \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
+	staticcheck-docs-envvars-help-table \
 	staticcheck-c-header-modeline
 
 .PHONY: staticcheck-clean
@@ -386,6 +388,16 @@ staticcheck-build-doc-meson-options:
 		--trs-file staticcheck-build-doc-meson-options.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-build-doc-meson-options.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-docs-envvars-help-table:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-docs-envvars-help-table" \
+		--log-file staticcheck-docs-envvars-help-table.log \
+		--trs-file staticcheck-docs-envvars-help-table.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-envvars-help-table.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-c-header-modeline:
@@ -945,6 +957,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
+    _static/sh/staticcheck-docs-envvars-help-table.sh \
     _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \
     $(TEST_DATA_DIRS)

@@ -604,6 +604,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-docs-envvars-help-table',
+    [meson.current_source_dir() / '_static/sh/staticcheck-docs-envvars-help-table.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-c-header-modeline',
     [meson.current_source_dir() / '_static/sh/staticcheck-c-header-modeline.sh',
       meson.project_source_root()],
@@ -619,7 +624,7 @@ run_target('staticcheck',
   command: [
     sh,
     '-c',
-    'set -eu; "$1" "$2" "$3"; "$4" "$5" "$6" "$7"; "$8" "$9" "${10}"; "${11}" "${12}" "${13}"; "${14}" "${15}"; "${16}" "${17}"; "${18}" "${19}"; "${20}" "${21}"',
+    'set -eu; "$1" "$2" "$3"; "$4" "$5" "$6" "$7"; "$8" "$9" "${10}"; "${11}" "${12}" "${13}"; "${14}" "${15}"; "${16}" "${17}"; "${18}" "${19}"; "${20}" "${21}"; "${22}" "${23}"',
     'sh',
     staticcheck_cases[0][1][0],
     staticcheck_cases[0][1][1],
@@ -642,4 +647,6 @@ run_target('staticcheck',
     staticcheck_cases[6][1][1],
     staticcheck_cases[7][1][0],
     staticcheck_cases[7][1][1],
+    staticcheck_cases[8][1][0],
+    staticcheck_cases[8][1][1],
   ])

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Extract environment variable names from C sources and compare them with
-# the variables advertised by img2sixel -H. This script relies only on
-# POSIX sh, awk, sort, uniq, comm, and find.
+# the variables listed in converters/img2sixel.c:g_env_help_table.
+# This static check relies only on POSIX sh, awk, sort, uniq, comm, and find.
 
 set -eu
 
@@ -10,27 +10,28 @@ repo_root=$(CDPATH=; cd -- "${script_dir}/../.." && pwd)
 
 usage() {
     cat <<'USAGE'
-Usage: tests/docs/list_envvars.sh [--check] [--img2sixel PATH]
-                                  [--source-root DIR]
+Usage: tests/docs/consistency/list_envvars.sh [--check]
+                                              [--source-root DIR]
+                                              [--help-source PATH]
 
 Options:
   --check           Return non-zero when a mismatch is detected.
-  --img2sixel PATH   Path to the img2sixel binary built by Meson
-                     (default: <repo>/build/converters/img2sixel).
   --source-root DIR  Repository root that contains the converters/src/
                      assessment/ trees (default: repository root).
+  --help-source PATH  Path to img2sixel.c that defines g_env_help_table
+                      (default: <source-root>/converters/img2sixel.c).
 USAGE
 }
 
-img2sixel=${repo_root}/build/converters/img2sixel${SIXEL_BIN_EXT-}
 source_root=${repo_root}
+help_source=
 check_only=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --img2sixel)
+        --help-source)
             shift || { usage >&2; exit 1; }
-            img2sixel=$1
+            help_source=$1
             ;;
         --source-root)
             shift || { usage >&2; exit 1; }
@@ -51,13 +52,17 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-if [ ! -x "$img2sixel" ]; then
-    echo "img2sixel binary not found: $img2sixel" >&2
+if [ ! -d "$source_root" ]; then
+    echo "source root not found: $source_root" >&2
     exit 1
 fi
 
-if [ ! -d "$source_root" ]; then
-    echo "source root not found: $source_root" >&2
+if [ -z "$help_source" ]; then
+    help_source="$source_root/converters/img2sixel.c"
+fi
+
+if [ ! -f "$help_source" ]; then
+    echo "img2sixel help source not found: $help_source" >&2
     exit 1
 fi
 
@@ -100,54 +105,29 @@ list_source_vars() {
         LC_ALL=C sort -u
 }
 
-# Extract the environment variable names from the img2sixel -H output by
-# reading the dedicated section.
+# Extract environment variable names from converters/img2sixel.c by reading
+# g_env_help_table entries.
 list_help_vars() {
-    img2sixel_dir=$(CDPATH=; cd -- "$(dirname "$img2sixel")" && pwd)
-    runtime_var="${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"
-    runtime_sep="${RUNTIME_SHLIBPATH_SEP:-:}"
-    runtime_current=""
-    shlibpath_overrides_runpath="${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH:-yes}"
-    if [ "$(basename "$img2sixel_dir")" = ".libs" ]; then
-        build_root=$(CDPATH=; cd -- "$img2sixel_dir/../.." && pwd)
-    else
-        build_root=$(CDPATH=; cd -- "$img2sixel_dir/.." && pwd)
-    fi
-    runtime_libdir="$build_root/src/.libs"
-    runtime_extra="${SIXEL_TEST_ADDITIOANL_PATH-}"
-    runtime_value=
-    if [ -d "$runtime_libdir" ] &&
-            [ "$shlibpath_overrides_runpath" = "yes" ]; then
-        eval "runtime_current=\${${runtime_var}:-}"
-        if [ -n "$runtime_current" ]; then
-            runtime_value="$runtime_libdir$runtime_sep$runtime_current"
-        else
-            runtime_value="$runtime_libdir"
-        fi
-    fi
-    if [ -d "$runtime_extra" ]; then
-        runtime_value="${runtime_extra}${runtime_sep}${runtime_value}"
-    fi
-    if [ -n "${runtime_value}" ]; then
-        eval "${runtime_var}=\${runtime_value}"
-        eval "export ${runtime_var}"
-    fi
-
-    ${SIXEL_RUNTIME-} "$img2sixel" -H 2>/dev/null |
-        awk '
-            /^Environment variables:/ {
+    awk '
+            /^[[:space:]]*static[[:space:]]+cli_env_help_t[[:space:]]+const[[:space:]]+g_env_help_table\[\][[:space:]]*=[[:space:]]*\{/ {
                 in_env = 1
                 next
             }
-            in_env && NF == 0 {
+            in_env && /^[[:space:]]*};/ {
                 exit
             }
-            in_env {
-                if ($1 ~ /^(SIXEL|IMG2SIXEL|LIBSIXEL)_[A-Z0-9_]+$/) {
-                    print $1
+            in_env && /^[[:space:]]*\{[[:space:]]*$/ {
+                want_name = 1
+                next
+            }
+            in_env && want_name {
+                line = $0
+                if (match(line, /"(SIXEL|IMG2SIXEL|LIBSIXEL)_[A-Z0-9_]+"/)) {
+                    print substr(line, RSTART + 1, RLENGTH - 2)
+                    want_name = 0
                 }
             }
-        ' |
+        ' "$help_source" |
         LC_ALL=C sort -u
 }
 
@@ -164,16 +144,16 @@ missing_in_help=$(comm -23 "$source_list" "$help_list")
 missing_in_source=$(comm -13 "$source_list" "$help_list")
 
 printf 'C sources: %s entries\n' "$(wc -l <"$source_list")"
-printf 'img2sixel -H: %s entries\n' "$(wc -l <"$help_list")"
+printf 'img2sixel env help table: %s entries\n' "$(wc -l <"$help_list")"
 
-printf '\nIn C sources only (missing from -H):\n'
+printf '\nIn C sources only (missing from help table):\n'
 if [ -n "$missing_in_help" ]; then
     printf '%s\n' "$missing_in_help"
 else
     echo '(none)'
 fi
 
-printf '\nIn -H only (not found in sources):\n'
+printf '\nIn help table only (not found in sources):\n'
 if [ -n "$missing_in_source" ]; then
     printf '%s\n' "$missing_in_source"
 else
@@ -182,7 +162,7 @@ fi
 
 if [ "$check_only" -eq 1 ]; then
     if [ -n "$missing_in_help" ] || [ -n "$missing_in_source" ]; then
-        echo "Mismatch detected between sources and -H output" >&2
+        echo "Mismatch detected between sources and img2sixel env help table" >&2
         exit 1
     fi
 fi

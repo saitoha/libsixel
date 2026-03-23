@@ -63,6 +63,11 @@ esac
         {
             path = $0
             sub("^\\./", "", path)
+            if (path == "docs/consistency/0004_envvars_vs_help.t") {
+                # This check is static and runs under the dedicated
+                # staticcheck target instead of runtime test suites.
+                next
+            }
             if (ruby_tests_mode == "skip" &&
                 path ~ /^bindings\/ruby\/[0-9][0-9][0-9][0-9]_.+\.rb$/) {
                 next
