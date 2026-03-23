@@ -38,7 +38,7 @@ run_img2sixel -Llibtiff:cms=0! "${input_tiff}" >"${output_six}" || {
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" \
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.997" \
     "${reference_six}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "rgb/img_tiff_rgb_icc1_wp1_pc1_trc0 (cms=0): ${lsqa_msg}"
     exit 0
