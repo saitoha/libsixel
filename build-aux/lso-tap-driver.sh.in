@@ -54,6 +54,31 @@ color_tests=
 expect_failure=
 hard_errors=no
 stream_output=auto
+stream_fifo=
+tee_pid=
+run_pid=
+
+cleanup_stream_children() {
+  if [ -n "${run_pid}" ]; then
+    kill "${run_pid}" >/dev/null 2>&1 || true
+    run_pid=
+  fi
+  if [ -n "${tee_pid}" ]; then
+    kill "${tee_pid}" >/dev/null 2>&1 || true
+    tee_pid=
+  fi
+  if [ -n "${stream_fifo}" ]; then
+    rm -f "${stream_fifo}" >/dev/null 2>&1 || true
+    stream_fifo=
+  fi
+}
+
+on_interrupt() {
+  cleanup_stream_children
+  exit 130
+}
+
+trap on_interrupt INT TERM HUP
 
 usage() {
   cat <<'EOF' >&2
@@ -385,10 +410,16 @@ run_and_capture() {
 
     tee "$log_file" <"$stream_fifo" &
     tee_pid=$!
-    run_with_timeout "$@" >"$stream_fifo" 2>&1
+    run_with_timeout "$@" >"$stream_fifo" 2>&1 &
+    run_pid=$!
+
+    wait "$run_pid"
     capture_status=$?
+    run_pid=
     rm -f "$stream_fifo"
+    stream_fifo=
     wait "$tee_pid" >/dev/null 2>&1 || true
+    tee_pid=
     return "$capture_status"
   fi
 
