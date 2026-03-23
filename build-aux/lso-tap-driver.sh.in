@@ -402,9 +402,11 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
    }
 
    # Test point: ok / not ok
-   $0 ~ /^(not[ \t]+)?ok([ \t]+[0-9]+)?([ \t]+-)?/ {
+   # Require a boundary after "ok" so fragments like `ok"` / `not ok"`
+   # from verbose shell traces are not parsed as TAP records.
+   $0 ~ /^(not[ \t]+)?ok([ \t]|$)/ {
      line=$0
-     is_not = (line ~ /^not[ \t]+ok/)
+     is_not = (line ~ /^not[ \t]+ok([ \t]|$)/)
      saw_tap=1;
      # Extract optional number
      n=0
@@ -533,6 +535,7 @@ __line__
                 echo ":test-result: PASS ${line#*-}" >&2
                 ;;
             not)
+                test "$col2" = ok || continue
                 saw_tap=1
                 is_not=1
                 n="${col3}"

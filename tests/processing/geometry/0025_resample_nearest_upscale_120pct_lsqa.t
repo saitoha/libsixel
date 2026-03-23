@@ -39,16 +39,15 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "nearest upscale 120pct lsqa passed"
-    exit 0
-}
-
-test "${lsqa_run_status}" -eq 5 && {
+test "${lsqa_run_status:-0}" -eq 5 && {
     echo "not ok" 1 - "${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 - "nearest upscale 120pct lsqa failed"
+test "${lsqa_run_status:-0}" -eq 0 || {
+    echo "not ok" 1 - "nearest upscale 120pct lsqa failed"
+    exit 0
+}
 
+echo "ok" 1 - "nearest upscale 120pct lsqa passed"
 exit 0
