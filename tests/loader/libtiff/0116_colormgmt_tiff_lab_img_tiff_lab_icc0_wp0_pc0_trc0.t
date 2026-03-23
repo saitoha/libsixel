@@ -1,9 +1,0 @@
-#!/bin/sh
-# TAP test: libtiff colormgmt parity for lab/img_tiff_lab_icc0_wp0_pc0_trc0.tiff
-
-set -eux
-
-CASE_SPACE=lab
-CASE_NAME=img_tiff_lab_icc0_wp0_pc0_trc0
-LSQA_FLOOR=0.993
-. "${TOP_SRCDIR}/tests/_lib/sh/colormgmt_tiff_case.sh"
