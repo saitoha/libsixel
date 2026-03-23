@@ -1,0 +1,21 @@
+file	sha256_12
+img_tiff_rgb_icc0_wp0_pc0_trc0.six	8e479a060e17
+img_tiff_rgb_icc0_wp0_pc0_trc1.six	8e479a060e17
+img_tiff_rgb_icc0_wp0_pc1_trc0.six	8e479a060e17
+img_tiff_rgb_icc0_wp0_pc1_trc1.six	8e479a060e17
+img_tiff_rgb_icc0_wp1_pc0_trc0.six	8e479a060e17
+img_tiff_rgb_icc0_wp1_pc0_trc1.six	8e479a060e17
+img_tiff_rgb_icc0_wp1_pc1_trc0.six	8e479a060e17
+img_tiff_rgb_icc0_wp1_pc1_trc1.six	8e479a060e17
+img_tiff_rgb_icc1_wp0_pc0_trc0.six	2e560a38fe49
+img_tiff_rgb_icc1_wp0_pc0_trc1.six	2e560a38fe49
+img_tiff_rgb_icc1_wp0_pc1_trc0.six	2e560a38fe49
+img_tiff_rgb_icc1_wp0_pc1_trc1.six	2e560a38fe49
+img_tiff_rgb_icc1_wp1_pc0_trc0.six	2e560a38fe49
+img_tiff_rgb_icc1_wp1_pc0_trc1.six	2e560a38fe49
+img_tiff_rgb_icc1_wp1_pc1_trc0.six	2e560a38fe49
+img_tiff_rgb_icc1_wp1_pc1_trc1.six	2e560a38fe49
+
+unique_groups	2
+group	2e560a38fe49	8	img_tiff_rgb_icc1_wp0_pc0_trc0.six
+group	8e479a060e17	8	img_tiff_rgb_icc0_wp0_pc0_trc0.six
