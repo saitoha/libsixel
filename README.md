@@ -800,13 +800,27 @@ steps.
                            loader names such as 'gd,builtin'.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
-                           libpng/libjpeg/libtiff/builtin accept
-                           :cms=0|1 (or :c=0|1, default 1).
+                           libpng/libjpeg/libwebp/libtiff/builtin
+                           accept :cms=0|1 (or :c=0|1, default 0).
+                           these loaders also accept
+                           :cms_engine=none|auto|builtin|lcms2|colorsync
+                           (or :e=..., default none).
                            WIC accepts :ico_minsize=SIZE to select
                            the smallest ICO frame whose edge is
                            greater than or equal to SIZE.
                            Append "!" to disable fallback loaders.
                            Unknown or ambiguous names are rejected.
+-# ENGINE, --cms-engine=ENGINE
+                           set default loader CMS backend for
+                           this process
+                           (SIXEL_LOADER_CMS_ENGINE).
+                             none      -> disable loader CMS
+                             auto      -> prefer lcms2, then
+                                          ColorSync (macOS), then
+                                          builtin
+                             builtin   -> force builtin backend
+                             lcms2     -> force lcms2 backend
+                             colorsync -> force ColorSync backend
 -@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH
                            emit DRCS tiles instead of regular SIXEL output.
                            MMV selects the mapping revision (0..2, default 2).
@@ -859,6 +873,26 @@ SIXEL_LOADER_PRIORITY_LIST override default loader search order.
                            as the -L/--loaders option (including
                            prefixes and the trailing "!") and is
                            ignored when that option is set.
+SIXEL_LOADER_CMS_ENGINE    select CMS backend for loader ICC conversion.
+                           Accepts none, auto, builtin, lcms2, or colorsync.
+                           auto prefers lcms2, then ColorSync (macOS),
+                           then builtin.
+                           overrided by -#(--cms-engine) option.
+SIXEL_LOADER_BUILTIN_CMS_ENGINE
+                           override builtin loader CMS backend.
+                           Overrides SIXEL_LOADER_CMS_ENGINE.
+SIXEL_LOADER_LIBPNG_CMS_ENGINE
+                           override libpng loader CMS backend.
+                           Overrides SIXEL_LOADER_CMS_ENGINE.
+SIXEL_LOADER_LIBJPEG_CMS_ENGINE
+                           override libjpeg loader CMS backend.
+                           Overrides SIXEL_LOADER_CMS_ENGINE.
+SIXEL_LOADER_LIBWEBP_CMS_ENGINE
+                           override libwebp loader CMS backend.
+                           Overrides SIXEL_LOADER_CMS_ENGINE.
+SIXEL_LOADER_LIBTIFF_CMS_ENGINE
+                           override libtiff loader CMS backend.
+                           Overrides SIXEL_LOADER_CMS_ENGINE.
 SIXEL_LODER_WIC_ICO_MINSIZE default minimum edge for
                            wic:ico_minsize when no -L suboption
                            is provided. Accepts positive integers.

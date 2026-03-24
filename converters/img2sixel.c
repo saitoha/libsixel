@@ -84,6 +84,7 @@
 #endif
 
 const char *img2sixel_compat_getenv(const char *name);
+int img2sixel_compat_setenv(const char *name, const char *value);
 int img2sixel_trace_topic_is_enabled(char const *topic);
 void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
 
@@ -595,15 +596,30 @@ static cli_option_help_t const g_option_help_table[] = {
         "-L LIST, --loaders=LIST    choose loader priority order\n"
         "                           LIST is a comma separated list of\n"
         "                           loader names (prefixes accepted).\n"
-        "                           libpng/libjpeg/libtiff support :cms=0|1\n"
-        "                           (or :c=0|1, default 1).\n"
-        "                           builtin supports :cms=0|1\n"
-        "                           (or :c=0|1, default 1).\n"
+        "                           libpng/libjpeg/libwebp/libtiff support\n"
+        "                           :cms=0|1 (or :c=0|1, default 0).\n"
+        "                           these loaders and builtin also support\n"
+        "                           :cms_engine=none|auto|builtin|lcms2|colorsync\n"
+        "                           (or :e=..., default none).\n"
         "                           WIC supports :ico_minsize=SIZE to\n"
         "                           choose the smallest ICO frame\n"
         "                           with edge >= SIZE.\n"
         "                           Append \"!\" to disable fallbacks.\n"
         "                           Use -H to list available loaders.\n"
+    },
+    {
+        '#',
+        "cms-engine",
+        "-# ENGINE, --cms-engine=ENGINE\n"
+        "                           set default loader CMS backend for\n"
+        "                           this process (SIXEL_LOADER_CMS_ENGINE).\n"
+        "                             none      -> disable loader CMS.\n"
+        "                             auto      -> prefer lcms2, then\n"
+        "                                          ColorSync (macOS), then\n"
+        "                                          builtin.\n"
+        "                             builtin   -> force builtin backend.\n"
+        "                             lcms2     -> force lcms2 backend.\n"
+        "                             colorsync -> force ColorSync backend.\n"
     },
     {
         '@',
@@ -918,6 +934,37 @@ static cli_env_help_t const g_env_help_table[] = {
         "Append `!` to disable default fallback intents."
     },
     {
+        "SIXEL_LOADER_CMS_ENGINE",
+        "select default loader CMS backend. Accepts none, auto, builtin,\n"
+        "lcms2, or colorsync. auto prefers lcms2, then ColorSync (macOS),\n"
+        "then builtin. Overridden by -#/--cms-engine."
+    },
+    {
+        "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
+        "override CMS backend for builtin loader conversion.\n"
+        "Overrides SIXEL_LOADER_CMS_ENGINE."
+    },
+    {
+        "SIXEL_LOADER_LIBPNG_CMS_ENGINE",
+        "override CMS backend for libpng loader conversion.\n"
+        "Overrides SIXEL_LOADER_CMS_ENGINE."
+    },
+    {
+        "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
+        "override CMS backend for libjpeg loader conversion.\n"
+        "Overrides SIXEL_LOADER_CMS_ENGINE."
+    },
+    {
+        "SIXEL_LOADER_LIBWEBP_CMS_ENGINE",
+        "override CMS backend for libwebp loader conversion.\n"
+        "Overrides SIXEL_LOADER_CMS_ENGINE."
+    },
+    {
+        "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
+        "override CMS backend for libtiff loader conversion.\n"
+        "Overrides SIXEL_LOADER_CMS_ENGINE."
+    },
+    {
         "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
         "set loader CMS output colorspace for PNG fallback conversion.\n"
         "Accepts gamma, linear, or cielab. Default is linear."
@@ -1126,7 +1173,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
     "OVX:W:HY:y:%:1:2:3:";
 
 static int
@@ -1307,6 +1354,118 @@ img2sixel_utf8_trim_length(char const *text, size_t length)
     }
 
     return length;
+}
+
+static int
+img2sixel_ascii_case_equal(char const *lhs, char const *rhs)
+{
+    size_t index;
+    unsigned char left;
+    unsigned char right;
+
+    if (lhs == NULL || rhs == NULL) {
+        return 0;
+    }
+
+    index = 0u;
+    while (lhs[index] != '\0' && rhs[index] != '\0') {
+        left = (unsigned char)lhs[index];
+        right = (unsigned char)rhs[index];
+        if (tolower(left) != tolower(right)) {
+            return 0;
+        }
+        ++index;
+    }
+
+    return lhs[index] == '\0' && rhs[index] == '\0';
+}
+
+static int
+img2sixel_resolve_cms_engine_name(char const *value,
+                                  char const **canonical_name)
+{
+    if (value == NULL || value[0] == '\0') {
+        return 0;
+    }
+
+    if (img2sixel_ascii_case_equal(value, "none") ||
+        img2sixel_ascii_case_equal(value, "off") ||
+        img2sixel_ascii_case_equal(value, "disabled")) {
+        if (canonical_name != NULL) {
+            *canonical_name = "none";
+        }
+        return 1;
+    }
+    if (img2sixel_ascii_case_equal(value, "auto")) {
+        if (canonical_name != NULL) {
+            *canonical_name = "auto";
+        }
+        return 1;
+    }
+    if (img2sixel_ascii_case_equal(value, "builtin")) {
+        if (canonical_name != NULL) {
+            *canonical_name = "builtin";
+        }
+        return 1;
+    }
+    if (img2sixel_ascii_case_equal(value, "lcms") ||
+        img2sixel_ascii_case_equal(value, "lcms2")) {
+        if (canonical_name != NULL) {
+            *canonical_name = "lcms2";
+        }
+        return 1;
+    }
+    if (img2sixel_ascii_case_equal(value, "colorsync") ||
+        img2sixel_ascii_case_equal(value, "color-sync")) {
+        if (canonical_name != NULL) {
+            *canonical_name = "colorsync";
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+img2sixel_apply_loader_cms_engine(char const *value,
+                                  char *error_buffer,
+                                  size_t error_buffer_size)
+{
+    char const *canonical_name;
+    int status;
+
+    canonical_name = NULL;
+    status = 0;
+
+    if (error_buffer != NULL && error_buffer_size > 0u) {
+        error_buffer[0] = '\0';
+    }
+
+    if (!img2sixel_resolve_cms_engine_name(value, &canonical_name)) {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(
+                error_buffer,
+                error_buffer_size,
+                "unknown cms engine \"%s\". valid values: none, auto, "
+                "builtin, lcms2, colorsync.",
+                value != NULL && value[0] != '\0' ? value : "(missing)");
+        }
+        return -1;
+    }
+
+    status = img2sixel_compat_setenv("SIXEL_LOADER_CMS_ENGINE",
+                                     canonical_name);
+    if (status != 0) {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "failed to set environment variable "
+                           "'SIXEL_LOADER_CMS_ENGINE'");
+        }
+        return -1;
+    }
+
+    return 0;
 }
 
 static void
@@ -1692,6 +1851,7 @@ main(int argc, char *argv[])
         {"ignore-delay",          no_argument,        &long_opt, 'g'},
         {"verbose",               no_argument,        &long_opt, 'v'},
         {"loaders",               required_argument,  &long_opt, 'L'},
+        {"cms-engine",            required_argument,  &long_opt, '#'},
         {"static",                no_argument,        &long_opt, 'S'},
         {"macro-number",          required_argument,  &long_opt, 'n'},
         {"penetrate",             no_argument,        &long_opt, 'P'}, /* deprecated */
@@ -1823,6 +1983,21 @@ main(int argc, char *argv[])
                 goto error;
             }
             break;
+        case '#':
+            if (img2sixel_apply_loader_cms_engine(
+                    parsed_options[parsed_index].argument,
+                    detail_buffer,
+                    sizeof(detail_buffer)) != 0) {
+                img2sixel_report_invalid_argument(
+                    '#',
+                    parsed_options[parsed_index].argument,
+                    detail_buffer[0] != '\0'
+                        ? detail_buffer
+                        : NULL);
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+            break;
         case 'V':
             show_version();
             status = SIXEL_OK;
@@ -1858,6 +2033,7 @@ main(int argc, char *argv[])
         case 'V':
         case 'H':
         case '%':
+        case '#':
             break;
         case '?':
             img2sixel_handle_getopt_error(
@@ -1974,7 +2150,7 @@ unknown_option_error:
             "                 [-h height] [-r resamplingtype] [-q quality]\n"
             "                 [-~ lookuppolicy] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-            "                 [-E encodepolicy] [-L loaderlist]\n"
+            "                 [-E encodepolicy] [-L loaderlist] [-# cmsengine]\n"
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-X clusteringcolorspace]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace]\n"
