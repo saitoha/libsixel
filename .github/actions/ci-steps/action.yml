@@ -682,7 +682,7 @@ runs:
           set -xv
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           meson compile -C builddir -v
-          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+          meson ${{ fromJSON(inputs.matrix_json).check_target || (fromJSON(inputs.matrix_json).cp_os == 'haiku' && 'test --num-processes 1') || 'test' }} -C builddir
 
     - name: Build and test (Autotools, DragonFlyBSD)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm' }}
