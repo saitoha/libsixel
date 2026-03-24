@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying short -# maps to SIXEL_LOADER_CMS_ENGINE.
+# TAP test verifying long --cms-engine maps to SIXEL_LOADER_CMS_ENGINE.
 
 set -eux
 
@@ -20,8 +20,8 @@ set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
-output_env="${ARTIFACT_LOCAL_DIR}/cms_engine_option_ref_env_auto.six"
-output_short="${ARTIFACT_LOCAL_DIR}/cms_engine_option_short_auto.six"
+output_env="${ARTIFACT_LOCAL_DIR}/cms_engine_option_ref_env_auto_long.six"
+output_long="${ARTIFACT_LOCAL_DIR}/cms_engine_option_long_auto.six"
 
 run_img2sixel \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
@@ -31,16 +31,16 @@ run_img2sixel \
 }
 
 run_img2sixel \
-    -# auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_short}" || {
-    echo "not ok" 1 - "short -# option was rejected"
+    --cms-engine=auto \
+    -Llibwebp:cms=1! "${input_webp}" >"${output_long}" || {
+    echo "not ok" 1 - "long --cms-engine option was rejected"
     exit 0
 }
 
-cmp -s "${output_env}" "${output_short}" || {
-    echo "not ok" 1 - "short -# cms engine output diverged from env reference"
+cmp -s "${output_env}" "${output_long}" || {
+    echo "not ok" 1 - "long --cms-engine output diverged from env reference"
     exit 0
 }
-echo "ok" 1 - "short -# option mirrors SIXEL_LOADER_CMS_ENGINE"
+echo "ok" 1 - "long --cms-engine option mirrors environment behavior"
 
 exit 0
