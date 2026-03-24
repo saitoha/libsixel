@@ -18,6 +18,14 @@ extern "C" {
 typedef struct sixel_cms_profile sixel_cms_profile_t;
 typedef struct sixel_cms_transform sixel_cms_transform_t;
 
+typedef enum sixel_cms_engine {
+    SIXEL_CMS_ENGINE_NONE = 0,
+    SIXEL_CMS_ENGINE_AUTO = 1,
+    SIXEL_CMS_ENGINE_BUILTIN = 2,
+    SIXEL_CMS_ENGINE_LCMS2 = 3,
+    SIXEL_CMS_ENGINE_COLORSYNC = 4
+} sixel_cms_engine_t;
+
 typedef enum sixel_cms_color_space {
     SIXEL_CMS_COLORSPACE_UNKNOWN = 0,
     SIXEL_CMS_COLORSPACE_RGB,
@@ -38,6 +46,35 @@ enum {
     SIXEL_CMS_TRANSFORM_DEFAULT = 0,
     SIXEL_CMS_TRANSFORM_COPY_ALPHA = 1
 };
+
+int
+sixel_cms_engine_from_string(char const *text,
+                             sixel_cms_engine_t *out_engine);
+
+char const *
+sixel_cms_engine_to_string(sixel_cms_engine_t engine);
+
+void
+sixel_cms_set_engine(sixel_cms_engine_t engine);
+
+sixel_cms_engine_t
+sixel_cms_get_engine(void);
+
+int
+sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  int pixelformat,
+                                  sixel_cms_profile_t *src_profile);
+
+int
+sixel_cms_convert_to_srgb_with_profile_bytes(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length);
 
 sixel_cms_profile_t *
 sixel_cms_open_profile_from_mem(void const *data, size_t length);

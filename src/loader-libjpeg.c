@@ -55,7 +55,6 @@
 #include "allocator.h"
 #include "cms.h"
 #include "chunk.h"
-#include "icc-convert.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "loader-common.h"
@@ -745,7 +744,7 @@ jpeg_promote_rgb888_to_linear_float32(unsigned char **result,
 
 #if !HAVE_LCMS2
     if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_icc_convert_to_srgb_with_pixelformat(
+        sixel_cms_convert_to_srgb_with_profile_bytes(
             (unsigned char *)float_pixels,
             width,
             height,
@@ -857,7 +856,7 @@ jpeg_promote_cmyk888_to_linear_float32(unsigned char **result,
 #if !HAVE_LCMS2
     if (!cms_converted &&
         enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_icc_convert_to_srgb_with_pixelformat(
+        sixel_cms_convert_to_srgb_with_profile_bytes(
             (unsigned char *)float_pixels,
             width,
             height,
@@ -958,7 +957,7 @@ jpeg_promote_cmyk16_to_linear_float32(unsigned char **result,
 #if !HAVE_LCMS2
     if (!cms_converted &&
         enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-        sixel_icc_convert_to_srgb_with_pixelformat(
+        sixel_cms_convert_to_srgb_with_profile_bytes(
             (unsigned char *)float_pixels,
             width,
             height,
@@ -1413,7 +1412,7 @@ load_jpeg(unsigned char **result,
             }
 #else
             if (enable_cms && icc_profile != NULL && icc_profile_length > 0u) {
-                sixel_icc_convert_to_srgb_with_pixelformat(
+                sixel_cms_convert_to_srgb_with_profile_bytes(
                     *result,
                     *pwidth,
                     *pheight,
@@ -1600,6 +1599,13 @@ sixel_loader_libjpeg_setopt(sixel_loader_component_t *component,
     case SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_CMS:
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
+        return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
+        flag = (int const *)value;
+        if (flag != NULL && *flag >= 0) {
+            self->enable_cms = (*flag == SIXEL_CMS_ENGINE_NONE) ? 0 : 1;
+        }
+        sixel_helper_set_loader_cms_engine(flag != NULL ? *flag : -1);
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;

@@ -346,6 +346,7 @@ loader_apply_component_options(sixel_loader_component_t *component,
     size_t index;
     SIXELSTATUS status;
     int suboption_value;
+    char const *component_name;
 
     /*
      * Distribute common execution parameters to every loader component.
@@ -366,9 +367,11 @@ loader_apply_component_options(sixel_loader_component_t *component,
     index = 0;
     value = NULL;
     suboption_value = 0;
+    component_name = NULL;
     if (component == NULL || loader == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    component_name = sixel_loader_component_get_name(component);
 
     for (index = 0; index < sizeof(options) / sizeof(options[0]); ++index) {
         switch (options[index].option) {
@@ -487,6 +490,35 @@ loader_apply_component_options(sixel_loader_component_t *component,
         sixel_helper_set_additional_message(
             "sixel_loader_load_file: failed to apply loader option "
             "'builtin-enable-cms'.");
+        return status;
+    }
+
+    if (component_name != NULL && strcmp(component_name, "libpng") == 0) {
+        suboption_value = suboptions->libpng_cms_engine;
+    } else if (component_name != NULL &&
+               strcmp(component_name, "libjpeg") == 0) {
+        suboption_value = suboptions->libjpeg_cms_engine;
+    } else if (component_name != NULL &&
+               strcmp(component_name, "libwebp") == 0) {
+        suboption_value = suboptions->libwebp_cms_engine;
+    } else if (component_name != NULL &&
+               strcmp(component_name, "libtiff") == 0) {
+        suboption_value = suboptions->libtiff_cms_engine;
+    } else if (component_name != NULL &&
+               (strcmp(component_name, "builtin") == 0 ||
+                strcmp(component_name, "gnome-thumbnailer") == 0)) {
+        suboption_value = suboptions->builtin_cms_engine;
+    } else {
+        suboption_value = 0;
+    }
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'cms-engine'.");
         return status;
     }
 

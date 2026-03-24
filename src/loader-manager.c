@@ -11,6 +11,7 @@
 
 #include "loader-manager.h"
 
+#include "cms.h"
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "loader-order-schema.h"
@@ -114,6 +115,54 @@ loader_manager_parse_bool_flag(char const *text,
         return 1;
     }
     return 0;
+}
+
+static int
+loader_manager_parse_cms_engine(char const *text,
+                                size_t length,
+                                int *value_out)
+{
+    sixel_cms_engine_t engine;
+
+    if (text == NULL || value_out == NULL || length == 0u) {
+        return 0;
+    }
+    if (strlen(text) != length) {
+        return 0;
+    }
+    if (!sixel_cms_engine_from_string(text, &engine)) {
+        return 0;
+    }
+
+    *value_out = (int)engine;
+    return 1;
+}
+
+static int
+loader_manager_read_env_cms_engine(char const *name,
+                                   int fallback_value)
+{
+    char const *env_value;
+    int parsed_value;
+
+    env_value = NULL;
+    parsed_value = fallback_value;
+    if (name == NULL) {
+        return fallback_value;
+    }
+
+    env_value = sixel_compat_getenv(name);
+    if (env_value == NULL || env_value[0] == '\0') {
+        return fallback_value;
+    }
+
+    if (!loader_manager_parse_cms_engine(env_value,
+                                         strlen(env_value),
+                                         &parsed_value)) {
+        return fallback_value;
+    }
+
+    return parsed_value;
 }
 
 #if HAVE_WIC
@@ -259,15 +308,36 @@ void
 loader_manager_init_loader_suboptions(
     sixel_loader_suboptions_t *suboptions)
 {
+    int default_cms_engine;
+
     if (suboptions == NULL) {
         return;
     }
 
+    default_cms_engine = loader_manager_read_env_cms_engine(
+        "SIXEL_LOADER_CMS_ENGINE",
+        SIXEL_CMS_ENGINE_NONE);
+
     suboptions->libjpeg_enable_cms = 0;
+    suboptions->libjpeg_cms_engine = loader_manager_read_env_cms_engine(
+        "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
+        default_cms_engine);
     suboptions->libpng_enable_cms = 0;
+    suboptions->libpng_cms_engine = loader_manager_read_env_cms_engine(
+        "SIXEL_LOADER_LIBPNG_CMS_ENGINE",
+        default_cms_engine);
     suboptions->libwebp_enable_cms = 0;
+    suboptions->libwebp_cms_engine = loader_manager_read_env_cms_engine(
+        "SIXEL_LOADER_LIBWEBP_CMS_ENGINE",
+        default_cms_engine);
     suboptions->libtiff_enable_cms = 0;
+    suboptions->libtiff_cms_engine = loader_manager_read_env_cms_engine(
+        "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
+        default_cms_engine);
     suboptions->builtin_enable_cms = 0;
+    suboptions->builtin_cms_engine = loader_manager_read_env_cms_engine(
+        "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
+        default_cms_engine);
 #if HAVE_WIC
     suboptions->wic_ico_minsize = loader_manager_read_wic_ico_minsize_from_env(
         0);
@@ -342,30 +412,75 @@ loader_manager_resolve_loader_suboptions(
                                                value_length,
                                                &parsed_value)) {
                 suboptions->libpng_enable_cms = parsed_value;
+                suboptions->libpng_cms_engine =
+                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
+                                      : SIXEL_CMS_ENGINE_NONE;
             } else if (strcmp(item->base_def->name, "libjpeg") == 0 &&
                        strcmp(key_name, "cms") == 0 &&
                        loader_manager_parse_bool_flag(value_text,
                                                       value_length,
                                                       &parsed_value)) {
                 suboptions->libjpeg_enable_cms = parsed_value;
+                suboptions->libjpeg_cms_engine =
+                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
+                                      : SIXEL_CMS_ENGINE_NONE;
             } else if (strcmp(item->base_def->name, "libwebp") == 0 &&
                        strcmp(key_name, "cms") == 0 &&
                        loader_manager_parse_bool_flag(value_text,
                                                       value_length,
                                                       &parsed_value)) {
                 suboptions->libwebp_enable_cms = parsed_value;
+                suboptions->libwebp_cms_engine =
+                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
+                                      : SIXEL_CMS_ENGINE_NONE;
             } else if (strcmp(item->base_def->name, "libtiff") == 0 &&
                        strcmp(key_name, "cms") == 0 &&
                        loader_manager_parse_bool_flag(value_text,
                                                       value_length,
                                                       &parsed_value)) {
                 suboptions->libtiff_enable_cms = parsed_value;
+                suboptions->libtiff_cms_engine =
+                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
+                                      : SIXEL_CMS_ENGINE_NONE;
             } else if (strcmp(item->base_def->name, "builtin") == 0 &&
                        strcmp(key_name, "cms") == 0 &&
                        loader_manager_parse_bool_flag(value_text,
                                                       value_length,
                                                       &parsed_value)) {
                 suboptions->builtin_enable_cms = parsed_value;
+                suboptions->builtin_cms_engine =
+                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
+                                      : SIXEL_CMS_ENGINE_NONE;
+            } else if (strcmp(item->base_def->name, "libpng") == 0 &&
+                       strcmp(key_name, "cms_engine") == 0 &&
+                       loader_manager_parse_cms_engine(value_text,
+                                                       value_length,
+                                                       &parsed_value)) {
+                suboptions->libpng_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "libjpeg") == 0 &&
+                       strcmp(key_name, "cms_engine") == 0 &&
+                       loader_manager_parse_cms_engine(value_text,
+                                                       value_length,
+                                                       &parsed_value)) {
+                suboptions->libjpeg_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "libwebp") == 0 &&
+                       strcmp(key_name, "cms_engine") == 0 &&
+                       loader_manager_parse_cms_engine(value_text,
+                                                       value_length,
+                                                       &parsed_value)) {
+                suboptions->libwebp_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "libtiff") == 0 &&
+                       strcmp(key_name, "cms_engine") == 0 &&
+                       loader_manager_parse_cms_engine(value_text,
+                                                       value_length,
+                                                       &parsed_value)) {
+                suboptions->libtiff_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "builtin") == 0 &&
+                       strcmp(key_name, "cms_engine") == 0 &&
+                       loader_manager_parse_cms_engine(value_text,
+                                                       value_length,
+                                                       &parsed_value)) {
+                suboptions->builtin_cms_engine = parsed_value;
             }
             ++assignment_index;
         }

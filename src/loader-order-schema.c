@@ -9,6 +9,7 @@
 #endif
 
 #include "loader-order-schema.h"
+#include "cms.h"
 
 #include <limits.h>
 #if HAVE_STDIO_H
@@ -38,6 +39,14 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_enable_cms[] = 
     { "1", 1 }
 };
 
+static sixel_suboption_choice_t const g_suboption_choices_loader_cms_engine[] = {
+    { "none", SIXEL_CMS_ENGINE_NONE },
+    { "auto", SIXEL_CMS_ENGINE_AUTO },
+    { "builtin", SIXEL_CMS_ENGINE_BUILTIN },
+    { "lcms2", SIXEL_CMS_ENGINE_LCMS2 },
+    { "colorsync", SIXEL_CMS_ENGINE_COLORSYNC }
+};
+
 #if HAVE_LIBPNG
 static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
     {
@@ -48,6 +57,15 @@ static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
         g_suboption_choices_loader_enable_cms,
         sizeof(g_suboption_choices_loader_enable_cms)
             / sizeof(g_suboption_choices_loader_enable_cms[0])
+    },
+    {
+        "cms_engine",
+        "e",
+        "SIXEL_LOADER_LIBPNG_CMS_ENGINE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_cms_engine,
+        sizeof(g_suboption_choices_loader_cms_engine)
+            / sizeof(g_suboption_choices_loader_cms_engine[0])
     }
 };
 #endif
@@ -62,6 +80,15 @@ static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
         g_suboption_choices_loader_enable_cms,
         sizeof(g_suboption_choices_loader_enable_cms)
             / sizeof(g_suboption_choices_loader_enable_cms[0])
+    },
+    {
+        "cms_engine",
+        "e",
+        "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_cms_engine,
+        sizeof(g_suboption_choices_loader_cms_engine)
+            / sizeof(g_suboption_choices_loader_cms_engine[0])
     }
 };
 #endif
@@ -76,6 +103,15 @@ static sixel_suboption_key_t const g_subkeys_loader_libwebp_cms[] = {
         g_suboption_choices_loader_enable_cms,
         sizeof(g_suboption_choices_loader_enable_cms)
             / sizeof(g_suboption_choices_loader_enable_cms[0])
+    },
+    {
+        "cms_engine",
+        "e",
+        "SIXEL_LOADER_LIBWEBP_CMS_ENGINE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_cms_engine,
+        sizeof(g_suboption_choices_loader_cms_engine)
+            / sizeof(g_suboption_choices_loader_cms_engine[0])
     }
 };
 #endif
@@ -90,6 +126,15 @@ static sixel_suboption_key_t const g_subkeys_loader_libtiff_cms[] = {
         g_suboption_choices_loader_enable_cms,
         sizeof(g_suboption_choices_loader_enable_cms)
             / sizeof(g_suboption_choices_loader_enable_cms[0])
+    },
+    {
+        "cms_engine",
+        "e",
+        "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_cms_engine,
+        sizeof(g_suboption_choices_loader_cms_engine)
+            / sizeof(g_suboption_choices_loader_cms_engine[0])
     }
 };
 #endif
@@ -103,6 +148,15 @@ static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
         g_suboption_choices_loader_enable_cms,
         sizeof(g_suboption_choices_loader_enable_cms)
             / sizeof(g_suboption_choices_loader_enable_cms[0])
+    },
+    {
+        "cms_engine",
+        "e",
+        "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_cms_engine,
+        sizeof(g_suboption_choices_loader_cms_engine)
+            / sizeof(g_suboption_choices_loader_cms_engine[0])
     }
 };
 

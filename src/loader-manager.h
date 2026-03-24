@@ -20,10 +20,15 @@ typedef struct sixel_loader_manager sixel_loader_manager_t;
 typedef struct sixel_loader_suboptions {
     int wic_ico_minsize;
     int libjpeg_enable_cms;
+    int libjpeg_cms_engine;
     int libpng_enable_cms;
+    int libpng_cms_engine;
     int libwebp_enable_cms;
+    int libwebp_cms_engine;
     int libtiff_enable_cms;
+    int libtiff_cms_engine;
     int builtin_enable_cms;
+    int builtin_cms_engine;
 } sixel_loader_suboptions_t;
 
 typedef SIXELSTATUS (*sixel_loader_manager_configure_component_fn)(

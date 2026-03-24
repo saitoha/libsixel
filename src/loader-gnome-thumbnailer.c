@@ -2700,6 +2700,13 @@ sixel_loader_gnome_thumbnailer_setopt(sixel_loader_component_t *component,
         int_value = (int const *)value;
         self->enable_cms = (int_value != NULL && *int_value == 0) ? 0 : 1;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
+        int_value = (int const *)value;
+        if (int_value != NULL && *int_value >= 0) {
+            self->enable_cms = (*int_value == 0) ? 0 : 1;
+        }
+        sixel_helper_set_loader_cms_engine(int_value != NULL ? *int_value : -1);
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }

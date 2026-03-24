@@ -56,7 +56,6 @@
 #include "cms.h"
 #include "chunk.h"
 #include "frame.h"
-#include "icc-convert.h"
 #include "loader-common.h"
 #include "loader-libwebp.h"
 #include "logger.h"
@@ -1064,7 +1063,7 @@ cleanup:
     if (pixelformat == SIXEL_PIXELFORMAT_RGB888
             || pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
             || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
-        return sixel_icc_convert_to_srgb_with_pixelformat(
+        return sixel_cms_convert_to_srgb_with_profile_bytes(
             pixels,
             width,
             height,
@@ -1096,7 +1095,7 @@ cleanup:
         rgb_pixels[dst_offset + 2u] = pixels[src_offset + 2u];
     }
 
-    converted = sixel_icc_convert_to_srgb_with_pixelformat(
+    converted = sixel_cms_convert_to_srgb_with_profile_bytes(
         rgb_pixels,
         width,
         height,
@@ -2179,6 +2178,13 @@ sixel_loader_libwebp_setopt(sixel_loader_component_t *component,
     case SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS:
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
+        return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
+        flag = (int const *)value;
+        if (flag != NULL && *flag >= 0) {
+            self->enable_cms = (*flag == SIXEL_CMS_ENGINE_NONE) ? 0 : 1;
+        }
+        sixel_helper_set_loader_cms_engine(flag != NULL ? *flag : -1);
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;

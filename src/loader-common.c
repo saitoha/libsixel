@@ -49,6 +49,7 @@
 
 #include <sixel.h>
 
+#include "cms.h"
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "logger.h"
@@ -263,6 +264,17 @@ loader_cms_target_pixelformat(void)
     default:
         return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     }
+}
+
+void
+sixel_helper_set_loader_cms_engine(int engine)
+{
+    if (engine < 0) {
+        sixel_cms_set_engine(SIXEL_CMS_ENGINE_AUTO);
+        return;
+    }
+
+    sixel_cms_set_engine((sixel_cms_engine_t)engine);
 }
 void
 loader_thumbnailer_initialize_size_hint(void)

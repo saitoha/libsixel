@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Lbuiltin:cm=1! \
+run_img2sixel -Lbuiltin:cms_e=auto! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null || {
     echo "not ok" 1 - "-L suboption key prefix was rejected"
