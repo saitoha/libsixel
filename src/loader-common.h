@@ -46,6 +46,7 @@
 #define SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_CMS   (0x10004)
 #define SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS   (0x10005)
 #define SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS   (0x10006)
+#define SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE           (0x10007)
 
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
@@ -61,6 +62,7 @@ int loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
 int loader_cms_target_colorspace(void);
 int loader_cms_target_pixelformat(void);
+void sixel_helper_set_loader_cms_engine(int engine);
 void sixel_helper_set_loader_trace(int enable);
 void loader_trace_try(char const *name);
 void loader_trace_result(char const *name, SIXELSTATUS status);

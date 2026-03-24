@@ -57,7 +57,6 @@
 #include "compat_stub.h"
 #include "frame.h"
 #include "fromgif.h"
-#include "icc-convert.h"
 #include "frompng.h"
 #include "frompnm.h"
 #include "pixelformat.h"
@@ -2130,6 +2129,14 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         int_value = (int const *)value;
         self->enable_cms = (int_value != NULL && *int_value != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
+        int_value = (int const *)value;
+        if (int_value != NULL && *int_value >= 0) {
+            self->enable_cms =
+                (*int_value == SIXEL_CMS_ENGINE_NONE) ? 0 : 1;
+        }
+        sixel_helper_set_loader_cms_engine(int_value != NULL ? *int_value : -1);
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }
@@ -2537,7 +2544,7 @@ load_with_builtin(
                                                        &icc_profile,
                                                        &icc_profile_length,
                                                        pchunk->allocator)) {
-                        sixel_icc_convert_to_srgb_with_pixelformat(
+                        sixel_cms_convert_to_srgb_with_profile_bytes(
                             (unsigned char *)float_pixels,
                             frame->width,
                             frame->height,
@@ -2568,7 +2575,7 @@ load_with_builtin(
                                                       &icc_profile,
                                                       &icc_profile_length,
                                                       pchunk->allocator)) {
-                        sixel_icc_convert_to_srgb_with_pixelformat(
+                        sixel_cms_convert_to_srgb_with_profile_bytes(
                             pixels,
                             frame->width,
                             frame->height,
@@ -2586,7 +2593,7 @@ load_with_builtin(
                             pchunk->allocator)) {
                         if (sixel_builtin_tiff_photometric_supports_icc(
                                 tiff_photometric)) {
-                            sixel_icc_convert_to_srgb_with_pixelformat(
+                            sixel_cms_convert_to_srgb_with_profile_bytes(
                                 pixels,
                                 frame->width,
                                 frame->height,

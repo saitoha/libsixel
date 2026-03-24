@@ -4245,6 +4245,13 @@ sixel_loader_libpng_setopt(sixel_loader_component_t *component,
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
+        flag = (int const *)value;
+        if (flag != NULL && *flag >= 0) {
+            self->enable_cms = (*flag == SIXEL_CMS_ENGINE_NONE) ? 0 : 1;
+        }
+        sixel_helper_set_loader_cms_engine(flag != NULL ? *flag : -1);
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }

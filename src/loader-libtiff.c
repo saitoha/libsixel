@@ -58,7 +58,6 @@
 #include "chunk.h"
 #include "frame.h"
 #include "icc-apply.h"
-#include "icc-convert.h"
 #include "icc-parse.h"
 #include "loader-common.h"
 #include "loader-libtiff.h"
@@ -216,7 +215,7 @@ cleanup:
 /*
  * no-lcms fallback for RGBA8888 TIFF decode path.
  *
- * sixel_icc_convert_to_srgb_with_pixelformat() does not accept RGBA8888
+ * sixel_cms_convert_to_srgb_with_profile_bytes() does not accept RGBA8888
  * directly, so this helper converts the RGB channels via a temporary RGB888
  * buffer and then writes the transformed RGB values back while preserving
  * the decoded alpha channel.
@@ -284,7 +283,7 @@ tiff_convert_embedded_icc_to_srgb_nolcms(unsigned char *pixels,
         rgb_pixels[dst_offset + 2u] = pixels[src_offset + 2u];
     }
 
-    converted = sixel_icc_convert_to_srgb_with_pixelformat(
+    converted = sixel_cms_convert_to_srgb_with_profile_bytes(
         rgb_pixels,
         width,
         height,
@@ -394,7 +393,7 @@ tiff_convert_embedded_icc_to_srgb_float32(float *pixels,
     }
     pixel_count = (size_t)width * (size_t)height;
 
-    converted = sixel_icc_convert_to_srgb_with_pixelformat(
+    converted = sixel_cms_convert_to_srgb_with_profile_bytes(
         (unsigned char *)pixels,
         width,
         height,
@@ -1226,6 +1225,13 @@ sixel_loader_libtiff_setopt(sixel_loader_component_t *component,
     case SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS:
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
+        return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
+        flag = (int const *)value;
+        if (flag != NULL && *flag >= 0) {
+            self->enable_cms = (*flag == SIXEL_CMS_ENGINE_NONE) ? 0 : 1;
+        }
+        sixel_helper_set_loader_cms_engine(flag != NULL ? *flag : -1);
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;

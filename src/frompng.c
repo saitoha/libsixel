@@ -23,8 +23,6 @@
 
 #include "allocator.h"
 #include "cms.h"
-#include "icc-convert.h"
-#include "icc-convert-internal.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "compat_stub.h"
@@ -705,7 +703,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                                       size,
                                       &icc_profile,
                                       &icc_profile_length)) {
-            converted = sixel_icc_convert_to_srgb_with_pixelformat(
+            converted = sixel_cms_convert_to_srgb_with_profile_bytes(
                 pixels,
                 width,
                 height,
@@ -719,7 +717,7 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                && sixel_frompng_build_profile_from_chunks(buffer,
                                                           size,
                                                           &chunk_profile)) {
-        converted = sixel_icc_convert_profile_to_srgb_internal(
+        converted = sixel_cms_convert_profile_to_srgb(
             pixels,
             width,
             height,
