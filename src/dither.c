@@ -593,6 +593,9 @@ sixel_dither_map_pixels(
     context.float_depth = 0;
     context.lookup_source_is_float = 0;
     context.prefer_palette_float_lookup = 0;
+    context.transparent_mask = NULL;
+    context.transparent_mask_size = 0;
+    context.transparent_keycolor = (-1);
     context.lut = NULL;
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.pixels_float = (float *)(void *)data;
@@ -616,6 +619,14 @@ sixel_dither_map_pixels(
                 palette_float_depth = palette_object->float_depth;
             }
         }
+    }
+    if (dither != NULL
+            && dither->pipeline_transparent_mask != NULL
+            && dither->pipeline_transparent_keycolor >= 0
+            && dither->pipeline_transparent_keycolor < SIXEL_PALETTE_MAX) {
+        context.transparent_mask = dither->pipeline_transparent_mask;
+        context.transparent_mask_size = dither->pipeline_transparent_mask_size;
+        context.transparent_keycolor = dither->pipeline_transparent_keycolor;
     }
 
     if (reqcolor < 1) {

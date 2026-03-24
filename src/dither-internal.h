@@ -31,6 +31,8 @@
 #ifndef LIBSIXEL_DITHER_INTERNAL_H
 #define LIBSIXEL_DITHER_INTERNAL_H
 
+#include <stddef.h>
+
 #include "dither.h"
 
 struct sixel_lut;
@@ -69,6 +71,9 @@ typedef struct sixel_dither_context {
     int float_depth;
     int lookup_source_is_float;
     int prefer_palette_float_lookup;
+    unsigned char const *transparent_mask;
+    size_t transparent_mask_size;
+    int transparent_keycolor;
 } sixel_dither_context_t;
 
 #endif /* LIBSIXEL_DITHER_INTERNAL_H */
