@@ -47,6 +47,7 @@ struct sixel_frame {
     int loop_count;                 /* loop count */
     int multiframe;                 /* whether the image has multiple frames */
     int transparent;                /* -1(no transparent) or >= 0(index of transparent color) */
+    int alpha_zero_is_transparent;  /* treat alpha=0 pixels as transparent keycolor candidates */
     sixel_allocator_t *allocator;   /* allocator object */
 };
 
