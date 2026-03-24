@@ -2128,7 +2128,7 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS:
         int_value = (int const *)value;
-        self->enable_cms = (int_value != NULL && *int_value == 0) ? 0 : 1;
+        self->enable_cms = (int_value != NULL && *int_value != 0) ? 1 : 0;
         return SIXEL_OK;
     default:
         return SIXEL_OK;
@@ -2215,7 +2215,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no_set = 0;
     self->start_frame_no = INT_MIN;
-    self->enable_cms = 1;
+    self->enable_cms = 0;
 
     *ppcomponent = &self->base;
     return SIXEL_OK;

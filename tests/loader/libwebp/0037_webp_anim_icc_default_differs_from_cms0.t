@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify libwebp default cms behavior differs from cms=0 for animated ICC input.
+# Verify libwebp default cms behavior differs from cms=1 for animated ICC input.
 
 set -eux
 
@@ -20,24 +20,24 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp_icc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedded_a98_icc_anim2.webp"
 output_default="${ARTIFACT_LOCAL_DIR}/webp-anim-icc-default-diff.sixel"
-output_cms0="${ARTIFACT_LOCAL_DIR}/webp-anim-icc-cms0-diff.sixel"
+output_cms1="${ARTIFACT_LOCAL_DIR}/webp-anim-icc-cms1-diff.sixel"
 
 run_img2sixel -Llibwebp! -S "${input_webp_icc}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp default decode failed for animated ICC input"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! -S "${input_webp_icc}" >"${output_cms0}" || {
-    echo "not ok" 1 - "libwebp cms=0 decode failed for animated ICC input"
+run_img2sixel -Llibwebp:cms=1! -S "${input_webp_icc}" >"${output_cms1}" || {
+    echo "not ok" 1 - "libwebp cms=1 decode failed for animated ICC input"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" "${output_default}" "${output_cms0}" 2>&1) || lsqa_status=$?
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" "${output_default}" "${output_cms1}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "libwebp default and cms=0 animated outputs were not distinguishable: ${lsqa_msg-}"
+    echo "not ok" 1 - "libwebp default and cms=1 animated outputs were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "libwebp default cms behavior differs from cms=0 for animated ICC input"
+echo "ok" 1 - "libwebp default cms behavior differs from cms=1 for animated ICC input"
 exit 0
