@@ -1542,6 +1542,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     dither->pipeline_row_callback = sixel_parallel_palette_row_ready;
     dither->pipeline_row_priv = &notifier;
     dither->pipeline_logger = logger;
+    dither->pipeline_image_width = width;
     dither->pipeline_image_height = height;
 
     if (logger != NULL && logger->active) {
@@ -1620,6 +1621,11 @@ cleanup:
     dither->pipeline_row_priv = NULL;
     dither->pipeline_index_buffer = NULL;
     dither->pipeline_index_size = 0;
+    dither->pipeline_image_width = 0;
+    dither->pipeline_image_height = 0;
+    dither->pipeline_transparent_mask = NULL;
+    dither->pipeline_transparent_mask_size = 0;
+    dither->pipeline_transparent_keycolor = (-1);
     if (!waited && ctx.pool != NULL) {
         wait_status = sixel_parallel_context_wait(&ctx, status != SIXEL_OK);
         if (status == SIXEL_OK) {
@@ -3568,7 +3574,6 @@ sixel_encode_dither(
          * data flow deterministic and thread-safe.
          */
         if (!ormode_enabled
-                && dither->keycolor < 0
                 && pipeline_threads > 1
                 && pipeline_nbands > 1) {
             pipeline_active = 1;
