@@ -276,6 +276,7 @@ sixel_filter_sample_copy_frame(
     sample->height = sample_height;
     sample->pixelformat = sixel_frame_get_pixelformat(frame);
     sample->colorspace = sixel_frame_get_colorspace(frame);
+    sample->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
     sample->ncolors = (-1);
 
     dst_index = 0u;
