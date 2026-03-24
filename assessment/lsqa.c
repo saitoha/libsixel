@@ -577,6 +577,184 @@ metric_name_matches(const char *input, const char *target)
     return 0;
 }
 
+static int
+lsqa_ascii_tolower_char(int ch)
+{
+    if (ch >= 'A' && ch <= 'Z') {
+        return ch + ('a' - 'A');
+    }
+
+    return ch;
+}
+
+static int
+lsqa_ascii_strdown_dup(char const *input, char **out_copy)
+{
+    size_t i;
+    size_t length;
+    char *copy;
+
+    if (out_copy == NULL) {
+        return -1;
+    }
+    *out_copy = NULL;
+
+    if (input == NULL) {
+        return -1;
+    }
+
+    length = strlen(input);
+    copy = (char *)malloc(length + 1u);
+    if (copy == NULL) {
+        return -1;
+    }
+    for (i = 0u; i < length; ++i) {
+        copy[i] = (char)lsqa_ascii_tolower_char((unsigned char)input[i]);
+    }
+    copy[length] = '\0';
+    *out_copy = copy;
+    return 0;
+}
+
+static const MetricSpec *
+metric_spec_from_metric_id(int metric_id)
+{
+    size_t i;
+
+    for (i = 0u; i < sizeof(sixel_metric_specs) / sizeof(sixel_metric_specs[0]);
+         ++i) {
+        if (sixel_metric_specs[i].metric_id == metric_id) {
+            return &sixel_metric_specs[i];
+        }
+    }
+    return NULL;
+}
+
+static int
+lsqa_parse_metric_spec_choice(char const *name,
+                              MetricSpec const **out_spec,
+                              char *detail,
+                              size_t detail_size)
+{
+    size_t spec_count;
+    size_t choice_capacity;
+    size_t choice_count;
+    size_t i;
+    char *normalized_name;
+    char **choice_names;
+    sixel_option_choice_t *choices;
+    sixel_option_choice_result_t match_result;
+    int matched_metric_id;
+    char match_detail[256];
+    char message[256];
+    int status;
+    int wrote;
+    char const *detail_source;
+
+    if (detail != NULL && detail_size > 0u) {
+        detail[0] = '\0';
+    }
+    if (out_spec != NULL) {
+        *out_spec = NULL;
+    }
+    if (name == NULL || name[0] == '\0' || out_spec == NULL) {
+        if (detail != NULL && detail_size > 0u) {
+            (void)snprintf(detail, detail_size, "%s", "Unknown metric name.");
+        }
+        return -1;
+    }
+
+    spec_count = sizeof(sixel_metric_specs) / sizeof(sixel_metric_specs[0]);
+    choice_capacity = spec_count * 2u;
+    normalized_name = NULL;
+    choice_names = NULL;
+    choices = NULL;
+    choice_count = 0u;
+    status = -1;
+    matched_metric_id = 0;
+    match_detail[0] = '\0';
+    message[0] = '\0';
+
+    if (lsqa_ascii_strdown_dup(name, &normalized_name) != 0) {
+        goto cleanup;
+    }
+
+    choice_names = (char **)calloc(choice_capacity, sizeof(*choice_names));
+    choices = (sixel_option_choice_t *)calloc(choice_capacity, sizeof(*choices));
+    if (choice_names == NULL || choices == NULL) {
+        goto cleanup;
+    }
+
+    for (i = 0u; i < spec_count; ++i) {
+        if (lsqa_ascii_strdown_dup(sixel_metric_specs[i].option,
+                                   &choice_names[choice_count]) != 0) {
+            goto cleanup;
+        }
+        choices[choice_count].name = choice_names[choice_count];
+        choices[choice_count].value = sixel_metric_specs[i].metric_id;
+        ++choice_count;
+
+        if (lsqa_ascii_strdown_dup(sixel_metric_specs[i].json_key,
+                                   &choice_names[choice_count]) != 0) {
+            goto cleanup;
+        }
+        choices[choice_count].name = choice_names[choice_count];
+        choices[choice_count].value = sixel_metric_specs[i].metric_id;
+        ++choice_count;
+    }
+
+    match_result = sixel_option_match_choice(normalized_name,
+                                             choices,
+                                             choice_count,
+                                             &matched_metric_id,
+                                             match_detail,
+                                             sizeof(match_detail));
+    if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+        *out_spec = metric_spec_from_metric_id(matched_metric_id);
+        if (*out_spec == NULL) {
+            goto cleanup;
+        }
+        status = 0;
+        goto cleanup;
+    }
+
+    if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+        sixel_option_report_ambiguous_prefix(normalized_name,
+                                             match_detail,
+                                             message,
+                                             sizeof(message));
+    } else {
+        sixel_option_report_invalid_choice("Unknown metric name.",
+                                           match_detail,
+                                           message,
+                                           sizeof(message));
+    }
+    if (detail != NULL && detail_size > 0u) {
+        detail_source = sixel_helper_get_additional_message();
+        if ((detail_source == NULL || detail_source[0] == '\0')
+                && message[0] != '\0') {
+            detail_source = message;
+        }
+        if (detail_source != NULL && detail_source[0] != '\0') {
+            wrote = snprintf(detail, detail_size, "%s", detail_source);
+            if (wrote < 0) {
+                detail[0] = '\0';
+            }
+        }
+    }
+
+cleanup:
+    if (choice_names != NULL) {
+        for (i = 0u; i < choice_count; ++i) {
+            free(choice_names[i]);
+        }
+    }
+    free(choices);
+    free(choice_names);
+    free(normalized_name);
+    return status;
+}
+
 static const MetricSpec *
 metric_spec_from_name(const char *name)
 {
@@ -1256,11 +1434,16 @@ lsqa_apply_env_overrides(Options *opts)
 
     if (metrics_env != NULL && metrics_env[0] != '\0'
             && opts->metric_spec == NULL) {
-        metric_spec = metric_spec_from_name(metrics_env);
-        if (metric_spec == NULL) {
+        if (lsqa_parse_metric_spec_choice(metrics_env,
+                                          &metric_spec,
+                                          option_detail,
+                                          sizeof(option_detail)) != 0
+                || metric_spec == NULL) {
             lsqa_report_invalid_argument('m',
                                          metrics_env,
-                                         "Unknown metric name.");
+                                         option_detail[0] != '\0'
+                                             ? option_detail
+                                             : "Unknown metric name.");
             status = -1;
             goto cleanup;
         }
@@ -2139,11 +2322,16 @@ parse_args(int argc, char **argv, Options *opts)
             break;
         case 'm':
             metrics_arg = optarg;
-            metric_spec = metric_spec_from_name(metrics_arg);
-            if (metric_spec == NULL) {
+            if (lsqa_parse_metric_spec_choice(metrics_arg,
+                                              &metric_spec,
+                                              detail_buffer,
+                                              sizeof(detail_buffer)) != 0
+                    || metric_spec == NULL) {
                 lsqa_report_invalid_argument('m',
                                              metrics_arg,
-                                             "Unknown metric name.");
+                                             detail_buffer[0] != '\0'
+                                                 ? detail_buffer
+                                                 : "Unknown metric name.");
                 parse_status = -1;
                 goto cleanup;
             }
