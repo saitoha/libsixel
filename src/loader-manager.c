@@ -263,11 +263,11 @@ loader_manager_init_loader_suboptions(
         return;
     }
 
-    suboptions->libjpeg_enable_cms = 1;
-    suboptions->libpng_enable_cms = 1;
-    suboptions->libwebp_enable_cms = 1;
-    suboptions->libtiff_enable_cms = 1;
-    suboptions->builtin_enable_cms = 1;
+    suboptions->libjpeg_enable_cms = 0;
+    suboptions->libpng_enable_cms = 0;
+    suboptions->libwebp_enable_cms = 0;
+    suboptions->libtiff_enable_cms = 0;
+    suboptions->builtin_enable_cms = 0;
 #if HAVE_WIC
     suboptions->wic_ico_minsize = loader_manager_read_wic_ico_minsize_from_env(
         0);

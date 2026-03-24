@@ -4124,7 +4124,7 @@ sixel_loader_libpng_setopt(sixel_loader_component_t *component,
         return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_CMS:
         flag = (int const *)value;
-        self->enable_cms = (flag != NULL && *flag == 0) ? 0 : 1;
+        self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
         return SIXEL_OK;
     default:
         return SIXEL_OK;
@@ -4203,7 +4203,7 @@ sixel_loader_libpng_new(sixel_allocator_t *allocator,
     self->ref = 1u;
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
-    self->enable_cms = 1;
+    self->enable_cms = 0;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;
     return SIXEL_OK;

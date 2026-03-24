@@ -1225,7 +1225,7 @@ sixel_loader_libtiff_setopt(sixel_loader_component_t *component,
     switch (option) {
     case SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS:
         flag = (int const *)value;
-        self->enable_cms = (flag != NULL && *flag == 0) ? 0 : 1;
+        self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;
@@ -1343,7 +1343,7 @@ sixel_loader_libtiff_new(sixel_allocator_t *allocator,
     self->base.vtbl = &g_sixel_loader_libtiff_vtbl;
     self->allocator = allocator;
     self->ref = 1u;
-    self->enable_cms = 1;
+    self->enable_cms = 0;
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
     sixel_allocator_ref(allocator);
