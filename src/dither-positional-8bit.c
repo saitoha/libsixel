@@ -488,6 +488,12 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     sixel_lut_t *fast_lut;
     int use_fast_lut;
     float (*f_mask)(int x, int y, int c);
+    unsigned char const *transparent_mask;
+    size_t transparent_mask_size;
+    int transparent_keycolor;
+    int use_transparent_fence;
+    int is_transparent;
+    size_t absolute_index;
 
     palette_float = NULL;
     new_palette_float = NULL;
@@ -528,6 +534,15 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     float_depth = context->float_depth;
     fast_lut = context->lut;
     use_fast_lut = (fast_lut != NULL);
+    transparent_mask = context->transparent_mask;
+    transparent_mask_size = context->transparent_mask_size;
+    transparent_keycolor = context->transparent_keycolor;
+    use_transparent_fence = 0;
+    if (transparent_mask != NULL
+            && transparent_keycolor >= 0
+            && transparent_keycolor < SIXEL_PALETTE_MAX) {
+        use_transparent_fence = 1;
+    }
 
     if (context->optimize_palette) {
         int x;
@@ -559,6 +574,23 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                 int color_index;
 
                 pos = y * context->width + x;
+                is_transparent = 0;
+                if (use_transparent_fence && absolute_y >= 0) {
+                    absolute_index = (size_t)absolute_y
+                        * (size_t)context->width
+                        + (size_t)x;
+                    if (absolute_index < transparent_mask_size
+                            && transparent_mask[absolute_index] != 0U) {
+                        is_transparent = 1;
+                    }
+                }
+                if (is_transparent) {
+                    if (absolute_y >= context->output_start) {
+                        context->result[pos]
+                            = (sixel_index_t)transparent_keycolor;
+                    }
+                    continue;
+                }
                 for (d = 0; d < context->depth; ++d) {
                     int val;
 
@@ -660,6 +692,23 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                 int d;
 
                 pos = y * context->width + x;
+                is_transparent = 0;
+                if (use_transparent_fence && absolute_y >= 0) {
+                    absolute_index = (size_t)absolute_y
+                        * (size_t)context->width
+                        + (size_t)x;
+                    if (absolute_index < transparent_mask_size
+                            && transparent_mask[absolute_index] != 0U) {
+                        is_transparent = 1;
+                    }
+                }
+                if (is_transparent) {
+                    if (absolute_y >= context->output_start) {
+                        context->result[pos]
+                            = (sixel_index_t)transparent_keycolor;
+                    }
+                    continue;
+                }
                 for (d = 0; d < context->depth; ++d) {
                     int val;
 

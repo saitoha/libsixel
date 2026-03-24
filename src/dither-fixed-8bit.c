@@ -428,10 +428,30 @@ sixel_dither_apply_fixed_impl(
     int offset;
     int float_index;
     int32_t *tmp;
+    unsigned char const *transparent_mask;
+    size_t transparent_mask_size;
+    int transparent_keycolor;
+    int use_transparent_fence;
+    int is_transparent;
+    size_t absolute_index;
 
     if (depth > SIXEL_MAX_CHANNELS) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
+    }
+
+    transparent_mask = NULL;
+    transparent_mask_size = 0U;
+    transparent_keycolor = (-1);
+    use_transparent_fence = 0;
+    if (dither != NULL
+            && dither->pipeline_transparent_mask != NULL
+            && dither->pipeline_transparent_keycolor >= 0
+            && dither->pipeline_transparent_keycolor < SIXEL_PALETTE_MAX) {
+        transparent_mask = dither->pipeline_transparent_mask;
+        transparent_mask_size = dither->pipeline_transparent_mask_size;
+        transparent_keycolor = dither->pipeline_transparent_keycolor;
+        use_transparent_fence = 1;
     }
 
     use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
@@ -534,6 +554,26 @@ sixel_dither_apply_fixed_impl(
             pos = y * width + x;
             base = (size_t)pos * (size_t)depth;
             carry_base = (size_t)x * (size_t)depth;
+            is_transparent = 0;
+            if (use_transparent_fence && absolute_y >= 0) {
+                absolute_index = (size_t)absolute_y * (size_t)width
+                    + (size_t)x;
+                if (absolute_index < transparent_mask_size
+                        && transparent_mask[absolute_index] != 0U) {
+                    is_transparent = 1;
+                }
+            }
+            if (is_transparent) {
+                if (absolute_y >= output_start) {
+                    result[pos] = (sixel_index_t)transparent_keycolor;
+                }
+                if (use_carry) {
+                    for (n = 0; n < depth; ++n) {
+                        carry_curr[carry_base + (size_t)n] = 0;
+                    }
+                }
+                continue;
+            }
             if (use_carry) {
                 for (n = 0; n < depth; ++n) {
                     accum = ((int64_t)data[base + n]
