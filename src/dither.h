@@ -72,7 +72,11 @@ struct sixel_dither {
     int pipeline_band_overlap;      /* overlap rows for burn-in */
     int pipeline_dither_threads;    /* thread budget for dither */
     int pipeline_pin_threads;       /* pin palette/encode workers */
+    int pipeline_image_width;       /* total image columns for masks */
     int pipeline_image_height;      /* total image rows for logging */
+    unsigned char const *pipeline_transparent_mask; /* alpha==0 pixels */
+    size_t pipeline_transparent_mask_size; /* transparent mask length */
+    int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
     struct sixel_logger *pipeline_logger; /* parallel log sink */
 };
 

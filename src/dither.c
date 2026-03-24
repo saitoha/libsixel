@@ -1401,7 +1401,11 @@ sixel_dither_new(
     (*ppdither)->pipeline_band_overlap = 0;
     (*ppdither)->pipeline_dither_threads = 0;
     (*ppdither)->pipeline_pin_threads = 1;
+    (*ppdither)->pipeline_image_width = 0;
     (*ppdither)->pipeline_image_height = 0;
+    (*ppdither)->pipeline_transparent_mask = NULL;
+    (*ppdither)->pipeline_transparent_mask_size = 0;
+    (*ppdither)->pipeline_transparent_keycolor = (-1);
     (*ppdither)->pipeline_logger = NULL;
 
     status = sixel_palette_new(&(*ppdither)->palette, allocator);
@@ -2296,6 +2300,9 @@ sixel_dither_apply_palette(
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
     total_pixels = (size_t)width * (size_t)height;
+    dither->pipeline_transparent_mask = NULL;
+    dither->pipeline_transparent_mask_size = 0;
+    dither->pipeline_transparent_keycolor = (-1);
 
     if (dither->keycolor >= 0 &&
         sixel_dither_pixelformat_has_alpha(source_pixelformat) &&
@@ -2326,6 +2333,12 @@ sixel_dither_apply_palette(
                 apply_transparent_mask = 1;
             }
         }
+    }
+    if (apply_transparent_mask && transparent_mask != NULL &&
+        keycolor_for_mask >= 0 && keycolor_for_mask < SIXEL_PALETTE_MAX) {
+        dither->pipeline_transparent_mask = transparent_mask;
+        dither->pipeline_transparent_mask_size = total_pixels;
+        dither->pipeline_transparent_keycolor = keycolor_for_mask;
     }
 
     pipeline_pixelformat = dither->pixelformat;
@@ -2666,7 +2679,11 @@ end:
         dither->pipeline_band_height = 0;
         dither->pipeline_band_overlap = 0;
         dither->pipeline_dither_threads = 0;
+        dither->pipeline_image_width = 0;
         dither->pipeline_image_height = 0;
+        dither->pipeline_transparent_mask = NULL;
+        dither->pipeline_transparent_mask_size = 0;
+        dither->pipeline_transparent_keycolor = (-1);
         dither->pipeline_logger = NULL;
         sixel_dither_unref(dither);
     }

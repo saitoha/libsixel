@@ -34,6 +34,50 @@
 #include "dither-common-pipeline.h"
 #include "logger.h"
 
+static void
+sixel_dither_pipeline_apply_keycolor_row(sixel_dither_t *dither, int row_index)
+{
+    size_t row_start;
+    size_t row_end;
+    size_t cursor;
+    size_t width;
+    int keycolor;
+
+    if (dither == NULL || row_index < 0) {
+        return;
+    }
+
+    if (dither->pipeline_transparent_mask == NULL
+            || dither->pipeline_index_buffer == NULL) {
+        return;
+    }
+
+    keycolor = dither->pipeline_transparent_keycolor;
+    if (keycolor < 0 || keycolor >= SIXEL_PALETTE_MAX) {
+        return;
+    }
+
+    width = (size_t)dither->pipeline_image_width;
+    if (width == 0U) {
+        return;
+    }
+
+    row_start = (size_t)row_index * width;
+    if (row_start >= dither->pipeline_transparent_mask_size) {
+        return;
+    }
+    row_end = row_start + width;
+    if (row_end > dither->pipeline_transparent_mask_size) {
+        row_end = dither->pipeline_transparent_mask_size;
+    }
+
+    for (cursor = row_start; cursor < row_end; ++cursor) {
+        if (dither->pipeline_transparent_mask[cursor] != 0U) {
+            dither->pipeline_index_buffer[cursor] = (sixel_index_t)keycolor;
+        }
+    }
+}
+
 
 /*
  * Notify the pipeline controller when a scanline completes PaletteApply.
@@ -46,6 +90,7 @@ sixel_dither_pipeline_row_notify(sixel_dither_t *dither, int row_index)
     if (dither == NULL) {
         return;
     }
+    sixel_dither_pipeline_apply_keycolor_row(dither, row_index);
     if (dither->pipeline_logger != NULL) {
         int band_height;
         int band_index;
