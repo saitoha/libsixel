@@ -170,6 +170,33 @@ apng_decode_trace_message(char const *format, ...)
     fputc('\n', stderr);
 }
 
+static int
+libpng_trns_keycolor_optin_enabled(void)
+{
+    char const *env;
+    static int initialized = 0;
+    static int enabled = 0;
+
+    if (initialized) {
+        return enabled;
+    }
+    initialized = 1;
+    enabled = 0;
+
+    env = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_TRNS_KEYCOLOR");
+    if (env == NULL || env[0] == '\0') {
+        return enabled;
+    }
+    if (strcmp(env, "1") == 0 ||
+        strcmp(env, "true") == 0 ||
+        strcmp(env, "yes") == 0 ||
+        strcmp(env, "on") == 0) {
+        enabled = 1;
+    }
+
+    return enabled;
+}
+
 static void
 read_png(png_structp png_ptr,
          png_bytep data,
@@ -1250,6 +1277,7 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *pixelformat,
          unsigned char      /* out */ *bgcolor,
          int                /* out */ *transparent,
+         int                /* out */ *alpha_zero_is_transparent,
          int                /* out */ *cms_applied,
          int                /* in */  enable_cms,
          sixel_allocator_t  /* in */  *allocator)
@@ -1314,6 +1342,8 @@ load_png(unsigned char      /* out */ **result,
     int has_tRNS_chunk;
     int has_alpha_chunk;
     int has_transparency;
+    int trns_keycolor_optin;
+    int use_trns_keycolor;
     int background_colorspace;
     int background_from_file;
     int source_transfer_mode;
@@ -1347,6 +1377,8 @@ load_png(unsigned char      /* out */ **result,
     has_tRNS_chunk = 0;
     has_alpha_chunk = 0;
     has_transparency = 0;
+    trns_keycolor_optin = 0;
+    use_trns_keycolor = 0;
     background_colorspace = SIXEL_COLORSPACE_GAMMA;
     background_from_file = 0;
     source_transfer_mode = SIXEL_PNG_TRANSFER_SRGB;
@@ -1400,6 +1432,9 @@ load_png(unsigned char      /* out */ **result,
     }
     if (transparent != NULL) {
         *transparent = -1;
+    }
+    if (alpha_zero_is_transparent != NULL) {
+        *alpha_zero_is_transparent = 0;
     }
 
     png_ptr = png_create_read_struct(
@@ -1554,6 +1589,14 @@ load_png(unsigned char      /* out */ **result,
     has_tRNS_chunk = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0;
     has_alpha_chunk = (color_type & PNG_COLOR_MASK_ALPHA) != 0;
     has_transparency = has_tRNS_chunk || has_alpha_chunk;
+    trns_keycolor_optin = libpng_trns_keycolor_optin_enabled();
+    use_trns_keycolor = trns_keycolor_optin &&
+                        has_tRNS_chunk &&
+                        !has_alpha_chunk &&
+                        !enable_cms &&
+                        bgcolor == NULL &&
+                        (color_type == PNG_COLOR_TYPE_GRAY ||
+                         color_type == PNG_COLOR_TYPE_RGB);
     background_colorspace = loader_background_colorspace();
     png_resolve_background_unit(png_ptr,
                                 info_ptr,
@@ -1567,6 +1610,77 @@ load_png(unsigned char      /* out */ **result,
     background.blue = (png_uint_16)(bg_unit[2] * 255.0 + 0.5);
     background.gray = (png_uint_16)((bg_unit[0] + bg_unit[1] + bg_unit[2])
                                     * 255.0 / 3.0 + 0.5);
+
+    if (use_trns_keycolor) {
+        if (bitdepth == 16u) {
+            png_set_strip_16(png_ptr);
+        }
+        if (color_type == PNG_COLOR_TYPE_GRAY && bitdepth < 8u) {
+#if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+            png_set_expand_gray_1_2_4_to_8(png_ptr);
+#elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+            png_set_gray_1_2_4_to_8(png_ptr);
+#endif
+        }
+        if (color_type == PNG_COLOR_TYPE_GRAY ||
+            color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+            png_set_gray_to_rgb(png_ptr);
+        }
+        if (has_tRNS_chunk) {
+            png_set_tRNS_to_alpha(png_ptr);
+        }
+
+        png_read_update_info(png_ptr, info_ptr);
+        read_bitdepth = png_get_bit_depth(png_ptr, info_ptr);
+        read_channels = png_get_channels(png_ptr, info_ptr);
+        rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+        if (read_bitdepth != 8u || read_channels != 4u) {
+            sixel_helper_set_additional_message(
+                "load_png: unsupported tRNS keycolor layout.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+        if ((size_t)*psy > 0u && (size_t)rowbytes > SIZE_MAX / (size_t)*psy) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto cleanup;
+        }
+        if ((size_t)rowbytes != (size_t)*psx * 4u) {
+            sixel_helper_set_additional_message(
+                "load_png: unexpected RGBA row stride.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+
+        *result = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            (size_t)*psy * (size_t)rowbytes);
+        if (*result == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        rows = (unsigned char **)sixel_allocator_malloc(
+            allocator,
+            (size_t)*psy * sizeof(unsigned char *));
+        if (rows == NULL) {
+            sixel_helper_set_additional_message(
+                "load_png: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = *result + (size_t)i * (size_t)rowbytes;
+        }
+        png_read_image(png_ptr, rows);
+
+        *pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        if (alpha_zero_is_transparent != NULL) {
+            *alpha_zero_is_transparent = 1;
+        }
+        status = SIXEL_OK;
+        goto cleanup;
+    }
 
     if (has_transparency) {
         unsigned char *rgb8_pixels;
@@ -3926,6 +4040,7 @@ load_with_libpng(
     int start_frame_no;
     int enable_cms;
     int cms_applied;
+    int alpha_zero_is_transparent;
     int cms_target_pixelformat;
 
     status = SIXEL_FALSE;
@@ -3934,6 +4049,7 @@ load_with_libpng(
     start_frame_no = INT_MIN;
     enable_cms = enable_cms_override != 0 ? 1 : 0;
     cms_applied = 0;
+    alpha_zero_is_transparent = 0;
     cms_target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
     (void)fstatic;
@@ -3982,6 +4098,7 @@ load_with_libpng(
                       &frame->pixelformat,
                       bgcolor,
                       &frame->transparent,
+                      &alpha_zero_is_transparent,
                       &cms_applied,
                       enable_cms,
                       pchunk->allocator);
@@ -3992,6 +4109,7 @@ load_with_libpng(
     sixel_frame_set_colorspace(frame,
                                png_colorspace_from_pixelformat(
                                    frame->pixelformat));
+    frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;
     sixel_frame_set_pixels(frame, pixels);
     if (cms_applied
             && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)
@@ -4003,9 +4121,11 @@ load_with_libpng(
         }
     }
 
-    status = sixel_frame_strip_alpha(frame, bgcolor);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (!frame->alpha_zero_is_transparent) {
+        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = fn_load(frame, context);

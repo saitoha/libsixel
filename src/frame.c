@@ -192,6 +192,7 @@ sixel_frame_new(
     (*ppframe)->loop_count = 0;
     (*ppframe)->multiframe = 0;
     (*ppframe)->transparent = (-1);
+    (*ppframe)->alpha_zero_is_transparent = 0;
     (*ppframe)->allocator = allocator;
 
     sixel_allocator_ref(allocator);
@@ -345,6 +346,7 @@ sixel_frame_init_common(
     sixel_frame_apply_pixelformat(frame, pixelformat);
     frame->palette = palette;
     frame->ncolors = ncolors;
+    frame->alpha_zero_is_transparent = 0;
     status = SIXEL_OK;
 
 end:
