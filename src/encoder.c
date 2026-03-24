@@ -774,6 +774,7 @@ sixel_encoder_clone_frame(sixel_frame_t *frame,
     clone->colorspace = frame->colorspace;
     clone->ncolors = frame->ncolors;
     clone->transparent = frame->transparent;
+    clone->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
     clone->frame_no = frame->frame_no;
     clone->loop_count = frame->loop_count;
     clone->multiframe = frame->multiframe;
@@ -4602,6 +4603,91 @@ end_loader:
     return status;
 }
 
+static int
+sixel_encoder_pixelformat_has_alpha(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static SIXELSTATUS
+sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
+                                    sixel_dither_t *dither)
+{
+    SIXELSTATUS status;
+    unsigned char *expanded;
+    unsigned int base_colors;
+    unsigned int key_index;
+    size_t bytes;
+
+    status = SIXEL_FALSE;
+    expanded = NULL;
+    base_colors = 0U;
+    key_index = 0U;
+    bytes = 0U;
+
+    if (encoder == NULL || dither == NULL || dither->palette == NULL ||
+        dither->palette->entries == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    base_colors = (unsigned int)dither->ncolors;
+    if (base_colors == 0U || base_colors >= (unsigned int)SIXEL_PALETTE_MAX) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    key_index = base_colors;
+    bytes = (size_t)(base_colors + 1U) * 3U;
+    expanded = (unsigned char *)sixel_allocator_malloc(dither->allocator, bytes);
+    if (expanded == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_attach_alpha_keycolor: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memcpy(expanded, dither->palette->entries, (size_t)base_colors * 3U);
+    if (encoder->bgcolor != NULL) {
+        expanded[key_index * 3U + 0U] = encoder->bgcolor[0];
+        expanded[key_index * 3U + 1U] = encoder->bgcolor[1];
+        expanded[key_index * 3U + 2U] = encoder->bgcolor[2];
+    } else {
+        expanded[key_index * 3U + 0U] = 0U;
+        expanded[key_index * 3U + 1U] = 0U;
+        expanded[key_index * 3U + 2U] = 0U;
+    }
+
+    status = sixel_palette_set_entries(dither->palette,
+                                       expanded,
+                                       base_colors + 1U,
+                                       3,
+                                       dither->allocator);
+    sixel_allocator_free(dither->allocator, expanded);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    (void)sixel_palette_set_entries_float32(dither->palette,
+                                            NULL,
+                                            0U,
+                                            0,
+                                            dither->allocator);
+    dither->palette->entry_count = base_colors + 1U;
+    dither->palette->requested_colors = (unsigned int)encoder->reqcolors;
+    dither->ncolors = (int)(base_colors + 1U);
+    dither->keycolor = (int)key_index;
+
+    return SIXEL_OK;
+}
+
 
 /* create dither object from a frame */
 static SIXELSTATUS
@@ -4625,6 +4711,8 @@ sixel_encoder_prepare_palette(
     int clustering_colorspace;
     int working_colorspace;
     int prefer_float32;
+    int reserve_alpha_key;
+    int palette_reqcolors;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -4636,6 +4724,8 @@ sixel_encoder_prepare_palette(
     clustering_colorspace = SIXEL_COLORSPACE_GAMMA;
     working_colorspace = SIXEL_COLORSPACE_GAMMA;
     prefer_float32 = 0;
+    reserve_alpha_key = 0;
+    palette_reqcolors = 0;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4735,21 +4825,44 @@ sixel_encoder_prepare_palette(
     if (cache_allowed && encoder->dither_cache) {
         sixel_dither_unref(encoder->dither_cache);
     }
-    status = sixel_dither_new(dither, encoder->reqcolors, encoder->allocator);
+    reserve_alpha_key =
+        frame->alpha_zero_is_transparent != 0 &&
+        sixel_encoder_pixelformat_has_alpha(
+            sixel_frame_get_pixelformat(frame)) &&
+        encoder->reqcolors > 1;
+    palette_reqcolors = encoder->reqcolors;
+    if (reserve_alpha_key) {
+        palette_reqcolors = encoder->reqcolors - 1;
+    }
+
+    status = sixel_dither_new(dither, palette_reqcolors, encoder->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+    if (reserve_alpha_key) {
+        /*
+         * Signal dither_initialize() to keep alpha-bearing input so palette
+         * generation can ignore fully transparent pixels.
+         */
+        sixel_dither_set_transparent(*dither, 0);
     }
 
     clustering_colorspace = encoder->clustering_colorspace;
     working_colorspace = encoder->working_colorspace;
     prefer_float32 = encoder->prefer_float32;
-    palette_target_pixelformat =
-        sixel_encoder_pixelformat_for_colorspace(clustering_colorspace,
-                                                 prefer_float32);
+    if (reserve_alpha_key) {
+        clustering_colorspace = sixel_frame_get_colorspace(frame);
+        palette_target_pixelformat = sixel_frame_get_pixelformat(frame);
+    } else {
+        palette_target_pixelformat =
+            sixel_encoder_pixelformat_for_colorspace(clustering_colorspace,
+                                                     prefer_float32);
+    }
 
-    if (sixel_frame_get_pixelformat(frame) != palette_target_pixelformat
+    if (!reserve_alpha_key &&
+        (sixel_frame_get_pixelformat(frame) != palette_target_pixelformat
             || sixel_frame_get_colorspace(frame)
-                != clustering_colorspace) {
+                != clustering_colorspace)) {
         status = sixel_encoder_clone_frame(frame,
                                            encoder->allocator,
                                            &cluster_frame);
@@ -4817,6 +4930,13 @@ sixel_encoder_prepare_palette(
             (*dither)->palette,
             clustering_colorspace,
             working_colorspace);
+        if (SIXEL_FAILED(status)) {
+            sixel_dither_unref(*dither);
+            goto end;
+        }
+    }
+    if (reserve_alpha_key) {
+        status = sixel_encoder_attach_alpha_keycolor(encoder, *dither);
         if (SIXEL_FAILED(status)) {
             sixel_dither_unref(*dither);
             goto end;
