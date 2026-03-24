@@ -1702,6 +1702,26 @@ sixel_dither_initialize(
     case SIXEL_PIXELFORMAT_RGB888:
         input_pixels = data;
         break;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        if (dither->keycolor >= 0) {
+            int source_depth;
+
+            source_depth = sixel_helper_compute_depth(pixelformat);
+            if (source_depth <= 0) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            input_pixels = data;
+            palette_pixelformat = pixelformat;
+            payload_length = (unsigned int)(total_pixels * (size_t)source_depth);
+            break;
+        }
+        /* fallthrough */
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
@@ -2118,6 +2138,41 @@ sixel_dither_set_transparent(
     dither->keycolor = transparent;
 }
 
+static int
+sixel_dither_pixelformat_has_alpha(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static unsigned char
+sixel_dither_extract_alpha_u8(unsigned char const *pixel, int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        return pixel[3];
+    case SIXEL_PIXELFORMAT_GA88:
+        return pixel[1];
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        return pixel[0];
+    case SIXEL_PIXELFORMAT_AG88:
+        return pixel[0];
+    default:
+        return 0xffU;
+    }
+}
+
 
 /* set transparent */
 sixel_index_t *
@@ -2140,9 +2195,16 @@ sixel_dither_apply_palette(
     float *float_pipeline_pixels = NULL;
     int owns_float_pipeline = 0;
     int pipeline_pixelformat;
+    int source_pixelformat;
     int prefer_float_pipeline;
     sixel_palette_t *palette;
     int dest_owned;
+    int palette_entry_limit;
+    unsigned char *transparent_mask = NULL;
+    int apply_transparent_mask = 0;
+    int keycolor_for_mask = (-1);
+    size_t source_depth;
+    size_t index;
     int parallel_active = 0;
 #if SIXEL_ENABLE_THREADS
     int parallel_band_height = 0;
@@ -2174,6 +2236,10 @@ sixel_dither_apply_palette(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+    source_pixelformat = dither->pixelformat;
+    palette_entry_limit = (int)palette->entry_count;
+    source_depth = 0U;
+    index = 0U;
     status = sixel_dither_validate_complexion_limit(3, dither->complexion);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2230,6 +2296,38 @@ sixel_dither_apply_palette(
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
     total_pixels = (size_t)width * (size_t)height;
+
+    if (dither->keycolor >= 0 &&
+        sixel_dither_pixelformat_has_alpha(source_pixelformat) &&
+        total_pixels > 0U) {
+        source_depth = (size_t)sixel_helper_compute_depth(source_pixelformat);
+        if (source_depth == 0U) {
+            sixel_helper_set_additional_message(
+                "sixel_dither_apply_palette: invalid source depth.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        transparent_mask = (unsigned char *)sixel_allocator_malloc(
+            dither->allocator,
+            total_pixels);
+        if (transparent_mask == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_dither_apply_palette: transparency mask allocation failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memset(transparent_mask, 0, total_pixels);
+        keycolor_for_mask = dither->keycolor;
+        for (index = 0U; index < total_pixels; ++index) {
+            if (sixel_dither_extract_alpha_u8(
+                    pixels + index * source_depth,
+                    source_pixelformat) == 0U) {
+                transparent_mask[index] = 1U;
+                apply_transparent_mask = 1;
+            }
+        }
+    }
+
     pipeline_pixelformat = dither->pixelformat;
     /*
      * Reuse the externally allocated index buffer when the pipeline has
@@ -2514,6 +2612,21 @@ sixel_dither_apply_palette(
         goto end;
     }
 
+    if (apply_transparent_mask && transparent_mask != NULL &&
+        keycolor_for_mask >= 0 &&
+        keycolor_for_mask < SIXEL_PALETTE_MAX) {
+        for (index = 0U; index < total_pixels; ++index) {
+            if (transparent_mask[index] != 0U) {
+                dest[index] = (sixel_index_t)keycolor_for_mask;
+            }
+        }
+    }
+    if (keycolor_for_mask >= 0 &&
+        keycolor_for_mask < palette_entry_limit &&
+        ncolors <= keycolor_for_mask) {
+        ncolors = keycolor_for_mask + 1;
+    }
+
     dither->ncolors = ncolors;
     palette->entry_count = (unsigned int)ncolors;
 
@@ -2542,6 +2655,9 @@ end:
         }
         if (float_pipeline_pixels != NULL && owns_float_pipeline) {
             sixel_allocator_free(dither->allocator, float_pipeline_pixels);
+        }
+        if (transparent_mask != NULL) {
+            sixel_allocator_free(dither->allocator, transparent_mask);
         }
         dither->pipeline_index_buffer = NULL;
         dither->pipeline_index_owned = 0;
