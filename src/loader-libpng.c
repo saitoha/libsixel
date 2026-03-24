@@ -183,15 +183,14 @@ libpng_trns_keycolor_optin_enabled(void)
     initialized = 1;
     enabled = 0;
 
-    env = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_TRNS_KEYCOLOR");
+    env = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
     if (env == NULL || env[0] == '\0') {
         return enabled;
     }
-    if (strcmp(env, "1") == 0 ||
-        strcmp(env, "true") == 0 ||
-        strcmp(env, "yes") == 0 ||
-        strcmp(env, "on") == 0) {
+    if (env[0] == '1' && env[1] == '\0') {
         enabled = 1;
+    } else if (env[0] == '0' && env[1] == '\0') {
+        enabled = 0;
     }
 
     return enabled;
