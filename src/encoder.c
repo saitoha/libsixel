@@ -178,6 +178,7 @@ static int sixel_encoder_parse_threads_argument(char const *text,
                                                 int *value);
 static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
                                                   sixel_dither_t *dither);
+static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
 
 #define SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY 4
 #define SIXEL_ENCODER_HANDOFF_UNDECIDED 0
@@ -3653,6 +3654,17 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                     context->planner->scale_pixelformat;
                 break;
             case SIXEL_PLANNER_NODE_COLORSPACE_POST:
+                if (context->frame != NULL &&
+                    context->frame->alpha_zero_is_transparent != 0 &&
+                    sixel_encoder_pixelformat_has_alpha(
+                        context->current_pixelformat)) {
+                    /*
+                     * Keep alpha-bearing pixels untouched for the opt-in
+                     * tRNS keycolor path. Converting to planner working
+                     * formats here would drop alpha before palette build.
+                     */
+                    break;
+                }
                 context->colors_config.target_pixelformat =
                     context->planner->working_pixelformat;
                 status = sixel_encoder_filter_plan_append(
@@ -4092,6 +4104,7 @@ sixel_encoder_palette_job_thread(void *priv)
     sixel_palette_async_job_t *job;
     SIXELSTATUS status;
     sixel_dither_t *local;
+    int preserve_alpha_key;
 
     job = (sixel_palette_async_job_t *)priv;
     if (job == NULL) {
@@ -4099,10 +4112,19 @@ sixel_encoder_palette_job_thread(void *priv)
     }
     status = SIXEL_BAD_ARGUMENT;
     local = NULL;
+    preserve_alpha_key = 0;
 
     if (job != NULL && job->encoder != NULL && job->sample_frame != NULL) {
-        status = sixel_frame_set_pixelformat(job->sample_frame,
-                                             job->target_pixelformat);
+        preserve_alpha_key =
+            job->sample_frame->alpha_zero_is_transparent != 0 &&
+            sixel_encoder_pixelformat_has_alpha(
+                sixel_frame_get_pixelformat(job->sample_frame));
+        if (!preserve_alpha_key) {
+            status = sixel_frame_set_pixelformat(job->sample_frame,
+                                                 job->target_pixelformat);
+        } else {
+            status = SIXEL_OK;
+        }
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_apply_palette_filter(job->encoder,
                                                         &job->sample_frame,

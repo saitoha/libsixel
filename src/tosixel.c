@@ -2140,7 +2140,7 @@ end:
 
 
 SIXELSTATUS
-sixel_encode_header(int width, int height, sixel_output_t *output)
+sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
@@ -2151,6 +2151,12 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
     if (output->ormode) {
         p[0] = 7;
         p[1] = 5;
+    } else if (keycolor >= 0) {
+        /*
+         * When a transparent keycolor is in use, request transparent
+         * background mode so untouched pixels keep the terminal background.
+         */
+        p[1] = 1;
     }
 
     output->pos = 0;
@@ -3562,6 +3568,7 @@ sixel_encode_dither(
          * data flow deterministic and thread-safe.
          */
         if (!ormode_enabled
+                && dither->keycolor < 0
                 && pipeline_threads > 1
                 && pipeline_nbands > 1) {
             pipeline_active = 1;
@@ -3740,7 +3747,7 @@ sixel_encode_dither(
         goto end;
     }
 
-    status = sixel_encode_header(width, height, output);
+    status = sixel_encode_header(width, height, dither->keycolor, output);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

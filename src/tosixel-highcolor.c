@@ -52,6 +52,7 @@ enum {
 SIXELSTATUS sixel_encode_header(
     int width,
     int height,
+    int keycolor,
     sixel_output_t *output);
 SIXELSTATUS sixel_encode_body(
     sixel_index_t *pixels,
@@ -935,7 +936,7 @@ next:
             orig_height = height;
 
             if (output_count++ == 0) {
-                status = sixel_encode_header(width, height, output);
+                status = sixel_encode_header(width, height, dither->keycolor, output);
                 if (SIXEL_FAILED(status)) {
                     goto error;
                 }
@@ -976,7 +977,7 @@ next:
 
 end:
     if (output_count == 0) {
-        status = sixel_encode_header(width, height, output);
+        status = sixel_encode_header(width, height, dither->keycolor, output);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
