@@ -8,6 +8,7 @@ _img2sixel()
     local opt_short_show opt_short_install opt_short_uninstall
     local opt_threads opt_short_threads
     local opt_precision opt_short_precision
+    local opt_cms_engine opt_short_cms_engine
     local loader_prefix loader_cur
 
     COMPREPLY=()
@@ -47,6 +48,8 @@ _img2sixel()
     opt_short_threads="-="
     opt_precision="--precision"
     opt_short_precision="-."
+    opt_cms_engine="--cms-engine"
+    opt_short_cms_engine="-#"
 
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -n '=' || return
@@ -97,6 +100,12 @@ _img2sixel()
         cur=${cur#*=}
     elif [[ $cur == ${opt_short_precision}=* ]]; then
         prev=${opt_short_precision}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_cms_engine}=* ]]; then
+        prev=${opt_cms_engine}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_short_cms_engine}=* ]]; then
+        prev=${opt_short_cms_engine}
         cur=${cur#*=}
     fi
 
@@ -312,6 +321,14 @@ _img2sixel()
         fi
         return 0
         ;;
+    -#|--cms-engine)
+        COMPREPLY=( $( compgen -W 'none \
+                                   auto \
+                                   builtin \
+                                   lcms2 \
+                                   colorsync' -- "$cur" ) )
+        return 0
+        ;;
     -X|--clustering-colorspace)
         COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
@@ -397,6 +414,7 @@ _img2sixel()
                                    -D --pipe-mode \
                                    -v --verbose \
                                    -L --loaders \
+                                   -# --cms-engine \
                                    -@ --drcs \
                                    -O --ormode \
                                    -X --clustering-colorspace \

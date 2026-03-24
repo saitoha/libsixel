@@ -498,8 +498,11 @@ show debugging info and print the planner DAG (Directed Acyclic Graph).
 .B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names. Each entry may be abbreviated by a unique prefix,
-and a trailing "!" disables fallback loaders. The libpng, libjpeg, libtiff,
-and builtin loaders accept \fBcms=0|1\fP (short form \fBc=0|1\fP, default 1).
+and a trailing "!" disables fallback loaders. The libpng, libjpeg, libwebp,
+libtiff, and builtin loaders accept \fBcms=0|1\fP (short form \fBc=0|1\fP,
+default 0). These loaders also accept
+\fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBe=\fP...,
+default none).
 The WIC loader also accepts suboptions such as \fBwic:ico_minsize=SIZE\fP to pick
 the smallest ICO frame whose edge is at least SIZE.
 .br
@@ -530,6 +533,15 @@ quicklook
 .IP \(bu 2
 gnome-thumbnailer
 .RE
+.TP 5
+.B \-# \fIENGINE\fP, \-\-cms\-engine=\fIENGINE\fP
+set the default loader CMS backend for this process by exporting
+\fBSIXEL_LOADER_CMS_ENGINE\fP.
+.br
+\fIENGINE\fP accepts \fBnone\fP, \fBauto\fP, \fBbuiltin\fP,
+\fBlcms2\fP, or \fBcolorsync\fP.
+.br
+\fBauto\fP prefers lcms2, then ColorSync (macOS), then builtin.
 .TP 5
 .B \-@, \-\-drcs
 emit extended DRCS tiles instead of a regular SIXEL image (experimental).
@@ -856,6 +868,38 @@ negative values count from the end; \-1 selects the last frame.
 out-of-range indexes fail with an error.
 the index is applied only on the first playback loop, and later loops
 decode from frame 0.
+.TP 5
+.B SIXEL_LOADER_CMS_ENGINE
+.br
+select the default loader CMS backend. Accepts "none", "auto", "builtin",
+"lcms2", or "colorsync".
+"auto" prefers lcms2, then ColorSync (macOS), then builtin.
+overrided by \fB-#\fP/\fB--cms\-engine\fP option.
+.TP 5
+.B SIXEL_LOADER_BUILTIN_CMS_ENGINE
+.br
+override the builtin loader CMS backend.
+overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
+.TP 5
+.B SIXEL_LOADER_LIBPNG_CMS_ENGINE
+.br
+override the libpng loader CMS backend.
+overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
+.TP 5
+.B SIXEL_LOADER_LIBJPEG_CMS_ENGINE
+.br
+override the libjpeg loader CMS backend.
+overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
+.TP 5
+.B SIXEL_LOADER_LIBWEBP_CMS_ENGINE
+.br
+override the libwebp loader CMS backend.
+overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
+.TP 5
+.B SIXEL_LOADER_LIBTIFF_CMS_ENGINE
+.br
+override the libtiff loader CMS backend.
+overrides \fBSIXEL_LOADER_CMS_ENGINE\fP.
 .TP 5
 .B SIXEL_LOADER_CMS_RENDERING_INTENT
 .br
