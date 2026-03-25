@@ -243,7 +243,7 @@ static SIXELSTATUS
 sixel_option_build_canonical_argument(
     sixel_option_argument_list_resolution_t *resolution);
 
-sixel_option_choice_result_t
+SIXEL_INTERNAL_API sixel_option_choice_result_t
 sixel_option_match_choice(
     char const *value,
     sixel_option_choice_t const *choices,
@@ -336,7 +336,7 @@ sixel_option_match_choice(
     return SIXEL_OPTION_CHOICE_AMBIGUOUS;
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_option_report_ambiguous_prefix(
     char const *value,
     char const *candidates,
@@ -369,7 +369,7 @@ sixel_option_report_ambiguous_prefix(
     sixel_helper_set_additional_message(buffer);
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_option_report_invalid_choice(
     char const *base_message,
     char const *suggestions,
