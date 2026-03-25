@@ -23,7 +23,7 @@ if [ ! -f "${input_png}" ] || [ ! -f "${reference_six}" ]; then
     exit 0
 fi
 
-run_img2sixel -Lbuiltin:cms=1! "${input_png}" >"${output_six}" || {
+run_img2sixel -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_six}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
 }

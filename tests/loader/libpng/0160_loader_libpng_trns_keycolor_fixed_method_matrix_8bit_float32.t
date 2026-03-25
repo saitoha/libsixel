@@ -23,7 +23,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-a-dither-8bit-tbbn0g04.six"
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               --precision=8bit \
               -d a_dither -y raster \
               "${input_png}" >"${output_six}" || {

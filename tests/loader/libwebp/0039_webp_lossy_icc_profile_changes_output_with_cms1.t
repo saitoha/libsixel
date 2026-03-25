@@ -22,12 +22,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_cms1="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms1.sixel"
 output_cms0="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms0.sixel"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_cms1}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed (cms=1)"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp}" >"${output_cms0}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_cms0}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed (cms=0)"
     exit 0
 }

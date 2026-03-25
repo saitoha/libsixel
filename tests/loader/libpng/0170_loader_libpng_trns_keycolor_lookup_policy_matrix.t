@@ -24,7 +24,7 @@ out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-lookup-bogus-on-tbbn0g04.six"
 run_img2sixel --env SIXEL_DITHER_LOOKUP_POLICY=bogus \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - lookup policy=bogus opt-in render failed"

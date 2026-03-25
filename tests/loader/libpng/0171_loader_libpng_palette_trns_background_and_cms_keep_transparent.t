@@ -22,7 +22,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn3p08.png"
 out="${ARTIFACT_LOCAL_DIR}/palette-trns-cms1-white-tbbn3p08.six"
 
-run_img2sixel -Llibpng:cms=1! \
+run_img2sixel -Llibpng:cms_engine=auto! \
               -B#ffffff \
               -d fs -y raster \
               "${input_png}" >"${out}" || {

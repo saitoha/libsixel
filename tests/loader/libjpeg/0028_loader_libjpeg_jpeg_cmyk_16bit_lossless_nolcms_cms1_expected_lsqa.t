@@ -34,7 +34,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-16bit-cmyk-lossle
 reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0016_jpeg_cmyk_16bit_lossless_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_cmyk_16bit_lossless_nolcms_cms1.six"
 
-run_img2sixel -L libjpeg:cms=1! "${input_jpeg}" >"${output_sixel}" || {
+run_img2sixel -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg 16-bit CMYK lossless JPEG decode failed on no-lcms build (cms=1)"
     exit 0
 }

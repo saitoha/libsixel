@@ -24,12 +24,12 @@ output_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libpng_ref_cms1.six"
 output_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libpng_ref_cms0.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libpng_override.six"
 
-run_img2sixel -Llibpng:cms=1! "${input_png}" >"${output_cms1}" || {
+run_img2sixel -Llibpng:cms_engine=auto! "${input_png}" >"${output_cms1}" || {
     echo "not ok" 1 - "libpng cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibpng:cms=0! "${input_png}" >"${output_cms0}" || {
+run_img2sixel -Llibpng:cms_engine=none! "${input_png}" >"${output_cms0}" || {
     echo "not ok" 1 - "libpng cms=0 reference decode failed"
     exit 0
 }

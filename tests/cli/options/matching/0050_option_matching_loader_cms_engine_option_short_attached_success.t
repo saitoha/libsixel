@@ -25,14 +25,14 @@ output_attached="${ARTIFACT_LOCAL_DIR}/cms_engine_short_attached_actual.six"
 
 run_img2sixel \
     --cms-engine=auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_equals}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_equals}" || {
     echo "not ok" 1 - "--cms-engine=auto reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     -#auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_attached}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_attached}" || {
     echo "not ok" 1 - "short attached -#auto form was rejected"
     exit 0
 }

@@ -34,14 +34,14 @@ cwebp -q 75 -alpha_q 100 "${input_png}" -o "${input_webp}" >/dev/null 2>&1 || {
 }
 
 run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
-              -Llibwebp:cms=0! \
+              -Llibwebp:cms_engine=none! \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
     echo "not ok" 1 - "libwebp YUVA gamma background composition failed"
     exit 0
 }
 
 run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
-              -Llibwebp:cms=0! \
+              -Llibwebp:cms_engine=none! \
               -B#808080 "${input_webp}" >"${output_linear}" || {
     echo "not ok" 1 - "libwebp YUVA linear background composition failed"
     exit 0

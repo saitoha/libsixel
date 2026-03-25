@@ -23,7 +23,7 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_invalid_ref_cms0.six"
 output_invalid_global="${ARTIFACT_LOCAL_DIR}/cms_engine_env_invalid_global.six"
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp}" >"${output_ref_cms0}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }

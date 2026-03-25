@@ -18,7 +18,7 @@ echo "1..1"
 
 probe_output=$(
     set +xv
-    run_img2sixel -Llibtiff:cms=0! \
+    run_img2sixel -Llibtiff:cms_engine=none! \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff" \
         -o/dev/null 2>&1
 ) || probe_status=$?
@@ -39,5 +39,5 @@ test "${probe_status-}" = "" || {
     exit 0
 }
 
-echo "ok" 1 - "-L accepts libtiff:cms suboptions"
+echo "ok" 1 - "-L accepts libtiff:cms_engine suboptions"
 exit 0

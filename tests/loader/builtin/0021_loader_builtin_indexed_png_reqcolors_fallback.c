@@ -335,8 +335,8 @@ run_loader_suboption_parallel_isolation_test(void)
     int create_status;
 
     source_root = NULL;
-    order_zero = "builtin:cms=0!";
-    order_one = "builtin:cms=1!";
+    order_zero = "builtin:cms_engine=none!";
+    order_one = "builtin:cms_engine=auto!";
     image_index = 0u;
     status = SIXEL_OK;
     baseline_zero = 0u;

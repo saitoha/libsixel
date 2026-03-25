@@ -27,14 +27,14 @@ output_env_none="${ARTIFACT_LOCAL_DIR}/cms_engine_env_override_option_actual_non
 
 run_img2sixel \
     --cms-engine=auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_ref_auto}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_auto}" || {
     echo "not ok" 1 - "auto reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=none \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_ref_none}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_none}" || {
     echo "not ok" 1 - "none reference decode failed"
     exit 0
 }
@@ -42,7 +42,7 @@ run_img2sixel \
 run_img2sixel \
     --cms-engine=none \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto" \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_env_auto}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_auto}" || {
     echo "not ok" 1 - "per-loader env auto override decode failed"
     exit 0
 }
@@ -50,7 +50,7 @@ run_img2sixel \
 run_img2sixel \
     --cms-engine=auto \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=none" \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_env_none}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_none}" || {
     echo "not ok" 1 - "per-loader env none override decode failed"
     exit 0
 }

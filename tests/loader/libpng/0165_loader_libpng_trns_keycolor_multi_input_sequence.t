@@ -26,7 +26,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-multi-off-ab.six"
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! -d fs -y raster \
+              -Llibpng:cms_engine=none! -d fs -y raster \
               "${input_a}" "${input_b}" >"${out_on}" || {
     echo "not ok 1 - multi-input opt-in render failed"
     exit 0
@@ -34,7 +34,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! -d fs -y raster \
+              -Llibpng:cms_engine=none! -d fs -y raster \
               "${input_a}" "${input_b}" >"${out_off}" || {
     echo "not ok 1 - multi-input opt-out render failed"
     exit 0

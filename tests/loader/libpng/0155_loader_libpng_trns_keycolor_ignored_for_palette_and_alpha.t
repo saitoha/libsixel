@@ -24,7 +24,7 @@ out_default="${ARTIFACT_LOCAL_DIR}/trns-keycolor-palette-default-tbbn3p08.six"
 out_optin="${ARTIFACT_LOCAL_DIR}/trns-keycolor-palette-optin-tbbn3p08.six"
 
 run_img2sixel --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - palette default render failed"
@@ -33,7 +33,7 @@ run_img2sixel --env SIXEL_THREADS=4 \
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_optin}" || {
     echo "not ok 1 - palette opt-in render failed"

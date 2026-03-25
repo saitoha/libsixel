@@ -22,13 +22,13 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_default="${ARTIFACT_LOCAL_DIR}/webp-icc-target-default.sixel"
 output_linear="${ARTIFACT_LOCAL_DIR}/webp-icc-target-linear.sixel"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_default}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp ICC decode failed with default cms target"
     exit 0
 }
 
 SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
-    run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_linear}" || {
+    run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_linear}" || {
     echo "not ok" 1 - "libwebp ICC decode failed with cms target linear"
     exit 0
 }

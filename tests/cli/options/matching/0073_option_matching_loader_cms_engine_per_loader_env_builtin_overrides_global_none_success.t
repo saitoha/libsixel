@@ -19,12 +19,12 @@ output_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_ref_cms1.six"
 output_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_ref_cms0.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_override.six"
 
-run_img2sixel -Lbuiltin:cms=1! "${input_png}" >"${output_cms1}" || {
+run_img2sixel -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_cms1}" || {
     echo "not ok" 1 - "builtin cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Lbuiltin:cms=0! "${input_png}" >"${output_cms0}" || {
+run_img2sixel -Lbuiltin:cms_engine=none! "${input_png}" >"${output_cms0}" || {
     echo "not ok" 1 - "builtin cms=0 reference decode failed"
     exit 0
 }

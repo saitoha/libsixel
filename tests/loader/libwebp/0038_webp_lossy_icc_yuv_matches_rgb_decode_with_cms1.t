@@ -22,13 +22,13 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_yuv="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-yuv-cms1.sixel"
 output_rgb="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-rgb-cms1.sixel"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_yuv}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_yuv}" || {
     echo "not ok" 1 - "libwebp lossy ICC YUV-path decode failed (cms=1)"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
-    run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_rgb}" || {
+    run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_rgb}" || {
     echo "not ok" 1 - "libwebp lossy ICC RGB-path decode failed (cms=1)"
     exit 0
 }

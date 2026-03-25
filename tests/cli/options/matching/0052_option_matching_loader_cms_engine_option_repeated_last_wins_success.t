@@ -27,14 +27,14 @@ output_last_none="${ARTIFACT_LOCAL_DIR}/cms_engine_repeated_last_none.six"
 
 run_img2sixel \
     --cms-engine=auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_ref_auto}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_auto}" || {
     echo "not ok" 1 - "auto reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=none \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_ref_none}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_none}" || {
     echo "not ok" 1 - "none reference decode failed"
     exit 0
 }
@@ -42,7 +42,7 @@ run_img2sixel \
 run_img2sixel \
     --cms-engine=none \
     --cms-engine=auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_last_auto}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_last_auto}" || {
     echo "not ok" 1 - "repeated option (last auto) decode failed"
     exit 0
 }
@@ -50,7 +50,7 @@ run_img2sixel \
 run_img2sixel \
     --cms-engine=auto \
     --cms-engine=none \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_last_none}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_last_none}" || {
     echo "not ok" 1 - "repeated option (last none) decode failed"
     exit 0
 }

@@ -24,14 +24,14 @@ output_gamma="${ARTIFACT_LOCAL_DIR}/libpng_bgcs_indexed_gamma.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/libpng_bgcs_indexed_linear.six"
 
 run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
     echo "not ok" 1 - "libpng indexed gamma background composition failed"
     exit 0
 }
 
 run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -B#808080 "${input_png}" >"${output_linear}" || {
     echo "not ok" 1 - "libpng indexed linear background composition failed"
     exit 0

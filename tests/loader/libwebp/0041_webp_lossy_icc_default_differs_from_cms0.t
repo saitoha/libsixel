@@ -27,7 +27,7 @@ run_img2sixel -Llibwebp! "${input_webp}" >"${output_default}" || {
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_cms1}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed with cms=1"
     exit 0
 }

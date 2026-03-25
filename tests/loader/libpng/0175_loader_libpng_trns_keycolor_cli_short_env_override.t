@@ -24,7 +24,7 @@ out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-cli-short-override-tbbn0g04.six"
 
 SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     run_img2sixel -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-                  -Llibpng:cms=0! -d fs -y raster \
+                  -Llibpng:cms_engine=none! -d fs -y raster \
                   "${input_png}" >"${out}" || {
     echo "not ok 1 - process env=0 + -%=1 render failed"
     exit 0

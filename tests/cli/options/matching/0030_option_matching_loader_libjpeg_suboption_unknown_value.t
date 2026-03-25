@@ -18,7 +18,7 @@ test "${HAVE_JPEG-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -Llibjpeg:cms=2! \
+msg=$(set +xv; run_img2sixel -Llibjpeg:cms_engine=2! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "unknown libjpeg -L suboption value unexpectedly succeeded"
     exit 0
@@ -36,7 +36,7 @@ case "${msg}" in
 esac
 
 case "${msg}" in
-    *"\"2\""*"\"cms\""*"valid values"*"0, 1"*)
+    *"\"2\""*"\"cms_engine\""*"valid values"*"none"*"auto"*"builtin"*"lcms2"*"colorsync"*)
         ;;
     *)
         echo "not ok" 1 - "missing token/candidate details for unknown libjpeg -L suboption value"

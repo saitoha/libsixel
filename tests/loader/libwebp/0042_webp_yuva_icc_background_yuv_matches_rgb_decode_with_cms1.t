@@ -22,13 +22,13 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossy-alpha-8x8-2fr
 output_yuv="${ARTIFACT_LOCAL_DIR}/webp-yuva-icc-bg-yuv-cms1.sixel"
 output_rgb="${ARTIFACT_LOCAL_DIR}/webp-yuva-icc-bg-rgb-cms1.sixel"
 
-run_img2sixel -Llibwebp:cms=1! -S -B#808080 "${input_webp}" >"${output_yuv}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! -S -B#808080 "${input_webp}" >"${output_yuv}" || {
     echo "not ok" 1 - "libwebp YUVA ICC YUV-path decode with -B failed (cms=1)"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
-    run_img2sixel -Llibwebp:cms=1! -S -B#808080 "${input_webp}" >"${output_rgb}" || {
+    run_img2sixel -Llibwebp:cms_engine=auto! -S -B#808080 "${input_webp}" >"${output_rgb}" || {
     echo "not ok" 1 - "libwebp YUVA ICC RGB-path decode with -B failed (cms=1)"
     exit 0
 }

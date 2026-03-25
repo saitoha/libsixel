@@ -23,7 +23,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-xdither-8bit-tbbn0g04.six"
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d x_dither -y raster --precision=8bit \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - x_dither 8bit render failed"

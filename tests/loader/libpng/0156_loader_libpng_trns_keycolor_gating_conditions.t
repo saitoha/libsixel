@@ -24,7 +24,7 @@ out_on="${ARTIFACT_LOCAL_DIR}/trns-keycolor-cms1-on-tbbn0g04.six"
 out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-cms1-off-tbbn0g04.six"
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              -Llibpng:cms=1! \
+              -Llibpng:cms_engine=auto! \
               -d fs -y raster \
               "${input_png}" >"${out_on}" || {
     echo "not ok 1 - cms=1 opt-in render failed"
@@ -32,7 +32,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
 }
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              -Llibpng:cms=1! \
+              -Llibpng:cms_engine=auto! \
               -d fs -y raster \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - cms=1 opt-out render failed"

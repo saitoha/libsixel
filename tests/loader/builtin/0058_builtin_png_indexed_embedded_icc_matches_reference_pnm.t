@@ -22,7 +22,7 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-indexed-embedded-esr
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0003_snake_64_indexed_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-64-builtin-indexed-png-icc.sixel"
 
-run_img2sixel -Lbuiltin:cms=1! "${input_png}" >"${output_sixel}" || {
+run_img2sixel -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
 }

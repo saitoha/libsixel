@@ -24,7 +24,7 @@ output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-bluenoise-float32-tbbn0g04.six"
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               --env SIXEL_DITHER_BLUENOISE_SEED=123 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d bluenoise -y raster --precision=float32 \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - bluenoise float32 render failed"

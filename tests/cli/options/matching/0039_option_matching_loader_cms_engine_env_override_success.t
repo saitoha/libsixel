@@ -26,12 +26,12 @@ output_global_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_env_global_auto.six"
 output_global_none="${ARTIFACT_LOCAL_DIR}/cms_engine_env_global_none.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_override.six"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_cms1}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
     echo "not ok" 1 - "libwebp cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp}" >"${output_cms0}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_cms0}" || {
     echo "not ok" 1 - "libwebp cms=0 reference decode failed"
     exit 0
 }

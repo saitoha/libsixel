@@ -25,14 +25,14 @@ output_long="${ARTIFACT_LOCAL_DIR}/cms_engine_option_long_auto.six"
 
 run_img2sixel \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_env}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env}" || {
     echo "not ok" 1 - "reference decode with env cms engine failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_long}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_long}" || {
     echo "not ok" 1 - "long --cms-engine option was rejected"
     exit 0
 }

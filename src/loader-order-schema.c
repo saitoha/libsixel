@@ -34,11 +34,6 @@ enum {
     SIXEL_LOADER_SCHEMA_CHOICE_GNOME_THUMBNAILER
 };
 
-static sixel_suboption_choice_t const g_suboption_choices_loader_enable_cms[] = {
-    { "0", 0 },
-    { "1", 1 }
-};
-
 static sixel_suboption_choice_t const g_suboption_choices_loader_cms_engine[] = {
     { "none", SIXEL_CMS_ENGINE_NONE },
     { "auto", SIXEL_CMS_ENGINE_AUTO },
@@ -49,15 +44,6 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_cms_engine[] = 
 
 #if HAVE_LIBPNG
 static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
-    {
-        "cms",
-        "c",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_suboption_choices_loader_enable_cms,
-        sizeof(g_suboption_choices_loader_enable_cms)
-            / sizeof(g_suboption_choices_loader_enable_cms[0])
-    },
     {
         "cms_engine",
         "e",
@@ -73,15 +59,6 @@ static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
 #if HAVE_JPEG
 static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
     {
-        "cms",
-        "c",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_suboption_choices_loader_enable_cms,
-        sizeof(g_suboption_choices_loader_enable_cms)
-            / sizeof(g_suboption_choices_loader_enable_cms[0])
-    },
-    {
         "cms_engine",
         "e",
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
@@ -95,15 +72,6 @@ static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
 
 #if HAVE_WEBP
 static sixel_suboption_key_t const g_subkeys_loader_libwebp_cms[] = {
-    {
-        "cms",
-        "c",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_suboption_choices_loader_enable_cms,
-        sizeof(g_suboption_choices_loader_enable_cms)
-            / sizeof(g_suboption_choices_loader_enable_cms[0])
-    },
     {
         "cms_engine",
         "e",
@@ -119,15 +87,6 @@ static sixel_suboption_key_t const g_subkeys_loader_libwebp_cms[] = {
 #if HAVE_LIBTIFF
 static sixel_suboption_key_t const g_subkeys_loader_libtiff_cms[] = {
     {
-        "cms",
-        "c",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_suboption_choices_loader_enable_cms,
-        sizeof(g_suboption_choices_loader_enable_cms)
-            / sizeof(g_suboption_choices_loader_enable_cms[0])
-    },
-    {
         "cms_engine",
         "e",
         "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
@@ -140,15 +99,6 @@ static sixel_suboption_key_t const g_subkeys_loader_libtiff_cms[] = {
 #endif
 
 static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
-    {
-        "cms",
-        "c",
-        NULL,
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_suboption_choices_loader_enable_cms,
-        sizeof(g_suboption_choices_loader_enable_cms)
-            / sizeof(g_suboption_choices_loader_enable_cms[0])
-    },
     {
         "cms_engine",
         "e",

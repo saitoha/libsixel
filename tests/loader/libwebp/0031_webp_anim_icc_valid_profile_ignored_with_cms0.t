@@ -23,12 +23,12 @@ input_webp_valid_icc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_e
 output_noicc="${ARTIFACT_LOCAL_DIR}/webp-anim-noicc-cms0.sixel"
 output_valid_icc="${ARTIFACT_LOCAL_DIR}/webp-anim-valid-icc-cms0.sixel"
 
-run_img2sixel -Llibwebp:cms=0! -S "${input_webp_noicc}" >"${output_noicc}" || {
+run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp_noicc}" >"${output_noicc}" || {
     echo "not ok" 1 - "libwebp animation decode failed for non-ICC input (cms=0)"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! -S "${input_webp_valid_icc}" >"${output_valid_icc}" || {
+run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp_valid_icc}" >"${output_valid_icc}" || {
     echo "not ok" 1 - "libwebp animation decode failed for valid ICC input (cms=0)"
     exit 0
 }

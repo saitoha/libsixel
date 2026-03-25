@@ -18,7 +18,7 @@ echo "1..1"
 
 probe_output=$(
     set +xv
-    run_img2sixel -Llibtiff:c=1! \
+    run_img2sixel -Llibtiff:e=auto! \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff" \
         -o/dev/null 2>&1
 ) || probe_status=$?

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying explicit :cms=1 overrides global --cms-engine=none.
+# TAP test verifying explicit :cms_engine=auto overrides global --cms-engine=none.
 
 set -eux
 
@@ -23,14 +23,14 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_flag_override_ref_cms1.six"
 output_with_global_none_cms1="${ARTIFACT_LOCAL_DIR}/cms_flag_override_global_none_cms1.six"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_ref_cms1}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=none \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_with_global_none_cms1}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_with_global_none_cms1}" || {
     echo "not ok" 1 - "decode failed for --cms-engine=none + cms=1"
     exit 0
 }

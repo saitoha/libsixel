@@ -23,7 +23,7 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-pal8-trns-multi0-semi-
 out_lo="${ARTIFACT_LOCAL_DIR}/req-lo-cms0.six"
 log_lo="${ARTIFACT_LOCAL_DIR}/req-lo-cms0.log"
 
-run_img2sixel -v -Llibpng:cms=0! \
+run_img2sixel -v -Llibpng:cms_engine=none! \
               -B#ffffff -d none -p16 \
               "${input_png}" >"${out_lo}" 2>"${log_lo}" || {
     echo "not ok 1 - low reqcolors render failed"

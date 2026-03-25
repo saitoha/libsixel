@@ -33,7 +33,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-run_img2sixel -Llibtiff:cms=1! "${input_tiff}" >"${output_six}" || {
+run_img2sixel -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_six}" || {
     echo "not ok" 1 - "libtiff decode failed: grayscale/img_tiff_grayscale_icc1_wp0_pc1_trc1"
     exit 0
 }
