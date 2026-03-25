@@ -196,6 +196,17 @@ libpng_trns_keycolor_optin_enabled(void)
     return enabled;
 }
 
+static double
+png_decode_srgb_unit(double value);
+
+static double
+png_encode_srgb_unit(double value);
+
+static double
+png_decode_source_unit(double value,
+                       int transfer_mode,
+                       double file_gamma);
+
 static void
 read_png(png_structp png_ptr,
          png_bytep data,
@@ -221,35 +232,98 @@ read_palette(png_structp png_ptr,
              int ncolors,
              png_color *png_palette,
              png_color_16 *pbackground,
-             int *transparent)
+             int background_colorspace,
+             double const bg_linear[3],
+             int *transparent,
+             unsigned char *zero_alpha_map,
+             int *zero_alpha_count)
 {
     png_bytep trans;
     int num_trans;
+    int alpha;
+    int key_index;
+    int zero_count;
+    double alpha_unit;
+    double src_unit;
+    double src_linear;
+    double out_linear;
     int i;
 
     trans = NULL;
     num_trans = 0;
+    alpha = 0xff;
+    key_index = -1;
+    zero_count = 0;
+    alpha_unit = 0.0;
+    src_unit = 0.0;
+    src_linear = 0.0;
+    out_linear = 0.0;
     i = 0;
 
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
         png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
     }
-    if (num_trans > 0) {
-        *transparent = trans[0];
+    if (num_trans > ncolors) {
+        num_trans = ncolors;
+    }
+    if (zero_alpha_map != NULL && ncolors > 0) {
+        memset(zero_alpha_map, 0, (size_t)ncolors);
     }
     for (i = 0; i < ncolors; ++i) {
-        if (pbackground && i < num_trans) {
-            palette[i * 3 + 0] = ((0xff - trans[i]) * pbackground->red
-                                   + trans[i] * png_palette[i].red) >> 8;
-            palette[i * 3 + 1] = ((0xff - trans[i]) * pbackground->green
-                                   + trans[i] * png_palette[i].green) >> 8;
-            palette[i * 3 + 2] = ((0xff - trans[i]) * pbackground->blue
-                                   + trans[i] * png_palette[i].blue) >> 8;
+        alpha = (i < num_trans) ? trans[i] : 0xff;
+        if (alpha == 0) {
+            if (key_index < 0) {
+                key_index = i;
+            }
+            ++zero_count;
+            if (zero_alpha_map != NULL) {
+                zero_alpha_map[i] = 1;
+            }
+        }
+        if (pbackground && alpha < 0xff) {
+            if (background_colorspace == SIXEL_COLORSPACE_LINEAR &&
+                bg_linear != NULL) {
+                alpha_unit = (double)alpha / 255.0;
+
+                src_unit = (double)png_palette[i].red / 255.0;
+                src_linear = png_decode_srgb_unit(src_unit);
+                out_linear = src_linear * alpha_unit
+                             + bg_linear[0] * (1.0 - alpha_unit);
+                palette[i * 3 + 0] = (unsigned char)(
+                    png_encode_srgb_unit(out_linear) * 255.0 + 0.5);
+
+                src_unit = (double)png_palette[i].green / 255.0;
+                src_linear = png_decode_srgb_unit(src_unit);
+                out_linear = src_linear * alpha_unit
+                             + bg_linear[1] * (1.0 - alpha_unit);
+                palette[i * 3 + 1] = (unsigned char)(
+                    png_encode_srgb_unit(out_linear) * 255.0 + 0.5);
+
+                src_unit = (double)png_palette[i].blue / 255.0;
+                src_linear = png_decode_srgb_unit(src_unit);
+                out_linear = src_linear * alpha_unit
+                             + bg_linear[2] * (1.0 - alpha_unit);
+                palette[i * 3 + 2] = (unsigned char)(
+                    png_encode_srgb_unit(out_linear) * 255.0 + 0.5);
+            } else {
+                palette[i * 3 + 0] = ((0xff - alpha) * pbackground->red
+                                       + alpha * png_palette[i].red) >> 8;
+                palette[i * 3 + 1] = ((0xff - alpha) * pbackground->green
+                                       + alpha * png_palette[i].green) >> 8;
+                palette[i * 3 + 2] = ((0xff - alpha) * pbackground->blue
+                                       + alpha * png_palette[i].blue) >> 8;
+            }
         } else {
             palette[i * 3 + 0] = png_palette[i].red;
             palette[i * 3 + 1] = png_palette[i].green;
             palette[i * 3 + 2] = png_palette[i].blue;
         }
+    }
+    if (transparent != NULL) {
+        *transparent = key_index;
+    }
+    if (zero_alpha_count != NULL) {
+        *zero_alpha_count = zero_count;
     }
 }
 
@@ -280,7 +354,6 @@ png_decode_srgb_unit(double value)
     return pow((value + 0.055) / 1.055, 2.4);
 }
 
-#if !HAVE_LCMS2
 static double
 png_encode_srgb_unit(double value)
 {
@@ -290,7 +363,6 @@ png_encode_srgb_unit(double value)
     }
     return 1.055 * pow(value, 1.0 / 2.4) - 0.055;
 }
-#endif  /* !HAVE_LCMS2 */
 
 static double
 png_decode_source_unit(double value, int transfer_mode, double file_gamma)
@@ -1341,6 +1413,7 @@ load_png(unsigned char      /* out */ **result,
     int has_tRNS_chunk;
     int has_alpha_chunk;
     int has_transparency;
+    int indexed_trns_palette_path;
     int trns_keycolor_optin;
     int use_trns_keycolor;
     int background_colorspace;
@@ -1353,6 +1426,14 @@ load_png(unsigned char      /* out */ **result,
     double bg_unit[3];
     double bg_linear[3];
     double file_gamma_decode;
+    int palette_force_pal8;
+    int palette_keycolor_index;
+    int palette_zero_alpha_count;
+    int palette_remap_zero_alpha_indexes;
+    unsigned char palette_zero_alpha_map[SIXEL_PALETTE_MAX];
+    size_t pixel_count;
+    size_t pixel_index;
+    unsigned int palette_index;
 
 #if HAVE_SETJMP && HAVE_LONGJMP
     if (setjmp(jmpbuf) != 0) {
@@ -1376,6 +1457,7 @@ load_png(unsigned char      /* out */ **result,
     has_tRNS_chunk = 0;
     has_alpha_chunk = 0;
     has_transparency = 0;
+    indexed_trns_palette_path = 0;
     trns_keycolor_optin = 0;
     use_trns_keycolor = 0;
     background_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -1408,6 +1490,14 @@ load_png(unsigned char      /* out */ **result,
     bg_linear[1] = 0.0;
     bg_linear[2] = 0.0;
     file_gamma_decode = 0.0;
+    palette_force_pal8 = 0;
+    palette_keycolor_index = -1;
+    palette_zero_alpha_count = 0;
+    palette_remap_zero_alpha_indexes = 0;
+    memset(palette_zero_alpha_map, 0, sizeof(palette_zero_alpha_map));
+    pixel_count = 0u;
+    pixel_index = 0u;
+    palette_index = 0u;
 #if HAVE_LCMS2
     icc_name = NULL;
     icc_compression_type = 0;
@@ -1587,7 +1677,11 @@ load_png(unsigned char      /* out */ **result,
 
     has_tRNS_chunk = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0;
     has_alpha_chunk = (color_type & PNG_COLOR_MASK_ALPHA) != 0;
-    has_transparency = has_tRNS_chunk || has_alpha_chunk;
+    indexed_trns_palette_path = has_tRNS_chunk &&
+                                !has_alpha_chunk &&
+                                color_type == PNG_COLOR_TYPE_PALETTE;
+    has_transparency = (has_tRNS_chunk || has_alpha_chunk) &&
+                       !indexed_trns_palette_path;
     trns_keycolor_optin = libpng_trns_keycolor_optin_enabled();
     use_trns_keycolor = trns_keycolor_optin &&
                         has_tRNS_chunk &&
@@ -1609,6 +1703,15 @@ load_png(unsigned char      /* out */ **result,
     background.blue = (png_uint_16)(bg_unit[2] * 255.0 + 0.5);
     background.gray = (png_uint_16)((bg_unit[0] + bg_unit[1] + bg_unit[2])
                                     * 255.0 / 3.0 + 0.5);
+    if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
+        bg_linear[0] = bg_unit[0];
+        bg_linear[1] = bg_unit[1];
+        bg_linear[2] = bg_unit[2];
+    } else {
+        bg_linear[0] = png_decode_srgb_unit(bg_unit[0]);
+        bg_linear[1] = png_decode_srgb_unit(bg_unit[1]);
+        bg_linear[2] = png_decode_srgb_unit(bg_unit[2]);
+    }
 
     if (use_trns_keycolor) {
         if (bitdepth == 16u) {
@@ -2335,79 +2438,68 @@ alpha_cleanup:
             png_set_strip_alpha(png_ptr);
             *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         } else {
-            switch (bitdepth) {
-            case 1:
-                *ppalette = (unsigned char *)
-                    sixel_allocator_malloc(allocator,
-                                           (size_t)*pncolors * 3);
-                if (*ppalette == NULL) {
-                    sixel_helper_set_additional_message(
-                        "load_png: sixel_allocator_malloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto cleanup;
+            *ppalette = (unsigned char *)
+                sixel_allocator_malloc(allocator,
+                                       (size_t)*pncolors * 3);
+            if (*ppalette == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_png: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto cleanup;
+            }
+
+            palette_force_pal8 = 0;
+            palette_keycolor_index = -1;
+            palette_zero_alpha_count = 0;
+            palette_remap_zero_alpha_indexes = 0;
+            memset(palette_zero_alpha_map, 0, sizeof(palette_zero_alpha_map));
+
+            read_palette(png_ptr, info_ptr, *ppalette,
+                         *pncolors,
+                         png_palette,
+                         &background,
+                         background_colorspace,
+                         bg_linear,
+                         transparent,
+                         palette_zero_alpha_map,
+                         &palette_zero_alpha_count);
+
+            if (palette_zero_alpha_count > 0) {
+                palette_force_pal8 = 1;
+                if (transparent != NULL) {
+                    palette_keycolor_index = *transparent;
                 }
-                read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors,
-                             png_palette,
-                             &background,
-                             transparent);
-                *pixelformat = SIXEL_PIXELFORMAT_PAL1;
-                break;
-            case 2:
-                *ppalette = (unsigned char *)
-                    sixel_allocator_malloc(allocator,
-                                           (size_t)*pncolors * 3);
-                if (*ppalette == NULL) {
-                    sixel_helper_set_additional_message(
-                        "load_png: sixel_allocator_malloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto cleanup;
+                if (palette_keycolor_index >= 0 &&
+                    palette_zero_alpha_count > 1) {
+                    palette_remap_zero_alpha_indexes = 1;
                 }
-                read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors,
-                             png_palette,
-                             &background,
-                             transparent);
-                *pixelformat = SIXEL_PIXELFORMAT_PAL2;
-                break;
-            case 4:
-                *ppalette = (unsigned char *)
-                    sixel_allocator_malloc(allocator,
-                                           (size_t)*pncolors * 3);
-                if (*ppalette == NULL) {
-                    sixel_helper_set_additional_message(
-                        "load_png: sixel_allocator_malloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto cleanup;
-                }
-                read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors,
-                             png_palette,
-                             &background,
-                             transparent);
-                *pixelformat = SIXEL_PIXELFORMAT_PAL4;
-                break;
-            case 8:
-                *ppalette = (unsigned char *)
-                    sixel_allocator_malloc(allocator,
-                                           (size_t)*pncolors * 3);
-                if (*ppalette == NULL) {
-                    sixel_helper_set_additional_message(
-                        "load_png: sixel_allocator_malloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto cleanup;
-                }
-                read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors,
-                             png_palette,
-                             &background,
-                             transparent);
+            }
+
+            if (palette_force_pal8 && bitdepth < 8u) {
+                png_set_packing(png_ptr);
+            }
+
+            if (palette_force_pal8) {
                 *pixelformat = SIXEL_PIXELFORMAT_PAL8;
-                break;
-            default:
-                png_set_palette_to_rgb(png_ptr);
-                *pixelformat = SIXEL_PIXELFORMAT_RGB888;
-                break;
+            } else {
+                switch (bitdepth) {
+                case 1:
+                    *pixelformat = SIXEL_PIXELFORMAT_PAL1;
+                    break;
+                case 2:
+                    *pixelformat = SIXEL_PIXELFORMAT_PAL2;
+                    break;
+                case 4:
+                    *pixelformat = SIXEL_PIXELFORMAT_PAL4;
+                    break;
+                case 8:
+                    *pixelformat = SIXEL_PIXELFORMAT_PAL8;
+                    break;
+                default:
+                    png_set_palette_to_rgb(png_ptr);
+                    *pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                    break;
+                }
             }
         }
         break;
@@ -2592,6 +2684,25 @@ alpha_cleanup:
         }
 
         png_read_image(png_ptr, rows);
+
+        if (palette_remap_zero_alpha_indexes &&
+            *pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
+            palette_keycolor_index >= 0 &&
+            palette_keycolor_index < SIXEL_PALETTE_MAX &&
+            *result != NULL &&
+            *psx > 0 &&
+            *psy > 0 &&
+            (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
+            pixel_count = (size_t)*psx * (size_t)*psy;
+            for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+                palette_index = (*result)[pixel_index];
+                if ((int)palette_index != palette_keycolor_index &&
+                    palette_index < SIXEL_PALETTE_MAX &&
+                    palette_zero_alpha_map[palette_index] != 0u) {
+                    (*result)[pixel_index] = (unsigned char)palette_keycolor_index;
+                }
+            }
+        }
     }
 
 #if HAVE_LCMS2
