@@ -1,5 +1,5 @@
 /*
- * Verify libjpeg loader reports linear float output for JPEG sources.
+ * Verify libjpeg loader reports float output for JPEG sources.
  */
 
 #include "tests/loader/pixelformat_test_common.h"
@@ -19,7 +19,7 @@ run_libjpeg_loader_test(void)
 
     rc = run_loader_component_case("libjpeg loader (8-bit grayscale)",
                                    JPEG_IMAGE_PATH,
-                                   SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                                   SIXEL_PIXELFORMAT_RGBFLOAT32,
                                    600,
                                    450,
                                    new_libjpeg_component);
@@ -30,7 +30,7 @@ run_libjpeg_loader_test(void)
 #if defined(HAVE_JPEG12_API) && HAVE_JPEG12_API
     rc = run_loader_component_case("libjpeg loader (12-bit CMYK)",
                                    "/tests/data/inputs/formats/snake-jpeg-12bit-cmyk-seq444.jpg",
-                                   SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                                   SIXEL_PIXELFORMAT_RGBFLOAT32,
                                    64,
                                    64,
                                    new_libjpeg_component);
@@ -40,7 +40,7 @@ run_libjpeg_loader_test(void)
 
     rc = run_loader_component_case("libjpeg loader (12-bit YCCK)",
                                    "/tests/data/inputs/formats/snake-jpeg-12bit-ycck-seq444.jpg",
-                                   SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                                   SIXEL_PIXELFORMAT_RGBFLOAT32,
                                    64,
                                    64,
                                    new_libjpeg_component);
@@ -52,7 +52,7 @@ run_libjpeg_loader_test(void)
 #if defined(HAVE_JPEG16_API) && HAVE_JPEG16_API
     rc = run_loader_component_case("libjpeg loader (16-bit CMYK)",
                                    "/tests/data/inputs/formats/snake-jpeg-16bit-cmyk-lossless.jpg",
-                                   SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                                   SIXEL_PIXELFORMAT_RGBFLOAT32,
                                    64,
                                    64,
                                    new_libjpeg_component);
