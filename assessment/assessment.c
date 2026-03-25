@@ -1148,6 +1148,10 @@ frame_to_rgb_float(sixel_frame_t *frame,
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
+        if (pixels == NULL) {
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
         for (index = 0; index < count; ++index) {
             converted[index] = pixels[index] / 255.0f;
         }
