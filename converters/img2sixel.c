@@ -949,6 +949,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Overrides SIXEL_LOADER_CMS_ENGINE."
     },
     {
+        "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",
+        "enable libpng tRNS keycolor transparency path. Accepts 1/yes/true/on\n"
+        "to enable; defaults to disabled."
+    },
+    {
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
         "override CMS backend for libjpeg loader conversion.\n"
         "Overrides SIXEL_LOADER_CMS_ENGINE."
