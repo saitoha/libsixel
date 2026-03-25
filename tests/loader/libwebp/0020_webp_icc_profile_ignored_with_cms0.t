@@ -23,12 +23,12 @@ input_webp_icc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedde
 output_noicc="${ARTIFACT_LOCAL_DIR}/webp-noicc-cms0.sixel"
 output_icc="${ARTIFACT_LOCAL_DIR}/webp-icc-cms0.sixel"
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp_noicc}" >"${output_noicc}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp_noicc}" >"${output_noicc}" || {
     echo "not ok" 1 - "libwebp decode failed for non-ICC input (cms=0)"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp_icc}" >"${output_icc}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp_icc}" >"${output_icc}" || {
     echo "not ok" 1 - "libwebp decode failed for ICC input (cms=0)"
     exit 0
 }

@@ -24,7 +24,7 @@ out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-scan-serpentine-carry-f32-lso2-tbbn0g04
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               --precision=float32 \
               -d lso2 -y serpentine -Y carry \
               "${input_png}" >"${out}" || {

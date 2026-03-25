@@ -29,7 +29,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit-cmyk-seq444
 reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0015_jpeg_cmyk_12bit_seq444_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_cmyk_12bit_seq444_cms0.six"
 
-run_img2sixel -L libjpeg:cms=0! "${input_jpeg}" >"${output_sixel}" || {
+run_img2sixel -L libjpeg:cms_engine=none! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg 12-bit CMYK JPEG decode failed (cms=0)"
     exit 0
 }

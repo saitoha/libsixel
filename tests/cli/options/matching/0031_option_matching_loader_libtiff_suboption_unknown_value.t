@@ -18,7 +18,7 @@ test "${HAVE_LIBTIFF-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -Llibtiff:cms=2! \
+msg=$(set +xv; run_img2sixel -Llibtiff:cms_engine=2! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "unknown libtiff -L suboption value unexpectedly succeeded"
     exit 0
@@ -36,7 +36,7 @@ case "${msg}" in
 esac
 
 case "${msg}" in
-    *"\"2\""*"\"cms\""*"valid values"*"0, 1"*)
+    *"\"2\""*"\"cms_engine\""*"valid values"*"none"*"auto"*"builtin"*"lcms2"*"colorsync"*)
         ;;
     *)
         echo "not ok" 1 - "missing token/candidate details for unknown libtiff -L suboption value"

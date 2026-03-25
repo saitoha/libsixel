@@ -25,14 +25,14 @@ output_separate="${ARTIFACT_LOCAL_DIR}/cms_engine_long_separate_actual.six"
 
 run_img2sixel \
     --cms-engine=auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_equals}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_equals}" || {
     echo "not ok" 1 - "--cms-engine=auto reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_separate}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_separate}" || {
     echo "not ok" 1 - "long separate --cms-engine auto form was rejected"
     exit 0
 }

@@ -24,12 +24,12 @@ output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_libtiff_subopt_ref_cms1.six"
 output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_libtiff_subopt_ref_cms0.six"
 output_subopt_none="${ARTIFACT_LOCAL_DIR}/cms_engine_libtiff_subopt_none.six"
 
-run_img2sixel -Llibtiff:cms=1! "${input_tiff}" >"${output_ref_cms1}" || {
+run_img2sixel -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "libtiff cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibtiff:cms=0! "${input_tiff}" >"${output_ref_cms0}" || {
+run_img2sixel -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_ref_cms0}" || {
     echo "not ok" 1 - "libtiff cms=0 reference decode failed"
     exit 0
 }

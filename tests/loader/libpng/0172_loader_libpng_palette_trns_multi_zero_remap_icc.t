@@ -24,7 +24,7 @@ input_single="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-pal8-trns-single0-s
 out_multi="${ARTIFACT_LOCAL_DIR}/multi0-white-cms0.six"
 out_single="${ARTIFACT_LOCAL_DIR}/single0-white-cms0.six"
 
-run_img2sixel -Llibpng:cms=0! \
+run_img2sixel -Llibpng:cms_engine=none! \
               -B#ffffff \
               -d none -p256 \
               "${input_multi}" >"${out_multi}" || {
@@ -32,7 +32,7 @@ run_img2sixel -Llibpng:cms=0! \
     exit 0
 }
 
-run_img2sixel -Llibpng:cms=0! \
+run_img2sixel -Llibpng:cms_engine=none! \
               -B#ffffff \
               -d none -p256 \
               "${input_single}" >"${out_single}" || {

@@ -18,7 +18,7 @@ echo "1..1"
 
 probe_output=$(
     set +xv
-    run_img2sixel -Llibwebp:cms=0! \
+    run_img2sixel -Llibwebp:cms_engine=none! \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.webp" \
         -o/dev/null 2>&1
 ) || probe_status=$?
@@ -39,5 +39,5 @@ test "${probe_status-}" = "" || {
     exit 0
 }
 
-echo "ok" 1 - "-L accepts libwebp:cms suboptions"
+echo "ok" 1 - "-L accepts libwebp:cms_engine suboptions"
 exit 0

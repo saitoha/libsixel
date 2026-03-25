@@ -26,27 +26,27 @@ output_subopt_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_subopt_override_actual_auto
 output_subopt_none="${ARTIFACT_LOCAL_DIR}/cms_engine_subopt_override_actual_none.six"
 
 run_img2sixel \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_ref_cms1}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }
 
 run_img2sixel \
-    -Llibwebp:cms=0! "${input_webp}" >"${output_ref_cms0}" || {
+    -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=none \
-    -Llibwebp:cms=1:cms_engine=auto! "${input_webp}" >"${output_subopt_auto}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_subopt_auto}" || {
     echo "not ok" 1 - "cms_engine=auto suboption override decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=auto \
-    -Llibwebp:cms=1:cms_engine=none! "${input_webp}" >"${output_subopt_none}" || {
+    -Llibwebp:cms_engine=none! "${input_webp}" >"${output_subopt_none}" || {
     echo "not ok" 1 - "cms_engine=none suboption override decode failed"
     exit 0
 }

@@ -24,12 +24,12 @@ output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_global_disabled_ref_cms1.six"
 output_ref_none="${ARTIFACT_LOCAL_DIR}/cms_engine_global_disabled_ref_none.six"
 output_env_disabled="${ARTIFACT_LOCAL_DIR}/cms_engine_global_disabled_alias.six"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_ref_cms1}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp}" >"${output_ref_none}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_none}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }

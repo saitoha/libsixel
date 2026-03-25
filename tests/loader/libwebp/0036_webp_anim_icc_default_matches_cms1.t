@@ -27,7 +27,7 @@ run_img2sixel -Llibwebp! -S "${input_webp_icc}" >"${output_default}" || {
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! -S "${input_webp_icc}" >"${output_cms0}" || {
+run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp_icc}" >"${output_cms0}" || {
     echo "not ok" 1 - "libwebp cms=0 decode failed for animated ICC input"
     exit 0
 }

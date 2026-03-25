@@ -24,7 +24,7 @@ out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-reqcolors-p1-on-tbbn0g04.six"
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d fs -y raster -p 1 \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - reqcolors p1 opt-in render failed"

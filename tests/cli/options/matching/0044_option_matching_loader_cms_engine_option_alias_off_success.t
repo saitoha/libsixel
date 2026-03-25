@@ -25,14 +25,14 @@ output_off="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_off_alias.six"
 
 run_img2sixel \
     --cms-engine=none \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_none}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_none}" || {
     echo "not ok" 1 - "--cms-engine=none reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=off \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_off}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_off}" || {
     echo "not ok" 1 - "--cms-engine=off was rejected"
     exit 0
 }

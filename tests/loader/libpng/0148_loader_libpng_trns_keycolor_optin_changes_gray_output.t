@@ -24,14 +24,14 @@ default_out="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_gray_default.six"
 optin_out="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_gray_optin.six"
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               "${input_png}" >"${default_out}" || {
     echo "not ok" 1 - "libpng default grayscale decode failed"
     exit 0
 }
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               "${input_png}" >"${optin_out}" || {
     echo "not ok" 1 - "libpng opt-in grayscale keycolor decode failed"
     exit 0

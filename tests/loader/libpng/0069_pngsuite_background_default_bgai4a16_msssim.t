@@ -25,7 +25,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/background/bgai4a16.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0061_pngsuite_background_default_bgai4a16_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/bgai4a16.sixel"
 
-run_img2sixel -Llibpng:cms=0! "${input_png}" >"${output_sixel}" || {
+run_img2sixel -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }

@@ -99,25 +99,6 @@ loader_manager_parse_positive_int(char const *text,
 #endif
 
 static int
-loader_manager_parse_bool_flag(char const *text,
-                               size_t length,
-                               int *value_out)
-{
-    if (text == NULL || value_out == NULL || length != 1u) {
-        return 0;
-    }
-    if (text[0] == '0') {
-        *value_out = 0;
-        return 1;
-    }
-    if (text[0] == '1') {
-        *value_out = 1;
-        return 1;
-    }
-    return 0;
-}
-
-static int
 loader_manager_parse_cms_engine(char const *text,
                                 size_t length,
                                 int *value_out)
@@ -407,51 +388,6 @@ loader_manager_resolve_loader_suboptions(
             }
 #endif
             if (strcmp(item->base_def->name, "libpng") == 0 &&
-                strcmp(key_name, "cms") == 0 &&
-                loader_manager_parse_bool_flag(value_text,
-                                               value_length,
-                                               &parsed_value)) {
-                suboptions->libpng_enable_cms = parsed_value;
-                suboptions->libpng_cms_engine =
-                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
-                                      : SIXEL_CMS_ENGINE_NONE;
-            } else if (strcmp(item->base_def->name, "libjpeg") == 0 &&
-                       strcmp(key_name, "cms") == 0 &&
-                       loader_manager_parse_bool_flag(value_text,
-                                                      value_length,
-                                                      &parsed_value)) {
-                suboptions->libjpeg_enable_cms = parsed_value;
-                suboptions->libjpeg_cms_engine =
-                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
-                                      : SIXEL_CMS_ENGINE_NONE;
-            } else if (strcmp(item->base_def->name, "libwebp") == 0 &&
-                       strcmp(key_name, "cms") == 0 &&
-                       loader_manager_parse_bool_flag(value_text,
-                                                      value_length,
-                                                      &parsed_value)) {
-                suboptions->libwebp_enable_cms = parsed_value;
-                suboptions->libwebp_cms_engine =
-                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
-                                      : SIXEL_CMS_ENGINE_NONE;
-            } else if (strcmp(item->base_def->name, "libtiff") == 0 &&
-                       strcmp(key_name, "cms") == 0 &&
-                       loader_manager_parse_bool_flag(value_text,
-                                                      value_length,
-                                                      &parsed_value)) {
-                suboptions->libtiff_enable_cms = parsed_value;
-                suboptions->libtiff_cms_engine =
-                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
-                                      : SIXEL_CMS_ENGINE_NONE;
-            } else if (strcmp(item->base_def->name, "builtin") == 0 &&
-                       strcmp(key_name, "cms") == 0 &&
-                       loader_manager_parse_bool_flag(value_text,
-                                                      value_length,
-                                                      &parsed_value)) {
-                suboptions->builtin_enable_cms = parsed_value;
-                suboptions->builtin_cms_engine =
-                    parsed_value != 0 ? SIXEL_CMS_ENGINE_AUTO
-                                      : SIXEL_CMS_ENGINE_NONE;
-            } else if (strcmp(item->base_def->name, "libpng") == 0 &&
                        strcmp(key_name, "cms_engine") == 0 &&
                        loader_manager_parse_cms_engine(value_text,
                                                        value_length,

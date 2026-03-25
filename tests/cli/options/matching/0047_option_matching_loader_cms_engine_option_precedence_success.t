@@ -27,14 +27,14 @@ output_env_last="${ARTIFACT_LOCAL_DIR}/cms_engine_precedence_env_last.six"
 
 run_img2sixel \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_ref_auto}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_auto}" || {
     echo "not ok" 1 - "auto reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_ref_none}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_none}" || {
     echo "not ok" 1 - "none reference decode failed"
     exit 0
 }
@@ -42,7 +42,7 @@ run_img2sixel \
 run_img2sixel \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     -# auto \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_option_last}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_option_last}" || {
     echo "not ok" 1 - "option-last precedence decode failed"
     exit 0
 }
@@ -50,7 +50,7 @@ run_img2sixel \
 run_img2sixel \
     -# auto \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_env_last}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_last}" || {
     echo "not ok" 1 - "env-last precedence decode failed"
     exit 0
 }

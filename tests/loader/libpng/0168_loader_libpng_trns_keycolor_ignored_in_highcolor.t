@@ -25,7 +25,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-highcolor-off-tbbn0g04.six"
 
 run_img2sixel -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_on}" || {
     echo "not ok 1 - highcolor opt-in render failed"
     exit 0
@@ -33,7 +33,7 @@ run_img2sixel -I \
 
 run_img2sixel -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - highcolor opt-out render failed"
     exit 0

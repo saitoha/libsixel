@@ -23,7 +23,7 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_per_loader_lcms_alias_ref_cms1.six"
 output_override_lcms="${ARTIFACT_LOCAL_DIR}/cms_per_loader_lcms_alias_actual.six"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_ref_cms1}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }

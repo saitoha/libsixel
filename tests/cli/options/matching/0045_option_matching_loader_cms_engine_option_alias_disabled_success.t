@@ -25,14 +25,14 @@ output_disabled="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_disabled_alias.six"
 
 run_img2sixel \
     --cms-engine=none \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_none}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_none}" || {
     echo "not ok" 1 - "--cms-engine=none reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=disabled \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_disabled}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_disabled}" || {
     echo "not ok" 1 - "--cms-engine=disabled was rejected"
     exit 0
 }

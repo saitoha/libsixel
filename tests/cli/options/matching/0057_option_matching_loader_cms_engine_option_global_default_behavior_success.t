@@ -1,5 +1,6 @@
 #!/bin/sh
-# TAP test verifying --cms-engine affects loaders without explicit :cms.
+# TAP test verifying --cms-engine affects loaders without explicit
+# :cms_engine suboptions.
 
 set -eux
 
@@ -25,12 +26,12 @@ output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_ref_cms0.six"
 output_option_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_option_auto.six"
 output_option_none="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_option_none.six"
 
-run_img2sixel -Llibwebp:cms=1! "${input_webp}" >"${output_ref_cms1}" || {
+run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp}" >"${output_ref_cms0}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }

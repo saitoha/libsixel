@@ -801,8 +801,7 @@ steps.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
                            libpng/libjpeg/libwebp/libtiff/builtin
-                           accept :cms=0|1 (or :c=0|1, default 0).
-                           these loaders also accept
+                           accept
                            :cms_engine=none|auto|builtin|lcms2|colorsync
                            (or :e=..., default none).
                            WIC accepts :ico_minsize=SIZE to select

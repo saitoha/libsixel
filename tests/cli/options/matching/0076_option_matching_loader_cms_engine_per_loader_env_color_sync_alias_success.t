@@ -24,7 +24,7 @@ output_ref_none="${ARTIFACT_LOCAL_DIR}/cms_engine_color_sync_alias_ref_none.six"
 output_colorsync="${ARTIFACT_LOCAL_DIR}/cms_engine_color_sync_alias_colorsync.six"
 output_color_sync="${ARTIFACT_LOCAL_DIR}/cms_engine_color_sync_alias_color_sync.six"
 
-run_img2sixel -Llibwebp:cms=0! "${input_webp}" >"${output_ref_none}" || {
+run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_none}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }

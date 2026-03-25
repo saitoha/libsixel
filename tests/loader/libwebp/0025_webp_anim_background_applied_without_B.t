@@ -22,12 +22,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-
 output_default="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-default.six"
 output_black="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-black.six"
 
-run_img2sixel -Llibwebp:cms=0! -S "${input_webp}" >"${output_default}" || {
+run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp animation decode without -B failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms=0! -S -B#000 "${input_webp}" >"${output_black}" || {
+run_img2sixel -Llibwebp:cms_engine=none! -S -B#000 "${input_webp}" >"${output_black}" || {
     echo "not ok" 1 - "libwebp animation decode with -B#000 failed"
     exit 0
 }

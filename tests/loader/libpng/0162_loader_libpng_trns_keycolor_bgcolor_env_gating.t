@@ -25,7 +25,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-bg-proc-off-tbbn0g04.six"
 
 SIXEL_BGCOLOR=white \
     run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-                  -Llibpng:cms=0! -d fs -y raster \
+                  -Llibpng:cms_engine=none! -d fs -y raster \
                   "${input_png}" >"${out_on}" || {
     echo "not ok 1 - process SIXEL_BGCOLOR + opt-in render failed"
     exit 0
@@ -33,7 +33,7 @@ SIXEL_BGCOLOR=white \
 
 SIXEL_BGCOLOR=white \
     run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-                  -Llibpng:cms=0! -d fs -y raster \
+                  -Llibpng:cms_engine=none! -d fs -y raster \
                   "${input_png}" >"${out_off}" || {
     echo "not ok 1 - process SIXEL_BGCOLOR + opt-out render failed"
     exit 0

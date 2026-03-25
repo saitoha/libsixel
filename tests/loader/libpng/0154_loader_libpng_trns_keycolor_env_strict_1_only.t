@@ -25,7 +25,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-env0-tbbn0g04.six"
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_invalid}" || {
     echo "not ok 1 - env=2 render failed"
@@ -34,7 +34,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
-              -Llibpng:cms=0! \
+              -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - env=0 render failed"

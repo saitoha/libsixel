@@ -23,7 +23,7 @@ output_gamma="${ARTIFACT_LOCAL_DIR}/webp-bgcs-alpha-gamma.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/webp-bgcs-alpha-linear.six"
 
 run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
-              -Llibwebp:cms=0! \
+              -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
     echo "not ok" 1 - "libwebp gamma background composition failed"
@@ -31,7 +31,7 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
 }
 
 run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
-              -Llibwebp:cms=0! \
+              -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_linear}" || {
     echo "not ok" 1 - "libwebp linear background composition failed"

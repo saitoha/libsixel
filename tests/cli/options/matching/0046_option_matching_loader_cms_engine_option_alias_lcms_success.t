@@ -25,14 +25,14 @@ output_lcms="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_lcms_alias.six"
 
 run_img2sixel \
     --cms-engine=lcms2 \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_lcms2}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_lcms2}" || {
     echo "not ok" 1 - "--cms-engine=lcms2 reference decode failed"
     exit 0
 }
 
 run_img2sixel \
     --cms-engine=lcms \
-    -Llibwebp:cms=1! "${input_webp}" >"${output_lcms}" || {
+    -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_lcms}" || {
     echo "not ok" 1 - "--cms-engine=lcms was rejected"
     exit 0
 }

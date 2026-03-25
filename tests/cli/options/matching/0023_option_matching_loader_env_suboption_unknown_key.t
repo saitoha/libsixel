@@ -34,7 +34,7 @@ case "${msg}" in
 esac
 
 case "${msg}" in
-    *"\"z\""*"valid keys"*"cms"*)
+    *"\"z\""*"valid keys"*"cms_engine"*)
         ;;
     *)
         echo "not ok" 1 - "missing token/candidate details for env loader suboption"

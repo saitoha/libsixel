@@ -29,7 +29,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_embedded_esrgb_nolcms_cms1.six"
 
-run_img2sixel -L libjpeg:cms=1! "${input_jpeg}" >"${output_sixel}" || {
+run_img2sixel -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg embedded-ICC JPEG decode failed (nolcms, cms=1)"
     exit 0
 }
