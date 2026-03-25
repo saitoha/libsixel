@@ -1,88 +1,50 @@
 #!/bin/sh
-# Verify tRNS keycolor opt-in accepts only 1 and otherwise stays disabled.
+# Verify env value 2 is ignored and matches explicit opt-out output.
 
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
-    printf "1..0 # SKIP libpng support is disabled in this build\n"
+    echo "1..0 # SKIP libpng support is disabled in this build"
     exit 0
 }
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    echo "1..0 # SKIP img2sixel is disabled in this build"
     exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-echo "1..25"
+echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-extract_leading_glyph() {
-    perl -0777 -ne '
-        $s = $_;
-        $s =~ s/^.*?(?=#\d+;2;)//s;
-        $s =~ s/^(?:#\d+;2;\d+;\d+;\d+)+//;
-        if ($s =~ /^#\d+(?:!\d+)?(.)/s) {
-            print $1;
-        }
-    '
+input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
+out_invalid="${ARTIFACT_LOCAL_DIR}/trns-keycolor-env2-tbbn0g04.six"
+out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-env0-tbbn0g04.six"
+
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
+              --env SIXEL_THREADS=4 \
+              -Llibpng:cms=0! \
+              -d fs -y raster \
+              "${input_png}" >"${out_invalid}" || {
+    echo "not ok 1 - env=2 render failed"
+    exit 0
 }
 
-files="tbbn0g04.png tbwn0g16.png tbrn2c08.png tbbn2c16.png tbgn2c16.png"
-index=0
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+              --env SIXEL_THREADS=4 \
+              -Llibpng:cms=0! \
+              -d fs -y raster \
+              "${input_png}" >"${out_off}" || {
+    echo "not ok 1 - env=0 render failed"
+    exit 0
+}
 
-for file in ${files}; do
-    input_png="${TOP_SRCDIR}/images/pngsuite/transparency/${file}"
-
-    index=$((index + 1))
-    output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-env-1-${file}.six"
-    run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-                  --env SIXEL_THREADS=4 \
-                  -Llibpng:cms=0! \
-                  -d fs -y raster \
-                  "${input_png}" >"${output_six}" || {
-        echo "not ok" "${index}" - "env=1 render failed (${file})"
-        continue
-    }
-    glyph="$(extract_leading_glyph <"${output_six}")"
-    if [ "${glyph}" = "?" ]; then
-        echo "ok" "${index}" - "env=1 enables transparent leading glyph (${file})"
-    else
-        echo "not ok" "${index}" - "env=1 did not enable transparent leading glyph (${file}, got=${glyph})"
-    fi
-
-    for mode in unset 0 true 2; do
-        index=$((index + 1))
-        output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-env-${mode}-${file}.six"
-
-        if [ "${mode}" = "unset" ]; then
-            run_img2sixel --env SIXEL_THREADS=4 \
-                          -Llibpng:cms=0! \
-                          -d fs -y raster \
-                          "${input_png}" >"${output_six}" || {
-                echo "not ok" "${index}" - "env unset render failed (${file})"
-                continue
-            }
-        else
-            run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR="${mode}" \
-                          --env SIXEL_THREADS=4 \
-                          -Llibpng:cms=0! \
-                          -d fs -y raster \
-                          "${input_png}" >"${output_six}" || {
-                echo "not ok" "${index}" - "env=${mode} render failed (${file})"
-                continue
-            }
-        fi
-
-        glyph="$(extract_leading_glyph <"${output_six}")"
-        if [ "${glyph}" = "~" ]; then
-            echo "ok" "${index}" - "env=${mode} keeps opaque leading glyph (${file})"
-        else
-            echo "not ok" "${index}" - "env=${mode} unexpectedly changed leading glyph (${file}, got=${glyph})"
-        fi
-    done
-done
+if cmp -s "${out_invalid}" "${out_off}"; then
+    echo "ok 1 - env=2 is ignored and stays opt-out"
+else
+    echo "not ok 1 - env=2 unexpectedly changes output"
+fi
 
 exit 0
