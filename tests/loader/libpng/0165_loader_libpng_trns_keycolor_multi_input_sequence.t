@@ -40,8 +40,8 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-if grep -F -q "$(printf '\033P0;1q')" "${out_on}" \
-   && ! grep -F -q "$(printf '\033P0;1q')" "${out_off}"; then
+if grep -q "$(printf '\033P0;1q')" "${out_on}" \
+   && ! grep -q "$(printf '\033P0;1q')" "${out_off}"; then
     echo "ok 1 - multi-input keycolor header appears only with opt-in"
 else
     echo "not ok 1 - multi-input keycolor header gating mismatch"
