@@ -30,7 +30,7 @@ case "${msg}" in
 esac
 
 case "${msg}" in
-    *"unknown cms engine"*"valid values: none, auto, builtin, lcms2, colorsync"*)
+    *"cms-engine accepts none, auto, builtin, lcms2, or colorsync."*)
         ;;
     *)
         echo "not ok" 1 - "missing valid-value diagnostics for long --cms-engine"

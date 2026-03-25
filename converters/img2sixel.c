@@ -89,6 +89,44 @@ int img2sixel_trace_topic_is_enabled(char const *topic);
 void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
 
 /*
+ * Keep the converter loosely coupled from private src/ headers while still
+ * reusing the shared option-matching implementation from libsixel.
+ */
+typedef struct sixel_option_choice {
+    char const *name;
+    int value;
+} sixel_option_choice_t;
+
+typedef enum sixel_option_choice_result {
+    SIXEL_OPTION_CHOICE_MATCH = 0,
+    SIXEL_OPTION_CHOICE_AMBIGUOUS = 1,
+    SIXEL_OPTION_CHOICE_NONE = 2
+} sixel_option_choice_result_t;
+
+sixel_option_choice_result_t
+sixel_option_match_choice(
+    char const *value,
+    sixel_option_choice_t const *choices,
+    size_t choice_count,
+    int *matched_value,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+void
+sixel_option_report_ambiguous_prefix(
+    char const *value,
+    char const *candidates,
+    char *buffer,
+    size_t buffer_size);
+
+void
+sixel_option_report_invalid_choice(
+    char const *base_message,
+    char const *suggestions,
+    char *buffer,
+    size_t buffer_size);
+
+/*
  * Option-specific help snippets drive both the --help output and
  * contextual error reporting.  The layout below mirrors a table:
  *
@@ -1360,74 +1398,75 @@ img2sixel_utf8_trim_length(char const *text, size_t length)
     return length;
 }
 
-static int
-img2sixel_ascii_case_equal(char const *lhs, char const *rhs)
+static char *
+img2sixel_ascii_lower_copy(char const *source)
 {
+    char *result;
     size_t index;
-    unsigned char left;
-    unsigned char right;
+    size_t length;
 
-    if (lhs == NULL || rhs == NULL) {
-        return 0;
+    result = NULL;
+    index = 0u;
+    length = 0u;
+
+    if (source == NULL) {
+        return NULL;
     }
 
-    index = 0u;
-    while (lhs[index] != '\0' && rhs[index] != '\0') {
-        left = (unsigned char)lhs[index];
-        right = (unsigned char)rhs[index];
-        if (tolower(left) != tolower(right)) {
-            return 0;
-        }
+    length = strlen(source);
+    result = (char *)malloc(length + 1u);
+    if (result == NULL) {
+        return NULL;
+    }
+
+    while (index < length) {
+        result[index] = (char)tolower((unsigned char)source[index]);
         ++index;
     }
+    result[length] = '\0';
 
-    return lhs[index] == '\0' && rhs[index] == '\0';
+    return result;
 }
 
-static int
-img2sixel_resolve_cms_engine_name(char const *value,
-                                  char const **canonical_name)
+enum {
+    IMG2SIXEL_CMS_ENGINE_CHOICE_NONE = 0,
+    IMG2SIXEL_CMS_ENGINE_CHOICE_AUTO = 1,
+    IMG2SIXEL_CMS_ENGINE_CHOICE_BUILTIN = 2,
+    IMG2SIXEL_CMS_ENGINE_CHOICE_LCMS2 = 3,
+    IMG2SIXEL_CMS_ENGINE_CHOICE_COLORSYNC = 4
+};
+
+static sixel_option_choice_t const g_img2sixel_cms_engine_choices[] = {
+    { "none", IMG2SIXEL_CMS_ENGINE_CHOICE_NONE },
+    { "off", IMG2SIXEL_CMS_ENGINE_CHOICE_NONE },
+    { "disabled", IMG2SIXEL_CMS_ENGINE_CHOICE_NONE },
+    { "auto", IMG2SIXEL_CMS_ENGINE_CHOICE_AUTO },
+    { "builtin", IMG2SIXEL_CMS_ENGINE_CHOICE_BUILTIN },
+    { "lcms2", IMG2SIXEL_CMS_ENGINE_CHOICE_LCMS2 },
+    { "lcms", IMG2SIXEL_CMS_ENGINE_CHOICE_LCMS2 },
+    { "colorsync", IMG2SIXEL_CMS_ENGINE_CHOICE_COLORSYNC },
+    { "color-sync", IMG2SIXEL_CMS_ENGINE_CHOICE_COLORSYNC }
+};
+
+static char const *
+img2sixel_cms_engine_canonical_name(int choice_value)
 {
-    if (value == NULL || value[0] == '\0') {
-        return 0;
+    switch (choice_value) {
+    case IMG2SIXEL_CMS_ENGINE_CHOICE_NONE:
+        return "none";
+    case IMG2SIXEL_CMS_ENGINE_CHOICE_AUTO:
+        return "auto";
+    case IMG2SIXEL_CMS_ENGINE_CHOICE_BUILTIN:
+        return "builtin";
+    case IMG2SIXEL_CMS_ENGINE_CHOICE_LCMS2:
+        return "lcms2";
+    case IMG2SIXEL_CMS_ENGINE_CHOICE_COLORSYNC:
+        return "colorsync";
+    default:
+        break;
     }
 
-    if (img2sixel_ascii_case_equal(value, "none") ||
-        img2sixel_ascii_case_equal(value, "off") ||
-        img2sixel_ascii_case_equal(value, "disabled")) {
-        if (canonical_name != NULL) {
-            *canonical_name = "none";
-        }
-        return 1;
-    }
-    if (img2sixel_ascii_case_equal(value, "auto")) {
-        if (canonical_name != NULL) {
-            *canonical_name = "auto";
-        }
-        return 1;
-    }
-    if (img2sixel_ascii_case_equal(value, "builtin")) {
-        if (canonical_name != NULL) {
-            *canonical_name = "builtin";
-        }
-        return 1;
-    }
-    if (img2sixel_ascii_case_equal(value, "lcms") ||
-        img2sixel_ascii_case_equal(value, "lcms2")) {
-        if (canonical_name != NULL) {
-            *canonical_name = "lcms2";
-        }
-        return 1;
-    }
-    if (img2sixel_ascii_case_equal(value, "colorsync") ||
-        img2sixel_ascii_case_equal(value, "color-sync")) {
-        if (canonical_name != NULL) {
-            *canonical_name = "colorsync";
-        }
-        return 1;
-    }
-
-    return 0;
+    return NULL;
 }
 
 static int
@@ -1436,23 +1475,91 @@ img2sixel_apply_loader_cms_engine(char const *value,
                                   size_t error_buffer_size)
 {
     char const *canonical_name;
+    char const *detail_source;
+    sixel_option_choice_result_t match_result;
+    char match_detail[512];
+    char *lower_value;
+    int matched_choice;
     int status;
 
     canonical_name = NULL;
+    detail_source = NULL;
+    match_result = SIXEL_OPTION_CHOICE_NONE;
+    match_detail[0] = '\0';
+    lower_value = NULL;
+    matched_choice = 0;
     status = 0;
 
     if (error_buffer != NULL && error_buffer_size > 0u) {
         error_buffer[0] = '\0';
     }
 
-    if (!img2sixel_resolve_cms_engine_name(value, &canonical_name)) {
+    lower_value = img2sixel_ascii_lower_copy(
+        value != NULL ? value : "");
+    if (lower_value == NULL) {
         if (error_buffer != NULL && error_buffer_size > 0u) {
-            (void)snprintf(
-                error_buffer,
-                error_buffer_size,
-                "unknown cms engine \"%s\". valid values: none, auto, "
-                "builtin, lcms2, colorsync.",
-                value != NULL && value[0] != '\0' ? value : "(missing)");
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "failed to allocate temporary memory while "
+                           "parsing cms-engine.");
+        }
+        return -1;
+    }
+
+    match_result = sixel_option_match_choice(
+        lower_value,
+        g_img2sixel_cms_engine_choices,
+        sizeof(g_img2sixel_cms_engine_choices) /
+            sizeof(g_img2sixel_cms_engine_choices[0]),
+        &matched_choice,
+        match_detail,
+        sizeof(match_detail));
+    free(lower_value);
+    lower_value = NULL;
+
+    if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+        sixel_option_report_ambiguous_prefix(
+            value != NULL ? value : "",
+            match_detail,
+            error_buffer,
+            error_buffer_size);
+        if (error_buffer != NULL && error_buffer_size > 0u
+            && error_buffer[0] == '\0') {
+            detail_source = sixel_helper_get_additional_message();
+            if (detail_source != NULL && detail_source[0] != '\0') {
+                (void)snprintf(error_buffer,
+                               error_buffer_size,
+                               "%s",
+                               detail_source);
+            }
+        }
+        return -1;
+    }
+    if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
+        sixel_option_report_invalid_choice(
+            "cms-engine accepts none, auto, builtin, lcms2, or colorsync.",
+            match_detail,
+            error_buffer,
+            error_buffer_size);
+        if (error_buffer != NULL && error_buffer_size > 0u
+            && error_buffer[0] == '\0') {
+            detail_source = sixel_helper_get_additional_message();
+            if (detail_source != NULL && detail_source[0] != '\0') {
+                (void)snprintf(error_buffer,
+                               error_buffer_size,
+                               "%s",
+                               detail_source);
+            }
+        }
+        return -1;
+    }
+
+    canonical_name = img2sixel_cms_engine_canonical_name(matched_choice);
+    if (canonical_name == NULL) {
+        if (error_buffer != NULL && error_buffer_size > 0u) {
+            (void)snprintf(error_buffer,
+                           error_buffer_size,
+                           "internal error: unknown cms-engine choice.");
         }
         return -1;
     }
