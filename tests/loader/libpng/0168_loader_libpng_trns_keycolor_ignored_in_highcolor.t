@@ -22,6 +22,12 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out_on="${ARTIFACT_LOCAL_DIR}/trns-keycolor-highcolor-on-tbbn0g04.six"
 out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-highcolor-off-tbbn0g04.six"
+keycolor_header="$(printf '\033P0;1q')"
+out_on_payload=''
+out_off_payload=''
+out_line=''
+out_on_has_header=0
+out_off_has_header=0
 
 run_img2sixel -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
@@ -39,8 +45,29 @@ run_img2sixel -I \
     exit 0
 }
 
-if ! grep -q "$(printf '\033P0;1q')" "${out_on}" \
-   && ! grep -q "$(printf '\033P0;1q')" "${out_off}"; then
+while IFS= read -r out_line || [ -n "${out_line}" ]; do
+    out_on_payload="${out_on_payload}${out_line}
+"
+done < "${out_on}"
+
+while IFS= read -r out_line || [ -n "${out_line}" ]; do
+    out_off_payload="${out_off_payload}${out_line}
+"
+done < "${out_off}"
+
+case "${out_on_payload}" in
+    *"${keycolor_header}"*)
+        out_on_has_header=1
+        ;;
+esac
+
+case "${out_off_payload}" in
+    *"${keycolor_header}"*)
+        out_off_has_header=1
+        ;;
+esac
+
+if [ "${out_on_has_header}" = 0 ] && [ "${out_off_has_header}" = 0 ]; then
     echo "ok 1 - highcolor mode ignores keycolor header"
 else
     echo "not ok 1 - highcolor mode emitted keycolor header"

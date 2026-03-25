@@ -21,6 +21,10 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn3p08.png"
 out="${ARTIFACT_LOCAL_DIR}/palette-trns-cms1-white-tbbn3p08.six"
+keycolor_header="$(printf '\033P0;1q')"
+out_payload=''
+out_line=''
+out_has_header=0
 
 run_img2sixel -Llibpng:cms_engine=auto! \
               -B#ffffff \
@@ -30,7 +34,18 @@ run_img2sixel -Llibpng:cms_engine=auto! \
     exit 0
 }
 
-if grep -q "$(printf '\033P0;1q')" "${out}"; then
+while IFS= read -r out_line || [ -n "${out_line}" ]; do
+    out_payload="${out_payload}${out_line}
+"
+done < "${out}"
+
+case "${out_payload}" in
+    *"${keycolor_header}"*)
+        out_has_header=1
+        ;;
+esac
+
+if [ "${out_has_header}" = 1 ]; then
     echo "ok 1 - palette+tRNS keeps keycolor header under cms=1 background"
 else
     echo "not ok 1 - palette+tRNS lost keycolor header under cms=1 background"
