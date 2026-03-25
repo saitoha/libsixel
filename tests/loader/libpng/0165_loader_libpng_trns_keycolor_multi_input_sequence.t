@@ -23,6 +23,12 @@ input_a="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 input_b="${TOP_SRCDIR}/images/pngsuite/transparency/tbrn2c08.png"
 out_on="${ARTIFACT_LOCAL_DIR}/trns-keycolor-multi-on-ab.six"
 out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-multi-off-ab.six"
+keycolor_header="$(printf '\033P0;1q')"
+out_on_payload=''
+out_off_payload=''
+out_line=''
+out_on_has_header=0
+out_off_has_header=0
 
 run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
@@ -40,8 +46,29 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-if grep -q "$(printf '\033P0;1q')" "${out_on}" \
-   && ! grep -q "$(printf '\033P0;1q')" "${out_off}"; then
+while IFS= read -r out_line || [ -n "${out_line}" ]; do
+    out_on_payload="${out_on_payload}${out_line}
+"
+done < "${out_on}"
+
+while IFS= read -r out_line || [ -n "${out_line}" ]; do
+    out_off_payload="${out_off_payload}${out_line}
+"
+done < "${out_off}"
+
+case "${out_on_payload}" in
+    *"${keycolor_header}"*)
+        out_on_has_header=1
+        ;;
+esac
+
+case "${out_off_payload}" in
+    *"${keycolor_header}"*)
+        out_off_has_header=1
+        ;;
+esac
+
+if [ "${out_on_has_header}" = 1 ] && [ "${out_off_has_header}" = 0 ]; then
     echo "ok 1 - multi-input keycolor header appears only with opt-in"
 else
     echo "not ok 1 - multi-input keycolor header gating mismatch"
