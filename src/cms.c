@@ -82,7 +82,24 @@ struct sixel_cms_transform {
 #endif
 };
 
-static sixel_cms_engine_t g_sixel_cms_engine = SIXEL_CMS_ENGINE_AUTO;
+#if defined(_MSC_VER)
+# if defined(_MT)
+#  define SIXEL_CMS_TLS __declspec(thread)
+# else
+#  define SIXEL_CMS_TLS
+# endif
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+# define SIXEL_CMS_TLS _Thread_local
+#elif defined(__GNUC__) || defined(__clang__)
+# define SIXEL_CMS_TLS __thread
+#else
+# define SIXEL_CMS_TLS
+#endif
+
+static SIXEL_CMS_TLS sixel_cms_engine_t g_sixel_cms_engine
+    = SIXEL_CMS_ENGINE_AUTO;
+
+#undef SIXEL_CMS_TLS
 
 typedef enum sixel_cms_rendering_intent {
     SIXEL_CMS_INTENT_PERCEPTUAL = 0,
@@ -254,6 +271,7 @@ sixel_cms_map_format_lcms(sixel_cms_pixel_format_t format)
 }
 #endif
 
+#if HAVE_LCMS2 || SIXEL_CMS_HAVE_COLORSYNC
 static int
 sixel_cms_intent_from_name(char const *name, size_t length, int *intent)
 {
@@ -416,7 +434,9 @@ sixel_cms_build_intent_order(int intents[4])
 
     return custom_count;
 }
+#endif
 
+#if SIXEL_CMS_HAVE_COLORSYNC
 static sixel_cms_color_space_t
 sixel_cms_parse_icc_colorspace_signature(unsigned char const *data,
                                          size_t length)
@@ -440,6 +460,7 @@ sixel_cms_parse_icc_colorspace_signature(unsigned char const *data,
 
     return SIXEL_CMS_COLORSPACE_UNKNOWN;
 }
+#endif
 
 static sixel_cms_profile_t *
 sixel_cms_allocate_profile(void)
@@ -1077,6 +1098,18 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
 {
     sixel_cms_profile_t *profile;
     sixel_cms_engine_t engine;
+
+#if !HAVE_LCMS2 && !SIXEL_CMS_HAVE_COLORSYNC
+    (void)file_gamma;
+    (void)white_x;
+    (void)white_y;
+    (void)red_x;
+    (void)red_y;
+    (void)green_x;
+    (void)green_y;
+    (void)blue_x;
+    (void)blue_y;
+#endif
 
     profile = sixel_cms_allocate_profile();
     if (profile == NULL) {
