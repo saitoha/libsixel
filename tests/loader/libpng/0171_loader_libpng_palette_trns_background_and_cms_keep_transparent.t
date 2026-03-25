@@ -30,7 +30,7 @@ run_img2sixel -Llibpng:cms_engine=auto! \
     exit 0
 }
 
-if grep -F -q "$(printf '\033P0;1q')" "${out}"; then
+if grep -q "$(printf '\033P0;1q')" "${out}"; then
     echo "ok 1 - palette+tRNS keeps keycolor header under cms=1 background"
 else
     echo "not ok 1 - palette+tRNS lost keycolor header under cms=1 background"

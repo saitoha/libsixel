@@ -39,8 +39,8 @@ run_img2sixel -I \
     exit 0
 }
 
-if ! grep -F -q "$(printf '\033P0;1q')" "${out_on}" \
-   && ! grep -F -q "$(printf '\033P0;1q')" "${out_off}"; then
+if ! grep -q "$(printf '\033P0;1q')" "${out_on}" \
+   && ! grep -q "$(printf '\033P0;1q')" "${out_off}"; then
     echo "ok 1 - highcolor mode ignores keycolor header"
 else
     echo "not ok 1 - highcolor mode emitted keycolor header"
