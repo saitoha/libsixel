@@ -488,7 +488,6 @@ cleanup:
     return *profile != NULL;
 }
 
-#if HAVE_LCMS2
 static int
 sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                               size_t size,
@@ -611,6 +610,7 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
     return 0;
 }
 
+#if HAVE_LCMS2
 static uint16_t
 sixel_builtin_tiff_read_u16(unsigned char const *p, int little_endian)
 {
@@ -794,7 +794,6 @@ sixel_builtin_tiff_photometric_supports_icc(uint16_t photometric)
 }
 #endif
 
-#if HAVE_LCMS2
 static int
 chunk_is_psd(sixel_chunk_t const *chunk)
 {
@@ -806,7 +805,6 @@ chunk_is_psd(sixel_chunk_t const *chunk)
     }
     return 0;
 }
-#endif
 
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
@@ -855,6 +853,60 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
         return 1;
     }
     return 0;
+}
+
+static SIXELSTATUS
+sixel_builtin_promote_rgb16_to_float32(unsigned char **ppixels,
+                                       int width,
+                                       int height,
+                                       sixel_allocator_t *allocator)
+{
+    size_t pixel_count;
+    size_t sample_count;
+    size_t i;
+    uint16_t *samples16;
+    float *samples32;
+
+    pixel_count = 0u;
+    sample_count = 0u;
+    i = 0u;
+    samples16 = NULL;
+    samples32 = NULL;
+
+    if (ppixels == NULL || *ppixels == NULL || allocator == NULL ||
+        width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    sample_count = pixel_count * 3u;
+    if (sample_count > SIZE_MAX / sizeof(float)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    samples16 = (uint16_t *)*ppixels;
+    samples32 = (float *)sixel_allocator_malloc(allocator,
+                                                sample_count * sizeof(float));
+    if (samples32 == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_builtin_promote_rgb16_to_float32: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (i = 0u; i < sample_count; ++i) {
+        samples32[i] = (float)((double)samples16[i] / 65535.0);
+    }
+
+    sixel_allocator_free(allocator, *ppixels);
+    *ppixels = (unsigned char *)samples32;
+
+    return SIXEL_OK;
 }
 
 /*
@@ -2555,6 +2607,83 @@ load_with_builtin(
                 }
                 frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
                 frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            } else if (chunk_is_psd(pchunk)) {
+                stbi__result_info psd_ri;
+                int psd_depth;
+                int psd_pixelformat;
+
+                psd_ri = (stbi__result_info){ 0 };
+                psd_depth = 0;
+                psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+
+                pixels = (unsigned char *)stbi__load_main(&stb_context,
+                                                          &frame->width,
+                                                          &frame->height,
+                                                          &psd_depth,
+                                                          3,
+                                                          &psd_ri,
+                                                          16);
+                if (pixels == NULL) {
+                    sixel_helper_set_additional_message(stbi_failure_reason());
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+
+                if (psd_ri.bits_per_channel == 16) {
+                    status = sixel_builtin_promote_rgb16_to_float32(
+                        &pixels,
+                        frame->width,
+                        frame->height,
+                        pchunk->allocator);
+                    if (SIXEL_FAILED(status)) {
+                        sixel_allocator_free(pchunk->allocator, pixels);
+                        pixels = NULL;
+                        goto end;
+                    }
+                    psd_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+                } else {
+                    switch (psd_depth) {
+                    case 1:
+                    case 3:
+                    case 4:
+                        psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                        break;
+                    default:
+                        nwrite = snprintf(message,
+                                          sizeof(message),
+                                          "load_with_builtin() failed.\n"
+                                          "reason: unknown pixel-format.(depth: %d)\n",
+                                          psd_depth);
+                        if (nwrite > 0) {
+                            sixel_helper_set_additional_message(message);
+                        }
+                        sixel_allocator_free(pchunk->allocator, pixels);
+                        pixels = NULL;
+                        status = SIXEL_STBI_ERROR;
+                        goto end;
+                    }
+                }
+
+                if (enable_cms) {
+                    if (sixel_builtin_extract_psd_icc(pchunk->buffer,
+                                                      pchunk->size,
+                                                      &icc_profile,
+                                                      &icc_profile_length,
+                                                      pchunk->allocator)) {
+                        sixel_cms_convert_to_srgb_with_profile_bytes(
+                            pixels,
+                            frame->width,
+                            frame->height,
+                            psd_pixelformat,
+                            icc_profile,
+                            icc_profile_length);
+                    }
+                }
+
+                sixel_frame_set_pixels(frame, pixels);
+                frame->loop_count = 1;
+                frame->pixelformat = psd_pixelformat;
+                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             } else {
                 pixels = stbi__load_and_postprocess_8bit(&stb_context,
                                                          &frame->width,
@@ -2569,21 +2698,7 @@ load_with_builtin(
                 sixel_frame_set_pixels(frame, pixels);
                 frame->loop_count = 1;
 #if HAVE_LCMS2
-                if (enable_cms && chunk_is_psd(pchunk)) {
-                    if (sixel_builtin_extract_psd_icc(pchunk->buffer,
-                                                      pchunk->size,
-                                                      &icc_profile,
-                                                      &icc_profile_length,
-                                                      pchunk->allocator)) {
-                        sixel_cms_convert_to_srgb_with_profile_bytes(
-                            pixels,
-                            frame->width,
-                            frame->height,
-                            SIXEL_PIXELFORMAT_RGB888,
-                            icc_profile,
-                            icc_profile_length);
-                    }
-                } else if (enable_cms && chunk_is_tiff(pchunk)) {
+                if (enable_cms && chunk_is_tiff(pchunk)) {
                     if (sixel_builtin_extract_tiff_icc(
                             pchunk->buffer,
                             pchunk->size,
