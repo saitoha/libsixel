@@ -4,38 +4,11 @@
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n";
+    echo "1..0 # SKIP img2sixel is disabled in this build"
     exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-find_ambiguous_prefix() {
-    names="$1"
-    for name in ${names}; do
-        len=${#name}
-        i=1
-        while [ "${i}" -lt "${len}" ]; do
-            prefix=$(printf '%s' "${name}" | cut -c1-"${i}")
-            count=0
-            for other in ${names}; do
-                case "${other}" in
-                    "${prefix}"*)
-                        count=$((count + 1))
-                        ;;
-                    *)
-                        ;;
-                esac
-            done
-            if [ "${count}" -ge 2 ]; then
-                printf '%s' "${prefix}"
-                return 0
-            fi
-            i=$((i + 1))
-        done
-    done
-    return 1
-}
 
 loader_names="builtin"
 test "${HAVE_LIBPNG-}" = 1 && loader_names="${loader_names} libpng"
@@ -52,9 +25,31 @@ test "${HAVE_COREGRAPHICS-}" = 1 && test "${HAVE_QUICKLOOK-}" = 1 &&
 test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 &&
     loader_names="${loader_names} gnome-thumbnailer"
 
-ambiguous_prefix=$(find_ambiguous_prefix "${loader_names}" || true)
+ambiguous_prefix=""
+for name in ${loader_names}; do
+    len=${#name}
+    i=1
+    while [ "${i}" -lt "${len}" ]; do
+        prefix=$(printf '%s' "${name}" | cut -c1-"${i}")
+        count=0
+        for other in ${loader_names}; do
+            case "${other}" in
+                "${prefix}"*)
+                    count=$((count + 1))
+                    ;;
+                *)
+                    ;;
+            esac
+        done
+        if [ "${count}" -ge 2 ]; then
+            ambiguous_prefix="${prefix}"
+            break 2
+        fi
+        i=$((i + 1))
+    done
+done
 test -n "${ambiguous_prefix}" || {
-    printf "1..0 # SKIP no ambiguous -L prefixes in this build\n"
+    echo "1..0 # SKIP no ambiguous -L prefixes in this build"
     exit 0
 }
 
