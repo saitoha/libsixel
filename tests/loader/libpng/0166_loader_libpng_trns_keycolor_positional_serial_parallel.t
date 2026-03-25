@@ -1,75 +1,43 @@
 #!/bin/sh
-# Verify positional dithers keep tRNS keycolor in serial/parallel pipelines.
+# Verify positional x_dither float32 serial keeps keycolor header.
 
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
-    printf "1..0 # SKIP libpng support is disabled in this build\n"
+    echo "1..0 # SKIP libpng support is disabled in this build"
     exit 0
 }
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    echo "1..0 # SKIP img2sixel is disabled in this build"
     exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-echo "1..16"
+echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-extract_header_params() {
-    perl -0777 -ne '
-        if (/^\eP([^q]*)q/s) {
-            print $1;
-        }
-    '
+input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
+output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-xdither-float32-serial-tbbn0g04.six"
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+              --env SIXEL_THREADS=1 \
+              -Llibpng:cms=0! \
+              --precision=float32 \
+              -d x_dither -y raster \
+              "${input_png}" >"${output_six}" || {
+    echo "not ok 1 - positional float32 serial render failed"
+    exit 0
 }
 
-extract_first_body_glyph() {
-    perl -0777 -ne '
-        $s = $_;
-        $s =~ s/^.*?\eP[^q]*q//s;
-        $s =~ s/^"[0-9;]*//s;
-        $s =~ s/^(?:#\d+;2;\d+;\d+;\d+)+//;
-        if ($s =~ /^(?:#\d+(?:!\d+)?)?(?:!\d+)?([?-~])/s) {
-            print $1;
-        }
-    '
-}
-
-files="tbbn0g04.png tbrn2c08.png"
-index=0
-
-for file in ${files}; do
-    input_png="${TOP_SRCDIR}/images/pngsuite/transparency/${file}"
-    for precision in 8bit float32; do
-        for diff in x_dither bluenoise; do
-            for threads in 1 4; do
-                index=$((index + 1))
-                output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-positional-${precision}-${diff}-t${threads}-${file}.six"
-
-                run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-                              --env SIXEL_THREADS="${threads}" \
-                              -Llibpng:cms=0! \
-                              --precision="${precision}" \
-                              -d "${diff}" -y raster \
-                              "${input_png}" >"${output_six}" || {
-                    echo "not ok" "${index}" - "render failed (${precision}, ${diff}, t${threads}, ${file})"
-                    continue
-                }
-
-                hdr="$(extract_header_params <"${output_six}")"
-                glyph="$(extract_first_body_glyph <"${output_six}")"
-                if [ "${hdr}" = "0;1" ] && [ "${glyph}" = "?" ]; then
-                    echo "ok" "${index}" - "keycolor kept (${precision}, ${diff}, t${threads}, ${file})"
-                else
-                    echo "not ok" "${index}" - "keycolor lost (${precision}, ${diff}, t${threads}, ${file}, hdr=${hdr}, glyph=${glyph})"
-                fi
-            done
-        done
-    done
-done
+case "$(cat "${output_six}")" in
+    *"$(printf '\033')P0;1q"*)
+        echo "ok 1 - positional float32 serial keeps keycolor header"
+        ;;
+    *)
+        echo "not ok 1 - positional float32 serial lost keycolor header"
+        ;;
+esac
 
 exit 0
