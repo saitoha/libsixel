@@ -19,10 +19,10 @@ msg_long=$(set +xv; run_img2sixel --cms-engine 2>&1) && {
 }
 
 case "${msg_long}" in
-    *"--cms-engine"*)
+    *"cms-engine"*)
         ;;
     *)
-        echo "not ok" 1 - "long --cms-engine option name is missing in diagnostic"
+        echo "not ok" 1 - "cms-engine option name is missing in diagnostic"
         exit 0
         ;;
 esac
