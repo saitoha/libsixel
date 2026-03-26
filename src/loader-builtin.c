@@ -2896,8 +2896,41 @@ load_with_builtin(
                         goto end;
                     }
                 } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT) {
+                    status = sixel_builtin_decode_psd_cmyk_32bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
+                        psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
+                            ? psd_icc_profile
+                            : NULL,
+                        psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
+                            ? psd_icc_profile_length
+                            : 0u,
+                        &psd_cmyk_icc_applied,
+                        &pixels,
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                } else if (psd_custom_decode_mode ==
                            SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT) {
                     status = sixel_builtin_decode_psd_lab_8bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
+                        &pixels,
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT) {
+                    status = sixel_builtin_decode_psd_lab_32bit(
                         pchunk,
                         &psd_info,
                         bgcolor,
@@ -2961,15 +2994,19 @@ load_with_builtin(
                             loader_trace_message(
                                 "builtin PSD: malformed ICC resource section; "
                                 "skipping ICC conversion");
-                        } else if (psd_custom_decode_mode ==
-                                       SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT &&
+                        } else if ((psd_custom_decode_mode ==
+                                    SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT ||
+                                    psd_custom_decode_mode ==
+                                    SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT) &&
                                    psd_icc_status ==
                                        SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
                                    !psd_cmyk_icc_applied) {
                             loader_trace_message(
                                 "builtin PSD: embedded ICC conversion failed");
-                        } else if (psd_custom_decode_mode ==
-                                       SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT &&
+                        } else if ((psd_custom_decode_mode ==
+                                    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT ||
+                                    psd_custom_decode_mode ==
+                                    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT) &&
                                    psd_icc_status ==
                                        SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
                             loader_trace_message(

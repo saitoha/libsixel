@@ -28,6 +28,15 @@
 # define SIZE_MAX ((size_t)-1)
 #endif
 
+#define SIXEL_SRGB_WHITE_X 0.3127
+#define SIXEL_SRGB_WHITE_Y 0.3290
+#define SIXEL_SRGB_RED_X   0.6400
+#define SIXEL_SRGB_RED_Y   0.3300
+#define SIXEL_SRGB_GREEN_X 0.3000
+#define SIXEL_SRGB_GREEN_Y 0.6000
+#define SIXEL_SRGB_BLUE_X  0.1500
+#define SIXEL_SRGB_BLUE_Y  0.0600
+
 #if HAVE_LCMS2
 # include <lcms2.h>
 #endif
@@ -262,6 +271,8 @@ sixel_cms_map_format_lcms(sixel_cms_pixel_format_t format)
         return TYPE_CMYK_8;
     case SIXEL_CMS_PIXELFORMAT_CMYK_16:
         return TYPE_CMYK_16;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_F32:
+        return TYPE_CMYK_FLT;
     case SIXEL_CMS_PIXELFORMAT_RGB_F32:
         return TYPE_RGB_FLT;
     case SIXEL_CMS_PIXELFORMAT_RGB_8:
@@ -880,6 +891,15 @@ sixel_cms_colorsync_map_format(sixel_cms_pixel_format_t format,
 #endif
         *bytes_per_pixel = 4u * sizeof(uint16_t);
         break;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_F32:
+        *depth = kColorSync32BitFloat;
+#if WORDS_BIGENDIAN
+        value_layout |= kColorSyncByteOrder32Big;
+#else
+        value_layout |= kColorSyncByteOrder32Little;
+#endif
+        *bytes_per_pixel = 4u * sizeof(float);
+        break;
     default:
         return 0;
     }
@@ -1083,6 +1103,21 @@ sixel_cms_create_srgb_profile(void)
 
     free(profile);
     return NULL;
+}
+
+sixel_cms_profile_t *
+sixel_cms_create_linear_srgb_profile(void)
+{
+    return sixel_cms_create_rgb_profile_from_gamma_chrm(
+        1.0,
+        SIXEL_SRGB_WHITE_X,
+        SIXEL_SRGB_WHITE_Y,
+        SIXEL_SRGB_RED_X,
+        SIXEL_SRGB_RED_Y,
+        SIXEL_SRGB_GREEN_X,
+        SIXEL_SRGB_GREEN_Y,
+        SIXEL_SRGB_BLUE_X,
+        SIXEL_SRGB_BLUE_Y);
 }
 
 sixel_cms_profile_t *
@@ -1648,6 +1683,17 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
             &src_profile->builtin_profile);
     }
 
+    if (!sixel_cms_builtin_profile_is_srgb(src_profile) &&
+        src_profile->builtin_profile_valid &&
+        transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32 &&
+        transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
+        return sixel_icc_apply_cmyk_float32_to_rgb_float32(
+            (float *)dst,
+            (float const *)src,
+            pixel_count,
+            &src_profile->builtin_profile);
+    }
+
     return 0;
 }
 
@@ -1939,6 +1985,129 @@ sixel_cms_convert_to_srgb_with_profile_bytes(
                                                   height,
                                                   pixelformat,
                                                   src_profile);
+    sixel_cms_close_profile(src_profile);
+
+    return converted;
+}
+
+static int
+sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count)
+{
+    SIXELSTATUS status;
+    size_t float_bytes;
+
+    status = SIXEL_FALSE;
+    float_bytes = 0u;
+    if (pixels == NULL || pixel_count == 0u) {
+        return 0;
+    }
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return 0;
+    }
+    float_bytes = pixel_count * 3u * sizeof(float);
+    status = sixel_helper_convert_colorspace((unsigned char *)pixels,
+                                             float_bytes,
+                                             SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                             SIXEL_COLORSPACE_GAMMA,
+                                             SIXEL_COLORSPACE_LINEAR);
+    return SIXEL_SUCCEEDED(status);
+}
+
+int
+sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
+                                       int width,
+                                       int height,
+                                       int pixelformat,
+                                       sixel_cms_profile_t *src_profile)
+{
+    sixel_cms_profile_t *dst_profile;
+    sixel_cms_transform_t *transform;
+    size_t pixel_count;
+    int normalized_pixelformat;
+    int converted;
+
+    dst_profile = NULL;
+    transform = NULL;
+    pixel_count = 0u;
+    normalized_pixelformat = pixelformat;
+    converted = 0;
+    if (normalized_pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        normalized_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    }
+    if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
+        return 0;
+    }
+    if (normalized_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        return 0;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return 0;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+
+    dst_profile = sixel_cms_create_linear_srgb_profile();
+    if (dst_profile != NULL) {
+        transform = sixel_cms_create_transform(src_profile,
+                                               SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                                               dst_profile,
+                                               SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                                               SIXEL_CMS_TRANSFORM_DEFAULT);
+        if (transform != NULL &&
+            sixel_cms_do_transform(transform, pixels, pixels, pixel_count)) {
+            converted = 1;
+        }
+    }
+
+    if (transform != NULL) {
+        sixel_cms_delete_transform(transform);
+    }
+    if (dst_profile != NULL) {
+        sixel_cms_close_profile(dst_profile);
+    }
+    if (converted) {
+        return 1;
+    }
+
+    if (!sixel_cms_convert_profile_to_srgb((unsigned char *)pixels,
+                                           width,
+                                           height,
+                                           SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                           src_profile)) {
+        return 0;
+    }
+    return sixel_cms_convert_rgbf32_gamma_to_linear((float *)pixels,
+                                                    pixel_count);
+}
+
+int
+sixel_cms_convert_to_linearrgb_with_profile_bytes(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length)
+{
+    sixel_cms_profile_t *src_profile;
+    int converted;
+
+    src_profile = NULL;
+    converted = 0;
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        profile == NULL || profile_length == 0u) {
+        return 0;
+    }
+
+    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
+    if (src_profile == NULL) {
+        return 0;
+    }
+
+    converted = sixel_cms_convert_profile_to_linearrgb(pixels,
+                                                        width,
+                                                        height,
+                                                        pixelformat,
+                                                        src_profile);
     sixel_cms_close_profile(src_profile);
 
     return converted;

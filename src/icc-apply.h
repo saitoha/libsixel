@@ -43,4 +43,10 @@ sixel_icc_apply_cmyk_u16_to_rgb_float32(float *dst_pixels,
                                         size_t pixel_count,
                                         sixel_icc_profile_t const *profile);
 
+int
+sixel_icc_apply_cmyk_float32_to_rgb_float32(float *dst_pixels,
+                                            float const *src_pixels,
+                                            size_t pixel_count,
+                                            sixel_icc_profile_t const *profile);
+
 #endif
