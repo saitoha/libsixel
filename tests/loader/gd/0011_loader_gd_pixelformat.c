@@ -1,5 +1,5 @@
 /*
- * Verify GD loader reports RGB output for RGBA sources.
+ * Verify GD loader pixelformats for PNG and shared GIF decode paths.
  */
 
 #include "tests/loader/pixelformat_test_common.h"
@@ -15,12 +15,68 @@ new_gd_component(sixel_allocator_t *allocator,
 static int
 run_gd_loader_test(void)
 {
-    return run_loader_component_case("GD loader",
-                                     RGBA_IMAGE_PATH,
-                                     SIXEL_PIXELFORMAT_RGB888,
-                                     2,
-                                     1,
-                                     new_gd_component);
+    int result;
+
+    result = run_loader_component_case("GD loader rgba8",
+                                       RGBA_IMAGE_PATH,
+                                       SIXEL_PIXELFORMAT_RGB888,
+                                       2,
+                                       1,
+                                       new_gd_component);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options("GD loader gif opaque pal8",
+                                                    "/tests/data/inputs/small.gif",
+                                                    SIXEL_PIXELFORMAT_PAL8,
+                                                    GEOMETRY_ANY,
+                                                    GEOMETRY_ANY,
+                                                    1,
+                                                    1,
+                                                    256,
+                                                    new_gd_component);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options(
+        "GD loader gif transparent pal8",
+        "/tests/data/inputs/formats/gif-transparent-static.gif",
+        SIXEL_PIXELFORMAT_PAL8,
+        8,
+        8,
+        1,
+        1,
+        256,
+        new_gd_component);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options("GD loader gif opaque rgb",
+                                                    "/tests/data/inputs/small.gif",
+                                                    SIXEL_PIXELFORMAT_RGB888,
+                                                    GEOMETRY_ANY,
+                                                    GEOMETRY_ANY,
+                                                    1,
+                                                    0,
+                                                    256,
+                                                    new_gd_component);
+    if (result != 0) {
+        return result;
+    }
+
+    return run_loader_component_case_with_options(
+        "GD loader gif transparent rgba",
+        "/tests/data/inputs/formats/gif-transparent-static.gif",
+        SIXEL_PIXELFORMAT_RGBA8888,
+        8,
+        8,
+        1,
+        0,
+        256,
+        new_gd_component);
 }
 #endif
 

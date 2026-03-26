@@ -54,6 +54,7 @@
 
 #include "fromgif.h"
 #include "compat_stub.h"
+#include "frame.h"
 
 /*
  * gif_context_t struct and start_xxx functions
@@ -82,17 +83,27 @@ typedef struct
 
 #define GIF_LZW_MAX_CODE_SIZE 12
 #define GIF_LZW_MAX 0xFFF  /* 0b1111_1111_1111 */
+#define GIF_RGB_STRIDE 3
+#define GIF_RGBA_STRIDE 4
+#define GIF_HASH_EMPTY_KEY 0xffffffffU
+
+static size_t const gif_color_table_bytes[8] = {
+    6u, 12u, 24u, 48u, 96u, 192u, 384u, 768u
+};
 
 typedef struct
 {
    int w, h;
    /*
-    * Keep the compositing canvas in RGB888 instead of palette indices.
+    * Keep the compositing canvas in packed RGB instead of palette
+    * indices.
     * GIF frames can switch local color tables per frame, so carrying only
     * indices across frames corrupts colors when the active palette changes.
     */
    unsigned char *out;       /* composited frame buffer (RGB888) */
-   unsigned char *prev_out;  /* RGB888 backup for disposal method 3 */
+   unsigned char *prev_out;  /* canvas backup for disposal method 3 */
+   unsigned char *alpha_out; /* alpha mask (optional, 0/255) */
+   unsigned char *prev_alpha;/* alpha backup for disposal method 3 */
    unsigned char *history;   /* pixels modified in the previous frame */
    int flags, bgindex, ratio, transparent, eflags;
    unsigned char pal[256][3];
@@ -110,6 +121,8 @@ typedef struct
    int delay;
    int is_multiframe;
    int is_terminated;
+   int preserve_transparency;
+   int stream_has_transparency;
 } gif_t;
 
 #if defined(_MSC_VER)
@@ -207,6 +220,509 @@ end:
 
 
 static SIXELSTATUS
+gif_scan_stream_for_transparency(
+    unsigned char const *buffer,
+    int size,
+    int *has_transparency)
+{
+    SIXELSTATUS status = SIXEL_OK;
+    unsigned char const *p;
+    unsigned char const *end;
+    size_t gct_size;
+    size_t lct_size;
+    unsigned char marker;
+    unsigned char packed;
+    unsigned char extension_label;
+    unsigned char block_size;
+
+    p = NULL;
+    end = NULL;
+    gct_size = 0u;
+    lct_size = 0u;
+    marker = 0u;
+    packed = 0u;
+    extension_label = 0u;
+    block_size = 0u;
+
+    if (buffer == NULL || has_transparency == NULL || size <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *has_transparency = 0;
+    if ((size_t)size < 13u) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    p = buffer;
+    end = buffer + (size_t)size;
+    if (memcmp(p, "GIF", 3u) != 0) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    packed = p[10u];
+    p += 13u;
+    if ((packed & 0x80u) != 0u) {
+        gct_size = gif_color_table_bytes[(size_t)packed & 0x07u];
+        if ((size_t)(end - p) < gct_size) {
+            return SIXEL_BAD_INPUT;
+        }
+        p += gct_size;
+    }
+
+    while (p < end) {
+        marker = *p++;
+        if (marker == 0x3bu) {
+            status = SIXEL_OK;
+            goto end;
+        }
+
+        if (marker == 0x2cu) {
+            if ((size_t)(end - p) < 9u) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+
+            packed = p[8u];
+            p += 9u;
+            if ((packed & 0x80u) != 0u) {
+                lct_size = gif_color_table_bytes[(size_t)packed & 0x07u];
+                if ((size_t)(end - p) < lct_size) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                p += lct_size;
+            }
+            if (p >= end) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            ++p;  /* LZW minimum code size */
+
+            for (;;) {
+                if (p >= end) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                block_size = *p++;
+                if (block_size == 0u) {
+                    break;
+                }
+                if ((size_t)(end - p) < (size_t)block_size) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                p += block_size;
+            }
+            continue;
+        }
+
+        if (marker != 0x21u) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        if (p >= end) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+
+        extension_label = *p++;
+        if (extension_label == 0xf9u) {
+            if (p >= end) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            block_size = *p++;
+            if (block_size != 4u) {
+                if ((size_t)(end - p) < (size_t)block_size) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                p += block_size;
+            } else {
+                if ((size_t)(end - p) < 4u) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                packed = p[0u];
+                p += 4u;
+                if ((packed & 0x01u) != 0u) {
+                    *has_transparency = 1;
+                    status = SIXEL_OK;
+                    goto end;
+                }
+            }
+        }
+
+        for (;;) {
+            if (p >= end) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            block_size = *p++;
+            if (block_size == 0u) {
+                break;
+            }
+            if ((size_t)(end - p) < (size_t)block_size) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            p += block_size;
+        }
+    }
+
+    status = SIXEL_BAD_INPUT;
+
+end:
+    return status;
+}
+
+
+static SIXELSTATUS
+gif_export_pal8_frame(
+    sixel_frame_t /* in */ *frame,
+    gif_t         /* in */ *pg,
+    int           /* in */ reqcolors)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    size_t pixel_total;
+    size_t table_size;
+    size_t table_mask;
+    size_t pixel_index;
+    size_t offset;
+    size_t step;
+    size_t slot;
+    int maxcolors;
+    int max_opaque_colors;
+    int ncolors;
+    int has_transparent_pixels;
+    int keycolor_index;
+    int found;
+    int lookup_index;
+    unsigned int key;
+    unsigned int mixed;
+    unsigned int probe;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char *indices;
+    unsigned char *palette;
+    unsigned int *keys;
+    unsigned char *values;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    pixel_total = 0u;
+    table_size = 0u;
+    table_mask = 0u;
+    pixel_index = 0u;
+    offset = 0u;
+    step = 0u;
+    slot = 0u;
+    maxcolors = 0;
+    max_opaque_colors = 0;
+    ncolors = 0;
+    has_transparent_pixels = 0;
+    keycolor_index = -1;
+    found = 0;
+    lookup_index = 0;
+    key = 0u;
+    mixed = 0u;
+    probe = 0u;
+    r = 0u;
+    g = 0u;
+    b = 0u;
+    indices = NULL;
+    palette = NULL;
+    keys = NULL;
+    values = NULL;
+
+    if (frame == NULL || pg == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    allocator = sixel_frame_get_allocator(frame);
+    if (allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (pg->w <= 0 || pg->h <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)pg->w > SIZE_MAX / (size_t)pg->h) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_total = (size_t)pg->w * (size_t)pg->h;
+    if (pixel_total > SIXEL_ALLOCATE_BYTES_MAX) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    maxcolors = reqcolors;
+    if (maxcolors <= 0 || maxcolors > SIXEL_PALETTE_MAX) {
+        maxcolors = SIXEL_PALETTE_MAX;
+    }
+
+    if (pg->preserve_transparency != 0 && pg->alpha_out != NULL) {
+        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+            if (pg->alpha_out[pixel_index] == 0u) {
+                has_transparent_pixels = 1;
+                break;
+            }
+        }
+    }
+
+    max_opaque_colors = maxcolors - (has_transparent_pixels != 0 ? 1 : 0);
+    if (max_opaque_colors < 0) {
+        status = SIXEL_FALSE;
+        goto end;
+    }
+
+    indices = (unsigned char *)sixel_allocator_malloc(allocator, pixel_total);
+    if (indices == NULL) {
+        sixel_helper_set_additional_message(
+            "gif_export_pal8_frame: indices allocation failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    palette = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)maxcolors * (size_t)GIF_RGB_STRIDE);
+    if (palette == NULL) {
+        sixel_helper_set_additional_message(
+            "gif_export_pal8_frame: palette allocation failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    if (max_opaque_colors > 0) {
+        table_size = 2048u;
+        while (table_size < (size_t)max_opaque_colors * 4u) {
+            table_size <<= 1u;
+        }
+        table_mask = table_size - 1u;
+
+        keys = (unsigned int *)sixel_allocator_malloc(
+            allocator,
+            sizeof(unsigned int) * table_size);
+        values = (unsigned char *)sixel_allocator_malloc(allocator, table_size);
+        if (keys == NULL || values == NULL) {
+            sixel_helper_set_additional_message(
+                "gif_export_pal8_frame: hash allocation failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (pixel_index = 0u; pixel_index < table_size; ++pixel_index) {
+            keys[pixel_index] = GIF_HASH_EMPTY_KEY;
+            values[pixel_index] = 0u;
+        }
+    }
+
+    for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+        if (has_transparent_pixels && pg->alpha_out[pixel_index] == 0u) {
+            indices[pixel_index] = 0u;
+            continue;
+        }
+        if (max_opaque_colors == 0) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
+
+        offset = pixel_index * (size_t)GIF_RGB_STRIDE;
+        r = pg->out[offset + 0u];
+        g = pg->out[offset + 1u];
+        b = pg->out[offset + 2u];
+        key = ((unsigned int)r << 16)
+            | ((unsigned int)g << 8)
+            | (unsigned int)b;
+        mixed = key;
+        mixed ^= mixed >> 13;
+        mixed *= 0x9e3779b1u;
+        mixed ^= mixed >> 16;
+        step = 0u;
+        found = 0;
+        lookup_index = 0;
+        slot = 0u;
+
+        if (keys != NULL && values != NULL) {
+            for (;;) {
+                slot = (mixed + step) & table_mask;
+                probe = keys[slot];
+                if (probe == GIF_HASH_EMPTY_KEY) {
+                    break;
+                }
+                if (probe == key) {
+                    lookup_index = (int)values[slot];
+                    if (lookup_index < ncolors &&
+                        palette[(size_t)lookup_index * 3u + 0u] == r &&
+                        palette[(size_t)lookup_index * 3u + 1u] == g &&
+                        palette[(size_t)lookup_index * 3u + 2u] == b) {
+                        found = 1;
+                        break;
+                    }
+                }
+                ++step;
+                if (step > table_mask) {
+                    break;
+                }
+            }
+        }
+
+        if (!found && (keys == NULL || step > table_mask)) {
+            for (lookup_index = 0; lookup_index < ncolors; ++lookup_index) {
+                if (palette[(size_t)lookup_index * 3u + 0u] == r &&
+                    palette[(size_t)lookup_index * 3u + 1u] == g &&
+                    palette[(size_t)lookup_index * 3u + 2u] == b) {
+                    found = 1;
+                    break;
+                }
+            }
+        }
+
+        if (!found) {
+            if (ncolors >= max_opaque_colors) {
+                status = SIXEL_FALSE;
+                goto end;
+            }
+            lookup_index = ncolors;
+            palette[(size_t)lookup_index * 3u + 0u] = r;
+            palette[(size_t)lookup_index * 3u + 1u] = g;
+            palette[(size_t)lookup_index * 3u + 2u] = b;
+            ++ncolors;
+
+            if (keys != NULL && values != NULL && step <= table_mask) {
+                keys[slot] = key;
+                values[slot] = (unsigned char)lookup_index;
+            }
+        }
+
+        indices[pixel_index] = (unsigned char)lookup_index;
+    }
+
+    if (has_transparent_pixels) {
+        keycolor_index = ncolors;
+        if (keycolor_index >= maxcolors) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
+        palette[(size_t)keycolor_index * 3u + 0u] = 0u;
+        palette[(size_t)keycolor_index * 3u + 1u] = 0u;
+        palette[(size_t)keycolor_index * 3u + 2u] = 0u;
+        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+            if (pg->alpha_out[pixel_index] == 0u) {
+                indices[pixel_index] = (unsigned char)keycolor_index;
+            }
+        }
+        ++ncolors;
+    }
+
+    if (ncolors <= 0 || ncolors > maxcolors) {
+        status = SIXEL_FALSE;
+        goto end;
+    }
+
+    sixel_frame_set_pixels(frame, indices);
+    sixel_frame_set_palette(frame, palette);
+    sixel_frame_set_ncolors(frame, ncolors);
+    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame->alpha_zero_is_transparent = 0;
+    sixel_frame_set_transparent(frame, keycolor_index);
+
+    indices = NULL;
+    palette = NULL;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(allocator, values);
+    sixel_allocator_free(allocator, keys);
+    sixel_allocator_free(allocator, palette);
+    sixel_allocator_free(allocator, indices);
+    return status;
+}
+
+
+static SIXELSTATUS
+gif_export_nonpal_frame(
+    sixel_frame_t /* in */ *frame,
+    gif_t         /* in */ *pg)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    size_t frame_pixels;
+    size_t frame_size;
+    size_t pixel_index;
+    size_t src_offset;
+    size_t dst_offset;
+    int has_alpha;
+    int output_stride;
+    unsigned char *pixels;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    frame_pixels = 0u;
+    frame_size = 0u;
+    pixel_index = 0u;
+    src_offset = 0u;
+    dst_offset = 0u;
+    has_alpha = 0;
+    output_stride = GIF_RGB_STRIDE;
+    pixels = NULL;
+
+    if (frame == NULL || pg == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    allocator = sixel_frame_get_allocator(frame);
+    if (allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (pg->w <= 0 || pg->h <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)pg->w > SIZE_MAX / (size_t)pg->h) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    frame_pixels = (size_t)pg->w * (size_t)pg->h;
+    has_alpha = (pg->preserve_transparency != 0 && pg->alpha_out != NULL)
+        ? 1 : 0;
+    output_stride = has_alpha ? GIF_RGBA_STRIDE : GIF_RGB_STRIDE;
+    if (frame_pixels > SIZE_MAX / (size_t)output_stride) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    frame_size = frame_pixels * (size_t)output_stride;
+
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator, frame_size);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "gif_export_nonpal_frame: pixel allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    if (has_alpha) {
+        for (pixel_index = 0u; pixel_index < frame_pixels; ++pixel_index) {
+            src_offset = pixel_index * (size_t)GIF_RGB_STRIDE;
+            dst_offset = pixel_index * (size_t)GIF_RGBA_STRIDE;
+            pixels[dst_offset + 0u] = pg->out[src_offset + 0u];
+            pixels[dst_offset + 1u] = pg->out[src_offset + 1u];
+            pixels[dst_offset + 2u] = pg->out[src_offset + 2u];
+            pixels[dst_offset + 3u] = pg->alpha_out[pixel_index];
+        }
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    } else {
+        memcpy(pixels, pg->out, frame_size);
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    }
+
+    sixel_frame_set_pixels(frame, pixels);
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_set_palette(frame, NULL);
+    sixel_frame_set_ncolors(frame, -1);
+    sixel_frame_set_transparent(frame, -1);
+    frame->alpha_zero_is_transparent = has_alpha;
+
+    status = SIXEL_OK;
+    return status;
+}
+
+
+static SIXELSTATUS
 gif_init_frame(
     sixel_frame_t /* in */ *frame,
     gif_t         /* in */ *pg,
@@ -214,46 +730,54 @@ gif_init_frame(
     int           /* in */ reqcolors,
     int           /* in */ fuse_palette)
 {
-    SIXELSTATUS status = SIXEL_OK;
-    int frame_width;
-    int frame_height;
-    size_t frame_size;
+    SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    unsigned char *pixels;
+    unsigned char *old_pixels;
+    unsigned char *old_palette;
 
     (void)bgcolor;
-    (void)reqcolors;
-    (void)fuse_palette;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    old_pixels = NULL;
+    old_palette = NULL;
+    if (frame == NULL || pg == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     allocator = sixel_frame_get_allocator(frame);
-    pixels = sixel_frame_get_pixels(frame);
-    frame_width = sixel_frame_get_width(frame);
-    frame_height = sixel_frame_get_height(frame);
+    if (allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    old_pixels = sixel_frame_get_pixels(frame);
+    old_palette = sixel_frame_get_palette(frame);
+    sixel_allocator_free(allocator, old_pixels);
+    sixel_allocator_free(allocator, old_palette);
+    sixel_frame_set_pixels(frame, NULL);
+    sixel_frame_set_palette(frame, NULL);
+    sixel_frame_set_ncolors(frame, -1);
+    frame->alpha_zero_is_transparent = 0;
+    sixel_frame_set_transparent(frame, -1);
 
     sixel_frame_set_delay(frame, pg->delay);
-    status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+    if (fuse_palette != 0) {
+        status = gif_export_pal8_frame(frame, pg, reqcolors);
+        if (status == SIXEL_OK) {
+            goto finalize;
+        }
+        if (status != SIXEL_FALSE) {
+            goto end;
+        }
+    }
+
+    status = gif_export_nonpal_frame(frame, pg);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    sixel_allocator_free(allocator, pixels);
-    frame_size = (size_t)frame_width * (size_t)frame_height * 3;
-    pixels = (unsigned char *)sixel_allocator_malloc(allocator, frame_size);
-    sixel_frame_set_pixels(frame, pixels);
-    if (pixels == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_allocator_malloc() failed in gif_init_frame().");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-
-    /*
-     * The canvas is already composited in RGB888, so each frame can be
-     * exported directly without reinterpretation through a per-frame palette.
-     */
-    memcpy(pixels, pg->out, frame_size);
+finalize:
     sixel_frame_set_multiframe(frame, (pg->loop_count != (-1)));
-
     status = SIXEL_OK;
 
 end:
@@ -304,11 +828,14 @@ gif_out_code(
         g->history[idx] = 1;
     }
     if (!(g->transparent >= 0 && suffix == g->transparent)) {
-        pixel_offset = idx * 3;
+        pixel_offset = idx * (size_t)GIF_RGB_STRIDE;
         palette_offset = (size_t)suffix * 3;
         g->out[pixel_offset + 0] = g->color_table[palette_offset + 2];
         g->out[pixel_offset + 1] = g->color_table[palette_offset + 1];
         g->out[pixel_offset + 2] = g->color_table[palette_offset + 0];
+        if (g->alpha_out != NULL) {
+            g->alpha_out[idx] = 0xffu;
+        }
     }
     if (g->cur_x >= g->actual_width) {
         g->actual_width = g->cur_x + 1;
@@ -464,6 +991,7 @@ gif_load_next(
     unsigned char bg_r;
     unsigned char bg_g;
     unsigned char bg_b;
+    unsigned char bg_a;
 
     /* apply disposal of previous frame and prepare buffers */
     if (g->out) {
@@ -487,17 +1015,18 @@ gif_load_next(
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        if (pcount > SIZE_MAX / 3) {
+        if (pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
             sixel_helper_set_additional_message(
                 "corrupt GIF (reason: image data exceeds limit).");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        bcount = pcount * 3;
+        bcount = pcount * (size_t)GIF_RGB_STRIDE;
 
         bg_r = g->pal[g->bgindex][2];
         bg_g = g->pal[g->bgindex][1];
         bg_b = g->pal[g->bgindex][0];
+        bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
 
         if (g->is_multiframe) {
             dispose = (g->eflags & 0x1C) >> 2;
@@ -505,32 +1034,38 @@ gif_load_next(
                 if (g->prev_out) {
                     for (i = 0; i < pcount; ++i) {
                         if (g->history[i]) {
-                            pixel_offset = i * 3;
-                            g->out[pixel_offset + 0] =
-                                g->prev_out[pixel_offset + 0];
-                            g->out[pixel_offset + 1] =
-                                g->prev_out[pixel_offset + 1];
-                            g->out[pixel_offset + 2] =
-                                g->prev_out[pixel_offset + 2];
+                            pixel_offset = i * (size_t)GIF_RGB_STRIDE;
+                            memcpy(g->out + pixel_offset,
+                                   g->prev_out + pixel_offset,
+                                   (size_t)GIF_RGB_STRIDE);
+                            if (g->alpha_out != NULL && g->prev_alpha != NULL) {
+                                g->alpha_out[i] = g->prev_alpha[i];
+                            }
                         }
                     }
                 } else {
                     for (i = 0; i < pcount; ++i) {
                         if (g->history[i]) {
-                            pixel_offset = i * 3;
+                            pixel_offset = i * (size_t)GIF_RGB_STRIDE;
                             g->out[pixel_offset + 0] = bg_r;
                             g->out[pixel_offset + 1] = bg_g;
                             g->out[pixel_offset + 2] = bg_b;
+                            if (g->alpha_out != NULL) {
+                                g->alpha_out[i] = bg_a;
+                            }
                         }
                     }
                 }
             } else if (dispose == 2) {
                 for (i = 0; i < pcount; ++i) {
                     if (g->history[i]) {
-                        pixel_offset = i * 3;
+                        pixel_offset = i * (size_t)GIF_RGB_STRIDE;
                         g->out[pixel_offset + 0] = bg_r;
                         g->out[pixel_offset + 1] = bg_g;
                         g->out[pixel_offset + 2] = bg_b;
+                        if (g->alpha_out != NULL) {
+                            g->alpha_out[i] = bg_a;
+                        }
                     }
                 }
             }
@@ -538,6 +1073,9 @@ gif_load_next(
 
         if (g->prev_out) {
             memcpy(g->prev_out, g->out, bcount);
+        }
+        if (g->alpha_out != NULL && g->prev_alpha != NULL) {
+            memcpy(g->prev_alpha, g->alpha_out, pcount);
         }
         if (g->history) {
             memset(g->history, 0, pcount);
@@ -602,7 +1140,9 @@ gif_load_next(
                                      2 << (g->lflags & 7));
                 g->color_table = (unsigned char *) g->lpal;
             } else if (g->flags & 0x80) {
-                if (g->transparent >= 0 && (g->eflags & 0x01)) {
+                if (!g->preserve_transparency &&
+                    g->transparent >= 0 &&
+                    (g->eflags & 0x01)) {
                    if (bgcolor) {
                        g->pal[g->transparent][0] = bgcolor[2];
                        g->pal[g->transparent][1] = bgcolor[1];
@@ -760,13 +1300,19 @@ load_gif(
     unsigned char bg_r;
     unsigned char bg_g;
     unsigned char bg_b;
+    unsigned char bg_a;
     int emit_frame;
     int decoded_frame_no;
     int emitted_frame_no;
+    int stream_has_transparency;
+    int preserve_transparency;
 
     frame = NULL;
     g = NULL;
     fnp.p = fn_load;
+    bg_a = 0u;
+    stream_has_transparency = 0;
+    preserve_transparency = 0;
 
     status = sixel_frame_new(&frame, allocator);
     if (SIXEL_FAILED(status)) {
@@ -780,6 +1326,21 @@ load_gif(
     s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
     s.img_buffer_end = (unsigned char *)buffer + size;
     memset(g, 0, sizeof(*g));
+    status = gif_scan_stream_for_transparency((unsigned char const *)buffer,
+                                              size,
+                                              &stream_has_transparency);
+    if (SIXEL_FAILED(status)) {
+        /*
+         * Transparency pre-scan is advisory. Decode continues on the legacy
+         * RGB path when the stream cannot be scanned safely.
+         */
+        stream_has_transparency = 0;
+        status = SIXEL_OK;
+    }
+    preserve_transparency =
+        bgcolor == NULL && stream_has_transparency != 0 ? 1 : 0;
+    g->stream_has_transparency = stream_has_transparency;
+    g->preserve_transparency = preserve_transparency;
     g->delay = SIXEL_DEFALUT_GIF_DELAY;
     g->loop_count = -1;
     status = gif_load_header(&s, g);
@@ -806,18 +1367,26 @@ load_gif(
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    if (pcount > SIZE_MAX / 3) {
+    if (pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: image data exceeds limit).");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    bcount = pcount * 3;
+    bcount = pcount * (size_t)GIF_RGB_STRIDE;
 
     g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
     g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+    g->alpha_out = NULL;
+    g->prev_alpha = NULL;
+    if (g->preserve_transparency != 0) {
+        g->alpha_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+        g->prev_alpha = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+    }
     g->history = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
-    if (g->out == NULL || g->prev_out == NULL || g->history == NULL) {
+    if (g->out == NULL || g->prev_out == NULL || g->history == NULL ||
+        (g->preserve_transparency != 0 &&
+         (g->alpha_out == NULL || g->prev_alpha == NULL))) {
         sixel_compat_snprintf(
             message,
             sizeof(message),
@@ -830,13 +1399,21 @@ load_gif(
     bg_r = g->pal[g->bgindex][2];
     bg_g = g->pal[g->bgindex][1];
     bg_b = g->pal[g->bgindex][0];
+    bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
     for (i = 0; i < pcount; ++i) {
-        g->out[i * 3 + 0] = bg_r;
-        g->out[i * 3 + 1] = bg_g;
-        g->out[i * 3 + 2] = bg_b;
-        g->prev_out[i * 3 + 0] = bg_r;
-        g->prev_out[i * 3 + 1] = bg_g;
-        g->prev_out[i * 3 + 2] = bg_b;
+        size_t pixel_offset;
+
+        pixel_offset = i * (size_t)GIF_RGB_STRIDE;
+        g->out[pixel_offset + 0] = bg_r;
+        g->out[pixel_offset + 1] = bg_g;
+        g->out[pixel_offset + 2] = bg_b;
+        g->prev_out[pixel_offset + 0] = bg_r;
+        g->prev_out[pixel_offset + 1] = bg_g;
+        g->prev_out[pixel_offset + 2] = bg_b;
+        if (g->alpha_out != NULL && g->prev_alpha != NULL) {
+            g->alpha_out[i] = bg_a;
+            g->prev_alpha[i] = bg_a;
+        }
     }
     memset(g->history, 0, pcount);
 
@@ -874,18 +1451,32 @@ load_gif(
             status = SIXEL_BAD_INPUT;
             goto end;
         }
+        if (pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
+            sixel_helper_set_additional_message(
+                "corrupt GIF (reason: image data exceeds limit).");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
 
         /* reset canvas for new loop */
         bg_r = g->pal[g->bgindex][2];
         bg_g = g->pal[g->bgindex][1];
         bg_b = g->pal[g->bgindex][0];
+        bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
         for (i = 0; i < pcount; ++i) {
-            g->out[i * 3 + 0] = bg_r;
-            g->out[i * 3 + 1] = bg_g;
-            g->out[i * 3 + 2] = bg_b;
-            g->prev_out[i * 3 + 0] = bg_r;
-            g->prev_out[i * 3 + 1] = bg_g;
-            g->prev_out[i * 3 + 2] = bg_b;
+            size_t pixel_offset;
+
+            pixel_offset = i * (size_t)GIF_RGB_STRIDE;
+            g->out[pixel_offset + 0] = bg_r;
+            g->out[pixel_offset + 1] = bg_g;
+            g->out[pixel_offset + 2] = bg_b;
+            g->prev_out[pixel_offset + 0] = bg_r;
+            g->prev_out[pixel_offset + 1] = bg_g;
+            g->prev_out[pixel_offset + 2] = bg_b;
+            if (g->alpha_out != NULL && g->prev_alpha != NULL) {
+                g->alpha_out[i] = bg_a;
+                g->prev_alpha[i] = bg_a;
+            }
         }
         memset(g->history, 0, pcount);
         g->is_multiframe = 0;
@@ -969,6 +1560,8 @@ end:
     if (g != NULL) {
         sixel_allocator_free(allocator, g->out);
         sixel_allocator_free(allocator, g->prev_out);
+        sixel_allocator_free(allocator, g->alpha_out);
+        sixel_allocator_free(allocator, g->prev_alpha);
         sixel_allocator_free(allocator, g->history);
         sixel_allocator_free(allocator, g);
     }
