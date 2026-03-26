@@ -983,16 +983,24 @@ convert_palette_to_rgb(
     for (i = 0; i < palette_colors; ++i) {
         if (palette_comp == 4) {
             alpha = palette[i * 4 + 3];
-            /* Blend: out = ((1-a) * bg + a * fg) / 255. */
-            rgb_palette[i * 3 + 0] =
-                (unsigned char)(((255 - alpha) * bg_r
-                                 + alpha * palette[i * 4 + 0]) / 255);
-            rgb_palette[i * 3 + 1] =
-                (unsigned char)(((255 - alpha) * bg_g
-                                 + alpha * palette[i * 4 + 1]) / 255);
-            rgb_palette[i * 3 + 2] =
-                (unsigned char)(((255 - alpha) * bg_b
-                                 + alpha * palette[i * 4 + 2]) / 255);
+            if (alpha < 0xff) {
+                /*
+                 * Keep integer blending consistent with the libpng loader.
+                 */
+                rgb_palette[i * 3 + 0] =
+                    (unsigned char)(((0xff - alpha) * bg_r
+                                     + alpha * palette[i * 4 + 0]) >> 8);
+                rgb_palette[i * 3 + 1] =
+                    (unsigned char)(((0xff - alpha) * bg_g
+                                     + alpha * palette[i * 4 + 1]) >> 8);
+                rgb_palette[i * 3 + 2] =
+                    (unsigned char)(((0xff - alpha) * bg_b
+                                     + alpha * palette[i * 4 + 2]) >> 8);
+            } else {
+                rgb_palette[i * 3 + 0] = palette[i * 4 + 0];
+                rgb_palette[i * 3 + 1] = palette[i * 4 + 1];
+                rgb_palette[i * 3 + 2] = palette[i * 4 + 2];
+            }
         } else if (palette_comp == 3) {
             rgb_palette[i * 3 + 0] = palette[i * 3 + 0];
             rgb_palette[i * 3 + 1] = palette[i * 3 + 1];
@@ -2523,6 +2531,12 @@ load_with_builtin(
     int resolved_start_frame_no;
     int gif_frame_count;
     int png_keycolor_mode;
+    int palette_keycolor_index;
+    int palette_zero_alpha_count;
+    size_t palette_pixel_count;
+    size_t palette_pixel_index;
+    unsigned int palette_index;
+    unsigned char palette_zero_alpha_map[SIXEL_PALETTE_MAX];
     unsigned char *icc_profile;
     size_t icc_profile_length;
     int cms_converted;
@@ -2546,6 +2560,12 @@ load_with_builtin(
     resolved_start_frame_no = -1;
     gif_frame_count = 0;
     png_keycolor_mode = 0;
+    palette_keycolor_index = -1;
+    palette_zero_alpha_count = 0;
+    palette_pixel_count = 0u;
+    palette_pixel_index = 0u;
+    palette_index = 0u;
+    memset(palette_zero_alpha_map, 0, sizeof(palette_zero_alpha_map));
     icc_profile = NULL;
     icc_profile_length = 0u;
     cms_converted = 0;
@@ -2789,6 +2809,90 @@ load_with_builtin(
 
         if (chunk_is_png(pchunk)) {
             if (png_keycolor_mode) {
+                stbi__start_mem(&stb_context,
+                                pchunk->buffer,
+                                (int)pchunk->size);
+                pixels = stbi__png_load_palette(&stb_context,
+                                                &frame->width,
+                                                &frame->height,
+                                                &palette_comp,
+                                                &palette,
+                                                &palette_colors,
+                                                &ri);
+                if (pixels != NULL &&
+                    palette != NULL &&
+                    palette_comp == 4 &&
+                    palette_colors > 0 &&
+                    palette_colors <= reqcolors) {
+                    palette_keycolor_index = -1;
+                    palette_zero_alpha_count = 0;
+                    memset(palette_zero_alpha_map,
+                           0,
+                           sizeof(palette_zero_alpha_map));
+                    for (palette_index = 0u;
+                         palette_index < (unsigned int)palette_colors &&
+                         palette_index < SIXEL_PALETTE_MAX;
+                         ++palette_index) {
+                        if (palette[palette_index * 4u + 3u] == 0u) {
+                            if (palette_keycolor_index < 0) {
+                                palette_keycolor_index = (int)palette_index;
+                            }
+                            palette_zero_alpha_map[palette_index] = 1u;
+                            ++palette_zero_alpha_count;
+                        }
+                    }
+
+                    status = convert_palette_to_rgb(&frame->palette,
+                                                    palette,
+                                                    palette_colors,
+                                                    palette_comp,
+                                                    bgcolor,
+                                                    pchunk->allocator);
+                    palette = NULL;
+                    if (SIXEL_FAILED(status)) {
+                        sixel_allocator_free(pchunk->allocator, pixels);
+                        goto end;
+                    }
+                    frame->ncolors = palette_colors;
+                    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+                    if (palette_keycolor_index >= 0) {
+                        sixel_frame_set_transparent(frame,
+                                                    palette_keycolor_index);
+                    }
+                    if (palette_zero_alpha_count > 1 &&
+                        palette_keycolor_index >= 0 &&
+                        frame->width > 0 &&
+                        frame->height > 0 &&
+                        (size_t)frame->width <=
+                            SIZE_MAX / (size_t)frame->height) {
+                        palette_pixel_count =
+                            (size_t)frame->width * (size_t)frame->height;
+                        for (palette_pixel_index = 0u;
+                             palette_pixel_index < palette_pixel_count;
+                             ++palette_pixel_index) {
+                            palette_index = pixels[palette_pixel_index];
+                            if ((int)palette_index != palette_keycolor_index &&
+                                palette_index < SIXEL_PALETTE_MAX &&
+                                palette_zero_alpha_map[palette_index] != 0u) {
+                                pixels[palette_pixel_index] =
+                                    (unsigned char)palette_keycolor_index;
+                            }
+                        }
+                    }
+                    sixel_frame_set_pixels(frame, pixels);
+                    frame->loop_count = 1;
+                    goto done;
+                }
+
+                if (palette != NULL) {
+                    stbi_free(palette);
+                    palette = NULL;
+                }
+                if (pixels != NULL) {
+                    sixel_allocator_free(pchunk->allocator, pixels);
+                    pixels = NULL;
+                }
                 pixels = stbi_load_from_memory(pchunk->buffer,
                                                (int)pchunk->size,
                                                &frame->width,
