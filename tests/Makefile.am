@@ -998,7 +998,7 @@ check-php: prepare-binding-artifacts
 # distdir does not hit shell ARG_MAX limits on some platforms.
 TEST_DATA_DIRS = data
 
-EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
+EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
@@ -1015,6 +1015,20 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     check-test-exports.list \
     $(TEST_DATA_DIRS)
 
+# Keep distdir recipe lines below per-argument shell limits by copying
+# discovered test scripts in dist-hook instead of expanding $(TESTS) in
+# EXTRA_DIST.
+dist-hook:
+	@set -eu; \
+	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+	    tests "$(srcdir)" include | tr ' ' '\n' | \
+	while IFS= read -r test_path; do \
+	    test -n "$$test_path" || continue; \
+	    dst="$(distdir)/$$test_path"; \
+	    $(MKDIR_P) "`dirname "$$dst"`"; \
+	    cp -p "$(srcdir)/$$test_path" "$$dst"; \
+	done
+
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
@@ -1027,7 +1041,13 @@ CLEANFILES =
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \
-	rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \
+	rm -f $(LOG_COMPILER) $(HELPER_FILES); \
+	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+	    tests "$(abs_srcdir)" include | tr ' ' '\n' | \
+	while IFS= read -r test_path; do \
+	    test -n "$$test_path" || continue; \
+	    rm -f "$$test_path"; \
+	done; \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv

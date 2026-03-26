@@ -1075,7 +1075,7 @@ AM_LOG_FLAGS =
 # Distribute fixture trees as directories so DISTFILES remains short and
 # distdir does not hit shell ARG_MAX limits on some platforms.
 TEST_DATA_DIRS = data
-EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
+EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
@@ -2375,6 +2375,9 @@ distdir-am: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-hook
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
@@ -2619,7 +2622,7 @@ uninstall-am:
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
 	check-am clean clean-checkPROGRAMS clean-generic clean-libtool \
-	clean-local cscopelist-am ctags ctags-am distclean \
+	clean-local cscopelist-am ctags ctags-am dist-hook distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
@@ -3345,6 +3348,20 @@ check-php: prepare-binding-artifacts
 	fi; \
 	echo "php TAP logs exported to $$artifact_root"
 
+# Keep distdir recipe lines below per-argument shell limits by copying
+# discovered test scripts in dist-hook instead of expanding $(TESTS) in
+# EXTRA_DIST.
+dist-hook:
+	@set -eu; \
+	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+	    tests "$(srcdir)" include | tr ' ' '\n' | \
+	while IFS= read -r test_path; do \
+	    test -n "$$test_path" || continue; \
+	    dst="$(distdir)/$$test_path"; \
+	    $(MKDIR_P) "`dirname "$$dst"`"; \
+	    cp -p "$(srcdir)/$$test_path" "$$dst"; \
+	done
+
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
 # distributed sources remain intact for developers and package builds.
@@ -3352,7 +3369,13 @@ check-php: prepare-binding-artifacts
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \
-	rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \
+	rm -f $(LOG_COMPILER) $(HELPER_FILES); \
+	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+	    tests "$(abs_srcdir)" include | tr ' ' '\n' | \
+	while IFS= read -r test_path; do \
+	    test -n "$$test_path" || continue; \
+	    rm -f "$$test_path"; \
+	done; \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
