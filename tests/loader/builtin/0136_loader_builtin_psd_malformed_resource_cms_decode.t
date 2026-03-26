@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify malformed PSD image-resource signature does not break CMS decode path.
+# Verify malformed PSD image-resource section is logged and decode still succeeds.
 
 set -eux
 
@@ -15,10 +15,35 @@ set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_bad_resource_signature.psd"
 
-run_img2sixel -L builtin:cms_engine=auto! "${input_psd}" >/dev/null || {
-    echo "not ok" 1 - "builtin loader failed on PSD with malformed resource signature"
-    exit 0
-}
+trace_log=$(set +xv; run_img2sixel -v -L builtin:cms_engine=auto! \
+    "${input_psd}" -o /dev/null 2>&1 || true)
 
-echo "ok" 1 - "builtin loader decodes PSD even when resource signature is malformed"
+case "${trace_log}" in
+    *"libsixel: trying builtin loader"*)
+        ;;
+    *)
+        echo "not ok" 1 - "builtin loader was not attempted"
+        exit 0
+        ;;
+esac
+
+case "${trace_log}" in
+    *"libsixel: builtin PSD: malformed ICC resource section; skipping ICC conversion"*)
+        ;;
+    *)
+        echo "not ok" 1 - "missing malformed-ICC trace for PSD resource section"
+        exit 0
+        ;;
+esac
+
+case "${trace_log}" in
+    *"libsixel: loader builtin succeeded"*)
+        ;;
+    *)
+        echo "not ok" 1 - "builtin loader failed on PSD with malformed resource signature"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "builtin loader logs malformed PSD ICC resource and still decodes"
 exit 0
