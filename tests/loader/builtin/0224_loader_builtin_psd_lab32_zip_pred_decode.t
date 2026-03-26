@@ -1,5 +1,10 @@
 #!/bin/sh
-# Verify builtin loader decodes PSD Lab 32-bit ZIP+Prediction.
+# Verify builtin loader decodes PSD Lab 32-bit ZIP+Prediction with stable image quality.
+# Reference generation command (coregraphics loader):
+#   DYLD_LIBRARY_PATH=src/.libs converters/.libs/img2sixel \
+#       -L coregraphics! \
+#       tests/data/inputs/formats/stbi_minimal_lab32_raw.psd \
+#       > tests/data/loader/builtin_expected/psd_lab32_raw_coregraphics_expected.six
 
 set -eux
 
@@ -12,13 +17,23 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_lab32_zip_pred.psd"
+reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_lab32_raw_coregraphics_expected.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/psd_lab32_zip_pred_output.six"
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 
-run_img2sixel -L builtin! "${input_psd}" >/dev/null || {
+run_img2sixel -L builtin! "${input_psd}" >"${output_sixel}" || {
     echo "not ok" 1 - "PSD Lab 32-bit ZIP+Prediction decode failed"
     exit 0
 }
 
-echo "ok" 1 - "PSD Lab 32-bit ZIP+Prediction decode succeeds"
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
+    "${reference_six}" "${output_sixel}" 2>&1) || {
+    echo "not ok" 1 - "PSD Lab 32-bit ZIP+Prediction fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    exit 0
+}
+
+echo "ok" 1 - "PSD Lab 32-bit ZIP+Prediction keeps MS-SSIM ${lsqa_floor} against expected sixel"
 exit 0
