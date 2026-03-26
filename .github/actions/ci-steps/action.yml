@@ -418,6 +418,15 @@ runs:
         ini-values: ffi.enable=1
         coverage: none
 
+    - name: Run pre-commit checks (staticcheck matrices)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).exec_type == 'bash'
+            && contains(fromJSON(inputs.matrix_json).label, '-staticcheck') }}
+      shell: bash
+      run: |
+        set -eux
+        .githooks/pre-commit
+
     - name: Build and test (Autotools, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
