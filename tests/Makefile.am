@@ -297,6 +297,7 @@ AM_LOG_FLAGS =
 	staticcheck-python-compileall \
 	staticcheck-private-includes \
 	staticcheck-makefile-recipes \
+	staticcheck-test-plan-single \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
@@ -311,6 +312,7 @@ staticcheck: \
 	staticcheck-python-compileall \
 	staticcheck-private-includes \
 	staticcheck-makefile-recipes \
+	staticcheck-test-plan-single \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
@@ -382,6 +384,17 @@ staticcheck-makefile-recipes:
 		--trs-file staticcheck-makefile-recipes.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-makefile-recipes.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-plan-single:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-plan-single" \
+		--log-file staticcheck-test-plan-single.log \
+		--trs-file staticcheck-test-plan-single.trs \
+		--enable-hard-errors \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-plan-single.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-binding-loader-setopt-sync:
@@ -994,6 +1007,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-private-includes.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
+    _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
