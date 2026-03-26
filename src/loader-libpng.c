@@ -1435,6 +1435,7 @@ load_png(unsigned char      /* out */ **result,
     double bg_linear[3];
     double file_gamma_decode;
     int palette_force_pal8;
+    int palette_keycolor_mode;
     int palette_keycolor_index;
     int palette_zero_alpha_count;
     int palette_remap_zero_alpha_indexes;
@@ -1499,6 +1500,7 @@ load_png(unsigned char      /* out */ **result,
     bg_linear[2] = 0.0;
     file_gamma_decode = 0.0;
     palette_force_pal8 = 0;
+    palette_keycolor_mode = 0;
     palette_keycolor_index = -1;
     palette_zero_alpha_count = 0;
     palette_remap_zero_alpha_indexes = 0;
@@ -1699,6 +1701,10 @@ load_png(unsigned char      /* out */ **result,
                           (color_type == PNG_COLOR_TYPE_GRAY ||
                            color_type == PNG_COLOR_TYPE_RGB))
                          || (has_alpha_chunk && trns_keycolor_mode == 2));
+    palette_keycolor_mode = trns_keycolor_mode != 0 &&
+                            !enable_cms &&
+                            bgcolor == NULL &&
+                            indexed_trns_palette_path;
     background_colorspace = loader_background_colorspace();
     png_resolve_background_unit(png_ptr,
                                 info_ptr,
@@ -2469,11 +2475,11 @@ alpha_cleanup:
                          &background,
                          background_colorspace,
                          bg_linear,
-                         transparent,
-                         palette_zero_alpha_map,
-                         &palette_zero_alpha_count);
+                         palette_keycolor_mode ? transparent : NULL,
+                         palette_keycolor_mode ? palette_zero_alpha_map : NULL,
+                         palette_keycolor_mode ? &palette_zero_alpha_count : NULL);
 
-            if (palette_zero_alpha_count > 0) {
+            if (palette_keycolor_mode && palette_zero_alpha_count > 0) {
                 palette_force_pal8 = 1;
                 if (transparent != NULL) {
                     palette_keycolor_index = *transparent;
@@ -3871,9 +3877,7 @@ load_apng_frames(
                 bgcolor == NULL &&
                 !enable_cms &&
                 ((has_trns_chunk &&
-                  !has_alpha_chunk &&
-                  (color_type == PNG_COLOR_TYPE_GRAY ||
-                   color_type == PNG_COLOR_TYPE_RGB))
+                  !has_alpha_chunk)
                  || (has_alpha_chunk && trns_keycolor_mode == 2));
         } else if (memcmp(p + 4, "acTL", 4) == 0) {
             if (length != 8) {
@@ -4051,9 +4055,7 @@ load_apng_frames(
                 bgcolor == NULL &&
                 !enable_cms &&
                 ((has_trns_chunk &&
-                  !has_alpha_chunk &&
-                  (color_type == PNG_COLOR_TYPE_GRAY ||
-                   color_type == PNG_COLOR_TYPE_RGB))
+                  !has_alpha_chunk)
                  || (has_alpha_chunk && trns_keycolor_mode == 2));
         } else if (memcmp(p + 4, "acTL", 4) != 0 &&
                    memcmp(p + 4, "fcTL", 4) != 0 &&

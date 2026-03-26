@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify palette+tRNS keeps keycolor header with cms=1 and explicit background.
+# Verify libpng palette+tRNS drops keycolor header under cms=1 background.
 
 set -eux
 
@@ -45,10 +45,10 @@ case "${out_payload}" in
         ;;
 esac
 
-if [ "${out_has_header}" = 1 ]; then
-    echo "ok 1 - palette+tRNS keeps keycolor header under cms=1 background"
+if [ "${out_has_header}" = 0 ]; then
+    echo "ok 1 - libpng palette+tRNS drops keycolor header under cms=1 background"
 else
-    echo "not ok 1 - palette+tRNS lost keycolor header under cms=1 background"
+    echo "not ok 1 - libpng palette+tRNS kept keycolor header under cms=1 background"
 fi
 
 exit 0
