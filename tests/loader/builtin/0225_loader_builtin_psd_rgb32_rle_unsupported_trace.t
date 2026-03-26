@@ -13,31 +13,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-tmp_psd=$(mktemp "${TMPDIR:-/tmp}/libsixel-psd-rgb32-rle-XXXXXX.psd")
-trap 'rm -f "${tmp_psd}"' EXIT HUP INT TERM
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_rgb32_rle.psd"
 
-python3 - "${tmp_psd}" <<'PY'
-import struct
-import sys
-
-out = sys.argv[1]
-with open(out, "wb") as f:
-    f.write(b"8BPS")
-    f.write(struct.pack(">H", 1))
-    f.write(b"\x00" * 6)
-    f.write(struct.pack(">H", 3))
-    f.write(struct.pack(">I", 1))
-    f.write(struct.pack(">I", 1))
-    f.write(struct.pack(">H", 32))
-    f.write(struct.pack(">H", 3))  # RGB
-    f.write(struct.pack(">I", 0))
-    f.write(struct.pack(">I", 0))
-    f.write(struct.pack(">I", 0))
-    f.write(struct.pack(">H", 1))  # RLE
-    f.write(b"\x00")
-PY
-
-trace_log=$(set +xv; run_img2sixel -L builtin! "${tmp_psd}" -o /dev/null 2>&1 || true)
+trace_log=$(set +xv; run_img2sixel -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
     *"builtin PSD: unsupported RLE compression for 32-bit RGB"*)
