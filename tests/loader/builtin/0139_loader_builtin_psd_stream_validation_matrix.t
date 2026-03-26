@@ -10,13 +10,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-echo "1..2"
+echo "1..4"
 set -v
 
 test_no=1
 for case_entry in \
     "invalid_rle_stream.psd:invalid RLE stream" \
-    "too_large_dimension.psd:dimension larger than STB max"
+    "too_large_dimension.psd:dimension larger than STB max" \
+    "bad_color_mode_data_length.psd:color mode data section length overflow" \
+    "bad_image_resources_length.psd:image resources section length overflow"
 do
     file_name=${case_entry%%:*}
     case_desc=${case_entry#*:}
