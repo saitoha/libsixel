@@ -55,6 +55,7 @@
 #include "fromgif.h"
 #include "compat_stub.h"
 #include "frame.h"
+#include "loader-common.h"
 
 /*
  * gif_context_t struct and start_xxx functions
@@ -93,6 +94,12 @@ static size_t const gif_color_table_bytes[8] = {
 
 typedef struct
 {
+   int has_transparency;
+   int image_count;
+} gif_stream_info_t;
+
+typedef struct
+{
    int w, h;
    /*
     * Keep the compositing canvas in packed RGB instead of palette
@@ -122,7 +129,10 @@ typedef struct
    int is_multiframe;
    int is_terminated;
    int preserve_transparency;
-   int stream_has_transparency;
+   int stream_frame_count;
+   int stream_is_multiframe;
+   int global_color_table_entries;
+   int color_table_entries;
 } gif_t;
 
 #if defined(_MSC_VER)
@@ -140,6 +150,9 @@ typedef struct
 static unsigned char
 gif_get8(gif_context_t *s)
 {
+    if (s == NULL || s->img_buffer == NULL || s->img_buffer_end == NULL) {
+        return 0;
+    }
     if (s->img_buffer < s->img_buffer_end) {
         return *s->img_buffer++;
     }
@@ -209,7 +222,12 @@ gif_load_header(
     g->loop_count = (-1);
 
     if (g->flags & 0x80) {
-        gif_parse_colortable(s, g->pal, 2 << (g->flags & 7));
+        g->global_color_table_entries = 2 << (g->flags & 7);
+        gif_parse_colortable(s, g->pal, g->global_color_table_entries);
+        g->color_table_entries = g->global_color_table_entries;
+    } else {
+        g->global_color_table_entries = 0;
+        g->color_table_entries = 0;
     }
 
     status = SIXEL_OK;
@@ -220,10 +238,10 @@ end:
 
 
 static SIXELSTATUS
-gif_scan_stream_for_transparency(
+gif_scan_stream_info(
     unsigned char const *buffer,
     int size,
-    int *has_transparency)
+    gif_stream_info_t *info)
 {
     SIXELSTATUS status = SIXEL_OK;
     unsigned char const *p;
@@ -244,10 +262,11 @@ gif_scan_stream_for_transparency(
     extension_label = 0u;
     block_size = 0u;
 
-    if (buffer == NULL || has_transparency == NULL || size <= 0) {
+    if (buffer == NULL || info == NULL || size <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
-    *has_transparency = 0;
+    info->has_transparency = 0;
+    info->image_count = 0;
     if ((size_t)size < 13u) {
         return SIXEL_BAD_INPUT;
     }
@@ -276,6 +295,7 @@ gif_scan_stream_for_transparency(
         }
 
         if (marker == 0x2cu) {
+            ++info->image_count;
             if ((size_t)(end - p) < 9u) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
@@ -345,9 +365,7 @@ gif_scan_stream_for_transparency(
                 packed = p[0u];
                 p += 4u;
                 if ((packed & 0x01u) != 0u) {
-                    *has_transparency = 1;
-                    status = SIXEL_OK;
-                    goto end;
+                    info->has_transparency = 1;
                 }
             }
         }
@@ -470,6 +488,12 @@ gif_export_pal8_frame(
 
     max_opaque_colors = maxcolors - (has_transparent_pixels != 0 ? 1 : 0);
     if (max_opaque_colors < 0) {
+        loader_trace_message(
+            "fromgif: PAL8 fallback reason=color_overflow reqcolors=%d "
+            "max_opaque=%d has_transparent=%d",
+            maxcolors,
+            max_opaque_colors,
+            has_transparent_pixels);
         status = SIXEL_FALSE;
         goto end;
     }
@@ -577,6 +601,12 @@ gif_export_pal8_frame(
 
         if (!found) {
             if (ncolors >= max_opaque_colors) {
+                loader_trace_message(
+                    "fromgif: PAL8 fallback reason=color_overflow "
+                    "reqcolors=%d max_opaque=%d has_transparent=%d",
+                    maxcolors,
+                    max_opaque_colors,
+                    has_transparent_pixels);
                 status = SIXEL_FALSE;
                 goto end;
             }
@@ -598,6 +628,12 @@ gif_export_pal8_frame(
     if (has_transparent_pixels) {
         keycolor_index = ncolors;
         if (keycolor_index >= maxcolors) {
+            loader_trace_message(
+                "fromgif: PAL8 fallback reason=keycolor_overflow "
+                "reqcolors=%d max_opaque=%d has_transparent=%d",
+                maxcolors,
+                max_opaque_colors,
+                has_transparent_pixels);
             status = SIXEL_FALSE;
             goto end;
         }
@@ -777,7 +813,7 @@ gif_init_frame(
     }
 
 finalize:
-    sixel_frame_set_multiframe(frame, (pg->loop_count != (-1)));
+    sixel_frame_set_multiframe(frame, pg->stream_is_multiframe != 0);
     status = SIXEL_OK;
 
 end:
@@ -817,6 +853,11 @@ gif_out_code(
 
     idx = (size_t)g->cur_x + (size_t)g->cur_y * g->w;
     suffix = g->codes[code].suffix;
+    if ((int)suffix >= g->color_table_entries) {
+        sixel_helper_set_additional_message(
+            "corrupt GIF (reason: color index out of range).");
+        return SIXEL_RUNTIME_ERROR;
+    }
     /*
      * Track every decoded pixel position, even when the source index is the
      * transparent index. GIF disposal methods 2/3 are defined on the whole
@@ -1138,6 +1179,7 @@ gif_load_next(
                 gif_parse_colortable(s,
                                      g->lpal,
                                      2 << (g->lflags & 7));
+                g->color_table_entries = 2 << (g->lflags & 7);
                 g->color_table = (unsigned char *) g->lpal;
             } else if (g->flags & 0x80) {
                 if (!g->preserve_transparency &&
@@ -1149,6 +1191,7 @@ gif_load_next(
                        g->pal[g->transparent][2] = bgcolor[0];
                    }
                 }
+                g->color_table_entries = g->global_color_table_entries;
                 g->color_table = (unsigned char *)g->pal;
             } else {
                 sixel_helper_set_additional_message(
@@ -1304,15 +1347,21 @@ load_gif(
     int emit_frame;
     int decoded_frame_no;
     int emitted_frame_no;
-    int stream_has_transparency;
+    gif_stream_info_t stream_info;
     int preserve_transparency;
 
     frame = NULL;
     g = NULL;
     fnp.p = fn_load;
     bg_a = 0u;
-    stream_has_transparency = 0;
+    stream_info.has_transparency = 0;
+    stream_info.image_count = 0;
     preserve_transparency = 0;
+
+    if (buffer == NULL || size <= 0 || fn_load == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
 
     status = sixel_frame_new(&frame, allocator);
     if (SIXEL_FAILED(status)) {
@@ -1326,20 +1375,25 @@ load_gif(
     s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
     s.img_buffer_end = (unsigned char *)buffer + size;
     memset(g, 0, sizeof(*g));
-    status = gif_scan_stream_for_transparency((unsigned char const *)buffer,
-                                              size,
-                                              &stream_has_transparency);
+    status = gif_scan_stream_info((unsigned char const *)buffer,
+                                  size,
+                                  &stream_info);
     if (SIXEL_FAILED(status)) {
         /*
          * Transparency pre-scan is advisory. Decode continues on the legacy
          * RGB path when the stream cannot be scanned safely.
          */
-        stream_has_transparency = 0;
+        stream_info.has_transparency = 0;
+        stream_info.image_count = 1;
         status = SIXEL_OK;
     }
     preserve_transparency =
-        bgcolor == NULL && stream_has_transparency != 0 ? 1 : 0;
-    g->stream_has_transparency = stream_has_transparency;
+        bgcolor == NULL && stream_info.has_transparency != 0 ? 1 : 0;
+    if (stream_info.image_count <= 0) {
+        stream_info.image_count = 1;
+    }
+    g->stream_frame_count = stream_info.image_count;
+    g->stream_is_multiframe = stream_info.image_count > 1 ? 1 : 0;
     g->preserve_transparency = preserve_transparency;
     g->delay = SIXEL_DEFALUT_GIF_DELAY;
     g->loop_count = -1;

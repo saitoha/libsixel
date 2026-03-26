@@ -5,6 +5,9 @@
  * - GIF(alpha, palette on)  -> PAL8
  * - GIF(opaque, palette off) -> RGB888
  * - GIF(alpha, palette off)  -> RGBA8888
+ * - GIF(alpha, palette on, low reqcolors) -> RGBA8888 fallback
+ * - GIF(alpha, palette on, low reqcolors + bgcolor) -> RGB888 fallback
+ * - GIF(anim without NETSCAPE extension) reports multiframe metadata
  * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
  */
 
@@ -20,6 +23,7 @@ new_builtin_component_for_pixelformat_test(sixel_allocator_t *allocator,
 static int
 run_builtin_loader_test(void)
 {
+    unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int result;
 
     result = run_loader_component_case("builtin loader rgba8",
@@ -32,57 +36,127 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    result = run_loader_component_case_with_options(
+    result = run_loader_component_case_with_options_ex(
         "builtin loader gif opaque pal8",
         "/tests/data/inputs/small.gif",
         SIXEL_PIXELFORMAT_PAL8,
         GEOMETRY_ANY,
         GEOMETRY_ANY,
         1,
+        -1,
+        1,
+        1,
         1,
         256,
+        NULL,
         new_builtin_component_for_pixelformat_test);
     if (result != 0) {
         return result;
     }
 
-    result = run_loader_component_case_with_options(
+    result = run_loader_component_case_with_options_ex(
         "builtin loader gif transparent pal8",
         "/tests/data/inputs/formats/gif-transparent-static.gif",
         SIXEL_PIXELFORMAT_PAL8,
         8,
         8,
         1,
+        FRAME_TRANSPARENT_NONNEG,
+        0,
+        1,
         1,
         256,
+        NULL,
         new_builtin_component_for_pixelformat_test);
     if (result != 0) {
         return result;
     }
 
-    result = run_loader_component_case_with_options(
+    result = run_loader_component_case_with_options_ex(
         "builtin loader gif opaque rgb",
         "/tests/data/inputs/small.gif",
         SIXEL_PIXELFORMAT_RGB888,
         GEOMETRY_ANY,
         GEOMETRY_ANY,
         1,
+        -1,
+        1,
+        1,
         0,
         256,
+        NULL,
         new_builtin_component_for_pixelformat_test);
     if (result != 0) {
         return result;
     }
 
-    result = run_loader_component_case_with_options(
+    result = run_loader_component_case_with_options_ex(
         "builtin loader gif transparent rgba",
         "/tests/data/inputs/formats/gif-transparent-static.gif",
         SIXEL_PIXELFORMAT_RGBA8888,
         8,
         8,
         1,
+        -1,
+        0,
+        1,
         0,
         256,
+        NULL,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "builtin loader gif transparent low-reqcolors rgba fallback",
+        "/tests/data/inputs/formats/gif-transparent-static-3colors.gif",
+        SIXEL_PIXELFORMAT_RGBA8888,
+        8,
+        8,
+        1,
+        -1,
+        0,
+        1,
+        1,
+        3,
+        NULL,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "builtin loader gif transparent low-reqcolors rgb fallback with bgcolor",
+        "/tests/data/inputs/formats/gif-transparent-static-3colors.gif",
+        SIXEL_PIXELFORMAT_RGB888,
+        8,
+        8,
+        1,
+        -1,
+        0,
+        1,
+        1,
+        3,
+        bgcolor_white,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "builtin loader gif no-netscape multiframe metadata",
+        "/tests/data/inputs/formats/gif-anim-no-netscape-2frame.gif",
+        SIXEL_PIXELFORMAT_PAL8,
+        6,
+        6,
+        2,
+        -1,
+        1,
+        0,
+        1,
+        256,
+        NULL,
         new_builtin_component_for_pixelformat_test);
     if (result != 0) {
         return result;
