@@ -806,17 +806,113 @@ chunk_is_psd(sixel_chunk_t const *chunk)
     return 0;
 }
 
-static int
-sixel_builtin_psd_header_bitdepth(sixel_chunk_t const *chunk)
+typedef struct sixel_builtin_psd_info {
+    unsigned int version;
+    unsigned int channels;
+    unsigned int width;
+    unsigned int height;
+    unsigned int depth;
+    unsigned int color_mode;
+    unsigned int compression;
+    size_t color_mode_data_offset;
+    size_t color_mode_data_length;
+    size_t image_resources_offset;
+    size_t image_resources_length;
+    size_t layer_mask_offset;
+    size_t layer_mask_length;
+    size_t image_data_offset;
+} sixel_builtin_psd_info_t;
+
+static unsigned int
+sixel_builtin_read_u16be(unsigned char const *p)
 {
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 26u) {
+    return ((unsigned int)p[0] << 8) | (unsigned int)p[1];
+}
+
+static size_t
+sixel_builtin_read_u32be_size(unsigned char const *p)
+{
+    return ((size_t)p[0] << 24) |
+           ((size_t)p[1] << 16) |
+           ((size_t)p[2] << 8) |
+           (size_t)p[3];
+}
+
+static int
+sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
+                             sixel_builtin_psd_info_t *info)
+{
+    unsigned char const *buffer;
+    size_t size;
+    size_t offset;
+    size_t section_length;
+
+    buffer = NULL;
+    size = 0u;
+    offset = 0u;
+    section_length = 0u;
+    if (chunk == NULL || chunk->buffer == NULL || info == NULL ||
+        chunk->size < 30u) {
         return 0;
     }
-    if (memcmp(chunk->buffer, "8BPS", 4u) != 0) {
+    buffer = chunk->buffer;
+    size = chunk->size;
+    if (memcmp(buffer, "8BPS", 4u) != 0) {
         return 0;
     }
-    return (int)(((unsigned int)chunk->buffer[22u] << 8) |
-                 (unsigned int)chunk->buffer[23u]);
+
+    memset(info, 0, sizeof(*info));
+    info->version = sixel_builtin_read_u16be(buffer + 4u);
+    info->channels = sixel_builtin_read_u16be(buffer + 12u);
+    info->height = (unsigned int)sixel_builtin_read_u32be_size(buffer + 14u);
+    info->width = (unsigned int)sixel_builtin_read_u32be_size(buffer + 18u);
+    info->depth = sixel_builtin_read_u16be(buffer + 22u);
+    info->color_mode = sixel_builtin_read_u16be(buffer + 24u);
+
+    offset = 26u;
+    if (offset + 4u > size) {
+        return 0;
+    }
+    section_length = sixel_builtin_read_u32be_size(buffer + offset);
+    offset += 4u;
+    if (section_length > size - offset) {
+        return 0;
+    }
+    info->color_mode_data_offset = offset;
+    info->color_mode_data_length = section_length;
+    offset += section_length;
+
+    if (offset + 4u > size) {
+        return 0;
+    }
+    section_length = sixel_builtin_read_u32be_size(buffer + offset);
+    offset += 4u;
+    if (section_length > size - offset) {
+        return 0;
+    }
+    info->image_resources_offset = offset;
+    info->image_resources_length = section_length;
+    offset += section_length;
+
+    if (offset + 4u > size) {
+        return 0;
+    }
+    section_length = sixel_builtin_read_u32be_size(buffer + offset);
+    offset += 4u;
+    if (section_length > size - offset) {
+        return 0;
+    }
+    info->layer_mask_offset = offset;
+    info->layer_mask_length = section_length;
+    offset += section_length;
+
+    if (offset + 2u > size) {
+        return 0;
+    }
+    info->compression = sixel_builtin_read_u16be(buffer + offset);
+    info->image_data_offset = offset + 2u;
+
+    return 1;
 }
 
 static int
@@ -2969,13 +3065,62 @@ load_with_builtin(
                 int psd_header_bitdepth;
                 unsigned char const *psd_icc_profile;
                 size_t psd_icc_profile_length;
+                sixel_builtin_psd_info_t psd_info;
+                int psd_info_ok;
 
                 psd_ri = (stbi__result_info){ 0 };
                 psd_depth = 0;
                 psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 psd_icc_profile = NULL;
                 psd_icc_profile_length = 0u;
-                psd_header_bitdepth = sixel_builtin_psd_header_bitdepth(pchunk);
+                psd_info_ok = sixel_builtin_parse_psd_info(pchunk, &psd_info);
+                if (!psd_info_ok) {
+                    sixel_helper_set_additional_message(
+                        "builtin PSD: malformed section length/offset");
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+                if (psd_info.version != 1u) {
+                    sixel_helper_set_additional_message(
+                        "builtin PSD: unsupported version (expected 1)");
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+                if (psd_info.color_mode != 3u) {
+                    nwrite = snprintf(message,
+                                      sizeof(message),
+                                      "builtin PSD: unsupported color mode (%u)",
+                                      psd_info.color_mode);
+                    if (nwrite > 0) {
+                        sixel_helper_set_additional_message(message);
+                    }
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+                if (psd_info.depth != 8u && psd_info.depth != 16u) {
+                    nwrite = snprintf(message,
+                                      sizeof(message),
+                                      "builtin PSD: unsupported bit depth (%u)",
+                                      psd_info.depth);
+                    if (nwrite > 0) {
+                        sixel_helper_set_additional_message(message);
+                    }
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+                if (psd_info.compression > 1u) {
+                    nwrite = snprintf(
+                        message,
+                        sizeof(message),
+                        "builtin PSD: unsupported compression (%u)",
+                        psd_info.compression);
+                    if (nwrite > 0) {
+                        sixel_helper_set_additional_message(message);
+                    }
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+                psd_header_bitdepth = (int)psd_info.depth;
                 if (psd_header_bitdepth == 16) {
                     /*
                      * Keep the existing 16-bpc path in RGB so promotion to
