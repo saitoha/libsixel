@@ -1073,16 +1073,15 @@ sixel_builtin_psd_unpack_packbits_row(unsigned char const *src,
 }
 
 static int
-sixel_builtin_decode_psd_8bit_planes(sixel_chunk_t const *chunk,
-                                     sixel_builtin_psd_info_t const *info,
-                                     int want_alpha,
-                                     unsigned char **pplane0,
-                                     unsigned char **pplane_alpha)
+sixel_builtin_decode_psd_8bit_channel(sixel_chunk_t const *chunk,
+                                      sixel_builtin_psd_info_t const *info,
+                                      unsigned int target_channel,
+                                      unsigned char *dst)
 {
-    unsigned char *plane0;
-    unsigned char *plane_alpha;
     size_t pixel_count;
     size_t plane_bytes;
+    size_t total_plane_bytes;
+    size_t channel_offset;
     size_t offset;
     size_t table_entries;
     size_t table_bytes;
@@ -1094,10 +1093,10 @@ sixel_builtin_decode_psd_8bit_planes(sixel_chunk_t const *chunk,
     size_t row_index;
     size_t row_offset;
 
-    plane0 = NULL;
-    plane_alpha = NULL;
     pixel_count = 0u;
     plane_bytes = 0u;
+    total_plane_bytes = 0u;
+    channel_offset = 0u;
     offset = 0u;
     table_entries = 0u;
     table_bytes = 0u;
@@ -1109,6 +1108,94 @@ sixel_builtin_decode_psd_8bit_planes(sixel_chunk_t const *chunk,
     row_index = 0u;
     row_offset = 0u;
 
+    if (chunk == NULL || info == NULL || dst == NULL ||
+        chunk->buffer == NULL || chunk->allocator == NULL ||
+        info->channels == 0u || info->width == 0u || info->height == 0u ||
+        target_channel >= info->channels) {
+        return 0;
+    }
+
+    if ((size_t)info->width > STBI_MAX_DIMENSIONS ||
+        (size_t)info->height > STBI_MAX_DIMENSIONS) {
+        return 0;
+    }
+    if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
+        return 0;
+    }
+    pixel_count = (size_t)info->width * (size_t)info->height;
+    plane_bytes = pixel_count;
+
+    if (info->compression == 0u) {
+        if (plane_bytes > 0u &&
+            (size_t)info->channels > (SIZE_MAX - info->image_data_offset) / plane_bytes) {
+            return 0;
+        }
+        total_plane_bytes = (size_t)info->channels * plane_bytes;
+        if (info->image_data_offset > chunk->size ||
+            total_plane_bytes > chunk->size - info->image_data_offset) {
+            return 0;
+        }
+        channel_offset = (size_t)target_channel * plane_bytes;
+        offset = info->image_data_offset + channel_offset;
+        memcpy(dst, chunk->buffer + offset, plane_bytes);
+        return 1;
+    } else if (info->compression == 1u) {
+        if ((size_t)info->height > SIZE_MAX / (size_t)info->channels) {
+            return 0;
+        }
+        table_entries = (size_t)info->height * (size_t)info->channels;
+        if (table_entries > SIZE_MAX / 2u) {
+            return 0;
+        }
+        table_bytes = table_entries * 2u;
+        if (info->image_data_offset > chunk->size ||
+            table_bytes > chunk->size - info->image_data_offset) {
+            return 0;
+        }
+        row_table = chunk->buffer + info->image_data_offset;
+        data_cursor = info->image_data_offset + table_bytes;
+
+        for (channel = 0u; channel < info->channels; ++channel) {
+            for (row = 0u; row < info->height; ++row) {
+                row_index = ((size_t)channel * (size_t)info->height + (size_t)row) * 2u;
+                row_length = (size_t)sixel_builtin_read_u16be(row_table + row_index);
+                if (data_cursor > chunk->size || row_length > chunk->size - data_cursor) {
+                    return 0;
+                }
+                if (channel == target_channel) {
+                    row_offset = (size_t)row * (size_t)info->width;
+                    if (!sixel_builtin_psd_unpack_packbits_row(
+                            chunk->buffer + data_cursor,
+                            row_length,
+                            dst + row_offset,
+                            (size_t)info->width)) {
+                        return 0;
+                    }
+                }
+                data_cursor += row_length;
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+static int
+sixel_builtin_decode_psd_8bit_planes(sixel_chunk_t const *chunk,
+                                     sixel_builtin_psd_info_t const *info,
+                                     int want_alpha,
+                                     unsigned char **pplane0,
+                                     unsigned char **pplane_alpha)
+{
+    unsigned char *plane0;
+    unsigned char *plane_alpha;
+    size_t pixel_count;
+    size_t plane_bytes;
+
+    plane0 = NULL;
+    plane_alpha = NULL;
+    pixel_count = 0u;
+    plane_bytes = 0u;
     if (chunk == NULL || info == NULL || pplane0 == NULL || pplane_alpha == NULL ||
         chunk->buffer == NULL || chunk->allocator == NULL ||
         info->channels == 0u || info->width == 0u || info->height == 0u) {
@@ -1118,10 +1205,6 @@ sixel_builtin_decode_psd_8bit_planes(sixel_chunk_t const *chunk,
     *pplane0 = NULL;
     *pplane_alpha = NULL;
 
-    if ((size_t)info->width > STBI_MAX_DIMENSIONS ||
-        (size_t)info->height > STBI_MAX_DIMENSIONS) {
-        return 0;
-    }
     if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
         return 0;
     }
@@ -1141,64 +1224,11 @@ sixel_builtin_decode_psd_8bit_planes(sixel_chunk_t const *chunk,
         }
     }
 
-    if (info->compression == 0u) {
-        offset = info->image_data_offset;
-        for (channel = 0u; channel < info->channels; ++channel) {
-            if (offset > chunk->size || plane_bytes > chunk->size - offset) {
-                goto fail;
-            }
-            if (channel == 0u) {
-                memcpy(plane0, chunk->buffer + offset, plane_bytes);
-            } else if (channel == 1u && plane_alpha != NULL) {
-                memcpy(plane_alpha, chunk->buffer + offset, plane_bytes);
-            }
-            offset += plane_bytes;
-        }
-    } else if (info->compression == 1u) {
-        if ((size_t)info->height > SIZE_MAX / (size_t)info->channels) {
-            goto fail;
-        }
-        table_entries = (size_t)info->height * (size_t)info->channels;
-        if (table_entries > SIZE_MAX / 2u) {
-            goto fail;
-        }
-        table_bytes = table_entries * 2u;
-        if (info->image_data_offset > chunk->size ||
-            table_bytes > chunk->size - info->image_data_offset) {
-            goto fail;
-        }
-        row_table = chunk->buffer + info->image_data_offset;
-        data_cursor = info->image_data_offset + table_bytes;
-
-        for (channel = 0u; channel < info->channels; ++channel) {
-            for (row = 0u; row < info->height; ++row) {
-                row_index = ((size_t)channel * (size_t)info->height + (size_t)row) * 2u;
-                row_length = (size_t)sixel_builtin_read_u16be(row_table + row_index);
-                if (data_cursor > chunk->size || row_length > chunk->size - data_cursor) {
-                    goto fail;
-                }
-                row_offset = (size_t)row * (size_t)info->width;
-                if (channel == 0u) {
-                    if (!sixel_builtin_psd_unpack_packbits_row(
-                            chunk->buffer + data_cursor,
-                            row_length,
-                            plane0 + row_offset,
-                            (size_t)info->width)) {
-                        goto fail;
-                    }
-                } else if (channel == 1u && plane_alpha != NULL) {
-                    if (!sixel_builtin_psd_unpack_packbits_row(
-                            chunk->buffer + data_cursor,
-                            row_length,
-                            plane_alpha + row_offset,
-                            (size_t)info->width)) {
-                        goto fail;
-                    }
-                }
-                data_cursor += row_length;
-            }
-        }
-    } else {
+    if (!sixel_builtin_decode_psd_8bit_channel(chunk, info, 0u, plane0)) {
+        goto fail;
+    }
+    if (plane_alpha != NULL &&
+        !sixel_builtin_decode_psd_8bit_channel(chunk, info, 1u, plane_alpha)) {
         goto fail;
     }
 
@@ -1320,6 +1350,157 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
 
     sixel_allocator_free(chunk->allocator, plane_alpha);
     sixel_allocator_free(chunk->allocator, plane0);
+
+    *ppixels = rgb;
+    *pwidth = (int)info->width;
+    *pheight = (int)info->height;
+    *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_builtin_decode_psd_cmyk_8bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat)
+{
+    unsigned char *plane_c;
+    unsigned char *plane_m;
+    unsigned char *plane_y;
+    unsigned char *plane_k;
+    unsigned char *plane_alpha;
+    unsigned char *rgb;
+    size_t pixel_count;
+    size_t i;
+    int want_alpha;
+    int c;
+    int m;
+    int y;
+    int k;
+    int alpha;
+    int r;
+    int g;
+    int b;
+
+    plane_c = NULL;
+    plane_m = NULL;
+    plane_y = NULL;
+    plane_k = NULL;
+    plane_alpha = NULL;
+    rgb = NULL;
+    pixel_count = 0u;
+    i = 0u;
+    want_alpha = 0;
+    c = 0;
+    m = 0;
+    y = 0;
+    k = 0;
+    alpha = 0;
+    r = 0;
+    g = 0;
+    b = 0;
+
+    if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
+        pheight == NULL || ppixelformat == NULL || chunk->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (info->color_mode != 4u || info->depth != 8u ||
+        info->compression > 1u || info->channels < 4u) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)info->width * (size_t)info->height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    plane_c = (unsigned char *)sixel_allocator_malloc(chunk->allocator, pixel_count);
+    plane_m = (unsigned char *)sixel_allocator_malloc(chunk->allocator, pixel_count);
+    plane_y = (unsigned char *)sixel_allocator_malloc(chunk->allocator, pixel_count);
+    plane_k = (unsigned char *)sixel_allocator_malloc(chunk->allocator, pixel_count);
+    if (plane_c == NULL || plane_m == NULL || plane_y == NULL || plane_k == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: sixel_allocator_malloc() failed.");
+        sixel_allocator_free(chunk->allocator, plane_k);
+        sixel_allocator_free(chunk->allocator, plane_y);
+        sixel_allocator_free(chunk->allocator, plane_m);
+        sixel_allocator_free(chunk->allocator, plane_c);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    want_alpha = (bgcolor != NULL && info->channels >= 5u) ? 1 : 0;
+    if (want_alpha) {
+        plane_alpha = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                              pixel_count);
+        if (plane_alpha == NULL) {
+            sixel_allocator_free(chunk->allocator, plane_k);
+            sixel_allocator_free(chunk->allocator, plane_y);
+            sixel_allocator_free(chunk->allocator, plane_m);
+            sixel_allocator_free(chunk->allocator, plane_c);
+            sixel_helper_set_additional_message(
+                "builtin PSD: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+
+    if (!sixel_builtin_decode_psd_8bit_channel(chunk, info, 0u, plane_c) ||
+        !sixel_builtin_decode_psd_8bit_channel(chunk, info, 1u, plane_m) ||
+        !sixel_builtin_decode_psd_8bit_channel(chunk, info, 2u, plane_y) ||
+        !sixel_builtin_decode_psd_8bit_channel(chunk, info, 3u, plane_k) ||
+        (plane_alpha != NULL &&
+         !sixel_builtin_decode_psd_8bit_channel(chunk, info, 4u, plane_alpha))) {
+        sixel_allocator_free(chunk->allocator, plane_alpha);
+        sixel_allocator_free(chunk->allocator, plane_k);
+        sixel_allocator_free(chunk->allocator, plane_y);
+        sixel_allocator_free(chunk->allocator, plane_m);
+        sixel_allocator_free(chunk->allocator, plane_c);
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed raw/RLE channel stream");
+        return SIXEL_STBI_ERROR;
+    }
+
+    rgb = (unsigned char *)sixel_allocator_malloc(chunk->allocator, pixel_count * 3u);
+    if (rgb == NULL) {
+        sixel_allocator_free(chunk->allocator, plane_alpha);
+        sixel_allocator_free(chunk->allocator, plane_k);
+        sixel_allocator_free(chunk->allocator, plane_y);
+        sixel_allocator_free(chunk->allocator, plane_m);
+        sixel_allocator_free(chunk->allocator, plane_c);
+        sixel_helper_set_additional_message(
+            "builtin PSD: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (i = 0u; i < pixel_count; ++i) {
+        c = (int)plane_c[i];
+        m = (int)plane_m[i];
+        y = (int)plane_y[i];
+        k = (int)plane_k[i];
+        r = ((0xff - c) * (0xff - k) + 0x7f) / 0xff;
+        g = ((0xff - m) * (0xff - k) + 0x7f) / 0xff;
+        b = ((0xff - y) * (0xff - k) + 0x7f) / 0xff;
+        if (plane_alpha != NULL) {
+            alpha = (int)plane_alpha[i];
+            r = (r * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+            g = (g * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+            b = (b * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+        }
+        rgb[i * 3u + 0u] = (unsigned char)r;
+        rgb[i * 3u + 1u] = (unsigned char)g;
+        rgb[i * 3u + 2u] = (unsigned char)b;
+    }
+
+    sixel_allocator_free(chunk->allocator, plane_alpha);
+    sixel_allocator_free(chunk->allocator, plane_k);
+    sixel_allocator_free(chunk->allocator, plane_y);
+    sixel_allocator_free(chunk->allocator, plane_m);
+    sixel_allocator_free(chunk->allocator, plane_c);
 
     *ppixels = rgb;
     *pwidth = (int)info->width;
@@ -3373,7 +3554,8 @@ load_with_builtin(
                 int psd_pixelformat;
                 int psd_req_comp;
                 int psd_header_bitdepth;
-                int psd_use_custom_decode;
+                int psd_custom_decode_mode;
+                int psd_skip_icc_conversion;
                 unsigned char const *psd_icc_profile;
                 size_t psd_icc_profile_length;
                 sixel_builtin_psd_info_t psd_info;
@@ -3383,7 +3565,8 @@ load_with_builtin(
                 psd_depth = 0;
                 psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 psd_req_comp = 3;
-                psd_use_custom_decode = 0;
+                psd_custom_decode_mode = 0;
+                psd_skip_icc_conversion = 0;
                 psd_icc_profile = NULL;
                 psd_icc_profile_length = 0u;
                 psd_info_ok = sixel_builtin_parse_psd_info(pchunk, &psd_info);
@@ -3412,7 +3595,7 @@ load_with_builtin(
                         goto end;
                     }
                 } else if (psd_info.color_mode == 1u || psd_info.color_mode == 2u) {
-                    psd_use_custom_decode = 1;
+                    psd_custom_decode_mode = 1;
                     if (psd_info.depth != 8u) {
                         nwrite = snprintf(message,
                                           sizeof(message),
@@ -3421,6 +3604,25 @@ load_with_builtin(
                         if (nwrite > 0) {
                             sixel_helper_set_additional_message(message);
                         }
+                        status = SIXEL_STBI_ERROR;
+                        goto end;
+                    }
+                } else if (psd_info.color_mode == 4u) {
+                    psd_custom_decode_mode = 2;
+                    if (psd_info.depth != 8u) {
+                        nwrite = snprintf(message,
+                                          sizeof(message),
+                                          "builtin PSD: unsupported bit depth (%u)",
+                                          psd_info.depth);
+                        if (nwrite > 0) {
+                            sixel_helper_set_additional_message(message);
+                        }
+                        status = SIXEL_STBI_ERROR;
+                        goto end;
+                    }
+                    if (psd_info.channels < 4u) {
+                        sixel_helper_set_additional_message(
+                            "builtin PSD: CMYK requires at least 4 channels");
                         status = SIXEL_STBI_ERROR;
                         goto end;
                     }
@@ -3448,7 +3650,7 @@ load_with_builtin(
                     goto end;
                 }
                 psd_header_bitdepth = (int)psd_info.depth;
-                if (psd_use_custom_decode) {
+                if (psd_custom_decode_mode == 1) {
                     status = sixel_builtin_decode_psd_gray_or_indexed_8bit(
                         pchunk,
                         &psd_info,
@@ -3461,6 +3663,20 @@ load_with_builtin(
                         goto end;
                     }
                     psd_depth = 3;
+                } else if (psd_custom_decode_mode == 2) {
+                    status = sixel_builtin_decode_psd_cmyk_8bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
+                        &pixels,
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    psd_depth = 3;
+                    psd_skip_icc_conversion = 1;
                 } else {
                     if (psd_header_bitdepth == 16) {
                         /*
@@ -3540,29 +3756,35 @@ load_with_builtin(
                 }
 
                 if (enable_cms) {
-                    psd_icc_status = sixel_builtin_extract_psd_icc(
-                        pchunk->buffer,
-                        pchunk->size,
-                        &psd_icc_profile,
-                        &psd_icc_profile_length);
-                    if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
-                        cms_converted =
-                            sixel_cms_convert_to_srgb_with_profile_bytes(
-                            pixels,
-                            frame->width,
-                            frame->height,
-                            psd_pixelformat,
-                            psd_icc_profile,
-                            psd_icc_profile_length);
-                        if (!cms_converted) {
-                            loader_trace_message(
-                                "builtin PSD: embedded ICC conversion failed");
-                        }
-                    } else if (psd_icc_status ==
-                               SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED) {
+                    if (psd_skip_icc_conversion) {
                         loader_trace_message(
-                            "builtin PSD: malformed ICC resource section; "
-                            "skipping ICC conversion");
+                            "builtin PSD: skipping embedded ICC conversion "
+                            "for CMYK custom decode path");
+                    } else {
+                        psd_icc_status = sixel_builtin_extract_psd_icc(
+                            pchunk->buffer,
+                            pchunk->size,
+                            &psd_icc_profile,
+                            &psd_icc_profile_length);
+                        if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
+                            cms_converted =
+                                sixel_cms_convert_to_srgb_with_profile_bytes(
+                                pixels,
+                                frame->width,
+                                frame->height,
+                                psd_pixelformat,
+                                psd_icc_profile,
+                                psd_icc_profile_length);
+                            if (!cms_converted) {
+                                loader_trace_message(
+                                    "builtin PSD: embedded ICC conversion failed");
+                            }
+                        } else if (psd_icc_status ==
+                                   SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED) {
+                            loader_trace_message(
+                                "builtin PSD: malformed ICC resource section; "
+                                "skipping ICC conversion");
+                        }
                     }
                 }
 
