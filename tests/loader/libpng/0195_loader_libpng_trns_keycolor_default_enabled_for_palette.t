@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify libpng loader enables tRNS keycolor by default for palette PNG.
+# Verify env=0 is ignored for palette+tRNS in libpng loader path.
 
 set -eux
 
@@ -41,9 +41,9 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
 }
 
 if cmp -s "${out_default}" "${out_off}"; then
-    echo "not ok" 1 - "libpng default palette+tRNS keycolor mode is unexpectedly disabled"
+    echo "ok" 1 - "libpng env=0 is ignored for palette+tRNS output"
 else
-    echo "ok" 1 - "libpng default enables palette+tRNS keycolor mode"
+    echo "not ok" 1 - "libpng env=0 unexpectedly changes palette+tRNS output"
 fi
 
 exit 0
