@@ -39,7 +39,8 @@ typedef enum sixel_cms_pixel_format {
     SIXEL_CMS_PIXELFORMAT_RGBA_8,
     SIXEL_CMS_PIXELFORMAT_RGB_F32,
     SIXEL_CMS_PIXELFORMAT_CMYK_8,
-    SIXEL_CMS_PIXELFORMAT_CMYK_16
+    SIXEL_CMS_PIXELFORMAT_CMYK_16,
+    SIXEL_CMS_PIXELFORMAT_CMYK_F32
 } sixel_cms_pixel_format_t;
 
 enum {
@@ -69,6 +70,25 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
 
 int
 sixel_cms_convert_to_srgb_with_profile_bytes(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length);
+
+sixel_cms_profile_t *
+sixel_cms_create_linear_srgb_profile(void);
+
+int
+sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
+                                       int width,
+                                       int height,
+                                       int pixelformat,
+                                       sixel_cms_profile_t *src_profile);
+
+int
+sixel_cms_convert_to_linearrgb_with_profile_bytes(
     unsigned char *pixels,
     int width,
     int height,

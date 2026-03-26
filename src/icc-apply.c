@@ -580,3 +580,41 @@ sixel_icc_apply_cmyk_u16_to_rgb_float32(float *dst_pixels,
 
     return 1;
 }
+
+int
+sixel_icc_apply_cmyk_float32_to_rgb_float32(float *dst_pixels,
+                                            float const *src_pixels,
+                                            size_t pixel_count,
+                                            sixel_icc_profile_t const *profile)
+{
+    size_t i;
+
+    if (dst_pixels == NULL || src_pixels == NULL ||
+        pixel_count == 0u || profile == NULL) {
+        return 0;
+    }
+
+    for (i = 0u; i < pixel_count; ++i) {
+        size_t src_offset;
+        size_t dst_offset;
+        double cmyk[4];
+        double rgb[3];
+
+        src_offset = i * 4u;
+        dst_offset = i * 3u;
+        cmyk[0] = sixel_icc_clamp_unit((double)src_pixels[src_offset + 0u]);
+        cmyk[1] = sixel_icc_clamp_unit((double)src_pixels[src_offset + 1u]);
+        cmyk[2] = sixel_icc_clamp_unit((double)src_pixels[src_offset + 2u]);
+        cmyk[3] = sixel_icc_clamp_unit((double)src_pixels[src_offset + 3u]);
+
+        if (!sixel_icc_apply_cmyk_triplet_internal(rgb, cmyk, profile)) {
+            return 0;
+        }
+
+        dst_pixels[dst_offset + 0u] = (float)sixel_icc_clamp_unit(rgb[0]);
+        dst_pixels[dst_offset + 1u] = (float)sixel_icc_clamp_unit(rgb[1]);
+        dst_pixels[dst_offset + 2u] = (float)sixel_icc_clamp_unit(rgb[2]);
+    }
+
+    return 1;
+}
