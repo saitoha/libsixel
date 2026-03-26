@@ -295,6 +295,8 @@ AM_LOG_FLAGS =
 	staticcheck-shellcheck \
 	staticcheck-codespell \
 	staticcheck-python-compileall \
+	staticcheck-private-includes \
+	staticcheck-makefile-recipes \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
@@ -307,6 +309,8 @@ staticcheck: \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
 	staticcheck-python-compileall \
+	staticcheck-private-includes \
+	staticcheck-makefile-recipes \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
@@ -359,6 +363,26 @@ staticcheck-python-compileall:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-python-compileall.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-private-includes:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-private-includes" \
+		--log-file staticcheck-private-includes.log \
+		--trs-file staticcheck-private-includes.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-private-includes.sh" \
+		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-makefile-recipes:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-makefile-recipes" \
+		--log-file staticcheck-makefile-recipes.log \
+		--trs-file staticcheck-makefile-recipes.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-makefile-recipes.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-binding-loader-setopt-sync:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -955,6 +979,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     _static/sh/staticcheck-shellcheck.sh \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
+    _static/sh/staticcheck-private-includes.sh \
+    _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
