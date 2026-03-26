@@ -488,6 +488,12 @@ cleanup:
     return *profile != NULL;
 }
 
+typedef enum sixel_builtin_icc_extract_status {
+    SIXEL_BUILTIN_ICC_EXTRACT_ABSENT = 0,
+    SIXEL_BUILTIN_ICC_EXTRACT_FOUND = 1,
+    SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED = -1
+} sixel_builtin_icc_extract_status_t;
+
 static int
 sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                               size_t size,
@@ -511,15 +517,14 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
     resource_id = 0u;
     copied = NULL;
 
-    *profile = NULL;
-    *profile_length = 0u;
-
     if (buffer == NULL || profile == NULL || profile_length == NULL ||
         allocator == NULL || size < 34u) {
-        return 0;
+        return SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
     }
+    *profile = NULL;
+    *profile_length = 0u;
     if (memcmp(buffer, "8BPS", 4u) != 0) {
-        return 0;
+        return SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
     }
 
     /* color mode data section */
@@ -530,13 +535,13 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                      (size_t)buffer[offset + 3u];
     offset += 4u;
     if (section_length > size - offset) {
-        return 0;
+        return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
     }
     offset += section_length;
 
     /* image resources section */
     if (offset + 4u > size) {
-        return 0;
+        return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
     }
     section_length = ((size_t)buffer[offset + 0u] << 24) |
                      ((size_t)buffer[offset + 1u] << 16) |
@@ -544,13 +549,13 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                      (size_t)buffer[offset + 3u];
     offset += 4u;
     if (section_length > size - offset) {
-        return 0;
+        return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
     }
 
     resource_end = offset + section_length;
     while (offset + 12u <= resource_end) {
         if (memcmp(buffer + offset, "8BIM", 4u) != 0) {
-            return 0;
+            return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
         }
         offset += 4u;
 
@@ -561,18 +566,18 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
         name_length = (size_t)buffer[offset];
         ++offset;
         if (name_length > resource_end - offset) {
-            return 0;
+            return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
         }
         offset += name_length;
         if (((1u + name_length) & 1u) != 0u) {
             if (offset >= resource_end) {
-                return 0;
+                return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
             }
             ++offset;
         }
 
         if (offset + 4u > resource_end) {
-            return 0;
+            return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
         }
         data_length = ((size_t)buffer[offset + 0u] << 24) |
                       ((size_t)buffer[offset + 1u] << 16) |
@@ -580,34 +585,34 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                       (size_t)buffer[offset + 3u];
         offset += 4u;
         if (data_length > resource_end - offset) {
-            return 0;
+            return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
         }
 
         if (resource_id == 0x040fu) {
             if (data_length == 0u) {
-                return 0;
+                return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
             }
             copied = (unsigned char *)sixel_allocator_malloc(allocator,
                                                              data_length);
             if (copied == NULL) {
-                return 0;
+                return SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
             }
             memcpy(copied, buffer + offset, data_length);
             *profile = copied;
             *profile_length = data_length;
-            return 1;
+            return SIXEL_BUILTIN_ICC_EXTRACT_FOUND;
         }
 
         offset += data_length;
         if ((data_length & 1u) != 0u) {
             if (offset >= resource_end) {
-                return 0;
+                return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
             }
             ++offset;
         }
     }
 
-    return 0;
+    return SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
 }
 
 #if HAVE_LCMS2
@@ -804,6 +809,19 @@ chunk_is_psd(sixel_chunk_t const *chunk)
         return 1;
     }
     return 0;
+}
+
+static int
+sixel_builtin_psd_header_bitdepth(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 26u) {
+        return 0;
+    }
+    if (memcmp(chunk->buffer, "8BPS", 4u) != 0) {
+        return 0;
+    }
+    return (int)(((unsigned int)chunk->buffer[22u] << 8) |
+                 (unsigned int)chunk->buffer[23u]);
 }
 
 static int
@@ -2324,6 +2342,8 @@ load_with_builtin(
     int gif_frame_count;
     unsigned char *icc_profile;
     size_t icc_profile_length;
+    int cms_converted;
+    int psd_icc_status;
 #if HAVE_LCMS2
     uint16_t tiff_photometric;
 #endif
@@ -2344,6 +2364,8 @@ load_with_builtin(
     gif_frame_count = 0;
     icc_profile = NULL;
     icc_profile_length = 0u;
+    cms_converted = 0;
+    psd_icc_status = SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
 #if HAVE_LCMS2
     tiff_photometric = (uint16_t)0xffffu;
 #endif
@@ -2609,13 +2631,18 @@ load_with_builtin(
                                                        &icc_profile,
                                                        &icc_profile_length,
                                                        pchunk->allocator)) {
-                        sixel_cms_convert_to_srgb_with_profile_bytes(
+                        cms_converted =
+                            sixel_cms_convert_to_srgb_with_profile_bytes(
                             (unsigned char *)float_pixels,
                             frame->width,
                             frame->height,
                             SIXEL_PIXELFORMAT_RGBFLOAT32,
                             icc_profile,
                             icc_profile_length);
+                        if (!cms_converted) {
+                            loader_trace_message(
+                                "builtin JPEG: embedded ICC conversion failed");
+                        }
                     }
                 }
                 frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -2624,22 +2651,46 @@ load_with_builtin(
                 stbi__result_info psd_ri;
                 int psd_depth;
                 int psd_pixelformat;
+                int psd_req_comp;
+                int psd_header_bitdepth;
 
                 psd_ri = (stbi__result_info){ 0 };
                 psd_depth = 0;
                 psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                psd_header_bitdepth = sixel_builtin_psd_header_bitdepth(pchunk);
+                if (psd_header_bitdepth == 16) {
+                    /*
+                     * Keep the existing 16-bpc path in RGB so promotion to
+                     * float32 remains lossless and compatible.
+                     */
+                    psd_req_comp = 3;
+                } else if (bgcolor != NULL) {
+                    /*
+                     * Preserve alpha only when a background color was
+                     * requested so strip_alpha can composite against it.
+                     */
+                    psd_req_comp = 4;
+                } else {
+                    psd_req_comp = 3;
+                }
 
                 pixels = (unsigned char *)stbi__load_main(&stb_context,
                                                           &frame->width,
                                                           &frame->height,
                                                           &psd_depth,
-                                                          3,
+                                                          psd_req_comp,
                                                           &psd_ri,
                                                           16);
                 if (pixels == NULL) {
                     sixel_helper_set_additional_message(stbi_failure_reason());
                     status = SIXEL_STBI_ERROR;
                     goto end;
+                }
+                if (psd_header_bitdepth == 16 &&
+                    psd_ri.bits_per_channel != 16) {
+                    loader_trace_message(
+                        "builtin PSD: 16-bpc source decoded as 8-bpc "
+                        "fallback path");
                 }
 
                 if (psd_ri.bits_per_channel == 16) {
@@ -2659,7 +2710,11 @@ load_with_builtin(
                     case 1:
                     case 3:
                     case 4:
-                        psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                        if (psd_req_comp == 4) {
+                            psd_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+                        } else {
+                            psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                        }
                         break;
                     default:
                         nwrite = snprintf(message,
@@ -2678,18 +2733,30 @@ load_with_builtin(
                 }
 
                 if (enable_cms) {
-                    if (sixel_builtin_extract_psd_icc(pchunk->buffer,
-                                                      pchunk->size,
-                                                      &icc_profile,
-                                                      &icc_profile_length,
-                                                      pchunk->allocator)) {
-                        sixel_cms_convert_to_srgb_with_profile_bytes(
+                    psd_icc_status = sixel_builtin_extract_psd_icc(
+                        pchunk->buffer,
+                        pchunk->size,
+                        &icc_profile,
+                        &icc_profile_length,
+                        pchunk->allocator);
+                    if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
+                        cms_converted =
+                            sixel_cms_convert_to_srgb_with_profile_bytes(
                             pixels,
                             frame->width,
                             frame->height,
                             psd_pixelformat,
                             icc_profile,
                             icc_profile_length);
+                        if (!cms_converted) {
+                            loader_trace_message(
+                                "builtin PSD: embedded ICC conversion failed");
+                        }
+                    } else if (psd_icc_status ==
+                               SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED) {
+                        loader_trace_message(
+                            "builtin PSD: malformed ICC resource section; "
+                            "skipping ICC conversion");
                     }
                 }
 
@@ -2721,13 +2788,19 @@ load_with_builtin(
                             pchunk->allocator)) {
                         if (sixel_builtin_tiff_photometric_supports_icc(
                                 tiff_photometric)) {
-                            sixel_cms_convert_to_srgb_with_profile_bytes(
+                            cms_converted =
+                                sixel_cms_convert_to_srgb_with_profile_bytes(
                                 pixels,
                                 frame->width,
                                 frame->height,
                                 SIXEL_PIXELFORMAT_RGB888,
                                 icc_profile,
                                 icc_profile_length);
+                            if (!cms_converted) {
+                                loader_trace_message(
+                                    "builtin TIFF: embedded ICC conversion "
+                                    "failed");
+                            }
                         }
                     }
                 }
