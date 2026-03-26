@@ -8,6 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+test "${HAVE_LIBPNG-}" = 1 || {
+    printf "1..0 # SKIP libpng support is disabled in this build\n"
+    exit 0
+}
+
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
@@ -34,10 +39,12 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR= \
     exit 0
 }
 
-if cmp -s "${out_builtin}" "${out_libpng}"; then
-    echo "ok" 1 - "builtin palette+tRNS keycolor tone matches libpng"
-else
+run_lsqa -m MS-SSIM -b "MS-SSIM:1.0" \
+         "${out_builtin}" "${out_libpng}" >/dev/null 2>&1 || {
     echo "not ok" 1 - "builtin palette+tRNS keycolor tone differs from libpng"
-fi
+    exit 0
+}
+
+echo "ok" 1 - "builtin palette+tRNS keycolor tone matches libpng"
 
 exit 0

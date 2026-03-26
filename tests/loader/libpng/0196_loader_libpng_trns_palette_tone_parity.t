@@ -39,10 +39,12 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR= \
     exit 0
 }
 
-if cmp -s "${out_libpng}" "${out_builtin}"; then
-    echo "ok" 1 - "libpng palette+tRNS keycolor tone matches builtin"
-else
+run_lsqa -m MS-SSIM -b "MS-SSIM:1.0" \
+         "${out_libpng}" "${out_builtin}" >/dev/null 2>&1 || {
     echo "not ok" 1 - "libpng palette+tRNS keycolor tone differs from builtin"
-fi
+    exit 0
+}
+
+echo "ok" 1 - "libpng palette+tRNS keycolor tone matches builtin"
 
 exit 0
