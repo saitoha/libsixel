@@ -1,10 +1,10 @@
 #!/bin/sh
 # Verify builtin loader decodes PSD CMYK 32-bit ZIP with stable image quality.
-# Reference generation command (coregraphics loader):
+# Reference generation command (builtin loader):
 #   DYLD_LIBRARY_PATH=src/.libs converters/.libs/img2sixel \
-#       -L coregraphics! \
+#       -L builtin! \
 #       tests/data/inputs/formats/stbi_minimal_cmyk32_raw.psd \
-#       > tests/data/loader/builtin_expected/psd_cmyk32_raw_coregraphics_expected.six
+#       > tests/data/loader/builtin_expected/psd_cmyk32_raw_builtin_expected.six
 
 set -eux
 
@@ -20,9 +20,9 @@ set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_cmyk32_zip.psd"
-reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_cmyk32_raw_coregraphics_expected.six"
+reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_cmyk32_raw_builtin_expected.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_cmyk32_zip_output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.85}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR_PSD_CMYK32:-0.995}
 
 run_img2sixel -L builtin! "${input_psd}" >"${output_sixel}" || {
     echo "not ok" 1 - "PSD CMYK 32-bit ZIP decode failed"
