@@ -2933,7 +2933,7 @@ load_with_builtin(
                     status = SIXEL_STBI_ERROR;
                     goto end;
                 }
-                if (psd_info.compression > 1u) {
+                if (psd_info.compression > 3u) {
                     nwrite = snprintf(
                         message,
                         sizeof(message),
