@@ -1,5 +1,7 @@
 #!/bin/sh
 # Verify builtin PSD duotone 16-bit+alpha compositing responds to --bgcolor.
+# Fixture generation command:
+#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 
 set -eux
 
@@ -19,11 +21,11 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_duotone16_alpha.psd"
-output_black_six="${ARTIFACT_LOCAL_DIR}/stbi_minimal_duotone16_alpha_bg_black.six"
-output_white_six="${ARTIFACT_LOCAL_DIR}/stbi_minimal_duotone16_alpha_bg_white.six"
-output_black_png="${ARTIFACT_LOCAL_DIR}/stbi_minimal_duotone16_alpha_bg_black.png"
-output_white_png="${ARTIFACT_LOCAL_DIR}/stbi_minimal_duotone16_alpha_bg_white.png"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_duotone16_alpha.psd"
+output_black_six="${ARTIFACT_LOCAL_DIR}/snake16_duotone16_alpha_bg_black.six"
+output_white_six="${ARTIFACT_LOCAL_DIR}/snake16_duotone16_alpha_bg_white.six"
+output_black_png="${ARTIFACT_LOCAL_DIR}/snake16_duotone16_alpha_bg_black.png"
+output_white_png="${ARTIFACT_LOCAL_DIR}/snake16_duotone16_alpha_bg_white.png"
 
 run_img2sixel -Lbuiltin! -B "#000000" "${input_psd}" >"${output_black_six}" || {
     echo "not ok" 1 - "builtin PSD decode failed with black bgcolor (duotone 16-bit+alpha)"

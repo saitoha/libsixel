@@ -1,9 +1,10 @@
 #!/bin/sh
 # Verify builtin loader decodes grayscale 16-bit raw with stable image quality.
 # Reference generation command (ImageMagick):
-#   magick tests/data/inputs/formats/stbi_minimal_gray16.psd \
+#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
+#   magick tests/data/inputs/formats/snake16_gray16_raw.psd \
 #       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_gray16_raw_expected.ppm
+#       PPM:tests/data/loader/builtin_expected/psd_snake16_gray16_expected.ppm
 
 set -eux
 
@@ -18,8 +19,8 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_gray16.psd"
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_gray16_raw_expected.ppm"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_gray16_raw.psd"
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_gray16_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_gray16_raw_output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 

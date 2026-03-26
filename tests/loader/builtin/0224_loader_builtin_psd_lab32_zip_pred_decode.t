@@ -1,10 +1,11 @@
 #!/bin/sh
 # Verify builtin loader decodes PSD Lab 32-bit ZIP+Prediction with stable image quality.
 # Reference generation command (coregraphics loader):
+#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 #   DYLD_LIBRARY_PATH=src/.libs converters/.libs/img2sixel \
 #       -L coregraphics! \
-#       tests/data/inputs/formats/stbi_minimal_lab32_raw.psd \
-#       > tests/data/loader/builtin_expected/psd_lab32_raw_coregraphics_expected.six
+#       tests/data/inputs/formats/snake16_lab32_raw.psd \
+#       > tests/data/loader/builtin_expected/psd_snake16_lab32_coregraphics_expected.six
 
 set -eux
 
@@ -19,8 +20,8 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_lab32_zip_pred.psd"
-reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_lab32_raw_coregraphics_expected.six"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_lab32_zip_pred.psd"
+reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_lab32_coregraphics_expected.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_lab32_zip_pred_output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 
