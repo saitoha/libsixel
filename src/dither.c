@@ -67,6 +67,19 @@
 #endif
 #include <sixel.h>
 
+static SIXELSTATUS
+sixel_dither_preblend_alpha_inplace(unsigned char *pixels,
+                                    size_t total_pixels,
+                                    int pixelformat,
+                                    unsigned char const *background);
+
+static SIXELSTATUS
+sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
+                                    unsigned char const *src,
+                                    size_t total_pixels,
+                                    int pixelformat,
+                                    unsigned char const *background);
+
 
 /*
  * Promote an RGB888 buffer to RGBFLOAT32 by normalising each channel to the
@@ -1384,6 +1397,10 @@ sixel_dither_new(
     (*ppdither)->ncolors = ncolors;
     (*ppdither)->origcolors = (-1);
     (*ppdither)->keycolor = (-1);
+    (*ppdither)->transparent_bgcolor[0] = 0U;
+    (*ppdither)->transparent_bgcolor[1] = 0U;
+    (*ppdither)->transparent_bgcolor[2] = 0U;
+    (*ppdither)->transparent_bgcolor_valid = 0;
     (*ppdither)->optimized = 0;
     (*ppdither)->optimize_palette = 0;
     (*ppdither)->complexion = 1;
@@ -1678,6 +1695,7 @@ sixel_dither_initialize(
 {
     unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
+    unsigned char *alpha_pixels = NULL;
     float *float_pixels = NULL;
     unsigned char *input_pixels;
     SIXELSTATUS status = SIXEL_FALSE;
@@ -1734,6 +1752,27 @@ sixel_dither_initialize(
             input_pixels = data;
             palette_pixelformat = pixelformat;
             payload_length = (unsigned int)(total_pixels * (size_t)source_depth);
+            if (dither->transparent_bgcolor_valid != 0 && payload_length > 0U) {
+                alpha_pixels = (unsigned char *)sixel_allocator_malloc(
+                    dither->allocator,
+                    payload_length);
+                if (alpha_pixels == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_dither_initialize: alpha blend buffer alloc failed.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto end;
+                }
+                memcpy(alpha_pixels, data, payload_length);
+                status = sixel_dither_preblend_alpha_inplace(
+                    alpha_pixels,
+                    total_pixels,
+                    pixelformat,
+                    dither->transparent_bgcolor);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                input_pixels = alpha_pixels;
+            }
             break;
         }
         /* fallthrough */
@@ -1848,6 +1887,9 @@ sixel_dither_initialize(
 end:
     if (normalized_pixels != NULL) {
         sixel_allocator_free(dither->allocator, normalized_pixels);
+    }
+    if (alpha_pixels != NULL) {
+        sixel_allocator_free(dither->allocator, alpha_pixels);
     }
     if (float_pixels != NULL) {
         sixel_allocator_free(dither->allocator, float_pixels);
@@ -2188,6 +2230,265 @@ sixel_dither_extract_alpha_u8(unsigned char const *pixel, int pixelformat)
     }
 }
 
+static unsigned char
+sixel_dither_blend_channel_u8(unsigned char source,
+                              unsigned char background,
+                              unsigned char alpha)
+{
+    unsigned int blended;
+
+    blended = (unsigned int)source * (unsigned int)alpha
+            + (unsigned int)background * (255U - (unsigned int)alpha)
+            + 127U;
+
+    return (unsigned char)(blended / 255U);
+}
+
+static unsigned char
+sixel_dither_background_gray_u8(unsigned char const *background)
+{
+    unsigned int luma;
+
+    luma = 299U * (unsigned int)background[0]
+         + 587U * (unsigned int)background[1]
+         + 114U * (unsigned int)background[2]
+         + 500U;
+
+    return (unsigned char)(luma / 1000U);
+}
+
+static SIXELSTATUS
+sixel_dither_preblend_alpha_inplace(unsigned char *pixels,
+                                    size_t total_pixels,
+                                    int pixelformat,
+                                    unsigned char const *background)
+{
+    size_t index;
+    unsigned char alpha;
+    unsigned char bg_gray;
+    unsigned char *pixel;
+
+    if (pixels == NULL || background == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    index = 0U;
+    bg_gray = sixel_dither_background_gray_u8(background);
+    pixel = pixels;
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[3];
+            if (alpha != 0xffU) {
+                pixel[0] = sixel_dither_blend_channel_u8(pixel[0],
+                                                         background[0],
+                                                         alpha);
+                pixel[1] = sixel_dither_blend_channel_u8(pixel[1],
+                                                         background[1],
+                                                         alpha);
+                pixel[2] = sixel_dither_blend_channel_u8(pixel[2],
+                                                         background[2],
+                                                         alpha);
+            }
+            pixel += 4;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[0];
+            if (alpha != 0xffU) {
+                pixel[1] = sixel_dither_blend_channel_u8(pixel[1],
+                                                         background[0],
+                                                         alpha);
+                pixel[2] = sixel_dither_blend_channel_u8(pixel[2],
+                                                         background[1],
+                                                         alpha);
+                pixel[3] = sixel_dither_blend_channel_u8(pixel[3],
+                                                         background[2],
+                                                         alpha);
+            }
+            pixel += 4;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[3];
+            if (alpha != 0xffU) {
+                pixel[0] = sixel_dither_blend_channel_u8(pixel[0],
+                                                         background[2],
+                                                         alpha);
+                pixel[1] = sixel_dither_blend_channel_u8(pixel[1],
+                                                         background[1],
+                                                         alpha);
+                pixel[2] = sixel_dither_blend_channel_u8(pixel[2],
+                                                         background[0],
+                                                         alpha);
+            }
+            pixel += 4;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[0];
+            if (alpha != 0xffU) {
+                pixel[1] = sixel_dither_blend_channel_u8(pixel[1],
+                                                         background[2],
+                                                         alpha);
+                pixel[2] = sixel_dither_blend_channel_u8(pixel[2],
+                                                         background[1],
+                                                         alpha);
+                pixel[3] = sixel_dither_blend_channel_u8(pixel[3],
+                                                         background[0],
+                                                         alpha);
+            }
+            pixel += 4;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_GA88:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[1];
+            if (alpha != 0xffU) {
+                pixel[0] = sixel_dither_blend_channel_u8(pixel[0],
+                                                         bg_gray,
+                                                         alpha);
+            }
+            pixel += 2;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_AG88:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[0];
+            if (alpha != 0xffU) {
+                pixel[1] = sixel_dither_blend_channel_u8(pixel[1],
+                                                         bg_gray,
+                                                         alpha);
+            }
+            pixel += 2;
+        }
+        return SIXEL_OK;
+    default:
+        break;
+    }
+
+    return SIXEL_BAD_ARGUMENT;
+}
+
+static SIXELSTATUS
+sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
+                                    unsigned char const *src,
+                                    size_t total_pixels,
+                                    int pixelformat,
+                                    unsigned char const *background)
+{
+    size_t index;
+    unsigned char alpha;
+    unsigned char gray;
+    unsigned char bg_gray;
+    unsigned char const *pixel;
+    unsigned char *output;
+
+    if (dst == NULL || src == NULL || background == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    index = 0U;
+    bg_gray = sixel_dither_background_gray_u8(background);
+    pixel = src;
+    output = dst;
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[3];
+            output[0] = sixel_dither_blend_channel_u8(pixel[0],
+                                                      background[0],
+                                                      alpha);
+            output[1] = sixel_dither_blend_channel_u8(pixel[1],
+                                                      background[1],
+                                                      alpha);
+            output[2] = sixel_dither_blend_channel_u8(pixel[2],
+                                                      background[2],
+                                                      alpha);
+            pixel += 4;
+            output += 3;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[0];
+            output[0] = sixel_dither_blend_channel_u8(pixel[1],
+                                                      background[0],
+                                                      alpha);
+            output[1] = sixel_dither_blend_channel_u8(pixel[2],
+                                                      background[1],
+                                                      alpha);
+            output[2] = sixel_dither_blend_channel_u8(pixel[3],
+                                                      background[2],
+                                                      alpha);
+            pixel += 4;
+            output += 3;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[3];
+            output[0] = sixel_dither_blend_channel_u8(pixel[2],
+                                                      background[0],
+                                                      alpha);
+            output[1] = sixel_dither_blend_channel_u8(pixel[1],
+                                                      background[1],
+                                                      alpha);
+            output[2] = sixel_dither_blend_channel_u8(pixel[0],
+                                                      background[2],
+                                                      alpha);
+            pixel += 4;
+            output += 3;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[0];
+            output[0] = sixel_dither_blend_channel_u8(pixel[3],
+                                                      background[0],
+                                                      alpha);
+            output[1] = sixel_dither_blend_channel_u8(pixel[2],
+                                                      background[1],
+                                                      alpha);
+            output[2] = sixel_dither_blend_channel_u8(pixel[1],
+                                                      background[2],
+                                                      alpha);
+            pixel += 4;
+            output += 3;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_GA88:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[1];
+            gray = sixel_dither_blend_channel_u8(pixel[0], bg_gray, alpha);
+            output[0] = gray;
+            output[1] = gray;
+            output[2] = gray;
+            pixel += 2;
+            output += 3;
+        }
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_AG88:
+        for (index = 0U; index < total_pixels; ++index) {
+            alpha = pixel[0];
+            gray = sixel_dither_blend_channel_u8(pixel[1], bg_gray, alpha);
+            output[0] = gray;
+            output[1] = gray;
+            output[2] = gray;
+            pixel += 2;
+            output += 3;
+        }
+        return SIXEL_OK;
+    default:
+        break;
+    }
+
+    return SIXEL_BAD_ARGUMENT;
+}
+
 
 /* set transparent */
 sixel_index_t *
@@ -2461,12 +2762,30 @@ sixel_dither_apply_palette(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        status = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                    &dither->pixelformat,
-                                                    pixels, dither->pixelformat,
-                                                    width, height);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+        if (dither->transparent_bgcolor_valid != 0
+                && sixel_dither_pixelformat_has_alpha(source_pixelformat)
+                && dither->keycolor >= 0) {
+            status = sixel_dither_composite_alpha_to_rgb(
+                normalized_pixels,
+                pixels,
+                total_pixels,
+                source_pixelformat,
+                dither->transparent_bgcolor);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        } else {
+            status = sixel_helper_normalize_pixelformat(
+                normalized_pixels,
+                &dither->pixelformat,
+                pixels,
+                dither->pixelformat,
+                width,
+                height);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
         input_pixels = normalized_pixels;
         pipeline_pixelformat = SIXEL_PIXELFORMAT_RGB888;

@@ -4867,6 +4867,18 @@ sixel_encoder_prepare_palette(
          * generation can ignore fully transparent pixels.
          */
         sixel_dither_set_transparent(*dither, 0);
+        if (encoder->bgcolor != NULL) {
+            (*dither)->transparent_bgcolor[0] = encoder->bgcolor[0];
+            (*dither)->transparent_bgcolor[1] = encoder->bgcolor[1];
+            (*dither)->transparent_bgcolor[2] = encoder->bgcolor[2];
+        } else {
+            (*dither)->transparent_bgcolor[0] = 0U;
+            (*dither)->transparent_bgcolor[1] = 0U;
+            (*dither)->transparent_bgcolor[2] = 0U;
+        }
+        (*dither)->transparent_bgcolor_valid = 1;
+    } else {
+        (*dither)->transparent_bgcolor_valid = 0;
     }
 
     clustering_colorspace = encoder->clustering_colorspace;
