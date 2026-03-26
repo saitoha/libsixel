@@ -1430,6 +1430,32 @@ img2sixel_ascii_lower_copy(char const *source)
     return result;
 }
 
+/*
+ * Copy a diagnostic string into a fixed buffer while always keeping it
+ * NUL-terminated. This avoids format-truncation warnings with -Werror.
+ */
+static void
+img2sixel_copy_truncated(char *destination,
+                         size_t destination_size,
+                         char const *source)
+{
+    size_t copy_length;
+
+    if (destination == NULL || destination_size == 0u) {
+        return;
+    }
+
+    copy_length = 0u;
+    if (source != NULL) {
+        copy_length = strlen(source);
+        if (copy_length >= destination_size) {
+            copy_length = destination_size - 1u;
+        }
+        memcpy(destination, source, copy_length);
+    }
+    destination[copy_length] = '\0';
+}
+
 enum {
     IMG2SIXEL_CMS_ENGINE_CHOICE_NONE = 0,
     IMG2SIXEL_CMS_ENGINE_CHOICE_AUTO = 1,
@@ -1529,10 +1555,9 @@ img2sixel_apply_loader_cms_engine(char const *value,
             && error_buffer[0] == '\0') {
             detail_source = sixel_helper_get_additional_message();
             if (detail_source != NULL && detail_source[0] != '\0') {
-                (void)snprintf(error_buffer,
-                               error_buffer_size,
-                               "%s",
-                               detail_source);
+                img2sixel_copy_truncated(error_buffer,
+                                         error_buffer_size,
+                                         detail_source);
             }
         }
         return -1;
@@ -1547,10 +1572,9 @@ img2sixel_apply_loader_cms_engine(char const *value,
             && error_buffer[0] == '\0') {
             detail_source = sixel_helper_get_additional_message();
             if (detail_source != NULL && detail_source[0] != '\0') {
-                (void)snprintf(error_buffer,
-                               error_buffer_size,
-                               "%s",
-                               detail_source);
+                img2sixel_copy_truncated(error_buffer,
+                                         error_buffer_size,
+                                         detail_source);
             }
         }
         return -1;
