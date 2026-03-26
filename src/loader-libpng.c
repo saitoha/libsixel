@@ -3694,7 +3694,7 @@ load_apng_frames(
     size_t remain;
     int seen_actl;
     int has_frame;
-    int frame_no;
+    int emit_frame_no;
     int source_frame_no;
     int frames_in_loop;
     int num_frames;
@@ -3717,7 +3717,7 @@ load_apng_frames(
     remain = 0;
     seen_actl = 0;
     has_frame = 0;
-    frame_no = 0;
+    emit_frame_no = 0;
     source_frame_no = 0;
     frames_in_loop = 0;
     num_frames = 0;
@@ -3767,6 +3767,7 @@ load_apng_frames(
         remain = pchunk->size - 8;
         seen_actl = 0;
         has_frame = 0;
+        source_frame_no = 0;
         frames_in_loop = 0;
         seen_fctl = 0;
         seen_idat = 0;
@@ -3873,9 +3874,21 @@ load_apng_frames(
                     frames_in_loop < start_frame_no) {
                     emit_callback = 0;
                 }
+                if (loop_no == 0 && start_frame_no != INT_MIN) {
+                    /*
+                     * frame_no is consumed by the encoder to determine
+                     * whether DECSC (first emitted frame) or DECRC
+                     * (subsequent frame) should be written in tty scroll.
+                     * Keep it as an emitted-frame index for the first loop
+                     * when start-frame skips leading source frames.
+                     */
+                    emit_frame_no = source_frame_no - start_frame_no;
+                } else {
+                    emit_frame_no = source_frame_no;
+                }
                 status = emit_apng_frame(&state,
                                          &control,
-                                         frame_no,
+                                         emit_frame_no,
                                          loop_no,
                                          (!fstatic && num_frames > 1),
                                          emit_callback,
@@ -3895,7 +3908,7 @@ load_apng_frames(
                     goto end;
                 }
 
-                ++frame_no;
+                ++source_frame_no;
                 ++frames_in_loop;
                 if (fstatic && emit_callback) {
                     status = SIXEL_OK;
@@ -4027,13 +4040,13 @@ load_apng_frames(
              * Keep frame_no aligned to emitted order when the first loop
              * skips leading source frames.
              */
-            frame_no = source_frame_no - start_frame_no;
+            emit_frame_no = source_frame_no - start_frame_no;
         } else {
-            frame_no = source_frame_no;
+            emit_frame_no = source_frame_no;
         }
         status = emit_apng_frame(&state,
                                  &control,
-                                 frame_no,
+                                 emit_frame_no,
                                  loop_no,
                                  (!fstatic && num_frames > 1),
                                  emit_callback,
@@ -4103,10 +4116,10 @@ load_apng_frames(
 
 end:
     apng_decode_trace_message(
-        "load_apng_frames: status=%d frame_no=%d source_frame_no=%d "
+        "load_apng_frames: status=%d emit_frame_no=%d source_frame_no=%d "
         "loop_no=%d saw_animation=%d",
         status,
-        frame_no,
+        emit_frame_no,
         source_frame_no,
         loop_no,
         saw_animation);
