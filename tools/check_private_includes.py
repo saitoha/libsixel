@@ -7,7 +7,7 @@ import pathlib
 import re
 import subprocess
 import sys
-from typing import List, Tuple
+from typing import List, Set, Tuple
 
 
 def _repo_root() -> pathlib.Path:
@@ -35,26 +35,71 @@ def _tracked_files(root: pathlib.Path) -> List[pathlib.Path]:
     return files
 
 
-def _scan_file(path: pathlib.Path, pattern: re.Pattern[str]) -> List[Tuple[int, str]]:
+def _public_tree_prefixes() -> Set[str]:
+    # converters/ contains the user-facing CLI tools; they should not depend on
+    # private src/ headers.
+    return {"converters"}
+
+
+def _is_public_tree_file(root: pathlib.Path, path: pathlib.Path) -> bool:
+    rel = path.relative_to(root)
+    if not rel.parts:
+        return False
+    return rel.parts[0] in _public_tree_prefixes()
+
+
+def _private_src_header_basenames(root: pathlib.Path) -> Set[str]:
+    src_dir = root / "src"
+    names: Set[str] = set()
+    for header in src_dir.glob("*.h"):
+        names.add(header.name)
+    return names
+
+
+def _scan_file(
+    path: pathlib.Path,
+    include_pattern: re.Pattern[str],
+    private_headers: Set[str],
+) -> List[Tuple[int, str]]:
     try:
         content = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         content = path.read_text(encoding="utf-8", errors="replace")
     matches: List[Tuple[int, str]] = []
     for idx, line in enumerate(content.splitlines(), start=1):
-        if pattern.search(line):
+        include_match = include_pattern.search(line)
+        if not include_match:
+            continue
+        target = include_match.group(1)
+        # Explicit src path includes are always private-tree violations.
+        if target.startswith("../src/") or target.startswith("src/"):
             matches.append((idx, line.rstrip()))
+            continue
+        # Unqualified includes that resolve to src-only header names are also
+        # considered private access unless a same-directory header shadows it.
+        if "/" in target:
+            continue
+        if target not in private_headers:
+            continue
+        if (path.parent / target).exists():
+            continue
+        matches.append((idx, line.rstrip()))
     return matches
 
 
 def main() -> int:
     root = _repo_root()
-    pattern = re.compile(r"^\s*#\s*include\s+\"\.\./src/[^\"]+\"")
+    include_pattern = re.compile(r"^\s*#\s*include\s+\"([^\"]+)\"")
+    private_headers = _private_src_header_basenames(root)
     offenders: List[Tuple[pathlib.Path, List[Tuple[int, str]]]] = []
     for path in _tracked_files(root):
         if not path.is_file():
             continue
-        hits = _scan_file(path, pattern)
+        if path.suffix.lower() not in {".c", ".h", ".m", ".mm"}:
+            continue
+        if not _is_public_tree_file(root, path):
+            continue
+        hits = _scan_file(path, include_pattern, private_headers)
         if hits:
             offenders.append((path, hits))
     if not offenders:
