@@ -1,9 +1,10 @@
 #!/bin/sh
 # Verify builtin loader decodes RGB 16-bit ZIP+prediction with stable image quality.
 # Reference generation command (ImageMagick):
-#   magick tests/data/inputs/formats/stbi_minimal_16bpc_raw.psd \
+#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
+#   magick tests/data/inputs/formats/snake16_rgb16_raw.psd \
 #       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_rgb16_raw_expected.ppm
+#       PPM:tests/data/loader/builtin_expected/psd_snake16_rgb16_expected.ppm
 
 set -eux
 
@@ -18,8 +19,8 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_16bpc_zip_pred.psd"
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_rgb16_raw_expected.ppm"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_rgb16_zip_pred.psd"
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_rgb16_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_rgb16_zip_pred_output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 

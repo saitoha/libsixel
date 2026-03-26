@@ -2,9 +2,10 @@
 # Verify builtin loader accepts the STB-supported PSD channel upper bound (16)
 # with stable image quality.
 # Reference generation command (ImageMagick):
-#   magick tests/data/inputs/formats/stbi_minimal_channels16.psd \
+#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
+#   magick tests/data/inputs/formats/snake16_channels16_rgb.psd \
 #       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_channels16_expected.ppm
+#       PPM:tests/data/loader/builtin_expected/psd_snake16_channels16_expected.ppm
 
 set -eux
 
@@ -19,8 +20,8 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_channels16.psd"
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_channels16_expected.ppm"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_channels16_rgb.psd"
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_channels16_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_channels16_output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 

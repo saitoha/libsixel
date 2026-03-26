@@ -1,5 +1,7 @@
 #!/bin/sh
 # Verify builtin PSD alpha compositing responds to --bgcolor.
+# Fixture generation command:
+#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 
 set -eux
 
@@ -19,7 +21,7 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_alpha.psd"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_rgb8_alpha.psd"
 output_black_six="${ARTIFACT_LOCAL_DIR}/psd_alpha_bg_black.six"
 output_white_six="${ARTIFACT_LOCAL_DIR}/psd_alpha_bg_white.six"
 output_black_png="${ARTIFACT_LOCAL_DIR}/psd_alpha_bg_black.png"

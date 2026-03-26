@@ -1,9 +1,10 @@
 #!/bin/sh
 # Verify builtin loader decodes PSD RGB 32-bit ZIP with stable image quality.
 # Reference generation command (ImageMagick):
-#   magick tests/data/inputs/formats/stbi_minimal_rgb32_raw.psd \
+#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
+#   magick tests/data/inputs/formats/snake16_rgb32_raw.psd \
 #       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_rgb32_raw_expected.ppm
+#       PPM:tests/data/loader/builtin_expected/psd_snake16_rgb32_expected.ppm
 
 set -eux
 
@@ -18,11 +19,11 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_rgb32_zip.psd"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_rgb32_zip.psd"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_rgb32_zip_output.six"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_rgb32_raw_expected.ppm"
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_rgb32_expected.ppm"
 
 run_img2sixel -L builtin! "${input_psd}" >"${output_sixel}" || {
     echo "not ok" 1 - "PSD RGB 32-bit ZIP decode failed"
