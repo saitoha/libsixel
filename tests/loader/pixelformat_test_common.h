@@ -51,6 +51,8 @@ typedef struct loader_probe_context {
     int pixelformat;
     int width;
     int height;
+    int transparent;
+    int multiframe;
 } loader_probe_context_t;
 
 /*
@@ -67,6 +69,9 @@ typedef struct loader_probe_callback_state {
 } loader_probe_callback_state_t;
 
 #define GEOMETRY_ANY (-1)
+#define CALLBACK_COUNT_ANY (-1)
+#define FRAME_METADATA_ANY INT_MIN
+#define FRAME_TRANSPARENT_NONNEG (INT_MIN + 1)
 #define SIXEL_TEST_SKIP 77
 
 static SIXEL_TEST_UNUSED SIXELSTATUS
@@ -79,6 +84,8 @@ capture_frame(sixel_frame_t *frame, void *data)
     context->pixelformat = sixel_frame_get_pixelformat(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
+    context->transparent = sixel_frame_get_transparent(frame);
+    context->multiframe = sixel_frame_get_multiframe(frame);
 
     return SIXEL_OK;
 }
@@ -209,6 +216,8 @@ run_loader_case_with_options(char const *label,
     context.pixelformat = 0;
     context.width = 0;
     context.height = 0;
+    context.transparent = FRAME_METADATA_ANY;
+    context.multiframe = FRAME_METADATA_ANY;
     callback_state.loader = NULL;
     callback_state.fn = capture_frame;
     callback_state.context = &context;
@@ -312,15 +321,19 @@ create_loader_component_by_name(char const *name,
 }
 
 static SIXEL_TEST_UNUSED int
-run_loader_component_case_with_options(
+run_loader_component_case_with_options_ex(
     char const *label,
     char const *relative_path,
     int expected_pixelformat,
     int expected_width,
     int expected_height,
+    int expected_callback_count,
+    int expected_transparent,
+    int expected_multiframe,
     int require_static,
     int use_palette,
     int reqcolors,
+    unsigned char const *bgcolor,
     loader_component_new_fn new_component)
 {
     SIXELSTATUS status;
@@ -405,6 +418,8 @@ run_loader_component_case_with_options(
     context.pixelformat = 0;
     context.width = 0;
     context.height = 0;
+    context.transparent = FRAME_METADATA_ANY;
+    context.multiframe = FRAME_METADATA_ANY;
     callback_state.loader = NULL;
     callback_state.fn = capture_frame;
     callback_state.context = &context;
@@ -427,6 +442,12 @@ run_loader_component_case_with_options(
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_BGCOLOR,
+                                           bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
 
     status = sixel_loader_component_load(component,
                                          chunk,
@@ -440,7 +461,16 @@ run_loader_component_case_with_options(
         goto cleanup;
     }
 
-    if (context.callback_count != 1) {
+    if (expected_callback_count != CALLBACK_COUNT_ANY &&
+        context.callback_count != expected_callback_count) {
+        fprintf(stderr,
+                "%s: callback count mismatch (%d expected=%d)\n",
+                label,
+                context.callback_count,
+                expected_callback_count);
+        goto cleanup;
+    }
+    if (context.callback_count <= 0) {
         fprintf(stderr, "%s: callback count mismatch\n", label);
         goto cleanup;
     }
@@ -473,6 +503,32 @@ run_loader_component_case_with_options(
             goto cleanup;
         }
     }
+    if (expected_transparent != FRAME_METADATA_ANY) {
+        if (expected_transparent == FRAME_TRANSPARENT_NONNEG) {
+            if (context.transparent < 0) {
+                fprintf(stderr,
+                        "%s: expected non-negative transparent index\n",
+                        label);
+                goto cleanup;
+            }
+        } else if (context.transparent != expected_transparent) {
+            fprintf(stderr,
+                    "%s: transparent index mismatch (%d expected=%d)\n",
+                    label,
+                    context.transparent,
+                    expected_transparent);
+            goto cleanup;
+        }
+    }
+    if (expected_multiframe != FRAME_METADATA_ANY &&
+        context.multiframe != expected_multiframe) {
+        fprintf(stderr,
+                "%s: multiframe mismatch (%d expected=%d)\n",
+                label,
+                context.multiframe,
+                expected_multiframe);
+        goto cleanup;
+    }
 
     result = 0;
 
@@ -485,6 +541,33 @@ cleanup:
 #endif
 
     return result;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_with_options(
+    char const *label,
+    char const *relative_path,
+    int expected_pixelformat,
+    int expected_width,
+    int expected_height,
+    int require_static,
+    int use_palette,
+    int reqcolors,
+    loader_component_new_fn new_component)
+{
+    return run_loader_component_case_with_options_ex(label,
+                                                     relative_path,
+                                                     expected_pixelformat,
+                                                     expected_width,
+                                                     expected_height,
+                                                     1,
+                                                     FRAME_METADATA_ANY,
+                                                     FRAME_METADATA_ANY,
+                                                     require_static,
+                                                     use_palette,
+                                                     reqcolors,
+                                                     NULL,
+                                                     new_component);
 }
 
 static SIXEL_TEST_UNUSED int
