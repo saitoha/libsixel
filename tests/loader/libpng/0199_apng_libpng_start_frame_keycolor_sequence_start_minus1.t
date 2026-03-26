@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify libpng APNG start=1 + keycolor keeps emitted frame_no sequence.
+# Verify libpng APNG start=-1 + keycolor keeps emitted frame_no sequence.
 
 set -eux
 
@@ -22,15 +22,16 @@ image_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 expected_sequence="0:0
 1:0
 1:1"
+
 trace_log=$(
     set +xv
     run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode \
-                  --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=1 \
+                  --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1 \
                   --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
                   -Llibpng! -lauto -g \
                   "${image_apng}" -o/dev/null 2>&1
 ) || {
-    echo "not ok 1 - libpng APNG trace run failed (start=1)"
+    echo "not ok 1 - libpng APNG trace run failed (start=-1)"
     exit 0
 }
 
@@ -56,9 +57,9 @@ actual_sequence=$(
 )
 
 if [ "${actual_sequence}" = "${expected_sequence}" ]; then
-    echo "ok 1 - libpng APNG start=1 keycolor sequence stays loop-local"
+    echo "ok 1 - libpng APNG start=-1 keycolor sequence stays loop-local"
 else
-    echo "not ok 1 - libpng APNG start=1 keycolor sequence mismatch"
+    echo "not ok 1 - libpng APNG start=-1 keycolor sequence mismatch"
 fi
 
 exit 0

@@ -1,15 +1,10 @@
 #!/bin/sh
-# Verify libpng APNG start=1 + keycolor keeps emitted frame_no sequence.
+# Verify builtin APNG start=1 + keycolor keeps emitted frame_no sequence.
 
 set -eux
 
-test "${HAVE_LIBPNG-}" = 1 || {
-    echo "1..0 # SKIP libpng support is disabled in this build"
-    exit 0
-}
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "1..0 # SKIP img2sixel is disabled in this build"
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
 }
 
@@ -27,10 +22,10 @@ trace_log=$(
     run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode \
                   --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=1 \
                   --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-                  -Llibpng! -lauto -g \
+                  -Lbuiltin! -lauto -g \
                   "${image_apng}" -o/dev/null 2>&1
 ) || {
-    echo "not ok 1 - libpng APNG trace run failed (start=1)"
+    echo "not ok 1 - builtin APNG trace run failed (start=1)"
     exit 0
 }
 
@@ -56,9 +51,9 @@ actual_sequence=$(
 )
 
 if [ "${actual_sequence}" = "${expected_sequence}" ]; then
-    echo "ok 1 - libpng APNG start=1 keycolor sequence stays loop-local"
+    echo "ok 1 - builtin APNG start=1 keycolor sequence stays loop-local"
 else
-    echo "not ok 1 - libpng APNG start=1 keycolor sequence mismatch"
+    echo "not ok 1 - builtin APNG start=1 keycolor sequence mismatch"
 fi
 
 exit 0
