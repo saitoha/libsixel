@@ -80,6 +80,10 @@ static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
 
 #undef SIXEL_STBI_TLS
 
+#define SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY 0
+#define SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB 2
+#define SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA 4
+
 typedef struct sixel_loader_builtin_component {
     sixel_loader_component_t base;
     sixel_atomic_u32_t ref;
@@ -1013,6 +1017,22 @@ typedef union _fn_pointer {
     void *                    p;
 } fn_pointer;
 
+static int
+sixel_builtin_trns_keycolor_optin_enabled(void)
+{
+    char const *env_value;
+
+    env_value = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
+    if (env_value == NULL) {
+        return 0;
+    }
+    if (env_value[0] == '1' && env_value[1] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_builtin_parse_animation_start_frame_no(int *start_frame_no)
 {
@@ -1584,6 +1604,7 @@ sixel_builtin_apng_emit_frame(
     int multiframe,
     int emit_callback,
     unsigned char *bgcolor,
+    int alpha_zero_is_transparent,
     sixel_builtin_apng_canvas_t *canvas,
     sixel_load_image_function fn_load,
     void *callback_context,
@@ -1700,6 +1721,8 @@ sixel_builtin_apng_emit_frame(
     frame->ncolors = 0;
     frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->transparent = -1;
+    frame->alpha_zero_is_transparent =
+        alpha_zero_is_transparent != 0 ? 1 : 0;
     sixel_frame_set_delay(frame, (int)control->delay_cs);
     sixel_frame_set_frame_no(frame, frame_no);
     sixel_frame_set_loop_count(frame, loop_no);
@@ -1707,9 +1730,11 @@ sixel_builtin_apng_emit_frame(
     sixel_frame_set_pixels(frame, emitted);
     emitted = NULL;
 
-    status = sixel_frame_strip_alpha(frame, bgcolor);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (!frame->alpha_zero_is_transparent) {
+        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = fn_load(frame, callback_context);
@@ -1735,6 +1760,7 @@ sixel_builtin_load_apng_frames(
     sixel_chunk_t const *pchunk,
     int fstatic,
     unsigned char *bgcolor,
+    int enable_cms,
     int loop_control,
     int start_frame_no,
     sixel_load_image_function fn_load,
@@ -1760,6 +1786,11 @@ sixel_builtin_load_apng_frames(
     int emit_callback;
     int seen_fctl;
     int seen_idat;
+    int alpha_zero_is_transparent;
+    int color_type;
+    int has_alpha_chunk;
+    int has_trns_chunk;
+    int trns_keycolor_optin;
     uint32_t length;
     uint32_t canvas_width;
     uint32_t canvas_height;
@@ -1786,6 +1817,11 @@ sixel_builtin_load_apng_frames(
     emit_callback = 1;
     seen_fctl = 0;
     seen_idat = 0;
+    alpha_zero_is_transparent = 0;
+    color_type = (-1);
+    has_alpha_chunk = 0;
+    has_trns_chunk = 0;
+    trns_keycolor_optin = sixel_builtin_trns_keycolor_optin_enabled();
     length = 0;
     canvas_width = 0;
     canvas_height = 0;
@@ -1812,6 +1848,10 @@ sixel_builtin_load_apng_frames(
         frames_in_loop = 0;
         seen_fctl = 0;
         seen_idat = 0;
+        alpha_zero_is_transparent = 0;
+        color_type = (-1);
+        has_alpha_chunk = 0;
+        has_trns_chunk = 0;
 
         if (loop_no > 0 && canvas_bytes > 0) {
             memset(canvas.pixels, 0, canvas_bytes);
@@ -1837,6 +1877,11 @@ sixel_builtin_load_apng_frames(
                 }
                 state.ihdr = p + 8;
                 state.ihdr_size = length;
+                color_type = (int)p[17];
+                has_alpha_chunk = (color_type
+                                   & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0
+                    ? 1
+                    : 0;
                 if (canvas_bytes == 0) {
                     canvas_width = sixel_builtin_read_be32(p + 8);
                     canvas_height = sixel_builtin_read_be32(p + 12);
@@ -1862,6 +1907,15 @@ sixel_builtin_load_apng_frames(
                     memset(canvas.pixels, 0, canvas_bytes);
                     memset(canvas.backup, 0, canvas_bytes);
                 }
+                alpha_zero_is_transparent =
+                    trns_keycolor_optin &&
+                    bgcolor == NULL &&
+                    !enable_cms &&
+                    ((has_trns_chunk &&
+                      !has_alpha_chunk &&
+                      (color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY ||
+                       color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB))
+                     || has_alpha_chunk);
             } else if (memcmp(p + 4, "acTL", 4) == 0) {
                 if (length != 8) {
                     status = SIXEL_BAD_INPUT;
@@ -1912,6 +1966,7 @@ sixel_builtin_load_apng_frames(
                         (!fstatic && num_frames > 1),
                         emit_callback,
                         bgcolor,
+                        alpha_zero_is_transparent,
                         &canvas,
                         fn_load,
                         context,
@@ -1999,6 +2054,17 @@ sixel_builtin_load_apng_frames(
                 has_frame = 1;
             } else if (memcmp(p + 4, "IEND", 4) == 0) {
                 break;
+            } else if (memcmp(p + 4, "tRNS", 4) == 0) {
+                has_trns_chunk = 1;
+                alpha_zero_is_transparent =
+                    trns_keycolor_optin &&
+                    bgcolor == NULL &&
+                    !enable_cms &&
+                    ((has_trns_chunk &&
+                      !has_alpha_chunk &&
+                      (color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY ||
+                       color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB))
+                     || has_alpha_chunk);
             } else if (memcmp(p + 4, "acTL", 4) != 0 &&
                        memcmp(p + 4, "fcTL", 4) != 0 &&
                        memcmp(p + 4, "fdAT", 4) != 0 &&
@@ -2048,6 +2114,7 @@ sixel_builtin_load_apng_frames(
                                                    (!fstatic && num_frames > 1),
                                                    emit_callback,
                                                    bgcolor,
+                                                   alpha_zero_is_transparent,
                                                    &canvas,
                                                    fn_load,
                                                    context,
@@ -2476,6 +2543,7 @@ load_with_builtin(
             status = sixel_builtin_load_apng_frames(pchunk,
                                                     fstatic,
                                                     bgcolor,
+                                                    enable_cms,
                                                     loop_control,
                                                     start_frame_no,
                                                     fn_load,

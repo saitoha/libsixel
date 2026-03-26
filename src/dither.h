@@ -55,6 +55,8 @@ struct sixel_dither {
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */
+    unsigned char transparent_bgcolor[3]; /* keycolor compositing backdrop */
+    int transparent_bgcolor_valid;  /* non-zero when backdrop is configured */
     int pixelformat;                /* pixelformat for internal processing */
     int prefer_float32;             /* opt-in flag for float32 internals */
     sixel_allocator_t *allocator;   /* allocator */
