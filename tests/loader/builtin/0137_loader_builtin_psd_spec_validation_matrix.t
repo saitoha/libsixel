@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin loader rejects PSD header values outside STB-supported range.
+# Verify builtin loader rejects PSD header values outside builtin-supported range.
 
 set -eux
 
@@ -19,7 +19,7 @@ for case_entry in \
     "wrong_version.psd:unsupported version" \
     "wrong_channel_count.psd:channel count > 16" \
     "unsupported_bit_depth.psd:bit depth other than 8/16" \
-    "wrong_color_mode.psd:unsupported color mode (outside Gray/Indexed/RGB/CMYK/Lab)" \
+    "wrong_color_mode.psd:unsupported color mode (outside Gray/Duotone/Indexed/RGB/CMYK/Lab)" \
     "bad_compression.psd:compression other than raw/RLE"
 do
     file_name=${case_entry%%:*}
