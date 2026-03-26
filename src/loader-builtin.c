@@ -1033,6 +1033,116 @@ sixel_builtin_trns_keycolor_optin_enabled(void)
     return 0;
 }
 
+static int
+sixel_builtin_parse_png_transparency_info(
+    sixel_chunk_t const *pchunk,
+    int *color_type_out,
+    int *has_alpha_chunk_out,
+    int *has_trns_chunk_out)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    unsigned char const *buffer;
+    size_t size;
+    size_t offset;
+    uint32_t length;
+    size_t chunk_total;
+    unsigned char const *chunk_type;
+    int color_type;
+    int has_trns_chunk;
+
+    if (pchunk == NULL ||
+        color_type_out == NULL ||
+        has_alpha_chunk_out == NULL ||
+        has_trns_chunk_out == NULL) {
+        return 0;
+    }
+
+    buffer = pchunk->buffer;
+    size = pchunk->size;
+    if (buffer == NULL || size < (8u + 12u + 13u)) {
+        return 0;
+    }
+    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+    if ((((uint32_t)buffer[8u] << 24)
+         | ((uint32_t)buffer[9u] << 16)
+         | ((uint32_t)buffer[10u] << 8)
+         | (uint32_t)buffer[11u]) != 13u) {
+        return 0;
+    }
+    if (memcmp(buffer + 12u, "IHDR", 4u) != 0) {
+        return 0;
+    }
+
+    color_type = (int)buffer[25u];
+    has_trns_chunk = 0;
+    offset = 8u;
+    while (offset + 12u <= size) {
+        length = ((uint32_t)buffer[offset + 0u] << 24)
+               | ((uint32_t)buffer[offset + 1u] << 16)
+               | ((uint32_t)buffer[offset + 2u] << 8)
+               | (uint32_t)buffer[offset + 3u];
+        chunk_total = (size_t)length + 12u;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+        chunk_type = buffer + offset + 4u;
+        if (memcmp(chunk_type, "tRNS", 4u) == 0) {
+            has_trns_chunk = 1;
+        } else if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+        offset += chunk_total;
+    }
+
+    *color_type_out = color_type;
+    *has_alpha_chunk_out =
+        (color_type & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0 ? 1 : 0;
+    *has_trns_chunk_out = has_trns_chunk;
+
+    return 1;
+}
+
+static int
+sixel_builtin_png_keycolor_mode_enabled(
+    sixel_chunk_t const *pchunk,
+    unsigned char const *bgcolor,
+    int enable_cms)
+{
+    int color_type;
+    int has_alpha_chunk;
+    int has_trns_chunk;
+
+    color_type = (-1);
+    has_alpha_chunk = 0;
+    has_trns_chunk = 0;
+
+    if (!sixel_builtin_trns_keycolor_optin_enabled()) {
+        return 0;
+    }
+    if (bgcolor != NULL || enable_cms) {
+        return 0;
+    }
+    if (!sixel_builtin_parse_png_transparency_info(
+            pchunk,
+            &color_type,
+            &has_alpha_chunk,
+            &has_trns_chunk)) {
+        return 0;
+    }
+
+    return ((has_trns_chunk &&
+             !has_alpha_chunk &&
+             (color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY ||
+              color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB))
+            || has_alpha_chunk)
+        ? 1
+        : 0;
+}
+
 static SIXELSTATUS
 sixel_builtin_parse_animation_start_frame_no(int *start_frame_no)
 {
@@ -2398,6 +2508,7 @@ load_with_builtin(
     int start_frame_no;
     int resolved_start_frame_no;
     int gif_frame_count;
+    int png_keycolor_mode;
     unsigned char *icc_profile;
     size_t icc_profile_length;
     int cms_converted;
@@ -2420,6 +2531,7 @@ load_with_builtin(
     start_frame_no = INT_MIN;
     resolved_start_frame_no = -1;
     gif_frame_count = 0;
+    png_keycolor_mode = 0;
     icc_profile = NULL;
     icc_profile_length = 0u;
     cms_converted = 0;
@@ -2534,6 +2646,12 @@ load_with_builtin(
             goto end;
         }
         stbi_allocator = pchunk->allocator;
+        if (chunk_is_png(pchunk)) {
+            png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
+                pchunk,
+                bgcolor,
+                enable_cms);
+        }
         if (chunk_is_png(pchunk)) {
             /*
              * Try APNG first for builtin PNG path. Regular PNG input returns
@@ -2656,12 +2774,31 @@ load_with_builtin(
         }
 
         if (chunk_is_png(pchunk)) {
-            status = sixel_frompng_load_nonindexed(pchunk,
-                                                   frame,
-                                                   enable_cms,
-                                                   bgcolor);
-            if (SIXEL_FAILED(status)) {
-                goto end;
+            if (png_keycolor_mode) {
+                pixels = stbi_load_from_memory(pchunk->buffer,
+                                               (int)pchunk->size,
+                                               &frame->width,
+                                               &frame->height,
+                                               &depth,
+                                               4);
+                if (pixels == NULL) {
+                    sixel_helper_set_additional_message(stbi_failure_reason());
+                    status = SIXEL_STBI_ERROR;
+                    goto end;
+                }
+                sixel_frame_set_pixels(frame, pixels);
+                frame->loop_count = 1;
+                frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+                frame->alpha_zero_is_transparent = 1;
+            } else {
+                status = sixel_frompng_load_nonindexed(pchunk,
+                                                       frame,
+                                                       enable_cms,
+                                                       bgcolor);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
             }
         } else {
             stbi__start_mem(&stb_context,
@@ -2891,9 +3028,11 @@ load_with_builtin(
     }
 
 done:
-    status = sixel_frame_strip_alpha(frame, bgcolor);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (!frame->alpha_zero_is_transparent) {
+        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = fn_load(frame, context);
