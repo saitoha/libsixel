@@ -1424,6 +1424,20 @@ sixel_builtin_psd_clamp_unit_float32(float value)
     return value;
 }
 
+static unsigned char
+sixel_builtin_psd_decode_cmyk_u8(unsigned char value)
+{
+    /* PSD stores CMYK channels with inverted polarity. */
+    return (unsigned char)(0xffu - value);
+}
+
+static float
+sixel_builtin_psd_decode_cmyk_f32(float value)
+{
+    /* PSD stores CMYK channels with inverted polarity. */
+    return 1.0f - sixel_builtin_psd_clamp_unit_float32(value);
+}
+
 static int
 sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
                                        sixel_builtin_psd_info_t const *info,
@@ -2380,10 +2394,10 @@ sixel_builtin_decode_psd_cmyk_8bit(
         }
 
         for (i = 0u; i < pixel_count; ++i) {
-            cmyk[i * 4u + 0u] = plane_c[i];
-            cmyk[i * 4u + 1u] = plane_m[i];
-            cmyk[i * 4u + 2u] = plane_y[i];
-            cmyk[i * 4u + 3u] = plane_k[i];
+            cmyk[i * 4u + 0u] = sixel_builtin_psd_decode_cmyk_u8(plane_c[i]);
+            cmyk[i * 4u + 1u] = sixel_builtin_psd_decode_cmyk_u8(plane_m[i]);
+            cmyk[i * 4u + 2u] = sixel_builtin_psd_decode_cmyk_u8(plane_y[i]);
+            cmyk[i * 4u + 3u] = sixel_builtin_psd_decode_cmyk_u8(plane_k[i]);
         }
 
         {
@@ -2473,10 +2487,10 @@ sixel_builtin_decode_psd_cmyk_8bit(
     }
 
     for (i = 0u; i < pixel_count; ++i) {
-        c = (int)plane_c[i];
-        m = (int)plane_m[i];
-        y = (int)plane_y[i];
-        k = (int)plane_k[i];
+        c = (int)sixel_builtin_psd_decode_cmyk_u8(plane_c[i]);
+        m = (int)sixel_builtin_psd_decode_cmyk_u8(plane_m[i]);
+        y = (int)sixel_builtin_psd_decode_cmyk_u8(plane_y[i]);
+        k = (int)sixel_builtin_psd_decode_cmyk_u8(plane_k[i]);
         r = ((0xff - c) * (0xff - k) + 0x7f) / 0xff;
         g = ((0xff - m) * (0xff - k) + 0x7f) / 0xff;
         b = ((0xff - y) * (0xff - k) + 0x7f) / 0xff;
@@ -3348,10 +3362,10 @@ sixel_builtin_decode_psd_cmyk_32bit(
             goto cleanup;
         }
         for (i = 0u; i < pixel_count; ++i) {
-            cmyk[i * 4u + 0u] = sixel_builtin_psd_clamp_unit_float32(plane_c[i]);
-            cmyk[i * 4u + 1u] = sixel_builtin_psd_clamp_unit_float32(plane_m[i]);
-            cmyk[i * 4u + 2u] = sixel_builtin_psd_clamp_unit_float32(plane_y[i]);
-            cmyk[i * 4u + 3u] = sixel_builtin_psd_clamp_unit_float32(plane_k[i]);
+            cmyk[i * 4u + 0u] = sixel_builtin_psd_decode_cmyk_f32(plane_c[i]);
+            cmyk[i * 4u + 1u] = sixel_builtin_psd_decode_cmyk_f32(plane_m[i]);
+            cmyk[i * 4u + 2u] = sixel_builtin_psd_decode_cmyk_f32(plane_y[i]);
+            cmyk[i * 4u + 3u] = sixel_builtin_psd_decode_cmyk_f32(plane_k[i]);
         }
 
         src_profile = sixel_cms_open_profile_from_mem(icc_profile,
@@ -3375,13 +3389,17 @@ sixel_builtin_decode_psd_cmyk_32bit(
 
     if (!cms_applied) {
         for (i = 0u; i < pixel_count; ++i) {
-            c = sixel_builtin_psd_clamp_unit_float32(plane_c[i]);
-            m = sixel_builtin_psd_clamp_unit_float32(plane_m[i]);
-            y = sixel_builtin_psd_clamp_unit_float32(plane_y[i]);
-            k = sixel_builtin_psd_clamp_unit_float32(plane_k[i]);
+            c = sixel_builtin_psd_decode_cmyk_f32(plane_c[i]);
+            m = sixel_builtin_psd_decode_cmyk_f32(plane_m[i]);
+            y = sixel_builtin_psd_decode_cmyk_f32(plane_y[i]);
+            k = sixel_builtin_psd_decode_cmyk_f32(plane_k[i]);
             rgb_linear[i * 3u + 0u] = (1.0f - c) * (1.0f - k);
             rgb_linear[i * 3u + 1u] = (1.0f - m) * (1.0f - k);
             rgb_linear[i * 3u + 2u] = (1.0f - y) * (1.0f - k);
+        }
+        if (!sixel_cms_convert_rgbf32_gamma_to_linear(rgb_linear, pixel_count)) {
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
         }
     }
 
