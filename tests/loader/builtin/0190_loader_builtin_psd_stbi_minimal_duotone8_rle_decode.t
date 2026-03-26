@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin loader decodes Gray 8-bit ZIP.
+# Verify builtin loader decodes duotone 8-bit RLE.
 
 set -eux
 
@@ -13,12 +13,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_gray8_zip.psd"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_duotone8_rle.psd"
 
 run_img2sixel -L builtin! "${input_psd}" >/dev/null || {
-    echo "not ok" 1 - "builtin loader failed to decode Gray 8-bit ZIP"
+    echo "not ok" 1 - "builtin loader failed to decode duotone 8-bit RLE"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader decodes Gray 8-bit ZIP"
+echo "ok" 1 - "builtin loader decodes duotone 8-bit RLE"
 exit 0

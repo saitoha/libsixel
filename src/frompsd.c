@@ -2122,3 +2122,12 @@ sixel_builtin_decode_psd_lab_8bit(
  * - RGBA entries are pre-blended against the background color so PAL8
  *   output stays opaque and matches the libpng backend.
  */
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 : */
+/* EOF */
