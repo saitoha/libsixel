@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify env=1 is ignored for palette+tRNS in builtin loader path.
+# Verify SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 is ignored for palette+tRNS in builtin loader path.
 
 set -eux
 
@@ -31,14 +31,14 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Lbuiltin:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_env1}" || {
-    echo "not ok 1 - builtin palette+tRNS env=1 render failed"
+    echo "not ok 1 - builtin palette+tRNS SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
     exit 0
 }
 
 if cmp -s "${out_default}" "${out_env1}"; then
-    echo "ok 1 - builtin env=1 is ignored for palette+tRNS output"
+    echo "ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 is ignored for palette+tRNS output"
 else
-    echo "not ok 1 - builtin env=1 unexpectedly changes palette+tRNS output"
+    echo "not ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 unexpectedly changes palette+tRNS output"
 fi
 
 exit 0

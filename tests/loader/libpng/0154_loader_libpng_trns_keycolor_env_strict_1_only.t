@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify env value 2 is ignored and matches explicit opt-out output.
+# Verify SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 is ignored and matches explicit opt-out output.
 
 set -eux
 
@@ -28,7 +28,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
               -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_invalid}" || {
-    echo "not ok 1 - env=2 render failed"
+    echo "not ok 1 - SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 render failed"
     exit 0
 }
 
@@ -37,14 +37,14 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_off}" || {
-    echo "not ok 1 - env=0 render failed"
+    echo "not ok 1 - SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
     exit 0
 }
 
 if cmp -s "${out_invalid}" "${out_off}"; then
-    echo "ok 1 - env=2 is ignored and stays opt-out"
+    echo "ok 1 - SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 is ignored and stays opt-out"
 else
-    echo "not ok 1 - env=2 unexpectedly changes output"
+    echo "not ok 1 - SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 unexpectedly changes output"
 fi
 
 exit 0

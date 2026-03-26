@@ -26,7 +26,7 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0005_rgba_png_def
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 
-run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "rgba roundtrip encode failed"
     exit 0
 }

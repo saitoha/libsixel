@@ -31,7 +31,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Lbuiltin:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_off}" || {
-    echo "not ok" 1 - "builtin palette+tRNS env=0 decode failed"
+    echo "not ok" 1 - "builtin palette+tRNS SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 decode failed"
     exit 0
 }
 

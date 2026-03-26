@@ -990,8 +990,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR",
-        "enable libpng tRNS keycolor transparency path. Accepts 1/yes/true/on\n"
-        "to enable; defaults to disabled."
+        "control PNG/APNG tRNS+alpha keycolor transparency path for builtin/libpng.\n"
+        "Accepts only 0/1. Unset and 1 enable (default); 0 disables."
     },
     {
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",

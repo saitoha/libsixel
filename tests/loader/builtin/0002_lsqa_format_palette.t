@@ -18,7 +18,7 @@ lsqa_floor=0.99
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0004_palette_png_default_black_composite.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/palette.six"
-run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "palette quality regressed"
     exit 0
 }

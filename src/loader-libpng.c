@@ -175,19 +175,20 @@ libpng_trns_keycolor_mode(void)
 {
     char const *env;
     static int initialized = 0;
-    static int mode = 1;
+    static int mode = 2;
     /*
      * mode:
      *   0 -> disabled
-     *   1 -> tRNS keycolor only (default when env is unset)
+     *   1 -> tRNS keycolor only
      *   2 -> tRNS keycolor + alpha-channel keycolor
+     *        (default when env is unset)
      */
 
     if (initialized) {
         return mode;
     }
     initialized = 1;
-    mode = 1;
+    mode = 2;
 
     env = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
     if (env == NULL || env[0] == '\0') {

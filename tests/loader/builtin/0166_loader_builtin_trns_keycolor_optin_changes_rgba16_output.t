@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify opt-in changes RGBA16 PNG output in builtin loader path.
+# Verify builtin RGBA16 PNG keycolor is enabled by default.
 
 set -eux
 
@@ -16,7 +16,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a16.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-rgba16-default.six"
-out_optin="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-rgba16-optin.six"
+out_off="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-rgba16-env0.six"
 
 run_img2sixel --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
@@ -26,19 +26,19 @@ run_img2sixel --env SIXEL_THREADS=4 \
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
               -d fs -y raster \
-              "${input_png}" >"${out_optin}" || {
-    echo "not ok 1 - builtin rgba16 opt-in render failed"
+              "${input_png}" >"${out_off}" || {
+    echo "not ok 1 - builtin rgba16 SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_optin}"; then
-    echo "not ok 1 - opt-in unexpectedly ignored for builtin rgba16 PNG"
+if cmp -s "${out_default}" "${out_off}"; then
+    echo "not ok 1 - builtin rgba16 default keycolor is unexpectedly disabled"
 else
-    echo "ok 1 - opt-in changes builtin rgba16 PNG output"
+    echo "ok 1 - builtin rgba16 keycolor is enabled by default"
 fi
 
 exit 0
