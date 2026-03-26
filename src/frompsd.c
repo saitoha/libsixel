@@ -285,9 +285,6 @@ sixel_builtin_psd_compute_row_bytes(sixel_builtin_psd_info_t const *info,
     }
 
     if (info->depth == 1u) {
-        if ((size_t)info->width > SIZE_MAX - 7u) {
-            return 0;
-        }
         row_bytes = ((size_t)info->width + 7u) / 8u;
         if (row_bytes == 0u) {
             return 0;
@@ -1242,9 +1239,6 @@ sixel_builtin_decode_psd_16bit_channel(sixel_chunk_t const *chunk,
         return 0;
     }
     plane_bytes = pixel_count * 2u;
-    if ((size_t)info->width > SIZE_MAX / 2u) {
-        return 0;
-    }
     row_bytes = (size_t)info->width * 2u;
 
     plane_bytes_buffer = (unsigned char *)sixel_allocator_malloc(
@@ -1440,9 +1434,6 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
         return 0;
     }
     plane_bytes = pixel_count * 4u;
-    if ((size_t)info->width > SIZE_MAX / 4u) {
-        return 0;
-    }
     row_bytes = (size_t)info->width * 4u;
 
     plane_bytes_buffer = (unsigned char *)sixel_allocator_malloc(
@@ -1738,9 +1729,6 @@ sixel_builtin_decode_psd_bitmap_1bit(
     }
     pixel_count = (size_t)info->width * (size_t)info->height;
     if (pixel_count > SIZE_MAX / 3u) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    if ((size_t)info->width > SIZE_MAX - 7u) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     row_bytes = ((size_t)info->width + 7u) / 8u;
