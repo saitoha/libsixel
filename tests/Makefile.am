@@ -610,8 +610,10 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
 	trs_manifest="$(abs_builddir)/.check-test-trs.list"; \
+	failed_manifest="$(abs_builddir)/.check-test-failures.list"; \
 	testsuite_tmp="$(TEST_SUITE_LOG).tmp"; \
 	rm -f "$$trs_manifest"; \
+	rm -f "$$failed_manifest"; \
 	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +; \
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
@@ -639,6 +641,7 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 	    copy_in_global_log=yes; \
 	    if test ! -r "$$trs_path"; then \
 	        error=$$((error + 1)); \
+	        printf '%s\n' "ERROR: $$rel_name (missing .trs)" >> "$$failed_manifest"; \
 	        printf '%s\n' "ERROR: missing $$trs_path" >> "$$testsuite_tmp"; \
 	        continue; \
 	    fi; \
@@ -668,6 +671,11 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 	                ;; \
 	        esac; \
 	    done < "$$trs_path"; \
+	    case "$$global_result" in \
+	        FAIL|XPASS|ERROR) \
+	            printf '%s\n' "$$global_result: $$rel_name" >> "$$failed_manifest" \
+	            ;; \
+	    esac; \
 	    if test "$$copy_in_global_log" = yes; then \
 	        { \
 	            printf '%s\n' "$$global_result: $$rel_name"; \
@@ -701,13 +709,18 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 	echo "# FAIL:  $$fail"; \
 	echo "# XPASS: $$xpass"; \
 	echo "# ERROR: $$error"; \
+	if test -s "$$failed_manifest"; then \
+	    echo "#"; \
+	    echo "# Failed tests:"; \
+	    sed 's/^/#   /' "$$failed_manifest"; \
+	fi; \
 	if test $$((fail + xpass + error)) -ne 0; then \
 	    test x"$$VERBOSE" = x || cat "$(TEST_SUITE_LOG)"; \
 	    echo "See $(subdir)/$(TEST_SUITE_LOG) for debugging."; \
-	    rm -f "$$trs_manifest"; \
+	    rm -f "$$trs_manifest" "$$failed_manifest"; \
 	    exit 1; \
 	fi; \
-	rm -f "$$trs_manifest"; \
+	rm -f "$$trs_manifest" "$$failed_manifest"; \
 	exit 0
 
 .PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts check-python check-ruby check-perl check-php sixel-check-test-logs
