@@ -1284,7 +1284,9 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
         pheight == NULL || ppixelformat == NULL || chunk->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((info->color_mode != 1u && info->color_mode != 2u) ||
+    if ((info->color_mode != 1u &&
+         info->color_mode != 2u &&
+         info->color_mode != 8u) ||
         info->depth != 8u || info->compression > 1u) {
         return SIXEL_BAD_INPUT;
     }
@@ -1326,7 +1328,7 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
     }
 
     for (i = 0u; i < pixel_count; ++i) {
-        if (info->color_mode == 1u) {
+        if (info->color_mode == 1u || info->color_mode == 8u) {
             gray = plane0[i];
             r = (int)gray;
             g = (int)gray;
@@ -4061,7 +4063,9 @@ load_with_builtin(
                     if (psd_info.depth == 8u) {
                         psd_custom_decode_mode = 4;
                     }
-                } else if (psd_info.color_mode == 1u || psd_info.color_mode == 2u) {
+                } else if (psd_info.color_mode == 1u ||
+                           psd_info.color_mode == 2u ||
+                           psd_info.color_mode == 8u) {
                     psd_custom_decode_mode = 1;
                     if (psd_info.depth != 8u) {
                         nwrite = snprintf(message,
