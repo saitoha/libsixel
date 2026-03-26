@@ -837,19 +837,20 @@ sixel_builtin_trns_keycolor_mode(void)
 {
     char const *env_value;
     static int initialized = 0;
-    static int mode = 1;
+    static int mode = 2;
     /*
      * mode:
      *   0 -> disabled
-     *   1 -> tRNS keycolor only (default when env is unset)
+     *   1 -> tRNS keycolor only
      *   2 -> tRNS keycolor + alpha-channel keycolor
+     *        (default when env is unset)
      */
 
     if (initialized) {
         return mode;
     }
     initialized = 1;
-    mode = 1;
+    mode = 2;
 
     env_value = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
     if (env_value == NULL || env_value[0] == '\0') {
@@ -2777,7 +2778,8 @@ load_with_builtin(
                 unsigned char const *psd_icc_profile;
                 size_t psd_icc_profile_length;
                 sixel_builtin_psd_info_t psd_info;
-                int psd_info_ok;
+                int psd_validation_status;
+                char psd_validation_message[128];
 
                 psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 psd_custom_decode_mode = 0;
@@ -2787,160 +2789,29 @@ load_with_builtin(
                 psd_icc_profile = NULL;
                 psd_icc_profile_length = 0u;
                 psd_icc_status = SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
-                psd_info_ok = sixel_builtin_parse_psd_info(pchunk, &psd_info);
-                if (!psd_info_ok) {
+                psd_validation_status = SIXEL_BUILTIN_PSD_VALIDATE_OK;
+                psd_validation_message[0] = '\0';
+                if (!sixel_builtin_parse_psd_info(pchunk, &psd_info)) {
                     sixel_helper_set_additional_message(
                         "builtin PSD: malformed section length/offset");
                     status = SIXEL_STBI_ERROR;
                     goto end;
                 }
-                if (psd_info.version != 1u) {
-                    sixel_helper_set_additional_message(
-                        "builtin PSD: unsupported version (expected 1)");
-                    status = SIXEL_STBI_ERROR;
-                    goto end;
-                }
-                if (psd_info.color_mode == 0u) {
-                    psd_custom_decode_mode = 5;
-                    if (psd_info.depth != 1u) {
-                        nwrite = snprintf(message,
-                                          sizeof(message),
-                                          "builtin PSD: unsupported bit depth (%u)",
-                                          psd_info.depth);
-                        if (nwrite > 0) {
-                            sixel_helper_set_additional_message(message);
-                        }
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                    if (psd_info.channels < 1u) {
+                psd_validation_status = sixel_builtin_validate_psd_info(
+                    pchunk,
+                    &psd_info,
+                    &psd_custom_decode_mode,
+                    &psd_skip_icc_conversion,
+                    &psd_colorspace,
+                    psd_validation_message,
+                    sizeof(psd_validation_message));
+                if (psd_validation_status != SIXEL_BUILTIN_PSD_VALIDATE_OK) {
+                    if (psd_validation_message[0] != '\0') {
                         sixel_helper_set_additional_message(
-                            "builtin PSD: Bitmap requires at least 1 channel");
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                } else if (psd_info.color_mode == 3u) {
-                    if (psd_info.depth != 8u && psd_info.depth != 16u) {
-                        nwrite = snprintf(message,
-                                          sizeof(message),
-                                          "builtin PSD: unsupported bit depth (%u)",
-                                          psd_info.depth);
-                        if (nwrite > 0) {
-                            sixel_helper_set_additional_message(message);
-                        }
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                    if (psd_info.channels < 3u) {
-                        sixel_helper_set_additional_message(
-                            "builtin PSD: RGB requires at least 3 channels");
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                    if (psd_info.depth == 8u) {
-                        psd_custom_decode_mode = 4;
+                            psd_validation_message);
                     } else {
-                        psd_custom_decode_mode = 7;
-                    }
-                } else if (psd_info.color_mode == 1u ||
-                           psd_info.color_mode == 8u) {
-                    if (psd_info.channels < 1u) {
                         sixel_helper_set_additional_message(
-                            "builtin PSD: Gray/Duotone requires at least 1 channel");
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                    if (psd_info.depth == 8u) {
-                        psd_custom_decode_mode = 1;
-                    } else if (psd_info.depth == 16u) {
-                        psd_custom_decode_mode = 6;
-                    } else {
-                        nwrite = snprintf(message,
-                                          sizeof(message),
-                                          "builtin PSD: unsupported bit depth (%u)",
-                                          psd_info.depth);
-                        if (nwrite > 0) {
-                            sixel_helper_set_additional_message(message);
-                        }
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                } else if (psd_info.color_mode == 2u) {
-                    psd_custom_decode_mode = 1;
-                    if (psd_info.depth != 8u) {
-                        nwrite = snprintf(message,
-                                          sizeof(message),
-                                          "builtin PSD: unsupported bit depth (%u)",
-                                          psd_info.depth);
-                        if (nwrite > 0) {
-                            sixel_helper_set_additional_message(message);
-                        }
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                    if (psd_info.channels < 1u) {
-                        sixel_helper_set_additional_message(
-                            "builtin PSD: Indexed requires at least 1 channel");
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                } else if (psd_info.color_mode == 4u) {
-                    psd_custom_decode_mode = 2;
-                    if (psd_info.depth != 8u) {
-                        nwrite = snprintf(message,
-                                          sizeof(message),
-                                          "builtin PSD: unsupported bit depth (%u)",
-                                          psd_info.depth);
-                        if (nwrite > 0) {
-                            sixel_helper_set_additional_message(message);
-                        }
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                    if (psd_info.channels < 4u) {
-                        sixel_helper_set_additional_message(
-                            "builtin PSD: CMYK requires at least 4 channels");
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                } else if (psd_info.color_mode == 9u) {
-                    psd_custom_decode_mode = 3;
-                    if (psd_info.depth != 8u) {
-                        nwrite = snprintf(message,
-                                          sizeof(message),
-                                          "builtin PSD: unsupported bit depth (%u)",
-                                          psd_info.depth);
-                        if (nwrite > 0) {
-                            sixel_helper_set_additional_message(message);
-                        }
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                    if (psd_info.channels < 3u) {
-                        sixel_helper_set_additional_message(
-                            "builtin PSD: Lab requires at least 3 channels");
-                        status = SIXEL_STBI_ERROR;
-                        goto end;
-                    }
-                } else {
-                    nwrite = snprintf(message,
-                                      sizeof(message),
-                                      "builtin PSD: unsupported color mode (%u)",
-                                      psd_info.color_mode);
-                    if (nwrite > 0) {
-                        sixel_helper_set_additional_message(message);
-                    }
-                    status = SIXEL_STBI_ERROR;
-                    goto end;
-                }
-                if (psd_info.compression > 3u) {
-                    nwrite = snprintf(
-                        message,
-                        sizeof(message),
-                        "builtin PSD: unsupported compression (%u)",
-                        psd_info.compression);
-                    if (nwrite > 0) {
-                        sixel_helper_set_additional_message(message);
+                            "builtin PSD: validation failed");
                     }
                     status = SIXEL_STBI_ERROR;
                     goto end;
@@ -2952,7 +2823,8 @@ load_with_builtin(
                         &psd_icc_profile,
                         &psd_icc_profile_length);
                 }
-                if (psd_custom_decode_mode == 5) {
+                if (psd_custom_decode_mode ==
+                    SIXEL_BUILTIN_PSD_DECODE_MODE_BITMAP_1BIT) {
                     status = sixel_builtin_decode_psd_bitmap_1bit(
                         pchunk,
                         &psd_info,
@@ -2964,7 +2836,8 @@ load_with_builtin(
                     if (SIXEL_FAILED(status)) {
                         goto end;
                     }
-                } else if (psd_custom_decode_mode == 1) {
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_INDEXED_8BIT) {
                     status = sixel_builtin_decode_psd_gray_or_indexed_8bit(
                         pchunk,
                         &psd_info,
@@ -2976,7 +2849,8 @@ load_with_builtin(
                     if (SIXEL_FAILED(status)) {
                         goto end;
                     }
-                } else if (psd_custom_decode_mode == 6) {
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_16BIT) {
                     status = sixel_builtin_decode_psd_gray_or_duotone_16bit(
                         pchunk,
                         &psd_info,
@@ -2988,7 +2862,21 @@ load_with_builtin(
                     if (SIXEL_FAILED(status)) {
                         goto end;
                     }
-                } else if (psd_custom_decode_mode == 2) {
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_32BIT) {
+                    status = sixel_builtin_decode_psd_gray_or_duotone_32bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
+                        &pixels,
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT) {
                     status = sixel_builtin_decode_psd_cmyk_8bit(
                         pchunk,
                         &psd_info,
@@ -3007,8 +2895,8 @@ load_with_builtin(
                     if (SIXEL_FAILED(status)) {
                         goto end;
                     }
-                    psd_skip_icc_conversion = 1;
-                } else if (psd_custom_decode_mode == 3) {
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT) {
                     status = sixel_builtin_decode_psd_lab_8bit(
                         pchunk,
                         &psd_info,
@@ -3020,9 +2908,8 @@ load_with_builtin(
                     if (SIXEL_FAILED(status)) {
                         goto end;
                     }
-                    psd_skip_icc_conversion = 1;
-                    psd_colorspace = SIXEL_COLORSPACE_CIELAB;
-                } else if (psd_custom_decode_mode == 4) {
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_8BIT) {
                     status = sixel_builtin_decode_psd_rgb_8bit(
                         pchunk,
                         &psd_info,
@@ -3034,8 +2921,22 @@ load_with_builtin(
                     if (SIXEL_FAILED(status)) {
                         goto end;
                     }
-                } else if (psd_custom_decode_mode == 7) {
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_16BIT) {
                     status = sixel_builtin_decode_psd_rgb_16bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
+                        &pixels,
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_32BIT) {
+                    status = sixel_builtin_decode_psd_rgb_32bit(
                         pchunk,
                         &psd_info,
                         bgcolor,
@@ -3060,13 +2961,15 @@ load_with_builtin(
                             loader_trace_message(
                                 "builtin PSD: malformed ICC resource section; "
                                 "skipping ICC conversion");
-                        } else if (psd_custom_decode_mode == 2 &&
+                        } else if (psd_custom_decode_mode ==
+                                       SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT &&
                                    psd_icc_status ==
                                        SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
                                    !psd_cmyk_icc_applied) {
                             loader_trace_message(
                                 "builtin PSD: embedded ICC conversion failed");
-                        } else if (psd_custom_decode_mode == 3 &&
+                        } else if (psd_custom_decode_mode ==
+                                       SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT &&
                                    psd_icc_status ==
                                        SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
                             loader_trace_message(
