@@ -38,6 +38,7 @@ Key points used by this roadmap:
   - compression `Raw/RLE only`
 - Existing PSD tests cover:
   - RGB raw/RLE decode
+  - RGB ZIP/ZIP+Prediction decode (8-bit / 16-bit)
   - RGB/Gray/Duotone 16bpc raw and RLE decode
   - malformed ICC resource handling
   - ICC conversion failure trace
