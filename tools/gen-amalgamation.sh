@@ -366,7 +366,7 @@ filter_local_includes() {
     inline_state=$4
 
     awk -v header_file="${header_file}" -v src_root="${src_root}" \
-        -v inline_state="${inline_state}" '
+        -v inline_state="${inline_state}" -v unit_path="${unit_path}" '
 BEGIN {
     while ((getline line < header_file) > 0) {
         gsub(/^[ \t]+|[ \t]+$/, "", line);
@@ -417,9 +417,12 @@ BEGIN {
                         print line;
                     }
                     close(path);
-                    print "";
                 }
+                print "#line " (NR + 1) " \"" unit_path "\"";
+                print "";
+                next;
             }
+            print "";
             next;
         }
     }

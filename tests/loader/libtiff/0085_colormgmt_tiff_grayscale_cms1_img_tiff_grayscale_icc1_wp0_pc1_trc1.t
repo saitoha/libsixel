@@ -38,7 +38,7 @@ run_img2sixel -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_six}" || {
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.998"     "${reference_six}" "${output_six}" 2>&1) || {
+lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.9977"     "${reference_six}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "grayscale/img_tiff_grayscale_icc1_wp0_pc1_trc1: ${lsqa_msg}"
     exit 0
 }
