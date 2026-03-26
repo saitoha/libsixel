@@ -88,6 +88,9 @@ int img2sixel_compat_setenv(const char *name, const char *value);
 int img2sixel_trace_topic_is_enabled(char const *topic);
 void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
 
+#if defined(SIXEL_AMALGAMATION)
+#include "options.h"
+#else
 /*
  * Keep the converter loosely coupled from private src/ headers while still
  * reusing the shared option-matching implementation from libsixel.
@@ -125,6 +128,7 @@ sixel_option_report_invalid_choice(
     char const *suggestions,
     char *buffer,
     size_t buffer_size);
+#endif
 
 /*
  * Option-specific help snippets drive both the --help output and
