@@ -1,9 +1,10 @@
 #!/bin/sh
 # Verify builtin loader decodes Bitmap 1-bit ZIP with stable image quality.
-# Reference generation command (ImageMagick):
-#   magick tests/data/inputs/formats/stbi_minimal_bitmap1.psd \
-#       -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_bitmap1_raw_expected.ppm
+# Reference generation command (builtin loader):
+#   DYLD_LIBRARY_PATH=src/.libs converters/.libs/img2sixel \
+#       -L builtin! \
+#       tests/data/inputs/formats/stbi_minimal_bitmap1.psd \
+#       > tests/data/loader/builtin_expected/psd_bitmap1_raw_builtin_expected.six
 
 set -eux
 
@@ -19,9 +20,9 @@ set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_bitmap1_zip.psd"
-reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_bitmap1_raw_expected.ppm"
+reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_bitmap1_raw_builtin_expected.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_bitmap1_zip_output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_BITMAP1:-0.4}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR_BITMAP1:-0.995}
 
 run_img2sixel -L builtin! "${input_psd}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin loader failed to decode Bitmap 1-bit ZIP"
@@ -29,10 +30,10 @@ run_img2sixel -L builtin! "${input_psd}" >"${output_sixel}" || {
 }
 
 lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
-    "${reference_ppm}" "${output_sixel}" 2>&1) || {
+    "${reference_six}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "builtin Bitmap 1-bit ZIP fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "builtin Bitmap 1-bit ZIP keeps MS-SSIM ${lsqa_floor} against expected PPM"
+echo "ok" 1 - "builtin Bitmap 1-bit ZIP keeps MS-SSIM ${lsqa_floor} against expected sixel"
 exit 0

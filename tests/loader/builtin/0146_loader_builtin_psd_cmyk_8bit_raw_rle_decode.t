@@ -1,10 +1,10 @@
 #!/bin/sh
 # Verify builtin loader decodes CMYK 8-bit raw with stable image quality.
-# Reference generation command (coregraphics loader):
+# Reference generation command (builtin loader):
 #   DYLD_LIBRARY_PATH=src/.libs converters/.libs/img2sixel \
-#       -L coregraphics! \
+#       -L builtin! \
 #       tests/data/inputs/formats/stbi_minimal_cmyk8.psd \
-#       > tests/data/loader/builtin_expected/psd_cmyk8_raw_coregraphics_expected.six
+#       > tests/data/loader/builtin_expected/psd_cmyk8_raw_builtin_expected.six
 
 set -eux
 
@@ -20,9 +20,9 @@ set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_cmyk8.psd"
-reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_cmyk8_raw_coregraphics_expected.six"
+reference_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_cmyk8_raw_builtin_expected.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_cmyk8_raw_output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_PSD_CMYK8:-0.3}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR_PSD_CMYK8:-0.995}
 
 run_img2sixel -L builtin! "${input_psd}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin loader failed to decode CMYK 8-bit raw"
