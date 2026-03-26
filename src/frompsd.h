@@ -118,6 +118,16 @@ sixel_builtin_decode_psd_rgb_8bit(
     int *ppixelformat);
 
 SIXELSTATUS
+sixel_builtin_decode_psd_rgb_16bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
+SIXELSTATUS
 sixel_builtin_decode_psd_lab_8bit(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,

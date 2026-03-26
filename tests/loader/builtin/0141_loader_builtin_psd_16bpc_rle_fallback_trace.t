@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin PSD decoder logs 16bpc->8bpc fallback for RLE input.
+# Verify builtin PSD decoder keeps native 16bpc path for RLE input.
 
 set -eux
 
@@ -29,10 +29,10 @@ esac
 
 case "${trace_log}" in
     *"libsixel: builtin PSD: 16-bpc source decoded as 8-bpc fallback path"*)
+        echo "not ok" 1 - "unexpected PSD 16bpc fallback trace"
+        exit 0
         ;;
     *)
-        echo "not ok" 1 - "missing PSD 16bpc fallback trace"
-        exit 0
         ;;
 esac
 
@@ -45,5 +45,5 @@ case "${trace_log}" in
         ;;
 esac
 
-echo "ok" 1 - "builtin PSD RLE 16bpc path reports fallback trace"
+echo "ok" 1 - "builtin PSD RLE 16bpc path avoids 8bpc fallback trace"
 exit 0
