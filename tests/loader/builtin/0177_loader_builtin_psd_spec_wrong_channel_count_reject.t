@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin loader rejects PSD (invalid RLE stream).
+# Verify builtin loader rejects PSD (channel count > 16).
 
 set -eux
 
@@ -13,12 +13,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/corrupted/invalid_rle_stream.psd"
+input_psd="${TOP_SRCDIR}/tests/data/corrupted/wrong_channel_count.psd"
 
 run_img2sixel -L builtin! "${input_psd}" >/dev/null && {
-    echo "not ok" 1 - "invalid RLE stream was unexpectedly accepted"
+    echo "not ok" 1 - "channel count > 16 was unexpectedly accepted"
     exit 0
 }
 
-echo "ok" 1 - "invalid RLE stream is rejected"
+echo "ok" 1 - "channel count > 16 is rejected"
 exit 0
