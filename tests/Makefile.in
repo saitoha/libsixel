@@ -2855,8 +2855,8 @@ sixel-check-test-logs: $(TEST_LOGS)
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
 check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
-	@$(am__rm_f) $(RECHECK_LOGS)
-	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
+	@find "$(abs_builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -exec rm -f {} +
+	@find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
