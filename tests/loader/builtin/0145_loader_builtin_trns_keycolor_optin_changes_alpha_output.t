@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify opt-in changes alpha-channel PNG output in builtin loader path.
+# Verify builtin alpha-channel PNG keycolor is enabled by default.
 
 set -eux
 
@@ -16,7 +16,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn4a08.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-alpha-default-basn4a08.six"
-out_optin="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-alpha-optin-basn4a08.six"
+out_off="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-alpha-env0-basn4a08.six"
 
 run_img2sixel --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
@@ -26,19 +26,19 @@ run_img2sixel --env SIXEL_THREADS=4 \
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
               -d fs -y raster \
-              "${input_png}" >"${out_optin}" || {
-    echo "not ok 1 - builtin alpha opt-in render failed"
+              "${input_png}" >"${out_off}" || {
+    echo "not ok 1 - builtin alpha SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_optin}"; then
-    echo "not ok 1 - opt-in unexpectedly ignored for builtin alpha PNG"
+if cmp -s "${out_default}" "${out_off}"; then
+    echo "not ok 1 - builtin alpha default keycolor is unexpectedly disabled"
 else
-    echo "ok 1 - opt-in changes builtin alpha PNG output"
+    echo "ok 1 - builtin alpha keycolor is enabled by default"
 fi
 
 exit 0

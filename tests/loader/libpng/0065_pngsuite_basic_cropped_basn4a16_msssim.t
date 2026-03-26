@@ -25,7 +25,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn4a16.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0057_pngsuite_basic_cropped_basn4a16_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn4a16.sixel"
 
-run_img2sixel -c16x16+8+8 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -c16x16+8+8 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }

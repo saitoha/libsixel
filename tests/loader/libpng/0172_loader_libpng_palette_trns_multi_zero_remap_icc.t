@@ -40,10 +40,14 @@ run_img2sixel -Llibpng:cms_engine=none! \
     exit 0
 }
 
-if cmp -s "${out_multi}" "${out_single}"; then
-    echo "ok 1 - multi-zero remap matches normalized single-zero output"
-else
-    echo "not ok 1 - multi-zero remap differs from normalized single-zero output"
-fi
+lsqa_msg=$(
+    set +xv
+    run_lsqa -m MS-SSIM -b "MS-SSIM:1.0" "${out_single}" "${out_multi}" 2>&1
+) || {
+    echo "not ok 1 - ${lsqa_msg}"
+    exit 0
+}
+
+echo "ok 1 - multi-zero remap matches normalized single-zero output"
 
 exit 0

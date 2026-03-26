@@ -26,16 +26,16 @@ SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
                   -Llibpng:cms_engine=none! -d fs -y raster \
                   "${input_png}" >"${out}" || {
-    echo "not ok 1 - process env=0 + --env=1 render failed"
+    echo "not ok 1 - process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 + --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
     exit 0
 }
 
 case "$(cat "${out}")" in
     *"$(printf '\033')P0;1q"*)
-        echo "ok 1 - --env=1 overrides process env=0"
+        echo "ok 1 - --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 overrides process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
         ;;
     *)
-        echo "not ok 1 - --env=1 did not override process env=0"
+        echo "not ok 1 - --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 did not override process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
         ;;
 esac
 

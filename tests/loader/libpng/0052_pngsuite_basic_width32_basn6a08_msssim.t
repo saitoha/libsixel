@@ -24,7 +24,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a08.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0045_pngsuite_basic_width32_basn6a08_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn6a08.sixel"
-run_img2sixel -w32 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -w32 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }

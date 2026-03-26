@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify opt-in changes APNG alpha output in libpng loader path.
+# Verify libpng APNG alpha keycolor is enabled by default.
 
 set -eux
 
@@ -21,7 +21,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 out_default="${ARTIFACT_LOCAL_DIR}/apng-trns-keycolor-default.six"
-out_optin="${ARTIFACT_LOCAL_DIR}/apng-trns-keycolor-optin.six"
+out_off="${ARTIFACT_LOCAL_DIR}/apng-trns-keycolor-env0.six"
 
 run_img2sixel --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
@@ -31,19 +31,19 @@ run_img2sixel --env SIXEL_THREADS=4 \
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
               -d fs -y raster \
-              "${input_png}" >"${out_optin}" || {
-    echo "not ok 1 - APNG opt-in render failed"
+              "${input_png}" >"${out_off}" || {
+    echo "not ok 1 - APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_optin}"; then
-    echo "not ok 1 - opt-in unexpectedly ignored for APNG alpha"
+if cmp -s "${out_default}" "${out_off}"; then
+    echo "not ok 1 - libpng APNG default keycolor is unexpectedly disabled"
 else
-    echo "ok 1 - opt-in changes APNG alpha output"
+    echo "ok 1 - libpng APNG alpha keycolor is enabled by default"
 fi
 
 exit 0
