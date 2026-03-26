@@ -38,7 +38,7 @@ Key points used by this roadmap:
   - compression `Raw/RLE only`
 - Existing PSD tests cover:
   - RGB raw/RLE decode
-  - 16bpc raw decode and RLE fallback trace
+  - RGB/Gray/Duotone 16bpc raw and RLE decode
   - malformed ICC resource handling
   - ICC conversion failure trace
   - alpha compositing behavior for 8-bit RGBA PSD
@@ -151,4 +151,3 @@ Minimum fixture naming convention:
 2. Switch loader dispatch to parsed metadata before decode.
 3. Add parser-focused TAP tests (malformed section lengths and offsets).
 4. Start Phase B with Gray + Indexed (8-bit Raw/RLE) before CMYK/Lab.
-
