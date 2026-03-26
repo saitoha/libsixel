@@ -1018,19 +1018,37 @@ typedef union _fn_pointer {
 } fn_pointer;
 
 static int
-sixel_builtin_trns_keycolor_optin_enabled(void)
+sixel_builtin_trns_keycolor_mode(void)
 {
     char const *env_value;
+    static int initialized = 0;
+    static int mode = 1;
+    /*
+     * mode:
+     *   0 -> disabled
+     *   1 -> tRNS keycolor only (default when env is unset)
+     *   2 -> tRNS keycolor + alpha-channel keycolor
+     */
+
+    if (initialized) {
+        return mode;
+    }
+    initialized = 1;
+    mode = 1;
 
     env_value = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
-    if (env_value == NULL) {
-        return 0;
+    if (env_value == NULL || env_value[0] == '\0') {
+        return mode;
     }
     if (env_value[0] == '1' && env_value[1] == '\0') {
-        return 1;
+        mode = 2;
+    } else if (env_value[0] == '0' && env_value[1] == '\0') {
+        mode = 0;
+    } else {
+        mode = 0;
     }
 
-    return 0;
+    return mode;
 }
 
 static int
@@ -1112,15 +1130,18 @@ sixel_builtin_png_keycolor_mode_enabled(
     unsigned char const *bgcolor,
     int enable_cms)
 {
+    int trns_keycolor_mode;
     int color_type;
     int has_alpha_chunk;
     int has_trns_chunk;
 
+    trns_keycolor_mode = 0;
     color_type = (-1);
     has_alpha_chunk = 0;
     has_trns_chunk = 0;
 
-    if (!sixel_builtin_trns_keycolor_optin_enabled()) {
+    trns_keycolor_mode = sixel_builtin_trns_keycolor_mode();
+    if (trns_keycolor_mode == 0) {
         return 0;
     }
     if (bgcolor != NULL || enable_cms) {
@@ -1134,11 +1155,8 @@ sixel_builtin_png_keycolor_mode_enabled(
         return 0;
     }
 
-    return ((has_trns_chunk &&
-             !has_alpha_chunk &&
-             (color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY ||
-              color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB))
-            || has_alpha_chunk)
+    return ((has_trns_chunk && !has_alpha_chunk)
+            || (has_alpha_chunk && trns_keycolor_mode == 2))
         ? 1
         : 0;
 }
@@ -1900,7 +1918,7 @@ sixel_builtin_load_apng_frames(
     int color_type;
     int has_alpha_chunk;
     int has_trns_chunk;
-    int trns_keycolor_optin;
+    int trns_keycolor_mode;
     uint32_t length;
     uint32_t canvas_width;
     uint32_t canvas_height;
@@ -1931,7 +1949,7 @@ sixel_builtin_load_apng_frames(
     color_type = (-1);
     has_alpha_chunk = 0;
     has_trns_chunk = 0;
-    trns_keycolor_optin = sixel_builtin_trns_keycolor_optin_enabled();
+    trns_keycolor_mode = sixel_builtin_trns_keycolor_mode();
     length = 0;
     canvas_width = 0;
     canvas_height = 0;
@@ -2018,14 +2036,12 @@ sixel_builtin_load_apng_frames(
                     memset(canvas.backup, 0, canvas_bytes);
                 }
                 alpha_zero_is_transparent =
-                    trns_keycolor_optin &&
+                    trns_keycolor_mode != 0 &&
                     bgcolor == NULL &&
                     !enable_cms &&
                     ((has_trns_chunk &&
-                      !has_alpha_chunk &&
-                      (color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY ||
-                       color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB))
-                     || has_alpha_chunk);
+                      !has_alpha_chunk)
+                     || (has_alpha_chunk && trns_keycolor_mode == 2));
             } else if (memcmp(p + 4, "acTL", 4) == 0) {
                 if (length != 8) {
                     status = SIXEL_BAD_INPUT;
@@ -2167,14 +2183,12 @@ sixel_builtin_load_apng_frames(
             } else if (memcmp(p + 4, "tRNS", 4) == 0) {
                 has_trns_chunk = 1;
                 alpha_zero_is_transparent =
-                    trns_keycolor_optin &&
+                    trns_keycolor_mode != 0 &&
                     bgcolor == NULL &&
                     !enable_cms &&
                     ((has_trns_chunk &&
-                      !has_alpha_chunk &&
-                      (color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY ||
-                       color_type == SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB))
-                     || has_alpha_chunk);
+                      !has_alpha_chunk)
+                     || (has_alpha_chunk && trns_keycolor_mode == 2));
             } else if (memcmp(p + 4, "acTL", 4) != 0 &&
                        memcmp(p + 4, "fcTL", 4) != 0 &&
                        memcmp(p + 4, "fdAT", 4) != 0 &&
@@ -2670,7 +2684,7 @@ load_with_builtin(
                 goto end;
             }
         }
-        if (fuse_palette && chunk_is_png(pchunk)) {
+        if (fuse_palette && chunk_is_png(pchunk) && !png_keycolor_mode) {
             /*
              * Try indexed PNG first to keep PAL8 output. If the PNG is not
              * paletted, fall back to the normal RGB path.
