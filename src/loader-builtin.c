@@ -1018,6 +1018,316 @@ sixel_builtin_promote_rgb16_to_float32(unsigned char **ppixels,
     return SIXEL_OK;
 }
 
+static int
+sixel_builtin_psd_unpack_packbits_row(unsigned char const *src,
+                                      size_t src_length,
+                                      unsigned char *dst,
+                                      size_t dst_length)
+{
+    size_t src_offset;
+    size_t dst_offset;
+    unsigned int control;
+    size_t run;
+    unsigned char value;
+
+    src_offset = 0u;
+    dst_offset = 0u;
+    control = 0u;
+    run = 0u;
+    value = 0u;
+    if (src == NULL || dst == NULL) {
+        return 0;
+    }
+
+    while (dst_offset < dst_length) {
+        if (src_offset >= src_length) {
+            return 0;
+        }
+        control = src[src_offset++];
+        if (control <= 127u) {
+            run = (size_t)control + 1u;
+            if (run > dst_length - dst_offset ||
+                run > src_length - src_offset) {
+                return 0;
+            }
+            memcpy(dst + dst_offset, src + src_offset, run);
+            src_offset += run;
+            dst_offset += run;
+        } else if (control == 128u) {
+            /* no-op */
+        } else {
+            run = 257u - (size_t)control;
+            if (run > dst_length - dst_offset || src_offset >= src_length) {
+                return 0;
+            }
+            value = src[src_offset++];
+            memset(dst + dst_offset, (int)value, run);
+            dst_offset += run;
+        }
+    }
+
+    if (src_offset != src_length) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_decode_psd_8bit_planes(sixel_chunk_t const *chunk,
+                                     sixel_builtin_psd_info_t const *info,
+                                     int want_alpha,
+                                     unsigned char **pplane0,
+                                     unsigned char **pplane_alpha)
+{
+    unsigned char *plane0;
+    unsigned char *plane_alpha;
+    size_t pixel_count;
+    size_t plane_bytes;
+    size_t offset;
+    size_t table_entries;
+    size_t table_bytes;
+    unsigned char const *row_table;
+    size_t data_cursor;
+    unsigned int channel;
+    unsigned int row;
+    size_t row_length;
+    size_t row_index;
+    size_t row_offset;
+
+    plane0 = NULL;
+    plane_alpha = NULL;
+    pixel_count = 0u;
+    plane_bytes = 0u;
+    offset = 0u;
+    table_entries = 0u;
+    table_bytes = 0u;
+    row_table = NULL;
+    data_cursor = 0u;
+    channel = 0u;
+    row = 0u;
+    row_length = 0u;
+    row_index = 0u;
+    row_offset = 0u;
+
+    if (chunk == NULL || info == NULL || pplane0 == NULL || pplane_alpha == NULL ||
+        chunk->buffer == NULL || chunk->allocator == NULL ||
+        info->channels == 0u || info->width == 0u || info->height == 0u) {
+        return 0;
+    }
+
+    *pplane0 = NULL;
+    *pplane_alpha = NULL;
+
+    if ((size_t)info->width > STBI_MAX_DIMENSIONS ||
+        (size_t)info->height > STBI_MAX_DIMENSIONS) {
+        return 0;
+    }
+    if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
+        return 0;
+    }
+    pixel_count = (size_t)info->width * (size_t)info->height;
+    plane_bytes = pixel_count;
+
+    plane0 = (unsigned char *)sixel_allocator_malloc(chunk->allocator, plane_bytes);
+    if (plane0 == NULL) {
+        return 0;
+    }
+    if (want_alpha && info->channels >= 2u) {
+        plane_alpha = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                              plane_bytes);
+        if (plane_alpha == NULL) {
+            sixel_allocator_free(chunk->allocator, plane0);
+            return 0;
+        }
+    }
+
+    if (info->compression == 0u) {
+        offset = info->image_data_offset;
+        for (channel = 0u; channel < info->channels; ++channel) {
+            if (offset > chunk->size || plane_bytes > chunk->size - offset) {
+                goto fail;
+            }
+            if (channel == 0u) {
+                memcpy(plane0, chunk->buffer + offset, plane_bytes);
+            } else if (channel == 1u && plane_alpha != NULL) {
+                memcpy(plane_alpha, chunk->buffer + offset, plane_bytes);
+            }
+            offset += plane_bytes;
+        }
+    } else if (info->compression == 1u) {
+        if ((size_t)info->height > SIZE_MAX / (size_t)info->channels) {
+            goto fail;
+        }
+        table_entries = (size_t)info->height * (size_t)info->channels;
+        if (table_entries > SIZE_MAX / 2u) {
+            goto fail;
+        }
+        table_bytes = table_entries * 2u;
+        if (info->image_data_offset > chunk->size ||
+            table_bytes > chunk->size - info->image_data_offset) {
+            goto fail;
+        }
+        row_table = chunk->buffer + info->image_data_offset;
+        data_cursor = info->image_data_offset + table_bytes;
+
+        for (channel = 0u; channel < info->channels; ++channel) {
+            for (row = 0u; row < info->height; ++row) {
+                row_index = ((size_t)channel * (size_t)info->height + (size_t)row) * 2u;
+                row_length = (size_t)sixel_builtin_read_u16be(row_table + row_index);
+                if (data_cursor > chunk->size || row_length > chunk->size - data_cursor) {
+                    goto fail;
+                }
+                row_offset = (size_t)row * (size_t)info->width;
+                if (channel == 0u) {
+                    if (!sixel_builtin_psd_unpack_packbits_row(
+                            chunk->buffer + data_cursor,
+                            row_length,
+                            plane0 + row_offset,
+                            (size_t)info->width)) {
+                        goto fail;
+                    }
+                } else if (channel == 1u && plane_alpha != NULL) {
+                    if (!sixel_builtin_psd_unpack_packbits_row(
+                            chunk->buffer + data_cursor,
+                            row_length,
+                            plane_alpha + row_offset,
+                            (size_t)info->width)) {
+                        goto fail;
+                    }
+                }
+                data_cursor += row_length;
+            }
+        }
+    } else {
+        goto fail;
+    }
+
+    *pplane0 = plane0;
+    *pplane_alpha = plane_alpha;
+    return 1;
+
+fail:
+    sixel_allocator_free(chunk->allocator, plane_alpha);
+    sixel_allocator_free(chunk->allocator, plane0);
+    return 0;
+}
+
+static SIXELSTATUS
+sixel_builtin_decode_psd_gray_or_indexed_8bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat)
+{
+    unsigned char const *palette_data;
+    unsigned char *plane0;
+    unsigned char *plane_alpha;
+    unsigned char *rgb;
+    size_t pixel_count;
+    size_t i;
+    int want_alpha;
+    unsigned char idx;
+    unsigned char gray;
+    unsigned char alpha;
+    int r;
+    int g;
+    int b;
+
+    palette_data = NULL;
+    plane0 = NULL;
+    plane_alpha = NULL;
+    rgb = NULL;
+    pixel_count = 0u;
+    i = 0u;
+    want_alpha = 0;
+    idx = 0u;
+    gray = 0u;
+    alpha = 0u;
+    r = 0;
+    g = 0;
+    b = 0;
+
+    if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
+        pheight == NULL || ppixelformat == NULL || chunk->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((info->color_mode != 1u && info->color_mode != 2u) ||
+        info->depth != 8u || info->compression > 1u) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)info->width * (size_t)info->height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if (info->color_mode == 2u && info->color_mode_data_length < 768u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: indexed palette data is too short");
+        return SIXEL_STBI_ERROR;
+    }
+
+    want_alpha = (bgcolor != NULL && info->channels >= 2u) ? 1 : 0;
+    if (!sixel_builtin_decode_psd_8bit_planes(chunk,
+                                              info,
+                                              want_alpha,
+                                              &plane0,
+                                              &plane_alpha)) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed raw/RLE channel stream");
+        return SIXEL_STBI_ERROR;
+    }
+
+    rgb = (unsigned char *)sixel_allocator_malloc(chunk->allocator, pixel_count * 3u);
+    if (rgb == NULL) {
+        sixel_allocator_free(chunk->allocator, plane_alpha);
+        sixel_allocator_free(chunk->allocator, plane0);
+        sixel_helper_set_additional_message(
+            "builtin PSD: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    if (info->color_mode == 2u) {
+        palette_data = chunk->buffer + info->color_mode_data_offset;
+    }
+
+    for (i = 0u; i < pixel_count; ++i) {
+        if (info->color_mode == 1u) {
+            gray = plane0[i];
+            r = (int)gray;
+            g = (int)gray;
+            b = (int)gray;
+        } else {
+            idx = plane0[i];
+            r = (int)palette_data[idx];
+            g = (int)palette_data[256u + idx];
+            b = (int)palette_data[512u + idx];
+        }
+        if (plane_alpha != NULL) {
+            alpha = plane_alpha[i];
+            r = (r * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+            g = (g * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+            b = (b * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+        }
+        rgb[i * 3u + 0u] = (unsigned char)r;
+        rgb[i * 3u + 1u] = (unsigned char)g;
+        rgb[i * 3u + 2u] = (unsigned char)b;
+    }
+
+    sixel_allocator_free(chunk->allocator, plane_alpha);
+    sixel_allocator_free(chunk->allocator, plane0);
+
+    *ppixels = rgb;
+    *pwidth = (int)info->width;
+    *pheight = (int)info->height;
+    *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+    return SIXEL_OK;
+}
+
 /*
  * Convert palette entries into RGB triplets while resolving alpha.
  *
@@ -3063,6 +3373,7 @@ load_with_builtin(
                 int psd_pixelformat;
                 int psd_req_comp;
                 int psd_header_bitdepth;
+                int psd_use_custom_decode;
                 unsigned char const *psd_icc_profile;
                 size_t psd_icc_profile_length;
                 sixel_builtin_psd_info_t psd_info;
@@ -3071,6 +3382,8 @@ load_with_builtin(
                 psd_ri = (stbi__result_info){ 0 };
                 psd_depth = 0;
                 psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                psd_req_comp = 3;
+                psd_use_custom_decode = 0;
                 psd_icc_profile = NULL;
                 psd_icc_profile_length = 0u;
                 psd_info_ok = sixel_builtin_parse_psd_info(pchunk, &psd_info);
@@ -3086,22 +3399,36 @@ load_with_builtin(
                     status = SIXEL_STBI_ERROR;
                     goto end;
                 }
-                if (psd_info.color_mode != 3u) {
+                if (psd_info.color_mode == 3u) {
+                    if (psd_info.depth != 8u && psd_info.depth != 16u) {
+                        nwrite = snprintf(message,
+                                          sizeof(message),
+                                          "builtin PSD: unsupported bit depth (%u)",
+                                          psd_info.depth);
+                        if (nwrite > 0) {
+                            sixel_helper_set_additional_message(message);
+                        }
+                        status = SIXEL_STBI_ERROR;
+                        goto end;
+                    }
+                } else if (psd_info.color_mode == 1u || psd_info.color_mode == 2u) {
+                    psd_use_custom_decode = 1;
+                    if (psd_info.depth != 8u) {
+                        nwrite = snprintf(message,
+                                          sizeof(message),
+                                          "builtin PSD: unsupported bit depth (%u)",
+                                          psd_info.depth);
+                        if (nwrite > 0) {
+                            sixel_helper_set_additional_message(message);
+                        }
+                        status = SIXEL_STBI_ERROR;
+                        goto end;
+                    }
+                } else {
                     nwrite = snprintf(message,
                                       sizeof(message),
                                       "builtin PSD: unsupported color mode (%u)",
                                       psd_info.color_mode);
-                    if (nwrite > 0) {
-                        sixel_helper_set_additional_message(message);
-                    }
-                    status = SIXEL_STBI_ERROR;
-                    goto end;
-                }
-                if (psd_info.depth != 8u && psd_info.depth != 16u) {
-                    nwrite = snprintf(message,
-                                      sizeof(message),
-                                      "builtin PSD: unsupported bit depth (%u)",
-                                      psd_info.depth);
                     if (nwrite > 0) {
                         sixel_helper_set_additional_message(message);
                     }
@@ -3121,79 +3448,94 @@ load_with_builtin(
                     goto end;
                 }
                 psd_header_bitdepth = (int)psd_info.depth;
-                if (psd_header_bitdepth == 16) {
-                    /*
-                     * Keep the existing 16-bpc path in RGB so promotion to
-                     * float32 remains lossless and compatible.
-                     */
-                    psd_req_comp = 3;
-                } else if (bgcolor != NULL && psd_info.channels >= 4u) {
-                    /*
-                     * Preserve alpha only when a background color was
-                     * requested and the PSD actually provides alpha.
-                     * For 3-channel PSD, forcing req_comp=4 injects opaque
-                     * alpha and can trigger false CMS failure traces.
-                     */
-                    psd_req_comp = 4;
-                } else {
-                    psd_req_comp = 3;
-                }
-
-                pixels = (unsigned char *)stbi__load_main(&stb_context,
-                                                          &frame->width,
-                                                          &frame->height,
-                                                          &psd_depth,
-                                                          psd_req_comp,
-                                                          &psd_ri,
-                                                          16);
-                if (pixels == NULL) {
-                    sixel_helper_set_additional_message(stbi_failure_reason());
-                    status = SIXEL_STBI_ERROR;
-                    goto end;
-                }
-                if (psd_header_bitdepth == 16 &&
-                    psd_ri.bits_per_channel != 16) {
-                    loader_trace_message(
-                        "builtin PSD: 16-bpc source decoded as 8-bpc "
-                        "fallback path");
-                }
-
-                if (psd_ri.bits_per_channel == 16) {
-                    status = sixel_builtin_promote_rgb16_to_float32(
+                if (psd_use_custom_decode) {
+                    status = sixel_builtin_decode_psd_gray_or_indexed_8bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
                         &pixels,
-                        frame->width,
-                        frame->height,
-                        pchunk->allocator);
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
                     if (SIXEL_FAILED(status)) {
-                        sixel_allocator_free(pchunk->allocator, pixels);
-                        pixels = NULL;
                         goto end;
                     }
-                    psd_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+                    psd_depth = 3;
                 } else {
-                    switch (psd_depth) {
-                    case 1:
-                    case 3:
-                    case 4:
-                        if (psd_req_comp == 4) {
-                            psd_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-                        } else {
-                            psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-                        }
-                        break;
-                    default:
-                        nwrite = snprintf(message,
-                                          sizeof(message),
-                                          "load_with_builtin() failed.\n"
-                                          "reason: unknown pixel-format.(depth: %d)\n",
-                                          psd_depth);
-                        if (nwrite > 0) {
-                            sixel_helper_set_additional_message(message);
-                        }
-                        sixel_allocator_free(pchunk->allocator, pixels);
-                        pixels = NULL;
+                    if (psd_header_bitdepth == 16) {
+                        /*
+                         * Keep the existing 16-bpc path in RGB so promotion to
+                         * float32 remains lossless and compatible.
+                         */
+                        psd_req_comp = 3;
+                    } else if (bgcolor != NULL && psd_info.channels >= 4u) {
+                        /*
+                         * Preserve alpha only when a background color was
+                         * requested and the PSD actually provides alpha.
+                         * For 3-channel PSD, forcing req_comp=4 injects opaque
+                         * alpha and can trigger false CMS failure traces.
+                         */
+                        psd_req_comp = 4;
+                    } else {
+                        psd_req_comp = 3;
+                    }
+
+                    pixels = (unsigned char *)stbi__load_main(&stb_context,
+                                                              &frame->width,
+                                                              &frame->height,
+                                                              &psd_depth,
+                                                              psd_req_comp,
+                                                              &psd_ri,
+                                                              16);
+                    if (pixels == NULL) {
+                        sixel_helper_set_additional_message(stbi_failure_reason());
                         status = SIXEL_STBI_ERROR;
                         goto end;
+                    }
+                    if (psd_header_bitdepth == 16 &&
+                        psd_ri.bits_per_channel != 16) {
+                        loader_trace_message(
+                            "builtin PSD: 16-bpc source decoded as 8-bpc "
+                            "fallback path");
+                    }
+
+                    if (psd_ri.bits_per_channel == 16) {
+                        status = sixel_builtin_promote_rgb16_to_float32(
+                            &pixels,
+                            frame->width,
+                            frame->height,
+                            pchunk->allocator);
+                        if (SIXEL_FAILED(status)) {
+                            sixel_allocator_free(pchunk->allocator, pixels);
+                            pixels = NULL;
+                            goto end;
+                        }
+                        psd_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+                    } else {
+                        switch (psd_depth) {
+                        case 1:
+                        case 3:
+                        case 4:
+                            if (psd_req_comp == 4) {
+                                psd_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+                            } else {
+                                psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                            }
+                            break;
+                        default:
+                            nwrite = snprintf(message,
+                                              sizeof(message),
+                                              "load_with_builtin() failed.\n"
+                                              "reason: unknown pixel-format.(depth: %d)\n",
+                                              psd_depth);
+                            if (nwrite > 0) {
+                                sixel_helper_set_additional_message(message);
+                            }
+                            sixel_allocator_free(pchunk->allocator, pixels);
+                            pixels = NULL;
+                            status = SIXEL_STBI_ERROR;
+                            goto end;
+                        }
                     }
                 }
 
