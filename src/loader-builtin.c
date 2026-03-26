@@ -497,9 +497,8 @@ typedef enum sixel_builtin_icc_extract_status {
 static int
 sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                               size_t size,
-                              unsigned char **profile,
-                              size_t *profile_length,
-                              sixel_allocator_t *allocator)
+                              unsigned char const **profile,
+                              size_t *profile_length)
 {
     size_t offset;
     size_t section_length;
@@ -507,7 +506,6 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
     size_t name_length;
     size_t data_length;
     unsigned int resource_id;
-    unsigned char *copied;
 
     offset = 0u;
     section_length = 0u;
@@ -515,10 +513,9 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
     name_length = 0u;
     data_length = 0u;
     resource_id = 0u;
-    copied = NULL;
 
     if (buffer == NULL || profile == NULL || profile_length == NULL ||
-        allocator == NULL || size < 34u) {
+        size < 34u) {
         return SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
     }
     *profile = NULL;
@@ -592,13 +589,7 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
             if (data_length == 0u) {
                 return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
             }
-            copied = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                             data_length);
-            if (copied == NULL) {
-                return SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
-            }
-            memcpy(copied, buffer + offset, data_length);
-            *profile = copied;
+            *profile = buffer + offset;
             *profile_length = data_length;
             return SIXEL_BUILTIN_ICC_EXTRACT_FOUND;
         }
@@ -2653,10 +2644,14 @@ load_with_builtin(
                 int psd_pixelformat;
                 int psd_req_comp;
                 int psd_header_bitdepth;
+                unsigned char const *psd_icc_profile;
+                size_t psd_icc_profile_length;
 
                 psd_ri = (stbi__result_info){ 0 };
                 psd_depth = 0;
                 psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                psd_icc_profile = NULL;
+                psd_icc_profile_length = 0u;
                 psd_header_bitdepth = sixel_builtin_psd_header_bitdepth(pchunk);
                 if (psd_header_bitdepth == 16) {
                     /*
@@ -2736,9 +2731,8 @@ load_with_builtin(
                     psd_icc_status = sixel_builtin_extract_psd_icc(
                         pchunk->buffer,
                         pchunk->size,
-                        &icc_profile,
-                        &icc_profile_length,
-                        pchunk->allocator);
+                        &psd_icc_profile,
+                        &psd_icc_profile_length);
                     if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
                         cms_converted =
                             sixel_cms_convert_to_srgb_with_profile_bytes(
@@ -2746,8 +2740,8 @@ load_with_builtin(
                             frame->width,
                             frame->height,
                             psd_pixelformat,
-                            icc_profile,
-                            icc_profile_length);
+                            psd_icc_profile,
+                            psd_icc_profile_length);
                         if (!cms_converted) {
                             loader_trace_message(
                                 "builtin PSD: embedded ICC conversion failed");
