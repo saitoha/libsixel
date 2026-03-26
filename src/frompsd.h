@@ -54,6 +54,25 @@ typedef struct sixel_builtin_psd_info {
     size_t image_data_offset;
 } sixel_builtin_psd_info_t;
 
+typedef enum sixel_builtin_psd_decode_mode {
+    SIXEL_BUILTIN_PSD_DECODE_MODE_NONE = 0,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_INDEXED_8BIT = 1,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT = 2,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT = 3,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_8BIT = 4,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_BITMAP_1BIT = 5,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_16BIT = 6,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_16BIT = 7,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_32BIT = 8,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_32BIT = 9
+} sixel_builtin_psd_decode_mode_t;
+
+typedef enum sixel_builtin_psd_validation_status {
+    SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED = -1,
+    SIXEL_BUILTIN_PSD_VALIDATE_OK = 0,
+    SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED = 1
+} sixel_builtin_psd_validation_status_t;
+
 int
 sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                               size_t size,
@@ -63,6 +82,16 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
 int
 sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
                              sixel_builtin_psd_info_t *info);
+
+int
+sixel_builtin_validate_psd_info(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    int *pdecode_mode,
+    int *pskip_icc_conversion,
+    int *pcolorspace,
+    char *message,
+    size_t message_size);
 
 SIXELSTATUS
 sixel_builtin_decode_psd_bitmap_1bit(
@@ -119,6 +148,26 @@ sixel_builtin_decode_psd_rgb_8bit(
 
 SIXELSTATUS
 sixel_builtin_decode_psd_rgb_16bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
+SIXELSTATUS
+sixel_builtin_decode_psd_rgb_32bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
+SIXELSTATUS
+sixel_builtin_decode_psd_gray_or_duotone_32bit(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
