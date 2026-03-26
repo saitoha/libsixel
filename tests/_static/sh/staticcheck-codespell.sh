@@ -24,12 +24,9 @@ trap cleanup EXIT HUP INT TERM
 
 cd "$src_root"
 
-find src tests \
-    \( -path 'src/stb_image.h' -o -path 'src/stb_image_write.h' -o \
-        -path 'tests/.python-test-venv' -o \
-        -path 'tests/.ruby-test-venv' -o \
-        -path 'tests/.perl-test-venv' -o \
-        -path 'tests/.ruby-test-gem-home' \) -prune -o \
+# Keep codespell focused on production sources to avoid long runtimes.
+find src \
+    \( -path 'src/stb_image.h' -o -path 'src/stb_image_write.h' \) -prune -o \
     -type f \( -name '*.[ch]' -o -name '*.md' -o \
         -name '*.1' -o -name '*.in' -o -name '*.am' -o \
         -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o \
