@@ -171,29 +171,37 @@ apng_decode_trace_message(char const *format, ...)
 }
 
 static int
-libpng_trns_keycolor_optin_enabled(void)
+libpng_trns_keycolor_mode(void)
 {
     char const *env;
     static int initialized = 0;
-    static int enabled = 0;
+    static int mode = 1;
+    /*
+     * mode:
+     *   0 -> disabled
+     *   1 -> tRNS keycolor only (default when env is unset)
+     *   2 -> tRNS keycolor + alpha-channel keycolor
+     */
 
     if (initialized) {
-        return enabled;
+        return mode;
     }
     initialized = 1;
-    enabled = 0;
+    mode = 1;
 
     env = sixel_compat_getenv("SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR");
     if (env == NULL || env[0] == '\0') {
-        return enabled;
+        return mode;
     }
     if (env[0] == '1' && env[1] == '\0') {
-        enabled = 1;
+        mode = 2;
     } else if (env[0] == '0' && env[1] == '\0') {
-        enabled = 0;
+        mode = 0;
+    } else {
+        mode = 0;
     }
 
-    return enabled;
+    return mode;
 }
 
 static double
@@ -1414,7 +1422,7 @@ load_png(unsigned char      /* out */ **result,
     int has_alpha_chunk;
     int has_transparency;
     int indexed_trns_palette_path;
-    int trns_keycolor_optin;
+    int trns_keycolor_mode;
     int use_trns_keycolor;
     int background_colorspace;
     int background_from_file;
@@ -1458,7 +1466,7 @@ load_png(unsigned char      /* out */ **result,
     has_alpha_chunk = 0;
     has_transparency = 0;
     indexed_trns_palette_path = 0;
-    trns_keycolor_optin = 0;
+    trns_keycolor_mode = 0;
     use_trns_keycolor = 0;
     background_colorspace = SIXEL_COLORSPACE_GAMMA;
     background_from_file = 0;
@@ -1682,15 +1690,15 @@ load_png(unsigned char      /* out */ **result,
                                 color_type == PNG_COLOR_TYPE_PALETTE;
     has_transparency = (has_tRNS_chunk || has_alpha_chunk) &&
                        !indexed_trns_palette_path;
-    trns_keycolor_optin = libpng_trns_keycolor_optin_enabled();
-    use_trns_keycolor = trns_keycolor_optin &&
+    trns_keycolor_mode = libpng_trns_keycolor_mode();
+    use_trns_keycolor = trns_keycolor_mode != 0 &&
                         !enable_cms &&
                         bgcolor == NULL &&
                         ((has_tRNS_chunk &&
                           !has_alpha_chunk &&
                           (color_type == PNG_COLOR_TYPE_GRAY ||
                            color_type == PNG_COLOR_TYPE_RGB))
-                         || has_alpha_chunk);
+                         || (has_alpha_chunk && trns_keycolor_mode == 2));
     background_colorspace = loader_background_colorspace();
     png_resolve_background_unit(png_ptr,
                                 info_ptr,
@@ -3716,7 +3724,7 @@ load_apng_frames(
     int color_type;
     int has_alpha_chunk;
     int has_trns_chunk;
-    int trns_keycolor_optin;
+    int trns_keycolor_mode;
     sixel_apng_canvas_t canvas;
     size_t canvas_bytes;
     png_uint_32 sequence_no;
@@ -3744,7 +3752,7 @@ load_apng_frames(
     color_type = (-1);
     has_alpha_chunk = 0;
     has_trns_chunk = 0;
-    trns_keycolor_optin = libpng_trns_keycolor_optin_enabled();
+    trns_keycolor_mode = libpng_trns_keycolor_mode();
     memset(&canvas, 0, sizeof(canvas));
     canvas_bytes = 0;
     sequence_no = 0;
@@ -3859,14 +3867,14 @@ load_apng_frames(
                 memset(canvas.backup, 0, canvas_bytes);
             }
             alpha_zero_is_transparent =
-                trns_keycolor_optin &&
+                trns_keycolor_mode != 0 &&
                 bgcolor == NULL &&
                 !enable_cms &&
                 ((has_trns_chunk &&
                   !has_alpha_chunk &&
                   (color_type == PNG_COLOR_TYPE_GRAY ||
                    color_type == PNG_COLOR_TYPE_RGB))
-                 || has_alpha_chunk);
+                 || (has_alpha_chunk && trns_keycolor_mode == 2));
         } else if (memcmp(p + 4, "acTL", 4) == 0) {
             if (length != 8) {
                 sixel_helper_set_additional_message(
@@ -4039,14 +4047,14 @@ load_apng_frames(
         } else if (memcmp(p + 4, "tRNS", 4) == 0) {
             has_trns_chunk = 1;
             alpha_zero_is_transparent =
-                trns_keycolor_optin &&
+                trns_keycolor_mode != 0 &&
                 bgcolor == NULL &&
                 !enable_cms &&
                 ((has_trns_chunk &&
                   !has_alpha_chunk &&
                   (color_type == PNG_COLOR_TYPE_GRAY ||
                    color_type == PNG_COLOR_TYPE_RGB))
-                 || has_alpha_chunk);
+                 || (has_alpha_chunk && trns_keycolor_mode == 2));
         } else if (memcmp(p + 4, "acTL", 4) != 0 &&
                    memcmp(p + 4, "fcTL", 4) != 0 &&
                    memcmp(p + 4, "fdAT", 4) != 0 &&
