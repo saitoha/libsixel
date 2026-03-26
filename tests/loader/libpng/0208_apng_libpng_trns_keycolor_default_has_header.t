@@ -22,6 +22,9 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 out_default="${ARTIFACT_LOCAL_DIR}/apng-trns-keycolor-default-header.six"
 keycolor_header="$(printf '\033P0;1q')"
+out_payload=''
+out_line=''
+has_header=0
 
 run_img2sixel --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
@@ -31,7 +34,18 @@ run_img2sixel --env SIXEL_THREADS=4 \
     exit 0
 }
 
-if LC_ALL=C grep -a -q "${keycolor_header}" "${out_default}"; then
+while IFS= read -r out_line || [ -n "${out_line}" ]; do
+    out_payload="${out_payload}${out_line}
+"
+done < "${out_default}"
+
+case "${out_payload}" in
+    *"${keycolor_header}"*)
+        has_header=1
+        ;;
+esac
+
+if [ "${has_header}" = 1 ]; then
     echo "ok 1 - libpng APNG default output keeps keycolor DCS header"
 else
     echo "not ok 1 - libpng APNG default output lost keycolor DCS header"
