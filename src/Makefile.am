@@ -198,6 +198,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frompnm.h \
                 $(srcdir)/frompng.c \
                 $(srcdir)/frompng.h \
+                $(srcdir)/frompsd.c \
+                $(srcdir)/frompsd.h \
                 $(srcdir)/fromgif.c \
                 $(srcdir)/fromgif.h \
                 $(srcdir)/clipboard.c \

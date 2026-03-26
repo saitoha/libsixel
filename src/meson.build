@@ -130,6 +130,8 @@ srcs = [
   'frompnm.c',
   'frompng.c',
   'frompng.h',
+  'frompsd.c',
+  'frompsd.h',
   'fromgif.c',
   'clipboard.c',
   'encoder.c',
