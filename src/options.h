@@ -140,7 +140,7 @@ sixel_option_validate_filesystem_path(
     char const *resolved_path,
     unsigned int flags);
 
-sixel_option_choice_result_t
+SIXEL_INTERNAL_API sixel_option_choice_result_t
 sixel_option_match_choice(
     char const *value,
     sixel_option_choice_t const *choices,
@@ -149,14 +149,14 @@ sixel_option_match_choice(
     char *diagnostic,
     size_t diagnostic_size);
 
-void
+SIXEL_INTERNAL_API void
 sixel_option_report_ambiguous_prefix(
     char const *value,
     char const *candidates,
     char *buffer,
     size_t buffer_size);
 
-void
+SIXEL_INTERNAL_API void
 sixel_option_report_invalid_choice(
     char const *base_message,
     char const *suggestions,
