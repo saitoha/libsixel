@@ -3127,10 +3127,12 @@ load_with_builtin(
                      * float32 remains lossless and compatible.
                      */
                     psd_req_comp = 3;
-                } else if (bgcolor != NULL) {
+                } else if (bgcolor != NULL && psd_info.channels >= 4u) {
                     /*
                      * Preserve alpha only when a background color was
-                     * requested so strip_alpha can composite against it.
+                     * requested and the PSD actually provides alpha.
+                     * For 3-channel PSD, forcing req_comp=4 injects opaque
+                     * alpha and can trigger false CMS failure traces.
                      */
                     psd_req_comp = 4;
                 } else {
