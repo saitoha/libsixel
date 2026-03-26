@@ -96,6 +96,9 @@ sixel_cms_convert_to_linearrgb_with_profile_bytes(
     unsigned char const *profile,
     size_t profile_length);
 
+int
+sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count);
+
 sixel_cms_profile_t *
 sixel_cms_open_profile_from_mem(void const *data, size_t length);
 

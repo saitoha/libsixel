@@ -1990,7 +1990,7 @@ sixel_cms_convert_to_srgb_with_profile_bytes(
     return converted;
 }
 
-static int
+int
 sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count)
 {
     SIXELSTATUS status;
