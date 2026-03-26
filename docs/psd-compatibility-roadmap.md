@@ -30,19 +30,32 @@ Key points used by this roadmap:
 
 ## Current State (Snapshot)
 
-- Decoder path is `stb_image`-based in builtin loader.
-- Effective constraints are inherited from `stbi__psd_load`:
-  - channels `<= 16`
-  - depth `8/16`
-  - color mode `RGB only`
-  - compression `Raw/RLE only`
-- Existing PSD tests cover:
-  - RGB raw/RLE decode
-  - RGB ZIP/ZIP+Prediction decode (8-bit / 16-bit)
-  - RGB/Gray/Duotone 16bpc raw and RLE decode
-  - malformed ICC resource handling
-  - ICC conversion failure trace
-  - alpha compositing behavior for 8-bit RGBA PSD
+- Decoder path is `src/frompsd.c` custom composite decoder (no PSD decode
+  fallback to `stb_image`).
+- Header/metadata validation is centralized with explicit policy:
+  - channels `1..56`
+  - width/height `1..300000`
+  - unsupported vs malformed diagnostics are separated
+- Supported matrix (current implementation):
+  - Bitmap 1-bit: Raw/RLE/ZIP (`ZIP+Prediction` is explicit unsupported)
+  - Gray/Duotone 8-bit: Raw/RLE/ZIP/ZIP+Prediction
+  - Gray/Duotone 16-bit: Raw/RLE/ZIP/ZIP+Prediction (`RGBFLOAT32`)
+  - Gray/Duotone 32-bit: Raw/ZIP/ZIP+Prediction (`RGBFLOAT32`)
+  - Indexed 8-bit: Raw/RLE/ZIP/ZIP+Prediction
+  - RGB 8/16-bit: Raw/RLE/ZIP/ZIP+Prediction
+  - RGB 32-bit: Raw/ZIP/ZIP+Prediction (`RGBFLOAT32`)
+  - CMYK 8-bit: Raw/RLE/ZIP/ZIP+Prediction
+  - Lab 8-bit: Raw/RLE/ZIP/ZIP+Prediction (`CIELABFLOAT32`)
+- Explicit unsupported policy (fixed):
+  - Multichannel (mode 7)
+  - CMYK 16/32-bit
+  - Lab 16/32-bit
+  - RGB/Gray/Duotone 32-bit with RLE
+- Composite-missing policy:
+  - When layer records exist and composite image data is absent, return explicit
+    unsupported (`merged/composite image required`).
+- Existing regression includes ICC and alpha combinations on Raw and ZIP paths,
+  plus ZIP-specific Lab/CMYK trace behavior.
 
 ## Target Compatibility Levels
 
@@ -148,7 +161,11 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Implement Phase A parser helpers in `src/loader-builtin.c`.
-2. Switch loader dispatch to parsed metadata before decode.
-3. Add parser-focused TAP tests (malformed section lengths and offsets).
-4. Start Phase B with Gray + Indexed (8-bit Raw/RLE) before CMYK/Lab.
+1. Expand composite-missing detection beyond the `image_data_length == 0` case
+   (distinguish truncated streams from "layer-only PSD" more precisely).
+2. Add explicit `mode × depth × compression` matrix docs/tests for all
+   unsupported combinations now fixed by policy.
+3. Decide next 32-bit scope (CMYK/Lab support vs long-term explicit unsupported)
+   and lock test expectations accordingly.
+4. Keep PSB (`8BPB`) out of scope for this milestone, but document boundary and
+   migration plan from PSD parser/decoder primitives.
