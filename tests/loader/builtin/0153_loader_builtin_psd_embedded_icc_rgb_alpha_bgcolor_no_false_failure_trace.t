@@ -24,10 +24,12 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-printf '%s\n' "${command_output}" | grep -F "embedded ICC conversion failed" >/dev/null && {
-    echo "not ok" 1 - "unexpected embedded ICC failure trace was emitted"
-    exit 0
-}
+case "${command_output}" in
+    *"embedded ICC conversion failed"*)
+        echo "not ok" 1 - "unexpected embedded ICC failure trace was emitted"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "builtin PSD RGB+alpha ICC path avoids false failure trace"
 exit 0
