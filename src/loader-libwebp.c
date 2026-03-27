@@ -220,6 +220,15 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
         }
 
         chunk_tag = data + offset;
+        if (offset == 12u &&
+            memcmp(chunk_tag, "VP8 ", 4u) != 0 &&
+            memcmp(chunk_tag, "VP8L", 4u) != 0 &&
+            memcmp(chunk_tag, "VP8X", 4u) != 0) {
+            sixel_helper_set_additional_message(
+                "webp decode: first chunk must be VP8/VP8L/VP8X.");
+            return SIXEL_BAD_INPUT;
+        }
+
         chunk_size_u32 = webp_read_u32le(data + offset + 4u);
         chunk_size = (size_t)chunk_size_u32;
         if (memcmp(chunk_tag, "VP8X", 4u) == 0 && chunk_size != 10u) {
@@ -258,6 +267,12 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
             }
             sixel_helper_set_additional_message(
                 "webp decode: chunk payload exceeds RIFF size.");
+            return SIXEL_BAD_INPUT;
+        }
+        if ((chunk_size_u32 & 1u) != 0u &&
+            data[offset + 8u + chunk_size] != 0u) {
+            sixel_helper_set_additional_message(
+                "webp decode: odd-sized chunk has non-zero padding byte.");
             return SIXEL_BAD_INPUT;
         }
 
