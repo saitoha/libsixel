@@ -959,7 +959,8 @@ load_webp(unsigned char **result,
           size_t icc_profile_length,
           int *pcms_converted,
           unsigned char *bgcolor,
-          sixel_allocator_t *allocator)
+          sixel_allocator_t *allocator,
+          WebPBitstreamFeatures const *known_features)
 {
     SIXELSTATUS status;
     WebPBitstreamFeatures features;
@@ -971,6 +972,7 @@ load_webp(unsigned char **result,
     size_t size;
     VP8StatusCode feature_status;
     char error_message[128];
+    int use_known_features;
 
     status = SIXEL_BAD_INPUT;
     cms_converted = 0;
@@ -978,6 +980,7 @@ load_webp(unsigned char **result,
     force_rgb_decode = 0;
     feature_status = VP8_STATUS_OK;
     memset(error_message, 0, sizeof(error_message));
+    use_known_features = 0;
     if (result == NULL || data == NULL || datasize == 0u ||
         pwidth == NULL || pheight == NULL || ppixelformat == NULL ||
         allocator == NULL) {
@@ -985,20 +988,26 @@ load_webp(unsigned char **result,
     }
     *result = NULL;
 
-    status = webp_validate_riff_container(data, datasize);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (known_features != NULL) {
+        features = *known_features;
+        use_known_features = 1;
     }
+    if (!use_known_features) {
+        status = webp_validate_riff_container(data, datasize);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
 
-    feature_status = WebPGetFeatures(data, datasize, &features);
-    if (feature_status != VP8_STATUS_OK) {
-        (void)snprintf(error_message,
-                       sizeof(error_message),
-                       "load_webp: WebPGetFeatures failed (%s:%d).",
-                       webp_decode_status_name(feature_status),
-                       (int)feature_status);
-        sixel_helper_set_additional_message(error_message);
-        return status;
+        feature_status = WebPGetFeatures(data, datasize, &features);
+        if (feature_status != VP8_STATUS_OK) {
+            (void)snprintf(error_message,
+                           sizeof(error_message),
+                           "load_webp: WebPGetFeatures failed (%s:%d).",
+                           webp_decode_status_name(feature_status),
+                           (int)feature_status);
+            sixel_helper_set_additional_message(error_message);
+            return status;
+        }
     }
 
     if (features.width > INT_MAX || features.height > INT_MAX) {
@@ -2125,7 +2134,8 @@ load_with_libwebp(
                            icc_profile_length,
                            &cms_converted,
                            bgcolor,
-                           pchunk->allocator);
+                           pchunk->allocator,
+                           &stream_features);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2275,7 +2285,8 @@ load_with_libwebp(
                            icc_profile_length,
                            &cms_converted,
                            resolved_bgcolor,
-                           pchunk->allocator);
+                           pchunk->allocator,
+                           &stream_features);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
