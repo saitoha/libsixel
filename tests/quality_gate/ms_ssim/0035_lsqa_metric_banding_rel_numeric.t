@@ -3,14 +3,13 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
-value=$(run_lsqa -m BANDING_REL "${image_ref}" "${image_out}" | tr -d '\r') || {
+value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m BANDING_REL "${image_ref}" "${image_out}" | tr -d '\r') || {
     echo "not ok" 1 - "lsqa BANDING_REL execution failed"
     exit 0
 }

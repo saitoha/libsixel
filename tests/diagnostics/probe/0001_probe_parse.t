@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
@@ -13,7 +12,7 @@ test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || {
     exit 0
 }
 
-probe_output=$(run_test_runner "probe/0001_probe_parse" 2>&1) || rc=$?
+probe_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "probe/0001_probe_parse" 2>&1) || rc=$?
 printf '%s' "${probe_output}" >&2
 
 

@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,13 +16,13 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 out_env="${ARTIFACT_LOCAL_DIR}/img2sixel_env_ref.six"
 out_opt="${ARTIFACT_LOCAL_DIR}/img2sixel_env_opt.six"
 
-run_img2sixel --env SIXEL_COLORS=16 --env SIXEL_THREADS=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_COLORS=16 --env SIXEL_THREADS=1 \
     "${input_image}" >"${out_env}" || {
     echo "not ok" 1 - "reference environment conversion failed"
     exit 0
 }
 
-run_img2sixel -% SIXEL_COLORS=16 -% SIXEL_THREADS=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -% SIXEL_COLORS=16 -% SIXEL_THREADS=1 \
     "${input_image}" >"${out_opt}" || {
     echo "not ok" 1 - "-% conversion failed"
     exit 0
@@ -34,7 +33,7 @@ cmp -s "${out_env}" "${out_opt}" || {
     exit 0
 }
 
-run_img2sixel -% INVALID "${input_image}" > /dev/null && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -% INVALID "${input_image}" > /dev/null && {
     echo "not ok" 1 - "invalid -% argument should fail"
     exit 0
 }

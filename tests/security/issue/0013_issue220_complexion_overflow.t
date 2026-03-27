@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 
 fixture="${TOP_SRCDIR}/tests/data/security/issue/data/220/snake_8x8.png"
 
 set +e
-run_img2sixel -p4 -C 2147483647 -o /dev/null "${fixture}"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p4 -C 2147483647 -o /dev/null "${fixture}"
 command_status=$?
 set -e
 

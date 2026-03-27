@@ -21,7 +21,6 @@ test "${HAVE_JPEG16_API-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -32,12 +31,12 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-16bit-cmyk-lossle
 reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0016_jpeg_cmyk_16bit_lossless_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_cmyk_16bit_lossless_cms0.six"
 
-run_img2sixel -L libjpeg:cms_engine=none! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg:cms_engine=none! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg 16-bit CMYK lossless JPEG decode failed (cms=0)"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "libjpeg 16-bit CMYK lossless JPEG (cms=0) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0

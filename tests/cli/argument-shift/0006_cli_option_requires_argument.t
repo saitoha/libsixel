@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -12,7 +11,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 rc=0
 cli_output_file="${ARTIFACT_LOCAL_DIR}/cli_option_requires_argument.out"
 
-run_test_runner "cli/0030_cli_option_requires_argument" >"${cli_output_file}" 2>&1 || rc=$?
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "cli/0030_cli_option_requires_argument" >"${cli_output_file}" 2>&1 || rc=$?
 cat "${cli_output_file}" >&2 2>/dev/null || :
 
 test "${rc}" -eq 0 || {

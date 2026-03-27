@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos2-no-diffusion.sixel"
 
-run_img2sixel -v -p 8 -h200 -fnorm -rlanczos2 -dnone \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -p 8 -h200 -fnorm -rlanczos2 -dnone \
         "${snake_jpg}" >"${target_sixel}" || {
     echo "not ok" 1 - "Lanczos2 scaling without diffusion fails"
     exit 0

@@ -13,12 +13,11 @@ test "${HAVE_WIC-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 
 probe_output=$(
     set +xv
-    run_img2sixel -Lwic:ico_minsize=40! \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lwic:ico_minsize=40! \
         "${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico" \
         -o/dev/null 2>&1
 ) || probe_status=$?

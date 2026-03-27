@@ -14,11 +14,10 @@ test "${HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc" \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null && {
     echo "not ok" 1 - "gd accepted a non-integer start-frame environment value"

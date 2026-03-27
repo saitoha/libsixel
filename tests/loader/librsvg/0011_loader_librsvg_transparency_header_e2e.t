@@ -19,7 +19,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -41,12 +40,12 @@ printf 'PLTE' >"${png_plte_magic}"
 printf '\000\000\000\006' >"${png_plte_len_two}"
 printf '\377\003\003\377\377\377' >"${png_plte_prefix_red_white}"
 
-run_img2sixel -L librsvg! "${svg_path}" >"${default_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${default_sixel}" || {
     echo "not ok" 1 - "default transparent SVG conversion failed"
     exit 0
 }
 
-run_img2sixel -L librsvg! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
     echo "not ok" 1 - "background-composited SVG conversion failed"
     exit 0
 }
@@ -66,12 +65,12 @@ dd if="${bg_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" && {
     exit 0
 }
 
-run_sixel2png -i "${default_sixel}" -o "${default_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${default_sixel}" -o "${default_png}" || {
     echo "not ok" 1 - "default transparent SIXEL decode failed"
     exit 0
 }
 
-run_sixel2png -i "${bg_sixel}" -o "${bg_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${bg_sixel}" -o "${bg_png}" || {
     echo "not ok" 1 - "background-composited SIXEL decode failed"
     exit 0
 }

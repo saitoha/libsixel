@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,7 +16,7 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 map16_palette="${TOP_SRCDIR}/images/map16-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/palette16.sixel"
 
-run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 -m "${map16_palette}" -Efast "${snake_jpg}" >"${target_sixel}" || {
     echo "not ok" 1 - "16-colour palette conversion fails"
     exit 0
 }

@@ -8,12 +8,11 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_sixel2png -i "${TOP_SRCDIR}/images/map8.six" -o /dev/null || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${TOP_SRCDIR}/images/map8.six" -o /dev/null || {
     echo "not ok" 1 - "snake file conversion failed"
     exit 0
 }

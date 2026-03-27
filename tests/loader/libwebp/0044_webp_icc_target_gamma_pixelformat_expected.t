@@ -8,12 +8,11 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
 SIXEL_LOADER_CMS_TARGET_COLORSPACE=gamma \
-    run_test_runner "loader/0017_loader_libwebp_pixelformat" >/dev/null || {
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0017_loader_libwebp_pixelformat" >/dev/null || {
     echo "not ok" 1 - "loader/0017_loader_libwebp_pixelformat under cms target gamma"
     exit 0
 }

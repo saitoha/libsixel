@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_tga="${TOP_SRCDIR}/tests/data/inputs/snake_64.tga"
 target_sixel="${ARTIFACT_LOCAL_DIR}/vt340-mono.sixel"
 
-run_img2sixel -bvt340mono "${snake_tga}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bvt340mono "${snake_tga}" >"${target_sixel}" || {
     echo "not ok" 1 - "VT340 monochrome control failed"
     exit 0
 }

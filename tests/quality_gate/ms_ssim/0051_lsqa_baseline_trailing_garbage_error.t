@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -13,7 +12,7 @@ image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_baseline_trailing_garbage.err"
 
 set +e
-run_lsqa -b "MS-SSIM:1.0x" "${image_ref}" >"/dev/null" 2>"${err_file}"
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:1.0x" "${image_ref}" >"/dev/null" 2>"${err_file}"
 status=$?
 set -e
 

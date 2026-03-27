@@ -14,11 +14,10 @@ test "${HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -L gd! -ldisable -dnone -u \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable -dnone -u \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" -o/dev/null || {
     echo "not ok" 1 - "gd disable/update flag combination failed"
     exit 0

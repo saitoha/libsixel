@@ -19,11 +19,10 @@ test -n "${SIXEL_TEST_QUICKLOOK_MOV-}" || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${SIXEL_TEST_QUICKLOOK_MOV}" >/dev/null || {
     echo "not ok" 1 - "quicklook MOV still-frame decode failed"
     exit 0

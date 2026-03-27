@@ -13,12 +13,11 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel -L coregraphics! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/invalid_signature.heic" >/dev/null && {
     echo "not ok" 1 - "coregraphics invalid-signature HEIC should fail"
     exit 0

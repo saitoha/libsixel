@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,7 +21,7 @@ SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
         SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
         SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
         SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
-        run_img2sixel -Q kmeans -6 \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q kmeans -6 \
     -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel snap kmeans 8bit failed"
     exit 0
@@ -30,7 +29,7 @@ SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

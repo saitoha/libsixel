@@ -4,12 +4,11 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "filter/0010_filter_encode" || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "filter/0010_filter_encode" || {
     echo "not ok 1 - 0010_filter_encode"
     exit 0
 }

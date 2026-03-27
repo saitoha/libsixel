@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel -Qk:i=p:t=0.120 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:i=p:t=0.120 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >/dev/null || {
     echo "not ok" 1 - "-Q kmeans suboptions were rejected"

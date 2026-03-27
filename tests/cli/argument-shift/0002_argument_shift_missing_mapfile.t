@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
-msg=$(set +xv; run_img2sixel -m -w 100 -h 100 "${image_path}" -o/dev/null 2>&1) && {
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m -w 100 -h 100 "${image_path}" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "accepted -m without argument"
     exit 0
 }

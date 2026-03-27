@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo '1..1'
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 output_file="${ARTIFACT_LOCAL_DIR}/completion-all.txt"
 
 
-run_img2sixel -1 all >"${output_file}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 all >"${output_file}" || {
     echo "not ok" 1 - "combined completion output failed"
     exit 0
 }

@@ -3,12 +3,11 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner \
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_LOADER_CMS_TARGET_COLORSPACE=gamma" \
     --env "SIXEL_LOADER_PREFER_8BIT=0" \
     --env "SIXEL_TEST_EXPECT_HDR_CMS_PIXELFORMAT=RGBFLOAT32" \

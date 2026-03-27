@@ -8,14 +8,13 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 
 issue220="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc2_sixel_dcs_signed_integer_overflow.sixel"
 
 set +e
-run_sixel2png -i "${issue220}" -o /dev/null
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${issue220}" -o /dev/null
 command_status=$?
 set -e
 

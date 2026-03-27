@@ -12,7 +12,6 @@ test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -23,7 +22,7 @@ xdg_data_home="${template_root}/cases/0036"
 bin_dir_1="${template_root}/bin-empty"
 bin_dir_2="${template_root}/bin"
 
-run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir_1}:${bin_dir_2}:${PATH}" \
               -L gnome-thumbnailer! "${input_png}" >/dev/null || {
     echo "not ok" 1 - "TryExec PATH search order test failed"

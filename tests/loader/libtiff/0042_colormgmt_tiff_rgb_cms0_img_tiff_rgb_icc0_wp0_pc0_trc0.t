@@ -13,7 +13,6 @@ test "${HAVE_LIBTIFF-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -33,12 +32,12 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-run_img2sixel -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_six}" || {
     echo "not ok" 1 - "libtiff decode failed with cms=0: rgb/img_tiff_rgb_icc0_wp0_pc0_trc0"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.997" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.997" \
     "${reference_six}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "rgb/img_tiff_rgb_icc0_wp0_pc0_trc0 (cms=0): ${lsqa_msg}"
     exit 0

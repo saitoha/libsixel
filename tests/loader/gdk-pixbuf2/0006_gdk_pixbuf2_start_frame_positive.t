@@ -14,19 +14,18 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -v -L gdk-pixbuf2! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gdk_start_default.six" || {
     echo "not ok" 1 - "baseline gdk-pixbuf2 animation decode failed"
     exit 0
 }
 
-run_img2sixel --start-frame=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 \
     -v -L gdk-pixbuf2! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gdk_start_positive.six" || {

@@ -14,7 +14,6 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,7 +22,7 @@ input_png="${TOP_SRCDIR}/tests/data/corrupted/truncated.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_corrupted_png.sixel"
 error_log="${ARTIFACT_LOCAL_DIR}/gdk_corrupted_png.err"
 
-run_img2sixel -L gdk-pixbuf2! "${input_png}" >"${output_sixel}" 2>"${error_log}" && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! "${input_png}" >"${output_sixel}" 2>"${error_log}" && {
     echo "not ok" 1 - "forced gdk-pixbuf2 corrupted PNG should fail"
     exit 0
 }

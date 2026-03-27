@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
 issue220="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc6_gif_truncated_lzw.gif"
 
-run_img2sixel -Lbuiltin! "${issue220}" -o /dev/null || rc=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${issue220}" -o /dev/null || rc=$?
 
 test "${rc-0}" -ne 0 || {
     echo "not ok" 1 - "truncated LZW GIF unexpectedly accepted"

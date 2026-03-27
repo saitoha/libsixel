@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,7 +21,7 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-
 output_gamma="${ARTIFACT_LOCAL_DIR}/webp-bgcs-alpha-gamma.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/webp-bgcs-alpha-linear.six"
 
-run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
@@ -30,7 +29,7 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_linear}" || {
@@ -38,7 +37,7 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" "${output_gamma}" "${output_linear}" 2>&1) || lsqa_status=$?
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" "${output_gamma}" "${output_linear}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
     echo "not ok" 1 - "gamma and linear composition were not distinguishable: ${lsqa_msg-}"

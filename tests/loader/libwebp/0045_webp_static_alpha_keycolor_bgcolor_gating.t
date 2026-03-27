@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -25,22 +24,22 @@ out_black="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-bg-black.six"
 out_white="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-bg-white.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp static alpha decode without -B failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=auto! -S "${input_webp}" >"${out_default_cms}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! -S "${input_webp}" >"${out_default_cms}" || {
     echo "not ok" 1 - "libwebp static alpha decode without -B failed (cms=auto)"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! -S -B#000 "${input_webp}" >"${out_black}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#000 "${input_webp}" >"${out_black}" || {
     echo "not ok" 1 - "libwebp static alpha decode with -B#000 failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! -S -B#fff "${input_webp}" >"${out_white}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#fff "${input_webp}" >"${out_white}" || {
     echo "not ok" 1 - "libwebp static alpha decode with -B#fff failed"
     exit 0
 }

@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -16,7 +15,7 @@ set -v
 input_file="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc10_gif_lzw_mincodesize9.gif"
 
 rc=0
-run_img2sixel -Lbuiltin! "${input_file}" -o /dev/null || rc=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${input_file}" -o /dev/null || rc=$?
 
 test "${rc-0}" -ge 1 -a "${rc-0}" -le 3 || {
     echo "not ok" 1 - "min code size 9 GIF did not return mapped error status"

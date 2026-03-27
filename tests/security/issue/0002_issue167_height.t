@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -18,7 +17,7 @@ issue167="${TOP_SRCDIR}/tests/data/security/issue/data/167/poc"
 
 
 set +e
-run_img2sixel "${issue167}" -h128 >"${ARTIFACT_LOCAL_DIR}/issue167-height.sixel"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${issue167}" -h128 >"${ARTIFACT_LOCAL_DIR}/issue167-height.sixel"
 command_status=$?
 set -e
 

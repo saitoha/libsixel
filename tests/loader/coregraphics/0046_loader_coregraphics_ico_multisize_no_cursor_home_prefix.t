@@ -13,7 +13,6 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -22,7 +21,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_ico_multisize_prefix.six"
 
-run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "coregraphics failed to decode multi-size ICO input"
     exit 0
 }

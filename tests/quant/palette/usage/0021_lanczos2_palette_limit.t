@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos2-palette-limit.sixel"
 
-run_img2sixel -p 16 -C3 -h100 -fnorm -rlanczos2 "${snake_jpg}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -C3 -h100 -fnorm -rlanczos2 "${snake_jpg}" \
         >"${target_sixel}" || {
     echo "not ok" 1 - "Lanczos2 scaling with palette limit fails"
     exit 0

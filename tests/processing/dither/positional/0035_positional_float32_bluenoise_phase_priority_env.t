@@ -12,7 +12,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -21,7 +20,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-run_img2sixel --env SIXEL_DITHER_BLUENOISE_PHASE=10 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_BLUENOISE_PHASE=10 \
         --env SIXEL_DITHER_BLUENOISE_SEED=123 -d bluenoise -y raster \
         --precision=float32 -p 16 -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional float32 bluenoise phase priority env failed"

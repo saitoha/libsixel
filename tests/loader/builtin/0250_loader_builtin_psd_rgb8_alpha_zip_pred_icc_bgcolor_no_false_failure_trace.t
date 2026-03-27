@@ -9,7 +9,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,7 +16,7 @@ set -v
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_rgb8_alpha_zip_pred_icc.psd"
 
 command_status=0
-command_output=$(set +xv; run_img2sixel -Lbuiltin:cms=auto! \
+command_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
     -B "#112233" "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {

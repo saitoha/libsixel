@@ -14,19 +14,18 @@ test "${HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -L gd! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gd_start_default.six" || {
     echo "not ok" 1 - "baseline gd animation decode failed"
     exit 0
 }
 
-run_img2sixel --start-frame=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gd_start_positive.six" || {

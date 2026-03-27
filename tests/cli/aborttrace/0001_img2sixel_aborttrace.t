@@ -8,12 +8,11 @@ test "${SIXEL_TSAN_BUILD:-no}" = "yes" && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-abort_output=$(run_test_runner --env SIXEL_ABORT_TRACE=1 \
+abort_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env SIXEL_ABORT_TRACE=1 \
     "aborttrace/0001_img2sixel_aborttrace" 2>&1) || rc=$?
 printf '%s' "${abort_output}" >&2
 

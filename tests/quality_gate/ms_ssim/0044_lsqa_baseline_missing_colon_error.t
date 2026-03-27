@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -14,7 +13,7 @@ image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_baseline_missing_colon.err"
 
 set +e
-run_lsqa -b "MS-SSIM" "${image_ref}" "${image_out}" >"/dev/null" 2>"${err_file}"
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM" "${image_ref}" "${image_out}" >"/dev/null" 2>"${err_file}"
 status=$?
 set -e
 

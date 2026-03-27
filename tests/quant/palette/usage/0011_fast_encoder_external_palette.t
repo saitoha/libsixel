@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -15,7 +14,7 @@ set -v
 snake_ppm="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
 map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
 
-run_img2sixel -8 -m "${map8_palette}" -Esize "${snake_ppm}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -8 -m "${map8_palette}" -Esize "${snake_ppm}" \
         -o/dev/null || {
     echo "not ok" 1 - "fast encoder with palette fails"
     exit 0

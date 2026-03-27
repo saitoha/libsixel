@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 small_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/timeline-empty-path.six"
 
-run_img2sixel --env SIXEL_LOG_PATH= --env SIXEL_LOG_LINES=3 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH= --env SIXEL_LOG_LINES=3 \
     --lookup-policy=certlut -p 4 -o "${output_sixel}" "${small_ppm}" || {
     echo "not ok" 1 - "conversion failed with empty SIXEL_LOG_PATH"
     exit 0

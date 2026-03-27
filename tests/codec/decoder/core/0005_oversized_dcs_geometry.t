@@ -9,14 +9,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 oversized="${TOP_SRCDIR}/tests/data/inputs/snake_64-oversized.six"
 
-run_img2sixel "${oversized}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${oversized}" >/dev/null || {
     echo "not ok" 1 - "oversized DCS geometry rejected"
     exit 0
 }

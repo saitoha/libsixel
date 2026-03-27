@@ -15,7 +15,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -28,14 +27,14 @@ reference_image="${data_root}/scaling/snake_64_h100px.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/height_100px.six"
 
 
-run_img2sixel -h 100px -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -h 100px -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "height scaling with -h 100px failed"
     exit 0
 }
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

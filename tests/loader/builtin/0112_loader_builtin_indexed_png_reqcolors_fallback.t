@@ -3,12 +3,11 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0021_loader_builtin_indexed_png_reqcolors_fallback" || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0021_loader_builtin_indexed_png_reqcolors_fallback" || {
     echo "not ok 1 - loader/0021_loader_builtin_indexed_png_reqcolors_fallback"
     exit 0
 }

@@ -12,7 +12,6 @@ test -x "${LSQA_PATH}" || {
     printf "1..0 # SKIP lsqa is disabled in this build\n";
     exit 0
 }
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,19 +22,19 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/snake_63_sse2.six"
 lsqa_run_status=0
 lsqa_err=""
 
-run_img2sixel --env SIXEL_SIMD_LEVEL=sse2 -Wo -w63 -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_SIMD_LEVEL=sse2 -Wo -w63 -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
-lsqa_err=$(run_lsqa -b "MS-SSIM:0.99" "${reference_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
+lsqa_err=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:0.99" "${reference_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
 test "${lsqa_run_status}" -eq 0 && {
     echo "ok" 1 - "SIXEL_SIMD_LEVEL=sse2 reached MS-SSIM 0.99"
     exit 0
 }
 
 lsqa_run_status=0
-lsqa_err=$(run_lsqa -b "MS-SSIM:0.98" "${reference_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
+lsqa_err=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:0.98" "${reference_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
 test "${lsqa_run_status}" -eq 0 && {
     echo "ok" 1 - "SIXEL_SIMD_LEVEL=sse2 reached MS-SSIM 0.98"
     exit 0

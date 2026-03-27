@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -85,7 +84,7 @@ wait "${server_pid}" 2>/dev/null || :
 }
 
 verify_output="${ARTIFACT_LOCAL_DIR}/curl-verify"
-run_img2sixel "https://localhost:${server_port}/images/map8.six" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "https://localhost:${server_port}/images/map8.six" \
     >"${verify_output}" && command_status=0 || command_status=$?
 
 wait_limit=10

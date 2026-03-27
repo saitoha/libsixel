@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -22,7 +21,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-reqcolors-p1-on-tbbn0g04.six"
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
               -d fs -y raster -p 1 \

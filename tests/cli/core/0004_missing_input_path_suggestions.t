@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 missing_input="${TOP_SRCDIR}/tests/data/inputs/xxxxx.xxx"
 
-msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               --env SIXEL_TRACE_TOPIC=file_open:suggestion:lifecycle \
               "${missing_input}" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "accepts missing input path"

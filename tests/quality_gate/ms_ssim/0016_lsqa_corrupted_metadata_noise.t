@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -11,7 +10,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/corrupted/metadata_noise.jpg"
 
 lsqa_msg=$(
-    run_lsqa -m MS-SSIM -b "MS-SSIM:0.5" "${input_image}" "${input_image}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.5" "${input_image}" "${input_image}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status-0}" -ne 0 || {

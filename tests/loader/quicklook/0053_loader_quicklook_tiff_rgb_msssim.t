@@ -14,19 +14,18 @@ test "${HAVE_QUICKLOOK-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff" \
     >"${ARTIFACT_LOCAL_DIR}/quicklook_tiff_rgb.six" || {
     echo "not ok" 1 - "quicklook baseline TIFF rgb decode failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm" \
     "${ARTIFACT_LOCAL_DIR}/quicklook_tiff_rgb.six" 2>&1) || {
     echo "not ok" 1 - "$lsqa_msg"

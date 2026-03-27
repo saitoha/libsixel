@@ -15,7 +15,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -28,14 +27,14 @@ reference_image="${data_root}/scaling/snake_64_bicubic_120pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/bicubic-upscale_120pct.six"
 
 
-run_img2sixel -r bicubic -w 120% -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r bicubic -w 120% -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "bicubic upscale 120pct scaling failed"
     exit 0
 }
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

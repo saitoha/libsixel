@@ -12,7 +12,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -24,19 +23,19 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_hls="${ARTIFACT_LOCAL_DIR}/hls.six"
 output_rgb="${ARTIFACT_LOCAL_DIR}/rgb.six"
 
-run_img2sixel -t hls -o "${output_hls}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t hls -o "${output_hls}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel hls conversion failed"
     exit 0
 }
 
-run_img2sixel -t rgb -o "${output_rgb}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -o "${output_rgb}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel rgb conversion failed"
     exit 0
 }
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${output_rgb}" "${output_hls}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${output_rgb}" "${output_hls}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

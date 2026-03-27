@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,12 +21,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-icc-overlimit-pa
 out_auto="${ARTIFACT_LOCAL_DIR}/webp-oversized-icc-cms-auto.six"
 out_none="${ARTIFACT_LOCAL_DIR}/webp-oversized-icc-cms-none.six"
 
-run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${out_auto}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${out_auto}" || {
     echo "not ok" 1 - "libwebp oversized ICC decode failed (cms=auto)"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${out_none}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${out_none}" || {
     echo "not ok" 1 - "libwebp oversized ICC decode failed (cms=none)"
     exit 0
 }

@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -11,7 +10,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 out_file="${ARTIFACT_LOCAL_DIR}/lsqa_help_H.stdout"
 
-run_lsqa -H >"${out_file}" || {
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -H >"${out_file}" || {
     echo "not ok" 1 - "lsqa -H should exit with success"
     exit 0
 }

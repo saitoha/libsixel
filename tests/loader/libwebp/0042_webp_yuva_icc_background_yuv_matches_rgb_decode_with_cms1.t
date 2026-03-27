@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,18 +21,18 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossy-alpha-8x8-2fr
 output_yuv="${ARTIFACT_LOCAL_DIR}/webp-yuva-icc-bg-yuv-cms1.sixel"
 output_rgb="${ARTIFACT_LOCAL_DIR}/webp-yuva-icc-bg-rgb-cms1.sixel"
 
-run_img2sixel -Llibwebp:cms_engine=auto! -S -B#808080 "${input_webp}" >"${output_yuv}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! -S -B#808080 "${input_webp}" >"${output_yuv}" || {
     echo "not ok" 1 - "libwebp YUVA ICC YUV-path decode with -B failed (cms=1)"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
-    run_img2sixel -Llibwebp:cms_engine=auto! -S -B#808080 "${input_webp}" >"${output_rgb}" || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! -S -B#808080 "${input_webp}" >"${output_rgb}" || {
     echo "not ok" 1 - "libwebp YUVA ICC RGB-path decode with -B failed (cms=1)"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.995" "${output_yuv}" "${output_rgb}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" "${output_yuv}" "${output_rgb}" 2>&1) || {
     echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }

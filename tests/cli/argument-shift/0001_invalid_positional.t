@@ -17,7 +17,6 @@ printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin' && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -26,7 +25,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 missing_path="${ARTIFACT_LOCAL_DIR}/invalid_filename"
 missing_output="${ARTIFACT_LOCAL_DIR}/capture.invalid"
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=file_open:lifecycle \
     -v "${missing_path}" >"${missing_output}" && {
     echo "not ok" 1 - "img2sixel accepted missing input"

@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 
@@ -17,7 +16,7 @@ set -v
 
 issue200="${TOP_SRCDIR}/tests/data/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
 
-run_img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose         "${issue200}" -o /dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --7bit-mode -8 --invert --palette-type=auto --verbose         "${issue200}" -o /dev/null || {
     echo "not ok" 1 - "heap overflow regression triggered"
     exit 0
 }

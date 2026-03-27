@@ -13,7 +13,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -25,21 +24,21 @@ output_ref_none="${ARTIFACT_LOCAL_DIR}/cms_engine_env_override_option_ref_none.s
 output_env_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_env_override_option_actual_auto.six"
 output_env_none="${ARTIFACT_LOCAL_DIR}/cms_engine_env_override_option_actual_none.six"
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_auto}" || {
     echo "not ok" 1 - "auto reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_none}" || {
     echo "not ok" 1 - "none reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_auto}" || {
@@ -47,7 +46,7 @@ run_img2sixel \
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=none" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_none}" || {

@@ -14,11 +14,10 @@ test "${HAVE_DECL_GDIMAGECREATEFROMGD2PTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -L gd! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/sample-gd2-conv_test.gd2" \
     >/dev/null && {
     echo "ok" 1 - "gd decodes GD2 input"

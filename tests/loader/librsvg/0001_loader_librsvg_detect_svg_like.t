@@ -8,12 +8,11 @@ test "${HAVE_LIBRSVG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0020_loader_librsvg_detect_svg_like" || rc="$?"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0020_loader_librsvg_detect_svg_like" || rc="$?"
 
 test "${rc-}" = 77 && {
     echo "ok 1 - loader/0020_loader_librsvg_detect_svg_like # SKIP unavailable"

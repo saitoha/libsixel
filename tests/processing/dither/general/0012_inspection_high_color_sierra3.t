@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -22,7 +21,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-run_img2sixel -I -d sierra3 "${input_image}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -d sierra3 "${input_image}" \
         >"${target_txt}" || {
     echo "not ok" 1 - "inspection with high color and Sierra-3 failed"
     exit 0

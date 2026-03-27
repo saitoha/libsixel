@@ -15,7 +15,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -27,28 +26,28 @@ output_white_six="${ARTIFACT_LOCAL_DIR}/psd_duotone_alpha_bg_white.six"
 output_black_png="${ARTIFACT_LOCAL_DIR}/psd_duotone_alpha_bg_black.png"
 output_white_png="${ARTIFACT_LOCAL_DIR}/psd_duotone_alpha_bg_white.png"
 
-run_img2sixel -Lbuiltin! -B "#000000" "${input_psd}" >"${output_black_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -B "#000000" "${input_psd}" >"${output_black_six}" || {
     echo "not ok" 1 - "builtin PSD decode failed with black bgcolor"
     exit 0
 }
 
-run_img2sixel -Lbuiltin! -B "#ffffff" "${input_psd}" >"${output_white_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -B "#ffffff" "${input_psd}" >"${output_white_six}" || {
     echo "not ok" 1 - "builtin PSD decode failed with white bgcolor"
     exit 0
 }
 
-run_sixel2png -i "${output_black_six}" -o "${output_black_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${output_black_six}" -o "${output_black_png}" || {
     echo "not ok" 1 - "black bgcolor sixel2png decode failed"
     exit 0
 }
 
-run_sixel2png -i "${output_white_six}" -o "${output_white_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${output_white_six}" -o "${output_white_png}" || {
     echo "not ok" 1 - "white bgcolor sixel2png decode failed"
     exit 0
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.99" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.99" \
     "${output_black_png}" "${output_white_png}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status}" -eq 5 || {

@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_cmyk8_bad_icc_profile.psd"
 
-trace_log=$(set +xv; run_img2sixel -v -L builtin:cms_engine=auto! \
+trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L builtin:cms_engine=auto! \
     "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in

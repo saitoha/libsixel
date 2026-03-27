@@ -8,14 +8,13 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_path="${TOP_SRCDIR}/images/map8.six"
 
-msg=$(set +xv; run_sixel2png --similarity=invalid -o/dev/null "${input_path}" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --similarity=invalid -o/dev/null "${input_path}" \
     2>&1) && {
     echo "not ok" 1 - "invalid similarity should fail"
     exit 0

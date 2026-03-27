@@ -8,12 +8,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0022_loader_libpng_indexed_png_reqcolors_fallback" || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0022_loader_libpng_indexed_png_reqcolors_fallback" || {
     echo "not ok 1 - loader/0022_loader_libpng_indexed_png_reqcolors_fallback"
     exit 0
 }

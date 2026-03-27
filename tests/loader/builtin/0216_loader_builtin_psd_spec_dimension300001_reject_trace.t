@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_dimension300001_rgb.psd"
 
-trace_log=$(set +xv; run_img2sixel -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
+trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
     *"builtin PSD: malformed dimensions (300001x1; expected"*)

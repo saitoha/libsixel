@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_jpeg="${TOP_SRCDIR}/tests/data/corrupted/metadata_noise.jpg"
 
-run_img2sixel -L builtin! "${input_jpeg}" >/dev/null && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_jpeg}" >/dev/null && {
     echo "not ok" 1 - "corrupted JPEG unexpectedly decoded by builtin"
     exit 0
 }

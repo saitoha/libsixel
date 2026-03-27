@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -30,7 +29,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.94}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fixed-float32-lookup-none-complexion.six"
 
-run_img2sixel -d fs --precision=float32 --lookup-policy=none \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision=float32 --lookup-policy=none \
         -C 8 -p 16 -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "fixed float32 lookup none complexion conversion failed"
     exit 0
@@ -38,7 +37,7 @@ run_img2sixel -d fs --precision=float32 --lookup-policy=none \
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" \
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" \
         "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 

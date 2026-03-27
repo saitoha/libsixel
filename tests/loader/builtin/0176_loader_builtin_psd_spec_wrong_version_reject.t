@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/corrupted/wrong_version.psd"
 
-run_img2sixel -L builtin! "${input_psd}" >/dev/null && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null && {
     echo "not ok" 1 - "unsupported version was unexpectedly accepted"
     exit 0
 }

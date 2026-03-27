@@ -14,12 +14,11 @@ test "${HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel --start-frame=-1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=-1 \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gd_start_negative.six" || {
@@ -27,7 +26,7 @@ run_img2sixel --start-frame=-1 \
     exit 0
 }
 
-run_img2sixel --start-frame=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=4 \
     -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/gd_start_positive_equivalent.six" || {

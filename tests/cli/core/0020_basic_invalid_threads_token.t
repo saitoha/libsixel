@@ -8,12 +8,11 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_sixel2png -= bogus -o/dev/null <"${TOP_SRCDIR}/images/map64.six" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -= bogus -o/dev/null <"${TOP_SRCDIR}/images/map64.six" \
         2>&1) && {
     echo "not ok" 1 - "accepts invalid thread token"
     exit 0

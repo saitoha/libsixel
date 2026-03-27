@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -41,12 +40,12 @@ SVGEOF
 printf '\033P0;1q' >"${header_alpha}"
 printf '\033Pq' >"${header_opaque}"
 
-run_img2sixel -L librsvg! "${svg_path}" >"${default_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${default_sixel}" || {
     echo "not ok" 1 - "default relative-resource SVG conversion failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1 \
               -L librsvg! "${svg_path}" >"${optin_sixel}" || {
     echo "not ok" 1 - "opt-in relative-resource SVG conversion failed"
     exit 0

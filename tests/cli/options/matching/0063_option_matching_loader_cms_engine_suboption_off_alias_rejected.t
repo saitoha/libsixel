@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg_off=$(set +xv; run_img2sixel -Lbuiltin:cms_engine=off! \
+msg_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=off! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "cms_engine=off suboption unexpectedly succeeded"

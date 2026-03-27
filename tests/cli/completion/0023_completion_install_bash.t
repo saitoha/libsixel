@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -25,7 +24,7 @@ legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
 trap 'rm -rf "${target_path}" "${legacy_path}"' EXIT INT TERM
 
-run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
               --env BASH_VERSION=5.0 \
               -2 bash >&2 || {

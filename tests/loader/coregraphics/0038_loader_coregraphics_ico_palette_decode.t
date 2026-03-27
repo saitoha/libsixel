@@ -13,7 +13,6 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -24,12 +23,12 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-pal8.ico"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_ico_palette.six"
 
-run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "coregraphics failed to decode palette ICO input"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}"     "${reference_path}" "${output_sixel}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}"     "${reference_path}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }

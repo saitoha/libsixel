@@ -16,7 +16,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -25,12 +24,12 @@ input_png="${TOP_SRCDIR}/images/pngsuite/background/bggn4a16.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0081_pngsuite_background_width32_white_bggn4a16_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/bggn4a16.sixel"
 
-run_img2sixel -w32 -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -w32 -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "img2sixel failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }

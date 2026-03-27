@@ -18,7 +18,6 @@ test "${HAVE_LCMS2-}" != 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -29,12 +28,12 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_embedded_esrgb_nolcms_cms1.six"
 
-run_img2sixel -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
     echo "not ok" 1 - "libjpeg embedded-ICC JPEG decode failed (nolcms, cms=1)"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "libjpeg embedded-ICC JPEG (nolcms, cms=1) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0

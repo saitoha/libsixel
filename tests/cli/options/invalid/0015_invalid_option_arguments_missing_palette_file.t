@@ -8,13 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -m "${ARTIFACT_LOCAL_DIR}/invalid_filename" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${ARTIFACT_LOCAL_DIR}/invalid_filename" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg" </dev/null >/dev/null  && {
     echo "not ok" 1 - "unexpected success: missing palette file"
     exit 0

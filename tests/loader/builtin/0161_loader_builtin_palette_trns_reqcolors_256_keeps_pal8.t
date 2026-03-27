@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -18,7 +17,7 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-pal8-trns-multi0-semi-
 out_hi="${ARTIFACT_LOCAL_DIR}/builtin-req256-cms0.six"
 log_hi="${ARTIFACT_LOCAL_DIR}/builtin-req256-cms0.log"
 
-run_img2sixel -v -Lbuiltin:cms_engine=none! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms_engine=none! \
               -B#ffffff -d none -p256 \
               "${input_png}" >"${out_hi}" 2>"${log_hi}" || {
     echo "not ok 1 - builtin reqcolors=256 render failed"

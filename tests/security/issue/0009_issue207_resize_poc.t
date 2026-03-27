@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 issue207="${TOP_SRCDIR}/tests/data/security/issue/data/207/poc"
 
-run_img2sixel -Lbuiltin! -h 50% -r lanczos3 -w 300px "${issue207}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -h 50% -r lanczos3 -w 300px "${issue207}" \
     >"${ARTIFACT_LOCAL_DIR}/issue207-resize.sixel" || command_status=$?
 
 # Accept success or mapped error exits (1/2/3) without crashing.

@@ -13,7 +13,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -23,12 +22,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_env_lcms_alias_ref_cms1.six"
 output_env_lcms="${ARTIFACT_LOCAL_DIR}/cms_env_lcms_alias_actual.six"
 
-run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=lcms" \
     -Llibwebp! "${input_webp}" >"${output_env_lcms}" || {
     echo "not ok" 1 - "SIXEL_LOADER_CMS_ENGINE=lcms decode failed"

@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -27,12 +26,12 @@ header_opaque="${ARTIFACT_LOCAL_DIR}/quicklook-header-opaque.bin"
 printf '\033P0;1q' >"${header_alpha}"
 printf '\033Pq' >"${header_opaque}"
 
-run_img2sixel -L quicklook! "${svg_path}" >"${default_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! "${svg_path}" >"${default_sixel}" || {
     echo "not ok" 1 - "default transparent SVG conversion failed"
     exit 0
 }
 
-run_img2sixel -L quicklook! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
     echo "not ok" 1 - "background-composited SVG conversion failed"
     exit 0
 }

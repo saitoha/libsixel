@@ -12,7 +12,6 @@ test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -22,7 +21,7 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_absolute_missing_skip.sixel"
 xdg_data_home="${TOP_BUILDDIR}/tests/data/inputs/thumbnailer/cases/0040"
 
-run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "HOME=${ARTIFACT_LOCAL_DIR}" \
               -v \
               -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" || {

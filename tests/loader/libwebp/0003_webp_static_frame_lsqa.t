@@ -19,7 +19,6 @@ test -n "${LSQA_PATH-}" || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -28,12 +27,12 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 image_ref="${TOP_SRCDIR}/tests/data/inputs/formats/animated-8x8-frame1-reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/webp_static_frame.six"
 
-run_img2sixel -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {
     echo "not ok" 1 - "libwebp static frame conversion failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${image_ref}" "${output_sixel}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${image_ref}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }

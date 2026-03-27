@@ -9,7 +9,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -19,7 +18,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8.png"
 
 planner_log=$(
     set +xv
-    run_img2sixel --env SIXEL_THREADS=1 -v \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 -v \
                   -Lbuiltin! -p"${reqcolors}" \
                   "${image_path}" 2>&1 >/dev/null
 ) || {

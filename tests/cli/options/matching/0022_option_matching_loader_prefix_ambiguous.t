@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 loader_names="builtin"
 test "${HAVE_LIBPNG-}" = 1 && loader_names="${loader_names} libpng"
@@ -56,7 +55,7 @@ test -n "${ambiguous_prefix}" || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -L"${ambiguous_prefix}" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L"${ambiguous_prefix}" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "ambiguous -L prefix unexpectedly succeeded"
     exit 0

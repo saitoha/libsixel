@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -18,7 +17,7 @@ completion_home="${ARTIFACT_LOCAL_DIR}"
 primary_path="${completion_home}/.local/share/bash-completion/completions/img2sixel"
 legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
-run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               -3 bash >/dev/null || {
     echo "not ok" 1 - "bash completion removal failed"
     exit 0

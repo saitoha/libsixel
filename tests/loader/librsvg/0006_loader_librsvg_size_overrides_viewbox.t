@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -24,7 +23,7 @@ sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-size-overrides-viewbox.six"
 printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='19' height='11' viewBox='0 0 95 55'><rect x='0' y='0' width='95' height='55' fill='#ff00ff'/></svg>" >"${svg_path}"
 
 
-run_img2sixel -L librsvg! "${svg_path}" >"${sixel_path}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${sixel_path}" || {
     echo "not ok" 1 - "librsvg size+viewBox conversion failed"
     exit 0
 }

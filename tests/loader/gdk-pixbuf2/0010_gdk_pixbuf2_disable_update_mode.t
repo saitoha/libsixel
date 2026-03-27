@@ -14,11 +14,10 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -L gdk-pixbuf2! -ldisable -dnone -u \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -ldisable -dnone -u \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" -o/dev/null || {
     echo "not ok" 1 - "gdk-pixbuf2 disable/update flag combination failed"
     exit 0

@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,7 +22,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_rgb16_srgb_only_float32.sixel"
 
 planner_log=$(
     set +xv
-    run_img2sixel --env SIXEL_THREADS=4 -v \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 -v \
                   -Llibpng:cms_engine=none! \
                   -o "${output_sixel}" "${input_png}" 2>&1
 ) || {

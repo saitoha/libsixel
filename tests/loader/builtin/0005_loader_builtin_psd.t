@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.psd"
 
-run_img2sixel "${input_psd}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${input_psd}" >/dev/null || {
     echo "not ok" 1 - "builtin loader failed to decode PSD"
     exit 0
 }

@@ -16,14 +16,13 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/tests/data/corrupted/truncated.png"
 
-run_img2sixel -L wic! "${input_png}" >/dev/null && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! "${input_png}" >/dev/null && {
     echo "not ok" 1 - "forced wic loader accepted corrupted PNG"
     exit 0
 }

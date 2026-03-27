@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -18,14 +17,14 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbwn0g16.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin_trns_keycolor_gray16_default.six"
 out_optin="${ARTIFACT_LOCAL_DIR}/builtin_trns_keycolor_gray16_optin.six"
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Lbuiltin:cms_engine=none! \
               "${input_png}" >"${out_default}" || {
     echo "not ok" 1 - "builtin default grayscale16+tRNS decode failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Lbuiltin:cms_engine=none! \
               "${input_png}" >"${out_optin}" || {
     echo "not ok" 1 - "builtin opt-in grayscale16+tRNS decode failed"

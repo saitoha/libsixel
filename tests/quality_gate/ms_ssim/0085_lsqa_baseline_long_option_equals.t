@@ -3,19 +3,18 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
-value=$(run_lsqa --metrics=MS-SSIM "${image_ref}" "${image_out}" | tr -d \\r) || {
+value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --metrics=MS-SSIM "${image_ref}" "${image_out}" | tr -d \\r) || {
     echo "not ok" 1 - "failed to calculate baseline source metric"
     exit 0
 }
 
-run_lsqa --baseline="MS-SSIM:${value}" "${image_ref}" "${image_out}" >/dev/null || {
+${SIXEL_RUNTIME-} "${LSQA_PATH}" --baseline="MS-SSIM:${value}" "${image_ref}" "${image_out}" >/dev/null || {
     echo "not ok" 1 - "--baseline= should accept METRIC:VALUE"
     exit 0
 }

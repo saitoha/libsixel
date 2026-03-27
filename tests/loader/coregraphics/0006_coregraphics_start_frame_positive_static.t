@@ -13,20 +13,19 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -v -L coregraphics! -ldisable -S \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
     echo "not ok" 1 - "baseline static coregraphics decode failed"
     exit 0
 }
 
-run_img2sixel --start-frame=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 \
     -v -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_positive.six" || {

@@ -12,7 +12,6 @@ test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -24,7 +23,7 @@ template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0028"
 bin_dir="${template_root}/bin"
 
-run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir}:${PATH}" \
               --env "THUMB_LOG=${log_file}" \
               --env "SIXEL_THUMBNAILER_HINT_SIZE=123" \

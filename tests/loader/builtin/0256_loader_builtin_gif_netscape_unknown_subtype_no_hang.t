@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,7 +16,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-unknown-subtype.gif"
 out_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_netscape_unknown_subtype.six"
 
-run_img2sixel --env SIXEL_THREADS=4 -Lbuiltin! -lforce -d none -p 256 -y raster \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 -Lbuiltin! -lforce -d none -p 256 -y raster \
     "${input_gif}" >"${out_six}" 2>/dev/null &
 pid=$!
 

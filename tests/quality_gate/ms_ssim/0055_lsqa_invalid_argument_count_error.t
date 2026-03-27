@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -15,7 +14,7 @@ extra_arg="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_invalid_arg_count.err"
 
 set +e
-run_lsqa "${image_ref}" "${image_out}" "${extra_arg}" >/dev/null 2>"${err_file}"
+${SIXEL_RUNTIME-} "${LSQA_PATH}" "${image_ref}" "${image_out}" "${extra_arg}" >/dev/null 2>"${err_file}"
 status=$?
 set -e
 

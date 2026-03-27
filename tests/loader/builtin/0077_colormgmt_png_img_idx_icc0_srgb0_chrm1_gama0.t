@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -18,12 +17,12 @@ input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/idx/img_idx_icc0_srgb0_c
 reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/idx/img_idx_icc0_srgb0_chrm1_gama0.six"
 output_six="${ARTIFACT_LOCAL_DIR}/img_idx_icc0_srgb0_chrm1_gama0_builtin.six"
 
-run_img2sixel -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_six}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${reference_six}" "${output_six}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${reference_six}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "${lsqa_msg}"
     exit 0
 }

@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -18,7 +17,7 @@ ppm_tall="${TOP_SRCDIR}/tests/data/inputs/tall.ppm"
 log_file="${ARTIFACT_LOCAL_DIR}/pipeline-row-ready-span.log"
 out_file="${ARTIFACT_LOCAL_DIR}/tall-row-ready-span.six"
 
-run_img2sixel --env SIXEL_LOG_PATH="${log_file}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_file}" \
               --env SIXEL_THREADS=6 \
               --env SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
               --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \

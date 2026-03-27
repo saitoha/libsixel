@@ -12,7 +12,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -77,7 +76,7 @@ verify_output="${ARTIFACT_LOCAL_DIR}/https.sixel"
 server_ok=1
 
 for _ in 1 2 3; do
-    run_img2sixel -k "https://localhost:${server_port}/images/map8.six" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -k "https://localhost:${server_port}/images/map8.six" \
         >"${verify_output}" && {
         server_ok=0
         break

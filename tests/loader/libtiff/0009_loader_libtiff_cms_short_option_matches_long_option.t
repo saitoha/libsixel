@@ -14,7 +14,6 @@ test "${HAVE_LIBTIFF-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -24,12 +23,12 @@ input_tiff="${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff"
 output_long="${ARTIFACT_LOCAL_DIR}/libtiff_cms_long_option.six"
 output_short="${ARTIFACT_LOCAL_DIR}/libtiff_cms_short_option.six"
 
-run_img2sixel -L libtiff:cms_engine=auto! "${input_tiff}" >"${output_long}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libtiff:cms_engine=auto! "${input_tiff}" >"${output_long}" || {
     echo "not ok" 1 - "libtiff decode with cms_engine=auto failed"
     exit 0
 }
 
-run_img2sixel -L libtiff:e=auto! "${input_tiff}" >"${output_short}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libtiff:e=auto! "${input_tiff}" >"${output_short}" || {
     echo "not ok" 1 - "libtiff decode with e=auto failed"
     exit 0
 }

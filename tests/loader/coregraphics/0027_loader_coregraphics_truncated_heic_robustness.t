@@ -13,14 +13,13 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 # A truncated HEIC can be partially recovered by Image I/O on macOS.
 # This test intentionally accepts both outcomes and only checks robustness.
-run_img2sixel -L coregraphics! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/truncated.heic" >/dev/null && {
     echo "ok" 1 - "coregraphics truncated HEIC decode completed without crash"
     exit 0

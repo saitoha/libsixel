@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-run_img2sixel -Lbuiltin! -ldisable -dnone -g "${image_gif}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -dnone -g "${image_gif}" >/dev/null || {
     echo "not ok" 1 - "static frame rendering fails"
     exit 0
 }

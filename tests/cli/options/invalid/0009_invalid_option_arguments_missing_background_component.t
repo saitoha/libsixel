@@ -8,11 +8,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -B "#ffff" </dev/null >/dev/null  && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B "#ffff" </dev/null >/dev/null  && {
     echo "not ok" 1 - "unexpected success: invalid background component"
     exit 0
 }

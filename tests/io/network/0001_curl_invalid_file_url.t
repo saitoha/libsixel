@@ -12,13 +12,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 set +e
-capture_output=$(run_img2sixel 'file:///test')
+capture_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" 'file:///test')
 set -e
 
 test -z "${capture_output}" || {

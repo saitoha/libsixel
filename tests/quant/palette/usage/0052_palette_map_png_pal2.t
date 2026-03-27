@@ -12,7 +12,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -22,7 +21,7 @@ palette_png="${TOP_SRCDIR}/images/pngsuite/basic/basn3p02.png"
 input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/mapfile-pal2.sixel"
 
-run_img2sixel -m "${palette_png}" "${input_png}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${palette_png}" "${input_png}" \
         >"${target_sixel}" || {
     echo "not ok" 1 - "PAL2 PNG palette mapfile rejected"
     exit 0

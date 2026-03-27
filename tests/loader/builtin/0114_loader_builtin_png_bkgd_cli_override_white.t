@@ -13,7 +13,6 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,17 +21,17 @@ input_png="${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png"
 expected_sixel="${ARTIFACT_LOCAL_DIR}/libpng_bgan6a08_white.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_bgan6a08_white.six"
 
-run_img2sixel -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${expected_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${expected_sixel}" || {
     echo "not ok" 1 - "libpng baseline conversion failed"
     exit 0
 }
 
-run_img2sixel -B#fff -Lbuiltin:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B#fff -Lbuiltin:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin bKGD cli override conversion failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_sixel}" "${output_sixel}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${expected_sixel}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "$lsqa_msg"
     exit 0
 }

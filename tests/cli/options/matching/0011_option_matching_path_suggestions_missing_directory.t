@@ -8,13 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               -m "${ARTIFACT_LOCAL_DIR}/not-there/map.gpl" \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
               -o/dev/null 2>&1) && {

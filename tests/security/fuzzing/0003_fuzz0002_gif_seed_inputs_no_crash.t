@@ -8,13 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
 rc=0
-run_img2sixel -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_truncated_lzw.gif" -o /dev/null || rc=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_truncated_lzw.gif" -o /dev/null || rc=$?
 test "${rc-0}" -ge 1 -a "${rc-0}" -le 3 || {
     echo "not ok" 1 - "fuzz0002 truncated LZW did not return mapped error"
     exit 0
@@ -29,7 +28,7 @@ test "${rc-0}" -ne 139 || {
 }
 
 rc=0
-run_img2sixel -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_truncated_extension.gif" -o /dev/null || rc=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_truncated_extension.gif" -o /dev/null || rc=$?
 test "${rc-0}" -ge 1 -a "${rc-0}" -le 3 || {
     echo "not ok" 1 - "fuzz0002 truncated extension did not return mapped error"
     exit 0
@@ -44,7 +43,7 @@ test "${rc-0}" -ne 139 || {
 }
 
 rc=0
-run_img2sixel -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_bad_lzw_cs0.gif" -o /dev/null || rc=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_bad_lzw_cs0.gif" -o /dev/null || rc=$?
 test "${rc-0}" -ge 1 -a "${rc-0}" -le 3 || {
     echo "not ok" 1 - "fuzz0002 bad min code size 0 did not return mapped error"
     exit 0
@@ -59,7 +58,7 @@ test "${rc-0}" -ne 139 || {
 }
 
 rc=0
-run_img2sixel -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_bad_lzw_cs9.gif" -o /dev/null || rc=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_bad_lzw_cs9.gif" -o /dev/null || rc=$?
 test "${rc-0}" -ge 1 -a "${rc-0}" -le 3 || {
     echo "not ok" 1 - "fuzz0002 bad min code size 9 did not return mapped error"
     exit 0

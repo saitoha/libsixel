@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -23,7 +22,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a16.png"
 out_default="${ARTIFACT_LOCAL_DIR}/libpng-trns-keycolor-rgba16-default.six"
 out_optin="${ARTIFACT_LOCAL_DIR}/libpng-trns-keycolor-rgba16-optin.six"
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_default}" || {
@@ -31,7 +30,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Llibpng:cms_engine=none! \
               -d fs -y raster \
               "${input_png}" >"${out_optin}" || {

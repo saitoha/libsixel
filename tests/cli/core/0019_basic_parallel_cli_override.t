@@ -14,15 +14,14 @@ command -v cmp >/dev/null 2>&1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 parallel_direct_cli="${ARTIFACT_LOCAL_DIR}/parallel-direct-cli.png"
-run_sixel2png --env SIXEL_THREADS=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
-run_sixel2png --env SIXEL_THREADS=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_cli}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_cli}"
 
 cmp -s "${parallel_direct_cli}" "${parallel_direct_4}" || {
     echo "not ok" 1 - "CLI thread override diverges"

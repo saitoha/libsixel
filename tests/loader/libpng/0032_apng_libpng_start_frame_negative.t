@@ -13,20 +13,19 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
               >"${ARTIFACT_LOCAL_DIR}/apng_start_default_neg.six" || {
     echo "not ok" 1 - "baseline APNG decode failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -v -Llibpng! -S \
               --start-frame=-1 \
               "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
               >"${ARTIFACT_LOCAL_DIR}/apng_start_negative.six" || {

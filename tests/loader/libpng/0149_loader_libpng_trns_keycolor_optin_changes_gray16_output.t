@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -23,14 +22,14 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbwn0g16.png"
 default_out="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_gray16_default.six"
 optin_out="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_gray16_optin.six"
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${default_out}" || {
     echo "not ok" 1 - "libpng default grayscale16 decode failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${optin_out}" || {
     echo "not ok" 1 - "libpng opt-in grayscale16 keycolor decode failed"

@@ -13,12 +13,11 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -L libwebp! \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_webp_signature.webp" \
              2>&1 >/dev/null) && {
     echo "not ok" 1 - "forced libwebp loader accepted invalid WEBP signature"

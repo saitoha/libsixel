@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,7 +16,7 @@ snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/gray-png-palette.sixel"
 
-run_img2sixel -m "${map8_palette}" "${snake_gray_png}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${map8_palette}" "${snake_gray_png}" >"${target_sixel}" || {
     echo "not ok" 1 - "grayscale PNG palette conversion fails"
     exit 0
 }

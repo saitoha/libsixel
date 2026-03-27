@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -19,7 +18,7 @@ expected_once="0:0
 
 trace_log=$(
     set +xv
-    run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff \
                   -Lbuiltin! -lauto -g \
                   "${input_loop1}" -o /dev/null 2>&1
 ) || {

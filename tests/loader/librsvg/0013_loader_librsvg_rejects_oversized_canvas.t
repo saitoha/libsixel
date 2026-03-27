@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -24,7 +23,7 @@ err_path="${ARTIFACT_LOCAL_DIR}/librsvg-oversized-canvas.err"
 
 printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='20000' height='20000'><rect x='0' y='0' width='20000' height='20000' fill='#ff0000'/></svg>" >"${svg_path}"
 
-run_img2sixel -L librsvg! "${svg_path}" >"${out_path}" 2>"${err_path}" && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${out_path}" 2>"${err_path}" && {
     echo "not ok" 1 - "oversized SVG unexpectedly succeeded"
     exit 0
 }

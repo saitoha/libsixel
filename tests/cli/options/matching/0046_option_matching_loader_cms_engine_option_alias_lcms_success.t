@@ -13,7 +13,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -23,14 +22,14 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_lcms2="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_lcms_ref_lcms2.six"
 output_lcms="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_lcms_alias.six"
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=lcms2 \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_lcms2}" || {
     echo "not ok" 1 - "--cms-engine=lcms2 reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=lcms \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_lcms}" || {
     echo "not ok" 1 - "--cms-engine=lcms was rejected"

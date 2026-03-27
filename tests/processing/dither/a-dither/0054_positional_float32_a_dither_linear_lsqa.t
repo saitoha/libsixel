@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -24,7 +23,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-run_img2sixel -d a_dither -y raster -W linear -o "${output_sixel}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d a_dither -y raster -W linear -o "${output_sixel}" \
     "${input_image}" || {
     echo "not ok" 1 - "positional float32 a_dither linear lsqa failed"
     exit 0
@@ -32,7 +31,7 @@ run_img2sixel -d a_dither -y raster -W linear -o "${output_sixel}" \
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" \
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" \
         "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 

@@ -7,14 +7,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
-run_img2sixel -O --outfile=/dev/null <"${snake_jpg}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -O --outfile=/dev/null <"${snake_jpg}" >/dev/null || {
     echo "not ok" 1 - "-O mode conversion failed"
     exit 0
 }

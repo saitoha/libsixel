@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,7 +16,7 @@ small_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/timeline-env-path.six"
 log_path="${ARTIFACT_LOCAL_DIR}/timeline-env-path.json"
 
-run_img2sixel --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
     -o "${output_sixel}" "${small_ppm}" || {
     echo "not ok" 1 - "conversion with SIXEL_LOG_PATH failed"
     exit 0

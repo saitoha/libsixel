@@ -7,13 +7,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 expected="3871514854 39"
-sum=$(printf '%b' '\033Pq"1;1;1;1!6~\033\057' | run_img2sixel -=1 -rne -h12 -w200% | cksum)
+sum=$(printf '%b' '\033Pq"1;1;1;1!6~\033\057' | ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=1 -rne -h12 -w200% | cksum)
 
 test -n "${sum}" || {
     echo "not ok" 1 - "DCS coordinates stayed consistent (no payload produced)"

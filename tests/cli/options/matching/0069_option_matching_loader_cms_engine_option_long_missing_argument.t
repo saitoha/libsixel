@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg_long=$(set +xv; run_img2sixel --cms-engine 2>&1) && {
+msg_long=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine 2>&1) && {
     echo "not ok" 1 - "long --cms-engine missing argument unexpectedly succeeded"
     exit 0
 }

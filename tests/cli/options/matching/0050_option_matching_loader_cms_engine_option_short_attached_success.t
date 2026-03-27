@@ -13,7 +13,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -23,14 +22,14 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_equals="${ARTIFACT_LOCAL_DIR}/cms_engine_short_attached_ref_equals.six"
 output_attached="${ARTIFACT_LOCAL_DIR}/cms_engine_short_attached_actual.six"
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_equals}" || {
     echo "not ok" 1 - "--cms-engine=auto reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -#auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_attached}" || {
     echo "not ok" 1 - "short attached -#auto form was rejected"

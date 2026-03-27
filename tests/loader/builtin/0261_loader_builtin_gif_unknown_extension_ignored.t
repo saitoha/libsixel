@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -19,14 +18,14 @@ unknown_ext_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-unknown-extension-s
 out_base="${ARTIFACT_LOCAL_DIR}/builtin_gif_unknown_ext_base.six"
 out_unknown="${ARTIFACT_LOCAL_DIR}/builtin_gif_unknown_ext_unknown.six"
 
-run_img2sixel --env SIXEL_THREADS=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               -Lbuiltin! -S -ldisable -d none -p 256 -y raster \
               "${base_gif}" >"${out_base}" || {
     echo "not ok" 1 - "baseline GIF decode failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_THREADS=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               -Lbuiltin! -S -ldisable -d none -p 256 -y raster \
               "${unknown_ext_gif}" >"${out_unknown}" || {
     echo "not ok" 1 - "unknown-extension GIF decode failed"

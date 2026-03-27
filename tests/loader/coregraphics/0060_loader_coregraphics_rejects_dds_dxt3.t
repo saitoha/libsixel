@@ -42,7 +42,6 @@ test "${dds_supported}" -eq 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -53,14 +52,14 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt3.dds"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_dds_dxt3.six"
 
-run_img2sixel -L coregraphics! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "coregraphics failed to decode DDS DXT3 input"
     exit 0
 }
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
