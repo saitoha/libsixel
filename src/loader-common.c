@@ -228,6 +228,10 @@ loader_cms_initialize_target(void)
         loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
     } else if (strcmp(target_env, "cielab") == 0) {
         loader_cms_target_colorspace_value = SIXEL_COLORSPACE_CIELAB;
+    } else if (strcmp(target_env, "oklab") == 0) {
+        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_OKLAB;
+    } else if (strcmp(target_env, "din99d") == 0) {
+        loader_cms_target_colorspace_value = SIXEL_COLORSPACE_DIN99D;
     }
 }
 
@@ -260,6 +264,10 @@ loader_cms_target_pixelformat(void)
         return SIXEL_PIXELFORMAT_RGBFLOAT32;
     case SIXEL_COLORSPACE_CIELAB:
         return SIXEL_PIXELFORMAT_CIELABFLOAT32;
+    case SIXEL_COLORSPACE_OKLAB:
+        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    case SIXEL_COLORSPACE_DIN99D:
+        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
     case SIXEL_COLORSPACE_LINEAR:
     default:
         return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
