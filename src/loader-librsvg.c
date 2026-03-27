@@ -21,9 +21,9 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * librsvg-backed SVG loader.  The backend rasterizes SVG into an RGB frame
- * through Cairo so the downstream pipeline keeps using the same pixel path
- * as the other decoders.
+ * librsvg-backed SVG loader. The backend rasterizes SVG through Cairo and
+ * emits RGB/RGBA frames so the downstream pipeline can preserve
+ * transparency while delegating palette generation to later quantization.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -41,6 +41,9 @@
 #if HAVE_CTYPE_H
 # include <ctype.h>
 #endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
 
 #include <librsvg/rsvg.h>
 #include <cairo.h>
@@ -55,8 +58,6 @@ typedef struct sixel_loader_librsvg_component {
     sixel_allocator_t *allocator;
     unsigned int ref;
     int fstatic;
-    int fuse_palette;
-    int reqcolors;
     unsigned char bgcolor[3];
     int has_bgcolor;
     int loop_control;
@@ -187,6 +188,62 @@ librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
     *pheight = height;
 }
 
+static int
+librsvg_surface_has_non_opaque_alpha(unsigned char const *row,
+                                     size_t row_stride,
+                                     int width,
+                                     int height)
+{
+    size_t x;
+    size_t y;
+    uint32_t const *src;
+    uint32_t pixel;
+    unsigned int alpha;
+
+    x = 0u;
+    y = 0u;
+    src = NULL;
+    pixel = 0u;
+    alpha = 0u;
+
+    if (row == NULL || width <= 0 || height <= 0) {
+        return 0;
+    }
+
+    for (y = 0u; y < (size_t)height; ++y) {
+        src = (uint32_t const *)(row + y * row_stride);
+        for (x = 0u; x < (size_t)width; ++x) {
+            pixel = src[x];
+            alpha = (pixel >> 24) & 0xffu;
+            if (alpha != 255u) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+static unsigned char
+librsvg_unpremultiply_channel(unsigned int value, unsigned int alpha)
+{
+    unsigned int unpremultiplied;
+
+    if (alpha == 0u) {
+        return 0u;
+    }
+    if (alpha >= 255u) {
+        return (unsigned char)value;
+    }
+
+    unpremultiplied = (value * 255u + alpha / 2u) / alpha;
+    if (unpremultiplied > 255u) {
+        unpremultiplied = 255u;
+    }
+
+    return (unsigned char)unpremultiplied;
+}
+
 static SIXELSTATUS
 librsvg_render_to_frame(sixel_frame_t *frame,
                         sixel_chunk_t const *chunk,
@@ -202,11 +259,20 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     unsigned char *pixels;
     unsigned char const *row;
     size_t row_stride;
+    size_t pixel_stride;
+    size_t pixel_total;
+    size_t buffer_size;
     int x;
     int y;
     uint32_t const *src;
     uint32_t pixel;
     size_t dst;
+    unsigned int alpha;
+    unsigned int red;
+    unsigned int green;
+    unsigned int blue;
+    int preserve_alpha;
+    int has_non_opaque_alpha;
 
     status = SIXEL_BAD_INPUT;
     handle = NULL;
@@ -220,6 +286,15 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     pixels = NULL;
     row = NULL;
     row_stride = 0;
+    pixel_stride = 0u;
+    pixel_total = 0u;
+    buffer_size = 0u;
+    alpha = 0u;
+    red = 0u;
+    green = 0u;
+    blue = 0u;
+    preserve_alpha = 0;
+    has_non_opaque_alpha = 0;
 
     handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
     if (handle == NULL) {
@@ -257,11 +332,19 @@ librsvg_render_to_frame(sixel_frame_t *frame,
         goto end;
     }
 
-    cairo_set_source_rgb(cr,
-                         ((double)bgcolor[0]) / 255.0,
-                         ((double)bgcolor[1]) / 255.0,
-                         ((double)bgcolor[2]) / 255.0);
-    cairo_paint(cr);
+    if (bgcolor != NULL) {
+        cairo_set_source_rgb(cr,
+                             ((double)bgcolor[0]) / 255.0,
+                             ((double)bgcolor[1]) / 255.0,
+                             ((double)bgcolor[2]) / 255.0);
+        cairo_paint(cr);
+    } else {
+        cairo_save(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
+        cairo_paint(cr);
+        cairo_restore(cr);
+    }
 
     viewport.width = (double)frame->width;
     viewport.height = (double)frame->height;
@@ -276,15 +359,29 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     row = cairo_image_surface_get_data(surface);
     row_stride = (size_t)cairo_image_surface_get_stride(surface);
 
-    if ((size_t)frame->width > SIZE_MAX / 3 ||
-            (size_t)frame->height > SIZE_MAX / ((size_t)frame->width * 3)) {
+    has_non_opaque_alpha = bgcolor == NULL
+        ? librsvg_surface_has_non_opaque_alpha(row,
+                                               row_stride,
+                                               frame->width,
+                                               frame->height)
+        : 0;
+    preserve_alpha = bgcolor == NULL && has_non_opaque_alpha;
+    pixel_stride = preserve_alpha ? 4u : 3u;
+
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
+    pixel_total = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_total > SIZE_MAX / pixel_stride) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    buffer_size = pixel_total * pixel_stride;
 
     pixels = (unsigned char *)sixel_allocator_malloc(
         chunk->allocator,
-        (size_t)frame->width * (size_t)frame->height * 3);
+        buffer_size);
     if (pixels == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -294,14 +391,30 @@ librsvg_render_to_frame(sixel_frame_t *frame,
         src = (uint32_t const *)(row + (size_t)y * row_stride);
         for (x = 0; x < frame->width; ++x) {
             pixel = src[x];
-            dst = ((size_t)y * (size_t)frame->width + (size_t)x) * 3;
-            pixels[dst + 0] = (unsigned char)((pixel >> 16) & 0xff);
-            pixels[dst + 1] = (unsigned char)((pixel >> 8) & 0xff);
-            pixels[dst + 2] = (unsigned char)(pixel & 0xff);
+            alpha = (pixel >> 24) & 0xffu;
+            red = (pixel >> 16) & 0xffu;
+            green = (pixel >> 8) & 0xffu;
+            blue = pixel & 0xffu;
+            dst = ((size_t)y * (size_t)frame->width + (size_t)x) * pixel_stride;
+            if (preserve_alpha) {
+                pixels[dst + 0] = librsvg_unpremultiply_channel(red, alpha);
+                pixels[dst + 1] = librsvg_unpremultiply_channel(green, alpha);
+                pixels[dst + 2] = librsvg_unpremultiply_channel(blue, alpha);
+                pixels[dst + 3] = (unsigned char)alpha;
+            } else {
+                pixels[dst + 0] = (unsigned char)red;
+                pixels[dst + 1] = (unsigned char)green;
+                pixels[dst + 2] = (unsigned char)blue;
+            }
         }
     }
 
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    frame->pixelformat = preserve_alpha
+        ? SIXEL_PIXELFORMAT_RGBA8888
+        : SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame->transparent = -1;
+    frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
     sixel_frame_set_pixels(frame, pixels);
     pixels = NULL;
 
@@ -331,8 +444,6 @@ static SIXELSTATUS
 load_with_librsvg(
     sixel_chunk_t const       /* in */     *pchunk,
     int                       /* in */     fstatic,
-    int                       /* in */     fuse_palette,
-    int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
     int                       /* in */     start_frame_no_set,
@@ -342,33 +453,21 @@ load_with_librsvg(
 {
     SIXELSTATUS status;
     sixel_frame_t *frame;
-    unsigned char opaque_bg[3];
 
     status = SIXEL_FALSE;
     frame = NULL;
-    opaque_bg[0] = 0;
-    opaque_bg[1] = 0;
-    opaque_bg[2] = 0;
 
     (void)fstatic;
-    (void)fuse_palette;
-    (void)reqcolors;
     (void)loop_control;
     (void)start_frame_no_set;
     (void)start_frame_no;
-
-    if (bgcolor != NULL) {
-        opaque_bg[0] = bgcolor[0];
-        opaque_bg[1] = bgcolor[1];
-        opaque_bg[2] = bgcolor[2];
-    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    status = librsvg_render_to_frame(frame, pchunk, opaque_bg);
+    status = librsvg_render_to_frame(frame, pchunk, bgcolor);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -451,14 +550,12 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
         self->fstatic = flag != NULL ? *flag : 0;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_USE_PALETTE:
-        flag = (int const *)value;
-        self->fuse_palette = flag != NULL ? *flag : 0;
+        /* librsvg always returns RGB/RGBA; palette generation is downstream. */
+        (void)value;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQCOLORS:
-        flag = (int const *)value;
-        if (flag != NULL) {
-            self->reqcolors = *flag;
-        }
+        /* kept for API compatibility with other loader components */
+        (void)value;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_BGCOLOR:
         if (value == NULL) {
@@ -514,8 +611,6 @@ sixel_loader_librsvg_load(sixel_loader_component_t *component,
 
     return load_with_librsvg(chunk,
                              self->fstatic,
-                             self->fuse_palette,
-                             self->reqcolors,
                              bgcolor,
                              self->loop_control,
                              self->has_start_frame_no,
@@ -561,7 +656,6 @@ sixel_loader_librsvg_new(sixel_allocator_t *allocator,
     self->base.vtbl = &g_sixel_loader_librsvg_vtbl;
     self->allocator = allocator;
     self->ref = 1u;
-    self->reqcolors = SIXEL_PALETTE_MAX;
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no = INT_MIN;
     sixel_allocator_ref(allocator);
