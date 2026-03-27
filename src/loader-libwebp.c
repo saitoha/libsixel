@@ -80,6 +80,7 @@ typedef struct sixel_loader_libwebp_component {
 #define WEBP_MAX_IMAGE_PIXELS     ((size_t)268435456u)
 #define WEBP_MAX_ANIMATION_FRAMES 65535
 #define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
+#define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)16777216u)
 
 static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
@@ -1141,7 +1142,8 @@ end:
  *
  * The ICC payload is stored in the ICCP chunk. This helper copies the
  * payload into allocator-managed memory so callers can safely use it after
- * the demuxer has been deleted.
+ * the demuxer has been deleted. Oversized profiles are ignored to avoid
+ * unbounded allocations in CMS-enabled decode paths.
  */
 static void
 webp_extract_icc_profile(unsigned char const *data,
@@ -1183,6 +1185,13 @@ webp_extract_icc_profile(unsigned char const *data,
         goto cleanup;
     }
     if (chunk_iter.chunk.bytes == NULL || chunk_iter.chunk.size == 0U) {
+        goto cleanup;
+    }
+    if (chunk_iter.chunk.size > WEBP_MAX_ICC_PROFILE_BYTES) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "embedded ICC profile too large (%zu bytes); skip CMS conversion",
+            chunk_iter.chunk.size);
         goto cleanup;
     }
 
