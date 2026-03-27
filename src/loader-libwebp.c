@@ -454,7 +454,22 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
+    src = frame->pixels.u8ptr;
+    if (src == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+
     pixel_count = (size_t)frame->width * (size_t)frame->height;
+    for (i = 0u; i < pixel_count; ++i) {
+        if (src[i * 4u + 3u] != 255u) {
+            has_transparency = 1;
+            break;
+        }
+    }
+    if (!has_transparency) {
+        return SIXEL_OK;
+    }
+
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
@@ -464,21 +479,6 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    src = frame->pixels.u8ptr;
-    if (src == NULL) {
-        sixel_allocator_free(allocator, dst);
-        return SIXEL_BAD_INPUT;
-    }
-    for (i = 0u; i < pixel_count; ++i) {
-        if (src[i * 4u + 3u] != 255u) {
-            has_transparency = 1;
-            break;
-        }
-    }
-    if (!has_transparency) {
-        sixel_allocator_free(allocator, dst);
-        return SIXEL_OK;
-    }
     webp_resolve_background_linear(bg_linear, bgcolor);
     for (i = 0u; i < pixel_count; ++i) {
         src_offset = i * 4u;
@@ -594,6 +594,7 @@ webp_decode_lossy_to_float32(unsigned char **result,
         return SIXEL_WEBP_ERROR;
     }
     config_initialized = 1;
+    config.options.use_threads = 1;
     config.output.colorspace = has_alpha ? MODE_YUVA : MODE_YUV;
 
     decode_status = WebPDecode(data, datasize, &config);
@@ -827,6 +828,15 @@ load_webp(unsigned char **result,
     if (features.format == 1 &&
         !force_rgb_decode &&
         !(features.has_alpha && bgcolor == NULL)) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "static decode path=lossy_yuva width=%d height=%d has_alpha=%d "
+            "has_bgcolor=%d force_rgb=%d",
+            *pwidth,
+            *pheight,
+            features.has_alpha,
+            bgcolor != NULL ? 1 : 0,
+            force_rgb_decode);
         return webp_decode_lossy_to_float32(result,
                                             data,
                                             datasize,
@@ -841,6 +851,17 @@ load_webp(unsigned char **result,
                                             bgcolor,
                                             allocator);
     }
+
+    sixel_trace_topic_message(
+        "webp_decode",
+        "static decode path=%s width=%d height=%d has_alpha=%d has_bgcolor=%d "
+        "force_rgb=%d",
+        features.has_alpha ? "rgba_u8" : "rgb_u8",
+        *pwidth,
+        *pheight,
+        features.has_alpha,
+        bgcolor != NULL ? 1 : 0,
+        force_rgb_decode);
 
     bytes_per_pixel = features.has_alpha ? 4 : 3;
     *ppixelformat = features.has_alpha ?
@@ -1698,6 +1719,15 @@ webp_finalize_frame_output(sixel_frame_t *frame,
 
     preserve_alpha_keycolor = webp_should_preserve_alpha_keycolor(frame,
                                                                   bgcolor);
+    sixel_trace_topic_message(
+        "webp_decode",
+        "finalize frame_no=%d pixelformat=%d preserve_alpha_keycolor=%d "
+        "has_bgcolor=%d allow_palette_promotion=%d",
+        frame->frame_no,
+        frame->pixelformat,
+        preserve_alpha_keycolor,
+        bgcolor != NULL ? 1 : 0,
+        allow_palette_promotion != 0 ? 1 : 0);
     if (preserve_alpha_keycolor) {
         frame->transparent = -1;
         frame->alpha_zero_is_transparent = 1;
@@ -1783,6 +1813,7 @@ load_with_libwebp(
     int emitted_frame_no;
     int cms_converted;
     unsigned int webp_format_flags;
+    unsigned int anim_bg_alpha;
     unsigned char anim_bgcolor[3];
     unsigned char *resolved_bgcolor;
     unsigned char *icc_profile;
@@ -1809,6 +1840,7 @@ load_with_libwebp(
     emitted_frame_no = 0;
     cms_converted = 0;
     webp_format_flags = 0U;
+    anim_bg_alpha = 0U;
     anim_bgcolor[0] = 0u;
     anim_bgcolor[1] = 0u;
     anim_bgcolor[2] = 0u;
@@ -1847,6 +1879,7 @@ load_with_libwebp(
         goto end;
     }
     decoder_options.color_mode = MODE_RGBA;
+    decoder_options.use_threads = 1;
     decoder = WebPAnimDecoderNew(&webp_data, &decoder_options);
     if (decoder == NULL) {
         sixel_helper_set_additional_message(
@@ -1868,6 +1901,7 @@ load_with_libwebp(
             webp_format_flags = WebPDemuxGetI(anim_demuxer, WEBP_FF_FORMAT_FLAGS);
             if ((webp_format_flags & ANIMATION_FLAG) != 0u &&
                 (webp_format_flags & ALPHA_FLAG) != 0u) {
+                anim_bg_alpha = (anim_info.bgcolor >> 24u) & 0xffu;
                 /*
                  * WebPAnimInfo::bgcolor stores ANIM background as
                  * 0xAARRGGBB. Extract RGB in that order.
@@ -1875,9 +1909,34 @@ load_with_libwebp(
                 anim_bgcolor[0] = (unsigned char)((anim_info.bgcolor >> 16u) & 0xffu);
                 anim_bgcolor[1] = (unsigned char)((anim_info.bgcolor >> 8u) & 0xffu);
                 anim_bgcolor[2] = (unsigned char)(anim_info.bgcolor & 0xffu);
-                resolved_bgcolor = anim_bgcolor;
+                if (anim_bg_alpha != 0u) {
+                    resolved_bgcolor = anim_bgcolor;
+                    sixel_trace_topic_message(
+                        "webp_decode",
+                        "animation background source=ANIM alpha=%u rgb=#%02x%02x%02x",
+                        anim_bg_alpha,
+                        anim_bgcolor[0],
+                        anim_bgcolor[1],
+                        anim_bgcolor[2]);
+                } else {
+                    sixel_trace_topic_message(
+                        "webp_decode",
+                        "animation background source=ANIM alpha=0; keep transparent path");
+                }
             }
         }
+    }
+    if (bgcolor != NULL) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "animation background source=explicit rgb=#%02x%02x%02x",
+            bgcolor[0],
+            bgcolor[1],
+            bgcolor[2]);
+    } else if (resolved_bgcolor == NULL) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "animation background source=none");
     }
 
     if (anim_info.frame_count <= 1) {

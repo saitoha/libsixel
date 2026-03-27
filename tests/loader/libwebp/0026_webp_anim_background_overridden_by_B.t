@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-2frame-min.webp"
+input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-2frame-bg112233.webp"
 output_default="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-default-override.six"
 output_white="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-white-override.six"
 
