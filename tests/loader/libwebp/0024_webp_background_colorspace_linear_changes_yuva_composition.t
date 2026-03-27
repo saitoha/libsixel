@@ -13,25 +13,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-command -v cwebp >/dev/null 2>&1 || {
-    printf "1..0 # SKIP cwebp is unavailable\n"
-    exit 0
-}
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_png="${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png"
-input_webp="${ARTIFACT_LOCAL_DIR}/webp-bgcs-lossy-alpha.webp"
+input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp"
 output_gamma="${ARTIFACT_LOCAL_DIR}/webp-bgcs-yuva-gamma.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/webp-bgcs-yuva-linear.six"
-
-cwebp -q 75 -alpha_q 100 "${input_png}" -o "${input_webp}" >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cwebp lossy alpha encode failed"
-    exit 0
-}
 
 run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Llibwebp:cms_engine=none! \
