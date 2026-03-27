@@ -144,6 +144,15 @@ quicklook_finalize_frame_pixels(sixel_frame_t *frame,
     frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
 }
 
+static void
+quicklook_set_error_message(char const *context)
+{
+    if (context == NULL) {
+        return;
+    }
+    sixel_helper_set_additional_message(context);
+}
+
 #if HAVE_QUICKLOOK_THUMBNAILING
 CGImageRef
 sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
@@ -297,6 +306,8 @@ load_with_quicklook(
     (void)start_frame_no;
 
     if (pchunk == NULL || pchunk->source_path == NULL) {
+        quicklook_set_error_message(
+            "load_with_quicklook: source path is unavailable.");
         goto end;
     }
 
@@ -311,6 +322,8 @@ load_with_quicklook(
                                      pchunk->source_path,
                                      kCFStringEncodingUTF8);
     if (path == NULL) {
+        quicklook_set_error_message(
+            "load_with_quicklook: CFStringCreateWithCString failed.");
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
@@ -320,6 +333,8 @@ load_with_quicklook(
                                         kCFURLPOSIXPathStyle,
                                         false);
     if (url == NULL) {
+        quicklook_set_error_message(
+            "load_with_quicklook: CFURLCreateWithFileSystemPath failed.");
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
@@ -363,6 +378,8 @@ load_with_quicklook(
 #endif
 
     if (image == NULL) {
+        quicklook_set_error_message(
+            "load_with_quicklook: QuickLook thumbnail creation failed.");
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
@@ -384,12 +401,16 @@ load_with_quicklook(
                                (size_t)(frame->height * stride)));
     pixels = sixel_frame_get_pixels(frame);
     if (pixels == NULL) {
+        quicklook_set_error_message(
+            "load_with_quicklook: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
     color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     if (color_space == NULL) {
+        quicklook_set_error_message(
+            "load_with_quicklook: CGColorSpaceCreateWithName failed.");
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
@@ -402,6 +423,8 @@ load_with_quicklook(
                                 kCGImageAlphaPremultipliedLast |
                                         kCGBitmapByteOrder32Big);
     if (ctx == NULL) {
+        quicklook_set_error_message(
+            "load_with_quicklook: CGBitmapContextCreate failed.");
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
