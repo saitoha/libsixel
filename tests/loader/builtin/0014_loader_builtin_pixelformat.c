@@ -139,6 +139,76 @@ float_approx_equal(float left, float right, float tolerance)
     return fabsf(left - right) <= tolerance;
 }
 
+#if defined(_MSC_VER)
+#define TEST_GETENV_CACHE_SLOTS 16
+static char *test_getenv_cache[TEST_GETENV_CACHE_SLOTS];
+static size_t test_getenv_cache_cursor;
+#endif
+
+/*
+ * Resolve environment variables without relying on private compat helpers.
+ *
+ * MSVC marks getenv() as deprecated and this test is compiled with /WX.
+ * Keep a small rotating cache for values duplicated via _dupenv_s() so
+ * callers can treat the return value like getenv() for the test lifetime.
+ */
+static char const *
+loader_test_getenv(char const *name)
+{
+#if defined(_MSC_VER)
+    char *value;
+    size_t value_length;
+    errno_t error_code;
+    size_t slot;
+
+    value = NULL;
+    value_length = 0u;
+    error_code = 0;
+    slot = 0u;
+
+    if (name == NULL || name[0] == '\0') {
+        return NULL;
+    }
+
+    error_code = _dupenv_s(&value, &value_length, name);
+    if (error_code != 0 || value == NULL || value_length == 0u) {
+        free(value);
+        return NULL;
+    }
+
+    slot = test_getenv_cache_cursor % TEST_GETENV_CACHE_SLOTS;
+    free(test_getenv_cache[slot]);
+    test_getenv_cache[slot] = value;
+    test_getenv_cache_cursor += 1u;
+
+    return test_getenv_cache[slot];
+#else
+    if (name == NULL || name[0] == '\0') {
+        return NULL;
+    }
+    return getenv(name);
+#endif
+}
+
+static char const *
+resolve_source_root_for_loader_test(void)
+{
+    char const *source_root;
+
+    source_root = loader_test_getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = loader_test_getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = loader_test_getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    return source_root;
+}
+
 static int
 run_builtin_loader_hdr_numeric_probe_case(char const *label,
                                           char const *relative_path,
@@ -171,16 +241,7 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
         return 1;
     }
 
-    source_root = getenv("MESON_SOURCE_ROOT");
-    if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
-    }
-    if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
-    }
-    if (source_root == NULL) {
-        source_root = ".";
-    }
+    source_root = resolve_source_root_for_loader_test();
 
     if (build_image_path(source_root,
                          relative_path,
@@ -401,16 +462,7 @@ run_builtin_loader_hdr_case_with_cms(char const *label,
     use_palette = 0;
     reqcolors = 256;
 
-    source_root = getenv("MESON_SOURCE_ROOT");
-    if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
-    }
-    if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
-    }
-    if (source_root == NULL) {
-        source_root = ".";
-    }
+    source_root = resolve_source_root_for_loader_test();
 
     if (build_image_path(source_root,
                          "/tests/data/inputs/formats/stbi_minimal.hdr",
@@ -533,7 +585,7 @@ run_builtin_loader_test(void)
     int parsed_pixelformat;
     int result;
 
-    hdr_numeric_mode = getenv("SIXEL_TEST_HDR_NUMERIC_GAMMA");
+    hdr_numeric_mode = loader_test_getenv("SIXEL_TEST_HDR_NUMERIC_GAMMA");
     if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_gamma_numeric_test();
     }
@@ -736,7 +788,7 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    expected_cms_pixelformat_text = getenv(
+    expected_cms_pixelformat_text = loader_test_getenv(
         "SIXEL_TEST_EXPECT_HDR_CMS_PIXELFORMAT");
     if (expected_cms_pixelformat_text != NULL &&
         expected_cms_pixelformat_text[0] != '\0') {
