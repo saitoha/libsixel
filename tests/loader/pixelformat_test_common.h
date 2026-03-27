@@ -49,6 +49,7 @@
 typedef struct loader_probe_context {
     int callback_count;
     int pixelformat;
+    int colorspace;
     int width;
     int height;
     int transparent;
@@ -82,6 +83,7 @@ capture_frame(sixel_frame_t *frame, void *data)
     context = (loader_probe_context_t *)data;
     context->callback_count += 1;
     context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->colorspace = sixel_frame_get_colorspace(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
     context->transparent = sixel_frame_get_transparent(frame);
@@ -214,6 +216,7 @@ run_loader_case_with_options(char const *label,
 
     context.callback_count = 0;
     context.pixelformat = 0;
+    context.colorspace = 0;
     context.width = 0;
     context.height = 0;
     context.transparent = FRAME_METADATA_ANY;
@@ -416,6 +419,7 @@ run_loader_component_case_with_options_ex(
 
     context.callback_count = 0;
     context.pixelformat = 0;
+    context.colorspace = 0;
     context.width = 0;
     context.height = 0;
     context.transparent = FRAME_METADATA_ANY;
