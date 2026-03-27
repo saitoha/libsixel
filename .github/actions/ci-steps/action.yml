@@ -1007,7 +1007,26 @@ runs:
           exit 0
         fi
         if command -v gcovr >/dev/null 2>&1; then
-          gcovr -r . --lcov -o coverage.info -j 1 || true
+          GCOV_TOOL=""
+          # clang-cl generated coverage needs llvm-cov gcov for format compatibility.
+          if command -v llvm-cov >/dev/null 2>&1; then
+            GCOV_TOOL="llvm-cov gcov"
+          elif command -v gcov-14 >/dev/null 2>&1; then
+            GCOV_TOOL="gcov-14"
+          fi
+
+          if [ -n "$GCOV_TOOL" ]; then
+            if ! gcovr -r . --lcov -o coverage.info -j 1 \
+              --gcov-executable "$GCOV_TOOL" \
+              --gcov-ignore-errors=no_working_dir_found; then
+              echo "gcovr with explicit gcov tool failed; retrying with auto gcov selection"
+              gcovr -r . --lcov -o coverage.info -j 1 \
+                --gcov-ignore-errors=no_working_dir_found || true
+            fi
+          else
+            gcovr -r . --lcov -o coverage.info -j 1 \
+              --gcov-ignore-errors=no_working_dir_found || true
+          fi
           if [ -f coverage.info ]; then
             cat coverage.info
           else
@@ -1018,7 +1037,26 @@ runs:
             python3 -m pip install --user gcovr || true
           fi
           if python3 -c "import gcovr" >/dev/null 2>&1; then
-            python3 -m gcovr -r . --lcov -o coverage.info -j 1 || true
+            GCOV_TOOL=""
+            # clang-cl generated coverage needs llvm-cov gcov for format compatibility.
+            if command -v llvm-cov >/dev/null 2>&1; then
+              GCOV_TOOL="llvm-cov gcov"
+            elif command -v gcov-14 >/dev/null 2>&1; then
+              GCOV_TOOL="gcov-14"
+            fi
+
+            if [ -n "$GCOV_TOOL" ]; then
+              if ! python3 -m gcovr -r . --lcov -o coverage.info -j 1 \
+                --gcov-executable "$GCOV_TOOL" \
+                --gcov-ignore-errors=no_working_dir_found; then
+                echo "python3 -m gcovr with explicit gcov tool failed; retrying with auto gcov selection"
+                python3 -m gcovr -r . --lcov -o coverage.info -j 1 \
+                  --gcov-ignore-errors=no_working_dir_found || true
+              fi
+            else
+              python3 -m gcovr -r . --lcov -o coverage.info -j 1 \
+                --gcov-ignore-errors=no_working_dir_found || true
+            fi
             if [ -f coverage.info ]; then
               cat coverage.info
             else
