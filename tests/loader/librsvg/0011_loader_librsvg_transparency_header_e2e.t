@@ -33,11 +33,13 @@ header_alpha="${ARTIFACT_LOCAL_DIR}/librsvg-header-alpha.bin"
 header_opaque="${ARTIFACT_LOCAL_DIR}/librsvg-header-opaque.bin"
 png_plte_magic="${ARTIFACT_LOCAL_DIR}/librsvg-png-plte-magic.bin"
 png_plte_len_two="${ARTIFACT_LOCAL_DIR}/librsvg-png-plte-len-two.bin"
+png_plte_prefix_red_white="${ARTIFACT_LOCAL_DIR}/librsvg-png-plte-prefix-red-white.bin"
 
 printf '\033P0;1q' >"${header_alpha}"
 printf '\033Pq' >"${header_opaque}"
 printf 'PLTE' >"${png_plte_magic}"
 printf '\000\000\000\006' >"${png_plte_len_two}"
+printf '\377\003\003\377\377\377' >"${png_plte_prefix_red_white}"
 
 run_img2sixel -L librsvg! "${svg_path}" >"${default_sixel}" || {
     echo "not ok" 1 - "default transparent SVG conversion failed"
@@ -99,18 +101,28 @@ dd if="${default_png}" bs=1 skip=33 count=4 2>/dev/null | cmp -s - "${png_plte_l
     exit 0
 }
 
-dd if="${bg_png}" bs=1 skip=41 count=6 2>/dev/null \
-    | od -An -tu1 \
-    | tr -s ' ' \
-    | grep -Eq ' 255 3 3 255 255 255' || {
+expected_plte_cksum_line="$(cksum "${png_plte_prefix_red_white}")"
+IFS=' ' read -r expected_plte_crc expected_plte_len _ <<EOF
+${expected_plte_cksum_line}
+EOF
+expected_plte_tag="${expected_plte_crc}:${expected_plte_len}"
+
+bg_plte_cksum_line="$(dd if="${bg_png}" bs=1 skip=41 count=6 2>/dev/null | cksum)"
+IFS=' ' read -r bg_plte_crc bg_plte_len _ <<EOF
+${bg_plte_cksum_line}
+EOF
+bg_plte_tag="${bg_plte_crc}:${bg_plte_len}"
+test "${bg_plte_tag}" = "${expected_plte_tag}" || {
     echo "not ok" 1 - "background PNG palette prefix did not include red+white"
     exit 0
 }
 
-dd if="${default_png}" bs=1 skip=41 count=6 2>/dev/null \
-    | od -An -tu1 \
-    | tr -s ' ' \
-    | grep -Eq ' 255 3 3 255 255 255' && {
+default_plte_cksum_line="$(dd if="${default_png}" bs=1 skip=41 count=6 2>/dev/null | cksum)"
+IFS=' ' read -r default_plte_crc default_plte_len _ <<EOF
+${default_plte_cksum_line}
+EOF
+default_plte_tag="${default_plte_crc}:${default_plte_len}"
+test "${default_plte_tag}" != "${expected_plte_tag}" || {
     echo "not ok" 1 - "default PNG unexpectedly matched red+white palette prefix"
     exit 0
 }
