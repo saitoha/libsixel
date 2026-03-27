@@ -36,10 +36,11 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-if cmp -s "${out_invalid}" "${out_off}"; then
-    echo "ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 is ignored and stays opt-out"
-else
+cmp -s "${out_invalid}" "${out_off}" || {
     echo "not ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 unexpectedly changes output"
-fi
+    exit 0
+}
+
+echo "ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 is ignored and stays opt-out"
 
 exit 0

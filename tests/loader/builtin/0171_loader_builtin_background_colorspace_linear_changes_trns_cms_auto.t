@@ -32,10 +32,10 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
     exit 0
 }
 
-if cmp -s "${output_gamma}" "${output_linear}"; then
+cmp -s "${output_gamma}" "${output_linear}" && {
     echo "not ok 1 - builtin cms=auto gamma and linear tRNS composition produced identical output"
-else
-    echo "ok 1 - builtin cms=auto linear background interpretation changes tRNS composition"
-fi
+    exit 0
+}
 
+echo "ok 1 - builtin cms=auto linear background interpretation changes tRNS composition"
 exit 0

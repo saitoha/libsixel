@@ -35,10 +35,11 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_env1}"; then
-    echo "ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 is ignored for palette+tRNS output"
-else
+cmp -s "${out_default}" "${out_env1}" || {
     echo "not ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 unexpectedly changes palette+tRNS output"
-fi
+    exit 0
+}
+
+echo "ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 is ignored for palette+tRNS output"
 
 exit 0

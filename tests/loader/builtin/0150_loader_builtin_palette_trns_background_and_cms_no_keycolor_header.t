@@ -29,7 +29,7 @@ run_img2sixel -Lbuiltin:cms_engine=auto! \
     exit 0
 }
 
-while IFS= read -r out_line || [ -n "${out_line}" ]; do
+while IFS= read -r out_line || test -n "${out_line}"; do
     out_payload="${out_payload}${out_line}
 "
 done < "${out}"
@@ -40,10 +40,11 @@ case "${out_payload}" in
         ;;
 esac
 
-if [ "${out_has_header}" = 0 ]; then
-    echo "ok 1 - builtin palette+tRNS drops keycolor header under cms=1 background"
-else
+test "${out_has_header}" = 0 || {
     echo "not ok 1 - builtin palette+tRNS kept keycolor header under cms=1 background"
-fi
+    exit 0
+}
+
+echo "ok 1 - builtin palette+tRNS drops keycolor header under cms=1 background"
 
 exit 0

@@ -33,28 +33,21 @@ trace_log=$(
 actual_sequence=$(
     printf '%s\n' "${trace_log}" | awk '
         /callback frame_no=/ && /handoff=/ {
-            frame = ""
-            loop = ""
-            for (i = 1; i <= NF; ++i) {
-                token = $i
-                if (token ~ /^frame_no=/) {
-                    sub(/^frame_no=/, "", token)
-                    frame = token
-                } else if (token ~ /^loop_no=/) {
-                    sub(/^loop_no=/, "", token)
-                    loop = token
-                }
-            }
-            if (frame != "" && loop != "") {
-                print loop ":" frame
-            }
+            frame = $0
+            loop = $0
+            sub(/^.*frame_no=/, "", frame)
+            sub(/ .*/, "", frame)
+            sub(/^.*loop_no=/, "", loop)
+            sub(/ .*/, "", loop)
+            printf "%s:%s\n", loop, frame
         }'
 )
 
-if [ "${actual_sequence}" = "${expected_sequence}" ]; then
-    echo "ok 1 - builtin APNG start=-1 keycolor sequence stays loop-local"
-else
+test "${actual_sequence}" = "${expected_sequence}" || {
     echo "not ok 1 - builtin APNG start=-1 keycolor sequence mismatch"
-fi
+    exit 0
+}
+
+echo "ok 1 - builtin APNG start=-1 keycolor sequence stays loop-local"
 
 exit 0
