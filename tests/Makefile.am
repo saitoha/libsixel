@@ -191,6 +191,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0020_LOADER_LIBRSVG_DETECT_SVG_LIKE \
     -DBUILD_TEST_0021_LOADER_BUILTIN_INDEXED_PNG_REQCOLORS_FALLBACK \
     -DBUILD_TEST_0022_LOADER_LIBPNG_INDEXED_PNG_REQCOLORS_FALLBACK \
+    -DBUILD_TEST_0023_LOADER_LIBRSVG_PIXELFORMAT \
     -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
     -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
     -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
@@ -237,6 +238,7 @@ test_runner_SOURCES = test_runner.c \
     loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
     loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c \
     loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
+    loader/librsvg/0023_loader_librsvg_pixelformat.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \

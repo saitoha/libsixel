@@ -60,6 +60,7 @@ int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv);
 int test_loader_0022_loader_libpng_indexed_png_reqcolors_fallback(int argc,
                                                                    char **argv);
+int test_loader_0023_loader_librsvg_pixelformat(int argc, char **argv);
 
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
 int test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv);
@@ -130,6 +131,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback },
     { "loader/0022_loader_libpng_indexed_png_reqcolors_fallback",
       test_loader_0022_loader_libpng_indexed_png_reqcolors_fallback },
+    { "loader/0023_loader_librsvg_pixelformat",
+      test_loader_0023_loader_librsvg_pixelformat },
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
     { "gdk-pixbuf-loader/0001_gdk_pixbuf_loader",
       test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader },
