@@ -57,9 +57,12 @@ Key points used by this roadmap:
 - Composite-missing policy:
   - When layer records exist and composite image data is absent, return explicit
     unsupported (`merged/composite image required`).
+  - When image data exists but raw/RLE payload is too short, return malformed
+    (do not conflate truncation with layer-only PSD policy).
 - Existing regression includes ICC and alpha combinations on Raw and ZIP paths,
-  32-bit decode matrix coverage (RGB/Gray/CMYK/Lab), and mode-specific
-  unsupported trace behavior (Bitmap ZIP+Prediction, 32-bit RLE paths).
+  32-bit decode matrix coverage (RGB/Gray/CMYK/Lab), explicit unsupported
+  traces (Bitmap ZIP+Prediction, 32-bit RLE, CMYK16/Lab16), and ZIP+Prediction
+  ICC trace coverage (`RGB+alpha+--bgcolor`, Lab skip, CMYK bad-ICC failure).
 
 ## Target Compatibility Levels
 
@@ -165,12 +168,10 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Expand composite-missing detection beyond the `image_data_length == 0` case
-   (distinguish truncated streams from "layer-only PSD" more precisely).
-2. Add explicit `mode × depth × compression` docs/tests for remaining
-   unsupported combinations (for example `CMYK 16-bit`, `Lab 16-bit`) so all
-   policy rejections are deterministic and trace-covered.
-3. Expand `alpha + --bgcolor + ICC` verification matrix for ZIP/ZIP+Prediction
-   paths, and keep "failure trace only on real ICC failure" behavior fixed.
-4. Keep PSB (`8BPB`) out of scope for this milestone, but document boundary and
+1. Extend "missing composite vs malformed stream" regression to ZIP/ZIP+Prediction
+   truncation scenarios with layer records, to keep diagnostics consistent across
+   all compression families.
+2. Keep unsupported-policy matrix synchronized as new decode scope changes:
+   every policy rejection must have deterministic trace coverage.
+3. Keep PSB (`8BPB`) out of scope for this milestone, but document boundary and
    migration plan from PSD parser/decoder primitives.
