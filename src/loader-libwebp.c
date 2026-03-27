@@ -939,219 +939,16 @@ end:
     return status;
 }
 
-static SIXELSTATUS
-webp_decode_lossy_to_rgba8888(unsigned char **result,
-                              unsigned char *data,
-                              size_t datasize,
-                              int width,
-                              int height,
-                              int *ppixelformat,
-                              int enable_cms,
-                              unsigned char const *icc_profile,
-                              size_t icc_profile_length,
-                              int *pcms_converted,
-                              sixel_allocator_t *allocator)
-{
-    SIXELSTATUS status;
-    WebPDecoderConfig config;
-    VP8StatusCode decode_status;
-    unsigned char *rgba_pixels;
-    size_t pixel_count;
-    size_t rgba_bytes;
-    uint8_t *y_plane;
-    uint8_t *u_plane;
-    uint8_t *v_plane;
-    uint8_t *a_plane;
-    int y_stride;
-    int u_stride;
-    int v_stride;
-    int a_stride;
-    int x;
-    int y;
-    size_t offset;
-    float y_sample;
-    float u_sample;
-    float v_sample;
-    float r;
-    float g;
-    float b;
-    int config_initialized;
-    int cms_converted;
-    char error_message[128];
-
-    status = SIXEL_BAD_INPUT;
-    memset(&config, 0, sizeof(config));
-    decode_status = VP8_STATUS_OK;
-    rgba_pixels = NULL;
-    pixel_count = 0u;
-    rgba_bytes = 0u;
-    y_plane = NULL;
-    u_plane = NULL;
-    v_plane = NULL;
-    a_plane = NULL;
-    y_stride = 0;
-    u_stride = 0;
-    v_stride = 0;
-    a_stride = 0;
-    x = 0;
-    y = 0;
-    offset = 0u;
-    y_sample = 0.0f;
-    u_sample = 0.0f;
-    v_sample = 0.0f;
-    r = 0.0f;
-    g = 0.0f;
-    b = 0.0f;
-    config_initialized = 0;
-    cms_converted = 0;
-    memset(error_message, 0, sizeof(error_message));
-
-    if (result == NULL || ppixelformat == NULL || allocator == NULL ||
-        data == NULL || datasize == 0u || width <= 0 || height <= 0) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (!WebPInitDecoderConfig(&config)) {
-        sixel_helper_set_additional_message(
-            "webp_decode_lossy_to_rgba8888: WebPInitDecoderConfig failed.");
-        return SIXEL_WEBP_ERROR;
-    }
-    config_initialized = 1;
-    config.options.use_threads = 1;
-    config.output.colorspace = MODE_YUVA;
-
-    decode_status = WebPDecode(data, datasize, &config);
-    if (decode_status != VP8_STATUS_OK) {
-        (void)snprintf(error_message,
-                       sizeof(error_message),
-                       "webp_decode_lossy_to_rgba8888: WebPDecode failed (%s:%d).",
-                       webp_decode_status_name(decode_status),
-                       (int)decode_status);
-        sixel_helper_set_additional_message(error_message);
-        status = SIXEL_WEBP_ERROR;
-        goto end;
-    }
-
-    y_plane = config.output.u.YUVA.y;
-    u_plane = config.output.u.YUVA.u;
-    v_plane = config.output.u.YUVA.v;
-    a_plane = config.output.u.YUVA.a;
-    y_stride = config.output.u.YUVA.y_stride;
-    u_stride = config.output.u.YUVA.u_stride;
-    v_stride = config.output.u.YUVA.v_stride;
-    a_stride = config.output.u.YUVA.a_stride;
-    if (y_plane == NULL || u_plane == NULL || v_plane == NULL) {
-        sixel_helper_set_additional_message(
-            "webp_decode_lossy_to_rgba8888: YUV plane is missing.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    if (config.output.width != width || config.output.height != height) {
-        sixel_helper_set_additional_message(
-            "webp_decode_lossy_to_rgba8888: decoded dimensions mismatch.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    if (y_stride <= 0 || u_stride <= 0 || v_stride <= 0 ||
-        (a_plane != NULL && a_stride <= 0)) {
-        sixel_helper_set_additional_message(
-            "webp_decode_lossy_to_rgba8888: YUVA plane stride is invalid.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-
-    if ((size_t)width > SIZE_MAX / (size_t)height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    pixel_count = (size_t)width * (size_t)height;
-    if (pixel_count > SIZE_MAX / 4u) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-
-    rgba_bytes = pixel_count * 4u;
-    rgba_pixels = (unsigned char *)sixel_allocator_malloc(allocator, rgba_bytes);
-    if (rgba_pixels == NULL) {
-        sixel_helper_set_additional_message(
-            "webp_decode_lossy_to_rgba8888: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
-            y_sample = (float)y_plane[(size_t)y * (size_t)y_stride + (size_t)x]
-                     - 16.0f;
-            if (y_sample < 0.0f) {
-                y_sample = 0.0f;
-            }
-            u_sample = (float)u_plane[(size_t)(y >> 1) * (size_t)u_stride
-                                      + (size_t)(x >> 1)] - 128.0f;
-            v_sample = (float)v_plane[(size_t)(y >> 1) * (size_t)v_stride
-                                      + (size_t)(x >> 1)] - 128.0f;
-
-            r = (1.16438356f * y_sample + 1.59602678f * v_sample) / 255.0f;
-            g = (1.16438356f * y_sample - 0.39176229f * u_sample
-                 - 0.81296765f * v_sample) / 255.0f;
-            b = (1.16438356f * y_sample + 2.01723214f * u_sample) / 255.0f;
-
-            r = webp_clamp_unit_float(r);
-            g = webp_clamp_unit_float(g);
-            b = webp_clamp_unit_float(b);
-
-            offset = ((size_t)y * (size_t)width + (size_t)x) * 4u;
-            rgba_pixels[offset + 0u] = (unsigned char)(r * 255.0f + 0.5f);
-            rgba_pixels[offset + 1u] = (unsigned char)(g * 255.0f + 0.5f);
-            rgba_pixels[offset + 2u] = (unsigned char)(b * 255.0f + 0.5f);
-            if (a_plane != NULL) {
-                rgba_pixels[offset + 3u] =
-                    a_plane[(size_t)y * (size_t)a_stride + (size_t)x];
-            } else {
-                rgba_pixels[offset + 3u] = 255u;
-            }
-        }
-    }
-
-    if (enable_cms) {
-        cms_converted = webp_convert_embedded_icc_to_srgb(
-            rgba_pixels,
-            width,
-            height,
-            SIXEL_PIXELFORMAT_RGBA8888,
-            icc_profile,
-            icc_profile_length,
-            allocator);
-    }
-    if (pcms_converted != NULL) {
-        *pcms_converted = cms_converted;
-    }
-
-    *ppixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    *result = rgba_pixels;
-    rgba_pixels = NULL;
-    status = SIXEL_OK;
-
-end:
-    if (rgba_pixels != NULL) {
-        sixel_allocator_free(allocator, rgba_pixels);
-    }
-    if (config_initialized) {
-        WebPFreeDecBuffer(&config.output);
-    }
-    return status;
-}
-
 /*
  * Decode a WebP buffer into an RGB(A) pixel buffer managed by libsixel.
  *
  * The steps are:
  *   1) Probe the WebP bitstream for dimensions and alpha flags.
  *   2) Allocate the output buffer from the sixel allocator.
- *   3) Decode lossy streams via YUV(A)-plane decode:
- *      - with alpha and no background: keep RGBA output for keycolor path
- *      - otherwise: convert to RGB float32 for background-aware composition
- *   4) Decode remaining streams into RGB/RGBA bytes.
+ *   3) Decode lossy streams via YUV(A)-plane decode when background-aware
+ *      composition is required.
+ *   4) Decode remaining streams (including lossy+alpha without background)
+ *      into RGB/RGBA bytes.
  */
 static SIXELSTATUS
 load_webp(unsigned char **result,
@@ -1240,29 +1037,8 @@ load_webp(unsigned char **result,
         force_rgb_decode = 1;
     }
 
-    if (features.format == 1 && !force_rgb_decode) {
-        if (features.has_alpha && bgcolor == NULL) {
-            sixel_trace_topic_message(
-                "webp_decode",
-                "static decode path=lossy_yuva_rgba width=%d height=%d has_alpha=%d "
-                "has_bgcolor=%d force_rgb=%d",
-                *pwidth,
-                *pheight,
-                features.has_alpha,
-                bgcolor != NULL ? 1 : 0,
-                force_rgb_decode);
-            return webp_decode_lossy_to_rgba8888(result,
-                                                 data,
-                                                 datasize,
-                                                 *pwidth,
-                                                 *pheight,
-                                                 ppixelformat,
-                                                 enable_cms,
-                                                 icc_profile,
-                                                 icc_profile_length,
-                                                 pcms_converted,
-                                                 allocator);
-        }
+    if (features.format == 1 && !force_rgb_decode &&
+        !(features.has_alpha && bgcolor == NULL)) {
         sixel_trace_topic_message(
             "webp_decode",
             "static decode path=lossy_yuva width=%d height=%d has_alpha=%d "
