@@ -72,6 +72,8 @@ typedef struct sixel_loader_librsvg_component {
 #define LIBRSVG_DEFAULT_DPI    90.0
 #define LIBRSVG_MAX_DIMENSION  32767
 #define LIBRSVG_MAX_IMAGE_PIXELS ((size_t)268435456u)
+#define LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES \
+    "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES"
 
 static void
 librsvg_set_error_message(char const *context, GError const *gerror)
@@ -100,6 +102,114 @@ librsvg_set_error_message(char const *context, GError const *gerror)
     }
     message[message_capacity - 1] = '\0';
     sixel_helper_set_additional_message(message);
+}
+
+static int
+librsvg_equals_nocase(char const *lhs, char const *rhs)
+{
+    unsigned char lch;
+    unsigned char rch;
+
+    lch = 0u;
+    rch = 0u;
+    if (lhs == NULL || rhs == NULL) {
+        return 0;
+    }
+
+    while (*lhs != '\0' && *rhs != '\0') {
+        lch = (unsigned char)*lhs;
+        rch = (unsigned char)*rhs;
+        if (tolower(lch) != tolower(rch)) {
+            return 0;
+        }
+        ++lhs;
+        ++rhs;
+    }
+
+    return *lhs == '\0' && *rhs == '\0';
+}
+
+static int
+librsvg_env_is_enabled(char const *name)
+{
+    char const *value;
+    size_t index;
+
+    value = NULL;
+    index = 0u;
+    if (name == NULL) {
+        return 0;
+    }
+
+    value = sixel_compat_getenv(name);
+    if (value == NULL) {
+        return 0;
+    }
+    while (value[index] != '\0' &&
+           isspace((unsigned char)value[index]) != 0) {
+        ++index;
+    }
+    if (value[index] == '\0') {
+        return 0;
+    }
+    if (librsvg_equals_nocase(value + index, "0") ||
+            librsvg_equals_nocase(value + index, "off") ||
+            librsvg_equals_nocase(value + index, "false") ||
+            librsvg_equals_nocase(value + index, "no")) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+librsvg_path_is_local_file(char const *path)
+{
+    if (path == NULL || path[0] == '\0' || strcmp(path, "-") == 0) {
+        return 0;
+    }
+    if (strstr(path, "://") != NULL) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+librsvg_path_has_suffix_nocase(char const *path, char const *suffix)
+{
+    size_t path_len;
+    size_t suffix_len;
+    size_t index;
+
+    path_len = 0u;
+    suffix_len = 0u;
+    index = 0u;
+    if (path == NULL || suffix == NULL) {
+        return 0;
+    }
+
+    path_len = strlen(path);
+    suffix_len = strlen(suffix);
+    if (path_len < suffix_len) {
+        return 0;
+    }
+
+    for (index = 0u; index < suffix_len; ++index) {
+        if (tolower((unsigned char)path[path_len - suffix_len + index]) !=
+                tolower((unsigned char)suffix[index])) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+static int
+librsvg_is_svgz_chunk(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 2u) {
+        return 0;
+    }
+    return chunk->buffer[0] == 0x1fu && chunk->buffer[1] == 0x8bu;
 }
 
 static int
@@ -156,6 +266,10 @@ chunk_is_svg_like(sixel_chunk_t const *chunk)
 
     if (chunk == NULL || chunk->buffer == NULL || chunk->size == 0) {
         return 0;
+    }
+    if (chunk->source_path != NULL &&
+            librsvg_path_has_suffix_nocase(chunk->source_path, ".svgz")) {
+        return 1;
     }
 
     offset = 0;
@@ -339,7 +453,8 @@ librsvg_unpremultiply_channel(unsigned int value, unsigned int alpha)
 static SIXELSTATUS
 librsvg_render_to_frame(sixel_frame_t *frame,
                         sixel_chunk_t const *chunk,
-                        unsigned char const *bgcolor)
+                        unsigned char const *bgcolor,
+                        int allow_relative_resources)
 {
     SIXELSTATUS status;
     RsvgHandle *handle;
@@ -367,6 +482,8 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     int preserve_alpha;
     int inspect_alpha;
     int has_non_opaque_alpha;
+    int use_source_file;
+    int input_is_svgz;
 
     status = SIXEL_BAD_INPUT;
     handle = NULL;
@@ -391,14 +508,42 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     preserve_alpha = 0;
     inspect_alpha = 0;
     has_non_opaque_alpha = 0;
+    use_source_file = 0;
+    input_is_svgz = 0;
 
-    handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
-    if (handle == NULL) {
-        librsvg_set_error_message(
-            "librsvg_render_to_frame: unable to parse SVG data.",
-            gerror);
-        status = SIXEL_BAD_INPUT;
-        goto end;
+    input_is_svgz = librsvg_is_svgz_chunk(chunk);
+    use_source_file = librsvg_path_is_local_file(chunk->source_path) &&
+                      (allow_relative_resources ||
+                       (input_is_svgz &&
+                        librsvg_path_has_suffix_nocase(chunk->source_path,
+                                                       ".svgz")));
+
+    if (use_source_file) {
+        handle = rsvg_handle_new_from_file(chunk->source_path, &gerror);
+        if (handle == NULL) {
+            librsvg_set_error_message(
+                "librsvg_render_to_frame: unable to parse SVG file.",
+                gerror);
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    } else {
+        if (input_is_svgz) {
+            sixel_helper_set_additional_message(
+                "librsvg_render_to_frame: gzip-compressed SVG (.svgz) "
+                "requires file-path decode or prior decompression.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+
+        handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
+        if (handle == NULL) {
+            librsvg_set_error_message(
+                "librsvg_render_to_frame: unable to parse SVG data.",
+                gerror);
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
     }
 
     librsvg_pick_size(handle, &frame->width, &frame->height);
@@ -572,9 +717,12 @@ load_with_librsvg(
 {
     SIXELSTATUS status;
     sixel_frame_t *frame;
+    int allow_relative_resources;
 
     status = SIXEL_FALSE;
     frame = NULL;
+    allow_relative_resources =
+        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES);
 
     (void)fstatic;
     (void)loop_control;
@@ -586,7 +734,10 @@ load_with_librsvg(
         goto end;
     }
 
-    status = librsvg_render_to_frame(frame, pchunk, bgcolor);
+    status = librsvg_render_to_frame(frame,
+                                     pchunk,
+                                     bgcolor,
+                                     allow_relative_resources);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

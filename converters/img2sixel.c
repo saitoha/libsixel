@@ -1005,6 +1005,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts only 0/1. Unset and 1 enable (default); 0 disables."
     },
     {
+        "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES",
+        "allow librsvg file-path decode so local relative external assets\n"
+        "can resolve. Unset/0/off/false/no keep byte-only mode."
+    },
+    {
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
         "override CMS backend for libjpeg loader conversion.\n"
         "Overrides SIXEL_LOADER_CMS_ENGINE."

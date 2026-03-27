@@ -64,7 +64,7 @@ static char const * const g_magic_webp[] = { "RIFF" };
 static char const * const g_magic_tiff[] = { "II", "MM" };
 #endif
 #if HAVE_LIBRSVG
-static char const * const g_magic_svg[] = { "<svg", "<?xml" };
+static char const * const g_magic_svg[] = { "<svg", "<?xml", "\x1f\x8b" };
 #endif
 
 static sixel_loader_entry_t const sixel_loader_entries[] = {

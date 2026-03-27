@@ -46,6 +46,13 @@ test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv)
         return 1;
     }
 
+    chunk.source_path = "sample.SVGZ";
+    if (!loader_can_try_librsvg(&chunk)) {
+        fprintf(stderr, ".svgz path hint was not detected\n");
+        return 1;
+    }
+    chunk.source_path = NULL;
+
     memset(long_prefix, ' ', sizeof(long_prefix));
     long_prefix[4100] = '<';
     long_prefix[4101] = 's';

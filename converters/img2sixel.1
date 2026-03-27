@@ -542,10 +542,16 @@ background compositing).
 compatibility but are ignored by this backend; palette limits are applied by
 the downstream quantizer.
 .PP
-The librsvg path parses SVG bytes without assigning a base URI. Relative
-external references (linked images, stylesheets, and similar assets) are not
-resolved; embed dependencies (for example with data: URIs) or preprocess the
-document into a self-contained SVG before conversion.
+By default, the librsvg path parses SVG bytes without assigning a base URI.
+Relative external references (linked images, stylesheets, and similar assets)
+are therefore not resolved.
+Set \fBSIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1\fP to opt in to
+file-path decode for local SVG files so relative references can resolve.
+.PP
+For local \fB.svgz\fP paths, the loader decodes through file-path mode even
+when the opt-in is unset.
+For gzip-compressed SVG data coming from stdin/pipe, this backend rejects the
+input; decompress first or pass a local \fB.svgz\fP filename.
 .TP 5
 .B \-# \fIENGINE\fP, \-\-cms\-engine=\fIENGINE\fP
 set the default loader CMS backend for this process by exporting
