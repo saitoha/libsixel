@@ -29,7 +29,10 @@ run_img2sixel --env SIXEL_THREADS=4 \
     exit 0
 }
 
-if [ "$(od -An -t x1 -N 3 "${output_six}" | tr -d ' \n')" = "1b5b48" ]; then
+prefix_hex="$(od -An -t x1 -N 3 "${output_six}" \
+    | LC_ALL=C tr -d '[:space:]' \
+    | LC_ALL=C tr 'A-F' 'a-f')"
+if [ "${prefix_hex}" = "1b5b48" ]; then
     dd if="${output_six}" of="${normalized_six}" bs=1 skip=3 2>/dev/null
 else
     cp "${output_six}" "${normalized_six}"
