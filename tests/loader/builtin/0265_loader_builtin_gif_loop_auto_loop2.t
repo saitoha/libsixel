@@ -37,7 +37,7 @@ actual_sequence="$(printf '%s\n' "${trace_log}" | awk '
         sub(/ .*/, "", frame)
         sub(/^.*loop_no=/, "", loop)
         sub(/ .*/, "", loop)
-        printf "%s:%s\\n", loop, frame
+        printf "%s:%s\n", loop, frame
     }')"
 
 test "${actual_sequence}" = "${expected_twice}" || {
