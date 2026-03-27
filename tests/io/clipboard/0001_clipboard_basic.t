@@ -26,7 +26,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 sixel_src="${TOP_SRCDIR}/images/snake-progressive-16x16.jpg"
 sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"
 roundtrip_png="${ARTIFACT_LOCAL_DIR}/clipboard-roundtrip.png"
-fake_clipboard_dir="${ARTIFACT_LOCAL_DIR}/clipboard-fake"
+fake_clipboard_dir="${ARTIFACT_LOCAL_DIR}"
 clipboard_backend_mode="fake"
 use_system_clipboard=0
 lsqa_floor="0.98"
@@ -39,65 +39,31 @@ fi
 
 if test "${use_system_clipboard}" = 1; then
     clipboard_backend_mode="system"
+    set --
 else
-    mkdir -p "${fake_clipboard_dir}"
+    set -- --env SIXEL_CLIPBOARD_BACKEND=file \
+        --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_clipboard_dir}"
 fi
 
-if test "${use_system_clipboard}" = 1; then
-    run_img2sixel "${sixel_src}" >"${sixel_tmp}" || {
-        echo "not ok" 1 - "failed to prepare sixel input"
-        exit 0
-    }
-else
-    run_img2sixel --env SIXEL_CLIPBOARD_BACKEND=file \
-        --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-        "${sixel_src}" >"${sixel_tmp}" || {
-        echo "not ok" 1 - "failed to prepare sixel input"
-        exit 0
-    }
-fi
+run_img2sixel "$@" "${sixel_src}" >"${sixel_tmp}" || {
+    echo "not ok" 1 - "failed to prepare sixel input"
+    exit 0
+}
 
-if test "${use_system_clipboard}" = 1; then
-    run_sixel2png -i "${sixel_tmp}" -o png:clipboard: || {
-        printf "ok 1 # SKIP clipboard backend unavailable\n"
-        exit 0
-    }
-else
-    run_sixel2png --env SIXEL_CLIPBOARD_BACKEND=file \
-        --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-        -i "${sixel_tmp}" -o png:clipboard: || {
-        printf "ok 1 # SKIP clipboard backend unavailable\n"
-        exit 0
-    }
-fi
+run_sixel2png "$@" -i "${sixel_tmp}" -o png:clipboard: || {
+    printf "ok 1 # SKIP clipboard backend unavailable\n"
+    exit 0
+}
 
-if test "${use_system_clipboard}" = 1; then
-    run_img2sixel clipboard: -o clipboard: || {
-        printf "ok 1 # SKIP clipboard backend unavailable\n"
-        exit 0
-    }
-else
-    run_img2sixel --env SIXEL_CLIPBOARD_BACKEND=file \
-        --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-        clipboard: -o clipboard: || {
-        printf "ok 1 # SKIP clipboard backend unavailable\n"
-        exit 0
-    }
-fi
+run_img2sixel "$@" clipboard: -o clipboard: || {
+    printf "ok 1 # SKIP clipboard backend unavailable\n"
+    exit 0
+}
 
-if test "${use_system_clipboard}" = 1; then
-    run_sixel2png -i clipboard: -o "${roundtrip_png}" || {
-        printf "ok 1 # SKIP clipboard backend unavailable\n"
-        exit 0
-    }
-else
-    run_sixel2png --env SIXEL_CLIPBOARD_BACKEND=file \
-        --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-        -i clipboard: -o "${roundtrip_png}" || {
-        printf "ok 1 # SKIP clipboard backend unavailable\n"
-        exit 0
-    }
-fi
+run_sixel2png "$@" -i clipboard: -o "${roundtrip_png}" || {
+    printf "ok 1 # SKIP clipboard backend unavailable\n"
+    exit 0
+}
 
 test -s "${roundtrip_png}" || {
     echo "not ok" 1 - "round-trip PNG missing"
