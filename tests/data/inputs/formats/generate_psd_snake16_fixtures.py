@@ -682,7 +682,7 @@ def generate(out_dir: pathlib.Path):
         channels=1,
         depth=32,
         color_mode=1,
-        variants=["raw", "zip_pred"],
+        variants=["raw", "zip", "zip_pred"],
     )
     write_variants(
         out_dir,
@@ -691,7 +691,7 @@ def generate(out_dir: pathlib.Path):
         channels=3,
         depth=32,
         color_mode=9,
-        variants=["raw", "zip_pred"],
+        variants=["raw", "zip", "zip_pred"],
     )
 
     # Existing CMYK and Bitmap fixtures (kept and expanded from same source)
@@ -722,7 +722,7 @@ def generate(out_dir: pathlib.Path):
         channels=4,
         depth=32,
         color_mode=4,
-        variants=["raw", "zip"],
+        variants=["raw", "zip", "zip_pred"],
     )
 
     write_variants(
