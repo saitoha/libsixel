@@ -74,6 +74,8 @@ typedef struct sixel_loader_librsvg_component {
 #define LIBRSVG_MAX_IMAGE_PIXELS ((size_t)268435456u)
 #define LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES \
     "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES"
+#define LIBRSVG_ENV_ALLOW_STDIN_SVGZ \
+    "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ"
 
 static void
 librsvg_set_error_message(char const *context, GError const *gerror)
@@ -451,10 +453,89 @@ librsvg_unpremultiply_channel(unsigned int value, unsigned int alpha)
 }
 
 static SIXELSTATUS
+librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
+{
+    SIXELSTATUS status;
+    GError *gerror;
+    int fd;
+    char *path;
+    size_t offset;
+    ssize_t written;
+
+    status = SIXEL_FALSE;
+    gerror = NULL;
+    fd = (-1);
+    path = NULL;
+    offset = 0u;
+    written = 0;
+    if (chunk == NULL || path_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *path_out = NULL;
+    if (chunk->buffer == NULL || chunk->size == 0u) {
+        sixel_helper_set_additional_message(
+            "librsvg_write_chunk_to_temp_svgz: empty input.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    fd = g_file_open_tmp("libsixel-librsvg-XXXXXX.svgz", &path, &gerror);
+    if (fd < 0 || path == NULL) {
+        librsvg_set_error_message(
+            "librsvg_write_chunk_to_temp_svgz: g_file_open_tmp failed.",
+            gerror);
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+
+    while (offset < chunk->size) {
+        written = sixel_compat_write(fd,
+                                     chunk->buffer + offset,
+                                     chunk->size - offset);
+        if (written <= 0) {
+            sixel_helper_set_additional_message(
+                "librsvg_write_chunk_to_temp_svgz: "
+                "failed to write temporary .svgz file.");
+            status = SIXEL_LIBC_ERROR;
+            goto end;
+        }
+        offset += (size_t)written;
+    }
+
+    if (sixel_compat_close(fd) != 0) {
+        sixel_helper_set_additional_message(
+            "librsvg_write_chunk_to_temp_svgz: "
+            "failed to close temporary .svgz file.");
+        status = SIXEL_LIBC_ERROR;
+        fd = (-1);
+        goto end;
+    }
+    fd = (-1);
+
+    *path_out = path;
+    path = NULL;
+    status = SIXEL_OK;
+
+end:
+    if (fd >= 0) {
+        (void)sixel_compat_close(fd);
+    }
+    if (path != NULL) {
+        (void)sixel_compat_unlink(path);
+        g_free(path);
+    }
+    if (gerror != NULL) {
+        g_error_free(gerror);
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
 librsvg_render_to_frame(sixel_frame_t *frame,
                         sixel_chunk_t const *chunk,
                         unsigned char const *bgcolor,
-                        int allow_relative_resources)
+                        int allow_relative_resources,
+                        int allow_stdin_svgz)
 {
     SIXELSTATUS status;
     RsvgHandle *handle;
@@ -484,6 +565,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     int has_non_opaque_alpha;
     int use_source_file;
     int input_is_svgz;
+    char *stdin_svgz_temp_path;
 
     status = SIXEL_BAD_INPUT;
     handle = NULL;
@@ -510,6 +592,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     has_non_opaque_alpha = 0;
     use_source_file = 0;
     input_is_svgz = 0;
+    stdin_svgz_temp_path = NULL;
 
     input_is_svgz = librsvg_is_svgz_chunk(chunk);
     use_source_file = librsvg_path_is_local_file(chunk->source_path) &&
@@ -529,20 +612,38 @@ librsvg_render_to_frame(sixel_frame_t *frame,
         }
     } else {
         if (input_is_svgz) {
-            sixel_helper_set_additional_message(
-                "librsvg_render_to_frame: gzip-compressed SVG (.svgz) "
-                "requires file-path decode or prior decompression.");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
+            if (!allow_stdin_svgz) {
+                sixel_helper_set_additional_message(
+                    "librsvg_render_to_frame: gzip-compressed SVG (.svgz) "
+                    "requires file-path decode, prior decompression, or "
+                    "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1.");
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
 
-        handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
-        if (handle == NULL) {
-            librsvg_set_error_message(
-                "librsvg_render_to_frame: unable to parse SVG data.",
-                gerror);
-            status = SIXEL_BAD_INPUT;
-            goto end;
+            status = librsvg_write_chunk_to_temp_svgz(chunk,
+                                                      &stdin_svgz_temp_path);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+
+            handle = rsvg_handle_new_from_file(stdin_svgz_temp_path, &gerror);
+            if (handle == NULL) {
+                librsvg_set_error_message(
+                    "librsvg_render_to_frame: unable to parse stdin .svgz via temporary file.",
+                    gerror);
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+        } else {
+            handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
+            if (handle == NULL) {
+                librsvg_set_error_message(
+                    "librsvg_render_to_frame: unable to parse SVG data.",
+                    gerror);
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
         }
     }
 
@@ -700,6 +801,10 @@ end:
     if (handle != NULL) {
         g_object_unref(handle);
     }
+    if (stdin_svgz_temp_path != NULL) {
+        (void)sixel_compat_unlink(stdin_svgz_temp_path);
+        g_free(stdin_svgz_temp_path);
+    }
 
     return status;
 }
@@ -718,11 +823,13 @@ load_with_librsvg(
     SIXELSTATUS status;
     sixel_frame_t *frame;
     int allow_relative_resources;
+    int allow_stdin_svgz;
 
     status = SIXEL_FALSE;
     frame = NULL;
     allow_relative_resources =
         librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES);
+    allow_stdin_svgz = librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ);
 
     (void)fstatic;
     (void)loop_control;
@@ -737,7 +844,8 @@ load_with_librsvg(
     status = librsvg_render_to_frame(frame,
                                      pchunk,
                                      bgcolor,
-                                     allow_relative_resources);
+                                     allow_relative_resources,
+                                     allow_stdin_svgz);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

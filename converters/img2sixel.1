@@ -551,14 +551,16 @@ file-path decode for local SVG files so relative references can resolve.
 For local \fB.svgz\fP paths, the loader decodes through file-path mode even
 when the opt-in is unset.
 For gzip-compressed SVG data coming from stdin/pipe, this backend rejects the
-input; decompress first or pass a local \fB.svgz\fP filename.
+input by default; set \fBSIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1\fP to allow
+temporary-file decode, or decompress first.
 .PP
 SVG loader comparison summary:
 .nf
 loader       transparency / -B              relative external refs      .svgz behavior                   palette
 librsvg      keep RGBA without -B when      default disabled; opt-in    local .svgz path supported;      quantizer
-             non-opaque pixels exist;       via SIXEL_LOADER_LIBRSVG_   stdin gzip rejected              stage
+             non-opaque pixels exist;       via SIXEL_LOADER_LIBRSVG_   stdin gzip opt-in via            stage
              otherwise RGB                  ALLOW_RELATIVE_RESOURCES=1
+                                                                       SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1
 gdk-pixbuf2  keep RGBA without -B when      backend-defined             backend-defined                  quantizer
              alpha exists; otherwise RGB                                                                      stage
 coregraphics keep RGBA without -B when      backend-defined             backend-defined                  quantizer
