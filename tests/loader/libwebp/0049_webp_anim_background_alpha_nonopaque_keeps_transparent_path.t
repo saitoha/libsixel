@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify ANIM background alpha=1..254 keeps transparent path by default.
+# Verify ANIM background alpha=1-254 keeps transparent path by default.
 
 set -eux
 
