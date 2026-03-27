@@ -739,7 +739,7 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 # Avoid expanding $(TEST_LOGS) into a single rm invocation during
 # mostlyclean/distclean; the test suite can exceed shell argument limits.
 mostlyclean-generic:
-	@find "$(abs_builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -exec rm -f {} +
+	-@find "$(abs_builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -exec rm -f {} +
 
 .PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts check-python check-ruby check-perl check-php sixel-check-test-logs
 check-binding-loader-setopt-sync:
