@@ -80,7 +80,7 @@ typedef struct sixel_loader_libwebp_component {
 #define WEBP_MAX_IMAGE_PIXELS     ((size_t)268435456u)
 #define WEBP_MAX_ANIMATION_FRAMES 65535
 #define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
-#define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)16777216u)
+#define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)1048576u)
 
 static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
