@@ -1146,33 +1146,21 @@ end:
  * unbounded allocations in CMS-enabled decode paths.
  */
 static void
-webp_extract_icc_profile(unsigned char const *data,
-                         size_t size,
+webp_extract_icc_profile(WebPDemuxer const *demux,
                          unsigned char **icc_profile,
                          size_t *icc_profile_length,
                          sixel_allocator_t *allocator)
 {
-    WebPData webp_data;
-    WebPDemuxer *demux;
     WebPChunkIterator chunk_iter;
     unsigned int format_flags;
 
-    webp_data = (WebPData){ 0 };
-    demux = NULL;
     chunk_iter = (WebPChunkIterator){ 0 };
     format_flags = 0U;
 
     *icc_profile = NULL;
     *icc_profile_length = 0U;
 
-    if (data == NULL || size == 0U || allocator == NULL) {
-        return;
-    }
-
-    webp_data.bytes = data;
-    webp_data.size = size;
-    demux = WebPDemux(&webp_data);
-    if (demux == NULL) {
+    if (demux == NULL || allocator == NULL) {
         return;
     }
 
@@ -1208,9 +1196,6 @@ webp_extract_icc_profile(unsigned char const *data,
 cleanup:
     if (chunk_iter.chunk.bytes != NULL) {
         WebPDemuxReleaseChunkIterator(&chunk_iter);
-    }
-    if (demux != NULL) {
-        WebPDemuxDelete(demux);
     }
 }
 
@@ -1504,17 +1489,14 @@ webp_stream_may_contain_vp8l(sixel_chunk_t const *pchunk)
 
 
 static int
-webp_input_is_indexed(sixel_chunk_t const *pchunk)
+webp_input_is_indexed(sixel_chunk_t const *pchunk,
+                      WebPDemuxer const *demux)
 {
-    WebPData data;
-    WebPDemuxer *demux;
     WebPIterator iter;
     int frame_count;
     int frame_index;
     int indexed;
 
-    data = (WebPData){ 0 };
-    demux = NULL;
     iter = (WebPIterator){ 0 };
     frame_count = 0;
     frame_index = 0;
@@ -1526,18 +1508,12 @@ webp_input_is_indexed(sixel_chunk_t const *pchunk)
     if (!webp_stream_may_contain_vp8l(pchunk)) {
         return 0;
     }
-
-    data.bytes = pchunk->buffer;
-    data.size = pchunk->size;
-
-    demux = WebPDemux(&data);
     if (demux == NULL) {
         return 0;
     }
 
     frame_count = (int)WebPDemuxGetI(demux, WEBP_FF_FRAME_COUNT);
     if (frame_count <= 0) {
-        WebPDemuxDelete(demux);
         return 0;
     }
 
@@ -1557,8 +1533,6 @@ webp_input_is_indexed(sixel_chunk_t const *pchunk)
 
         WebPDemuxReleaseIterator(&iter);
     }
-
-    WebPDemuxDelete(demux);
 
     return indexed;
 }
@@ -2014,6 +1988,7 @@ load_with_libwebp(
     WebPAnimDecoderOptions decoder_options;
     WebPAnimDecoder *decoder;
     WebPAnimInfo anim_info;
+    WebPDemuxer *demux;
     WebPDemuxer const *anim_demuxer;
     uint8_t *decoded_frame;
     int timestamp;
@@ -2045,6 +2020,7 @@ load_with_libwebp(
     webp_data = (WebPData){ 0 };
     decoder = NULL;
     anim_info = (WebPAnimInfo){ 0 };
+    demux = NULL;
     anim_demuxer = NULL;
     decoded_frame = NULL;
     timestamp = 0;
@@ -2081,10 +2057,6 @@ load_with_libwebp(
         }
     }
 
-    if (fuse_palette) {
-        allow_palette_promotion = webp_input_is_indexed(pchunk);
-    }
-
     webp_data.bytes = pchunk->buffer;
     webp_data.size = pchunk->size;
 
@@ -2093,9 +2065,22 @@ load_with_libwebp(
         goto end;
     }
 
+    if (enable_cms || fuse_palette) {
+        demux = WebPDemux(&webp_data);
+        if (demux == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_libwebp: WebPDemux failed.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    }
+
+    if (fuse_palette) {
+        allow_palette_promotion = webp_input_is_indexed(pchunk, demux);
+    }
+
     if (enable_cms) {
-        webp_extract_icc_profile(pchunk->buffer,
-                                 pchunk->size,
+        webp_extract_icc_profile(demux,
                                  &icc_profile,
                                  &icc_profile_length,
                                  pchunk->allocator);
@@ -2590,6 +2575,9 @@ load_with_libwebp(
 end:
     if (decoder != NULL) {
         WebPAnimDecoderDelete(decoder);
+    }
+    if (demux != NULL) {
+        WebPDemuxDelete(demux);
     }
     sixel_allocator_free(pchunk->allocator, icc_profile);
     sixel_frame_unref(frame);
