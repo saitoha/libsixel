@@ -10,46 +10,53 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-printf '1..4\n'
+printf '1..1\n'
 set -v
 
 run_seed_case() {
-    test_no="$1"
-    seed_file="$2"
-    label="$3"
+    seed_file="$1"
+    label="$2"
 
     rc=0
     run_img2sixel -Lbuiltin! "${seed_file}" -o /dev/null || rc=$?
 
     test "${rc-0}" -ge 1 -a "${rc-0}" -le 3 || {
-        echo "not ok" "${test_no}" - "${label} did not return mapped error"
-        return
+        echo "# ${label}: did not return mapped error"
+        return 1
     }
 
     test "${rc-0}" -ne 127 || {
-        echo "not ok" "${test_no}" - "${label} did not execute img2sixel"
-        return
+        echo "# ${label}: did not execute img2sixel"
+        return 1
     }
 
     test "${rc-0}" -ne 139 || {
-        echo "not ok" "${test_no}" - "${label} triggered SIGSEGV"
-        return
+        echo "# ${label}: triggered SIGSEGV"
+        return 1
     }
 
-    echo "ok" "${test_no}" - "${label} handled safely"
+    return 0
 }
 
-run_seed_case 1 \
+failed=0
+run_seed_case \
     "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_truncated_lzw.gif" \
-    "fuzz0002 truncated LZW"
-run_seed_case 2 \
+    "fuzz0002 truncated LZW" || failed=1
+run_seed_case \
     "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_truncated_extension.gif" \
-    "fuzz0002 truncated extension"
-run_seed_case 3 \
+    "fuzz0002 truncated extension" || failed=1
+run_seed_case \
     "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_bad_lzw_cs0.gif" \
-    "fuzz0002 bad min code size 0"
-run_seed_case 4 \
+    "fuzz0002 bad min code size 0" || failed=1
+run_seed_case \
     "${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0002/gif_seed_bad_lzw_cs9.gif" \
-    "fuzz0002 bad min code size 9"
+    "fuzz0002 bad min code size 9" || failed=1
+
+test "${failed}" -eq 0 || {
+    echo "not ok" 1 - "fuzz0002 GIF seed corpus handled safely"
+    exit 0
+}
+
+echo "ok" 1 - "fuzz0002 GIF seed corpus handled safely"
 
 exit 0

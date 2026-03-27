@@ -32,14 +32,16 @@ run_img2sixel --env SIXEL_THREADS=4 \
 prefix_hex="$(od -An -t x1 -N 3 "${output_six}" \
     | LC_ALL=C tr -d '[:space:]' \
     | LC_ALL=C tr 'A-F' 'a-f')"
-test "${prefix_hex}" = "1b5b48" && {
-    dd if="${output_six}" of="${normalized_six}" bs=1 skip=3 2>/dev/null || {
-        echo "not ok" 1 - "builtin transparent dispose3 frame2 normalization failed"
-        exit 0
-    }
-} || {
+test "${prefix_hex}" = "1b5b48" || {
     cp "${output_six}" "${normalized_six}" || {
         echo "not ok" 1 - "builtin transparent dispose3 frame2 normalization copy failed"
+        exit 0
+    }
+}
+
+test "${prefix_hex}" != "1b5b48" || {
+    dd if="${output_six}" of="${normalized_six}" bs=1 skip=3 2>/dev/null || {
+        echo "not ok" 1 - "builtin transparent dispose3 frame2 normalization failed"
         exit 0
     }
 }

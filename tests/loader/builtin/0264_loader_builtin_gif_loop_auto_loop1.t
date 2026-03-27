@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: loop=disable ignores NETSCAPE loop0 and emits one pass.
+# TAP test: loop=auto respects NETSCAPE loop1 as one pass.
 
 set -eux
 
@@ -13,17 +13,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 printf '1..1\n'
 set -v
 
-input_loop0="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
+input_loop1="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop1.gif"
 expected_once="0:0
 0:1"
 
 trace_log=$(
     set +xv
     run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff \
-                  -Lbuiltin! -ldisable -g \
-                  "${input_loop0}" -o /dev/null 2>&1
+                  -Lbuiltin! -lauto -g \
+                  "${input_loop1}" -o /dev/null 2>&1
 ) || {
-    echo "not ok" 1 - "loop disable ignores NETSCAPE loop0 trace run failed"
+    echo "not ok" 1 - "loop auto respects NETSCAPE loop1 trace run failed"
     exit 0
 }
 
@@ -39,10 +39,10 @@ actual_sequence="$(printf '%s\n' "${trace_log}" | awk '
     }')"
 
 test "${actual_sequence}" = "${expected_once}" || {
-    echo "not ok" 1 - "loop disable ignores NETSCAPE loop0 sequence mismatch"
+    echo "not ok" 1 - "loop auto respects NETSCAPE loop1 sequence mismatch"
     exit 0
 }
 
-echo "ok" 1 - "loop disable ignores NETSCAPE loop0"
+echo "ok" 1 - "loop auto respects NETSCAPE loop1"
 
 exit 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming forced libwebp loader rejects truncated WebP input.
+# TAP test confirming forced libwebp loader rejects RIFF size mismatch.
 
 set -eux
 
@@ -18,12 +18,12 @@ test "${HAVE_WEBP-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/truncated.webp" \
+run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_size.webp" \
     >/dev/null && {
-    echo "not ok" 1 - "forced libwebp loader accepted truncated WebP"
+    echo "not ok" 1 - "forced libwebp loader accepted RIFF size mismatch"
     exit 0
 }
 
-echo "ok" 1 - "forced libwebp loader rejects truncated WebP"
+echo "ok" 1 - "forced libwebp loader rejects RIFF size mismatch"
 
 exit 0
