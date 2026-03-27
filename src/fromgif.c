@@ -113,6 +113,7 @@ typedef struct
    unsigned char *alpha_out; /* alpha mask (optional, 0/255) */
    unsigned char *prev_alpha;/* alpha backup for disposal method 3 */
    unsigned char *history;   /* bitset of pixels modified in the previous frame */
+   size_t history_pixel_count;
    int flags, bgindex, ratio, transparent, eflags;
    unsigned char pal[256][3];
    unsigned char lpal[256][3];
@@ -424,6 +425,12 @@ gif_history_mark(
     if (g == NULL || g->history == NULL) {
         return;
     }
+    if (g->history_pixel_count == 0u || pixel_index >= g->history_pixel_count) {
+#if defined(HAVE_ASSERT_H) && !defined(NDEBUG)
+        assert(!"gif history index out of bounds");
+#endif
+        return;
+    }
     byte_index = pixel_index / GIF_HISTORY_BITS_PER_BYTE;
     bit_mask = (unsigned char)(1u << (pixel_index % GIF_HISTORY_BITS_PER_BYTE));
     g->history[byte_index] |= bit_mask;
@@ -439,6 +446,12 @@ gif_history_test(
     unsigned char bit_mask;
 
     if (g == NULL || g->history == NULL) {
+        return 0;
+    }
+    if (g->history_pixel_count == 0u || pixel_index >= g->history_pixel_count) {
+#if defined(HAVE_ASSERT_H) && !defined(NDEBUG)
+        assert(!"gif history index out of bounds");
+#endif
         return 0;
     }
     byte_index = pixel_index / GIF_HISTORY_BITS_PER_BYTE;
@@ -1556,7 +1569,9 @@ gif_load_next(
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
-            if (x >= g->w || y >= g->h || x + w > g->w || y + h > g->h) {
+            if (x < 0 || y < 0 || w <= 0 || h <= 0 ||
+                x > g->w || y > g->h ||
+                w > g->w - x || h > g->h - y) {
                 sixel_helper_set_additional_message(
                     "corrupt GIF (reason: bad Image Separator).");
                 status = SIXEL_RUNTIME_ERROR;
@@ -1908,6 +1923,7 @@ load_gif(
     }
     bcount = pcount * (size_t)GIF_RGB_STRIDE;
     history_bytes = gif_history_required_bytes(pcount);
+    g->history_pixel_count = pcount;
 
     g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
     g->prev_out = NULL;
@@ -1994,6 +2010,7 @@ load_gif(
             goto end;
         }
         pcount = (size_t)g->w * (size_t)g->h;
+        g->history_pixel_count = pcount;
         if (pcount > SIXEL_ALLOCATE_BYTES_MAX) {
             sixel_helper_set_additional_message(
                 "corrupt GIF (reason: image data exceeds limit).");
