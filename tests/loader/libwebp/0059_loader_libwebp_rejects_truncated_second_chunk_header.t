@@ -17,20 +17,26 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-stderr_log="${ARTIFACT_LOCAL_DIR}/webp-bad-truncated-second-chunk-header.stderr"
-
-run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_truncated_second_chunk_header.webp" \
-    >/dev/null 2>"${stderr_log}" && {
+msg=$(set +xv; run_img2sixel -L libwebp! \
+             "${TOP_SRCDIR}/tests/data/corrupted/bad_truncated_second_chunk_header.webp" \
+             2>&1 >/dev/null) && {
     echo "not ok" 1 - "forced libwebp loader accepted truncated second chunk header"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-grep -F "webp decode: chunk header is truncated." "${stderr_log}" >/dev/null || {
-    echo "not ok" 1 - "expected truncated chunk header diagnostic was missing"
-    exit 0
-}
+case "${msg}" in
+    *"webp decode: chunk header is truncated."*)
+        ;;
+    *)
+        echo "not ok" 1 - "expected truncated chunk header diagnostic was missing"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "forced libwebp loader rejects truncated second chunk header"
 

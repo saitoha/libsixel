@@ -17,20 +17,26 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-stderr_log="${ARTIFACT_LOCAL_DIR}/webp-truncated-riff-header.stderr"
-
-run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_header_truncated.webp" \
-    >/dev/null 2>"${stderr_log}" && {
+msg=$(set +xv; run_img2sixel -L libwebp! \
+             "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_header_truncated.webp" \
+             2>&1 >/dev/null) && {
     echo "not ok" 1 - "forced libwebp loader accepted truncated RIFF header"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-grep -F "webp decode: RIFF header is truncated." "${stderr_log}" >/dev/null || {
-    echo "not ok" 1 - "expected truncated RIFF header diagnostic was missing"
-    exit 0
-}
+case "${msg}" in
+    *"webp decode: RIFF header is truncated."*)
+        ;;
+    *)
+        echo "not ok" 1 - "expected truncated RIFF header diagnostic was missing"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "forced libwebp loader rejects truncated RIFF header"
 
