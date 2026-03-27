@@ -1,4 +1,8 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
+ *
  * Verify librsvg loader output policy:
  * - preserve RGBA when background is not provided
  * - composite to RGB when background is provided

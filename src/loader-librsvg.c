@@ -67,6 +67,50 @@ typedef struct sixel_loader_librsvg_component {
 
 #define LIBRSVG_DEFAULT_WIDTH  300
 #define LIBRSVG_DEFAULT_HEIGHT 150
+#define LIBRSVG_DEFAULT_DPI    90.0
+#define LIBRSVG_MAX_DIMENSION  32767
+#define LIBRSVG_MAX_IMAGE_PIXELS ((size_t)268435456u)
+
+static int
+librsvg_length_to_pixels(RsvgLength const *length, double *pixels)
+{
+    if (length == NULL || pixels == NULL) {
+        return 0;
+    }
+
+    switch (length->unit) {
+    case RSVG_UNIT_PX:
+        *pixels = length->length;
+        return 1;
+    case RSVG_UNIT_IN:
+        *pixels = length->length * LIBRSVG_DEFAULT_DPI;
+        return 1;
+    case RSVG_UNIT_CM:
+        *pixels = length->length * LIBRSVG_DEFAULT_DPI / 2.54;
+        return 1;
+    case RSVG_UNIT_MM:
+        *pixels = length->length * LIBRSVG_DEFAULT_DPI / 25.4;
+        return 1;
+    case RSVG_UNIT_PT:
+        *pixels = length->length * LIBRSVG_DEFAULT_DPI / 72.0;
+        return 1;
+    case RSVG_UNIT_PC:
+        *pixels = length->length * LIBRSVG_DEFAULT_DPI / 6.0;
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static int
+librsvg_rounded_dimension(double value)
+{
+    if (!(value >= 1.0) || value > (double)INT_MAX) {
+        return 0;
+    }
+
+    return (int)(value + 0.5);
+}
 
 /*
  * Try to identify SVG input quickly so the registry can skip this backend for
@@ -133,46 +177,99 @@ chunk_is_svg_like(sixel_chunk_t const *chunk)
 static void
 librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
 {
+    gboolean has_width;
+    gboolean has_height;
     gboolean has_viewbox;
+    RsvgLength width_length;
+    RsvgLength height_length;
     RsvgRectangle viewbox;
     gdouble pixel_width;
     gdouble pixel_height;
+    double width_from_length;
+    double height_from_length;
+    int width_valid;
+    int height_valid;
     int width;
     int height;
 
+    has_width = FALSE;
+    has_height = FALSE;
     width = LIBRSVG_DEFAULT_WIDTH;
     height = LIBRSVG_DEFAULT_HEIGHT;
     pixel_width = 0.0;
     pixel_height = 0.0;
+    width_length.length = 0.0;
+    width_length.unit = RSVG_UNIT_PX;
+    height_length.length = 0.0;
+    height_length.unit = RSVG_UNIT_PX;
     has_viewbox = FALSE;
     viewbox.x = 0.0;
     viewbox.y = 0.0;
     viewbox.width = 0.0;
     viewbox.height = 0.0;
+    width_from_length = 0.0;
+    height_from_length = 0.0;
+    width_valid = 0;
+    height_valid = 0;
 
     if (rsvg_handle_get_intrinsic_size_in_pixels(handle,
                                                   &pixel_width,
                                                   &pixel_height)) {
-        if (pixel_width >= 1.0 && pixel_width <= 32767.0) {
-            width = (int)(pixel_width + 0.5);
-        }
-        if (pixel_height >= 1.0 && pixel_height <= 32767.0) {
-            height = (int)(pixel_height + 0.5);
-        }
+        width = librsvg_rounded_dimension(pixel_width);
+        height = librsvg_rounded_dimension(pixel_height);
     } else {
         rsvg_handle_get_intrinsic_dimensions(handle,
-                                             NULL,
-                                             NULL,
-                                             NULL,
-                                             NULL,
+                                             &has_width,
+                                             &width_length,
+                                             &has_height,
+                                             &height_length,
                                              &has_viewbox,
                                              &viewbox);
+        if (has_width && librsvg_length_to_pixels(&width_length,
+                                                  &width_from_length) &&
+            width_from_length >= 1.0) {
+            width_valid = 1;
+        }
+        if (has_height && librsvg_length_to_pixels(&height_length,
+                                                   &height_from_length) &&
+            height_from_length >= 1.0) {
+            height_valid = 1;
+        }
         if (has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0) {
-            if (viewbox.width >= 1.0 && viewbox.width <= 32767.0) {
-                width = (int)(viewbox.width + 0.5);
+            if (width_valid && !height_valid) {
+                height_from_length =
+                    width_from_length * viewbox.height / viewbox.width;
+                height_valid = height_from_length >= 1.0 ? 1 : 0;
+            } else if (!width_valid && height_valid) {
+                width_from_length =
+                    height_from_length * viewbox.width / viewbox.height;
+                width_valid = width_from_length >= 1.0 ? 1 : 0;
+            } else if (!width_valid && !height_valid) {
+                width_from_length = viewbox.width;
+                height_from_length = viewbox.height;
+                width_valid = width_from_length >= 1.0 ? 1 : 0;
+                height_valid = height_from_length >= 1.0 ? 1 : 0;
             }
-            if (viewbox.height >= 1.0 && viewbox.height <= 32767.0) {
-                height = (int)(viewbox.height + 0.5);
+        }
+        if (width_valid) {
+            width = librsvg_rounded_dimension(width_from_length);
+        }
+        if (height_valid) {
+            height = librsvg_rounded_dimension(height_from_length);
+        }
+        if (width <= 0 || height <= 0) {
+            if (has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0) {
+                int viewbox_width;
+                int viewbox_height;
+
+                viewbox_width = librsvg_rounded_dimension(viewbox.width);
+                viewbox_height = librsvg_rounded_dimension(viewbox.height);
+                if (viewbox_width > 0) {
+                    width = viewbox_width;
+                }
+                if (viewbox_height > 0) {
+                    height = viewbox_height;
+                }
             }
         }
     }
@@ -311,6 +408,24 @@ librsvg_render_to_frame(sixel_frame_t *frame,
         status = SIXEL_BAD_INPUT;
         goto end;
     }
+    if (frame->width > LIBRSVG_MAX_DIMENSION ||
+            frame->height > LIBRSVG_MAX_DIMENSION) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: dimensions exceed limit.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    pixel_total = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_total > LIBRSVG_MAX_IMAGE_PIXELS) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: image exceeds pixel limit.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
 
     surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                          frame->width,
@@ -368,11 +483,6 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     preserve_alpha = bgcolor == NULL && has_non_opaque_alpha;
     pixel_stride = preserve_alpha ? 4u : 3u;
 
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    pixel_total = (size_t)frame->width * (size_t)frame->height;
     if (pixel_total > SIZE_MAX / pixel_stride) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
