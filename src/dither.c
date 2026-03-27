@@ -2955,7 +2955,13 @@ sixel_dither_apply_palette(
         goto end;
     }
 
-    if (apply_transparent_mask && transparent_mask != NULL &&
+    /*
+     * Parallel encode workers may already classify rows from `dest`.  Avoid
+     * a final whole-buffer rewrite in that mode; transparent keycolor mapping
+     * is applied during index resolution via pipeline_transparent_mask.
+     */
+    if (!parallel_active &&
+        apply_transparent_mask && transparent_mask != NULL &&
         keycolor_for_mask >= 0 &&
         keycolor_for_mask < SIXEL_PALETTE_MAX) {
         for (index = 0U; index < total_pixels; ++index) {
