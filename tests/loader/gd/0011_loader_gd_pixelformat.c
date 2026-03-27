@@ -172,7 +172,7 @@ run_gd_loader_test(void)
         return result;
     }
 
-    return run_loader_component_case_with_options_ex(
+    result = run_loader_component_case_with_options_ex(
         "GD loader gif netscape unknown subtype metadata",
         "/tests/data/inputs/formats/gif-anim-netscape-unknown-subtype.gif",
         SIXEL_PIXELFORMAT_PAL8,
@@ -182,6 +182,24 @@ run_gd_loader_test(void)
         -1,
         1,
         0,
+        1,
+        256,
+        NULL,
+        new_gd_component);
+    if (result != 0) {
+        return result;
+    }
+
+    return run_loader_component_case_with_options_ex(
+        "GD loader gif transparent-index-oob treated opaque",
+        "/tests/data/inputs/formats/gif-transparent-index-oob-static.gif",
+        SIXEL_PIXELFORMAT_PAL8,
+        8,
+        8,
+        1,
+        -1,
+        0,
+        1,
         1,
         256,
         NULL,
