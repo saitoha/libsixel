@@ -34,10 +34,11 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_optin}"; then
+cmp -s "${out_default}" "${out_optin}" && {
     echo "not ok 1 - opt-in unexpectedly ignored for builtin ga16 PNG"
-else
-    echo "ok 1 - opt-in changes builtin ga16 PNG output"
-fi
+    exit 0
+}
+
+echo "ok 1 - opt-in changes builtin ga16 PNG output"
 
 exit 0

@@ -22,20 +22,20 @@ run_img2sixel --env SIXEL_THREADS=4 -Lbuiltin! -lforce -d none -p 256 -y raster 
 pid=$!
 
 wait_limit=5
-while [ "${wait_limit}" -gt 0 ]; do
-    if ! kill -0 "${pid}" 2>/dev/null; then
+while test "${wait_limit}" -gt 0; do
+    kill -0 "${pid}" 2>/dev/null || {
         break
-    fi
+    }
     sleep 1
     wait_limit=$((wait_limit - 1))
 done
 
-if kill -0 "${pid}" 2>/dev/null; then
+kill -0 "${pid}" 2>/dev/null && {
     kill "${pid}" 2>/dev/null || true
     wait "${pid}" 2>/dev/null || true
     echo "not ok" 1 - "builtin unknown NETSCAPE subtype caused force-loop hang"
     exit 0
-fi
+}
 
 wait "${pid}" || rc=$?
 test "${rc-0}" -eq 0 || {

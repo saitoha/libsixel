@@ -33,10 +33,11 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_env1}"; then
-    echo "ok 1 - builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 matches default output"
-else
+cmp -s "${out_default}" "${out_env1}" || {
     echo "not ok 1 - builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 differs from default output"
-fi
+    exit 0
+}
+
+echo "ok 1 - builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 matches default output"
 
 exit 0

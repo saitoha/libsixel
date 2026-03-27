@@ -28,7 +28,7 @@ run_img2sixel -Lbuiltin! \
     exit 0
 }
 
-while IFS= read -r out_line || [ -n "${out_line}" ]; do
+while IFS= read -r out_line || test -n "${out_line}"; do
     out_payload="${out_payload}${out_line}
 "
 done < "${out_default}"
@@ -39,10 +39,11 @@ case "${out_payload}" in
         ;;
 esac
 
-if [ "${has_header}" = 1 ]; then
-    echo "ok 1 - builtin APNG default output keeps keycolor DCS header"
-else
+test "${has_header}" = 1 || {
     echo "not ok 1 - builtin APNG default output lost keycolor DCS header"
-fi
+    exit 0
+}
+
+echo "ok 1 - builtin APNG default output keeps keycolor DCS header"
 
 exit 0

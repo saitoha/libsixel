@@ -32,10 +32,11 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
     exit 0
 }
 
-if cmp -s "${out_invalid}" "${out_gamma}"; then
-    echo "ok 1 - builtin invalid background colorspace falls back to gamma"
-else
+cmp -s "${out_invalid}" "${out_gamma}" || {
     echo "not ok 1 - builtin invalid background colorspace changed output"
-fi
+    exit 0
+}
+
+echo "ok 1 - builtin invalid background colorspace falls back to gamma"
 
 exit 0

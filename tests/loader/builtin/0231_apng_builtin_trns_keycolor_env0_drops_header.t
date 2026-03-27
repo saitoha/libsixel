@@ -29,7 +29,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-while IFS= read -r out_line || [ -n "${out_line}" ]; do
+while IFS= read -r out_line || test -n "${out_line}"; do
     out_payload="${out_payload}${out_line}
 "
 done < "${out_off}"
@@ -40,10 +40,10 @@ case "${out_payload}" in
         ;;
 esac
 
-if [ "${has_header}" = 1 ]; then
+test "${has_header}" = 1 && {
     echo "not ok 1 - builtin APNG kept keycolor DCS header with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
-else
-    echo "ok 1 - builtin APNG drops keycolor DCS header with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
-fi
+    exit 0
+}
 
+echo "ok 1 - builtin APNG drops keycolor DCS header with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
 exit 0

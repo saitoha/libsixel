@@ -35,10 +35,10 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_off}"; then
+cmp -s "${out_default}" "${out_off}" && {
     echo "not ok 1 - builtin alpha default keycolor is unexpectedly disabled"
-else
-    echo "ok 1 - builtin alpha keycolor is enabled by default"
-fi
+    exit 0
+}
 
+echo "ok 1 - builtin alpha keycolor is enabled by default"
 exit 0
