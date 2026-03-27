@@ -18,24 +18,24 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-2frame-min.webp"
+input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-2frame-bg112233.webp"
 output_default="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-default.six"
-output_black="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-black.six"
+output_expected="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-expected-112233.six"
 
 run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp animation decode without -B failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! -S -B#000 "${input_webp}" >"${output_black}" || {
-    echo "not ok" 1 - "libwebp animation decode with -B#000 failed"
+run_img2sixel -Llibwebp:cms_engine=none! -S -B#112233 "${input_webp}" >"${output_expected}" || {
+    echo "not ok" 1 - "libwebp animation decode with -B#112233 failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" "${output_default}" "${output_black}" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+cmp -s "${output_default}" "${output_expected}" || {
+    echo "not ok" 1 - "ANIM background was not applied as default output"
     exit 0
 }
 
-echo "ok" 1 - "ANIM background is applied when -B is absent"
+echo "ok" 1 - "ANIM opaque background is applied when -B is absent"
 exit 0
