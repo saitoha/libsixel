@@ -755,6 +755,7 @@ end:
  *   1) Probe the WebP bitstream for dimensions and alpha flags.
  *   2) Allocate the output buffer from the sixel allocator.
  *   3) Decode lossy streams as YUV(A) and convert to RGB float32.
+ *      (lossy + alpha + no background keeps RGBA to preserve alpha keycolor)
  *   4) Decode remaining streams into RGB/RGBA bytes.
  */
 static SIXELSTATUS
@@ -784,6 +785,12 @@ load_webp(unsigned char **result,
     cms_converted = 0;
     force_rgb_env = NULL;
     force_rgb_decode = 0;
+    if (result == NULL || data == NULL || datasize == 0u ||
+        pwidth == NULL || pheight == NULL || ppixelformat == NULL ||
+        allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *result = NULL;
 
     if (WebPGetFeatures(data, datasize, &features) != VP8_STATUS_OK) {
         sixel_helper_set_additional_message(
@@ -817,7 +824,9 @@ load_webp(unsigned char **result,
         force_rgb_decode = 1;
     }
 
-    if (features.format == 1 && !force_rgb_decode) {
+    if (features.format == 1 &&
+        !force_rgb_decode &&
+        !(features.has_alpha && bgcolor == NULL)) {
         return webp_decode_lossy_to_float32(result,
                                             data,
                                             datasize,
@@ -859,14 +868,16 @@ load_webp(unsigned char **result,
                                (int)stride) == NULL) {
             sixel_helper_set_additional_message(
                 "load_webp: WebPDecodeRGBAInto failed.");
-            return SIXEL_BAD_INPUT;
+            status = SIXEL_BAD_INPUT;
+            goto end;
         }
     } else {
         if (WebPDecodeRGBInto(data, datasize, *result, size,
                               (int)stride) == NULL) {
             sixel_helper_set_additional_message(
                 "load_webp: WebPDecodeRGBInto failed.");
-            return SIXEL_BAD_INPUT;
+            status = SIXEL_BAD_INPUT;
+            goto end;
         }
     }
 
@@ -884,6 +895,11 @@ load_webp(unsigned char **result,
 
     status = SIXEL_OK;
 
+end:
+    if (SIXEL_FAILED(status) && *result != NULL) {
+        sixel_allocator_free(allocator, *result);
+        *result = NULL;
+    }
     return status;
 }
 
@@ -1612,6 +1628,52 @@ loader_try_promote_pal8(
 #undef PAL8_HASH_EMPTY_KEY
 }
 
+static int
+webp_frame_has_non_opaque_alpha(sixel_frame_t const *frame)
+{
+    unsigned char const *pixels;
+    size_t pixel_count;
+    size_t index;
+
+    pixels = NULL;
+    pixel_count = 0u;
+    index = 0u;
+
+    if (frame == NULL) {
+        return 0;
+    }
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        return 0;
+    }
+    if (frame->pixels.u8ptr == NULL || frame->width <= 0 || frame->height <= 0) {
+        return 0;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return 0;
+    }
+
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    pixels = frame->pixels.u8ptr;
+    for (index = 0u; index < pixel_count; ++index) {
+        if (pixels[index * 4u + 3u] != 255u) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+webp_should_preserve_alpha_keycolor(sixel_frame_t const *frame,
+                                    unsigned char const *bgcolor)
+{
+    if (bgcolor != NULL) {
+        return 0;
+    }
+
+    return webp_frame_has_non_opaque_alpha(frame);
+}
+
 static SIXELSTATUS
 webp_finalize_frame_output(sixel_frame_t *frame,
                            int enable_cms,
@@ -1624,25 +1686,36 @@ webp_finalize_frame_output(sixel_frame_t *frame,
     SIXELSTATUS status;
     int target_pixelformat;
     int apply_cms_target;
+    int preserve_alpha_keycolor;
 
     status = SIXEL_FALSE;
     target_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     apply_cms_target = 0;
+    preserve_alpha_keycolor = 0;
     if (frame == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = webp_blend_rgba_background_linear(frame, bgcolor, allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    preserve_alpha_keycolor = webp_should_preserve_alpha_keycolor(frame,
+                                                                  bgcolor);
+    if (preserve_alpha_keycolor) {
+        frame->transparent = -1;
+        frame->alpha_zero_is_transparent = 1;
+    } else {
+        status = webp_blend_rgba_background_linear(frame, bgcolor, allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+
+        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        frame->transparent = -1;
+        frame->alpha_zero_is_transparent = 0;
     }
 
-    status = sixel_frame_strip_alpha(frame, bgcolor);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    if (allow_palette_promotion) {
+    if (allow_palette_promotion && !preserve_alpha_keycolor) {
         status = loader_try_promote_pal8(frame, reqcolors, allocator);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -1795,9 +1868,13 @@ load_with_libwebp(
             webp_format_flags = WebPDemuxGetI(anim_demuxer, WEBP_FF_FORMAT_FLAGS);
             if ((webp_format_flags & ANIMATION_FLAG) != 0u &&
                 (webp_format_flags & ALPHA_FLAG) != 0u) {
-                anim_bgcolor[0] = (unsigned char)((anim_info.bgcolor >> 8u) & 0xffu);
-                anim_bgcolor[1] = (unsigned char)((anim_info.bgcolor >> 16u) & 0xffu);
-                anim_bgcolor[2] = (unsigned char)((anim_info.bgcolor >> 24u) & 0xffu);
+                /*
+                 * WebPAnimInfo::bgcolor stores ANIM background as
+                 * 0xAARRGGBB. Extract RGB in that order.
+                 */
+                anim_bgcolor[0] = (unsigned char)((anim_info.bgcolor >> 16u) & 0xffu);
+                anim_bgcolor[1] = (unsigned char)((anim_info.bgcolor >> 8u) & 0xffu);
+                anim_bgcolor[2] = (unsigned char)(anim_info.bgcolor & 0xffu);
                 resolved_bgcolor = anim_bgcolor;
             }
         }
