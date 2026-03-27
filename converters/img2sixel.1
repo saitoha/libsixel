@@ -532,6 +532,20 @@ quicklook
 .IP \(bu 2
 gnome-thumbnailer
 .RE
+.PP
+For \fBlibrsvg\fP, SVG input is rasterized through Cairo and this loader
+returns only RGB/RGBA frames. When no background color is specified and
+non-opaque pixels are present, transparency is preserved in RGBA output;
+otherwise the frame is emitted as RGB (including when \fB-B\fP requests
+background compositing).
+\fBUSE_PALETTE\fP and \fBREQCOLORS\fP are accepted for loader API
+compatibility but are ignored by this backend; palette limits are applied by
+the downstream quantizer.
+.PP
+The librsvg path parses SVG bytes without assigning a base URI. Relative
+external references (linked images, stylesheets, and similar assets) are not
+resolved; embed dependencies (for example with data: URIs) or preprocess the
+document into a self-contained SVG before conversion.
 .TP 5
 .B \-# \fIENGINE\fP, \-\-cms\-engine=\fIENGINE\fP
 set the default loader CMS backend for this process by exporting
@@ -756,6 +770,10 @@ overrided by -p(--colors) option.
 .br
 prefer the float32 quantization path. Any non-empty string other than 0, off,
 false, or no enables the high-precision pipeline.
+.br
+For SVG decoded via \fBlibrsvg\fP, the source raster remains cairo ARGB32
+(8-bit per channel); float32 improves downstream processing precision but does
+not recover higher source bit depth from the loader.
 .TP 5
 .B SIXEL_PLANNER_RESIZE_PRECISION_MODE
 .br

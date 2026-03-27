@@ -49,9 +49,11 @@
 #include <cairo.h>
 
 #include "allocator.h"
+#include "compat_stub.h"
 #include "frame.h"
 #include "loader-common.h"
 #include "loader-librsvg.h"
+#include "status.h"
 
 typedef struct sixel_loader_librsvg_component {
     sixel_loader_component_t base;
@@ -70,6 +72,35 @@ typedef struct sixel_loader_librsvg_component {
 #define LIBRSVG_DEFAULT_DPI    90.0
 #define LIBRSVG_MAX_DIMENSION  32767
 #define LIBRSVG_MAX_IMAGE_PIXELS ((size_t)268435456u)
+
+static void
+librsvg_set_error_message(char const *context, GError const *gerror)
+{
+    enum { message_capacity = 512 };
+    char message[message_capacity];
+    int written;
+
+    written = 0;
+    if (context == NULL) {
+        return;
+    }
+    if (gerror == NULL || gerror->message == NULL || gerror->message[0] == '\0') {
+        sixel_helper_set_additional_message(context);
+        return;
+    }
+
+    written = sixel_compat_snprintf(message,
+                                    sizeof(message),
+                                    "%s (%s)",
+                                    context,
+                                    gerror->message);
+    if (written < 0) {
+        sixel_helper_set_additional_message(context);
+        return;
+    }
+    message[message_capacity - 1] = '\0';
+    sixel_helper_set_additional_message(message);
+}
 
 static int
 librsvg_length_to_pixels(RsvgLength const *length, double *pixels)
@@ -285,42 +316,6 @@ librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
     *pheight = height;
 }
 
-static int
-librsvg_surface_has_non_opaque_alpha(unsigned char const *row,
-                                     size_t row_stride,
-                                     int width,
-                                     int height)
-{
-    size_t x;
-    size_t y;
-    uint32_t const *src;
-    uint32_t pixel;
-    unsigned int alpha;
-
-    x = 0u;
-    y = 0u;
-    src = NULL;
-    pixel = 0u;
-    alpha = 0u;
-
-    if (row == NULL || width <= 0 || height <= 0) {
-        return 0;
-    }
-
-    for (y = 0u; y < (size_t)height; ++y) {
-        src = (uint32_t const *)(row + y * row_stride);
-        for (x = 0u; x < (size_t)width; ++x) {
-            pixel = src[x];
-            alpha = (pixel >> 24) & 0xffu;
-            if (alpha != 255u) {
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
 static unsigned char
 librsvg_unpremultiply_channel(unsigned int value, unsigned int alpha)
 {
@@ -356,9 +351,10 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     unsigned char *pixels;
     unsigned char const *row;
     size_t row_stride;
-    size_t pixel_stride;
+    size_t output_stride;
     size_t pixel_total;
     size_t buffer_size;
+    size_t pixel_index;
     int x;
     int y;
     uint32_t const *src;
@@ -369,6 +365,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     unsigned int green;
     unsigned int blue;
     int preserve_alpha;
+    int inspect_alpha;
     int has_non_opaque_alpha;
 
     status = SIXEL_BAD_INPUT;
@@ -383,20 +380,23 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     pixels = NULL;
     row = NULL;
     row_stride = 0;
-    pixel_stride = 0u;
+    output_stride = 0u;
     pixel_total = 0u;
     buffer_size = 0u;
+    pixel_index = 0u;
     alpha = 0u;
     red = 0u;
     green = 0u;
     blue = 0u;
     preserve_alpha = 0;
+    inspect_alpha = 0;
     has_non_opaque_alpha = 0;
 
     handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
     if (handle == NULL) {
-        sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: unable to parse SVG data.");
+        librsvg_set_error_message(
+            "librsvg_render_to_frame: unable to parse SVG data.",
+            gerror);
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -464,8 +464,9 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     viewport.width = (double)frame->width;
     viewport.height = (double)frame->height;
     if (!rsvg_handle_render_document(handle, cr, &viewport, &gerror)) {
-        sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: rsvg_handle_render_document failed.");
+        librsvg_set_error_message(
+            "librsvg_render_to_frame: rsvg_handle_render_document failed.",
+            gerror);
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -474,20 +475,14 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     row = cairo_image_surface_get_data(surface);
     row_stride = (size_t)cairo_image_surface_get_stride(surface);
 
-    has_non_opaque_alpha = bgcolor == NULL
-        ? librsvg_surface_has_non_opaque_alpha(row,
-                                               row_stride,
-                                               frame->width,
-                                               frame->height)
-        : 0;
-    preserve_alpha = bgcolor == NULL && has_non_opaque_alpha;
-    pixel_stride = preserve_alpha ? 4u : 3u;
+    inspect_alpha = bgcolor == NULL ? 1 : 0;
+    output_stride = inspect_alpha ? 4u : 3u;
 
-    if (pixel_total > SIZE_MAX / pixel_stride) {
+    if (pixel_total > SIZE_MAX / output_stride) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
-    buffer_size = pixel_total * pixel_stride;
+    buffer_size = pixel_total * output_stride;
 
     pixels = (unsigned char *)sixel_allocator_malloc(
         chunk->allocator,
@@ -500,22 +495,36 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     for (y = 0; y < frame->height; ++y) {
         src = (uint32_t const *)(row + (size_t)y * row_stride);
         for (x = 0; x < frame->width; ++x) {
+            pixel_index = (size_t)y * (size_t)frame->width + (size_t)x;
             pixel = src[x];
             alpha = (pixel >> 24) & 0xffu;
             red = (pixel >> 16) & 0xffu;
             green = (pixel >> 8) & 0xffu;
             blue = pixel & 0xffu;
-            dst = ((size_t)y * (size_t)frame->width + (size_t)x) * pixel_stride;
-            if (preserve_alpha) {
+            if (inspect_alpha) {
+                if (alpha != 255u) {
+                    has_non_opaque_alpha = 1;
+                }
+                dst = pixel_index * 4u;
                 pixels[dst + 0] = librsvg_unpremultiply_channel(red, alpha);
                 pixels[dst + 1] = librsvg_unpremultiply_channel(green, alpha);
                 pixels[dst + 2] = librsvg_unpremultiply_channel(blue, alpha);
                 pixels[dst + 3] = (unsigned char)alpha;
             } else {
+                dst = pixel_index * 3u;
                 pixels[dst + 0] = (unsigned char)red;
                 pixels[dst + 1] = (unsigned char)green;
                 pixels[dst + 2] = (unsigned char)blue;
             }
+        }
+    }
+
+    preserve_alpha = inspect_alpha && has_non_opaque_alpha;
+    if (inspect_alpha && !has_non_opaque_alpha) {
+        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+            pixels[pixel_index * 3u + 0u] = pixels[pixel_index * 4u + 0u];
+            pixels[pixel_index * 3u + 1u] = pixels[pixel_index * 4u + 1u];
+            pixels[pixel_index * 3u + 2u] = pixels[pixel_index * 4u + 2u];
         }
     }
 
@@ -660,12 +669,16 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
         self->fstatic = flag != NULL ? *flag : 0;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_USE_PALETTE:
-        /* librsvg always returns RGB/RGBA; palette generation is downstream. */
-        (void)value;
+        flag = (int const *)value;
+        sixel_debugf("librsvg loader: USE_PALETTE=%d ignored; "
+                     "output remains RGB/RGBA.",
+                     flag != NULL ? *flag : 0);
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQCOLORS:
-        /* kept for API compatibility with other loader components */
-        (void)value;
+        flag = (int const *)value;
+        sixel_debugf("librsvg loader: REQCOLORS=%d ignored; "
+                     "palette limits apply during quantization.",
+                     flag != NULL ? *flag : 0);
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_BGCOLOR:
         if (value == NULL) {
