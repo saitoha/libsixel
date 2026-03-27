@@ -27,23 +27,17 @@ sixel_src="${TOP_SRCDIR}/images/snake-progressive-16x16.jpg"
 sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"
 roundtrip_png="${ARTIFACT_LOCAL_DIR}/clipboard-roundtrip.png"
 fake_clipboard_dir="${ARTIFACT_LOCAL_DIR}"
-clipboard_backend_mode="fake"
-use_system_clipboard=0
+clipboard_backend_mode="system"
 lsqa_floor="0.98"
 
-if test "${SIXEL_CLIPBOARD_USE_SYSTEM-}" = 1; then
-    use_system_clipboard=1
-elif test -n "${CI-}" && test "${SIXEL_CLIPBOARD_FORCE_FAKE-}" != 1; then
-    use_system_clipboard=1
-fi
+test -n "${CI-}" && SIXEL_CLIPBOARD_USE_SYSTEM=1
+set --
 
-if test "${use_system_clipboard}" = 1; then
-    clipboard_backend_mode="system"
-    set --
-else
+test "${SIXEL_CLIPBOARD_USE_SYSTEM-}" = 1 || {
+    clipboard_backend_mode="fake"
     set -- --env SIXEL_CLIPBOARD_BACKEND=file \
         --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_clipboard_dir}"
-fi
+}
 
 run_img2sixel "$@" "${sixel_src}" >"${sixel_tmp}" || {
     echo "not ok" 1 - "failed to prepare sixel input"
