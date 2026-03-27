@@ -971,10 +971,20 @@ Without `-B` and with any non-opaque pixel, alpha is preserved
 `USE_PALETTE` and `REQCOLORS` are accepted for API compatibility but treated as
 no-op in this loader. Palette limits are applied later by the quantizer.
 
-The `librsvg` loader parses SVG bytes without assigning a base URI.
+By default, the `librsvg` loader parses SVG bytes without assigning a base URI.
 Relative external references (linked images, stylesheets, and similar assets)
-are therefore not resolved. Embed dependencies (for example with `data:` URIs)
-or preprocess the SVG into a self-contained document before conversion.
+are therefore not resolved. Set
+`SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1` to opt in to file-path
+decode for local files so relative references can resolve.
+
+`librsvg` input mode summary:
+
+| Input path/mode | Relative external refs | `.svgz` handling |
+| --- | --- | --- |
+| local `.svg` file (default) | disabled | n/a |
+| local `.svg` file + `SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1` | enabled | n/a |
+| local `.svgz` file | disabled (unless env opt-in is set) | decoded via file path |
+| stdin/pipe gzip stream (`cat foo.svgz \| img2sixel ... -`) | n/a | rejected; decompress first or pass file path |
 
 When running under GNOME or other desktops that implement the FreeDesktop.org
 Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
