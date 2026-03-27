@@ -1455,42 +1455,8 @@ vp8l_payload_uses_color_indexing(unsigned char const *data, size_t size)
 }
 
 
-/*
- * Return 1 when every frame in the WebP stream uses VP8L color indexing.
- *
- * Palette promotion must only run for bitstreams that are explicitly indexed
- * in the source format. RGB/RGBA sources must keep their original semantics.
- */
 static int
-webp_stream_may_contain_vp8l(sixel_chunk_t const *pchunk)
-{
-    unsigned char const *bytes;
-    size_t i;
-
-    bytes = NULL;
-    i = 0U;
-
-    if (pchunk == NULL || pchunk->buffer == NULL || pchunk->size < 4U) {
-        return 0;
-    }
-
-    bytes = pchunk->buffer;
-    for (i = 0U; i + 3U < pchunk->size; ++i) {
-        if (bytes[i + 0U] == 'V' &&
-            bytes[i + 1U] == 'P' &&
-            bytes[i + 2U] == '8' &&
-            bytes[i + 3U] == 'L') {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-
-static int
-webp_input_is_indexed(sixel_chunk_t const *pchunk,
-                      WebPDemuxer const *demux)
+webp_input_is_indexed(WebPDemuxer const *demux)
 {
     WebPIterator iter;
     int frame_count;
@@ -1502,12 +1468,6 @@ webp_input_is_indexed(sixel_chunk_t const *pchunk,
     frame_index = 0;
     indexed = 0;
 
-    if (pchunk == NULL || pchunk->buffer == NULL || pchunk->size == 0U) {
-        return 0;
-    }
-    if (!webp_stream_may_contain_vp8l(pchunk)) {
-        return 0;
-    }
     if (demux == NULL) {
         return 0;
     }
@@ -2076,7 +2036,7 @@ load_with_libwebp(
     }
 
     if (fuse_palette) {
-        allow_palette_promotion = webp_input_is_indexed(pchunk, demux);
+        allow_palette_promotion = webp_input_is_indexed(demux);
     }
 
     if (enable_cms) {
