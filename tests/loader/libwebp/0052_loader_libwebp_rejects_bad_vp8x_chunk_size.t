@@ -17,10 +17,18 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
+stderr_log="${ARTIFACT_LOCAL_DIR}/webp-bad-vp8x-size.stderr"
 
 run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_vp8x_chunk_size.webp" \
-    >/dev/null && {
+    >/dev/null 2>"${stderr_log}" && {
     echo "not ok" 1 - "forced libwebp loader accepted invalid VP8X chunk size"
+    exit 0
+}
+
+grep -F "webp decode: VP8X chunk size is invalid." "${stderr_log}" >/dev/null || {
+    echo "not ok" 1 - "expected VP8X chunk size diagnostic was missing"
     exit 0
 }
 
