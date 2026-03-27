@@ -79,6 +79,7 @@ typedef struct sixel_loader_libwebp_component {
 #define WEBP_MAX_DIMENSION        32767
 #define WEBP_MAX_IMAGE_PIXELS     ((size_t)268435456u)
 #define WEBP_MAX_ANIMATION_FRAMES 65535
+#define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
 
 static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
@@ -114,6 +115,152 @@ webp_validate_canvas_limits(int width, int height)
         sixel_helper_set_additional_message(
             "webp decode: image exceeds pixel limit.");
         return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    return SIXEL_OK;
+}
+
+static unsigned int
+webp_read_u32le(unsigned char const *p)
+{
+    if (p == NULL) {
+        return 0U;
+    }
+
+    return (unsigned int)p[0]
+         | ((unsigned int)p[1] << 8)
+         | ((unsigned int)p[2] << 16)
+         | ((unsigned int)p[3] << 24);
+}
+
+static char const *
+webp_decode_status_name(VP8StatusCode status)
+{
+    switch (status) {
+    case VP8_STATUS_OK:
+        return "VP8_STATUS_OK";
+    case VP8_STATUS_OUT_OF_MEMORY:
+        return "VP8_STATUS_OUT_OF_MEMORY";
+    case VP8_STATUS_INVALID_PARAM:
+        return "VP8_STATUS_INVALID_PARAM";
+    case VP8_STATUS_BITSTREAM_ERROR:
+        return "VP8_STATUS_BITSTREAM_ERROR";
+    case VP8_STATUS_UNSUPPORTED_FEATURE:
+        return "VP8_STATUS_UNSUPPORTED_FEATURE";
+    case VP8_STATUS_SUSPENDED:
+        return "VP8_STATUS_SUSPENDED";
+    case VP8_STATUS_USER_ABORT:
+        return "VP8_STATUS_USER_ABORT";
+    case VP8_STATUS_NOT_ENOUGH_DATA:
+        return "VP8_STATUS_NOT_ENOUGH_DATA";
+    default:
+        return "VP8_STATUS_UNKNOWN";
+    }
+}
+
+static SIXELSTATUS
+webp_validate_riff_container(unsigned char const *data, size_t size)
+{
+    size_t riff_size;
+    size_t riff_total_size;
+    size_t offset;
+    unsigned int chunk_size_u32;
+    size_t chunk_size;
+    size_t chunk_total_size;
+    int saw_chunk;
+    unsigned char const *chunk_tag;
+
+    riff_size = 0u;
+    riff_total_size = 0u;
+    offset = 0u;
+    chunk_size_u32 = 0U;
+    chunk_size = 0u;
+    chunk_total_size = 0u;
+    saw_chunk = 0;
+    chunk_tag = NULL;
+
+    if (data == NULL || size < 12u) {
+        sixel_helper_set_additional_message(
+            "webp decode: RIFF header is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (memcmp(data, "RIFF", 4u) != 0 ||
+        memcmp(data + 8u, "WEBP", 4u) != 0) {
+        sixel_helper_set_additional_message(
+            "webp decode: RIFF/WEBP signature is invalid.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    riff_size = (size_t)webp_read_u32le(data + 4u);
+    if (riff_size < 4u) {
+        sixel_helper_set_additional_message(
+            "webp decode: RIFF size field is invalid.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (riff_size > SIZE_MAX - 8u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    riff_total_size = riff_size + 8u;
+    if (riff_total_size > size) {
+        sixel_helper_set_additional_message(
+            "webp decode: RIFF size exceeds input buffer.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    offset = 12u;
+    while (offset < riff_total_size) {
+        if (riff_total_size - offset < 8u) {
+            sixel_helper_set_additional_message(
+                "webp decode: chunk header is truncated.");
+            return SIXEL_BAD_INPUT;
+        }
+
+        chunk_tag = data + offset;
+        chunk_size_u32 = webp_read_u32le(data + offset + 4u);
+        chunk_size = (size_t)chunk_size_u32;
+        if (memcmp(chunk_tag, "VP8X", 4u) == 0 && chunk_size != 10u) {
+            sixel_helper_set_additional_message(
+                "webp decode: VP8X chunk size is invalid.");
+            return SIXEL_BAD_INPUT;
+        }
+        if (memcmp(chunk_tag, "ANIM", 4u) == 0 && chunk_size != 6u) {
+            sixel_helper_set_additional_message(
+                "webp decode: ANIM chunk size is invalid.");
+            return SIXEL_BAD_INPUT;
+        }
+        if (memcmp(chunk_tag, "ANMF", 4u) == 0 && chunk_size < 16u) {
+            sixel_helper_set_additional_message(
+                "webp decode: ANMF chunk size is too small.");
+            return SIXEL_BAD_INPUT;
+        }
+        if (chunk_size > SIZE_MAX - 8u - offset) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+
+        chunk_total_size = 8u + chunk_size;
+        if ((chunk_size_u32 & 1u) != 0u) {
+            if (chunk_total_size == SIZE_MAX) {
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            chunk_total_size += 1u;
+        }
+
+        if (chunk_total_size > riff_total_size - offset) {
+            sixel_helper_set_additional_message(
+                "webp decode: chunk payload exceeds RIFF size.");
+            return SIXEL_BAD_INPUT;
+        }
+
+        saw_chunk = 1;
+        offset += chunk_total_size;
+    }
+
+    if (!saw_chunk) {
+        sixel_helper_set_additional_message(
+            "webp decode: no RIFF chunks found.");
+        return SIXEL_BAD_INPUT;
     }
 
     return SIXEL_OK;
@@ -584,6 +731,7 @@ webp_decode_lossy_to_float32(unsigned char **result,
     int has_transparency;
     int config_initialized;
     int cms_converted;
+    char error_message[128];
 
     status = SIXEL_BAD_INPUT;
     memset(&config, 0, sizeof(config));
@@ -617,6 +765,7 @@ webp_decode_lossy_to_float32(unsigned char **result,
     has_transparency = 0;
     config_initialized = 0;
     cms_converted = 0;
+    memset(error_message, 0, sizeof(error_message));
 
     if (result == NULL || ppixelformat == NULL || allocator == NULL ||
         data == NULL || datasize == 0u || width <= 0 || height <= 0) {
@@ -634,8 +783,12 @@ webp_decode_lossy_to_float32(unsigned char **result,
 
     decode_status = WebPDecode(data, datasize, &config);
     if (decode_status != VP8_STATUS_OK) {
-        sixel_helper_set_additional_message(
-            "webp_decode_lossy_to_float32: WebPDecode failed.");
+        (void)snprintf(error_message,
+                       sizeof(error_message),
+                       "webp_decode_lossy_to_float32: WebPDecode failed (%s:%d).",
+                       webp_decode_status_name(decode_status),
+                       (int)decode_status);
+        sixel_helper_set_additional_message(error_message);
         status = SIXEL_WEBP_ERROR;
         goto end;
     }
@@ -816,11 +969,15 @@ load_webp(unsigned char **result,
     int force_rgb_decode;
     size_t stride;
     size_t size;
+    VP8StatusCode feature_status;
+    char error_message[128];
 
     status = SIXEL_BAD_INPUT;
     cms_converted = 0;
     force_rgb_env = NULL;
     force_rgb_decode = 0;
+    feature_status = VP8_STATUS_OK;
+    memset(error_message, 0, sizeof(error_message));
     if (result == NULL || data == NULL || datasize == 0u ||
         pwidth == NULL || pheight == NULL || ppixelformat == NULL ||
         allocator == NULL) {
@@ -828,9 +985,19 @@ load_webp(unsigned char **result,
     }
     *result = NULL;
 
-    if (WebPGetFeatures(data, datasize, &features) != VP8_STATUS_OK) {
-        sixel_helper_set_additional_message(
-            "load_webp: WebPGetFeatures failed.");
+    status = webp_validate_riff_container(data, datasize);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    feature_status = WebPGetFeatures(data, datasize, &features);
+    if (feature_status != VP8_STATUS_OK) {
+        (void)snprintf(error_message,
+                       sizeof(error_message),
+                       "load_webp: WebPGetFeatures failed (%s:%d).",
+                       webp_decode_status_name(feature_status),
+                       (int)feature_status);
+        sixel_helper_set_additional_message(error_message);
         return status;
     }
 
@@ -1844,6 +2011,8 @@ load_with_libwebp(
     unsigned char *resolved_bgcolor;
     unsigned char *icc_profile;
     size_t icc_profile_length;
+    size_t emitted_total_frames;
+    char error_message[128];
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -1875,6 +2044,8 @@ load_with_libwebp(
     resolved_bgcolor = bgcolor;
     icc_profile = NULL;
     icc_profile_length = 0U;
+    emitted_total_frames = 0u;
+    memset(error_message, 0, sizeof(error_message));
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -1900,12 +2071,21 @@ load_with_libwebp(
                                  pchunk->allocator);
     }
 
+    status = webp_validate_riff_container(pchunk->buffer, pchunk->size);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     feature_status = WebPGetFeatures(pchunk->buffer,
                                      pchunk->size,
                                      &stream_features);
     if (feature_status != VP8_STATUS_OK) {
-        sixel_helper_set_additional_message(
-            "load_with_libwebp: WebPGetFeatures failed.");
+        (void)snprintf(error_message,
+                       sizeof(error_message),
+                       "load_with_libwebp: WebPGetFeatures failed (%s:%d).",
+                       webp_decode_status_name(feature_status),
+                       (int)feature_status);
+        sixel_helper_set_additional_message(error_message);
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -2284,6 +2464,13 @@ load_with_libwebp(
                 continue;
             }
 
+            if (emitted_total_frames >= WEBP_MAX_OUTPUT_FRAMES) {
+                sixel_helper_set_additional_message(
+                    "load_with_libwebp: emitted frame count exceeds safety limit.");
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+
             status = sixel_frame_new(&frame, pchunk->allocator);
             if (SIXEL_FAILED(status)) {
                 goto end;
@@ -2349,6 +2536,7 @@ load_with_libwebp(
             sixel_frame_unref(frame);
             frame = NULL;
 
+            emitted_total_frames++;
             previous_timestamp = timestamp;
             emitted_frame_no++;
             frame_no++;
