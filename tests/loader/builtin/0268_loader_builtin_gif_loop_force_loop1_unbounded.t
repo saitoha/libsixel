@@ -15,7 +15,9 @@ set -v
 
 input_loop1="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop1.gif"
 
-run_img2sixel -Lbuiltin! -lforce -g "${input_loop1}" -o /dev/null >/dev/null 2>&1 &
+# Launch directly so $! points to the actual wrapper process.
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce -g "${input_loop1}" \
+    -o /dev/null >/dev/null 2>&1 &
 pid=$!
 
 wait_limit=3
