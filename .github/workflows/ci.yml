@@ -62,7 +62,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -137,7 +141,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -325,7 +333,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -418,7 +430,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -515,7 +531,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -598,7 +618,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -679,7 +703,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -767,7 +795,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -853,7 +885,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -939,7 +975,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -1023,7 +1063,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -1077,7 +1121,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -1575,7 +1623,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -1921,7 +1973,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2030,7 +2086,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2091,7 +2151,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2181,7 +2245,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2245,7 +2313,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2342,7 +2414,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2480,7 +2556,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2601,7 +2681,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2656,7 +2740,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2740,7 +2828,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2810,7 +2902,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2872,7 +2968,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -2962,7 +3062,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3274,7 +3378,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3385,7 +3493,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3457,7 +3569,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3528,7 +3644,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3633,7 +3753,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3724,7 +3848,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3822,7 +3950,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -3932,7 +4064,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4095,7 +4231,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4188,7 +4328,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4254,7 +4398,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4322,7 +4470,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4450,7 +4602,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4512,7 +4668,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4574,7 +4734,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4683,7 +4847,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4745,7 +4913,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
@@ -4801,7 +4973,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Add-MpPreference -ExclusionPath "C:\a"
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
 
       - name: Disable Windows Search Indexer (Windows)
         if: runner.os == 'Windows'
