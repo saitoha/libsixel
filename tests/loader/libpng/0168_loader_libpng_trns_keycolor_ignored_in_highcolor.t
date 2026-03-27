@@ -67,7 +67,12 @@ case "${out_off_payload}" in
         ;;
 esac
 
-test "${out_on_has_header}" = 0 && test "${out_off_has_header}" = 0 || {
+test "${out_on_has_header}" = 0 || {
+    echo "not ok 1 - highcolor mode emitted keycolor header"
+    exit 0
+}
+
+test "${out_off_has_header}" = 0 || {
     echo "not ok 1 - highcolor mode emitted keycolor header"
     exit 0
 }

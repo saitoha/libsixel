@@ -63,7 +63,12 @@ case "${out_off_payload}" in
         ;;
 esac
 
-test "${out_on_has_header}" = 1 && test "${out_off_has_header}" = 0 || {
+test "${out_on_has_header}" = 1 || {
+    echo "not ok 1 - builtin multi-input keycolor header gating mismatch"
+    exit 0
+}
+
+test "${out_off_has_header}" = 0 || {
     echo "not ok 1 - builtin multi-input keycolor header gating mismatch"
     exit 0
 }

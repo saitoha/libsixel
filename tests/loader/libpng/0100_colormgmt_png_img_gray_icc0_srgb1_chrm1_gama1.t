@@ -23,7 +23,12 @@ input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/gray/img_gray_icc0_srgb1
 reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/gray/img_gray_icc0_srgb1_chrm1_gama1.six"
 output_six="${ARTIFACT_LOCAL_DIR}/img_gray_icc0_srgb1_chrm1_gama1_libpng.six"
 
-test -f "${input_png}" && test -f "${reference_six}" || {
+test -f "${input_png}" || {
+    echo "not ok" 1 - "missing test fixture"
+    exit 0
+}
+
+test -f "${reference_six}" || {
     echo "not ok" 1 - "missing test fixture"
     exit 0
 }

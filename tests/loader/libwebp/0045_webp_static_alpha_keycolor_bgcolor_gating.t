@@ -81,10 +81,22 @@ case "$(cat "${out_white}")" in
         ;;
 esac
 
-test "${default_has_keycolor}" -eq 1 &&
-    test "${cms_has_keycolor}" -eq 1 &&
-    test "${black_has_keycolor}" -eq 0 &&
-    test "${white_has_keycolor}" -eq 0 || {
+test "${default_has_keycolor}" -eq 1 || {
+    echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
+    exit 0
+}
+
+test "${cms_has_keycolor}" -eq 1 || {
+    echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
+    exit 0
+}
+
+test "${black_has_keycolor}" -eq 0 || {
+    echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
+    exit 0
+}
+
+test "${white_has_keycolor}" -eq 0 || {
     echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
     exit 0
 }
