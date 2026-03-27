@@ -57,6 +57,7 @@
 #include "compat_stub.h"
 #include "frame.h"
 #include "fromgif.h"
+#include "fromhdr.h"
 #include "frompng.h"
 #include "frompsd.h"
 #include "frompnm.h"
@@ -2727,6 +2728,11 @@ load_with_builtin(
                 }
             }
         } else {
+            int hdr_pixelformat;
+            int hdr_colorspace;
+
+            hdr_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
                             (int)pchunk->size);
@@ -3041,64 +3047,80 @@ load_with_builtin(
                 frame->pixelformat = psd_pixelformat;
                 frame->colorspace = psd_colorspace;
             } else {
-                pixels = stbi__load_and_postprocess_8bit(&stb_context,
-                                                         &frame->width,
-                                                         &frame->height,
-                                                         &depth,
-                                                         3);
-                if (pixels == NULL) {
-                    sixel_helper_set_additional_message(stbi_failure_reason());
-                    status = SIXEL_STBI_ERROR;
+                status = sixel_builtin_decode_hdr_float32(
+                    pchunk,
+                    &pixels,
+                    &frame->width,
+                    &frame->height,
+                    &hdr_pixelformat,
+                    &hdr_colorspace);
+                if (status == SIXEL_OK) {
+                    sixel_frame_set_pixels(frame, pixels);
+                    frame->loop_count = 1;
+                    frame->pixelformat = hdr_pixelformat;
+                    frame->colorspace = hdr_colorspace;
+                } else if (status != SIXEL_FALSE) {
                     goto end;
-                }
-                sixel_frame_set_pixels(frame, pixels);
-                frame->loop_count = 1;
+                } else {
+                    pixels = stbi__load_and_postprocess_8bit(&stb_context,
+                                                             &frame->width,
+                                                             &frame->height,
+                                                             &depth,
+                                                             3);
+                    if (pixels == NULL) {
+                        sixel_helper_set_additional_message(stbi_failure_reason());
+                        status = SIXEL_STBI_ERROR;
+                        goto end;
+                    }
+                    sixel_frame_set_pixels(frame, pixels);
+                    frame->loop_count = 1;
 #if HAVE_LCMS2
-                if (enable_cms && chunk_is_tiff(pchunk)) {
-                    if (sixel_builtin_extract_tiff_icc(
-                            pchunk->buffer,
-                            pchunk->size,
-                            &icc_profile,
-                            &icc_profile_length,
-                            &tiff_photometric,
-                            pchunk->allocator)) {
-                        if (sixel_builtin_tiff_photometric_supports_icc(
-                                tiff_photometric)) {
-                            cms_converted =
-                                sixel_cms_convert_to_srgb_with_profile_bytes(
-                                pixels,
+                    if (enable_cms && chunk_is_tiff(pchunk)) {
+                        if (sixel_builtin_extract_tiff_icc(
+                                pchunk->buffer,
+                                pchunk->size,
+                                &icc_profile,
+                                &icc_profile_length,
+                                &tiff_photometric,
+                                pchunk->allocator)) {
+                            if (sixel_builtin_tiff_photometric_supports_icc(
+                                    tiff_photometric)) {
+                                cms_converted =
+                                    sixel_cms_convert_to_srgb_with_profile_bytes(
+                                    pixels,
                                 frame->width,
                                 frame->height,
                                 SIXEL_PIXELFORMAT_RGB888,
                                 icc_profile,
                                 icc_profile_length);
-                            if (!cms_converted) {
-                                loader_trace_message(
-                                    "builtin TIFF: embedded ICC conversion "
-                                    "failed");
+                                if (!cms_converted) {
+                                    loader_trace_message(
+                                        "builtin TIFF: embedded ICC conversion "
+                                        "failed");
+                                }
                             }
                         }
                     }
-                }
 #endif
-                switch (depth) {
-                case 1:
-                case 3:
-                case 4:
-                    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-                    break;
-                default:
-                    nwrite = snprintf(message,
-                                      sizeof(message),
-                                      "load_with_builtin() failed.\n"
-                                      "reason: unknown pixel-format.(depth: %d)\n",
-                                      depth);
-                    if (nwrite > 0) {
-                        sixel_helper_set_additional_message(message);
+                    switch (depth) {
+                    case 1:
+                    case 3:
+                    case 4:
+                        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+                        break;
+                    default:
+                        nwrite = snprintf(message,
+                                          sizeof(message),
+                                          "load_with_builtin() failed.\n"
+                                          "reason: unknown pixel-format.(depth: %d)\n",
+                                          depth);
+                        if (nwrite > 0) {
+                            sixel_helper_set_additional_message(message);
+                        }
+                        status = SIXEL_STBI_ERROR;
+                        goto end;
                     }
-                    status = SIXEL_STBI_ERROR;
-                    goto end;
                 }
             }
         }

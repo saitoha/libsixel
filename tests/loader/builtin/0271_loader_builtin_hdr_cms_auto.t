@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming the builtin loader can decode HDR inputs.
+# TAP test confirming builtin HDR decode succeeds with cms_engine=auto.
 
 set -eux
 
@@ -15,10 +15,10 @@ set -v
 
 input_hdr="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.hdr"
 
-run_img2sixel -L builtin! "${input_hdr}" >/dev/null || {
-    echo "not ok" 1 - "builtin loader failed to decode HDR with builtin!"
+run_img2sixel -Lbuiltin:cms_engine=auto! "${input_hdr}" >/dev/null || {
+    echo "not ok" 1 - "builtin loader failed to decode HDR with cms=auto"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader decodes HDR with builtin!"
+echo "ok" 1 - "builtin loader decodes HDR with cms=auto"
 exit 0
