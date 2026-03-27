@@ -52,8 +52,12 @@ case "$(cat "${out_forced_rgb}")" in
         ;;
 esac
 
-test "${default_has_keycolor}" -eq 1 &&
-    test "${forced_has_keycolor}" -eq 1 || {
+test "${default_has_keycolor}" -eq 1 || {
+    echo "not ok" 1 - "libwebp static alpha path lost keycolor header"
+    exit 0
+}
+
+test "${forced_has_keycolor}" -eq 1 || {
     echo "not ok" 1 - "libwebp static alpha path lost keycolor header"
     exit 0
 }

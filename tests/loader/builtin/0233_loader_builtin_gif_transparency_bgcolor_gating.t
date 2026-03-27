@@ -54,7 +54,12 @@ case "$(cat "${out_bgcolor}")" in
         ;;
 esac
 
-test "${default_has_keycolor}" -eq 1 && test "${bgcolor_has_keycolor}" -eq 0 || {
+test "${default_has_keycolor}" -eq 1 || {
+    echo "not ok" 1 - "builtin GIF transparency keycolor gating mismatch"
+    exit 0
+}
+
+test "${bgcolor_has_keycolor}" -eq 0 || {
     echo "not ok" 1 - "builtin GIF transparency keycolor gating mismatch"
     exit 0
 }

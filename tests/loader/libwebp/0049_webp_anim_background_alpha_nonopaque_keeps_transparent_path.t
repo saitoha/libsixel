@@ -51,7 +51,12 @@ case "$(cat "${out_bg}")" in
         ;;
 esac
 
-test "${default_has_keycolor}" -eq 1 && test "${bg_has_keycolor}" -eq 0 || {
+test "${default_has_keycolor}" -eq 1 || {
+    echo "not ok" 1 - "ANIM non-opaque alpha did not keep transparent-path gating"
+    exit 0
+}
+
+test "${bg_has_keycolor}" -eq 0 || {
     echo "not ok" 1 - "ANIM non-opaque alpha did not keep transparent-path gating"
     exit 0
 }
