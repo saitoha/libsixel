@@ -1145,6 +1145,7 @@ runs:
       if: ${{ hashFiles('coverage.info') != '' }}
       shell: bash
       run: |
+        set -o igncr 2>/dev/null || true
         if ! test -s coverage.info; then
           echo "coverage.info is empty; skip Coveralls upload"
           echo "upload_ready=false" >> "$GITHUB_OUTPUT"
@@ -1164,6 +1165,7 @@ runs:
       if: ${{ hashFiles('python-coverage.info', 'builddir/python-coverage.info') != '' }}
       shell: bash
       run: |
+        set -o igncr 2>/dev/null || true
         COVERAGE_FILE=""
         if test -f python-coverage.info; then
           COVERAGE_FILE="python-coverage.info"
@@ -1197,6 +1199,7 @@ runs:
       if: ${{ hashFiles('ruby-coverage.info', 'builddir/ruby-coverage.info') != '' }}
       shell: bash
       run: |
+        set -o igncr 2>/dev/null || true
         COVERAGE_FILE=""
         if test -f ruby-coverage.info; then
           COVERAGE_FILE="ruby-coverage.info"
@@ -1230,6 +1233,7 @@ runs:
       if: ${{ hashFiles('perl-coverage.info', 'builddir/perl-coverage.info') != '' }}
       shell: bash
       run: |
+        set -o igncr 2>/dev/null || true
         COVERAGE_FILE=""
         if test -f perl-coverage.info; then
           COVERAGE_FILE="perl-coverage.info"
@@ -1263,6 +1267,7 @@ runs:
       if: ${{ hashFiles('php-coverage.info', 'builddir/php-coverage.info') != '' }}
       shell: bash
       run: |
+        set -o igncr 2>/dev/null || true
         COVERAGE_FILE=""
         if test -f php-coverage.info; then
           COVERAGE_FILE="php-coverage.info"
@@ -1310,7 +1315,9 @@ runs:
             && steps.coverage_info_check.outputs.upload_ready == 'true'
             && steps.coveralls_upload.outcome == 'failure' }}
       shell: bash
-      run: sleep 5
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
       if: >-
@@ -1358,7 +1365,9 @@ runs:
             && steps.python_coverage_info_check.outputs.upload_ready == 'true'
             && steps.coveralls_upload_python.outcome == 'failure' }}
       shell: bash
-      run: sleep 5
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 5
 
     - name: Upload Python coverage to Coveralls (per-flag, retry)
       if: >-
@@ -1407,7 +1416,9 @@ runs:
             && steps.ruby_coverage_info_check.outputs.upload_ready == 'true'
             && steps.coveralls_upload_ruby.outcome == 'failure' }}
       shell: bash
-      run: sleep 5
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 5
 
     - name: Upload Ruby coverage to Coveralls (per-flag, retry)
       if: >-
@@ -1456,7 +1467,9 @@ runs:
             && steps.perl_coverage_info_check.outputs.upload_ready == 'true'
             && steps.coveralls_upload_perl.outcome == 'failure' }}
       shell: bash
-      run: sleep 5
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 5
 
     - name: Upload Perl coverage to Coveralls (per-flag, retry)
       if: >-
@@ -1505,7 +1518,9 @@ runs:
             && steps.php_coverage_info_check.outputs.upload_ready == 'true'
             && steps.coveralls_upload_php.outcome == 'failure' }}
       shell: bash
-      run: sleep 5
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 5
 
     - name: Upload PHP coverage to Coveralls (per-flag, retry)
       if: >-
