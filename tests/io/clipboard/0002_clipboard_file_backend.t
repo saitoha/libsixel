@@ -25,25 +25,22 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 sixel_src="${TOP_SRCDIR}/images/snake-progressive-16x16.jpg"
 sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-file-input.six"
 roundtrip_png="${ARTIFACT_LOCAL_DIR}/clipboard-file-roundtrip.png"
-fake_clipboard_dir="${ARTIFACT_LOCAL_DIR}/clipboard-fake"
+fake_clipboard_dir="${ARTIFACT_LOCAL_DIR}"
 fake_png_slot="${fake_clipboard_dir}/image.bin"
 fake_text_slot="${fake_clipboard_dir}/text.bin"
 png_magic=
 text_magic=
 lsqa_floor="0.98"
 
-mkdir -p "${fake_clipboard_dir}"
+set -- --env SIXEL_CLIPBOARD_BACKEND=file \
+    --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_clipboard_dir}"
 
-run_img2sixel --env SIXEL_CLIPBOARD_BACKEND=file \
-    --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-    "${sixel_src}" >"${sixel_tmp}" || {
+run_img2sixel "$@" "${sixel_src}" >"${sixel_tmp}" || {
     echo "not ok" 1 - "failed to prepare sixel input"
     exit 0
 }
 
-run_sixel2png --env SIXEL_CLIPBOARD_BACKEND=file \
-    --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-    -i "${sixel_tmp}" -o png:clipboard: || {
+run_sixel2png "$@" -i "${sixel_tmp}" -o png:clipboard: || {
     echo "not ok" 1 - "failed to write PNG into fake clipboard"
     exit 0
 }
@@ -59,9 +56,7 @@ test "${png_magic}" = "89504e470d0a1a0a" || {
     exit 0
 }
 
-run_img2sixel --env SIXEL_CLIPBOARD_BACKEND=file \
-    --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-    clipboard: -o clipboard: || {
+run_img2sixel "$@" clipboard: -o clipboard: || {
     echo "not ok" 1 - "failed to read/write fake clipboard SIXEL payload"
     exit 0
 }
@@ -77,9 +72,7 @@ test "${text_magic}" = "1b50" || {
     exit 0
 }
 
-run_sixel2png --env SIXEL_CLIPBOARD_BACKEND=file \
-    --env SIXEL_CLIPBOARD_FILE_DIR="${fake_clipboard_dir}" \
-    -i clipboard: -o "${roundtrip_png}" || {
+run_sixel2png "$@" -i clipboard: -o "${roundtrip_png}" || {
     echo "not ok" 1 - "failed to decode fake clipboard payload"
     exit 0
 }
