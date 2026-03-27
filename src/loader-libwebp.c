@@ -76,6 +76,10 @@ typedef struct sixel_loader_libwebp_component {
     int start_frame_no;
 } sixel_loader_libwebp_component_t;
 
+#define WEBP_MAX_DIMENSION        32767
+#define WEBP_MAX_IMAGE_PIXELS     ((size_t)268435456u)
+#define WEBP_MAX_ANIMATION_FRAMES 65535
+
 static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
                                   int width,
@@ -83,6 +87,37 @@ webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
                                   int pixelformat,
                                   unsigned char const *icc_profile,
                                   size_t icc_profile_length);
+
+static SIXELSTATUS
+webp_validate_canvas_limits(int width, int height)
+{
+    size_t pixel_total;
+
+    pixel_total = 0u;
+
+    if (width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "webp decode: invalid image dimensions.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (width > WEBP_MAX_DIMENSION || height > WEBP_MAX_DIMENSION) {
+        sixel_helper_set_additional_message(
+            "webp decode: dimensions exceed limit.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_total = (size_t)width * (size_t)height;
+    if (pixel_total > WEBP_MAX_IMAGE_PIXELS) {
+        sixel_helper_set_additional_message(
+            "webp decode: image exceeds pixel limit.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    return SIXEL_OK;
+}
 
 static float
 webp_clamp_unit_float(float value)
@@ -799,14 +834,12 @@ load_webp(unsigned char **result,
         return status;
     }
 
-    if (features.width <= 0 || features.height <= 0) {
-        sixel_helper_set_additional_message(
-            "load_webp: invalid image dimensions.");
-        return status;
-    }
-
     if (features.width > INT_MAX || features.height > INT_MAX) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    status = webp_validate_canvas_limits(features.width, features.height);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     *pwidth = features.width;
@@ -1236,17 +1269,8 @@ vp8l_payload_uses_color_indexing(unsigned char const *data, size_t size)
             }
             bitbuf >>= 3;
             bits -= 3;
-        } else if (transform_type == 3) {
-            while (bits < 8) {
-                if (pos >= size) {
-                    return 0;
-                }
-                bitbuf |= (unsigned int)data[pos] << bits;
-                bits += 8;
-                pos++;
-            }
-            bitbuf >>= 8;
-            bits -= 8;
+        } else if (transform_type == 2) {
+            /* subtract-green transform carries no additional payload bits */
         }
     }
 
@@ -1812,6 +1836,8 @@ load_with_libwebp(
     int decode_start_frame_no;
     int emitted_frame_no;
     int cms_converted;
+    WebPBitstreamFeatures stream_features;
+    VP8StatusCode feature_status;
     unsigned int webp_format_flags;
     unsigned int anim_bg_alpha;
     unsigned char anim_bgcolor[3];
@@ -1839,6 +1865,8 @@ load_with_libwebp(
     decode_start_frame_no = 0;
     emitted_frame_no = 0;
     cms_converted = 0;
+    stream_features = (WebPBitstreamFeatures){ 0 };
+    feature_status = VP8_STATUS_OK;
     webp_format_flags = 0U;
     anim_bg_alpha = 0U;
     anim_bgcolor[0] = 0u;
@@ -1872,6 +1900,83 @@ load_with_libwebp(
                                  pchunk->allocator);
     }
 
+    feature_status = WebPGetFeatures(pchunk->buffer,
+                                     pchunk->size,
+                                     &stream_features);
+    if (feature_status != VP8_STATUS_OK) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: WebPGetFeatures failed.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (stream_features.width > INT_MAX || stream_features.height > INT_MAX) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    status = webp_validate_canvas_limits(stream_features.width,
+                                         stream_features.height);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    if (!stream_features.has_animation) {
+        if (start_frame_no != INT_MIN) {
+            status = webp_resolve_animation_start_frame_no(start_frame_no,
+                                                           1,
+                                                           &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = load_webp(&pixels,
+                           pchunk->buffer,
+                           pchunk->size,
+                           &frame->width,
+                           &frame->height,
+                           &frame->pixelformat,
+                           enable_cms,
+                           icc_profile,
+                           icc_profile_length,
+                           &cms_converted,
+                           bgcolor,
+                           pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+            sixel_frame_set_pixels_float32(frame, (float *)pixels);
+        } else {
+            sixel_frame_set_pixels(frame, pixels);
+        }
+        frame->frame_no = resolved_start_frame_no;
+
+        status = webp_finalize_frame_output(frame,
+                                            enable_cms,
+                                            cms_converted,
+                                            allow_palette_promotion,
+                                            reqcolors,
+                                            bgcolor,
+                                            pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = fn_load(frame, context);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = SIXEL_OK;
+        goto end;
+    }
+
     if (!WebPAnimDecoderOptionsInit(&decoder_options)) {
         sixel_helper_set_additional_message(
             "load_with_libwebp: WebPAnimDecoderOptionsInit failed.");
@@ -1894,6 +1999,22 @@ load_with_libwebp(
         status = SIXEL_WEBP_ERROR;
         goto end;
     }
+    if (anim_info.canvas_width > (unsigned int)INT_MAX ||
+        anim_info.canvas_height > (unsigned int)INT_MAX) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    status = webp_validate_canvas_limits((int)anim_info.canvas_width,
+                                         (int)anim_info.canvas_height);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (anim_info.frame_count > WEBP_MAX_ANIMATION_FRAMES) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: animation frame count exceeds limit.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     if (bgcolor == NULL) {
         anim_demuxer = WebPAnimDecoderGetDemuxer(decoder);
@@ -1909,19 +2030,26 @@ load_with_libwebp(
                 anim_bgcolor[0] = (unsigned char)((anim_info.bgcolor >> 16u) & 0xffu);
                 anim_bgcolor[1] = (unsigned char)((anim_info.bgcolor >> 8u) & 0xffu);
                 anim_bgcolor[2] = (unsigned char)(anim_info.bgcolor & 0xffu);
-                if (anim_bg_alpha != 0u) {
+                if (anim_bg_alpha == 255u) {
                     resolved_bgcolor = anim_bgcolor;
                     sixel_trace_topic_message(
                         "webp_decode",
-                        "animation background source=ANIM alpha=%u rgb=#%02x%02x%02x",
+                        "animation background source=ANIM alpha=255 rgb=#%02x%02x%02x",
+                        anim_bgcolor[0],
+                        anim_bgcolor[1],
+                        anim_bgcolor[2]);
+                } else if (anim_bg_alpha == 0u) {
+                    sixel_trace_topic_message(
+                        "webp_decode",
+                        "animation background source=ANIM alpha=0; keep transparent path");
+                } else {
+                    sixel_trace_topic_message(
+                        "webp_decode",
+                        "animation background source=ANIM alpha=%u (non-opaque); keep transparent path rgb=#%02x%02x%02x",
                         anim_bg_alpha,
                         anim_bgcolor[0],
                         anim_bgcolor[1],
                         anim_bgcolor[2]);
-                } else {
-                    sixel_trace_topic_message(
-                        "webp_decode",
-                        "animation background source=ANIM alpha=0; keep transparent path");
                 }
             }
         }
@@ -2012,6 +2140,8 @@ load_with_libwebp(
             goto end;
         }
 
+        previous_timestamp = 0;
+        next_delay = 0;
         for (frame_no = 0; frame_no <= resolved_start_frame_no; frame_no++) {
             if (!WebPAnimDecoderHasMoreFrames(decoder)) {
                 sixel_helper_set_additional_message(
@@ -2025,6 +2155,11 @@ load_with_libwebp(
                 status = SIXEL_WEBP_ERROR;
                 goto end;
             }
+            next_delay = timestamp - previous_timestamp;
+            if (next_delay < 0) {
+                next_delay = 0;
+            }
+            previous_timestamp = timestamp;
         }
 
         frame->width = (int)anim_info.canvas_width;
@@ -2034,14 +2169,8 @@ load_with_libwebp(
         frame->multiframe = 0;
         frame->loop_count = 0;
         frame->frame_no = resolved_start_frame_no;
-        frame->delay = timestamp / 10;
+        frame->delay = next_delay / 10;
 
-        if (frame->width <= 0 || frame->height <= 0) {
-            sixel_helper_set_additional_message(
-                "load_with_libwebp: invalid canvas dimensions.");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
         if ((size_t)frame->width > SIZE_MAX / 4 ||
             (size_t)frame->height > SIZE_MAX / ((size_t)frame->width * 4)) {
             status = SIXEL_BAD_INTEGER_OVERFLOW;
