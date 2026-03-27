@@ -162,6 +162,42 @@ run_builtin_loader_test(void)
         return result;
     }
 
+    result = run_loader_component_case_with_options_ex(
+        "builtin loader gif bgindex-oob fallback pal8",
+        "/tests/data/inputs/formats/gif-bgindex-oob-anim.gif",
+        SIXEL_PIXELFORMAT_PAL8,
+        2,
+        1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        256,
+        NULL,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "builtin loader gif netscape unknown subtype metadata",
+        "/tests/data/inputs/formats/gif-anim-netscape-unknown-subtype.gif",
+        SIXEL_PIXELFORMAT_PAL8,
+        2,
+        1,
+        2,
+        -1,
+        1,
+        0,
+        1,
+        256,
+        NULL,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
     return run_loader_component_case("builtin loader gray16",
                                      "/tests/data/inputs/formats/snake-png-gray16.png",
                                      SIXEL_PIXELFORMAT_RGBFLOAT32,
