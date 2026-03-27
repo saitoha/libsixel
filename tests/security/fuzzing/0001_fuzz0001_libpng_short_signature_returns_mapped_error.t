@@ -15,17 +15,19 @@ set -v
 
 fuzz_input="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0001/libpng_short_signature.bin"
 
-set +e
-run_img2sixel -Llibpng! "${fuzz_input}" -o /dev/null >/dev/null 2>&1
-command_status=$?
-set -e
+run_img2sixel -Llibpng! "${fuzz_input}" -o/dev/null || command_status=$?
 
-test "${command_status}" -ge 1 && test "${command_status}" -le 3 || {
+test "${command_status-0}" -ge 1 || {
     echo "not ok 1 - fuzz0001 did not return mapped error status"
     exit 0
 }
 
-    echo "ok 1 - fuzz0001 returned mapped error status"
+test "${command_status-0}" -le 3 || {
+    echo "not ok 1 - fuzz0001 did not return mapped error status"
+    exit 0
+}
+
+echo "ok 1 - fuzz0001 returned mapped error status"
 
 
 exit 0
