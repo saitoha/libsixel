@@ -307,18 +307,24 @@ load_with_coregraphics(
                         pchunk->buffer,
                         (CFIndex)pchunk->size);
     if (! data) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: CFDataCreate failed.");
         status = SIXEL_FALSE;
         goto end;
     }
 
     source = CGImageSourceCreateWithData(data, NULL);
     if (! source) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: CGImageSourceCreateWithData failed.");
         status = SIXEL_FALSE;
         goto end;
     }
 
     frame_count = CGImageSourceGetCount(source);
     if (! frame_count) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: input has no decodable frames.");
         status = SIXEL_FALSE;
         goto end;
     }
@@ -387,6 +393,9 @@ load_with_coregraphics(
             image = CGImageSourceCreateImageAtIndex(
                 source, (unsigned int)frame_index, NULL);
             if (! image) {
+                sixel_helper_set_additional_message(
+                    "load_with_coregraphics: CGImageSourceCreateImageAtIndex "
+                    "failed.");
                 status = SIXEL_FALSE;
                 goto end;
             }
@@ -494,6 +503,9 @@ load_with_coregraphics(
 
             color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
             if (!color_space) {
+                sixel_helper_set_additional_message(
+                    "load_with_coregraphics: CGColorSpaceCreateWithName "
+                    "failed.");
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
@@ -509,6 +521,8 @@ load_with_coregraphics(
             CGColorSpaceRelease(color_space);
             color_space = NULL;
             if (!ctx) {
+                sixel_helper_set_additional_message(
+                    "load_with_coregraphics: CGBitmapContextCreate failed.");
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
