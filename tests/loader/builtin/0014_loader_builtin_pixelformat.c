@@ -8,6 +8,7 @@
  * - GIF(alpha, palette on, low reqcolors) -> RGBA8888 fallback
  * - GIF(alpha, palette on, low reqcolors + bgcolor) -> RGB888 fallback
  * - GIF(anim without NETSCAPE extension) reports multiframe metadata
+ * - HDR(RGBE) -> LINEARRGBFLOAT32
  * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
  */
 
@@ -212,6 +213,16 @@ run_builtin_loader_test(void)
         256,
         NULL,
         new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case("builtin loader hdr",
+                                       "/tests/data/inputs/formats/stbi_minimal.hdr",
+                                       SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                                       GEOMETRY_ANY,
+                                       GEOMETRY_ANY,
+                                       new_builtin_component_for_pixelformat_test);
     if (result != 0) {
         return result;
     }
