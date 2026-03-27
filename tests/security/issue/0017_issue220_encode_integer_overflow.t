@@ -15,7 +15,7 @@ set -v
 issue220="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc5_encode_integer_overflow.gif"
 
 set +e
-run_img2sixel -S -o /dev/null "${issue220}"
+run_img2sixel -Lbuiltin! -S -o /dev/null "${issue220}"
 command_status=$?
 set -e
 
