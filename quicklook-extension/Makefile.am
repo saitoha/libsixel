@@ -20,7 +20,16 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 MODULE_CACHE_DIR = $(builddir)/module-cache
-AM_OBJCFLAGS = @APPLE_QUICKLOOK_OBJCFLAGS@ -fmodules-cache-path=$(MODULE_CACHE_DIR)
+# Keep sanitizer flags consistent between the C static archive and the
+# Objective-C Quick Look binaries.  Some CI profiles inject sanitizers via
+# CFLAGS only, which otherwise leaves the Objective-C link step without the
+# required ASan/UBSan runtime libraries.
+SIXEL_OBJC_SANITIZER_FLAGS = \
+    $(filter -fsanitize=% -fno-sanitize=%,$(CFLAGS) $(LDFLAGS))
+AM_OBJCFLAGS = @APPLE_QUICKLOOK_OBJCFLAGS@ \
+    -fmodules-cache-path=$(MODULE_CACHE_DIR) \
+    $(SIXEL_OBJC_SANITIZER_FLAGS)
+AM_LDFLAGS = $(SIXEL_OBJC_SANITIZER_FLAGS)
 AM_CPPFLAGS = -DHAVE_CONFIG_H -DSIXEL_DISABLE_EXT_LIBS=1 \
     -I$(top_builddir) \
     -I$(top_builddir)/include \
