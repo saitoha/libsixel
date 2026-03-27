@@ -980,6 +980,12 @@ gif_out_code(
     unsigned char suffix;
     SIXELSTATUS status;
 
+    if (g == NULL || g->out == NULL || g->color_table == NULL) {
+        sixel_helper_set_additional_message(
+            "corrupt GIF (reason: decoder buffer unavailable).");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
     if (code > GIF_LZW_MAX) {
         sixel_helper_set_additional_message("gif_out_code() failed; GIF file corrupt");
         return SIXEL_RUNTIME_ERROR;
