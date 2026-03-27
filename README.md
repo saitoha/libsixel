@@ -939,6 +939,11 @@ expands to `coregraphics,builtin`. libsixel tries the listed loaders first and
 then falls back to any remaining backends in their default order. Append `!` to
 disable the fallback list entirely.
 
+The `float32` precision mode improves quantization and resize math after decode.
+For SVG input through `librsvg`, the source raster is Cairo `ARGB32` (8-bit per
+channel), so `float32` does not increase source channel depth; it only keeps
+downstream processing in higher precision.
+
 For the WIC loader, you can add a suboption such as
 `wic:ico_minsize=40` to require a minimum ICO edge length. With a
 multi-size icon containing 16/32/48/64 frames, that value selects the 48x48
@@ -958,6 +963,18 @@ what is available):
 - `gd`
 - `quicklook`
 - `gnome-thumbnailer`
+
+`librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
+Without `-B` and with any non-opaque pixel, alpha is preserved
+(`alpha_zero_is_transparent=1`); otherwise output is `RGB888`
+(including when `-B` background compositing is used).
+`USE_PALETTE` and `REQCOLORS` are accepted for API compatibility but treated as
+no-op in this loader. Palette limits are applied later by the quantizer.
+
+The `librsvg` loader parses SVG bytes without assigning a base URI.
+Relative external references (linked images, stylesheets, and similar assets)
+are therefore not resolved. Embed dependencies (for example with `data:` URIs)
+or preprocess the SVG into a self-contained document before conversion.
 
 When running under GNOME or other desktops that implement the FreeDesktop.org
 Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
