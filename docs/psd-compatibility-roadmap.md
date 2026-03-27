@@ -168,10 +168,10 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Extend "missing composite vs malformed stream" regression to ZIP/ZIP+Prediction
-   truncation scenarios with layer records, to keep diagnostics consistent across
-   all compression families.
-2. Keep unsupported-policy matrix synchronized as new decode scope changes:
+1. Keep unsupported-policy matrix synchronized as new decode scope changes:
    every policy rejection must have deterministic trace coverage.
+2. Add user-facing docs (`README`/changelog) that clearly separate:
+   supported combinations, policy-based unsupported combinations, and malformed
+   input diagnostics.
 3. Keep PSB (`8BPB`) out of scope for this milestone, but document boundary and
    migration plan from PSD parser/decoder primitives.
