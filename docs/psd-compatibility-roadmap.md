@@ -45,17 +45,21 @@ Key points used by this roadmap:
   - RGB 8/16-bit: Raw/RLE/ZIP/ZIP+Prediction
   - RGB 32-bit: Raw/ZIP/ZIP+Prediction (`RGBFLOAT32`)
   - CMYK 8-bit: Raw/RLE/ZIP/ZIP+Prediction
+  - CMYK 32-bit: Raw/ZIP/ZIP+Prediction (`LINEARRGBFLOAT32`, ICC skipped)
   - Lab 8-bit: Raw/RLE/ZIP/ZIP+Prediction (`CIELABFLOAT32`)
+  - Lab 32-bit: Raw/ZIP/ZIP+Prediction (`CIELABFLOAT32`, ICC skipped)
 - Explicit unsupported policy (fixed):
   - Multichannel (mode 7)
-  - CMYK 16/32-bit
-  - Lab 16/32-bit
-  - RGB/Gray/Duotone 32-bit with RLE
+  - CMYK 16-bit
+  - Lab 16-bit
+  - RGB/Gray/Duotone/CMYK/Lab 32-bit with RLE
+  - Bitmap 1-bit with ZIP+Prediction
 - Composite-missing policy:
   - When layer records exist and composite image data is absent, return explicit
     unsupported (`merged/composite image required`).
 - Existing regression includes ICC and alpha combinations on Raw and ZIP paths,
-  plus ZIP-specific Lab/CMYK trace behavior.
+  32-bit decode matrix coverage (RGB/Gray/CMYK/Lab), and mode-specific
+  unsupported trace behavior (Bitmap ZIP+Prediction, 32-bit RLE paths).
 
 ## Target Compatibility Levels
 
@@ -163,9 +167,10 @@ Minimum fixture naming convention:
 
 1. Expand composite-missing detection beyond the `image_data_length == 0` case
    (distinguish truncated streams from "layer-only PSD" more precisely).
-2. Add explicit `mode × depth × compression` matrix docs/tests for all
-   unsupported combinations now fixed by policy.
-3. Decide next 32-bit scope (CMYK/Lab support vs long-term explicit unsupported)
-   and lock test expectations accordingly.
+2. Add explicit `mode × depth × compression` docs/tests for remaining
+   unsupported combinations (for example `CMYK 16-bit`, `Lab 16-bit`) so all
+   policy rejections are deterministic and trace-covered.
+3. Expand `alpha + --bgcolor + ICC` verification matrix for ZIP/ZIP+Prediction
+   paths, and keep "failure trace only on real ICC failure" behavior fixed.
 4. Keep PSB (`8BPB`) out of scope for this milestone, but document boundary and
    migration plan from PSD parser/decoder primitives.
