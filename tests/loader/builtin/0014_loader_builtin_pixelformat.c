@@ -24,8 +24,28 @@ new_builtin_component_for_pixelformat_test(sixel_allocator_t *allocator,
 }
 
 static int
+expected_colorspace_for_pixelformat(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        return SIXEL_COLORSPACE_LINEAR;
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return SIXEL_COLORSPACE_CIELAB;
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return SIXEL_COLORSPACE_OKLAB;
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return SIXEL_COLORSPACE_DIN99D;
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_RGB888:
+    default:
+        return SIXEL_COLORSPACE_GAMMA;
+    }
+}
+
+static int
 run_builtin_loader_hdr_case_with_cms(char const *label,
                                      int expected_pixelformat,
+                                     int expected_colorspace,
                                      int cms_engine)
 {
     SIXELSTATUS status;
@@ -92,6 +112,7 @@ run_builtin_loader_hdr_case_with_cms(char const *label,
 
     context.callback_count = 0;
     context.pixelformat = 0;
+    context.colorspace = 0;
     context.width = 0;
     context.height = 0;
     context.transparent = FRAME_METADATA_ANY;
@@ -148,6 +169,13 @@ run_builtin_loader_hdr_case_with_cms(char const *label,
                 context.pixelformat);
         goto cleanup;
     }
+    if (context.colorspace != expected_colorspace) {
+        fprintf(stderr,
+                "%s: reported colorspace %d\n",
+                label,
+                context.colorspace);
+        goto cleanup;
+    }
     if (context.width <= 0 || context.height <= 0) {
         fprintf(stderr,
                 "%s: invalid geometry %dx%d\n",
@@ -171,6 +199,7 @@ run_builtin_loader_test(void)
 {
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
+    int cms_target_colorspace;
     int result;
 
     result = run_loader_component_case("builtin loader rgba8",
@@ -363,19 +392,20 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    result = run_loader_component_case("builtin loader hdr cms=off",
-                                       "/tests/data/inputs/formats/stbi_minimal.hdr",
-                                       SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                                       GEOMETRY_ANY,
-                                       GEOMETRY_ANY,
-                                       new_builtin_component_for_pixelformat_test);
+    result = run_builtin_loader_hdr_case_with_cms("builtin loader hdr cms=off",
+                                                  SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                                                  SIXEL_COLORSPACE_LINEAR,
+                                                  SIXEL_CMS_ENGINE_NONE);
     if (result != 0) {
         return result;
     }
 
     cms_target_pixelformat = loader_cms_target_pixelformat();
+    cms_target_colorspace = expected_colorspace_for_pixelformat(
+        cms_target_pixelformat);
     result = run_builtin_loader_hdr_case_with_cms("builtin loader hdr cms=on",
                                                   cms_target_pixelformat,
+                                                  cms_target_colorspace,
                                                   SIXEL_CMS_ENGINE_AUTO);
     if (result != 0) {
         return result;
