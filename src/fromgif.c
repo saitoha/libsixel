@@ -129,7 +129,6 @@ typedef struct
    int is_multiframe;
    int is_terminated;
    int preserve_transparency;
-   int stream_frame_count;
    int stream_is_multiframe;
    int global_color_table_entries;
    int color_table_entries;
@@ -168,6 +167,89 @@ gif_get16le(gif_context_t *s)
 }
 
 
+static int
+gif_read_u8(
+    gif_context_t /* in */ *s,
+    unsigned char /* out */ *value)
+{
+    if (s == NULL || value == NULL ||
+        s->img_buffer == NULL || s->img_buffer_end == NULL ||
+        s->img_buffer >= s->img_buffer_end) {
+        return 0;
+    }
+    *value = *s->img_buffer++;
+    return 1;
+}
+
+
+static int
+gif_read_u16le(
+    gif_context_t /* in */ *s,
+    int           /* out */ *value)
+{
+    unsigned char lo;
+    unsigned char hi;
+
+    lo = 0u;
+    hi = 0u;
+    if (value == NULL) {
+        return 0;
+    }
+    if (!gif_read_u8(s, &lo) || !gif_read_u8(s, &hi)) {
+        return 0;
+    }
+    *value = (int)lo + ((int)hi << 8);
+    return 1;
+}
+
+
+static int
+gif_skip_bytes(
+    gif_context_t /* in */ *s,
+    size_t        /* in */ count)
+{
+    if (s == NULL || s->img_buffer == NULL || s->img_buffer_end == NULL) {
+        return 0;
+    }
+    if ((size_t)(s->img_buffer_end - s->img_buffer) < count) {
+        return 0;
+    }
+    s->img_buffer += count;
+    return 1;
+}
+
+
+static SIXELSTATUS
+gif_skip_subblocks(
+    gif_context_t /* in */ *s,
+    int           /* in */ is_extension_block)
+{
+    unsigned char block_size;
+
+    block_size = 0u;
+    for (;;) {
+        if (!gif_read_u8(s, &block_size)) {
+            sixel_helper_set_additional_message(
+                is_extension_block != 0
+                ? "corrupt GIF (reason: truncated extension block)."
+                : "corrupt GIF (reason: truncated data block).");
+            return SIXEL_RUNTIME_ERROR;
+        }
+        if (block_size == 0u) {
+            break;
+        }
+        if (!gif_skip_bytes(s, (size_t)block_size)) {
+            sixel_helper_set_additional_message(
+                is_extension_block != 0
+                ? "corrupt GIF (reason: truncated extension block)."
+                : "corrupt GIF (reason: truncated data block).");
+            return SIXEL_RUNTIME_ERROR;
+        }
+    }
+    return SIXEL_OK;
+}
+
+
 static void
 gif_parse_colortable(
     gif_context_t /* in */ *s,
@@ -181,6 +263,29 @@ gif_parse_colortable(
         pal[i][1] = gif_get8(s);
         pal[i][0] = gif_get8(s);
     }
+}
+
+
+static SIXELSTATUS
+gif_parse_colortable_checked(
+    gif_context_t /* in */ *s,
+    unsigned char       /* in */ pal[256][3],
+    int           /* in */ num_entries)
+{
+    if (s == NULL || s->img_buffer == NULL || s->img_buffer_end == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (num_entries < 0 || num_entries > 256) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)(s->img_buffer_end - s->img_buffer) <
+        (size_t)num_entries * (size_t)GIF_RGB_STRIDE) {
+        sixel_helper_set_additional_message(
+            "corrupt GIF (reason: truncated data block).");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    gif_parse_colortable(s, pal, num_entries);
+    return SIXEL_OK;
 }
 
 
@@ -223,7 +328,12 @@ gif_load_header(
 
     if (g->flags & 0x80) {
         g->global_color_table_entries = 2 << (g->flags & 7);
-        gif_parse_colortable(s, g->pal, g->global_color_table_entries);
+        status = gif_parse_colortable_checked(s,
+                                              g->pal,
+                                              g->global_color_table_entries);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         g->color_table_entries = g->global_color_table_entries;
     } else {
         g->global_color_table_entries = 0;
@@ -234,6 +344,38 @@ gif_load_header(
 
 end:
     return status;
+}
+
+
+static void
+gif_resolve_background_color(
+    gif_t const      /* in */ *g,
+    unsigned char    /* out */ *bg_r,
+    unsigned char    /* out */ *bg_g,
+    unsigned char    /* out */ *bg_b)
+{
+    if (bg_r != NULL) {
+        *bg_r = 0u;
+    }
+    if (bg_g != NULL) {
+        *bg_g = 0u;
+    }
+    if (bg_b != NULL) {
+        *bg_b = 0u;
+    }
+    if (g == NULL || g->global_color_table_entries <= 0 ||
+        g->bgindex < 0 || g->bgindex >= g->global_color_table_entries) {
+        return;
+    }
+    if (bg_r != NULL) {
+        *bg_r = g->pal[g->bgindex][2];
+    }
+    if (bg_g != NULL) {
+        *bg_g = g->pal[g->bgindex][1];
+    }
+    if (bg_b != NULL) {
+        *bg_b = g->pal[g->bgindex][0];
+    }
 }
 
 
@@ -910,12 +1052,22 @@ gif_process_raster(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char lzw_cs;
+    unsigned char block_size;
+    unsigned char next_byte;
     signed int len, code;
     signed int codesize, codemask, avail, oldcode, bits, valid_bits, clear;
     gif_lzw *p;
 
+    block_size = 0u;
+    next_byte = 0u;
+
     /* LZW Minimum Code Size */
-    lzw_cs = gif_get8(s);
+    if (!gif_read_u8(s, &lzw_cs)) {
+        sixel_helper_set_additional_message(
+            "corrupt GIF (reason: truncated data block).");
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
     if (lzw_cs > GIF_LZW_MAX_CODE_SIZE) {
         sixel_helper_set_additional_message(
             "Unsupported GIF (LZW code size)");
@@ -942,13 +1094,26 @@ gif_process_raster(
     for(;;) {
         if (valid_bits < codesize) {
             if (len == 0) {
-                len = gif_get8(s); /* start new block */
+                if (!gif_read_u8(s, &block_size)) {
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: truncated data block).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                len = (signed int)block_size; /* start new block */
                 if (len == 0) {
-                    return SIXEL_OK;
+                    status = SIXEL_OK;
+                    goto end;
                 }
             }
             --len;
-            bits |= (signed int) gif_get8(s) << valid_bits;
+            if (!gif_read_u8(s, &next_byte)) {
+                sixel_helper_set_additional_message(
+                    "corrupt GIF (reason: truncated data block).");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+            bits |= (signed int)next_byte << valid_bits;
             valid_bits += 8;
         } else {
             code = bits & codemask;
@@ -961,11 +1126,16 @@ gif_process_raster(
                 avail = clear + 2;
                 oldcode = (-1);
             } else if (code == clear + 1) { /* end of stream code */
-                s->img_buffer += len;
-                while ((len = gif_get8(s)) > 0) {
-                    s->img_buffer += len;
+                if (len > 0 &&
+                    !gif_skip_bytes(s, (size_t)len)) {
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: truncated data block).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
                 }
-                return SIXEL_OK;
+                len = 0;
+                status = gif_skip_subblocks(s, 0);
+                goto end;
             } else if (code <= avail) {
                 if (oldcode >= 0) {
                     if (avail < (1 << GIF_LZW_MAX_CODE_SIZE)) {
@@ -1019,11 +1189,16 @@ gif_load_next(
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char buffer[256];
     unsigned char c;
+    unsigned char block_size;
+    unsigned char extension_label;
+    unsigned char extension_block[4];
+    unsigned char loop_subtype;
     int x;
     int y;
     int w;
     int h;
-    int len;
+    int table_entries;
+    int loop_count_raw;
     int dispose;
     size_t pcount;
     size_t bcount;
@@ -1033,6 +1208,16 @@ gif_load_next(
     unsigned char bg_g;
     unsigned char bg_b;
     unsigned char bg_a;
+
+    block_size = 0u;
+    extension_label = 0u;
+    extension_block[0] = 0u;
+    extension_block[1] = 0u;
+    extension_block[2] = 0u;
+    extension_block[3] = 0u;
+    loop_subtype = 0u;
+    table_entries = 0;
+    loop_count_raw = 0;
 
     /* apply disposal of previous frame and prepare buffers */
     if (g->out) {
@@ -1064,15 +1249,13 @@ gif_load_next(
         }
         bcount = pcount * (size_t)GIF_RGB_STRIDE;
 
-        bg_r = g->pal[g->bgindex][2];
-        bg_g = g->pal[g->bgindex][1];
-        bg_b = g->pal[g->bgindex][0];
+        gif_resolve_background_color(g, &bg_r, &bg_g, &bg_b);
         bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
 
-        if (g->is_multiframe) {
+        if (g->is_multiframe && g->history != NULL) {
             dispose = (g->eflags & 0x1C) >> 2;
             if (dispose == 3) {
-                if (g->prev_out) {
+                if (g->prev_out != NULL) {
                     for (i = 0; i < pcount; ++i) {
                         if (g->history[i]) {
                             pixel_offset = i * (size_t)GIF_RGB_STRIDE;
@@ -1129,12 +1312,22 @@ gif_load_next(
     }
 
     for (;;) {
-        switch ((c = gif_get8(s))) {
+        if (!gif_read_u8(s, &c)) {
+            sixel_helper_set_additional_message(
+                "corrupt GIF (reason: truncated data block).");
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
+        switch (c) {
         case 0x2C:  /* Image Separator (1 byte) */
-            x = gif_get16le(s);  /* Image Left Position (2 bytes)*/
-            y = gif_get16le(s);  /* Image Top Position (2 bytes) */
-            w = gif_get16le(s);  /* Image Width (2 bytes) */
-            h = gif_get16le(s);  /* Image Height (2 bytes) */
+            if (!gif_read_u16le(s, &x) || !gif_read_u16le(s, &y) ||
+                !gif_read_u16le(s, &w) || !gif_read_u16le(s, &h) ||
+                !gif_read_u8(s, &block_size)) {
+                sixel_helper_set_additional_message(
+                    "corrupt GIF (reason: truncated data block).");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
             if (x >= g->w || y >= g->h || x + w > g->w || y + h > g->h) {
                 sixel_helper_set_additional_message(
                     "corrupt GIF (reason: bad Image Separator).");
@@ -1163,7 +1356,7 @@ gif_load_next(
              *  | +- Interlace Flag (1 bit)
              *  +- Local Color Table Flag (1 bit)
              */
-            g->lflags = gif_get8(s);
+            g->lflags = (int)block_size;
 
             /* Interlace Flag */
             if (g->lflags & 0x40) {
@@ -1176,10 +1369,12 @@ gif_load_next(
 
             /* Local Color Table Flag */
             if (g->lflags & 0x80) {
-                gif_parse_colortable(s,
-                                     g->lpal,
-                                     2 << (g->lflags & 7));
-                g->color_table_entries = 2 << (g->lflags & 7);
+                table_entries = 2 << (g->lflags & 7);
+                status = gif_parse_colortable_checked(s, g->lpal, table_entries);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                g->color_table_entries = table_entries;
                 g->color_table = (unsigned char *) g->lpal;
             } else if (g->flags & 0x80) {
                 if (!g->preserve_transparency &&
@@ -1207,79 +1402,123 @@ gif_load_next(
             goto end;
 
         case 0x21:  /* Comment Extension. */
-            switch (gif_get8(s)) {
+            if (!gif_read_u8(s, &extension_label)) {
+                sixel_helper_set_additional_message(
+                    "corrupt GIF (reason: truncated extension block).");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+            switch (extension_label) {
             case 0x01:  /* Plain Text Extension */
-                while ((len = gif_get8(s))) {  /* block size */
-                    if (s->img_buffer + len > s->img_buffer_end) {
-                        status = SIXEL_RUNTIME_ERROR;
-                        goto end;
-                    }
-                    s->img_buffer += len;
+                status = gif_skip_subblocks(s, 1);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
                 }
                 break;
-            case 0x21:  /* Comment Extension */
-                while ((len = gif_get8(s))) { /* block size */
-                    if (s->img_buffer + len > s->img_buffer_end) {
-                        status = SIXEL_RUNTIME_ERROR;
-                        goto end;
-                    }
-                    s->img_buffer += len;
+            case 0xFE:  /* Comment Extension */
+                status = gif_skip_subblocks(s, 1);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
                 }
                 break;
             case 0xF9:  /* Graphic Control Extension */
-                while ((len = gif_get8(s))) {  /* block size */
-                    if (len == 4) {
-                        g->eflags = gif_get8(s);
-                        g->delay = gif_get16le(s); /* delay */
-                        g->transparent = gif_get8(s);
-                        if ((g->eflags & 0x01) == 0) {
-                            g->transparent = (-1);
-                        }
-                    } else {
-                        if (s->img_buffer + len > s->img_buffer_end) {
-                            status = SIXEL_RUNTIME_ERROR;
-                            goto end;
-                        }
-                        s->img_buffer += len;
-                        break;
+                if (!gif_read_u8(s, &block_size)) {
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: truncated extension block).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                if (block_size == 4u) {
+                    if (!gif_read_u8(s, &extension_block[0]) ||
+                        !gif_read_u8(s, &extension_block[1]) ||
+                        !gif_read_u8(s, &extension_block[2]) ||
+                        !gif_read_u8(s, &extension_block[3])) {
+                        sixel_helper_set_additional_message(
+                            "corrupt GIF (reason: truncated extension block).");
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
                     }
+                    g->eflags = (int)extension_block[0];
+                    g->delay = (int)extension_block[1]
+                        | ((int)extension_block[2] << 8);
+                    g->transparent = (int)extension_block[3];
+                    if ((g->eflags & 0x01) == 0) {
+                        g->transparent = (-1);
+                    }
+                } else if (!gif_skip_bytes(s, (size_t)block_size)) {
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: truncated extension block).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                status = gif_skip_subblocks(s, 1);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
                 }
                 break;
             case 0xFF:  /* Application Extension */
-                while ((len = gif_get8(s))) {   /* block size */
-                    if (s->img_buffer + len > s->img_buffer_end) {
+                if (!gif_read_u8(s, &block_size)) {
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: truncated extension block).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                if ((size_t)(s->img_buffer_end - s->img_buffer) < (size_t)block_size) {
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: truncated extension block).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                if (block_size > 0u) {
+                    memcpy(buffer, s->img_buffer, (size_t)block_size);
+                }
+                buffer[block_size] = 0u;
+                if (block_size == 11u &&
+                    memcmp(buffer, "NETSCAPE2.0", 11u) == 0) {
+                    if (!gif_skip_bytes(s, (size_t)block_size)) {
+                        sixel_helper_set_additional_message(
+                            "corrupt GIF (reason: truncated extension block).");
                         status = SIXEL_RUNTIME_ERROR;
                         goto end;
                     }
-                    memcpy(buffer, s->img_buffer, (size_t)len);
-                    s->img_buffer += len;
-                    buffer[len] = 0;
-                    if (len == 11 && strcmp((char *)buffer, "NETSCAPE2.0") == 0) {
-                        if (gif_get8(s) == 0x03) {
-                            /* loop count */
-                            switch (gif_get8(s)) {
-                            case 0x00:
-                                g->loop_count = 1;
-                                break;
-                            case 0x01:
-                                g->loop_count = gif_get16le(s);
-                                break;
-                            default:
-                                g->loop_count = 1;
-                                break;
-                            }
-                        }
+                    if (!gif_read_u8(s, &block_size)) {
+                        sixel_helper_set_additional_message(
+                            "corrupt GIF (reason: truncated extension block).");
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
                     }
+                    if (block_size == 3u) {
+                        if (!gif_read_u8(s, &loop_subtype) ||
+                            !gif_read_u16le(s, &loop_count_raw)) {
+                            sixel_helper_set_additional_message(
+                                "corrupt GIF (reason: truncated extension block).");
+                            status = SIXEL_RUNTIME_ERROR;
+                            goto end;
+                        }
+                        if (loop_subtype == 0x01u) {
+                            g->loop_count = loop_count_raw;
+                        }
+                    } else if (!gif_skip_bytes(s, (size_t)block_size)) {
+                        sixel_helper_set_additional_message(
+                            "corrupt GIF (reason: truncated extension block).");
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
+                    }
+                } else if (!gif_skip_bytes(s, (size_t)block_size)) {
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: truncated extension block).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                status = gif_skip_subblocks(s, 1);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
                 }
                 break;
             default:
-                while ((len = gif_get8(s))) {   /* block size */
-                    if (s->img_buffer + len > s->img_buffer_end) {
-                        status = SIXEL_RUNTIME_ERROR;
-                        goto end;
-                    }
-                    memcpy(buffer, s->img_buffer, (size_t)len);
-                    s->img_buffer += len;
+                status = gif_skip_subblocks(s, 1);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
                 }
                 break;
             }
@@ -1349,6 +1588,8 @@ load_gif(
     int emitted_frame_no;
     gif_stream_info_t stream_info;
     int preserve_transparency;
+    int stream_scan_failed;
+    int need_multiframe_buffers;
 
     frame = NULL;
     g = NULL;
@@ -1357,6 +1598,8 @@ load_gif(
     stream_info.has_transparency = 0;
     stream_info.image_count = 0;
     preserve_transparency = 0;
+    stream_scan_failed = 0;
+    need_multiframe_buffers = 0;
 
     if (buffer == NULL || size <= 0 || fn_load == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -1383,6 +1626,9 @@ load_gif(
          * Transparency pre-scan is advisory. Decode continues on the legacy
          * RGB path when the stream cannot be scanned safely.
          */
+        loader_trace_message(
+            "fromgif: stream pre-scan failed; using safe multiframe buffers.");
+        stream_scan_failed = 1;
         stream_info.has_transparency = 0;
         stream_info.image_count = 1;
         status = SIXEL_OK;
@@ -1392,8 +1638,9 @@ load_gif(
     if (stream_info.image_count <= 0) {
         stream_info.image_count = 1;
     }
-    g->stream_frame_count = stream_info.image_count;
     g->stream_is_multiframe = stream_info.image_count > 1 ? 1 : 0;
+    need_multiframe_buffers =
+        (g->stream_is_multiframe != 0 || stream_scan_failed != 0) ? 1 : 0;
     g->preserve_transparency = preserve_transparency;
     g->delay = SIXEL_DEFALUT_GIF_DELAY;
     g->loop_count = -1;
@@ -1430,17 +1677,29 @@ load_gif(
     bcount = pcount * (size_t)GIF_RGB_STRIDE;
 
     g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
-    g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+    g->prev_out = NULL;
     g->alpha_out = NULL;
     g->prev_alpha = NULL;
+    g->history = NULL;
+    if (need_multiframe_buffers != 0) {
+        g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+        g->history = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+    }
     if (g->preserve_transparency != 0) {
         g->alpha_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
-        g->prev_alpha = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+        if (need_multiframe_buffers != 0) {
+            g->prev_alpha = (unsigned char *)sixel_allocator_malloc(
+                allocator,
+                pcount);
+        }
     }
-    g->history = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
-    if (g->out == NULL || g->prev_out == NULL || g->history == NULL ||
+    if (g->out == NULL ||
+        (need_multiframe_buffers != 0 &&
+         (g->prev_out == NULL || g->history == NULL)) ||
+        (g->preserve_transparency != 0 && g->alpha_out == NULL) ||
         (g->preserve_transparency != 0 &&
-         (g->alpha_out == NULL || g->prev_alpha == NULL))) {
+         need_multiframe_buffers != 0 &&
+         g->prev_alpha == NULL)) {
         sixel_compat_snprintf(
             message,
             sizeof(message),
@@ -1450,9 +1709,7 @@ load_gif(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    bg_r = g->pal[g->bgindex][2];
-    bg_g = g->pal[g->bgindex][1];
-    bg_b = g->pal[g->bgindex][0];
+    gif_resolve_background_color(g, &bg_r, &bg_g, &bg_b);
     bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
     for (i = 0; i < pcount; ++i) {
         size_t pixel_offset;
@@ -1461,15 +1718,21 @@ load_gif(
         g->out[pixel_offset + 0] = bg_r;
         g->out[pixel_offset + 1] = bg_g;
         g->out[pixel_offset + 2] = bg_b;
-        g->prev_out[pixel_offset + 0] = bg_r;
-        g->prev_out[pixel_offset + 1] = bg_g;
-        g->prev_out[pixel_offset + 2] = bg_b;
-        if (g->alpha_out != NULL && g->prev_alpha != NULL) {
+        if (g->prev_out != NULL) {
+            g->prev_out[pixel_offset + 0] = bg_r;
+            g->prev_out[pixel_offset + 1] = bg_g;
+            g->prev_out[pixel_offset + 2] = bg_b;
+        }
+        if (g->alpha_out != NULL) {
             g->alpha_out[i] = bg_a;
-            g->prev_alpha[i] = bg_a;
+            if (g->prev_alpha != NULL) {
+                g->prev_alpha[i] = bg_a;
+            }
         }
     }
-    memset(g->history, 0, pcount);
+    if (g->history != NULL) {
+        memset(g->history, 0, pcount);
+    }
 
     sixel_frame_set_loop_count(frame, 0);
 
@@ -1513,9 +1776,7 @@ load_gif(
         }
 
         /* reset canvas for new loop */
-        bg_r = g->pal[g->bgindex][2];
-        bg_g = g->pal[g->bgindex][1];
-        bg_b = g->pal[g->bgindex][0];
+        gif_resolve_background_color(g, &bg_r, &bg_g, &bg_b);
         bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
         for (i = 0; i < pcount; ++i) {
             size_t pixel_offset;
@@ -1524,15 +1785,21 @@ load_gif(
             g->out[pixel_offset + 0] = bg_r;
             g->out[pixel_offset + 1] = bg_g;
             g->out[pixel_offset + 2] = bg_b;
-            g->prev_out[pixel_offset + 0] = bg_r;
-            g->prev_out[pixel_offset + 1] = bg_g;
-            g->prev_out[pixel_offset + 2] = bg_b;
-            if (g->alpha_out != NULL && g->prev_alpha != NULL) {
+            if (g->prev_out != NULL) {
+                g->prev_out[pixel_offset + 0] = bg_r;
+                g->prev_out[pixel_offset + 1] = bg_g;
+                g->prev_out[pixel_offset + 2] = bg_b;
+            }
+            if (g->alpha_out != NULL) {
                 g->alpha_out[i] = bg_a;
-                g->prev_alpha[i] = bg_a;
+                if (g->prev_alpha != NULL) {
+                    g->prev_alpha[i] = bg_a;
+                }
             }
         }
-        memset(g->history, 0, pcount);
+        if (g->history != NULL) {
+            memset(g->history, 0, pcount);
+        }
         g->is_multiframe = 0;
 
         g->is_terminated = 0;

@@ -136,12 +136,48 @@ run_gd_loader_test(void)
         return result;
     }
 
-    return run_loader_component_case_with_options_ex(
+    result = run_loader_component_case_with_options_ex(
         "GD loader gif no-netscape multiframe metadata",
         "/tests/data/inputs/formats/gif-anim-no-netscape-2frame.gif",
         SIXEL_PIXELFORMAT_PAL8,
         6,
         6,
+        2,
+        -1,
+        1,
+        0,
+        1,
+        256,
+        NULL,
+        new_gd_component);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "GD loader gif bgindex-oob fallback pal8",
+        "/tests/data/inputs/formats/gif-bgindex-oob-anim.gif",
+        SIXEL_PIXELFORMAT_PAL8,
+        2,
+        1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        256,
+        NULL,
+        new_gd_component);
+    if (result != 0) {
+        return result;
+    }
+
+    return run_loader_component_case_with_options_ex(
+        "GD loader gif netscape unknown subtype metadata",
+        "/tests/data/inputs/formats/gif-anim-netscape-unknown-subtype.gif",
+        SIXEL_PIXELFORMAT_PAL8,
+        2,
+        1,
         2,
         -1,
         1,
