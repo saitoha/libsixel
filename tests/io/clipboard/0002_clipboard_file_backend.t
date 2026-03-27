@@ -50,7 +50,9 @@ test -s "${fake_png_slot}" || {
     exit 0
 }
 
-png_magic=$(od -An -tx1 -N8 "${fake_png_slot}" | tr -d ' \n')
+png_magic=$(od -An -t x1 -N 8 "${fake_png_slot}" \
+    | LC_ALL=C tr -d '[:space:]' \
+    | LC_ALL=C tr 'A-F' 'a-f')
 test "${png_magic}" = "89504e470d0a1a0a" || {
     echo "not ok" 1 - "fake clipboard PNG slot has invalid signature"
     exit 0
@@ -66,7 +68,9 @@ test -s "${fake_text_slot}" || {
     exit 0
 }
 
-text_magic=$(od -An -tx1 -N2 "${fake_text_slot}" | tr -d ' \n')
+text_magic=$(od -An -t x1 -N 2 "${fake_text_slot}" \
+    | LC_ALL=C tr -d '[:space:]' \
+    | LC_ALL=C tr 'A-F' 'a-f')
 test "${text_magic}" = "1b50" || {
     echo "not ok" 1 - "fake clipboard text slot is not SIXEL text"
     exit 0
