@@ -18,11 +18,25 @@ test "${HAVE_WEBP-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/truncated.webp" \
-    >/dev/null && {
+msg=$(set +xv; run_img2sixel -L libwebp! \
+             "${TOP_SRCDIR}/tests/data/corrupted/truncated.webp" \
+             2>&1 >/dev/null) && {
     echo "not ok" 1 - "forced libwebp loader accepted truncated WebP"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
     exit 0
 }
+
+case "${msg}" in
+    *"webp decode: RIFF size exceeds input buffer."*)
+        ;;
+    *)
+        echo "not ok" 1 - "expected truncated WebP diagnostic was missing"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "forced libwebp loader rejects truncated WebP"
 
