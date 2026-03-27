@@ -37,72 +37,20 @@ test -n "${PYTHON}" || {
 }
 
 cert_dir="${TOP_SRCDIR}/tests/data/io/network/certs"
+server_script="${TOP_SRCDIR}/tests/data/io/network/https-server.py"
 server_root="${TOP_SRCDIR}"
-
-cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
-try:
-    from http.server import SimpleHTTPRequestHandler
-    from socketserver import TCPServer
-except ImportError:
-    from SimpleHTTPServer import SimpleHTTPRequestHandler  # type: ignore
-    from SocketServer import TCPServer  # type: ignore
-import ssl
-import sys
-
-class TLSHTTPServer(TCPServer):
-    allow_reuse_address = True
-
-
-def configure_socket(sock):
-    if hasattr(ssl, 'SSLContext'):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        context.load_cert_chain('${cert_dir}/server.crt',
-                                '${cert_dir}/server.key')
-        return context.wrap_socket(sock, server_side=True)
-    return ssl.wrap_socket(
-        sock,
-        certfile='${cert_dir}/server.crt',
-        keyfile='${cert_dir}/server.key',
-        server_side=True,
-    )
-
-def serve_requests(port):
-    with TLSHTTPServer(('localhost', port), SimpleHTTPRequestHandler) as httpd:
-        httpd.socket = configure_socket(httpd.socket)
-        httpd.timeout = 5
-        with open('${port_file}', 'w', encoding='ascii') as port_fp:
-            port_fp.write(str(port))
-
-        for _ in range(5):
-            httpd.handle_request()
-
-
-def main():
-    last_error = None
-
-    for offset in range(${max_port_attempts}):
-        port = ${server_port_base} + offset
-        try:
-            serve_requests(port)
-            return 0
-        except OSError as exc:
-            last_error = exc
-            continue
-
-    sys.stderr.write(
-        f"Failed to bind after ${max_port_attempts} attempts: {last_error}\n",
-    )
-    return 75
-
-
-if __name__ == '__main__':
-    sys.exit(main())
-PY
 
 server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
 (
     cd "${server_root}" || exit 1
-    "${PYTHON}" "${ARTIFACT_LOCAL_DIR}/server.py" &
+    "${PYTHON}" "${server_script}" \
+        --host localhost \
+        --port-base "${server_port_base}" \
+        --max-port-attempts "${max_port_attempts}" \
+        --port-file "${port_file}" \
+        --cert-file "${cert_dir}/server.crt" \
+        --key-file "${cert_dir}/server.key" \
+        --requests 5 &
     echo $! >"${server_pid_file}"
 )
 server_pid=$(cat "${server_pid_file}")
