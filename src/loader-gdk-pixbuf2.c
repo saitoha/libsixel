@@ -94,6 +94,45 @@ typedef struct sixel_loader_gdkpixbuf_component {
     int start_frame_no;
 } sixel_loader_gdkpixbuf_component_t;
 
+static void
+gdkpixbuf_set_error_message(char const *context, GError const *gerror)
+{
+    enum { message_capacity = 512 };
+    char message[message_capacity];
+    int written;
+
+    written = 0;
+    if (context == NULL) {
+        return;
+    }
+    if (gerror == NULL || gerror->message == NULL || gerror->message[0] == '\0') {
+        sixel_helper_set_additional_message(context);
+        return;
+    }
+
+    written = sixel_compat_snprintf(message,
+                                    sizeof(message),
+                                    "%s (%s)",
+                                    context,
+                                    gerror->message);
+    if (written < 0) {
+        sixel_helper_set_additional_message(context);
+        return;
+    }
+    message[message_capacity - 1] = '\0';
+    sixel_helper_set_additional_message(message);
+}
+
+static void
+gdkpixbuf_clear_error(GError **pgerror)
+{
+    if (pgerror == NULL || *pgerror == NULL) {
+        return;
+    }
+    g_error_free(*pgerror);
+    *pgerror = NULL;
+}
+
 static SIXELSTATUS
 gdkpixbuf_parse_animation_start_frame_no(int *start_frame_no)
 {
@@ -590,6 +629,10 @@ load_with_gdkpixbuf(
     }
     loader = gdk_pixbuf_loader_new();
     if (loader == NULL) {
+        gdkpixbuf_set_error_message(
+            "load_with_gdkpixbuf: gdk_pixbuf_loader_new failed.",
+            loader_error);
+        gdkpixbuf_clear_error(&loader_error);
         status = SIXEL_GDK_ERROR;
         goto end;
     }
@@ -598,50 +641,78 @@ load_with_gdkpixbuf(
      * the loader to let gdk finalize the parse state before consuming.
      */
     if (! gdk_pixbuf_loader_write(
-            loader, pchunk->buffer, pchunk->size, NULL)) {
+            loader, pchunk->buffer, pchunk->size, &loader_error)) {
         if (!is_sixel) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: generic loader write failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
+        gdkpixbuf_set_error_message(
+            "load_with_gdkpixbuf: generic loader write failed before sixel fallback.",
+            loader_error);
+        gdkpixbuf_clear_error(&loader_error);
         g_object_unref(loader);
         loader = NULL;
         loader = gdk_pixbuf_loader_new_with_type("sixel", &loader_error);
-        if (loader_error) {
-            g_error_free(loader_error);
-            loader_error = NULL;
-        }
         if (loader == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: sixel fallback loader creation failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
         if (! gdk_pixbuf_loader_write(
-                loader, pchunk->buffer, pchunk->size, NULL)) {
+                loader, pchunk->buffer, pchunk->size, &loader_error)) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: sixel fallback loader write failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
     }
-    if (! gdk_pixbuf_loader_close(loader, NULL)) {
+    if (! gdk_pixbuf_loader_close(loader, &loader_error)) {
         if (!is_sixel) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: generic loader close failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
+        gdkpixbuf_set_error_message(
+            "load_with_gdkpixbuf: generic loader close failed before sixel fallback.",
+            loader_error);
+        gdkpixbuf_clear_error(&loader_error);
         g_object_unref(loader);
         loader = NULL;
         loader = gdk_pixbuf_loader_new_with_type("sixel", &loader_error);
-        if (loader_error) {
-            g_error_free(loader_error);
-            loader_error = NULL;
-        }
         if (loader == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: sixel fallback loader creation failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
         if (! gdk_pixbuf_loader_write(
-                loader, pchunk->buffer, pchunk->size, NULL)) {
+                loader, pchunk->buffer, pchunk->size, &loader_error)) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: sixel fallback loader write failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
-        if (! gdk_pixbuf_loader_close(loader, NULL)) {
+        if (! gdk_pixbuf_loader_close(loader, &loader_error)) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: sixel fallback loader close failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
@@ -661,6 +732,9 @@ load_with_gdkpixbuf(
     animation = gdk_pixbuf_loader_get_animation(loader);
 #endif
     if (animation == NULL) {
+        gdkpixbuf_set_error_message(
+            "load_with_gdkpixbuf: gdk_pixbuf_loader_get_animation failed.",
+            NULL);
         status = SIXEL_GDK_ERROR;
         goto end;
     }
@@ -688,6 +762,9 @@ load_with_gdkpixbuf(
     if (!use_animation) {
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: gdk_pixbuf_loader_get_pixbuf failed.",
+                NULL);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
@@ -735,6 +812,9 @@ load_with_gdkpixbuf(
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
         it = gdk_pixbuf_animation_get_iter(animation, &time_val);
         if (it == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+                NULL);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
@@ -847,6 +927,9 @@ load_with_gdkpixbuf(
             time_val = start_time;
             it = gdk_pixbuf_animation_get_iter(animation, &time_val);
             if (it == NULL) {
+                gdkpixbuf_set_error_message(
+                    "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+                    NULL);
                 status = SIXEL_GDK_ERROR;
                 goto end;
             }
@@ -869,6 +952,9 @@ load_with_gdkpixbuf(
     if (!use_animation) {
         pixbuf = gdk_pixbuf_animation_get_static_image(animation);
         if (pixbuf == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: gdk_pixbuf_animation_get_static_image failed.",
+                NULL);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
@@ -917,6 +1003,9 @@ load_with_gdkpixbuf(
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
         it = gdk_pixbuf_animation_get_iter(animation, &time_val);
         if (it == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+                NULL);
             status = SIXEL_GDK_ERROR;
             goto end;
         }
@@ -1027,6 +1116,9 @@ load_with_gdkpixbuf(
 # pragma GCC diagnostic pop
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
             if (it == NULL) {
+                gdkpixbuf_set_error_message(
+                    "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+                    NULL);
                 status = SIXEL_GDK_ERROR;
                 goto end;
             }
@@ -1054,6 +1146,7 @@ end:
         }
         g_object_unref(loader);
     }
+    gdkpixbuf_clear_error(&loader_error);
 
     return status;
 

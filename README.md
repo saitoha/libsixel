@@ -986,6 +986,15 @@ decode for local files so relative references can resolve.
 | local `.svgz` file | disabled (unless env opt-in is set) | decoded via file path |
 | stdin/pipe gzip stream (`cat foo.svgz \| img2sixel ... -`) | n/a | rejected; decompress first or pass file path |
 
+SVG loader comparison summary:
+
+| Loader | Transparency / `-B` behavior | Relative external refs | `.svgz` behavior | Palette responsibility |
+| --- | --- | --- | --- | --- |
+| `librsvg` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | default disabled; opt-in via `SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1` | local `.svgz` path decode supported; stdin gzip rejected | quantizer stage |
+| `gdk-pixbuf2` | no `-B` + alpha keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |
+| `coregraphics` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |
+| `quicklook` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |
+
 When running under GNOME or other desktops that implement the FreeDesktop.org
 Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
 `img2sixel` inspects the installed `.thumbnailer` definitions located in
