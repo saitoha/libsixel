@@ -2021,27 +2021,6 @@ load_with_libwebp(
         goto end;
     }
 
-    if (enable_cms || fuse_palette) {
-        demux = WebPDemux(&webp_data);
-        if (demux == NULL) {
-            sixel_helper_set_additional_message(
-                "load_with_libwebp: WebPDemux failed.");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-    }
-
-    if (fuse_palette) {
-        allow_palette_promotion = webp_input_is_indexed(demux);
-    }
-
-    if (enable_cms) {
-        webp_extract_icc_profile(demux,
-                                 &icc_profile,
-                                 &icc_profile_length,
-                                 pchunk->allocator);
-    }
-
     feature_status = WebPGetFeatures(pchunk->buffer,
                                      pchunk->size,
                                      &stream_features);
@@ -2063,6 +2042,27 @@ load_with_libwebp(
                                          stream_features.height);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+
+    if (enable_cms || fuse_palette) {
+        demux = WebPDemux(&webp_data);
+        if (demux == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_libwebp: WebPDemux failed.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    }
+
+    if (fuse_palette) {
+        allow_palette_promotion = webp_input_is_indexed(demux);
+    }
+
+    if (enable_cms) {
+        webp_extract_icc_profile(demux,
+                                 &icc_profile,
+                                 &icc_profile_length,
+                                 pchunk->allocator);
     }
 
     if (!stream_features.has_animation) {
