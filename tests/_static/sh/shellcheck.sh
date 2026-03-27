@@ -57,6 +57,27 @@ while IFS= read -r test_file; do
     fi
 done < "$tmpfile"
 
+echo "Checking shell test policy rules"
+if_hits=$(
+    find "${repo_root}/tests" -name '*.t' -type f \
+        -exec grep -l '^if ' {} + || true
+)
+test -z "${if_hits}" || {
+    printf '%s\n' "${if_hits}"
+    echo "ERROR: if is forbidden in tests/*.t"
+    failed=1
+}
+
+func_hits=$(
+    find "${repo_root}/tests" -name '*.t' -type f \
+        -exec grep '^[a-z_]\+()' {} + || true
+)
+test -z "${func_hits}" || {
+    printf '%s\n' "${func_hits}"
+    echo "ERROR: shell functions are forbidden in tests/*.t"
+    failed=1
+}
+
 target_files=${TEST_FILES:-}
 test -n "${target_files}" || {
     echo "Skipping custom checks: set TEST_FILES='tests/.../*.t'"
@@ -102,8 +123,10 @@ check_fixed() {
     fi
 }
 
-check_pattern '^[[:space:]]*(if|elif|else|case)\b' \
-    'if/elif/else/case are forbidden in tests/*.t'
+check_pattern '^[[:space:]]*if[[:space:]]' \
+    'if is forbidden in tests/*.t'
+check_pattern '^[[:space:]]*[a-z_]+\(\)' \
+    'shell functions are forbidden in tests/*.t'
 check_fixed '|| {' \
     'nested || { ... } blocks are forbidden in tests/*.t'
 check_pattern '^[[:space:]]*\[[^]]*\]' \
