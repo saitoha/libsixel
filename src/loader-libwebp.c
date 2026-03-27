@@ -2079,17 +2079,17 @@ load_with_libwebp(
     webp_data.bytes = pchunk->buffer;
     webp_data.size = pchunk->size;
 
+    status = webp_validate_riff_container(pchunk->buffer, pchunk->size);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     if (enable_cms) {
         webp_extract_icc_profile(pchunk->buffer,
                                  pchunk->size,
                                  &icc_profile,
                                  &icc_profile_length,
                                  pchunk->allocator);
-    }
-
-    status = webp_validate_riff_container(pchunk->buffer, pchunk->size);
-    if (SIXEL_FAILED(status)) {
-        goto end;
     }
 
     feature_status = WebPGetFeatures(pchunk->buffer,
