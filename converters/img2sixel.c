@@ -1010,6 +1010,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "can resolve. Unset/0/off/false/no keep byte-only mode."
     },
     {
+        "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ",
+        "allow librsvg to decode gzip-compressed SVG from stdin/pipe by\n"
+        "spooling input to a temporary .svgz file first."
+    },
+    {
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
         "override CMS backend for libjpeg loader conversion.\n"
         "Overrides SIXEL_LOADER_CMS_ENGINE."

@@ -984,13 +984,13 @@ decode for local files so relative references can resolve.
 | local `.svg` file (default) | disabled | n/a |
 | local `.svg` file + `SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1` | enabled | n/a |
 | local `.svgz` file | disabled (unless env opt-in is set) | decoded via file path |
-| stdin/pipe gzip stream (`cat foo.svgz \| img2sixel ... -`) | n/a | rejected; decompress first or pass file path |
+| stdin/pipe gzip stream (`cat foo.svgz \| img2sixel ... -`) | n/a | rejected by default; set `SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1` to allow temp-file decode |
 
 SVG loader comparison summary:
 
 | Loader | Transparency / `-B` behavior | Relative external refs | `.svgz` behavior | Palette responsibility |
 | --- | --- | --- | --- | --- |
-| `librsvg` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | default disabled; opt-in via `SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1` | local `.svgz` path decode supported; stdin gzip rejected | quantizer stage |
+| `librsvg` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | default disabled; opt-in via `SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1` | local `.svgz` path decode supported; stdin gzip is opt-in via `SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1` | quantizer stage |
 | `gdk-pixbuf2` | no `-B` + alpha keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |
 | `coregraphics` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |
 | `quicklook` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |

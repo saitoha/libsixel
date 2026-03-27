@@ -28,6 +28,7 @@ svgz_path="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-2color.svgz"
 file_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-file.six"
 stdin_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-stdin.six"
 stdin_err="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-stdin.err"
+stdin_optin_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-stdin-optin.six"
 header_alpha="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-header-alpha.bin"
 
 gzip -c "${svg_path}" >"${svgz_path}"
@@ -55,9 +56,26 @@ test "${status}" -ne 0 || {
 
 grep -F "gzip-compressed SVG (.svgz) requires file-path decode or prior decompression." \
     "${stdin_err}" >/dev/null || {
+    grep -F "gzip-compressed SVG (.svgz) requires file-path decode, prior decompression, or SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1." \
+        "${stdin_err}" >/dev/null || {
     echo "not ok" 1 - "stdin .svgz failure did not report decode policy"
     exit 0
 }
+}
 
-echo "ok" 1 - "librsvg .svgz file-path decode policy works"
+run_img2sixel \
+    --env SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1 \
+    -L librsvg! - \
+    >"${stdin_optin_sixel}" \
+    <"${svgz_path}" || {
+    echo "not ok" 1 - "stdin .svgz conversion failed with opt-in env"
+    exit 0
+}
+
+dd if="${stdin_optin_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" || {
+    echo "not ok" 1 - "stdin .svgz opt-in conversion lost transparency header"
+    exit 0
+}
+
+echo "ok" 1 - "librsvg .svgz file/stdin opt-in decode policy works"
 exit 0
