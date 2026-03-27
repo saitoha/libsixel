@@ -37,10 +37,11 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
     exit 0
 }
 
-if cmp -s "${default_out}" "${optin_out}"; then
+cmp -s "${default_out}" "${optin_out}" && {
     echo "not ok" 1 - "opt-in keycolor mode did not change grayscale16 output"
     exit 0
-fi
+}
+
 
 echo "ok" 1 - "opt-in keycolor mode changes ColorType 0/16-bit+tRNS output"
 exit 0

@@ -23,15 +23,18 @@ run_img2sixel --env SIXEL_TRACE_TOPIC=apng_decode -Llibpng! "${fuzz_input}" -o /
 command_status=$?
 set -e
 
-if [ "${command_status}" -lt 1 ] || [ "${command_status}" -gt 3 ]; then
+test "${command_status}" -lt 1 || test "${command_status}" -gt 3 && {
     echo "not ok 1 - fuzz0001 did not return mapped error status"
     exit 0
-fi
+}
 
-if [ ! -s "${trace_log}" ] || ! grep -q 'remain=1844674407370955' "${trace_log}"; then
-    echo "ok 1 - fuzz0001 avoids APNG size underflow trace"
-else
+
+test ! -s "${trace_log}" || ! grep -q 'remain=1844674407370955' "${trace_log}" || {
     echo "not ok 1 - fuzz0001 still triggers APNG size underflow"
-fi
+    exit 0
+}
+
+    echo "ok 1 - fuzz0001 avoids APNG size underflow trace"
+
 
 exit 0

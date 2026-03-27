@@ -20,10 +20,12 @@ run_img2sixel -Llibpng! "${fuzz_input}" -o /dev/null >/dev/null 2>&1
 command_status=$?
 set -e
 
-if [ "${command_status}" -ge 1 ] && [ "${command_status}" -le 3 ]; then
-    echo "ok 1 - fuzz0001 returned mapped error status"
-else
+test "${command_status}" -ge 1 && test "${command_status}" -le 3 || {
     echo "not ok 1 - fuzz0001 did not return mapped error status"
-fi
+    exit 0
+}
+
+    echo "ok 1 - fuzz0001 returned mapped error status"
+
 
 exit 0

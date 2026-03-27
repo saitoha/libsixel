@@ -30,10 +30,12 @@ run_img2sixel -v -Llibpng:cms_engine=none! \
     exit 0
 }
 
-if grep -q 'formats: source=pal8 work=pal8' "${log_hi}"; then
-    echo "ok 1 - high reqcolors keeps pal8 work format"
-else
+grep -q 'formats: source=pal8 work=pal8' "${log_hi}" || {
     echo "not ok 1 - high reqcolors did not keep pal8 work format"
-fi
+    exit 0
+}
+
+    echo "ok 1 - high reqcolors keeps pal8 work format"
+
 
 exit 0

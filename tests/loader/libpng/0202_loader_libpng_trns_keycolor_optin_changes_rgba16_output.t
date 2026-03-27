@@ -39,10 +39,12 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
     exit 0
 }
 
-if cmp -s "${out_default}" "${out_optin}"; then
+cmp -s "${out_default}" "${out_optin}" && {
     echo "not ok 1 - opt-in unexpectedly ignored for libpng rgba16 PNG"
-else
+    exit 0
+}
+
     echo "ok 1 - opt-in changes libpng rgba16 PNG output"
-fi
+
 
 exit 0

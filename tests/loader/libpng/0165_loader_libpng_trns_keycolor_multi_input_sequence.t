@@ -46,12 +46,12 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-while IFS= read -r out_line || [ -n "${out_line}" ]; do
+while IFS= read -r out_line || test -n "${out_line}"; do
     out_on_payload="${out_on_payload}${out_line}
 "
 done < "${out_on}"
 
-while IFS= read -r out_line || [ -n "${out_line}" ]; do
+while IFS= read -r out_line || test -n "${out_line}"; do
     out_off_payload="${out_off_payload}${out_line}
 "
 done < "${out_off}"
@@ -68,10 +68,12 @@ case "${out_off_payload}" in
         ;;
 esac
 
-if [ "${out_on_has_header}" = 1 ] && [ "${out_off_has_header}" = 0 ]; then
-    echo "ok 1 - multi-input keycolor header appears only with opt-in"
-else
+test "${out_on_has_header}" = 1 && test "${out_off_has_header}" = 0 || {
     echo "not ok 1 - multi-input keycolor header gating mismatch"
-fi
+    exit 0
+}
+
+    echo "ok 1 - multi-input keycolor header appears only with opt-in"
+
 
 exit 0

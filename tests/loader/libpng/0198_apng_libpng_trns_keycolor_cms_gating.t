@@ -39,10 +39,12 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     exit 0
 }
 
-if cmp -s "${out_on}" "${out_off}"; then
-    echo "ok 1 - libpng APNG cms=1 disables keycolor path"
-else
+cmp -s "${out_on}" "${out_off}" || {
     echo "not ok 1 - libpng APNG cms=1 unexpectedly keeps keycolor path"
-fi
+    exit 0
+}
+
+    echo "ok 1 - libpng APNG cms=1 disables keycolor path"
+
 
 exit 0

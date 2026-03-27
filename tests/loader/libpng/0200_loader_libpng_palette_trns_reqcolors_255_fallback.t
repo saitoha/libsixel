@@ -30,10 +30,12 @@ run_img2sixel -v -Llibpng:cms_engine=none! \
     exit 0
 }
 
-if grep -q 'formats: source=pal8 work=pal8' "${log_lo}"; then
+grep -q 'formats: source=pal8 work=pal8' "${log_lo}" && {
     echo "not ok 1 - libpng reqcolors=255 unexpectedly kept pal8 work format"
-else
+    exit 0
+}
+
     echo "ok 1 - libpng reqcolors=255 moved off pal8 work format"
-fi
+
 
 exit 0

@@ -45,12 +45,12 @@ run_img2sixel -I \
     exit 0
 }
 
-while IFS= read -r out_line || [ -n "${out_line}" ]; do
+while IFS= read -r out_line || test -n "${out_line}"; do
     out_on_payload="${out_on_payload}${out_line}
 "
 done < "${out_on}"
 
-while IFS= read -r out_line || [ -n "${out_line}" ]; do
+while IFS= read -r out_line || test -n "${out_line}"; do
     out_off_payload="${out_off_payload}${out_line}
 "
 done < "${out_off}"
@@ -67,10 +67,12 @@ case "${out_off_payload}" in
         ;;
 esac
 
-if [ "${out_on_has_header}" = 0 ] && [ "${out_off_has_header}" = 0 ]; then
-    echo "ok 1 - highcolor mode ignores keycolor header"
-else
+test "${out_on_has_header}" = 0 && test "${out_off_has_header}" = 0 || {
     echo "not ok 1 - highcolor mode emitted keycolor header"
-fi
+    exit 0
+}
+
+    echo "ok 1 - highcolor mode ignores keycolor header"
+
 
 exit 0

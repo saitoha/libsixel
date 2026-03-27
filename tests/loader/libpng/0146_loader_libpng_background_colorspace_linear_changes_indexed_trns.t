@@ -37,10 +37,11 @@ run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
     exit 0
 }
 
-if cmp -s "${output_gamma}" "${output_linear}"; then
+cmp -s "${output_gamma}" "${output_linear}" && {
     echo "not ok" 1 - "gamma and linear indexed composition produced identical output"
     exit 0
-fi
+}
+
 
 echo "ok" 1 - "linear background interpretation changes indexed+tRNS composition"
 exit 0
