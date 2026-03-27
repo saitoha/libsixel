@@ -628,21 +628,6 @@ sixel_builtin_validate_psd_info(
         }
         total_bytes = plane_bytes * (size_t)info->channels;
         if (total_bytes > image_data_length) {
-            layer_state = sixel_builtin_psd_has_layer_records(chunk, info);
-            if (layer_state < 0) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: malformed layer/mask section");
-                return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
-            }
-            if (layer_state > 0) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: unsupported file without merged/composite image");
-                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
-            }
             sixel_builtin_psd_set_message(
                 message,
                 message_size,
@@ -667,21 +652,6 @@ sixel_builtin_validate_psd_info(
         }
         table_bytes = table_entries * 2u;
         if (table_bytes > image_data_length) {
-            layer_state = sixel_builtin_psd_has_layer_records(chunk, info);
-            if (layer_state < 0) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: malformed layer/mask section");
-                return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
-            }
-            if (layer_state > 0) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: unsupported file without merged/composite image");
-                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
-            }
             sixel_builtin_psd_set_message(
                 message,
                 message_size,
