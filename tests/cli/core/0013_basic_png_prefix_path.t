@@ -8,7 +8,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 out_path="${ARTIFACT_LOCAL_DIR}/out.png"
 
-run_sixel2png -o "png:${out_path}" <"${TOP_SRCDIR}/images/map8.six" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -o "png:${out_path}" <"${TOP_SRCDIR}/images/map8.six" || {
     echo "not ok" 1 - "prefixed output command failed"
     exit 0
 }

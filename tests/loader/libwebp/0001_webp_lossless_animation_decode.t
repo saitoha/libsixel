@@ -14,12 +14,11 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -Llibwebp! -=1 -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -=1 -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_loop_disable.six" || {
     echo "not ok" 1 - "libwebp lossless animation decode failed"

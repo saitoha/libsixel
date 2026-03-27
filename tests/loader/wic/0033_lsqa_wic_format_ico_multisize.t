@@ -18,7 +18,6 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -29,13 +28,13 @@ lsqa_floor=0.96
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_multisize.six"
-run_img2sixel -Lwic:ico_minsize=30! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lwic:ico_minsize=30! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "wic ico multisize conversion failed"
     exit 0
 }
 
 lsqa_err=$(
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

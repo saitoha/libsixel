@@ -13,12 +13,11 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 
 probe_output=$(
     set +xv
-    run_img2sixel -Llibwebp:cms_engine=none! \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.webp" \
         -o/dev/null 2>&1
 ) || probe_status=$?

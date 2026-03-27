@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -18,7 +17,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-8bit.six"
 
-run_img2sixel --env SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible \
               --env SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
               --env SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
               --env SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
@@ -27,7 +26,7 @@ run_img2sixel --env SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible \
     exit 0
 }
 
-lsqa_err=$(run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
+lsqa_err=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
     echo "ok" 1 - "snap heckbert 8bit lsqa passed"

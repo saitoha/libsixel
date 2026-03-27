@@ -9,7 +9,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 
@@ -20,7 +19,7 @@ issue51="${TOP_SRCDIR}/tests/data/security/issue/data/libsixel-libsixel/51/stbi_
 # Use the minimal invocation to exercise the decoder and ensure the
 # reported PoC is rejected safely.
 set +e
-run_img2sixel "${issue51}" -o /dev/null
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${issue51}" -o /dev/null
 command_status=$?
 set -e
 

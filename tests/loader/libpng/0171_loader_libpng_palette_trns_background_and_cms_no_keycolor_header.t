@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -26,7 +25,7 @@ out_payload=''
 out_line=''
 out_has_header=0
 
-run_img2sixel -Llibpng:cms_engine=auto! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! \
               -B#ffffff \
               -d fs -y raster \
               "${input_png}" >"${out}" || {

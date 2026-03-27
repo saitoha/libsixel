@@ -18,7 +18,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -32,22 +31,22 @@ white_png="${ARTIFACT_LOCAL_DIR}/librsvg-bgcolor-white.png"
 printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='1'></svg>" >"${svg_path}"
 
 
-run_img2sixel -L librsvg! "${svg_path}" >"${default_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${default_sixel}" || {
     echo "not ok" 1 - "default background conversion failed"
     exit 0
 }
 
-run_img2sixel -L librsvg! -B '#ffffff' "${svg_path}" >"${white_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! -B '#ffffff' "${svg_path}" >"${white_sixel}" || {
     echo "not ok" 1 - "white background conversion failed"
     exit 0
 }
 
-run_sixel2png -i "${default_sixel}" -o "${default_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${default_sixel}" -o "${default_png}" || {
     echo "not ok" 1 - "default sixel decode failed"
     exit 0
 }
 
-run_sixel2png -i "${white_sixel}" -o "${white_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${white_sixel}" -o "${white_png}" || {
     echo "not ok" 1 - "white sixel decode failed"
     exit 0
 }

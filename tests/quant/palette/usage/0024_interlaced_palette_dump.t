@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_sixel="${ARTIFACT_LOCAL_DIR}/interlaced-palette-dump.sixel"
 
-run_img2sixel -e -i -P "${snake_jpg}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -e -i -P "${snake_jpg}" >"${target_sixel}" || {
     echo "not ok" 1 - "interlaced encode palette dump fails"
     exit 0
 }

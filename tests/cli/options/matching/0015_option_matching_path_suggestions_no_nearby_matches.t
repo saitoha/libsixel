@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 missing_path="${TOP_SRCDIR}/tests/quant/no-such-file.gpl"
 
-msg=$(set +xv; run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
               -m "${missing_path}" \
               "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "missing mapfile unexpectedly succeeded"

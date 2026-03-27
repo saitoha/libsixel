@@ -8,12 +8,11 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0019_loader_libwebp_palette_promotion_guard" || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0019_loader_libwebp_palette_promotion_guard" || {
     echo "not ok 1 - loader/0019_loader_libwebp_palette_promotion_guard"
     exit 0
 }

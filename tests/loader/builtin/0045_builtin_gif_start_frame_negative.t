@@ -8,20 +8,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -L builtin! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_default_neg.six" || {
     echo "not ok" 1 - "baseline builtin GIF decode failed"
     exit 0
 }
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1" \
     -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_negative.six" || {

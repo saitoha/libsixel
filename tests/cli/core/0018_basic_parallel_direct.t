@@ -14,7 +14,6 @@ command -v cmp >/dev/null 2>&1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,8 +21,8 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 parallel_direct_1="${ARTIFACT_LOCAL_DIR}/parallel-direct-1.png"
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 
-run_sixel2png --env SIXEL_THREADS=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_1}"
-run_sixel2png --env SIXEL_THREADS=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_1}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
 
 cmp -s "${parallel_direct_1}" "${parallel_direct_4}" || {
     echo "not ok" 1 - "parallel direct diverges"

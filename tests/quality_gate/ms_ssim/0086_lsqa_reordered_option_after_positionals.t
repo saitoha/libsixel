@@ -3,18 +3,17 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
-value_prefix=$(run_lsqa -m MS-SSIM "${image_ref}" "${image_out}") || {
+value_prefix=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image_ref}" "${image_out}") || {
     echo "not ok" 1 - "failed to calculate metric with option before args"
     exit 0
 }
-value_suffix=$(run_lsqa "${image_ref}" "${image_out}" -m MS-SSIM) || {
+value_suffix=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" "${image_ref}" "${image_out}" -m MS-SSIM) || {
     echo "not ok" 1 - "failed to calculate metric with option after args"
     exit 0
 }

@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 
 issue220="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc3_encoder_integer_overflow.gif"
 
 set +e
-run_img2sixel -h 1890177820 -e -I -C 1 -S -o /dev/null "${issue220}"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -h 1890177820 -e -I -C 1 -S -o /dev/null "${issue220}"
 command_status=$?
 set -e
 

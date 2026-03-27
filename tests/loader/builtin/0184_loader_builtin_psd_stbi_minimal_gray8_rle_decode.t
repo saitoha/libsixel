@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -24,12 +23,12 @@ reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_gray
 output_sixel="${ARTIFACT_LOCAL_DIR}/psd_gray8_rle_output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 
-run_img2sixel -L builtin! "${input_psd}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin loader failed to decode grayscale 8-bit RLE"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_ppm}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "builtin grayscale 8-bit RLE fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0

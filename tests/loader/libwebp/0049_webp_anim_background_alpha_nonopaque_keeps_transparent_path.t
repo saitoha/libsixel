@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,12 +22,12 @@ out_default="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-alpha-nonopaque-default.six"
 out_bg="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-alpha-nonopaque-bg112233.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp animation decode without -B failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! -S -B#112233 "${input_webp}" >"${out_bg}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#112233 "${input_webp}" >"${out_bg}" || {
     echo "not ok" 1 - "libwebp animation decode with -B#112233 failed"
     exit 0
 }

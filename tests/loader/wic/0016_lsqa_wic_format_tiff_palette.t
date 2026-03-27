@@ -16,7 +16,6 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -27,14 +26,14 @@ lsqa_floor=0.99
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64-indexed.tiff"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_tiff_palette.six"
-run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lwic! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "wic tiff palette conversion failed"
     exit 0
 }
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

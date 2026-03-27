@@ -3,12 +3,11 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
-run_lsqa -h >/dev/null && {
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -h >/dev/null && {
     echo "not ok" 1 - "lsqa -h should fail"
     exit 0
 }

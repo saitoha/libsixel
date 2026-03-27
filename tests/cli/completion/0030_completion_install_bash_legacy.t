@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo '1..1'
 set -v
@@ -17,7 +16,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 completion_home="${ARTIFACT_LOCAL_DIR}"
 legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
-run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               --env IMG2SIXEL_BASH_VERSION_OVERRIDE=3.2 \
               -2 bash >&2 || {
     echo "not ok" 1 - "legacy bash completion install failed"

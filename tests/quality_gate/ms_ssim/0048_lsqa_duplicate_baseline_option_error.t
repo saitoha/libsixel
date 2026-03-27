@@ -3,7 +3,6 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -14,7 +13,7 @@ image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_duplicate_baseline.err"
 
 set +e
-run_lsqa -b "MS-SSIM:0.0" -b "MS-SSIM:0.0" "${image_ref}" "${image_out}" >"/dev/null" 2>"${err_file}"
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:0.0" -b "MS-SSIM:0.0" "${image_ref}" "${image_out}" >"/dev/null" 2>"${err_file}"
 status=$?
 set -e
 

@@ -13,7 +13,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 test -n "${LSQA_PATH-}" || {
     printf "1..0 # SKIP lsqa is disabled in this build\n";
     exit 0
@@ -36,12 +35,12 @@ lsqa_floor="0.98"
 set -- --env SIXEL_CLIPBOARD_BACKEND=file \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_clipboard_dir}"
 
-run_img2sixel "$@" "${sixel_src}" >"${sixel_tmp}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" "${sixel_src}" >"${sixel_tmp}" || {
     echo "not ok" 1 - "failed to prepare sixel input"
     exit 0
 }
 
-run_sixel2png "$@" -i "${sixel_tmp}" -o png:clipboard: || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i "${sixel_tmp}" -o png:clipboard: || {
     echo "not ok" 1 - "failed to write PNG into fake clipboard"
     exit 0
 }
@@ -57,7 +56,7 @@ test "${png_signature_cksum}" = "4074750897 8" || {
     exit 0
 }
 
-run_img2sixel "$@" clipboard: -o clipboard: || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" clipboard: -o clipboard: || {
     echo "not ok" 1 - "failed to read/write fake clipboard SIXEL payload"
     exit 0
 }
@@ -74,7 +73,7 @@ test "${text_prefix_cksum}" = "3058461199 2" || {
     exit 0
 }
 
-run_sixel2png "$@" -i clipboard: -o "${roundtrip_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i clipboard: -o "${roundtrip_png}" || {
     echo "not ok" 1 - "failed to decode fake clipboard payload"
     exit 0
 }
@@ -84,7 +83,7 @@ test -s "${roundtrip_png}" || {
     exit 0
 }
 
-run_lsqa -b "MS-SSIM:${lsqa_floor}" "${sixel_src}" "${roundtrip_png}" >/dev/null 2>&1 || {
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${sixel_src}" "${roundtrip_png}" >/dev/null 2>&1 || {
     echo "not ok" 1 - "fake clipboard round-trip quality check failed"
     exit 0
 }

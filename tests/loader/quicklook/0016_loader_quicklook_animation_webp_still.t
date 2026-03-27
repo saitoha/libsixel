@@ -14,11 +14,10 @@ test "${HAVE_QUICKLOOK-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" >/dev/null || {
     echo "not ok" 1 - "quicklook animated WebP still-frame decode failed"
     exit 0

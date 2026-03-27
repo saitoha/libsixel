@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg_short=$(set +xv; run_img2sixel -# 2>&1) && {
+msg_short=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -# 2>&1) && {
     echo "not ok" 1 - "short -# missing argument unexpectedly succeeded"
     exit 0
 }

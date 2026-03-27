@@ -13,12 +13,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel -L librsvg! "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null && {
     echo "not ok" 1 - "forced librsvg loader accepted non-SVG signature"
     exit 0

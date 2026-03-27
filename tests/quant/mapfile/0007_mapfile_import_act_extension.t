@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,12 +16,12 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 act_palette="${ARTIFACT_LOCAL_DIR}/palette.act"
 
-run_img2sixel -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six"         "${snake_png}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six"         "${snake_png}" || {
     echo "not ok" 1 - "Preparing ACT palette for import failed"
     exit 0
 }
 
-run_img2sixel -m "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/from-act.six"         "${snake_png}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/from-act.six"         "${snake_png}" || {
     echo "not ok" 1 - "ACT palette conversion failed"
     exit 0
 }

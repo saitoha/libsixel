@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-resize_log=$(run_img2sixel -v -=1 -W oklab -w 99% -o/dev/null <<'PPM' 2>&1
+resize_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -=1 -W oklab -w 99% -o/dev/null <<'PPM' 2>&1
 P3
 4 4
 255

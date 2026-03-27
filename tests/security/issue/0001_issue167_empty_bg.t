@@ -8,13 +8,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 
 printf '1..1\n'
 set -v
 
-run_img2sixel -B '#000' -B '' </dev/null >/dev/null && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B '#000' -B '' </dev/null >/dev/null && {
     echo "not ok" 1 - "empty background accepted unexpectedly"
     exit 0
 }

@@ -12,14 +12,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 local_file="file://${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
-run_img2sixel "${local_file}" >"${ARTIFACT_LOCAL_DIR}/local-file.sixel" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${local_file}" >"${ARTIFACT_LOCAL_DIR}/local-file.sixel" || {
     echo "not ok" 1 - "local file fetch via file scheme failed"
     exit 0
 }

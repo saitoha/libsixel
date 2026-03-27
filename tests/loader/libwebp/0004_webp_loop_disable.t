@@ -14,13 +14,12 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 
-run_img2sixel -Llibwebp! -ldisable "${image_webp}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -ldisable "${image_webp}" >/dev/null || {
     echo "not ok" 1 - "libwebp loop disable failed"
     exit 0
 }

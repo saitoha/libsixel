@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -24,7 +23,7 @@ printf '%s' "<svg xmlns='http://www.w3.org/2000/svg'><g><rect x='0' y='0' width=
 
 
 set +e
-run_img2sixel -L librsvg! "${svg_path}" >/dev/null
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >/dev/null
 status="$?"
 set -e
 

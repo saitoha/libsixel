@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -18,14 +17,14 @@ input_png="${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png"
 out_invalid="${ARTIFACT_LOCAL_DIR}/builtin_bgcs_invalid.six"
 out_gamma="${ARTIFACT_LOCAL_DIR}/builtin_bgcs_gamma_explicit.six"
 
-run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=invalid \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=invalid \
               -Lbuiltin:cms_engine=none! \
               -B#808080 "${input_png}" >"${out_invalid}" || {
     echo "not ok 1 - builtin invalid background colorspace render failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Lbuiltin:cms_engine=none! \
               -B#808080 "${input_png}" >"${out_gamma}" || {
     echo "not ok 1 - builtin gamma background colorspace render failed"

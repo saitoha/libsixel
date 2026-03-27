@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel -B "#0000000000000" </dev/null >/dev/null  && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B "#0000000000000" </dev/null >/dev/null  && {
     echo "not ok" 1 - "unexpected success: invalid background specification"
     exit 0
 }

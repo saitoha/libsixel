@@ -4,12 +4,11 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "filter/0009_filter_dither" || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "filter/0009_filter_dither" || {
     echo "not ok 1 - 0009_filter_dither"
     exit 0
 }

@@ -14,19 +14,18 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -L libwebp! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_start_default_neg.six" || {
     echo "not ok" 1 - "baseline libwebp animation decode failed"
     exit 0
 }
 
-run_img2sixel --start-frame=-1 -L libwebp! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=-1 -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_start_negative.six" || {
     echo "not ok" 1 - "libwebp decode with negative start frame failed"

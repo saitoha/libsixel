@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -29,7 +28,7 @@ out_line=''
 out_on_has_header=0
 out_off_has_header=0
 
-run_img2sixel -I \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_on}" || {
@@ -37,7 +36,7 @@ run_img2sixel -I \
     exit 0
 }
 
-run_img2sixel -I \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${out_off}" || {

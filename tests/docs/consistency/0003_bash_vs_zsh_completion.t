@@ -19,7 +19,6 @@ command -v diff >/dev/null 2>&1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"

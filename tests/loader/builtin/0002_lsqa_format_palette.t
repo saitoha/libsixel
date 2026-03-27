@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
@@ -18,13 +17,13 @@ lsqa_floor=0.99
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0004_palette_png_default_black_composite.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/palette.six"
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Lbuiltin! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "palette quality regressed"
     exit 0
 }
 
 lsqa_err=$(
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${expected_ppm}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${expected_ppm}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 lsqa_status=${lsqa_run_status-0}

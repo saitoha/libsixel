@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -19,13 +18,13 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/builtin-hdr-default.six"
 black_reference="${ARTIFACT_LOCAL_DIR}/builtin-hdr-black-reference.ppm"
 lsqa_status=0
 
-run_img2sixel -L builtin! "${input_hdr}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_hdr}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin loader failed to decode HDR with builtin!"
     exit 0
 }
 
 printf 'P6\n1 1\n255\n\000\000\000' >"${black_reference}"
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.99" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.99" \
     "${black_reference}" "${output_sixel}" 2>&1) || lsqa_status=$?
 lsqa_status=${lsqa_status-0}
 

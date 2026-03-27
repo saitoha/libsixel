@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -20,7 +19,7 @@ out_file="${ARTIFACT_LOCAL_DIR}/-p"
 : >"${out_file}"
 
 cd "${ARTIFACT_LOCAL_DIR}" && {
-    run_img2sixel -o -p "${image_path}" >/dev/null || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o -p "${image_path}" >/dev/null || {
         echo "not ok" 1 - "outfile named like option rejected"
         printf '%s\n' '--- stderr ---' >&2
         exit 0

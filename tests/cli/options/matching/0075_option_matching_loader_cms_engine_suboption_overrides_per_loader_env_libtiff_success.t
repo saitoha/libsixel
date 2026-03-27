@@ -13,7 +13,6 @@ test "${HAVE_LIBTIFF-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -24,25 +23,25 @@ output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_libtiff_subopt_ref_cms1.six"
 output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_libtiff_subopt_ref_cms0.six"
 output_subopt_none="${ARTIFACT_LOCAL_DIR}/cms_engine_libtiff_subopt_none.six"
 
-run_img2sixel -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_ref_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "libtiff cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_ref_cms0}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_ref_cms0}" || {
     echo "not ok" 1 - "libtiff cms=0 reference decode failed"
     exit 0
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
     "${output_ref_cms1}" "${output_ref_cms0}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 5 || {
     echo "not ok" 1 - "libtiff cms references were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_LIBTIFF_CMS_ENGINE=auto" \
     -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_subopt_none}" || {
     echo "not ok" 1 - "libtiff cms_engine=none suboption decode failed"

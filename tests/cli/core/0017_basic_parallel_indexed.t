@@ -14,15 +14,14 @@ command -v cmp >/dev/null 2>&1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 parallel_indexed_1="${ARTIFACT_LOCAL_DIR}/parallel-indexed-1.png"
 parallel_indexed_4="${ARTIFACT_LOCAL_DIR}/parallel-indexed-4.png"
-run_sixel2png --env SIXEL_THREADS=1 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_1}"
-run_sixel2png --env SIXEL_THREADS=4 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_4}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=1 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_1}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=4 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_4}"
 
 cmp -s "${parallel_indexed_1}" "${parallel_indexed_4}" >/dev/null || {
     echo "not ok" 1 - "parallel indexed diverges"

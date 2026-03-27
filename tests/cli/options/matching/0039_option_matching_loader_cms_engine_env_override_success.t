@@ -13,7 +13,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -26,39 +25,39 @@ output_global_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_env_global_auto.six"
 output_global_none="${ARTIFACT_LOCAL_DIR}/cms_engine_env_global_none.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_override.six"
 
-run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
     echo "not ok" 1 - "libwebp cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_cms0}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_cms0}" || {
     echo "not ok" 1 - "libwebp cms=0 reference decode failed"
     exit 0
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.995" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
     "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 5 || {
     echo "not ok" 1 - "libwebp cms references were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
     -Llibwebp! "${input_webp}" >"${output_global_auto}" || {
     echo "not ok" 1 - "global cms engine env (auto) failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     -Llibwebp! "${input_webp}" >"${output_global_none}" || {
     echo "not ok" 1 - "global cms engine env (none) failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto" \
     -Llibwebp! "${input_webp}" >"${output_override}" || {
@@ -67,7 +66,7 @@ run_img2sixel \
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
     "${output_global_auto}" "${output_cms1}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 0 || {
     echo "not ok" 1 - "SIXEL_LOADER_CMS_ENGINE=auto did not match cms=1 reference: ${lsqa_msg-}"
@@ -75,7 +74,7 @@ test "${lsqa_status}" -eq 0 || {
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
     "${output_global_none}" "${output_cms0}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 0 || {
     echo "not ok" 1 - "SIXEL_LOADER_CMS_ENGINE=none did not match cms=0 reference: ${lsqa_msg-}"
@@ -83,7 +82,7 @@ test "${lsqa_status}" -eq 0 || {
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
     "${output_override}" "${output_cms1}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 0 || {
     echo "not ok" 1 - "SIXEL_LOADER_LIBWEBP_CMS_ENGINE did not override global setting: ${lsqa_msg-}"
@@ -91,7 +90,7 @@ test "${lsqa_status}" -eq 0 || {
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.995" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
     "${output_override}" "${output_global_none}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 5 || {
     echo "not ok" 1 - "override output did not differ from global none baseline: ${lsqa_msg-}"

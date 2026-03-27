@@ -13,12 +13,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle  \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle  \
     -v -Llibpng! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fctl_after_idat.png" \
     -o/dev/null || {

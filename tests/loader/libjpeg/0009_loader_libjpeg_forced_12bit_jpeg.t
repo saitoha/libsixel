@@ -18,7 +18,6 @@ test "${HAVE_JPEG12_API-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -28,12 +27,12 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-jpeg-12bit.six"
 
-run_img2sixel -L libjpeg! "${input_jpeg}" -o "${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg! "${input_jpeg}" -o "${output_sixel}" || {
     echo "not ok" 1 - "forced libjpeg 12-bit JPEG decode failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
     echo "not ok" 1 - "forced libjpeg 12-bit JPEG fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0

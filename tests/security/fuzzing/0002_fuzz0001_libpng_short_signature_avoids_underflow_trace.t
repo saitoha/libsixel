@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -18,7 +17,7 @@ trace_log="${ARTIFACT_LOCAL_DIR-/tmp}/fuzz0001_libpng_short_signature.trace"
 mkdir -p "$(dirname "${trace_log}")"
 
 set +e
-run_img2sixel --env SIXEL_TRACE_TOPIC=apng_decode -Llibpng! "${fuzz_input}" -o /dev/null \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=apng_decode -Llibpng! "${fuzz_input}" -o /dev/null \
     >/dev/null 2>"${trace_log}"
 command_status=$?
 set -e

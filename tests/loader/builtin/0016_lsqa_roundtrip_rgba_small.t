@@ -13,7 +13,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 printf '1..1\n'
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -26,19 +25,19 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0005_rgba_png_def
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Lbuiltin! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     echo "not ok" 1 - "rgba roundtrip encode failed"
     exit 0
 }
 
-run_sixel2png -i "${output_sixel}" -o "${output_png}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${output_sixel}" -o "${output_png}" || {
     echo "not ok" 1 - "rgba roundtrip decode failed"
     exit 0
 }
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${expected_ppm}" "${output_png}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${expected_ppm}" "${output_png}" 2>&1
 ) || lsqa_run_status=$?
 
 lsqa_status=${lsqa_run_status-0}

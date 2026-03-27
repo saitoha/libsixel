@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_pic="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.pic"
 
-run_img2sixel "${input_pic}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${input_pic}" >/dev/null || {
     echo "not ok" 1 - "builtin loader failed to decode PIC"
     exit 0
 }

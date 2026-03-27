@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_ascii_pgm="${TOP_SRCDIR}/images/snake-ascii.pgm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ascii-pgm-inspection.txt"
 
-run_img2sixel -I -Eauto "${snake_ascii_pgm}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -Eauto "${snake_ascii_pgm}" >"${target_txt}" || {
     echo "not ok" 1 - "ASCII PGM auto encoder inspection fails"
     exit 0
 }

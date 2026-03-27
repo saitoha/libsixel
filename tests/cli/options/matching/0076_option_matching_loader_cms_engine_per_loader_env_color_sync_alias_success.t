@@ -13,7 +13,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -24,12 +23,12 @@ output_ref_none="${ARTIFACT_LOCAL_DIR}/cms_engine_color_sync_alias_ref_none.six"
 output_colorsync="${ARTIFACT_LOCAL_DIR}/cms_engine_color_sync_alias_colorsync.six"
 output_color_sync="${ARTIFACT_LOCAL_DIR}/cms_engine_color_sync_alias_color_sync.six"
 
-run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_none}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_none}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=colorsync" \
     -Llibwebp! "${input_webp}" >"${output_colorsync}" || {
@@ -37,7 +36,7 @@ run_img2sixel \
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=color-sync" \
     -Llibwebp! "${input_webp}" >"${output_color_sync}" || {
@@ -46,7 +45,7 @@ run_img2sixel \
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.995" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
     "${output_colorsync}" "${output_ref_none}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 5 || {
     echo "not ok" 1 - "colorsync env did not differ from none baseline: ${lsqa_msg-}"

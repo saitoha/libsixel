@@ -13,7 +13,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -25,23 +24,23 @@ output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_subkey_ref_cms0.six"
 output_subkey_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_subkey_auto.six"
 output_subkey_none="${ARTIFACT_LOCAL_DIR}/cms_engine_subkey_none.six"
 
-run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibwebp:e=auto! "${input_webp}" >"${output_subkey_auto}" || {
     echo "not ok" 1 - "short subkey :e=auto decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibwebp:cms_engine=auto:e=none! "${input_webp}" >"${output_subkey_none}" || {
     echo "not ok" 1 - "short subkey :e=none decode failed"
     exit 0

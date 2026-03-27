@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -19,25 +18,25 @@ output_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_ref_cms1.six"
 output_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_ref_cms0.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_override.six"
 
-run_img2sixel -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_cms1}" || {
     echo "not ok" 1 - "builtin cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Lbuiltin:cms_engine=none! "${input_png}" >"${output_cms0}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! "${input_png}" >"${output_cms0}" || {
     echo "not ok" 1 - "builtin cms=0 reference decode failed"
     exit 0
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.995" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
     "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 5 || {
     echo "not ok" 1 - "builtin cms references were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_BUILTIN_CMS_ENGINE=auto" \
     -Lbuiltin! "${input_png}" >"${output_override}" || {
@@ -46,7 +45,7 @@ run_img2sixel \
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.999" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
     "${output_override}" "${output_cms1}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 0 || {
     echo "not ok" 1 - "SIXEL_LOADER_BUILTIN_CMS_ENGINE did not match cms=1 reference: ${lsqa_msg-}"
@@ -54,7 +53,7 @@ test "${lsqa_status}" -eq 0 || {
 }
 
 lsqa_status=0
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:0.995" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
     "${output_override}" "${output_cms0}" 2>&1) || lsqa_status=$?
 test "${lsqa_status}" -eq 5 || {
     echo "not ok" 1 - "override output did not differ from cms=0 baseline: ${lsqa_msg-}"

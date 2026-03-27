@@ -8,12 +8,11 @@ test "${HAVE_QUICKLOOK-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0015_loader_quicklook_pixelformat" || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0015_loader_quicklook_pixelformat" || {
     echo "not ok 1 - loader/0015_loader_quicklook_pixelformat"
     exit 0
 }

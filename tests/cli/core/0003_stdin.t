@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 output_file="${ARTIFACT_LOCAL_DIR}/capture.stdin"
 
-echo a | run_img2sixel - >"${output_file}" && :
+echo a | ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" - >"${output_file}" && :
 
 test ! -s "${output_file}" || {
     echo "not ok" 1 - "img2sixel produced output for invalid stdin"

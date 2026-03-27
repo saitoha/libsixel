@@ -14,7 +14,6 @@ test "${HAVE_WIC-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
@@ -23,7 +22,7 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
 }
 
 
-run_img2sixel -L wic! -ldisable -dnone -u \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! -ldisable -dnone -u \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" -o/dev/null || {
     echo "not ok" 1 - "wic disable/update flag combination failed"
     exit 0

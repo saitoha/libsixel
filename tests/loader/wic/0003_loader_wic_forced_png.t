@@ -16,12 +16,11 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel -L wic! "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null || {
     echo "not ok" 1 - "wic forced PNG decoding failed"
     exit 0

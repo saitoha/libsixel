@@ -8,13 +8,12 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_sixel2png -dk_ <"${TOP_SRCDIR}/images/map8.six" \
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -dk_ <"${TOP_SRCDIR}/images/map8.six" \
         >"${ARTIFACT_LOCAL_DIR}/dequantize-short.png" \
        2>"${ARTIFACT_LOCAL_DIR}/err.txt" || {
     echo "not ok" 1 - "unique dequantize prefix rejected"

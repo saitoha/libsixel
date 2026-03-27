@@ -13,14 +13,13 @@ test "${HAVE_WIC-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 msg=$(
     set +xv
-    run_img2sixel --env SIXEL_LOADER_PRIORITY_LIST='wic:ico_minsize=abc!' \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_PRIORITY_LIST='wic:ico_minsize=abc!' \
         "${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico" \
         -o/dev/null 2>&1
 ) && {

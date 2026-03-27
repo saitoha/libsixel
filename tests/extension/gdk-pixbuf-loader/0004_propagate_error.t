@@ -8,12 +8,11 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "gdk-pixbuf-loader/0004_propagate_error" >/dev/null || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "gdk-pixbuf-loader/0004_propagate_error" >/dev/null || {
     echo "not ok 1 - gdk-pixbuf-loader/0004_propagate_error"
     exit 0
 }

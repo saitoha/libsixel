@@ -13,13 +13,12 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -L coregraphics! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_interlaced_default.six" || {
     echo "not ok" 1 - "default interlaced GIF decode failed on coregraphics"

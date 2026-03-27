@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -20,13 +19,13 @@ log_path="${ARTIFACT_LOCAL_DIR}/timeline-overwrite.json"
 
 printf '%s\n' 'sentinel-before-run' >"${log_path}"
 
-run_img2sixel --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
     -o "${output_a}" "${small_ppm}" || {
     echo "not ok" 1 - "first conversion run failed"
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
     -o "${output_b}" "${small_ppm}" || {
     echo "not ok" 1 - "second conversion run failed"
     exit 0

@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,12 +21,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-
 output_default="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-default.six"
 output_expected="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-expected-112233.six"
 
-run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp}" >"${output_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp animation decode without -B failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! -S -B#112233 "${input_webp}" >"${output_expected}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#112233 "${input_webp}" >"${output_expected}" || {
     echo "not ok" 1 - "libwebp animation decode with -B#112233 failed"
     exit 0
 }

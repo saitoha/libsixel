@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-disposal-stress-anim.gif"
 
-run_img2sixel -Lbuiltin! -ldisable -g \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -g \
               "${input_gif}" -o /dev/null >/dev/null 2>&1 &
 pid=$!
 

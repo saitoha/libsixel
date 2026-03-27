@@ -9,7 +9,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -19,12 +18,12 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
 output_long="${ARTIFACT_LOCAL_DIR}/builtin_cms_long_option.six"
 output_short="${ARTIFACT_LOCAL_DIR}/builtin_cms_short_option.six"
 
-run_img2sixel -L builtin:cms_engine=auto! "${input_jpeg}" >"${output_long}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=auto! "${input_jpeg}" >"${output_long}" || {
     echo "not ok" 1 - "builtin decode with cms_engine=auto failed"
     exit 0
 }
 
-run_img2sixel -L builtin:e=auto! "${input_jpeg}" >"${output_short}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:e=auto! "${input_jpeg}" >"${output_short}" || {
     echo "not ok" 1 - "builtin decode with e=auto failed"
     exit 0
 }

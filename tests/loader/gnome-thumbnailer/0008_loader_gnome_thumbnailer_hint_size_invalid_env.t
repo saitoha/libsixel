@@ -12,7 +12,6 @@ test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -25,7 +24,7 @@ bin_dir="${xdg_data_home}/bin:${template_root}/bin"
 default_log="${ARTIFACT_LOCAL_DIR}/gnome_hint_invalid_default.log"
 invalid_log="${ARTIFACT_LOCAL_DIR}/gnome_hint_invalid_invalid.log"
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "XDG_DATA_DIRS=${xdg_data_home}" \
     --env "PATH=${bin_dir}:${PATH}" \
     --env "THUMB_LOG=${default_log}" \
@@ -33,7 +32,7 @@ run_img2sixel \
 
 default_size=$(cat "${default_log}")
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "XDG_DATA_DIRS=${xdg_data_home}" \
     --env "PATH=${bin_dir}:${PATH}" \
     --env "THUMB_LOG=${invalid_log}" \

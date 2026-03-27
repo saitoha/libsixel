@@ -18,14 +18,13 @@ test "${HAVE_JPEG12_API-}" = 1 && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit-cmyk-seq444.jpg"
 
-trace_log=$(set +xv; run_img2sixel -v -L libjpeg,builtin! \
+trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L libjpeg,builtin! \
     "${input_jpeg}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in

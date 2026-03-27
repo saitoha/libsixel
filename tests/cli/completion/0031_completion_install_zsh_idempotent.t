@@ -14,7 +14,6 @@ command -v zsh >/dev/null || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo '1..1'
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,13 +22,13 @@ rc_path="${completion_home}/.zshrc"
 fpath_count=0
 compinit_count=0
 
-run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     -2 zsh >/dev/null || {
     echo "not ok" 1 - "zsh completion install failed on first run"
     exit 0
 }
 
-run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     -2 zsh >/dev/null || {
     echo "not ok" 1 - "zsh completion install failed on second run"
     exit 0

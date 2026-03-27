@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 progressive_jpeg="${TOP_SRCDIR}/images/snake-progressive-16x16.jpg"
 
-run_img2sixel "${progressive_jpeg}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${progressive_jpeg}" >/dev/null || {
     echo "not ok" 1 - "progressive JPEG conversion failed"
     exit 0
 }

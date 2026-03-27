@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
-sum1=$(run_img2sixel -H | awk '/^-[A-Za-z0-9],/ { print $1, $2; } /^-[A-Za-z0-9] / { print $1, $2, $3; }' | tr -d \\r | cksum)
+sum1=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -H | awk '/^-[A-Za-z0-9],/ { print $1, $2; } /^-[A-Za-z0-9] / { print $1, $2, $3; }' | tr -d \\r | cksum)
 
 sum2=$(awk '
 /^\.B \\-\\?[A-Za-z0-9],/ { gsub(/\\/, ""); print $2, $3; }

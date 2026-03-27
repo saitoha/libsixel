@@ -8,12 +8,11 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_sixel2png -H >/dev/null || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -H >/dev/null || {
     echo "not ok" 1 - "help option failed"
     exit 0
 }

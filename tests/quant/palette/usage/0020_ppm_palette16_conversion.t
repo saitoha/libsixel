@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,7 +16,7 @@ snake_ppm="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
 map16_png="${TOP_SRCDIR}/images/map16.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/ppm-palette16.sixel"
 
-run_img2sixel -m "${map16_png}" -w100 -hauto -rbicubic -dauto "${snake_ppm}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${map16_png}" -w100 -hauto -rbicubic -dauto "${snake_ppm}" >"${target_sixel}" || {
     echo "not ok" 1 - "PPM conversion with 16-colour palette fails"
     exit 0
 }

@@ -13,13 +13,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
 snake_tiff="${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff"
 
-run_img2sixel -Llibtiff! -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhan -dstucki \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff! -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhan -dstucki \
     -thls "${snake_tiff}" -o/dev/null || {
     echo "not ok" 1 - "TIFF conversion with palette controls failed"
     exit 0

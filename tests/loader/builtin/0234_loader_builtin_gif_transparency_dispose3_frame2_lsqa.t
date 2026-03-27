@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -20,7 +19,7 @@ output_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_dispose3_frame2.six"
 normalized_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_dispose3_frame2_norm.six"
 lsqa_floor=0.995
 
-run_img2sixel --env SIXEL_THREADS=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=2 \
               -Lbuiltin! \
               -ldisable -d none -p 256 -y raster -g \
@@ -46,7 +45,7 @@ test "${prefix_hex}" != "1b5b48" || {
     }
 }
 
-lsqa_msg=$(set +xv; run_lsqa -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_png}" "${normalized_six}" 2>&1) || {
     echo "not ok" 1 - "${lsqa_msg}"
     exit 0

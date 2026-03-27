@@ -14,11 +14,10 @@ test "${HAVE_DECL_GDIMAGECREATEFROMBMPPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -L gd! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-bmp3-rgb.bmp" \
     >/dev/null || {
     echo "not ok" 1 - "gd failed to decode BMP input"

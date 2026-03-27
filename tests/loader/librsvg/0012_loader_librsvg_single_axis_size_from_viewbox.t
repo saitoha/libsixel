@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,7 +22,7 @@ sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-single-axis-viewbox.six"
 
 printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='40' viewBox='0 0 120 30'><rect x='0' y='0' width='120' height='30' fill='#00ff00'/></svg>" >"${svg_path}"
 
-run_img2sixel -L librsvg! "${svg_path}" >"${sixel_path}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${sixel_path}" || {
     echo "not ok" 1 - "single-axis viewBox conversion failed"
     exit 0
 }

@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -18,7 +17,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/resolutions/tiny_square.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-run_img2sixel --env SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
               --env SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \
               --env SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=3 \
               --env SIXEL_PALETTE_KMEANS_THRESHOLD=0.1 \
@@ -32,7 +31,7 @@ run_img2sixel --env SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status-}" = 5 && {

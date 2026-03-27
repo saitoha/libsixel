@@ -13,12 +13,11 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel -L coregraphics! -ldisable -dnone -u -g \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable -dnone -u -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
     echo "not ok" 1 - "coregraphics combined update/static frame failed"
     exit 0

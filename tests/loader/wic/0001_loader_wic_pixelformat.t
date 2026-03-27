@@ -12,12 +12,11 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-loader_output=$(run_test_runner "loader/0009_loader_wic_pixelformat" 2>&1) || rc=$?
+loader_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0009_loader_wic_pixelformat" 2>&1) || rc=$?
 printf '%s' "${loader_output}" >&2
 
 test "${rc-0}" -eq 0 || {

@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 fuzz_input="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0001/libpng_short_signature.bin"
 
-run_img2sixel -Llibpng! "${fuzz_input}" -o/dev/null || command_status=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng! "${fuzz_input}" -o/dev/null || command_status=$?
 
 test "${command_status-0}" -ge 1 || {
     echo "not ok 1 - fuzz0001 did not return mapped error status"

@@ -14,11 +14,10 @@ test "${HAVE_DECL_GDIMAGECREATEFROMTIFFPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -L gd! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff" \
     >/dev/null && {
     echo "ok" 1 - "gd decodes TIFF input"

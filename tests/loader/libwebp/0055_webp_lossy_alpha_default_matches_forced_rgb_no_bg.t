@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,13 +22,13 @@ out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-default-path.six"
 out_forced_rgb="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-forced-rgb-path.six"
 keycolor_header="$(printf '\033P0;1q')"
 
-run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp static alpha decode with default path failed"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
-    run_img2sixel -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_forced_rgb}" || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_forced_rgb}" || {
     echo "not ok" 1 - "libwebp static alpha decode with forced RGB path failed"
     exit 0
 }

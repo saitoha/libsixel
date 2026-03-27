@@ -13,13 +13,12 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-run_img2sixel -L coregraphics! -u -g \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -u -g \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-heic-lossless-64.heic" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_heic_static_with_anim_flags.six" || {
     echo "not ok" 1 - "coregraphics HEIC static decode with animation flags failed"

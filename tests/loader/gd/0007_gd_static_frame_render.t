@@ -14,11 +14,10 @@ test "${HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -L gd! -ldisable -dnone -g \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable -dnone -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
     echo "not ok" 1 - "gd static frame rendering failed"
     exit 0

@@ -13,12 +13,11 @@ test "${HAVE_LIBTIFF-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -Llibtiff:cms_engine=2! \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=2! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "unknown libtiff -L suboption value unexpectedly succeeded"
     exit 0

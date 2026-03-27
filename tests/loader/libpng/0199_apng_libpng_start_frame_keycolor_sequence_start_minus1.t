@@ -13,7 +13,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -25,7 +24,7 @@ expected_sequence="0:0
 
 trace_log=$(
     set +xv
-    run_img2sixel --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode \
                   --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1 \
                   --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
                   -Llibpng! -lauto -g \

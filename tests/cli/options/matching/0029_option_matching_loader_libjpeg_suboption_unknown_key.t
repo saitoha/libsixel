@@ -13,12 +13,11 @@ test "${HAVE_JPEG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -Llibjpeg:z=1! \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibjpeg:z=1! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "unknown libjpeg -L suboption key unexpectedly succeeded"
     exit 0

@@ -8,12 +8,11 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_sixel2png - <"${TOP_SRCDIR}/images/map8.six" >/dev/null || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" - <"${TOP_SRCDIR}/images/map8.six" >/dev/null || {
     echo "not ok" 1 - "map8 stdin conversion failed"
     exit 0
 }

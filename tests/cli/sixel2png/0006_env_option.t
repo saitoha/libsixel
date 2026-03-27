@@ -7,7 +7,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,13 +16,13 @@ input_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 out_env="${ARTIFACT_LOCAL_DIR}/sixel2png_env_ref.png"
 out_opt="${ARTIFACT_LOCAL_DIR}/sixel2png_env_opt.png"
 
-run_sixel2png --env SIXEL_THREADS=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     -i "${input_six}" -o "${out_env}" || {
     echo "not ok" 1 - "reference environment decode failed"
     exit 0
 }
 
-run_sixel2png -% SIXEL_THREADS=1 -% SIXEL_OPTION_PATH_SUGGESTIONS=0 \
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -% SIXEL_THREADS=1 -% SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     -i "${input_six}" -o "${out_opt}" || {
     echo "not ok" 1 - "-% decode failed"
     exit 0
@@ -34,7 +33,7 @@ cmp -s "${out_env}" "${out_opt}" || {
     exit 0
 }
 
-run_sixel2png -% INVALID -i "${input_six}" > /dev/null && {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -% INVALID -i "${input_six}" > /dev/null && {
     echo "not ok" 1 - "invalid -% argument should fail"
     exit 0
 }

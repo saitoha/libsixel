@@ -14,7 +14,6 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -26,24 +25,24 @@ output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_ref_cms0.six"
 output_option_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_option_auto.six"
 output_option_none="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_option_none.six"
 
-run_img2sixel -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
     echo "not ok" 1 - "cms=1 reference decode failed"
     exit 0
 }
 
-run_img2sixel -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
     echo "not ok" 1 - "cms=0 reference decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp! "${input_webp}" >"${output_option_auto}" || {
     echo "not ok" 1 - "--cms-engine=auto with implicit cms decode failed"
     exit 0
 }
 
-run_img2sixel \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     -Llibwebp! "${input_webp}" >"${output_option_none}" || {
     echo "not ok" 1 - "--cms-engine=none with implicit cms decode failed"

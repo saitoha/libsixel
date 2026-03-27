@@ -8,12 +8,11 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_sixel2png -D -dk_undither <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -dk_undither <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
         2>&1) && {
     echo "not ok" 1 - "accepts conflicting direct/dequantize flags"
     exit 0

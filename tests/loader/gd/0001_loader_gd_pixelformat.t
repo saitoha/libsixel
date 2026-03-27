@@ -8,12 +8,11 @@ test "${HAVE_DECL_GDIMAGECREATEFROMPNGPTR-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_test_runner "loader/0011_loader_gd_pixelformat" || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0011_loader_gd_pixelformat" || {
     echo "not ok 1 - loader/0011_loader_gd_pixelformat"
     exit 0
 }

@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -21,7 +20,7 @@ out_payload=''
 out_line=''
 has_header=0
 
-run_img2sixel -Lbuiltin! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
               -d fs -y raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin APNG default render failed"

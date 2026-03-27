@@ -3,14 +3,13 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
-value=$(run_lsqa -m HIGHFREQ_DELTA "${image_ref}" "${image_out}" | tr -d '\r') || {
+value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m HIGHFREQ_DELTA "${image_ref}" "${image_out}" | tr -d '\r') || {
     echo "not ok" 1 - "lsqa HIGHFREQ_DELTA execution failed"
     exit 0
 }

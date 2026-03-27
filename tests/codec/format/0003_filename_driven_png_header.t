@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 filename_png="${ARTIFACT_LOCAL_DIR}/snake-filename.png"
 
-run_img2sixel -o "${filename_png}" "${snake_jpg}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o "${filename_png}" "${snake_jpg}" || {
     echo "not ok" 1 - "filename-driven PNG conversion failed"
     exit 0
 }

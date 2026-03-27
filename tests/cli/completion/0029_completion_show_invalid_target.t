@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo '1..1'
 set -v
 
-run_img2sixel -1 fish >/dev/null && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 fish >/dev/null && {
     echo "not ok" 1 - "invalid show target unexpectedly succeeded"
     exit 0
 }

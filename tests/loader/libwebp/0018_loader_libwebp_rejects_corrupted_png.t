@@ -14,11 +14,10 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
-run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/truncated.png" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/truncated.png" \
     >/dev/null && {
     echo "not ok" 1 - "forced libwebp loader accepted corrupted PNG"
     exit 0

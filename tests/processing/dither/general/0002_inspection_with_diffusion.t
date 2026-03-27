@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -17,7 +16,7 @@ snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-run_img2sixel -I -dstucki -thls -B"#a0B030" "${snake_ppm}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -dstucki -thls -B"#a0B030" "${snake_ppm}" >"${target_txt}" || {
     echo "not ok" 1 - "inspection with diffusion failed"
     exit 0
 }

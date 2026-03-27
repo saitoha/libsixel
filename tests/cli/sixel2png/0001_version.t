@@ -8,7 +8,6 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -16,7 +15,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 version_output="${ARTIFACT_LOCAL_DIR}/version.txt"
 
-run_sixel2png -V >"${version_output}" || {
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -V >"${version_output}" || {
     echo "not ok" 1 - "-V exited with failure"
     exit 0
 }

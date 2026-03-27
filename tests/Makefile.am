@@ -27,7 +27,6 @@ TEST_EXTENSIONS = .t .py .rb .pl .php
 
 
 HELPER_FILES = \
-    _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
     bindings/python/_taptest.py \
     bindings/check-loader-setopt-sync.sh \

@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 
 probe_output=$(
     set +xv
-    run_img2sixel -Lbuiltin:cms_engine=none! \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         -o/dev/null 2>&1
 ) || probe_status=$?

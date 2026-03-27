@@ -7,7 +7,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -25,7 +24,7 @@ SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
         SIXEL_PALETTE_LUMIN_FACTOR_R=0.3 \
         SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
         SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
-        run_img2sixel -Q heckbert -F ward -W oklab \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q heckbert -F ward -W oklab \
     -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel merge heckbert float32 failed"
     exit 0
@@ -33,7 +32,7 @@ SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

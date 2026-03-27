@@ -10,7 +10,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -21,7 +20,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-oklab.six"
 
-run_img2sixel --lookup-policy=fhedt --precision=float32 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=fhedt --precision=float32 \
     --working-colorspace=oklab -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "float32 FHEDT oklab colorspace conversion failed"
     exit 0
@@ -29,7 +28,7 @@ run_img2sixel --lookup-policy=fhedt --precision=float32 \
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

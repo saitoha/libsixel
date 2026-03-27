@@ -13,12 +13,11 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-run_img2sixel --start-frame=999 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=999 \
     -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null && {
     echo "not ok" 1 - "coregraphics positive out-of-range start frame succeeded"

@@ -8,7 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -18,7 +17,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out_invalid="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-env2-tbbn0g04.six"
 out_off="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-env0-tbbn0g04.six"
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
               --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
               -d fs -y raster \
@@ -27,7 +26,7 @@ run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
     exit 0
 }
 
-run_img2sixel --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
               -d fs -y raster \

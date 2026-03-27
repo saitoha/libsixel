@@ -8,12 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-msg=$(set +xv; run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) || {
     case "${msg}" in
         *'specified diffusion method is not supported.'*)

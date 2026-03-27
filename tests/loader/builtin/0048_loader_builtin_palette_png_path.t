@@ -8,14 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
 
-run_img2sixel -L builtin! "${input_png}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_png}" >/dev/null || {
     echo "not ok" 1 - "builtin loader indexed PNG palette path failed"
     exit 0
 }

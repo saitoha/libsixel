@@ -3,13 +3,12 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
 output=$(
-   run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE= "palette/0001_kmeans_init" | tr -d '\r'
+   ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env SIXEL_PALETTE_KMEANS_INITTYPE= "palette/0001_kmeans_init" | tr -d '\r'
 ) || output=""
 
 test "${output}" = "none" || {

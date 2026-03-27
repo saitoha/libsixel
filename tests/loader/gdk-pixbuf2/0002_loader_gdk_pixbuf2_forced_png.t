@@ -14,13 +14,12 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
     exit 0
 }
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 
-run_img2sixel -L gdk-pixbuf2! "${input_png}" >/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! "${input_png}" >/dev/null || {
     echo "not ok" 1 - "gdk-pixbuf2 forced PNG decoding failed"
     exit 0
 }
