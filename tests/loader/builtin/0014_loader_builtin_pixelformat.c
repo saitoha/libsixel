@@ -13,6 +13,8 @@
  */
 
 #include "tests/loader/pixelformat_test_common.h"
+#include "src/cms.h"
+#include "src/loader-common.h"
 
 static SIXELSTATUS
 new_builtin_component_for_pixelformat_test(sixel_allocator_t *allocator,
@@ -22,9 +24,153 @@ new_builtin_component_for_pixelformat_test(sixel_allocator_t *allocator,
 }
 
 static int
+run_builtin_loader_hdr_case_with_cms(char const *label,
+                                     int expected_pixelformat,
+                                     int cms_engine)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
+    loader_probe_context_t context;
+    loader_probe_callback_state_t callback_state;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int result;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    component = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    result = 1;
+    require_static = 1;
+    use_palette = 0;
+    reqcolors = 256;
+
+    source_root = getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (build_image_path(source_root,
+                         "/tests/data/inputs/formats/stbi_minimal.hdr",
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    status = new_builtin_component_for_pixelformat_test(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+
+    context.callback_count = 0;
+    context.pixelformat = 0;
+    context.width = 0;
+    context.height = 0;
+    context.transparent = FRAME_METADATA_ANY;
+    context.multiframe = FRAME_METADATA_ANY;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_frame;
+    callback_state.context = &context;
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
+                                           &cms_engine);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    if (context.callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch\n", label);
+        goto cleanup;
+    }
+    if (context.pixelformat != expected_pixelformat) {
+        fprintf(stderr,
+                "%s: reported pixelformat %d\n",
+                label,
+                context.pixelformat);
+        goto cleanup;
+    }
+    if (context.width <= 0 || context.height <= 0) {
+        fprintf(stderr,
+                "%s: invalid geometry %dx%d\n",
+                label,
+                context.width,
+                context.height);
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
 run_builtin_loader_test(void)
 {
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
+    int cms_target_pixelformat;
     int result;
 
     result = run_loader_component_case("builtin loader rgba8",
@@ -217,12 +363,20 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    result = run_loader_component_case("builtin loader hdr",
+    result = run_loader_component_case("builtin loader hdr cms=off",
                                        "/tests/data/inputs/formats/stbi_minimal.hdr",
                                        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                                        GEOMETRY_ANY,
                                        GEOMETRY_ANY,
                                        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    cms_target_pixelformat = loader_cms_target_pixelformat();
+    result = run_builtin_loader_hdr_case_with_cms("builtin loader hdr cms=on",
+                                                  cms_target_pixelformat,
+                                                  SIXEL_CMS_ENGINE_AUTO);
     if (result != 0) {
         return result;
     }
