@@ -28,7 +28,7 @@ msg=$(set +xv; run_img2sixel -L libwebp! \
 }
 
 case "${msg}" in
-    *"webp decode: chunk payload exceeds RIFF size."*)
+    *"webp decode: odd-sized chunk is missing padding byte."*)
         ;;
     *)
         echo "not ok" 1 - "expected odd-chunk padding diagnostic was missing"

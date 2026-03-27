@@ -250,6 +250,12 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
         }
 
         if (chunk_total_size > riff_total_size - offset) {
+            if ((chunk_size_u32 & 1u) != 0u &&
+                chunk_total_size - 1u == riff_total_size - offset) {
+                sixel_helper_set_additional_message(
+                    "webp decode: odd-sized chunk is missing padding byte.");
+                return SIXEL_BAD_INPUT;
+            }
             sixel_helper_set_additional_message(
                 "webp decode: chunk payload exceeds RIFF size.");
             return SIXEL_BAD_INPUT;
