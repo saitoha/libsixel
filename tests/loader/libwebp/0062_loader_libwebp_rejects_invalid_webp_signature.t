@@ -17,20 +17,26 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-stderr_log="${ARTIFACT_LOCAL_DIR}/webp-bad-signature.stderr"
-
-run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_webp_signature.webp" \
-    >/dev/null 2>"${stderr_log}" && {
+msg=$(set +xv; run_img2sixel -L libwebp! \
+             "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_webp_signature.webp" \
+             2>&1 >/dev/null) && {
     echo "not ok" 1 - "forced libwebp loader accepted invalid WEBP signature"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-grep -F "webp decode: RIFF/WEBP signature is invalid." "${stderr_log}" >/dev/null || {
-    echo "not ok" 1 - "expected invalid RIFF/WEBP signature diagnostic was missing"
-    exit 0
-}
+case "${msg}" in
+    *"webp decode: RIFF/WEBP signature is invalid."*)
+        ;;
+    *)
+        echo "not ok" 1 - "expected invalid RIFF/WEBP signature diagnostic was missing"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "forced libwebp loader rejects invalid WEBP signature"
 

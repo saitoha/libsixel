@@ -17,20 +17,26 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-stderr_log="${ARTIFACT_LOCAL_DIR}/webp-no-riff-chunks.stderr"
-
-run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_no_riff_chunks.webp" \
-    >/dev/null 2>"${stderr_log}" && {
+msg=$(set +xv; run_img2sixel -L libwebp! \
+             "${TOP_SRCDIR}/tests/data/corrupted/bad_no_riff_chunks.webp" \
+             2>&1 >/dev/null) && {
     echo "not ok" 1 - "forced libwebp loader accepted RIFF without chunks"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-grep -F "webp decode: no RIFF chunks found." "${stderr_log}" >/dev/null || {
-    echo "not ok" 1 - "expected no-chunk diagnostic was missing"
-    exit 0
-}
+case "${msg}" in
+    *"webp decode: no RIFF chunks found."*)
+        ;;
+    *)
+        echo "not ok" 1 - "expected no-chunk diagnostic was missing"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "forced libwebp loader rejects RIFF without chunks"
 
