@@ -17,10 +17,18 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
+stderr_log="${ARTIFACT_LOCAL_DIR}/webp-bad-chunk-payload-overrun.stderr"
 
 run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_chunk_payload_exceeds_riff.webp" \
-    >/dev/null && {
+    >/dev/null 2>"${stderr_log}" && {
     echo "not ok" 1 - "forced libwebp loader accepted chunk payload overrun"
+    exit 0
+}
+
+grep -F "webp decode: chunk payload exceeds RIFF size." "${stderr_log}" >/dev/null || {
+    echo "not ok" 1 - "expected chunk payload overrun diagnostic was missing"
     exit 0
 }
 
