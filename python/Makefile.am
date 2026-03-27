@@ -25,8 +25,9 @@ PYTHON_WHEEL_INPUTS = \
 	$(wildcard $(srcdir)/libsixel/_libs/*.py)
 
 $(WHEEL_STAMP): $(srcdir)/wheel_builder.py $(srcdir)/setup.py \
-		$(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS) \
-		$(builddir)/Makefile
+        $(srcdir)/libsixel/_wheel_ext.c $(PYTHON_WHEEL_INPUTS) \
+        $(top_builddir)/src/libsixel.la \
+        $(builddir)/Makefile
 	$(AM_V_at) mkdir -p "$(abs_top_builddir)/python/dist"
 	$(AM_V_at) rm -f "$(abs_top_builddir)/python/dist"/libsixel_wheel-*.whl
 	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \

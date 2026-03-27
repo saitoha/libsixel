@@ -2730,9 +2730,11 @@ load_with_builtin(
         } else {
             int hdr_pixelformat;
             int hdr_colorspace;
+            int target_pixelformat;
 
             hdr_pixelformat = SIXEL_PIXELFORMAT_RGB888;
             hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
+            target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
                             (int)pchunk->size);
@@ -3059,6 +3061,15 @@ load_with_builtin(
                     frame->loop_count = 1;
                     frame->pixelformat = hdr_pixelformat;
                     frame->colorspace = hdr_colorspace;
+                    if (enable_cms) {
+                        target_pixelformat = loader_cms_target_pixelformat();
+                        status = sixel_frame_set_pixelformat(
+                            frame,
+                            target_pixelformat);
+                        if (SIXEL_FAILED(status)) {
+                            goto end;
+                        }
+                    }
                 } else if (status != SIXEL_FALSE) {
                     goto end;
                 } else {

@@ -1026,7 +1026,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
-        "set loader CMS output colorspace for PNG fallback conversion.\n"
+        "set loader CMS output colorspace after loader-side CMS conversion.\n"
         "Accepts gamma, linear, or cielab. Default is linear."
     },
     {
