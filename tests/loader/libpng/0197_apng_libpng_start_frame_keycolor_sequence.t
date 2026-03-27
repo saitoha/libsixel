@@ -55,10 +55,12 @@ actual_sequence=$(
         }'
 )
 
-if [ "${actual_sequence}" = "${expected_sequence}" ]; then
-    echo "ok 1 - libpng APNG start=1 keycolor sequence stays loop-local"
-else
+test "${actual_sequence}" = "${expected_sequence}" || {
     echo "not ok 1 - libpng APNG start=1 keycolor sequence mismatch"
-fi
+    exit 0
+}
+
+    echo "ok 1 - libpng APNG start=1 keycolor sequence stays loop-local"
+
 
 exit 0

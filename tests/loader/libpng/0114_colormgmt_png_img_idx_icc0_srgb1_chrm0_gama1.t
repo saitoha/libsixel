@@ -23,10 +23,10 @@ input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/idx/img_idx_icc0_srgb1_c
 reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/idx/img_idx_icc0_srgb1_chrm0_gama1.six"
 output_six="${ARTIFACT_LOCAL_DIR}/img_idx_icc0_srgb1_chrm0_gama1_libpng.six"
 
-if [ ! -f "${input_png}" ] || [ ! -f "${reference_six}" ]; then
+test -f "${input_png}" && test -f "${reference_six}" || {
     echo "not ok" 1 - "missing test fixture"
     exit 0
-fi
+}
 
 run_img2sixel -Llibpng:cms_engine=auto! "${input_png}" >"${output_six}" || {
     echo "not ok" 1 - "libpng decode failed"
