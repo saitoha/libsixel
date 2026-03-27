@@ -335,6 +335,166 @@ end:
     return status;
 }
 
+static unsigned char
+gdkpixbuf_blend_channel(unsigned int source,
+                        unsigned int alpha,
+                        unsigned int background)
+{
+    return (unsigned char)(
+        (source * alpha + background * (255u - alpha) + 127u) / 255u);
+}
+
+static SIXELSTATUS
+gdkpixbuf_copy_pixbuf_to_frame(sixel_frame_t *frame,
+                               sixel_chunk_t const *pchunk,
+                               GdkPixbuf *pixbuf,
+                               unsigned char const *bgcolor)
+{
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    unsigned char *source_pixels;
+    size_t pixel_total;
+    size_t buffer_size;
+    size_t x;
+    size_t y;
+    size_t source_offset;
+    size_t dest_offset;
+    int width;
+    int height;
+    int rowstride;
+    int source_depth;
+    int has_alpha;
+    int inspect_alpha;
+    int preserve_alpha;
+    unsigned int alpha;
+
+    status = SIXEL_OK;
+    pixels = NULL;
+    source_pixels = NULL;
+    pixel_total = 0u;
+    buffer_size = 0u;
+    x = 0u;
+    y = 0u;
+    source_offset = 0u;
+    dest_offset = 0u;
+    width = 0;
+    height = 0;
+    rowstride = 0;
+    source_depth = 0;
+    has_alpha = 0;
+    inspect_alpha = 0;
+    preserve_alpha = 0;
+    alpha = 0u;
+    if (frame == NULL || pchunk == NULL || pixbuf == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    width = gdk_pixbuf_get_width(pixbuf);
+    height = gdk_pixbuf_get_height(pixbuf);
+    if (width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "load_with_gdkpixbuf: invalid pixbuf dimensions.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    has_alpha = gdk_pixbuf_get_has_alpha(pixbuf) ? 1 : 0;
+    inspect_alpha = has_alpha && bgcolor == NULL;
+    source_depth = has_alpha ? 4 : 3;
+    rowstride = gdk_pixbuf_get_rowstride(pixbuf);
+
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_total = (size_t)width * (size_t)height;
+    if (pixel_total > SIZE_MAX / (inspect_alpha ? 4u : 3u)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    buffer_size = pixel_total * (inspect_alpha ? 4u : 3u);
+
+    sixel_frame_set_pixels(frame,
+                           sixel_allocator_malloc(pchunk->allocator,
+                                                  buffer_size));
+    pixels = sixel_frame_get_pixels(frame);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    source_pixels = gdk_pixbuf_get_pixels(pixbuf);
+    if (source_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_gdkpixbuf: gdk_pixbuf_get_pixels() failed.");
+        return SIXEL_GDK_ERROR;
+    }
+
+    for (y = 0u; y < (size_t)height; ++y) {
+        for (x = 0u; x < (size_t)width; ++x) {
+            source_offset = (size_t)rowstride * y + x * (size_t)source_depth;
+            if (inspect_alpha) {
+                alpha = source_pixels[source_offset + 3u];
+                if (alpha != 255u) {
+                    preserve_alpha = 1;
+                }
+                dest_offset = (y * (size_t)width + x) * 4u;
+                pixels[dest_offset + 0u] = source_pixels[source_offset + 0u];
+                pixels[dest_offset + 1u] = source_pixels[source_offset + 1u];
+                pixels[dest_offset + 2u] = source_pixels[source_offset + 2u];
+                pixels[dest_offset + 3u] = (unsigned char)alpha;
+            } else {
+                dest_offset = (y * (size_t)width + x) * 3u;
+                if (has_alpha) {
+                    alpha = source_pixels[source_offset + 3u];
+                    if (bgcolor != NULL) {
+                        pixels[dest_offset + 0u] = gdkpixbuf_blend_channel(
+                            source_pixels[source_offset + 0u],
+                            alpha,
+                            bgcolor[0]);
+                        pixels[dest_offset + 1u] = gdkpixbuf_blend_channel(
+                            source_pixels[source_offset + 1u],
+                            alpha,
+                            bgcolor[1]);
+                        pixels[dest_offset + 2u] = gdkpixbuf_blend_channel(
+                            source_pixels[source_offset + 2u],
+                            alpha,
+                            bgcolor[2]);
+                    } else {
+                        pixels[dest_offset + 0u] =
+                            source_pixels[source_offset + 0u];
+                        pixels[dest_offset + 1u] =
+                            source_pixels[source_offset + 1u];
+                        pixels[dest_offset + 2u] =
+                            source_pixels[source_offset + 2u];
+                    }
+                } else {
+                    pixels[dest_offset + 0u] = source_pixels[source_offset + 0u];
+                    pixels[dest_offset + 1u] = source_pixels[source_offset + 1u];
+                    pixels[dest_offset + 2u] = source_pixels[source_offset + 2u];
+                }
+            }
+        }
+    }
+
+    if (inspect_alpha && !preserve_alpha) {
+        for (x = 0u; x < pixel_total; ++x) {
+            pixels[x * 3u + 0u] = pixels[x * 4u + 0u];
+            pixels[x * 3u + 1u] = pixels[x * 4u + 1u];
+            pixels[x * 3u + 2u] = pixels[x * 4u + 2u];
+        }
+    }
+
+    frame->width = width;
+    frame->height = height;
+    frame->pixelformat = preserve_alpha
+        ? SIXEL_PIXELFORMAT_RGBA8888
+        : SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame->transparent = -1;
+    frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
+
+    return status;
+}
+
 /*
  * Loader backed by gdk-pixbuf2. The entire animation is consumed via
  * GdkPixbufLoader, each frame is copied into a temporary buffer and forwarded
@@ -372,12 +532,7 @@ load_with_gdkpixbuf(
 # pragma GCC diagnostic pop
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     sixel_frame_t *frame = NULL;
-    int stride;
-    unsigned char *p;
-    unsigned char *pixels;
     unsigned char *frame_pixels;
-    int i;
-    int depth;
     int delay_ms;
     gboolean use_animation = FALSE;
     gboolean is_sixel = FALSE;
@@ -536,39 +691,12 @@ load_with_gdkpixbuf(
             status = SIXEL_GDK_ERROR;
             goto end;
         }
-        frame->width = gdk_pixbuf_get_width(pixbuf);
-        frame->height = gdk_pixbuf_get_height(pixbuf);
-        stride = gdk_pixbuf_get_rowstride(pixbuf);
-        sixel_frame_set_pixels(
-            frame,
-            sixel_allocator_malloc(
-                pchunk->allocator,
-                (size_t)(frame->height * stride)));
-        pixels = sixel_frame_get_pixels(frame);
-        if (pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
+        status = gdkpixbuf_copy_pixbuf_to_frame(frame,
+                                                pchunk,
+                                                pixbuf,
+                                                bgcolor);
+        if (SIXEL_FAILED(status)) {
             goto end;
-        }
-        if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-            depth = 4;
-        } else {
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-            depth = 3;
-        }
-        p = gdk_pixbuf_get_pixels(pixbuf);
-        if (stride == frame->width * depth) {
-            memcpy(pixels, p, (size_t)(frame->height * stride));
-        } else {
-            for (i = 0; i < frame->height; ++i) {
-                memcpy(pixels + frame->width * depth * i,
-                       p + stride * i,
-                       (size_t)(frame->width * depth));
-            }
         }
         frame->delay = 0;
         frame->multiframe = 0;
@@ -626,42 +754,12 @@ load_with_gdkpixbuf(
                     finished = TRUE;
                     break;
                 }
-                /* allocate a scratch copy of the current frame */
-                frame->width = gdk_pixbuf_get_width(pixbuf);
-                frame->height = gdk_pixbuf_get_height(pixbuf);
-                stride = gdk_pixbuf_get_rowstride(pixbuf);
-                sixel_frame_set_pixels(
-                    frame,
-                    sixel_allocator_malloc(
-                        pchunk->allocator,
-                        (size_t)(frame->height * stride)));
-                pixels = sixel_frame_get_pixels(frame);
-                if (pixels == NULL) {
-                    sixel_helper_set_additional_message(
-                        "load_with_gdkpixbuf: "
-                        "sixel_allocator_malloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
+                status = gdkpixbuf_copy_pixbuf_to_frame(frame,
+                                                        pchunk,
+                                                        pixbuf,
+                                                        bgcolor);
+                if (SIXEL_FAILED(status)) {
                     goto end;
-                }
-                if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-                    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-                    depth = 4;
-                } else {
-                    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-                    depth = 3;
-                }
-                p = gdk_pixbuf_get_pixels(pixbuf);
-                if (stride == frame->width * depth) {
-                    memcpy(pixels, p,
-                           (size_t)(frame->height * stride));
-                } else {
-                    for (i = 0; i < frame->height; ++i) {
-                        memcpy(pixels + frame->width * depth * i,
-                               p + stride * i,
-                               (size_t)(frame->width * depth));
-                    }
                 }
                 delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
                 if (delay_ms < 0) {
@@ -774,39 +872,12 @@ load_with_gdkpixbuf(
             status = SIXEL_GDK_ERROR;
             goto end;
         }
-        frame->width = gdk_pixbuf_get_width(pixbuf);
-        frame->height = gdk_pixbuf_get_height(pixbuf);
-        stride = gdk_pixbuf_get_rowstride(pixbuf);
-        sixel_frame_set_pixels(
-            frame,
-            sixel_allocator_malloc(
-                pchunk->allocator,
-                (size_t)(frame->height * stride)));
-        pixels = sixel_frame_get_pixels(frame);
-        if (pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
+        status = gdkpixbuf_copy_pixbuf_to_frame(frame,
+                                                pchunk,
+                                                pixbuf,
+                                                bgcolor);
+        if (SIXEL_FAILED(status)) {
             goto end;
-        }
-        if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-            depth = 4;
-        } else {
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-            depth = 3;
-        }
-        p = gdk_pixbuf_get_pixels(pixbuf);
-        if (stride == frame->width * depth) {
-            memcpy(pixels, p, (size_t)(frame->height * stride));
-        } else {
-            for (i = 0; i < frame->height; ++i) {
-                memcpy(pixels + frame->width * depth * i,
-                       p + stride * i,
-                       (size_t)(frame->width * depth));
-            }
         }
         frame->delay = 0;
         frame->multiframe = 0;
@@ -860,42 +931,12 @@ load_with_gdkpixbuf(
                     finished = TRUE;
                     break;
                 }
-                /* allocate a scratch copy of the current frame */
-                frame->width = gdk_pixbuf_get_width(pixbuf);
-                frame->height = gdk_pixbuf_get_height(pixbuf);
-                stride = gdk_pixbuf_get_rowstride(pixbuf);
-                sixel_frame_set_pixels(
-                    frame,
-                    sixel_allocator_malloc(
-                        pchunk->allocator,
-                        (size_t)(frame->height * stride)));
-                pixels = sixel_frame_get_pixels(frame);
-                if (pixels == NULL) {
-                    sixel_helper_set_additional_message(
-                        "load_with_gdkpixbuf: "
-                        "sixel_allocator_malloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
+                status = gdkpixbuf_copy_pixbuf_to_frame(frame,
+                                                        pchunk,
+                                                        pixbuf,
+                                                        bgcolor);
+                if (SIXEL_FAILED(status)) {
                     goto end;
-                }
-                if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-                    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-                    depth = 4;
-                } else {
-                    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-                    depth = 3;
-                }
-                p = gdk_pixbuf_get_pixels(pixbuf);
-                if (stride == frame->width * depth) {
-                    memcpy(pixels, p,
-                           (size_t)(frame->height * stride));
-                } else {
-                    for (i = 0; i < frame->height; ++i) {
-                        memcpy(pixels + frame->width * depth * i,
-                               p + stride * i,
-                               (size_t)(frame->width * depth));
-                    }
                 }
                 delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
                 if (delay_ms < 0) {

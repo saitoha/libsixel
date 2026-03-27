@@ -63,6 +63,87 @@ typedef struct sixel_loader_quicklook_component {
     int start_frame_no;
 } sixel_loader_quicklook_component_t;
 
+static unsigned char
+quicklook_unpremultiply_channel(unsigned int value, unsigned int alpha)
+{
+    unsigned int unpremultiplied;
+
+    if (alpha == 0u) {
+        return 0u;
+    }
+    if (alpha >= 255u) {
+        return (unsigned char)value;
+    }
+
+    unpremultiplied = (value * 255u + alpha / 2u) / alpha;
+    if (unpremultiplied > 255u) {
+        unpremultiplied = 255u;
+    }
+    return (unsigned char)unpremultiplied;
+}
+
+static void
+quicklook_finalize_frame_pixels(sixel_frame_t *frame,
+                                unsigned char const *bgcolor)
+{
+    unsigned char *pixels;
+    size_t pixel_total;
+    size_t pixel_index;
+    unsigned int alpha;
+    int inspect_alpha;
+    int preserve_alpha;
+
+    pixels = NULL;
+    pixel_total = 0u;
+    pixel_index = 0u;
+    alpha = 0u;
+    inspect_alpha = 0;
+    preserve_alpha = 0;
+    if (frame == NULL) {
+        return;
+    }
+
+    pixels = sixel_frame_get_pixels(frame);
+    if (pixels == NULL || frame->width <= 0 || frame->height <= 0) {
+        return;
+    }
+
+    pixel_total = (size_t)frame->width * (size_t)frame->height;
+    inspect_alpha = bgcolor == NULL ? 1 : 0;
+    if (inspect_alpha) {
+        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+            alpha = pixels[pixel_index * 4u + 3u];
+            if (alpha != 255u) {
+                preserve_alpha = 1;
+            }
+            pixels[pixel_index * 4u + 0u] =
+                quicklook_unpremultiply_channel(
+                    pixels[pixel_index * 4u + 0u], alpha);
+            pixels[pixel_index * 4u + 1u] =
+                quicklook_unpremultiply_channel(
+                    pixels[pixel_index * 4u + 1u], alpha);
+            pixels[pixel_index * 4u + 2u] =
+                quicklook_unpremultiply_channel(
+                    pixels[pixel_index * 4u + 2u], alpha);
+        }
+    }
+
+    if (!preserve_alpha) {
+        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+            pixels[pixel_index * 3u + 0u] = pixels[pixel_index * 4u + 0u];
+            pixels[pixel_index * 3u + 1u] = pixels[pixel_index * 4u + 1u];
+            pixels[pixel_index * 3u + 2u] = pixels[pixel_index * 4u + 2u];
+        }
+    }
+
+    frame->pixelformat = preserve_alpha
+        ? SIXEL_PIXELFORMAT_RGBA8888
+        : SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame->transparent = -1;
+    frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
+}
+
 #if HAVE_QUICKLOOK_THUMBNAILING
 CGImageRef
 sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
@@ -200,9 +281,6 @@ load_with_quicklook(
     CGContextRef ctx = NULL;
     CGRect bounds;
     size_t stride;
-    unsigned char fill_color[3];
-    unsigned char default_bgcolor[3];
-    unsigned char const *fill_source;
     CGFloat fill_r;
     CGFloat fill_g;
     CGFloat fill_b;
@@ -294,33 +372,12 @@ load_with_quicklook(
                         (CGFloat)CGImageGetHeight(image));
     frame->width = (int)bounds.size.width;
     frame->height = (int)bounds.size.height;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     /*
      * QuickLook renders into a premultiplied RGBA buffer. Keep a four-byte
      * stride so the pixel format matches the bitmap context layout.
      */
     stride = (size_t)frame->width * 4;
 
-    /*
-     * Background colors are optional for most loaders. QuickLook renders
-     * into a bitmap that needs an explicit clear color, so choose a safe
-     * default when callers did not supply one.
-     */
-    fill_source = bgcolor;
-    if (fill_source == NULL) {
-        default_bgcolor[0] = 0;
-        default_bgcolor[1] = 0;
-        default_bgcolor[2] = 0;
-        fill_source = default_bgcolor;
-    }
-    fill_color[0] = fill_source[0];
-    fill_color[1] = fill_source[1];
-    fill_color[2] = fill_source[2];
-    fill_r = (CGFloat)fill_color[0] / 255.0;
-    fill_g = (CGFloat)fill_color[1] / 255.0;
-    fill_b = (CGFloat)fill_color[2] / 255.0;
-    /* QuickLook renders into RGBA so no palette mapping is required. */
     sixel_frame_set_pixels(frame,
                            sixel_allocator_malloc(
                                pchunk->allocator,
@@ -349,9 +406,20 @@ load_with_quicklook(
         goto end;
     }
 
-    CGContextSetRGBFillColor(ctx, fill_r, fill_g, fill_b, 1.0);
-    CGContextFillRect(ctx, bounds);
+    if (bgcolor != NULL) {
+        fill_r = (CGFloat)bgcolor[0] / 255.0;
+        fill_g = (CGFloat)bgcolor[1] / 255.0;
+        fill_b = (CGFloat)bgcolor[2] / 255.0;
+        CGContextSetRGBFillColor(ctx, fill_r, fill_g, fill_b, 1.0);
+        CGContextFillRect(ctx, bounds);
+    } else {
+        CGContextSetBlendMode(ctx, kCGBlendModeCopy);
+        CGContextSetRGBFillColor(ctx, 0.0, 0.0, 0.0, 0.0);
+        CGContextFillRect(ctx, bounds);
+        CGContextSetBlendMode(ctx, kCGBlendModeNormal);
+    }
     CGContextDrawImage(ctx, bounds, image);
+    quicklook_finalize_frame_pixels(frame, bgcolor);
     frame->multiframe = 0;
     frame->frame_no = 0;
     frame->delay = 0;

@@ -67,6 +67,87 @@ typedef struct sixel_loader_coregraphics_component {
     int start_frame_no;
 } sixel_loader_coregraphics_component_t;
 
+static unsigned char
+coregraphics_unpremultiply_channel(unsigned int value, unsigned int alpha)
+{
+    unsigned int unpremultiplied;
+
+    if (alpha == 0u) {
+        return 0u;
+    }
+    if (alpha >= 255u) {
+        return (unsigned char)value;
+    }
+
+    unpremultiplied = (value * 255u + alpha / 2u) / alpha;
+    if (unpremultiplied > 255u) {
+        unpremultiplied = 255u;
+    }
+    return (unsigned char)unpremultiplied;
+}
+
+static void
+coregraphics_finalize_frame_pixels(sixel_frame_t *frame,
+                                   unsigned char const *bgcolor)
+{
+    unsigned char *pixels;
+    size_t pixel_total;
+    size_t pixel_index;
+    unsigned int alpha;
+    int inspect_alpha;
+    int preserve_alpha;
+
+    pixels = NULL;
+    pixel_total = 0u;
+    pixel_index = 0u;
+    alpha = 0u;
+    inspect_alpha = 0;
+    preserve_alpha = 0;
+    if (frame == NULL) {
+        return;
+    }
+
+    pixels = sixel_frame_get_pixels(frame);
+    if (pixels == NULL || frame->width <= 0 || frame->height <= 0) {
+        return;
+    }
+
+    pixel_total = (size_t)frame->width * (size_t)frame->height;
+    inspect_alpha = bgcolor == NULL ? 1 : 0;
+    if (inspect_alpha) {
+        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+            alpha = pixels[pixel_index * 4u + 3u];
+            if (alpha != 255u) {
+                preserve_alpha = 1;
+            }
+            pixels[pixel_index * 4u + 0u] =
+                coregraphics_unpremultiply_channel(
+                    pixels[pixel_index * 4u + 0u], alpha);
+            pixels[pixel_index * 4u + 1u] =
+                coregraphics_unpremultiply_channel(
+                    pixels[pixel_index * 4u + 1u], alpha);
+            pixels[pixel_index * 4u + 2u] =
+                coregraphics_unpremultiply_channel(
+                    pixels[pixel_index * 4u + 2u], alpha);
+        }
+    }
+
+    if (!preserve_alpha) {
+        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+            pixels[pixel_index * 3u + 0u] = pixels[pixel_index * 4u + 0u];
+            pixels[pixel_index * 3u + 1u] = pixels[pixel_index * 4u + 1u];
+            pixels[pixel_index * 3u + 2u] = pixels[pixel_index * 4u + 2u];
+        }
+    }
+
+    frame->pixelformat = preserve_alpha
+        ? SIXEL_PIXELFORMAT_RGBA8888
+        : SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame->transparent = -1;
+    frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
+}
+
 
 static SIXELSTATUS
 coregraphics_parse_animation_start_frame_no(int *start_frame_no)
@@ -183,10 +264,12 @@ load_with_coregraphics(
     int loop_no;
     int stop_loop;
     int is_animation_container;
+    double fill_r;
+    double fill_g;
+    double fill_b;
 
     (void) fuse_palette;
     (void) reqcolors;
-    (void) bgcolor;
 
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
@@ -197,6 +280,14 @@ load_with_coregraphics(
     stop_loop = 0;
     is_animation_container = 0;
     frame_props = NULL;
+    fill_r = 0.0;
+    fill_g = 0.0;
+    fill_b = 0.0;
+    if (bgcolor != NULL) {
+        fill_r = (double)bgcolor[0] / 255.0;
+        fill_g = (double)bgcolor[1] / 255.0;
+        fill_b = (double)bgcolor[2] / 255.0;
+    }
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -349,13 +440,6 @@ load_with_coregraphics(
 
             frame->width = (int)CGImageGetWidth(image);
             frame->height = (int)CGImageGetHeight(image);
-            /*
-             * CoreGraphics renders into a premultiplied RGBA surface. Report
-             * the four-component layout so downstream planners know an alpha
-             * channel is available.
-             */
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
 
             if (frame->width > SIXEL_WIDTH_LIMIT) {
                 sixel_helper_set_additional_message(
@@ -429,11 +513,29 @@ load_with_coregraphics(
                 goto end;
             }
 
+            if (bgcolor != NULL) {
+                CGContextSetRGBFillColor(ctx, fill_r, fill_g, fill_b, 1.0);
+                CGContextFillRect(ctx,
+                                  CGRectMake(0,
+                                             0,
+                                             frame->width,
+                                             frame->height));
+            } else {
+                CGContextSetBlendMode(ctx, kCGBlendModeCopy);
+                CGContextSetRGBFillColor(ctx, 0.0, 0.0, 0.0, 0.0);
+                CGContextFillRect(ctx,
+                                  CGRectMake(0,
+                                             0,
+                                             frame->width,
+                                             frame->height));
+                CGContextSetBlendMode(ctx, kCGBlendModeNormal);
+            }
             CGContextDrawImage(ctx,
                                CGRectMake(0, 0, frame->width, frame->height),
                                image);
             CGContextRelease(ctx);
             ctx = NULL;
+            coregraphics_finalize_frame_pixels(frame, bgcolor);
 
             frame->multiframe = (!fstatic && frame_count > 1
                                 && is_animation_container);
