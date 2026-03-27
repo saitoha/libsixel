@@ -17,10 +17,18 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
+stderr_log="${ARTIFACT_LOCAL_DIR}/webp-bad-riff-size.stderr"
 
 run_img2sixel -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_size.webp" \
-    >/dev/null && {
+    >/dev/null 2>"${stderr_log}" && {
     echo "not ok" 1 - "forced libwebp loader accepted RIFF size mismatch"
+    exit 0
+}
+
+grep -F "webp decode: RIFF size exceeds input buffer." "${stderr_log}" >/dev/null || {
+    echo "not ok" 1 - "expected RIFF size mismatch diagnostic was missing"
     exit 0
 }
 
