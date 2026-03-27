@@ -123,6 +123,335 @@ sixel_clipboard_parse_spec(char const *spec,
     return clipboard_parse_format(spec, out);
 }
 
+#define CLIPBOARD_FILE_BACKEND_ENV "SIXEL_CLIPBOARD_BACKEND"
+#define CLIPBOARD_FILE_DIR_ENV "SIXEL_CLIPBOARD_FILE_DIR"
+#define CLIPBOARD_FILE_PATH_LIMIT 4096u
+
+static int
+clipboard_case_equals(char const *lhs,
+                      char const *rhs)
+{
+    unsigned char left;
+    unsigned char right;
+
+    left = 0u;
+    right = 0u;
+
+    if (lhs == NULL || rhs == NULL) {
+        return 0;
+    }
+
+    while (*lhs != '\0' && *rhs != '\0') {
+        left = (unsigned char)*lhs;
+        right = (unsigned char)*rhs;
+        if (tolower(left) != tolower(right)) {
+            return 0;
+        }
+        ++lhs;
+        ++rhs;
+    }
+
+    return (*lhs == '\0' && *rhs == '\0') ? 1 : 0;
+}
+
+static int
+clipboard_file_backend_is_active(void)
+{
+    char const *backend;
+
+    backend = sixel_compat_getenv(CLIPBOARD_FILE_BACKEND_ENV);
+    if (backend == NULL || backend[0] == '\0') {
+        return 0;
+    }
+
+    if (clipboard_case_equals(backend, "file")
+            || clipboard_case_equals(backend, "fake")) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+clipboard_format_wants_binary_slot(char const *format)
+{
+    if (format == NULL || format[0] == '\0') {
+        return 0;
+    }
+
+    if (clipboard_case_equals(format, "png")
+            || clipboard_case_equals(format, "tiff")) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static SIXELSTATUS
+clipboard_file_backend_resolve_path(char const *format,
+                                    char *path,
+                                    size_t path_size)
+{
+    char const *directory;
+    char const *slot;
+    size_t directory_len;
+    int written;
+
+    directory = NULL;
+    slot = NULL;
+    directory_len = 0u;
+    written = 0;
+
+    if (path == NULL || path_size == 0u) {
+        sixel_helper_set_additional_message(
+            "clipboard: fake backend path buffer is invalid.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    path[0] = '\0';
+
+    directory = sixel_compat_getenv(CLIPBOARD_FILE_DIR_ENV);
+    if (directory == NULL || directory[0] == '\0') {
+        sixel_helper_set_additional_message(
+            "clipboard: fake backend requires SIXEL_CLIPBOARD_FILE_DIR.");
+        return SIXEL_BAD_CLIPBOARD;
+    }
+
+    slot = clipboard_format_wants_binary_slot(format)
+        ? "image.bin"
+        : "text.bin";
+    directory_len = strlen(directory);
+
+    if (directory_len > 0u
+            && (directory[directory_len - 1u] == '/'
+                || directory[directory_len - 1u] == '\\')) {
+        written = sixel_compat_snprintf(path,
+                                        path_size,
+                                        "%s%s",
+                                        directory,
+                                        slot);
+    } else {
+        written = sixel_compat_snprintf(path,
+                                        path_size,
+                                        "%s/%s",
+                                        directory,
+                                        slot);
+    }
+
+    if (written < 0 || (size_t)written >= path_size) {
+        sixel_helper_set_additional_message(
+            "clipboard: fake backend path is too long.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+clipboard_file_backend_read_path(char const *path,
+                                 unsigned char **data,
+                                 size_t *size)
+{
+    FILE *stream;
+    long stream_size;
+    size_t payload_size;
+    unsigned char *buffer;
+    size_t read_size;
+
+    stream = NULL;
+    stream_size = 0L;
+    payload_size = 0u;
+    buffer = NULL;
+    read_size = 0u;
+
+    stream = sixel_compat_fopen(path, "rb");
+    if (stream == NULL) {
+        return SIXEL_BAD_CLIPBOARD;
+    }
+
+    if (fseek(stream, 0L, SEEK_END) != 0) {
+        fclose(stream);
+        sixel_helper_set_additional_message(
+            "clipboard: failed to seek fake backend payload.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    stream_size = ftell(stream);
+    if (stream_size < 0L) {
+        fclose(stream);
+        sixel_helper_set_additional_message(
+            "clipboard: failed to determine fake backend payload size.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    if (fseek(stream, 0L, SEEK_SET) != 0) {
+        fclose(stream);
+        sixel_helper_set_additional_message(
+            "clipboard: failed to rewind fake backend payload.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    payload_size = (size_t)stream_size;
+    if (payload_size > 0u) {
+        buffer = (unsigned char *)malloc(payload_size);
+        if (buffer == NULL) {
+            fclose(stream);
+            sixel_helper_set_additional_message(
+                "clipboard: malloc() failed for fake backend payload.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        read_size = fread(buffer, 1u, payload_size, stream);
+        if (read_size != payload_size) {
+            free(buffer);
+            fclose(stream);
+            sixel_helper_set_additional_message(
+                "clipboard: failed to read fake backend payload.");
+            return SIXEL_RUNTIME_ERROR;
+        }
+    }
+
+    fclose(stream);
+
+    *data = buffer;
+    *size = payload_size;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+clipboard_file_backend_read(char const *format,
+                            unsigned char **data,
+                            size_t *size,
+                            sixel_allocator_t *allocator)
+{
+    char primary_path[CLIPBOARD_FILE_PATH_LIMIT];
+    char fallback_path[CLIPBOARD_FILE_PATH_LIMIT];
+    SIXELSTATUS status;
+    int wants_binary;
+    (void)allocator;
+
+    status = SIXEL_FALSE;
+    wants_binary = 0;
+
+    if (data == NULL || size == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: destination pointers are null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *data = NULL;
+    *size = 0u;
+
+    status = clipboard_file_backend_resolve_path(format,
+                                                 primary_path,
+                                                 sizeof(primary_path));
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    wants_binary = clipboard_format_wants_binary_slot(format);
+    status = clipboard_file_backend_read_path(primary_path,
+                                              data,
+                                              size);
+    if (SIXEL_SUCCEEDED(status)) {
+        return status;
+    }
+    if (status != SIXEL_BAD_CLIPBOARD || wants_binary) {
+        if (status == SIXEL_BAD_CLIPBOARD) {
+            sixel_helper_set_additional_message(
+                "clipboard: fake backend payload is unavailable.");
+        }
+        return status;
+    }
+
+    status = clipboard_file_backend_resolve_path("png",
+                                                 fallback_path,
+                                                 sizeof(fallback_path));
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = clipboard_file_backend_read_path(fallback_path,
+                                              data,
+                                              size);
+    if (status == SIXEL_BAD_CLIPBOARD) {
+        sixel_helper_set_additional_message(
+            "clipboard: fake backend payload is unavailable.");
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
+clipboard_file_backend_write(char const *format,
+                             unsigned char const *data,
+                             size_t size)
+{
+    char path[CLIPBOARD_FILE_PATH_LIMIT];
+    SIXELSTATUS status;
+    FILE *stream;
+    size_t written;
+    size_t offset;
+
+    status = SIXEL_FALSE;
+    stream = NULL;
+    written = 0u;
+    offset = 0u;
+
+    if (size > 0u && data == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: source buffer is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = clipboard_file_backend_resolve_path(format,
+                                                 path,
+                                                 sizeof(path));
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    stream = sixel_compat_fopen(path, "wb");
+    if (stream == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open fake backend payload for write.");
+        return SIXEL_BAD_CLIPBOARD;
+    }
+
+    while (offset < size) {
+        written = fwrite(data + offset, 1u, size - offset, stream);
+        if (written == 0u) {
+            if (ferror(stream)) {
+                fclose(stream);
+                sixel_helper_set_additional_message(
+                    "clipboard: failed to write fake backend payload.");
+                return SIXEL_RUNTIME_ERROR;
+            }
+            break;
+        }
+        offset += written;
+    }
+
+    if (fclose(stream) != 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to close fake backend payload.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+clipboard_file_backend_is_available(void)
+{
+    char const *directory;
+
+    directory = sixel_compat_getenv(CLIPBOARD_FILE_DIR_ENV);
+    if (directory == NULL || directory[0] == '\0') {
+        return 0;
+    }
+
+    return 1;
+}
+
 #if defined(HAVE_CLIPBOARD_MACOS)
 
 SIXELSTATUS sixel_clipboard_read_macos(char const *format,
@@ -1296,6 +1625,13 @@ sixel_clipboard_read(char const *format,
                      size_t *size,
                      sixel_allocator_t *allocator)
 {
+    if (clipboard_file_backend_is_active()) {
+        return clipboard_file_backend_read(format,
+                                           data,
+                                           size,
+                                           allocator);
+    }
+
 #if defined(HAVE_CLIPBOARD_MACOS)
     return sixel_clipboard_read_macos(format, data, size, allocator);
 #elif defined(HAVE_CLIPBOARD_WINDOWS)
@@ -1318,6 +1654,10 @@ sixel_clipboard_write(char const *format,
                       unsigned char const *data,
                       size_t size)
 {
+    if (clipboard_file_backend_is_active()) {
+        return clipboard_file_backend_write(format, data, size);
+    }
+
 #if defined(HAVE_CLIPBOARD_MACOS)
     return sixel_clipboard_write_macos(format, data, size);
 #elif defined(HAVE_CLIPBOARD_WINDOWS)
@@ -1337,6 +1677,10 @@ sixel_clipboard_write(char const *format,
 int
 sixel_clipboard_is_available(void)
 {
+    if (clipboard_file_backend_is_active()) {
+        return clipboard_file_backend_is_available();
+    }
+
 #if defined(HAVE_CLIPBOARD_MACOS)
     return sixel_clipboard_is_available_macos();
 #elif defined(HAVE_CLIPBOARD_WINDOWS)

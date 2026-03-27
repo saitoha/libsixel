@@ -784,6 +784,17 @@ static cli_env_help_t const g_env_help_table[] = {
         "Set to '1' to emit color sequences without TTY detection."
     },
     {
+        "SIXEL_CLIPBOARD_BACKEND",
+        "select clipboard backend. Set to 'system' (default) to use the\n"
+        "desktop clipboard or 'file' to use a file-backed fake clipboard."
+    },
+    {
+        "SIXEL_CLIPBOARD_FILE_DIR",
+        "directory used by the fake clipboard backend when\n"
+        "SIXEL_CLIPBOARD_BACKEND=file. The backend stores image/text payloads\n"
+        "as files under this path."
+    },
+    {
         "IMG2SIXEL_COMPLETION_BASH",
         "override the bash completion source path. When set, completion\n"
         "commands load this file before packaged defaults."
