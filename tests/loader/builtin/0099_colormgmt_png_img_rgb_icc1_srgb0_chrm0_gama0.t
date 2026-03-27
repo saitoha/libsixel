@@ -18,11 +18,6 @@ input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/rgb/img_rgb_icc1_srgb0_c
 reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_icc1_srgb0_chrm0_gama0.six"
 output_six="${ARTIFACT_LOCAL_DIR}/img_rgb_icc1_srgb0_chrm0_gama0_builtin.six"
 
-if [ ! -f "${input_png}" ] || [ ! -f "${reference_six}" ]; then
-    echo "not ok" 1 - "missing test fixture"
-    exit 0
-fi
-
 run_img2sixel -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_six}" || {
     echo "not ok" 1 - "builtin decode failed"
     exit 0
