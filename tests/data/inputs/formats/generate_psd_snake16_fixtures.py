@@ -609,6 +609,34 @@ def build_psd_layer_only_multilayer_rgb8(planes):
     return bytes(out)
 
 
+def build_psd_missing_composite_marker(
+    *,
+    channels,
+    depth,
+    color_mode,
+    color_mode_data=b"",
+):
+    layer_and_mask = struct.pack(">I", 4) + b"\x00\x00\x00\x00"
+
+    out = bytearray()
+    out += b"8BPS"
+    out += struct.pack(">H", 1)
+    out += b"\x00" * 6
+    out += struct.pack(">H", channels)
+    out += struct.pack(">I", HEIGHT)
+    out += struct.pack(">I", WIDTH)
+    out += struct.pack(">H", depth)
+    out += struct.pack(">H", color_mode)
+    out += struct.pack(">I", len(color_mode_data))
+    out += color_mode_data
+    out += struct.pack(">I", 0)  # image resources length
+    out += struct.pack(">I", len(layer_and_mask))
+    out += layer_and_mask
+    out += struct.pack(">H", 0)  # compression for composite image data
+    # Composite image data intentionally omitted.
+    return bytes(out)
+
+
 def write_file(path: pathlib.Path, data: bytes):
     path.write_bytes(data)
     print(path)
@@ -836,6 +864,14 @@ def generate(out_dir: pathlib.Path):
         color_mode=3,
         variants=["raw", "rle", "zip", "zip_pred"],
     )
+    write_file(
+        out_dir / "snake16_rgb16_missing_composite_marker.psd",
+        build_psd_missing_composite_marker(
+            channels=3,
+            depth=16,
+            color_mode=3,
+        ),
+    )
 
     write_variants(
         out_dir,
@@ -915,6 +951,14 @@ def generate(out_dir: pathlib.Path):
         depth=32,
         color_mode=1,
         variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_file(
+        out_dir / "snake16_gray32_missing_composite_marker.psd",
+        build_psd_missing_composite_marker(
+            channels=1,
+            depth=32,
+            color_mode=1,
+        ),
     )
     write_variants(
         out_dir,
