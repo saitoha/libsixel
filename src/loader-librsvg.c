@@ -1264,14 +1264,13 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
                                int height,
                                unsigned char const *bgcolor)
 {
-    SIXELSTATUS status;
     cairo_surface_t *surface;
     cairo_t *cr;
     cairo_status_t cairo_stat;
 
-    status = SIXEL_FALSE;
     surface = NULL;
     cr = NULL;
+    cairo_stat = CAIRO_STATUS_SUCCESS;
     if (surface_out == NULL || cr_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1286,8 +1285,10 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
     if (cairo_stat != CAIRO_STATUS_SUCCESS) {
         sixel_helper_set_additional_message(
             "librsvg_render_to_frame: cairo_image_surface_create failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+        if (surface != NULL) {
+            cairo_surface_destroy(surface);
+        }
+        return SIXEL_BAD_ALLOCATION;
     }
 
     cr = cairo_create(surface);
@@ -1295,27 +1296,18 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
     if (cairo_stat != CAIRO_STATUS_SUCCESS) {
         sixel_helper_set_additional_message(
             "librsvg_render_to_frame: cairo_create failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+        if (cr != NULL) {
+            cairo_destroy(cr);
+        }
+        cairo_surface_destroy(surface);
+        return SIXEL_BAD_ALLOCATION;
     }
 
     librsvg_prepare_background(cr, bgcolor);
 
     *surface_out = surface;
     *cr_out = cr;
-    surface = NULL;
-    cr = NULL;
-    status = SIXEL_OK;
-
-end:
-    if (cr != NULL) {
-        cairo_destroy(cr);
-    }
-    if (surface != NULL) {
-        cairo_surface_destroy(surface);
-    }
-
-    return status;
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -1339,11 +1331,9 @@ librsvg_render_document(RsvgHandle *handle, cairo_t *cr, int width, int height)
             SIXEL_BAD_INPUT,
             "librsvg_render_to_frame: rsvg_handle_render_document failed.",
             gerror);
-        goto end;
+    } else {
+        status = SIXEL_OK;
     }
-    status = SIXEL_OK;
-
-end:
     if (gerror != NULL) {
         g_error_free(gerror);
     }
