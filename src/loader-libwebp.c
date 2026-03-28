@@ -178,6 +178,25 @@ webp_decode_status_name(VP8StatusCode status)
     }
 }
 
+static int
+webp_env_value_is_truthy(char const *value)
+{
+    if (value == NULL || value[0] == '\0') {
+        return 0;
+    }
+
+    switch (value[0]) {
+    case '1':
+    case 'y':
+    case 'Y':
+    case 't':
+    case 'T':
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 static SIXELSTATUS
 webp_validate_riff_container(unsigned char const *data, size_t size)
 {
@@ -1072,10 +1091,7 @@ load_webp(unsigned char **result,
      */
     force_rgb_env = sixel_compat_getenv(
         "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE");
-    if (force_rgb_env != NULL &&
-        (force_rgb_env[0] == '1' || force_rgb_env[0] == 'y' ||
-         force_rgb_env[0] == 'Y' || force_rgb_env[0] == 't' ||
-         force_rgb_env[0] == 'T')) {
+    if (webp_env_value_is_truthy(force_rgb_env)) {
         force_rgb_decode = 1;
     }
 
