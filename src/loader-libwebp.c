@@ -2000,6 +2000,106 @@ webp_finalize_frame_output(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+webp_finalize_and_emit_frame(sixel_frame_t *frame,
+                             int enable_cms,
+                             int cms_converted,
+                             int allow_palette_promotion,
+                             int reqcolors,
+                             unsigned char *bgcolor,
+                             sixel_allocator_t *allocator,
+                             sixel_load_image_function fn_load,
+                             void *context)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (frame == NULL || allocator == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = webp_finalize_frame_output(frame,
+                                        enable_cms,
+                                        cms_converted,
+                                        allow_palette_promotion,
+                                        reqcolors,
+                                        bgcolor,
+                                        allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return fn_load(frame, context);
+}
+
+static void
+webp_assign_rgba_canvas_frame(sixel_frame_t *frame,
+                              int width,
+                              int height,
+                              int multiframe,
+                              int loop_count,
+                              int frame_no,
+                              int delay)
+{
+    if (frame == NULL) {
+        return;
+    }
+
+    frame->width = width;
+    frame->height = height;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame->multiframe = multiframe;
+    frame->loop_count = loop_count;
+    frame->frame_no = frame_no;
+    frame->delay = delay;
+}
+
+static SIXELSTATUS
+webp_clone_decoder_canvas_pixels(unsigned char **ppixels,
+                                 uint8_t const *decoded_frame,
+                                 size_t frame_bytes,
+                                 int width,
+                                 int height,
+                                 int enable_cms,
+                                 unsigned char const *icc_profile,
+                                 size_t icc_profile_length,
+                                 sixel_allocator_t *allocator,
+                                 int *cms_converted)
+{
+    unsigned char *pixels;
+
+    pixels = NULL;
+    if (ppixels == NULL || decoded_frame == NULL ||
+        allocator == NULL || cms_converted == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *ppixels = NULL;
+    *cms_converted = 0;
+
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator, frame_bytes);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(pixels, decoded_frame, frame_bytes);
+
+    if (enable_cms) {
+        *cms_converted = webp_convert_embedded_icc_to_srgb(
+            pixels,
+            width,
+            height,
+            SIXEL_PIXELFORMAT_RGBA8888,
+            icc_profile,
+            icc_profile_length,
+            allocator);
+    }
+
+    *ppixels = pixels;
+    return SIXEL_OK;
+}
+
 /*
  * Dedicated libwebp loader wiring minimal pipeline.
  *
@@ -2192,18 +2292,15 @@ load_with_libwebp(
         }
         frame->frame_no = resolved_start_frame_no;
 
-        status = webp_finalize_frame_output(frame,
-                                            enable_cms,
-                                            cms_converted,
-                                            allow_palette_promotion,
-                                            reqcolors,
-                                            bgcolor,
-                                            pchunk->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-
-        status = fn_load(frame, context);
+        status = webp_finalize_and_emit_frame(frame,
+                                              enable_cms,
+                                              cms_converted,
+                                              allow_palette_promotion,
+                                              reqcolors,
+                                              bgcolor,
+                                              pchunk->allocator,
+                                              fn_load,
+                                              context);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2334,18 +2431,15 @@ load_with_libwebp(
         } else {
             sixel_frame_set_pixels(frame, pixels);
         }
-        status = webp_finalize_frame_output(frame,
-                                            enable_cms,
-                                            cms_converted,
-                                            allow_palette_promotion,
-                                            reqcolors,
-                                            resolved_bgcolor,
-                                            pchunk->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-
-        status = fn_load(frame, context);
+        status = webp_finalize_and_emit_frame(frame,
+                                              enable_cms,
+                                              cms_converted,
+                                              allow_palette_promotion,
+                                              reqcolors,
+                                              resolved_bgcolor,
+                                              pchunk->allocator,
+                                              fn_load,
+                                              context);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2391,14 +2485,13 @@ load_with_libwebp(
             previous_timestamp = timestamp;
         }
 
-        frame->width = (int)anim_info.canvas_width;
-        frame->height = (int)anim_info.canvas_height;
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-        frame->multiframe = 0;
-        frame->loop_count = 0;
-        frame->frame_no = resolved_start_frame_no;
-        frame->delay = next_delay / 10;
+        webp_assign_rgba_canvas_frame(frame,
+                                      (int)anim_info.canvas_width,
+                                      (int)anim_info.canvas_height,
+                                      0,
+                                      0,
+                                      resolved_start_frame_no,
+                                      next_delay / 10);
 
         if ((size_t)frame->width > SIZE_MAX / 4 ||
             (size_t)frame->height > SIZE_MAX / ((size_t)frame->width * 4)) {
@@ -2407,39 +2500,30 @@ load_with_libwebp(
         }
         frame_bytes = (size_t)frame->width * (size_t)frame->height * 4;
 
-        pixels = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
-                                                         frame_bytes);
-        if (pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "load_with_libwebp: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        memcpy(pixels, decoded_frame, frame_bytes);
-        cms_converted = 0;
-        if (enable_cms) {
-            cms_converted = webp_convert_embedded_icc_to_srgb(
-                pixels,
-                frame->width,
-                frame->height,
-                frame->pixelformat,
-                icc_profile,
-                icc_profile_length,
-                pchunk->allocator);
-        }
-        sixel_frame_set_pixels(frame, pixels);
-        status = webp_finalize_frame_output(frame,
-                                            enable_cms,
-                                            cms_converted,
-                                            allow_palette_promotion,
-                                            reqcolors,
-                                            resolved_bgcolor,
-                                            pchunk->allocator);
+        status = webp_clone_decoder_canvas_pixels(&pixels,
+                                                  decoded_frame,
+                                                  frame_bytes,
+                                                  frame->width,
+                                                  frame->height,
+                                                  enable_cms,
+                                                  icc_profile,
+                                                  icc_profile_length,
+                                                  pchunk->allocator,
+                                                  &cms_converted);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-
-        status = fn_load(frame, context);
+        sixel_frame_set_pixels(frame, pixels);
+        pixels = NULL;
+        status = webp_finalize_and_emit_frame(frame,
+                                              enable_cms,
+                                              cms_converted,
+                                              allow_palette_promotion,
+                                              reqcolors,
+                                              resolved_bgcolor,
+                                              pchunk->allocator,
+                                              fn_load,
+                                              context);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2526,57 +2610,44 @@ load_with_libwebp(
                 goto end;
             }
 
-            pixels = (unsigned char *)sixel_allocator_malloc(
+            status = webp_clone_decoder_canvas_pixels(
+                &pixels,
+                decoded_frame,
+                frame_bytes,
+                (int)anim_info.canvas_width,
+                (int)anim_info.canvas_height,
+                enable_cms,
+                icc_profile,
+                icc_profile_length,
                 pchunk->allocator,
-                frame_bytes);
-            if (pixels == NULL) {
-                sixel_helper_set_additional_message(
-                    "load_with_libwebp: sixel_allocator_malloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
+                &cms_converted);
+            if (SIXEL_FAILED(status)) {
                 goto end;
-            }
-
-            memcpy(pixels, decoded_frame, frame_bytes);
-            cms_converted = 0;
-            if (enable_cms) {
-                cms_converted = webp_convert_embedded_icc_to_srgb(
-                    pixels,
-                    (int)anim_info.canvas_width,
-                    (int)anim_info.canvas_height,
-                    SIXEL_PIXELFORMAT_RGBA8888,
-                    icc_profile,
-                    icc_profile_length,
-                    pchunk->allocator);
             }
             sixel_frame_set_pixels(frame, pixels);
             pixels = NULL;
-
-            frame->width = (int)anim_info.canvas_width;
-            frame->height = (int)anim_info.canvas_height;
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-            frame->multiframe = 1;
-            frame->loop_count = loop_count;
-            frame->frame_no = emitted_frame_no;
 
             next_delay = timestamp - previous_timestamp;
             if (next_delay < 0) {
                 next_delay = 0;
             }
-            frame->delay = next_delay / 10;
+            webp_assign_rgba_canvas_frame(frame,
+                                          (int)anim_info.canvas_width,
+                                          (int)anim_info.canvas_height,
+                                          1,
+                                          loop_count,
+                                          emitted_frame_no,
+                                          next_delay / 10);
 
-            status = webp_finalize_frame_output(frame,
-                                                enable_cms,
-                                                cms_converted,
-                                                allow_palette_promotion,
-                                                reqcolors,
-                                                resolved_bgcolor,
-                                                pchunk->allocator);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-
-            status = fn_load(frame, context);
+            status = webp_finalize_and_emit_frame(frame,
+                                                  enable_cms,
+                                                  cms_converted,
+                                                  allow_palette_promotion,
+                                                  reqcolors,
+                                                  resolved_bgcolor,
+                                                  pchunk->allocator,
+                                                  fn_load,
+                                                  context);
             if (status == SIXEL_INTERRUPTED) {
                 goto end;
             }
