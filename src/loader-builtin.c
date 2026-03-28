@@ -367,6 +367,32 @@ sixel_builtin_hdr_fallback_profile_name(
     return "linear-srgb";
 }
 
+typedef struct sixel_builtin_hdr_profile_trace {
+    double effective_gamma;
+    int gamma_from_header;
+    int primaries_from_header;
+    int header_profile_used;
+    int fallback_profile_used;
+    sixel_builtin_hdr_fallback_profile_t fallback_profile;
+    int profile_apply_failed;
+} sixel_builtin_hdr_profile_trace_t;
+
+static void
+sixel_builtin_hdr_init_profile_trace(
+    sixel_builtin_hdr_profile_trace_t *trace)
+{
+    if (trace == NULL) {
+        return;
+    }
+    trace->effective_gamma = 1.0;
+    trace->gamma_from_header = 0;
+    trace->primaries_from_header = 0;
+    trace->header_profile_used = 0;
+    trace->fallback_profile_used = 0;
+    trace->fallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
+    trace->profile_apply_failed = 0;
+}
+
 static int
 sixel_builtin_hdr_parse_use_header_exposure(
     char const *text,
@@ -490,9 +516,8 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
                                        int height,
                                        int pixelformat,
                                        sixel_chunk_t const *chunk,
-                                       sixel_builtin_hdr_fallback_profile_t
-                                           *pfallback_profile,
-                                       int *pfallback_profile_used)
+                                       sixel_builtin_hdr_profile_trace_t
+                                           *profile_trace)
 {
     SIXELSTATUS hint_status;
     sixel_builtin_hdr_profile_hint_t hint;
@@ -511,6 +536,8 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
     int use_header_profile_hint;
     int header_linear_override;
     int converted;
+    int src_profile_is_header;
+    int profile_applied;
 
     hint_status = SIXEL_FALSE;
     memset(&hint, 0, sizeof(hint));
@@ -529,12 +556,9 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
     use_header_profile_hint = 0;
     header_linear_override = 0;
     converted = 0;
-    if (pfallback_profile != NULL) {
-        *pfallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
-    }
-    if (pfallback_profile_used != NULL) {
-        *pfallback_profile_used = 0;
-    }
+    src_profile_is_header = 0;
+    profile_applied = 0;
+    sixel_builtin_hdr_init_profile_trace(profile_trace);
 
     if (pixels == NULL || width <= 0 || height <= 0 || chunk == NULL) {
         return;
@@ -580,6 +604,7 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
                                              effective_blue_x,
                                              effective_blue_y)) {
             header_linear_override = 1;
+            profile_applied = 1;
         } else {
             src_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(
                 effective_gamma,
@@ -595,13 +620,15 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
                 loader_trace_message(
                     "builtin HDR: header-derived source profile is unavailable "
                     "on this CMS backend; falling back");
+            } else {
+                src_profile_is_header = 1;
             }
         }
     }
 
     if (src_profile == NULL && !header_linear_override) {
-        if (pfallback_profile_used != NULL) {
-            *pfallback_profile_used = 1;
+        if (profile_trace != NULL) {
+            profile_trace->fallback_profile_used = 1;
         }
         fallback_profile_text = sixel_compat_getenv(
             "SIXEL_LOADER_HDR_FALLBACK_PROFILE");
@@ -613,6 +640,9 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
                 fallback_profile_text);
             fallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
         }
+        if (profile_trace != NULL) {
+            profile_trace->fallback_profile = fallback_profile;
+        }
 
         if (fallback_profile == SIXEL_BUILTIN_HDR_FALLBACK_SRGB) {
             src_profile = sixel_cms_create_srgb_profile();
@@ -620,11 +650,13 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
                 loader_trace_message(
                     "builtin HDR: fallback profile 'srgb' is unavailable on "
                     "this CMS backend; using decode-linear fallback");
+                if (profile_trace != NULL) {
+                    profile_trace->profile_apply_failed = 1;
+                }
             }
+        } else {
+            profile_applied = 1;
         }
-    }
-    if (pfallback_profile != NULL) {
-        *pfallback_profile = fallback_profile;
     }
 
     if (src_profile != NULL) {
@@ -638,8 +670,38 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
             loader_trace_message(
                 "builtin HDR: source profile conversion failed; "
                 "using decode-linear fallback");
+            if (profile_trace != NULL) {
+                profile_trace->profile_apply_failed = 1;
+                profile_trace->fallback_profile_used = 1;
+                profile_trace->fallback_profile =
+                    SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
+                profile_trace->header_profile_used = 0;
+                profile_trace->gamma_from_header = 0;
+                profile_trace->primaries_from_header = 0;
+                profile_trace->effective_gamma = 1.0;
+            }
+            return;
         }
+        profile_applied = 1;
     }
+
+    if (profile_trace == NULL || !profile_applied) {
+        return;
+    }
+    if (header_linear_override || src_profile_is_header) {
+        profile_trace->header_profile_used = 1;
+        profile_trace->gamma_from_header = hint.has_gamma ? 1 : 0;
+        profile_trace->primaries_from_header = hint.has_primaries ? 1 : 0;
+        profile_trace->effective_gamma = effective_gamma;
+        profile_trace->fallback_profile_used = 0;
+        profile_trace->fallback_profile =
+            SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
+        return;
+    }
+    profile_trace->header_profile_used = 0;
+    profile_trace->gamma_from_header = 0;
+    profile_trace->primaries_from_header = 0;
+    profile_trace->effective_gamma = 1.0;
 }
 
 static void
