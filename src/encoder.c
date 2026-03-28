@@ -3776,7 +3776,7 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                 break;
             case SIXEL_PLANNER_NODE_COLORSPACE_POST:
                 if (context->frame != NULL &&
-                    context->frame->alpha_zero_is_transparent != 0 &&
+                    sixel_encoder_frame_preserves_alpha_key(context->frame) &&
                     sixel_encoder_pixelformat_has_alpha(
                         context->current_pixelformat)) {
                     /*
