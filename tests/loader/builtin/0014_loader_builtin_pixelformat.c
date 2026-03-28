@@ -133,6 +133,15 @@ srgb_from_linear(float linear_value)
     return 1.055f * powf(linear_value, 1.0f / 2.4f) - 0.055f;
 }
 
+static float
+reinhard_tonemap_from_linear(float linear_value)
+{
+    if (linear_value <= 0.0f) {
+        return 0.0f;
+    }
+    return linear_value / (1.0f + linear_value);
+}
+
 static int
 float_approx_equal(float left, float right, float tolerance)
 {
@@ -670,6 +679,126 @@ run_builtin_loader_hdr_header_priority_numeric_test(void)
 }
 
 static int
+run_builtin_loader_hdr_exposure_numeric_test(void)
+{
+    char const *sample_path;
+    hdr_numeric_probe_context_t probe;
+    float expected_linear[3];
+    float expected_exposure[3];
+    float tolerance;
+    int index;
+    int result;
+
+    sample_path = "/tests/data/inputs/formats/stbi_midtones.hdr";
+    tolerance = 0.0007f;
+    expected_linear[0] = 0.5f;
+    expected_linear[1] = 0.25f;
+    expected_linear[2] = 0.125f;
+
+    expected_exposure[0] = expected_linear[0] * 2.0f;
+    expected_exposure[1] = expected_linear[1] * 2.0f;
+    expected_exposure[2] = expected_linear[2] * 2.0f;
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr exposure numeric",
+        sample_path,
+        SIXEL_CMS_ENGINE_NONE,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr exposure numeric: unexpected frame "
+                "contract (pixelformat=%d colorspace=%d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(probe.first_pixel[index],
+                                expected_exposure[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr exposure numeric: channel %d mismatch "
+                    "(actual=%f expected=%f)\n",
+                    index,
+                    probe.first_pixel[index],
+                    expected_exposure[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_tonemap_reinhard_numeric_test(void)
+{
+    char const *sample_path;
+    hdr_numeric_probe_context_t probe;
+    float expected_linear[3];
+    float expected_tonemap[3];
+    float tolerance;
+    int index;
+    int result;
+
+    sample_path = "/tests/data/inputs/formats/stbi_midtones.hdr";
+    tolerance = 0.0007f;
+    expected_linear[0] = 0.5f;
+    expected_linear[1] = 0.25f;
+    expected_linear[2] = 0.125f;
+
+    for (index = 0; index < 3; ++index) {
+        expected_tonemap[index] = reinhard_tonemap_from_linear(
+            expected_linear[index]);
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr tonemap numeric",
+        sample_path,
+        SIXEL_CMS_ENGINE_NONE,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr tonemap numeric: unexpected frame "
+                "contract (pixelformat=%d colorspace=%d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(probe.first_pixel[index],
+                                expected_tonemap[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr tonemap numeric: channel %d mismatch "
+                    "(actual=%f expected=%f)\n",
+                    index,
+                    probe.first_pixel[index],
+                    expected_tonemap[index]);
+            return 1;
+        }
+    }
+
+    if (!(probe.first_pixel[0] < expected_linear[0])) {
+        fprintf(stderr,
+                "builtin loader hdr tonemap numeric: dynamic range was not "
+                "compressed\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_hdr_case_with_cms(char const *label,
                                      int expected_pixelformat,
                                      int expected_colorspace,
@@ -818,6 +947,8 @@ run_builtin_loader_test(void)
     char const *hdr_numeric_mode;
     char const *hdr_fallback_numeric_mode;
     char const *hdr_header_priority_mode;
+    char const *hdr_exposure_numeric_mode;
+    char const *hdr_tonemap_numeric_mode;
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
@@ -830,6 +961,10 @@ run_builtin_loader_test(void)
         "SIXEL_TEST_HDR_NUMERIC_FALLBACK_PROFILE");
     hdr_header_priority_mode = loader_test_getenv(
         "SIXEL_TEST_HDR_NUMERIC_HEADER_PRIORITY");
+    hdr_exposure_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_EXPOSURE");
+    hdr_tonemap_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_TONEMAP_REINHARD");
     if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_gamma_numeric_test();
     }
@@ -840,6 +975,14 @@ run_builtin_loader_test(void)
     if (hdr_header_priority_mode != NULL &&
         strcmp(hdr_header_priority_mode, "1") == 0) {
         return run_builtin_loader_hdr_header_priority_numeric_test();
+    }
+    if (hdr_exposure_numeric_mode != NULL &&
+        strcmp(hdr_exposure_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_exposure_numeric_test();
+    }
+    if (hdr_tonemap_numeric_mode != NULL &&
+        strcmp(hdr_tonemap_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_tonemap_reinhard_numeric_test();
     }
 
     result = run_loader_component_case("builtin loader rgba8",

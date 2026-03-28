@@ -1042,6 +1042,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "Header-derived metadata takes precedence."
     },
     {
+        "SIXEL_LOADER_HDR_EXPOSURE_EV",
+        "apply HDR exposure in EV stops on builtin HDR decode path before\n"
+        "quantization. Positive brightens, negative darkens. Default 0."
+    },
+    {
+        "SIXEL_LOADER_HDR_TONEMAP",
+        "apply HDR tone mapping on builtin HDR decode path. Accepts none\n"
+        "(default) or reinhard."
+    },
+    {
         "SIXEL_LOADER_PREFER_8BIT",
         "when set to 1, keep loader CMS output in RGB888 instead of\n"
         "float32 target colorspaces."
