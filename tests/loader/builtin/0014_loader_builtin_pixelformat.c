@@ -10,6 +10,9 @@
  * - GIF(anim without NETSCAPE extension) reports multiframe metadata
  * - HDR(RGBE) -> LINEARRGBFLOAT32
  * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
+ * - PSD RGB16/RGB32 callbacks keep float precision (RGBFLOAT32)
+ * - PSD CMYK32/Lab32 callbacks keep float precision family
+ * - PSD RGB8+alpha callback stays RGB888 (mask side-channel handles alpha)
  */
 
 #include <math.h>
@@ -1967,12 +1970,99 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    return run_loader_component_case("builtin loader gray16",
-                                     "/tests/data/inputs/formats/snake-png-gray16.png",
-                                     SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                     GEOMETRY_ANY,
-                                     GEOMETRY_ANY,
-                                     new_builtin_component_for_pixelformat_test);
+    result = run_loader_component_case(
+        "builtin loader gray16",
+        "/tests/data/inputs/formats/"
+        "snake-png-gray16.png",
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case(
+        "builtin loader psd rgb16 keeps float32",
+        "/tests/data/inputs/formats/snake16_rgb16_raw.psd",
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case(
+        "builtin loader psd rgb32 keeps float32",
+        "/tests/data/inputs/formats/snake16_rgb32_raw.psd",
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case(
+        "builtin loader psd cmyk32 keeps linear float32",
+        "/tests/data/inputs/formats/snake16_cmyk32_raw.psd",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case(
+        "builtin loader psd lab32 keeps cielab float32",
+        "/tests/data/inputs/formats/snake16_lab32_raw.psd",
+        SIXEL_PIXELFORMAT_CIELABFLOAT32,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "builtin loader psd rgb8 alpha no-bgcolor keeps rgb888",
+        "/tests/data/inputs/formats/snake16_rgb8_alpha.psd",
+        SIXEL_PIXELFORMAT_RGB888,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        1,
+        -1,
+        0,
+        1,
+        0,
+        256,
+        NULL,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "builtin loader psd rgb8 alpha with-bgcolor keeps rgb888",
+        "/tests/data/inputs/formats/snake16_rgb8_alpha.psd",
+        SIXEL_PIXELFORMAT_RGB888,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        1,
+        -1,
+        0,
+        1,
+        0,
+        256,
+        bgcolor_white,
+        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    return 0;
 }
 
 int
