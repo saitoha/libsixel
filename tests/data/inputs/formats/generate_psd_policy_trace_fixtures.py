@@ -98,6 +98,25 @@ def generate(out_dir: pathlib.Path) -> None:
     write_u16be(mode6, 24, 6)
     write_file(out_dir / "stbi_minimal_colormode6_raw.psd", bytes(mode6))
 
+    # Unsupported: Multichannel (mode=7) policy allows only channels=3/4
+    # and depth=8/16/32.
+    mode7_channels5 = bytearray(base)
+    write_u16be(mode7_channels5, 12, 5)
+    write_u16be(mode7_channels5, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_channels5_raw.psd",
+        bytes(mode7_channels5),
+    )
+
+    mode7_depth1_channels3 = bytearray(base)
+    write_u16be(mode7_depth1_channels3, 12, 3)
+    write_u16be(mode7_depth1_channels3, 22, 1)
+    write_u16be(mode7_depth1_channels3, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_depth1_channels3_raw.psd",
+        bytes(mode7_depth1_channels3),
+    )
+
     # Malformed: channel count below mode-specific minima.
     rgb_channels2 = bytearray(base)
     write_u16be(rgb_channels2, 12, 2)
