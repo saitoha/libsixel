@@ -2360,38 +2360,154 @@ webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
 }
 
 static SIXELSTATUS
-webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
-                                  WebPBitstreamFeatures const *stream_features,
-                                  unsigned char *bgcolor)
+webp_extract_first_animation_subframe_as_riff(unsigned char **output_data,
+                                              size_t *output_size,
+                                              unsigned char const *data,
+                                              size_t size,
+                                              sixel_allocator_t *allocator)
+{
+    size_t riff_size;
+    size_t riff_total_size;
+    size_t offset;
+    size_t chunk_size;
+    size_t chunk_total_size;
+    size_t subframe_size;
+    size_t wrapped_size;
+    unsigned int wrapped_riff_size_u32;
+    unsigned char const *chunk_tag;
+    unsigned char const *subframe_data;
+    unsigned char *wrapped_data;
+
+    riff_size = 0u;
+    riff_total_size = 0u;
+    offset = 0u;
+    chunk_size = 0u;
+    chunk_total_size = 0u;
+    subframe_size = 0u;
+    wrapped_size = 0u;
+    wrapped_riff_size_u32 = 0U;
+    chunk_tag = NULL;
+    subframe_data = NULL;
+    wrapped_data = NULL;
+
+    if (output_data == NULL || output_size == NULL ||
+        data == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *output_data = NULL;
+    *output_size = 0u;
+
+    if (size < 12u ||
+        memcmp(data, "RIFF", 4u) != 0 ||
+        memcmp(data + 8u, "WEBP", 4u) != 0) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: invalid RIFF/WEBP container.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    riff_size = (size_t)webp_read_u32le(data + 4u);
+    if (riff_size > SIZE_MAX - 8u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    riff_total_size = riff_size + 8u;
+    if (riff_total_size > size) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: RIFF size exceeds input buffer.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    offset = 12u;
+    while (offset + 8u <= riff_total_size) {
+        chunk_tag = data + offset;
+        chunk_size = (size_t)webp_read_u32le(data + offset + 4u);
+        if (chunk_size > SIZE_MAX - 8u - offset) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        chunk_total_size = 8u + chunk_size + (chunk_size & 1u);
+        if (chunk_total_size > riff_total_size - offset) {
+            sixel_helper_set_additional_message(
+                "load_with_libwebp: animation chunk payload exceeds RIFF size.");
+            return SIXEL_BAD_INPUT;
+        }
+
+        if (memcmp(chunk_tag, "ANMF", 4u) == 0) {
+            if (chunk_size < 16u + 8u) {
+                sixel_helper_set_additional_message(
+                    "load_with_libwebp: ANMF payload is too small.");
+                return SIXEL_BAD_INPUT;
+            }
+
+            subframe_data = data + offset + 8u + 16u;
+            subframe_size = chunk_size - 16u;
+            if (subframe_size > SIZE_MAX - 12u) {
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            if (subframe_size > (size_t)UINT_MAX - 4u) {
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            wrapped_size = 12u + subframe_size;
+            wrapped_riff_size_u32 = (unsigned int)(4u + subframe_size);
+            wrapped_data = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                                   wrapped_size);
+            if (wrapped_data == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_with_libwebp: sixel_allocator_malloc() failed.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+
+            memcpy(wrapped_data, "RIFF", 4u);
+            wrapped_data[4] = (unsigned char)(wrapped_riff_size_u32 & 0xffu);
+            wrapped_data[5] = (unsigned char)((wrapped_riff_size_u32 >> 8u) & 0xffu);
+            wrapped_data[6] = (unsigned char)((wrapped_riff_size_u32 >> 16u) & 0xffu);
+            wrapped_data[7] = (unsigned char)((wrapped_riff_size_u32 >> 24u) & 0xffu);
+            memcpy(wrapped_data + 8u, "WEBP", 4u);
+            memcpy(wrapped_data + 12u, subframe_data, subframe_size);
+
+            *output_data = wrapped_data;
+            *output_size = wrapped_size;
+            return SIXEL_OK;
+        }
+
+        offset += chunk_total_size;
+    }
+
+    sixel_helper_set_additional_message(
+        "load_with_libwebp: no ANMF chunk found in animated WebP stream.");
+    return SIXEL_BAD_INPUT;
+}
+
+static SIXELSTATUS
+webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
+                                         unsigned char *source_data,
+                                         size_t source_size,
+                                         WebPBitstreamFeatures const *known_features,
+                                         unsigned char *bgcolor)
 {
     SIXELSTATUS status;
-    sixel_chunk_t const *chunk;
+    sixel_allocator_t *allocator;
     sixel_frame_t *frame;
     unsigned char *pixels;
     int cms_converted;
-    WebPBitstreamFeatures decode_features;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
     cms_converted = 0;
-    decode_features = (WebPBitstreamFeatures){ 0 };
-
     if (decode == NULL || decode->chunk == NULL ||
-        decode->fn_load == NULL || stream_features == NULL) {
+        decode->fn_load == NULL || source_data == NULL ||
+        source_size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    chunk = decode->chunk;
+    allocator = decode->chunk->allocator;
 
-    status = sixel_frame_new(&frame, chunk->allocator);
+    status = sixel_frame_new(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    decode_features = *stream_features;
     status = load_webp(&pixels,
-                       chunk->buffer,
-                       chunk->size,
+                       source_data,
+                       source_size,
                        &frame->width,
                        &frame->height,
                        &frame->pixelformat,
@@ -2400,8 +2516,8 @@ webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
                        decode->icc_profile_length,
                        &cms_converted,
                        bgcolor,
-                       chunk->allocator,
-                       &decode_features);
+                       allocator,
+                       known_features);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2416,13 +2532,30 @@ webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
                                           decode->allow_palette_promotion,
                                           decode->reqcolors,
                                           bgcolor,
-                                          chunk->allocator,
+                                          allocator,
                                           decode->fn_load,
                                           decode->context);
 
 end:
     sixel_frame_unref(frame);
     return status;
+}
+
+static SIXELSTATUS
+webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
+                                  WebPBitstreamFeatures const *stream_features,
+                                  unsigned char *bgcolor)
+{
+    if (decode == NULL || decode->chunk == NULL ||
+        decode->fn_load == NULL || stream_features == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return webp_decode_and_emit_single_frame_buffer(decode,
+                                                    decode->chunk->buffer,
+                                                    decode->chunk->size,
+                                                    stream_features,
+                                                    bgcolor);
 }
 
 static SIXELSTATUS
@@ -2759,6 +2892,8 @@ load_with_libwebp(
     VP8StatusCode feature_status;
     unsigned char anim_bgcolor[3];
     unsigned char *resolved_bgcolor;
+    unsigned char *single_frame_data;
+    size_t single_frame_size;
 
     status = SIXEL_FALSE;
     webp_data = (WebPData){ 0 };
@@ -2773,6 +2908,8 @@ load_with_libwebp(
     anim_bgcolor[1] = 0u;
     anim_bgcolor[2] = 0u;
     resolved_bgcolor = bgcolor;
+    single_frame_data = NULL;
+    single_frame_size = 0u;
 
     webp_init_decode_common(&decode,
                             pchunk,
@@ -2887,12 +3024,24 @@ load_with_libwebp(
         anim_bgcolor);
 
     if (anim_info.frame_count <= 1) {
+        status = webp_extract_first_animation_subframe_as_riff(
+            &single_frame_data,
+            &single_frame_size,
+            pchunk->buffer,
+            pchunk->size,
+            pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
         WebPAnimDecoderDelete(decoder);
         decoder = NULL;
 
-        status = webp_decode_and_emit_single_frame(&decode,
-                                                   &stream_features,
-                                                   resolved_bgcolor);
+        status = webp_decode_and_emit_single_frame_buffer(&decode,
+                                                          single_frame_data,
+                                                          single_frame_size,
+                                                          NULL,
+                                                          resolved_bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2942,6 +3091,7 @@ end:
     if (demux != NULL) {
         WebPDemuxDelete(demux);
     }
+    sixel_allocator_free(pchunk->allocator, single_frame_data);
     sixel_allocator_free(pchunk->allocator, decode.icc_profile);
 
     return status;
