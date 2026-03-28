@@ -2859,6 +2859,11 @@ load_with_libwebp(
         goto end;
     }
 
+    /*
+     * Animation start-frame controls only apply when more than one frame is
+     * available. Keep single-frame decode semantics aligned with ordinary
+     * static WebP decode by skipping start-frame parsing in that case.
+     */
     status = webp_load_start_frame_control(&control,
                                            start_frame_no_set,
                                            start_frame_no_override);
