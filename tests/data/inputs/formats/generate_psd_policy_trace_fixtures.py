@@ -134,6 +134,25 @@ def generate(out_dir: pathlib.Path) -> None:
         bytes(mode7_depth1_channels4),
     )
 
+    # Mode7 CMYK-mapped bad-ICC fixtures (channels=4 -> CMYK decode path).
+    mode7_cmyk_zip_bad_icc = bytearray(
+        (out_dir / "stbi_minimal_cmyk8_zip_bad_icc.psd").read_bytes()
+    )
+    write_u16be(mode7_cmyk_zip_bad_icc, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_cmyk8_zip_bad_icc.psd",
+        bytes(mode7_cmyk_zip_bad_icc),
+    )
+
+    mode7_cmyk_zip_pred_bad_icc = bytearray(
+        (out_dir / "stbi_minimal_cmyk8_zip_pred_bad_icc.psd").read_bytes()
+    )
+    write_u16be(mode7_cmyk_zip_pred_bad_icc, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_cmyk8_zip_pred_bad_icc.psd",
+        bytes(mode7_cmyk_zip_pred_bad_icc),
+    )
+
     # Malformed: channel count below mode-specific minima.
     rgb_channels2 = bytearray(base)
     write_u16be(rgb_channels2, 12, 2)
