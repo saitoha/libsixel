@@ -235,8 +235,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-libwebp.h $(srcdir)/loader-quicklook.h \
 	$(srcdir)/loader-registry.h $(srcdir)/loader-wic.h \
 	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/frompng.c \
-	$(srcdir)/frompng.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
-	$(srcdir)/fromhdr.c $(srcdir)/fromhdr.h $(srcdir)/fromgif.c \
+	$(srcdir)/frompng.h $(srcdir)/fromhdr.c $(srcdir)/fromhdr.h \
+	$(srcdir)/frompsd.c $(srcdir)/frompsd.h $(srcdir)/fromgif.c \
 	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
@@ -336,8 +336,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-registry.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompnm.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompng.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromhdr.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-clipboard.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder.lo \
@@ -952,10 +952,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompnm.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompng.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompng.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromhdr.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromhdr.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.c \
@@ -1783,19 +1783,19 @@ libsixel_la-frompng.lo: frompng.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frompng.lo `test -f 'frompng.c' || echo '$(srcdir)/'`frompng.c
 
-libsixel_la-frompsd.lo: frompsd.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frompsd.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frompsd.Tpo -c -o libsixel_la-frompsd.lo `test -f 'frompsd.c' || echo '$(srcdir)/'`frompsd.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-frompsd.Tpo $(DEPDIR)/libsixel_la-frompsd.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frompsd.c' object='libsixel_la-frompsd.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frompsd.lo `test -f 'frompsd.c' || echo '$(srcdir)/'`frompsd.c
-
 libsixel_la-fromhdr.lo: fromhdr.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromhdr.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromhdr.Tpo -c -o libsixel_la-fromhdr.lo `test -f 'fromhdr.c' || echo '$(srcdir)/'`fromhdr.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromhdr.Tpo $(DEPDIR)/libsixel_la-fromhdr.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromhdr.c' object='libsixel_la-fromhdr.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromhdr.lo `test -f 'fromhdr.c' || echo '$(srcdir)/'`fromhdr.c
+
+libsixel_la-frompsd.lo: frompsd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frompsd.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frompsd.Tpo -c -o libsixel_la-frompsd.lo `test -f 'frompsd.c' || echo '$(srcdir)/'`frompsd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-frompsd.Tpo $(DEPDIR)/libsixel_la-frompsd.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frompsd.c' object='libsixel_la-frompsd.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frompsd.lo `test -f 'frompsd.c' || echo '$(srcdir)/'`frompsd.c
 
 libsixel_la-fromgif.lo: fromgif.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromgif.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromgif.Tpo -c -o libsixel_la-fromgif.lo `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
