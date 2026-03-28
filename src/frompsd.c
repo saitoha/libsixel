@@ -48,6 +48,10 @@ int stbi_zlib_decode_buffer(char *obuffer,
                             char const *ibuffer,
                             int ilen);
 
+static SIXELSTATUS
+sixel_builtin_psd_rgb_bgcolor_to_linear(unsigned char const *bgcolor,
+                                        float out_linear[3]);
+
 int
 sixel_builtin_extract_psd_icc(unsigned char const *buffer,
                               size_t size,
@@ -610,6 +614,10 @@ sixel_builtin_validate_psd_info(
         if (info->depth == 8u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT;
             skip_icc_conversion = 1;
+        } else if (info->depth == 16u) {
+            decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT;
+            skip_icc_conversion = 1;
+            colorspace = SIXEL_COLORSPACE_LINEAR;
         } else if (info->depth == 32u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT;
             skip_icc_conversion = 1;
@@ -633,6 +641,10 @@ sixel_builtin_validate_psd_info(
         min_channels = 3u;
         if (info->depth == 8u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT;
+            skip_icc_conversion = 1;
+            colorspace = SIXEL_COLORSPACE_CIELAB;
+        } else if (info->depth == 16u) {
+            decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT;
             skip_icc_conversion = 1;
             colorspace = SIXEL_COLORSPACE_CIELAB;
         } else if (info->depth == 32u) {
@@ -1597,6 +1609,13 @@ sixel_builtin_psd_decode_cmyk_f32(float value)
 {
     /* PSD stores CMYK channels with inverted polarity. */
     return 1.0f - sixel_builtin_psd_clamp_unit_float32(value);
+}
+
+static uint16_t
+sixel_builtin_psd_decode_cmyk_u16(uint16_t value)
+{
+    /* PSD stores CMYK channels with inverted polarity. */
+    return (uint16_t)(0xffffu - value);
 }
 
 static int
@@ -2994,6 +3013,280 @@ sixel_builtin_decode_psd_cmyk_8bit(
     return SIXEL_OK;
 }
 
+SIXELSTATUS
+sixel_builtin_decode_psd_cmyk_16bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char const *icc_profile,
+    size_t icc_profile_length,
+    int *pcms_applied,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat)
+{
+    SIXELSTATUS status;
+    uint16_t *plane_c;
+    uint16_t *plane_m;
+    uint16_t *plane_y;
+    uint16_t *plane_k;
+    uint16_t *plane_alpha;
+    uint16_t *cmyk16;
+    float *rgb_linear;
+    unsigned char *transparent_mask;
+    sixel_cms_profile_t *src_profile;
+    sixel_cms_profile_t *dst_profile;
+    sixel_cms_transform_t *transform;
+    size_t pixel_count;
+    size_t i;
+    int want_alpha;
+    int preserve_alpha;
+    int use_cms;
+    int cms_applied;
+    float bg_linear[3];
+    float alpha_f;
+    float one_minus_alpha;
+    float c;
+    float m;
+    float y;
+    float k;
+
+    status = SIXEL_FALSE;
+    plane_c = NULL;
+    plane_m = NULL;
+    plane_y = NULL;
+    plane_k = NULL;
+    plane_alpha = NULL;
+    cmyk16 = NULL;
+    rgb_linear = NULL;
+    transparent_mask = NULL;
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    pixel_count = 0u;
+    i = 0u;
+    want_alpha = 0;
+    preserve_alpha = 0;
+    use_cms = 0;
+    cms_applied = 0;
+    bg_linear[0] = 0.0f;
+    bg_linear[1] = 0.0f;
+    bg_linear[2] = 0.0f;
+    alpha_f = 0.0f;
+    one_minus_alpha = 0.0f;
+    c = 0.0f;
+    m = 0.0f;
+    y = 0.0f;
+    k = 0.0f;
+
+    if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
+        pheight == NULL || ppixelformat == NULL || pcms_applied == NULL ||
+        chunk->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *pcms_applied = 0;
+    sixel_builtin_psd_init_transparent_mask_output(
+        ptransparent_mask,
+        ptransparent_mask_size);
+    if (info->color_mode != 4u || info->depth != 16u ||
+        info->compression > 3u || info->channels < 4u) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)info->width * (size_t)info->height;
+    if (pixel_count > SIZE_MAX / sizeof(uint16_t) ||
+        pixel_count > SIZE_MAX / (4u * sizeof(uint16_t)) ||
+        pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    use_cms = (icc_profile != NULL && icc_profile_length > 0u) ? 1 : 0;
+
+    plane_c = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count *
+                                                 sizeof(uint16_t));
+    plane_m = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count *
+                                                 sizeof(uint16_t));
+    plane_y = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count *
+                                                 sizeof(uint16_t));
+    plane_k = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count *
+                                                 sizeof(uint16_t));
+    if (plane_c == NULL || plane_m == NULL || plane_y == NULL || plane_k == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "builtin PSD: sixel_allocator_malloc() failed.");
+        goto cleanup_cmyk16;
+    }
+
+    preserve_alpha = (bgcolor == NULL && info->channels >= 5u) ? 1 : 0;
+    want_alpha = info->channels >= 5u ? 1 : 0;
+    if (want_alpha) {
+        plane_alpha = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                         pixel_count *
+                                                         sizeof(uint16_t));
+        if (plane_alpha == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "builtin PSD: sixel_allocator_malloc() failed.");
+            goto cleanup_cmyk16;
+        }
+    }
+    if (preserve_alpha != 0) {
+        transparent_mask = (unsigned char *)sixel_allocator_malloc(
+            chunk->allocator,
+            pixel_count);
+        if (transparent_mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "builtin PSD: sixel_allocator_malloc() failed.");
+            goto cleanup_cmyk16;
+        }
+    }
+
+    if (!sixel_builtin_decode_psd_16bit_channel(chunk, info, 0u, plane_c) ||
+        !sixel_builtin_decode_psd_16bit_channel(chunk, info, 1u, plane_m) ||
+        !sixel_builtin_decode_psd_16bit_channel(chunk, info, 2u, plane_y) ||
+        !sixel_builtin_decode_psd_16bit_channel(chunk, info, 3u, plane_k) ||
+        (plane_alpha != NULL &&
+         !sixel_builtin_decode_psd_16bit_channel(chunk,
+                                                 info,
+                                                 4u,
+                                                 plane_alpha))) {
+        status = SIXEL_STBI_ERROR;
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed compressed channel stream");
+        goto cleanup_cmyk16;
+    }
+
+    rgb_linear = (float *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count * 3u * sizeof(float));
+    if (rgb_linear == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "builtin PSD: sixel_allocator_malloc() failed.");
+        goto cleanup_cmyk16;
+    }
+
+    if (use_cms) {
+        cmyk16 = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                    pixel_count * 4u *
+                                                    sizeof(uint16_t));
+        if (cmyk16 == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "builtin PSD: sixel_allocator_malloc() failed.");
+            goto cleanup_cmyk16;
+        }
+        for (i = 0u; i < pixel_count; ++i) {
+            cmyk16[i * 4u + 0u] = sixel_builtin_psd_decode_cmyk_u16(plane_c[i]);
+            cmyk16[i * 4u + 1u] = sixel_builtin_psd_decode_cmyk_u16(plane_m[i]);
+            cmyk16[i * 4u + 2u] = sixel_builtin_psd_decode_cmyk_u16(plane_y[i]);
+            cmyk16[i * 4u + 3u] = sixel_builtin_psd_decode_cmyk_u16(plane_k[i]);
+        }
+
+        src_profile = sixel_cms_open_profile_from_mem(icc_profile,
+                                                      icc_profile_length);
+        if (src_profile != NULL) {
+            dst_profile = sixel_cms_create_linear_srgb_profile();
+        }
+        if (src_profile != NULL && dst_profile != NULL) {
+            transform = sixel_cms_create_transform(
+                src_profile,
+                SIXEL_CMS_PIXELFORMAT_CMYK_16,
+                dst_profile,
+                SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                SIXEL_CMS_TRANSFORM_DEFAULT);
+        }
+        if (transform != NULL &&
+            sixel_cms_do_transform(transform, cmyk16, rgb_linear, pixel_count)) {
+            cms_applied = 1;
+        }
+    }
+
+    if (!cms_applied) {
+        for (i = 0u; i < pixel_count; ++i) {
+            c = (float)sixel_builtin_psd_decode_cmyk_u16(plane_c[i]) / 65535.0f;
+            m = (float)sixel_builtin_psd_decode_cmyk_u16(plane_m[i]) / 65535.0f;
+            y = (float)sixel_builtin_psd_decode_cmyk_u16(plane_y[i]) / 65535.0f;
+            k = (float)sixel_builtin_psd_decode_cmyk_u16(plane_k[i]) / 65535.0f;
+            rgb_linear[i * 3u + 0u] = (1.0f - c) * (1.0f - k);
+            rgb_linear[i * 3u + 1u] = (1.0f - m) * (1.0f - k);
+            rgb_linear[i * 3u + 2u] = (1.0f - y) * (1.0f - k);
+        }
+        if (!sixel_cms_convert_rgbf32_gamma_to_linear(rgb_linear, pixel_count)) {
+            status = SIXEL_BAD_INPUT;
+            goto cleanup_cmyk16;
+        }
+    }
+
+    if (plane_alpha != NULL) {
+        if (preserve_alpha != 0) {
+            for (i = 0u; i < pixel_count; ++i) {
+                alpha_f = (float)plane_alpha[i] / 65535.0f;
+                rgb_linear[i * 3u + 0u] *= alpha_f;
+                rgb_linear[i * 3u + 1u] *= alpha_f;
+                rgb_linear[i * 3u + 2u] *= alpha_f;
+                transparent_mask[i] = alpha_f <= 0.0f ? 1u : 0u;
+            }
+        } else {
+            status = sixel_builtin_psd_rgb_bgcolor_to_linear(bgcolor, bg_linear);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup_cmyk16;
+            }
+            for (i = 0u; i < pixel_count; ++i) {
+                alpha_f = (float)plane_alpha[i] / 65535.0f;
+                one_minus_alpha = 1.0f - alpha_f;
+                rgb_linear[i * 3u + 0u] =
+                    rgb_linear[i * 3u + 0u] * alpha_f + bg_linear[0] * one_minus_alpha;
+                rgb_linear[i * 3u + 1u] =
+                    rgb_linear[i * 3u + 1u] * alpha_f + bg_linear[1] * one_minus_alpha;
+                rgb_linear[i * 3u + 2u] =
+                    rgb_linear[i * 3u + 2u] * alpha_f + bg_linear[2] * one_minus_alpha;
+            }
+        }
+    }
+
+    *pcms_applied = cms_applied;
+    sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
+        ptransparent_mask,
+        ptransparent_mask_size,
+        &transparent_mask,
+        pixel_count,
+        preserve_alpha);
+    sixel_builtin_psd_set_decode_output(
+        ppixels,
+        pwidth,
+        pheight,
+        ppixelformat,
+        (unsigned char *)rgb_linear,
+        info,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
+    status = SIXEL_OK;
+    rgb_linear = NULL;
+
+cleanup_cmyk16:
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(dst_profile);
+    sixel_cms_close_profile(src_profile);
+    sixel_allocator_free(chunk->allocator, cmyk16);
+    sixel_allocator_free(chunk->allocator, rgb_linear);
+    sixel_allocator_free(chunk->allocator, transparent_mask);
+    sixel_allocator_free(chunk->allocator, plane_alpha);
+    sixel_allocator_free(chunk->allocator, plane_k);
+    sixel_allocator_free(chunk->allocator, plane_y);
+    sixel_allocator_free(chunk->allocator, plane_m);
+    sixel_allocator_free(chunk->allocator, plane_c);
+    return status;
+}
+
 /* Recover RGB8 pixels from a single-layer PSD that omits merged data. */
 static SIXELSTATUS
 sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
@@ -4051,6 +4344,21 @@ sixel_builtin_psd_lab_decode_l32(float value)
 }
 
 static float
+sixel_builtin_psd_lab_decode_l16(uint16_t value)
+{
+    return sixel_builtin_psd_clamp_unit_float32((float)value / 65535.0f);
+}
+
+static float
+sixel_builtin_psd_lab_decode_ab16(uint16_t value)
+{
+    float normalized;
+
+    normalized = ((float)value - 32768.0f) / 32768.0f;
+    return sixel_builtin_psd_lab_clamp_ab(normalized);
+}
+
+static float
 sixel_builtin_psd_lab_decode_ab32(float value)
 {
     if (value != value) {
@@ -4254,6 +4562,198 @@ sixel_builtin_decode_psd_lab_8bit(
                                         info,
                                         SIXEL_PIXELFORMAT_CIELABFLOAT32);
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_builtin_decode_psd_lab_16bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat)
+{
+    SIXELSTATUS status;
+    uint16_t *plane_l;
+    uint16_t *plane_a;
+    uint16_t *plane_b;
+    uint16_t *plane_alpha;
+    unsigned char *transparent_mask;
+    float *lab;
+    float bg_lab[3];
+    size_t pixel_count;
+    size_t i;
+    int want_alpha;
+    int preserve_alpha;
+    float alpha_f;
+    float one_minus_alpha;
+    float l;
+    float a;
+    float b;
+
+    status = SIXEL_FALSE;
+    plane_l = NULL;
+    plane_a = NULL;
+    plane_b = NULL;
+    plane_alpha = NULL;
+    transparent_mask = NULL;
+    lab = NULL;
+    bg_lab[0] = 0.0f;
+    bg_lab[1] = 0.0f;
+    bg_lab[2] = 0.0f;
+    pixel_count = 0u;
+    i = 0u;
+    want_alpha = 0;
+    preserve_alpha = 0;
+    alpha_f = 0.0f;
+    one_minus_alpha = 0.0f;
+    l = 0.0f;
+    a = 0.0f;
+    b = 0.0f;
+
+    if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
+        pheight == NULL || ppixelformat == NULL || chunk->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sixel_builtin_psd_init_transparent_mask_output(
+        ptransparent_mask,
+        ptransparent_mask_size);
+    if (info->color_mode != 9u || info->depth != 16u ||
+        info->compression > 3u || info->channels < 3u) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)info->width * (size_t)info->height;
+    if (pixel_count > SIZE_MAX / sizeof(uint16_t) ||
+        pixel_count > SIZE_MAX / (3u * sizeof(uint16_t)) ||
+        pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    plane_l = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count *
+                                                 sizeof(uint16_t));
+    plane_a = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count *
+                                                 sizeof(uint16_t));
+    plane_b = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                 pixel_count *
+                                                 sizeof(uint16_t));
+    if (plane_l == NULL || plane_a == NULL || plane_b == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "builtin PSD: sixel_allocator_malloc() failed.");
+        goto cleanup_lab16;
+    }
+
+    preserve_alpha = (bgcolor == NULL && info->channels >= 4u) ? 1 : 0;
+    want_alpha = info->channels >= 4u ? 1 : 0;
+    if (want_alpha) {
+        plane_alpha = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
+                                                         pixel_count *
+                                                         sizeof(uint16_t));
+        if (plane_alpha == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "builtin PSD: sixel_allocator_malloc() failed.");
+            goto cleanup_lab16;
+        }
+    }
+    if (preserve_alpha != 0) {
+        transparent_mask = (unsigned char *)sixel_allocator_malloc(
+            chunk->allocator,
+            pixel_count);
+        if (transparent_mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "builtin PSD: sixel_allocator_malloc() failed.");
+            goto cleanup_lab16;
+        }
+    }
+
+    if (!sixel_builtin_decode_psd_16bit_channel(chunk, info, 0u, plane_l) ||
+        !sixel_builtin_decode_psd_16bit_channel(chunk, info, 1u, plane_a) ||
+        !sixel_builtin_decode_psd_16bit_channel(chunk, info, 2u, plane_b) ||
+        (plane_alpha != NULL &&
+         !sixel_builtin_decode_psd_16bit_channel(chunk,
+                                                 info,
+                                                 3u,
+                                                 plane_alpha))) {
+        status = SIXEL_STBI_ERROR;
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed compressed channel stream");
+        goto cleanup_lab16;
+    }
+
+    if (plane_alpha != NULL && preserve_alpha == 0) {
+        status = sixel_builtin_psd_rgb_bgcolor_to_cielab(bgcolor, bg_lab);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup_lab16;
+        }
+    }
+
+    lab = (float *)sixel_allocator_malloc(chunk->allocator,
+                                          pixel_count * 3u * sizeof(float));
+    if (lab == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "builtin PSD: sixel_allocator_malloc() failed.");
+        goto cleanup_lab16;
+    }
+
+    for (i = 0u; i < pixel_count; ++i) {
+        l = sixel_builtin_psd_lab_decode_l16(plane_l[i]);
+        a = sixel_builtin_psd_lab_decode_ab16(plane_a[i]);
+        b = sixel_builtin_psd_lab_decode_ab16(plane_b[i]);
+        if (plane_alpha != NULL) {
+            alpha_f = (float)plane_alpha[i] / 65535.0f;
+            if (preserve_alpha != 0) {
+                l *= alpha_f;
+                a *= alpha_f;
+                b *= alpha_f;
+                transparent_mask[i] = alpha_f <= 0.0f ? 1u : 0u;
+            } else {
+                one_minus_alpha = 1.0f - alpha_f;
+                l = l * alpha_f + bg_lab[0] * one_minus_alpha;
+                a = a * alpha_f + bg_lab[1] * one_minus_alpha;
+                b = b * alpha_f + bg_lab[2] * one_minus_alpha;
+            }
+        }
+        lab[i * 3u + 0u] = sixel_builtin_psd_clamp_unit_float32(l);
+        lab[i * 3u + 1u] = sixel_builtin_psd_lab_clamp_ab(a);
+        lab[i * 3u + 2u] = sixel_builtin_psd_lab_clamp_ab(b);
+    }
+
+    sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
+        ptransparent_mask,
+        ptransparent_mask_size,
+        &transparent_mask,
+        pixel_count,
+        preserve_alpha);
+    sixel_builtin_psd_set_decode_output(ppixels,
+                                        pwidth,
+                                        pheight,
+                                        ppixelformat,
+                                        (unsigned char *)lab,
+                                        info,
+                                        SIXEL_PIXELFORMAT_CIELABFLOAT32);
+    status = SIXEL_OK;
+    lab = NULL;
+
+cleanup_lab16:
+    sixel_allocator_free(chunk->allocator, lab);
+    sixel_allocator_free(chunk->allocator, transparent_mask);
+    sixel_allocator_free(chunk->allocator, plane_alpha);
+    sixel_allocator_free(chunk->allocator, plane_b);
+    sixel_allocator_free(chunk->allocator, plane_a);
+    sixel_allocator_free(chunk->allocator, plane_l);
+    return status;
 }
 
 SIXELSTATUS
