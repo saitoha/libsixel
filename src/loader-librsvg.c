@@ -1987,7 +1987,6 @@ sixel_loader_librsvg_ref(sixel_loader_component_t *component)
 {
     sixel_loader_librsvg_component_t *self;
 
-    self = NULL;
     if (component == NULL) {
         return;
     }
@@ -2002,8 +2001,6 @@ sixel_loader_librsvg_unref(sixel_loader_component_t *component)
     sixel_loader_librsvg_component_t *self;
     sixel_allocator_t *allocator;
 
-    self = NULL;
-    allocator = NULL;
     if (component == NULL) {
         return;
     }
@@ -2188,7 +2185,6 @@ sixel_loader_librsvg_new(sixel_allocator_t *allocator,
 {
     sixel_loader_librsvg_component_t *self;
 
-    self = NULL;
     if (allocator == NULL || ppcomponent == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
