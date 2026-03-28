@@ -76,6 +76,24 @@ typedef struct sixel_loader_libwebp_component {
     int start_frame_no;
 } sixel_loader_libwebp_component_t;
 
+typedef struct webp_decode_common {
+    sixel_chunk_t const *chunk;
+    int enable_cms;
+    int allow_palette_promotion;
+    int reqcolors;
+    unsigned char *icc_profile;
+    size_t icc_profile_length;
+    sixel_load_image_function fn_load;
+    void *context;
+} webp_decode_common_t;
+
+typedef struct webp_animation_decode_control {
+    int start_frame_no_set;
+    int start_frame_no;
+    int loop_control;
+    size_t max_output_frames;
+} webp_animation_decode_control_t;
+
 #define WEBP_MAX_DIMENSION        32767
 #define WEBP_MAX_IMAGE_PIXELS     ((size_t)268435456u)
 #define WEBP_MAX_ANIMATION_FRAMES 65535
@@ -1662,6 +1680,110 @@ webp_resolve_max_output_frames(void)
     return (size_t)parsed;
 }
 
+static int
+webp_decode_context_is_valid(webp_decode_common_t const *decode,
+                             webp_animation_decode_control_t const *control)
+{
+    return decode != NULL &&
+           decode->chunk != NULL &&
+           decode->fn_load != NULL &&
+           control != NULL;
+}
+
+static SIXELSTATUS
+webp_compute_rgba_canvas_bytes(int width,
+                               int height,
+                               size_t *frame_bytes)
+{
+    size_t pixel_count;
+
+    pixel_count = 0u;
+    if (frame_bytes == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *frame_bytes = 0u;
+
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    *frame_bytes = pixel_count * 4u;
+
+    return SIXEL_OK;
+}
+
+static void
+webp_set_get_features_error_message(VP8StatusCode feature_status)
+{
+    char error_message[128];
+
+    memset(error_message, 0, sizeof(error_message));
+    (void)snprintf(error_message,
+                   sizeof(error_message),
+                   "load_with_libwebp: WebPGetFeatures failed (%s:%d).",
+                   webp_decode_status_name(feature_status),
+                   (int)feature_status);
+    sixel_helper_set_additional_message(error_message);
+}
+
+static void
+webp_init_decode_common(webp_decode_common_t *decode,
+                        sixel_chunk_t const *chunk,
+                        int enable_cms,
+                        int reqcolors,
+                        sixel_load_image_function fn_load,
+                        void *context)
+{
+    if (decode == NULL) {
+        return;
+    }
+
+    *decode = (webp_decode_common_t){ 0 };
+    decode->chunk = chunk;
+    decode->enable_cms = enable_cms;
+    decode->reqcolors = reqcolors;
+    decode->fn_load = fn_load;
+    decode->context = context;
+}
+
+static void
+webp_init_animation_decode_control(webp_animation_decode_control_t *control,
+                                   int loop_control)
+{
+    if (control == NULL) {
+        return;
+    }
+
+    *control = (webp_animation_decode_control_t){ 0 };
+    control->loop_control = loop_control;
+    control->max_output_frames = webp_resolve_max_output_frames();
+}
+
+static SIXELSTATUS
+webp_load_start_frame_control(webp_animation_decode_control_t *control,
+                              int start_frame_no_set,
+                              int start_frame_no_override)
+{
+    if (control == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (start_frame_no_set) {
+        control->start_frame_no_set = 1;
+        control->start_frame_no = start_frame_no_override;
+        return SIXEL_OK;
+    }
+
+    return webp_parse_animation_start_frame_no(&control->start_frame_no_set,
+                                               &control->start_frame_no);
+}
+
 
 static SIXELSTATUS
 loader_try_promote_pal8(
@@ -2178,21 +2300,14 @@ webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
 }
 
 static SIXELSTATUS
-webp_decode_and_emit_single_frame(sixel_chunk_t const *pchunk,
+webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
                                   WebPBitstreamFeatures const *stream_features,
-                                  int start_frame_no_set,
-                                  int start_frame_no,
+                                  webp_animation_decode_control_t const *control,
                                   int frame_count,
-                                  int enable_cms,
-                                  unsigned char const *icc_profile,
-                                  size_t icc_profile_length,
-                                  int allow_palette_promotion,
-                                  int reqcolors,
-                                  unsigned char *bgcolor,
-                                  sixel_load_image_function fn_load,
-                                  void *context)
+                                  unsigned char *bgcolor)
 {
     SIXELSTATUS status;
+    sixel_chunk_t const *chunk;
     sixel_frame_t *frame;
     unsigned char *pixels;
     int resolved_start_frame_no;
@@ -2206,36 +2321,38 @@ webp_decode_and_emit_single_frame(sixel_chunk_t const *pchunk,
     cms_converted = 0;
     decode_features = (WebPBitstreamFeatures){ 0 };
 
-    if (pchunk == NULL || stream_features == NULL || fn_load == NULL) {
+    if (!webp_decode_context_is_valid(decode, control) ||
+        stream_features == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    chunk = decode->chunk;
 
-    status = webp_maybe_resolve_animation_start_frame_no(start_frame_no_set,
-                                                         start_frame_no,
+    status = webp_maybe_resolve_animation_start_frame_no(control->start_frame_no_set,
+                                                         control->start_frame_no,
                                                          frame_count,
                                                          &resolved_start_frame_no);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_new(&frame, chunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     decode_features = *stream_features;
     status = load_webp(&pixels,
-                       pchunk->buffer,
-                       pchunk->size,
+                       chunk->buffer,
+                       chunk->size,
                        &frame->width,
                        &frame->height,
                        &frame->pixelformat,
-                       enable_cms,
-                       icc_profile,
-                       icc_profile_length,
+                       decode->enable_cms,
+                       decode->icc_profile,
+                       decode->icc_profile_length,
                        &cms_converted,
                        bgcolor,
-                       pchunk->allocator,
+                       chunk->allocator,
                        &decode_features);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2246,14 +2363,14 @@ webp_decode_and_emit_single_frame(sixel_chunk_t const *pchunk,
     frame->frame_no = resolved_start_frame_no;
 
     status = webp_finalize_and_emit_frame(frame,
-                                          enable_cms,
+                                          decode->enable_cms,
                                           cms_converted,
-                                          allow_palette_promotion,
-                                          reqcolors,
+                                          decode->allow_palette_promotion,
+                                          decode->reqcolors,
                                           bgcolor,
-                                          pchunk->allocator,
-                                          fn_load,
-                                          context);
+                                          chunk->allocator,
+                                          decode->fn_load,
+                                          decode->context);
 
 end:
     sixel_frame_unref(frame);
@@ -2263,19 +2380,12 @@ end:
 static SIXELSTATUS
 webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
                                             WebPAnimInfo const *anim_info,
-                                            sixel_chunk_t const *pchunk,
-                                            int enable_cms,
-                                            unsigned char const *icc_profile,
-                                            size_t icc_profile_length,
-                                            int allow_palette_promotion,
-                                            int reqcolors,
-                                            unsigned char *resolved_bgcolor,
-                                            int start_frame_no_set,
-                                            int start_frame_no,
-                                            sixel_load_image_function fn_load,
-                                            void *context)
+                                            webp_decode_common_t const *decode,
+                                            webp_animation_decode_control_t const *control,
+                                            unsigned char *resolved_bgcolor)
 {
     SIXELSTATUS status;
+    sixel_chunk_t const *chunk;
     sixel_frame_t *frame;
     unsigned char *pixels;
     uint8_t *decoded_frame;
@@ -2299,19 +2409,21 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
     resolved_start_frame_no = 0;
     cms_converted = 0;
 
-    if (decoder == NULL || anim_info == NULL || pchunk == NULL || fn_load == NULL) {
+    if (decoder == NULL || anim_info == NULL ||
+        !webp_decode_context_is_valid(decode, control)) {
         return SIXEL_BAD_ARGUMENT;
     }
+    chunk = decode->chunk;
 
-    status = webp_maybe_resolve_animation_start_frame_no(start_frame_no_set,
-                                                         start_frame_no,
+    status = webp_maybe_resolve_animation_start_frame_no(control->start_frame_no_set,
+                                                         control->start_frame_no,
                                                          anim_info->frame_count,
                                                          &resolved_start_frame_no);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_new(&frame, chunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2346,22 +2458,22 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
                                   resolved_start_frame_no,
                                   next_delay / 10);
 
-    if ((size_t)frame->width > SIZE_MAX / 4 ||
-        (size_t)frame->height > SIZE_MAX / ((size_t)frame->width * 4)) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
+    status = webp_compute_rgba_canvas_bytes(frame->width,
+                                            frame->height,
+                                            &frame_bytes);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
-    frame_bytes = (size_t)frame->width * (size_t)frame->height * 4;
 
     status = webp_clone_decoder_canvas_pixels(&pixels,
                                               decoded_frame,
                                               frame_bytes,
                                               frame->width,
                                               frame->height,
-                                              enable_cms,
-                                              icc_profile,
-                                              icc_profile_length,
-                                              pchunk->allocator,
+                                              decode->enable_cms,
+                                              decode->icc_profile,
+                                              decode->icc_profile_length,
+                                              chunk->allocator,
                                               &cms_converted);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2370,14 +2482,14 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
     pixels = NULL;
 
     status = webp_finalize_and_emit_frame(frame,
-                                          enable_cms,
+                                          decode->enable_cms,
                                           cms_converted,
-                                          allow_palette_promotion,
-                                          reqcolors,
+                                          decode->allow_palette_promotion,
+                                          decode->reqcolors,
                                           resolved_bgcolor,
-                                          pchunk->allocator,
-                                          fn_load,
-                                          context);
+                                          chunk->allocator,
+                                          decode->fn_load,
+                                          decode->context);
 
 end:
     sixel_frame_unref(frame);
@@ -2387,21 +2499,12 @@ end:
 static SIXELSTATUS
 webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                                           WebPAnimInfo const *anim_info,
-                                          sixel_chunk_t const *pchunk,
-                                          int enable_cms,
-                                          unsigned char const *icc_profile,
-                                          size_t icc_profile_length,
-                                          int allow_palette_promotion,
-                                          int reqcolors,
-                                          unsigned char *resolved_bgcolor,
-                                          int loop_control,
-                                          int start_frame_no_set,
-                                          int start_frame_no,
-                                          size_t max_output_frames,
-                                          sixel_load_image_function fn_load,
-                                          void *context)
+                                          webp_decode_common_t const *decode,
+                                          webp_animation_decode_control_t const *control,
+                                          unsigned char *resolved_bgcolor)
 {
     SIXELSTATUS status;
+    sixel_chunk_t const *chunk;
     sixel_frame_t *frame;
     unsigned char *pixels;
     uint8_t *decoded_frame;
@@ -2433,9 +2536,11 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
     resolved_start_frame_no = 0;
     cms_converted = 0;
 
-    if (decoder == NULL || anim_info == NULL || pchunk == NULL || fn_load == NULL) {
+    if (decoder == NULL || anim_info == NULL ||
+        !webp_decode_context_is_valid(decode, control)) {
         return SIXEL_BAD_ARGUMENT;
     }
+    chunk = decode->chunk;
 
     /*
      * Decode WebP animation as fully composited RGBA canvases.
@@ -2454,22 +2559,15 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    frame_bytes = (size_t)anim_info->canvas_width *
-                  (size_t)anim_info->canvas_height;
-    if ((size_t)anim_info->canvas_width != 0 &&
-        frame_bytes / (size_t)anim_info->canvas_width !=
-        (size_t)anim_info->canvas_height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
+    status = webp_compute_rgba_canvas_bytes((int)anim_info->canvas_width,
+                                            (int)anim_info->canvas_height,
+                                            &frame_bytes);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (frame_bytes > SIZE_MAX / 4) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    frame_bytes *= 4;
 
-    status = webp_maybe_resolve_animation_start_frame_no(start_frame_no_set,
-                                                         start_frame_no,
+    status = webp_maybe_resolve_animation_start_frame_no(control->start_frame_no_set,
+                                                         control->start_frame_no,
                                                          anim_info->frame_count,
                                                          &resolved_start_frame_no);
     if (SIXEL_FAILED(status)) {
@@ -2478,7 +2576,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
 
     for (;;) {
         decode_start_frame_no = 0;
-        if (loop_count == 0 && start_frame_no_set) {
+        if (loop_count == 0 && control->start_frame_no_set) {
             decode_start_frame_no = resolved_start_frame_no;
         }
 
@@ -2500,14 +2598,14 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                 continue;
             }
 
-            if (emitted_total_frames >= max_output_frames) {
+            if (emitted_total_frames >= control->max_output_frames) {
                 sixel_helper_set_additional_message(
                     "load_with_libwebp: emitted frame count exceeds safety limit.");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
 
-            status = sixel_frame_new(&frame, pchunk->allocator);
+            status = sixel_frame_new(&frame, chunk->allocator);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -2518,10 +2616,10 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                 frame_bytes,
                 (int)anim_info->canvas_width,
                 (int)anim_info->canvas_height,
-                enable_cms,
-                icc_profile,
-                icc_profile_length,
-                pchunk->allocator,
+                decode->enable_cms,
+                decode->icc_profile,
+                decode->icc_profile_length,
+                chunk->allocator,
                 &cms_converted);
             if (SIXEL_FAILED(status)) {
                 goto end;
@@ -2542,14 +2640,14 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                                           next_delay / 10);
 
             status = webp_finalize_and_emit_frame(frame,
-                                                  enable_cms,
+                                                  decode->enable_cms,
                                                   cms_converted,
-                                                  allow_palette_promotion,
-                                                  reqcolors,
+                                                  decode->allow_palette_promotion,
+                                                  decode->reqcolors,
                                                   resolved_bgcolor,
-                                                  pchunk->allocator,
-                                                  fn_load,
-                                                  context);
+                                                  chunk->allocator,
+                                                  decode->fn_load,
+                                                  decode->context);
             if (status == SIXEL_INTERRUPTED) {
                 goto end;
             }
@@ -2568,10 +2666,10 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
 
         loop_count++;
 
-        if (loop_control == SIXEL_LOOP_DISABLE || emitted_frame_no == 1) {
+        if (control->loop_control == SIXEL_LOOP_DISABLE || emitted_frame_no == 1) {
             break;
         }
-        if (loop_control == SIXEL_LOOP_AUTO &&
+        if (control->loop_control == SIXEL_LOOP_AUTO &&
             anim_info->loop_count > 0 &&
             (unsigned int)loop_count >= anim_info->loop_count) {
             break;
@@ -2614,48 +2712,40 @@ load_with_libwebp(
     WebPAnimDecoder *decoder;
     WebPAnimInfo anim_info;
     WebPDemuxer *demux;
-    int allow_palette_promotion;
-    int has_start_frame_no;
-    int start_frame_no;
+    webp_decode_common_t decode;
+    webp_animation_decode_control_t control;
     WebPBitstreamFeatures stream_features;
     VP8StatusCode feature_status;
     unsigned char anim_bgcolor[3];
     unsigned char *resolved_bgcolor;
-    unsigned char *icc_profile;
-    size_t icc_profile_length;
-    size_t max_output_frames;
-    char error_message[128];
 
     status = SIXEL_FALSE;
     webp_data = (WebPData){ 0 };
     decoder = NULL;
     anim_info = (WebPAnimInfo){ 0 };
     demux = NULL;
-    allow_palette_promotion = 0;
-    has_start_frame_no = 0;
-    start_frame_no = 0;
+    decode = (webp_decode_common_t){ 0 };
+    control = (webp_animation_decode_control_t){ 0 };
     stream_features = (WebPBitstreamFeatures){ 0 };
     feature_status = VP8_STATUS_OK;
     anim_bgcolor[0] = 0u;
     anim_bgcolor[1] = 0u;
     anim_bgcolor[2] = 0u;
     resolved_bgcolor = bgcolor;
-    icc_profile = NULL;
-    icc_profile_length = 0U;
-    max_output_frames = 0u;
-    memset(error_message, 0, sizeof(error_message));
 
-    max_output_frames = webp_resolve_max_output_frames();
+    webp_init_decode_common(&decode,
+                            pchunk,
+                            enable_cms,
+                            reqcolors,
+                            fn_load,
+                            context);
+    webp_init_animation_decode_control(&control, loop_control);
 
-    if (start_frame_no_set) {
-        has_start_frame_no = 1;
-        start_frame_no = start_frame_no_override;
-    } else {
-        status = webp_parse_animation_start_frame_no(&has_start_frame_no,
-                                                     &start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    status = webp_load_start_frame_control(&control,
+                                           start_frame_no_set,
+                                           start_frame_no_override);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     webp_data.bytes = pchunk->buffer;
@@ -2670,12 +2760,7 @@ load_with_libwebp(
                                      pchunk->size,
                                      &stream_features);
     if (feature_status != VP8_STATUS_OK) {
-        (void)snprintf(error_message,
-                       sizeof(error_message),
-                       "load_with_libwebp: WebPGetFeatures failed (%s:%d).",
-                       webp_decode_status_name(feature_status),
-                       (int)feature_status);
-        sixel_helper_set_additional_message(error_message);
+        webp_set_get_features_error_message(feature_status);
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -2700,30 +2785,22 @@ load_with_libwebp(
     }
 
     if (fuse_palette) {
-        allow_palette_promotion = webp_input_is_indexed(demux);
+        decode.allow_palette_promotion = webp_input_is_indexed(demux);
     }
 
     if (enable_cms) {
         webp_extract_icc_profile(demux,
-                                 &icc_profile,
-                                 &icc_profile_length,
+                                 &decode.icc_profile,
+                                 &decode.icc_profile_length,
                                  pchunk->allocator);
     }
 
     if (!stream_features.has_animation) {
-        status = webp_decode_and_emit_single_frame(pchunk,
+        status = webp_decode_and_emit_single_frame(&decode,
                                                    &stream_features,
-                                                   has_start_frame_no,
-                                                   start_frame_no,
+                                                   &control,
                                                    1,
-                                                   enable_cms,
-                                                   icc_profile,
-                                                   icc_profile_length,
-                                                   allow_palette_promotion,
-                                                   reqcolors,
-                                                   bgcolor,
-                                                   fn_load,
-                                                   context);
+                                                   bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2781,19 +2858,11 @@ load_with_libwebp(
         WebPAnimDecoderDelete(decoder);
         decoder = NULL;
 
-        status = webp_decode_and_emit_single_frame(pchunk,
+        status = webp_decode_and_emit_single_frame(&decode,
                                                    &stream_features,
-                                                   has_start_frame_no,
-                                                   start_frame_no,
+                                                   &control,
                                                    anim_info.frame_count,
-                                                   enable_cms,
-                                                   icc_profile,
-                                                   icc_profile_length,
-                                                   allow_palette_promotion,
-                                                   reqcolors,
-                                                   resolved_bgcolor,
-                                                   fn_load,
-                                                   context);
+                                                   resolved_bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2806,17 +2875,9 @@ load_with_libwebp(
         status = webp_decode_and_emit_static_animation_frame(
             decoder,
             &anim_info,
-            pchunk,
-            enable_cms,
-            icc_profile,
-            icc_profile_length,
-            allow_palette_promotion,
-            reqcolors,
-            resolved_bgcolor,
-            has_start_frame_no,
-            start_frame_no,
-            fn_load,
-            context);
+            &decode,
+            &control,
+            resolved_bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2828,19 +2889,9 @@ load_with_libwebp(
     status = webp_decode_and_emit_multiframe_animation(
         decoder,
         &anim_info,
-        pchunk,
-        enable_cms,
-        icc_profile,
-        icc_profile_length,
-        allow_palette_promotion,
-        reqcolors,
-        resolved_bgcolor,
-        loop_control,
-        has_start_frame_no,
-        start_frame_no,
-        max_output_frames,
-        fn_load,
-        context);
+        &decode,
+        &control,
+        resolved_bgcolor);
 
 end:
     if (decoder != NULL) {
@@ -2849,7 +2900,7 @@ end:
     if (demux != NULL) {
         WebPDemuxDelete(demux);
     }
-    sixel_allocator_free(pchunk->allocator, icc_profile);
+    sixel_allocator_free(pchunk->allocator, decode.icc_profile);
 
     return status;
 }

@@ -1397,10 +1397,7 @@ sixel_dither_new(
     (*ppdither)->ncolors = ncolors;
     (*ppdither)->origcolors = (-1);
     (*ppdither)->keycolor = (-1);
-    (*ppdither)->transparent_bgcolor[0] = 0U;
-    (*ppdither)->transparent_bgcolor[1] = 0U;
-    (*ppdither)->transparent_bgcolor[2] = 0U;
-    (*ppdither)->transparent_bgcolor_valid = 0;
+    sixel_dither_clear_transparent_bgcolor_hint(*ppdither);
     (*ppdither)->optimized = 0;
     (*ppdither)->optimize_palette = 0;
     (*ppdither)->complexion = 1;
@@ -2190,6 +2187,9 @@ sixel_dither_set_transparent(
     sixel_dither_t /* in */ *dither,      /* dither context object */
     int            /* in */ transparent)  /* transparent color index */
 {
+    if (dither == NULL) {
+        return;
+    }
     dither->keycolor = transparent;
 }
 
