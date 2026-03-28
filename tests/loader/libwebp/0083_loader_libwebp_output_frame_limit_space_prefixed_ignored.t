@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: libwebp output-frame limit env ignores prefixed values.
+# TAP test: libwebp output-frame limit env ignores space-prefixed values.
 
 set -eux
 
@@ -18,21 +18,21 @@ set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
 
-msg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=+1 \
+msg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=' 1' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "plus-prefixed output-frame limit unexpectedly failed decode"
+    echo "not ok" 1 - "space-prefixed output-frame limit unexpectedly failed decode"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in
-    *"ignore invalid SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=+1"*)
-        echo "ok" 1 - "plus-prefixed output-frame limit is ignored with trace"
+    *"ignore invalid SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES= 1"*)
+        echo "ok" 1 - "space-prefixed output-frame limit is ignored with trace"
         ;;
     *)
-        echo "not ok" 1 - "expected plus-prefixed ignore trace was missing"
+        echo "not ok" 1 - "expected space-prefixed ignore trace was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
