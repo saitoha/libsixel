@@ -2808,6 +2808,11 @@ typedef struct builtin_loader_env_dispatch_entry {
     builtin_loader_env_test_fn_t fn;
 } builtin_loader_env_dispatch_entry_t;
 
+typedef struct builtin_loader_env_dispatch_group {
+    builtin_loader_env_dispatch_entry_t const *entries;
+    size_t entry_count;
+} builtin_loader_env_dispatch_group_t;
+
 static int
 run_builtin_loader_env_dispatch(
     builtin_loader_env_dispatch_entry_t const *entries,
@@ -2832,9 +2837,34 @@ run_builtin_loader_env_dispatch(
 }
 
 static int
+run_builtin_loader_env_dispatch_groups(
+    builtin_loader_env_dispatch_group_t const *groups,
+    size_t group_count)
+{
+    size_t group_index;
+    int dispatch_result;
+
+    group_index = 0u;
+    dispatch_result = -1;
+    if (groups == NULL) {
+        return -1;
+    }
+
+    for (group_index = 0u; group_index < group_count; ++group_index) {
+        dispatch_result = run_builtin_loader_env_dispatch(
+            groups[group_index].entries,
+            groups[group_index].entry_count);
+        if (dispatch_result >= 0) {
+            return dispatch_result;
+        }
+    }
+    return -1;
+}
+
+static int
 run_builtin_loader_test(void)
 {
-    static builtin_loader_env_dispatch_entry_t const env_dispatch[] = {
+    static builtin_loader_env_dispatch_entry_t const hdr_env_dispatch[] = {
         { "SIXEL_TEST_HDR_NUMERIC_GAMMA",
           run_builtin_loader_hdr_gamma_numeric_test },
         { "SIXEL_TEST_HDR_NUMERIC_FALLBACK_PROFILE",
@@ -2874,7 +2904,9 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV",
           run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test },
         { "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS",
-          run_builtin_loader_hdr_duplicate_header_metadata_numeric_test },
+          run_builtin_loader_hdr_duplicate_header_metadata_numeric_test }
+    };
+    static builtin_loader_env_dispatch_entry_t const gif_env_dispatch[] = {
         { "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP0_ONCE",
           run_builtin_loader_gif_loop_disable_loop0_once_test },
         { "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP1_ONCE",
@@ -2892,9 +2924,25 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_GIF_LOOP_FORCE_LOOP1_UNBOUNDED",
           run_builtin_loader_gif_loop_force_loop1_unbounded_test },
         { "SIXEL_TEST_GIF_LOOP_FORCE_LOOP2_UNBOUNDED",
-          run_builtin_loader_gif_loop_force_loop2_unbounded_test },
+          run_builtin_loader_gif_loop_force_loop2_unbounded_test }
+    };
+    static builtin_loader_env_dispatch_entry_t const psd_env_dispatch[] = {
         { "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE",
           run_builtin_loader_psd_validate_defensive_test }
+    };
+    static builtin_loader_env_dispatch_group_t const env_dispatch_groups[] = {
+        {
+            hdr_env_dispatch,
+            sizeof(hdr_env_dispatch) / sizeof(hdr_env_dispatch[0])
+        },
+        {
+            gif_env_dispatch,
+            sizeof(gif_env_dispatch) / sizeof(gif_env_dispatch[0])
+        },
+        {
+            psd_env_dispatch,
+            sizeof(psd_env_dispatch) / sizeof(psd_env_dispatch[0])
+        }
     };
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
@@ -2905,9 +2953,9 @@ run_builtin_loader_test(void)
     int result;
     loader_component_case_spec_t psd_alpha_case;
 
-    dispatch_result = run_builtin_loader_env_dispatch(
-        env_dispatch,
-        sizeof(env_dispatch) / sizeof(env_dispatch[0]));
+    dispatch_result = run_builtin_loader_env_dispatch_groups(
+        env_dispatch_groups,
+        sizeof(env_dispatch_groups) / sizeof(env_dispatch_groups[0]));
     if (dispatch_result >= 0) {
         return dispatch_result;
     }
