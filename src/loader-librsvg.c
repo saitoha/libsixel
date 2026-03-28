@@ -30,6 +30,8 @@
 #include "config.h"
 #endif
 
+#include "loader-librsvg.h"
+
 #if HAVE_LIBRSVG
 
 #if HAVE_STDINT_H
@@ -52,7 +54,6 @@
 #include "compat_stub.h"
 #include "frame.h"
 #include "loader-common.h"
-#include "loader-librsvg.h"
 #include "status.h"
 
 typedef struct sixel_loader_librsvg_component {
