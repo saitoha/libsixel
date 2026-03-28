@@ -13,6 +13,10 @@ def read_u32be(data: bytes, offset: int) -> int:
     return struct.unpack(">I", data[offset : offset + 4])[0]
 
 
+def read_u16be(data: bytes, offset: int) -> int:
+    return struct.unpack(">H", data[offset : offset + 2])[0]
+
+
 def write_u16be(buf: bytearray, offset: int, value: int) -> None:
     buf[offset : offset + 2] = struct.pack(">H", value & 0xFFFF)
 
@@ -95,6 +99,77 @@ def generate(out_dir: pathlib.Path) -> None:
     write_file(
         out_dir / "stbi_minimal_missing_image_data_badlayer.psd",
         bytes(bad_layer),
+    )
+
+    # Layer-fallback policy fixtures (based on the single-layer RGB8 baseline).
+    layer_base_path = out_dir / "snake16_rgb8_missing_composite_single_layer.psd"
+    layer_base = layer_base_path.read_bytes()
+    layer_len_off2, _, _ = locate_offsets(layer_base)
+    section_offset = layer_len_off2 + 4
+    layer_info_length = read_u32be(layer_base, section_offset)
+    layer_info_offset = section_offset + 4
+    layer_info_end = layer_info_offset + layer_info_length
+
+    layer_record_offset = layer_info_offset + 2
+    channel_count_offset = layer_record_offset + 16
+    channel_count = read_u16be(layer_base, channel_count_offset)
+    channel_entries_offset = channel_count_offset + 2
+    blend_block_offset = channel_entries_offset + channel_count * 6
+    extra_data_length_offset = blend_block_offset + 12
+    extra_data_length = read_u32be(layer_base, extra_data_length_offset)
+    channel_data_offset = blend_block_offset + 16 + extra_data_length
+    first_channel_length_offset = channel_entries_offset + 2
+    first_channel_payload_offset = channel_data_offset
+
+    if layer_info_end > len(layer_base):
+        raise RuntimeError("invalid single-layer baseline fixture")
+
+    fallback_channels2 = bytearray(layer_base)
+    write_u16be(fallback_channels2, channel_count_offset, 2)
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_single_layer_channel_count2.psd",
+        bytes(fallback_channels2),
+    )
+
+    fallback_table_overflow = bytearray(layer_base)
+    write_u16be(fallback_table_overflow, channel_count_offset, 56)
+    write_u32be(fallback_table_overflow, section_offset, 300)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_channel_table_overflow.psd",
+        bytes(fallback_table_overflow),
+    )
+
+    fallback_length1 = bytearray(layer_base)
+    write_u32be(fallback_length1, first_channel_length_offset, 1)
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_single_layer_channel_length1.psd",
+        bytes(fallback_length1),
+    )
+
+    fallback_compression2 = bytearray(layer_base)
+    write_u16be(fallback_compression2, first_channel_payload_offset, 2)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_channel_compression2.psd",
+        bytes(fallback_compression2),
+    )
+
+    fallback_extra_oversized = bytearray(layer_base)
+    write_u32be(fallback_extra_oversized, extra_data_length_offset, 0x7FFFFFFF)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_extra_data_oversized.psd",
+        bytes(fallback_extra_oversized),
+    )
+
+    fallback_blend_short = bytearray(layer_base)
+    short_layer_info_length = (blend_block_offset - layer_info_offset) + 15
+    write_u32be(fallback_blend_short, section_offset, short_layer_info_length)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_blend_block_short.psd",
+        bytes(fallback_blend_short),
     )
 
 
