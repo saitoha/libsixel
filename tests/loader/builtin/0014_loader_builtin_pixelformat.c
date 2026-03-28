@@ -194,7 +194,16 @@ loader_test_setenv(char const *name, char const *value)
 #if defined(_MSC_VER)
     return _putenv_s(name, value);
 #else
+# if defined(HAVE_SETENV)
+    extern int setenv(char const *name, char const *value, int overwrite);
+
     return setenv(name, value, 1);
+# else
+    (void)name;
+    (void)value;
+
+    return -1;
+# endif
 #endif
 }
 
@@ -484,7 +493,7 @@ loader_test_getenv(char const *name)
 }
 
 static char const *
-resolve_source_root_for_loader_test(void)
+resolve_source_root_for_pixelformat_test(void)
 {
     char const *source_root;
 
@@ -534,7 +543,7 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
         return 1;
     }
 
-    source_root = resolve_source_root_for_loader_test();
+    source_root = resolve_source_root_for_pixelformat_test();
 
     if (build_image_path(source_root,
                          relative_path,
@@ -1547,7 +1556,7 @@ run_builtin_loader_hdr_case_with_cms(char const *label,
     use_palette = 0;
     reqcolors = 256;
 
-    source_root = resolve_source_root_for_loader_test();
+    source_root = resolve_source_root_for_pixelformat_test();
 
     if (build_image_path(source_root,
                          "/tests/data/inputs/formats/stbi_minimal.hdr",

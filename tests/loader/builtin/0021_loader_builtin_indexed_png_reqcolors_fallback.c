@@ -221,7 +221,7 @@ cleanup:
 }
 
 static char const *
-resolve_source_root_for_loader_test(void)
+resolve_source_root_for_indexed_png_reqcolors_test(void)
 {
 #if defined(_MSC_VER)
     char *source_root_dupe;
@@ -353,7 +353,7 @@ run_loader_suboption_parallel_isolation_test(void)
     thread_one_started = 0;
     create_status = SIXEL_OK;
 
-    source_root = resolve_source_root_for_loader_test();
+    source_root = resolve_source_root_for_indexed_png_reqcolors_test();
     while (image_index < sizeof(relative_images) / sizeof(relative_images[0])) {
         if (build_image_path(source_root,
                              relative_images[image_index],
