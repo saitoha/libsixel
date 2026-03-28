@@ -168,6 +168,24 @@ librsvg_equals_nocase(char const *lhs, char const *rhs)
     return *lhs == '\0' && *rhs == '\0';
 }
 
+/*
+ * Treat common textual false values as disabled flags.
+ */
+static int
+librsvg_string_is_falsey(char const *value)
+{
+    if (value == NULL) {
+        return 0;
+    }
+    if (librsvg_equals_nocase(value, "0") ||
+            librsvg_equals_nocase(value, "off") ||
+            librsvg_equals_nocase(value, "false") ||
+            librsvg_equals_nocase(value, "no")) {
+        return 1;
+    }
+    return 0;
+}
+
 static int
 librsvg_env_is_enabled(char const *name)
 {
@@ -191,10 +209,7 @@ librsvg_env_is_enabled(char const *name)
     if (value[index] == '\0') {
         return 0;
     }
-    if (librsvg_equals_nocase(value + index, "0") ||
-            librsvg_equals_nocase(value + index, "off") ||
-            librsvg_equals_nocase(value + index, "false") ||
-            librsvg_equals_nocase(value + index, "no")) {
+    if (librsvg_string_is_falsey(value + index)) {
         return 0;
     }
     return 1;
