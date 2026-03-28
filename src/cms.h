@@ -10,6 +10,7 @@
 #endif
 
 #include <stddef.h>
+#include <sixel.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +62,7 @@ sixel_cms_set_engine(sixel_cms_engine_t engine);
 sixel_cms_engine_t
 sixel_cms_get_engine(void);
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
                                   int width,
                                   int height,
@@ -77,10 +78,10 @@ sixel_cms_convert_to_srgb_with_profile_bytes(
     unsigned char const *profile,
     size_t profile_length);
 
-sixel_cms_profile_t *
+SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_linear_srgb_profile(void);
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
                                        int width,
                                        int height,
@@ -102,10 +103,10 @@ sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count);
 sixel_cms_profile_t *
 sixel_cms_open_profile_from_mem(void const *data, size_t length);
 
-sixel_cms_profile_t *
+SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_srgb_profile(void);
 
-sixel_cms_profile_t *
+SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
                                              double white_x,
                                              double white_y,
@@ -119,7 +120,7 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
 sixel_cms_color_space_t
 sixel_cms_get_color_space(sixel_cms_profile_t const *profile);
 
-void
+SIXEL_INTERNAL_API void
 sixel_cms_close_profile(sixel_cms_profile_t *profile);
 
 sixel_cms_transform_t *

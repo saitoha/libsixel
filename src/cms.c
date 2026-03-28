@@ -1069,7 +1069,7 @@ sixel_cms_open_profile_from_mem(void const *data, size_t length)
     return NULL;
 }
 
-sixel_cms_profile_t *
+SIXELAPI sixel_cms_profile_t *
 sixel_cms_create_srgb_profile(void)
 {
     sixel_cms_profile_t *profile;
@@ -1105,7 +1105,7 @@ sixel_cms_create_srgb_profile(void)
     return NULL;
 }
 
-sixel_cms_profile_t *
+SIXELAPI sixel_cms_profile_t *
 sixel_cms_create_linear_srgb_profile(void)
 {
     return sixel_cms_create_rgb_profile_from_gamma_chrm(
@@ -1120,7 +1120,7 @@ sixel_cms_create_linear_srgb_profile(void)
         SIXEL_SRGB_BLUE_Y);
 }
 
-sixel_cms_profile_t *
+SIXELAPI sixel_cms_profile_t *
 sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
                                              double white_x,
                                              double white_y,
@@ -1201,7 +1201,7 @@ sixel_cms_get_color_space(sixel_cms_profile_t const *profile)
     return profile->colorspace;
 }
 
-void
+SIXELAPI void
 sixel_cms_close_profile(sixel_cms_profile_t *profile)
 {
     if (profile == NULL) {
@@ -1827,7 +1827,7 @@ sixel_cms_delete_transform(sixel_cms_transform_t *transform)
     free(transform);
 }
 
-int
+SIXELAPI int
 sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
                                   int width,
                                   int height,
@@ -2013,7 +2013,7 @@ sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count)
     return SIXEL_SUCCEEDED(status);
 }
 
-int
+SIXELAPI int
 sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
                                        int width,
                                        int height,
