@@ -154,10 +154,11 @@ test_transparent_mask_fence_core(int parallel_active)
         goto cleanup;
     }
 
-    masked_dither->pipeline_transparent_mask = transparent_mask;
-    masked_dither->pipeline_transparent_mask_size =
-        sizeof(transparent_mask);
-    masked_dither->pipeline_transparent_keycolor = 0;
+    sixel_dither_set_pipeline_transparent_mask_hint(
+        masked_dither,
+        transparent_mask,
+        sizeof(transparent_mask),
+        0);
 
     masked_indexes = sixel_dither_apply_palette(masked_dither,
                                                 masked_pixels,

@@ -916,9 +916,7 @@ sixel_encoder_bind_frame_transparent_mask(
     if (dither == NULL) {
         return;
     }
-    dither->pipeline_transparent_mask = NULL;
-    dither->pipeline_transparent_mask_size = 0u;
-    dither->pipeline_transparent_keycolor = (-1);
+    sixel_dither_clear_pipeline_transparent_mask_hint(dither);
 
     /*
      * Reuse frame-owned transparency masks directly in the dither pipeline.
@@ -943,9 +941,10 @@ sixel_encoder_bind_frame_transparent_mask(
         return;
     }
 
-    dither->pipeline_transparent_mask = frame->transparent_mask;
-    dither->pipeline_transparent_mask_size = pixel_count;
-    dither->pipeline_transparent_keycolor = dither->keycolor;
+    sixel_dither_set_pipeline_transparent_mask_hint(dither,
+                                                    frame->transparent_mask,
+                                                    pixel_count,
+                                                    dither->keycolor);
 }
 
 /*

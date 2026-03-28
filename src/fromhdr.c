@@ -32,6 +32,9 @@
 #if HAVE_CTYPE_H
 # include <ctype.h>
 #endif
+#if HAVE_FLOAT_H
+# include <float.h>
+#endif
 #if HAVE_MATH_H
 # include <math.h>
 #endif
@@ -140,6 +143,26 @@ sixel_builtin_hdr_parse_gamma_line(char const *line, double *gamma)
     }
 
     *gamma = values[0];
+    return 1;
+}
+
+static int
+sixel_builtin_hdr_parse_exposure_line(char const *line, double *exposure)
+{
+    double values[1];
+
+    values[0] = 0.0;
+    if (line == NULL || exposure == NULL) {
+        return 0;
+    }
+    if (!sixel_builtin_hdr_parse_double_list(line, values, 1u)) {
+        return 0;
+    }
+    if (!(values[0] > 0.0)) {
+        return 0;
+    }
+
+    *exposure = values[0];
     return 1;
 }
 
@@ -279,6 +302,8 @@ sixel_builtin_parse_hdr_profile_hint(
     char line[256];
     int parsing_done;
     double gamma_value;
+    double exposure_value;
+    double exposure_scale;
 
     cursor = 0u;
     line_start = 0u;
@@ -286,6 +311,8 @@ sixel_builtin_parse_hdr_profile_hint(
     line_length = 0u;
     parsing_done = 0;
     gamma_value = 0.0;
+    exposure_value = 0.0;
+    exposure_scale = 1.0;
 
     if (chunk == NULL || chunk->buffer == NULL || out_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -293,6 +320,7 @@ sixel_builtin_parse_hdr_profile_hint(
 
     memset(out_hint, 0, sizeof(*out_hint));
     out_hint->gamma = 1.0;
+    out_hint->exposure_scale = 1.0;
     if (chunk->size == 0u) {
         return SIXEL_FALSE;
     }
@@ -329,14 +357,42 @@ sixel_builtin_parse_hdr_profile_hint(
                 out_hint->gamma = gamma_value;
                 out_hint->has_gamma = 1;
             } else {
+                out_hint->gamma_malformed = 1;
                 out_hint->malformed = 1;
             }
             continue;
         }
         if (sixel_builtin_hdr_ascii_has_prefix(line, "PRIMARIES=")) {
             if (!sixel_builtin_hdr_parse_primaries_line(line + 10, out_hint)) {
+                out_hint->primaries_malformed = 1;
                 out_hint->malformed = 1;
             }
+            continue;
+        }
+        if (sixel_builtin_hdr_ascii_has_prefix(line, "EXPOSURE=")) {
+            if (!sixel_builtin_hdr_parse_exposure_line(line + 9,
+                                                       &exposure_value)) {
+                out_hint->exposure_malformed = 1;
+                out_hint->malformed = 1;
+                continue;
+            }
+            exposure_scale = out_hint->has_exposure ? out_hint->exposure_scale
+                                                    : 1.0;
+            if (!isfinite(exposure_scale) ||
+                exposure_scale <= 0.0 ||
+                exposure_scale > DBL_MAX / exposure_value) {
+                out_hint->exposure_malformed = 1;
+                out_hint->malformed = 1;
+                continue;
+            }
+            exposure_scale *= exposure_value;
+            if (!isfinite(exposure_scale) || exposure_scale <= 0.0) {
+                out_hint->exposure_malformed = 1;
+                out_hint->malformed = 1;
+                continue;
+            }
+            out_hint->exposure_scale = exposure_scale;
+            out_hint->has_exposure = 1;
             continue;
         }
     }

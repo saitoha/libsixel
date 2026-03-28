@@ -1047,6 +1047,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "quantization. Positive brightens, negative darkens. Default 0."
     },
     {
+        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+        "control whether builtin HDR applies Radiance EXPOSURE metadata.\n"
+        "Accepts 1/on/true/yes (default) or 0/off/false/no."
+    },
+    {
         "SIXEL_LOADER_HDR_TONEMAP",
         "apply HDR tone mapping on builtin HDR decode path. Accepts none\n"
         "(default) or reinhard."

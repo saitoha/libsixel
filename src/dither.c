@@ -1431,9 +1431,7 @@ sixel_dither_new(
     (*ppdither)->pipeline_pin_threads = 1;
     (*ppdither)->pipeline_image_width = 0;
     (*ppdither)->pipeline_image_height = 0;
-    (*ppdither)->pipeline_transparent_mask = NULL;
-    (*ppdither)->pipeline_transparent_mask_size = 0;
-    (*ppdither)->pipeline_transparent_keycolor = (-1);
+    sixel_dither_clear_pipeline_transparent_mask_hint(*ppdither);
     (*ppdither)->pipeline_logger = NULL;
 
     status = sixel_palette_new(&(*ppdither)->palette, allocator);
@@ -2195,6 +2193,43 @@ sixel_dither_set_transparent(
     dither->keycolor = transparent;
 }
 
+void
+sixel_dither_clear_pipeline_transparent_mask_hint(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->pipeline_transparent_mask = NULL;
+    dither->pipeline_transparent_mask_size = 0u;
+    dither->pipeline_transparent_keycolor = (-1);
+}
+
+void
+sixel_dither_set_pipeline_transparent_mask_hint(
+    sixel_dither_t *dither,
+    unsigned char const *transparent_mask,
+    size_t transparent_mask_size,
+    int keycolor)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    sixel_dither_clear_pipeline_transparent_mask_hint(dither);
+    if (transparent_mask == NULL || transparent_mask_size == 0u) {
+        return;
+    }
+    if (keycolor < 0 || keycolor >= SIXEL_PALETTE_MAX) {
+        return;
+    }
+
+    dither->pipeline_transparent_mask = transparent_mask;
+    dither->pipeline_transparent_mask_size = transparent_mask_size;
+    dither->pipeline_transparent_keycolor = keycolor;
+}
+
 static int
 sixel_dither_pixelformat_has_alpha(int pixelformat)
 {
@@ -2623,9 +2658,7 @@ sixel_dither_apply_palette(
     preset_transparent_mask = dither->pipeline_transparent_mask;
     preset_transparent_mask_size = dither->pipeline_transparent_mask_size;
     preset_transparent_keycolor = dither->pipeline_transparent_keycolor;
-    dither->pipeline_transparent_mask = NULL;
-    dither->pipeline_transparent_mask_size = 0;
-    dither->pipeline_transparent_keycolor = (-1);
+    sixel_dither_clear_pipeline_transparent_mask_hint(dither);
 
     /*
      * Prefer caller-provided transparency masks when available.
@@ -2672,9 +2705,11 @@ sixel_dither_apply_palette(
     }
     if (apply_transparent_mask && transparent_mask != NULL &&
         keycolor_for_mask >= 0 && keycolor_for_mask < SIXEL_PALETTE_MAX) {
-        dither->pipeline_transparent_mask = transparent_mask;
-        dither->pipeline_transparent_mask_size = total_pixels;
-        dither->pipeline_transparent_keycolor = keycolor_for_mask;
+        sixel_dither_set_pipeline_transparent_mask_hint(
+            dither,
+            transparent_mask,
+            total_pixels,
+            keycolor_for_mask);
     }
 
     pipeline_pixelformat = dither->pixelformat;
@@ -3045,9 +3080,7 @@ end:
         dither->pipeline_dither_threads = 0;
         dither->pipeline_image_width = 0;
         dither->pipeline_image_height = 0;
-        dither->pipeline_transparent_mask = NULL;
-        dither->pipeline_transparent_mask_size = 0;
-        dither->pipeline_transparent_keycolor = (-1);
+        sixel_dither_clear_pipeline_transparent_mask_hint(dither);
         dither->pipeline_logger = NULL;
         sixel_dither_unref(dither);
     }

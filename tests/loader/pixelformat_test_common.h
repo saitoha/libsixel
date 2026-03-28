@@ -73,6 +73,36 @@ typedef struct loader_probe_callback_state {
     void *context;
 } loader_probe_callback_state_t;
 
+typedef SIXELSTATUS (*loader_component_new_fn)(
+    sixel_allocator_t *,
+    sixel_loader_component_t **);
+
+typedef struct loader_component_case_expect {
+    int pixelformat;
+    int width;
+    int height;
+    int callback_count;
+    int transparent;
+    int multiframe;
+    int mask_present;
+    int alpha_zero_is_transparent;
+} loader_component_case_expect_t;
+
+typedef struct loader_component_case_options {
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    unsigned char const *bgcolor;
+} loader_component_case_options_t;
+
+typedef struct loader_component_case_spec {
+    char const *label;
+    char const *relative_path;
+    loader_component_case_expect_t expect;
+    loader_component_case_options_t options;
+    loader_component_new_fn new_component;
+} loader_component_case_spec_t;
+
 #define GEOMETRY_ANY (-1)
 #define CALLBACK_COUNT_ANY (-1)
 #define FRAME_METADATA_ANY INT_MIN
@@ -303,13 +333,6 @@ cleanup:
 
     return result;
 }
-
-
-
-typedef SIXELSTATUS (*loader_component_new_fn)(
-    sixel_allocator_t *,
-    sixel_loader_component_t **);
-
 static SIXEL_TEST_UNUSED SIXELSTATUS
 create_loader_component_by_name(char const *name,
                                 sixel_allocator_t *allocator,
@@ -653,6 +676,33 @@ run_loader_component_case_with_options_mask_ex(
         reqcolors,
         bgcolor,
         new_component);
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_from_spec(
+    loader_component_case_spec_t const *spec)
+{
+    if (spec == NULL || spec->label == NULL || spec->relative_path == NULL ||
+        spec->new_component == NULL) {
+        return 1;
+    }
+
+    return run_loader_component_case_with_options_full(
+        spec->label,
+        spec->relative_path,
+        spec->expect.pixelformat,
+        spec->expect.width,
+        spec->expect.height,
+        spec->expect.callback_count,
+        spec->expect.transparent,
+        spec->expect.multiframe,
+        spec->expect.mask_present,
+        spec->expect.alpha_zero_is_transparent,
+        spec->options.require_static,
+        spec->options.use_palette,
+        spec->options.reqcolors,
+        spec->options.bgcolor,
+        spec->new_component);
 }
 
 static SIXEL_TEST_UNUSED int

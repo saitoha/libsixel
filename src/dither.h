@@ -93,6 +93,22 @@ sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
                            int                 /* in */ width,
                            int                 /* in */ height);
 
+/*
+ * Set or clear a caller-provided transparent mask hint used by the
+ * dithering pipeline. The mask pointer is borrowed and must stay valid
+ * for the duration of sixel_dither_apply_palette().
+ */
+void
+sixel_dither_set_pipeline_transparent_mask_hint(
+    sixel_dither_t *dither,
+    unsigned char const *transparent_mask,
+    size_t transparent_mask_size,
+    int keycolor);
+
+void
+sixel_dither_clear_pipeline_transparent_mask_hint(
+    sixel_dither_t *dither);
+
 
 #ifdef __cplusplus
 }

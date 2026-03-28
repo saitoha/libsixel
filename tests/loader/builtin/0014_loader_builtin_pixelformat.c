@@ -1097,6 +1097,274 @@ run_builtin_loader_hdr_tonemap_reinhard_numeric_test(void)
     return 0;
 }
 
+static int
+run_builtin_loader_hdr_header_exposure_numeric_test(void)
+{
+    hdr_numeric_probe_context_t probe;
+    float expected[3];
+    float tolerance;
+    int index;
+    int result;
+
+    tolerance = 0.0007f;
+    expected[0] = 1.0f;
+    expected[1] = 0.5f;
+    expected[2] = 0.25f;
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr header exposure numeric",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr header exposure numeric: unexpected "
+                "frame contract (pixelformat=%d colorspace=%d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(probe.first_pixel[index],
+                                expected[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr header exposure numeric: "
+                    "channel %d mismatch (actual=%f expected=%f)\n",
+                    index,
+                    probe.first_pixel[index],
+                    expected[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_header_exposure_multi_numeric_test(void)
+{
+    hdr_numeric_probe_context_t probe;
+    float expected[3];
+    float tolerance;
+    int index;
+    int result;
+
+    tolerance = 0.0007f;
+    expected[0] = 4.0f;
+    expected[1] = 2.0f;
+    expected[2] = 1.0f;
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr header exposure multi numeric",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2x4.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr header exposure multi numeric: "
+                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(probe.first_pixel[index],
+                                expected[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr header exposure multi numeric: "
+                    "channel %d mismatch (actual=%f expected=%f)\n",
+                    index,
+                    probe.first_pixel[index],
+                    expected[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_header_exposure_disabled_numeric_test(void)
+{
+    hdr_numeric_probe_context_t probe;
+    float expected[3];
+    float tolerance;
+    int index;
+    int result;
+
+    tolerance = 0.0007f;
+    expected[0] = 0.5f;
+    expected[1] = 0.25f;
+    expected[2] = 0.125f;
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "0") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr header exposure disabled numeric",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr header exposure disabled numeric: "
+                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(probe.first_pixel[index],
+                                expected[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr header exposure disabled numeric: "
+                    "channel %d mismatch (actual=%f expected=%f)\n",
+                    index,
+                    probe.first_pixel[index],
+                    expected[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_partial_header_numeric_test(
+    char const *label,
+    char const *sample_path,
+    hdr_test_gamma_mode_t gamma_mode,
+    hdr_test_primaries_mode_t primaries_mode)
+{
+    hdr_numeric_probe_context_t probe;
+    float expected[3];
+    float tolerance;
+    int target_pixelformat;
+    int target_colorspace;
+    int channel;
+    int result;
+
+    tolerance = 0.0012f;
+    target_pixelformat = loader_cms_target_pixelformat();
+    target_colorspace = expected_colorspace_for_pixelformat(target_pixelformat);
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(label,
+                                                       sample_path,
+                                                       SIXEL_CMS_ENGINE_AUTO,
+                                                       &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != target_pixelformat ||
+        probe.colorspace != target_colorspace) {
+        fprintf(stderr,
+                "%s: frame contract mismatch (pf=%d expected=%d cs=%d "
+                "expected=%d)\n",
+                label,
+                probe.pixelformat,
+                target_pixelformat,
+                probe.colorspace,
+                target_colorspace);
+        return 1;
+    }
+
+    if (hdr_test_expected_first_pixel(expected,
+                                      gamma_mode,
+                                      primaries_mode,
+                                      0.0,
+                                      HDR_TEST_TONEMAP_NONE,
+                                      SIXEL_CMS_ENGINE_AUTO,
+                                      HDR_TEST_FALLBACK_LINEAR_SRGB,
+                                      target_pixelformat) != 0) {
+        fprintf(stderr, "%s: failed to compute expected value\n", label);
+        return 1;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        if (!float_approx_equal(probe.first_pixel[channel],
+                                expected[channel],
+                                tolerance)) {
+            fprintf(stderr,
+                    "%s: channel %d mismatch (actual=%f expected=%f)\n",
+                    label,
+                    channel,
+                    probe.first_pixel[channel],
+                    expected[channel]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test(void)
+{
+    return run_builtin_loader_hdr_partial_header_numeric_test(
+        "builtin loader hdr gamma invalid + primaries valid numeric",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_gamma_invalid_bt2020.hdr",
+        HDR_TEST_GAMMA_NONE,
+        HDR_TEST_PRIMARIES_BT2020);
+}
+
+static int
+run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test(void)
+{
+    return run_builtin_loader_hdr_partial_header_numeric_test(
+        "builtin loader hdr primaries invalid + gamma valid numeric",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_gamma22_primaries_invalid.hdr",
+        HDR_TEST_GAMMA_22,
+        HDR_TEST_PRIMARIES_NONE);
+}
+
 static char const *
 hdr_test_fixture_for_axes(hdr_test_gamma_mode_t gamma_mode,
                           hdr_test_primaries_mode_t primaries_mode)
@@ -1341,7 +1609,9 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
         loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV",
                            exposure_text) != 0 ||
         loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP",
-                           tonemap_text) != 0) {
+                           tonemap_text) != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
         fprintf(stderr,
                 "builtin loader hdr single-case numeric: failed to set loader env\n");
         return 1;
@@ -1424,7 +1694,9 @@ run_builtin_loader_hdr_invalid_fallback_numeric_test(void)
     if (loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
         loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
         loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
-                           "linear-srgb") != 0) {
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
         return 1;
     }
 
@@ -1465,7 +1737,9 @@ run_builtin_loader_hdr_invalid_tonemap_numeric_test(void)
     if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
                            "linear-srgb") != 0 ||
         loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
-        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0) {
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
         return 1;
     }
     result = run_builtin_loader_hdr_numeric_probe_case(
@@ -1503,7 +1777,9 @@ run_builtin_loader_hdr_invalid_exposure_numeric_test(void)
     if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
                            "linear-srgb") != 0 ||
         loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
-        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0) {
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
         return 1;
     }
     result = run_builtin_loader_hdr_numeric_probe_case(
@@ -1686,12 +1962,18 @@ run_builtin_loader_test(void)
     char const *hdr_invalid_fallback_numeric_mode;
     char const *hdr_invalid_tonemap_numeric_mode;
     char const *hdr_invalid_exposure_numeric_mode;
+    char const *hdr_header_exposure_numeric_mode;
+    char const *hdr_header_exposure_multi_numeric_mode;
+    char const *hdr_header_exposure_disabled_numeric_mode;
+    char const *hdr_gamma_invalid_primaries_valid_numeric_mode;
+    char const *hdr_primaries_invalid_gamma_valid_numeric_mode;
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
     int cms_target_colorspace;
     int parsed_pixelformat;
     int result;
+    loader_component_case_spec_t psd_alpha_case;
 
     hdr_numeric_mode = loader_test_getenv("SIXEL_TEST_HDR_NUMERIC_GAMMA");
     hdr_fallback_numeric_mode = loader_test_getenv(
@@ -1710,6 +1992,16 @@ run_builtin_loader_test(void)
         "SIXEL_TEST_HDR_NUMERIC_INVALID_TONEMAP");
     hdr_invalid_exposure_numeric_mode = loader_test_getenv(
         "SIXEL_TEST_HDR_NUMERIC_INVALID_EXPOSURE");
+    hdr_header_exposure_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE");
+    hdr_header_exposure_multi_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE_MULTI");
+    hdr_header_exposure_disabled_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE_DISABLED");
+    hdr_gamma_invalid_primaries_valid_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_GAMMA_INVALID_PRIMARIES_VALID");
+    hdr_primaries_invalid_gamma_valid_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_PRIMARIES_INVALID_GAMMA_VALID");
     if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_gamma_numeric_test();
     }
@@ -1744,6 +2036,28 @@ run_builtin_loader_test(void)
     if (hdr_invalid_exposure_numeric_mode != NULL &&
         strcmp(hdr_invalid_exposure_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_invalid_exposure_numeric_test();
+    }
+    if (hdr_header_exposure_numeric_mode != NULL &&
+        strcmp(hdr_header_exposure_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_header_exposure_numeric_test();
+    }
+    if (hdr_header_exposure_multi_numeric_mode != NULL &&
+        strcmp(hdr_header_exposure_multi_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_header_exposure_multi_numeric_test();
+    }
+    if (hdr_header_exposure_disabled_numeric_mode != NULL &&
+        strcmp(hdr_header_exposure_disabled_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_header_exposure_disabled_numeric_test();
+    }
+    if (hdr_gamma_invalid_primaries_valid_numeric_mode != NULL &&
+        strcmp(hdr_gamma_invalid_primaries_valid_numeric_mode, "1") == 0) {
+        return
+            run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test();
+    }
+    if (hdr_primaries_invalid_gamma_valid_numeric_mode != NULL &&
+        strcmp(hdr_primaries_invalid_gamma_valid_numeric_mode, "1") == 0) {
+        return
+            run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test();
     }
 
     result = run_loader_component_case("builtin loader rgba8",
@@ -2026,42 +2340,34 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    result = run_loader_component_case_with_options_mask_ex(
-        "builtin loader psd rgb8 alpha no-bgcolor keeps rgb888",
-        "/tests/data/inputs/formats/snake16_rgb8_alpha.psd",
-        SIXEL_PIXELFORMAT_RGB888,
-        GEOMETRY_ANY,
-        GEOMETRY_ANY,
-        1,
-        -1,
-        0,
-        1,
-        1,
-        1,
-        0,
-        256,
-        NULL,
-        new_builtin_component_for_pixelformat_test);
+    psd_alpha_case.label =
+        "builtin loader psd rgb8 alpha no-bgcolor keeps rgb888";
+    psd_alpha_case.relative_path =
+        "/tests/data/inputs/formats/snake16_rgb8_alpha.psd";
+    psd_alpha_case.expect.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    psd_alpha_case.expect.width = GEOMETRY_ANY;
+    psd_alpha_case.expect.height = GEOMETRY_ANY;
+    psd_alpha_case.expect.callback_count = 1;
+    psd_alpha_case.expect.transparent = -1;
+    psd_alpha_case.expect.multiframe = 0;
+    psd_alpha_case.expect.mask_present = 1;
+    psd_alpha_case.expect.alpha_zero_is_transparent = 1;
+    psd_alpha_case.options.require_static = 1;
+    psd_alpha_case.options.use_palette = 0;
+    psd_alpha_case.options.reqcolors = 256;
+    psd_alpha_case.options.bgcolor = NULL;
+    psd_alpha_case.new_component = new_builtin_component_for_pixelformat_test;
+    result = run_loader_component_case_from_spec(&psd_alpha_case);
     if (result != 0) {
         return result;
     }
 
-    result = run_loader_component_case_with_options_mask_ex(
-        "builtin loader psd rgb8 alpha with-bgcolor keeps rgb888",
-        "/tests/data/inputs/formats/snake16_rgb8_alpha.psd",
-        SIXEL_PIXELFORMAT_RGB888,
-        GEOMETRY_ANY,
-        GEOMETRY_ANY,
-        1,
-        -1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        256,
-        bgcolor_white,
-        new_builtin_component_for_pixelformat_test);
+    psd_alpha_case.label =
+        "builtin loader psd rgb8 alpha with-bgcolor keeps rgb888";
+    psd_alpha_case.expect.mask_present = 0;
+    psd_alpha_case.expect.alpha_zero_is_transparent = 0;
+    psd_alpha_case.options.bgcolor = bgcolor_white;
+    result = run_loader_component_case_from_spec(&psd_alpha_case);
     if (result != 0) {
         return result;
     }

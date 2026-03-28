@@ -48,6 +48,9 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#if HAVE_FLOAT_H
+# include <float.h>
+#endif
 #if HAVE_MATH_H
 # include <math.h>
 #endif
@@ -345,6 +348,51 @@ sixel_builtin_hdr_parse_tonemap_mode(
     return 0;
 }
 
+static char const *
+sixel_builtin_hdr_tonemap_mode_name(sixel_builtin_hdr_tonemap_mode_t mode)
+{
+    if (mode == SIXEL_BUILTIN_HDR_TONEMAP_REINHARD) {
+        return "reinhard";
+    }
+    return "none";
+}
+
+static char const *
+sixel_builtin_hdr_fallback_profile_name(
+    sixel_builtin_hdr_fallback_profile_t profile)
+{
+    if (profile == SIXEL_BUILTIN_HDR_FALLBACK_SRGB) {
+        return "srgb";
+    }
+    return "linear-srgb";
+}
+
+static int
+sixel_builtin_hdr_parse_use_header_exposure(
+    char const *text,
+    int *out_enabled)
+{
+    if (out_enabled == NULL) {
+        return 0;
+    }
+    if (text == NULL || text[0] == '\0' ||
+        sixel_builtin_ascii_case_equal(text, "1") ||
+        sixel_builtin_ascii_case_equal(text, "on") ||
+        sixel_builtin_ascii_case_equal(text, "true") ||
+        sixel_builtin_ascii_case_equal(text, "yes")) {
+        *out_enabled = 1;
+        return 1;
+    }
+    if (sixel_builtin_ascii_case_equal(text, "0") ||
+        sixel_builtin_ascii_case_equal(text, "off") ||
+        sixel_builtin_ascii_case_equal(text, "false") ||
+        sixel_builtin_ascii_case_equal(text, "no")) {
+        *out_enabled = 0;
+        return 1;
+    }
+    return 0;
+}
+
 static int
 sixel_builtin_hdr_parse_double_env(
     char const *env_name,
@@ -441,7 +489,10 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
                                        int width,
                                        int height,
                                        int pixelformat,
-                                       sixel_chunk_t const *chunk)
+                                       sixel_chunk_t const *chunk,
+                                       sixel_builtin_hdr_fallback_profile_t
+                                           *pfallback_profile,
+                                       int *pfallback_profile_used)
 {
     SIXELSTATUS hint_status;
     sixel_builtin_hdr_profile_hint_t hint;
@@ -478,19 +529,29 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
     use_header_profile_hint = 0;
     header_linear_override = 0;
     converted = 0;
+    if (pfallback_profile != NULL) {
+        *pfallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
+    }
+    if (pfallback_profile_used != NULL) {
+        *pfallback_profile_used = 0;
+    }
 
     if (pixels == NULL || width <= 0 || height <= 0 || chunk == NULL) {
         return;
     }
 
     hint_status = sixel_builtin_parse_hdr_profile_hint(chunk, &hint);
-    if (SIXEL_SUCCEEDED(hint_status) && hint.malformed) {
+    if (SIXEL_SUCCEEDED(hint_status) && hint.gamma_malformed) {
         loader_trace_message(
-            "builtin HDR: malformed GAMMA/PRIMARIES metadata; "
-            "falling back to profile defaults");
+            "builtin HDR: malformed GAMMA metadata; "
+            "using fallback gamma");
+    }
+    if (SIXEL_SUCCEEDED(hint_status) && hint.primaries_malformed) {
+        loader_trace_message(
+            "builtin HDR: malformed PRIMARIES metadata; "
+            "using fallback primaries");
     }
     if (SIXEL_SUCCEEDED(hint_status) &&
-        !hint.malformed &&
         (hint.has_gamma || hint.has_primaries)) {
         use_header_profile_hint = 1;
     }
@@ -539,6 +600,9 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
     }
 
     if (src_profile == NULL && !header_linear_override) {
+        if (pfallback_profile_used != NULL) {
+            *pfallback_profile_used = 1;
+        }
         fallback_profile_text = sixel_compat_getenv(
             "SIXEL_LOADER_HDR_FALLBACK_PROFILE");
         if (!sixel_builtin_hdr_parse_fallback_profile(fallback_profile_text,
@@ -558,6 +622,9 @@ sixel_builtin_hdr_apply_source_profile(unsigned char *pixels,
                     "this CMS backend; using decode-linear fallback");
             }
         }
+    }
+    if (pfallback_profile != NULL) {
+        *pfallback_profile = fallback_profile;
     }
 
     if (src_profile != NULL) {
@@ -579,29 +646,52 @@ static void
 sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
                                       int width,
                                       int height,
-                                      int pixelformat)
+                                      int pixelformat,
+                                      sixel_chunk_t const *chunk,
+                                      int enable_cms,
+                                      sixel_builtin_hdr_fallback_profile_t
+                                          fallback_profile,
+                                      int fallback_profile_used)
 {
     char const *tonemap_text;
+    char const *use_header_exposure_text;
+    char const *fallback_label;
     sixel_builtin_hdr_tonemap_mode_t tonemap_mode;
+    SIXELSTATUS hint_status;
+    sixel_builtin_hdr_profile_hint_t hint;
     float *float_pixels;
     size_t pixel_count;
     size_t sample_count;
     size_t index;
+    double effective_gamma;
+    double header_exposure_scale;
     double exposure_ev;
+    double env_exposure_scale;
     double exposure_scale;
     double value;
+    int has_header_primaries;
+    int use_header_exposure;
 
     tonemap_text = NULL;
+    use_header_exposure_text = NULL;
+    fallback_label = NULL;
     tonemap_mode = SIXEL_BUILTIN_HDR_TONEMAP_NONE;
+    hint_status = SIXEL_FALSE;
+    memset(&hint, 0, sizeof(hint));
     float_pixels = NULL;
     pixel_count = 0u;
     sample_count = 0u;
     index = 0u;
+    effective_gamma = 1.0;
+    header_exposure_scale = 1.0;
     exposure_ev = 0.0;
+    env_exposure_scale = 1.0;
     exposure_scale = 1.0;
     value = 0.0;
+    has_header_primaries = 0;
+    use_header_exposure = 1;
 
-    if (pixels == NULL || width <= 0 || height <= 0) {
+    if (pixels == NULL || width <= 0 || height <= 0 || chunk == NULL) {
         return;
     }
     if (pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
@@ -610,6 +700,22 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
         return;
+    }
+
+    hint_status = sixel_builtin_parse_hdr_profile_hint(chunk, &hint);
+    if (SIXEL_SUCCEEDED(hint_status) && hint.has_gamma) {
+        effective_gamma = hint.gamma;
+    }
+    if (SIXEL_SUCCEEDED(hint_status) && hint.has_primaries) {
+        has_header_primaries = 1;
+    }
+    if (SIXEL_SUCCEEDED(hint_status) && hint.has_exposure) {
+        header_exposure_scale = hint.exposure_scale;
+    }
+    if (SIXEL_SUCCEEDED(hint_status) && hint.exposure_malformed) {
+        loader_trace_message(
+            "builtin HDR: malformed EXPOSURE metadata; "
+            "ignoring invalid values");
     }
 
     tonemap_text = sixel_compat_getenv("SIXEL_LOADER_HDR_TONEMAP");
@@ -628,17 +734,66 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
         exposure_ev = 0.0;
     }
 
-    if (tonemap_mode == SIXEL_BUILTIN_HDR_TONEMAP_NONE &&
-        sixel_builtin_abs_double(exposure_ev) <= 0.0000001) {
-        return;
+    env_exposure_scale = pow(2.0, exposure_ev);
+    if (!isfinite(env_exposure_scale) || env_exposure_scale <= 0.0) {
+        loader_trace_message(
+            "builtin HDR: exposure scale overflow (ev=%f); using env=1.0",
+            exposure_ev);
+        env_exposure_scale = 1.0;
+    }
+    exposure_scale = env_exposure_scale;
+
+    use_header_exposure_text = sixel_compat_getenv(
+        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE");
+    if (!sixel_builtin_hdr_parse_use_header_exposure(use_header_exposure_text,
+                                                     &use_header_exposure)) {
+        loader_trace_message(
+            "builtin HDR: unknown SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE='%s'; "
+            "using on",
+            use_header_exposure_text);
+        use_header_exposure = 1;
     }
 
-    exposure_scale = pow(2.0, exposure_ev);
-    if (!isfinite(exposure_scale) || exposure_scale <= 0.0) {
-        loader_trace_message(
-            "builtin HDR: exposure scale overflow (ev=%f); using 1.0",
-            exposure_ev);
-        exposure_scale = 1.0;
+    if (use_header_exposure && hint.has_exposure) {
+        if (header_exposure_scale > 0.0 &&
+            isfinite(header_exposure_scale) &&
+            exposure_scale <= DBL_MAX / header_exposure_scale) {
+            exposure_scale *= header_exposure_scale;
+        } else {
+            loader_trace_message(
+                "builtin HDR: header exposure overflow (%f); "
+                "ignoring header exposure",
+                header_exposure_scale);
+            header_exposure_scale = 1.0;
+        }
+    } else {
+        header_exposure_scale = 1.0;
+    }
+
+    if (!enable_cms) {
+        fallback_label = "disabled";
+    } else if (fallback_profile_used) {
+        fallback_label = sixel_builtin_hdr_fallback_profile_name(
+            fallback_profile);
+    } else {
+        fallback_label = "header";
+    }
+
+    loader_trace_message(
+        "builtin HDR: final controls gamma=%f primaries=%s exposure=%f "
+        "(header=%f env_ev=%f use_header=%s) tonemap=%s fallback=%s",
+        effective_gamma,
+        has_header_primaries ? "header" : "srgb",
+        exposure_scale,
+        header_exposure_scale,
+        exposure_ev,
+        use_header_exposure ? "on" : "off",
+        sixel_builtin_hdr_tonemap_mode_name(tonemap_mode),
+        fallback_label);
+
+    if (tonemap_mode == SIXEL_BUILTIN_HDR_TONEMAP_NONE &&
+        sixel_builtin_abs_double(exposure_scale - 1.0) <= 0.0000001) {
+        return;
     }
 
     pixel_count = (size_t)width * (size_t)height;
@@ -3174,10 +3329,14 @@ load_with_builtin(
             int hdr_pixelformat;
             int hdr_colorspace;
             int target_pixelformat;
+            int hdr_fallback_profile_used;
+            sixel_builtin_hdr_fallback_profile_t hdr_fallback_profile;
 
             hdr_pixelformat = SIXEL_PIXELFORMAT_RGB888;
             hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
             target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            hdr_fallback_profile_used = 0;
+            hdr_fallback_profile = SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
                             (int)pchunk->size);
@@ -3542,13 +3701,19 @@ load_with_builtin(
                             frame->width,
                             frame->height,
                             hdr_pixelformat,
-                            pchunk);
+                            pchunk,
+                            &hdr_fallback_profile,
+                            &hdr_fallback_profile_used);
                     }
                     sixel_builtin_hdr_apply_dynamic_range(
                         pixels,
                         frame->width,
                         frame->height,
-                        hdr_pixelformat);
+                        hdr_pixelformat,
+                        pchunk,
+                        enable_cms,
+                        hdr_fallback_profile,
+                        hdr_fallback_profile_used);
                     if (enable_cms) {
                         target_pixelformat = loader_cms_target_pixelformat();
                         status = sixel_frame_set_pixelformat(
