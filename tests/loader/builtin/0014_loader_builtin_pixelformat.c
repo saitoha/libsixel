@@ -1130,102 +1130,252 @@ run_builtin_loader_hdr_static_numeric_case(
     return 0;
 }
 
-static int
-run_builtin_loader_hdr_gamma_numeric_test(void)
-{
+typedef enum hdr_numeric_dual_expect_mode {
+    HDR_NUMERIC_DUAL_EXPECT_SRGB_FROM_BASELINE = 0,
+    HDR_NUMERIC_DUAL_EXPECT_FALLBACK_FROM_BASELINE,
+    HDR_NUMERIC_DUAL_EXPECT_SAME_AS_BASELINE
+} hdr_numeric_dual_expect_mode_t;
+
+typedef struct hdr_numeric_dual_case_spec {
     char const *sample_path;
-    hdr_numeric_probe_context_t linear_probe;
-    hdr_numeric_probe_context_t gamma_probe;
-    float expected_linear[3];
-    float expected_gamma[3];
+    char const *baseline_label;
+    int baseline_cms_engine;
+    int baseline_pixelformat;
+    int baseline_colorspace;
+    char const *variant_label;
+    int variant_cms_engine;
+    int variant_pixelformat;
+    int variant_colorspace;
+    float baseline_expected[3];
     float tolerance;
+    int require_target_pixelformat;
+    int target_pixelformat;
+    hdr_numeric_dual_expect_mode_t expect_mode;
+    int require_variant_channel1_delta;
+    float min_variant_channel1_delta;
+    int require_source_profile_observed;
+    float expected_diff_threshold;
+    float observed_diff_min;
+} hdr_numeric_dual_case_spec_t;
+
+typedef enum hdr_numeric_dual_case_id {
+    HDR_NUMERIC_DUAL_CASE_GAMMA = 0,
+    HDR_NUMERIC_DUAL_CASE_FALLBACK_PROFILE,
+    HDR_NUMERIC_DUAL_CASE_HEADER_PRIORITY
+} hdr_numeric_dual_case_id_t;
+
+static int compute_hdr_srgb_fallback_expected(float *rgb_linear);
+
+static hdr_numeric_dual_case_spec_t const hdr_numeric_dual_cases[] = {
+    {
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        "builtin loader hdr numeric cms=off",
+        SIXEL_CMS_ENGINE_NONE,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        "builtin loader hdr numeric cms=on",
+        SIXEL_CMS_ENGINE_AUTO,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        SIXEL_COLORSPACE_GAMMA,
+        { 0.5f, 0.25f, 0.125f },
+        0.0005f,
+        1,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        HDR_NUMERIC_DUAL_EXPECT_SRGB_FROM_BASELINE,
+        1,
+        0.1f,
+        0,
+        0.0f,
+        0.0f
+    },
+    {
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        "builtin loader hdr fallback numeric cms=off",
+        SIXEL_CMS_ENGINE_NONE,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        "builtin loader hdr fallback numeric cms=on",
+        SIXEL_CMS_ENGINE_BUILTIN,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 0.5f, 0.25f, 0.125f },
+        0.0007f,
+        1,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        HDR_NUMERIC_DUAL_EXPECT_FALLBACK_FROM_BASELINE,
+        0,
+        0.0f,
+        1,
+        0.05f,
+        0.05f
+    },
+    {
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_linear.hdr",
+        "builtin loader hdr header-priority numeric cms=off",
+        SIXEL_CMS_ENGINE_NONE,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        "builtin loader hdr header-priority numeric cms=on",
+        SIXEL_CMS_ENGINE_BUILTIN,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 0.5f, 0.25f, 0.125f },
+        0.0007f,
+        1,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        HDR_NUMERIC_DUAL_EXPECT_SAME_AS_BASELINE,
+        0,
+        0.0f,
+        0,
+        0.0f,
+        0.0f
+    }
+};
+
+static int
+run_builtin_loader_hdr_dual_numeric_case(
+    hdr_numeric_dual_case_spec_t const *spec)
+{
+    hdr_numeric_probe_context_t baseline_probe;
+    hdr_numeric_probe_context_t variant_probe;
+    float expected_variant[3];
     int index;
     int result;
 
-    sample_path = "/tests/data/inputs/formats/stbi_midtones.hdr";
-    tolerance = 0.0005f;
-    expected_linear[0] = 0.5f;
-    expected_linear[1] = 0.25f;
-    expected_linear[2] = 0.125f;
-
-    if (loader_cms_target_pixelformat() != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    baseline_probe = (hdr_numeric_probe_context_t){ 0 };
+    variant_probe = (hdr_numeric_probe_context_t){ 0 };
+    memset(expected_variant, 0, sizeof(expected_variant));
+    index = 0;
+    result = 1;
+    if (spec == NULL) {
+        return 1;
+    }
+    if (spec->require_target_pixelformat != 0 &&
+        loader_cms_target_pixelformat() != spec->target_pixelformat) {
         fprintf(stderr,
-                "builtin loader hdr numeric gamma: expected target RGBFLOAT32\n");
+                "%s: unexpected cms target pixelformat (%d expected=%d)\n",
+                spec->baseline_label,
+                loader_cms_target_pixelformat(),
+                spec->target_pixelformat);
         return 1;
     }
 
     result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr numeric cms=off",
-        sample_path,
-        SIXEL_CMS_ENGINE_NONE,
-        &linear_probe);
+        spec->baseline_label,
+        spec->sample_path,
+        spec->baseline_cms_engine,
+        &baseline_probe);
     if (result != 0) {
         return result;
     }
-    if (linear_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        linear_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+    if (baseline_probe.pixelformat != spec->baseline_pixelformat ||
+        baseline_probe.colorspace != spec->baseline_colorspace) {
         fprintf(stderr,
-                "builtin loader hdr numeric cms=off: unexpected frame contract "
-                "(pixelformat=%d colorspace=%d)\n",
-                linear_probe.pixelformat,
-                linear_probe.colorspace);
+                "%s: frame contract mismatch (pf=%d expected=%d cs=%d "
+                "expected=%d)\n",
+                spec->baseline_label,
+                baseline_probe.pixelformat,
+                spec->baseline_pixelformat,
+                baseline_probe.colorspace,
+                spec->baseline_colorspace);
         return 1;
     }
-
     for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(linear_probe.first_pixel[index],
-                                expected_linear[index],
-                                tolerance)) {
+        if (!float_approx_equal(baseline_probe.first_pixel[index],
+                                spec->baseline_expected[index],
+                                spec->tolerance)) {
             fprintf(stderr,
-                    "builtin loader hdr numeric cms=off: channel %d mismatch "
-                    "(actual=%f expected=%f)\n",
+                    "%s: channel %d mismatch (actual=%f expected=%f)\n",
+                    spec->baseline_label,
                     index,
-                    linear_probe.first_pixel[index],
-                    expected_linear[index]);
+                    baseline_probe.first_pixel[index],
+                    spec->baseline_expected[index]);
             return 1;
         }
     }
 
     result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr numeric cms=on",
-        sample_path,
-        SIXEL_CMS_ENGINE_AUTO,
-        &gamma_probe);
+        spec->variant_label,
+        spec->sample_path,
+        spec->variant_cms_engine,
+        &variant_probe);
     if (result != 0) {
         return result;
     }
-    if (gamma_probe.pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        gamma_probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (variant_probe.pixelformat != spec->variant_pixelformat ||
+        variant_probe.colorspace != spec->variant_colorspace) {
         fprintf(stderr,
-                "builtin loader hdr numeric cms=on: unexpected frame contract "
-                "(pixelformat=%d colorspace=%d)\n",
-                gamma_probe.pixelformat,
-                gamma_probe.colorspace);
+                "%s: frame contract mismatch (pf=%d expected=%d cs=%d "
+                "expected=%d)\n",
+                spec->variant_label,
+                variant_probe.pixelformat,
+                spec->variant_pixelformat,
+                variant_probe.colorspace,
+                spec->variant_colorspace);
         return 1;
     }
 
     for (index = 0; index < 3; ++index) {
-        expected_gamma[index] = srgb_from_linear(expected_linear[index]);
-        if (!float_approx_equal(gamma_probe.first_pixel[index],
-                                expected_gamma[index],
-                                tolerance)) {
+        expected_variant[index] = baseline_probe.first_pixel[index];
+    }
+    if (spec->expect_mode == HDR_NUMERIC_DUAL_EXPECT_SRGB_FROM_BASELINE) {
+        for (index = 0; index < 3; ++index) {
+            expected_variant[index] = srgb_from_linear(expected_variant[index]);
+        }
+    } else if (spec->expect_mode ==
+               HDR_NUMERIC_DUAL_EXPECT_FALLBACK_FROM_BASELINE) {
+        if (!compute_hdr_srgb_fallback_expected(expected_variant)) {
             fprintf(stderr,
-                    "builtin loader hdr numeric cms=on: channel %d mismatch "
-                    "(actual=%f expected=%f)\n",
-                    index,
-                    gamma_probe.first_pixel[index],
-                    expected_gamma[index]);
+                    "%s: failed to compute expected fallback conversion\n",
+                    spec->variant_label);
             return 1;
         }
     }
 
-    if (fabsf(gamma_probe.first_pixel[1] - linear_probe.first_pixel[1]) < 0.1f) {
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(variant_probe.first_pixel[index],
+                                expected_variant[index],
+                                spec->tolerance)) {
+            fprintf(stderr,
+                    "%s: channel %d mismatch (actual=%f expected=%f)\n",
+                    spec->variant_label,
+                    index,
+                    variant_probe.first_pixel[index],
+                    expected_variant[index]);
+            return 1;
+        }
+    }
+
+    if (spec->require_variant_channel1_delta != 0 &&
+        fabsf(variant_probe.first_pixel[1] -
+              baseline_probe.first_pixel[1]) <
+            spec->min_variant_channel1_delta) {
         fprintf(stderr,
-                "builtin loader hdr numeric cms=on: gamma conversion not observed\n");
+                "%s: expected channel1 delta was not observed\n",
+                spec->variant_label);
+        return 1;
+    }
+
+    if (spec->require_source_profile_observed != 0 &&
+        fabsf(expected_variant[0] - baseline_probe.first_pixel[0]) >
+            spec->expected_diff_threshold &&
+        fabsf(variant_probe.first_pixel[0] -
+              baseline_probe.first_pixel[0]) <
+            spec->observed_diff_min) {
+        fprintf(stderr,
+                "%s: expected source profile conversion was not observed\n",
+                spec->variant_label);
         return 1;
     }
 
     return 0;
+}
+
+static int
+run_builtin_loader_hdr_gamma_numeric_test(void)
+{
+    return run_builtin_loader_hdr_dual_numeric_case(
+        &hdr_numeric_dual_cases[HDR_NUMERIC_DUAL_CASE_GAMMA]);
 }
 
 static int
@@ -1258,212 +1408,15 @@ compute_hdr_srgb_fallback_expected(float *rgb_linear)
 static int
 run_builtin_loader_hdr_fallback_profile_numeric_test(void)
 {
-    char const *sample_path;
-    hdr_numeric_probe_context_t linear_probe;
-    hdr_numeric_probe_context_t cms_probe;
-    float expected_linear[3];
-    float expected_cms[3];
-    float tolerance;
-    int index;
-    int result;
-
-    sample_path = "/tests/data/inputs/formats/stbi_midtones.hdr";
-    tolerance = 0.0007f;
-    expected_linear[0] = 0.5f;
-    expected_linear[1] = 0.25f;
-    expected_linear[2] = 0.125f;
-
-    if (loader_cms_target_pixelformat() !=
-        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
-        fprintf(stderr,
-                "builtin loader hdr fallback profile numeric: expected "
-                "target LINEARRGBFLOAT32\n");
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr fallback numeric cms=off",
-        sample_path,
-        SIXEL_CMS_ENGINE_NONE,
-        &linear_probe);
-    if (result != 0) {
-        return result;
-    }
-    if (linear_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        linear_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr fallback numeric cms=off: unexpected "
-                "frame contract (pixelformat=%d colorspace=%d)\n",
-                linear_probe.pixelformat,
-                linear_probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(linear_probe.first_pixel[index],
-                                expected_linear[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr fallback numeric cms=off: channel %d "
-                    "mismatch (actual=%f expected=%f)\n",
-                    index,
-                    linear_probe.first_pixel[index],
-                    expected_linear[index]);
-            return 1;
-        }
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr fallback numeric cms=on",
-        sample_path,
-        SIXEL_CMS_ENGINE_BUILTIN,
-        &cms_probe);
-    if (result != 0) {
-        return result;
-    }
-    if (cms_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        cms_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr fallback numeric cms=on: unexpected frame "
-                "contract (pixelformat=%d colorspace=%d)\n",
-                cms_probe.pixelformat,
-                cms_probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        expected_cms[index] = expected_linear[index];
-    }
-    if (!compute_hdr_srgb_fallback_expected(expected_cms)) {
-        fprintf(stderr,
-                "builtin loader hdr fallback numeric: failed to compute "
-                "expected srgb fallback conversion\n");
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(cms_probe.first_pixel[index],
-                                expected_cms[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr fallback numeric cms=on: channel %d "
-                    "mismatch (actual=%f expected=%f)\n",
-                    index,
-                    cms_probe.first_pixel[index],
-                    expected_cms[index]);
-            return 1;
-        }
-    }
-
-    if (fabsf(expected_cms[0] - expected_linear[0]) > 0.05f &&
-        fabsf(cms_probe.first_pixel[0] - linear_probe.first_pixel[0]) < 0.05f) {
-        fprintf(stderr,
-                "builtin loader hdr fallback numeric cms=on: source profile "
-                "conversion not observed\n");
-        return 1;
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_dual_numeric_case(
+        &hdr_numeric_dual_cases[HDR_NUMERIC_DUAL_CASE_FALLBACK_PROFILE]);
 }
 
 static int
 run_builtin_loader_hdr_header_priority_numeric_test(void)
 {
-    char const *sample_path;
-    hdr_numeric_probe_context_t linear_probe;
-    hdr_numeric_probe_context_t cms_probe;
-    float expected_linear[3];
-    float tolerance;
-    int index;
-    int result;
-
-    sample_path = "/tests/data/inputs/formats/stbi_midtones_hdrmeta_linear.hdr";
-    tolerance = 0.0007f;
-    expected_linear[0] = 0.5f;
-    expected_linear[1] = 0.25f;
-    expected_linear[2] = 0.125f;
-
-    if (loader_cms_target_pixelformat() !=
-        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
-        fprintf(stderr,
-                "builtin loader hdr header-priority numeric: expected target "
-                "LINEARRGBFLOAT32\n");
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr header-priority numeric cms=off",
-        sample_path,
-        SIXEL_CMS_ENGINE_NONE,
-        &linear_probe);
-    if (result != 0) {
-        return result;
-    }
-    if (linear_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        linear_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr header-priority numeric cms=off: "
-                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
-                linear_probe.pixelformat,
-                linear_probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(linear_probe.first_pixel[index],
-                                expected_linear[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr header-priority numeric cms=off: "
-                    "channel %d mismatch (actual=%f expected=%f)\n",
-                    index,
-                    linear_probe.first_pixel[index],
-                    expected_linear[index]);
-            return 1;
-        }
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr header-priority numeric cms=on",
-        sample_path,
-        SIXEL_CMS_ENGINE_BUILTIN,
-        &cms_probe);
-    if (result != 0) {
-        return result;
-    }
-    if (cms_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        cms_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr header-priority numeric cms=on: "
-                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
-                cms_probe.pixelformat,
-                cms_probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(cms_probe.first_pixel[index],
-                                expected_linear[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr header-priority numeric cms=on: "
-                    "channel %d mismatch (actual=%f expected=%f)\n",
-                    index,
-                    cms_probe.first_pixel[index],
-                    expected_linear[index]);
-            return 1;
-        }
-    }
-
-    if (fabsf(cms_probe.first_pixel[0] - linear_probe.first_pixel[0]) >
-        tolerance) {
-        fprintf(stderr,
-                "builtin loader hdr header-priority numeric cms=on: "
-                "unexpected fallback-profile override observed\n");
-        return 1;
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_dual_numeric_case(
+        &hdr_numeric_dual_cases[HDR_NUMERIC_DUAL_CASE_HEADER_PRIORITY]);
 }
 
 static int
