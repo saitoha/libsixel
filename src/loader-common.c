@@ -251,7 +251,7 @@ loader_cms_target_colorspace(void)
     return loader_cms_target_colorspace_value;
 }
 
-int
+SIXELAPI int
 loader_cms_target_pixelformat(void)
 {
     loader_cms_initialize_target();

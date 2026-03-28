@@ -61,7 +61,8 @@ void sixel_helper_set_builtin_enable_cms(int enable);
 int loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
 int loader_cms_target_colorspace(void);
-int loader_cms_target_pixelformat(void);
+/* Keep this exported: test runners call it via the shared libsixel DLL. */
+SIXEL_INTERNAL_API int loader_cms_target_pixelformat(void);
 void sixel_helper_set_loader_cms_engine(int engine);
 void sixel_helper_set_loader_trace(int enable);
 void loader_trace_try(char const *name);
