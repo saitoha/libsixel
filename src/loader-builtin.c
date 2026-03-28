@@ -3745,7 +3745,13 @@ typedef struct sixel_builtin_psd_decode_basic_entry {
     sixel_builtin_psd_decode_basic_fn_t fn;
 } sixel_builtin_psd_decode_basic_entry_t;
 
-static int
+#if defined(__GNUC__) && !defined(__PCC__)
+# define SIXEL_BUILTIN_PSD_HELPER_UNUSED __attribute__((unused))
+#else
+# define SIXEL_BUILTIN_PSD_HELPER_UNUSED
+#endif
+
+static int SIXEL_BUILTIN_PSD_HELPER_UNUSED
 sixel_builtin_psd_mode_is_cmyk(int mode)
 {
     return mode == SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT ||
@@ -3753,7 +3759,7 @@ sixel_builtin_psd_mode_is_cmyk(int mode)
         mode == SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT;
 }
 
-static int
+static int SIXEL_BUILTIN_PSD_HELPER_UNUSED
 sixel_builtin_psd_mode_is_lab(int mode)
 {
     return mode == SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT ||
@@ -3761,7 +3767,7 @@ sixel_builtin_psd_mode_is_lab(int mode)
         mode == SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT;
 }
 
-static sixel_builtin_psd_decode_basic_fn_t
+static sixel_builtin_psd_decode_basic_fn_t SIXEL_BUILTIN_PSD_HELPER_UNUSED
 sixel_builtin_psd_lookup_basic_decode_fn(int mode)
 {
     static sixel_builtin_psd_decode_basic_entry_t const entries[] = {
@@ -3817,7 +3823,7 @@ sixel_builtin_psd_lookup_basic_decode_fn(int mode)
     return NULL;
 }
 
-static SIXELSTATUS
+static SIXELSTATUS SIXEL_BUILTIN_PSD_HELPER_UNUSED
 sixel_builtin_psd_decode_cmyk_by_mode(
     int mode,
     sixel_chunk_t const *chunk,
