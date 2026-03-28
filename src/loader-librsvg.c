@@ -106,6 +106,7 @@ typedef struct sixel_librsvg_render_context {
 
 typedef struct sixel_librsvg_render_request {
     sixel_chunk_t const *chunk;
+    sixel_allocator_t *allocator;
     unsigned char const *bgcolor;
     sixel_librsvg_decode_policy_t const *policy;
 } sixel_librsvg_render_request_t;
@@ -1154,6 +1155,23 @@ librsvg_render_context_cleanup(sixel_librsvg_render_context_t *render_ctx)
 }
 
 static void
+librsvg_render_request_init(
+    sixel_librsvg_render_request_t *request,
+    sixel_chunk_t const *chunk,
+    unsigned char const *bgcolor,
+    sixel_librsvg_decode_policy_t const *policy)
+{
+    if (request == NULL) {
+        return;
+    }
+
+    request->chunk = chunk;
+    request->allocator = chunk != NULL ? chunk->allocator : NULL;
+    request->bgcolor = bgcolor;
+    request->policy = policy;
+}
+
+static void
 librsvg_decode_policy_init_from_env(sixel_librsvg_decode_policy_t *policy)
 {
     if (policy == NULL) {
@@ -1685,7 +1703,7 @@ librsvg_render_context_to_frame_pixels(
 
     if (frame == NULL ||
             request == NULL ||
-            request->chunk == NULL ||
+            request->allocator == NULL ||
             render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1699,7 +1717,7 @@ librsvg_render_context_to_frame_pixels(
     }
 
     return librsvg_convert_surface_to_frame_pixels(frame,
-                                                   request->chunk->allocator,
+                                                   request->allocator,
                                                    render_ctx->surface,
                                                    request->bgcolor,
                                                    render_ctx->pixel_total);
@@ -1715,16 +1733,11 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     sixel_librsvg_render_context_t render_ctx;
     sixel_librsvg_render_request_t request;
 
-    request.chunk = NULL;
-    request.bgcolor = NULL;
-    request.policy = NULL;
     librsvg_render_context_init(&render_ctx);
     if (frame == NULL || chunk == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    request.chunk = chunk;
-    request.bgcolor = bgcolor;
-    request.policy = policy;
+    librsvg_render_request_init(&request, chunk, bgcolor, policy);
     status = librsvg_prepare_render_context(frame,
                                             &request,
                                             &render_ctx);
