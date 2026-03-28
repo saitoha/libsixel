@@ -1,3 +1,18 @@
+2026-03-28  Codex <codex@openai.com>
+
+	* src/encoder.c, src/dither.c: Route frame-owned transparent masks
+	into the dither pipeline directly so PSD alpha handling keeps source
+	precision without temporary RGBA conversion.
+
+	* tests/loader/pixelformat_test_common.h,
+	tests/loader/builtin/0014_loader_builtin_pixelformat.c: Extend loader
+	callback probes to validate transparent-mask/alpha-zero metadata and add
+	PSD callback precision coverage for RGB16/RGB32/CMYK32/Lab32 and RGB8+alpha.
+
+	* tests/processing/filter/0009_filter_dither.c: Add serial/parallel
+	regression checks that transparent-mask pixels fence error diffusion and
+	keep neighboring opaque pixels deterministic.
+
 2025-08-12  Hayaki Saito <saitoha@me.com>
 
 	* : Merge pull request #140 from dthadi3/ppc64le Travis-ci: added support for ppc64le
