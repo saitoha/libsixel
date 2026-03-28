@@ -153,6 +153,24 @@ def generate(out_dir: pathlib.Path) -> None:
         bytes(mode7_cmyk_zip_pred_bad_icc),
     )
 
+    mode7_cmyk_raw_bad_icc = bytearray(
+        (out_dir / "stbi_minimal_cmyk8_bad_icc_profile.psd").read_bytes()
+    )
+    write_u16be(mode7_cmyk_raw_bad_icc, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_cmyk8_bad_icc_profile.psd",
+        bytes(mode7_cmyk_raw_bad_icc),
+    )
+
+    mode7_bad_resource_signature = bytearray(
+        (out_dir / "stbi_minimal_bad_resource_signature.psd").read_bytes()
+    )
+    write_u16be(mode7_bad_resource_signature, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_bad_resource_signature.psd",
+        bytes(mode7_bad_resource_signature),
+    )
+
     # Malformed: channel count below mode-specific minima.
     rgb_channels2 = bytearray(base)
     write_u16be(rgb_channels2, 12, 2)
