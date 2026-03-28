@@ -1662,6 +1662,13 @@ webp_resolve_max_output_frames(void)
     if (env_value == NULL || env_value[0] == '\0') {
         return WEBP_MAX_OUTPUT_FRAMES;
     }
+    if (env_value[0] < '0' || env_value[0] > '9') {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "ignore invalid SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=%s",
+            env_value);
+        return WEBP_MAX_OUTPUT_FRAMES;
+    }
 
     errno = 0;
     parsed = strtoull(env_value, &endptr, 10);
