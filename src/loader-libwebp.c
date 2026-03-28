@@ -1704,13 +1704,19 @@ webp_compute_rgba_canvas_bytes(int width,
     *frame_bytes = 0u;
 
     if (width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: invalid canvas dimensions.");
         return SIXEL_BAD_INPUT;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: RGBA canvas size overflow.");
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     pixel_count = (size_t)width * (size_t)height;
     if (pixel_count > SIZE_MAX / 4u) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: RGBA canvas size overflow.");
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     *frame_bytes = pixel_count * 4u;
@@ -2552,13 +2558,6 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
      * frame state isolated and avoids leaking in-place updates from one frame
      * into the next frame.
      */
-    if ((int)anim_info->canvas_width <= 0 ||
-        (int)anim_info->canvas_height <= 0) {
-        sixel_helper_set_additional_message(
-            "load_with_libwebp: invalid canvas dimensions.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
     status = webp_compute_rgba_canvas_bytes((int)anim_info->canvas_width,
                                             (int)anim_info->canvas_height,
                                             &frame_bytes);
