@@ -1026,6 +1026,20 @@ librsvg_open_handle_from_stdin_svgz_tempfile(sixel_chunk_t const *chunk,
 }
 
 static SIXELSTATUS
+librsvg_decode_mode_error(sixel_librsvg_decode_mode_t decode_mode)
+{
+    if (decode_mode == SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED) {
+        sixel_helper_set_additional_message(
+            LIBRSVG_MESSAGE_STDIN_SVGZ_REJECTED);
+        return SIXEL_BAD_INPUT;
+    }
+
+    sixel_helper_set_additional_message(
+        LIBRSVG_MESSAGE_UNSUPPORTED_DECODE_MODE);
+    return SIXEL_BAD_ARGUMENT;
+}
+
+static SIXELSTATUS
 librsvg_open_handle_by_mode(sixel_librsvg_decode_mode_t decode_mode,
                             sixel_chunk_t const *chunk,
                             sixel_librsvg_open_result_t *open_result)
@@ -1046,14 +1060,8 @@ librsvg_open_handle_by_mode(sixel_librsvg_decode_mode_t decode_mode,
     case SIXEL_LIBRSVG_DECODE_MODE_DATA:
         return librsvg_open_handle_from_data_chunk(chunk,
                                                    &open_result->handle);
-    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED:
-        sixel_helper_set_additional_message(
-            LIBRSVG_MESSAGE_STDIN_SVGZ_REJECTED);
-        return SIXEL_BAD_INPUT;
     default:
-        sixel_helper_set_additional_message(
-            LIBRSVG_MESSAGE_UNSUPPORTED_DECODE_MODE);
-        return SIXEL_BAD_ARGUMENT;
+        return librsvg_decode_mode_error(decode_mode);
     }
 }
 
@@ -1074,7 +1082,6 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
 {
     sixel_librsvg_decode_mode_t decode_mode;
 
-    decode_mode = SIXEL_LIBRSVG_DECODE_MODE_DATA;
     if (chunk == NULL ||
             policy == NULL ||
             open_result == NULL) {
