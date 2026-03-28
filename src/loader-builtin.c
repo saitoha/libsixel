@@ -3585,6 +3585,139 @@ sixel_builtin_load_png_keycolor_or_rgba(
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_builtin_load_png_single_frame(
+    sixel_chunk_t const *chunk,
+    int chunk_size,
+    sixel_frame_t *frame,
+    stbi__context *stb_context,
+    stbi__result_info *ri,
+    int fuse_palette,
+    int reqcolors,
+    int enable_cms,
+    int png_keycolor_mode,
+    unsigned char *bgcolor)
+{
+    SIXELSTATUS status;
+    int pal_loaded;
+
+    status = SIXEL_OK;
+    pal_loaded = 0;
+    if (chunk == NULL ||
+        chunk_size <= 0 ||
+        frame == NULL ||
+        stb_context == NULL ||
+        ri == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (fuse_palette && !png_keycolor_mode) {
+        status = sixel_builtin_try_load_indexed_png(chunk,
+                                                    chunk_size,
+                                                    frame,
+                                                    stb_context,
+                                                    ri,
+                                                    bgcolor,
+                                                    reqcolors,
+                                                    enable_cms,
+                                                    &pal_loaded);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (pal_loaded != 0) {
+            return SIXEL_OK;
+        }
+    }
+    if (fuse_palette) {
+        status = sixel_builtin_try_load_indexed_tga(chunk,
+                                                    chunk_size,
+                                                    frame,
+                                                    stb_context,
+                                                    ri,
+                                                    bgcolor,
+                                                    &pal_loaded);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (pal_loaded != 0) {
+            return SIXEL_OK;
+        }
+    }
+    if (png_keycolor_mode) {
+        return sixel_builtin_load_png_keycolor_or_rgba(chunk,
+                                                       chunk_size,
+                                                       frame,
+                                                       stb_context,
+                                                       ri,
+                                                       bgcolor,
+                                                       reqcolors);
+    }
+    return sixel_frompng_load_nonindexed(chunk, frame, enable_cms, bgcolor);
+}
+
+static SIXELSTATUS
+sixel_builtin_load_jpeg_float32(
+    sixel_chunk_t const *chunk,
+    sixel_frame_t *frame,
+    stbi__context *stb_context,
+    stbi__result_info *ri,
+    int enable_cms,
+    unsigned char **icc_profile,
+    size_t *icc_profile_length)
+{
+    float *float_pixels;
+    int depth;
+    int cms_converted;
+
+    float_pixels = NULL;
+    depth = 0;
+    cms_converted = 0;
+    if (chunk == NULL ||
+        frame == NULL ||
+        stb_context == NULL ||
+        ri == NULL ||
+        icc_profile == NULL ||
+        icc_profile_length == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    float_pixels = stbi__jpeg_loadf(stb_context,
+                                    &frame->width,
+                                    &frame->height,
+                                    &depth,
+                                    3,
+                                    ri);
+    if (float_pixels == NULL) {
+        sixel_helper_set_additional_message(stbi_failure_reason());
+        return SIXEL_STBI_ERROR;
+    }
+
+    sixel_frame_set_pixels(frame, (unsigned char *)float_pixels);
+    frame->loop_count = 1;
+    if (enable_cms) {
+        if (sixel_builtin_extract_jpeg_icc(chunk->buffer,
+                                           chunk->size,
+                                           icc_profile,
+                                           icc_profile_length,
+                                           chunk->allocator)) {
+            cms_converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+                (unsigned char *)float_pixels,
+                frame->width,
+                frame->height,
+                SIXEL_PIXELFORMAT_RGBFLOAT32,
+                *icc_profile,
+                *icc_profile_length);
+            if (!cms_converted) {
+                loader_trace_message(
+                    "builtin JPEG: embedded ICC conversion failed");
+            }
+        }
+    }
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const *pchunk,
@@ -3612,7 +3745,6 @@ load_with_builtin(
     int is_jpeg;
     int is_psd;
     int png_keycolor_mode;
-    int pal_loaded;
     unsigned char *icc_profile;
     size_t icc_profile_length;
     int cms_converted;
@@ -3641,7 +3773,6 @@ load_with_builtin(
     is_jpeg = 0;
     is_psd = 0;
     png_keycolor_mode = 0;
-    pal_loaded = 0;
     icc_profile = NULL;
     icc_profile_length = 0u;
     cms_converted = 0;
@@ -3770,70 +3901,18 @@ load_with_builtin(
             if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
                 goto end;
             }
-        }
-        if (fuse_palette && is_png && !png_keycolor_mode) {
-            /*
-             * Try indexed PNG first to keep PAL8 output. If the PNG is not
-             * paletted, fall back to the normal RGB path.
-             */
-            status = sixel_builtin_try_load_indexed_png(pchunk,
-                                                        chunk_size,
-                                                        frame,
-                                                        &stb_context,
-                                                        &ri,
-                                                        bgcolor,
-                                                        reqcolors,
-                                                        enable_cms,
-                                                        &pal_loaded);
+            status = sixel_builtin_load_png_single_frame(pchunk,
+                                                         chunk_size,
+                                                         frame,
+                                                         &stb_context,
+                                                         &ri,
+                                                         fuse_palette,
+                                                         reqcolors,
+                                                         enable_cms,
+                                                         png_keycolor_mode,
+                                                         bgcolor);
             if (SIXEL_FAILED(status)) {
                 goto end;
-            }
-            if (pal_loaded != 0) {
-                goto done;
-            }
-        }
-        if (fuse_palette) {
-            /*
-             * Try indexed TGA next to keep PAL8 output. The TGA loader only
-             * supports 8-bit indices for this path and falls back to RGB
-             * otherwise.
-             */
-            status = sixel_builtin_try_load_indexed_tga(pchunk,
-                                                        chunk_size,
-                                                        frame,
-                                                        &stb_context,
-                                                        &ri,
-                                                        bgcolor,
-                                                        &pal_loaded);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            if (pal_loaded != 0) {
-                goto done;
-            }
-        }
-
-        if (is_png) {
-            if (png_keycolor_mode) {
-                status = sixel_builtin_load_png_keycolor_or_rgba(
-                    pchunk,
-                    chunk_size,
-                    frame,
-                    &stb_context,
-                    &ri,
-                    bgcolor,
-                    reqcolors);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-            } else {
-                status = sixel_frompng_load_nonindexed(pchunk,
-                                                       frame,
-                                                       enable_cms,
-                                                       bgcolor);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
             }
         } else {
             int hdr_pixelformat;
@@ -3849,44 +3928,16 @@ load_with_builtin(
                             pchunk->buffer,
                             chunk_size);
             if (is_jpeg) {
-                float *float_pixels;
-
-                float_pixels = stbi__jpeg_loadf(&stb_context,
-                                                &frame->width,
-                                                &frame->height,
-                                                &depth,
-                                                3,
-                                                &ri);
-                if (float_pixels == NULL) {
-                    sixel_helper_set_additional_message(stbi_failure_reason());
-                    status = SIXEL_STBI_ERROR;
+                status = sixel_builtin_load_jpeg_float32(pchunk,
+                                                         frame,
+                                                         &stb_context,
+                                                         &ri,
+                                                         enable_cms,
+                                                         &icc_profile,
+                                                         &icc_profile_length);
+                if (SIXEL_FAILED(status)) {
                     goto end;
                 }
-                pixels = (unsigned char *)float_pixels;
-                sixel_frame_set_pixels(frame, pixels);
-                frame->loop_count = 1;
-                if (enable_cms) {
-                    if (sixel_builtin_extract_jpeg_icc(pchunk->buffer,
-                                                       pchunk->size,
-                                                       &icc_profile,
-                                                       &icc_profile_length,
-                                                       pchunk->allocator)) {
-                        cms_converted =
-                            sixel_cms_convert_to_srgb_with_profile_bytes(
-                            (unsigned char *)float_pixels,
-                            frame->width,
-                            frame->height,
-                            SIXEL_PIXELFORMAT_RGBFLOAT32,
-                            icc_profile,
-                            icc_profile_length);
-                        if (!cms_converted) {
-                            loader_trace_message(
-                                "builtin JPEG: embedded ICC conversion failed");
-                        }
-                    }
-                }
-                frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             } else if (is_psd) {
                 int psd_pixelformat;
                 int psd_custom_decode_mode;
