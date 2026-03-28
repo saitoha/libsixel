@@ -41,19 +41,20 @@ Key points used by this roadmap:
   - Bitmap 1-bit: Raw/RLE/ZIP (`ZIP+Prediction` is explicit unsupported)
   - Gray/Duotone 8-bit: Raw/RLE/ZIP/ZIP+Prediction
   - Gray/Duotone 16-bit: Raw/RLE/ZIP/ZIP+Prediction (`RGBFLOAT32`)
-  - Gray/Duotone 32-bit: Raw/ZIP/ZIP+Prediction (`RGBFLOAT32`)
+  - Gray/Duotone 32-bit: Raw/RLE/ZIP/ZIP+Prediction (`RGBFLOAT32`)
   - Indexed 8-bit: Raw/RLE/ZIP/ZIP+Prediction
   - RGB 8/16-bit: Raw/RLE/ZIP/ZIP+Prediction
-  - RGB 32-bit: Raw/ZIP/ZIP+Prediction (`RGBFLOAT32`)
-  - CMYK 8-bit: Raw/RLE/ZIP/ZIP+Prediction
-  - CMYK 32-bit: Raw/ZIP/ZIP+Prediction (`LINEARRGBFLOAT32`, ICC skipped)
-  - Lab 8-bit: Raw/RLE/ZIP/ZIP+Prediction (`CIELABFLOAT32`)
-  - Lab 32-bit: Raw/ZIP/ZIP+Prediction (`CIELABFLOAT32`, ICC skipped)
+  - RGB 32-bit: Raw/RLE/ZIP/ZIP+Prediction (`RGBFLOAT32`)
+  - CMYK 8/16/32-bit: Raw/RLE/ZIP/ZIP+Prediction
+    (`LINEARRGBFLOAT32` for 16/32-bit; ICC skipped for non-RGB outputs)
+  - Lab 8/16/32-bit: Raw/RLE/ZIP/ZIP+Prediction (`CIELABFLOAT32`, ICC skipped)
+  - Multichannel (mode 7):
+    - `channels==3`: mapped to RGB decode mode
+    - `channels==4`: mapped to CMYK decode mode
+    - all mapped paths support 8/16/32-bit + Raw/RLE/ZIP/ZIP+Prediction
 - Explicit unsupported policy (fixed):
-  - Multichannel (mode 7)
-  - CMYK 16-bit
-  - Lab 16-bit
-  - RGB/Gray/Duotone/CMYK/Lab 32-bit with RLE
+  - Multichannel channel counts other than `3/4`
+  - Multichannel bit depths other than `8/16/32`
   - Bitmap 1-bit with ZIP+Prediction
 - Composite-missing policy:
   - Minimal fallback is supported for RGB 8-bit layer-only PSDs:
@@ -62,13 +63,15 @@ Key points used by this roadmap:
     unsupported trace (`unsupported layer fallback layout`).
   - When image data exists but raw/RLE payload is too short, return malformed
     (do not conflate truncation with layer-only PSD policy).
-- Existing regression includes ICC and alpha combinations on Raw and ZIP paths,
-  32-bit decode matrix coverage (RGB/Gray/CMYK/Lab), explicit unsupported
-  traces (Bitmap ZIP+Prediction, 32-bit RLE, CMYK16/Lab16), and ZIP+Prediction
-  ICC trace coverage (`RGB+alpha+--bgcolor`, Lab skip, CMYK bad-ICC failure).
+- Existing regression includes ICC and alpha combinations on Raw/ZIP/ZIP+Prediction
+  paths, 32-bit decode matrix coverage including RLE (RGB/Gray/CMYK/Lab),
+  CMYK16/Lab16 decode coverage, mode7 representative decode coverage (3ch->RGB,
+  4ch->CMYK), and explicit unsupported traces (Bitmap ZIP+Prediction,
+  Multichannel invalid channel-count).
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
+  - Multichannel policy trace for unsupported channel counts (`!=3/4`),
   - positive trace for missing merged/composite image policy.
 - Defensive validate branches are split by reachability:
   - unit-tested directly: `malformed header/metadata`,
