@@ -104,6 +104,12 @@ typedef struct sixel_librsvg_render_context {
     size_t pixel_total;
 } sixel_librsvg_render_context_t;
 
+typedef struct sixel_librsvg_render_request {
+    sixel_chunk_t const *chunk;
+    unsigned char const *bgcolor;
+    sixel_librsvg_decode_policy_t const *policy;
+} sixel_librsvg_render_request_t;
+
 typedef struct sixel_librsvg_intrinsic_size_state {
     gboolean has_width;
     gboolean has_height;
@@ -1639,22 +1645,21 @@ librsvg_prepare_frame_surface(sixel_frame_t const *frame,
 static SIXELSTATUS
 librsvg_prepare_render_context(
     sixel_frame_t *frame,
-    sixel_chunk_t const *chunk,
-    unsigned char const *bgcolor,
-    sixel_librsvg_decode_policy_t const *policy,
+    sixel_librsvg_render_request_t const *request,
     sixel_librsvg_render_context_t *render_ctx)
 {
     SIXELSTATUS status;
 
     if (frame == NULL ||
-            chunk == NULL ||
-            policy == NULL ||
+            request == NULL ||
+            request->chunk == NULL ||
+            request->policy == NULL ||
             render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = librsvg_open_handle(chunk,
-                                 policy,
+    status = librsvg_open_handle(request->chunk,
+                                 request->policy,
                                  &render_ctx->open_result);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1667,19 +1672,21 @@ librsvg_prepare_render_context(
         return status;
     }
 
-    return librsvg_prepare_frame_surface(frame, bgcolor, render_ctx);
+    return librsvg_prepare_frame_surface(frame, request->bgcolor, render_ctx);
 }
 
 static SIXELSTATUS
 librsvg_render_context_to_frame_pixels(
     sixel_frame_t *frame,
-    sixel_allocator_t *allocator,
-    unsigned char const *bgcolor,
+    sixel_librsvg_render_request_t const *request,
     sixel_librsvg_render_context_t *render_ctx)
 {
     SIXELSTATUS status;
 
-    if (frame == NULL || allocator == NULL || render_ctx == NULL) {
+    if (frame == NULL ||
+            request == NULL ||
+            request->chunk == NULL ||
+            render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1692,9 +1699,9 @@ librsvg_render_context_to_frame_pixels(
     }
 
     return librsvg_convert_surface_to_frame_pixels(frame,
-                                                   allocator,
+                                                   request->chunk->allocator,
                                                    render_ctx->surface,
-                                                   bgcolor,
+                                                   request->bgcolor,
                                                    render_ctx->pixel_total);
 }
 
@@ -1706,23 +1713,27 @@ librsvg_render_to_frame(sixel_frame_t *frame,
 {
     SIXELSTATUS status;
     sixel_librsvg_render_context_t render_ctx;
+    sixel_librsvg_render_request_t request;
 
+    request.chunk = NULL;
+    request.bgcolor = NULL;
+    request.policy = NULL;
     librsvg_render_context_init(&render_ctx);
     if (frame == NULL || chunk == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    request.chunk = chunk;
+    request.bgcolor = bgcolor;
+    request.policy = policy;
     status = librsvg_prepare_render_context(frame,
-                                            chunk,
-                                            bgcolor,
-                                            policy,
+                                            &request,
                                             &render_ctx);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     status = librsvg_render_context_to_frame_pixels(frame,
-                                                    chunk->allocator,
-                                                    bgcolor,
+                                                    &request,
                                                     &render_ctx);
     if (SIXEL_FAILED(status)) {
         goto end;
