@@ -784,6 +784,9 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
     if (surface_out == NULL || cr_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     *surface_out = NULL;
     *cr_out = NULL;
 
@@ -845,6 +848,9 @@ librsvg_render_document(RsvgHandle *handle, cairo_t *cr, int width, int height)
 
     status = SIXEL_FALSE;
     gerror = NULL;
+    if (handle == NULL || cr == NULL || width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     viewport.x = 0.0;
     viewport.y = 0.0;
     viewport.width = (double)width;
@@ -868,7 +874,7 @@ end:
 
 static SIXELSTATUS
 librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
-                                        sixel_chunk_t const *chunk,
+                                        sixel_allocator_t *allocator,
                                         cairo_surface_t *surface,
                                         unsigned char const *bgcolor,
                                         size_t pixel_total)
@@ -912,9 +918,22 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     preserve_alpha = 0;
     inspect_alpha = 0;
     has_non_opaque_alpha = 0;
+    if (frame == NULL ||
+            allocator == NULL ||
+            surface == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->width <= 0 || frame->height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     cairo_surface_flush(surface);
     row = cairo_image_surface_get_data(surface);
     row_stride = (size_t)cairo_image_surface_get_stride(surface);
+    if (row == NULL || row_stride == 0u) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: cairo surface access failed.");
+        return SIXEL_BAD_INPUT;
+    }
 
     inspect_alpha = bgcolor == NULL ? 1 : 0;
     output_stride = inspect_alpha ? 4u : 3u;
@@ -926,7 +945,7 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     buffer_size = pixel_total * output_stride;
 
     pixels = (unsigned char *)sixel_allocator_malloc(
-        chunk->allocator,
+        allocator,
         buffer_size);
     if (pixels == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -986,7 +1005,7 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
 
 end:
     if (pixels != NULL) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(allocator, pixels);
     }
 
     return status;
@@ -1010,6 +1029,9 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     surface = NULL;
     cr = NULL;
     pixel_total = 0u;
+    if (frame == NULL || chunk == NULL || policy == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     status = librsvg_open_handle(chunk,
                                  policy,
                                  &open_result);
@@ -1043,7 +1065,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     }
 
     status = librsvg_convert_surface_to_frame_pixels(frame,
-                                                     chunk,
+                                                     chunk->allocator,
                                                      surface,
                                                      bgcolor,
                                                      pixel_total);
@@ -1068,7 +1090,7 @@ end:
 static SIXELSTATUS
 load_with_librsvg(
     sixel_chunk_t const       /* in */     *pchunk,
-    unsigned char             /* in */     *bgcolor,
+    unsigned char const       /* in */     *bgcolor,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -1078,13 +1100,13 @@ load_with_librsvg(
 
     status = SIXEL_FALSE;
     frame = NULL;
+    if (pchunk == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     policy.allow_relative_resources =
         librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES);
     policy.allow_stdin_svgz =
         librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ);
-    if (pchunk == NULL || fn_load == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -1164,6 +1186,17 @@ librsvg_setopt_noop_single_frame(void const *value)
     return SIXEL_OK;
 }
 
+static void
+librsvg_debug_ignored_int_option(char const *name,
+                                 int const *value,
+                                 char const *detail)
+{
+    sixel_debugf("librsvg loader: %s=%d ignored; %s",
+                 name != NULL ? name : "option",
+                 value != NULL ? *value : 0,
+                 detail != NULL ? detail : "");
+}
+
 static SIXELSTATUS
 sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
                             int option,
@@ -1186,15 +1219,16 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
         return librsvg_setopt_noop_single_frame(value);
     case SIXEL_LOADER_OPTION_USE_PALETTE:
         flag = (int const *)value;
-        sixel_debugf("librsvg loader: USE_PALETTE=%d ignored; "
-                     "output remains RGB/RGBA.",
-                     flag != NULL ? *flag : 0);
+        librsvg_debug_ignored_int_option("USE_PALETTE",
+                                         flag,
+                                         "output remains RGB/RGBA.");
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQCOLORS:
         flag = (int const *)value;
-        sixel_debugf("librsvg loader: REQCOLORS=%d ignored; "
-                     "palette limits apply during quantization.",
-                     flag != NULL ? *flag : 0);
+        librsvg_debug_ignored_int_option(
+            "REQCOLORS",
+            flag,
+            "palette limits apply during quantization.");
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_BGCOLOR:
         if (value == NULL) {
@@ -1223,7 +1257,7 @@ sixel_loader_librsvg_load(sixel_loader_component_t *component,
                           void *context)
 {
     sixel_loader_librsvg_component_t *self;
-    unsigned char *bgcolor;
+    unsigned char const *bgcolor;
 
     self = NULL;
     bgcolor = NULL;
