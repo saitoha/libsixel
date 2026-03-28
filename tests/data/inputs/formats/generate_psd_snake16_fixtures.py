@@ -228,6 +228,18 @@ def planes_from_lab8(lab_values):
     return [bytes(p) for p in planes]
 
 
+def planes_from_lab16(lab_values):
+    planes = [bytearray(), bytearray(), bytearray()]
+    for l, a, bstar in lab_values:
+        l16 = int(max(0.0, min(65535.0, (l / 100.0) * 65535.0)) + 0.5)
+        a16 = int(max(0.0, min(65535.0, (a / 128.0) * 32768.0 + 32768.0)) + 0.5)
+        b16 = int(max(0.0, min(65535.0, (bstar / 128.0) * 32768.0 + 32768.0)) + 0.5)
+        planes[0] += struct.pack(">H", l16)
+        planes[1] += struct.pack(">H", a16)
+        planes[2] += struct.pack(">H", b16)
+    return [bytes(p) for p in planes]
+
+
 def planes_from_lab32(lab_values):
     planes = [bytearray(), bytearray(), bytearray()]
     for l, a, bstar in lab_values:
@@ -244,6 +256,16 @@ def planes_from_cmyk8(cmyk):
         planes[1].append(m)
         planes[2].append(y)
         planes[3].append(k)
+    return [bytes(p) for p in planes]
+
+
+def planes_from_cmyk16(cmyk):
+    planes = [bytearray(), bytearray(), bytearray(), bytearray()]
+    for c, m, y, k in cmyk:
+        planes[0] += struct.pack(">H", c * 257)
+        planes[1] += struct.pack(">H", m * 257)
+        planes[2] += struct.pack(">H", y * 257)
+        planes[3] += struct.pack(">H", k * 257)
     return [bytes(p) for p in planes]
 
 
@@ -549,6 +571,7 @@ def generate(out_dir: pathlib.Path):
     gray32_plane = planes_from_gray32(gray8)[0]
 
     lab8_planes = planes_from_lab8(lab)
+    lab16_planes = planes_from_lab16(lab)
     # Keep Lab32 chroma small so builtin ZIP+prediction decode and
     # coregraphics raw decode stay comparable in cross-loader LSQA.
     lab32_chroma_scale = 0.02
@@ -557,6 +580,7 @@ def generate(out_dir: pathlib.Path):
     lab32_planes = planes_from_lab32(lab32_values)
 
     cmyk8_planes = planes_from_cmyk8(cmyk8)
+    cmyk16_planes = planes_from_cmyk16(cmyk8)
     cmyk32_planes = planes_from_cmyk32(cmyk8)
 
     bitmap_plane = [build_bitmap_plane(bitmap)]
@@ -727,6 +751,26 @@ def generate(out_dir: pathlib.Path):
             color_mode=8,
             compression=0,
         ),
+    )
+
+    write_variants(
+        out_dir,
+        "snake16_lab16",
+        lab16_planes,
+        channels=3,
+        depth=16,
+        color_mode=9,
+        variants=["raw", "rle", "zip", "zip_pred"],
+    )
+
+    write_variants(
+        out_dir,
+        "snake16_cmyk16",
+        cmyk16_planes,
+        channels=4,
+        depth=16,
+        color_mode=4,
+        variants=["raw", "rle", "zip", "zip_pred"],
     )
 
     # 32-bit fixtures

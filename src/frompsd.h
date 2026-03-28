@@ -66,7 +66,9 @@ typedef enum sixel_builtin_psd_decode_mode {
     SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_32BIT = 8,
     SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_32BIT = 9,
     SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT = 10,
-    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT = 11
+    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT = 11,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT = 12,
+    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT = 13
 } sixel_builtin_psd_decode_mode_t;
 
 typedef enum sixel_builtin_psd_validation_status {
@@ -147,6 +149,21 @@ sixel_builtin_decode_psd_cmyk_8bit(
     int *ppixelformat);
 
 SIXELSTATUS
+sixel_builtin_decode_psd_cmyk_16bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char const *icc_profile,
+    size_t icc_profile_length,
+    int *pcms_applied,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
+SIXELSTATUS
 sixel_builtin_decode_psd_rgb_8bit(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
@@ -196,6 +213,18 @@ sixel_builtin_decode_psd_gray_or_duotone_32bit(
 
 SIXELSTATUS
 sixel_builtin_decode_psd_lab_8bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
+SIXELSTATUS
+sixel_builtin_decode_psd_lab_16bit(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
