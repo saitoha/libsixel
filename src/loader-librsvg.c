@@ -763,6 +763,17 @@ librsvg_close_temp_svgz_fd(int *fd)
     return SIXEL_OK;
 }
 
+static void
+librsvg_dispose_temp_path(char **path)
+{
+    if (path == NULL || *path == NULL) {
+        return;
+    }
+    (void)sixel_compat_unlink(*path);
+    g_free(*path);
+    *path = NULL;
+}
+
 static SIXELSTATUS
 librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
 {
@@ -805,10 +816,7 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
     if (fd >= 0) {
         (void)sixel_compat_close(fd);
     }
-    if (path != NULL) {
-        (void)sixel_compat_unlink(path);
-        g_free(path);
-    }
+    librsvg_dispose_temp_path(&path);
     if (gerror != NULL) {
         g_error_free(gerror);
     }
@@ -1038,8 +1046,7 @@ librsvg_open_handle_from_stdin_svgz_tempfile(sixel_chunk_t const *chunk,
         status = SIXEL_OK;
     }
     if (temp_path != NULL) {
-        (void)sixel_compat_unlink(temp_path);
-        g_free(temp_path);
+        librsvg_dispose_temp_path(&temp_path);
     }
 
     return status;
@@ -1125,9 +1132,7 @@ librsvg_open_result_cleanup(sixel_librsvg_open_result_t *open_result)
         open_result->handle = NULL;
     }
     if (open_result->stdin_svgz_temp_path != NULL) {
-        (void)sixel_compat_unlink(open_result->stdin_svgz_temp_path);
-        g_free(open_result->stdin_svgz_temp_path);
-        open_result->stdin_svgz_temp_path = NULL;
+        librsvg_dispose_temp_path(&open_result->stdin_svgz_temp_path);
     }
 }
 
