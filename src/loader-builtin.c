@@ -4396,7 +4396,6 @@ load_with_builtin(
         }
     }
 
-done:
     status = sixel_builtin_finalize_loaded_frame(&load_request, frame);
     if (SIXEL_FAILED(status)) {
         goto end;
