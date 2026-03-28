@@ -144,6 +144,7 @@ stbi_free(void *p)
 #endif
 #define STBI_NO_GIF
 #define STBI_NO_PNM
+#define STBI_NO_PSD
 #if HAVE_NEON && HAVE_ARM_NEON_H
 # define STBI_NEON 1
 # define STBI_NO_SIMD 1
