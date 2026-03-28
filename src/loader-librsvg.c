@@ -331,6 +331,58 @@ librsvg_fill_missing_dimensions_from_viewbox(
 }
 
 /*
+ * If rounded explicit values become invalid, recover from positive viewBox.
+ */
+static void
+librsvg_recover_invalid_dimensions_from_viewbox(
+    int has_positive_viewbox,
+    RsvgRectangle const *viewbox,
+    int *width,
+    int *height)
+{
+    int viewbox_width;
+    int viewbox_height;
+
+    viewbox_width = 0;
+    viewbox_height = 0;
+    if (viewbox == NULL || width == NULL || height == NULL) {
+        return;
+    }
+    if (*width > 0 && *height > 0) {
+        return;
+    }
+    if (!has_positive_viewbox) {
+        return;
+    }
+
+    viewbox_width = librsvg_rounded_dimension(viewbox->width);
+    viewbox_height = librsvg_rounded_dimension(viewbox->height);
+    if (viewbox_width > 0) {
+        *width = viewbox_width;
+    }
+    if (viewbox_height > 0) {
+        *height = viewbox_height;
+    }
+}
+
+/*
+ * Apply conventional SVG default viewport when computed values are invalid.
+ */
+static void
+librsvg_apply_default_dimensions(int *width, int *height)
+{
+    if (width == NULL || height == NULL) {
+        return;
+    }
+    if (*width <= 0) {
+        *width = LIBRSVG_DEFAULT_WIDTH;
+    }
+    if (*height <= 0) {
+        *height = LIBRSVG_DEFAULT_HEIGHT;
+    }
+}
+
+/*
  * Try to identify SVG input quickly so the registry can skip this backend for
  * obvious raster formats.
  */
@@ -476,29 +528,14 @@ librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
         if (height_valid) {
             height = librsvg_rounded_dimension(height_from_length);
         }
-        if (width <= 0 || height <= 0) {
-            if (has_positive_viewbox) {
-                int viewbox_width;
-                int viewbox_height;
-
-                viewbox_width = librsvg_rounded_dimension(viewbox.width);
-                viewbox_height = librsvg_rounded_dimension(viewbox.height);
-                if (viewbox_width > 0) {
-                    width = viewbox_width;
-                }
-                if (viewbox_height > 0) {
-                    height = viewbox_height;
-                }
-            }
-        }
+        librsvg_recover_invalid_dimensions_from_viewbox(
+            has_positive_viewbox,
+            &viewbox,
+            &width,
+            &height);
     }
 
-    if (width <= 0) {
-        width = LIBRSVG_DEFAULT_WIDTH;
-    }
-    if (height <= 0) {
-        height = LIBRSVG_DEFAULT_HEIGHT;
-    }
+    librsvg_apply_default_dimensions(&width, &height);
 
     *pwidth = width;
     *pheight = height;
