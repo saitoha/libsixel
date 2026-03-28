@@ -72,10 +72,19 @@ typedef struct sixel_loader_librsvg_component {
     "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES"
 #define LIBRSVG_ENV_ALLOW_STDIN_SVGZ \
     "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ"
+#define LIBRSVG_CONTEXT_PARSE_FILE \
+    "librsvg_render_to_frame: unable to parse SVG file."
+#define LIBRSVG_CONTEXT_PARSE_DATA \
+    "librsvg_render_to_frame: unable to parse SVG data."
+#define LIBRSVG_CONTEXT_PARSE_STDIN_SVGZ_TEMPFILE \
+    "librsvg_render_to_frame: unable to parse stdin .svgz via " \
+    "temporary file."
 #define LIBRSVG_MESSAGE_STDIN_SVGZ_REJECTED \
     "librsvg_render_to_frame: gzip-compressed SVG (.svgz) " \
     "requires file-path decode, prior decompression, or " \
     "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1."
+#define LIBRSVG_MESSAGE_UNSUPPORTED_DECODE_MODE \
+    "librsvg_render_to_frame: unsupported decode mode."
 
 typedef struct sixel_librsvg_open_result {
     RsvgHandle *handle;
@@ -761,7 +770,7 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
     case SIXEL_LIBRSVG_DECODE_MODE_FILE:
         status = librsvg_new_handle_from_file(
             chunk->source_path,
-            "librsvg_render_to_frame: unable to parse SVG file.",
+            LIBRSVG_CONTEXT_PARSE_FILE,
             &open_result->handle);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -775,8 +784,7 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
 
         status = librsvg_new_handle_from_file(
             stdin_svgz_temp_path,
-            "librsvg_render_to_frame: unable to parse stdin .svgz via "
-            "temporary file.",
+            LIBRSVG_CONTEXT_PARSE_STDIN_SVGZ_TEMPFILE,
             &open_result->handle);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -786,7 +794,7 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
         status = librsvg_new_handle_from_data(
             chunk->buffer,
             chunk->size,
-            "librsvg_render_to_frame: unable to parse SVG data.",
+            LIBRSVG_CONTEXT_PARSE_DATA,
             &open_result->handle);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -799,7 +807,7 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
         goto end;
     default:
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: unsupported decode mode.");
+            LIBRSVG_MESSAGE_UNSUPPORTED_DECODE_MODE);
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
