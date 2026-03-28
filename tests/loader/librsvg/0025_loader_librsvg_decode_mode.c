@@ -62,6 +62,24 @@ test_loader_0025_loader_librsvg_decode_mode(int argc, char **argv)
         return result;
     }
 
+    chunk.source_path = "file:///tmp/sample.svg";
+    mode = sixel_loader_librsvg_pick_decode_mode_for_test(&chunk, 1, 0);
+    result = expect_decode_mode("file URI svg remains data mode",
+                                mode,
+                                SIXEL_LIBRSVG_DECODE_MODE_DATA);
+    if (result != 0) {
+        return result;
+    }
+
+    chunk.source_path = "";
+    mode = sixel_loader_librsvg_pick_decode_mode_for_test(&chunk, 1, 0);
+    result = expect_decode_mode("empty source path remains data mode",
+                                mode,
+                                SIXEL_LIBRSVG_DECODE_MODE_DATA);
+    if (result != 0) {
+        return result;
+    }
+
     chunk.source_path = "sample.svgz";
     chunk.buffer = (unsigned char *)svgz_data;
     chunk.size = sizeof(svgz_data);
