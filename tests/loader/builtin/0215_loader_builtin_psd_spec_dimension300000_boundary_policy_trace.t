@@ -17,8 +17,8 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_dimension300000_
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: unsupported color mode (7: Multichannel)"*)
-        echo "ok" 1 - "dimension=300000 passes boundary and reaches policy"
+    *"builtin PSD: unsupported Multichannel channel count (1; expected 3 or 4)"*)
+        echo "ok" 1 - "dimension=300000 passes boundary and reaches multichannel channel-count policy"
         ;;
     *)
         echo "not ok" 1 - "dimension=300000 did not pass boundary validation"

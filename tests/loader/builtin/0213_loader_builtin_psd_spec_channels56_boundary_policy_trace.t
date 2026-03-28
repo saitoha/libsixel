@@ -17,8 +17,8 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_channels56_multi
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: unsupported color mode (7: Multichannel)"*)
-        echo "ok" 1 - "channel=56 passes boundary and hits multichannel policy"
+    *"builtin PSD: unsupported Multichannel channel count (56; expected 3 or 4)"*)
+        echo "ok" 1 - "channel=56 passes boundary and hits multichannel channel-count policy"
         ;;
     *)
         echo "not ok" 1 - "channel=56 did not reach multichannel policy check"

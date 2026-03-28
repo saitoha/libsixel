@@ -632,11 +632,55 @@ sixel_builtin_validate_psd_info(
         }
         break;
     case 7u:
-        sixel_builtin_psd_set_message(
-            message,
-            message_size,
-            "builtin PSD: unsupported color mode (7: Multichannel)");
-        return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
+        if (info->channels == 3u) {
+            min_channels = 3u;
+            if (info->depth == 8u) {
+                decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_8BIT;
+            } else if (info->depth == 16u) {
+                decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_16BIT;
+            } else if (info->depth == 32u) {
+                decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_32BIT;
+            } else {
+                nwrite = snprintf(
+                    message,
+                    message_size,
+                    "builtin PSD: unsupported bit depth (%u) for Multichannel (3ch->RGB)",
+                    info->depth);
+                (void)nwrite;
+                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
+            }
+        } else if (info->channels == 4u) {
+            min_channels = 4u;
+            if (info->depth == 8u) {
+                decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT;
+                skip_icc_conversion = 1;
+            } else if (info->depth == 16u) {
+                decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT;
+                skip_icc_conversion = 1;
+                colorspace = SIXEL_COLORSPACE_LINEAR;
+            } else if (info->depth == 32u) {
+                decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT;
+                skip_icc_conversion = 1;
+                colorspace = SIXEL_COLORSPACE_LINEAR;
+            } else {
+                nwrite = snprintf(
+                    message,
+                    message_size,
+                    "builtin PSD: unsupported bit depth (%u) for Multichannel (4ch->CMYK)",
+                    info->depth);
+                (void)nwrite;
+                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
+            }
+        } else {
+            nwrite = snprintf(
+                message,
+                message_size,
+                "builtin PSD: unsupported Multichannel channel count (%u; expected 3 or 4)",
+                info->channels);
+            (void)nwrite;
+            return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
+        }
+        break;
     case 9u:
         min_channels = 3u;
         if (info->depth == 8u) {
@@ -2744,7 +2788,8 @@ sixel_builtin_decode_psd_cmyk_8bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 4u || info->depth != 8u ||
+    if ((info->color_mode != 4u && info->color_mode != 7u) ||
+        info->depth != 8u ||
         info->compression > 3u || info->channels < 4u) {
         return SIXEL_BAD_INPUT;
     }
@@ -3091,7 +3136,8 @@ sixel_builtin_decode_psd_cmyk_16bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 4u || info->depth != 16u ||
+    if ((info->color_mode != 4u && info->color_mode != 7u) ||
+        info->depth != 16u ||
         info->compression > 3u || info->channels < 4u) {
         return SIXEL_BAD_INPUT;
     }
@@ -3712,7 +3758,8 @@ sixel_builtin_decode_psd_rgb_8bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 3u || info->depth != 8u ||
+    if ((info->color_mode != 3u && info->color_mode != 7u) ||
+        info->depth != 8u ||
         info->compression > 3u || info->channels < 3u) {
         return SIXEL_BAD_INPUT;
     }
@@ -3908,7 +3955,8 @@ sixel_builtin_decode_psd_rgb_16bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 3u || info->depth != 16u ||
+    if ((info->color_mode != 3u && info->color_mode != 7u) ||
+        info->depth != 16u ||
         info->compression > 3u || info->channels < 3u) {
         return SIXEL_BAD_INPUT;
     }
@@ -4100,7 +4148,8 @@ sixel_builtin_decode_psd_rgb_32bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 3u || info->depth != 32u ||
+    if ((info->color_mode != 3u && info->color_mode != 7u) ||
+        info->depth != 32u ||
         info->compression > 3u ||
         info->channels < 3u) {
         return SIXEL_BAD_INPUT;
@@ -4834,7 +4883,8 @@ sixel_builtin_decode_psd_cmyk_32bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 4u || info->depth != 32u ||
+    if ((info->color_mode != 4u && info->color_mode != 7u) ||
+        info->depth != 32u ||
         info->compression > 3u ||
         info->channels < 4u) {
         return SIXEL_BAD_INPUT;
