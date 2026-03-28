@@ -10,7 +10,8 @@ This document defines how `src/loader-builtin.c` will move from the current
   - Feature parity for "basic subformats": color mode, bit depth, compression,
     alpha/background behavior, and embedded ICC usage.
 - Out of scope for initial milestone:
-  - Full layered reconstruction when merged/composite image is absent.
+  - Full layered reconstruction when merged/composite image is absent
+    (beyond minimal single-layer RGB8 fallback).
   - PSB (`8BPB`, version 2) large-document support.
 
 ## Normative Reference
@@ -55,8 +56,10 @@ Key points used by this roadmap:
   - RGB/Gray/Duotone/CMYK/Lab 32-bit with RLE
   - Bitmap 1-bit with ZIP+Prediction
 - Composite-missing policy:
-  - When layer records exist and composite image data is absent, return explicit
-    unsupported (`merged/composite image required`).
+  - Minimal fallback is supported for RGB 8-bit layer-only PSDs:
+    single full-canvas layer with decodable R/G/B channels.
+  - Layer-only PSD layouts outside that minimal fallback surface a deterministic
+    unsupported trace (`unsupported layer fallback layout`).
   - When image data exists but raw/RLE payload is too short, return malformed
     (do not conflate truncation with layer-only PSD policy).
 - Existing regression includes ICC and alpha combinations on Raw and ZIP paths,
@@ -161,8 +164,8 @@ Definition of done:
 
 1. Detect missing merged/composite image.
 2. Decide policy:
-   - explicit unsupported error (initial), or
-   - minimal layer reconstruction path.
+   - explicit unsupported error (for unsupported layouts), and
+   - minimal layer reconstruction path (single-layer RGB8).
 3. Document behavior in README/changelog.
 
 Definition of done:
