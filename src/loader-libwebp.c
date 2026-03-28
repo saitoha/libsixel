@@ -357,6 +357,77 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+webp_count_animation_frames_in_riff(size_t *pframe_count,
+                                    unsigned char const *data,
+                                    size_t size)
+{
+    size_t riff_size;
+    size_t riff_total_size;
+    size_t offset;
+    unsigned int chunk_size_u32;
+    size_t chunk_size;
+    size_t chunk_total_size;
+    size_t frame_count;
+
+    riff_size = 0u;
+    riff_total_size = 0u;
+    offset = 0u;
+    chunk_size_u32 = 0U;
+    chunk_size = 0u;
+    chunk_total_size = 0u;
+    frame_count = 0u;
+
+    if (pframe_count == NULL || data == NULL || size < 12u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *pframe_count = 0u;
+
+    riff_size = (size_t)webp_read_u32le(data + 4u);
+    if (riff_size < 4u || riff_size > SIZE_MAX - 8u) {
+        return SIXEL_BAD_INPUT;
+    }
+    riff_total_size = riff_size + 8u;
+    if (riff_total_size > size) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    offset = 12u;
+    while (offset < riff_total_size) {
+        if (riff_total_size - offset < 8u) {
+            return SIXEL_BAD_INPUT;
+        }
+
+        chunk_size_u32 = webp_read_u32le(data + offset + 4u);
+        chunk_size = (size_t)chunk_size_u32;
+        if (chunk_size > SIZE_MAX - 8u - offset) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+
+        chunk_total_size = 8u + chunk_size;
+        if ((chunk_size_u32 & 1u) != 0u) {
+            if (chunk_total_size == SIZE_MAX) {
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            chunk_total_size += 1u;
+        }
+        if (chunk_total_size > riff_total_size - offset) {
+            return SIXEL_BAD_INPUT;
+        }
+
+        if (memcmp(data + offset, "ANMF", 4u) == 0) {
+            if (frame_count == SIZE_MAX) {
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            ++frame_count;
+        }
+        offset += chunk_total_size;
+    }
+
+    *pframe_count = frame_count;
+    return SIXEL_OK;
+}
+
 static float
 webp_clamp_unit_float(float value)
 {
@@ -2894,6 +2965,7 @@ load_with_libwebp(
     unsigned char *resolved_bgcolor;
     unsigned char *single_frame_data;
     size_t single_frame_size;
+    size_t animation_frame_count_hint;
 
     status = SIXEL_FALSE;
     webp_data = (WebPData){ 0 };
@@ -2910,6 +2982,7 @@ load_with_libwebp(
     resolved_bgcolor = bgcolor;
     single_frame_data = NULL;
     single_frame_size = 0u;
+    animation_frame_count_hint = 0u;
 
     webp_init_decode_common(&decode,
                             pchunk,
@@ -2924,6 +2997,19 @@ load_with_libwebp(
 
     status = webp_validate_riff_container(pchunk->buffer, pchunk->size);
     if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = webp_count_animation_frames_in_riff(&animation_frame_count_hint,
+                                                 pchunk->buffer,
+                                                 pchunk->size);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (animation_frame_count_hint > WEBP_MAX_ANIMATION_FRAMES) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: animation frame count exceeds limit.");
+        status = SIXEL_BAD_INPUT;
         goto end;
     }
 
