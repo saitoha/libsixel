@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming local .svgz file-path decode succeeds for librsvg.
+# TAP test confirming stdin .svgz decode succeeds when opt-in is set for librsvg.
 
 set -eux
 
@@ -24,21 +24,25 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-transparent-2color.svg"
 svgz_path="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-2color.svgz"
-file_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-file.six"
+stdin_optin_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-stdin-optin.six"
 header_alpha="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-header-alpha.bin"
 
 gzip -c "${svg_path}" >"${svgz_path}"
 printf '\033P0;1q' >"${header_alpha}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svgz_path}" >"${file_sixel}" || {
-    echo "not ok" 1 - "file-path .svgz conversion failed"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1 \
+    -L librsvg! - \
+    >"${stdin_optin_sixel}" \
+    <"${svgz_path}" || {
+    echo "not ok" 1 - "stdin .svgz conversion failed with opt-in env"
     exit 0
 }
 
-dd if="${file_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" || {
-    echo "not ok" 1 - "file-path .svgz conversion lost transparency header"
+dd if="${stdin_optin_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" || {
+    echo "not ok" 1 - "stdin .svgz opt-in conversion lost transparency header"
     exit 0
 }
 
-echo "ok" 1 - "librsvg .svgz file-path decode works"
+echo "ok" 1 - "librsvg stdin .svgz decode works with opt-in"
 exit 0
