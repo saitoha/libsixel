@@ -1271,7 +1271,7 @@ librsvg_render_context_cleanup(sixel_librsvg_render_context_t *render_ctx)
     render_ctx->pixel_total = 0u;
 }
 
-static void
+static SIXELSTATUS
 librsvg_render_request_init(
     sixel_librsvg_render_request_t *request,
     sixel_chunk_t const *chunk,
@@ -1279,14 +1279,18 @@ librsvg_render_request_init(
     unsigned char const *bgcolor,
     sixel_librsvg_decode_policy_t const *policy)
 {
-    if (request == NULL) {
-        return;
+    if (request == NULL ||
+            chunk == NULL ||
+            allocator == NULL ||
+            policy == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
     request->chunk = chunk;
     request->allocator = allocator;
     request->bgcolor = bgcolor;
     request->policy = policy;
+    return SIXEL_OK;
 }
 
 static void
@@ -1834,8 +1838,6 @@ librsvg_open_and_prepare_frame_geometry(
 
     if (frame == NULL ||
             request == NULL ||
-            request->chunk == NULL ||
-            request->policy == NULL ||
             render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1862,8 +1864,6 @@ librsvg_prepare_render_context(
 
     if (frame == NULL ||
             request == NULL ||
-            request->chunk == NULL ||
-            request->policy == NULL ||
             render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1889,7 +1889,6 @@ librsvg_render_context_to_frame_pixels(
 
     if (frame == NULL ||
             request == NULL ||
-            request->allocator == NULL ||
             render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1923,14 +1922,16 @@ librsvg_render_to_frame(sixel_frame_t *frame,
         return SIXEL_BAD_ARGUMENT;
     }
     librsvg_render_context_init(&render_ctx);
-    librsvg_render_request_init(&request,
-                                chunk,
-                                chunk->allocator,
-                                bgcolor,
-                                policy);
-    status = librsvg_prepare_render_context(frame,
-                                            &request,
-                                            &render_ctx);
+    status = librsvg_render_request_init(&request,
+                                         chunk,
+                                         chunk->allocator,
+                                         bgcolor,
+                                         policy);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_prepare_render_context(frame,
+                                                &request,
+                                                &render_ctx);
+    }
     if (SIXEL_SUCCEEDED(status)) {
         status = librsvg_render_context_to_frame_pixels(frame,
                                                         &request,
