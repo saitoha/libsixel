@@ -3114,6 +3114,40 @@ sixel_builtin_finalize_loaded_frame(
     return status;
 }
 
+static SIXELSTATUS
+sixel_builtin_chunk_size_to_int(sixel_chunk_t const *chunk, int *chunk_size)
+{
+    if (chunk == NULL || chunk_size == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (chunk->size > INT_MAX) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    *chunk_size = (int)chunk->size;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_builtin_prepare_frame_and_chunk_size(
+    sixel_chunk_t const *chunk,
+    sixel_frame_t **frame,
+    int *chunk_size)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (chunk == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_frame_new(frame, chunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_builtin_chunk_size_to_int(chunk, chunk_size);
+    return status;
+}
+
 SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const *pchunk,
@@ -3140,6 +3174,7 @@ load_with_builtin(
     stbi__result_info ri;
     char message[80];
     int nwrite;
+    int chunk_size;
     int png_keycolor_mode;
     int palette_keycolor_index;
     int palette_zero_alpha_count;
@@ -3173,6 +3208,7 @@ load_with_builtin(
     stb_context = (stbi__context){ 0 };
     ri = (stbi__result_info){ 0 };
     nwrite = 0;
+    chunk_size = 0;
     png_keycolor_mode = 0;
     palette_keycolor_index = -1;
     palette_zero_alpha_count = 0;
@@ -3218,17 +3254,15 @@ load_with_builtin(
 
     switch (decode_path) {
     case SIXEL_BUILTIN_DECODE_PATH_SIXEL:
-        status = sixel_frame_new(&frame, pchunk->allocator);
+        status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
+                                                            &frame,
+                                                            &chunk_size);
         if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        if (pchunk->size > INT_MAX) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
         status = load_sixel(&pixels,
                             pchunk->buffer,
-                            (int)pchunk->size,
+                            chunk_size,
                             &frame->width,
                             &frame->height,
                             fuse_palette ? &frame->palette: NULL,
@@ -3243,16 +3277,14 @@ load_with_builtin(
         break;
 
     case SIXEL_BUILTIN_DECODE_PATH_PNM:
-        status = sixel_frame_new(&frame, pchunk->allocator);
+        status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
+                                                            &frame,
+                                                            &chunk_size);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        if (pchunk->size > INT_MAX) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto end;
-        }
         status = load_pnm(pchunk->buffer,
-                          (int)pchunk->size,
+                          chunk_size,
                           frame->allocator,
                           &pixels,
                           &frame->width,
@@ -3268,8 +3300,8 @@ load_with_builtin(
 
     case SIXEL_BUILTIN_DECODE_PATH_GIF:
         fnp.fn = load_request.fn_load;
-        if (pchunk->size > INT_MAX) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
+        status = sixel_builtin_chunk_size_to_int(pchunk, &chunk_size);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         if (load_context.start_frame_no != INT_MIN) {
@@ -3288,7 +3320,7 @@ load_with_builtin(
             }
         }
         status = load_gif(pchunk->buffer,
-                          (int)pchunk->size,
+                          chunk_size,
                           bgcolor,
                           reqcolors,
                           fuse_palette,
@@ -3306,12 +3338,10 @@ load_with_builtin(
 
     case SIXEL_BUILTIN_DECODE_PATH_STBI:
     default:
-        status = sixel_frame_new(&frame, pchunk->allocator);
+        status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
+                                                            &frame,
+                                                            &chunk_size);
         if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        if (pchunk->size > INT_MAX) {
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
         stbi_allocator = pchunk->allocator;
@@ -3346,7 +3376,7 @@ load_with_builtin(
              */
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
-                            (int)pchunk->size);
+                            chunk_size);
             pixels = stbi__png_load_palette(&stb_context,
                                             &frame->width,
                                             &frame->height,
@@ -3410,7 +3440,7 @@ load_with_builtin(
              */
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
-                            (int)pchunk->size);
+                            chunk_size);
             if (stbi__tga_test(&stb_context)) {
                 pixels = stbi__tga_load_palette(&stb_context,
                                                 &frame->width,
@@ -3446,7 +3476,7 @@ load_with_builtin(
             if (png_keycolor_mode) {
                 stbi__start_mem(&stb_context,
                                 pchunk->buffer,
-                                (int)pchunk->size);
+                                chunk_size);
                 pixels = stbi__png_load_palette(&stb_context,
                                                 &frame->width,
                                                 &frame->height,
@@ -3529,7 +3559,7 @@ load_with_builtin(
                     pixels = NULL;
                 }
                 pixels = stbi_load_from_memory(pchunk->buffer,
-                                               (int)pchunk->size,
+                                               chunk_size,
                                                &frame->width,
                                                &frame->height,
                                                &depth,
@@ -3565,7 +3595,7 @@ load_with_builtin(
             sixel_builtin_hdr_init_profile_trace(&hdr_profile_trace);
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
-                            (int)pchunk->size);
+                            chunk_size);
             if (chunk_is_jpeg(pchunk)) {
                 float *float_pixels;
 
@@ -3744,6 +3774,28 @@ load_with_builtin(
                         goto end;
                     }
                 } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT) {
+                    status = sixel_builtin_decode_psd_cmyk_16bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
+                        psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
+                            ? psd_icc_profile
+                            : NULL,
+                        psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
+                            ? psd_icc_profile_length
+                            : 0u,
+                        &psd_cmyk_icc_applied,
+                        &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                } else if (psd_custom_decode_mode ==
                            SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT) {
                     status = sixel_builtin_decode_psd_cmyk_32bit(
                         pchunk,
@@ -3768,6 +3820,21 @@ load_with_builtin(
                 } else if (psd_custom_decode_mode ==
                            SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT) {
                     status = sixel_builtin_decode_psd_lab_8bit(
+                        pchunk,
+                        &psd_info,
+                        bgcolor,
+                        &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
+                        &frame->width,
+                        &frame->height,
+                        &psd_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                } else if (psd_custom_decode_mode ==
+                           SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT) {
+                    status = sixel_builtin_decode_psd_lab_16bit(
                         pchunk,
                         &psd_info,
                         bgcolor,
@@ -3857,6 +3924,8 @@ load_with_builtin(
                         } else if ((psd_custom_decode_mode ==
                                     SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT ||
                                     psd_custom_decode_mode ==
+                                    SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT ||
+                                    psd_custom_decode_mode ==
                                     SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT) &&
                                    psd_icc_status ==
                                        SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
@@ -3865,6 +3934,8 @@ load_with_builtin(
                                 "builtin PSD: embedded ICC conversion failed");
                         } else if ((psd_custom_decode_mode ==
                                     SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT ||
+                                    psd_custom_decode_mode ==
+                                    SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT ||
                                     psd_custom_decode_mode ==
                                     SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT) &&
                                    psd_icc_status ==
