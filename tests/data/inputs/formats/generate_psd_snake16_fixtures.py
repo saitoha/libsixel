@@ -439,6 +439,52 @@ def build_psd_bytes(
     return bytes(out)
 
 
+def build_psd_layer_only_single_rgb8(planes):
+    if len(planes) < 3:
+        raise RuntimeError("layer-only RGB fixture requires R/G/B planes")
+    row_bytes = WIDTH
+    plane_bytes = row_bytes * HEIGHT
+    for i in range(3):
+        if len(planes[i]) != plane_bytes:
+            raise RuntimeError("unexpected RGB8 plane size")
+
+    layer_record = bytearray()
+    channel_payload = bytearray()
+    layer_record += struct.pack(">iiii", 0, 0, HEIGHT, WIDTH)
+    layer_record += struct.pack(">H", 3)
+    for channel_id, plane in enumerate(planes[:3]):
+        payload = struct.pack(">H", 0) + plane
+        layer_record += struct.pack(">hI", channel_id, len(payload))
+        channel_payload += payload
+    layer_record += b"8BIMnorm"
+    layer_record += bytes([255, 0, 0, 0])
+    layer_record += struct.pack(">I", 0)
+
+    layer_info = bytearray()
+    layer_info += struct.pack(">h", 1)
+    layer_info += layer_record
+    layer_info += channel_payload
+
+    layer_and_mask = struct.pack(">I", len(layer_info)) + layer_info
+
+    out = bytearray()
+    out += b"8BPS"
+    out += struct.pack(">H", 1)
+    out += b"\x00" * 6
+    out += struct.pack(">H", 3)
+    out += struct.pack(">I", HEIGHT)
+    out += struct.pack(">I", WIDTH)
+    out += struct.pack(">H", 8)
+    out += struct.pack(">H", 3)
+    out += struct.pack(">I", 0)  # color mode data length
+    out += struct.pack(">I", 0)  # image resources length
+    out += struct.pack(">I", len(layer_and_mask))
+    out += layer_and_mask
+    out += struct.pack(">H", 0)  # compression for composite image data
+    # Composite image data intentionally omitted (missing merged/composite image).
+    return bytes(out)
+
+
 def write_file(path: pathlib.Path, data: bytes):
     path.write_bytes(data)
     print(path)
@@ -530,6 +576,10 @@ def generate(out_dir: pathlib.Path):
             color_mode=3,
             compression=0,
         ),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb8(rgb8_planes),
     )
 
     write_variants(
