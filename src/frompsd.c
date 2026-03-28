@@ -1725,6 +1725,7 @@ sixel_builtin_decode_psd_bitmap_1bit(
     int r;
     int g;
     int b;
+    int blend_with_bg;
 
     plane0 = NULL;
     plane_alpha = NULL;
@@ -1744,6 +1745,7 @@ sixel_builtin_decode_psd_bitmap_1bit(
     r = 0;
     g = 0;
     b = 0;
+    blend_with_bg = 0;
 
     if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
         pheight == NULL || ppixelformat == NULL || chunk->allocator == NULL) {
@@ -1802,6 +1804,14 @@ sixel_builtin_decode_psd_bitmap_1bit(
             return SIXEL_BAD_ALLOCATION;
         }
     }
+    /* Alpha blending requires a concrete background color. */
+    blend_with_bg = (plane_alpha != NULL && preserve_alpha == 0) ? 1 : 0;
+    if (blend_with_bg != 0 && bgcolor == NULL) {
+        sixel_allocator_free(chunk->allocator, transparent_mask);
+        sixel_allocator_free(chunk->allocator, plane_alpha);
+        sixel_allocator_free(chunk->allocator, plane0);
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     if (!sixel_builtin_decode_psd_bitmap_channel(chunk,
                                                  info,
@@ -1845,15 +1855,17 @@ sixel_builtin_decode_psd_bitmap_1bit(
             if (plane_alpha != NULL) {
                 alpha = (plane_alpha[row_offset + (x >> 3u)] &
                          (unsigned char)(1u << (7u - (x & 7u)))) ? 0xff : 0;
-                if (preserve_alpha != 0) {
-                    r = (r * alpha) >> 8;
-                    g = (g * alpha) >> 8;
-                    b = (b * alpha) >> 8;
-                    transparent_mask[pixel_offset] = alpha == 0 ? 1u : 0u;
-                } else {
+                if (blend_with_bg != 0) {
                     r = (r * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
                     g = (g * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
                     b = (b * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                } else {
+                    r = (r * alpha) >> 8;
+                    g = (g * alpha) >> 8;
+                    b = (b * alpha) >> 8;
+                    if (transparent_mask != NULL) {
+                        transparent_mask[pixel_offset] = alpha == 0 ? 1u : 0u;
+                    }
                 }
             }
             rgb[pixel_offset * 3u + 0u] = (unsigned char)r;
@@ -1909,6 +1921,7 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
     int r;
     int g;
     int b;
+    int blend_with_bg;
 
     palette_data = NULL;
     plane0 = NULL;
@@ -1925,6 +1938,7 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
     r = 0;
     g = 0;
     b = 0;
+    blend_with_bg = 0;
 
     if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
         pheight == NULL || ppixelformat == NULL || chunk->allocator == NULL) {
@@ -1957,6 +1971,11 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
 
     preserve_alpha = (bgcolor == NULL && info->channels == 2u) ? 1 : 0;
     want_alpha = info->channels == 2u ? 1 : 0;
+    /* Alpha blending requires a concrete background color. */
+    blend_with_bg = (want_alpha != 0 && preserve_alpha == 0) ? 1 : 0;
+    if (blend_with_bg != 0 && bgcolor == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (!sixel_builtin_decode_psd_8bit_planes(chunk,
                                               info,
                                               want_alpha,
@@ -2007,15 +2026,17 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
         }
         if (plane_alpha != NULL) {
             alpha = plane_alpha[i];
-            if (preserve_alpha != 0) {
-                r = (r * alpha) >> 8;
-                g = (g * alpha) >> 8;
-                b = (b * alpha) >> 8;
-                transparent_mask[i] = alpha == 0u ? 1u : 0u;
-            } else {
+            if (blend_with_bg != 0) {
                 r = (r * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
                 g = (g * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
                 b = (b * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+            } else {
+                r = (r * alpha) >> 8;
+                g = (g * alpha) >> 8;
+                b = (b * alpha) >> 8;
+                if (transparent_mask != NULL) {
+                    transparent_mask[i] = alpha == 0u ? 1u : 0u;
+                }
             }
         }
         rgb[i * 3u + 0u] = (unsigned char)r;
