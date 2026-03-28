@@ -382,6 +382,30 @@ librsvg_apply_default_dimensions(int *width, int *height)
     }
 }
 
+static int
+librsvg_buffer_has_svg_tag(unsigned char const *buffer,
+                           size_t offset,
+                           size_t limit)
+{
+    size_t index;
+
+    index = 0u;
+    if (buffer == NULL || offset >= limit) {
+        return 0;
+    }
+
+    for (index = offset; index + 4 < limit; ++index) {
+        if (buffer[index] == '<' &&
+                buffer[index + 1] == 's' &&
+                buffer[index + 2] == 'v' &&
+                buffer[index + 3] == 'g') {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 /*
  * Try to identify SVG input quickly so the registry can skip this backend for
  * obvious raster formats.
@@ -391,7 +415,6 @@ chunk_is_svg_like(sixel_chunk_t const *chunk)
 {
     size_t offset;
     size_t limit;
-    size_t index;
 
     if (chunk == NULL || chunk->buffer == NULL || chunk->size == 0) {
         return 0;
@@ -423,24 +446,7 @@ chunk_is_svg_like(sixel_chunk_t const *chunk)
         limit = 4096;
     }
 
-    if (offset + 4 < limit && chunk->buffer[offset] == '<') {
-        if (chunk->buffer[offset + 1] == 's' &&
-                chunk->buffer[offset + 2] == 'v' &&
-                chunk->buffer[offset + 3] == 'g') {
-            return 1;
-        }
-    }
-
-    for (index = offset; index + 4 < limit; ++index) {
-        if (chunk->buffer[index] == '<' &&
-                chunk->buffer[index + 1] == 's' &&
-                chunk->buffer[index + 2] == 'v' &&
-                chunk->buffer[index + 3] == 'g') {
-            return 1;
-        }
-    }
-
-    return 0;
+    return librsvg_buffer_has_svg_tag(chunk->buffer, offset, limit);
 }
 
 /*
