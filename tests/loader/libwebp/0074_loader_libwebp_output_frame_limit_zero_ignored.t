@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: libwebp output-frame limit env ignores non-integer values.
+# TAP test: libwebp output-frame limit env ignores zero values.
 
 set -eux
 
@@ -18,15 +18,15 @@ set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
 
-msg=$(set +xv; SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=abc \
+msg=$(set +xv; SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "non-integer output-frame limit unexpectedly failed decode"
+    echo "not ok" 1 - "zero output-frame limit unexpectedly failed decode"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "non-integer output-frame limit is ignored"
+echo "ok" 1 - "zero output-frame limit is ignored"
 
 exit 0
