@@ -520,6 +520,75 @@ librsvg_intrinsic_size_state_init(
     state->resolved_height = base_height;
 }
 
+static void
+librsvg_update_intrinsic_length_validity(
+    sixel_librsvg_intrinsic_size_state_t *state)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    if (state->has_width &&
+            librsvg_length_to_pixels(&state->width_length,
+                                     &state->width_from_length) &&
+            state->width_from_length >= 1.0) {
+        state->width_valid = 1;
+    }
+    if (state->has_height &&
+            librsvg_length_to_pixels(&state->height_length,
+                                     &state->height_from_length) &&
+            state->height_from_length >= 1.0) {
+        state->height_valid = 1;
+    }
+}
+
+static void
+librsvg_apply_viewbox_constraints_to_intrinsic_state(
+    sixel_librsvg_intrinsic_size_state_t *state)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    state->has_positive_viewbox = state->has_viewbox &&
+        state->viewbox.width > 0.0 &&
+        state->viewbox.height > 0.0;
+    if (!state->has_positive_viewbox) {
+        return;
+    }
+
+    librsvg_fill_missing_dimensions_from_viewbox(
+        state->viewbox.width,
+        state->viewbox.height,
+        &state->width_from_length,
+        &state->height_from_length,
+        &state->width_valid,
+        &state->height_valid);
+}
+
+static void
+librsvg_resolve_intrinsic_dimensions(
+    sixel_librsvg_intrinsic_size_state_t *state)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    if (state->width_valid) {
+        state->resolved_width = librsvg_rounded_dimension(
+            state->width_from_length);
+    }
+    if (state->height_valid) {
+        state->resolved_height = librsvg_rounded_dimension(
+            state->height_from_length);
+    }
+    librsvg_recover_invalid_dimensions_from_viewbox(
+        state->has_positive_viewbox,
+        &state->viewbox,
+        &state->resolved_width,
+        &state->resolved_height);
+}
+
 /*
  * Resolve dimensions from intrinsic length units and viewBox relationships.
  */
@@ -542,41 +611,9 @@ librsvg_pick_size_from_intrinsic_dimensions(RsvgHandle *handle,
                                          &state.height_length,
                                          &state.has_viewbox,
                                          &state.viewbox);
-    if (state.has_width && librsvg_length_to_pixels(&state.width_length,
-                                                    &state.width_from_length) &&
-        state.width_from_length >= 1.0) {
-        state.width_valid = 1;
-    }
-    if (state.has_height &&
-            librsvg_length_to_pixels(&state.height_length,
-                                     &state.height_from_length) &&
-            state.height_from_length >= 1.0) {
-        state.height_valid = 1;
-    }
-    state.has_positive_viewbox = state.has_viewbox &&
-        state.viewbox.width > 0.0 && state.viewbox.height > 0.0;
-    if (state.has_positive_viewbox) {
-        librsvg_fill_missing_dimensions_from_viewbox(
-            state.viewbox.width,
-            state.viewbox.height,
-            &state.width_from_length,
-            &state.height_from_length,
-            &state.width_valid,
-            &state.height_valid);
-    }
-    if (state.width_valid) {
-        state.resolved_width = librsvg_rounded_dimension(
-            state.width_from_length);
-    }
-    if (state.height_valid) {
-        state.resolved_height = librsvg_rounded_dimension(
-            state.height_from_length);
-    }
-    librsvg_recover_invalid_dimensions_from_viewbox(
-        state.has_positive_viewbox,
-        &state.viewbox,
-        &state.resolved_width,
-        &state.resolved_height);
+    librsvg_update_intrinsic_length_validity(&state);
+    librsvg_apply_viewbox_constraints_to_intrinsic_state(&state);
+    librsvg_resolve_intrinsic_dimensions(&state);
 
     *width = state.resolved_width;
     *height = state.resolved_height;
