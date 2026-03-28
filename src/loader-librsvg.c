@@ -1605,39 +1605,35 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     }
 
     status = librsvg_build_surface_convert_plan(bgcolor, pixel_total, &plan);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        pixels = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            plan.buffer_size);
+        if (pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+        }
     }
 
-    pixels = (unsigned char *)sixel_allocator_malloc(
-        allocator,
-        plan.buffer_size);
-    if (pixels == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_unpack_surface_pixels(pixels,
+                                               row,
+                                               row_stride,
+                                               frame->width,
+                                               frame->height,
+                                               plan.inspect_alpha,
+                                               &has_non_opaque_alpha);
     }
 
-    status = librsvg_unpack_surface_pixels(pixels,
-                                           row,
-                                           row_stride,
-                                           frame->width,
-                                           frame->height,
-                                           plan.inspect_alpha,
-                                           &has_non_opaque_alpha);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        librsvg_commit_frame_pixels(frame,
+                                    pixels,
+                                    pixel_total,
+                                    plan.inspect_alpha,
+                                    has_non_opaque_alpha);
+        pixels = NULL;
+        status = SIXEL_OK;
     }
 
-    librsvg_commit_frame_pixels(frame,
-                                pixels,
-                                pixel_total,
-                                plan.inspect_alpha,
-                                has_non_opaque_alpha);
-    pixels = NULL;
-
-    status = SIXEL_OK;
-
-end:
     if (pixels != NULL) {
         sixel_allocator_free(allocator, pixels);
     }
