@@ -833,6 +833,64 @@ def generate(out_dir: pathlib.Path):
         variants=["raw", "rle", "zip", "zip_pred"],
     )
 
+    # Multichannel (mode=7) fixtures:
+    # - channels=3 behaves like RGB
+    # - channels=4 behaves like CMYK
+    write_variants(
+        out_dir,
+        "snake16_mode7_rgb8",
+        rgb8_planes,
+        channels=3,
+        depth=8,
+        color_mode=7,
+        variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_variants(
+        out_dir,
+        "snake16_mode7_rgb16",
+        rgb16_planes,
+        channels=3,
+        depth=16,
+        color_mode=7,
+        variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_variants(
+        out_dir,
+        "snake16_mode7_rgb32",
+        rgb32_planes,
+        channels=3,
+        depth=32,
+        color_mode=7,
+        variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_variants(
+        out_dir,
+        "snake16_mode7_cmyk8",
+        cmyk8_planes,
+        channels=4,
+        depth=8,
+        color_mode=7,
+        variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_variants(
+        out_dir,
+        "snake16_mode7_cmyk16",
+        cmyk16_planes,
+        channels=4,
+        depth=16,
+        color_mode=7,
+        variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_variants(
+        out_dir,
+        "snake16_mode7_cmyk32",
+        cmyk32_planes,
+        channels=4,
+        depth=32,
+        color_mode=7,
+        variants=["raw", "rle", "zip", "zip_pred"],
+    )
+
     write_variants(
         out_dir,
         "snake16_bitmap1",
