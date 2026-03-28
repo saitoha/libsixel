@@ -2614,7 +2614,7 @@ run_builtin_loader_psd_validate_defensive_test(void)
         return 1;
     }
 
-    if ((size_t)-1 <= 0xffffffffULL) {
+#if SIZE_MAX <= 0xffffffffULL
         info.version = 1u;
         info.channels = 3u;
         info.width = 300000u;
@@ -2641,7 +2641,7 @@ run_builtin_loader_psd_validate_defensive_test(void)
                     message);
             return 1;
         }
-    }
+#endif
 
     return 0;
 }
