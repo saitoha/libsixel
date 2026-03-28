@@ -1865,15 +1865,15 @@ librsvg_render_context_to_frame_pixels(
                                      render_ctx->cr,
                                      frame->width,
                                      frame->height);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_convert_surface_to_frame_pixels(frame,
+                                                         request->allocator,
+                                                         render_ctx->surface,
+                                                         request->bgcolor,
+                                                         render_ctx->pixel_total);
     }
 
-    return librsvg_convert_surface_to_frame_pixels(frame,
-                                                   request->allocator,
-                                                   render_ctx->surface,
-                                                   request->bgcolor,
-                                                   render_ctx->pixel_total);
+    return status;
 }
 
 static SIXELSTATUS
