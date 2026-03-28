@@ -1036,6 +1036,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "Default is linear."
     },
     {
+        "SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+        "set builtin HDR source-profile fallback when GAMMA/PRIMARIES are\n"
+        "missing or unusable. Accepts linear-srgb (default) or srgb.\n"
+        "Header-derived metadata takes precedence."
+    },
+    {
         "SIXEL_LOADER_PREFER_8BIT",
         "when set to 1, keep loader CMS output in RGB888 instead of\n"
         "float32 target colorspaces."

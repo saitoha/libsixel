@@ -432,6 +432,244 @@ run_builtin_loader_hdr_gamma_numeric_test(void)
 }
 
 static int
+compute_hdr_srgb_fallback_expected(float *rgb_linear)
+{
+    sixel_cms_profile_t *src_profile;
+    int converted;
+
+    src_profile = NULL;
+    converted = 0;
+    if (rgb_linear == NULL) {
+        return 0;
+    }
+
+    src_profile = sixel_cms_create_srgb_profile();
+    if (src_profile == NULL) {
+        return 0;
+    }
+    converted = sixel_cms_convert_profile_to_linearrgb(
+        (unsigned char *)rgb_linear,
+        1,
+        1,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        src_profile);
+    sixel_cms_close_profile(src_profile);
+
+    return converted;
+}
+
+static int
+run_builtin_loader_hdr_fallback_profile_numeric_test(void)
+{
+    char const *sample_path;
+    hdr_numeric_probe_context_t linear_probe;
+    hdr_numeric_probe_context_t cms_probe;
+    float expected_linear[3];
+    float expected_cms[3];
+    float tolerance;
+    int index;
+    int result;
+
+    sample_path = "/tests/data/inputs/formats/stbi_midtones.hdr";
+    tolerance = 0.0007f;
+    expected_linear[0] = 0.5f;
+    expected_linear[1] = 0.25f;
+    expected_linear[2] = 0.125f;
+
+    if (loader_cms_target_pixelformat() !=
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        fprintf(stderr,
+                "builtin loader hdr fallback profile numeric: expected "
+                "target LINEARRGBFLOAT32\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr fallback numeric cms=off",
+        sample_path,
+        SIXEL_CMS_ENGINE_NONE,
+        &linear_probe);
+    if (result != 0) {
+        return result;
+    }
+    if (linear_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        linear_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr fallback numeric cms=off: unexpected "
+                "frame contract (pixelformat=%d colorspace=%d)\n",
+                linear_probe.pixelformat,
+                linear_probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(linear_probe.first_pixel[index],
+                                expected_linear[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr fallback numeric cms=off: channel %d "
+                    "mismatch (actual=%f expected=%f)\n",
+                    index,
+                    linear_probe.first_pixel[index],
+                    expected_linear[index]);
+            return 1;
+        }
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr fallback numeric cms=on",
+        sample_path,
+        SIXEL_CMS_ENGINE_BUILTIN,
+        &cms_probe);
+    if (result != 0) {
+        return result;
+    }
+    if (cms_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        cms_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr fallback numeric cms=on: unexpected frame "
+                "contract (pixelformat=%d colorspace=%d)\n",
+                cms_probe.pixelformat,
+                cms_probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        expected_cms[index] = expected_linear[index];
+    }
+    if (!compute_hdr_srgb_fallback_expected(expected_cms)) {
+        fprintf(stderr,
+                "builtin loader hdr fallback numeric: failed to compute "
+                "expected srgb fallback conversion\n");
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(cms_probe.first_pixel[index],
+                                expected_cms[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr fallback numeric cms=on: channel %d "
+                    "mismatch (actual=%f expected=%f)\n",
+                    index,
+                    cms_probe.first_pixel[index],
+                    expected_cms[index]);
+            return 1;
+        }
+    }
+
+    if (fabsf(expected_cms[0] - expected_linear[0]) > 0.05f &&
+        fabsf(cms_probe.first_pixel[0] - linear_probe.first_pixel[0]) < 0.05f) {
+        fprintf(stderr,
+                "builtin loader hdr fallback numeric cms=on: source profile "
+                "conversion not observed\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_header_priority_numeric_test(void)
+{
+    char const *sample_path;
+    hdr_numeric_probe_context_t linear_probe;
+    hdr_numeric_probe_context_t cms_probe;
+    float expected_linear[3];
+    float tolerance;
+    int index;
+    int result;
+
+    sample_path = "/tests/data/inputs/formats/stbi_midtones_hdrmeta_linear.hdr";
+    tolerance = 0.0007f;
+    expected_linear[0] = 0.5f;
+    expected_linear[1] = 0.25f;
+    expected_linear[2] = 0.125f;
+
+    if (loader_cms_target_pixelformat() !=
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        fprintf(stderr,
+                "builtin loader hdr header-priority numeric: expected target "
+                "LINEARRGBFLOAT32\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr header-priority numeric cms=off",
+        sample_path,
+        SIXEL_CMS_ENGINE_NONE,
+        &linear_probe);
+    if (result != 0) {
+        return result;
+    }
+    if (linear_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        linear_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr header-priority numeric cms=off: "
+                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
+                linear_probe.pixelformat,
+                linear_probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(linear_probe.first_pixel[index],
+                                expected_linear[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr header-priority numeric cms=off: "
+                    "channel %d mismatch (actual=%f expected=%f)\n",
+                    index,
+                    linear_probe.first_pixel[index],
+                    expected_linear[index]);
+            return 1;
+        }
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin loader hdr header-priority numeric cms=on",
+        sample_path,
+        SIXEL_CMS_ENGINE_BUILTIN,
+        &cms_probe);
+    if (result != 0) {
+        return result;
+    }
+    if (cms_probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        cms_probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin loader hdr header-priority numeric cms=on: "
+                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
+                cms_probe.pixelformat,
+                cms_probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!float_approx_equal(cms_probe.first_pixel[index],
+                                expected_linear[index],
+                                tolerance)) {
+            fprintf(stderr,
+                    "builtin loader hdr header-priority numeric cms=on: "
+                    "channel %d mismatch (actual=%f expected=%f)\n",
+                    index,
+                    cms_probe.first_pixel[index],
+                    expected_linear[index]);
+            return 1;
+        }
+    }
+
+    if (fabsf(cms_probe.first_pixel[0] - linear_probe.first_pixel[0]) >
+        tolerance) {
+        fprintf(stderr,
+                "builtin loader hdr header-priority numeric cms=on: "
+                "unexpected fallback-profile override observed\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_hdr_case_with_cms(char const *label,
                                      int expected_pixelformat,
                                      int expected_colorspace,
@@ -578,6 +816,8 @@ static int
 run_builtin_loader_test(void)
 {
     char const *hdr_numeric_mode;
+    char const *hdr_fallback_numeric_mode;
+    char const *hdr_header_priority_mode;
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
@@ -586,8 +826,20 @@ run_builtin_loader_test(void)
     int result;
 
     hdr_numeric_mode = loader_test_getenv("SIXEL_TEST_HDR_NUMERIC_GAMMA");
+    hdr_fallback_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_FALLBACK_PROFILE");
+    hdr_header_priority_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_HEADER_PRIORITY");
     if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_gamma_numeric_test();
+    }
+    if (hdr_fallback_numeric_mode != NULL &&
+        strcmp(hdr_fallback_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_fallback_profile_numeric_test();
+    }
+    if (hdr_header_priority_mode != NULL &&
+        strcmp(hdr_header_priority_mode, "1") == 0) {
+        return run_builtin_loader_hdr_header_priority_numeric_test();
     }
 
     result = run_loader_component_case("builtin loader rgba8",
