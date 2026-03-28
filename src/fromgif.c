@@ -1801,168 +1801,62 @@ typedef union sixel_fromgif_fn_pointer {
     void *                    p;
 } sixel_fromgif_fn_pointer_t;
 
-SIXELSTATUS
-load_gif(
-    unsigned char       /* in */ *buffer,
-    int                 /* in */ size,
-    unsigned char       /* in */ *bgcolor,
-    int                 /* in */ reqcolors,
-    int                 /* in */ fuse_palette,
-    int                 /* in */ fstatic,
-    int                 /* in */ loop_control,
-    int                 /* in */ start_frame_no,
-    void                /* in */ *fn_load,     /* callback */
-    void                /* in */ *context,     /* private data for callback */
-    sixel_allocator_t   /* in */ *allocator)   /* allocator object */
+static SIXELSTATUS
+gif_validate_canvas_requirements(gif_t *g, size_t *pcount_out)
 {
-    gif_context_t s;
-    gif_t *g;
-    SIXELSTATUS status = SIXEL_FALSE;
-    sixel_frame_t *frame;
-    sixel_fromgif_fn_pointer_t fnp;
-    char message[256];
     size_t pcount;
-    size_t bcount;
-    size_t history_bytes;
-    size_t i;
-    unsigned char bg_r;
-    unsigned char bg_g;
-    unsigned char bg_b;
-    unsigned char bg_a;
-    int emit_frame;
-    int decoded_frame_no;
-    int emitted_frame_no;
-    gif_stream_info_t stream_info;
-    int preserve_transparency;
-    int stream_scan_failed;
-    int need_multiframe_buffers;
 
-    frame = NULL;
-    g = NULL;
-    fnp.p = fn_load;
-    bg_a = 0u;
-    stream_info.has_transparency = 0;
-    stream_info.image_count = 0;
-    preserve_transparency = 0;
-    stream_scan_failed = 0;
-    need_multiframe_buffers = 0;
-    history_bytes = 0u;
-
-    if (buffer == NULL || size <= 0 || fn_load == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
-    status = sixel_frame_new(&frame, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    g = (gif_t *)sixel_allocator_malloc(allocator, sizeof(*g));
-    if (g == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
-    s.img_buffer_end = (unsigned char *)buffer + size;
-    memset(g, 0, sizeof(*g));
-    status = gif_scan_stream_info((unsigned char const *)buffer,
-                                  size,
-                                  &stream_info);
-    if (SIXEL_FAILED(status)) {
-        /*
-         * Transparency pre-scan is advisory. Decode continues on the legacy
-         * RGB path when the stream cannot be scanned safely.
-         */
-        loader_trace_message(
-            "fromgif: stream pre-scan failed; using safe multiframe buffers.");
-        stream_scan_failed = 1;
-        stream_info.has_transparency = 0;
-        stream_info.image_count = 1;
-        status = SIXEL_OK;
-    }
-    preserve_transparency =
-        bgcolor == NULL && stream_info.has_transparency != 0 ? 1 : 0;
-    if (stream_info.image_count <= 0) {
-        stream_info.image_count = 1;
-    }
-    g->stream_is_multiframe = stream_info.image_count > 1 ? 1 : 0;
-    need_multiframe_buffers =
-        (g->stream_is_multiframe != 0 || stream_scan_failed != 0) ? 1 : 0;
-    g->preserve_transparency = preserve_transparency;
-    g->delay = SIXEL_DEFALUT_GIF_DELAY;
-    g->loop_count = -1;
-    status = gif_load_header(&s, g);
-    if (status != SIXEL_OK) {
-        goto end;
+    pcount = 0u;
+    if (g == NULL || pcount_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
     if (g->w <= 0 || g->h <= 0 ||
         (size_t)g->w > SIZE_MAX / (size_t)g->h) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: invalid image size).");
-        status = SIXEL_BAD_INPUT;
-        goto end;
+        return SIXEL_BAD_INPUT;
     }
     if (g->w > SIXEL_WIDTH_LIMIT || g->h > SIXEL_HEIGHT_LIMIT) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: image dimensions exceed limit).");
-        status = SIXEL_BAD_INPUT;
-        goto end;
+        return SIXEL_BAD_INPUT;
     }
     pcount = (size_t)g->w * (size_t)g->h;
-    if (pcount > SIXEL_ALLOCATE_BYTES_MAX) {
+    if (pcount > SIXEL_ALLOCATE_BYTES_MAX ||
+        pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
         sixel_helper_set_additional_message(
             "corrupt GIF (reason: image data exceeds limit).");
-        status = SIXEL_BAD_INPUT;
-        goto end;
+        return SIXEL_BAD_INPUT;
     }
-    if (pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
-        sixel_helper_set_additional_message(
-            "corrupt GIF (reason: image data exceeds limit).");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    bcount = pcount * (size_t)GIF_RGB_STRIDE;
-    history_bytes = gif_history_required_bytes(pcount);
-    g->history_pixel_count = pcount;
 
-    g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
-    g->prev_out = NULL;
-    g->alpha_out = NULL;
-    g->prev_alpha = NULL;
-    g->history = NULL;
-    if (need_multiframe_buffers != 0) {
-        g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
-        g->history = (unsigned char *)sixel_allocator_malloc(allocator, history_bytes);
+    g->history_pixel_count = pcount;
+    *pcount_out = pcount;
+    return SIXEL_OK;
+}
+
+static void
+gif_reset_canvas_for_loop(gif_t *g, size_t pcount)
+{
+    size_t i;
+    size_t pixel_offset;
+    unsigned char bg_r;
+    unsigned char bg_g;
+    unsigned char bg_b;
+    unsigned char bg_a;
+
+    i = 0u;
+    pixel_offset = 0u;
+    bg_r = 0u;
+    bg_g = 0u;
+    bg_b = 0u;
+    bg_a = 0u;
+    if (g == NULL || g->out == NULL) {
+        return;
     }
-    if (g->preserve_transparency != 0) {
-        g->alpha_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
-        if (need_multiframe_buffers != 0) {
-            g->prev_alpha = (unsigned char *)sixel_allocator_malloc(
-                allocator,
-                pcount);
-        }
-    }
-    if (g->out == NULL ||
-        (need_multiframe_buffers != 0 &&
-         (g->prev_out == NULL || g->history == NULL)) ||
-        (g->preserve_transparency != 0 && g->alpha_out == NULL) ||
-        (g->preserve_transparency != 0 &&
-         need_multiframe_buffers != 0 &&
-         g->prev_alpha == NULL)) {
-        sixel_compat_snprintf(
-            message,
-            sizeof(message),
-            "load_gif: sixel_allocator_malloc() failed. size=%zu.",
-            pcount);
-        sixel_helper_set_additional_message(message);
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
+
     gif_resolve_background_color(g, &bg_r, &bg_g, &bg_b);
     bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
-    for (i = 0; i < pcount; ++i) {
-        size_t pixel_offset;
-
+    for (i = 0u; i < pcount; ++i) {
         pixel_offset = i * (size_t)GIF_RGB_STRIDE;
         g->out[pixel_offset + 0] = bg_r;
         g->out[pixel_offset + 1] = bg_g;
@@ -1981,11 +1875,363 @@ load_gif(
     }
     gif_history_clear(g, pcount);
     gif_dirty_reset(g);
+}
 
+static int
+gif_should_emit_decoded_frame(int start_frame_no,
+                              int loop_no,
+                              int decoded_frame_no)
+{
+    if (start_frame_no >= 0 &&
+        loop_no == 0 &&
+        decoded_frame_no < start_frame_no) {
+        return 0;
+    }
+    return 1;
+}
+
+static void
+gif_update_frame_progress(sixel_frame_t *frame,
+                          int emitted_frame,
+                          int *decoded_frame_no,
+                          int *emitted_frame_no)
+{
+    if (decoded_frame_no == NULL || emitted_frame_no == NULL) {
+        return;
+    }
+    if (emitted_frame != 0) {
+        ++(*emitted_frame_no);
+    }
+    ++(*decoded_frame_no);
+    if (frame != NULL) {
+        sixel_frame_increment_frame_no(frame);
+    }
+}
+
+static int
+gif_should_stop_after_loop(int loop_control,
+                           int frames_in_loop,
+                           int loop_no,
+                           int gif_loop_count)
+{
+    if (loop_control == SIXEL_LOOP_DISABLE) {
+        return 1;
+    }
+    if (frames_in_loop <= 1) {
+        return 1;
+    }
+    if (loop_control == SIXEL_LOOP_AUTO &&
+        gif_loop_count > 0 &&
+        loop_no >= gif_loop_count) {
+        return 1;
+    }
+    return 0;
+}
+
+static SIXELSTATUS
+gif_prepare_decoder_state(unsigned char *buffer,
+                          int size,
+                          unsigned char *bgcolor,
+                          sixel_allocator_t *allocator,
+                          gif_context_t *s,
+                          gif_t **pg,
+                          sixel_frame_t **pframe,
+                          int *stream_scan_failed)
+{
+    SIXELSTATUS status;
+    gif_t *g;
+    sixel_frame_t *frame;
+    gif_stream_info_t stream_info;
+    size_t pcount;
+    size_t bcount;
+    size_t history_bytes;
+    int preserve_transparency;
+    int need_multiframe_buffers;
+    char message[256];
+
+    status = SIXEL_FALSE;
+    g = NULL;
+    frame = NULL;
+    pcount = 0u;
+    bcount = 0u;
+    history_bytes = 0u;
+    preserve_transparency = 0;
+    need_multiframe_buffers = 0;
+    if (stream_scan_failed != NULL) {
+        *stream_scan_failed = 0;
+    }
+    if (buffer == NULL ||
+        size <= 0 ||
+        allocator == NULL ||
+        s == NULL ||
+        pg == NULL ||
+        pframe == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *pg = NULL;
+    *pframe = NULL;
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    g = (gif_t *)sixel_allocator_malloc(allocator, sizeof(*g));
+    if (g == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    s->img_buffer = s->img_buffer_original = (unsigned char *)buffer;
+    s->img_buffer_end = (unsigned char *)buffer + size;
+    memset(g, 0, sizeof(*g));
+    stream_info.has_transparency = 0;
+    stream_info.image_count = 0;
+
+    status = gif_scan_stream_info((unsigned char const *)buffer,
+                                  size,
+                                  &stream_info);
+    if (SIXEL_FAILED(status)) {
+        /*
+         * Transparency pre-scan is advisory. Decode continues on the legacy
+         * RGB path when the stream cannot be scanned safely.
+         */
+        loader_trace_message(
+            "fromgif: stream pre-scan failed; using safe "
+            "multiframe buffers.");
+        if (stream_scan_failed != NULL) {
+            *stream_scan_failed = 1;
+        }
+        stream_info.has_transparency = 0;
+        stream_info.image_count = 1;
+        status = SIXEL_OK;
+    }
+    preserve_transparency =
+        bgcolor == NULL && stream_info.has_transparency != 0 ? 1 : 0;
+    if (stream_info.image_count <= 0) {
+        stream_info.image_count = 1;
+    }
+    g->stream_is_multiframe = stream_info.image_count > 1 ? 1 : 0;
+    need_multiframe_buffers = (g->stream_is_multiframe != 0 ||
+                               (stream_scan_failed != NULL &&
+                                *stream_scan_failed != 0))
+        ? 1 : 0;
+    g->preserve_transparency = preserve_transparency;
+    g->delay = SIXEL_DEFALUT_GIF_DELAY;
+    g->loop_count = -1;
+    status = gif_load_header(s, g);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = gif_validate_canvas_requirements(g, &pcount);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    bcount = pcount * (size_t)GIF_RGB_STRIDE;
+    history_bytes = gif_history_required_bytes(pcount);
+
+    g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+    g->prev_out = NULL;
+    g->alpha_out = NULL;
+    g->prev_alpha = NULL;
+    g->history = NULL;
+    if (need_multiframe_buffers != 0) {
+        g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+        g->history = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                             history_bytes);
+    }
+    if (g->preserve_transparency != 0) {
+        g->alpha_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+        if (need_multiframe_buffers != 0) {
+            g->prev_alpha = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                                    pcount);
+        }
+    }
+    if (g->out == NULL ||
+        (need_multiframe_buffers != 0 &&
+         (g->prev_out == NULL || g->history == NULL)) ||
+        (g->preserve_transparency != 0 && g->alpha_out == NULL) ||
+        (g->preserve_transparency != 0 &&
+         need_multiframe_buffers != 0 &&
+         g->prev_alpha == NULL)) {
+        sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "load_gif: sixel_allocator_malloc() failed. size=%zu.",
+            pcount);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    gif_reset_canvas_for_loop(g, pcount);
     sixel_frame_set_loop_count(frame, 0);
+    *pg = g;
+    *pframe = frame;
+    status = SIXEL_OK;
+
+end:
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, g != NULL ? g->out : NULL);
+        sixel_allocator_free(allocator, g != NULL ? g->prev_out : NULL);
+        sixel_allocator_free(allocator, g != NULL ? g->alpha_out : NULL);
+        sixel_allocator_free(allocator, g != NULL ? g->prev_alpha : NULL);
+        sixel_allocator_free(allocator, g != NULL ? g->history : NULL);
+        sixel_allocator_free(allocator, g);
+        sixel_frame_unref(frame);
+    }
+    return status;
+}
+
+static SIXELSTATUS
+gif_decode_one_frame(gif_context_t *s,
+                     gif_t *g,
+                     sixel_frame_t *frame,
+                     unsigned char *bgcolor,
+                     int reqcolors,
+                     int fuse_palette,
+                     int start_frame_no,
+                     sixel_fromgif_fn_pointer_t fnp,
+                     void *context,
+                     int stream_scan_failed,
+                     int fstatic,
+                     int *decoded_frame_no,
+                     int *emitted_frame_no,
+                     int *stream_terminated,
+                     int *stop_decode)
+{
+    SIXELSTATUS status;
+    int emit_frame;
+    int loop_no;
+
+    status = SIXEL_FALSE;
+    emit_frame = 0;
+    loop_no = 0;
+    if (stream_terminated != NULL) {
+        *stream_terminated = 0;
+    }
+    if (stop_decode != NULL) {
+        *stop_decode = 0;
+    }
+    if (s == NULL ||
+        g == NULL ||
+        frame == NULL ||
+        decoded_frame_no == NULL ||
+        emitted_frame_no == NULL ||
+        stream_terminated == NULL ||
+        stop_decode == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = gif_load_next(s, g, bgcolor);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    if (g->is_terminated != 0) {
+        *stream_terminated = 1;
+        return SIXEL_OK;
+    }
+
+    if (stream_scan_failed != 0 && *decoded_frame_no >= 1) {
+        g->stream_is_multiframe = 1;
+    }
+
+    /*
+     * GIF image descriptors may encode only a dirty rectangle with non-zero
+     * offsets. The decoder composites each frame onto the full logical
+     * screen in g->out, so exported dimensions must stay at logical-screen
+     * size.
+     */
+    sixel_frame_set_width(frame, g->w);
+    sixel_frame_set_height(frame, g->h);
+    status = gif_init_frame(frame, g, bgcolor, reqcolors, fuse_palette);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+
+    loop_no = sixel_frame_get_loop_no(frame);
+    emit_frame = gif_should_emit_decoded_frame(start_frame_no,
+                                               loop_no,
+                                               *decoded_frame_no);
+    if (emit_frame != 0) {
+        /*
+         * Frame numbers are reported relative to emitted frames so start-frame
+         * skipping still begins at frame 0 for the first callback.
+         */
+        sixel_frame_set_frame_no(frame, *emitted_frame_no);
+        status = fnp.fn(frame, context);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+        if (fstatic != 0) {
+            *stop_decode = 1;
+        }
+    }
+
+    gif_update_frame_progress(frame,
+                              emit_frame,
+                              decoded_frame_no,
+                              emitted_frame_no);
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+load_gif(
+    unsigned char       /* in */ *buffer,
+    int                 /* in */ size,
+    unsigned char       /* in */ *bgcolor,
+    int                 /* in */ reqcolors,
+    int                 /* in */ fuse_palette,
+    int                 /* in */ fstatic,
+    int                 /* in */ loop_control,
+    int                 /* in */ start_frame_no,
+    void                /* in */ *fn_load,     /* callback */
+    void                /* in */ *context,     /* private data for callback */
+    sixel_allocator_t   /* in */ *allocator)   /* allocator object */
+{
+    gif_context_t s;
+    gif_t *g;
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    sixel_fromgif_fn_pointer_t fnp;
+    size_t pcount;
+    int decoded_frame_no;
+    int emitted_frame_no;
+    int stream_scan_failed;
+    int stream_terminated;
+    int stop_decode;
+    int loop_no;
+
+    status = SIXEL_FALSE;
+    frame = NULL;
+    g = NULL;
+    fnp.p = fn_load;
+    pcount = 0u;
+    decoded_frame_no = 0;
+    emitted_frame_no = 0;
+    stream_scan_failed = 0;
+    stream_terminated = 0;
+    stop_decode = 0;
+    loop_no = 0;
+
+    if (buffer == NULL || size <= 0 || fn_load == NULL || allocator == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    status = gif_prepare_decoder_state(buffer,
+                                       size,
+                                       bgcolor,
+                                       allocator,
+                                       &s,
+                                       &g,
+                                       &frame,
+                                       &stream_scan_failed);
+    if (status != SIXEL_OK) {
+        goto end;
+    }
 
     for (;;) { /* per loop */
-
         sixel_frame_set_frame_no(frame, 0);
         decoded_frame_no = 0;
         emitted_frame_no = 0;
@@ -1996,138 +2242,56 @@ load_gif(
         if (status != SIXEL_OK) {
             goto end;
         }
-        if (g->w <= 0 || g->h <= 0 ||
-            (size_t)g->w > SIZE_MAX / (size_t)g->h) {
-            sixel_helper_set_additional_message(
-                "corrupt GIF (reason: invalid image size).");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-        if (g->w > SIXEL_WIDTH_LIMIT || g->h > SIXEL_HEIGHT_LIMIT) {
-            sixel_helper_set_additional_message(
-                "corrupt GIF (reason: image dimensions exceed limit).");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-        pcount = (size_t)g->w * (size_t)g->h;
-        g->history_pixel_count = pcount;
-        if (pcount > SIXEL_ALLOCATE_BYTES_MAX) {
-            sixel_helper_set_additional_message(
-                "corrupt GIF (reason: image data exceeds limit).");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-        if (pcount > SIZE_MAX / (size_t)GIF_RGB_STRIDE) {
-            sixel_helper_set_additional_message(
-                "corrupt GIF (reason: image data exceeds limit).");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
 
-        /* reset canvas for new loop */
-        gif_resolve_background_color(g, &bg_r, &bg_g, &bg_b);
-        bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
-        for (i = 0; i < pcount; ++i) {
-            size_t pixel_offset;
-
-            pixel_offset = i * (size_t)GIF_RGB_STRIDE;
-            g->out[pixel_offset + 0] = bg_r;
-            g->out[pixel_offset + 1] = bg_g;
-            g->out[pixel_offset + 2] = bg_b;
-            if (g->prev_out != NULL) {
-                g->prev_out[pixel_offset + 0] = bg_r;
-                g->prev_out[pixel_offset + 1] = bg_g;
-                g->prev_out[pixel_offset + 2] = bg_b;
-            }
-            if (g->alpha_out != NULL) {
-                g->alpha_out[i] = bg_a;
-                if (g->prev_alpha != NULL) {
-                    g->prev_alpha[i] = bg_a;
-                }
-            }
+        status = gif_validate_canvas_requirements(g, &pcount);
+        if (status != SIXEL_OK) {
+            goto end;
         }
-        gif_history_clear(g, pcount);
-        gif_dirty_reset(g);
+        gif_reset_canvas_for_loop(g, pcount);
         g->is_multiframe = 0;
-
         g->is_terminated = 0;
 
         for (;;) { /* per frame */
-            status = gif_load_next(&s, g, bgcolor);
+            status = gif_decode_one_frame(&s,
+                                          g,
+                                          frame,
+                                          bgcolor,
+                                          reqcolors,
+                                          fuse_palette,
+                                          start_frame_no,
+                                          fnp,
+                                          context,
+                                          stream_scan_failed,
+                                          fstatic,
+                                          &decoded_frame_no,
+                                          &emitted_frame_no,
+                                          &stream_terminated,
+                                          &stop_decode);
             if (status != SIXEL_OK) {
                 goto end;
             }
-            if (g->is_terminated) {
+            if (stream_terminated != 0) {
                 break;
             }
-
-            if (stream_scan_failed != 0 && decoded_frame_no >= 1) {
-                g->stream_is_multiframe = 1;
-            }
-
-            /*
-             * GIF image descriptors may encode only a dirty rectangle with
-             * non-zero offsets. The decoder composites each frame onto the
-             * full logical screen in g.out, so exported frame dimensions must
-             * remain the logical screen size. Using the descriptor bounds here
-             * would make the packed RGB buffer width/height inconsistent and
-             * produce corrupted output on partial-update frames.
-             */
-            sixel_frame_set_width(frame, g->w);
-            sixel_frame_set_height(frame, g->h);
-            status = gif_init_frame(frame, g, bgcolor, reqcolors, fuse_palette);
-            if (status != SIXEL_OK) {
+            if (stop_decode != 0) {
                 goto end;
             }
-
-            emit_frame = 1;
-            /*
-             * Start-frame override applies only to the first decoded loop.
-             * Later loops always emit from frame 0 to preserve GIF looping.
-             */
-            if (start_frame_no >= 0 &&
-                sixel_frame_get_loop_no(frame) == 0 &&
-                decoded_frame_no < start_frame_no) {
-                emit_frame = 0;
-            }
-
-            if (emit_frame) {
-                /*
-                 * Report frame numbers relative to the emitted stream.
-                 * This keeps the first emitted frame at index 0 even when
-                 * start-frame skipping suppresses earlier decoded frames.
-                 */
-                sixel_frame_set_frame_no(frame, emitted_frame_no);
-                status = fnp.fn(frame, context);
-                if (status != SIXEL_OK) {
-                    goto end;
-                }
-
-                if (fstatic) {
-                    goto end;
-                }
-                ++emitted_frame_no;
-            }
-
-            ++decoded_frame_no;
-            sixel_frame_increment_frame_no(frame);
         }
 
         sixel_frame_increment_loop_count(frame);
-
         if (g->loop_count < 0) {
             break;
         }
-        if (loop_control == SIXEL_LOOP_DISABLE ||
-            sixel_frame_get_frame_no(frame) == 1) {
+        loop_no = sixel_frame_get_loop_no(frame);
+        if (gif_should_stop_after_loop(loop_control,
+                                       decoded_frame_no,
+                                       loop_no,
+                                       g->loop_count)) {
             break;
         }
-        if (loop_control == SIXEL_LOOP_AUTO) {
-            if (sixel_frame_get_loop_no(frame) == g->loop_count) {
-                break;
-            }
-        }
     }
+
+    status = SIXEL_OK;
 
 end:
     if (g != NULL) {
