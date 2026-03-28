@@ -1377,6 +1377,29 @@ librsvg_setopt_noop_single_frame(void const *value)
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+librsvg_setopt_bgcolor(sixel_loader_librsvg_component_t *self,
+                       void const *value)
+{
+    unsigned char const *color;
+
+    color = NULL;
+    if (self == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (value == NULL) {
+        self->has_bgcolor = 0;
+        return SIXEL_OK;
+    }
+
+    color = (unsigned char const *)value;
+    self->bgcolor[0] = color[0];
+    self->bgcolor[1] = color[1];
+    self->bgcolor[2] = color[2];
+    self->has_bgcolor = 1;
+    return SIXEL_OK;
+}
+
 static void
 librsvg_debug_ignored_int_option(char const *name,
                                  int const *value,
@@ -1395,11 +1418,9 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
 {
     sixel_loader_librsvg_component_t *self;
     int const *flag;
-    unsigned char const *color;
 
     self = NULL;
     flag = NULL;
-    color = NULL;
     if (component == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1407,6 +1428,8 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
     self = (sixel_loader_librsvg_component_t *)component;
     switch (option) {
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
+    case SIXEL_LOADER_OPTION_LOOP_CONTROL:
+    case SIXEL_LOADER_OPTION_START_FRAME_NO:
         return librsvg_setopt_noop_single_frame(value);
     case SIXEL_LOADER_OPTION_USE_PALETTE:
         flag = (int const *)value;
@@ -1422,20 +1445,7 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
             "palette limits apply during quantization.");
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_BGCOLOR:
-        if (value == NULL) {
-            self->has_bgcolor = 0;
-            return SIXEL_OK;
-        }
-        color = (unsigned char const *)value;
-        self->bgcolor[0] = color[0];
-        self->bgcolor[1] = color[1];
-        self->bgcolor[2] = color[2];
-        self->has_bgcolor = 1;
-        return SIXEL_OK;
-    case SIXEL_LOADER_OPTION_LOOP_CONTROL:
-        return librsvg_setopt_noop_single_frame(value);
-    case SIXEL_LOADER_OPTION_START_FRAME_NO:
-        return librsvg_setopt_noop_single_frame(value);
+        return librsvg_setopt_bgcolor(self, value);
     default:
         return SIXEL_OK;
     }
