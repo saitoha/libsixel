@@ -439,7 +439,7 @@ def build_psd_bytes(
     return bytes(out)
 
 
-def build_psd_layer_only_single_rgb8(planes):
+def build_psd_layer_only_single_rgb8(planes, *, alpha_plane=None):
     if len(planes) < 3:
         raise RuntimeError("layer-only RGB fixture requires R/G/B planes")
     row_bytes = WIDTH
@@ -447,12 +447,22 @@ def build_psd_layer_only_single_rgb8(planes):
     for i in range(3):
         if len(planes[i]) != plane_bytes:
             raise RuntimeError("unexpected RGB8 plane size")
+    if alpha_plane is not None and len(alpha_plane) != plane_bytes:
+        raise RuntimeError("unexpected alpha plane size")
+
+    layer_planes = [
+        (0, planes[0]),
+        (1, planes[1]),
+        (2, planes[2]),
+    ]
+    if alpha_plane is not None:
+        layer_planes.append((-1, alpha_plane))
 
     layer_record = bytearray()
     channel_payload = bytearray()
     layer_record += struct.pack(">iiii", 0, 0, HEIGHT, WIDTH)
-    layer_record += struct.pack(">H", 3)
-    for channel_id, plane in enumerate(planes[:3]):
+    layer_record += struct.pack(">H", len(layer_planes))
+    for channel_id, plane in layer_planes:
         payload = struct.pack(">H", 0) + plane
         layer_record += struct.pack(">hI", channel_id, len(payload))
         channel_payload += payload
@@ -471,7 +481,7 @@ def build_psd_layer_only_single_rgb8(planes):
     out += b"8BPS"
     out += struct.pack(">H", 1)
     out += b"\x00" * 6
-    out += struct.pack(">H", 3)
+    out += struct.pack(">H", len(layer_planes))
     out += struct.pack(">I", HEIGHT)
     out += struct.pack(">I", WIDTH)
     out += struct.pack(">H", 8)
@@ -580,6 +590,10 @@ def generate(out_dir: pathlib.Path):
     write_file(
         out_dir / "snake16_rgb8_missing_composite_single_layer.psd",
         build_psd_layer_only_single_rgb8(rgb8_planes),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_alpha_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb8(rgb8_planes, alpha_plane=alpha8_plane),
     )
 
     write_variants(
