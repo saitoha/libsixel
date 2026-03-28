@@ -1165,18 +1165,21 @@ static sixel_librsvg_open_result_fn_t
 librsvg_find_open_result_fn(sixel_librsvg_decode_mode_t decode_mode)
 {
     size_t index;
+    sixel_librsvg_open_result_fn_t open_result_fn;
 
     index = 0u;
+    open_result_fn = NULL;
     for (index = 0u;
             index < sizeof(g_librsvg_open_dispatch) /
                     sizeof(g_librsvg_open_dispatch[0]);
             ++index) {
         if (g_librsvg_open_dispatch[index].mode == decode_mode) {
-            return g_librsvg_open_dispatch[index].fn;
+            open_result_fn = g_librsvg_open_dispatch[index].fn;
+            break;
         }
     }
 
-    return NULL;
+    return open_result_fn;
 }
 
 static SIXELSTATUS
