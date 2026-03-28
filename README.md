@@ -1010,7 +1010,8 @@ Builtin PSD transparency summary:
 Embedded ICC conversion on PSD applies to RGB color data only; the transparent
 mask remains unchanged.
 For `mode=7` mapped CMYK decode (`channels=4`), invalid/malformed ICC resource
-traces follow the same CMYK contract as native `mode=4`.
+traces follow the same CMYK contract as native `mode=4`, and valid embedded ICC
+paths are expected to avoid false `embedded ICC conversion failed` traces.
 
 Builtin PSD Multichannel (mode 7) policy:
 

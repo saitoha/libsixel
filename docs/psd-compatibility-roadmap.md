@@ -69,8 +69,10 @@ Key points used by this roadmap:
   - `3ch->RGB` and `4ch->CMYK` for `8/16/32-bit`
   - `Raw/RLE/ZIP/ZIP+Prediction` decode regressions
   - policy traces for invalid channel-count/depth combinations
-  - CMYK-mapped mode7 ICC trace coverage (invalid profile and malformed
-    resource section)
+  - CMYK-mapped mode7 ICC trace coverage (valid profile no-false-failure,
+    invalid profile, and malformed resource section)
+  - mode7 missing-composite policy traces across mapped depth variants
+    (`RGB8/16/32`, `CMYK8/16/32`)
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
