@@ -2100,6 +2100,68 @@ webp_clone_decoder_canvas_pixels(unsigned char **ppixels,
     return SIXEL_OK;
 }
 
+static unsigned char *
+webp_resolve_animation_background(unsigned char *bgcolor,
+                                  int has_alpha,
+                                  uint32_t anim_bgcolor_raw,
+                                  unsigned char anim_bgcolor[3])
+{
+    unsigned int anim_bg_alpha;
+    unsigned char *resolved_bgcolor;
+
+    anim_bg_alpha = 0u;
+    resolved_bgcolor = bgcolor;
+    if (anim_bgcolor == NULL) {
+        return resolved_bgcolor;
+    }
+
+    if (bgcolor == NULL && has_alpha) {
+        anim_bg_alpha = (anim_bgcolor_raw >> 24u) & 0xffu;
+        /*
+         * WebPAnimInfo::bgcolor stores ANIM background as
+         * 0xAARRGGBB. Extract RGB in that order.
+         */
+        anim_bgcolor[0] = (unsigned char)((anim_bgcolor_raw >> 16u) & 0xffu);
+        anim_bgcolor[1] = (unsigned char)((anim_bgcolor_raw >> 8u) & 0xffu);
+        anim_bgcolor[2] = (unsigned char)(anim_bgcolor_raw & 0xffu);
+        if (anim_bg_alpha == 255u) {
+            resolved_bgcolor = anim_bgcolor;
+            sixel_trace_topic_message(
+                "webp_decode",
+                "animation background source=ANIM alpha=255 rgb=#%02x%02x%02x",
+                anim_bgcolor[0],
+                anim_bgcolor[1],
+                anim_bgcolor[2]);
+        } else if (anim_bg_alpha == 0u) {
+            sixel_trace_topic_message(
+                "webp_decode",
+                "animation background source=ANIM alpha=0; keep transparent path");
+        } else {
+            sixel_trace_topic_message(
+                "webp_decode",
+                "animation background source=ANIM alpha=%u (non-opaque); keep transparent path rgb=#%02x%02x%02x",
+                anim_bg_alpha,
+                anim_bgcolor[0],
+                anim_bgcolor[1],
+                anim_bgcolor[2]);
+        }
+    }
+    if (bgcolor != NULL) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "animation background source=explicit rgb=#%02x%02x%02x",
+            bgcolor[0],
+            bgcolor[1],
+            bgcolor[2]);
+    } else if (resolved_bgcolor == NULL) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "animation background source=none");
+    }
+
+    return resolved_bgcolor;
+}
+
 /*
  * Dedicated libwebp loader wiring minimal pipeline.
  *
@@ -2145,7 +2207,6 @@ load_with_libwebp(
     int cms_converted;
     WebPBitstreamFeatures stream_features;
     VP8StatusCode feature_status;
-    unsigned int anim_bg_alpha;
     unsigned char anim_bgcolor[3];
     unsigned char *resolved_bgcolor;
     unsigned char *icc_profile;
@@ -2177,7 +2238,6 @@ load_with_libwebp(
     cms_converted = 0;
     stream_features = (WebPBitstreamFeatures){ 0 };
     feature_status = VP8_STATUS_OK;
-    anim_bg_alpha = 0U;
     anim_bgcolor[0] = 0u;
     anim_bgcolor[1] = 0u;
     anim_bgcolor[2] = 0u;
@@ -2348,49 +2408,11 @@ load_with_libwebp(
         goto end;
     }
 
-    if (bgcolor == NULL && stream_features.has_alpha) {
-        anim_bg_alpha = (anim_info.bgcolor >> 24u) & 0xffu;
-        /*
-         * WebPAnimInfo::bgcolor stores ANIM background as
-         * 0xAARRGGBB. Extract RGB in that order.
-         */
-        anim_bgcolor[0] = (unsigned char)((anim_info.bgcolor >> 16u) & 0xffu);
-        anim_bgcolor[1] = (unsigned char)((anim_info.bgcolor >> 8u) & 0xffu);
-        anim_bgcolor[2] = (unsigned char)(anim_info.bgcolor & 0xffu);
-        if (anim_bg_alpha == 255u) {
-            resolved_bgcolor = anim_bgcolor;
-            sixel_trace_topic_message(
-                "webp_decode",
-                "animation background source=ANIM alpha=255 rgb=#%02x%02x%02x",
-                anim_bgcolor[0],
-                anim_bgcolor[1],
-                anim_bgcolor[2]);
-        } else if (anim_bg_alpha == 0u) {
-            sixel_trace_topic_message(
-                "webp_decode",
-                "animation background source=ANIM alpha=0; keep transparent path");
-        } else {
-            sixel_trace_topic_message(
-                "webp_decode",
-                "animation background source=ANIM alpha=%u (non-opaque); keep transparent path rgb=#%02x%02x%02x",
-                anim_bg_alpha,
-                anim_bgcolor[0],
-                anim_bgcolor[1],
-                anim_bgcolor[2]);
-        }
-    }
-    if (bgcolor != NULL) {
-        sixel_trace_topic_message(
-            "webp_decode",
-            "animation background source=explicit rgb=#%02x%02x%02x",
-            bgcolor[0],
-            bgcolor[1],
-            bgcolor[2]);
-    } else if (resolved_bgcolor == NULL) {
-        sixel_trace_topic_message(
-            "webp_decode",
-            "animation background source=none");
-    }
+    resolved_bgcolor = webp_resolve_animation_background(
+        bgcolor,
+        stream_features.has_alpha,
+        anim_info.bgcolor,
+        anim_bgcolor);
 
     if (anim_info.frame_count <= 1) {
         status = webp_maybe_resolve_animation_start_frame_no(
