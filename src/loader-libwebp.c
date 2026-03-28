@@ -1681,6 +1681,11 @@ webp_resolve_max_output_frames(void)
     }
 
     if (parsed > (unsigned long long)WEBP_MAX_OUTPUT_FRAMES) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "clamp SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=%s to %zu",
+            env_value,
+            WEBP_MAX_OUTPUT_FRAMES);
         return WEBP_MAX_OUTPUT_FRAMES;
     }
 
