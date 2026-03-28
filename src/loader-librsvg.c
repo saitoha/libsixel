@@ -605,24 +605,37 @@ end:
 static void
 librsvg_trace_decode_mode(sixel_librsvg_decode_mode_t mode)
 {
-    char const *message;
+    char message[64];
+    char const *mode_name;
+    int written;
 
-    message = "librsvg: decode_mode=unknown";
+    message[0] = '\0';
+    mode_name = "unknown";
+    written = 0;
     switch (mode) {
     case SIXEL_LIBRSVG_DECODE_MODE_FILE:
-        message = "librsvg: decode_mode=file";
+        mode_name = "file";
         break;
     case SIXEL_LIBRSVG_DECODE_MODE_DATA:
-        message = "librsvg: decode_mode=data";
+        mode_name = "data";
         break;
     case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE:
-        message = "librsvg: decode_mode=stdin_svgz_tempfile";
+        mode_name = "stdin_svgz_tempfile";
         break;
     case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED:
-        message = "librsvg: decode_mode=stdin_svgz_rejected";
+        mode_name = "stdin_svgz_rejected";
         break;
     }
 
+    written = sixel_compat_snprintf(message,
+                                    sizeof(message),
+                                    "librsvg: decode_mode=%s",
+                                    mode_name);
+    if (written < 0) {
+        sixel_trace_topic_message("loader", "librsvg: decode_mode=unknown");
+        return;
+    }
+    message[sizeof(message) - 1] = '\0';
     sixel_trace_topic_message("loader", message);
 }
 
