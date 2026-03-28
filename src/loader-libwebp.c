@@ -197,6 +197,37 @@ webp_env_value_is_truthy(char const *value)
     }
 }
 
+static int
+webp_should_use_lossy_float_decode(WebPBitstreamFeatures const *features,
+                                   int force_rgb_decode,
+                                   unsigned char const *bgcolor)
+{
+    if (features == NULL) {
+        return 0;
+    }
+    if (features->format != 1 || force_rgb_decode) {
+        return 0;
+    }
+    if (features->has_alpha && bgcolor == NULL) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static char const *
+webp_static_decode_path_name(WebPBitstreamFeatures const *features,
+                             int use_lossy_float_decode)
+{
+    if (features == NULL) {
+        return "unknown";
+    }
+    if (use_lossy_float_decode) {
+        return features->has_alpha ? "lossy_yuva" : "lossy_yuv";
+    }
+    return features->has_alpha ? "rgba_u8" : "rgb_u8";
+}
+
 static SIXELSTATUS
 webp_validate_riff_container(unsigned char const *data, size_t size)
 {
@@ -1034,7 +1065,8 @@ load_webp(unsigned char **result,
     size_t size;
     VP8StatusCode feature_status;
     char error_message[128];
-    int use_known_features;
+    int use_lossy_float_decode;
+    char const *decode_path_name;
 
     status = SIXEL_BAD_INPUT;
     cms_converted = 0;
@@ -1042,7 +1074,8 @@ load_webp(unsigned char **result,
     force_rgb_decode = 0;
     feature_status = VP8_STATUS_OK;
     memset(error_message, 0, sizeof(error_message));
-    use_known_features = 0;
+    use_lossy_float_decode = 0;
+    decode_path_name = NULL;
     if (result == NULL || data == NULL || datasize == 0u ||
         pwidth == NULL || pheight == NULL || ppixelformat == NULL ||
         allocator == NULL) {
@@ -1052,9 +1085,7 @@ load_webp(unsigned char **result,
 
     if (known_features != NULL) {
         features = *known_features;
-        use_known_features = 1;
-    }
-    if (!use_known_features) {
+    } else {
         status = webp_validate_riff_container(data, datasize);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -1093,18 +1124,23 @@ load_webp(unsigned char **result,
         force_rgb_decode = 1;
     }
 
-    if (features.format == 1 && !force_rgb_decode &&
-        !(features.has_alpha && bgcolor == NULL)) {
-        sixel_trace_topic_message(
-            "webp_decode",
-            "static decode path=%s width=%d height=%d has_alpha=%d "
-            "has_bgcolor=%d force_rgb=%d",
-            features.has_alpha ? "lossy_yuva" : "lossy_yuv",
-            *pwidth,
-            *pheight,
-            features.has_alpha,
-            bgcolor != NULL ? 1 : 0,
-            force_rgb_decode);
+    use_lossy_float_decode = webp_should_use_lossy_float_decode(&features,
+                                                                force_rgb_decode,
+                                                                bgcolor);
+    decode_path_name = webp_static_decode_path_name(&features,
+                                                    use_lossy_float_decode);
+    sixel_trace_topic_message(
+        "webp_decode",
+        "static decode path=%s width=%d height=%d has_alpha=%d has_bgcolor=%d "
+        "force_rgb=%d",
+        decode_path_name,
+        *pwidth,
+        *pheight,
+        features.has_alpha,
+        bgcolor != NULL ? 1 : 0,
+        force_rgb_decode);
+
+    if (use_lossy_float_decode) {
         return webp_decode_lossy_to_float32(result,
                                             data,
                                             datasize,
@@ -1119,17 +1155,6 @@ load_webp(unsigned char **result,
                                             bgcolor,
                                             allocator);
     }
-
-    sixel_trace_topic_message(
-        "webp_decode",
-        "static decode path=%s width=%d height=%d has_alpha=%d has_bgcolor=%d "
-        "force_rgb=%d",
-        features.has_alpha ? "rgba_u8" : "rgb_u8",
-        *pwidth,
-        *pheight,
-        features.has_alpha,
-        bgcolor != NULL ? 1 : 0,
-        force_rgb_decode);
 
     bytes_per_pixel = features.has_alpha ? 4 : 3;
     *ppixelformat = features.has_alpha ?
