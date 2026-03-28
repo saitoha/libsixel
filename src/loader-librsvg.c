@@ -912,16 +912,13 @@ librsvg_new_handle_from_file(char const *path,
     *handle_out = NULL;
 
     handle = rsvg_handle_new_from_file(path, &gerror);
-    if (handle == NULL) {
+    if (handle != NULL) {
+        *handle_out = handle;
+        handle = NULL;
+        status = SIXEL_OK;
+    } else {
         status = librsvg_fail_with_gerror(SIXEL_BAD_INPUT, context, gerror);
-        goto end;
     }
-
-    *handle_out = handle;
-    handle = NULL;
-    status = SIXEL_OK;
-
-end:
     if (handle != NULL) {
         g_object_unref(handle);
     }
@@ -954,16 +951,13 @@ librsvg_new_handle_from_data(unsigned char const *buffer,
     *handle_out = NULL;
 
     handle = rsvg_handle_new_from_data(buffer, size, &gerror);
-    if (handle == NULL) {
+    if (handle != NULL) {
+        *handle_out = handle;
+        handle = NULL;
+        status = SIXEL_OK;
+    } else {
         status = librsvg_fail_with_gerror(SIXEL_BAD_INPUT, context, gerror);
-        goto end;
     }
-
-    *handle_out = handle;
-    handle = NULL;
-    status = SIXEL_OK;
-
-end:
     if (handle != NULL) {
         g_object_unref(handle);
     }
@@ -1016,22 +1010,17 @@ librsvg_open_handle_from_stdin_svgz_tempfile(sixel_chunk_t const *chunk,
     *temp_path_out = NULL;
 
     status = librsvg_write_chunk_to_temp_svgz(chunk, &temp_path);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_new_handle_from_file(
+            temp_path,
+            LIBRSVG_CONTEXT_PARSE_STDIN_SVGZ_TEMPFILE,
+            handle_out);
     }
-    status = librsvg_new_handle_from_file(
-        temp_path,
-        LIBRSVG_CONTEXT_PARSE_STDIN_SVGZ_TEMPFILE,
-        handle_out);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        *temp_path_out = temp_path;
+        temp_path = NULL;
+        status = SIXEL_OK;
     }
-
-    *temp_path_out = temp_path;
-    temp_path = NULL;
-    status = SIXEL_OK;
-
-end:
     if (temp_path != NULL) {
         (void)sixel_compat_unlink(temp_path);
         g_free(temp_path);
@@ -1241,6 +1230,33 @@ librsvg_validate_canvas_size(int width, int height, size_t *pixel_total_out)
     return SIXEL_OK;
 }
 
+/*
+ * Initialize the cairo target either as transparent or with a solid
+ * background color before rendering SVG contents.
+ */
+static void
+librsvg_prepare_background(cairo_t *cr, unsigned char const *bgcolor)
+{
+    if (cr == NULL) {
+        return;
+    }
+
+    if (bgcolor == NULL) {
+        cairo_save(cr);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
+        cairo_paint(cr);
+        cairo_restore(cr);
+        return;
+    }
+
+    cairo_set_source_rgb(cr,
+                         ((double)bgcolor[0]) / 255.0,
+                         ((double)bgcolor[1]) / 255.0,
+                         ((double)bgcolor[2]) / 255.0);
+    cairo_paint(cr);
+}
+
 static SIXELSTATUS
 librsvg_prepare_render_surface(cairo_surface_t **surface_out,
                                cairo_t **cr_out,
@@ -1283,19 +1299,7 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
         goto end;
     }
 
-    if (bgcolor == NULL) {
-        cairo_save(cr);
-        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-        cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
-        cairo_paint(cr);
-        cairo_restore(cr);
-    } else {
-        cairo_set_source_rgb(cr,
-                             ((double)bgcolor[0]) / 255.0,
-                             ((double)bgcolor[1]) / 255.0,
-                             ((double)bgcolor[2]) / 255.0);
-        cairo_paint(cr);
-    }
+    librsvg_prepare_background(cr, bgcolor);
 
     *surface_out = surface;
     *cr_out = cr;
