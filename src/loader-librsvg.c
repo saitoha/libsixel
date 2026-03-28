@@ -72,6 +72,10 @@ typedef struct sixel_loader_librsvg_component {
     "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES"
 #define LIBRSVG_ENV_ALLOW_STDIN_SVGZ \
     "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ"
+#define LIBRSVG_MESSAGE_STDIN_SVGZ_REJECTED \
+    "librsvg_render_to_frame: gzip-compressed SVG (.svgz) " \
+    "requires file-path decode, prior decompression, or " \
+    "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1."
 
 typedef enum sixel_librsvg_decode_mode {
     SIXEL_LIBRSVG_DECODE_MODE_FILE,
@@ -620,6 +624,10 @@ librsvg_pick_decode_mode(sixel_chunk_t const *chunk,
 
     input_is_svgz = 0;
     use_source_file = 0;
+    /*
+     * Callers should validate arguments before use.  The fallback keeps the
+     * function safe for defensive use from future call sites.
+     */
     if (chunk == NULL || policy == NULL) {
         return SIXEL_LIBRSVG_DECODE_MODE_DATA;
     }
@@ -780,9 +788,7 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
         break;
     case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED:
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: gzip-compressed SVG (.svgz) "
-            "requires file-path decode, prior decompression, or "
-            "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1.");
+            LIBRSVG_MESSAGE_STDIN_SVGZ_REJECTED);
         status = SIXEL_BAD_INPUT;
         goto end;
     default:
@@ -851,6 +857,19 @@ librsvg_render_context_cleanup(sixel_librsvg_render_context_t *render_ctx)
     }
     librsvg_open_result_cleanup(&render_ctx->open_result);
     render_ctx->pixel_total = 0u;
+}
+
+static void
+librsvg_decode_policy_init_from_env(sixel_librsvg_decode_policy_t *policy)
+{
+    if (policy == NULL) {
+        return;
+    }
+
+    policy->allow_relative_resources =
+        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES);
+    policy->allow_stdin_svgz =
+        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ);
 }
 
 static SIXELSTATUS
@@ -1264,10 +1283,7 @@ load_with_librsvg(
     if (pchunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    policy.allow_relative_resources =
-        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES);
-    policy.allow_stdin_svgz =
-        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ);
+    librsvg_decode_policy_init_from_env(&policy);
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
