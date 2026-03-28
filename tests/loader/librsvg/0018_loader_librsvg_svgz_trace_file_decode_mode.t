@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming local .svgz file-path decode succeeds for librsvg.
+# TAP test confirming file-path .svgz decode emits trace decode_mode=file.
 
 set -eux
 
@@ -24,21 +24,20 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-transparent-2color.svg"
 svgz_path="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-2color.svgz"
-file_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-file.six"
-header_alpha="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-header-alpha.bin"
+trace_file_err="${ARTIFACT_LOCAL_DIR}/librsvg-svgz-trace-file.err"
 
 gzip -c "${svg_path}" >"${svgz_path}"
-printf '\033P0;1q' >"${header_alpha}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svgz_path}" >"${file_sixel}" || {
-    echo "not ok" 1 - "file-path .svgz conversion failed"
+SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svgz_path}" \
+    >/dev/null 2>"${trace_file_err}" || {
+    echo "not ok" 1 - "trace-enabled file-path .svgz conversion failed"
     exit 0
 }
 
-dd if="${file_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" || {
-    echo "not ok" 1 - "file-path .svgz conversion lost transparency header"
+grep -F "librsvg: decode_mode=file" "${trace_file_err}" >/dev/null || {
+    echo "not ok" 1 - "file-path .svgz trace mode was not reported"
     exit 0
 }
 
-echo "ok" 1 - "librsvg .svgz file-path decode works"
+echo "ok" 1 - "librsvg .svgz file-path trace decode mode is reported"
 exit 0
