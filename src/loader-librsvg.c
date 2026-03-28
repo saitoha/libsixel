@@ -1682,14 +1682,14 @@ librsvg_prepare_render_context(
 static SIXELSTATUS
 librsvg_render_context_to_frame_pixels(
     sixel_frame_t *frame,
-    sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     unsigned char const *bgcolor,
     sixel_librsvg_render_context_t *render_ctx)
 {
     SIXELSTATUS status;
 
     status = SIXEL_BAD_INPUT;
-    if (frame == NULL || chunk == NULL || render_ctx == NULL) {
+    if (frame == NULL || allocator == NULL || render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1702,7 +1702,7 @@ librsvg_render_context_to_frame_pixels(
     }
 
     status = librsvg_convert_surface_to_frame_pixels(frame,
-                                                     chunk->allocator,
+                                                     allocator,
                                                      render_ctx->surface,
                                                      bgcolor,
                                                      render_ctx->pixel_total);
@@ -1733,7 +1733,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     }
 
     status = librsvg_render_context_to_frame_pixels(frame,
-                                                    chunk,
+                                                    chunk->allocator,
                                                     bgcolor,
                                                     &render_ctx);
     if (SIXEL_FAILED(status)) {
