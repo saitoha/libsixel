@@ -193,6 +193,9 @@ loader_test_setenv(char const *name, char const *value)
     }
 #if defined(_MSC_VER)
     return _putenv_s(name, value);
+#elif defined(_WIN32) && defined(HAVE__PUTENV_S) && HAVE__PUTENV_S
+    /* MinGW can provide _putenv_s without defining _MSC_VER. */
+    return _putenv_s(name, value);
 #else
 # if defined(HAVE_SETENV)
     extern int setenv(char const *name, char const *value, int overwrite);
