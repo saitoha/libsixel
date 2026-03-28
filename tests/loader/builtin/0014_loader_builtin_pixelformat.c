@@ -1600,152 +1600,235 @@ hdr_test_compare_probe(char const *label,
                        hdr_numeric_probe_context_t const *right,
                        float tolerance);
 
+typedef struct hdr_numeric_compare_case_spec {
+    char const *setup_fallback_profile;
+    char const *setup_exposure_ev;
+    char const *setup_tonemap;
+    char const *setup_use_header_exposure;
+    char const *baseline_label;
+    char const *baseline_path;
+    int baseline_cms_engine;
+    char const *variant_label;
+    char const *variant_path;
+    int variant_cms_engine;
+    char const *variant_env_name;
+    char const *variant_env_value;
+    char const *compare_label;
+    float tolerance;
+} hdr_numeric_compare_case_spec_t;
+
+typedef enum hdr_numeric_compare_case_id {
+    HDR_NUMERIC_COMPARE_INVALID_HEADER_EXPOSURE = 0,
+    HDR_NUMERIC_COMPARE_MIXED_HEADER_EXPOSURE_INVALID,
+    HDR_NUMERIC_COMPARE_INVALID_USE_HEADER_EXPOSURE_ENV,
+    HDR_NUMERIC_COMPARE_DUPLICATE_HEADER_METADATA,
+    HDR_NUMERIC_COMPARE_INVALID_FALLBACK,
+    HDR_NUMERIC_COMPARE_INVALID_TONEMAP,
+    HDR_NUMERIC_COMPARE_INVALID_EXPOSURE
+} hdr_numeric_compare_case_id_t;
+
+static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr invalid header exposure baseline",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "builtin hdr invalid header exposure",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_exposure_invalid_zero.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        NULL,
+        NULL,
+        "builtin hdr invalid header exposure",
+        0.0007f
+    },
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr mixed header exposure invalid baseline",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "builtin hdr mixed header exposure invalid",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_exposure2_invalid_overflow.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        NULL,
+        NULL,
+        "builtin hdr mixed header exposure invalid",
+        0.0007f
+    },
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr invalid use-header-exposure env baseline",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "builtin hdr invalid use-header-exposure env",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+        "invalid-value",
+        "builtin hdr invalid use-header-exposure env",
+        0.0007f
+    },
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr duplicate metadata baseline",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_gamma22_bt2020.hdr",
+        SIXEL_CMS_ENGINE_AUTO,
+        "builtin hdr duplicate metadata",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_duplicate_gamma_primaries_last_wins.hdr",
+        SIXEL_CMS_ENGINE_AUTO,
+        NULL,
+        NULL,
+        "builtin hdr duplicate metadata",
+        0.0012f
+    },
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr invalid fallback baseline",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_AUTO,
+        "builtin hdr invalid fallback",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_AUTO,
+        "SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+        "invalid-profile",
+        "builtin hdr invalid fallback",
+        0.0007f
+    },
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr invalid tonemap baseline",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "builtin hdr invalid tonemap",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "SIXEL_LOADER_HDR_TONEMAP",
+        "invalid-tonemap",
+        "builtin hdr invalid tonemap",
+        0.0007f
+    },
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr invalid exposure baseline",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "builtin hdr invalid exposure",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "SIXEL_LOADER_HDR_EXPOSURE_EV",
+        "not-a-number",
+        "builtin hdr invalid exposure",
+        0.0007f
+    }
+};
+
 static int
-run_builtin_loader_hdr_invalid_header_exposure_numeric_test(void)
+run_builtin_loader_hdr_compare_case(
+    hdr_numeric_compare_case_spec_t const *spec)
 {
     hdr_numeric_probe_context_t baseline_probe;
-    hdr_numeric_probe_context_t invalid_probe;
+    hdr_numeric_probe_context_t variant_probe;
     int result;
 
-    if (hdr_test_configure_loader_env_default("1") != 0) {
+    baseline_probe = (hdr_numeric_probe_context_t){ 0 };
+    variant_probe = (hdr_numeric_probe_context_t){ 0 };
+    result = 1;
+    if (spec == NULL) {
+        return 1;
+    }
+
+    if (hdr_test_configure_loader_env(spec->setup_fallback_profile,
+                                      spec->setup_exposure_ev,
+                                      spec->setup_tonemap,
+                                      spec->setup_use_header_exposure) != 0) {
         return 1;
     }
 
     result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid header exposure baseline",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_NONE,
+        spec->baseline_label,
+        spec->baseline_path,
+        spec->baseline_cms_engine,
         &baseline_probe);
     if (result != 0) {
         return result;
     }
 
+    if (spec->variant_env_name != NULL) {
+        if (spec->variant_env_value == NULL ||
+            loader_test_setenv(spec->variant_env_name,
+                               spec->variant_env_value) != 0) {
+            return 1;
+        }
+    }
+
     result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid header exposure",
-        "/tests/data/inputs/formats/"
-        "stbi_midtones_hdrmeta_exposure_invalid_zero.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &invalid_probe);
+        spec->variant_label,
+        spec->variant_path,
+        spec->variant_cms_engine,
+        &variant_probe);
     if (result != 0) {
         return result;
     }
 
-    return hdr_test_compare_probe("builtin hdr invalid header exposure",
-                                  &invalid_probe,
+    return hdr_test_compare_probe(spec->compare_label,
+                                  &variant_probe,
                                   &baseline_probe,
-                                  0.0007f);
+                                  spec->tolerance);
+}
+
+static int
+run_builtin_loader_hdr_invalid_header_exposure_numeric_test(void)
+{
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[
+            HDR_NUMERIC_COMPARE_INVALID_HEADER_EXPOSURE]);
 }
 
 static int
 run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric_test(void)
 {
-    hdr_numeric_probe_context_t baseline_probe;
-    hdr_numeric_probe_context_t mixed_probe;
-    int result;
-
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr mixed header exposure invalid baseline",
-        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &baseline_probe);
-    if (result != 0) {
-        return result;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr mixed header exposure invalid",
-        "/tests/data/inputs/formats/"
-        "stbi_midtones_hdrmeta_exposure2_invalid_overflow.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &mixed_probe);
-    if (result != 0) {
-        return result;
-    }
-
-    return hdr_test_compare_probe("builtin hdr mixed header exposure invalid",
-                                  &mixed_probe,
-                                  &baseline_probe,
-                                  0.0007f);
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[
+            HDR_NUMERIC_COMPARE_MIXED_HEADER_EXPOSURE_INVALID]);
 }
 
 static int
 run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test(void)
 {
-    hdr_numeric_probe_context_t baseline_probe;
-    hdr_numeric_probe_context_t invalid_probe;
-    int result;
-
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid use-header-exposure env baseline",
-        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &baseline_probe);
-    if (result != 0) {
-        return result;
-    }
-
-    if (loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
-                           "invalid-value") != 0) {
-        return 1;
-    }
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid use-header-exposure env",
-        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &invalid_probe);
-    if (result != 0) {
-        return result;
-    }
-
-    return hdr_test_compare_probe(
-        "builtin hdr invalid use-header-exposure env",
-        &invalid_probe,
-        &baseline_probe,
-        0.0007f);
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[
+            HDR_NUMERIC_COMPARE_INVALID_USE_HEADER_EXPOSURE_ENV]);
 }
 
 static int
 run_builtin_loader_hdr_duplicate_header_metadata_numeric_test(void)
 {
-    hdr_numeric_probe_context_t baseline_probe;
-    hdr_numeric_probe_context_t duplicate_probe;
-    int result;
-
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr duplicate metadata baseline",
-        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_gamma22_bt2020.hdr",
-        SIXEL_CMS_ENGINE_AUTO,
-        &baseline_probe);
-    if (result != 0) {
-        return result;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr duplicate metadata",
-        "/tests/data/inputs/formats/"
-        "stbi_midtones_hdrmeta_duplicate_gamma_primaries_last_wins.hdr",
-        SIXEL_CMS_ENGINE_AUTO,
-        &duplicate_probe);
-    if (result != 0) {
-        return result;
-    }
-
-    return hdr_test_compare_probe("builtin hdr duplicate metadata",
-                                  &duplicate_probe,
-                                  &baseline_probe,
-                                  0.0012f);
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[
+            HDR_NUMERIC_COMPARE_DUPLICATE_HEADER_METADATA]);
 }
 
 static char const *
@@ -2066,109 +2149,22 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
 static int
 run_builtin_loader_hdr_invalid_fallback_numeric_test(void)
 {
-    hdr_numeric_probe_context_t baseline_probe;
-    hdr_numeric_probe_context_t invalid_probe;
-    int result;
-
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid fallback baseline",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_AUTO,
-        &baseline_probe);
-    if (result != 0) {
-        return result;
-    }
-
-    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
-                           "invalid-profile") != 0) {
-        return 1;
-    }
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid fallback",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_AUTO,
-        &invalid_probe);
-    if (result != 0) {
-        return result;
-    }
-    return hdr_test_compare_probe("builtin hdr invalid fallback",
-                                  &invalid_probe,
-                                  &baseline_probe,
-                                  0.0007f);
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[HDR_NUMERIC_COMPARE_INVALID_FALLBACK]);
 }
 
 static int
 run_builtin_loader_hdr_invalid_tonemap_numeric_test(void)
 {
-    hdr_numeric_probe_context_t baseline_probe;
-    hdr_numeric_probe_context_t invalid_probe;
-    int result;
-
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid tonemap baseline",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &baseline_probe);
-    if (result != 0) {
-        return result;
-    }
-    if (loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "invalid-tonemap") != 0) {
-        return 1;
-    }
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid tonemap",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &invalid_probe);
-    if (result != 0) {
-        return result;
-    }
-    return hdr_test_compare_probe("builtin hdr invalid tonemap",
-                                  &invalid_probe,
-                                  &baseline_probe,
-                                  0.0007f);
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[HDR_NUMERIC_COMPARE_INVALID_TONEMAP]);
 }
 
 static int
 run_builtin_loader_hdr_invalid_exposure_numeric_test(void)
 {
-    hdr_numeric_probe_context_t baseline_probe;
-    hdr_numeric_probe_context_t invalid_probe;
-    int result;
-
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid exposure baseline",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &baseline_probe);
-    if (result != 0) {
-        return result;
-    }
-    if (loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "not-a-number") != 0) {
-        return 1;
-    }
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr invalid exposure",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &invalid_probe);
-    if (result != 0) {
-        return result;
-    }
-    return hdr_test_compare_probe("builtin hdr invalid exposure",
-                                  &invalid_probe,
-                                  &baseline_probe,
-                                  0.0007f);
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[HDR_NUMERIC_COMPARE_INVALID_EXPOSURE]);
 }
 
 static int
