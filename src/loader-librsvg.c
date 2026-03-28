@@ -146,12 +146,6 @@ typedef struct sixel_librsvg_setopt_spec {
 } sixel_librsvg_setopt_spec_t;
 
 static void
-librsvg_decode_policy_init(
-    sixel_librsvg_decode_policy_t *policy,
-    int allow_relative_resources,
-    int allow_stdin_svgz);
-
-static void
 librsvg_set_error_message(char const *context, GError const *gerror)
 {
     enum { message_capacity = 512 };
@@ -900,20 +894,6 @@ librsvg_pick_decode_mode(sixel_chunk_t const *chunk,
     return SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE;
 }
 
-sixel_librsvg_decode_mode_t
-sixel_loader_librsvg_pick_decode_mode_for_test(
-    sixel_chunk_t const *chunk,
-    int allow_relative_resources,
-    int allow_stdin_svgz)
-{
-    sixel_librsvg_decode_policy_t policy;
-
-    librsvg_decode_policy_init(&policy,
-                               allow_relative_resources,
-                               allow_stdin_svgz);
-    return librsvg_pick_decode_mode(chunk, &policy);
-}
-
 static SIXELSTATUS
 librsvg_new_handle_from_file(char const *path,
                              char const *context,
@@ -1208,6 +1188,20 @@ librsvg_decode_policy_init_from_env(sixel_librsvg_decode_policy_t *policy)
         policy,
         librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES),
         librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ));
+}
+
+sixel_librsvg_decode_mode_t
+sixel_loader_librsvg_pick_decode_mode_for_test(
+    sixel_chunk_t const *chunk,
+    int allow_relative_resources,
+    int allow_stdin_svgz)
+{
+    sixel_librsvg_decode_policy_t policy;
+
+    librsvg_decode_policy_init(&policy,
+                               allow_relative_resources,
+                               allow_stdin_svgz);
+    return librsvg_pick_decode_mode(chunk, &policy);
 }
 
 static SIXELSTATUS
@@ -1694,6 +1688,7 @@ librsvg_prepare_render_context(
 {
     SIXELSTATUS status;
 
+    status = SIXEL_FALSE;
     if (frame == NULL ||
             request == NULL ||
             request->chunk == NULL ||
@@ -1705,18 +1700,17 @@ librsvg_prepare_render_context(
     status = librsvg_open_handle(request->chunk,
                                  request->policy,
                                  &render_ctx->open_result);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_prepare_frame_geometry(frame,
+                                                render_ctx->open_result.handle,
+                                                &render_ctx->pixel_total);
     }
-
-    status = librsvg_prepare_frame_geometry(frame,
-                                            render_ctx->open_result.handle,
-                                            &render_ctx->pixel_total);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_prepare_frame_surface(frame,
+                                               request->bgcolor,
+                                               render_ctx);
     }
-
-    return librsvg_prepare_frame_surface(frame, request->bgcolor, render_ctx);
+    return status;
 }
 
 static SIXELSTATUS
@@ -1771,20 +1765,11 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     status = librsvg_prepare_render_context(frame,
                                             &request,
                                             &render_ctx);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_render_context_to_frame_pixels(frame,
+                                                        &request,
+                                                        &render_ctx);
     }
-
-    status = librsvg_render_context_to_frame_pixels(frame,
-                                                    &request,
-                                                    &render_ctx);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = SIXEL_OK;
-
-end:
     librsvg_render_context_cleanup(&render_ctx);
 
     return status;
