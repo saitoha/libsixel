@@ -119,6 +119,19 @@ typedef struct sixel_librsvg_intrinsic_size_state {
     int resolved_height;
 } sixel_librsvg_intrinsic_size_state_t;
 
+typedef enum sixel_librsvg_setopt_action {
+    SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
+    SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
+    SIXEL_LIBRSVG_SETOPT_ACTION_BGCOLOR
+} sixel_librsvg_setopt_action_t;
+
+typedef struct sixel_librsvg_setopt_spec {
+    int option;
+    sixel_librsvg_setopt_action_t action;
+    char const *name;
+    char const *detail;
+} sixel_librsvg_setopt_spec_t;
+
 static void
 librsvg_set_error_message(char const *context, GError const *gerror)
 {
@@ -1687,40 +1700,82 @@ librsvg_debug_ignored_int_option(char const *name,
                  detail != NULL ? detail : "");
 }
 
+static sixel_librsvg_setopt_spec_t const g_librsvg_setopt_specs[] = {
+    { SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+      SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
+      NULL,
+      NULL },
+    { SIXEL_LOADER_OPTION_LOOP_CONTROL,
+      SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
+      NULL,
+      NULL },
+    { SIXEL_LOADER_OPTION_START_FRAME_NO,
+      SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
+      NULL,
+      NULL },
+    { SIXEL_LOADER_OPTION_USE_PALETTE,
+      SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
+      "USE_PALETTE",
+      "output remains RGB/RGBA." },
+    { SIXEL_LOADER_OPTION_REQCOLORS,
+      SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
+      "REQCOLORS",
+      "palette limits apply during quantization." },
+    { SIXEL_LOADER_OPTION_BGCOLOR,
+      SIXEL_LIBRSVG_SETOPT_ACTION_BGCOLOR,
+      NULL,
+      NULL }
+};
+
+static sixel_librsvg_setopt_spec_t const *
+librsvg_find_setopt_spec(int option)
+{
+    size_t index;
+
+    index = 0u;
+    for (index = 0u;
+            index < sizeof(g_librsvg_setopt_specs) /
+                    sizeof(g_librsvg_setopt_specs[0]);
+            ++index) {
+        if (g_librsvg_setopt_specs[index].option == option) {
+            return &g_librsvg_setopt_specs[index];
+        }
+    }
+    return NULL;
+}
+
 static SIXELSTATUS
 sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
                             int option,
                             void const *value)
 {
     sixel_loader_librsvg_component_t *self;
+    sixel_librsvg_setopt_spec_t const *spec;
     int const *flag;
 
     self = NULL;
+    spec = NULL;
     flag = NULL;
     if (component == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     self = (sixel_loader_librsvg_component_t *)component;
-    switch (option) {
-    case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
-    case SIXEL_LOADER_OPTION_LOOP_CONTROL:
-    case SIXEL_LOADER_OPTION_START_FRAME_NO:
+    spec = librsvg_find_setopt_spec(option);
+    if (spec == NULL) {
+        return SIXEL_OK;
+    }
+
+    switch (spec->action) {
+    case SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME:
         return librsvg_setopt_noop_single_frame(value);
-    case SIXEL_LOADER_OPTION_USE_PALETTE:
+    case SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT:
         flag = (int const *)value;
-        librsvg_debug_ignored_int_option("USE_PALETTE",
+        librsvg_debug_ignored_int_option(spec->name,
                                          flag,
-                                         "output remains RGB/RGBA.");
+                                         spec->detail);
         return SIXEL_OK;
-    case SIXEL_LOADER_OPTION_REQCOLORS:
-        flag = (int const *)value;
-        librsvg_debug_ignored_int_option(
-            "REQCOLORS",
-            flag,
-            "palette limits apply during quantization.");
-        return SIXEL_OK;
-    case SIXEL_LOADER_OPTION_BGCOLOR:
+    case SIXEL_LIBRSVG_SETOPT_ACTION_BGCOLOR:
         return librsvg_setopt_bgcolor(self, value);
     default:
         return SIXEL_OK;
