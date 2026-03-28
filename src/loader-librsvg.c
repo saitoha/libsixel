@@ -1653,7 +1653,6 @@ librsvg_prepare_render_context(
 {
     SIXELSTATUS status;
 
-    status = SIXEL_BAD_INPUT;
     if (frame == NULL ||
             chunk == NULL ||
             policy == NULL ||
@@ -1688,7 +1687,6 @@ librsvg_render_context_to_frame_pixels(
 {
     SIXELSTATUS status;
 
-    status = SIXEL_BAD_INPUT;
     if (frame == NULL || allocator == NULL || render_ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1718,7 +1716,6 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     SIXELSTATUS status;
     sixel_librsvg_render_context_t render_ctx;
 
-    status = SIXEL_BAD_INPUT;
     librsvg_render_context_init(&render_ctx);
     if (frame == NULL || chunk == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1759,7 +1756,6 @@ load_with_librsvg(
     sixel_frame_t *frame;
     sixel_librsvg_decode_policy_t policy;
 
-    status = SIXEL_FALSE;
     frame = NULL;
     if (pchunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
