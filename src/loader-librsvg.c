@@ -1143,21 +1143,18 @@ static sixel_librsvg_open_result_fn_t
 librsvg_find_open_result_fn(sixel_librsvg_decode_mode_t decode_mode)
 {
     size_t index;
-    sixel_librsvg_open_result_fn_t open_result_fn;
 
     index = 0u;
-    open_result_fn = NULL;
     for (index = 0u;
             index < sizeof(g_librsvg_open_dispatch) /
                     sizeof(g_librsvg_open_dispatch[0]);
             ++index) {
         if (g_librsvg_open_dispatch[index].mode == decode_mode) {
-            open_result_fn = g_librsvg_open_dispatch[index].fn;
-            break;
+            return g_librsvg_open_dispatch[index].fn;
         }
     }
 
-    return open_result_fn;
+    return NULL;
 }
 
 static SIXELSTATUS
@@ -1214,9 +1211,7 @@ librsvg_open_result_cleanup(sixel_librsvg_open_result_t *open_result)
         return;
     }
     librsvg_unref_handle(&open_result->handle);
-    if (open_result->stdin_svgz_temp_path != NULL) {
-        librsvg_dispose_temp_path(&open_result->stdin_svgz_temp_path);
-    }
+    librsvg_dispose_temp_path(&open_result->stdin_svgz_temp_path);
 }
 
 static void
