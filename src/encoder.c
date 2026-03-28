@@ -181,6 +181,9 @@ static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
 static int sixel_encoder_frame_has_transparent_mask(
     sixel_frame_t const *frame);
+static int sixel_encoder_frame_get_transparent_mask_pixels(
+    sixel_frame_t const *frame,
+    size_t *pixel_count_out);
 static void sixel_encoder_bind_frame_transparent_mask(
     sixel_dither_t *dither,
     sixel_frame_t const *frame);
@@ -880,11 +883,16 @@ error:
 }
 
 static int
-sixel_encoder_frame_has_transparent_mask(sixel_frame_t const *frame)
+sixel_encoder_frame_get_transparent_mask_pixels(
+    sixel_frame_t const *frame,
+    size_t *pixel_count_out)
 {
     size_t pixel_count;
 
     pixel_count = 0u;
+    if (pixel_count_out != NULL) {
+        *pixel_count_out = 0u;
+    }
     if (frame == NULL) {
         return 0;
     }
@@ -901,8 +909,17 @@ sixel_encoder_frame_has_transparent_mask(sixel_frame_t const *frame)
     if (frame->transparent_mask_size < pixel_count) {
         return 0;
     }
+    if (pixel_count_out != NULL) {
+        *pixel_count_out = pixel_count;
+    }
 
     return 1;
+}
+
+static int
+sixel_encoder_frame_has_transparent_mask(sixel_frame_t const *frame)
+{
+    return sixel_encoder_frame_get_transparent_mask_pixels(frame, NULL);
 }
 
 static void
@@ -927,17 +944,8 @@ sixel_encoder_bind_frame_transparent_mask(
             || dither->keycolor >= SIXEL_PALETTE_MAX) {
         return;
     }
-    if (!sixel_encoder_frame_has_transparent_mask(frame)) {
-        return;
-    }
-    if (frame->width <= 0 || frame->height <= 0) {
-        return;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return;
-    }
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
-    if (frame->transparent_mask_size < pixel_count) {
+    if (!sixel_encoder_frame_get_transparent_mask_pixels(frame,
+                                                         &pixel_count)) {
         return;
     }
 
