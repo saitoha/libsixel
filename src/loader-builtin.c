@@ -3266,6 +3266,9 @@ load_with_builtin(
     char message[80];
     int nwrite;
     int chunk_size;
+    int is_png;
+    int is_jpeg;
+    int is_psd;
     int png_keycolor_mode;
     int palette_keycolor_index;
     int palette_zero_alpha_count;
@@ -3286,6 +3289,7 @@ load_with_builtin(
     sixel_builtin_decode_path_t decode_path;
 #if HAVE_LCMS2
     uint16_t tiff_photometric;
+    int is_tiff;
 #endif
 
     status = SIXEL_BAD_INPUT;
@@ -3300,6 +3304,9 @@ load_with_builtin(
     ri = (stbi__result_info){ 0 };
     nwrite = 0;
     chunk_size = 0;
+    is_png = 0;
+    is_jpeg = 0;
+    is_psd = 0;
     png_keycolor_mode = 0;
     palette_keycolor_index = -1;
     palette_zero_alpha_count = 0;
@@ -3332,6 +3339,7 @@ load_with_builtin(
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
 #if HAVE_LCMS2
     tiff_photometric = (uint16_t)0xffffu;
+    is_tiff = 0;
 #endif
 
     status = sixel_builtin_prepare_load_context(&load_request, &load_context);
@@ -3340,6 +3348,12 @@ load_with_builtin(
     }
 
     decode_path = sixel_builtin_detect_decode_path(load_request.chunk);
+    is_png = chunk_is_png(pchunk);
+    is_jpeg = chunk_is_jpeg(pchunk);
+    is_psd = chunk_is_psd(pchunk);
+#if HAVE_LCMS2
+    is_tiff = chunk_is_tiff(pchunk);
+#endif
     loader_trace_message("builtin loader: decode path=%s",
                          sixel_builtin_decode_path_name(decode_path));
 
@@ -3435,13 +3449,13 @@ load_with_builtin(
             goto end;
         }
         stbi_allocator = pchunk->allocator;
-        if (chunk_is_png(pchunk)) {
+        if (is_png) {
             png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
                 pchunk,
                 bgcolor,
                 enable_cms);
         }
-        if (chunk_is_png(pchunk)) {
+        if (is_png) {
             /*
              * Try APNG first for builtin PNG path. Regular PNG input returns
              * SIXEL_FALSE and then falls through to existing single-frame
@@ -3459,7 +3473,7 @@ load_with_builtin(
                 goto end;
             }
         }
-        if (fuse_palette && chunk_is_png(pchunk) && !png_keycolor_mode) {
+        if (fuse_palette && is_png && !png_keycolor_mode) {
             /*
              * Try indexed PNG first to keep PAL8 output. If the PNG is not
              * paletted, fall back to the normal RGB path.
@@ -3562,7 +3576,7 @@ load_with_builtin(
             }
         }
 
-        if (chunk_is_png(pchunk)) {
+        if (is_png) {
             if (png_keycolor_mode) {
                 stbi__start_mem(&stb_context,
                                 pchunk->buffer,
@@ -3686,7 +3700,7 @@ load_with_builtin(
             stbi__start_mem(&stb_context,
                             pchunk->buffer,
                             chunk_size);
-            if (chunk_is_jpeg(pchunk)) {
+            if (is_jpeg) {
                 float *float_pixels;
 
                 float_pixels = stbi__jpeg_loadf(&stb_context,
@@ -3725,7 +3739,7 @@ load_with_builtin(
                 }
                 frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
                 frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-            } else if (chunk_is_psd(pchunk)) {
+            } else if (is_psd) {
                 int psd_pixelformat;
                 int psd_custom_decode_mode;
                 int psd_skip_icc_conversion;
@@ -4135,7 +4149,7 @@ load_with_builtin(
                     sixel_frame_set_pixels(frame, pixels);
                     frame->loop_count = 1;
 #if HAVE_LCMS2
-                    if (enable_cms && chunk_is_tiff(pchunk)) {
+                    if (enable_cms && is_tiff) {
                         if (sixel_builtin_extract_tiff_icc(
                                 pchunk->buffer,
                                 pchunk->size,
