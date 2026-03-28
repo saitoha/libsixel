@@ -293,6 +293,44 @@ librsvg_rounded_dimension(double value)
 }
 
 /*
+ * Resolve missing width/height from viewBox while preserving explicit values.
+ */
+static void
+librsvg_fill_missing_dimensions_from_viewbox(
+    double viewbox_width,
+    double viewbox_height,
+    double *width_from_length,
+    double *height_from_length,
+    int *width_valid,
+    int *height_valid)
+{
+    if (width_from_length == NULL ||
+            height_from_length == NULL ||
+            width_valid == NULL ||
+            height_valid == NULL) {
+        return;
+    }
+    if (*width_valid && !*height_valid) {
+        *height_from_length =
+            *width_from_length * viewbox_height / viewbox_width;
+        *height_valid = *height_from_length >= 1.0 ? 1 : 0;
+        return;
+    }
+    if (!*width_valid && *height_valid) {
+        *width_from_length =
+            *height_from_length * viewbox_width / viewbox_height;
+        *width_valid = *width_from_length >= 1.0 ? 1 : 0;
+        return;
+    }
+    if (!*width_valid && !*height_valid) {
+        *width_from_length = viewbox_width;
+        *height_from_length = viewbox_height;
+        *width_valid = *width_from_length >= 1.0 ? 1 : 0;
+        *height_valid = *height_from_length >= 1.0 ? 1 : 0;
+    }
+}
+
+/*
  * Try to identify SVG input quickly so the registry can skip this backend for
  * obvious raster formats.
  */
@@ -371,6 +409,7 @@ librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
     gdouble pixel_height;
     double width_from_length;
     double height_from_length;
+    int has_positive_viewbox;
     int width_valid;
     int height_valid;
     int width;
@@ -393,6 +432,7 @@ librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
     viewbox.height = 0.0;
     width_from_length = 0.0;
     height_from_length = 0.0;
+    has_positive_viewbox = 0;
     width_valid = 0;
     height_valid = 0;
 
@@ -419,21 +459,16 @@ librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
             height_from_length >= 1.0) {
             height_valid = 1;
         }
-        if (has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0) {
-            if (width_valid && !height_valid) {
-                height_from_length =
-                    width_from_length * viewbox.height / viewbox.width;
-                height_valid = height_from_length >= 1.0 ? 1 : 0;
-            } else if (!width_valid && height_valid) {
-                width_from_length =
-                    height_from_length * viewbox.width / viewbox.height;
-                width_valid = width_from_length >= 1.0 ? 1 : 0;
-            } else if (!width_valid && !height_valid) {
-                width_from_length = viewbox.width;
-                height_from_length = viewbox.height;
-                width_valid = width_from_length >= 1.0 ? 1 : 0;
-                height_valid = height_from_length >= 1.0 ? 1 : 0;
-            }
+        has_positive_viewbox =
+            has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0;
+        if (has_positive_viewbox) {
+            librsvg_fill_missing_dimensions_from_viewbox(
+                viewbox.width,
+                viewbox.height,
+                &width_from_length,
+                &height_from_length,
+                &width_valid,
+                &height_valid);
         }
         if (width_valid) {
             width = librsvg_rounded_dimension(width_from_length);
@@ -442,7 +477,7 @@ librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
             height = librsvg_rounded_dimension(height_from_length);
         }
         if (width <= 0 || height <= 0) {
-            if (has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0) {
+            if (has_positive_viewbox) {
                 int viewbox_width;
                 int viewbox_height;
 
