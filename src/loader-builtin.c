@@ -4093,6 +4093,189 @@ sixel_builtin_load_psd_single_frame(
     return SIXEL_OK;
 }
 
+static void
+sixel_builtin_hdr_reset_profile_hint(sixel_builtin_hdr_profile_hint_t *hint)
+{
+    if (hint == NULL) {
+        return;
+    }
+    memset(hint, 0, sizeof(*hint));
+    hint->gamma = 1.0;
+    hint->exposure_scale = 1.0;
+}
+
+static SIXELSTATUS
+sixel_builtin_try_load_nonpng_hdr(
+    sixel_chunk_t const *chunk,
+    sixel_frame_t *frame,
+    int enable_cms)
+{
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    SIXELSTATUS hdr_hint_status;
+    sixel_builtin_hdr_profile_hint_t hdr_hint;
+    int hdr_pixelformat;
+    int hdr_colorspace;
+    int target_pixelformat;
+    sixel_builtin_hdr_profile_trace_t hdr_profile_trace;
+
+    status = SIXEL_FALSE;
+    pixels = NULL;
+    hdr_hint_status = SIXEL_FALSE;
+    sixel_builtin_hdr_reset_profile_hint(&hdr_hint);
+    hdr_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
+    target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    sixel_builtin_hdr_init_profile_trace(&hdr_profile_trace);
+    if (chunk == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_builtin_decode_hdr_float32(chunk,
+                                              &pixels,
+                                              &frame->width,
+                                              &frame->height,
+                                              &hdr_pixelformat,
+                                              &hdr_colorspace);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+
+    sixel_frame_set_pixels(frame, pixels);
+    frame->loop_count = 1;
+    frame->pixelformat = hdr_pixelformat;
+    frame->colorspace = hdr_colorspace;
+
+    hdr_hint_status = sixel_builtin_parse_hdr_profile_hint(chunk, &hdr_hint);
+    if (SIXEL_FAILED(hdr_hint_status)) {
+        hdr_hint_status = SIXEL_FALSE;
+        sixel_builtin_hdr_reset_profile_hint(&hdr_hint);
+    }
+
+    if (enable_cms) {
+        sixel_builtin_hdr_apply_source_profile(pixels,
+                                               frame->width,
+                                               frame->height,
+                                               hdr_pixelformat,
+                                               &hdr_hint,
+                                               hdr_hint_status,
+                                               &hdr_profile_trace);
+    }
+    sixel_builtin_hdr_apply_dynamic_range(pixels,
+                                          frame->width,
+                                          frame->height,
+                                          hdr_pixelformat,
+                                          &hdr_hint,
+                                          hdr_hint_status,
+                                          enable_cms,
+                                          &hdr_profile_trace);
+    if (enable_cms) {
+        target_pixelformat = loader_cms_target_pixelformat();
+        status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+    }
+    return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_load_nonpng_rgb8_fallback(
+    sixel_chunk_t const *chunk,
+    sixel_frame_t *frame,
+    stbi__context *stb_context,
+    int enable_cms
+#if HAVE_LCMS2
+    ,
+    int is_tiff,
+    unsigned char **icc_profile,
+    size_t *icc_profile_length
+#endif
+)
+{
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    int depth;
+    int nwrite;
+    char message[80];
+#if HAVE_LCMS2
+    uint16_t tiff_photometric;
+#endif
+
+    status = SIXEL_OK;
+    pixels = NULL;
+    depth = 0;
+    nwrite = 0;
+    message[0] = '\0';
+#if HAVE_LCMS2
+    tiff_photometric = (uint16_t)0xffffu;
+#endif
+    if (chunk == NULL || frame == NULL || stb_context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+#if HAVE_LCMS2
+    if (icc_profile == NULL || icc_profile_length == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+#else
+    (void)enable_cms;
+#endif
+
+    pixels = stbi__load_and_postprocess_8bit(stb_context,
+                                             &frame->width,
+                                             &frame->height,
+                                             &depth,
+                                             3);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(stbi_failure_reason());
+        return SIXEL_STBI_ERROR;
+    }
+    sixel_frame_set_pixels(frame, pixels);
+    frame->loop_count = 1;
+#if HAVE_LCMS2
+    if (enable_cms && is_tiff) {
+        if (sixel_builtin_extract_tiff_icc(chunk->buffer,
+                                           chunk->size,
+                                           icc_profile,
+                                           icc_profile_length,
+                                           &tiff_photometric,
+                                           chunk->allocator)) {
+            if (sixel_builtin_tiff_photometric_supports_icc(
+                    tiff_photometric)) {
+                if (!sixel_cms_convert_to_srgb_with_profile_bytes(
+                        pixels,
+                        frame->width,
+                        frame->height,
+                        SIXEL_PIXELFORMAT_RGB888,
+                        *icc_profile,
+                        *icc_profile_length)) {
+                    loader_trace_message(
+                        "builtin TIFF: embedded ICC conversion failed");
+                }
+            }
+        }
+    }
+#endif
+    switch (depth) {
+    case 1:
+    case 3:
+    case 4:
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        status = SIXEL_OK;
+        break;
+    default:
+        nwrite = snprintf(message,
+                          sizeof(message),
+                          "load_with_builtin() failed.\n"
+                          "reason: unknown pixel-format.(depth: %d)\n",
+                          depth);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        status = SIXEL_STBI_ERROR;
+        break;
+    }
+    return status;
+}
+
 static SIXELSTATUS
 sixel_builtin_load_nonpng_single_frame(
     sixel_chunk_t const *chunk,
@@ -4114,44 +4297,14 @@ sixel_builtin_load_nonpng_single_frame(
     size_t *psd_transparent_mask_size)
 {
     SIXELSTATUS status;
-    unsigned char *pixels;
-    int depth;
-    int nwrite;
-    char message[80];
-    int cms_converted;
     unsigned char *mask;
     size_t mask_size;
     int pal_loaded;
-    SIXELSTATUS hdr_hint_status;
-    sixel_builtin_hdr_profile_hint_t hdr_hint;
-    int hdr_pixelformat;
-    int hdr_colorspace;
-    int target_pixelformat;
-    sixel_builtin_hdr_profile_trace_t hdr_profile_trace;
-#if HAVE_LCMS2
-    uint16_t tiff_photometric;
-#endif
 
     status = SIXEL_FALSE;
-    pixels = NULL;
-    depth = 0;
-    nwrite = 0;
-    message[0] = '\0';
-    cms_converted = 0;
     mask = NULL;
     mask_size = 0u;
     pal_loaded = 0;
-    hdr_hint_status = SIXEL_FALSE;
-    memset(&hdr_hint, 0, sizeof(hdr_hint));
-    hdr_hint.gamma = 1.0;
-    hdr_hint.exposure_scale = 1.0;
-    hdr_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
-    target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    sixel_builtin_hdr_init_profile_trace(&hdr_profile_trace);
-#if HAVE_LCMS2
-    tiff_photometric = (uint16_t)0xffffu;
-#endif
 
     if (chunk == NULL ||
         chunk_size <= 0 ||
@@ -4208,109 +4361,22 @@ sixel_builtin_load_nonpng_single_frame(
         goto end;
     }
 
-    status = sixel_builtin_decode_hdr_float32(chunk,
-                                              &pixels,
-                                              &frame->width,
-                                              &frame->height,
-                                              &hdr_pixelformat,
-                                              &hdr_colorspace);
-    if (status == SIXEL_OK) {
-        sixel_frame_set_pixels(frame, pixels);
-        frame->loop_count = 1;
-        frame->pixelformat = hdr_pixelformat;
-        frame->colorspace = hdr_colorspace;
-        hdr_hint_status = sixel_builtin_parse_hdr_profile_hint(chunk,
-                                                               &hdr_hint);
-        if (SIXEL_FAILED(hdr_hint_status)) {
-            hdr_hint_status = SIXEL_FALSE;
-            memset(&hdr_hint, 0, sizeof(hdr_hint));
-            hdr_hint.gamma = 1.0;
-            hdr_hint.exposure_scale = 1.0;
-        }
-        if (enable_cms) {
-            sixel_builtin_hdr_apply_source_profile(pixels,
-                                                   frame->width,
-                                                   frame->height,
-                                                   hdr_pixelformat,
-                                                   &hdr_hint,
-                                                   hdr_hint_status,
-                                                   &hdr_profile_trace);
-        }
-        sixel_builtin_hdr_apply_dynamic_range(pixels,
-                                              frame->width,
-                                              frame->height,
-                                              hdr_pixelformat,
-                                              &hdr_hint,
-                                              hdr_hint_status,
-                                              enable_cms,
-                                              &hdr_profile_trace);
-        if (enable_cms) {
-            target_pixelformat = loader_cms_target_pixelformat();
-            status = sixel_frame_set_pixelformat(frame, target_pixelformat);
-        }
-        goto end;
-    }
+    status = sixel_builtin_try_load_nonpng_hdr(chunk, frame, enable_cms);
     if (status != SIXEL_FALSE) {
         goto end;
     }
-
-    pixels = stbi__load_and_postprocess_8bit(stb_context,
-                                             &frame->width,
-                                             &frame->height,
-                                             &depth,
-                                             3);
-    if (pixels == NULL) {
-        sixel_helper_set_additional_message(stbi_failure_reason());
-        status = SIXEL_STBI_ERROR;
-        goto end;
-    }
-    sixel_frame_set_pixels(frame, pixels);
-    frame->loop_count = 1;
+    status = sixel_builtin_load_nonpng_rgb8_fallback(
+        chunk,
+        frame,
+        stb_context,
+        enable_cms
 #if HAVE_LCMS2
-    if (enable_cms && is_tiff) {
-        if (sixel_builtin_extract_tiff_icc(chunk->buffer,
-                                           chunk->size,
-                                           icc_profile,
-                                           icc_profile_length,
-                                           &tiff_photometric,
-                                           chunk->allocator)) {
-            if (sixel_builtin_tiff_photometric_supports_icc(
-                    tiff_photometric)) {
-                cms_converted = sixel_cms_convert_to_srgb_with_profile_bytes(
-                    pixels,
-                    frame->width,
-                    frame->height,
-                    SIXEL_PIXELFORMAT_RGB888,
-                    *icc_profile,
-                    *icc_profile_length);
-                if (!cms_converted) {
-                    loader_trace_message(
-                        "builtin TIFF: embedded ICC conversion failed");
-                }
-            }
-        }
-    }
+        ,
+        is_tiff,
+        icc_profile,
+        icc_profile_length
 #endif
-    switch (depth) {
-    case 1:
-    case 3:
-    case 4:
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-        status = SIXEL_OK;
-        break;
-    default:
-        nwrite = snprintf(message,
-                          sizeof(message),
-                          "load_with_builtin() failed.\n"
-                          "reason: unknown pixel-format.(depth: %d)\n",
-                          depth);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        status = SIXEL_STBI_ERROR;
-        break;
-    }
+    );
 
 end:
     *psd_transparent_mask = mask;
