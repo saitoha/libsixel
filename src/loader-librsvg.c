@@ -146,15 +146,15 @@ typedef struct sixel_librsvg_open_dispatch {
     sixel_librsvg_open_result_fn_t fn;
 } sixel_librsvg_open_dispatch_t;
 
-typedef enum sixel_librsvg_setopt_action {
-    SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
-    SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
-    SIXEL_LIBRSVG_SETOPT_ACTION_BGCOLOR
-} sixel_librsvg_setopt_action_t;
+typedef SIXELSTATUS (*sixel_librsvg_setopt_handler_t)(
+    sixel_loader_librsvg_component_t *self,
+    void const *value,
+    char const *name,
+    char const *detail);
 
 typedef struct sixel_librsvg_setopt_spec {
     int option;
-    sixel_librsvg_setopt_action_t action;
+    sixel_librsvg_setopt_handler_t handler;
     char const *name;
     char const *detail;
 } sixel_librsvg_setopt_spec_t;
@@ -1876,11 +1876,12 @@ librsvg_render_context_to_frame_pixels(
                                      frame->width,
                                      frame->height);
     if (SIXEL_SUCCEEDED(status)) {
-        status = librsvg_convert_surface_to_frame_pixels(frame,
-                                                         request->allocator,
-                                                         render_ctx->surface,
-                                                         request->bgcolor,
-                                                         render_ctx->pixel_total);
+        status = librsvg_convert_surface_to_frame_pixels(
+            frame,
+            request->allocator,
+            render_ctx->surface,
+            request->bgcolor,
+            render_ctx->pixel_total);
     }
 
     return status;
@@ -1995,18 +1996,28 @@ sixel_loader_librsvg_unref(sixel_loader_component_t *component)
  * API compatibility only: SVG decode is single-frame in this backend.
  */
 static SIXELSTATUS
-librsvg_setopt_noop_single_frame(void const *value)
+librsvg_setopt_noop_single_frame(sixel_loader_librsvg_component_t *self,
+                                 void const *value,
+                                 char const *name,
+                                 char const *detail)
 {
+    (void)self;
     (void)value;
+    (void)name;
+    (void)detail;
     return SIXEL_OK;
 }
 
 static SIXELSTATUS
 librsvg_setopt_bgcolor(sixel_loader_librsvg_component_t *self,
-                       void const *value)
+                       void const *value,
+                       char const *name,
+                       char const *detail)
 {
     unsigned char const *color;
 
+    (void)name;
+    (void)detail;
     if (self == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2034,29 +2045,47 @@ librsvg_debug_ignored_int_option(char const *name,
                  detail != NULL ? detail : "");
 }
 
+/*
+ * Keep option-level API compatibility while routing palette semantics to
+ * quantization instead of this loader.
+ */
+static SIXELSTATUS
+librsvg_setopt_log_ignored_int(sixel_loader_librsvg_component_t *self,
+                               void const *value,
+                               char const *name,
+                               char const *detail)
+{
+    int const *flag;
+
+    (void)self;
+    flag = (int const *)value;
+    librsvg_debug_ignored_int_option(name, flag, detail);
+    return SIXEL_OK;
+}
+
 static sixel_librsvg_setopt_spec_t const g_librsvg_setopt_specs[] = {
     { SIXEL_LOADER_OPTION_REQUIRE_STATIC,
-      SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
+      librsvg_setopt_noop_single_frame,
       NULL,
       NULL },
     { SIXEL_LOADER_OPTION_LOOP_CONTROL,
-      SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
+      librsvg_setopt_noop_single_frame,
       NULL,
       NULL },
     { SIXEL_LOADER_OPTION_START_FRAME_NO,
-      SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
+      librsvg_setopt_noop_single_frame,
       NULL,
       NULL },
     { SIXEL_LOADER_OPTION_USE_PALETTE,
-      SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
+      librsvg_setopt_log_ignored_int,
       "USE_PALETTE",
       "output remains RGB/RGBA." },
     { SIXEL_LOADER_OPTION_REQCOLORS,
-      SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
+      librsvg_setopt_log_ignored_int,
       "REQCOLORS",
       "palette limits apply during quantization." },
     { SIXEL_LOADER_OPTION_BGCOLOR,
-      SIXEL_LIBRSVG_SETOPT_ACTION_BGCOLOR,
+      librsvg_setopt_bgcolor,
       NULL,
       NULL }
 };
@@ -2085,7 +2114,6 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
 {
     sixel_loader_librsvg_component_t *self;
     sixel_librsvg_setopt_spec_t const *spec;
-    int const *flag;
 
     if (component == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -2096,21 +2124,10 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
     if (spec == NULL) {
         return SIXEL_OK;
     }
-
-    switch (spec->action) {
-    case SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME:
-        return librsvg_setopt_noop_single_frame(value);
-    case SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT:
-        flag = (int const *)value;
-        librsvg_debug_ignored_int_option(spec->name,
-                                         flag,
-                                         spec->detail);
-        return SIXEL_OK;
-    case SIXEL_LIBRSVG_SETOPT_ACTION_BGCOLOR:
-        return librsvg_setopt_bgcolor(self, value);
-    default:
+    if (spec->handler == NULL) {
         return SIXEL_OK;
     }
+    return spec->handler(self, value, spec->name, spec->detail);
 }
 
 static SIXELSTATUS
