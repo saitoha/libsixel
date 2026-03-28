@@ -1009,6 +1009,8 @@ Builtin PSD transparency summary:
 
 Embedded ICC conversion on PSD applies to RGB color data only; the transparent
 mask remains unchanged.
+For `mode=7` mapped CMYK decode (`channels=4`), invalid/malformed ICC resource
+traces follow the same CMYK contract as native `mode=4`.
 
 Builtin PSD Multichannel (mode 7) policy:
 
@@ -1017,6 +1019,7 @@ Builtin PSD Multichannel (mode 7) policy:
 | `mode=7`, `channels=3`, `depth=8/16/32` | decode via RGB path (`3ch->RGB`) |
 | `mode=7`, `channels=4`, `depth=8/16/32` | decode via CMYK path (`4ch->CMYK`) |
 | `mode=7`, `channels!=3/4` or unsupported depth | deterministic unsupported (`builtin PSD: unsupported Multichannel channel count ...` / bit-depth trace) |
+| layer-only `mode=7` PSD without merged/composite image | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
 
 Builtin PSD missing merged/composite image policy:
 
