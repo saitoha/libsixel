@@ -29,6 +29,21 @@
 
 #include "chunk.h"
 
+typedef struct sixel_builtin_hdr_profile_hint {
+    int has_gamma;
+    double gamma;
+    int has_primaries;
+    double white_x;
+    double white_y;
+    double red_x;
+    double red_y;
+    double green_x;
+    double green_y;
+    double blue_x;
+    double blue_y;
+    int malformed;
+} sixel_builtin_hdr_profile_hint_t;
+
 SIXELSTATUS
 sixel_builtin_decode_hdr_float32(
     sixel_chunk_t const *chunk,
@@ -37,6 +52,11 @@ sixel_builtin_decode_hdr_float32(
     int *pheight,
     int *ppixelformat,
     int *pcolorspace);
+
+SIXELSTATUS
+sixel_builtin_parse_hdr_profile_hint(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_hdr_profile_hint_t *out_hint);
 
 #endif /* LIBSIXEL_FROMHDR_H */
 
