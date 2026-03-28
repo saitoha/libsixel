@@ -2345,12 +2345,15 @@ webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
     }
     chunk = decode->chunk;
 
-    status = webp_maybe_resolve_animation_start_frame_no(control->start_frame_no_set,
-                                                         control->start_frame_no,
-                                                         frame_count,
-                                                         &resolved_start_frame_no);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (frame_count > 1) {
+        status = webp_maybe_resolve_animation_start_frame_no(
+            control->start_frame_no_set,
+            control->start_frame_no,
+            frame_count,
+            &resolved_start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = sixel_frame_new(&frame, chunk->allocator);
@@ -2752,13 +2755,6 @@ load_with_libwebp(
                             context);
     webp_init_animation_decode_control(&control, loop_control);
 
-    status = webp_load_start_frame_control(&control,
-                                           start_frame_no_set,
-                                           start_frame_no_override);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
     webp_data.bytes = pchunk->buffer;
     webp_data.size = pchunk->size;
 
@@ -2879,6 +2875,13 @@ load_with_libwebp(
         }
 
         status = SIXEL_OK;
+        goto end;
+    }
+
+    status = webp_load_start_frame_control(&control,
+                                           start_frame_no_set,
+                                           start_frame_no_override);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
