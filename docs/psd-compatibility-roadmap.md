@@ -63,6 +63,16 @@ Key points used by this roadmap:
   32-bit decode matrix coverage (RGB/Gray/CMYK/Lab), explicit unsupported
   traces (Bitmap ZIP+Prediction, 32-bit RLE, CMYK16/Lab16), and ZIP+Prediction
   ICC trace coverage (`RGB+alpha+--bgcolor`, Lab skip, CMYK bad-ICC failure).
+- Alpha/background policy (implemented):
+  - `--bgcolor` specified: decode path composites against background and does
+    not emit a transparent mask.
+  - `--bgcolor` omitted and alpha extra channel exists: decode output remains
+    3ch (`RGB888` or existing float32 3ch), and transparency is stored in
+    `sixel_frame.transparent_mask`.
+  - Key transparency targets only `alpha == 0`; partial alpha is precomposited
+    against black before storing 3ch color.
+  - Embedded ICC conversion applies to RGB channels only; transparency mask
+    bytes are preserved unchanged.
 
 ## Target Compatibility Levels
 
@@ -77,7 +87,8 @@ Key points used by this roadmap:
 - Compression support:
   - Raw, RLE, ZIP, ZIP+Prediction
 - Consistent alpha/background handling:
-  - preserve alpha when needed, strip/composite once, no silent loss.
+  - implemented with `3ch + transparent mask` output when `--bgcolor` is not
+    provided, and opaque compositing when `--bgcolor` is provided.
 
 ### Level 2 (P2): Color Management and Diagnostics
 
@@ -132,9 +143,12 @@ Definition of done:
 
 ### Phase D: ICC and Alpha Coherence
 
-1. Apply ICC consistently across RGB/RGBA/float32 paths.
-2. Unify alpha-preservation and final strip/composite semantics.
-3. Add regression tests for `--bgcolor` + ICC combinations.
+1. Keep ICC conversion on RGB channels only, never mutate transparent masks.
+2. Keep alpha policy stable:
+   - no `--bgcolor`: `3ch + transparent mask`, key transparency at encode.
+   - with `--bgcolor`: opaque composite output.
+3. Continue regression coverage for `--bgcolor` + ICC and no-`--bgcolor` alpha
+   keycolor paths.
 
 Definition of done:
 

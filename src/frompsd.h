@@ -101,6 +101,8 @@ sixel_builtin_decode_psd_bitmap_1bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -111,6 +113,8 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -121,6 +125,8 @@ sixel_builtin_decode_psd_gray_or_duotone_16bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -134,6 +140,8 @@ sixel_builtin_decode_psd_cmyk_8bit(
     size_t icc_profile_length,
     int *pcms_applied,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -144,6 +152,8 @@ sixel_builtin_decode_psd_rgb_8bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -154,6 +164,8 @@ sixel_builtin_decode_psd_rgb_16bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -164,6 +176,8 @@ sixel_builtin_decode_psd_rgb_32bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -174,6 +188,8 @@ sixel_builtin_decode_psd_gray_or_duotone_32bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -184,6 +200,8 @@ sixel_builtin_decode_psd_lab_8bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -197,6 +215,8 @@ sixel_builtin_decode_psd_cmyk_32bit(
     size_t icc_profile_length,
     int *pcms_applied,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);
@@ -207,6 +227,8 @@ sixel_builtin_decode_psd_lab_32bit(
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
     unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
     int *pwidth,
     int *pheight,
     int *ppixelformat);

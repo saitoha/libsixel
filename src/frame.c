@@ -193,6 +193,8 @@ sixel_frame_new(
     (*ppframe)->multiframe = 0;
     (*ppframe)->transparent = (-1);
     (*ppframe)->alpha_zero_is_transparent = 0;
+    (*ppframe)->transparent_mask = NULL;
+    (*ppframe)->transparent_mask_size = 0u;
     (*ppframe)->allocator = allocator;
 
     sixel_allocator_ref(allocator);
@@ -230,6 +232,7 @@ sixel_frame_destroy(sixel_frame_t /* in */ *frame)
         allocator = frame->allocator;
         sixel_allocator_free(allocator, frame->pixels.u8ptr);
         sixel_allocator_free(allocator, frame->palette);
+        sixel_allocator_free(allocator, frame->transparent_mask);
         sixel_allocator_free(allocator, frame);
         sixel_allocator_unref(allocator);
     }
@@ -347,6 +350,11 @@ sixel_frame_init_common(
     frame->palette = palette;
     frame->ncolors = ncolors;
     frame->alpha_zero_is_transparent = 0;
+    if (frame->transparent_mask != NULL) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+    }
+    frame->transparent_mask_size = 0u;
     status = SIXEL_OK;
 
 end:

@@ -134,7 +134,10 @@ sixel_filter_sample_copy_frame(
     sixel_frame_t *sample;
     unsigned char *src_pixels;
     unsigned char *dst_pixels;
+    unsigned char const *src_mask;
+    unsigned char *dst_mask;
     size_t stride;
+    size_t src_pixel_count;
     int clip_x;
     int clip_y;
     int clip_w;
@@ -148,6 +151,7 @@ sixel_filter_sample_copy_frame(
     int sample_height;
     size_t sample_count;
     size_t payload_size;
+    size_t mask_size;
     size_t dst_index;
     size_t src_offset;
     int x;
@@ -157,7 +161,10 @@ sixel_filter_sample_copy_frame(
     sample = NULL;
     src_pixels = NULL;
     dst_pixels = NULL;
+    src_mask = NULL;
+    dst_mask = NULL;
     stride = 1u;
+    src_pixel_count = 0u;
     clip_x = 0;
     clip_y = 0;
     clip_w = 0;
@@ -171,6 +178,7 @@ sixel_filter_sample_copy_frame(
     sample_height = 0;
     sample_count = 0u;
     payload_size = 0u;
+    mask_size = 0u;
     dst_index = 0u;
     src_offset = 0u;
     x = 0;
@@ -187,9 +195,15 @@ sixel_filter_sample_copy_frame(
     src_width = sixel_frame_get_width(frame);
     src_height = sixel_frame_get_height(frame);
     depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
+    src_mask = frame->transparent_mask;
+    src_pixel_count = (size_t)src_width * (size_t)src_height;
 
     if (depth <= 0 || src_pixels == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (src_width > 0 && src_height > 0 &&
+        src_pixel_count / (size_t)src_height != (size_t)src_width) {
+        return SIXEL_RUNTIME_ERROR;
     }
 
     /*
@@ -278,6 +292,18 @@ sixel_filter_sample_copy_frame(
     sample->colorspace = sixel_frame_get_colorspace(frame);
     sample->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
     sample->ncolors = (-1);
+    sample->transparent = frame->transparent;
+    if (src_mask != NULL && frame->transparent_mask_size >= src_pixel_count) {
+        mask_size = sample_count;
+        dst_mask = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                           mask_size);
+        if (dst_mask == NULL) {
+            sixel_frame_unref(sample);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        sample->transparent_mask = dst_mask;
+        sample->transparent_mask_size = mask_size;
+    }
 
     dst_index = 0u;
     for (y = 0; y < height; y += (int)stride) {
@@ -288,6 +314,11 @@ sixel_filter_sample_copy_frame(
             memcpy(dst_pixels + dst_index * (size_t)depth,
                    src_pixels + src_offset,
                    (size_t)depth);
+            if (dst_mask != NULL) {
+                dst_mask[dst_index] =
+                    src_mask[(size_t)(clip_y + y) * (size_t)src_width
+                             + (size_t)(clip_x + x)];
+            }
             ++dst_index;
         }
 
