@@ -1009,28 +1009,22 @@ librsvg_open_handle_by_mode(sixel_librsvg_decode_mode_t decode_mode,
                             sixel_chunk_t const *chunk,
                             sixel_librsvg_open_result_t *open_result)
 {
-    SIXELSTATUS status;
-
-    status = SIXEL_BAD_INPUT;
     if (chunk == NULL || open_result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     switch (decode_mode) {
     case SIXEL_LIBRSVG_DECODE_MODE_FILE:
-        status = librsvg_open_handle_from_source_file(chunk,
-                                                      &open_result->handle);
-        break;
+        return librsvg_open_handle_from_source_file(chunk,
+                                                    &open_result->handle);
     case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE:
-        status = librsvg_open_handle_from_stdin_svgz_tempfile(
+        return librsvg_open_handle_from_stdin_svgz_tempfile(
             chunk,
             &open_result->handle,
             &open_result->stdin_svgz_temp_path);
-        break;
     case SIXEL_LIBRSVG_DECODE_MODE_DATA:
-        status = librsvg_open_handle_from_data_chunk(chunk,
-                                                     &open_result->handle);
-        break;
+        return librsvg_open_handle_from_data_chunk(chunk,
+                                                   &open_result->handle);
     case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED:
         sixel_helper_set_additional_message(
             LIBRSVG_MESSAGE_STDIN_SVGZ_REJECTED);
@@ -1040,8 +1034,6 @@ librsvg_open_handle_by_mode(sixel_librsvg_decode_mode_t decode_mode,
             LIBRSVG_MESSAGE_UNSUPPORTED_DECODE_MODE);
         return SIXEL_BAD_ARGUMENT;
     }
-
-    return status;
 }
 
 static SIXELSTATUS
@@ -1049,10 +1041,8 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
                     sixel_librsvg_decode_policy_t const *policy,
                     sixel_librsvg_open_result_t *open_result)
 {
-    SIXELSTATUS status;
     sixel_librsvg_decode_mode_t decode_mode;
 
-    status = SIXEL_BAD_INPUT;
     decode_mode = SIXEL_LIBRSVG_DECODE_MODE_DATA;
     if (chunk == NULL ||
             policy == NULL ||
@@ -1064,8 +1054,7 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
     open_result->stdin_svgz_temp_path = NULL;
     decode_mode = librsvg_pick_decode_mode(chunk, policy);
     librsvg_trace_decode_mode(decode_mode);
-    status = librsvg_open_handle_by_mode(decode_mode, chunk, open_result);
-    return status;
+    return librsvg_open_handle_by_mode(decode_mode, chunk, open_result);
 }
 
 static void
