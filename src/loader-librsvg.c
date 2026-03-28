@@ -742,44 +742,39 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
         return SIXEL_BAD_ARGUMENT;
     }
 
+    status = SIXEL_LIBC_ERROR;
     fd = g_file_open_tmp("libsixel-librsvg-XXXXXX.svgz", &path, &gerror);
     if (fd < 0 || path == NULL) {
         librsvg_set_error_message(
             "librsvg_write_chunk_to_temp_svgz: g_file_open_tmp failed.",
             gerror);
-        status = SIXEL_LIBC_ERROR;
-        goto end;
     }
-
-    while (offset < chunk->size) {
-        written = sixel_compat_write(fd,
-                                     chunk->buffer + offset,
-                                     chunk->size - offset);
-        if (written <= 0) {
+    if (fd >= 0 && path != NULL) {
+        while (offset < chunk->size) {
+            written = sixel_compat_write(fd,
+                                         chunk->buffer + offset,
+                                         chunk->size - offset);
+            if (written <= 0) {
+                sixel_helper_set_additional_message(
+                    "librsvg_write_chunk_to_temp_svgz: "
+                    "failed to write temporary .svgz file.");
+                break;
+            }
+            offset += (size_t)written;
+        }
+        if (offset == chunk->size && sixel_compat_close(fd) != 0) {
             sixel_helper_set_additional_message(
                 "librsvg_write_chunk_to_temp_svgz: "
-                "failed to write temporary .svgz file.");
-            status = SIXEL_LIBC_ERROR;
-            goto end;
+                "failed to close temporary .svgz file.");
+            fd = (-1);
         }
-        offset += (size_t)written;
+        if (offset == chunk->size && fd >= 0) {
+            fd = (-1);
+            *path_out = path;
+            path = NULL;
+            status = SIXEL_OK;
+        }
     }
-
-    if (sixel_compat_close(fd) != 0) {
-        sixel_helper_set_additional_message(
-            "librsvg_write_chunk_to_temp_svgz: "
-            "failed to close temporary .svgz file.");
-        status = SIXEL_LIBC_ERROR;
-        fd = (-1);
-        goto end;
-    }
-    fd = (-1);
-
-    *path_out = path;
-    path = NULL;
-    status = SIXEL_OK;
-
-end:
     if (fd >= 0) {
         (void)sixel_compat_close(fd);
     }
@@ -818,9 +813,7 @@ librsvg_trace_decode_mode(sixel_librsvg_decode_mode_t mode)
     char const *mode_name;
     int written;
 
-    message[0] = '\0';
     mode_name = librsvg_decode_mode_name(mode);
-    written = 0;
     written = sixel_compat_snprintf(message,
                                     sizeof(message),
                                     "librsvg: decode_mode=%s",
@@ -1518,8 +1511,6 @@ librsvg_build_surface_convert_plan(
     int inspect_alpha;
     size_t output_stride;
 
-    inspect_alpha = 0;
-    output_stride = 0u;
     if (plan == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
