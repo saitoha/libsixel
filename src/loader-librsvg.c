@@ -1688,7 +1688,6 @@ librsvg_prepare_render_context(
 {
     SIXELSTATUS status;
 
-    status = SIXEL_FALSE;
     if (frame == NULL ||
             request == NULL ||
             request->chunk == NULL ||
@@ -1793,26 +1792,15 @@ load_with_librsvg(
     librsvg_decode_policy_init_from_env(&policy);
 
     status = sixel_frame_new(&frame, pchunk->allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_render_to_frame(frame,
+                                         pchunk,
+                                         bgcolor,
+                                         &policy);
     }
-
-    status = librsvg_render_to_frame(frame,
-                                     pchunk,
-                                     bgcolor,
-                                     &policy);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        status = fn_load(frame, context);
     }
-
-    status = fn_load(frame, context);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = SIXEL_OK;
-
-end:
     sixel_frame_unref(frame);
 
     return status;
