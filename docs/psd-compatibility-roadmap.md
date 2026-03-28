@@ -65,13 +65,17 @@ Key points used by this roadmap:
     (do not conflate truncation with layer-only PSD policy).
 - Existing regression includes ICC and alpha combinations on Raw/ZIP/ZIP+Prediction
   paths, 32-bit decode matrix coverage including RLE (RGB/Gray/CMYK/Lab),
-  CMYK16/Lab16 decode coverage, mode7 representative decode coverage (3ch->RGB,
-  4ch->CMYK), and explicit unsupported traces (Bitmap ZIP+Prediction,
-  Multichannel invalid channel-count).
+  CMYK16/Lab16 decode coverage, and mode7 coverage across mapped paths:
+  - `3ch->RGB` and `4ch->CMYK` for `8/16/32-bit`
+  - `Raw/RLE/ZIP/ZIP+Prediction` decode regressions
+  - policy traces for invalid channel-count/depth combinations
+  - CMYK-mapped mode7 ICC trace coverage (invalid profile and malformed
+    resource section)
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
-  - Multichannel policy trace for unsupported channel counts (`!=3/4`),
+  - Multichannel policy traces for unsupported channel counts (`!=3/4`) and
+    depth policy on both mapped paths (`3ch->RGB`, `4ch->CMYK`),
   - positive trace for missing merged/composite image policy.
 - Defensive validate branches are split by reachability:
   - unit-tested directly: `malformed header/metadata`,
