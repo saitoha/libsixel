@@ -517,6 +517,57 @@ def build_psd_layer_only_single_rgb8(planes, *, alpha_plane=None):
     return bytes(out)
 
 
+def build_psd_layer_only_single_gray8(plane, *, color_mode=1, alpha_plane=None):
+    if color_mode not in (1, 8):
+        raise RuntimeError("gray layer-only fixture supports color_mode 1 or 8")
+    row_bytes = WIDTH
+    plane_bytes = row_bytes * HEIGHT
+    if len(plane) != plane_bytes:
+        raise RuntimeError("unexpected Gray8 plane size")
+    if alpha_plane is not None and len(alpha_plane) != plane_bytes:
+        raise RuntimeError("unexpected alpha plane size")
+
+    layer_planes = [(0, plane)]
+    if alpha_plane is not None:
+        layer_planes.append((-1, alpha_plane))
+
+    layer_record = bytearray()
+    channel_payload = bytearray()
+    layer_record += struct.pack(">iiii", 0, 0, HEIGHT, WIDTH)
+    layer_record += struct.pack(">H", len(layer_planes))
+    for channel_id, channel_plane in layer_planes:
+        payload = struct.pack(">H", 0) + channel_plane
+        layer_record += struct.pack(">hI", channel_id, len(payload))
+        channel_payload += payload
+    layer_record += b"8BIMnorm"
+    layer_record += bytes([255, 0, 0, 0])
+    layer_record += struct.pack(">I", 0)
+
+    layer_info = bytearray()
+    layer_info += struct.pack(">h", 1)
+    layer_info += layer_record
+    layer_info += channel_payload
+
+    layer_and_mask = struct.pack(">I", len(layer_info)) + layer_info
+
+    out = bytearray()
+    out += b"8BPS"
+    out += struct.pack(">H", 1)
+    out += b"\x00" * 6
+    out += struct.pack(">H", len(layer_planes))
+    out += struct.pack(">I", HEIGHT)
+    out += struct.pack(">I", WIDTH)
+    out += struct.pack(">H", 8)
+    out += struct.pack(">H", color_mode)
+    out += struct.pack(">I", 0)  # color mode data length
+    out += struct.pack(">I", 0)  # image resources length
+    out += struct.pack(">I", len(layer_and_mask))
+    out += layer_and_mask
+    out += struct.pack(">H", 0)  # compression for composite image data
+    # Composite image data intentionally omitted (missing merged/composite image).
+    return bytes(out)
+
+
 def write_file(path: pathlib.Path, data: bytes):
     path.write_bytes(data)
     print(path)
@@ -638,6 +689,14 @@ def generate(out_dir: pathlib.Path):
             color_mode=1,
             compression=0,
         ),
+    )
+    write_file(
+        out_dir / "snake16_gray8_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_gray8(gray8_plane),
+    )
+    write_file(
+        out_dir / "snake16_gray8_alpha_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_gray8(gray8_plane, alpha_plane=alpha8_plane),
     )
 
     write_variants(

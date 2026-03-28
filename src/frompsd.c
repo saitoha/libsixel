@@ -519,9 +519,10 @@ sixel_builtin_validate_psd_info(
             return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
         }
         if (layer_state > 0) {
-            if (info->color_mode == 3u &&
-                info->depth == 8u &&
-                info->channels >= 3u) {
+            if (info->depth == 8u &&
+                ((info->color_mode == 3u && info->channels >= 3u) ||
+                 ((info->color_mode == 1u || info->color_mode == 8u) &&
+                  info->channels >= 1u))) {
                 allow_layer_fallback = 1;
             } else {
                 sixel_builtin_psd_set_message(
@@ -2202,6 +2203,18 @@ sixel_builtin_decode_psd_bitmap_1bit(
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
 SIXELSTATUS
 sixel_builtin_decode_psd_gray_or_indexed_8bit(
     sixel_chunk_t const *chunk,
@@ -2280,6 +2293,18 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
     blend_with_bg = (want_alpha != 0 && preserve_alpha == 0) ? 1 : 0;
     if (blend_with_bg != 0 && bgcolor == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (info->color_mode != 2u && info->image_data_offset >= chunk->size) {
+        return sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
+            chunk,
+            info,
+            bgcolor,
+            ppixels,
+            ptransparent_mask,
+            ptransparent_mask_size,
+            pwidth,
+            pheight,
+            ppixelformat);
     }
     if (!sixel_builtin_decode_psd_8bit_planes(chunk,
                                               info,
@@ -3361,9 +3386,9 @@ cleanup_cmyk16:
     return status;
 }
 
-/* Recover RGB8 pixels from a single-layer PSD that omits merged data. */
+/* Recover 8-bit RGB/Gray pixels from single-layer PSD without merged data. */
 static SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
+sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -3391,12 +3416,16 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
     size_t extra_data_length;
     size_t pixel_count;
     size_t i;
+    unsigned int min_channels;
+    int decode_rgb;
+    int gray_channel_index;
     int red_channel_index;
     int green_channel_index;
     int blue_channel_index;
     int alpha_channel_index;
     int decode_status;
     int preserve_alpha;
+    int blend_with_bg;
     int alpha;
     int r;
     int g;
@@ -3427,12 +3456,16 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
     extra_data_length = 0u;
     pixel_count = 0u;
     i = 0u;
+    min_channels = 0u;
+    decode_rgb = 0;
+    gray_channel_index = -1;
     red_channel_index = -1;
     green_channel_index = -1;
     blue_channel_index = -1;
     alpha_channel_index = -1;
     decode_status = 0;
     preserve_alpha = 0;
+    blend_with_bg = 0;
     alpha = 0;
     r = 0;
     g = 0;
@@ -3453,7 +3486,16 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 3u || info->depth != 8u || info->channels < 3u) {
+    if (info->color_mode == 3u) {
+        decode_rgb = 1;
+        min_channels = 3u;
+    } else if (info->color_mode == 1u || info->color_mode == 8u) {
+        decode_rgb = 0;
+        min_channels = 1u;
+    } else {
+        return SIXEL_BAD_INPUT;
+    }
+    if (info->depth != 8u || info->channels < min_channels) {
         return SIXEL_BAD_INPUT;
     }
     if (info->image_data_offset < chunk->size) {
@@ -3520,7 +3562,8 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
         buffer + layer_info_offset + 16u);
     layer_info_offset += 18u;
 
-    if (channel_count < 3u || channel_count > SIXEL_FROMPSD_MAX_CHANNELS) {
+    if (channel_count < min_channels ||
+        channel_count > SIXEL_FROMPSD_MAX_CHANNELS) {
         sixel_helper_set_additional_message(
             "builtin PSD: unsupported layer fallback channels");
         return SIXEL_STBI_ERROR;
@@ -3543,11 +3586,18 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
                 "builtin PSD: malformed layer channel length");
             return SIXEL_STBI_ERROR;
         }
-        if (channels[i].channel_id == 0 && red_channel_index < 0) {
-            red_channel_index = (int)i;
-        } else if (channels[i].channel_id == 1 && green_channel_index < 0) {
+        if (channels[i].channel_id == 0 && gray_channel_index < 0) {
+            gray_channel_index = (int)i;
+            if (decode_rgb != 0) {
+                red_channel_index = (int)i;
+            }
+        } else if (decode_rgb != 0 &&
+                   channels[i].channel_id == 1 &&
+                   green_channel_index < 0) {
             green_channel_index = (int)i;
-        } else if (channels[i].channel_id == 2 && blue_channel_index < 0) {
+        } else if (decode_rgb != 0 &&
+                   channels[i].channel_id == 2 &&
+                   blue_channel_index < 0) {
             blue_channel_index = (int)i;
         } else if (channels[i].channel_id == -1 && alpha_channel_index < 0) {
             alpha_channel_index = (int)i;
@@ -3589,9 +3639,9 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
     if (top != 0 || left != 0 ||
         bottom != (int32_t)info->height ||
         right != (int32_t)info->width ||
-        red_channel_index < 0 ||
-        green_channel_index < 0 ||
-        blue_channel_index < 0) {
+        gray_channel_index < 0 ||
+        (decode_rgb != 0 &&
+         (green_channel_index < 0 || blue_channel_index < 0))) {
         sixel_helper_set_additional_message(
             "builtin PSD: unsupported layer fallback layout");
         return SIXEL_STBI_ERROR;
@@ -3599,11 +3649,13 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
 
     plane_r = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
                                                       pixel_count);
-    plane_g = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
-                                                      pixel_count);
-    plane_b = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
-                                                      pixel_count);
-    if (plane_r == NULL || plane_g == NULL || plane_b == NULL) {
+    if (decode_rgb != 0) {
+        plane_g = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                          pixel_count);
+        plane_b = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                          pixel_count);
+    }
+    if (plane_r == NULL || (decode_rgb != 0 && (plane_g == NULL || plane_b == NULL))) {
         sixel_helper_set_additional_message(
             "builtin PSD: sixel_allocator_malloc() failed.");
         decode_status = SIXEL_BAD_ALLOCATION;
@@ -3613,35 +3665,42 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
     decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
         buffer,
         channels,
-        red_channel_index,
+        gray_channel_index,
         info->width,
         info->height,
         plane_r);
     if (decode_status != SIXEL_OK) {
         goto cleanup;
     }
-    decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
-        buffer,
-        channels,
-        green_channel_index,
-        info->width,
-        info->height,
-        plane_g);
-    if (decode_status != SIXEL_OK) {
-        goto cleanup;
-    }
-    decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
-        buffer,
-        channels,
-        blue_channel_index,
-        info->width,
-        info->height,
-        plane_b);
-    if (decode_status != SIXEL_OK) {
-        goto cleanup;
+    if (decode_rgb != 0) {
+        decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
+            buffer,
+            channels,
+            green_channel_index,
+            info->width,
+            info->height,
+            plane_g);
+        if (decode_status != SIXEL_OK) {
+            goto cleanup;
+        }
+        decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
+            buffer,
+            channels,
+            blue_channel_index,
+            info->width,
+            info->height,
+            plane_b);
+        if (decode_status != SIXEL_OK) {
+            goto cleanup;
+        }
     }
 
     preserve_alpha = (bgcolor == NULL && alpha_channel_index >= 0) ? 1 : 0;
+    blend_with_bg = (alpha_channel_index >= 0 && preserve_alpha == 0) ? 1 : 0;
+    if (blend_with_bg != 0 && bgcolor == NULL) {
+        decode_status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
     if (alpha_channel_index >= 0) {
         plane_alpha = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
                                                               pixel_count);
@@ -3684,12 +3743,22 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
     }
 
     for (i = 0u; i < pixel_count; ++i) {
-        r = (int)plane_r[i];
-        g = (int)plane_g[i];
-        b = (int)plane_b[i];
+        if (decode_rgb != 0) {
+            r = (int)plane_r[i];
+            g = (int)plane_g[i];
+            b = (int)plane_b[i];
+        } else {
+            r = (int)plane_r[i];
+            g = r;
+            b = r;
+        }
         if (plane_alpha != NULL) {
             alpha = (int)plane_alpha[i];
-            if (preserve_alpha != 0) {
+            if (blend_with_bg != 0) {
+                r = (r * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                g = (g * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                b = (b * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+            } else {
                 /*
                  * SIXEL supports key transparency only. Keep alpha==0 in
                  * the mask and pre-multiply color for semi-transparent
@@ -3698,11 +3767,9 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
                 r = (r * alpha) >> 8;
                 g = (g * alpha) >> 8;
                 b = (b * alpha) >> 8;
-                transparent_mask[i] = alpha == 0 ? 1u : 0u;
-            } else {
-                r = (r * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
-                g = (g * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
-                b = (b * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                if (transparent_mask != NULL) {
+                    transparent_mask[i] = alpha == 0 ? 1u : 0u;
+                }
             }
         }
         rgb[i * 3u + 0u] = (unsigned char)r;
@@ -3799,7 +3866,7 @@ sixel_builtin_decode_psd_rgb_8bit(
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     if (info->image_data_offset >= chunk->size) {
-        return sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
+        return sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
             chunk,
             info,
             bgcolor,
