@@ -28,6 +28,8 @@ TEST_EXTENSIONS = .t .py .rb .pl .php
 
 HELPER_FILES = \
     docs/consistency/list_envvars.sh \
+    loader/builtin/hdr_matrix_numeric_case_common.sh \
+    loader/builtin/hdr_matrix_lsqa_case_common.sh \
     bindings/python/_taptest.py \
     bindings/check-loader-setopt-sync.sh \
     bindings/ruby/_coverage_runner.rb \
