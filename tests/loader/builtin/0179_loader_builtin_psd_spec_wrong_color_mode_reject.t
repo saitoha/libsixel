@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin loader rejects PSD (unsupported color mode (outside Bitmap/Gray/Duotone/Indexed/RGB/CMYK/Lab)).
+# Verify builtin loader rejects PSD with unsupported color mode (mode=6).
 
 set -eux
 
@@ -12,12 +12,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/corrupted/wrong_color_mode.psd"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_colormode6_raw.psd"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null && {
-    echo "not ok" 1 - "unsupported color mode (outside Bitmap/Gray/Duotone/Indexed/RGB/CMYK/Lab) was unexpectedly accepted"
+    echo "not ok" 1 - "unsupported color mode (6) was unexpectedly accepted"
     exit 0
 }
 
-echo "ok" 1 - "unsupported color mode (outside Bitmap/Gray/Duotone/Indexed/RGB/CMYK/Lab) is rejected"
+echo "ok" 1 - "unsupported color mode (6) is rejected"
 exit 0
