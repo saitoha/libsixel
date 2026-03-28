@@ -132,6 +132,15 @@ typedef struct sixel_librsvg_surface_convert_plan {
     size_t buffer_size;
 } sixel_librsvg_surface_convert_plan_t;
 
+typedef SIXELSTATUS (*sixel_librsvg_open_result_fn_t)(
+    sixel_chunk_t const *chunk,
+    sixel_librsvg_open_result_t *open_result);
+
+typedef struct sixel_librsvg_open_dispatch {
+    sixel_librsvg_decode_mode_t mode;
+    sixel_librsvg_open_result_fn_t fn;
+} sixel_librsvg_open_dispatch_t;
+
 typedef enum sixel_librsvg_setopt_action {
     SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
     SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
@@ -1043,13 +1052,48 @@ librsvg_open_handle_from_stdin_svgz_tempfile(sixel_chunk_t const *chunk,
     if (SIXEL_SUCCEEDED(status)) {
         *temp_path_out = temp_path;
         temp_path = NULL;
-        status = SIXEL_OK;
     }
-    if (temp_path != NULL) {
-        librsvg_dispose_temp_path(&temp_path);
-    }
+    librsvg_dispose_temp_path(&temp_path);
 
     return status;
+}
+
+static SIXELSTATUS
+librsvg_open_result_from_source_file(
+    sixel_chunk_t const *chunk,
+    sixel_librsvg_open_result_t *open_result)
+{
+    if (chunk == NULL || open_result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return librsvg_open_handle_from_source_file(chunk,
+                                                &open_result->handle);
+}
+
+static SIXELSTATUS
+librsvg_open_result_from_data_chunk(
+    sixel_chunk_t const *chunk,
+    sixel_librsvg_open_result_t *open_result)
+{
+    if (chunk == NULL || open_result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return librsvg_open_handle_from_data_chunk(chunk,
+                                               &open_result->handle);
+}
+
+static SIXELSTATUS
+librsvg_open_result_from_stdin_svgz_tempfile(
+    sixel_chunk_t const *chunk,
+    sixel_librsvg_open_result_t *open_result)
+{
+    if (chunk == NULL || open_result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return librsvg_open_handle_from_stdin_svgz_tempfile(
+        chunk,
+        &open_result->handle,
+        &open_result->stdin_svgz_temp_path);
 }
 
 static SIXELSTATUS
@@ -1066,30 +1110,51 @@ librsvg_decode_mode_error(sixel_librsvg_decode_mode_t decode_mode)
     return SIXEL_BAD_ARGUMENT;
 }
 
+static sixel_librsvg_open_dispatch_t const g_librsvg_open_dispatch[] = {
+    { SIXEL_LIBRSVG_DECODE_MODE_FILE,
+      librsvg_open_result_from_source_file },
+    { SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE,
+      librsvg_open_result_from_stdin_svgz_tempfile },
+    { SIXEL_LIBRSVG_DECODE_MODE_DATA,
+      librsvg_open_result_from_data_chunk }
+};
+
+static sixel_librsvg_open_result_fn_t
+librsvg_find_open_result_fn(sixel_librsvg_decode_mode_t decode_mode)
+{
+    size_t index;
+
+    index = 0u;
+    for (index = 0u;
+            index < sizeof(g_librsvg_open_dispatch) /
+                    sizeof(g_librsvg_open_dispatch[0]);
+            ++index) {
+        if (g_librsvg_open_dispatch[index].mode == decode_mode) {
+            return g_librsvg_open_dispatch[index].fn;
+        }
+    }
+
+    return NULL;
+}
+
 static SIXELSTATUS
 librsvg_open_handle_by_mode(sixel_librsvg_decode_mode_t decode_mode,
                             sixel_chunk_t const *chunk,
                             sixel_librsvg_open_result_t *open_result)
 {
+    sixel_librsvg_open_result_fn_t open_result_fn;
+
+    open_result_fn = NULL;
     if (chunk == NULL || open_result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    switch (decode_mode) {
-    case SIXEL_LIBRSVG_DECODE_MODE_FILE:
-        return librsvg_open_handle_from_source_file(chunk,
-                                                    &open_result->handle);
-    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE:
-        return librsvg_open_handle_from_stdin_svgz_tempfile(
-            chunk,
-            &open_result->handle,
-            &open_result->stdin_svgz_temp_path);
-    case SIXEL_LIBRSVG_DECODE_MODE_DATA:
-        return librsvg_open_handle_from_data_chunk(chunk,
-                                                   &open_result->handle);
-    default:
+    open_result_fn = librsvg_find_open_result_fn(decode_mode);
+    if (open_result_fn == NULL) {
         return librsvg_decode_mode_error(decode_mode);
     }
+
+    return open_result_fn(chunk, open_result);
 }
 
 static void
