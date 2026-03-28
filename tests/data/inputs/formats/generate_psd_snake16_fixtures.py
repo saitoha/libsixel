@@ -718,6 +718,18 @@ def generate(out_dir: pathlib.Path):
             compression=0,
         ),
     )
+    write_file(
+        out_dir / "snake16_duotone8_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_gray8(gray8_plane, color_mode=8),
+    )
+    write_file(
+        out_dir / "snake16_duotone8_alpha_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_gray8(
+            gray8_plane,
+            color_mode=8,
+            alpha_plane=alpha8_plane,
+        ),
+    )
 
     write_variants(
         out_dir,
