@@ -3876,6 +3876,65 @@ sixel_builtin_psd_decode_cmyk_by_mode(
               ppixelformat);
 }
 
+static void
+sixel_builtin_psd_trace_malformed_icc(void)
+{
+    loader_trace_message(
+        "builtin PSD: malformed ICC resource section; "
+        "skipping ICC conversion");
+}
+
+static void
+sixel_builtin_psd_trace_embedded_icc_failure(void)
+{
+    loader_trace_message("builtin PSD: embedded ICC conversion failed");
+}
+
+static void
+sixel_builtin_psd_trace_skip_icc_reason(
+    int psd_icc_status,
+    int psd_custom_decode_mode,
+    int psd_cmyk_icc_applied)
+{
+    if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED) {
+        sixel_builtin_psd_trace_malformed_icc();
+    } else if (sixel_builtin_psd_mode_is_cmyk(psd_custom_decode_mode) &&
+               psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
+               !psd_cmyk_icc_applied) {
+        sixel_builtin_psd_trace_embedded_icc_failure();
+    } else if (sixel_builtin_psd_mode_is_lab(psd_custom_decode_mode) &&
+               psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
+        loader_trace_message(
+            "builtin PSD: skipping embedded ICC conversion "
+            "for Lab custom decode path");
+    }
+}
+
+static int
+sixel_builtin_psd_apply_embedded_icc(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *icc_profile,
+    size_t icc_profile_length)
+{
+    int cms_converted;
+
+    cms_converted = 0;
+    cms_converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+        pixels,
+        width,
+        height,
+        pixelformat,
+        icc_profile,
+        icc_profile_length);
+    if (!cms_converted) {
+        sixel_builtin_psd_trace_embedded_icc_failure();
+    }
+    return cms_converted;
+}
+
 static SIXELSTATUS
 sixel_builtin_load_psd_single_frame(
     sixel_chunk_t const *chunk,
@@ -3898,7 +3957,6 @@ sixel_builtin_load_psd_single_frame(
     int psd_validation_status;
     char psd_validation_message[128];
     int psd_icc_status;
-    int cms_converted;
     sixel_builtin_psd_decode_basic_fn_t basic_decode_fn;
 
     status = SIXEL_FALSE;
@@ -3913,7 +3971,6 @@ sixel_builtin_load_psd_single_frame(
     psd_validation_status = SIXEL_BUILTIN_PSD_VALIDATE_OK;
     psd_validation_message[0] = '\0';
     psd_icc_status = SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
-    cms_converted = 0;
     basic_decode_fn = NULL;
     if (chunk == NULL ||
         frame == NULL ||
@@ -3996,39 +4053,21 @@ sixel_builtin_load_psd_single_frame(
 
     if (enable_cms) {
         if (psd_skip_icc_conversion) {
-            if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED) {
-                loader_trace_message(
-                    "builtin PSD: malformed ICC resource section; "
-                    "skipping ICC conversion");
-            } else if (sixel_builtin_psd_mode_is_cmyk(psd_custom_decode_mode) &&
-                       psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
-                       !psd_cmyk_icc_applied) {
-                loader_trace_message(
-                    "builtin PSD: embedded ICC conversion failed");
-            } else if (sixel_builtin_psd_mode_is_lab(psd_custom_decode_mode) &&
-                       psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
-                loader_trace_message(
-                    "builtin PSD: skipping embedded ICC conversion "
-                    "for Lab custom decode path");
-            }
+            sixel_builtin_psd_trace_skip_icc_reason(psd_icc_status,
+                                                    psd_custom_decode_mode,
+                                                    psd_cmyk_icc_applied);
         } else {
             if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
-                cms_converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+                (void)sixel_builtin_psd_apply_embedded_icc(
                     pixels,
                     frame->width,
                     frame->height,
                     psd_pixelformat,
                     psd_icc_profile,
                     psd_icc_profile_length);
-                if (!cms_converted) {
-                    loader_trace_message(
-                        "builtin PSD: embedded ICC conversion failed");
-                }
             } else if (psd_icc_status ==
                        SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED) {
-                loader_trace_message(
-                    "builtin PSD: malformed ICC resource section; "
-                    "skipping ICC conversion");
+                sixel_builtin_psd_trace_malformed_icc();
             }
         }
     }
