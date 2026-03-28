@@ -15,23 +15,27 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-oversized-canvas.svg"
-out_path="${ARTIFACT_LOCAL_DIR}/librsvg-oversized-canvas.six"
-err_path="${ARTIFACT_LOCAL_DIR}/librsvg-oversized-canvas.err"
+svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-oversized-canvas.svg"
+status=0
+msg=$(
+    set +xv
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" -o/dev/null 2>&1
+) || status="$?"
 
-printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='20000' height='20000'><rect x='0' y='0' width='20000' height='20000' fill='#ff0000'/></svg>" >"${svg_path}"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${out_path}" 2>"${err_path}" && {
+test "${status}" -ne 0 || {
     echo "not ok" 1 - "oversized SVG unexpectedly succeeded"
     exit 0
 }
 
-grep -E 'pixel limit|dimensions exceed limit|integer overflow' "${err_path}" >/dev/null || {
-    echo "not ok" 1 - "oversized SVG failure did not report a size-limit reason"
-    exit 0
-}
+case "${msg}" in
+    *"pixel limit"* | *"dimensions exceed limit"* | *"integer overflow"*)
+        ;;
+    *)
+        echo "not ok" 1 - "oversized SVG failure did not report a size-limit reason"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "librsvg rejects oversized canvases"
 exit 0
