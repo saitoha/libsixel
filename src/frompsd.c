@@ -3419,7 +3419,6 @@ sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
     unsigned int min_channels;
     int decode_rgb;
     int gray_channel_index;
-    int red_channel_index;
     int green_channel_index;
     int blue_channel_index;
     int alpha_channel_index;
@@ -3459,7 +3458,6 @@ sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
     min_channels = 0u;
     decode_rgb = 0;
     gray_channel_index = -1;
-    red_channel_index = -1;
     green_channel_index = -1;
     blue_channel_index = -1;
     alpha_channel_index = -1;
@@ -3588,9 +3586,6 @@ sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
         }
         if (channels[i].channel_id == 0 && gray_channel_index < 0) {
             gray_channel_index = (int)i;
-            if (decode_rgb != 0) {
-                red_channel_index = (int)i;
-            }
         } else if (decode_rgb != 0 &&
                    channels[i].channel_id == 1 &&
                    green_channel_index < 0) {
