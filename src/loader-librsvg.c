@@ -902,8 +902,9 @@ sixel_loader_librsvg_pick_decode_mode_for_test(
 {
     sixel_librsvg_decode_policy_t policy;
 
-    policy.allow_relative_resources = allow_relative_resources ? 1 : 0;
-    policy.allow_stdin_svgz = allow_stdin_svgz ? 1 : 0;
+    librsvg_decode_policy_init(&policy,
+                               allow_relative_resources,
+                               allow_stdin_svgz);
     return librsvg_pick_decode_mode(chunk, &policy);
 }
 
@@ -1172,16 +1173,26 @@ librsvg_render_request_init(
 }
 
 static void
-librsvg_decode_policy_init_from_env(sixel_librsvg_decode_policy_t *policy)
+librsvg_decode_policy_init(
+    sixel_librsvg_decode_policy_t *policy,
+    int allow_relative_resources,
+    int allow_stdin_svgz)
 {
     if (policy == NULL) {
         return;
     }
 
-    policy->allow_relative_resources =
-        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES);
-    policy->allow_stdin_svgz =
-        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ);
+    policy->allow_relative_resources = allow_relative_resources ? 1 : 0;
+    policy->allow_stdin_svgz = allow_stdin_svgz ? 1 : 0;
+}
+
+static void
+librsvg_decode_policy_init_from_env(sixel_librsvg_decode_policy_t *policy)
+{
+    librsvg_decode_policy_init(
+        policy,
+        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES),
+        librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ));
 }
 
 static SIXELSTATUS
@@ -1731,12 +1742,12 @@ librsvg_render_to_frame(sixel_frame_t *frame,
 {
     SIXELSTATUS status;
     sixel_librsvg_render_context_t render_ctx;
-    sixel_librsvg_render_request_t request;
+    sixel_librsvg_render_request_t request = { NULL, NULL, NULL, NULL };
 
-    librsvg_render_context_init(&render_ctx);
     if (frame == NULL || chunk == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    librsvg_render_context_init(&render_ctx);
     librsvg_render_request_init(&request, chunk, bgcolor, policy);
     status = librsvg_prepare_render_context(frame,
                                             &request,
