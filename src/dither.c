@@ -2590,7 +2590,7 @@ sixel_dither_apply_palette(
     unsigned char const *preset_transparent_mask;
     size_t preset_transparent_mask_size;
     int preset_transparent_keycolor;
-    int using_preset_transparent_mask;
+    int using_preset_transparent_mask = 0;
     int apply_transparent_mask = 0;
     int keycolor_for_mask = (-1);
     size_t source_depth;
@@ -2633,7 +2633,6 @@ sixel_dither_apply_palette(
     preset_transparent_mask = NULL;
     preset_transparent_mask_size = 0u;
     preset_transparent_keycolor = (-1);
-    using_preset_transparent_mask = 0;
     status = sixel_dither_validate_complexion_limit(3, dither->complexion);
     if (SIXEL_FAILED(status)) {
         goto end;

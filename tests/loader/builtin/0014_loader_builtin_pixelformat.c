@@ -23,6 +23,7 @@
 
 #include "tests/loader/pixelformat_test_common.h"
 #include "src/cms.h"
+#include "src/frompsd.h"
 #include "src/loader-common.h"
 
 static SIXELSTATUS
@@ -2759,6 +2760,103 @@ cleanup:
 }
 
 static int
+run_builtin_loader_psd_validate_defensive_test(void)
+{
+    sixel_chunk_t chunk;
+    sixel_builtin_psd_info_t info;
+    unsigned char buffer[64];
+    int decode_mode;
+    int skip_icc_conversion;
+    int colorspace;
+    char message[128];
+    int status;
+
+    memset(&chunk, 0, sizeof(chunk));
+    memset(&info, 0, sizeof(info));
+    memset(buffer, 0, sizeof(buffer));
+    memset(message, 0, sizeof(message));
+    decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_NONE;
+    skip_icc_conversion = 0;
+    colorspace = SIXEL_COLORSPACE_GAMMA;
+
+    status = sixel_builtin_validate_psd_info(NULL,
+                                             NULL,
+                                             &decode_mode,
+                                             &skip_icc_conversion,
+                                             &colorspace,
+                                             message,
+                                             sizeof(message));
+    if (status != SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED ||
+        strcmp(message, "builtin PSD: malformed header/metadata") != 0) {
+        fprintf(stderr,
+                "builtin psd validate defensive: malformed header path mismatch "
+                "(status=%d message=%s)\n",
+                status,
+                message);
+        return 1;
+    }
+
+    chunk.buffer = buffer;
+    chunk.size = sizeof(buffer);
+    info.version = 1u;
+    info.channels = 3u;
+    info.width = 1u;
+    info.height = 1u;
+    info.depth = 8u;
+    info.color_mode = 3u;
+    info.compression = 0u;
+    info.image_data_offset = chunk.size + 1u;
+    message[0] = '\0';
+    status = sixel_builtin_validate_psd_info(&chunk,
+                                             &info,
+                                             &decode_mode,
+                                             &skip_icc_conversion,
+                                             &colorspace,
+                                             message,
+                                             sizeof(message));
+    if (status != SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED ||
+        strcmp(message, "builtin PSD: malformed image data offset") != 0) {
+        fprintf(stderr,
+                "builtin psd validate defensive: image data offset mismatch "
+                "(status=%d message=%s)\n",
+                status,
+                message);
+        return 1;
+    }
+
+    if ((size_t)-1 <= 0xffffffffULL) {
+        info.version = 1u;
+        info.channels = 3u;
+        info.width = 300000u;
+        info.height = 300000u;
+        info.depth = 32u;
+        info.color_mode = 3u;
+        info.compression = 0u;
+        info.image_data_offset = 2u;
+        message[0] = '\0';
+        status = sixel_builtin_validate_psd_info(&chunk,
+                                                 &info,
+                                                 &decode_mode,
+                                                 &skip_icc_conversion,
+                                                 &colorspace,
+                                                 message,
+                                                 sizeof(message));
+        if (status != SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED ||
+            strcmp(message, "builtin PSD: malformed dimensions/depth overflow")
+                != 0) {
+            fprintf(stderr,
+                    "builtin psd validate defensive: overflow path mismatch "
+                    "(status=%d message=%s)\n",
+                    status,
+                    message);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_test(void)
 {
     char const *hdr_numeric_mode;
@@ -2790,6 +2888,7 @@ run_builtin_loader_test(void)
     char const *gif_loop_force_loop0_unbounded_mode;
     char const *gif_loop_force_loop1_unbounded_mode;
     char const *gif_loop_force_loop2_unbounded_mode;
+    char const *psd_validate_defensive_mode;
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
@@ -2855,6 +2954,8 @@ run_builtin_loader_test(void)
         "SIXEL_TEST_GIF_LOOP_FORCE_LOOP1_UNBOUNDED");
     gif_loop_force_loop2_unbounded_mode = loader_test_getenv(
         "SIXEL_TEST_GIF_LOOP_FORCE_LOOP2_UNBOUNDED");
+    psd_validate_defensive_mode = loader_test_getenv(
+        "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE");
     if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_gamma_numeric_test();
     }
@@ -2972,6 +3073,10 @@ run_builtin_loader_test(void)
     if (gif_loop_force_loop2_unbounded_mode != NULL &&
         strcmp(gif_loop_force_loop2_unbounded_mode, "1") == 0) {
         return run_builtin_loader_gif_loop_force_loop2_unbounded_test();
+    }
+    if (psd_validate_defensive_mode != NULL &&
+        strcmp(psd_validate_defensive_mode, "1") == 0) {
+        return run_builtin_loader_psd_validate_defensive_test();
     }
 
     result = run_loader_component_case("builtin loader rgba8",
