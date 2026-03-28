@@ -565,13 +565,6 @@ sixel_builtin_validate_psd_info(
         } else if (info->depth == 16u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_16BIT;
         } else if (info->depth == 32u) {
-            if (info->compression == 1u) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: unsupported RLE compression for 32-bit Gray/Duotone");
-                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
-            }
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_32BIT;
         } else {
             nwrite = snprintf(message,
@@ -602,13 +595,6 @@ sixel_builtin_validate_psd_info(
         } else if (info->depth == 16u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_16BIT;
         } else if (info->depth == 32u) {
-            if (info->compression == 1u) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: unsupported RLE compression for 32-bit RGB");
-                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
-            }
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_32BIT;
         } else {
             nwrite = snprintf(message,
@@ -625,13 +611,6 @@ sixel_builtin_validate_psd_info(
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT;
             skip_icc_conversion = 1;
         } else if (info->depth == 32u) {
-            if (info->compression == 1u) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: unsupported RLE compression for 32-bit CMYK");
-                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
-            }
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT;
             skip_icc_conversion = 1;
             colorspace = SIXEL_COLORSPACE_LINEAR;
@@ -657,13 +636,6 @@ sixel_builtin_validate_psd_info(
             skip_icc_conversion = 1;
             colorspace = SIXEL_COLORSPACE_CIELAB;
         } else if (info->depth == 32u) {
-            if (info->compression == 1u) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: unsupported RLE compression for 32-bit Lab");
-                return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
-            }
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT;
             skip_icc_conversion = 1;
             colorspace = SIXEL_COLORSPACE_CIELAB;
@@ -1641,6 +1613,15 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
     size_t total_plane_bytes;
     size_t channel_offset;
     size_t offset;
+    size_t table_entries;
+    size_t table_bytes;
+    unsigned char const *row_table;
+    size_t data_cursor;
+    unsigned int channel;
+    unsigned int row;
+    size_t row_length;
+    size_t row_index;
+    size_t row_offset;
     size_t i;
     unsigned char *zip_planar;
     size_t zip_plane_bytes;
@@ -1653,6 +1634,15 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
     total_plane_bytes = 0u;
     channel_offset = 0u;
     offset = 0u;
+    table_entries = 0u;
+    table_bytes = 0u;
+    row_table = NULL;
+    data_cursor = 0u;
+    channel = 0u;
+    row = 0u;
+    row_length = 0u;
+    row_index = 0u;
+    row_offset = 0u;
     i = 0u;
     zip_planar = NULL;
     zip_plane_bytes = 0u;
@@ -1698,6 +1688,45 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
         offset = info->image_data_offset + channel_offset;
         src = chunk->buffer + offset;
         memcpy(plane_bytes_buffer, src, plane_bytes);
+    } else if (info->compression == 1u) {
+        if ((size_t)info->height > SIZE_MAX / (size_t)info->channels) {
+            goto fail;
+        }
+        table_entries = (size_t)info->height * (size_t)info->channels;
+        if (table_entries > SIZE_MAX / 2u) {
+            goto fail;
+        }
+        table_bytes = table_entries * 2u;
+        if (info->image_data_offset > chunk->size ||
+            table_bytes > chunk->size - info->image_data_offset) {
+            goto fail;
+        }
+        row_table = chunk->buffer + info->image_data_offset;
+        data_cursor = info->image_data_offset + table_bytes;
+
+        for (channel = 0u; channel < info->channels; ++channel) {
+            for (row = 0u; row < info->height; ++row) {
+                row_index = ((size_t)channel * (size_t)info->height +
+                             (size_t)row) * 2u;
+                row_length = (size_t)sixel_builtin_read_u16be(
+                    row_table + row_index);
+                if (data_cursor > chunk->size ||
+                    row_length > chunk->size - data_cursor) {
+                    goto fail;
+                }
+                if (channel == target_channel) {
+                    row_offset = (size_t)row * row_bytes;
+                    if (!sixel_builtin_psd_unpack_packbits_row(
+                            chunk->buffer + data_cursor,
+                            row_length,
+                            plane_bytes_buffer + row_offset,
+                            row_bytes)) {
+                        goto fail;
+                    }
+                }
+                data_cursor += row_length;
+            }
+        }
     } else if (info->compression == 2u || info->compression == 3u) {
         if (!sixel_builtin_psd_decode_zip_planar(chunk,
                                                  info,
@@ -2502,9 +2531,7 @@ sixel_builtin_decode_psd_gray_or_duotone_32bit(
         ptransparent_mask_size);
     if ((info->color_mode != 1u && info->color_mode != 8u) ||
         info->depth != 32u ||
-        (info->compression != 0u &&
-         info->compression != 2u &&
-         info->compression != 3u) ||
+        info->compression > 3u ||
         info->channels < 1u) {
         return SIXEL_BAD_INPUT;
     }
@@ -3781,9 +3808,7 @@ sixel_builtin_decode_psd_rgb_32bit(
         ptransparent_mask,
         ptransparent_mask_size);
     if (info->color_mode != 3u || info->depth != 32u ||
-        (info->compression != 0u &&
-         info->compression != 2u &&
-         info->compression != 3u) ||
+        info->compression > 3u ||
         info->channels < 3u) {
         return SIXEL_BAD_INPUT;
     }
@@ -4310,9 +4335,7 @@ sixel_builtin_decode_psd_cmyk_32bit(
         ptransparent_mask,
         ptransparent_mask_size);
     if (info->color_mode != 4u || info->depth != 32u ||
-        (info->compression != 0u &&
-         info->compression != 2u &&
-         info->compression != 3u) ||
+        info->compression > 3u ||
         info->channels < 4u) {
         return SIXEL_BAD_INPUT;
     }
@@ -4561,9 +4584,7 @@ sixel_builtin_decode_psd_lab_32bit(
         ptransparent_mask,
         ptransparent_mask_size);
     if (info->color_mode != 9u || info->depth != 32u ||
-        (info->compression != 0u &&
-         info->compression != 2u &&
-         info->compression != 3u) ||
+        info->compression > 3u ||
         info->channels < 3u) {
         return SIXEL_BAD_INPUT;
     }
