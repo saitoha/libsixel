@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "src/loader-librsvg.h"
+#include "src/loader-librsvg-test.h"
 #include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_LIBRSVG
