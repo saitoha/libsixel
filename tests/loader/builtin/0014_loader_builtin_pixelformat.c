@@ -103,6 +103,16 @@ typedef struct gif_loop_probe_context {
     int reached_required_loop;
 } gif_loop_probe_context_t;
 
+typedef struct gif_sequence_probe_context {
+    int callback_count;
+    int expected_count;
+    int mismatch_index;
+    int mismatch_loop_no;
+    int mismatch_frame_no;
+    int saw_multiframe;
+    int const *expected_sequence;
+} gif_sequence_probe_context_t;
+
 typedef enum hdr_test_gamma_mode {
     HDR_TEST_GAMMA_NONE = 0,
     HDR_TEST_GAMMA_22
@@ -216,6 +226,54 @@ capture_gif_loop_probe_until_target(sixel_frame_t *frame, void *data)
         return SIXEL_INTERRUPTED;
     }
 
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+capture_gif_sequence_probe(sixel_frame_t *frame, void *data)
+{
+    gif_sequence_probe_context_t *context;
+    int loop_no;
+    int frame_no;
+    int expected_loop_no;
+    int expected_frame_no;
+    int expected_index;
+
+    context = (gif_sequence_probe_context_t *)data;
+    loop_no = 0;
+    frame_no = 0;
+    expected_loop_no = 0;
+    expected_frame_no = 0;
+    expected_index = 0;
+    if (context == NULL ||
+        frame == NULL ||
+        context->expected_sequence == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    loop_no = sixel_frame_get_loop_no(frame);
+    frame_no = sixel_frame_get_frame_no(frame);
+    if (sixel_frame_get_multiframe(frame) != 0) {
+        context->saw_multiframe = 1;
+    }
+    if (context->callback_count >= context->expected_count) {
+        context->mismatch_index = context->callback_count;
+        context->mismatch_loop_no = loop_no;
+        context->mismatch_frame_no = frame_no;
+        return SIXEL_BAD_INPUT;
+    }
+
+    expected_index = context->callback_count * 2;
+    expected_loop_no = context->expected_sequence[expected_index + 0];
+    expected_frame_no = context->expected_sequence[expected_index + 1];
+    if (loop_no != expected_loop_no || frame_no != expected_frame_no) {
+        context->mismatch_index = context->callback_count;
+        context->mismatch_loop_no = loop_no;
+        context->mismatch_frame_no = frame_no;
+        return SIXEL_BAD_INPUT;
+    }
+
+    context->callback_count += 1;
     return SIXEL_OK;
 }
 
@@ -2051,6 +2109,234 @@ run_builtin_loader_hdr_invalid_exposure_numeric_test(void)
 }
 
 static int
+run_builtin_loader_gif_sequence_test(
+    char const *label,
+    char const *relative_path,
+    int loop_control,
+    int const *expected_sequence,
+    int expected_count)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
+    loader_probe_callback_state_t callback_state;
+    gif_sequence_probe_context_t probe;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    int mismatch_expected_loop_no;
+    int mismatch_expected_frame_no;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    component = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    require_static = 0;
+    use_palette = 1;
+    reqcolors = 256;
+    mismatch_expected_loop_no = -1;
+    mismatch_expected_frame_no = -1;
+    memset(&probe, 0, sizeof(probe));
+
+    if (label == NULL ||
+        relative_path == NULL ||
+        expected_sequence == NULL ||
+        expected_count <= 0) {
+        return 1;
+    }
+
+    source_root = resolve_source_root_for_pixelformat_test();
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    status = new_builtin_component_for_pixelformat_test(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                           &loop_control);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    probe.callback_count = 0;
+    probe.expected_count = expected_count;
+    probe.mismatch_index = -1;
+    probe.mismatch_loop_no = -1;
+    probe.mismatch_frame_no = -1;
+    probe.saw_multiframe = 0;
+    probe.expected_sequence = expected_sequence;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_gif_sequence_probe;
+    callback_state.context = &probe;
+
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (SIXEL_FAILED(status)) {
+        if (probe.mismatch_index >= 0 &&
+            probe.mismatch_index < expected_count) {
+            mismatch_expected_loop_no =
+                expected_sequence[probe.mismatch_index * 2 + 0];
+            mismatch_expected_frame_no =
+                expected_sequence[probe.mismatch_index * 2 + 1];
+            fprintf(stderr,
+                    "%s: sequence mismatch at %d "
+                    "(actual=%d:%d expected=%d:%d)\n",
+                    label,
+                    probe.mismatch_index,
+                    probe.mismatch_loop_no,
+                    probe.mismatch_frame_no,
+                    mismatch_expected_loop_no,
+                    mismatch_expected_frame_no);
+        } else {
+            fprintf(stderr,
+                    "%s: loader returned failure (%d)\n",
+                    label,
+                    (int)status);
+        }
+        goto cleanup;
+    }
+    if (probe.callback_count != expected_count) {
+        fprintf(stderr,
+                "%s: callback count mismatch (actual=%d expected=%d)\n",
+                label,
+                probe.callback_count,
+                expected_count);
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (probe.saw_multiframe == 0) {
+        fprintf(stderr, "%s: frame metadata did not mark multiframe\n", label);
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+    return SIXEL_SUCCEEDED(status) ? 0 : 1;
+}
+
+static int
+run_builtin_loader_gif_loop_disable_loop0_once_test(void)
+{
+    static int const expected_sequence[] = { 0, 0, 0, 1 };
+
+    return run_builtin_loader_gif_sequence_test(
+        "builtin gif loop=disable ignores loop0 and emits one pass",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop0.gif",
+        SIXEL_LOOP_DISABLE,
+        expected_sequence,
+        2);
+}
+
+static int
+run_builtin_loader_gif_loop_disable_loop1_once_test(void)
+{
+    static int const expected_sequence[] = { 0, 0, 0, 1 };
+
+    return run_builtin_loader_gif_sequence_test(
+        "builtin gif loop=disable ignores loop1 and emits one pass",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop1.gif",
+        SIXEL_LOOP_DISABLE,
+        expected_sequence,
+        2);
+}
+
+static int
+run_builtin_loader_gif_loop_disable_loop2_once_test(void)
+{
+    static int const expected_sequence[] = { 0, 0, 0, 1 };
+
+    return run_builtin_loader_gif_sequence_test(
+        "builtin gif loop=disable ignores loop2 and emits one pass",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop2.gif",
+        SIXEL_LOOP_DISABLE,
+        expected_sequence,
+        2);
+}
+
+static int
+run_builtin_loader_gif_loop_auto_loop1_once_test(void)
+{
+    static int const expected_sequence[] = { 0, 0, 0, 1 };
+
+    return run_builtin_loader_gif_sequence_test(
+        "builtin gif loop=auto respects loop1 as one pass",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop1.gif",
+        SIXEL_LOOP_AUTO,
+        expected_sequence,
+        2);
+}
+
+static int
+run_builtin_loader_gif_loop_auto_loop2_twice_test(void)
+{
+    static int const expected_sequence[] = {
+        0, 0,
+        0, 1,
+        1, 0,
+        1, 1
+    };
+
+    return run_builtin_loader_gif_sequence_test(
+        "builtin gif loop=auto respects loop2 as two passes",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop2.gif",
+        SIXEL_LOOP_AUTO,
+        expected_sequence,
+        4);
+}
+
+static int
 run_builtin_loader_gif_unbounded_loop_probe_test(
     char const *label,
     char const *relative_path,
@@ -2495,6 +2781,11 @@ run_builtin_loader_test(void)
     char const *hdr_mixed_header_exposure_invalid_numeric_mode;
     char const *hdr_invalid_use_header_exposure_env_numeric_mode;
     char const *hdr_duplicate_header_metadata_numeric_mode;
+    char const *gif_loop_disable_loop0_once_mode;
+    char const *gif_loop_disable_loop1_once_mode;
+    char const *gif_loop_disable_loop2_once_mode;
+    char const *gif_loop_auto_loop1_once_mode;
+    char const *gif_loop_auto_loop2_twice_mode;
     char const *gif_loop_auto_loop0_unbounded_mode;
     char const *gif_loop_force_loop0_unbounded_mode;
     char const *gif_loop_force_loop1_unbounded_mode;
@@ -2546,6 +2837,16 @@ run_builtin_loader_test(void)
         "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV");
     hdr_duplicate_header_metadata_numeric_mode = loader_test_getenv(
         "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS");
+    gif_loop_disable_loop0_once_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP0_ONCE");
+    gif_loop_disable_loop1_once_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP1_ONCE");
+    gif_loop_disable_loop2_once_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP2_ONCE");
+    gif_loop_auto_loop1_once_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_AUTO_LOOP1_ONCE");
+    gif_loop_auto_loop2_twice_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_AUTO_LOOP2_TWICE");
     gif_loop_auto_loop0_unbounded_mode = loader_test_getenv(
         "SIXEL_TEST_GIF_LOOP_AUTO_LOOP0_UNBOUNDED");
     gif_loop_force_loop0_unbounded_mode = loader_test_getenv(
@@ -2635,6 +2936,26 @@ run_builtin_loader_test(void)
     if (hdr_duplicate_header_metadata_numeric_mode != NULL &&
         strcmp(hdr_duplicate_header_metadata_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_duplicate_header_metadata_numeric_test();
+    }
+    if (gif_loop_disable_loop0_once_mode != NULL &&
+        strcmp(gif_loop_disable_loop0_once_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_disable_loop0_once_test();
+    }
+    if (gif_loop_disable_loop1_once_mode != NULL &&
+        strcmp(gif_loop_disable_loop1_once_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_disable_loop1_once_test();
+    }
+    if (gif_loop_disable_loop2_once_mode != NULL &&
+        strcmp(gif_loop_disable_loop2_once_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_disable_loop2_once_test();
+    }
+    if (gif_loop_auto_loop1_once_mode != NULL &&
+        strcmp(gif_loop_auto_loop1_once_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_auto_loop1_once_test();
+    }
+    if (gif_loop_auto_loop2_twice_mode != NULL &&
+        strcmp(gif_loop_auto_loop2_twice_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_auto_loop2_twice_test();
     }
     if (gif_loop_auto_loop0_unbounded_mode != NULL &&
         strcmp(gif_loop_auto_loop0_unbounded_mode, "1") == 0) {
