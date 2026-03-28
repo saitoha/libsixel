@@ -1,0 +1,56 @@
+#!/bin/sh
+# TAP test: libwebp CLI start-frame overrides out-of-range env values.
+
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+test "${HAVE_WEBP-}" = 1 || {
+    printf "1..0 # SKIP libwebp loader is unavailable\n"
+    exit 0
+}
+
+echo "1..1"
+set -v
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
+
+image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
+out_cli="${ARTIFACT_LOCAL_DIR}/webp-start-frame-cli-oob.six"
+out_cli_with_oob_env="${ARTIFACT_LOCAL_DIR}/webp-start-frame-cli-oob-env.six"
+
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -ldisable \
+    "${image_webp}" >"${out_cli}" || {
+    echo "not ok" 1 - "libwebp decode with --start-frame=1 failed"
+    exit 0
+}
+
+msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=999999999999999999999999999999 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -ldisable \
+    "${image_webp}" 2>&1 >"${out_cli_with_oob_env}") || {
+    echo "not ok" 1 - "out-of-range env unexpectedly overrode --start-frame"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
+    exit 0
+}
+
+case "${msg}" in
+    *"SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range."*)
+        echo "not ok" 1 - "out-of-range env should be ignored when --start-frame is set"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${msg}" >&2
+        exit 0
+        ;;
+    *)
+        ;;
+esac
+
+cmp -s "${out_cli}" "${out_cli_with_oob_env}" || {
+    echo "not ok" 1 - "out-of-range env changed output despite --start-frame override"
+    exit 0
+}
+
+echo "ok" 1 - "libwebp --start-frame overrides out-of-range env input"
+exit 0
