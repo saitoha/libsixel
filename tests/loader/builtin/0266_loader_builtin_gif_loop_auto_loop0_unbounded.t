@@ -13,53 +13,37 @@ printf '1..1\n'
 set -v
 
 input_loop0="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
+timeout_helper=
+timeout_runtime=
 
-# Launch directly so $! points to the actual wrapper process.
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -lauto -g "${input_loop0}" \
-    -o /dev/null >/dev/null 2>&1 &
-pid=$!
-
-wait_limit=3
-while test "${wait_limit}" -gt 0; do
-    kill -0 "${pid}" 2>/dev/null || {
-        wait "${pid}" 2>/dev/null || true
-        echo "not ok" 1 - "loop auto treats NETSCAPE loop0 as unbounded unexpectedly finished"
-        exit 0
-    }
-    sleep 1
-    wait_limit=$((wait_limit - 1))
-done
-
-kill "${pid}" 2>/dev/null || true
-
-kill_wait=5
-while test "${kill_wait}" -gt 0; do
-    kill -0 "${pid}" 2>/dev/null || {
-        break
-    }
-    sleep 1
-    kill_wait=$((kill_wait - 1))
-done
-
-kill -0 "${pid}" 2>/dev/null && {
-    kill -9 "${pid}" 2>/dev/null || true
+command -v timeout >/dev/null 2>&1 && timeout_helper=timeout || true
+test -n "${timeout_helper}" || {
+    command -v gtimeout >/dev/null 2>&1 && timeout_helper=gtimeout || true
 }
-
-kill_wait=3
-while test "${kill_wait}" -gt 0; do
-    kill -0 "${pid}" 2>/dev/null || {
-        break
-    }
-    sleep 1
-    kill_wait=$((kill_wait - 1))
-done
-
-kill -0 "${pid}" 2>/dev/null && {
-    echo "not ok" 1 - "loop auto watchdog could not terminate process"
+test -n "${timeout_helper}" || {
+    test -x "${TOP_BUILDDIR}/tools/lso-timeout${EXEEXT-}" &&
+        timeout_helper="${TOP_BUILDDIR}/tools/lso-timeout${EXEEXT-}" || true
+}
+test -n "${timeout_helper}" || {
+    printf "1..0 # SKIP timeout helper unavailable\n"
     exit 0
 }
+test "${timeout_helper}" = timeout || {
+    test "${timeout_helper}" = gtimeout || {
+        test -n "${SIXEL_RUNTIME-}" && timeout_runtime="${SIXEL_RUNTIME-}" || true
+    }
+}
 
-wait "${pid}" 2>/dev/null || true
+rc=0
+# shellcheck disable=SC2086
+${timeout_runtime-} "${timeout_helper}" -k 1s 3s \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -lauto -g "${input_loop0}" \
+    -o /dev/null >/dev/null 2>&1 || rc=$?
+
+test "${rc}" -eq 124 || {
+    echo "not ok" 1 - "loop auto treats NETSCAPE loop0 as unbounded watchdog mismatch"
+    exit 0
+}
 
 echo "ok" 1 - "loop auto treats NETSCAPE loop0 as unbounded"
 
