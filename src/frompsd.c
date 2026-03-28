@@ -983,7 +983,7 @@ sixel_builtin_psd_decode_layer_channel_8bit(
         return -1;
     }
     row_bytes = (size_t)width;
-    if ((size_t)height > SIZE_MAX / 2u) {
+    if (payload_length / 2u < (size_t)height) {
         return 0;
     }
     row_table_bytes = (size_t)height * 2u;
