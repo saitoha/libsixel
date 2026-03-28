@@ -70,6 +70,23 @@ def generate(out_dir: pathlib.Path) -> None:
     write_u16be(rgb1, 24, 3)  # RGB mode
     write_file(out_dir / "stbi_minimal_rgb1bit_raw.psd", bytes(rgb1))
 
+    # Unsupported: Bitmap mode must use depth=1.
+    bitmap8 = bytearray(base)
+    write_u16be(bitmap8, 22, 8)  # depth
+    write_u16be(bitmap8, 24, 0)  # Bitmap mode
+    write_file(out_dir / "stbi_minimal_bitmap8_raw.psd", bytes(bitmap8))
+
+    # Unsupported: Grayscale/Duotone mode depth=1 exercises %s trace path.
+    gray1 = bytearray(base)
+    write_u16be(gray1, 22, 1)  # depth
+    write_u16be(gray1, 24, 1)  # Grayscale mode
+    write_file(out_dir / "stbi_minimal_gray1bit_raw.psd", bytes(gray1))
+
+    duotone1 = bytearray(base)
+    write_u16be(duotone1, 22, 1)  # depth
+    write_u16be(duotone1, 24, 8)  # Duotone mode
+    write_file(out_dir / "stbi_minimal_duotone1bit_raw.psd", bytes(duotone1))
+
     # Unsupported: Indexed depth must be 8 in PSD.
     indexed16 = bytearray(base)
     write_u16be(indexed16, 22, 16)  # depth
@@ -80,6 +97,25 @@ def generate(out_dir: pathlib.Path) -> None:
     mode6 = bytearray(base)
     write_u16be(mode6, 24, 6)
     write_file(out_dir / "stbi_minimal_colormode6_raw.psd", bytes(mode6))
+
+    # Malformed: channel count below mode-specific minima.
+    rgb_channels2 = bytearray(base)
+    write_u16be(rgb_channels2, 12, 2)
+    write_u16be(rgb_channels2, 24, 3)  # RGB mode (requires >=3)
+    write_file(out_dir / "stbi_minimal_rgb_channels2_raw.psd", bytes(rgb_channels2))
+
+    cmyk_channels3 = bytearray(base)
+    write_u16be(cmyk_channels3, 12, 3)
+    write_u16be(cmyk_channels3, 24, 4)  # CMYK mode (requires >=4)
+    write_file(
+        out_dir / "stbi_minimal_cmyk_channels3_raw.psd",
+        bytes(cmyk_channels3),
+    )
+
+    lab_channels2 = bytearray(base)
+    write_u16be(lab_channels2, 12, 2)
+    write_u16be(lab_channels2, 24, 9)  # Lab mode (requires >=3)
+    write_file(out_dir / "stbi_minimal_lab_channels2_raw.psd", bytes(lab_channels2))
 
     # Malformed: no image data and no layer records.
     no_image = bytearray(base)
@@ -99,6 +135,17 @@ def generate(out_dir: pathlib.Path) -> None:
     write_file(
         out_dir / "stbi_minimal_missing_image_data_badlayer.psd",
         bytes(bad_layer),
+    )
+
+    # Unsupported: missing composite image for non-RGB8 mode.
+    missing_composite_base = (
+        out_dir / "stbi_minimal_missing_composite_rgb.psd"
+    ).read_bytes()
+    missing_composite_gray = bytearray(missing_composite_base)
+    write_u16be(missing_composite_gray, 24, 1)
+    write_file(
+        out_dir / "stbi_minimal_missing_composite_gray.psd",
+        bytes(missing_composite_gray),
     )
 
     # Layer-fallback policy fixtures (based on the single-layer RGB8 baseline).

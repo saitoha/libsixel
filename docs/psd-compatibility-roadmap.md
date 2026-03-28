@@ -66,6 +66,16 @@ Key points used by this roadmap:
   32-bit decode matrix coverage (RGB/Gray/CMYK/Lab), explicit unsupported
   traces (Bitmap ZIP+Prediction, 32-bit RLE, CMYK16/Lab16), and ZIP+Prediction
   ICC trace coverage (`RGB+alpha+--bgcolor`, Lab skip, CMYK bad-ICC failure).
+- Validation trace coverage includes:
+  - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
+  - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
+  - positive trace for missing merged/composite image policy.
+- Defensive validate branches are split by reachability:
+  - unit-tested directly: `malformed header/metadata`,
+    `malformed image data offset` (plus `dimensions/depth overflow` on 32-bit),
+  - documented as policy-bounded defensive guards:
+    `raw plane size overflow`, `RLE row table overflow`
+    (current `channels<=56`, `dimension<=300000` bounds make them unreachable).
 - Alpha/background policy (implemented):
   - `--bgcolor` specified: decode path composites against background and does
     not emit a transparent mask.
@@ -187,10 +197,10 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Keep unsupported-policy matrix synchronized as new decode scope changes:
-   every policy rejection must have deterministic trace coverage.
-2. Add user-facing docs (`README`/changelog) that clearly separate:
-   supported combinations, policy-based unsupported combinations, and malformed
-   input diagnostics.
-3. Keep PSB (`8BPB`) out of scope for this milestone, but document boundary and
-   migration plan from PSD parser/decoder primitives.
+1. Keep unsupported-policy matrix synchronized as decode scope changes:
+   every policy rejection path must keep deterministic trace coverage.
+2. Keep defensive-branch policy explicit:
+   unit-test directly reachable validate guards, and document
+   policy-bounded guards as defensive-only.
+3. Keep PSB (`8BPB`) out of scope for this milestone, but maintain a migration
+   boundary from PSD parser/decoder primitives.
