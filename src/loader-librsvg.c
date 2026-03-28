@@ -602,6 +602,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
                                                        ".svgz")));
 
     if (use_source_file) {
+        sixel_trace_topic_message("loader", "librsvg: decode_mode=file");
         handle = rsvg_handle_new_from_file(chunk->source_path, &gerror);
         if (handle == NULL) {
             librsvg_set_error_message(
@@ -613,6 +614,8 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     } else {
         if (input_is_svgz) {
             if (!allow_stdin_svgz) {
+                sixel_trace_topic_message("loader",
+                                          "librsvg: decode_mode=stdin_svgz_rejected");
                 sixel_helper_set_additional_message(
                     "librsvg_render_to_frame: gzip-compressed SVG (.svgz) "
                     "requires file-path decode, prior decompression, or "
@@ -621,6 +624,8 @@ librsvg_render_to_frame(sixel_frame_t *frame,
                 goto end;
             }
 
+            sixel_trace_topic_message("loader",
+                                      "librsvg: decode_mode=stdin_svgz_tempfile");
             status = librsvg_write_chunk_to_temp_svgz(chunk,
                                                       &stdin_svgz_temp_path);
             if (SIXEL_FAILED(status)) {
@@ -636,6 +641,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
                 goto end;
             }
         } else {
+            sixel_trace_topic_message("loader", "librsvg: decode_mode=data");
             handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
             if (handle == NULL) {
                 librsvg_set_error_message(
