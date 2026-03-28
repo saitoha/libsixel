@@ -1054,31 +1054,6 @@ librsvg_new_handle_from_data(unsigned char const *buffer,
 }
 
 static SIXELSTATUS
-librsvg_open_handle_from_source_file(sixel_chunk_t const *chunk,
-                                     RsvgHandle **handle_out)
-{
-    if (chunk == NULL || handle_out == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    return librsvg_new_handle_from_file(chunk->source_path,
-                                        LIBRSVG_CONTEXT_PARSE_FILE,
-                                        handle_out);
-}
-
-static SIXELSTATUS
-librsvg_open_handle_from_data_chunk(sixel_chunk_t const *chunk,
-                                    RsvgHandle **handle_out)
-{
-    if (chunk == NULL || handle_out == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    return librsvg_new_handle_from_data(chunk->buffer,
-                                        chunk->size,
-                                        LIBRSVG_CONTEXT_PARSE_DATA,
-                                        handle_out);
-}
-
-static SIXELSTATUS
 librsvg_open_handle_from_stdin_svgz_tempfile(sixel_chunk_t const *chunk,
                                              RsvgHandle **handle_out,
                                              char **temp_path_out)
@@ -1114,8 +1089,9 @@ librsvg_open_result_from_source_file(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result)
 {
-    return librsvg_open_handle_from_source_file(chunk,
-                                                &open_result->handle);
+    return librsvg_new_handle_from_file(chunk->source_path,
+                                        LIBRSVG_CONTEXT_PARSE_FILE,
+                                        &open_result->handle);
 }
 
 static SIXELSTATUS
@@ -1123,8 +1099,10 @@ librsvg_open_result_from_data_chunk(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result)
 {
-    return librsvg_open_handle_from_data_chunk(chunk,
-                                               &open_result->handle);
+    return librsvg_new_handle_from_data(chunk->buffer,
+                                        chunk->size,
+                                        LIBRSVG_CONTEXT_PARSE_DATA,
+                                        &open_result->handle);
 }
 
 static SIXELSTATUS
