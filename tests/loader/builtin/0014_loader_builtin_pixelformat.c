@@ -2026,7 +2026,7 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    result = run_loader_component_case_with_options_ex(
+    result = run_loader_component_case_with_options_mask_ex(
         "builtin loader psd rgb8 alpha no-bgcolor keeps rgb888",
         "/tests/data/inputs/formats/snake16_rgb8_alpha.psd",
         SIXEL_PIXELFORMAT_RGB888,
@@ -2036,6 +2036,8 @@ run_builtin_loader_test(void)
         -1,
         0,
         1,
+        1,
+        1,
         0,
         256,
         NULL,
@@ -2044,7 +2046,7 @@ run_builtin_loader_test(void)
         return result;
     }
 
-    result = run_loader_component_case_with_options_ex(
+    result = run_loader_component_case_with_options_mask_ex(
         "builtin loader psd rgb8 alpha with-bgcolor keeps rgb888",
         "/tests/data/inputs/formats/snake16_rgb8_alpha.psd",
         SIXEL_PIXELFORMAT_RGB888,
@@ -2052,6 +2054,8 @@ run_builtin_loader_test(void)
         GEOMETRY_ANY,
         1,
         -1,
+        0,
+        0,
         0,
         1,
         0,

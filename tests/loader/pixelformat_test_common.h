@@ -17,6 +17,7 @@
 
 #include "src/allocator.h"
 #include "src/chunk.h"
+#include "src/frame.h"
 #include "src/loader-factory.h"
 #include "src/status.h"
 #include "src/loader-component.h"
@@ -54,6 +55,9 @@ typedef struct loader_probe_context {
     int height;
     int transparent;
     int multiframe;
+    int alpha_zero_is_transparent;
+    int has_transparent_mask;
+    size_t transparent_mask_size;
 } loader_probe_context_t;
 
 /*
@@ -73,6 +77,8 @@ typedef struct loader_probe_callback_state {
 #define CALLBACK_COUNT_ANY (-1)
 #define FRAME_METADATA_ANY INT_MIN
 #define FRAME_TRANSPARENT_NONNEG (INT_MIN + 1)
+#define FRAME_MASK_ANY INT_MIN
+#define FRAME_ALPHA_ZERO_ANY INT_MIN
 #define SIXEL_TEST_SKIP 77
 
 static SIXEL_TEST_UNUSED SIXELSTATUS
@@ -88,6 +94,9 @@ capture_frame(sixel_frame_t *frame, void *data)
     context->height = sixel_frame_get_height(frame);
     context->transparent = sixel_frame_get_transparent(frame);
     context->multiframe = sixel_frame_get_multiframe(frame);
+    context->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    context->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
+    context->transparent_mask_size = frame->transparent_mask_size;
 
     return SIXEL_OK;
 }
@@ -221,6 +230,9 @@ run_loader_case_with_options(char const *label,
     context.height = 0;
     context.transparent = FRAME_METADATA_ANY;
     context.multiframe = FRAME_METADATA_ANY;
+    context.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    context.has_transparent_mask = FRAME_MASK_ANY;
+    context.transparent_mask_size = 0u;
     callback_state.loader = NULL;
     callback_state.fn = capture_frame;
     callback_state.context = &context;
@@ -324,7 +336,7 @@ create_loader_component_by_name(char const *name,
 }
 
 static SIXEL_TEST_UNUSED int
-run_loader_component_case_with_options_ex(
+run_loader_component_case_with_options_full(
     char const *label,
     char const *relative_path,
     int expected_pixelformat,
@@ -333,6 +345,8 @@ run_loader_component_case_with_options_ex(
     int expected_callback_count,
     int expected_transparent,
     int expected_multiframe,
+    int expected_mask_present,
+    int expected_alpha_zero_is_transparent,
     int require_static,
     int use_palette,
     int reqcolors,
@@ -424,6 +438,9 @@ run_loader_component_case_with_options_ex(
     context.height = 0;
     context.transparent = FRAME_METADATA_ANY;
     context.multiframe = FRAME_METADATA_ANY;
+    context.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    context.has_transparent_mask = FRAME_MASK_ANY;
+    context.transparent_mask_size = 0u;
     callback_state.loader = NULL;
     callback_state.fn = capture_frame;
     callback_state.context = &context;
@@ -533,6 +550,27 @@ run_loader_component_case_with_options_ex(
                 expected_multiframe);
         goto cleanup;
     }
+    if (expected_mask_present != FRAME_MASK_ANY &&
+        context.has_transparent_mask != expected_mask_present) {
+        fprintf(stderr,
+                "%s: transparent mask presence mismatch "
+                "(%d expected=%d)\n",
+                label,
+                context.has_transparent_mask,
+                expected_mask_present);
+        goto cleanup;
+    }
+    if (expected_alpha_zero_is_transparent != FRAME_ALPHA_ZERO_ANY &&
+        context.alpha_zero_is_transparent
+            != expected_alpha_zero_is_transparent) {
+        fprintf(stderr,
+                "%s: alpha_zero_is_transparent mismatch "
+                "(%d expected=%d)\n",
+                label,
+                context.alpha_zero_is_transparent,
+                expected_alpha_zero_is_transparent);
+        goto cleanup;
+    }
 
     result = 0;
 
@@ -545,6 +583,76 @@ cleanup:
 #endif
 
     return result;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_with_options_ex(
+    char const *label,
+    char const *relative_path,
+    int expected_pixelformat,
+    int expected_width,
+    int expected_height,
+    int expected_callback_count,
+    int expected_transparent,
+    int expected_multiframe,
+    int require_static,
+    int use_palette,
+    int reqcolors,
+    unsigned char const *bgcolor,
+    loader_component_new_fn new_component)
+{
+    return run_loader_component_case_with_options_full(
+        label,
+        relative_path,
+        expected_pixelformat,
+        expected_width,
+        expected_height,
+        expected_callback_count,
+        expected_transparent,
+        expected_multiframe,
+        FRAME_MASK_ANY,
+        FRAME_ALPHA_ZERO_ANY,
+        require_static,
+        use_palette,
+        reqcolors,
+        bgcolor,
+        new_component);
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_with_options_mask_ex(
+    char const *label,
+    char const *relative_path,
+    int expected_pixelformat,
+    int expected_width,
+    int expected_height,
+    int expected_callback_count,
+    int expected_transparent,
+    int expected_multiframe,
+    int expected_mask_present,
+    int expected_alpha_zero_is_transparent,
+    int require_static,
+    int use_palette,
+    int reqcolors,
+    unsigned char const *bgcolor,
+    loader_component_new_fn new_component)
+{
+    return run_loader_component_case_with_options_full(
+        label,
+        relative_path,
+        expected_pixelformat,
+        expected_width,
+        expected_height,
+        expected_callback_count,
+        expected_transparent,
+        expected_multiframe,
+        expected_mask_present,
+        expected_alpha_zero_is_transparent,
+        require_static,
+        use_palette,
+        reqcolors,
+        bgcolor,
+        new_component);
 }
 
 static SIXEL_TEST_UNUSED int
