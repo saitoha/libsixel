@@ -1030,7 +1030,6 @@ load_webp(unsigned char **result,
     int cms_converted;
     char const *force_rgb_env;
     int force_rgb_decode;
-    char const *lossy_path;
     size_t stride;
     size_t size;
     VP8StatusCode feature_status;
@@ -1041,7 +1040,6 @@ load_webp(unsigned char **result,
     cms_converted = 0;
     force_rgb_env = NULL;
     force_rgb_decode = 0;
-    lossy_path = NULL;
     feature_status = VP8_STATUS_OK;
     memset(error_message, 0, sizeof(error_message));
     use_known_features = 0;
@@ -1097,12 +1095,11 @@ load_webp(unsigned char **result,
 
     if (features.format == 1 && !force_rgb_decode &&
         !(features.has_alpha && bgcolor == NULL)) {
-        lossy_path = features.has_alpha ? "lossy_yuva" : "lossy_yuv";
         sixel_trace_topic_message(
             "webp_decode",
             "static decode path=%s width=%d height=%d has_alpha=%d "
             "has_bgcolor=%d force_rgb=%d",
-            lossy_path,
+            features.has_alpha ? "lossy_yuva" : "lossy_yuv",
             *pwidth,
             *pheight,
             features.has_alpha,
