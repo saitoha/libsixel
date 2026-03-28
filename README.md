@@ -1010,6 +1010,14 @@ Builtin PSD transparency summary:
 Embedded ICC conversion on PSD applies to RGB color data only; the transparent
 mask remains unchanged.
 
+Builtin PSD missing merged/composite image policy:
+
+| Condition | Behavior |
+| --- | --- |
+| layer-only PSD with single full-canvas RGB 8-bit layer | decode via minimal layer fallback |
+| layer-only PSD outside fallback layout constraints | deterministic unsupported (`builtin PSD: unsupported layer fallback layout`) |
+| composite image payload exists but raw/RLE/ZIP stream is truncated | deterministic malformed decode error (not treated as layer-only fallback) |
+
 When running under GNOME or other desktops that implement the FreeDesktop.org
 Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
 `img2sixel` inspects the installed `.thumbnailer` definitions located in
