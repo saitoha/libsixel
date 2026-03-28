@@ -132,6 +132,11 @@ typedef struct sixel_librsvg_surface_convert_plan {
     size_t buffer_size;
 } sixel_librsvg_surface_convert_plan_t;
 
+typedef RsvgHandle *(*sixel_librsvg_handle_builder_t)(
+    void const *source,
+    size_t size,
+    GError **gerror);
+
 typedef SIXELSTATUS (*sixel_librsvg_open_result_fn_t)(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result);
@@ -948,10 +953,43 @@ librsvg_pick_decode_mode(sixel_chunk_t const *chunk,
     return SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE;
 }
 
+static RsvgHandle *
+librsvg_build_handle_from_file_source(void const *source,
+                                      size_t size,
+                                      GError **gerror)
+{
+    char const *path;
+
+    (void)size;
+    path = NULL;
+    if (source == NULL) {
+        return NULL;
+    }
+    path = (char const *)source;
+    return rsvg_handle_new_from_file(path, gerror);
+}
+
+static RsvgHandle *
+librsvg_build_handle_from_data_source(void const *source,
+                                      size_t size,
+                                      GError **gerror)
+{
+    unsigned char const *buffer;
+
+    buffer = NULL;
+    if (source == NULL) {
+        return NULL;
+    }
+    buffer = (unsigned char const *)source;
+    return rsvg_handle_new_from_data(buffer, size, gerror);
+}
+
 static SIXELSTATUS
-librsvg_new_handle_from_file(char const *path,
-                             char const *context,
-                             RsvgHandle **handle_out)
+librsvg_new_handle_common(void const *source,
+                          size_t size,
+                          char const *context,
+                          RsvgHandle **handle_out,
+                          sixel_librsvg_handle_builder_t builder)
 {
     SIXELSTATUS status;
     GError *gerror;
@@ -959,12 +997,15 @@ librsvg_new_handle_from_file(char const *path,
 
     gerror = NULL;
     handle = NULL;
-    if (path == NULL || context == NULL || handle_out == NULL) {
+    if (source == NULL ||
+            context == NULL ||
+            handle_out == NULL ||
+            builder == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *handle_out = NULL;
 
-    handle = rsvg_handle_new_from_file(path, &gerror);
+    handle = builder(source, size, &gerror);
     if (handle != NULL) {
         *handle_out = handle;
         handle = NULL;
@@ -979,37 +1020,37 @@ librsvg_new_handle_from_file(char const *path,
 }
 
 static SIXELSTATUS
+librsvg_new_handle_from_file(char const *path,
+                             char const *context,
+                             RsvgHandle **handle_out)
+{
+    if (path == NULL || context == NULL || handle_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return librsvg_new_handle_common(path,
+                                     0u,
+                                     context,
+                                     handle_out,
+                                     librsvg_build_handle_from_file_source);
+}
+
+static SIXELSTATUS
 librsvg_new_handle_from_data(unsigned char const *buffer,
                              size_t size,
                              char const *context,
                              RsvgHandle **handle_out)
 {
-    SIXELSTATUS status;
-    GError *gerror;
-    RsvgHandle *handle;
-
-    gerror = NULL;
-    handle = NULL;
     if (buffer == NULL ||
             size == 0u ||
             context == NULL ||
             handle_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    *handle_out = NULL;
-
-    handle = rsvg_handle_new_from_data(buffer, size, &gerror);
-    if (handle != NULL) {
-        *handle_out = handle;
-        handle = NULL;
-        status = SIXEL_OK;
-    } else {
-        status = librsvg_fail_with_gerror(SIXEL_BAD_INPUT, context, gerror);
-    }
-    librsvg_unref_handle(&handle);
-    librsvg_free_gerror(&gerror);
-
-    return status;
+    return librsvg_new_handle_common(buffer,
+                                     size,
+                                     context,
+                                     handle_out,
+                                     librsvg_build_handle_from_data_source);
 }
 
 static SIXELSTATUS
