@@ -1655,6 +1655,37 @@ librsvg_commit_frame_pixels(sixel_frame_t *frame,
     sixel_frame_set_pixels(frame, pixels);
 }
 
+/*
+ * Expose cairo image bytes and stride for pixel unpacking.
+ */
+static SIXELSTATUS
+librsvg_get_surface_data(cairo_surface_t *surface,
+                         unsigned char const **row_out,
+                         size_t *row_stride_out)
+{
+    unsigned char const *row;
+    size_t row_stride;
+
+    row = NULL;
+    row_stride = 0u;
+    if (surface == NULL || row_out == NULL || row_stride_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    cairo_surface_flush(surface);
+    row = cairo_image_surface_get_data(surface);
+    row_stride = (size_t)cairo_image_surface_get_stride(surface);
+    if (row == NULL || row_stride == 0u) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: cairo surface access failed.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    *row_out = row;
+    *row_stride_out = row_stride;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
                                         sixel_allocator_t *allocator,
@@ -1683,16 +1714,12 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     if (frame->width <= 0 || frame->height <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
-    cairo_surface_flush(surface);
-    row = cairo_image_surface_get_data(surface);
-    row_stride = (size_t)cairo_image_surface_get_stride(surface);
-    if (row == NULL || row_stride == 0u) {
-        sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: cairo surface access failed.");
-        return SIXEL_BAD_INPUT;
+    status = librsvg_get_surface_data(surface, &row, &row_stride);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_build_surface_convert_plan(bgcolor,
+                                                    pixel_total,
+                                                    &plan);
     }
-
-    status = librsvg_build_surface_convert_plan(bgcolor, pixel_total, &plan);
     if (SIXEL_SUCCEEDED(status)) {
         pixels = (unsigned char *)sixel_allocator_malloc(
             allocator,
@@ -1760,7 +1787,7 @@ librsvg_prepare_frame_surface(sixel_frame_t const *frame,
 }
 
 static SIXELSTATUS
-librsvg_prepare_render_context(
+librsvg_open_and_prepare_frame_geometry(
     sixel_frame_t *frame,
     sixel_librsvg_render_request_t const *request,
     sixel_librsvg_render_context_t *render_ctx)
@@ -1783,6 +1810,29 @@ librsvg_prepare_render_context(
                                                 render_ctx->open_result.handle,
                                                 &render_ctx->pixel_total);
     }
+
+    return status;
+}
+
+static SIXELSTATUS
+librsvg_prepare_render_context(
+    sixel_frame_t *frame,
+    sixel_librsvg_render_request_t const *request,
+    sixel_librsvg_render_context_t *render_ctx)
+{
+    SIXELSTATUS status;
+
+    if (frame == NULL ||
+            request == NULL ||
+            request->chunk == NULL ||
+            request->policy == NULL ||
+            render_ctx == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = librsvg_open_and_prepare_frame_geometry(frame,
+                                                     request,
+                                                     render_ctx);
     if (SIXEL_SUCCEEDED(status)) {
         status = librsvg_prepare_frame_surface(frame,
                                                request->bgcolor,
