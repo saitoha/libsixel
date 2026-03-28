@@ -1852,6 +1852,26 @@ gif_validate_canvas_requirements(gif_t *g, size_t *pcount_out)
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+gif_reload_header_and_validate_canvas(gif_context_t *s,
+                                      gif_t *g,
+                                      size_t *pcount)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (s == NULL || g == NULL || pcount == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    g->loop_count = -1;
+    status = gif_load_header(s, g);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    return gif_validate_canvas_requirements(g, pcount);
+}
+
 static void
 gif_reset_canvas_for_loop(gif_t *g, size_t pcount)
 {
@@ -2181,13 +2201,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
         ? 1 : 0;
     g->preserve_transparency = preserve_transparency;
     g->delay = SIXEL_DEFALUT_GIF_DELAY;
-    g->loop_count = -1;
-    status = gif_load_header(s, g);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = gif_validate_canvas_requirements(g, &pcount);
+    status = gif_reload_header_and_validate_canvas(s, g, &pcount);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2339,13 +2353,7 @@ gif_prepare_loop_iteration(gif_context_t *s,
     progress->stop_decode = 0;
 
     s->img_buffer = s->img_buffer_original;
-    g->loop_count = -1;
-    status = gif_load_header(s, g);
-    if (status != SIXEL_OK) {
-        return status;
-    }
-
-    status = gif_validate_canvas_requirements(g, pcount);
+    status = gif_reload_header_and_validate_canvas(s, g, pcount);
     if (status != SIXEL_OK) {
         return status;
     }
