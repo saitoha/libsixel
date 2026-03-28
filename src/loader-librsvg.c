@@ -828,15 +828,52 @@ librsvg_dispose_temp_path(char **path)
     *path = NULL;
 }
 
+/*
+ * Create a temporary .svgz file path and keep the descriptor open so callers
+ * can stream data before closing.
+ */
 static SIXELSTATUS
-librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
+librsvg_open_temp_svgz_file(int *fd_out, char **path_out)
 {
-    SIXELSTATUS status;
     GError *gerror;
     int fd;
     char *path;
 
     gerror = NULL;
+    fd = (-1);
+    path = NULL;
+    if (fd_out == NULL || path_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *fd_out = (-1);
+    *path_out = NULL;
+
+    fd = g_file_open_tmp("libsixel-librsvg-XXXXXX.svgz", &path, &gerror);
+    if (fd < 0 || path == NULL) {
+        librsvg_set_error_message(
+            "librsvg_write_chunk_to_temp_svgz: g_file_open_tmp failed.",
+            gerror);
+        if (fd >= 0) {
+            (void)sixel_compat_close(fd);
+        }
+        librsvg_dispose_temp_path(&path);
+        librsvg_free_gerror(&gerror);
+        return SIXEL_LIBC_ERROR;
+    }
+
+    *fd_out = fd;
+    *path_out = path;
+    librsvg_free_gerror(&gerror);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
+{
+    SIXELSTATUS status;
+    int fd;
+    char *path;
+
     fd = (-1);
     path = NULL;
     if (chunk == NULL || path_out == NULL) {
@@ -849,29 +886,24 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = SIXEL_LIBC_ERROR;
-    fd = g_file_open_tmp("libsixel-librsvg-XXXXXX.svgz", &path, &gerror);
-    if (fd < 0 || path == NULL) {
-        librsvg_set_error_message(
-            "librsvg_write_chunk_to_temp_svgz: g_file_open_tmp failed.",
-            gerror);
+    status = librsvg_open_temp_svgz_file(&fd, &path);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
-    if (fd >= 0 && path != NULL) {
-        status = librsvg_write_buffer_to_fd(fd, chunk->buffer, chunk->size);
-        if (SIXEL_SUCCEEDED(status)) {
-            status = librsvg_close_temp_svgz_fd(&fd);
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            *path_out = path;
-            path = NULL;
-            status = SIXEL_OK;
-        }
+
+    status = librsvg_write_buffer_to_fd(fd, chunk->buffer, chunk->size);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_close_temp_svgz_fd(&fd);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        *path_out = path;
+        path = NULL;
+        status = SIXEL_OK;
     }
     if (fd >= 0) {
         (void)sixel_compat_close(fd);
     }
     librsvg_dispose_temp_path(&path);
-    librsvg_free_gerror(&gerror);
 
     return status;
 }
@@ -1409,9 +1441,7 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
     if (cairo_stat != CAIRO_STATUS_SUCCESS) {
         sixel_helper_set_additional_message(
             "librsvg_render_to_frame: cairo_image_surface_create failed.");
-        if (surface != NULL) {
-            cairo_surface_destroy(surface);
-        }
+        librsvg_destroy_cairo_surface(&surface);
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -1420,10 +1450,8 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
     if (cairo_stat != CAIRO_STATUS_SUCCESS) {
         sixel_helper_set_additional_message(
             "librsvg_render_to_frame: cairo_create failed.");
-        if (cr != NULL) {
-            cairo_destroy(cr);
-        }
-        cairo_surface_destroy(surface);
+        librsvg_destroy_cairo_context(&cr);
+        librsvg_destroy_cairo_surface(&surface);
         return SIXEL_BAD_ALLOCATION;
     }
 
