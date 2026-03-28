@@ -745,9 +745,12 @@ def generate(out_dir: pathlib.Path):
         ),
     )
 
-    # Stress fixture: RGB with 16 channels (first 3 used for color).
+    # Stress fixture: RGB with 16 channels.
+    # The first extra channel is forced opaque so boundary-policy tests stay
+    # stable even if decoders treat it as transparency.
     extra_channel = gray8_plane
-    channels16_planes = rgb8_planes + [extra_channel] * 13
+    opaque_alpha_plane = b"\xff" * len(gray8_plane)
+    channels16_planes = rgb8_planes + [opaque_alpha_plane] + [extra_channel] * 12
     write_file(
         out_dir / "snake16_channels16_rgb.psd",
         build_psd_bytes(
