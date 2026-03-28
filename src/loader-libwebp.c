@@ -99,6 +99,7 @@ typedef struct webp_animation_decode_control {
 #define WEBP_MAX_ANIMATION_FRAMES 65535
 #define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
 #define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)1048576u)
+#define WEBP_VP8X_FLAG_ANIMATION  0x02u
 
 static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
@@ -242,6 +243,10 @@ webp_validate_riff_container(unsigned char const *data,
     int saw_chunk;
     unsigned char const *chunk_tag;
     size_t animation_frame_count;
+    int saw_vp8x;
+    unsigned char vp8x_flags;
+    int saw_anim_chunk;
+    int saw_anmf_chunk;
 
     riff_size = 0u;
     riff_total_size = 0u;
@@ -252,6 +257,10 @@ webp_validate_riff_container(unsigned char const *data,
     saw_chunk = 0;
     chunk_tag = NULL;
     animation_frame_count = 0u;
+    saw_vp8x = 0;
+    vp8x_flags = 0u;
+    saw_anim_chunk = 0;
+    saw_anmf_chunk = 0;
 
     if (data == NULL || size < 12u) {
         sixel_helper_set_additional_message(
@@ -308,10 +317,22 @@ webp_validate_riff_container(unsigned char const *data,
                 "webp decode: VP8X chunk size is invalid.");
             return SIXEL_BAD_INPUT;
         }
+        if (memcmp(chunk_tag, "VP8X", 4u) == 0) {
+            if (saw_vp8x) {
+                sixel_helper_set_additional_message(
+                    "webp decode: duplicate VP8X chunk is invalid.");
+                return SIXEL_BAD_INPUT;
+            }
+            saw_vp8x = 1;
+            vp8x_flags = data[offset + 8u];
+        }
         if (memcmp(chunk_tag, "ANIM", 4u) == 0 && chunk_size != 6u) {
             sixel_helper_set_additional_message(
                 "webp decode: ANIM chunk size is invalid.");
             return SIXEL_BAD_INPUT;
+        }
+        if (memcmp(chunk_tag, "ANIM", 4u) == 0) {
+            saw_anim_chunk = 1;
         }
         if (memcmp(chunk_tag, "ANMF", 4u) == 0 && chunk_size < 16u) {
             sixel_helper_set_additional_message(
@@ -319,6 +340,12 @@ webp_validate_riff_container(unsigned char const *data,
             return SIXEL_BAD_INPUT;
         }
         if (memcmp(chunk_tag, "ANMF", 4u) == 0) {
+            if (!saw_anim_chunk) {
+                sixel_helper_set_additional_message(
+                    "webp decode: ANMF chunk requires a preceding ANIM chunk.");
+                return SIXEL_BAD_INPUT;
+            }
+            saw_anmf_chunk = 1;
             if (animation_frame_count == SIZE_MAX) {
                 return SIXEL_BAD_INTEGER_OVERFLOW;
             }
@@ -362,6 +389,24 @@ webp_validate_riff_container(unsigned char const *data,
         sixel_helper_set_additional_message(
             "webp decode: no RIFF chunks found.");
         return SIXEL_BAD_INPUT;
+    }
+    if (saw_anim_chunk && !saw_vp8x) {
+        sixel_helper_set_additional_message(
+            "webp decode: ANIM/ANMF chunks require VP8X animation flag.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (saw_vp8x) {
+        if ((vp8x_flags & WEBP_VP8X_FLAG_ANIMATION) != 0u) {
+            if (!saw_anim_chunk || !saw_anmf_chunk) {
+                sixel_helper_set_additional_message(
+                    "webp decode: VP8X animation flag requires ANIM and ANMF chunks.");
+                return SIXEL_BAD_INPUT;
+            }
+        } else if (saw_anim_chunk || saw_anmf_chunk) {
+            sixel_helper_set_additional_message(
+                "webp decode: ANIM/ANMF chunks require VP8X animation flag.");
+            return SIXEL_BAD_INPUT;
+        }
     }
     if (panimation_frame_count != NULL) {
         *panimation_frame_count = animation_frame_count;
