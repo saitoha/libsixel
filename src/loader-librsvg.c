@@ -997,6 +997,94 @@ end:
 }
 
 static SIXELSTATUS
+librsvg_unpack_surface_pixels(unsigned char *pixels,
+                              unsigned char const *row,
+                              size_t row_stride,
+                              int width,
+                              int height,
+                              int inspect_alpha,
+                              int *has_non_opaque_alpha_out)
+{
+    size_t pixel_index;
+    int x;
+    int y;
+    uint32_t const *src;
+    uint32_t pixel;
+    size_t dst;
+    unsigned int alpha;
+    unsigned int red;
+    unsigned int green;
+    unsigned int blue;
+    int has_non_opaque_alpha;
+
+    pixel_index = 0u;
+    x = 0;
+    y = 0;
+    src = NULL;
+    pixel = 0u;
+    dst = 0u;
+    alpha = 0u;
+    red = 0u;
+    green = 0u;
+    blue = 0u;
+    has_non_opaque_alpha = 0;
+    if (pixels == NULL ||
+            row == NULL ||
+            width <= 0 ||
+            height <= 0 ||
+            has_non_opaque_alpha_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (y = 0; y < height; ++y) {
+        src = (uint32_t const *)(row + (size_t)y * row_stride);
+        for (x = 0; x < width; ++x) {
+            pixel_index = (size_t)y * (size_t)width + (size_t)x;
+            pixel = src[x];
+            alpha = (pixel >> 24) & 0xffu;
+            red = (pixel >> 16) & 0xffu;
+            green = (pixel >> 8) & 0xffu;
+            blue = pixel & 0xffu;
+            if (inspect_alpha) {
+                if (alpha != 255u) {
+                    has_non_opaque_alpha = 1;
+                }
+                dst = pixel_index * 4u;
+                pixels[dst + 0] = librsvg_unpremultiply_channel(red, alpha);
+                pixels[dst + 1] = librsvg_unpremultiply_channel(green, alpha);
+                pixels[dst + 2] = librsvg_unpremultiply_channel(blue, alpha);
+                pixels[dst + 3] = (unsigned char)alpha;
+            } else {
+                dst = pixel_index * 3u;
+                pixels[dst + 0] = (unsigned char)red;
+                pixels[dst + 1] = (unsigned char)green;
+                pixels[dst + 2] = (unsigned char)blue;
+            }
+        }
+    }
+
+    *has_non_opaque_alpha_out = has_non_opaque_alpha;
+    return SIXEL_OK;
+}
+
+static void
+librsvg_collapse_opaque_rgba_to_rgb(unsigned char *pixels, size_t pixel_total)
+{
+    size_t pixel_index;
+
+    pixel_index = 0u;
+    if (pixels == NULL) {
+        return;
+    }
+
+    for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
+        pixels[pixel_index * 3u + 0u] = pixels[pixel_index * 4u + 0u];
+        pixels[pixel_index * 3u + 1u] = pixels[pixel_index * 4u + 1u];
+        pixels[pixel_index * 3u + 2u] = pixels[pixel_index * 4u + 2u];
+    }
+}
+
+static SIXELSTATUS
 librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
                                         sixel_allocator_t *allocator,
                                         cairo_surface_t *surface,
@@ -1009,16 +1097,6 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     size_t row_stride;
     size_t output_stride;
     size_t buffer_size;
-    size_t pixel_index;
-    int x;
-    int y;
-    uint32_t const *src;
-    uint32_t pixel;
-    size_t dst;
-    unsigned int alpha;
-    unsigned int red;
-    unsigned int green;
-    unsigned int blue;
     int preserve_alpha;
     int inspect_alpha;
     int has_non_opaque_alpha;
@@ -1029,16 +1107,6 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     row_stride = 0u;
     output_stride = 0u;
     buffer_size = 0u;
-    pixel_index = 0u;
-    x = 0;
-    y = 0;
-    src = NULL;
-    pixel = 0u;
-    dst = 0u;
-    alpha = 0u;
-    red = 0u;
-    green = 0u;
-    blue = 0u;
     preserve_alpha = 0;
     inspect_alpha = 0;
     has_non_opaque_alpha = 0;
@@ -1076,31 +1144,15 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
         goto end;
     }
 
-    for (y = 0; y < frame->height; ++y) {
-        src = (uint32_t const *)(row + (size_t)y * row_stride);
-        for (x = 0; x < frame->width; ++x) {
-            pixel_index = (size_t)y * (size_t)frame->width + (size_t)x;
-            pixel = src[x];
-            alpha = (pixel >> 24) & 0xffu;
-            red = (pixel >> 16) & 0xffu;
-            green = (pixel >> 8) & 0xffu;
-            blue = pixel & 0xffu;
-            if (inspect_alpha) {
-                if (alpha != 255u) {
-                    has_non_opaque_alpha = 1;
-                }
-                dst = pixel_index * 4u;
-                pixels[dst + 0] = librsvg_unpremultiply_channel(red, alpha);
-                pixels[dst + 1] = librsvg_unpremultiply_channel(green, alpha);
-                pixels[dst + 2] = librsvg_unpremultiply_channel(blue, alpha);
-                pixels[dst + 3] = (unsigned char)alpha;
-            } else {
-                dst = pixel_index * 3u;
-                pixels[dst + 0] = (unsigned char)red;
-                pixels[dst + 1] = (unsigned char)green;
-                pixels[dst + 2] = (unsigned char)blue;
-            }
-        }
+    status = librsvg_unpack_surface_pixels(pixels,
+                                           row,
+                                           row_stride,
+                                           frame->width,
+                                           frame->height,
+                                           inspect_alpha,
+                                           &has_non_opaque_alpha);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     preserve_alpha = inspect_alpha && has_non_opaque_alpha;
@@ -1109,11 +1161,7 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
          * Keep the single allocated buffer: collapse the temporary RGBA view
          * to RGB when the rendered image is fully opaque.
          */
-        for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
-            pixels[pixel_index * 3u + 0u] = pixels[pixel_index * 4u + 0u];
-            pixels[pixel_index * 3u + 1u] = pixels[pixel_index * 4u + 1u];
-            pixels[pixel_index * 3u + 2u] = pixels[pixel_index * 4u + 2u];
-        }
+        librsvg_collapse_opaque_rgba_to_rgb(pixels, pixel_total);
     }
 
     frame->pixelformat = preserve_alpha
