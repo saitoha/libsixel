@@ -8,6 +8,7 @@
  * - GIF(alpha, palette on, low reqcolors) -> RGBA8888 fallback
  * - GIF(alpha, palette on, low reqcolors + bgcolor) -> RGB888 fallback
  * - GIF(anim without NETSCAPE extension) reports multiframe metadata
+ * - GIF(loop=auto/force) keeps unbounded NETSCAPE loop behavior
  * - HDR(RGBE) -> LINEARRGBFLOAT32
  * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
  * - PSD RGB16/RGB32 callbacks keep float precision (RGBFLOAT32)
@@ -92,6 +93,16 @@ typedef struct hdr_numeric_probe_context {
     float first_pixel[3];
 } hdr_numeric_probe_context_t;
 
+typedef struct gif_loop_probe_context {
+    int callback_count;
+    int max_callbacks;
+    int required_loop_no;
+    int highest_loop_no;
+    int highest_frame_no;
+    int saw_multiframe;
+    int reached_required_loop;
+} gif_loop_probe_context_t;
+
 typedef enum hdr_test_gamma_mode {
     HDR_TEST_GAMMA_NONE = 0,
     HDR_TEST_GAMMA_22
@@ -161,6 +172,49 @@ capture_hdr_numeric_probe(sixel_frame_t *frame, void *data)
     context->first_pixel[0] = pixels[0];
     context->first_pixel[1] = pixels[1];
     context->first_pixel[2] = pixels[2];
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+capture_gif_loop_probe_until_target(sixel_frame_t *frame, void *data)
+{
+    gif_loop_probe_context_t *context;
+    int loop_no;
+    int frame_no;
+
+    context = (gif_loop_probe_context_t *)data;
+    loop_no = 0;
+    frame_no = 0;
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * Force-loop cases are intentionally unbounded, so this callback ends the
+     * decode by returning SIXEL_INTERRUPTED once the required loop number is
+     * observed. The max-callback guard prevents runaway decode on regressions.
+     */
+    context->callback_count += 1;
+    loop_no = sixel_frame_get_loop_no(frame);
+    frame_no = sixel_frame_get_frame_no(frame);
+    if (loop_no > context->highest_loop_no) {
+        context->highest_loop_no = loop_no;
+    }
+    if (frame_no > context->highest_frame_no) {
+        context->highest_frame_no = frame_no;
+    }
+    if (sixel_frame_get_multiframe(frame) != 0) {
+        context->saw_multiframe = 1;
+    }
+
+    if (loop_no >= context->required_loop_no) {
+        context->reached_required_loop = 1;
+        return SIXEL_INTERRUPTED;
+    }
+    if (context->callback_count >= context->max_callbacks) {
+        return SIXEL_INTERRUPTED;
+    }
 
     return SIXEL_OK;
 }
@@ -1997,6 +2051,182 @@ run_builtin_loader_hdr_invalid_exposure_numeric_test(void)
 }
 
 static int
+run_builtin_loader_gif_unbounded_loop_probe_test(
+    char const *label,
+    char const *relative_path,
+    int loop_control,
+    int required_loop_no)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
+    loader_probe_callback_state_t callback_state;
+    gif_loop_probe_context_t probe;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    component = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    require_static = 0;
+    use_palette = 1;
+    reqcolors = 256;
+    memset(&probe, 0, sizeof(probe));
+
+    if (label == NULL || relative_path == NULL || required_loop_no < 0) {
+        return 1;
+    }
+
+    source_root = resolve_source_root_for_pixelformat_test();
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    status = new_builtin_component_for_pixelformat_test(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                           &loop_control);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    probe.callback_count = 0;
+    /* Keep probe bounded while still allowing several full animation loops. */
+    probe.max_callbacks = 64;
+    probe.required_loop_no = required_loop_no;
+    probe.highest_loop_no = -1;
+    probe.highest_frame_no = -1;
+    probe.saw_multiframe = 0;
+    probe.reached_required_loop = 0;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_gif_loop_probe_until_target;
+    callback_state.context = &probe;
+
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (status != SIXEL_INTERRUPTED) {
+        fprintf(stderr,
+                "%s: expected interruption status, got %d\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+    if (probe.reached_required_loop == 0) {
+        fprintf(stderr,
+                "%s: loop threshold was not reached "
+                "(required=%d highest=%d callbacks=%d)\n",
+                label,
+                required_loop_no,
+                probe.highest_loop_no,
+                probe.callback_count);
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (probe.saw_multiframe == 0) {
+        fprintf(stderr, "%s: frame metadata did not mark multiframe\n", label);
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+    return SIXEL_SUCCEEDED(status) ? 0 : 1;
+}
+
+static int
+run_builtin_loader_gif_loop_auto_loop0_unbounded_test(void)
+{
+    return run_builtin_loader_gif_unbounded_loop_probe_test(
+        "builtin gif loop=auto loop0 remains unbounded",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop0.gif",
+        SIXEL_LOOP_AUTO,
+        2);
+}
+
+static int
+run_builtin_loader_gif_loop_force_loop0_unbounded_test(void)
+{
+    return run_builtin_loader_gif_unbounded_loop_probe_test(
+        "builtin gif loop=force loop0 remains unbounded",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop0.gif",
+        SIXEL_LOOP_FORCE,
+        2);
+}
+
+static int
+run_builtin_loader_gif_loop_force_loop1_unbounded_test(void)
+{
+    return run_builtin_loader_gif_unbounded_loop_probe_test(
+        "builtin gif loop=force ignores loop1 and stays unbounded",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop1.gif",
+        SIXEL_LOOP_FORCE,
+        2);
+}
+
+static int
+run_builtin_loader_gif_loop_force_loop2_unbounded_test(void)
+{
+    return run_builtin_loader_gif_unbounded_loop_probe_test(
+        "builtin gif loop=force ignores loop2 and stays unbounded",
+        "/tests/data/inputs/formats/gif-anim-netscape-loop2.gif",
+        SIXEL_LOOP_FORCE,
+        3);
+}
+
+static int
 run_builtin_loader_hdr_exposure_overflow_none_numeric_test(void)
 {
     hdr_numeric_probe_context_t probe;
@@ -2265,6 +2495,10 @@ run_builtin_loader_test(void)
     char const *hdr_mixed_header_exposure_invalid_numeric_mode;
     char const *hdr_invalid_use_header_exposure_env_numeric_mode;
     char const *hdr_duplicate_header_metadata_numeric_mode;
+    char const *gif_loop_auto_loop0_unbounded_mode;
+    char const *gif_loop_force_loop0_unbounded_mode;
+    char const *gif_loop_force_loop1_unbounded_mode;
+    char const *gif_loop_force_loop2_unbounded_mode;
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
@@ -2312,6 +2546,14 @@ run_builtin_loader_test(void)
         "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV");
     hdr_duplicate_header_metadata_numeric_mode = loader_test_getenv(
         "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS");
+    gif_loop_auto_loop0_unbounded_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_AUTO_LOOP0_UNBOUNDED");
+    gif_loop_force_loop0_unbounded_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_FORCE_LOOP0_UNBOUNDED");
+    gif_loop_force_loop1_unbounded_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_FORCE_LOOP1_UNBOUNDED");
+    gif_loop_force_loop2_unbounded_mode = loader_test_getenv(
+        "SIXEL_TEST_GIF_LOOP_FORCE_LOOP2_UNBOUNDED");
     if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_gamma_numeric_test();
     }
@@ -2393,6 +2635,22 @@ run_builtin_loader_test(void)
     if (hdr_duplicate_header_metadata_numeric_mode != NULL &&
         strcmp(hdr_duplicate_header_metadata_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_duplicate_header_metadata_numeric_test();
+    }
+    if (gif_loop_auto_loop0_unbounded_mode != NULL &&
+        strcmp(gif_loop_auto_loop0_unbounded_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_auto_loop0_unbounded_test();
+    }
+    if (gif_loop_force_loop0_unbounded_mode != NULL &&
+        strcmp(gif_loop_force_loop0_unbounded_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_force_loop0_unbounded_test();
+    }
+    if (gif_loop_force_loop1_unbounded_mode != NULL &&
+        strcmp(gif_loop_force_loop1_unbounded_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_force_loop1_unbounded_test();
+    }
+    if (gif_loop_force_loop2_unbounded_mode != NULL &&
+        strcmp(gif_loop_force_loop2_unbounded_mode, "1") == 0) {
+        return run_builtin_loader_gif_loop_force_loop2_unbounded_test();
     }
 
     result = run_loader_component_case("builtin loader rgba8",
