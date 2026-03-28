@@ -1063,6 +1063,14 @@ def generate(out_dir: pathlib.Path):
         color_mode=7,
         variants=["raw", "rle", "zip", "zip_pred"],
     )
+    write_file(
+        out_dir / "snake16_mode7_rgb32_missing_composite_marker.psd",
+        build_psd_missing_composite_marker(
+            channels=3,
+            depth=32,
+            color_mode=7,
+        ),
+    )
     write_variants(
         out_dir,
         "snake16_mode7_cmyk8",
@@ -1088,6 +1096,14 @@ def generate(out_dir: pathlib.Path):
         depth=16,
         color_mode=7,
         variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk16_missing_composite_marker.psd",
+        build_psd_missing_composite_marker(
+            channels=4,
+            depth=16,
+            color_mode=7,
+        ),
     )
     write_variants(
         out_dir,
