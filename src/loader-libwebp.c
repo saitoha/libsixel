@@ -229,7 +229,9 @@ webp_static_decode_path_name(WebPBitstreamFeatures const *features,
 }
 
 static SIXELSTATUS
-webp_validate_riff_container(unsigned char const *data, size_t size)
+webp_validate_riff_container(unsigned char const *data,
+                             size_t size,
+                             size_t *panimation_frame_count)
 {
     size_t riff_size;
     size_t riff_total_size;
@@ -239,6 +241,7 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
     size_t chunk_total_size;
     int saw_chunk;
     unsigned char const *chunk_tag;
+    size_t animation_frame_count;
 
     riff_size = 0u;
     riff_total_size = 0u;
@@ -248,6 +251,7 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
     chunk_total_size = 0u;
     saw_chunk = 0;
     chunk_tag = NULL;
+    animation_frame_count = 0u;
 
     if (data == NULL || size < 12u) {
         sixel_helper_set_additional_message(
@@ -314,6 +318,12 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
                 "webp decode: ANMF chunk size is too small.");
             return SIXEL_BAD_INPUT;
         }
+        if (memcmp(chunk_tag, "ANMF", 4u) == 0) {
+            if (animation_frame_count == SIZE_MAX) {
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            ++animation_frame_count;
+        }
         if (chunk_size > SIZE_MAX - 8u - offset) {
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
@@ -353,78 +363,10 @@ webp_validate_riff_container(unsigned char const *data, size_t size)
             "webp decode: no RIFF chunks found.");
         return SIXEL_BAD_INPUT;
     }
-
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-webp_count_animation_frames_in_riff(size_t *pframe_count,
-                                    unsigned char const *data,
-                                    size_t size)
-{
-    size_t riff_size;
-    size_t riff_total_size;
-    size_t offset;
-    unsigned int chunk_size_u32;
-    size_t chunk_size;
-    size_t chunk_total_size;
-    size_t frame_count;
-
-    riff_size = 0u;
-    riff_total_size = 0u;
-    offset = 0u;
-    chunk_size_u32 = 0U;
-    chunk_size = 0u;
-    chunk_total_size = 0u;
-    frame_count = 0u;
-
-    if (pframe_count == NULL || data == NULL || size < 12u) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    *pframe_count = 0u;
-
-    riff_size = (size_t)webp_read_u32le(data + 4u);
-    if (riff_size < 4u || riff_size > SIZE_MAX - 8u) {
-        return SIXEL_BAD_INPUT;
-    }
-    riff_total_size = riff_size + 8u;
-    if (riff_total_size > size) {
-        return SIXEL_BAD_INPUT;
+    if (panimation_frame_count != NULL) {
+        *panimation_frame_count = animation_frame_count;
     }
 
-    offset = 12u;
-    while (offset < riff_total_size) {
-        if (riff_total_size - offset < 8u) {
-            return SIXEL_BAD_INPUT;
-        }
-
-        chunk_size_u32 = webp_read_u32le(data + offset + 4u);
-        chunk_size = (size_t)chunk_size_u32;
-        if (chunk_size > SIZE_MAX - 8u - offset) {
-            return SIXEL_BAD_INTEGER_OVERFLOW;
-        }
-
-        chunk_total_size = 8u + chunk_size;
-        if ((chunk_size_u32 & 1u) != 0u) {
-            if (chunk_total_size == SIZE_MAX) {
-                return SIXEL_BAD_INTEGER_OVERFLOW;
-            }
-            chunk_total_size += 1u;
-        }
-        if (chunk_total_size > riff_total_size - offset) {
-            return SIXEL_BAD_INPUT;
-        }
-
-        if (memcmp(data + offset, "ANMF", 4u) == 0) {
-            if (frame_count == SIZE_MAX) {
-                return SIXEL_BAD_INTEGER_OVERFLOW;
-            }
-            ++frame_count;
-        }
-        offset += chunk_total_size;
-    }
-
-    *pframe_count = frame_count;
     return SIXEL_OK;
 }
 
@@ -1157,7 +1099,7 @@ load_webp(unsigned char **result,
     if (known_features != NULL) {
         features = *known_features;
     } else {
-        status = webp_validate_riff_container(data, datasize);
+        status = webp_validate_riff_container(data, datasize, NULL);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -2995,14 +2937,9 @@ load_with_libwebp(
     webp_data.bytes = pchunk->buffer;
     webp_data.size = pchunk->size;
 
-    status = webp_validate_riff_container(pchunk->buffer, pchunk->size);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = webp_count_animation_frames_in_riff(&animation_frame_count_hint,
-                                                 pchunk->buffer,
-                                                 pchunk->size);
+    status = webp_validate_riff_container(pchunk->buffer,
+                                          pchunk->size,
+                                          &animation_frame_count_hint);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
