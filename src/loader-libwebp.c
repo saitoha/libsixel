@@ -2320,41 +2320,26 @@ webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
 static SIXELSTATUS
 webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
                                   WebPBitstreamFeatures const *stream_features,
-                                  webp_animation_decode_control_t const *control,
-                                  int frame_count,
                                   unsigned char *bgcolor)
 {
     SIXELSTATUS status;
     sixel_chunk_t const *chunk;
     sixel_frame_t *frame;
     unsigned char *pixels;
-    int resolved_start_frame_no;
     int cms_converted;
     WebPBitstreamFeatures decode_features;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
-    resolved_start_frame_no = 0;
     cms_converted = 0;
     decode_features = (WebPBitstreamFeatures){ 0 };
 
-    if (!webp_decode_context_is_valid(decode, control) ||
-        stream_features == NULL) {
+    if (decode == NULL || decode->chunk == NULL ||
+        decode->fn_load == NULL || stream_features == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     chunk = decode->chunk;
-
-    if (frame_count > 1) {
-        status = webp_maybe_resolve_animation_start_frame_no(
-            control->start_frame_no_set,
-            control->start_frame_no,
-            frame_count,
-            &resolved_start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
 
     status = sixel_frame_new(&frame, chunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -2381,7 +2366,7 @@ webp_decode_and_emit_single_frame(webp_decode_common_t const *decode,
 
     webp_assign_loaded_frame_pixels(frame, pixels);
     pixels = NULL;
-    frame->frame_no = resolved_start_frame_no;
+    frame->frame_no = 0;
 
     status = webp_finalize_and_emit_frame(frame,
                                           decode->enable_cms,
@@ -2805,8 +2790,6 @@ load_with_libwebp(
     if (!stream_features.has_animation) {
         status = webp_decode_and_emit_single_frame(&decode,
                                                    &stream_features,
-                                                   &control,
-                                                   1,
                                                    bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -2867,8 +2850,6 @@ load_with_libwebp(
 
         status = webp_decode_and_emit_single_frame(&decode,
                                                    &stream_features,
-                                                   &control,
-                                                   anim_info.frame_count,
                                                    resolved_bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
