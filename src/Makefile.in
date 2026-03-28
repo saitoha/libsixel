@@ -232,6 +232,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-gnome-thumbnailer.h \
 	$(srcdir)/loader-libjpeg.h $(srcdir)/loader-libpng.h \
 	$(srcdir)/loader-libtiff.h $(srcdir)/loader-librsvg.h \
+	$(srcdir)/loader-librsvg-test.h \
 	$(srcdir)/loader-libwebp.h $(srcdir)/loader-quicklook.h \
 	$(srcdir)/loader-registry.h $(srcdir)/loader-wic.h \
 	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/frompng.c \
@@ -944,6 +945,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libpng.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libtiff.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-librsvg.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-librsvg-test.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libwebp.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-quicklook.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-registry.h \

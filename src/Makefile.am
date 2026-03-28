@@ -190,6 +190,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-libpng.h \
                 $(srcdir)/loader-libtiff.h \
                 $(srcdir)/loader-librsvg.h \
+                $(srcdir)/loader-librsvg-test.h \
                 $(srcdir)/loader-libwebp.h \
                 $(srcdir)/loader-quicklook.h \
                 $(srcdir)/loader-registry.h \

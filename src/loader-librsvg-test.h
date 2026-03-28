@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -22,38 +22,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOADER_LIBRSVG_H
-#define LIBSIXEL_LOADER_LIBRSVG_H
+#ifndef LIBSIXEL_LOADER_LIBRSVG_TEST_H
+#define LIBSIXEL_LOADER_LIBRSVG_TEST_H
 
-#include <sixel.h>
-
-#include "chunk.h"
-#include "loader-component.h"
+#include "loader-librsvg.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum sixel_librsvg_decode_mode {
-    SIXEL_LIBRSVG_DECODE_MODE_FILE,
-    SIXEL_LIBRSVG_DECODE_MODE_DATA,
-    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE,
-    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED
-} sixel_librsvg_decode_mode_t;
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_loader_librsvg_new(
-    sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
-
-SIXEL_INTERNAL_API int
-loader_can_try_librsvg(sixel_chunk_t const *chunk);
+/*
+ * Test hook for decode mode selection logic used by librsvg loader.
+ * This function only classifies input source/mode and does not decode data.
+ */
+SIXEL_INTERNAL_API sixel_librsvg_decode_mode_t
+sixel_loader_librsvg_pick_decode_mode_for_test(
+    sixel_chunk_t const *chunk,
+    int allow_relative_resources,
+    int allow_stdin_svgz);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_LOADER_LIBRSVG_H */
+#endif /* LIBSIXEL_LOADER_LIBRSVG_TEST_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
