@@ -77,13 +77,6 @@ typedef struct sixel_loader_librsvg_component {
     "requires file-path decode, prior decompression, or " \
     "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1."
 
-typedef enum sixel_librsvg_decode_mode {
-    SIXEL_LIBRSVG_DECODE_MODE_FILE,
-    SIXEL_LIBRSVG_DECODE_MODE_DATA,
-    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE,
-    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED
-} sixel_librsvg_decode_mode_t;
-
 typedef struct sixel_librsvg_open_result {
     RsvgHandle *handle;
     char *stdin_svgz_temp_path;
@@ -647,6 +640,19 @@ librsvg_pick_decode_mode(sixel_chunk_t const *chunk,
         return SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED;
     }
     return SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE;
+}
+
+sixel_librsvg_decode_mode_t
+sixel_loader_librsvg_pick_decode_mode_for_test(
+    sixel_chunk_t const *chunk,
+    int allow_relative_resources,
+    int allow_stdin_svgz)
+{
+    sixel_librsvg_decode_policy_t policy;
+
+    policy.allow_relative_resources = allow_relative_resources ? 1 : 0;
+    policy.allow_stdin_svgz = allow_stdin_svgz ? 1 : 0;
+    return librsvg_pick_decode_mode(chunk, &policy);
 }
 
 static SIXELSTATUS
@@ -1504,6 +1510,18 @@ loader_can_try_librsvg(sixel_chunk_t const *chunk)
 #else  /* !HAVE_LIBRSVG */
 
 typedef int loader_librsvg_disabled;
+
+sixel_librsvg_decode_mode_t
+sixel_loader_librsvg_pick_decode_mode_for_test(
+    sixel_chunk_t const *chunk,
+    int allow_relative_resources,
+    int allow_stdin_svgz)
+{
+    (void)chunk;
+    (void)allow_relative_resources;
+    (void)allow_stdin_svgz;
+    return SIXEL_LIBRSVG_DECODE_MODE_DATA;
+}
 
 #endif  /* HAVE_LIBRSVG */
 

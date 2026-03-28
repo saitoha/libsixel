@@ -140,6 +140,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c \
 	loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 	loader/librsvg/0023_loader_librsvg_pixelformat.c \
+	loader/librsvg/0025_loader_librsvg_decode_mode.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	diagnostics/probe/0001_probe_parse.c \
@@ -185,6 +186,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
@@ -295,6 +297,7 @@ am__depfiles_remade =  \
 	loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po \
 	loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po \
+	loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po \
 	loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po \
@@ -1049,6 +1052,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0023_loader_librsvg_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0025_loader_librsvg_decode_mode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -1310,6 +1314,9 @@ loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.$(OB
 loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.$(OBJEXT):  \
 	loader/librsvg/$(am__dirstamp) \
 	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
+loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.$(OBJEXT):  \
+	loader/librsvg/$(am__dirstamp) \
+	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1444,6 +1451,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
@@ -1924,6 +1932,20 @@ loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.obj: loader/librsvg/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0023_loader_librsvg_pixelformat.c' object='loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.obj `if test -f 'loader/librsvg/0023_loader_librsvg_pixelformat.c'; then $(CYGPATH_W) 'loader/librsvg/0023_loader_librsvg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0023_loader_librsvg_pixelformat.c'; fi`
+
+loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.o: loader/librsvg/0025_loader_librsvg_decode_mode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.o -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Tpo -c -o loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.o `test -f 'loader/librsvg/0025_loader_librsvg_decode_mode.c' || echo '$(srcdir)/'`loader/librsvg/0025_loader_librsvg_decode_mode.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Tpo loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0025_loader_librsvg_decode_mode.c' object='loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.o `test -f 'loader/librsvg/0025_loader_librsvg_decode_mode.c' || echo '$(srcdir)/'`loader/librsvg/0025_loader_librsvg_decode_mode.c
+
+loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj: loader/librsvg/0025_loader_librsvg_decode_mode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj -MD -MP -MF loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Tpo -c -o loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj `if test -f 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; then $(CYGPATH_W) 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0025_loader_librsvg_decode_mode.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Tpo loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0025_loader_librsvg_decode_mode.c' object='loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj `if test -f 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; then $(CYGPATH_W) 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0025_loader_librsvg_decode_mode.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -2514,6 +2536,7 @@ distclean: distclean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
@@ -2603,6 +2626,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libpng/$(DEPDIR)/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0020_loader_librsvg_detect_svg_like.Po
 	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0023_loader_librsvg_pixelformat.Po
+	-rm -f loader/librsvg/$(DEPDIR)/test_runner-0025_loader_librsvg_decode_mode.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0013_loader_libwebp_pixelformat.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0014_loader_libwebp_animation_frames.Po
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0015_loader_libwebp_palette_promotion_guard.Po
