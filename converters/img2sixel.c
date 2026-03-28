@@ -970,6 +970,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "Applied only on the first loop; later loops decode from frame 0."
     },
     {
+        "SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES",
+        "cap the total number of frames emitted by libwebp animation decode.\n"
+        "Accepts positive integers; invalid or unset values use the built-in\n"
+        "safety limit."
+    },
+    {
         "SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
         "force lossy WebP inputs through the legacy RGB decode path instead\n"
         "of the default YUV float32 pipeline. Intended for tests and\n"
