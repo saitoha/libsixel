@@ -1446,6 +1446,79 @@ end:
 }
 
 static SIXELSTATUS
+librsvg_prepare_render_context(
+    sixel_frame_t *frame,
+    sixel_chunk_t const *chunk,
+    unsigned char const *bgcolor,
+    sixel_librsvg_decode_policy_t const *policy,
+    sixel_librsvg_render_context_t *render_ctx)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_BAD_INPUT;
+    if (frame == NULL ||
+            chunk == NULL ||
+            policy == NULL ||
+            render_ctx == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = librsvg_open_handle(chunk,
+                                 policy,
+                                 &render_ctx->open_result);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    librsvg_pick_size(render_ctx->open_result.handle,
+                      &frame->width,
+                      &frame->height);
+    status = librsvg_validate_canvas_size(frame->width,
+                                          frame->height,
+                                          &render_ctx->pixel_total);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = librsvg_prepare_render_surface(&render_ctx->surface,
+                                            &render_ctx->cr,
+                                            frame->width,
+                                            frame->height,
+                                            bgcolor);
+    return status;
+}
+
+static SIXELSTATUS
+librsvg_render_context_to_frame_pixels(
+    sixel_frame_t *frame,
+    sixel_chunk_t const *chunk,
+    unsigned char const *bgcolor,
+    sixel_librsvg_render_context_t *render_ctx)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_BAD_INPUT;
+    if (frame == NULL || chunk == NULL || render_ctx == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = librsvg_render_document(render_ctx->open_result.handle,
+                                     render_ctx->cr,
+                                     frame->width,
+                                     frame->height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = librsvg_convert_surface_to_frame_pixels(frame,
+                                                     chunk->allocator,
+                                                     render_ctx->surface,
+                                                     bgcolor,
+                                                     render_ctx->pixel_total);
+    return status;
+}
+
+static SIXELSTATUS
 librsvg_render_to_frame(sixel_frame_t *frame,
                         sixel_chunk_t const *chunk,
                         unsigned char const *bgcolor,
@@ -1459,45 +1532,19 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     if (frame == NULL || chunk == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    status = librsvg_open_handle(chunk,
-                                 policy,
-                                 &render_ctx.open_result);
+    status = librsvg_prepare_render_context(frame,
+                                            chunk,
+                                            bgcolor,
+                                            policy,
+                                            &render_ctx);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    librsvg_pick_size(render_ctx.open_result.handle,
-                      &frame->width,
-                      &frame->height);
-    status = librsvg_validate_canvas_size(frame->width,
-                                          frame->height,
-                                          &render_ctx.pixel_total);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = librsvg_prepare_render_surface(&render_ctx.surface,
-                                            &render_ctx.cr,
-                                            frame->width,
-                                            frame->height,
-                                            bgcolor);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = librsvg_render_document(render_ctx.open_result.handle,
-                                     render_ctx.cr,
-                                     frame->width,
-                                     frame->height);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = librsvg_convert_surface_to_frame_pixels(frame,
-                                                     chunk->allocator,
-                                                     render_ctx.surface,
-                                                     bgcolor,
-                                                     render_ctx.pixel_total);
+    status = librsvg_render_context_to_frame_pixels(frame,
+                                                    chunk,
+                                                    bgcolor,
+                                                    &render_ctx);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
