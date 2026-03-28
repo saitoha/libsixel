@@ -69,6 +69,8 @@ Key points used by this roadmap:
   - `--bgcolor` omitted and alpha extra channel exists: decode output remains
     3ch (`RGB888` or existing float32 3ch), and transparency is stored in
     `sixel_frame.transparent_mask`.
+  - When extra channels are multiple, the first extra channel is interpreted as
+    alpha; remaining extra channels are ignored.
   - Key transparency targets only `alpha == 0`; partial alpha is precomposited
     against black before storing 3ch color.
   - Embedded ICC conversion applies to RGB channels only; transparency mask
