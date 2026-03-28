@@ -287,15 +287,6 @@ srgb_from_linear(float linear_value)
     return 1.055f * powf(linear_value, 1.0f / 2.4f) - 0.055f;
 }
 
-static float
-reinhard_tonemap_from_linear(float linear_value)
-{
-    if (linear_value <= 0.0f) {
-        return 0.0f;
-    }
-    return linear_value / (1.0f + linear_value);
-}
-
 static int
 float_approx_equal(float left, float right, float tolerance)
 {
@@ -888,6 +879,257 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
     return 0;
 }
 
+typedef enum hdr_numeric_case_validation_mode {
+    HDR_NUMERIC_CASE_VALIDATE_EXACT = 0,
+    HDR_NUMERIC_CASE_VALIDATE_CLAMP_RANGE
+} hdr_numeric_case_validation_mode_t;
+
+typedef struct hdr_numeric_static_case_spec {
+    char const *label;
+    char const *sample_path;
+    int cms_engine;
+    char const *fallback_profile;
+    char const *exposure_ev;
+    char const *tonemap;
+    char const *use_header_exposure;
+    int expected_pixelformat;
+    int expected_colorspace;
+    float expected_first_pixel[3];
+    float tolerance;
+    hdr_numeric_case_validation_mode_t validation_mode;
+    float lower_bound;
+    float upper_bound;
+    int require_channel0_less_than;
+    float channel0_less_than;
+} hdr_numeric_static_case_spec_t;
+
+typedef enum hdr_numeric_static_case_id {
+    HDR_NUMERIC_STATIC_CASE_EXPOSURE = 0,
+    HDR_NUMERIC_STATIC_CASE_TONEMAP_REINHARD,
+    HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE,
+    HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_MULTI,
+    HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_DISABLED,
+    HDR_NUMERIC_STATIC_CASE_EXPOSURE_OVERFLOW_NONE,
+    HDR_NUMERIC_STATIC_CASE_EXPOSURE_OVERFLOW_REINHARD
+} hdr_numeric_static_case_id_t;
+
+static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
+    {
+        "builtin loader hdr exposure numeric",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "1",
+        "none",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 1.0f, 0.5f, 0.25f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    },
+    {
+        "builtin loader hdr tonemap numeric",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "0",
+        "reinhard",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 0.33333334f, 0.2f, 0.11111111f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        1,
+        0.5f
+    },
+    {
+        "builtin loader hdr header exposure numeric",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 1.0f, 0.5f, 0.25f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    },
+    {
+        "builtin loader hdr header exposure multi numeric",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2x4.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 4.0f, 2.0f, 1.0f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    },
+    {
+        "builtin loader hdr header exposure disabled numeric",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "0",
+        "none",
+        "0",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 0.5f, 0.25f, 0.125f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    },
+    {
+        "builtin hdr exposure overflow none",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "200",
+        "none",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 0.0f, 0.0f, 0.0f },
+        0.0f,
+        HDR_NUMERIC_CASE_VALIDATE_CLAMP_RANGE,
+        FLT_MAX * 0.99f,
+        FLT_MAX,
+        0,
+        0.0f
+    },
+    {
+        "builtin hdr exposure overflow reinhard",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "200",
+        "reinhard",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 1.0f, 1.0f, 1.0f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    }
+};
+
+static int
+run_builtin_loader_hdr_static_numeric_case(
+    hdr_numeric_static_case_spec_t const *spec)
+{
+    hdr_numeric_probe_context_t probe;
+    int index;
+    int result;
+
+    probe = (hdr_numeric_probe_context_t){ 0 };
+    index = 0;
+    result = 1;
+    if (spec == NULL) {
+        return 1;
+    }
+
+    if (hdr_test_configure_loader_env(spec->fallback_profile,
+                                      spec->exposure_ev,
+                                      spec->tonemap,
+                                      spec->use_header_exposure) != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        spec->label,
+        spec->sample_path,
+        spec->cms_engine,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != spec->expected_pixelformat ||
+        probe.colorspace != spec->expected_colorspace) {
+        fprintf(stderr,
+                "%s: frame contract mismatch (pf=%d expected=%d cs=%d "
+                "expected=%d)\n",
+                spec->label,
+                probe.pixelformat,
+                spec->expected_pixelformat,
+                probe.colorspace,
+                spec->expected_colorspace);
+        return 1;
+    }
+
+    if (spec->validation_mode == HDR_NUMERIC_CASE_VALIDATE_CLAMP_RANGE) {
+        for (index = 0; index < 3; ++index) {
+            if (!isfinite((double)probe.first_pixel[index]) ||
+                probe.first_pixel[index] < spec->lower_bound ||
+                probe.first_pixel[index] > spec->upper_bound) {
+                fprintf(stderr,
+                        "%s: channel %d is outside clamp range "
+                        "(actual=%f min=%f max=%f)\n",
+                        spec->label,
+                        index,
+                        probe.first_pixel[index],
+                        spec->lower_bound,
+                        spec->upper_bound);
+                return 1;
+            }
+        }
+    } else {
+        for (index = 0; index < 3; ++index) {
+            if (!float_approx_equal(probe.first_pixel[index],
+                                    spec->expected_first_pixel[index],
+                                    spec->tolerance)) {
+                fprintf(stderr,
+                        "%s: channel %d mismatch (actual=%f expected=%f)\n",
+                        spec->label,
+                        index,
+                        probe.first_pixel[index],
+                        spec->expected_first_pixel[index]);
+                return 1;
+            }
+        }
+    }
+
+    if (spec->require_channel0_less_than != 0 &&
+        !(probe.first_pixel[0] < spec->channel0_less_than)) {
+        fprintf(stderr,
+                "%s: channel 0 threshold check failed (actual=%f limit=%f)\n",
+                spec->label,
+                probe.first_pixel[0],
+                spec->channel0_less_than);
+        return 1;
+    }
+
+    return 0;
+}
+
 static int
 run_builtin_loader_hdr_gamma_numeric_test(void)
 {
@@ -1227,277 +1469,37 @@ run_builtin_loader_hdr_header_priority_numeric_test(void)
 static int
 run_builtin_loader_hdr_exposure_numeric_test(void)
 {
-    char const *sample_path;
-    hdr_numeric_probe_context_t probe;
-    float expected_linear[3];
-    float expected_exposure[3];
-    float tolerance;
-    int index;
-    int result;
-
-    sample_path = "/tests/data/inputs/formats/stbi_midtones.hdr";
-    tolerance = 0.0007f;
-    expected_linear[0] = 0.5f;
-    expected_linear[1] = 0.25f;
-    expected_linear[2] = 0.125f;
-
-    expected_exposure[0] = expected_linear[0] * 2.0f;
-    expected_exposure[1] = expected_linear[1] * 2.0f;
-    expected_exposure[2] = expected_linear[2] * 2.0f;
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr exposure numeric",
-        sample_path,
-        SIXEL_CMS_ENGINE_NONE,
-        &probe);
-    if (result != 0) {
-        return result;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr exposure numeric: unexpected frame "
-                "contract (pixelformat=%d colorspace=%d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(probe.first_pixel[index],
-                                expected_exposure[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr exposure numeric: channel %d mismatch "
-                    "(actual=%f expected=%f)\n",
-                    index,
-                    probe.first_pixel[index],
-                    expected_exposure[index]);
-            return 1;
-        }
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_EXPOSURE]);
 }
 
 static int
 run_builtin_loader_hdr_tonemap_reinhard_numeric_test(void)
 {
-    char const *sample_path;
-    hdr_numeric_probe_context_t probe;
-    float expected_linear[3];
-    float expected_tonemap[3];
-    float tolerance;
-    int index;
-    int result;
-
-    sample_path = "/tests/data/inputs/formats/stbi_midtones.hdr";
-    tolerance = 0.0007f;
-    expected_linear[0] = 0.5f;
-    expected_linear[1] = 0.25f;
-    expected_linear[2] = 0.125f;
-
-    for (index = 0; index < 3; ++index) {
-        expected_tonemap[index] = reinhard_tonemap_from_linear(
-            expected_linear[index]);
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr tonemap numeric",
-        sample_path,
-        SIXEL_CMS_ENGINE_NONE,
-        &probe);
-    if (result != 0) {
-        return result;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr tonemap numeric: unexpected frame "
-                "contract (pixelformat=%d colorspace=%d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(probe.first_pixel[index],
-                                expected_tonemap[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr tonemap numeric: channel %d mismatch "
-                    "(actual=%f expected=%f)\n",
-                    index,
-                    probe.first_pixel[index],
-                    expected_tonemap[index]);
-            return 1;
-        }
-    }
-
-    if (!(probe.first_pixel[0] < expected_linear[0])) {
-        fprintf(stderr,
-                "builtin loader hdr tonemap numeric: dynamic range was not "
-                "compressed\n");
-        return 1;
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_TONEMAP_REINHARD]);
 }
 
 static int
 run_builtin_loader_hdr_header_exposure_numeric_test(void)
 {
-    hdr_numeric_probe_context_t probe;
-    float expected[3];
-    float tolerance;
-    int index;
-    int result;
-
-    tolerance = 0.0007f;
-    expected[0] = 1.0f;
-    expected[1] = 0.5f;
-    expected[2] = 0.25f;
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr header exposure numeric",
-        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &probe);
-    if (result != 0) {
-        return result;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr header exposure numeric: unexpected "
-                "frame contract (pixelformat=%d colorspace=%d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(probe.first_pixel[index],
-                                expected[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr header exposure numeric: "
-                    "channel %d mismatch (actual=%f expected=%f)\n",
-                    index,
-                    probe.first_pixel[index],
-                    expected[index]);
-            return 1;
-        }
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE]);
 }
 
 static int
 run_builtin_loader_hdr_header_exposure_multi_numeric_test(void)
 {
-    hdr_numeric_probe_context_t probe;
-    float expected[3];
-    float tolerance;
-    int index;
-    int result;
-
-    tolerance = 0.0007f;
-    expected[0] = 4.0f;
-    expected[1] = 2.0f;
-    expected[2] = 1.0f;
-    if (hdr_test_configure_loader_env_default("1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr header exposure multi numeric",
-        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2x4.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &probe);
-    if (result != 0) {
-        return result;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr header exposure multi numeric: "
-                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(probe.first_pixel[index],
-                                expected[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr header exposure multi numeric: "
-                    "channel %d mismatch (actual=%f expected=%f)\n",
-                    index,
-                    probe.first_pixel[index],
-                    expected[index]);
-            return 1;
-        }
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_MULTI]);
 }
 
 static int
 run_builtin_loader_hdr_header_exposure_disabled_numeric_test(void)
 {
-    hdr_numeric_probe_context_t probe;
-    float expected[3];
-    float tolerance;
-    int index;
-    int result;
-
-    tolerance = 0.0007f;
-    expected[0] = 0.5f;
-    expected[1] = 0.25f;
-    expected[2] = 0.125f;
-    if (hdr_test_configure_loader_env_default("0") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin loader hdr header exposure disabled numeric",
-        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &probe);
-    if (result != 0) {
-        return result;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin loader hdr header exposure disabled numeric: "
-                "unexpected frame contract (pixelformat=%d colorspace=%d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!float_approx_equal(probe.first_pixel[index],
-                                expected[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "builtin loader hdr header exposure disabled numeric: "
-                    "channel %d mismatch (actual=%f expected=%f)\n",
-                    index,
-                    probe.first_pixel[index],
-                    expected[index]);
-            return 1;
-        }
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[
+            HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_DISABLED]);
 }
 
 static int
@@ -2442,100 +2444,17 @@ run_builtin_loader_gif_loop_force_loop2_unbounded_test(void)
 static int
 run_builtin_loader_hdr_exposure_overflow_none_numeric_test(void)
 {
-    hdr_numeric_probe_context_t probe;
-    float lower_bound;
-    int index;
-    int result;
-
-    lower_bound = FLT_MAX * 0.99f;
-    if (hdr_test_configure_loader_env("linear-srgb",
-                                      "200",
-                                      "none",
-                                      "1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr exposure overflow none",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &probe);
-    if (result != 0) {
-        return result;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin hdr exposure overflow none: frame contract mismatch "
-                "(pf=%d cs=%d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!isfinite((double)probe.first_pixel[index]) ||
-            probe.first_pixel[index] < lower_bound ||
-            probe.first_pixel[index] > FLT_MAX) {
-            fprintf(stderr,
-                    "builtin hdr exposure overflow none: channel %d is not "
-                    "clamped finite (actual=%f)\n",
-                    index,
-                    probe.first_pixel[index]);
-            return 1;
-        }
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[
+            HDR_NUMERIC_STATIC_CASE_EXPOSURE_OVERFLOW_NONE]);
 }
 
 static int
 run_builtin_loader_hdr_exposure_overflow_reinhard_numeric_test(void)
 {
-    hdr_numeric_probe_context_t probe;
-    float tolerance;
-    int index;
-    int result;
-
-    tolerance = 0.0007f;
-    if (hdr_test_configure_loader_env("linear-srgb",
-                                      "200",
-                                      "reinhard",
-                                      "1") != 0) {
-        return 1;
-    }
-
-    result = run_builtin_loader_hdr_numeric_probe_case(
-        "builtin hdr exposure overflow reinhard",
-        "/tests/data/inputs/formats/stbi_midtones.hdr",
-        SIXEL_CMS_ENGINE_NONE,
-        &probe);
-    if (result != 0) {
-        return result;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
-        fprintf(stderr,
-                "builtin hdr exposure overflow reinhard: frame contract "
-                "mismatch (pf=%d cs=%d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-
-    for (index = 0; index < 3; ++index) {
-        if (!isfinite((double)probe.first_pixel[index]) ||
-            !float_approx_equal(probe.first_pixel[index], 1.0f, tolerance)) {
-            fprintf(stderr,
-                    "builtin hdr exposure overflow reinhard: channel %d "
-                    "mismatch (actual=%f expected=1.000000)\n",
-                    index,
-                    probe.first_pixel[index]);
-            return 1;
-        }
-    }
-
-    return 0;
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[
+            HDR_NUMERIC_STATIC_CASE_EXPOSURE_OVERFLOW_REINHARD]);
 }
 
 static int
