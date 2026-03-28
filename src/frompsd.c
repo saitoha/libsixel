@@ -985,6 +985,44 @@ sixel_builtin_psd_decode_layer_channel_8bit(
     return 1;
 }
 
+static SIXELSTATUS
+sixel_builtin_psd_decode_layer_plane_rgb8(
+    unsigned char const *buffer,
+    sixel_builtin_psd_layer_channel_entry_t const *channels,
+    int channel_index,
+    unsigned int width,
+    unsigned int height,
+    unsigned char *dst)
+{
+    int decode_status;
+
+    decode_status = 0;
+
+    if (buffer == NULL || channels == NULL || channel_index < 0 ||
+        dst == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    decode_status = sixel_builtin_psd_decode_layer_channel_8bit(
+        buffer + channels[(size_t)channel_index].data_offset,
+        channels[(size_t)channel_index].length,
+        width,
+        height,
+        dst);
+    if (decode_status > 0) {
+        return SIXEL_OK;
+    }
+
+    if (decode_status < 0) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: unsupported layer channel compression");
+    } else {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed layer channel stream");
+    }
+    return SIXEL_STBI_ERROR;
+}
+
 static void
 sixel_builtin_psd_decode_prediction_8bit(unsigned char *data,
                                          unsigned int channels,
@@ -3178,55 +3216,34 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
         goto cleanup;
     }
 
-    decode_status = sixel_builtin_psd_decode_layer_channel_8bit(
-        buffer + channels[(size_t)red_channel_index].data_offset,
-        channels[(size_t)red_channel_index].length,
+    decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
+        buffer,
+        channels,
+        red_channel_index,
         info->width,
         info->height,
         plane_r);
-    if (decode_status <= 0) {
-        if (decode_status < 0) {
-            sixel_helper_set_additional_message(
-                "builtin PSD: unsupported layer channel compression");
-        } else {
-            sixel_helper_set_additional_message(
-                "builtin PSD: malformed layer channel stream");
-        }
-        decode_status = SIXEL_STBI_ERROR;
+    if (decode_status != SIXEL_OK) {
         goto cleanup;
     }
-    decode_status = sixel_builtin_psd_decode_layer_channel_8bit(
-        buffer + channels[(size_t)green_channel_index].data_offset,
-        channels[(size_t)green_channel_index].length,
+    decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
+        buffer,
+        channels,
+        green_channel_index,
         info->width,
         info->height,
         plane_g);
-    if (decode_status <= 0) {
-        if (decode_status < 0) {
-            sixel_helper_set_additional_message(
-                "builtin PSD: unsupported layer channel compression");
-        } else {
-            sixel_helper_set_additional_message(
-                "builtin PSD: malformed layer channel stream");
-        }
-        decode_status = SIXEL_STBI_ERROR;
+    if (decode_status != SIXEL_OK) {
         goto cleanup;
     }
-    decode_status = sixel_builtin_psd_decode_layer_channel_8bit(
-        buffer + channels[(size_t)blue_channel_index].data_offset,
-        channels[(size_t)blue_channel_index].length,
+    decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
+        buffer,
+        channels,
+        blue_channel_index,
         info->width,
         info->height,
         plane_b);
-    if (decode_status <= 0) {
-        if (decode_status < 0) {
-            sixel_helper_set_additional_message(
-                "builtin PSD: unsupported layer channel compression");
-        } else {
-            sixel_helper_set_additional_message(
-                "builtin PSD: malformed layer channel stream");
-        }
-        decode_status = SIXEL_STBI_ERROR;
+    if (decode_status != SIXEL_OK) {
         goto cleanup;
     }
 
@@ -3240,21 +3257,14 @@ sixel_builtin_decode_psd_single_layer_missing_composite_rgb8(
             decode_status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
         }
-        decode_status = sixel_builtin_psd_decode_layer_channel_8bit(
-            buffer + channels[(size_t)alpha_channel_index].data_offset,
-            channels[(size_t)alpha_channel_index].length,
+        decode_status = sixel_builtin_psd_decode_layer_plane_rgb8(
+            buffer,
+            channels,
+            alpha_channel_index,
             info->width,
             info->height,
             plane_alpha);
-        if (decode_status <= 0) {
-            if (decode_status < 0) {
-                sixel_helper_set_additional_message(
-                    "builtin PSD: unsupported layer channel compression");
-            } else {
-                sixel_helper_set_additional_message(
-                    "builtin PSD: malformed layer channel stream");
-            }
-            decode_status = SIXEL_STBI_ERROR;
+        if (decode_status != SIXEL_OK) {
             goto cleanup;
         }
     }
