@@ -231,6 +231,7 @@ sixel_builtin_psd_init_transparent_mask_output(
 
 static void
 sixel_builtin_psd_commit_transparent_mask_output(
+    sixel_allocator_t *allocator,
     unsigned char **ptransparent_mask,
     size_t *ptransparent_mask_size,
     unsigned char **ptransparent_mask_buffer,
@@ -245,6 +246,12 @@ sixel_builtin_psd_commit_transparent_mask_output(
     }
     if (ptransparent_mask_size != NULL && preserve_alpha != 0) {
         *ptransparent_mask_size = pixel_count;
+    }
+    if (allocator != NULL &&
+        ptransparent_mask_buffer != NULL &&
+        *ptransparent_mask_buffer != NULL) {
+        sixel_allocator_free(allocator, *ptransparent_mask_buffer);
+        *ptransparent_mask_buffer = NULL;
     }
 }
 
@@ -1908,14 +1915,12 @@ sixel_builtin_decode_psd_bitmap_1bit(
 
     *ppixels = rgb;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -2074,14 +2079,12 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
 
     *ppixels = rgb;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -2247,14 +2250,12 @@ sixel_builtin_decode_psd_gray_or_duotone_16bit(
 
     *ppixels = (unsigned char *)rgbf32;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -2421,14 +2422,12 @@ sixel_builtin_decode_psd_gray_or_duotone_32bit(
 
     *ppixels = (unsigned char *)rgbf32;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -2694,14 +2693,12 @@ sixel_builtin_decode_psd_cmyk_8bit(
             *pcms_applied = 1;
             *ppixels = (unsigned char *)rgbf32;
             sixel_builtin_psd_commit_transparent_mask_output(
+                chunk->allocator,
                 ptransparent_mask,
                 ptransparent_mask_size,
                 &transparent_mask,
                 pixel_count,
                 preserve_alpha);
-            if (transparent_mask != NULL) {
-                sixel_allocator_free(chunk->allocator, transparent_mask);
-            }
             *pwidth = (int)info->width;
             *pheight = (int)info->height;
             *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -2758,14 +2755,12 @@ sixel_builtin_decode_psd_cmyk_8bit(
 
     *ppixels = rgb;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -2931,14 +2926,12 @@ sixel_builtin_decode_psd_rgb_8bit(
 
     *ppixels = rgb;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -3128,14 +3121,12 @@ sixel_builtin_decode_psd_rgb_16bit(
 
     *ppixels = (unsigned char *)rgbf32;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -3323,14 +3314,12 @@ sixel_builtin_decode_psd_rgb_32bit(
 
     *ppixels = (unsigned char *)rgbf32;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -3628,14 +3617,12 @@ sixel_builtin_decode_psd_lab_8bit(
 
     *ppixels = (unsigned char *)lab;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
         pixel_count,
         preserve_alpha);
-    if (transparent_mask != NULL) {
-        sixel_allocator_free(chunk->allocator, transparent_mask);
-    }
     *pwidth = (int)info->width;
     *pheight = (int)info->height;
     *ppixelformat = SIXEL_PIXELFORMAT_CIELABFLOAT32;
@@ -3883,6 +3870,7 @@ sixel_builtin_decode_psd_cmyk_32bit(
     *pcms_applied = cms_applied;
     *ppixels = (unsigned char *)rgb_linear;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
@@ -4075,6 +4063,7 @@ sixel_builtin_decode_psd_lab_32bit(
 
     *ppixels = (unsigned char *)lab;
     sixel_builtin_psd_commit_transparent_mask_output(
+        chunk->allocator,
         ptransparent_mask,
         ptransparent_mask_size,
         &transparent_mask,
