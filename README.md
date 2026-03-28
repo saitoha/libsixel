@@ -995,6 +995,17 @@ SVG loader comparison summary:
 | `coregraphics` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |
 | `quicklook` | no `-B` + non-opaque pixel keeps `RGBA8888`; otherwise `RGB888` | backend-defined | backend-defined | quantizer stage |
 
+Builtin PSD transparency summary:
+
+| Condition | Loader output contract | Encoder behavior |
+| --- | --- | --- |
+| PSD has alpha, no `-B` | keep 3ch output (`RGB888` for 8-bit; existing float32 3ch for 16/32-bit) plus an internal transparent mask (`alpha == 0` pixels) | keycolor transparency path is enabled (`alpha_zero_is_transparent=1`) |
+| PSD has alpha, with `-B` | composite against `-B` color into opaque 3ch output | keycolor transparency path is disabled |
+| PSD partial alpha (`0 < alpha < max`) | precomposite color against black before storing 3ch | final SIXEL still uses key transparency for `alpha == 0` only |
+
+Embedded ICC conversion on PSD applies to RGB color data only; the transparent
+mask remains unchanged.
+
 When running under GNOME or other desktops that implement the FreeDesktop.org
 Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
 `img2sixel` inspects the installed `.thumbnailer` definitions located in

@@ -2789,6 +2789,8 @@ load_with_builtin(
     size_t icc_profile_length;
     int cms_converted;
     int psd_icc_status;
+    unsigned char *psd_transparent_mask;
+    size_t psd_transparent_mask_size;
 #if HAVE_LCMS2
     uint16_t tiff_photometric;
 #endif
@@ -2818,6 +2820,8 @@ load_with_builtin(
     icc_profile_length = 0u;
     cms_converted = 0;
     psd_icc_status = SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
+    psd_transparent_mask = NULL;
+    psd_transparent_mask_size = 0u;
 #if HAVE_LCMS2
     tiff_photometric = (uint16_t)0xffffu;
 #endif
@@ -3270,6 +3274,8 @@ load_with_builtin(
                         &psd_icc_profile,
                         &psd_icc_profile_length);
                 }
+                psd_transparent_mask = NULL;
+                psd_transparent_mask_size = 0u;
                 if (psd_custom_decode_mode ==
                     SIXEL_BUILTIN_PSD_DECODE_MODE_BITMAP_1BIT) {
                     status = sixel_builtin_decode_psd_bitmap_1bit(
@@ -3277,6 +3283,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3290,6 +3298,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3303,6 +3313,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3316,6 +3328,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3336,6 +3350,8 @@ load_with_builtin(
                             : 0u,
                         &psd_cmyk_icc_applied,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3356,6 +3372,8 @@ load_with_builtin(
                             : 0u,
                         &psd_cmyk_icc_applied,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3369,6 +3387,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3382,6 +3402,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3395,6 +3417,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3408,6 +3432,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3421,6 +3447,8 @@ load_with_builtin(
                         &psd_info,
                         bgcolor,
                         &pixels,
+                        &psd_transparent_mask,
+                        &psd_transparent_mask_size,
                         &frame->width,
                         &frame->height,
                         &psd_pixelformat);
@@ -3487,6 +3515,14 @@ load_with_builtin(
                 frame->loop_count = 1;
                 frame->pixelformat = psd_pixelformat;
                 frame->colorspace = psd_colorspace;
+                frame->transparent = -1;
+                frame->transparent_mask = psd_transparent_mask;
+                frame->transparent_mask_size = psd_transparent_mask_size;
+                psd_transparent_mask = NULL;
+                psd_transparent_mask_size = 0u;
+                frame->alpha_zero_is_transparent =
+                    frame->transparent_mask != NULL &&
+                    frame->transparent_mask_size > 0u ? 1 : 0;
             } else {
                 status = sixel_builtin_decode_hdr_float32(
                     pchunk,
@@ -3605,6 +3641,9 @@ done:
     status = SIXEL_OK;
 
 end:
+    if (psd_transparent_mask != NULL && pchunk != NULL) {
+        sixel_allocator_free(pchunk->allocator, psd_transparent_mask);
+    }
     if (icc_profile != NULL) {
         sixel_allocator_free(pchunk->allocator, icc_profile);
     }
