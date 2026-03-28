@@ -181,10 +181,9 @@ static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
 static int sixel_encoder_frame_has_transparent_mask(
     sixel_frame_t const *frame);
-static SIXELSTATUS sixel_encoder_make_alpha_mask_work_frame(
-    sixel_frame_t *frame,
-    sixel_allocator_t *allocator,
-    sixel_frame_t **frame_out);
+static void sixel_encoder_bind_frame_transparent_mask(
+    sixel_dither_t *dither,
+    sixel_frame_t const *frame);
 
 #define SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY 4
 #define SIXEL_ENCODER_HANDOFF_UNDECIDED 0
@@ -906,110 +905,47 @@ sixel_encoder_frame_has_transparent_mask(sixel_frame_t const *frame)
     return 1;
 }
 
-/*
- * Convert a frame carrying a side-channel transparency mask into an
- * ephemeral RGBA frame so the existing alpha-zero keycolor path can run
- * unchanged inside palette extraction and final dithering.
- */
-static SIXELSTATUS
-sixel_encoder_make_alpha_mask_work_frame(
-    sixel_frame_t *frame,
-    sixel_allocator_t *allocator,
-    sixel_frame_t **frame_out)
+static void
+sixel_encoder_bind_frame_transparent_mask(
+    sixel_dither_t *dither,
+    sixel_frame_t const *frame)
 {
-    SIXELSTATUS status;
-    sixel_frame_t *work_frame;
-    unsigned char *rgb_pixels;
-    unsigned char *rgba_pixels;
-    unsigned char const *transparent_mask;
     size_t pixel_count;
-    size_t index;
 
-    status = SIXEL_FALSE;
-    work_frame = NULL;
-    rgb_pixels = NULL;
-    rgba_pixels = NULL;
-    transparent_mask = NULL;
     pixel_count = 0u;
-    index = 0u;
-
-    if (frame == NULL || allocator == NULL || frame_out == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+    if (dither == NULL) {
+        return;
     }
-    *frame_out = NULL;
+    dither->pipeline_transparent_mask = NULL;
+    dither->pipeline_transparent_mask_size = 0u;
+    dither->pipeline_transparent_keycolor = (-1);
 
+    /*
+     * Reuse frame-owned transparency masks directly in the dither pipeline.
+     * This keeps the source precision intact by avoiding temporary RGBA
+     * conversion while still enabling keycolor-based transparent output.
+     */
+    if (frame == NULL || dither->keycolor < 0
+            || dither->keycolor >= SIXEL_PALETTE_MAX) {
+        return;
+    }
     if (!sixel_encoder_frame_has_transparent_mask(frame)) {
-        return SIXEL_BAD_ARGUMENT;
+        return;
+    }
+    if (frame->width <= 0 || frame->height <= 0) {
+        return;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return;
+    }
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (frame->transparent_mask_size < pixel_count) {
+        return;
     }
 
-    status = sixel_encoder_clone_frame(frame, allocator, &work_frame);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-
-    if (sixel_frame_get_pixelformat(work_frame) != SIXEL_PIXELFORMAT_RGB888) {
-        status = sixel_frame_set_pixelformat(work_frame,
-                                             SIXEL_PIXELFORMAT_RGB888);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-    }
-
-    if ((size_t)work_frame->width > SIZE_MAX / (size_t)work_frame->height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto cleanup;
-    }
-    pixel_count = (size_t)work_frame->width * (size_t)work_frame->height;
-    if (pixel_count > SIZE_MAX / 4u) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto cleanup;
-    }
-
-    rgba_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                          pixel_count * 4u);
-    if (rgba_pixels == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
-    }
-
-    rgb_pixels = work_frame->pixels.u8ptr;
-    transparent_mask = frame->transparent_mask;
-    for (index = 0u; index < pixel_count; ++index) {
-        rgba_pixels[index * 4u + 0u] = rgb_pixels[index * 3u + 0u];
-        rgba_pixels[index * 4u + 1u] = rgb_pixels[index * 3u + 1u];
-        rgba_pixels[index * 4u + 2u] = rgb_pixels[index * 3u + 2u];
-        rgba_pixels[index * 4u + 3u] =
-            transparent_mask[index] != 0u ? 0u : 0xffu;
-    }
-
-    sixel_allocator_free(work_frame->allocator, work_frame->pixels.u8ptr);
-    work_frame->pixels.u8ptr = rgba_pixels;
-    rgba_pixels = NULL;
-
-    if (work_frame->transparent_mask != NULL) {
-        sixel_allocator_free(work_frame->allocator,
-                             work_frame->transparent_mask);
-        work_frame->transparent_mask = NULL;
-        work_frame->transparent_mask_size = 0u;
-    }
-    work_frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    work_frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-    work_frame->transparent = -1;
-    work_frame->alpha_zero_is_transparent = 1;
-
-    *frame_out = work_frame;
-    work_frame = NULL;
-    status = SIXEL_OK;
-
-cleanup:
-    if (rgba_pixels != NULL) {
-        sixel_allocator_free(allocator, rgba_pixels);
-    }
-    if (work_frame != NULL) {
-        sixel_frame_unref(work_frame);
-    }
-
-    return status;
+    dither->pipeline_transparent_mask = frame->transparent_mask;
+    dither->pipeline_transparent_mask_size = pixel_count;
+    dither->pipeline_transparent_keycolor = dither->keycolor;
 }
 
 /*
@@ -3556,7 +3492,6 @@ sixel_encoder_parse_sample_target(char const *text, size_t *value_out)
 typedef struct sixel_encode_dag_context {
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;
-    sixel_frame_t *mask_work_frame;
     sixel_output_t *output;
     SIXELSTATUS status;
     sixel_dither_t *dither;
@@ -4279,9 +4214,11 @@ sixel_encoder_palette_job_thread(void *priv)
 
     if (job != NULL && job->encoder != NULL && job->sample_frame != NULL) {
         preserve_alpha_key =
-            job->sample_frame->alpha_zero_is_transparent != 0 &&
-            sixel_encoder_pixelformat_has_alpha(
-                sixel_frame_get_pixelformat(job->sample_frame));
+            job->sample_frame->alpha_zero_is_transparent != 0
+            && (sixel_encoder_pixelformat_has_alpha(
+                    sixel_frame_get_pixelformat(job->sample_frame))
+                || sixel_encoder_frame_has_transparent_mask(
+                    job->sample_frame));
         if (!preserve_alpha_key) {
             status = sixel_frame_set_pixelformat(job->sample_frame,
                                                  job->target_pixelformat);
@@ -5012,9 +4949,10 @@ sixel_encoder_prepare_palette(
     }
     reserve_alpha_key =
         frame->alpha_zero_is_transparent != 0 &&
-        sixel_encoder_pixelformat_has_alpha(
-            sixel_frame_get_pixelformat(frame)) &&
-        encoder->reqcolors > 1;
+        encoder->reqcolors > 1 &&
+        (sixel_encoder_pixelformat_has_alpha(
+             sixel_frame_get_pixelformat(frame))
+         || sixel_encoder_frame_has_transparent_mask(frame));
     palette_reqcolors = encoder->reqcolors;
     if (reserve_alpha_key) {
         palette_reqcolors = encoder->reqcolors - 1;
@@ -5522,6 +5460,7 @@ sixel_encoder_output_without_macro(
     if (planner != NULL && dither != NULL) {
         dither->pipeline_pin_threads = planner->pipeline_pin_threads;
     }
+    sixel_encoder_bind_frame_transparent_mask(dither, frame);
     status = sixel_encode(p, width, height, depth, dither, output);
     if (status != SIXEL_OK) {
         goto end;
@@ -5640,6 +5579,7 @@ sixel_encoder_output_with_macro(
             dither->pipeline_pin_threads =
                 planner->pipeline_pin_threads;
         }
+        sixel_encoder_bind_frame_transparent_mask(dither, frame);
         status = sixel_encode(converted,
                               width,
                               height,
@@ -5965,7 +5905,6 @@ sixel_encoder_encode_frame(
     memset(&context, 0, sizeof(context));
     context.encoder = encoder;
     context.frame = frame;
-    context.mask_work_frame = NULL;
     context.output = output;
     context.status = SIXEL_FALSE;
     context.dither = NULL;
@@ -6016,16 +5955,6 @@ sixel_encoder_encode_frame(
     planner = context.planner;
     if (planner != NULL) {
         sixel_encoding_planner_reset_for_frame(planner);
-    }
-    if (sixel_encoder_frame_has_transparent_mask(context.frame)) {
-        status = sixel_encoder_make_alpha_mask_work_frame(
-            context.frame,
-            encoder->allocator,
-            &context.mask_work_frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        context.frame = context.mask_work_frame;
     }
 
     /*
@@ -6140,9 +6069,6 @@ end:
     }
     if (context.dither) {
         sixel_dither_unref(context.dither);
-    }
-    if (context.mask_work_frame != NULL) {
-        sixel_frame_unref(context.mask_work_frame);
     }
     if (encoder) {
         sixel_encoder_unref(encoder);
