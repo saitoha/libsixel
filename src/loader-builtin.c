@@ -2394,6 +2394,132 @@ end:
     return status;
 }
 
+static int
+sixel_builtin_apng_should_emit_callback(
+    int loop_no,
+    int start_frame_no,
+    int frames_in_loop)
+{
+    if (loop_no == 0 &&
+        start_frame_no != INT_MIN &&
+        frames_in_loop < start_frame_no) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_apng_resolve_emit_frame_no(
+    int loop_no,
+    int start_frame_no,
+    int source_frame_no)
+{
+    /*
+     * Keep frame numbers aligned with emitted order in the first loop when
+     * start-frame skips leading source frames.
+     */
+    if (loop_no == 0 && start_frame_no != INT_MIN) {
+        return source_frame_no - start_frame_no;
+    }
+    return source_frame_no;
+}
+
+static SIXELSTATUS
+sixel_builtin_apng_emit_pending_frame(
+    sixel_builtin_apng_state_t const *state,
+    sixel_builtin_apng_frame_control_t *control,
+    int loop_no,
+    int start_frame_no,
+    int frames_in_loop,
+    int source_frame_no,
+    int fstatic,
+    int num_frames,
+    unsigned char *bgcolor,
+    int alpha_zero_is_transparent,
+    sixel_builtin_apng_canvas_t *canvas,
+    sixel_load_image_function fn_load,
+    void *context,
+    sixel_allocator_t *allocator,
+    int *emit_callback_out)
+{
+    SIXELSTATUS status;
+    int emit_callback;
+    int emit_frame_no;
+
+    status = SIXEL_FALSE;
+    emit_callback = 0;
+    emit_frame_no = 0;
+    if (state == NULL || control == NULL || canvas == NULL || fn_load == NULL ||
+        allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    emit_callback = sixel_builtin_apng_should_emit_callback(
+        loop_no,
+        start_frame_no,
+        frames_in_loop);
+    emit_frame_no = sixel_builtin_apng_resolve_emit_frame_no(
+        loop_no,
+        start_frame_no,
+        source_frame_no);
+    status = sixel_builtin_apng_emit_frame(
+        state,
+        control,
+        emit_frame_no,
+        loop_no,
+        (!fstatic && num_frames > 1),
+        emit_callback,
+        bgcolor,
+        alpha_zero_is_transparent,
+        canvas,
+        fn_load,
+        context,
+        allocator);
+    if (emit_callback_out != NULL) {
+        *emit_callback_out = emit_callback;
+    }
+    return status;
+}
+
+static int
+sixel_builtin_apng_should_stop_loop(
+    int loop_control,
+    int frames_in_loop,
+    int loop_no,
+    int num_plays)
+{
+    if (loop_control == SIXEL_LOOP_DISABLE) {
+        return 1;
+    }
+    if (frames_in_loop <= 1) {
+        return 1;
+    }
+    if (loop_control == SIXEL_LOOP_AUTO &&
+        num_plays > 0 &&
+        loop_no >= num_plays) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+sixel_builtin_apng_resolve_alpha_zero_transparent(
+    int trns_keycolor_mode,
+    unsigned char const *bgcolor,
+    int enable_cms,
+    int has_trns_chunk,
+    int has_alpha_chunk)
+{
+    if (trns_keycolor_mode == 0 || bgcolor != NULL || enable_cms != 0) {
+        return 0;
+    }
+    if ((has_trns_chunk != 0 && has_alpha_chunk == 0) ||
+        (has_alpha_chunk != 0 && trns_keycolor_mode == 2)) {
+        return 1;
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_builtin_load_apng_frames(
     sixel_chunk_t const *pchunk,
@@ -2415,13 +2541,11 @@ sixel_builtin_load_apng_frames(
     int seen_actl;
     int saw_animation;
     int has_frame;
-    int emit_frame_no;
     int source_frame_no;
     int num_frames;
     int num_plays;
     int loop_no;
     int frames_in_loop;
-    int stop_loop;
     int emit_callback;
     int seen_fctl;
     int seen_idat;
@@ -2446,13 +2570,11 @@ sixel_builtin_load_apng_frames(
     seen_actl = 0;
     saw_animation = 0;
     has_frame = 0;
-    emit_frame_no = 0;
     source_frame_no = 0;
     num_frames = 0;
     num_plays = 0;
     loop_no = 0;
     frames_in_loop = 0;
-    stop_loop = 0;
     emit_callback = 1;
     seen_fctl = 0;
     seen_idat = 0;
@@ -2547,12 +2669,12 @@ sixel_builtin_load_apng_frames(
                     memset(canvas.backup, 0, canvas_bytes);
                 }
                 alpha_zero_is_transparent =
-                    trns_keycolor_mode != 0 &&
-                    bgcolor == NULL &&
-                    !enable_cms &&
-                    ((has_trns_chunk &&
-                      !has_alpha_chunk)
-                     || (has_alpha_chunk && trns_keycolor_mode == 2));
+                    sixel_builtin_apng_resolve_alpha_zero_transparent(
+                        trns_keycolor_mode,
+                        bgcolor,
+                        enable_cms,
+                        has_trns_chunk,
+                        has_alpha_chunk);
             } else if (memcmp(p + 4, "acTL", 4) == 0) {
                 if (length != 8) {
                     status = SIXEL_BAD_INPUT;
@@ -2578,36 +2700,22 @@ sixel_builtin_load_apng_frames(
                 }
             } else if (memcmp(p + 4, "fcTL", 4) == 0 && seen_actl) {
                 if (has_frame && state.chunk_size > 0) {
-                    emit_callback = 1;
-                    if (loop_no == 0 && start_frame_no != INT_MIN &&
-                        frames_in_loop < start_frame_no) {
-                        emit_callback = 0;
-                    }
-                    if (loop_no == 0 && start_frame_no != INT_MIN) {
-                        /*
-                         * frame_no is consumed by the encoder to determine
-                         * whether DECSC (first emitted frame) or DECRC
-                         * (subsequent frame) should be written in tty scroll.
-                         * Keep it as an emitted-frame index for the first loop
-                         * when start-frame skips leading source frames.
-                         */
-                        emit_frame_no = source_frame_no - start_frame_no;
-                    } else {
-                        emit_frame_no = source_frame_no;
-                    }
-                    status = sixel_builtin_apng_emit_frame(
+                    status = sixel_builtin_apng_emit_pending_frame(
                         &state,
                         &control,
-                        emit_frame_no,
                         loop_no,
-                        (!fstatic && num_frames > 1),
-                        emit_callback,
+                        start_frame_no,
+                        frames_in_loop,
+                        source_frame_no,
+                        fstatic,
+                        num_frames,
                         bgcolor,
                         alpha_zero_is_transparent,
                         &canvas,
                         fn_load,
                         context,
-                        pchunk->allocator);
+                        pchunk->allocator,
+                        &emit_callback);
                     if (SIXEL_FAILED(status)) {
                         goto end;
                     }
@@ -2694,12 +2802,12 @@ sixel_builtin_load_apng_frames(
             } else if (memcmp(p + 4, "tRNS", 4) == 0) {
                 has_trns_chunk = 1;
                 alpha_zero_is_transparent =
-                    trns_keycolor_mode != 0 &&
-                    bgcolor == NULL &&
-                    !enable_cms &&
-                    ((has_trns_chunk &&
-                      !has_alpha_chunk)
-                     || (has_alpha_chunk && trns_keycolor_mode == 2));
+                    sixel_builtin_apng_resolve_alpha_zero_transparent(
+                        trns_keycolor_mode,
+                        bgcolor,
+                        enable_cms,
+                        has_trns_chunk,
+                        has_alpha_chunk);
             } else if (memcmp(p + 4, "acTL", 4) != 0 &&
                        memcmp(p + 4, "fcTL", 4) != 0 &&
                        memcmp(p + 4, "fdAT", 4) != 0 &&
@@ -2726,34 +2834,22 @@ sixel_builtin_load_apng_frames(
         }
 
         if (state.chunk_size > 0) {
-            emit_callback = 1;
-            if (loop_no == 0 && start_frame_no != INT_MIN &&
-                frames_in_loop < start_frame_no) {
-                emit_callback = 0;
-            }
-            if (loop_no == 0 && start_frame_no != INT_MIN) {
-                /*
-                 * frame_no is used by the encoder/tty path to select DECSC
-                 * for the first emitted frame and DECRC for subsequent
-                 * frames. Keep frame_no aligned to emitted order when the
-                 * first loop skips leading source frames.
-                 */
-                emit_frame_no = source_frame_no - start_frame_no;
-            } else {
-                emit_frame_no = source_frame_no;
-            }
-            status = sixel_builtin_apng_emit_frame(&state,
-                                                   &control,
-                                                   emit_frame_no,
-                                                   loop_no,
-                                                   (!fstatic && num_frames > 1),
-                                                   emit_callback,
-                                                   bgcolor,
-                                                   alpha_zero_is_transparent,
-                                                   &canvas,
-                                                   fn_load,
-                                                   context,
-                                                   pchunk->allocator);
+            status = sixel_builtin_apng_emit_pending_frame(
+                &state,
+                &control,
+                loop_no,
+                start_frame_no,
+                frames_in_loop,
+                source_frame_no,
+                fstatic,
+                num_frames,
+                bgcolor,
+                alpha_zero_is_transparent,
+                &canvas,
+                fn_load,
+                context,
+                pchunk->allocator,
+                &emit_callback);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -2775,21 +2871,16 @@ sixel_builtin_load_apng_frames(
         }
 
         ++loop_no;
-        stop_loop = 0;
-        if (loop_control == SIXEL_LOOP_DISABLE || frames_in_loop == 1) {
-            stop_loop = 1;
-        } else if (loop_control == SIXEL_LOOP_AUTO &&
-                   num_plays > 0 &&
-                   loop_no >= num_plays) {
-            stop_loop = 1;
-        }
 
         sixel_allocator_free(pchunk->allocator, state.shared_chunks);
         sixel_allocator_free(pchunk->allocator, state.chunk_base);
         state.shared_chunks = NULL;
         state.chunk_base = NULL;
 
-        if (stop_loop) {
+        if (sixel_builtin_apng_should_stop_loop(loop_control,
+                                                frames_in_loop,
+                                                loop_no,
+                                                num_plays)) {
             status = SIXEL_OK;
             goto end;
         }
@@ -3334,7 +3425,6 @@ load_with_builtin(
             goto end;
         }
         goto end;
-        break;
 
     case SIXEL_BUILTIN_DECODE_PATH_STBI:
     default:

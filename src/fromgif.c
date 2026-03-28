@@ -2175,6 +2175,47 @@ gif_decode_one_frame(gif_context_t *s,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+gif_prepare_loop_iteration(gif_context_t *s,
+                           gif_t *g,
+                           sixel_frame_t *frame,
+                           size_t *pcount,
+                           int *decoded_frame_no,
+                           int *emitted_frame_no)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (s == NULL ||
+        g == NULL ||
+        frame == NULL ||
+        pcount == NULL ||
+        decoded_frame_no == NULL ||
+        emitted_frame_no == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_frame_set_frame_no(frame, 0);
+    *decoded_frame_no = 0;
+    *emitted_frame_no = 0;
+
+    s->img_buffer = s->img_buffer_original;
+    g->loop_count = -1;
+    status = gif_load_header(s, g);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+
+    status = gif_validate_canvas_requirements(g, pcount);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    gif_reset_canvas_for_loop(g, *pcount);
+    g->is_multiframe = 0;
+    g->is_terminated = 0;
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 load_gif(
     unsigned char       /* in */ *buffer,
@@ -2232,24 +2273,15 @@ load_gif(
     }
 
     for (;;) { /* per loop */
-        sixel_frame_set_frame_no(frame, 0);
-        decoded_frame_no = 0;
-        emitted_frame_no = 0;
-
-        s.img_buffer = s.img_buffer_original;
-        g->loop_count = -1;
-        status = gif_load_header(&s, g);
-        if (status != SIXEL_OK) {
+        status = gif_prepare_loop_iteration(&s,
+                                            g,
+                                            frame,
+                                            &pcount,
+                                            &decoded_frame_no,
+                                            &emitted_frame_no);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
-
-        status = gif_validate_canvas_requirements(g, &pcount);
-        if (status != SIXEL_OK) {
-            goto end;
-        }
-        gif_reset_canvas_for_loop(g, pcount);
-        g->is_multiframe = 0;
-        g->is_terminated = 0;
 
         for (;;) { /* per frame */
             status = gif_decode_one_frame(&s,
