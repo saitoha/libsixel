@@ -8,6 +8,7 @@
 #include "src/loader-librsvg.h"
 #include "tests/loader/pixelformat_test_common.h"
 
+#if HAVE_LIBRSVG
 static int
 expect_decode_mode(char const *label,
                    sixel_librsvg_decode_mode_t actual,
@@ -24,6 +25,7 @@ expect_decode_mode(char const *label,
             (int)actual);
     return 1;
 }
+#endif
 
 int
 test_loader_0025_loader_librsvg_decode_mode(int argc, char **argv)
@@ -135,6 +137,11 @@ test_loader_0025_loader_librsvg_decode_mode(int argc, char **argv)
                               mode,
                               SIXEL_LIBRSVG_DECODE_MODE_DATA);
 #else
+    (void)chunk;
+    (void)svg_data;
+    (void)svgz_data;
+    (void)result;
+    (void)mode;
     fprintf(stderr, "librsvg loader unavailable\n");
     return SIXEL_TEST_SKIP;
 #endif
