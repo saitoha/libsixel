@@ -17,20 +17,28 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-single-axis-viewbox.svg"
+svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-single-axis-viewbox.svg"
 sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-single-axis-viewbox.six"
-
-printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='40' viewBox='0 0 120 30'><rect x='0' y='0' width='120' height='30' fill='#00ff00'/></svg>" >"${svg_path}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${sixel_path}" || {
     echo "not ok" 1 - "single-axis viewBox conversion failed"
     exit 0
 }
 
-sed 's/^.*"//;s/#.*$//' "${sixel_path}" | grep -q '^1;1;40;10$' || {
-    echo "not ok" 1 - "missing-axis geometry was not resolved to 40x10"
+IFS='"' read -r _ raster _ <"${sixel_path}" || :
+test -n "${raster-}" || {
+    echo "not ok" 1 - "failed to read sixel raster for single-axis geometry"
     exit 0
 }
+raster="${raster%%#*}"
+case "${raster}" in
+    "1;1;40;10")
+        ;;
+    *)
+        echo "not ok" 1 - "missing-axis geometry was not resolved to 40x10"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "librsvg resolves missing axis from viewBox ratio"
 exit 0

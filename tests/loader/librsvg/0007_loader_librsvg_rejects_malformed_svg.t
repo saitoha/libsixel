@@ -15,19 +15,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-malformed.svg"
+svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-malformed.svg"
 
-printf '%s' "<svg xmlns='http://www.w3.org/2000/svg'><g><rect x='0' y='0' width='1' height='1'></svg>" >"${svg_path}"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" -o/dev/null || status="$?"
 
-
-set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >/dev/null
-status="$?"
-set -e
-
-test "${status}" -ne 0 || {
+test "${status-0}" -ne 0 || {
     echo "not ok" 1 - "forced librsvg unexpectedly accepted malformed SVG"
     exit 0
 }

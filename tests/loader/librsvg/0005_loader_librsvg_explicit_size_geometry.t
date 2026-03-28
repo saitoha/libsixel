@@ -17,21 +17,28 @@ echo "1..1"
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-svg_path="${ARTIFACT_LOCAL_DIR}/librsvg-explicit-size.svg"
+svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-explicit-size.svg"
 sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-explicit-size.six"
-
-printf '%s' "<svg xmlns='http://www.w3.org/2000/svg' width='13' height='7'><rect x='0' y='0' width='13' height='7' fill='#0000ff'/></svg>" >"${svg_path}"
-
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${sixel_path}" || {
     echo "not ok" 1 - "librsvg explicit-size conversion failed"
     exit 0
 }
 
-sed 's/^.*"//;s/#.*$//' "${sixel_path}" | grep -q '^1;1;13;7$' || {
-    echo "not ok" 1 - "explicit width/height geometry is not 13x7"
+IFS='"' read -r _ raster _ <"${sixel_path}" || :
+test -n "${raster-}" || {
+    echo "not ok" 1 - "failed to read sixel raster for explicit geometry"
     exit 0
 }
+raster="${raster%%#*}"
+case "${raster}" in
+    "1;1;13;7")
+        ;;
+    *)
+        echo "not ok" 1 - "explicit width/height geometry is not 13x7"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "librsvg explicit width/height geometry is respected"
 exit 0
