@@ -181,6 +181,8 @@ static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
 static int sixel_encoder_frame_has_transparent_mask(
     sixel_frame_t const *frame);
+static int sixel_encoder_frame_preserves_alpha_key(
+    sixel_frame_t const *frame);
 static int sixel_encoder_frame_get_transparent_mask_pixels(
     sixel_frame_t const *frame,
     size_t *pixel_count_out);
@@ -920,6 +922,20 @@ static int
 sixel_encoder_frame_has_transparent_mask(sixel_frame_t const *frame)
 {
     return sixel_encoder_frame_get_transparent_mask_pixels(frame, NULL);
+}
+
+static int
+sixel_encoder_frame_preserves_alpha_key(sixel_frame_t const *frame)
+{
+    if (frame == NULL || frame->alpha_zero_is_transparent == 0) {
+        return 0;
+    }
+    if (sixel_encoder_pixelformat_has_alpha(frame->pixelformat)
+            || sixel_encoder_frame_has_transparent_mask(frame)) {
+        return 1;
+    }
+
+    return 0;
 }
 
 static void
@@ -4220,12 +4236,8 @@ sixel_encoder_palette_job_thread(void *priv)
     preserve_alpha_key = 0;
 
     if (job != NULL && job->encoder != NULL && job->sample_frame != NULL) {
-        preserve_alpha_key =
-            job->sample_frame->alpha_zero_is_transparent != 0
-            && (sixel_encoder_pixelformat_has_alpha(
-                    sixel_frame_get_pixelformat(job->sample_frame))
-                || sixel_encoder_frame_has_transparent_mask(
-                    job->sample_frame));
+        preserve_alpha_key = sixel_encoder_frame_preserves_alpha_key(
+            job->sample_frame);
         if (!preserve_alpha_key) {
             status = sixel_frame_set_pixelformat(job->sample_frame,
                                                  job->target_pixelformat);
@@ -4918,9 +4930,9 @@ sixel_encoder_prepare_palette(
         if (sixel_frame_get_transparent(frame) != (-1)) {
             sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
         }
-    if (*dither && cache_allowed && encoder->dither_cache) {
-        sixel_dither_unref(encoder->dither_cache);
-    }
+        if (*dither && cache_allowed && encoder->dither_cache) {
+            sixel_dither_unref(encoder->dither_cache);
+        }
         goto end;
     }
 
@@ -4955,11 +4967,8 @@ sixel_encoder_prepare_palette(
         sixel_dither_unref(encoder->dither_cache);
     }
     reserve_alpha_key =
-        frame->alpha_zero_is_transparent != 0 &&
-        encoder->reqcolors > 1 &&
-        (sixel_encoder_pixelformat_has_alpha(
-             sixel_frame_get_pixelformat(frame))
-         || sixel_encoder_frame_has_transparent_mask(frame));
+        encoder->reqcolors > 1
+        && sixel_encoder_frame_preserves_alpha_key(frame);
     palette_reqcolors = encoder->reqcolors;
     if (reserve_alpha_key) {
         palette_reqcolors = encoder->reqcolors - 1;
@@ -4975,18 +4984,10 @@ sixel_encoder_prepare_palette(
          * generation can ignore fully transparent pixels.
          */
         sixel_dither_set_transparent(*dither, 0);
-        if (encoder->bgcolor != NULL) {
-            (*dither)->transparent_bgcolor[0] = encoder->bgcolor[0];
-            (*dither)->transparent_bgcolor[1] = encoder->bgcolor[1];
-            (*dither)->transparent_bgcolor[2] = encoder->bgcolor[2];
-        } else {
-            (*dither)->transparent_bgcolor[0] = 0U;
-            (*dither)->transparent_bgcolor[1] = 0U;
-            (*dither)->transparent_bgcolor[2] = 0U;
-        }
-        (*dither)->transparent_bgcolor_valid = 1;
+        sixel_dither_set_transparent_bgcolor_hint(*dither,
+                                                  encoder->bgcolor);
     } else {
-        (*dither)->transparent_bgcolor_valid = 0;
+        sixel_dither_clear_transparent_bgcolor_hint(*dither);
     }
 
     clustering_colorspace = encoder->clustering_colorspace;
