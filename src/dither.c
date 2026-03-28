@@ -2517,6 +2517,10 @@ sixel_dither_apply_palette(
     int dest_owned;
     int palette_entry_limit;
     unsigned char *transparent_mask = NULL;
+    unsigned char const *preset_transparent_mask;
+    size_t preset_transparent_mask_size;
+    int preset_transparent_keycolor;
+    int using_preset_transparent_mask;
     int apply_transparent_mask = 0;
     int keycolor_for_mask = (-1);
     size_t source_depth;
@@ -2556,6 +2560,10 @@ sixel_dither_apply_palette(
     palette_entry_limit = (int)palette->entry_count;
     source_depth = 0U;
     index = 0U;
+    preset_transparent_mask = NULL;
+    preset_transparent_mask_size = 0u;
+    preset_transparent_keycolor = (-1);
+    using_preset_transparent_mask = 0;
     status = sixel_dither_validate_complexion_limit(3, dither->complexion);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2612,13 +2620,29 @@ sixel_dither_apply_palette(
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
     total_pixels = (size_t)width * (size_t)height;
+    preset_transparent_mask = dither->pipeline_transparent_mask;
+    preset_transparent_mask_size = dither->pipeline_transparent_mask_size;
+    preset_transparent_keycolor = dither->pipeline_transparent_keycolor;
     dither->pipeline_transparent_mask = NULL;
     dither->pipeline_transparent_mask_size = 0;
     dither->pipeline_transparent_keycolor = (-1);
 
-    if (dither->keycolor >= 0 &&
-        sixel_dither_pixelformat_has_alpha(source_pixelformat) &&
-        total_pixels > 0U) {
+    /*
+     * Prefer caller-provided transparency masks when available.
+     * This path avoids alpha extraction and keeps precision for
+     * non-8bit sources.
+     */
+    if (preset_transparent_mask != NULL
+            && preset_transparent_mask_size >= total_pixels
+            && preset_transparent_keycolor >= 0
+            && preset_transparent_keycolor < SIXEL_PALETTE_MAX) {
+        transparent_mask = (unsigned char *)preset_transparent_mask;
+        keycolor_for_mask = preset_transparent_keycolor;
+        apply_transparent_mask = 1;
+        using_preset_transparent_mask = 1;
+    } else if (dither->keycolor >= 0
+            && sixel_dither_pixelformat_has_alpha(source_pixelformat)
+            && total_pixels > 0U) {
         source_depth = (size_t)sixel_helper_compute_depth(source_pixelformat);
         if (source_depth == 0U) {
             sixel_helper_set_additional_message(
@@ -3005,7 +3029,11 @@ end:
         if (float_pipeline_pixels != NULL && owns_float_pipeline) {
             sixel_allocator_free(dither->allocator, float_pipeline_pixels);
         }
-        if (transparent_mask != NULL) {
+        /*
+         * Frame-owned preset masks are borrowed pointers and must not be
+         * released here.
+         */
+        if (transparent_mask != NULL && !using_preset_transparent_mask) {
             sixel_allocator_free(dither->allocator, transparent_mask);
         }
         dither->pipeline_index_buffer = NULL;
