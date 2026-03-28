@@ -3206,6 +3206,58 @@ sixel_builtin_finalize_loaded_frame(
 }
 
 static SIXELSTATUS
+sixel_builtin_load_gif_frames(
+    sixel_builtin_load_request_t const *request,
+    sixel_builtin_load_context_t *load_context)
+{
+    SIXELSTATUS status;
+    fn_pointer fnp;
+    int chunk_size;
+
+    status = SIXEL_OK;
+    fnp.fn = NULL;
+    chunk_size = 0;
+    if (request == NULL ||
+        load_context == NULL ||
+        request->chunk == NULL ||
+        request->fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    fnp.fn = request->fn_load;
+    status = sixel_builtin_chunk_size_to_int(request->chunk, &chunk_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (load_context->start_frame_no != INT_MIN) {
+        status = sixel_builtin_count_gif_frames(request->chunk,
+                                                &load_context->gif_frame_count);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        status = sixel_builtin_resolve_animation_start_frame_no(
+            load_context->start_frame_no,
+            load_context->gif_frame_count,
+            &load_context->resolved_start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    return load_gif(request->chunk->buffer,
+                    chunk_size,
+                    request->bgcolor,
+                    request->reqcolors,
+                    request->fuse_palette,
+                    request->fstatic,
+                    request->loop_control,
+                    load_context->resolved_start_frame_no,
+                    fnp.p,
+                    request->callback_context,
+                    request->chunk->allocator);
+}
+
+static SIXELSTATUS
 sixel_builtin_chunk_size_to_int(sixel_chunk_t const *chunk, int *chunk_size)
 {
     if (chunk == NULL || chunk_size == NULL) {
@@ -3260,7 +3312,6 @@ load_with_builtin(
     int palette_colors;
     int palette_comp;
     sixel_frame_t *frame;
-    fn_pointer fnp;
     stbi__context stb_context;
     stbi__result_info ri;
     char message[80];
@@ -3299,7 +3350,6 @@ load_with_builtin(
     palette_colors = 0;
     palette_comp = 0;
     frame = NULL;
-    fnp.fn = NULL;
     stb_context = (stbi__context){ 0 };
     ri = (stbi__result_info){ 0 };
     nwrite = 0;
@@ -3404,37 +3454,7 @@ load_with_builtin(
         break;
 
     case SIXEL_BUILTIN_DECODE_PATH_GIF:
-        fnp.fn = load_request.fn_load;
-        status = sixel_builtin_chunk_size_to_int(pchunk, &chunk_size);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        if (load_context.start_frame_no != INT_MIN) {
-            status = sixel_builtin_count_gif_frames(
-                pchunk,
-                &load_context.gif_frame_count);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            status = sixel_builtin_resolve_animation_start_frame_no(
-                load_context.start_frame_no,
-                load_context.gif_frame_count,
-                &load_context.resolved_start_frame_no);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        }
-        status = load_gif(pchunk->buffer,
-                          chunk_size,
-                          bgcolor,
-                          reqcolors,
-                          fuse_palette,
-                          fstatic,
-                          loop_control,
-                          load_context.resolved_start_frame_no,
-                          fnp.p,
-                          context,
-                          pchunk->allocator);
+        status = sixel_builtin_load_gif_frames(&load_request, &load_context);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
