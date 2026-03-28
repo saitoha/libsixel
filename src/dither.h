@@ -109,6 +109,19 @@ void
 sixel_dither_clear_pipeline_transparent_mask_hint(
     sixel_dither_t *dither);
 
+/*
+ * Configure the alpha preblend backdrop used when transparent keycolor
+ * handling keeps alpha-bearing pixels in the palette stage.
+ */
+void
+sixel_dither_set_transparent_bgcolor_hint(
+    sixel_dither_t *dither,
+    unsigned char const *bgcolor);
+
+void
+sixel_dither_clear_transparent_bgcolor_hint(
+    sixel_dither_t *dither);
+
 
 #ifdef __cplusplus
 }

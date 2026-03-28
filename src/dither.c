@@ -2194,6 +2194,41 @@ sixel_dither_set_transparent(
 }
 
 void
+sixel_dither_clear_transparent_bgcolor_hint(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->transparent_bgcolor[0] = 0U;
+    dither->transparent_bgcolor[1] = 0U;
+    dither->transparent_bgcolor[2] = 0U;
+    dither->transparent_bgcolor_valid = 0;
+}
+
+void
+sixel_dither_set_transparent_bgcolor_hint(
+    sixel_dither_t *dither,
+    unsigned char const *bgcolor)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    if (bgcolor != NULL) {
+        dither->transparent_bgcolor[0] = bgcolor[0];
+        dither->transparent_bgcolor[1] = bgcolor[1];
+        dither->transparent_bgcolor[2] = bgcolor[2];
+    } else {
+        dither->transparent_bgcolor[0] = 0U;
+        dither->transparent_bgcolor[1] = 0U;
+        dither->transparent_bgcolor[2] = 0U;
+    }
+    dither->transparent_bgcolor_valid = 1;
+}
+
+void
 sixel_dither_clear_pipeline_transparent_mask_hint(
     sixel_dither_t *dither)
 {
