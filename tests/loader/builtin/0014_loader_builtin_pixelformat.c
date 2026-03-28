@@ -645,11 +645,23 @@ resolve_source_root_for_pixelformat_test(void)
     return source_root;
 }
 
+typedef struct builtin_loader_probe_options {
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    int set_loop_control;
+    int loop_control;
+    int set_cms_engine;
+    int cms_engine;
+} builtin_loader_probe_options_t;
+
 static int
-run_builtin_loader_hdr_numeric_probe_case(char const *label,
-                                          char const *relative_path,
-                                          int cms_engine,
-                                          hdr_numeric_probe_context_t *context)
+run_builtin_loader_probe_case(char const *label,
+                              char const *relative_path,
+                              builtin_loader_probe_options_t const *options,
+                              sixel_load_image_function callback,
+                              void *callback_context,
+                              SIXELSTATUS *load_status_out)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -662,23 +674,34 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
     int require_static;
     int use_palette;
     int reqcolors;
+    int loop_control;
+    int cms_engine;
+    int result;
 
     status = SIXEL_FALSE;
     allocator = NULL;
     chunk = NULL;
     component = NULL;
+    source_root = NULL;
     cancel_flag = 0;
-    require_static = 1;
+    require_static = 0;
     use_palette = 0;
     reqcolors = 256;
+    loop_control = SIXEL_LOOP_AUTO;
+    cms_engine = SIXEL_CMS_ENGINE_NONE;
+    result = 1;
+    if (load_status_out != NULL) {
+        *load_status_out = SIXEL_FALSE;
+    }
 
-    if (context == NULL) {
-        fprintf(stderr, "%s: context is null\n", label);
+    if (label == NULL ||
+        relative_path == NULL ||
+        options == NULL ||
+        callback == NULL) {
         return 1;
     }
 
     source_root = resolve_source_root_for_pixelformat_test();
-
     if (build_image_path(source_root,
                          relative_path,
                          image_path,
@@ -705,10 +728,11 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
         goto cleanup;
     }
 
-    memset(context, 0, sizeof(*context));
-    callback_state.loader = NULL;
-    callback_state.fn = capture_hdr_numeric_probe;
-    callback_state.context = context;
+    require_static = options->require_static;
+    use_palette = options->use_palette;
+    reqcolors = options->reqcolors;
+    loop_control = options->loop_control;
+    cms_engine = options->cms_engine;
 
     status = sixel_loader_component_setopt(component,
                                            SIXEL_LOADER_OPTION_REQUIRE_STATIC,
@@ -728,28 +752,89 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
-                                           &cms_engine);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
+    if (options->set_loop_control != 0) {
+        status = sixel_loader_component_setopt(component,
+                                               SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                               &loop_control);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+    if (options->set_cms_engine != 0) {
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
+            &cms_engine);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
     }
 
+    callback_state.loader = NULL;
+    callback_state.fn = callback;
+    callback_state.context = callback_context;
     status = sixel_loader_component_load(component,
                                          chunk,
                                          capture_frame_trampoline,
                                          &callback_state);
+    if (load_status_out != NULL) {
+        *load_status_out = status;
+    }
+    result = 0;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
+run_builtin_loader_hdr_numeric_probe_case(char const *label,
+                                          char const *relative_path,
+                                          int cms_engine,
+                                          hdr_numeric_probe_context_t *context)
+{
+    SIXELSTATUS status;
+    builtin_loader_probe_options_t options;
+    int result;
+
+    status = SIXEL_FALSE;
+    result = 1;
+
+    if (context == NULL) {
+        fprintf(stderr, "%s: context is null\n", label);
+        return 1;
+    }
+
+    memset(context, 0, sizeof(*context));
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = cms_engine;
+    result = run_builtin_loader_probe_case(label,
+                                           relative_path,
+                                           &options,
+                                           capture_hdr_numeric_probe,
+                                           context,
+                                           &status);
+    if (result != 0) {
+        return result;
+    }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "%s: loader reported failure (%d)\n",
                 label,
                 (int)status);
-        goto cleanup;
+        return 1;
     }
 
     if (context->callback_count != 1) {
         fprintf(stderr, "%s: callback count mismatch\n", label);
-        goto cleanup;
+        return 1;
     }
     if (context->width <= 0 || context->height <= 0) {
         fprintf(stderr,
@@ -757,16 +842,10 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
                 label,
                 context->width,
                 context->height);
-        goto cleanup;
+        return 1;
     }
 
-    status = SIXEL_OK;
-
-cleanup:
-    sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
-    sixel_allocator_unref(allocator);
-    return SIXEL_SUCCEEDED(status) ? 0 : 1;
+    return 0;
 }
 
 static int
@@ -2118,31 +2197,16 @@ run_builtin_loader_gif_sequence_test(
     int expected_count)
 {
     SIXELSTATUS status;
-    sixel_allocator_t *allocator;
-    sixel_chunk_t *chunk;
-    sixel_loader_component_t *component;
-    loader_probe_callback_state_t callback_state;
+    builtin_loader_probe_options_t options;
     gif_sequence_probe_context_t probe;
-    char const *source_root;
-    char image_path[PATH_MAX];
-    int cancel_flag;
-    int require_static;
-    int use_palette;
-    int reqcolors;
     int mismatch_expected_loop_no;
     int mismatch_expected_frame_no;
+    int result;
 
     status = SIXEL_FALSE;
-    allocator = NULL;
-    chunk = NULL;
-    component = NULL;
-    source_root = NULL;
-    cancel_flag = 0;
-    require_static = 0;
-    use_palette = 1;
-    reqcolors = 256;
     mismatch_expected_loop_no = -1;
     mismatch_expected_frame_no = -1;
+    result = 1;
     memset(&probe, 0, sizeof(probe));
 
     if (label == NULL ||
@@ -2152,58 +2216,6 @@ run_builtin_loader_gif_sequence_test(
         return 1;
     }
 
-    source_root = resolve_source_root_for_pixelformat_test();
-    if (build_image_path(source_root,
-                         relative_path,
-                         image_path,
-                         sizeof(image_path)) != 0) {
-        fprintf(stderr, "%s: failed to build image path\n", label);
-        return 1;
-    }
-
-    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "%s: allocator initialization failed\n", label);
-        return 1;
-    }
-
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "%s: failed to read sample\n", label);
-        goto cleanup;
-    }
-
-    status = new_builtin_component_for_pixelformat_test(allocator, &component);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
-        goto cleanup;
-    }
-
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
-                                           &require_static);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_USE_PALETTE,
-                                           &use_palette);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_REQCOLORS,
-                                           &reqcolors);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_LOOP_CONTROL,
-                                           &loop_control);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-
     probe.callback_count = 0;
     probe.expected_count = expected_count;
     probe.mismatch_index = -1;
@@ -2211,14 +2223,22 @@ run_builtin_loader_gif_sequence_test(
     probe.mismatch_frame_no = -1;
     probe.saw_multiframe = 0;
     probe.expected_sequence = expected_sequence;
-    callback_state.loader = NULL;
-    callback_state.fn = capture_gif_sequence_probe;
-    callback_state.context = &probe;
-
-    status = sixel_loader_component_load(component,
-                                         chunk,
-                                         capture_frame_trampoline,
-                                         &callback_state);
+    options.require_static = 0;
+    options.use_palette = 1;
+    options.reqcolors = 256;
+    options.set_loop_control = 1;
+    options.loop_control = loop_control;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+    result = run_builtin_loader_probe_case(label,
+                                           relative_path,
+                                           &options,
+                                           capture_gif_sequence_probe,
+                                           &probe,
+                                           &status);
+    if (result != 0) {
+        return result;
+    }
     if (SIXEL_FAILED(status)) {
         if (probe.mismatch_index >= 0 &&
             probe.mismatch_index < expected_count) {
@@ -2241,7 +2261,7 @@ run_builtin_loader_gif_sequence_test(
                     label,
                     (int)status);
         }
-        goto cleanup;
+        return 1;
     }
     if (probe.callback_count != expected_count) {
         fprintf(stderr,
@@ -2249,22 +2269,14 @@ run_builtin_loader_gif_sequence_test(
                 label,
                 probe.callback_count,
                 expected_count);
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
+        return 1;
     }
     if (probe.saw_multiframe == 0) {
         fprintf(stderr, "%s: frame metadata did not mark multiframe\n", label);
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
+        return 1;
     }
 
-    status = SIXEL_OK;
-
-cleanup:
-    sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
-    sixel_allocator_unref(allocator);
-    return SIXEL_SUCCEEDED(status) ? 0 : 1;
+    return 0;
 }
 
 static int
@@ -2345,83 +2357,16 @@ run_builtin_loader_gif_unbounded_loop_probe_test(
     int required_loop_no)
 {
     SIXELSTATUS status;
-    sixel_allocator_t *allocator;
-    sixel_chunk_t *chunk;
-    sixel_loader_component_t *component;
-    loader_probe_callback_state_t callback_state;
+    builtin_loader_probe_options_t options;
     gif_loop_probe_context_t probe;
-    char const *source_root;
-    char image_path[PATH_MAX];
-    int cancel_flag;
-    int require_static;
-    int use_palette;
-    int reqcolors;
+    int result;
 
     status = SIXEL_FALSE;
-    allocator = NULL;
-    chunk = NULL;
-    component = NULL;
-    source_root = NULL;
-    cancel_flag = 0;
-    require_static = 0;
-    use_palette = 1;
-    reqcolors = 256;
+    result = 1;
     memset(&probe, 0, sizeof(probe));
 
     if (label == NULL || relative_path == NULL || required_loop_no < 0) {
         return 1;
-    }
-
-    source_root = resolve_source_root_for_pixelformat_test();
-    if (build_image_path(source_root,
-                         relative_path,
-                         image_path,
-                         sizeof(image_path)) != 0) {
-        fprintf(stderr, "%s: failed to build image path\n", label);
-        return 1;
-    }
-
-    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "%s: allocator initialization failed\n", label);
-        return 1;
-    }
-
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "%s: failed to read sample\n", label);
-        goto cleanup;
-    }
-
-    status = new_builtin_component_for_pixelformat_test(allocator, &component);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
-        goto cleanup;
-    }
-
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
-                                           &require_static);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_USE_PALETTE,
-                                           &use_palette);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_REQCOLORS,
-                                           &reqcolors);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_LOOP_CONTROL,
-                                           &loop_control);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
     }
 
     probe.callback_count = 0;
@@ -2432,20 +2377,28 @@ run_builtin_loader_gif_unbounded_loop_probe_test(
     probe.highest_frame_no = -1;
     probe.saw_multiframe = 0;
     probe.reached_required_loop = 0;
-    callback_state.loader = NULL;
-    callback_state.fn = capture_gif_loop_probe_until_target;
-    callback_state.context = &probe;
-
-    status = sixel_loader_component_load(component,
-                                         chunk,
-                                         capture_frame_trampoline,
-                                         &callback_state);
+    options.require_static = 0;
+    options.use_palette = 1;
+    options.reqcolors = 256;
+    options.set_loop_control = 1;
+    options.loop_control = loop_control;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+    result = run_builtin_loader_probe_case(label,
+                                           relative_path,
+                                           &options,
+                                           capture_gif_loop_probe_until_target,
+                                           &probe,
+                                           &status);
+    if (result != 0) {
+        return result;
+    }
     if (status != SIXEL_INTERRUPTED) {
         fprintf(stderr,
                 "%s: expected interruption status, got %d\n",
                 label,
                 (int)status);
-        goto cleanup;
+        return 1;
     }
     if (probe.reached_required_loop == 0) {
         fprintf(stderr,
@@ -2455,22 +2408,14 @@ run_builtin_loader_gif_unbounded_loop_probe_test(
                 required_loop_no,
                 probe.highest_loop_no,
                 probe.callback_count);
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
+        return 1;
     }
     if (probe.saw_multiframe == 0) {
         fprintf(stderr, "%s: frame metadata did not mark multiframe\n", label);
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
+        return 1;
     }
 
-    status = SIXEL_OK;
-
-cleanup:
-    sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
-    sixel_allocator_unref(allocator);
-    return SIXEL_SUCCEEDED(status) ? 0 : 1;
+    return 0;
 }
 
 static int
@@ -2856,227 +2801,115 @@ run_builtin_loader_psd_validate_defensive_test(void)
     return 0;
 }
 
+typedef int (*builtin_loader_env_test_fn_t)(void);
+
+typedef struct builtin_loader_env_dispatch_entry {
+    char const *env_name;
+    builtin_loader_env_test_fn_t fn;
+} builtin_loader_env_dispatch_entry_t;
+
+static int
+run_builtin_loader_env_dispatch(
+    builtin_loader_env_dispatch_entry_t const *entries,
+    size_t entry_count)
+{
+    size_t index;
+    char const *mode;
+
+    index = 0u;
+    mode = NULL;
+    if (entries == NULL) {
+        return -1;
+    }
+
+    for (index = 0u; index < entry_count; ++index) {
+        mode = loader_test_getenv(entries[index].env_name);
+        if (mode != NULL && strcmp(mode, "1") == 0) {
+            return entries[index].fn();
+        }
+    }
+    return -1;
+}
+
 static int
 run_builtin_loader_test(void)
 {
-    char const *hdr_numeric_mode;
-    char const *hdr_fallback_numeric_mode;
-    char const *hdr_header_priority_mode;
-    char const *hdr_exposure_numeric_mode;
-    char const *hdr_tonemap_numeric_mode;
-    char const *hdr_single_case_numeric_mode;
-    char const *hdr_invalid_fallback_numeric_mode;
-    char const *hdr_invalid_tonemap_numeric_mode;
-    char const *hdr_invalid_exposure_numeric_mode;
-    char const *hdr_exposure_overflow_none_numeric_mode;
-    char const *hdr_exposure_overflow_reinhard_numeric_mode;
-    char const *hdr_header_exposure_numeric_mode;
-    char const *hdr_header_exposure_multi_numeric_mode;
-    char const *hdr_header_exposure_disabled_numeric_mode;
-    char const *hdr_gamma_invalid_primaries_valid_numeric_mode;
-    char const *hdr_primaries_invalid_gamma_valid_numeric_mode;
-    char const *hdr_invalid_header_exposure_numeric_mode;
-    char const *hdr_mixed_header_exposure_invalid_numeric_mode;
-    char const *hdr_invalid_use_header_exposure_env_numeric_mode;
-    char const *hdr_duplicate_header_metadata_numeric_mode;
-    char const *gif_loop_disable_loop0_once_mode;
-    char const *gif_loop_disable_loop1_once_mode;
-    char const *gif_loop_disable_loop2_once_mode;
-    char const *gif_loop_auto_loop1_once_mode;
-    char const *gif_loop_auto_loop2_twice_mode;
-    char const *gif_loop_auto_loop0_unbounded_mode;
-    char const *gif_loop_force_loop0_unbounded_mode;
-    char const *gif_loop_force_loop1_unbounded_mode;
-    char const *gif_loop_force_loop2_unbounded_mode;
-    char const *psd_validate_defensive_mode;
+    static builtin_loader_env_dispatch_entry_t const env_dispatch[] = {
+        { "SIXEL_TEST_HDR_NUMERIC_GAMMA",
+          run_builtin_loader_hdr_gamma_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_FALLBACK_PROFILE",
+          run_builtin_loader_hdr_fallback_profile_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_HEADER_PRIORITY",
+          run_builtin_loader_hdr_header_priority_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_EXPOSURE",
+          run_builtin_loader_hdr_exposure_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_TONEMAP_REINHARD",
+          run_builtin_loader_hdr_tonemap_reinhard_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_SINGLE_CASE",
+          run_builtin_loader_hdr_single_case_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_INVALID_FALLBACK",
+          run_builtin_loader_hdr_invalid_fallback_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_INVALID_TONEMAP",
+          run_builtin_loader_hdr_invalid_tonemap_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_INVALID_EXPOSURE",
+          run_builtin_loader_hdr_invalid_exposure_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_EXPOSURE_OVERFLOW_NONE",
+          run_builtin_loader_hdr_exposure_overflow_none_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_EXPOSURE_OVERFLOW_REINHARD",
+          run_builtin_loader_hdr_exposure_overflow_reinhard_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE",
+          run_builtin_loader_hdr_header_exposure_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE_MULTI",
+          run_builtin_loader_hdr_header_exposure_multi_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE_DISABLED",
+          run_builtin_loader_hdr_header_exposure_disabled_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_GAMMA_INVALID_PRIMARIES_VALID",
+          run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_PRIMARIES_INVALID_GAMMA_VALID",
+          run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_INVALID_HEADER_EXPOSURE",
+          run_builtin_loader_hdr_invalid_header_exposure_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_MIXED_HEADER_EXPOSURE_INVALID",
+          run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV",
+          run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test },
+        { "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS",
+          run_builtin_loader_hdr_duplicate_header_metadata_numeric_test },
+        { "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP0_ONCE",
+          run_builtin_loader_gif_loop_disable_loop0_once_test },
+        { "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP1_ONCE",
+          run_builtin_loader_gif_loop_disable_loop1_once_test },
+        { "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP2_ONCE",
+          run_builtin_loader_gif_loop_disable_loop2_once_test },
+        { "SIXEL_TEST_GIF_LOOP_AUTO_LOOP1_ONCE",
+          run_builtin_loader_gif_loop_auto_loop1_once_test },
+        { "SIXEL_TEST_GIF_LOOP_AUTO_LOOP2_TWICE",
+          run_builtin_loader_gif_loop_auto_loop2_twice_test },
+        { "SIXEL_TEST_GIF_LOOP_AUTO_LOOP0_UNBOUNDED",
+          run_builtin_loader_gif_loop_auto_loop0_unbounded_test },
+        { "SIXEL_TEST_GIF_LOOP_FORCE_LOOP0_UNBOUNDED",
+          run_builtin_loader_gif_loop_force_loop0_unbounded_test },
+        { "SIXEL_TEST_GIF_LOOP_FORCE_LOOP1_UNBOUNDED",
+          run_builtin_loader_gif_loop_force_loop1_unbounded_test },
+        { "SIXEL_TEST_GIF_LOOP_FORCE_LOOP2_UNBOUNDED",
+          run_builtin_loader_gif_loop_force_loop2_unbounded_test },
+        { "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE",
+          run_builtin_loader_psd_validate_defensive_test }
+    };
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
     int cms_target_colorspace;
     int parsed_pixelformat;
+    int dispatch_result;
     int result;
     loader_component_case_spec_t psd_alpha_case;
 
-    hdr_numeric_mode = loader_test_getenv("SIXEL_TEST_HDR_NUMERIC_GAMMA");
-    hdr_fallback_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_FALLBACK_PROFILE");
-    hdr_header_priority_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_HEADER_PRIORITY");
-    hdr_exposure_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_EXPOSURE");
-    hdr_tonemap_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_TONEMAP_REINHARD");
-    hdr_single_case_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_SINGLE_CASE");
-    hdr_invalid_fallback_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_INVALID_FALLBACK");
-    hdr_invalid_tonemap_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_INVALID_TONEMAP");
-    hdr_invalid_exposure_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_INVALID_EXPOSURE");
-    hdr_exposure_overflow_none_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_EXPOSURE_OVERFLOW_NONE");
-    hdr_exposure_overflow_reinhard_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_EXPOSURE_OVERFLOW_REINHARD");
-    hdr_header_exposure_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE");
-    hdr_header_exposure_multi_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE_MULTI");
-    hdr_header_exposure_disabled_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE_DISABLED");
-    hdr_gamma_invalid_primaries_valid_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_GAMMA_INVALID_PRIMARIES_VALID");
-    hdr_primaries_invalid_gamma_valid_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_PRIMARIES_INVALID_GAMMA_VALID");
-    hdr_invalid_header_exposure_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_INVALID_HEADER_EXPOSURE");
-    hdr_mixed_header_exposure_invalid_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_MIXED_HEADER_EXPOSURE_INVALID");
-    hdr_invalid_use_header_exposure_env_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV");
-    hdr_duplicate_header_metadata_numeric_mode = loader_test_getenv(
-        "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS");
-    gif_loop_disable_loop0_once_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP0_ONCE");
-    gif_loop_disable_loop1_once_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP1_ONCE");
-    gif_loop_disable_loop2_once_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP2_ONCE");
-    gif_loop_auto_loop1_once_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_AUTO_LOOP1_ONCE");
-    gif_loop_auto_loop2_twice_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_AUTO_LOOP2_TWICE");
-    gif_loop_auto_loop0_unbounded_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_AUTO_LOOP0_UNBOUNDED");
-    gif_loop_force_loop0_unbounded_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_FORCE_LOOP0_UNBOUNDED");
-    gif_loop_force_loop1_unbounded_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_FORCE_LOOP1_UNBOUNDED");
-    gif_loop_force_loop2_unbounded_mode = loader_test_getenv(
-        "SIXEL_TEST_GIF_LOOP_FORCE_LOOP2_UNBOUNDED");
-    psd_validate_defensive_mode = loader_test_getenv(
-        "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE");
-    if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_gamma_numeric_test();
-    }
-    if (hdr_fallback_numeric_mode != NULL &&
-        strcmp(hdr_fallback_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_fallback_profile_numeric_test();
-    }
-    if (hdr_header_priority_mode != NULL &&
-        strcmp(hdr_header_priority_mode, "1") == 0) {
-        return run_builtin_loader_hdr_header_priority_numeric_test();
-    }
-    if (hdr_exposure_numeric_mode != NULL &&
-        strcmp(hdr_exposure_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_exposure_numeric_test();
-    }
-    if (hdr_tonemap_numeric_mode != NULL &&
-        strcmp(hdr_tonemap_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_tonemap_reinhard_numeric_test();
-    }
-    if (hdr_single_case_numeric_mode != NULL &&
-        strcmp(hdr_single_case_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_single_case_numeric_test();
-    }
-    if (hdr_invalid_fallback_numeric_mode != NULL &&
-        strcmp(hdr_invalid_fallback_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_invalid_fallback_numeric_test();
-    }
-    if (hdr_invalid_tonemap_numeric_mode != NULL &&
-        strcmp(hdr_invalid_tonemap_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_invalid_tonemap_numeric_test();
-    }
-    if (hdr_invalid_exposure_numeric_mode != NULL &&
-        strcmp(hdr_invalid_exposure_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_invalid_exposure_numeric_test();
-    }
-    if (hdr_exposure_overflow_none_numeric_mode != NULL &&
-        strcmp(hdr_exposure_overflow_none_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_exposure_overflow_none_numeric_test();
-    }
-    if (hdr_exposure_overflow_reinhard_numeric_mode != NULL &&
-        strcmp(hdr_exposure_overflow_reinhard_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_exposure_overflow_reinhard_numeric_test();
-    }
-    if (hdr_header_exposure_numeric_mode != NULL &&
-        strcmp(hdr_header_exposure_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_header_exposure_numeric_test();
-    }
-    if (hdr_header_exposure_multi_numeric_mode != NULL &&
-        strcmp(hdr_header_exposure_multi_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_header_exposure_multi_numeric_test();
-    }
-    if (hdr_header_exposure_disabled_numeric_mode != NULL &&
-        strcmp(hdr_header_exposure_disabled_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_header_exposure_disabled_numeric_test();
-    }
-    if (hdr_gamma_invalid_primaries_valid_numeric_mode != NULL &&
-        strcmp(hdr_gamma_invalid_primaries_valid_numeric_mode, "1") == 0) {
-        return
-            run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test();
-    }
-    if (hdr_primaries_invalid_gamma_valid_numeric_mode != NULL &&
-        strcmp(hdr_primaries_invalid_gamma_valid_numeric_mode, "1") == 0) {
-        return
-            run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test();
-    }
-    if (hdr_invalid_header_exposure_numeric_mode != NULL &&
-        strcmp(hdr_invalid_header_exposure_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_invalid_header_exposure_numeric_test();
-    }
-    if (hdr_mixed_header_exposure_invalid_numeric_mode != NULL &&
-        strcmp(hdr_mixed_header_exposure_invalid_numeric_mode, "1") == 0) {
-        return
-            run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric_test();
-    }
-    if (hdr_invalid_use_header_exposure_env_numeric_mode != NULL &&
-        strcmp(hdr_invalid_use_header_exposure_env_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test();
-    }
-    if (hdr_duplicate_header_metadata_numeric_mode != NULL &&
-        strcmp(hdr_duplicate_header_metadata_numeric_mode, "1") == 0) {
-        return run_builtin_loader_hdr_duplicate_header_metadata_numeric_test();
-    }
-    if (gif_loop_disable_loop0_once_mode != NULL &&
-        strcmp(gif_loop_disable_loop0_once_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_disable_loop0_once_test();
-    }
-    if (gif_loop_disable_loop1_once_mode != NULL &&
-        strcmp(gif_loop_disable_loop1_once_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_disable_loop1_once_test();
-    }
-    if (gif_loop_disable_loop2_once_mode != NULL &&
-        strcmp(gif_loop_disable_loop2_once_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_disable_loop2_once_test();
-    }
-    if (gif_loop_auto_loop1_once_mode != NULL &&
-        strcmp(gif_loop_auto_loop1_once_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_auto_loop1_once_test();
-    }
-    if (gif_loop_auto_loop2_twice_mode != NULL &&
-        strcmp(gif_loop_auto_loop2_twice_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_auto_loop2_twice_test();
-    }
-    if (gif_loop_auto_loop0_unbounded_mode != NULL &&
-        strcmp(gif_loop_auto_loop0_unbounded_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_auto_loop0_unbounded_test();
-    }
-    if (gif_loop_force_loop0_unbounded_mode != NULL &&
-        strcmp(gif_loop_force_loop0_unbounded_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_force_loop0_unbounded_test();
-    }
-    if (gif_loop_force_loop1_unbounded_mode != NULL &&
-        strcmp(gif_loop_force_loop1_unbounded_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_force_loop1_unbounded_test();
-    }
-    if (gif_loop_force_loop2_unbounded_mode != NULL &&
-        strcmp(gif_loop_force_loop2_unbounded_mode, "1") == 0) {
-        return run_builtin_loader_gif_loop_force_loop2_unbounded_test();
-    }
-    if (psd_validate_defensive_mode != NULL &&
-        strcmp(psd_validate_defensive_mode, "1") == 0) {
-        return run_builtin_loader_psd_validate_defensive_test();
+    dispatch_result = run_builtin_loader_env_dispatch(
+        env_dispatch,
+        sizeof(env_dispatch) / sizeof(env_dispatch[0]));
+    if (dispatch_result >= 0) {
+        return dispatch_result;
     }
 
     result = run_loader_component_case("builtin loader rgba8",

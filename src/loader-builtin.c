@@ -3004,6 +3004,116 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
+typedef struct sixel_builtin_load_request {
+    sixel_chunk_t const *chunk;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    unsigned char *bgcolor;
+    int loop_control;
+    int start_frame_no_set;
+    int start_frame_no_override;
+    int enable_cms;
+    sixel_load_image_function fn_load;
+    void *callback_context;
+} sixel_builtin_load_request_t;
+
+typedef struct sixel_builtin_load_context {
+    int start_frame_no;
+    int resolved_start_frame_no;
+    int gif_frame_count;
+} sixel_builtin_load_context_t;
+
+typedef enum sixel_builtin_decode_path {
+    SIXEL_BUILTIN_DECODE_PATH_SIXEL = 0,
+    SIXEL_BUILTIN_DECODE_PATH_PNM,
+    SIXEL_BUILTIN_DECODE_PATH_GIF,
+    SIXEL_BUILTIN_DECODE_PATH_STBI
+} sixel_builtin_decode_path_t;
+
+static sixel_builtin_decode_path_t
+sixel_builtin_detect_decode_path(sixel_chunk_t const *chunk)
+{
+    if (chunk != NULL && chunk_is_sixel(chunk)) {
+        return SIXEL_BUILTIN_DECODE_PATH_SIXEL;
+    }
+    if (chunk != NULL && chunk_is_pnm(chunk)) {
+        return SIXEL_BUILTIN_DECODE_PATH_PNM;
+    }
+    if (chunk != NULL && chunk_is_gif(chunk)) {
+        return SIXEL_BUILTIN_DECODE_PATH_GIF;
+    }
+    return SIXEL_BUILTIN_DECODE_PATH_STBI;
+}
+
+static char const *
+sixel_builtin_decode_path_name(sixel_builtin_decode_path_t path)
+{
+    switch (path) {
+    case SIXEL_BUILTIN_DECODE_PATH_SIXEL:
+        return "sixel";
+    case SIXEL_BUILTIN_DECODE_PATH_PNM:
+        return "pnm";
+    case SIXEL_BUILTIN_DECODE_PATH_GIF:
+        return "gif";
+    case SIXEL_BUILTIN_DECODE_PATH_STBI:
+    default:
+        return "stbi";
+    }
+}
+
+static SIXELSTATUS
+sixel_builtin_prepare_load_context(
+    sixel_builtin_load_request_t const *request,
+    sixel_builtin_load_context_t *load_context)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (request == NULL ||
+        load_context == NULL ||
+        request->chunk == NULL ||
+        request->fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    load_context->start_frame_no = INT_MIN;
+    load_context->resolved_start_frame_no = -1;
+    load_context->gif_frame_count = 0;
+
+    if (request->start_frame_no_set != 0) {
+        load_context->start_frame_no = request->start_frame_no_override;
+    } else {
+        status = sixel_builtin_parse_animation_start_frame_no(
+            &load_context->start_frame_no);
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_finalize_loaded_frame(
+    sixel_builtin_load_request_t const *request,
+    sixel_frame_t *frame)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (request == NULL || frame == NULL || request->fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (!frame->alpha_zero_is_transparent) {
+        status = sixel_frame_strip_alpha(frame, request->bgcolor);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    status = request->fn_load(frame, request->callback_context);
+    return status;
+}
+
 SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const *pchunk,
@@ -3030,9 +3140,6 @@ load_with_builtin(
     stbi__result_info ri;
     char message[80];
     int nwrite;
-    int start_frame_no;
-    int resolved_start_frame_no;
-    int gif_frame_count;
     int png_keycolor_mode;
     int palette_keycolor_index;
     int palette_zero_alpha_count;
@@ -3048,6 +3155,9 @@ load_with_builtin(
     size_t psd_transparent_mask_size;
     SIXELSTATUS hdr_hint_status;
     sixel_builtin_hdr_profile_hint_t hdr_hint;
+    sixel_builtin_load_request_t load_request;
+    sixel_builtin_load_context_t load_context;
+    sixel_builtin_decode_path_t decode_path;
 #if HAVE_LCMS2
     uint16_t tiff_photometric;
 #endif
@@ -3063,9 +3173,6 @@ load_with_builtin(
     stb_context = (stbi__context){ 0 };
     ri = (stbi__result_info){ 0 };
     nwrite = 0;
-    start_frame_no = INT_MIN;
-    resolved_start_frame_no = -1;
-    gif_frame_count = 0;
     png_keycolor_mode = 0;
     palette_keycolor_index = -1;
     palette_zero_alpha_count = 0;
@@ -3083,28 +3190,34 @@ load_with_builtin(
     memset(&hdr_hint, 0, sizeof(hdr_hint));
     hdr_hint.gamma = 1.0;
     hdr_hint.exposure_scale = 1.0;
+    load_request.chunk = pchunk;
+    load_request.fstatic = fstatic;
+    load_request.fuse_palette = fuse_palette;
+    load_request.reqcolors = reqcolors;
+    load_request.bgcolor = bgcolor;
+    load_request.loop_control = loop_control;
+    load_request.start_frame_no_set = start_frame_no_set;
+    load_request.start_frame_no_override = start_frame_no_override;
+    load_request.enable_cms = enable_cms;
+    load_request.fn_load = fn_load;
+    load_request.callback_context = context;
+    memset(&load_context, 0, sizeof(load_context));
+    decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
 #if HAVE_LCMS2
     tiff_photometric = (uint16_t)0xffffu;
 #endif
 
-    if (start_frame_no_set) {
-        start_frame_no = start_frame_no_override;
-    } else {
-        status = sixel_builtin_parse_animation_start_frame_no(&start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
+    status = sixel_builtin_prepare_load_context(&load_request, &load_context);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    if (pchunk == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
+    decode_path = sixel_builtin_detect_decode_path(load_request.chunk);
+    loader_trace_message("builtin loader: decode path=%s",
+                         sixel_builtin_decode_path_name(decode_path));
 
-    if (chunk_is_sixel(pchunk)) {
+    switch (decode_path) {
+    case SIXEL_BUILTIN_DECODE_PATH_SIXEL:
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3127,7 +3240,9 @@ load_with_builtin(
             goto end;
         }
         sixel_frame_set_pixels(frame, pixels);
-    } else if (chunk_is_pnm(pchunk)) {
+        break;
+
+    case SIXEL_BUILTIN_DECODE_PATH_PNM:
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3149,21 +3264,25 @@ load_with_builtin(
             goto end;
         }
         sixel_frame_set_pixels(frame, pixels);
-    } else if (chunk_is_gif(pchunk)) {
-        fnp.fn = fn_load;
+        break;
+
+    case SIXEL_BUILTIN_DECODE_PATH_GIF:
+        fnp.fn = load_request.fn_load;
         if (pchunk->size > INT_MAX) {
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
-        if (start_frame_no != INT_MIN) {
-            status = sixel_builtin_count_gif_frames(pchunk, &gif_frame_count);
+        if (load_context.start_frame_no != INT_MIN) {
+            status = sixel_builtin_count_gif_frames(
+                pchunk,
+                &load_context.gif_frame_count);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
             status = sixel_builtin_resolve_animation_start_frame_no(
-                start_frame_no,
-                gif_frame_count,
-                &resolved_start_frame_no);
+                load_context.start_frame_no,
+                load_context.gif_frame_count,
+                &load_context.resolved_start_frame_no);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -3175,7 +3294,7 @@ load_with_builtin(
                           fuse_palette,
                           fstatic,
                           loop_control,
-                          resolved_start_frame_no,
+                          load_context.resolved_start_frame_no,
                           fnp.p,
                           context,
                           pchunk->allocator);
@@ -3183,7 +3302,10 @@ load_with_builtin(
             goto end;
         }
         goto end;
-    } else {
+        break;
+
+    case SIXEL_BUILTIN_DECODE_PATH_STBI:
+    default:
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3210,7 +3332,7 @@ load_with_builtin(
                                                     bgcolor,
                                                     enable_cms,
                                                     loop_control,
-                                                    start_frame_no,
+                                                    load_context.start_frame_no,
                                                     fn_load,
                                                     context);
             if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
@@ -3904,14 +4026,7 @@ load_with_builtin(
     }
 
 done:
-    if (!frame->alpha_zero_is_transparent) {
-        status = sixel_frame_strip_alpha(frame, bgcolor);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
-    status = fn_load(frame, context);
+    status = sixel_builtin_finalize_loaded_frame(&load_request, frame);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
