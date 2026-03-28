@@ -1801,6 +1801,24 @@ typedef union sixel_fromgif_fn_pointer {
     void *                    p;
 } sixel_fromgif_fn_pointer_t;
 
+typedef struct gif_decode_request {
+    unsigned char *bgcolor;
+    int reqcolors;
+    int fuse_palette;
+    int start_frame_no;
+    sixel_fromgif_fn_pointer_t fnp;
+    void *context;
+    int stream_scan_failed;
+    int fstatic;
+} gif_decode_request_t;
+
+typedef struct gif_decode_progress {
+    int decoded_frame_no;
+    int emitted_frame_no;
+    int stream_terminated;
+    int stop_decode;
+} gif_decode_progress_t;
+
 static SIXELSTATUS
 gif_validate_canvas_requirements(gif_t *g, size_t *pcount_out)
 {
@@ -2087,18 +2105,8 @@ static SIXELSTATUS
 gif_decode_one_frame(gif_context_t *s,
                      gif_t *g,
                      sixel_frame_t *frame,
-                     unsigned char *bgcolor,
-                     int reqcolors,
-                     int fuse_palette,
-                     int start_frame_no,
-                     sixel_fromgif_fn_pointer_t fnp,
-                     void *context,
-                     int stream_scan_failed,
-                     int fstatic,
-                     int *decoded_frame_no,
-                     int *emitted_frame_no,
-                     int *stream_terminated,
-                     int *stop_decode)
+                     gif_decode_request_t const *request,
+                     gif_decode_progress_t *progress)
 {
     SIXELSTATUS status;
     int emit_frame;
@@ -2107,32 +2115,31 @@ gif_decode_one_frame(gif_context_t *s,
     status = SIXEL_FALSE;
     emit_frame = 0;
     loop_no = 0;
-    if (stream_terminated != NULL) {
-        *stream_terminated = 0;
+    if (progress != NULL) {
+        progress->stream_terminated = 0;
     }
-    if (stop_decode != NULL) {
-        *stop_decode = 0;
+    if (progress != NULL) {
+        progress->stop_decode = 0;
     }
     if (s == NULL ||
         g == NULL ||
         frame == NULL ||
-        decoded_frame_no == NULL ||
-        emitted_frame_no == NULL ||
-        stream_terminated == NULL ||
-        stop_decode == NULL) {
+        request == NULL ||
+        progress == NULL ||
+        request->fnp.fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = gif_load_next(s, g, bgcolor);
+    status = gif_load_next(s, g, request->bgcolor);
     if (status != SIXEL_OK) {
         return status;
     }
     if (g->is_terminated != 0) {
-        *stream_terminated = 1;
+        progress->stream_terminated = 1;
         return SIXEL_OK;
     }
 
-    if (stream_scan_failed != 0 && *decoded_frame_no >= 1) {
+    if (request->stream_scan_failed != 0 && progress->decoded_frame_no >= 1) {
         g->stream_is_multiframe = 1;
     }
 
@@ -2144,34 +2151,38 @@ gif_decode_one_frame(gif_context_t *s,
      */
     sixel_frame_set_width(frame, g->w);
     sixel_frame_set_height(frame, g->h);
-    status = gif_init_frame(frame, g, bgcolor, reqcolors, fuse_palette);
+    status = gif_init_frame(frame,
+                            g,
+                            request->bgcolor,
+                            request->reqcolors,
+                            request->fuse_palette);
     if (status != SIXEL_OK) {
         return status;
     }
 
     loop_no = sixel_frame_get_loop_no(frame);
-    emit_frame = gif_should_emit_decoded_frame(start_frame_no,
+    emit_frame = gif_should_emit_decoded_frame(request->start_frame_no,
                                                loop_no,
-                                               *decoded_frame_no);
+                                               progress->decoded_frame_no);
     if (emit_frame != 0) {
         /*
          * Frame numbers are reported relative to emitted frames so start-frame
          * skipping still begins at frame 0 for the first callback.
          */
-        sixel_frame_set_frame_no(frame, *emitted_frame_no);
-        status = fnp.fn(frame, context);
+        sixel_frame_set_frame_no(frame, progress->emitted_frame_no);
+        status = request->fnp.fn(frame, request->context);
         if (status != SIXEL_OK) {
             return status;
         }
-        if (fstatic != 0) {
-            *stop_decode = 1;
+        if (request->fstatic != 0) {
+            progress->stop_decode = 1;
         }
     }
 
     gif_update_frame_progress(frame,
                               emit_frame,
-                              decoded_frame_no,
-                              emitted_frame_no);
+                              &progress->decoded_frame_no,
+                              &progress->emitted_frame_no);
     return SIXEL_OK;
 }
 
@@ -2180,8 +2191,7 @@ gif_prepare_loop_iteration(gif_context_t *s,
                            gif_t *g,
                            sixel_frame_t *frame,
                            size_t *pcount,
-                           int *decoded_frame_no,
-                           int *emitted_frame_no)
+                           gif_decode_progress_t *progress)
 {
     SIXELSTATUS status;
 
@@ -2190,14 +2200,15 @@ gif_prepare_loop_iteration(gif_context_t *s,
         g == NULL ||
         frame == NULL ||
         pcount == NULL ||
-        decoded_frame_no == NULL ||
-        emitted_frame_no == NULL) {
+        progress == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     sixel_frame_set_frame_no(frame, 0);
-    *decoded_frame_no = 0;
-    *emitted_frame_no = 0;
+    progress->decoded_frame_no = 0;
+    progress->emitted_frame_no = 0;
+    progress->stream_terminated = 0;
+    progress->stop_decode = 0;
 
     s->img_buffer = s->img_buffer_original;
     g->loop_count = -1;
@@ -2234,31 +2245,31 @@ load_gif(
     gif_t *g;
     SIXELSTATUS status;
     sixel_frame_t *frame;
-    sixel_fromgif_fn_pointer_t fnp;
+    gif_decode_request_t decode_request;
+    gif_decode_progress_t progress;
     size_t pcount;
-    int decoded_frame_no;
-    int emitted_frame_no;
-    int stream_scan_failed;
-    int stream_terminated;
-    int stop_decode;
     int loop_no;
 
     status = SIXEL_FALSE;
     frame = NULL;
     g = NULL;
-    fnp.p = fn_load;
+    memset(&decode_request, 0, sizeof(decode_request));
+    memset(&progress, 0, sizeof(progress));
     pcount = 0u;
-    decoded_frame_no = 0;
-    emitted_frame_no = 0;
-    stream_scan_failed = 0;
-    stream_terminated = 0;
-    stop_decode = 0;
     loop_no = 0;
 
     if (buffer == NULL || size <= 0 || fn_load == NULL || allocator == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+    decode_request.bgcolor = bgcolor;
+    decode_request.reqcolors = reqcolors;
+    decode_request.fuse_palette = fuse_palette;
+    decode_request.start_frame_no = start_frame_no;
+    decode_request.fnp.p = fn_load;
+    decode_request.context = context;
+    decode_request.stream_scan_failed = 0;
+    decode_request.fstatic = fstatic;
 
     status = gif_prepare_decoder_state(buffer,
                                        size,
@@ -2267,7 +2278,7 @@ load_gif(
                                        &s,
                                        &g,
                                        &frame,
-                                       &stream_scan_failed);
+                                       &decode_request.stream_scan_failed);
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -2277,8 +2288,7 @@ load_gif(
                                             g,
                                             frame,
                                             &pcount,
-                                            &decoded_frame_no,
-                                            &emitted_frame_no);
+                                            &progress);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2287,25 +2297,15 @@ load_gif(
             status = gif_decode_one_frame(&s,
                                           g,
                                           frame,
-                                          bgcolor,
-                                          reqcolors,
-                                          fuse_palette,
-                                          start_frame_no,
-                                          fnp,
-                                          context,
-                                          stream_scan_failed,
-                                          fstatic,
-                                          &decoded_frame_no,
-                                          &emitted_frame_no,
-                                          &stream_terminated,
-                                          &stop_decode);
+                                          &decode_request,
+                                          &progress);
             if (status != SIXEL_OK) {
                 goto end;
             }
-            if (stream_terminated != 0) {
+            if (progress.stream_terminated != 0) {
                 break;
             }
-            if (stop_decode != 0) {
+            if (progress.stop_decode != 0) {
                 goto end;
             }
         }
@@ -2316,7 +2316,7 @@ load_gif(
         }
         loop_no = sixel_frame_get_loop_no(frame);
         if (gif_should_stop_after_loop(loop_control,
-                                       decoded_frame_no,
+                                       progress.decoded_frame_no,
                                        loop_no,
                                        g->loop_count)) {
             break;
