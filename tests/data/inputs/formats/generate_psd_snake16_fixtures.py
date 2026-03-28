@@ -517,9 +517,17 @@ def build_psd_layer_only_single_rgb8(planes, *, alpha_plane=None):
     return bytes(out)
 
 
-def build_psd_layer_only_single_gray8(plane, *, color_mode=1, alpha_plane=None):
-    if color_mode not in (1, 8):
-        raise RuntimeError("gray layer-only fixture supports color_mode 1 or 8")
+def build_psd_layer_only_single_gray8(
+    plane,
+    *,
+    color_mode=1,
+    alpha_plane=None,
+    color_mode_data=b"",
+):
+    if color_mode not in (1, 2, 8):
+        raise RuntimeError("layer-only fixture supports color_mode 1/2/8")
+    if color_mode == 2 and len(color_mode_data) < 768:
+        raise RuntimeError("indexed layer-only fixture requires 768-byte palette")
     row_bytes = WIDTH
     plane_bytes = row_bytes * HEIGHT
     if len(plane) != plane_bytes:
@@ -559,12 +567,45 @@ def build_psd_layer_only_single_gray8(plane, *, color_mode=1, alpha_plane=None):
     out += struct.pack(">I", WIDTH)
     out += struct.pack(">H", 8)
     out += struct.pack(">H", color_mode)
-    out += struct.pack(">I", 0)  # color mode data length
+    out += struct.pack(">I", len(color_mode_data))
+    out += color_mode_data
     out += struct.pack(">I", 0)  # image resources length
     out += struct.pack(">I", len(layer_and_mask))
     out += layer_and_mask
     out += struct.pack(">H", 0)  # compression for composite image data
     # Composite image data intentionally omitted (missing merged/composite image).
+    return bytes(out)
+
+
+def build_psd_layer_only_multilayer_rgb8(planes):
+    if len(planes) < 3:
+        raise RuntimeError("multilayer RGB fixture requires R/G/B planes")
+    row_bytes = WIDTH
+    plane_bytes = row_bytes * HEIGHT
+    for i in range(3):
+        if len(planes[i]) != plane_bytes:
+            raise RuntimeError("unexpected RGB8 plane size")
+
+    # Minimal marker for "multiple layers exist". Builtin fallback rejects this
+    # layout before layer record parsing (requires exactly one layer).
+    layer_info = struct.pack(">h", 2)
+    layer_and_mask = struct.pack(">I", len(layer_info)) + layer_info
+
+    out = bytearray()
+    out += b"8BPS"
+    out += struct.pack(">H", 1)
+    out += b"\x00" * 6
+    out += struct.pack(">H", 3)
+    out += struct.pack(">I", HEIGHT)
+    out += struct.pack(">I", WIDTH)
+    out += struct.pack(">H", 8)
+    out += struct.pack(">H", 3)
+    out += struct.pack(">I", 0)  # color mode data length
+    out += struct.pack(">I", 0)  # image resources length
+    out += struct.pack(">I", len(layer_and_mask))
+    out += layer_and_mask
+    out += struct.pack(">H", 0)  # compression for composite image data
+    # Composite image data intentionally omitted.
     return bytes(out)
 
 
@@ -670,6 +711,10 @@ def generate(out_dir: pathlib.Path):
         out_dir / "snake16_rgb8_alpha_missing_composite_single_layer.psd",
         build_psd_layer_only_single_rgb8(rgb8_planes, alpha_plane=alpha8_plane),
     )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer.psd",
+        build_psd_layer_only_multilayer_rgb8(rgb8_planes),
+    )
 
     write_variants(
         out_dir,
@@ -749,6 +794,14 @@ def generate(out_dir: pathlib.Path):
             depth=8,
             color_mode=2,
             compression=0,
+            color_mode_data=indexed_color_mode_data,
+        ),
+    )
+    write_file(
+        out_dir / "snake16_indexed8_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_gray8(
+            indexed_planes[0],
+            color_mode=2,
             color_mode_data=indexed_color_mode_data,
         ),
     )
