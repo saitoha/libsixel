@@ -1365,6 +1365,180 @@ run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test(void)
         HDR_TEST_PRIMARIES_NONE);
 }
 
+static int
+hdr_test_compare_probe(char const *label,
+                       hdr_numeric_probe_context_t const *left,
+                       hdr_numeric_probe_context_t const *right,
+                       float tolerance);
+
+static int
+run_builtin_loader_hdr_invalid_header_exposure_numeric_test(void)
+{
+    hdr_numeric_probe_context_t baseline_probe;
+    hdr_numeric_probe_context_t invalid_probe;
+    int result;
+
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr invalid header exposure baseline",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &baseline_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr invalid header exposure",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_exposure_invalid_zero.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &invalid_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    return hdr_test_compare_probe("builtin hdr invalid header exposure",
+                                  &invalid_probe,
+                                  &baseline_probe,
+                                  0.0007f);
+}
+
+static int
+run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric_test(void)
+{
+    hdr_numeric_probe_context_t baseline_probe;
+    hdr_numeric_probe_context_t mixed_probe;
+    int result;
+
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr mixed header exposure invalid baseline",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &baseline_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr mixed header exposure invalid",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_exposure2_invalid_overflow.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &mixed_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    return hdr_test_compare_probe("builtin hdr mixed header exposure invalid",
+                                  &mixed_probe,
+                                  &baseline_probe,
+                                  0.0007f);
+}
+
+static int
+run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test(void)
+{
+    hdr_numeric_probe_context_t baseline_probe;
+    hdr_numeric_probe_context_t invalid_probe;
+    int result;
+
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr invalid use-header-exposure env baseline",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &baseline_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    if (loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "invalid-value") != 0) {
+        return 1;
+    }
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr invalid use-header-exposure env",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &invalid_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    return hdr_test_compare_probe(
+        "builtin hdr invalid use-header-exposure env",
+        &invalid_probe,
+        &baseline_probe,
+        0.0007f);
+}
+
+static int
+run_builtin_loader_hdr_duplicate_header_metadata_numeric_test(void)
+{
+    hdr_numeric_probe_context_t baseline_probe;
+    hdr_numeric_probe_context_t duplicate_probe;
+    int result;
+
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "0") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr duplicate metadata baseline",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_gamma22_bt2020.hdr",
+        SIXEL_CMS_ENGINE_AUTO,
+        &baseline_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr duplicate metadata",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_duplicate_gamma_primaries_last_wins.hdr",
+        SIXEL_CMS_ENGINE_AUTO,
+        &duplicate_probe);
+    if (result != 0) {
+        return result;
+    }
+
+    return hdr_test_compare_probe("builtin hdr duplicate metadata",
+                                  &duplicate_probe,
+                                  &baseline_probe,
+                                  0.0012f);
+}
+
 static char const *
 hdr_test_fixture_for_axes(hdr_test_gamma_mode_t gamma_mode,
                           hdr_test_primaries_mode_t primaries_mode)
@@ -1967,6 +2141,10 @@ run_builtin_loader_test(void)
     char const *hdr_header_exposure_disabled_numeric_mode;
     char const *hdr_gamma_invalid_primaries_valid_numeric_mode;
     char const *hdr_primaries_invalid_gamma_valid_numeric_mode;
+    char const *hdr_invalid_header_exposure_numeric_mode;
+    char const *hdr_mixed_header_exposure_invalid_numeric_mode;
+    char const *hdr_invalid_use_header_exposure_env_numeric_mode;
+    char const *hdr_duplicate_header_metadata_numeric_mode;
     char const *expected_cms_pixelformat_text;
     unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     int cms_target_pixelformat;
@@ -2002,6 +2180,14 @@ run_builtin_loader_test(void)
         "SIXEL_TEST_HDR_NUMERIC_GAMMA_INVALID_PRIMARIES_VALID");
     hdr_primaries_invalid_gamma_valid_numeric_mode = loader_test_getenv(
         "SIXEL_TEST_HDR_NUMERIC_PRIMARIES_INVALID_GAMMA_VALID");
+    hdr_invalid_header_exposure_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_INVALID_HEADER_EXPOSURE");
+    hdr_mixed_header_exposure_invalid_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_MIXED_HEADER_EXPOSURE_INVALID");
+    hdr_invalid_use_header_exposure_env_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV");
+    hdr_duplicate_header_metadata_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS");
     if (hdr_numeric_mode != NULL && strcmp(hdr_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_gamma_numeric_test();
     }
@@ -2058,6 +2244,23 @@ run_builtin_loader_test(void)
         strcmp(hdr_primaries_invalid_gamma_valid_numeric_mode, "1") == 0) {
         return
             run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test();
+    }
+    if (hdr_invalid_header_exposure_numeric_mode != NULL &&
+        strcmp(hdr_invalid_header_exposure_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_invalid_header_exposure_numeric_test();
+    }
+    if (hdr_mixed_header_exposure_invalid_numeric_mode != NULL &&
+        strcmp(hdr_mixed_header_exposure_invalid_numeric_mode, "1") == 0) {
+        return
+            run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric_test();
+    }
+    if (hdr_invalid_use_header_exposure_env_numeric_mode != NULL &&
+        strcmp(hdr_invalid_use_header_exposure_env_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test();
+    }
+    if (hdr_duplicate_header_metadata_numeric_mode != NULL &&
+        strcmp(hdr_duplicate_header_metadata_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_duplicate_header_metadata_numeric_test();
     }
 
     result = run_loader_component_case("builtin loader rgba8",

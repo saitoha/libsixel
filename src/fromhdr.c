@@ -353,6 +353,10 @@ sixel_builtin_parse_hdr_profile_hint(
         line[line_length] = '\0';
 
         if (sixel_builtin_hdr_ascii_has_prefix(line, "GAMMA=")) {
+            /*
+             * Repeated GAMMA lines are accepted; the last valid value wins.
+             * Malformed lines are ignored after recording diagnostics.
+             */
             if (sixel_builtin_hdr_parse_gamma_line(line + 6, &gamma_value)) {
                 out_hint->gamma = gamma_value;
                 out_hint->has_gamma = 1;
@@ -363,6 +367,10 @@ sixel_builtin_parse_hdr_profile_hint(
             continue;
         }
         if (sixel_builtin_hdr_ascii_has_prefix(line, "PRIMARIES=")) {
+            /*
+             * Repeated PRIMARIES lines are accepted; the last valid value
+             * wins. Malformed lines are ignored after recording diagnostics.
+             */
             if (!sixel_builtin_hdr_parse_primaries_line(line + 10, out_hint)) {
                 out_hint->primaries_malformed = 1;
                 out_hint->malformed = 1;
@@ -370,6 +378,10 @@ sixel_builtin_parse_hdr_profile_hint(
             continue;
         }
         if (sixel_builtin_hdr_ascii_has_prefix(line, "EXPOSURE=")) {
+            /*
+             * Radiance EXPOSURE is a linear scale multiplier. Multiple valid
+             * lines are composed by multiplication in encounter order.
+             */
             if (!sixel_builtin_hdr_parse_exposure_line(line + 9,
                                                        &exposure_value)) {
                 out_hint->exposure_malformed = 1;
