@@ -120,6 +120,12 @@ typedef struct sixel_librsvg_intrinsic_size_state {
     int resolved_height;
 } sixel_librsvg_intrinsic_size_state_t;
 
+typedef struct sixel_librsvg_surface_convert_plan {
+    int inspect_alpha;
+    size_t output_stride;
+    size_t buffer_size;
+} sixel_librsvg_surface_convert_plan_t;
+
 typedef enum sixel_librsvg_setopt_action {
     SIXEL_LIBRSVG_SETOPT_ACTION_NOOP_SINGLE_FRAME,
     SIXEL_LIBRSVG_SETOPT_ACTION_LOG_IGNORED_INT,
@@ -1350,74 +1356,44 @@ librsvg_collapse_opaque_rgba_to_rgb(unsigned char *pixels, size_t pixel_total)
 }
 
 static SIXELSTATUS
-librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
-                                        sixel_allocator_t *allocator,
-                                        cairo_surface_t *surface,
-                                        unsigned char const *bgcolor,
-                                        size_t pixel_total)
+librsvg_build_surface_convert_plan(
+    unsigned char const *bgcolor,
+    size_t pixel_total,
+    sixel_librsvg_surface_convert_plan_t *plan)
 {
-    SIXELSTATUS status;
-    unsigned char *pixels;
-    unsigned char const *row;
-    size_t row_stride;
-    size_t output_stride;
-    size_t buffer_size;
-    int preserve_alpha;
     int inspect_alpha;
-    int has_non_opaque_alpha;
+    size_t output_stride;
 
-    status = SIXEL_FALSE;
-    pixels = NULL;
-    row = NULL;
-    row_stride = 0u;
-    output_stride = 0u;
-    buffer_size = 0u;
-    preserve_alpha = 0;
     inspect_alpha = 0;
-    has_non_opaque_alpha = 0;
-    if (frame == NULL ||
-            allocator == NULL ||
-            surface == NULL) {
+    output_stride = 0u;
+    if (plan == NULL) {
         return SIXEL_BAD_ARGUMENT;
-    }
-    if (frame->width <= 0 || frame->height <= 0) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    cairo_surface_flush(surface);
-    row = cairo_image_surface_get_data(surface);
-    row_stride = (size_t)cairo_image_surface_get_stride(surface);
-    if (row == NULL || row_stride == 0u) {
-        sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: cairo surface access failed.");
-        return SIXEL_BAD_INPUT;
     }
 
     inspect_alpha = bgcolor == NULL ? 1 : 0;
     output_stride = inspect_alpha ? 4u : 3u;
-
     if (pixel_total > SIZE_MAX / output_stride) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    buffer_size = pixel_total * output_stride;
-
-    pixels = (unsigned char *)sixel_allocator_malloc(
-        allocator,
-        buffer_size);
-    if (pixels == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+        return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
-    status = librsvg_unpack_surface_pixels(pixels,
-                                           row,
-                                           row_stride,
-                                           frame->width,
-                                           frame->height,
-                                           inspect_alpha,
-                                           &has_non_opaque_alpha);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    plan->inspect_alpha = inspect_alpha;
+    plan->output_stride = output_stride;
+    plan->buffer_size = pixel_total * output_stride;
+    return SIXEL_OK;
+}
+
+static void
+librsvg_commit_frame_pixels(sixel_frame_t *frame,
+                            unsigned char *pixels,
+                            size_t pixel_total,
+                            int inspect_alpha,
+                            int has_non_opaque_alpha)
+{
+    int preserve_alpha;
+
+    preserve_alpha = 0;
+    if (frame == NULL || pixels == NULL) {
+        return;
     }
 
     preserve_alpha = inspect_alpha && has_non_opaque_alpha;
@@ -1436,6 +1412,76 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     frame->transparent = -1;
     frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
     sixel_frame_set_pixels(frame, pixels);
+}
+
+static SIXELSTATUS
+librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
+                                        sixel_allocator_t *allocator,
+                                        cairo_surface_t *surface,
+                                        unsigned char const *bgcolor,
+                                        size_t pixel_total)
+{
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    unsigned char const *row;
+    size_t row_stride;
+    sixel_librsvg_surface_convert_plan_t plan;
+    int has_non_opaque_alpha;
+
+    status = SIXEL_FALSE;
+    pixels = NULL;
+    row = NULL;
+    row_stride = 0u;
+    plan.inspect_alpha = 0;
+    plan.output_stride = 0u;
+    plan.buffer_size = 0u;
+    has_non_opaque_alpha = 0;
+    if (frame == NULL ||
+            allocator == NULL ||
+            surface == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->width <= 0 || frame->height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    cairo_surface_flush(surface);
+    row = cairo_image_surface_get_data(surface);
+    row_stride = (size_t)cairo_image_surface_get_stride(surface);
+    if (row == NULL || row_stride == 0u) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: cairo surface access failed.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    status = librsvg_build_surface_convert_plan(bgcolor, pixel_total, &plan);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    pixels = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        plan.buffer_size);
+    if (pixels == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    status = librsvg_unpack_surface_pixels(pixels,
+                                           row,
+                                           row_stride,
+                                           frame->width,
+                                           frame->height,
+                                           plan.inspect_alpha,
+                                           &has_non_opaque_alpha);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    librsvg_commit_frame_pixels(frame,
+                                pixels,
+                                pixel_total,
+                                plan.inspect_alpha,
+                                has_non_opaque_alpha);
     pixels = NULL;
 
     status = SIXEL_OK;
