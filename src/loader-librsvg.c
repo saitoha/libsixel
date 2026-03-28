@@ -122,7 +122,6 @@ typedef struct sixel_librsvg_intrinsic_size_state {
 
 typedef struct sixel_librsvg_surface_convert_plan {
     int inspect_alpha;
-    size_t output_stride;
     size_t buffer_size;
 } sixel_librsvg_surface_convert_plan_t;
 
@@ -1492,7 +1491,6 @@ librsvg_build_surface_convert_plan(
     }
 
     plan->inspect_alpha = inspect_alpha;
-    plan->output_stride = output_stride;
     plan->buffer_size = pixel_total * output_stride;
     return SIXEL_OK;
 }
@@ -1548,7 +1546,6 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     row = NULL;
     row_stride = 0u;
     plan.inspect_alpha = 0;
-    plan.output_stride = 0u;
     plan.buffer_size = 0u;
     has_non_opaque_alpha = 0;
     if (frame == NULL ||
@@ -1614,18 +1611,14 @@ librsvg_prepare_frame_geometry(sixel_frame_t *frame,
                                RsvgHandle *handle,
                                size_t *pixel_total_out)
 {
-    SIXELSTATUS status;
-
-    status = SIXEL_BAD_INPUT;
     if (frame == NULL || handle == NULL || pixel_total_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     librsvg_pick_size(handle, &frame->width, &frame->height);
-    status = librsvg_validate_canvas_size(frame->width,
-                                          frame->height,
-                                          pixel_total_out);
-    return status;
+    return librsvg_validate_canvas_size(frame->width,
+                                        frame->height,
+                                        pixel_total_out);
 }
 
 static SIXELSTATUS
@@ -1674,8 +1667,7 @@ librsvg_prepare_render_context(
         return status;
     }
 
-    status = librsvg_prepare_frame_surface(frame, bgcolor, render_ctx);
-    return status;
+    return librsvg_prepare_frame_surface(frame, bgcolor, render_ctx);
 }
 
 static SIXELSTATUS
@@ -1699,12 +1691,11 @@ librsvg_render_context_to_frame_pixels(
         return status;
     }
 
-    status = librsvg_convert_surface_to_frame_pixels(frame,
-                                                     allocator,
-                                                     render_ctx->surface,
-                                                     bgcolor,
-                                                     render_ctx->pixel_total);
-    return status;
+    return librsvg_convert_surface_to_frame_pixels(frame,
+                                                   allocator,
+                                                   render_ctx->surface,
+                                                   bgcolor,
+                                                   render_ctx->pixel_total);
 }
 
 static SIXELSTATUS
