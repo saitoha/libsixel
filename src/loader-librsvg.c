@@ -1943,7 +1943,6 @@ librsvg_setopt_bgcolor(sixel_loader_librsvg_component_t *self,
 {
     unsigned char const *color;
 
-    color = NULL;
     if (self == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2024,9 +2023,6 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
     sixel_librsvg_setopt_spec_t const *spec;
     int const *flag;
 
-    self = NULL;
-    spec = NULL;
-    flag = NULL;
     if (component == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2062,16 +2058,12 @@ sixel_loader_librsvg_load(sixel_loader_component_t *component,
     sixel_loader_librsvg_component_t *self;
     unsigned char const *bgcolor;
 
-    self = NULL;
-    bgcolor = NULL;
     if (component == NULL || chunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     self = (sixel_loader_librsvg_component_t *)component;
-    if (self->has_bgcolor) {
-        bgcolor = self->bgcolor;
-    }
+    bgcolor = self->has_bgcolor ? self->bgcolor : NULL;
 
     return load_with_librsvg(chunk,
                              bgcolor,
