@@ -194,6 +194,26 @@ librsvg_fail_with_gerror(SIXELSTATUS status,
     return status;
 }
 
+static void
+librsvg_free_gerror(GError **gerror)
+{
+    if (gerror == NULL || *gerror == NULL) {
+        return;
+    }
+    g_error_free(*gerror);
+    *gerror = NULL;
+}
+
+static void
+librsvg_unref_handle(RsvgHandle **handle)
+{
+    if (handle == NULL || *handle == NULL) {
+        return;
+    }
+    g_object_unref(*handle);
+    *handle = NULL;
+}
+
 static int
 librsvg_equals_nocase(char const *lhs, char const *rhs)
 {
@@ -826,9 +846,7 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
         (void)sixel_compat_close(fd);
     }
     librsvg_dispose_temp_path(&path);
-    if (gerror != NULL) {
-        g_error_free(gerror);
-    }
+    librsvg_free_gerror(&gerror);
 
     return status;
 }
@@ -954,12 +972,8 @@ librsvg_new_handle_from_file(char const *path,
     } else {
         status = librsvg_fail_with_gerror(SIXEL_BAD_INPUT, context, gerror);
     }
-    if (handle != NULL) {
-        g_object_unref(handle);
-    }
-    if (gerror != NULL) {
-        g_error_free(gerror);
-    }
+    librsvg_unref_handle(&handle);
+    librsvg_free_gerror(&gerror);
 
     return status;
 }
@@ -992,12 +1006,8 @@ librsvg_new_handle_from_data(unsigned char const *buffer,
     } else {
         status = librsvg_fail_with_gerror(SIXEL_BAD_INPUT, context, gerror);
     }
-    if (handle != NULL) {
-        g_object_unref(handle);
-    }
-    if (gerror != NULL) {
-        g_error_free(gerror);
-    }
+    librsvg_unref_handle(&handle);
+    librsvg_free_gerror(&gerror);
 
     return status;
 }
@@ -1192,10 +1202,7 @@ librsvg_open_result_cleanup(sixel_librsvg_open_result_t *open_result)
     if (open_result == NULL) {
         return;
     }
-    if (open_result->handle != NULL) {
-        g_object_unref(open_result->handle);
-        open_result->handle = NULL;
-    }
+    librsvg_unref_handle(&open_result->handle);
     if (open_result->stdin_svgz_temp_path != NULL) {
         librsvg_dispose_temp_path(&open_result->stdin_svgz_temp_path);
     }
@@ -1426,9 +1433,7 @@ librsvg_render_document(RsvgHandle *handle, cairo_t *cr, int width, int height)
     } else {
         status = SIXEL_OK;
     }
-    if (gerror != NULL) {
-        g_error_free(gerror);
-    }
+    librsvg_free_gerror(&gerror);
 
     return status;
 }
