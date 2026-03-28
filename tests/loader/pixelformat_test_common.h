@@ -322,6 +322,28 @@ run_loader_case_with_options(char const *label,
             goto cleanup;
         }
     }
+    if (context.has_transparent_mask) {
+        size_t pixel_count;
+
+        pixel_count = (size_t)context.width;
+        if (pixel_count > (size_t)-1 / (size_t)context.height) {
+            fprintf(stderr,
+                    "%s: transparent mask pixel count overflow\n",
+                    label);
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        pixel_count *= (size_t)context.height;
+        if (context.transparent_mask_size < pixel_count) {
+            fprintf(stderr,
+                    "%s: transparent mask too short (%zu < %zu)\n",
+                    label,
+                    context.transparent_mask_size,
+                    pixel_count);
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+    }
     result = 0;
 
 cleanup:
@@ -544,6 +566,26 @@ run_loader_component_case_with_options_full(
                     label,
                     context.width,
                     context.height);
+            goto cleanup;
+        }
+    }
+    if (context.has_transparent_mask) {
+        size_t pixel_count;
+
+        pixel_count = (size_t)context.width;
+        if (pixel_count > (size_t)-1 / (size_t)context.height) {
+            fprintf(stderr,
+                    "%s: transparent mask pixel count overflow\n",
+                    label);
+            goto cleanup;
+        }
+        pixel_count *= (size_t)context.height;
+        if (context.transparent_mask_size < pixel_count) {
+            fprintf(stderr,
+                    "%s: transparent mask too short (%zu < %zu)\n",
+                    label,
+                    context.transparent_mask_size,
+                    pixel_count);
             goto cleanup;
         }
     }
