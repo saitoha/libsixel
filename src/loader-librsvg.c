@@ -422,6 +422,129 @@ librsvg_buffer_has_svg_tag(unsigned char const *buffer,
 }
 
 /*
+ * Try direct intrinsic pixel size first.  Return 1 when librsvg reports
+ * intrinsic pixels and updates width/height, otherwise return 0.
+ */
+static int
+librsvg_try_pick_size_from_intrinsic_pixels(RsvgHandle *handle,
+                                             int *width,
+                                             int *height)
+{
+    gdouble pixel_width;
+    gdouble pixel_height;
+    int has_intrinsic_pixels;
+
+    pixel_width = 0.0;
+    pixel_height = 0.0;
+    has_intrinsic_pixels = 0;
+    if (handle == NULL || width == NULL || height == NULL) {
+        return 0;
+    }
+
+    has_intrinsic_pixels = rsvg_handle_get_intrinsic_size_in_pixels(
+        handle,
+        &pixel_width,
+        &pixel_height);
+    if (!has_intrinsic_pixels) {
+        return 0;
+    }
+
+    *width = librsvg_rounded_dimension(pixel_width);
+    *height = librsvg_rounded_dimension(pixel_height);
+    return 1;
+}
+
+/*
+ * Resolve dimensions from intrinsic length units and viewBox relationships.
+ */
+static void
+librsvg_pick_size_from_intrinsic_dimensions(RsvgHandle *handle,
+                                            int *width,
+                                            int *height)
+{
+    gboolean has_width;
+    gboolean has_height;
+    gboolean has_viewbox;
+    RsvgLength width_length;
+    RsvgLength height_length;
+    RsvgRectangle viewbox;
+    double width_from_length;
+    double height_from_length;
+    int has_positive_viewbox;
+    int width_valid;
+    int height_valid;
+    int resolved_width;
+    int resolved_height;
+
+    has_width = FALSE;
+    has_height = FALSE;
+    has_viewbox = FALSE;
+    width_length.length = 0.0;
+    width_length.unit = RSVG_UNIT_PX;
+    height_length.length = 0.0;
+    height_length.unit = RSVG_UNIT_PX;
+    viewbox.x = 0.0;
+    viewbox.y = 0.0;
+    viewbox.width = 0.0;
+    viewbox.height = 0.0;
+    width_from_length = 0.0;
+    height_from_length = 0.0;
+    has_positive_viewbox = 0;
+    width_valid = 0;
+    height_valid = 0;
+    resolved_width = 0;
+    resolved_height = 0;
+    if (handle == NULL || width == NULL || height == NULL) {
+        return;
+    }
+
+    resolved_width = *width;
+    resolved_height = *height;
+    rsvg_handle_get_intrinsic_dimensions(handle,
+                                         &has_width,
+                                         &width_length,
+                                         &has_height,
+                                         &height_length,
+                                         &has_viewbox,
+                                         &viewbox);
+    if (has_width && librsvg_length_to_pixels(&width_length,
+                                              &width_from_length) &&
+        width_from_length >= 1.0) {
+        width_valid = 1;
+    }
+    if (has_height && librsvg_length_to_pixels(&height_length,
+                                               &height_from_length) &&
+        height_from_length >= 1.0) {
+        height_valid = 1;
+    }
+    has_positive_viewbox =
+        has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0;
+    if (has_positive_viewbox) {
+        librsvg_fill_missing_dimensions_from_viewbox(
+            viewbox.width,
+            viewbox.height,
+            &width_from_length,
+            &height_from_length,
+            &width_valid,
+            &height_valid);
+    }
+    if (width_valid) {
+        resolved_width = librsvg_rounded_dimension(width_from_length);
+    }
+    if (height_valid) {
+        resolved_height = librsvg_rounded_dimension(height_from_length);
+    }
+    librsvg_recover_invalid_dimensions_from_viewbox(
+        has_positive_viewbox,
+        &viewbox,
+        &resolved_width,
+        &resolved_height);
+
+    *width = resolved_width;
+    *height = resolved_height;
+}
+
+/*
  * Try to identify SVG input quickly so the registry can skip this backend for
  * obvious raster formats.
  */
@@ -472,88 +595,19 @@ chunk_is_svg_like(sixel_chunk_t const *chunk)
 static void
 librsvg_pick_size(RsvgHandle *handle, int *pwidth, int *pheight)
 {
-    gboolean has_width;
-    gboolean has_height;
-    gboolean has_viewbox;
-    RsvgLength width_length;
-    RsvgLength height_length;
-    RsvgRectangle viewbox;
-    gdouble pixel_width;
-    gdouble pixel_height;
-    double width_from_length;
-    double height_from_length;
-    int has_positive_viewbox;
-    int width_valid;
-    int height_valid;
+    int has_intrinsic_pixels;
     int width;
     int height;
 
-    has_width = FALSE;
-    has_height = FALSE;
+    has_intrinsic_pixels = 0;
     width = LIBRSVG_DEFAULT_WIDTH;
     height = LIBRSVG_DEFAULT_HEIGHT;
-    pixel_width = 0.0;
-    pixel_height = 0.0;
-    width_length.length = 0.0;
-    width_length.unit = RSVG_UNIT_PX;
-    height_length.length = 0.0;
-    height_length.unit = RSVG_UNIT_PX;
-    has_viewbox = FALSE;
-    viewbox.x = 0.0;
-    viewbox.y = 0.0;
-    viewbox.width = 0.0;
-    viewbox.height = 0.0;
-    width_from_length = 0.0;
-    height_from_length = 0.0;
-    has_positive_viewbox = 0;
-    width_valid = 0;
-    height_valid = 0;
-
-    if (rsvg_handle_get_intrinsic_size_in_pixels(handle,
-                                                  &pixel_width,
-                                                  &pixel_height)) {
-        width = librsvg_rounded_dimension(pixel_width);
-        height = librsvg_rounded_dimension(pixel_height);
-    } else {
-        rsvg_handle_get_intrinsic_dimensions(handle,
-                                             &has_width,
-                                             &width_length,
-                                             &has_height,
-                                             &height_length,
-                                             &has_viewbox,
-                                             &viewbox);
-        if (has_width && librsvg_length_to_pixels(&width_length,
-                                                  &width_from_length) &&
-            width_from_length >= 1.0) {
-            width_valid = 1;
-        }
-        if (has_height && librsvg_length_to_pixels(&height_length,
-                                                   &height_from_length) &&
-            height_from_length >= 1.0) {
-            height_valid = 1;
-        }
-        has_positive_viewbox =
-            has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0;
-        if (has_positive_viewbox) {
-            librsvg_fill_missing_dimensions_from_viewbox(
-                viewbox.width,
-                viewbox.height,
-                &width_from_length,
-                &height_from_length,
-                &width_valid,
-                &height_valid);
-        }
-        if (width_valid) {
-            width = librsvg_rounded_dimension(width_from_length);
-        }
-        if (height_valid) {
-            height = librsvg_rounded_dimension(height_from_length);
-        }
-        librsvg_recover_invalid_dimensions_from_viewbox(
-            has_positive_viewbox,
-            &viewbox,
-            &width,
-            &height);
+    has_intrinsic_pixels = librsvg_try_pick_size_from_intrinsic_pixels(
+        handle,
+        &width,
+        &height);
+    if (!has_intrinsic_pixels) {
+        librsvg_pick_size_from_intrinsic_dimensions(handle, &width, &height);
     }
 
     librsvg_apply_default_dimensions(&width, &height);
