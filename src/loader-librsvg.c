@@ -1495,6 +1495,40 @@ end:
 }
 
 static SIXELSTATUS
+librsvg_prepare_frame_geometry(sixel_frame_t *frame,
+                               RsvgHandle *handle,
+                               size_t *pixel_total_out)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_BAD_INPUT;
+    if (frame == NULL || handle == NULL || pixel_total_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    librsvg_pick_size(handle, &frame->width, &frame->height);
+    status = librsvg_validate_canvas_size(frame->width,
+                                          frame->height,
+                                          pixel_total_out);
+    return status;
+}
+
+static SIXELSTATUS
+librsvg_prepare_frame_surface(sixel_frame_t const *frame,
+                              unsigned char const *bgcolor,
+                              sixel_librsvg_render_context_t *render_ctx)
+{
+    if (frame == NULL || render_ctx == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return librsvg_prepare_render_surface(&render_ctx->surface,
+                                          &render_ctx->cr,
+                                          frame->width,
+                                          frame->height,
+                                          bgcolor);
+}
+
+static SIXELSTATUS
 librsvg_prepare_render_context(
     sixel_frame_t *frame,
     sixel_chunk_t const *chunk,
@@ -1519,21 +1553,14 @@ librsvg_prepare_render_context(
         return status;
     }
 
-    librsvg_pick_size(render_ctx->open_result.handle,
-                      &frame->width,
-                      &frame->height);
-    status = librsvg_validate_canvas_size(frame->width,
-                                          frame->height,
-                                          &render_ctx->pixel_total);
+    status = librsvg_prepare_frame_geometry(frame,
+                                            render_ctx->open_result.handle,
+                                            &render_ctx->pixel_total);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    status = librsvg_prepare_render_surface(&render_ctx->surface,
-                                            &render_ctx->cr,
-                                            frame->width,
-                                            frame->height,
-                                            bgcolor);
+    status = librsvg_prepare_frame_surface(frame, bgcolor, render_ctx);
     return status;
 }
 
