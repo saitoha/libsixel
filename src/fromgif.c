@@ -2009,6 +2009,24 @@ gif_advance_loop_and_should_stop(sixel_frame_t *frame,
                                       g->loop_count);
 }
 
+static void
+gif_destroy_decoder_state(sixel_allocator_t *allocator,
+                          gif_t *g,
+                          sixel_frame_t *frame)
+{
+    if (g != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, g->out);
+        sixel_allocator_free(allocator, g->prev_out);
+        sixel_allocator_free(allocator, g->alpha_out);
+        sixel_allocator_free(allocator, g->prev_alpha);
+        sixel_allocator_free(allocator, g->history);
+        sixel_allocator_free(allocator, g);
+    }
+    if (frame != NULL) {
+        sixel_frame_unref(frame);
+    }
+}
+
 static SIXELSTATUS
 gif_prepare_decoder_state(unsigned char *buffer,
                           int size,
@@ -2153,13 +2171,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
 
 end:
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(allocator, g != NULL ? g->out : NULL);
-        sixel_allocator_free(allocator, g != NULL ? g->prev_out : NULL);
-        sixel_allocator_free(allocator, g != NULL ? g->alpha_out : NULL);
-        sixel_allocator_free(allocator, g != NULL ? g->prev_alpha : NULL);
-        sixel_allocator_free(allocator, g != NULL ? g->history : NULL);
-        sixel_allocator_free(allocator, g);
-        sixel_frame_unref(frame);
+        gif_destroy_decoder_state(allocator, g, frame);
     }
     return status;
 }
@@ -2290,6 +2302,48 @@ gif_prepare_loop_iteration(gif_context_t *s,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+gif_decode_animation_loops(gif_context_t *s,
+                           gif_t *g,
+                           sixel_frame_t *frame,
+                           gif_decode_request_t const *request,
+                           int loop_control)
+{
+    SIXELSTATUS status;
+    gif_decode_progress_t progress;
+    size_t pcount;
+
+    status = SIXEL_FALSE;
+    memset(&progress, 0, sizeof(progress));
+    pcount = 0u;
+    if (s == NULL || g == NULL || frame == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (;;) { /* per loop */
+        status = gif_prepare_loop_iteration(s, g, frame, &pcount, &progress);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+
+        status = gif_decode_loop_frames(s, g, frame, request, &progress);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+        if (progress.stop_decode != 0) {
+            return SIXEL_OK;
+        }
+        if (gif_advance_loop_and_should_stop(frame,
+                                             g,
+                                             &progress,
+                                             loop_control) != 0) {
+            break;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 load_gif(
     unsigned char       /* in */ *buffer,
@@ -2309,15 +2363,11 @@ load_gif(
     SIXELSTATUS status;
     sixel_frame_t *frame;
     gif_decode_request_t decode_request;
-    gif_decode_progress_t progress;
-    size_t pcount;
 
     status = SIXEL_FALSE;
     frame = NULL;
     g = NULL;
     memset(&decode_request, 0, sizeof(decode_request));
-    memset(&progress, 0, sizeof(progress));
-    pcount = 0u;
 
     if (buffer == NULL || size <= 0 || fn_load == NULL || allocator == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -2344,49 +2394,14 @@ load_gif(
         goto end;
     }
 
-    for (;;) { /* per loop */
-        status = gif_prepare_loop_iteration(&s,
-                                            g,
-                                            frame,
-                                            &pcount,
-                                            &progress);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-
-        status = gif_decode_loop_frames(&s,
+    status = gif_decode_animation_loops(&s,
                                         g,
                                         frame,
                                         &decode_request,
-                                        &progress);
-        if (status != SIXEL_OK) {
-            goto end;
-        }
-        if (progress.stop_decode != 0) {
-            goto end;
-        }
-        if (gif_advance_loop_and_should_stop(frame,
-                                             g,
-                                             &progress,
-                                             loop_control) != 0) {
-            break;
-        }
-    }
-
-    status = SIXEL_OK;
+                                        loop_control);
 
 end:
-    if (g != NULL) {
-        sixel_allocator_free(allocator, g->out);
-        sixel_allocator_free(allocator, g->prev_out);
-        sixel_allocator_free(allocator, g->alpha_out);
-        sixel_allocator_free(allocator, g->prev_alpha);
-        sixel_allocator_free(allocator, g->history);
-        sixel_allocator_free(allocator, g);
-    }
-    if (frame != NULL) {
-        sixel_frame_unref(frame);
-    }
+    gif_destroy_decoder_state(allocator, g, frame);
 
     return status;
 }
