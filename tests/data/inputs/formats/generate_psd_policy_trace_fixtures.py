@@ -172,6 +172,39 @@ def generate(out_dir: pathlib.Path) -> None:
         bytes(fallback_blend_short),
     )
 
+    fallback_record_header_short = bytearray(layer_base)
+    write_u32be(fallback_record_header_short, section_offset, 1)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_record_header_short.psd",
+        bytes(fallback_record_header_short),
+    )
+
+    fallback_record_geometry_short = bytearray(layer_base)
+    write_u32be(fallback_record_geometry_short, section_offset, 2)
+    write_u16be(fallback_record_geometry_short, layer_info_offset, 1)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_record_geometry_short.psd",
+        bytes(fallback_record_geometry_short),
+    )
+
+    fallback_stream_cursor_overflow = bytearray(layer_base)
+    write_u32be(fallback_stream_cursor_overflow, first_channel_length_offset, 10000)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_channel_stream_cursor_overflow.psd",
+        bytes(fallback_stream_cursor_overflow),
+    )
+
+    fallback_stream_decode_short = bytearray(layer_base)
+    write_u32be(fallback_stream_decode_short, first_channel_length_offset, 10)
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_single_layer_channel_stream_decode_short.psd",
+        bytes(fallback_stream_decode_short),
+    )
+
 
 def main() -> int:
     out_dir = pathlib.Path(__file__).resolve().parent
