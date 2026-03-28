@@ -32,6 +32,7 @@
 typedef struct sixel_builtin_hdr_profile_hint {
     int has_gamma;
     double gamma;
+    int gamma_malformed;
     int has_primaries;
     double white_x;
     double white_y;
@@ -41,6 +42,10 @@ typedef struct sixel_builtin_hdr_profile_hint {
     double green_y;
     double blue_x;
     double blue_y;
+    int primaries_malformed;
+    int has_exposure;
+    double exposure_scale;
+    int exposure_malformed;
     int malformed;
 } sixel_builtin_hdr_profile_hint_t;
 

@@ -59,12 +59,8 @@ typedef struct sixel_loader_librsvg_component {
     sixel_loader_component_t base;
     sixel_allocator_t *allocator;
     unsigned int ref;
-    int fstatic;
     unsigned char bgcolor[3];
     int has_bgcolor;
-    int loop_control;
-    int has_start_frame_no;
-    int start_frame_no;
 } sixel_loader_librsvg_component_t;
 
 #define LIBRSVG_DEFAULT_WIDTH  300
@@ -77,6 +73,13 @@ typedef struct sixel_loader_librsvg_component {
 #define LIBRSVG_ENV_ALLOW_STDIN_SVGZ \
     "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ"
 
+typedef enum sixel_librsvg_decode_mode {
+    SIXEL_LIBRSVG_DECODE_MODE_FILE,
+    SIXEL_LIBRSVG_DECODE_MODE_DATA,
+    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE,
+    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED
+} sixel_librsvg_decode_mode_t;
+
 static void
 librsvg_set_error_message(char const *context, GError const *gerror)
 {
@@ -88,7 +91,9 @@ librsvg_set_error_message(char const *context, GError const *gerror)
     if (context == NULL) {
         return;
     }
-    if (gerror == NULL || gerror->message == NULL || gerror->message[0] == '\0') {
+    if (gerror == NULL ||
+            gerror->message == NULL ||
+            gerror->message[0] == '\0') {
         sixel_helper_set_additional_message(context);
         return;
     }
@@ -530,6 +535,196 @@ end:
     return status;
 }
 
+static void
+librsvg_trace_decode_mode(sixel_librsvg_decode_mode_t mode)
+{
+    switch (mode) {
+    case SIXEL_LIBRSVG_DECODE_MODE_FILE:
+        sixel_trace_topic_message("loader", "librsvg: decode_mode=file");
+        return;
+    case SIXEL_LIBRSVG_DECODE_MODE_DATA:
+        sixel_trace_topic_message("loader", "librsvg: decode_mode=data");
+        return;
+    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE:
+        sixel_trace_topic_message("loader",
+                                  "librsvg: decode_mode=stdin_svgz_tempfile");
+        return;
+    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED:
+        sixel_trace_topic_message("loader",
+                                  "librsvg: decode_mode=stdin_svgz_rejected");
+        return;
+    }
+
+    sixel_trace_topic_message("loader", "librsvg: decode_mode=unknown");
+}
+
+/*
+ * Prefer file-based decode when we explicitly allow relative external
+ * resources, or when the local input is .svgz and must be parsed from a file
+ * path by librsvg.
+ */
+static int
+librsvg_should_decode_from_file(sixel_chunk_t const *chunk,
+                                int allow_relative_resources,
+                                int input_is_svgz)
+{
+    if (chunk == NULL) {
+        return 0;
+    }
+    if (!librsvg_path_is_local_file(chunk->source_path)) {
+        return 0;
+    }
+    if (allow_relative_resources) {
+        return 1;
+    }
+    if (input_is_svgz &&
+            librsvg_path_has_suffix_nocase(chunk->source_path, ".svgz")) {
+        return 1;
+    }
+    return 0;
+}
+
+static SIXELSTATUS
+librsvg_open_handle(sixel_chunk_t const *chunk,
+                    int allow_relative_resources,
+                    int allow_stdin_svgz,
+                    RsvgHandle **handle_out,
+                    char **stdin_svgz_temp_path_out)
+{
+    SIXELSTATUS status;
+    GError *gerror;
+    RsvgHandle *handle;
+    int use_source_file;
+    int input_is_svgz;
+    char *stdin_svgz_temp_path;
+
+    status = SIXEL_BAD_INPUT;
+    gerror = NULL;
+    handle = NULL;
+    use_source_file = 0;
+    input_is_svgz = 0;
+    stdin_svgz_temp_path = NULL;
+    if (chunk == NULL ||
+            handle_out == NULL ||
+            stdin_svgz_temp_path_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *handle_out = NULL;
+    *stdin_svgz_temp_path_out = NULL;
+    input_is_svgz = librsvg_is_svgz_chunk(chunk);
+    use_source_file = librsvg_should_decode_from_file(chunk,
+                                                      allow_relative_resources,
+                                                      input_is_svgz);
+
+    if (use_source_file) {
+        librsvg_trace_decode_mode(SIXEL_LIBRSVG_DECODE_MODE_FILE);
+        handle = rsvg_handle_new_from_file(chunk->source_path, &gerror);
+        if (handle == NULL) {
+            librsvg_set_error_message(
+                "librsvg_render_to_frame: unable to parse SVG file.",
+                gerror);
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    } else if (input_is_svgz) {
+        if (!allow_stdin_svgz) {
+            librsvg_trace_decode_mode(
+                SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED);
+            sixel_helper_set_additional_message(
+                "librsvg_render_to_frame: gzip-compressed SVG (.svgz) "
+                "requires file-path decode, prior decompression, or "
+                "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+
+        librsvg_trace_decode_mode(
+            SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE);
+        status = librsvg_write_chunk_to_temp_svgz(chunk, &stdin_svgz_temp_path);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        handle = rsvg_handle_new_from_file(stdin_svgz_temp_path, &gerror);
+        if (handle == NULL) {
+            librsvg_set_error_message(
+                "librsvg_render_to_frame: unable to parse stdin .svgz via "
+                "temporary file.",
+                gerror);
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    } else {
+        librsvg_trace_decode_mode(SIXEL_LIBRSVG_DECODE_MODE_DATA);
+        handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
+        if (handle == NULL) {
+            librsvg_set_error_message(
+                "librsvg_render_to_frame: unable to parse SVG data.",
+                gerror);
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    }
+
+    *handle_out = handle;
+    *stdin_svgz_temp_path_out = stdin_svgz_temp_path;
+    handle = NULL;
+    stdin_svgz_temp_path = NULL;
+    status = SIXEL_OK;
+
+end:
+    if (handle != NULL) {
+        g_object_unref(handle);
+    }
+    if (stdin_svgz_temp_path != NULL) {
+        (void)sixel_compat_unlink(stdin_svgz_temp_path);
+        g_free(stdin_svgz_temp_path);
+    }
+    if (gerror != NULL) {
+        g_error_free(gerror);
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
+librsvg_validate_canvas_size(int width, int height, size_t *pixel_total_out)
+{
+    size_t pixel_total;
+
+    pixel_total = 0u;
+    if (pixel_total_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: invalid dimensions.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (width > LIBRSVG_MAX_DIMENSION || height > LIBRSVG_MAX_DIMENSION) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: dimensions exceed limit.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: dimensions overflow pixel count.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_total = (size_t)width * (size_t)height;
+    if (pixel_total > LIBRSVG_MAX_IMAGE_PIXELS) {
+        sixel_helper_set_additional_message(
+            "librsvg_render_to_frame: image exceeds pixel limit.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    *pixel_total_out = pixel_total;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 librsvg_render_to_frame(sixel_frame_t *frame,
                         sixel_chunk_t const *chunk,
@@ -563,8 +758,6 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     int preserve_alpha;
     int inspect_alpha;
     int has_non_opaque_alpha;
-    int use_source_file;
-    int input_is_svgz;
     char *stdin_svgz_temp_path;
 
     status = SIXEL_BAD_INPUT;
@@ -590,92 +783,21 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     preserve_alpha = 0;
     inspect_alpha = 0;
     has_non_opaque_alpha = 0;
-    use_source_file = 0;
-    input_is_svgz = 0;
     stdin_svgz_temp_path = NULL;
-
-    input_is_svgz = librsvg_is_svgz_chunk(chunk);
-    use_source_file = librsvg_path_is_local_file(chunk->source_path) &&
-                      (allow_relative_resources ||
-                       (input_is_svgz &&
-                        librsvg_path_has_suffix_nocase(chunk->source_path,
-                                                       ".svgz")));
-
-    if (use_source_file) {
-        sixel_trace_topic_message("loader", "librsvg: decode_mode=file");
-        handle = rsvg_handle_new_from_file(chunk->source_path, &gerror);
-        if (handle == NULL) {
-            librsvg_set_error_message(
-                "librsvg_render_to_frame: unable to parse SVG file.",
-                gerror);
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-    } else {
-        if (input_is_svgz) {
-            if (!allow_stdin_svgz) {
-                sixel_trace_topic_message("loader",
-                                          "librsvg: decode_mode=stdin_svgz_rejected");
-                sixel_helper_set_additional_message(
-                    "librsvg_render_to_frame: gzip-compressed SVG (.svgz) "
-                    "requires file-path decode, prior decompression, or "
-                    "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-
-            sixel_trace_topic_message("loader",
-                                      "librsvg: decode_mode=stdin_svgz_tempfile");
-            status = librsvg_write_chunk_to_temp_svgz(chunk,
-                                                      &stdin_svgz_temp_path);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-
-            handle = rsvg_handle_new_from_file(stdin_svgz_temp_path, &gerror);
-            if (handle == NULL) {
-                librsvg_set_error_message(
-                    "librsvg_render_to_frame: unable to parse stdin .svgz via temporary file.",
-                    gerror);
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-        } else {
-            sixel_trace_topic_message("loader", "librsvg: decode_mode=data");
-            handle = rsvg_handle_new_from_data(chunk->buffer, chunk->size, &gerror);
-            if (handle == NULL) {
-                librsvg_set_error_message(
-                    "librsvg_render_to_frame: unable to parse SVG data.",
-                    gerror);
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-        }
+    status = librsvg_open_handle(chunk,
+                                 allow_relative_resources,
+                                 allow_stdin_svgz,
+                                 &handle,
+                                 &stdin_svgz_temp_path);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     librsvg_pick_size(handle, &frame->width, &frame->height);
-    if (frame->width <= 0 || frame->height <= 0) {
-        sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: invalid dimensions.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    if (frame->width > LIBRSVG_MAX_DIMENSION ||
-            frame->height > LIBRSVG_MAX_DIMENSION) {
-        sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: dimensions exceed limit.");
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    pixel_total = (size_t)frame->width * (size_t)frame->height;
-    if (pixel_total > LIBRSVG_MAX_IMAGE_PIXELS) {
-        sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: image exceeds pixel limit.");
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
+    status = librsvg_validate_canvas_size(frame->width,
+                                          frame->height,
+                                          &pixel_total);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
@@ -773,6 +895,10 @@ librsvg_render_to_frame(sixel_frame_t *frame,
 
     preserve_alpha = inspect_alpha && has_non_opaque_alpha;
     if (inspect_alpha && !has_non_opaque_alpha) {
+        /*
+         * Keep the single allocated buffer: collapse the temporary RGBA view
+         * to RGB when the rendered image is fully opaque.
+         */
         for (pixel_index = 0u; pixel_index < pixel_total; ++pixel_index) {
             pixels[pixel_index * 3u + 0u] = pixels[pixel_index * 4u + 0u];
             pixels[pixel_index * 3u + 1u] = pixels[pixel_index * 4u + 1u];
@@ -818,11 +944,7 @@ end:
 static SIXELSTATUS
 load_with_librsvg(
     sixel_chunk_t const       /* in */     *pchunk,
-    int                       /* in */     fstatic,
     unsigned char             /* in */     *bgcolor,
-    int                       /* in */     loop_control,
-    int                       /* in */     start_frame_no_set,
-    int                       /* in */     start_frame_no,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -836,11 +958,9 @@ load_with_librsvg(
     allow_relative_resources =
         librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_RELATIVE_RESOURCES);
     allow_stdin_svgz = librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ);
-
-    (void)fstatic;
-    (void)loop_control;
-    (void)start_frame_no_set;
-    (void)start_frame_no;
+    if (pchunk == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -929,9 +1049,12 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
 
     self = (sixel_loader_librsvg_component_t *)component;
     switch (option) {
+    /*
+     * API compatibility only: librsvg backend is always single-frame and does
+     * not distinguish static/animated decode paths.
+     */
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
-        flag = (int const *)value;
-        self->fstatic = flag != NULL ? *flag : 0;
+        (void)value;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_USE_PALETTE:
         flag = (int const *)value;
@@ -957,20 +1080,14 @@ sixel_loader_librsvg_setopt(sixel_loader_component_t *component,
         self->has_bgcolor = 1;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_LOOP_CONTROL:
-        flag = (int const *)value;
-        if (flag != NULL) {
-            self->loop_control = *flag;
-        }
+        /*
+         * SVG input is rendered as a single frame, so loop options are no-op.
+         */
+        (void)value;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_START_FRAME_NO:
-        if (value == NULL) {
-            self->has_start_frame_no = 0;
-            self->start_frame_no = INT_MIN;
-            return SIXEL_OK;
-        }
-        flag = (int const *)value;
-        self->start_frame_no = *flag;
-        self->has_start_frame_no = 1;
+        /* SVG input is rendered as a single frame, so start-frame is no-op. */
+        (void)value;
         return SIXEL_OK;
     default:
         return SIXEL_OK;
@@ -998,11 +1115,7 @@ sixel_loader_librsvg_load(sixel_loader_component_t *component,
     }
 
     return load_with_librsvg(chunk,
-                             self->fstatic,
                              bgcolor,
-                             self->loop_control,
-                             self->has_start_frame_no,
-                             self->start_frame_no,
                              fn_load,
                              context);
 }
@@ -1044,8 +1157,6 @@ sixel_loader_librsvg_new(sixel_allocator_t *allocator,
     self->base.vtbl = &g_sixel_loader_librsvg_vtbl;
     self->allocator = allocator;
     self->ref = 1u;
-    self->loop_control = SIXEL_LOOP_AUTO;
-    self->start_frame_no = INT_MIN;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;
     return SIXEL_OK;
