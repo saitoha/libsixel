@@ -3206,7 +3206,17 @@ sixel_builtin_finalize_loaded_frame(
 }
 
 static SIXELSTATUS
-sixel_builtin_chunk_size_to_int(sixel_chunk_t const *chunk, int *chunk_size);
+sixel_builtin_chunk_size_to_int(sixel_chunk_t const *chunk, int *chunk_size)
+{
+    if (chunk == NULL || chunk_size == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (chunk->size > INT_MAX) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    *chunk_size = (int)chunk->size;
+    return SIXEL_OK;
+}
 
 static SIXELSTATUS
 sixel_builtin_load_gif_frames(
@@ -3258,19 +3268,6 @@ sixel_builtin_load_gif_frames(
                     fnp.p,
                     request->callback_context,
                     request->chunk->allocator);
-}
-
-static SIXELSTATUS
-sixel_builtin_chunk_size_to_int(sixel_chunk_t const *chunk, int *chunk_size)
-{
-    if (chunk == NULL || chunk_size == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (chunk->size > INT_MAX) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    *chunk_size = (int)chunk->size;
-    return SIXEL_OK;
 }
 
 static SIXELSTATUS
