@@ -219,6 +219,26 @@ librsvg_unref_handle(RsvgHandle **handle)
     *handle = NULL;
 }
 
+static void
+librsvg_destroy_cairo_context(cairo_t **cr)
+{
+    if (cr == NULL || *cr == NULL) {
+        return;
+    }
+    cairo_destroy(*cr);
+    *cr = NULL;
+}
+
+static void
+librsvg_destroy_cairo_surface(cairo_surface_t **surface)
+{
+    if (surface == NULL || *surface == NULL) {
+        return;
+    }
+    cairo_surface_destroy(*surface);
+    *surface = NULL;
+}
+
 static int
 librsvg_equals_nocase(char const *lhs, char const *rhs)
 {
@@ -1232,14 +1252,8 @@ librsvg_render_context_cleanup(sixel_librsvg_render_context_t *render_ctx)
     if (render_ctx == NULL) {
         return;
     }
-    if (render_ctx->cr != NULL) {
-        cairo_destroy(render_ctx->cr);
-        render_ctx->cr = NULL;
-    }
-    if (render_ctx->surface != NULL) {
-        cairo_surface_destroy(render_ctx->surface);
-        render_ctx->surface = NULL;
-    }
+    librsvg_destroy_cairo_context(&render_ctx->cr);
+    librsvg_destroy_cairo_surface(&render_ctx->surface);
     librsvg_open_result_cleanup(&render_ctx->open_result);
     render_ctx->pixel_total = 0u;
 }
