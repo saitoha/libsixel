@@ -2010,6 +2010,71 @@ gif_advance_loop_and_should_stop(sixel_frame_t *frame,
 }
 
 static void
+gif_init_decoder_buffers(gif_t *g)
+{
+    if (g == NULL) {
+        return;
+    }
+    g->out = NULL;
+    g->prev_out = NULL;
+    g->alpha_out = NULL;
+    g->prev_alpha = NULL;
+    g->history = NULL;
+}
+
+static void
+gif_allocate_multiframe_buffers(gif_t *g,
+                                sixel_allocator_t *allocator,
+                                size_t bcount,
+                                size_t history_bytes,
+                                int need_multiframe_buffers)
+{
+    if (g == NULL || allocator == NULL || need_multiframe_buffers == 0) {
+        return;
+    }
+    g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
+    g->history = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                         history_bytes);
+}
+
+static void
+gif_allocate_alpha_buffers(gif_t *g,
+                           sixel_allocator_t *allocator,
+                           size_t pcount,
+                           int need_multiframe_buffers)
+{
+    if (g == NULL || allocator == NULL || g->preserve_transparency == 0) {
+        return;
+    }
+    g->alpha_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
+    if (need_multiframe_buffers != 0) {
+        g->prev_alpha = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                                 pcount);
+    }
+}
+
+static int
+gif_has_required_decoder_buffers(gif_t const *g, int need_multiframe_buffers)
+{
+    if (g == NULL || g->out == NULL) {
+        return 0;
+    }
+    if (need_multiframe_buffers != 0 &&
+        (g->prev_out == NULL || g->history == NULL)) {
+        return 0;
+    }
+    if (g->preserve_transparency != 0 && g->alpha_out == NULL) {
+        return 0;
+    }
+    if (g->preserve_transparency != 0 &&
+        need_multiframe_buffers != 0 &&
+        g->prev_alpha == NULL) {
+        return 0;
+    }
+    return 1;
+}
+
+static void
 gif_destroy_decoder_state(sixel_allocator_t *allocator,
                           gif_t *g,
                           sixel_frame_t *frame)
@@ -2129,30 +2194,18 @@ gif_prepare_decoder_state(unsigned char *buffer,
     bcount = pcount * (size_t)GIF_RGB_STRIDE;
     history_bytes = gif_history_required_bytes(pcount);
 
+    gif_init_decoder_buffers(g);
     g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
-    g->prev_out = NULL;
-    g->alpha_out = NULL;
-    g->prev_alpha = NULL;
-    g->history = NULL;
-    if (need_multiframe_buffers != 0) {
-        g->prev_out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
-        g->history = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                             history_bytes);
-    }
-    if (g->preserve_transparency != 0) {
-        g->alpha_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
-        if (need_multiframe_buffers != 0) {
-            g->prev_alpha = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                                    pcount);
-        }
-    }
-    if (g->out == NULL ||
-        (need_multiframe_buffers != 0 &&
-         (g->prev_out == NULL || g->history == NULL)) ||
-        (g->preserve_transparency != 0 && g->alpha_out == NULL) ||
-        (g->preserve_transparency != 0 &&
-         need_multiframe_buffers != 0 &&
-         g->prev_alpha == NULL)) {
+    gif_allocate_multiframe_buffers(g,
+                                    allocator,
+                                    bcount,
+                                    history_bytes,
+                                    need_multiframe_buffers);
+    gif_allocate_alpha_buffers(g,
+                               allocator,
+                               pcount,
+                               need_multiframe_buffers);
+    if (!gif_has_required_decoder_buffers(g, need_multiframe_buffers)) {
         sixel_compat_snprintf(
             message,
             sizeof(message),
