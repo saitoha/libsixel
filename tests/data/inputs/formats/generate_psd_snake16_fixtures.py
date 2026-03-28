@@ -737,7 +737,7 @@ def generate(out_dir: pathlib.Path):
         channels=3,
         depth=32,
         color_mode=3,
-        variants=["raw", "zip", "zip_pred"],
+        variants=["raw", "rle", "zip", "zip_pred"],
     )
     write_variants(
         out_dir,
