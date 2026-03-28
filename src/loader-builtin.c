@@ -3715,6 +3715,167 @@ sixel_builtin_load_jpeg_float32(
     return SIXEL_OK;
 }
 
+typedef SIXELSTATUS (*sixel_builtin_psd_decode_basic_fn_t)(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
+typedef SIXELSTATUS (*sixel_builtin_psd_decode_cmyk_fn_t)(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char const *icc_profile,
+    size_t icc_profile_length,
+    int *pcms_applied,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat);
+
+typedef struct sixel_builtin_psd_decode_basic_entry {
+    int mode;
+    sixel_builtin_psd_decode_basic_fn_t fn;
+} sixel_builtin_psd_decode_basic_entry_t;
+
+static int
+sixel_builtin_psd_mode_is_cmyk(int mode)
+{
+    return mode == SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT ||
+        mode == SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT ||
+        mode == SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT;
+}
+
+static int
+sixel_builtin_psd_mode_is_lab(int mode)
+{
+    return mode == SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT ||
+        mode == SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT ||
+        mode == SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT;
+}
+
+static sixel_builtin_psd_decode_basic_fn_t
+sixel_builtin_psd_lookup_basic_decode_fn(int mode)
+{
+    static sixel_builtin_psd_decode_basic_entry_t const entries[] = {
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_BITMAP_1BIT,
+            sixel_builtin_decode_psd_bitmap_1bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_INDEXED_8BIT,
+            sixel_builtin_decode_psd_gray_or_indexed_8bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_16BIT,
+            sixel_builtin_decode_psd_gray_or_duotone_16bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_32BIT,
+            sixel_builtin_decode_psd_gray_or_duotone_32bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT,
+            sixel_builtin_decode_psd_lab_8bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT,
+            sixel_builtin_decode_psd_lab_16bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT,
+            sixel_builtin_decode_psd_lab_32bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_8BIT,
+            sixel_builtin_decode_psd_rgb_8bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_16BIT,
+            sixel_builtin_decode_psd_rgb_16bit
+        },
+        {
+            SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_32BIT,
+            sixel_builtin_decode_psd_rgb_32bit
+        }
+    };
+    size_t index;
+
+    index = 0u;
+    for (index = 0u; index < sizeof(entries) / sizeof(entries[0]); ++index) {
+        if (entries[index].mode == mode) {
+            return entries[index].fn;
+        }
+    }
+    return NULL;
+}
+
+static SIXELSTATUS
+sixel_builtin_psd_decode_cmyk_by_mode(
+    int mode,
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    unsigned char *bgcolor,
+    unsigned char const *icc_profile,
+    size_t icc_profile_length,
+    int *pcms_applied,
+    unsigned char **ppixels,
+    unsigned char **ptransparent_mask,
+    size_t *ptransparent_mask_size,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat)
+{
+    sixel_builtin_psd_decode_cmyk_fn_t fn;
+
+    fn = NULL;
+    if (chunk == NULL ||
+        info == NULL ||
+        ppixels == NULL ||
+        ptransparent_mask == NULL ||
+        ptransparent_mask_size == NULL ||
+        pwidth == NULL ||
+        pheight == NULL ||
+        ppixelformat == NULL ||
+        pcms_applied == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    switch (mode) {
+    case SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT:
+        fn = sixel_builtin_decode_psd_cmyk_8bit;
+        break;
+    case SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT:
+        fn = sixel_builtin_decode_psd_cmyk_16bit;
+        break;
+    case SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT:
+        fn = sixel_builtin_decode_psd_cmyk_32bit;
+        break;
+    default:
+        return SIXEL_FALSE;
+    }
+
+    return fn(chunk,
+              info,
+              bgcolor,
+              icc_profile,
+              icc_profile_length,
+              pcms_applied,
+              ppixels,
+              ptransparent_mask,
+              ptransparent_mask_size,
+              pwidth,
+              pheight,
+              ppixelformat);
+}
+
 static SIXELSTATUS
 sixel_builtin_load_psd_single_frame(
     sixel_chunk_t const *chunk,
@@ -3738,6 +3899,7 @@ sixel_builtin_load_psd_single_frame(
     char psd_validation_message[128];
     int psd_icc_status;
     int cms_converted;
+    sixel_builtin_psd_decode_basic_fn_t basic_decode_fn;
 
     status = SIXEL_FALSE;
     pixels = NULL;
@@ -3752,6 +3914,7 @@ sixel_builtin_load_psd_single_frame(
     psd_validation_message[0] = '\0';
     psd_icc_status = SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
     cms_converted = 0;
+    basic_decode_fn = NULL;
     if (chunk == NULL ||
         frame == NULL ||
         mask == NULL ||
@@ -3790,179 +3953,42 @@ sixel_builtin_load_psd_single_frame(
                                                        &psd_icc_profile_length);
     }
 
-    if (psd_custom_decode_mode == SIXEL_BUILTIN_PSD_DECODE_MODE_BITMAP_1BIT) {
-        status = sixel_builtin_decode_psd_bitmap_1bit(chunk,
-                                                      &psd_info,
-                                                      bgcolor,
-                                                      &pixels,
-                                                      mask,
-                                                      mask_size,
-                                                      &frame->width,
-                                                      &frame->height,
-                                                      &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_INDEXED_8BIT) {
-        status = sixel_builtin_decode_psd_gray_or_indexed_8bit(
-            chunk,
-            &psd_info,
-            bgcolor,
-            &pixels,
-            mask,
-            mask_size,
-            &frame->width,
-            &frame->height,
-            &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_16BIT) {
-        status = sixel_builtin_decode_psd_gray_or_duotone_16bit(
-            chunk,
-            &psd_info,
-            bgcolor,
-            &pixels,
-            mask,
-            mask_size,
-            &frame->width,
-            &frame->height,
-            &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_GRAY_DUOTONE_32BIT) {
-        status = sixel_builtin_decode_psd_gray_or_duotone_32bit(
-            chunk,
-            &psd_info,
-            bgcolor,
-            &pixels,
-            mask,
-            mask_size,
-            &frame->width,
-            &frame->height,
-            &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT) {
-        status = sixel_builtin_decode_psd_cmyk_8bit(
-            chunk,
-            &psd_info,
-            bgcolor,
-            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
-                ? psd_icc_profile
-                : NULL,
-            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
-                ? psd_icc_profile_length
-                : 0u,
-            &psd_cmyk_icc_applied,
-            &pixels,
-            mask,
-            mask_size,
-            &frame->width,
-            &frame->height,
-            &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT) {
-        status = sixel_builtin_decode_psd_cmyk_16bit(
-            chunk,
-            &psd_info,
-            bgcolor,
-            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
-                ? psd_icc_profile
-                : NULL,
-            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
-                ? psd_icc_profile_length
-                : 0u,
-            &psd_cmyk_icc_applied,
-            &pixels,
-            mask,
-            mask_size,
-            &frame->width,
-            &frame->height,
-            &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT) {
-        status = sixel_builtin_decode_psd_cmyk_32bit(
-            chunk,
-            &psd_info,
-            bgcolor,
-            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
-                ? psd_icc_profile
-                : NULL,
-            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
-                ? psd_icc_profile_length
-                : 0u,
-            &psd_cmyk_icc_applied,
-            &pixels,
-            mask,
-            mask_size,
-            &frame->width,
-            &frame->height,
-            &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT) {
-        status = sixel_builtin_decode_psd_lab_8bit(chunk,
-                                                   &psd_info,
-                                                   bgcolor,
-                                                   &pixels,
-                                                   mask,
-                                                   mask_size,
-                                                   &frame->width,
-                                                   &frame->height,
-                                                   &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT) {
-        status = sixel_builtin_decode_psd_lab_16bit(chunk,
-                                                    &psd_info,
-                                                    bgcolor,
-                                                    &pixels,
-                                                    mask,
-                                                    mask_size,
-                                                    &frame->width,
-                                                    &frame->height,
-                                                    &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT) {
-        status = sixel_builtin_decode_psd_lab_32bit(chunk,
-                                                    &psd_info,
-                                                    bgcolor,
-                                                    &pixels,
-                                                    mask,
-                                                    mask_size,
-                                                    &frame->width,
-                                                    &frame->height,
-                                                    &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_8BIT) {
-        status = sixel_builtin_decode_psd_rgb_8bit(chunk,
-                                                   &psd_info,
-                                                   bgcolor,
-                                                   &pixels,
-                                                   mask,
-                                                   mask_size,
-                                                   &frame->width,
-                                                   &frame->height,
-                                                   &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_16BIT) {
-        status = sixel_builtin_decode_psd_rgb_16bit(chunk,
-                                                    &psd_info,
-                                                    bgcolor,
-                                                    &pixels,
-                                                    mask,
-                                                    mask_size,
-                                                    &frame->width,
-                                                    &frame->height,
-                                                    &psd_pixelformat);
-    } else if (psd_custom_decode_mode ==
-               SIXEL_BUILTIN_PSD_DECODE_MODE_RGB_32BIT) {
-        status = sixel_builtin_decode_psd_rgb_32bit(chunk,
-                                                    &psd_info,
-                                                    bgcolor,
-                                                    &pixels,
-                                                    mask,
-                                                    mask_size,
-                                                    &frame->width,
-                                                    &frame->height,
-                                                    &psd_pixelformat);
+    basic_decode_fn = sixel_builtin_psd_lookup_basic_decode_fn(
+        psd_custom_decode_mode);
+    if (basic_decode_fn != NULL) {
+        status = basic_decode_fn(chunk,
+                                 &psd_info,
+                                 bgcolor,
+                                 &pixels,
+                                 mask,
+                                 mask_size,
+                                 &frame->width,
+                                 &frame->height,
+                                 &psd_pixelformat);
     } else {
-        sixel_helper_set_additional_message(
-            "builtin PSD: internal decode mode selection failed");
-        return SIXEL_STBI_ERROR;
+        status = sixel_builtin_psd_decode_cmyk_by_mode(
+            psd_custom_decode_mode,
+            chunk,
+            &psd_info,
+            bgcolor,
+            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
+                ? psd_icc_profile
+                : NULL,
+            psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND
+                ? psd_icc_profile_length
+                : 0u,
+            &psd_cmyk_icc_applied,
+            &pixels,
+            mask,
+            mask_size,
+            &frame->width,
+            &frame->height,
+            &psd_pixelformat);
+        if (status == SIXEL_FALSE) {
+            sixel_helper_set_additional_message(
+                "builtin PSD: internal decode mode selection failed");
+            return SIXEL_STBI_ERROR;
+        }
     }
     if (SIXEL_FAILED(status)) {
         return status;
@@ -3974,22 +4000,12 @@ sixel_builtin_load_psd_single_frame(
                 loader_trace_message(
                     "builtin PSD: malformed ICC resource section; "
                     "skipping ICC conversion");
-            } else if ((psd_custom_decode_mode ==
-                        SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT ||
-                        psd_custom_decode_mode ==
-                        SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT ||
-                        psd_custom_decode_mode ==
-                        SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT) &&
+            } else if (sixel_builtin_psd_mode_is_cmyk(psd_custom_decode_mode) &&
                        psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
                        !psd_cmyk_icc_applied) {
                 loader_trace_message(
                     "builtin PSD: embedded ICC conversion failed");
-            } else if ((psd_custom_decode_mode ==
-                        SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT ||
-                        psd_custom_decode_mode ==
-                        SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT ||
-                        psd_custom_decode_mode ==
-                        SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT) &&
+            } else if (sixel_builtin_psd_mode_is_lab(psd_custom_decode_mode) &&
                        psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
                 loader_trace_message(
                     "builtin PSD: skipping embedded ICC conversion "
