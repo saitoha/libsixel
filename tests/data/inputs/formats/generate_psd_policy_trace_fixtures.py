@@ -108,6 +108,14 @@ def generate(out_dir: pathlib.Path) -> None:
         bytes(mode7_channels5),
     )
 
+    mode7_channels56 = bytearray(base)
+    write_u16be(mode7_channels56, 12, 56)
+    write_u16be(mode7_channels56, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_channels56_raw.psd",
+        bytes(mode7_channels56),
+    )
+
     mode7_depth1_channels3 = bytearray(base)
     write_u16be(mode7_depth1_channels3, 12, 3)
     write_u16be(mode7_depth1_channels3, 22, 1)
@@ -115,6 +123,15 @@ def generate(out_dir: pathlib.Path) -> None:
     write_file(
         out_dir / "stbi_minimal_mode7_depth1_channels3_raw.psd",
         bytes(mode7_depth1_channels3),
+    )
+
+    mode7_depth1_channels4 = bytearray(base)
+    write_u16be(mode7_depth1_channels4, 12, 4)
+    write_u16be(mode7_depth1_channels4, 22, 1)
+    write_u16be(mode7_depth1_channels4, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_depth1_channels4_raw.psd",
+        bytes(mode7_depth1_channels4),
     )
 
     # Malformed: channel count below mode-specific minima.
