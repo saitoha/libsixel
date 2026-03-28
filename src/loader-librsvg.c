@@ -718,20 +718,62 @@ librsvg_unpremultiply_channel(unsigned int value, unsigned int alpha)
 }
 
 static SIXELSTATUS
+librsvg_write_buffer_to_fd(int fd,
+                           unsigned char const *buffer,
+                           size_t size)
+{
+    size_t offset;
+    ssize_t written;
+
+    offset = 0u;
+    written = 0;
+    if (fd < 0 || buffer == NULL || size == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    while (offset < size) {
+        written = sixel_compat_write(fd, buffer + offset, size - offset);
+        if (written <= 0) {
+            sixel_helper_set_additional_message(
+                "librsvg_write_chunk_to_temp_svgz: "
+                "failed to write temporary .svgz file.");
+            return SIXEL_LIBC_ERROR;
+        }
+        offset += (size_t)written;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+librsvg_close_temp_svgz_fd(int *fd)
+{
+    if (fd == NULL || *fd < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (sixel_compat_close(*fd) != 0) {
+        sixel_helper_set_additional_message(
+            "librsvg_write_chunk_to_temp_svgz: "
+            "failed to close temporary .svgz file.");
+        *fd = (-1);
+        return SIXEL_LIBC_ERROR;
+    }
+    *fd = (-1);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
 {
     SIXELSTATUS status;
     GError *gerror;
     int fd;
     char *path;
-    size_t offset;
-    ssize_t written;
 
     gerror = NULL;
     fd = (-1);
     path = NULL;
-    offset = 0u;
-    written = 0;
     if (chunk == NULL || path_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -750,26 +792,11 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
             gerror);
     }
     if (fd >= 0 && path != NULL) {
-        while (offset < chunk->size) {
-            written = sixel_compat_write(fd,
-                                         chunk->buffer + offset,
-                                         chunk->size - offset);
-            if (written <= 0) {
-                sixel_helper_set_additional_message(
-                    "librsvg_write_chunk_to_temp_svgz: "
-                    "failed to write temporary .svgz file.");
-                break;
-            }
-            offset += (size_t)written;
+        status = librsvg_write_buffer_to_fd(fd, chunk->buffer, chunk->size);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = librsvg_close_temp_svgz_fd(&fd);
         }
-        if (offset == chunk->size && sixel_compat_close(fd) != 0) {
-            sixel_helper_set_additional_message(
-                "librsvg_write_chunk_to_temp_svgz: "
-                "failed to close temporary .svgz file.");
-            fd = (-1);
-        }
-        if (offset == chunk->size && fd >= 0) {
-            fd = (-1);
+        if (SIXEL_SUCCEEDED(status)) {
             *path_out = path;
             path = NULL;
             status = SIXEL_OK;
