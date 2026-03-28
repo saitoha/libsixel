@@ -16,6 +16,7 @@
  */
 
 #include <math.h>
+#include <float.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -300,6 +301,20 @@ hdr_test_apply_dynamic_range(float *rgb,
             value = 0.0;
         }
         value *= exposure_scale;
+        if (!isfinite(value)) {
+            if (tonemap_mode == HDR_TEST_TONEMAP_REINHARD) {
+                value = DBL_MAX;
+            } else {
+                value = (double)FLT_MAX;
+            }
+        }
+        if (value < 0.0) {
+            value = 0.0;
+        } else if (tonemap_mode == HDR_TEST_TONEMAP_NONE &&
+                   value > (double)FLT_MAX) {
+            value = (double)FLT_MAX;
+        }
+
         if (tonemap_mode == HDR_TEST_TONEMAP_REINHARD) {
             value = value / (1.0 + value);
             if (!isfinite(value) || value < 0.0) {
@@ -1982,6 +1997,109 @@ run_builtin_loader_hdr_invalid_exposure_numeric_test(void)
 }
 
 static int
+run_builtin_loader_hdr_exposure_overflow_none_numeric_test(void)
+{
+    hdr_numeric_probe_context_t probe;
+    float lower_bound;
+    int index;
+    int result;
+
+    lower_bound = FLT_MAX * 0.99f;
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "none") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "200") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr exposure overflow none",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin hdr exposure overflow none: frame contract mismatch "
+                "(pf=%d cs=%d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!isfinite((double)probe.first_pixel[index]) ||
+            probe.first_pixel[index] < lower_bound ||
+            probe.first_pixel[index] > FLT_MAX) {
+            fprintf(stderr,
+                    "builtin hdr exposure overflow none: channel %d is not "
+                    "clamped finite (actual=%f)\n",
+                    index,
+                    probe.first_pixel[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_exposure_overflow_reinhard_numeric_test(void)
+{
+    hdr_numeric_probe_context_t probe;
+    float tolerance;
+    int index;
+    int result;
+
+    tolerance = 0.0007f;
+    if (loader_test_setenv("SIXEL_LOADER_HDR_FALLBACK_PROFILE",
+                           "linear-srgb") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_TONEMAP", "reinhard") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_EXPOSURE_EV", "200") != 0 ||
+        loader_test_setenv("SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE",
+                           "1") != 0) {
+        return 1;
+    }
+
+    result = run_builtin_loader_hdr_numeric_probe_case(
+        "builtin hdr exposure overflow reinhard",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        &probe);
+    if (result != 0) {
+        return result;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr,
+                "builtin hdr exposure overflow reinhard: frame contract "
+                "mismatch (pf=%d cs=%d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    for (index = 0; index < 3; ++index) {
+        if (!isfinite((double)probe.first_pixel[index]) ||
+            !float_approx_equal(probe.first_pixel[index], 1.0f, tolerance)) {
+            fprintf(stderr,
+                    "builtin hdr exposure overflow reinhard: channel %d "
+                    "mismatch (actual=%f expected=1.000000)\n",
+                    index,
+                    probe.first_pixel[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_hdr_case_with_cms(char const *label,
                                      int expected_pixelformat,
                                      int expected_colorspace,
@@ -2136,6 +2254,8 @@ run_builtin_loader_test(void)
     char const *hdr_invalid_fallback_numeric_mode;
     char const *hdr_invalid_tonemap_numeric_mode;
     char const *hdr_invalid_exposure_numeric_mode;
+    char const *hdr_exposure_overflow_none_numeric_mode;
+    char const *hdr_exposure_overflow_reinhard_numeric_mode;
     char const *hdr_header_exposure_numeric_mode;
     char const *hdr_header_exposure_multi_numeric_mode;
     char const *hdr_header_exposure_disabled_numeric_mode;
@@ -2170,6 +2290,10 @@ run_builtin_loader_test(void)
         "SIXEL_TEST_HDR_NUMERIC_INVALID_TONEMAP");
     hdr_invalid_exposure_numeric_mode = loader_test_getenv(
         "SIXEL_TEST_HDR_NUMERIC_INVALID_EXPOSURE");
+    hdr_exposure_overflow_none_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_EXPOSURE_OVERFLOW_NONE");
+    hdr_exposure_overflow_reinhard_numeric_mode = loader_test_getenv(
+        "SIXEL_TEST_HDR_NUMERIC_EXPOSURE_OVERFLOW_REINHARD");
     hdr_header_exposure_numeric_mode = loader_test_getenv(
         "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE");
     hdr_header_exposure_multi_numeric_mode = loader_test_getenv(
@@ -2222,6 +2346,14 @@ run_builtin_loader_test(void)
     if (hdr_invalid_exposure_numeric_mode != NULL &&
         strcmp(hdr_invalid_exposure_numeric_mode, "1") == 0) {
         return run_builtin_loader_hdr_invalid_exposure_numeric_test();
+    }
+    if (hdr_exposure_overflow_none_numeric_mode != NULL &&
+        strcmp(hdr_exposure_overflow_none_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_exposure_overflow_none_numeric_test();
+    }
+    if (hdr_exposure_overflow_reinhard_numeric_mode != NULL &&
+        strcmp(hdr_exposure_overflow_reinhard_numeric_mode, "1") == 0) {
+        return run_builtin_loader_hdr_exposure_overflow_reinhard_numeric_test();
     }
     if (hdr_header_exposure_numeric_mode != NULL &&
         strcmp(hdr_header_exposure_numeric_mode, "1") == 0) {
