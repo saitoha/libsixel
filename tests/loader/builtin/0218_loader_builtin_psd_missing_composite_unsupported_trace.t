@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify PSD without merged/composite image is explicitly unsupported.
+# Verify malformed layer-only PSD is deterministically rejected.
 
 set -eux
 
@@ -17,11 +17,11 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_missing_composit
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: unsupported file without merged/composite image"*)
-        echo "ok" 1 - "missing merged/composite image is deterministically rejected"
+    *"builtin PSD: unsupported layer fallback layout"*)
+        echo "ok" 1 - "malformed layer-only PSD is rejected by fallback policy"
         ;;
     *)
-        echo "not ok" 1 - "missing composite policy trace is missing"
+        echo "not ok" 1 - "layer-only fallback rejection trace is missing"
         exit 0
         ;;
 esac
