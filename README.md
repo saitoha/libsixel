@@ -986,6 +986,10 @@ decode for local files so relative references can resolve.
 | local `.svgz` file | disabled (unless env opt-in is set) | decoded via file path |
 | stdin/pipe gzip stream (`cat foo.svgz \| img2sixel ... -`) | n/a | rejected by default; set `SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1` to allow temp-file decode |
 
+For decode-path diagnostics, set `SIXEL_TRACE_TOPIC=loader`.
+`librsvg` emits `decode_mode=data`, `decode_mode=file`,
+`decode_mode=stdin_svgz_tempfile`, or `decode_mode=stdin_svgz_rejected`.
+
 SVG loader comparison summary:
 
 | Loader | Transparency / `-B` behavior | Relative external refs | `.svgz` behavior | Palette responsibility |

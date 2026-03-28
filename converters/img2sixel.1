@@ -553,6 +553,10 @@ when the opt-in is unset.
 For gzip-compressed SVG data coming from stdin/pipe, this backend rejects the
 input by default; set \fBSIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1\fP to allow
 temporary-file decode, or decompress first.
+For decode-path diagnostics, set \fBSIXEL_TRACE_TOPIC=loader\fP; librsvg emits
+\fBdecode_mode=data\fP, \fBdecode_mode=file\fP,
+\fBdecode_mode=stdin_svgz_tempfile\fP, or
+\fBdecode_mode=stdin_svgz_rejected\fP.
 .PP
 SVG loader comparison summary:
 .nf
