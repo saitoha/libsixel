@@ -238,6 +238,7 @@ test_runner_SOURCES = test_runner.c \
     loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c \
     loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
     loader/librsvg/0023_loader_librsvg_pixelformat.c \
+    loader/librsvg/0025_loader_librsvg_decode_mode.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \
