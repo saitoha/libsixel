@@ -1947,6 +1947,13 @@ gif_should_stop_after_loop(int loop_control,
 }
 
 static SIXELSTATUS
+gif_decode_one_frame(gif_context_t *s,
+                     gif_t *g,
+                     sixel_frame_t *frame,
+                     gif_decode_request_t const *request,
+                     gif_decode_progress_t *progress);
+
+static SIXELSTATUS
 gif_decode_loop_frames(gif_context_t *s,
                        gif_t *g,
                        sixel_frame_t *frame,
