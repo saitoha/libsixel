@@ -727,7 +727,6 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
     size_t offset;
     ssize_t written;
 
-    status = SIXEL_FALSE;
     gerror = NULL;
     fd = (-1);
     path = NULL;
@@ -903,7 +902,6 @@ librsvg_new_handle_from_file(char const *path,
     GError *gerror;
     RsvgHandle *handle;
 
-    status = SIXEL_FALSE;
     gerror = NULL;
     handle = NULL;
     if (path == NULL || context == NULL || handle_out == NULL) {
@@ -939,7 +937,6 @@ librsvg_new_handle_from_data(unsigned char const *buffer,
     GError *gerror;
     RsvgHandle *handle;
 
-    status = SIXEL_FALSE;
     gerror = NULL;
     handle = NULL;
     if (buffer == NULL ||
@@ -1001,7 +998,6 @@ librsvg_open_handle_from_stdin_svgz_tempfile(sixel_chunk_t const *chunk,
     SIXELSTATUS status;
     char *temp_path;
 
-    status = SIXEL_FALSE;
     temp_path = NULL;
     if (chunk == NULL || handle_out == NULL || temp_path_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1317,7 +1313,6 @@ librsvg_render_document(RsvgHandle *handle, cairo_t *cr, int width, int height)
     GError *gerror;
     RsvgRectangle viewport;
 
-    status = SIXEL_FALSE;
     gerror = NULL;
     if (handle == NULL || cr == NULL || width <= 0 || height <= 0) {
         return SIXEL_BAD_ARGUMENT;
@@ -1579,7 +1574,6 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     sixel_librsvg_surface_convert_plan_t plan;
     int has_non_opaque_alpha;
 
-    status = SIXEL_FALSE;
     pixels = NULL;
     row = NULL;
     row_stride = 0u;
