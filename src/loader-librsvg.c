@@ -1114,9 +1114,6 @@ librsvg_open_result_from_source_file(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result)
 {
-    if (chunk == NULL || open_result == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
     return librsvg_open_handle_from_source_file(chunk,
                                                 &open_result->handle);
 }
@@ -1126,9 +1123,6 @@ librsvg_open_result_from_data_chunk(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result)
 {
-    if (chunk == NULL || open_result == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
     return librsvg_open_handle_from_data_chunk(chunk,
                                                &open_result->handle);
 }
@@ -1138,9 +1132,6 @@ librsvg_open_result_from_stdin_svgz_tempfile(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result)
 {
-    if (chunk == NULL || open_result == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
     return librsvg_open_handle_from_stdin_svgz_tempfile(
         chunk,
         &open_result->handle,
@@ -1195,17 +1186,15 @@ librsvg_open_handle_by_mode(sixel_librsvg_decode_mode_t decode_mode,
 {
     sixel_librsvg_open_result_fn_t open_result_fn;
 
-    open_result_fn = NULL;
     if (chunk == NULL || open_result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     open_result_fn = librsvg_find_open_result_fn(decode_mode);
-    if (open_result_fn == NULL) {
-        return librsvg_decode_mode_error(decode_mode);
+    if (open_result_fn != NULL) {
+        return open_result_fn(chunk, open_result);
     }
-
-    return open_result_fn(chunk, open_result);
+    return librsvg_decode_mode_error(decode_mode);
 }
 
 static void
