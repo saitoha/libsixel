@@ -1603,6 +1603,39 @@ end:
     return status;
 }
 
+static size_t
+webp_resolve_max_output_frames(void)
+{
+    char const *env_value;
+    char *endptr;
+    unsigned long long parsed;
+
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0ULL;
+
+    env_value = sixel_compat_getenv("SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES");
+    if (env_value == NULL || env_value[0] == '\0') {
+        return WEBP_MAX_OUTPUT_FRAMES;
+    }
+
+    errno = 0;
+    parsed = strtoull(env_value, &endptr, 10);
+    if (errno != 0 || endptr == env_value || *endptr != '\0' || parsed == 0ULL) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "ignore invalid SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=%s",
+            env_value);
+        return WEBP_MAX_OUTPUT_FRAMES;
+    }
+
+    if (parsed > (unsigned long long)WEBP_MAX_OUTPUT_FRAMES) {
+        return WEBP_MAX_OUTPUT_FRAMES;
+    }
+
+    return (size_t)parsed;
+}
+
 
 static SIXELSTATUS
 loader_try_promote_pal8(
@@ -1991,6 +2024,7 @@ load_with_libwebp(
     unsigned char *icc_profile;
     size_t icc_profile_length;
     size_t emitted_total_frames;
+    size_t max_output_frames;
     char error_message[128];
 
     status = SIXEL_FALSE;
@@ -2023,7 +2057,10 @@ load_with_libwebp(
     icc_profile = NULL;
     icc_profile_length = 0U;
     emitted_total_frames = 0u;
+    max_output_frames = WEBP_MAX_OUTPUT_FRAMES;
     memset(error_message, 0, sizeof(error_message));
+
+    max_output_frames = webp_resolve_max_output_frames();
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -2447,7 +2484,7 @@ load_with_libwebp(
                 continue;
             }
 
-            if (emitted_total_frames >= WEBP_MAX_OUTPUT_FRAMES) {
+            if (emitted_total_frames >= max_output_frames) {
                 sixel_helper_set_additional_message(
                     "load_with_libwebp: emitted frame count exceeds safety limit.");
                 status = SIXEL_BAD_INPUT;
