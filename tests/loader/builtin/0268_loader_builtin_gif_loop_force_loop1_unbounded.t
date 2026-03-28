@@ -31,6 +31,34 @@ while test "${wait_limit}" -gt 0; do
 done
 
 kill "${pid}" 2>/dev/null || true
+
+kill_wait=5
+while test "${kill_wait}" -gt 0; do
+    kill -0 "${pid}" 2>/dev/null || {
+        break
+    }
+    sleep 1
+    kill_wait=$((kill_wait - 1))
+done
+
+kill -0 "${pid}" 2>/dev/null && {
+    kill -9 "${pid}" 2>/dev/null || true
+}
+
+kill_wait=3
+while test "${kill_wait}" -gt 0; do
+    kill -0 "${pid}" 2>/dev/null || {
+        break
+    }
+    sleep 1
+    kill_wait=$((kill_wait - 1))
+done
+
+kill -0 "${pid}" 2>/dev/null && {
+    echo "not ok" 1 - "loop force watchdog could not terminate process"
+    exit 0
+}
+
 wait "${pid}" 2>/dev/null || true
 
 echo "ok" 1 - "loop force ignores NETSCAPE loop1"
