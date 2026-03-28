@@ -103,6 +103,22 @@ typedef struct sixel_librsvg_render_context {
     size_t pixel_total;
 } sixel_librsvg_render_context_t;
 
+typedef struct sixel_librsvg_intrinsic_size_state {
+    gboolean has_width;
+    gboolean has_height;
+    gboolean has_viewbox;
+    RsvgLength width_length;
+    RsvgLength height_length;
+    RsvgRectangle viewbox;
+    double width_from_length;
+    double height_from_length;
+    int has_positive_viewbox;
+    int width_valid;
+    int height_valid;
+    int resolved_width;
+    int resolved_height;
+} sixel_librsvg_intrinsic_size_state_t;
+
 static void
 librsvg_set_error_message(char const *context, GError const *gerror)
 {
@@ -454,6 +470,36 @@ librsvg_try_pick_size_from_intrinsic_pixels(RsvgHandle *handle,
     return 1;
 }
 
+static void
+librsvg_intrinsic_size_state_init(
+    sixel_librsvg_intrinsic_size_state_t *state,
+    int base_width,
+    int base_height)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    state->has_width = FALSE;
+    state->has_height = FALSE;
+    state->has_viewbox = FALSE;
+    state->width_length.length = 0.0;
+    state->width_length.unit = RSVG_UNIT_PX;
+    state->height_length.length = 0.0;
+    state->height_length.unit = RSVG_UNIT_PX;
+    state->viewbox.x = 0.0;
+    state->viewbox.y = 0.0;
+    state->viewbox.width = 0.0;
+    state->viewbox.height = 0.0;
+    state->width_from_length = 0.0;
+    state->height_from_length = 0.0;
+    state->has_positive_viewbox = 0;
+    state->width_valid = 0;
+    state->height_valid = 0;
+    state->resolved_width = base_width;
+    state->resolved_height = base_height;
+}
+
 /*
  * Resolve dimensions from intrinsic length units and viewBox relationships.
  */
@@ -462,86 +508,58 @@ librsvg_pick_size_from_intrinsic_dimensions(RsvgHandle *handle,
                                             int *width,
                                             int *height)
 {
-    gboolean has_width;
-    gboolean has_height;
-    gboolean has_viewbox;
-    RsvgLength width_length;
-    RsvgLength height_length;
-    RsvgRectangle viewbox;
-    double width_from_length;
-    double height_from_length;
-    int has_positive_viewbox;
-    int width_valid;
-    int height_valid;
-    int resolved_width;
-    int resolved_height;
+    sixel_librsvg_intrinsic_size_state_t state;
 
-    has_width = FALSE;
-    has_height = FALSE;
-    has_viewbox = FALSE;
-    width_length.length = 0.0;
-    width_length.unit = RSVG_UNIT_PX;
-    height_length.length = 0.0;
-    height_length.unit = RSVG_UNIT_PX;
-    viewbox.x = 0.0;
-    viewbox.y = 0.0;
-    viewbox.width = 0.0;
-    viewbox.height = 0.0;
-    width_from_length = 0.0;
-    height_from_length = 0.0;
-    has_positive_viewbox = 0;
-    width_valid = 0;
-    height_valid = 0;
-    resolved_width = 0;
-    resolved_height = 0;
     if (handle == NULL || width == NULL || height == NULL) {
         return;
     }
 
-    resolved_width = *width;
-    resolved_height = *height;
+    librsvg_intrinsic_size_state_init(&state, *width, *height);
     rsvg_handle_get_intrinsic_dimensions(handle,
-                                         &has_width,
-                                         &width_length,
-                                         &has_height,
-                                         &height_length,
-                                         &has_viewbox,
-                                         &viewbox);
-    if (has_width && librsvg_length_to_pixels(&width_length,
-                                              &width_from_length) &&
-        width_from_length >= 1.0) {
-        width_valid = 1;
+                                         &state.has_width,
+                                         &state.width_length,
+                                         &state.has_height,
+                                         &state.height_length,
+                                         &state.has_viewbox,
+                                         &state.viewbox);
+    if (state.has_width && librsvg_length_to_pixels(&state.width_length,
+                                                    &state.width_from_length) &&
+        state.width_from_length >= 1.0) {
+        state.width_valid = 1;
     }
-    if (has_height && librsvg_length_to_pixels(&height_length,
-                                               &height_from_length) &&
-        height_from_length >= 1.0) {
-        height_valid = 1;
+    if (state.has_height &&
+            librsvg_length_to_pixels(&state.height_length,
+                                     &state.height_from_length) &&
+            state.height_from_length >= 1.0) {
+        state.height_valid = 1;
     }
-    has_positive_viewbox =
-        has_viewbox && viewbox.width > 0.0 && viewbox.height > 0.0;
-    if (has_positive_viewbox) {
+    state.has_positive_viewbox = state.has_viewbox &&
+        state.viewbox.width > 0.0 && state.viewbox.height > 0.0;
+    if (state.has_positive_viewbox) {
         librsvg_fill_missing_dimensions_from_viewbox(
-            viewbox.width,
-            viewbox.height,
-            &width_from_length,
-            &height_from_length,
-            &width_valid,
-            &height_valid);
+            state.viewbox.width,
+            state.viewbox.height,
+            &state.width_from_length,
+            &state.height_from_length,
+            &state.width_valid,
+            &state.height_valid);
     }
-    if (width_valid) {
-        resolved_width = librsvg_rounded_dimension(width_from_length);
+    if (state.width_valid) {
+        state.resolved_width = librsvg_rounded_dimension(
+            state.width_from_length);
     }
-    if (height_valid) {
-        resolved_height = librsvg_rounded_dimension(height_from_length);
+    if (state.height_valid) {
+        state.resolved_height = librsvg_rounded_dimension(
+            state.height_from_length);
     }
     librsvg_recover_invalid_dimensions_from_viewbox(
-        has_positive_viewbox,
-        &viewbox,
-        &resolved_width,
-        &resolved_height);
+        state.has_positive_viewbox,
+        &state.viewbox,
+        &state.resolved_width,
+        &state.resolved_height);
 
-    *width = resolved_width;
-    *height = resolved_height;
+    *width = state.resolved_width;
+    *height = state.resolved_height;
 }
 
 /*
@@ -714,6 +732,23 @@ end:
     return status;
 }
 
+static char const *
+librsvg_decode_mode_name(sixel_librsvg_decode_mode_t mode)
+{
+    switch (mode) {
+    case SIXEL_LIBRSVG_DECODE_MODE_FILE:
+        return "file";
+    case SIXEL_LIBRSVG_DECODE_MODE_DATA:
+        return "data";
+    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE:
+        return "stdin_svgz_tempfile";
+    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED:
+        return "stdin_svgz_rejected";
+    default:
+        return "unknown";
+    }
+}
+
 static void
 librsvg_trace_decode_mode(sixel_librsvg_decode_mode_t mode)
 {
@@ -722,23 +757,8 @@ librsvg_trace_decode_mode(sixel_librsvg_decode_mode_t mode)
     int written;
 
     message[0] = '\0';
-    mode_name = "unknown";
+    mode_name = librsvg_decode_mode_name(mode);
     written = 0;
-    switch (mode) {
-    case SIXEL_LIBRSVG_DECODE_MODE_FILE:
-        mode_name = "file";
-        break;
-    case SIXEL_LIBRSVG_DECODE_MODE_DATA:
-        mode_name = "data";
-        break;
-    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE:
-        mode_name = "stdin_svgz_tempfile";
-        break;
-    case SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED:
-        mode_name = "stdin_svgz_rejected";
-        break;
-    }
-
     written = sixel_compat_snprintf(message,
                                     sizeof(message),
                                     "librsvg: decode_mode=%s",
@@ -971,25 +991,17 @@ end:
 }
 
 static SIXELSTATUS
-librsvg_open_handle(sixel_chunk_t const *chunk,
-                    sixel_librsvg_decode_policy_t const *policy,
-                    sixel_librsvg_open_result_t *open_result)
+librsvg_open_handle_by_mode(sixel_librsvg_decode_mode_t decode_mode,
+                            sixel_chunk_t const *chunk,
+                            sixel_librsvg_open_result_t *open_result)
 {
     SIXELSTATUS status;
-    sixel_librsvg_decode_mode_t decode_mode;
 
     status = SIXEL_BAD_INPUT;
-    decode_mode = SIXEL_LIBRSVG_DECODE_MODE_DATA;
-    if (chunk == NULL ||
-            policy == NULL ||
-            open_result == NULL) {
+    if (chunk == NULL || open_result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    open_result->handle = NULL;
-    open_result->stdin_svgz_temp_path = NULL;
-    decode_mode = librsvg_pick_decode_mode(chunk, policy);
-    librsvg_trace_decode_mode(decode_mode);
     switch (decode_mode) {
     case SIXEL_LIBRSVG_DECODE_MODE_FILE:
         status = librsvg_open_handle_from_source_file(chunk,
@@ -1014,11 +1026,32 @@ librsvg_open_handle(sixel_chunk_t const *chunk,
             LIBRSVG_MESSAGE_UNSUPPORTED_DECODE_MODE);
         return SIXEL_BAD_ARGUMENT;
     }
-    if (SIXEL_FAILED(status)) {
-        return status;
+
+    return status;
+}
+
+static SIXELSTATUS
+librsvg_open_handle(sixel_chunk_t const *chunk,
+                    sixel_librsvg_decode_policy_t const *policy,
+                    sixel_librsvg_open_result_t *open_result)
+{
+    SIXELSTATUS status;
+    sixel_librsvg_decode_mode_t decode_mode;
+
+    status = SIXEL_BAD_INPUT;
+    decode_mode = SIXEL_LIBRSVG_DECODE_MODE_DATA;
+    if (chunk == NULL ||
+            policy == NULL ||
+            open_result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    return SIXEL_OK;
+    open_result->handle = NULL;
+    open_result->stdin_svgz_temp_path = NULL;
+    decode_mode = librsvg_pick_decode_mode(chunk, policy);
+    librsvg_trace_decode_mode(decode_mode);
+    status = librsvg_open_handle_by_mode(decode_mode, chunk, open_result);
+    return status;
 }
 
 static void
