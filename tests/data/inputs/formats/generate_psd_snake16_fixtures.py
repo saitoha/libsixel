@@ -461,7 +461,9 @@ def build_psd_bytes(
     return bytes(out)
 
 
-def build_psd_layer_only_single_rgb8(planes, *, alpha_plane=None):
+def build_psd_layer_only_single_rgb8(planes, *, color_mode=3, alpha_plane=None):
+    if color_mode not in (3, 9):
+        raise RuntimeError("layer-only RGB8 fixture supports color_mode 3/9")
     if len(planes) < 3:
         raise RuntimeError("layer-only RGB fixture requires R/G/B planes")
     row_bytes = WIDTH
@@ -507,7 +509,7 @@ def build_psd_layer_only_single_rgb8(planes, *, alpha_plane=None):
     out += struct.pack(">I", HEIGHT)
     out += struct.pack(">I", WIDTH)
     out += struct.pack(">H", 8)
-    out += struct.pack(">H", 3)
+    out += struct.pack(">H", color_mode)
     out += struct.pack(">I", 0)  # color mode data length
     out += struct.pack(">I", 0)  # image resources length
     out += struct.pack(">I", len(layer_and_mask))
@@ -577,7 +579,9 @@ def build_psd_layer_only_single_gray8(
     return bytes(out)
 
 
-def build_psd_layer_only_single_rgb16(planes, *, alpha_plane=None):
+def build_psd_layer_only_single_rgb16(planes, *, color_mode=3, alpha_plane=None):
+    if color_mode not in (3, 9):
+        raise RuntimeError("layer-only RGB16 fixture supports color_mode 3/9")
     if len(planes) < 3:
         raise RuntimeError("layer-only RGB16 fixture requires R/G/B planes")
     row_bytes = WIDTH * 2
@@ -623,7 +627,7 @@ def build_psd_layer_only_single_rgb16(planes, *, alpha_plane=None):
     out += struct.pack(">I", HEIGHT)
     out += struct.pack(">I", WIDTH)
     out += struct.pack(">H", 16)
-    out += struct.pack(">H", 3)
+    out += struct.pack(">H", color_mode)
     out += struct.pack(">I", 0)  # color mode data length
     out += struct.pack(">I", 0)  # image resources length
     out += struct.pack(">I", len(layer_and_mask))
@@ -689,7 +693,9 @@ def build_psd_layer_only_single_gray16(
     return bytes(out)
 
 
-def build_psd_layer_only_single_rgb32(planes, *, alpha_plane=None):
+def build_psd_layer_only_single_rgb32(planes, *, color_mode=3, alpha_plane=None):
+    if color_mode not in (3, 9):
+        raise RuntimeError("layer-only RGB32 fixture supports color_mode 3/9")
     if len(planes) < 3:
         raise RuntimeError("layer-only RGB32 fixture requires R/G/B planes")
     row_bytes = WIDTH * 4
@@ -735,7 +741,7 @@ def build_psd_layer_only_single_rgb32(planes, *, alpha_plane=None):
     out += struct.pack(">I", HEIGHT)
     out += struct.pack(">I", WIDTH)
     out += struct.pack(">H", 32)
-    out += struct.pack(">H", 3)
+    out += struct.pack(">H", color_mode)
     out += struct.pack(">I", 0)  # color mode data length
     out += struct.pack(">I", 0)  # image resources length
     out += struct.pack(">I", len(layer_and_mask))
@@ -1077,6 +1083,10 @@ def generate(out_dir: pathlib.Path):
             compression=0,
         ),
     )
+    write_file(
+        out_dir / "snake16_lab8_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb8(lab8_planes, color_mode=9),
+    )
 
     # 16-bit fixtures
     write_variants(
@@ -1166,6 +1176,10 @@ def generate(out_dir: pathlib.Path):
             color_mode=9,
         ),
     )
+    write_file(
+        out_dir / "snake16_lab16_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb16(lab16_planes, color_mode=9),
+    )
 
     write_variants(
         out_dir,
@@ -1220,6 +1234,10 @@ def generate(out_dir: pathlib.Path):
         depth=32,
         color_mode=9,
         variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_file(
+        out_dir / "snake16_lab32_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb32(lab32_planes, color_mode=9),
     )
     write_file(
         out_dir / "snake16_duotone32_missing_composite_single_layer.psd",
