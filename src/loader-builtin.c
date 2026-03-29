@@ -1436,7 +1436,7 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 static SIXELSTATUS
 convert_palette_to_rgb(
     unsigned char **ppalette_rgb,
-    unsigned char *palette,
+    unsigned char **ppalette,
     int palette_colors,
     int palette_comp,
     unsigned char *bgcolor,
@@ -1444,6 +1444,7 @@ convert_palette_to_rgb(
 {
     SIXELSTATUS status;
     unsigned char *rgb_palette;
+    unsigned char *palette_src;
     int i;
     int bg_r;
     int bg_g;
@@ -1453,6 +1454,7 @@ convert_palette_to_rgb(
 
     status = SIXEL_FALSE;
     rgb_palette = NULL;
+    palette_src = NULL;
     i = 0;
     bg_r = 0;
     bg_g = 0;
@@ -1460,13 +1462,17 @@ convert_palette_to_rgb(
     gray = 0;
     alpha = 0;
 
-    if (ppalette_rgb == NULL || palette == NULL || allocator == NULL) {
+    if (ppalette_rgb == NULL ||
+        ppalette == NULL ||
+        *ppalette == NULL ||
+        allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (palette_colors <= 0 ||
         (palette_comp != 1 && palette_comp != 3 && palette_comp != 4)) {
         return SIXEL_BAD_INPUT;
     }
+    palette_src = *ppalette;
 
     rgb_palette = (unsigned char *)
         sixel_allocator_malloc(allocator, (size_t)palette_colors * 3);
@@ -1484,38 +1490,39 @@ convert_palette_to_rgb(
 
     for (i = 0; i < palette_colors; ++i) {
         if (palette_comp == 4) {
-            alpha = palette[i * 4 + 3];
+            alpha = palette_src[i * 4 + 3];
             if (alpha < 0xff) {
                 /*
                  * Keep integer blending consistent with the libpng loader.
                  */
                 rgb_palette[i * 3 + 0] =
                     (unsigned char)(((0xff - alpha) * bg_r
-                                     + alpha * palette[i * 4 + 0]) >> 8);
+                                     + alpha * palette_src[i * 4 + 0]) >> 8);
                 rgb_palette[i * 3 + 1] =
                     (unsigned char)(((0xff - alpha) * bg_g
-                                     + alpha * palette[i * 4 + 1]) >> 8);
+                                     + alpha * palette_src[i * 4 + 1]) >> 8);
                 rgb_palette[i * 3 + 2] =
                     (unsigned char)(((0xff - alpha) * bg_b
-                                     + alpha * palette[i * 4 + 2]) >> 8);
+                                     + alpha * palette_src[i * 4 + 2]) >> 8);
             } else {
-                rgb_palette[i * 3 + 0] = palette[i * 4 + 0];
-                rgb_palette[i * 3 + 1] = palette[i * 4 + 1];
-                rgb_palette[i * 3 + 2] = palette[i * 4 + 2];
+                rgb_palette[i * 3 + 0] = palette_src[i * 4 + 0];
+                rgb_palette[i * 3 + 1] = palette_src[i * 4 + 1];
+                rgb_palette[i * 3 + 2] = palette_src[i * 4 + 2];
             }
         } else if (palette_comp == 3) {
-            rgb_palette[i * 3 + 0] = palette[i * 3 + 0];
-            rgb_palette[i * 3 + 1] = palette[i * 3 + 1];
-            rgb_palette[i * 3 + 2] = palette[i * 3 + 2];
+            rgb_palette[i * 3 + 0] = palette_src[i * 3 + 0];
+            rgb_palette[i * 3 + 1] = palette_src[i * 3 + 1];
+            rgb_palette[i * 3 + 2] = palette_src[i * 3 + 2];
         } else {
-            gray = palette[i];
+            gray = palette_src[i];
             rgb_palette[i * 3 + 0] = gray;
             rgb_palette[i * 3 + 1] = gray;
             rgb_palette[i * 3 + 2] = gray;
         }
     }
 
-    stbi_free(palette);
+    stbi_free(palette_src);
+    *ppalette = NULL;
     *ppalette_rgb = rgb_palette;
     status = SIXEL_OK;
 
@@ -3596,7 +3603,7 @@ sixel_builtin_try_load_indexed_png(
     }
 
     status = convert_palette_to_rgb(&frame->palette,
-                                    palette,
+                                    &palette,
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
@@ -3677,7 +3684,7 @@ sixel_builtin_try_load_indexed_tga(
     }
 
     status = convert_palette_to_rgb(&frame->palette,
-                                    palette,
+                                    &palette,
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
@@ -3777,7 +3784,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
         }
 
         status = convert_palette_to_rgb(&frame->palette,
-                                        palette,
+                                        &palette,
                                         palette_colors,
                                         palette_comp,
                                         bgcolor,
