@@ -2001,6 +2001,93 @@ def generate(out_dir: pathlib.Path):
             ],
         ),
     )
+    write_file(
+        out_dir / "snake16_cmyk16_missing_composite_multilayer_clipping.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=16,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top clipped layer: full-canvas black clipped by base below
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_u16_patch_plane(0xFFFF, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0xFFFF, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0xFFFF, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0x0000, 0, 0, HEIGHT, WIDTH),
+                    ],
+                    "blend_key": b"norm",
+                    "clipping": 1,
+                },
+                {
+                    # clipping base: opaque white patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk16_missing_composite_multilayer_mask.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=16,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer with raster user mask channel (-2)
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3, -2],
+                    "planes": [
+                        build_u16_patch_plane(0xFFFF, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0xFFFF, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0xFFFF, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0x0000, 0, 0, HEIGHT, WIDTH),
+                        alpha16_plane,
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
 
     # 32-bit fixtures
     write_variants(
