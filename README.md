@@ -800,6 +800,9 @@ steps.
                            loader names such as 'gd,builtin'.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
+                           libpng/libjpeg/libwebp accept
+                           :orientation=on|off
+                           (or :o=..., default on).
                            libpng/libjpeg/libwebp/libtiff/builtin
                            accept
                            :cms_engine=none|auto|builtin|lcms2|colorsync
@@ -872,6 +875,19 @@ SIXEL_LOADER_PRIORITY_LIST override default loader search order.
                            as the -L/--loaders option (including
                            prefixes and the trailing "!") and is
                            ignored when that option is set.
+SIXEL_LOADER_ORIENTATION   default EXIF orientation handling for
+                           libjpeg/libpng/libwebp loaders.
+                           Accepts on/off (preferred) and 1/0 aliases.
+                           Defaults to on.
+SIXEL_LOADER_LIBJPEG_ORIENTATION
+                           override libjpeg EXIF orientation handling.
+                           Overrides SIXEL_LOADER_ORIENTATION.
+SIXEL_LOADER_LIBPNG_ORIENTATION
+                           override libpng EXIF orientation handling.
+                           Overrides SIXEL_LOADER_ORIENTATION.
+SIXEL_LOADER_LIBWEBP_ORIENTATION
+                           override libwebp EXIF orientation handling.
+                           Overrides SIXEL_LOADER_ORIENTATION.
 SIXEL_LOADER_CMS_ENGINE    select CMS backend for loader ICC conversion.
                            Accepts none, auto, builtin, lcms2, or colorsync.
                            auto prefers lcms2, then ColorSync (macOS),

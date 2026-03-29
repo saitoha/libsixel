@@ -21,10 +21,13 @@ typedef struct sixel_loader_suboptions {
     int wic_ico_minsize;
     int libjpeg_enable_cms;
     int libjpeg_cms_engine;
+    int libjpeg_enable_orientation;
     int libpng_enable_cms;
     int libpng_cms_engine;
+    int libpng_enable_orientation;
     int libwebp_enable_cms;
     int libwebp_cms_engine;
+    int libwebp_enable_orientation;
     int libtiff_enable_cms;
     int libtiff_cms_engine;
     int builtin_enable_cms;

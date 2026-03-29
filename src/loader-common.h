@@ -47,6 +47,9 @@
 #define SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS   (0x10005)
 #define SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS   (0x10006)
 #define SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE           (0x10007)
+#define SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_ORIENTATION (0x10008)
+#define SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_ORIENTATION  (0x10009)
+#define SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_ORIENTATION (0x1000a)
 
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
@@ -79,6 +82,12 @@ int chunk_is_webp(sixel_chunk_t const *chunk);
 int chunk_is_bmp(sixel_chunk_t const *chunk);
 int chunk_is_gif(sixel_chunk_t const *chunk);
 int chunk_is_tiff(sixel_chunk_t const *chunk);
+
+int loader_exif_parse_orientation(unsigned char const *data,
+                                  size_t size,
+                                  int *orientation);
+SIXELSTATUS loader_frame_apply_orientation(sixel_frame_t *frame,
+                                           int orientation);
 
 #endif /* LIBSIXEL_LOADER_COMMON_H */
 

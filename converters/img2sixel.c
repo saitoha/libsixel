@@ -636,6 +636,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "-L LIST, --loaders=LIST    choose loader priority order\n"
         "                           LIST is a comma separated list of\n"
         "                           loader names (prefixes accepted).\n"
+        "                           libpng/libjpeg/libwebp support\n"
+        "                           :orientation=on|off\n"
+        "                           (or :o=..., default on).\n"
         "                           libpng/libjpeg/libwebp/libtiff/builtin\n"
         "                           support\n"
         "                           :cms_engine=none|auto|builtin|lcms2|colorsync\n"
@@ -961,6 +964,26 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_BACKGROUND_COLORSPACE",
         "set how loader background colors are interpreted during alpha\n"
         "composition. Accepts gamma (default) or linear."
+    },
+    {
+        "SIXEL_LOADER_ORIENTATION",
+        "default EXIF orientation handling for libjpeg/libpng/libwebp.\n"
+        "Accepts on/off (preferred) and 1/0 aliases. Defaults to on."
+    },
+    {
+        "SIXEL_LOADER_LIBJPEG_ORIENTATION",
+        "override EXIF orientation handling for libjpeg loader only.\n"
+        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+    },
+    {
+        "SIXEL_LOADER_LIBPNG_ORIENTATION",
+        "override EXIF orientation handling for libpng loader only.\n"
+        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+    },
+    {
+        "SIXEL_LOADER_LIBWEBP_ORIENTATION",
+        "override EXIF orientation handling for libwebp loader only.\n"
+        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {
         "SIXEL_LOADER_ANIMATION_START_FRAME_NO",

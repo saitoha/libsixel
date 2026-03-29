@@ -146,6 +146,94 @@ loader_manager_read_env_cms_engine(char const *name,
     return parsed_value;
 }
 
+static int
+loader_manager_span_equals_nocase(char const *text,
+                                  size_t length,
+                                  char const *token)
+{
+    size_t index;
+    unsigned char left;
+    unsigned char right;
+
+    index = 0u;
+    left = 0u;
+    right = 0u;
+    if (text == NULL || token == NULL) {
+        return 0;
+    }
+
+    while (index < length && token[index] != '\0') {
+        left = (unsigned char)text[index];
+        right = (unsigned char)token[index];
+        if (tolower(left) != tolower(right)) {
+            return 0;
+        }
+        ++index;
+    }
+    if (index != length || token[index] != '\0') {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
+loader_manager_parse_orientation(char const *text,
+                                 size_t length,
+                                 int *value_out,
+                                 int allow_numeric)
+{
+    if (text == NULL || value_out == NULL || length == 0u) {
+        return 0;
+    }
+    if (loader_manager_span_equals_nocase(text, length, "on")) {
+        *value_out = 1;
+        return 1;
+    }
+    if (loader_manager_span_equals_nocase(text, length, "off")) {
+        *value_out = 0;
+        return 1;
+    }
+    if (allow_numeric &&
+        loader_manager_span_equals_nocase(text, length, "1")) {
+        *value_out = 1;
+        return 1;
+    }
+    if (allow_numeric &&
+        loader_manager_span_equals_nocase(text, length, "0")) {
+        *value_out = 0;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+loader_manager_read_env_orientation(char const *name, int fallback_value)
+{
+    char const *env_value;
+    int parsed_value;
+
+    env_value = NULL;
+    parsed_value = fallback_value;
+    if (name == NULL) {
+        return fallback_value;
+    }
+
+    env_value = sixel_compat_getenv(name);
+    if (env_value == NULL || env_value[0] == '\0') {
+        return fallback_value;
+    }
+    if (!loader_manager_parse_orientation(env_value,
+                                          strlen(env_value),
+                                          &parsed_value,
+                                          1)) {
+        return fallback_value;
+    }
+
+    return parsed_value;
+}
+
 #if HAVE_WIC
 static int
 loader_manager_read_env_positive_int(char const *name,
@@ -290,6 +378,7 @@ loader_manager_init_loader_suboptions(
     sixel_loader_suboptions_t *suboptions)
 {
     int default_cms_engine;
+    int default_orientation;
 
     if (suboptions == NULL) {
         return;
@@ -298,19 +387,34 @@ loader_manager_init_loader_suboptions(
     default_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_CMS_ENGINE",
         SIXEL_CMS_ENGINE_NONE);
+    default_orientation = loader_manager_read_env_orientation(
+        "SIXEL_LOADER_ORIENTATION",
+        1);
 
     suboptions->libjpeg_enable_cms = 0;
     suboptions->libjpeg_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
         default_cms_engine);
+    suboptions->libjpeg_enable_orientation =
+        loader_manager_read_env_orientation(
+            "SIXEL_LOADER_LIBJPEG_ORIENTATION",
+            default_orientation);
     suboptions->libpng_enable_cms = 0;
     suboptions->libpng_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_LIBPNG_CMS_ENGINE",
         default_cms_engine);
+    suboptions->libpng_enable_orientation =
+        loader_manager_read_env_orientation(
+            "SIXEL_LOADER_LIBPNG_ORIENTATION",
+            default_orientation);
     suboptions->libwebp_enable_cms = 0;
     suboptions->libwebp_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_LIBWEBP_CMS_ENGINE",
         default_cms_engine);
+    suboptions->libwebp_enable_orientation =
+        loader_manager_read_env_orientation(
+            "SIXEL_LOADER_LIBWEBP_ORIENTATION",
+            default_orientation);
     suboptions->libtiff_enable_cms = 0;
     suboptions->libtiff_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
@@ -393,18 +497,39 @@ loader_manager_resolve_loader_suboptions(
                                                        value_length,
                                                        &parsed_value)) {
                 suboptions->libpng_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "libpng") == 0 &&
+                       strcmp(key_name, "orientation") == 0 &&
+                       loader_manager_parse_orientation(value_text,
+                                                        value_length,
+                                                        &parsed_value,
+                                                        0)) {
+                suboptions->libpng_enable_orientation = parsed_value;
             } else if (strcmp(item->base_def->name, "libjpeg") == 0 &&
                        strcmp(key_name, "cms_engine") == 0 &&
                        loader_manager_parse_cms_engine(value_text,
                                                        value_length,
                                                        &parsed_value)) {
                 suboptions->libjpeg_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "libjpeg") == 0 &&
+                       strcmp(key_name, "orientation") == 0 &&
+                       loader_manager_parse_orientation(value_text,
+                                                        value_length,
+                                                        &parsed_value,
+                                                        0)) {
+                suboptions->libjpeg_enable_orientation = parsed_value;
             } else if (strcmp(item->base_def->name, "libwebp") == 0 &&
                        strcmp(key_name, "cms_engine") == 0 &&
                        loader_manager_parse_cms_engine(value_text,
                                                        value_length,
                                                        &parsed_value)) {
                 suboptions->libwebp_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "libwebp") == 0 &&
+                       strcmp(key_name, "orientation") == 0 &&
+                       loader_manager_parse_orientation(value_text,
+                                                        value_length,
+                                                        &parsed_value,
+                                                        0)) {
+                suboptions->libwebp_enable_orientation = parsed_value;
             } else if (strcmp(item->base_def->name, "libtiff") == 0 &&
                        strcmp(key_name, "cms_engine") == 0 &&
                        loader_manager_parse_cms_engine(value_text,

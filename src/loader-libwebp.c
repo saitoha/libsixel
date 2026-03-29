@@ -74,6 +74,7 @@ typedef struct sixel_loader_libwebp_component {
     unsigned char bgcolor[3];
     int has_start_frame_no;
     int start_frame_no;
+    int enable_orientation;
 } sixel_loader_libwebp_component_t;
 
 typedef struct webp_decode_common {
@@ -81,6 +82,7 @@ typedef struct webp_decode_common {
     int enable_cms;
     int allow_palette_promotion;
     int reqcolors;
+    int exif_orientation;
     unsigned char *icc_profile;
     size_t icc_profile_length;
     sixel_load_image_function fn_load;
@@ -1342,6 +1344,46 @@ cleanup:
 }
 
 /*
+ * Read EXIF orientation metadata from WebP EXIF chunk when present.
+ */
+static int
+webp_extract_exif_orientation(WebPDemuxer const *demux, int *orientation)
+{
+    WebPChunkIterator chunk_iter;
+    unsigned int format_flags;
+    int found;
+
+    chunk_iter = (WebPChunkIterator){ 0 };
+    format_flags = 0U;
+    found = 0;
+    if (demux == NULL || orientation == NULL) {
+        return 0;
+    }
+
+    format_flags = WebPDemuxGetI(demux, WEBP_FF_FORMAT_FLAGS);
+#if defined(EXIF_FLAG)
+    if ((format_flags & EXIF_FLAG) == 0U) {
+        return 0;
+    }
+#endif
+
+    if (!WebPDemuxGetChunk(demux, "EXIF", 1, &chunk_iter)) {
+        return 0;
+    }
+    if (chunk_iter.chunk.bytes != NULL && chunk_iter.chunk.size > 0U) {
+        found = loader_exif_parse_orientation(chunk_iter.chunk.bytes,
+                                              chunk_iter.chunk.size,
+                                              orientation);
+    }
+    if (chunk_iter.chunk.bytes != NULL) {
+        WebPDemuxReleaseChunkIterator(&chunk_iter);
+    }
+
+    (void)format_flags;
+    return found;
+}
+
+/*
  * Convert decoded WebP pixels from embedded ICC profile space to sRGB.
  *
  * The alpha channel is preserved when RGBA pixels are provided. If ICC data
@@ -1869,6 +1911,7 @@ webp_init_decode_common(webp_decode_common_t *decode,
     decode->chunk = chunk;
     decode->enable_cms = enable_cms;
     decode->reqcolors = reqcolors;
+    decode->exif_orientation = 1;
     decode->fn_load = fn_load;
     decode->context = context;
 }
@@ -2250,6 +2293,7 @@ webp_finalize_and_emit_frame(sixel_frame_t *frame,
                              int allow_palette_promotion,
                              int reqcolors,
                              unsigned char *bgcolor,
+                             int exif_orientation,
                              sixel_allocator_t *allocator,
                              sixel_load_image_function fn_load,
                              void *context)
@@ -2270,6 +2314,13 @@ webp_finalize_and_emit_frame(sixel_frame_t *frame,
                                         allocator);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+
+    if (exif_orientation >= 2 && exif_orientation <= 8) {
+        status = loader_frame_apply_orientation(frame, exif_orientation);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
     }
 
     return fn_load(frame, context);
@@ -2597,6 +2648,7 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
                                           decode->allow_palette_promotion,
                                           decode->reqcolors,
                                           bgcolor,
+                                          decode->exif_orientation,
                                           allocator,
                                           decode->fn_load,
                                           decode->context);
@@ -2733,6 +2785,7 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
                                           decode->allow_palette_promotion,
                                           decode->reqcolors,
                                           resolved_bgcolor,
+                                          decode->exif_orientation,
                                           chunk->allocator,
                                           decode->fn_load,
                                           decode->context);
@@ -2884,6 +2937,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                                                   decode->allow_palette_promotion,
                                                   decode->reqcolors,
                                                   resolved_bgcolor,
+                                                  decode->exif_orientation,
                                                   chunk->allocator,
                                                   decode->fn_load,
                                                   decode->context);
@@ -2935,6 +2989,7 @@ static SIXELSTATUS
 load_with_libwebp(
     sixel_chunk_t const       /* in */     *pchunk,
     int                       /* in */     enable_cms,
+    int                       /* in */     enable_orientation,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
@@ -2960,6 +3015,7 @@ load_with_libwebp(
     unsigned char *single_frame_data;
     size_t single_frame_size;
     size_t animation_frame_count_hint;
+    int parsed_orientation;
 
     status = SIXEL_FALSE;
     webp_data = (WebPData){ 0 };
@@ -2977,6 +3033,7 @@ load_with_libwebp(
     single_frame_data = NULL;
     single_frame_size = 0u;
     animation_frame_count_hint = 0u;
+    parsed_orientation = 1;
 
     webp_init_decode_common(&decode,
                             pchunk,
@@ -3035,7 +3092,7 @@ load_with_libwebp(
         goto end;
     }
 
-    if (enable_cms || fuse_palette) {
+    if (enable_cms || fuse_palette || enable_orientation) {
         demux = WebPDemux(&webp_data);
         if (demux == NULL) {
             sixel_helper_set_additional_message(
@@ -3054,6 +3111,11 @@ load_with_libwebp(
                                  &decode.icc_profile,
                                  &decode.icc_profile_length,
                                  pchunk->allocator);
+    }
+    if (enable_orientation && demux != NULL) {
+        if (webp_extract_exif_orientation(demux, &parsed_orientation)) {
+            decode.exif_orientation = parsed_orientation;
+        }
     }
 
     if (!stream_features.has_animation) {
@@ -3268,6 +3330,10 @@ sixel_loader_libwebp_setopt(sixel_loader_component_t *component,
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_ORIENTATION:
+        flag = (int const *)value;
+        self->enable_orientation = (flag == NULL || *flag != 0) ? 1 : 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
         flag = (int const *)value;
         if (flag != NULL && *flag >= 0) {
@@ -3342,6 +3408,7 @@ sixel_loader_libwebp_load(sixel_loader_component_t *component,
 
     return load_with_libwebp(chunk,
                              self->enable_cms,
+                             self->enable_orientation,
                              self->fstatic,
                              self->fuse_palette,
                              self->reqcolors,
@@ -3391,6 +3458,7 @@ sixel_loader_libwebp_new(sixel_allocator_t *allocator,
     self->allocator = allocator;
     self->ref = 1u;
     self->enable_cms = 0;
+    self->enable_orientation = 1;
     self->reqcolors = 256;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;
