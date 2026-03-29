@@ -410,6 +410,25 @@ def generate(out_dir: pathlib.Path) -> None:
         bytes(fallback_stream_decode_short),
     )
 
+    # Mode7 CMYK-mapped missing-composite multi-layer valid-ICC fixtures.
+    # Reuse known-good ICC image-resource block from minimal valid profile.
+    mode7_valid_icc_resource = extract_icc_resource_block(
+        (out_dir / "stbi_minimal_mode7_cmyk8_valid_icc_profile.psd").read_bytes()
+    )
+    for depth_tag in ("8", "16", "32"):
+        source_path = (
+            out_dir
+            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal.psd"
+        )
+        target_path = (
+            out_dir
+            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal_valid_icc_profile.psd"
+        )
+        write_file(
+            target_path,
+            replace_image_resources(source_path.read_bytes(), mode7_valid_icc_resource),
+        )
+
 
 def main() -> int:
     out_dir = pathlib.Path(__file__).resolve().parent
