@@ -61,7 +61,7 @@ Key points used by this roadmap:
     and 8-bit CMYK layer-only PSDs.
     For Multichannel (`mode=7`), minimal fallback currently applies to
     `channels==3` on `8/16/32-bit` (`3ch->RGB8/16/32`) and
-    `channels==4` on `8/16-bit` (`4ch->CMYK8/16`).
+    `channels==4` on `8/16/32-bit` (`4ch->CMYK8/16/32`).
     Fallback layout is limited to a single full-canvas layer with decodable
     base-color channels.
   - Layer-only PSD layouts outside that minimal fallback surface a deterministic
