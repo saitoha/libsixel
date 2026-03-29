@@ -44,6 +44,64 @@ def locate_offsets(data: bytes) -> tuple[int, int, int]:
     return layer_length_field_offset, compression_offset, image_data_offset
 
 
+def locate_image_resources(data: bytes) -> tuple[int, int, int]:
+    """Return (image_resources_length_offset, resources_data_offset, resources_end)."""
+    offset = 26
+    color_mode_len = read_u32be(data, offset)
+    offset += 4 + color_mode_len
+    image_resources_length_offset = offset
+    image_resources_len = read_u32be(data, image_resources_length_offset)
+    resources_data_offset = image_resources_length_offset + 4
+    resources_end = resources_data_offset + image_resources_len
+    if resources_end > len(data):
+        raise RuntimeError("invalid image resources section")
+    return image_resources_length_offset, resources_data_offset, resources_end
+
+
+def extract_icc_resource_block(data: bytes) -> bytes:
+    """Extract the full ICC image-resource block (including header and padding)."""
+    _, cursor, end = locate_image_resources(data)
+
+    while cursor + 12 <= end:
+        block_start = cursor
+        if data[cursor : cursor + 4] != b"8BIM":
+            break
+        resource_id = read_u16be(data, cursor + 4)
+        cursor += 6
+
+        name_length = data[cursor]
+        cursor += 1 + name_length
+        if cursor & 1:
+            cursor += 1
+        if cursor + 4 > end:
+            break
+
+        resource_size = read_u32be(data, cursor)
+        cursor += 4
+        block_end = cursor + resource_size
+        if resource_size & 1:
+            block_end += 1
+        if block_end > end:
+            break
+
+        if resource_id == 0x040F:
+            return data[block_start:block_end]
+        cursor = block_end
+
+    raise RuntimeError("ICC resource block not found")
+
+
+def replace_image_resources(data: bytes, resources: bytes) -> bytes:
+    """Replace the PSD image resources section with the given bytes."""
+    length_offset, _, resources_end = locate_image_resources(data)
+    out = bytearray()
+    out += data[:length_offset]
+    out += struct.pack(">I", len(resources))
+    out += resources
+    out += data[resources_end:]
+    return bytes(out)
+
+
 def write_file(path: pathlib.Path, data: bytes) -> None:
     path.write_bytes(data)
     print(path)
@@ -160,6 +218,26 @@ def generate(out_dir: pathlib.Path) -> None:
     write_file(
         out_dir / "stbi_minimal_mode7_cmyk8_bad_icc_profile.psd",
         bytes(mode7_cmyk_raw_bad_icc),
+    )
+
+    # Mode7 CMYK-mapped valid-ICC fixtures for higher bit depths.
+    # Reuse the known-good ICC resource block from the static 8-bit fixture.
+    mode7_valid_icc_resource = extract_icc_resource_block(
+        (out_dir / "stbi_minimal_mode7_cmyk8_valid_icc_profile.psd").read_bytes()
+    )
+
+    mode7_cmyk16_valid_icc = bytearray((out_dir / "stbi_minimal_cmyk16_raw.psd").read_bytes())
+    write_u16be(mode7_cmyk16_valid_icc, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_cmyk16_valid_icc_profile.psd",
+        replace_image_resources(bytes(mode7_cmyk16_valid_icc), mode7_valid_icc_resource),
+    )
+
+    mode7_cmyk32_valid_icc = bytearray((out_dir / "stbi_minimal_cmyk32_raw.psd").read_bytes())
+    write_u16be(mode7_cmyk32_valid_icc, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_cmyk32_valid_icc_profile.psd",
+        replace_image_resources(bytes(mode7_cmyk32_valid_icc), mode7_valid_icc_resource),
     )
 
     mode7_bad_resource_signature = bytearray(
