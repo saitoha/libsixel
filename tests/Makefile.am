@@ -187,6 +187,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_LOADER_LIBWEBP_PIXELFORMAT \
     -DBUILD_TEST_0014_LOADER_LIBWEBP_ANIMATION_FRAMES \
     -DBUILD_TEST_0015_LOADER_LIBWEBP_PALETTE_PROMOTION_GUARD \
+    -DBUILD_TEST_0016_LOADER_LIBWEBP_FAULT_INJECTION \
     -DBUILD_TEST_0020_LOADER_LIBRSVG_DETECT_SVG_LIKE \
     -DBUILD_TEST_0021_LOADER_BUILTIN_INDEXED_PNG_REQCOLORS_FALLBACK \
     -DBUILD_TEST_0022_LOADER_LIBPNG_INDEXED_PNG_REQCOLORS_FALLBACK \
@@ -234,6 +235,7 @@ test_runner_SOURCES = test_runner.c \
     loader/libwebp/0013_loader_libwebp_pixelformat.c \
     loader/libwebp/0014_loader_libwebp_animation_frames.c \
     loader/libwebp/0015_loader_libwebp_palette_promotion_guard.c \
+    loader/libwebp/0016_loader_libwebp_fault_injection.c \
     loader/librsvg/0020_loader_librsvg_detect_svg_like.c \
     loader/builtin/0021_loader_builtin_indexed_png_reqcolors_fallback.c \
     loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
@@ -253,6 +255,7 @@ test_runner_SOURCES = test_runner.c \
     $(top_srcdir)/converters/aborttrace.c \
     $(top_srcdir)/converters/cli.c
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
+    $(LIBWEBP_CFLAGS) \
     $(GDK_PIXBUF_CFLAGS) \
     -DGDK_PIXBUF_ENABLE_BACKEND \
     -DSIXEL_PIXBUF_LOADER_TESTING \
