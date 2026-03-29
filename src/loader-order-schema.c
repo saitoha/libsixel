@@ -42,11 +42,13 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_cms_engine[] = 
     { "colorsync", SIXEL_CMS_ENGINE_COLORSYNC }
 };
 
+#if HAVE_LIBPNG || HAVE_JPEG || HAVE_WEBP
 static sixel_suboption_choice_t const
 g_suboption_choices_loader_orientation[] = {
     { "on", 1 },
     { "off", 0 }
 };
+#endif
 
 #if HAVE_LIBPNG
 static sixel_suboption_key_t const g_subkeys_loader_libpng[] = {
