@@ -2633,22 +2633,112 @@ sixel_builtin_decode_hdr_float32_with_hint(
                                                   pcolorspace);
 }
 
+typedef struct sixel_builtin_hdr_line_reader {
+    unsigned char const *buffer;
+    size_t size;
+    size_t cursor;
+} sixel_builtin_hdr_line_reader_t;
+
+static void
+sixel_builtin_hdr_line_reader_init(
+    sixel_builtin_hdr_line_reader_t *reader,
+    sixel_chunk_t const *chunk)
+{
+    if (reader == NULL) {
+        return;
+    }
+
+    reader->buffer = NULL;
+    reader->size = 0u;
+    reader->cursor = 0u;
+    if (chunk == NULL || chunk->buffer == NULL) {
+        return;
+    }
+
+    reader->buffer = chunk->buffer;
+    reader->size = chunk->size;
+}
+
+static int
+sixel_builtin_hdr_line_reader_next(
+    sixel_builtin_hdr_line_reader_t *reader,
+    size_t *line_start,
+    size_t *line_length)
+{
+    size_t cursor;
+
+    cursor = 0u;
+    if (reader == NULL ||
+        reader->buffer == NULL ||
+        line_start == NULL ||
+        line_length == NULL ||
+        reader->cursor >= reader->size) {
+        return 0;
+    }
+
+    cursor = reader->cursor;
+    *line_start = cursor;
+    while (cursor < reader->size &&
+           reader->buffer[cursor] != '\n' &&
+           reader->buffer[cursor] != '\r') {
+        ++cursor;
+    }
+    *line_length = cursor - *line_start;
+
+    if (cursor < reader->size) {
+        if (reader->buffer[cursor] == '\r') {
+            ++cursor;
+            if (cursor < reader->size &&
+                reader->buffer[cursor] == '\n') {
+                ++cursor;
+            }
+        } else if (reader->buffer[cursor] == '\n') {
+            ++cursor;
+            if (cursor < reader->size &&
+                reader->buffer[cursor] == '\r') {
+                ++cursor;
+            }
+        }
+    }
+
+    reader->cursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_hdr_copy_line_to_buffer(
+    char *line_buffer,
+    size_t line_buffer_size,
+    unsigned char const *source_buffer,
+    size_t line_start,
+    size_t line_length)
+{
+    if (line_buffer == NULL ||
+        source_buffer == NULL ||
+        line_buffer_size == 0u ||
+        line_length >= line_buffer_size) {
+        return 0;
+    }
+
+    memcpy(line_buffer, source_buffer + line_start, line_length);
+    line_buffer[line_length] = '\0';
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_builtin_parse_hdr_profile_hint(
     sixel_chunk_t const *chunk,
     sixel_builtin_hdr_profile_hint_t *out_hint)
 {
-    size_t cursor;
+    sixel_builtin_hdr_line_reader_t reader;
     size_t line_start;
-    size_t line_end;
     size_t line_length;
     char line[1024];
     int in_header;
     int have_resolution_line;
 
-    cursor = 0u;
+    sixel_builtin_hdr_line_reader_init(&reader, chunk);
     line_start = 0u;
-    line_end = 0u;
     line_length = 0u;
     in_header = 1;
     have_resolution_line = 0;
@@ -2662,43 +2752,23 @@ sixel_builtin_parse_hdr_profile_hint(
         return SIXEL_FALSE;
     }
 
-    while (cursor < chunk->size && !have_resolution_line) {
-        line_start = cursor;
-        while (cursor < chunk->size &&
-               chunk->buffer[cursor] != '\n' &&
-               chunk->buffer[cursor] != '\r') {
-            ++cursor;
-        }
-        line_end = cursor;
-        line_length = line_end - line_start;
-
-        if (cursor < chunk->size) {
-            if (chunk->buffer[cursor] == '\r') {
-                ++cursor;
-                if (cursor < chunk->size &&
-                    chunk->buffer[cursor] == '\n') {
-                    ++cursor;
-                }
-            } else if (chunk->buffer[cursor] == '\n') {
-                ++cursor;
-                if (cursor < chunk->size &&
-                    chunk->buffer[cursor] == '\r') {
-                    ++cursor;
-                }
-            }
-        }
+    while (!have_resolution_line &&
+           sixel_builtin_hdr_line_reader_next(&reader,
+                                              &line_start,
+                                              &line_length)) {
 
         if (in_header) {
             if (line_length == 0u) {
                 in_header = 0;
                 continue;
             }
-            if (line_length >= sizeof(line)) {
+            if (!sixel_builtin_hdr_copy_line_to_buffer(line,
+                                                       sizeof(line),
+                                                       chunk->buffer,
+                                                       line_start,
+                                                       line_length)) {
                 continue;
             }
-
-            memcpy(line, chunk->buffer + line_start, line_length);
-            line[line_length] = '\0';
             sixel_builtin_hdr_parse_header_metadata_line(line, out_hint);
             continue;
         }
@@ -2706,18 +2776,20 @@ sixel_builtin_parse_hdr_profile_hint(
         if (line_length == 0u) {
             continue;
         }
-        if (line_length >= sizeof(line)) {
+        if (!sixel_builtin_hdr_copy_line_to_buffer(line,
+                                                   sizeof(line),
+                                                   chunk->buffer,
+                                                   line_start,
+                                                   line_length)) {
             sixel_builtin_hdr_mark_resolution_malformed(out_hint);
             break;
         }
 
-        memcpy(line, chunk->buffer + line_start, line_length);
-        line[line_length] = '\0';
         if (!sixel_builtin_hdr_parse_resolution_line(line, out_hint)) {
             sixel_builtin_hdr_mark_resolution_malformed(out_hint);
             break;
         }
-        out_hint->pixel_data_offset = cursor;
+        out_hint->pixel_data_offset = reader.cursor;
         have_resolution_line = 1;
     }
 

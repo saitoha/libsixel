@@ -239,14 +239,15 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
-	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
-	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-image.h \
-	$(srcdir)/options.c $(srcdir)/options.h $(srcdir)/path.c \
-	$(srcdir)/path.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
-	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
-	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
-	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/mapfile.c $(srcdir)/mapfile.h $(srcdir)/drcs.c \
+	$(srcdir)/drcs.h $(srcdir)/planner.c $(srcdir)/planner.h \
+	$(srcdir)/decoder.c $(srcdir)/decoder.h \
+	$(srcdir)/decoder-parallel.c $(srcdir)/decoder-parallel.h \
+	$(srcdir)/decoder-image.h $(srcdir)/options.c \
+	$(srcdir)/options.h $(srcdir)/path.c $(srcdir)/path.h \
+	$(srcdir)/stb_image.h $(srcdir)/writer.c $(srcdir)/writer.h \
+	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
+	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
@@ -341,6 +342,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-clipboard.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-mapfile.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-drcs.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-planner.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder-parallel.lo \
@@ -410,6 +413,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
+	./$(DEPDIR)/libsixel_la-drcs.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
 	./$(DEPDIR)/libsixel_la-filter-clip.Plo \
 	./$(DEPDIR)/libsixel_la-filter-colors.Plo \
@@ -465,6 +469,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
+	./$(DEPDIR)/libsixel_la-mapfile.Plo \
 	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
@@ -963,6 +968,9 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/mapfile.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/mapfile.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/drcs.c $(srcdir)/drcs.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/planner.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/planner.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder.c \
@@ -1156,6 +1164,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-drcs.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-clip.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-colors.Plo@am__quote@ # am--include-marker
@@ -1211,6 +1220,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-mapfile.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
@@ -1819,6 +1829,20 @@ libsixel_la-encoder.lo: encoder.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-encoder.lo `test -f 'encoder.c' || echo '$(srcdir)/'`encoder.c
 
+libsixel_la-mapfile.lo: mapfile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-mapfile.lo -MD -MP -MF $(DEPDIR)/libsixel_la-mapfile.Tpo -c -o libsixel_la-mapfile.lo `test -f 'mapfile.c' || echo '$(srcdir)/'`mapfile.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-mapfile.Tpo $(DEPDIR)/libsixel_la-mapfile.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mapfile.c' object='libsixel_la-mapfile.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-mapfile.lo `test -f 'mapfile.c' || echo '$(srcdir)/'`mapfile.c
+
+libsixel_la-drcs.lo: drcs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-drcs.lo -MD -MP -MF $(DEPDIR)/libsixel_la-drcs.Tpo -c -o libsixel_la-drcs.lo `test -f 'drcs.c' || echo '$(srcdir)/'`drcs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-drcs.Tpo $(DEPDIR)/libsixel_la-drcs.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='drcs.c' object='libsixel_la-drcs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-drcs.lo `test -f 'drcs.c' || echo '$(srcdir)/'`drcs.c
+
 libsixel_la-planner.lo: planner.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-planner.lo -MD -MP -MF $(DEPDIR)/libsixel_la-planner.Tpo -c -o libsixel_la-planner.lo `test -f 'planner.c' || echo '$(srcdir)/'`planner.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-planner.Tpo $(DEPDIR)/libsixel_la-planner.Plo
@@ -2190,6 +2214,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-clip.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
@@ -2245,6 +2270,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
@@ -2334,6 +2360,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-clip.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
@@ -2389,6 +2416,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
