@@ -17,7 +17,6 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-default-header.six"
 keycolor_header="$(printf '\033P0;1q')"
 out_payload=''
-out_line=''
 has_header=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
@@ -27,10 +26,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
     exit 0
 }
 
-while IFS= read -r out_line || test -n "${out_line}"; do
-    out_payload="${out_payload}${out_line}
-"
-done < "${out_default}"
+set +x
+IFS= read -r out_payload < "${out_default}" || test -n "${out_payload}"
 
 case "${out_payload}" in
     *"${keycolor_header}"*)

@@ -35,19 +35,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
     exit 0
 }
 
+set +x
 out_default_text=""
-while IFS= read -r out_default_line || test -n "
-${out_default_line}"; do
-    case "${out_default_text}" in
-        "")
-            out_default_text=${out_default_line}
-            ;;
-        *)
-            out_default_text="${out_default_text}
-${out_default_line}"
-            ;;
-    esac
-done < "${out_default}"
+IFS= read -r out_default_text < "${out_default}" || test -n "${out_default_text}"
 case "${out_default_text}" in
     *"${keycolor_header}"*)
         default_has_keycolor=1
@@ -58,18 +48,7 @@ case "${out_default_text}" in
 esac
 
 out_bgcolor_text=""
-while IFS= read -r out_bgcolor_line || test -n "
-${out_bgcolor_line}"; do
-    case "${out_bgcolor_text}" in
-        "")
-            out_bgcolor_text=${out_bgcolor_line}
-            ;;
-        *)
-            out_bgcolor_text="${out_bgcolor_text}
-${out_bgcolor_line}"
-            ;;
-    esac
-done < "${out_bgcolor}"
+IFS= read -r out_bgcolor_text < "${out_bgcolor}" || test -n "${out_bgcolor_text}"
 case "${out_bgcolor_text}" in
     *"${keycolor_header}"*)
         bgcolor_has_keycolor=1

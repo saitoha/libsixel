@@ -25,7 +25,6 @@ out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-multi-off-ab.six"
 keycolor_header="$(printf '\033P0;1q')"
 out_on_payload=''
 out_off_payload=''
-out_line=''
 out_on_has_header=0
 out_off_has_header=0
 
@@ -45,15 +44,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-while IFS= read -r out_line || test -n "${out_line}"; do
-    out_on_payload="${out_on_payload}${out_line}
-"
-done < "${out_on}"
-
-while IFS= read -r out_line || test -n "${out_line}"; do
-    out_off_payload="${out_off_payload}${out_line}
-"
-done < "${out_off}"
+set +x
+IFS= read -r out_on_payload < "${out_on}" || test -n "${out_on_payload}"
+IFS= read -r out_off_payload < "${out_off}" || test -n "${out_off_payload}"
 
 case "${out_on_payload}" in
     *"${keycolor_header}"*)

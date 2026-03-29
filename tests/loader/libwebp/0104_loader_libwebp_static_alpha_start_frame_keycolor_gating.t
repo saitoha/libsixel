@@ -45,19 +45,9 @@ cmp -s "${out_default}" "${out_start1}" && {
     exit 0
 }
 
+set +x
 out_start1_text=""
-while IFS= read -r out_start1_line || test -n "
-${out_start1_line}"; do
-    case "${out_start1_text}" in
-        "")
-            out_start1_text=${out_start1_line}
-            ;;
-        *)
-            out_start1_text="${out_start1_text}
-${out_start1_line}"
-            ;;
-    esac
-done < "${out_start1}"
+IFS= read -r out_start1_text < "${out_start1}" || test -n "${out_start1_text}"
 case "${out_start1_text}" in
     *"${keycolor_header}"*)
         start1_has_keycolor=1
@@ -68,18 +58,7 @@ case "${out_start1_text}" in
 esac
 
 out_start1_bg_text=""
-while IFS= read -r out_start1_bg_line || test -n "
-${out_start1_bg_line}"; do
-    case "${out_start1_bg_text}" in
-        "")
-            out_start1_bg_text=${out_start1_bg_line}
-            ;;
-        *)
-            out_start1_bg_text="${out_start1_bg_text}
-${out_start1_bg_line}"
-            ;;
-    esac
-done < "${out_start1_bg}"
+IFS= read -r out_start1_bg_text < "${out_start1_bg}" || test -n "${out_start1_bg_text}"
 case "${out_start1_bg_text}" in
     *"${keycolor_header}"*)
         start1_bg_has_keycolor=1
