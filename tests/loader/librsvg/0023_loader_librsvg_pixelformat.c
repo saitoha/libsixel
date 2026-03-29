@@ -6,8 +6,13 @@
  * Verify librsvg loader output policy:
  * - preserve RGBA when background is not provided
  * - composite to RGB when background is provided
- * - keep RGB/RGBA output even when palette-related options are set
+ *
+ * This test also supports a dedicated setopt mode so TAP wrappers can
+ * validate option-compatibility behavior separately from plain pixelformat
+ * policy.
  */
+
+#include <string.h>
 
 #include "tests/loader/pixelformat_test_common.h"
 
@@ -20,7 +25,7 @@ new_librsvg_component(sixel_allocator_t *allocator,
 }
 
 static int
-run_librsvg_loader_test(void)
+run_librsvg_pixelformat_test(void)
 {
     int result;
     unsigned char white_bg[3];
@@ -49,24 +54,6 @@ run_librsvg_loader_test(void)
     }
 
     result = run_loader_component_case_with_options_ex(
-        "librsvg ignores palette options and keeps rgba",
-        "/tests/data/inputs/formats/librsvg-transparent-2color.svg",
-        SIXEL_PIXELFORMAT_RGBA8888,
-        2,
-        1,
-        1,
-        FRAME_METADATA_ANY,
-        FRAME_METADATA_ANY,
-        1,
-        1,
-        2,
-        NULL,
-        new_librsvg_component);
-    if (result != 0) {
-        return result;
-    }
-
-    result = run_loader_component_case_with_options_ex(
         "librsvg composites rgb with bgcolor",
         "/tests/data/inputs/formats/librsvg-transparent-2color.svg",
         SIXEL_PIXELFORMAT_RGB888,
@@ -84,8 +71,58 @@ run_librsvg_loader_test(void)
         return result;
     }
 
+    return 0;
+}
+
+static int
+run_librsvg_setopt_compat_test(void)
+{
+    int result;
+    unsigned char white_bg[3];
+
+    result = 0;
+    white_bg[0] = 255u;
+    white_bg[1] = 255u;
+    white_bg[2] = 255u;
+
+    result = run_loader_component_case_with_options_ex(
+        "librsvg use_palette/reqcolors are accepted as no-op",
+        "/tests/data/inputs/formats/librsvg-transparent-2color.svg",
+        SIXEL_PIXELFORMAT_RGBA8888,
+        2,
+        1,
+        1,
+        FRAME_METADATA_ANY,
+        FRAME_METADATA_ANY,
+        1,
+        1,
+        2,
+        NULL,
+        new_librsvg_component);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case_with_options_ex(
+        "librsvg bgcolor option is applied",
+        "/tests/data/inputs/formats/librsvg-transparent-2color.svg",
+        SIXEL_PIXELFORMAT_RGB888,
+        2,
+        1,
+        1,
+        FRAME_METADATA_ANY,
+        FRAME_METADATA_ANY,
+        1,
+        0,
+        256,
+        white_bg,
+        new_librsvg_component);
+    if (result != 0) {
+        return result;
+    }
+
     return run_loader_component_case_with_options_ex(
-        "librsvg keeps rgb with bgcolor even when palette options are set",
+        "librsvg bgcolor works even when palette options are set",
         "/tests/data/inputs/formats/librsvg-transparent-2color.svg",
         SIXEL_PIXELFORMAT_RGB888,
         2,
@@ -99,17 +136,37 @@ run_librsvg_loader_test(void)
         white_bg,
         new_librsvg_component);
 }
+
+static int
+run_librsvg_loader_test_mode(char const *mode)
+{
+    if (mode == NULL || strcmp(mode, "pixelformat") == 0) {
+        return run_librsvg_pixelformat_test();
+    }
+    if (strcmp(mode, "setopt") == 0) {
+        return run_librsvg_setopt_compat_test();
+    }
+
+    fprintf(stderr, "unknown librsvg pixelformat test mode: %s\n", mode);
+    return 1;
+}
 #endif
 
 int
 test_loader_0023_loader_librsvg_pixelformat(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
+    char const *mode;
+
+    mode = NULL;
 
 #if HAVE_LIBRSVG
-    return run_librsvg_loader_test();
+    if (argc > 1 && argv != NULL) {
+        mode = argv[1];
+    }
+    return run_librsvg_loader_test_mode(mode);
 #else
+    (void)argc;
+    (void)argv;
     fprintf(stderr, "librsvg loader unavailable\n");
     return SIXEL_TEST_SKIP;
 #endif
