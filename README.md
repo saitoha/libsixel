@@ -1026,8 +1026,8 @@ Builtin PSD missing merged/composite image policy:
 
 | Condition | Behavior |
 | --- | --- |
-| layer-only PSD with single full-canvas 8/16/32-bit layer in RGB/Gray/Duotone/Lab | decode via minimal layer fallback |
-| layer-only PSD where base mode/depth is outside fallback scope (for example Indexed, CMYK, Bitmap) | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
+| layer-only PSD with single full-canvas 8/16/32-bit layer in RGB/Gray/Duotone/Lab, and 8-bit CMYK | decode via minimal layer fallback |
+| layer-only PSD where base mode/depth is outside fallback scope (for example Indexed, CMYK16/32, Bitmap) | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
 | layer-only PSD outside fallback layout constraints | deterministic unsupported (`builtin PSD: unsupported layer fallback layout`) |
 | composite image payload exists but raw/RLE/ZIP stream is truncated | deterministic malformed decode error (not treated as layer-only fallback) |
 
