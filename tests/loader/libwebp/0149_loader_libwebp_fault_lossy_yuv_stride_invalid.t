@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper for fast in-memory animation frame-count limit guard.
+# TAP wrapper for libwebp lossy invalid YUV stride fault-injection case.
 
 set -eux
 
@@ -17,14 +17,14 @@ set -v
 
 status=0
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "loader/0041_loader_libwebp_frame_count_limit_fast" 2>&1) || status=$?
+    "loader/0037_loader_libwebp_fault_lossy_yuv_stride_invalid" 2>&1) || status=$?
 
 case "${status}" in
     0)
-        echo "ok" 1 - "loader/0041_loader_libwebp_frame_count_limit_fast"
+        echo "ok" 1 - "loader/0037_loader_libwebp_fault_lossy_yuv_stride_invalid"
         ;;
     *)
-        echo "not ok" 1 - "loader/0041_loader_libwebp_frame_count_limit_fast"
+        echo "not ok" 1 - "loader/0037_loader_libwebp_fault_lossy_yuv_stride_invalid"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         ;;

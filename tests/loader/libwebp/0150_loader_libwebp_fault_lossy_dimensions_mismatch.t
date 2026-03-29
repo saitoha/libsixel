@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper for fast in-memory animation frame-count limit guard.
+# TAP wrapper for libwebp lossy decoded-dimensions mismatch fault-injection case.
 
 set -eux
 
@@ -17,14 +17,14 @@ set -v
 
 status=0
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "loader/0041_loader_libwebp_frame_count_limit_fast" 2>&1) || status=$?
+    "loader/0038_loader_libwebp_fault_lossy_dimensions_mismatch" 2>&1) || status=$?
 
 case "${status}" in
     0)
-        echo "ok" 1 - "loader/0041_loader_libwebp_frame_count_limit_fast"
+        echo "ok" 1 - "loader/0038_loader_libwebp_fault_lossy_dimensions_mismatch"
         ;;
     *)
-        echo "not ok" 1 - "loader/0041_loader_libwebp_frame_count_limit_fast"
+        echo "not ok" 1 - "loader/0038_loader_libwebp_fault_lossy_dimensions_mismatch"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         ;;

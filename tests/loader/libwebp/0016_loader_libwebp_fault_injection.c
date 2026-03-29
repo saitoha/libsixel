@@ -1,5 +1,5 @@
 /*
- * Verify libwebp loader reports decoder setup failures via fault injection.
+ * Verify libwebp loader diagnostics for fault-injection paths.
  */
 
 #include <string.h>
@@ -17,7 +17,13 @@ typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_OPTIONS_INIT,
     WEBP_FI_FAIL_DECODER_NEW,
     WEBP_FI_FAIL_DECODER_GET_INFO,
+    WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES,
     WEBP_FI_FAIL_DECODER_GET_NEXT,
+    WEBP_FI_FAIL_LOSSY_INIT_CONFIG,
+    WEBP_FI_FAIL_LOSSY_DECODE,
+    WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING,
+    WEBP_FI_FAIL_LOSSY_YUV_STRIDE_INVALID,
+    WEBP_FI_FAIL_LOSSY_DIMENSION_MISMATCH,
     WEBP_FI_FAIL_STATIC_RGB_INTO,
     WEBP_FI_FAIL_STATIC_RGBA_INTO
 } webp_fi_failpoint_t;
@@ -32,10 +38,18 @@ static WebPAnimDecoder *(*g_real_WebPAnimDecoderNew)(WebPData const *,
 static int (*g_real_WebPAnimDecoderGetInfo)(WebPAnimDecoder const *,
                                             WebPAnimInfo *) =
     WebPAnimDecoderGetInfo;
+static int (*g_real_WebPAnimDecoderHasMoreFrames)(WebPAnimDecoder const *) =
+    WebPAnimDecoderHasMoreFrames;
 static int (*g_real_WebPAnimDecoderGetNext)(WebPAnimDecoder *,
                                             uint8_t **,
                                             int *) =
     WebPAnimDecoderGetNext;
+static int (*g_real_WebPInitDecoderConfig)(WebPDecoderConfig *) =
+    WebPInitDecoderConfig;
+static VP8StatusCode (*g_real_WebPDecode)(uint8_t const *,
+                                          size_t,
+                                          WebPDecoderConfig *) =
+    WebPDecode;
 static uint8_t *(*g_real_WebPDecodeRGBInto)(uint8_t const *,
                                             size_t,
                                             uint8_t *,
@@ -89,6 +103,61 @@ webpfi_WebPAnimDecoderGetNext(WebPAnimDecoder *decoder,
     return g_real_WebPAnimDecoderGetNext(decoder, buf_ptr, timestamp);
 }
 
+static int
+webpfi_WebPAnimDecoderHasMoreFrames(WebPAnimDecoder const *decoder)
+{
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES) {
+        return 0;
+    }
+    return g_real_WebPAnimDecoderHasMoreFrames(decoder);
+}
+
+static int
+webpfi_WebPInitDecoderConfig(WebPDecoderConfig *config)
+{
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_LOSSY_INIT_CONFIG) {
+        return 0;
+    }
+    return g_real_WebPInitDecoderConfig(config);
+}
+
+static VP8StatusCode
+webpfi_WebPDecode(uint8_t const *data,
+                  size_t data_size,
+                  WebPDecoderConfig *config)
+{
+    VP8StatusCode status;
+
+    status = VP8_STATUS_OK;
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_LOSSY_DECODE) {
+        return VP8_STATUS_BITSTREAM_ERROR;
+    }
+
+    status = g_real_WebPDecode(data, data_size, config);
+    if (status != VP8_STATUS_OK) {
+        return status;
+    }
+    if (config == NULL) {
+        return status;
+    }
+
+    switch (g_webp_fi_failpoint) {
+    case WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING:
+        config->output.u.YUVA.y = NULL;
+        break;
+    case WEBP_FI_FAIL_LOSSY_YUV_STRIDE_INVALID:
+        config->output.u.YUVA.y_stride = 0;
+        break;
+    case WEBP_FI_FAIL_LOSSY_DIMENSION_MISMATCH:
+        config->output.width += 1;
+        break;
+    default:
+        break;
+    }
+
+    return status;
+}
+
 static uint8_t *
 webpfi_WebPDecodeRGBInto(uint8_t const *data,
                          size_t data_size,
@@ -135,7 +204,10 @@ webpfi_WebPDemux(WebPData const *webp_data)
 #define WebPAnimDecoderOptionsInit webpfi_WebPAnimDecoderOptionsInit
 #define WebPAnimDecoderNew webpfi_WebPAnimDecoderNew
 #define WebPAnimDecoderGetInfo webpfi_WebPAnimDecoderGetInfo
+#define WebPAnimDecoderHasMoreFrames webpfi_WebPAnimDecoderHasMoreFrames
 #define WebPAnimDecoderGetNext webpfi_WebPAnimDecoderGetNext
+#define WebPInitDecoderConfig webpfi_WebPInitDecoderConfig
+#define WebPDecode webpfi_WebPDecode
 #define WebPDecodeRGBInto webpfi_WebPDecodeRGBInto
 #define WebPDecodeRGBAInto webpfi_WebPDecodeRGBAInto
 #define WebPDemux webpfi_WebPDemux
@@ -166,10 +238,43 @@ webpfi_WebPDemux(WebPData const *webp_data)
 #undef WebPAnimDecoderOptionsInit
 #undef WebPAnimDecoderNew
 #undef WebPAnimDecoderGetInfo
+#undef WebPAnimDecoderHasMoreFrames
 #undef WebPAnimDecoderGetNext
+#undef WebPInitDecoderConfig
+#undef WebPDecode
 #undef WebPDecodeRGBInto
 #undef WebPDecodeRGBAInto
 #undef WebPDemux
+
+typedef struct webp_lossy_decode_fault_case {
+    webp_fi_failpoint_t failpoint;
+    SIXELSTATUS expected_status;
+    char const *expected_message;
+    char const *label;
+} webp_lossy_decode_fault_case_t;
+
+static webp_lossy_decode_fault_case_t const g_lossy_decode_fault_cases[] = {
+    { WEBP_FI_FAIL_LOSSY_INIT_CONFIG,
+      SIXEL_WEBP_ERROR,
+      "webp_decode_lossy_to_float32: WebPInitDecoderConfig failed.",
+      "libwebp fault injection lossy-init-config" },
+    { WEBP_FI_FAIL_LOSSY_DECODE,
+      SIXEL_WEBP_ERROR,
+      "webp_decode_lossy_to_float32: WebPDecode failed",
+      "libwebp fault injection lossy-decode" },
+    { WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING,
+      SIXEL_BAD_INPUT,
+      "webp_decode_lossy_to_float32: YUV plane is missing.",
+      "libwebp fault injection lossy-yuv-plane-missing" },
+    { WEBP_FI_FAIL_LOSSY_YUV_STRIDE_INVALID,
+      SIXEL_BAD_INPUT,
+      "webp_decode_lossy_to_float32: YUV plane stride is invalid.",
+      "libwebp fault injection lossy-yuv-stride-invalid" },
+    { WEBP_FI_FAIL_LOSSY_DIMENSION_MISMATCH,
+      SIXEL_BAD_INPUT,
+      "webp_decode_lossy_to_float32: decoded dimensions mismatch.",
+      "libwebp fault injection lossy-dimensions-mismatch" }
+};
 
 static SIXELSTATUS
 capture_noop_frame(sixel_frame_t *frame, void *data)
@@ -180,26 +285,12 @@ capture_noop_frame(sixel_frame_t *frame, void *data)
 }
 
 static int
-run_decoder_setup_fail_case(webp_fi_failpoint_t failpoint,
-                            char const *expected_message,
-                            char const *label)
+webpfi_build_source_path(char const *relative,
+                         char *path,
+                         size_t path_size,
+                         char const *label)
 {
-    SIXELSTATUS status;
-    sixel_allocator_t *allocator;
-    sixel_chunk_t *chunk;
     char const *source_root;
-    char image_path[PATH_MAX];
-    int cancel_flag;
-    char const *message;
-    int result;
-
-    status = SIXEL_FALSE;
-    allocator = NULL;
-    chunk = NULL;
-    source_root = NULL;
-    cancel_flag = 0;
-    message = NULL;
-    result = 1;
 
     source_root = getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
@@ -212,11 +303,40 @@ run_decoder_setup_fail_case(webp_fi_failpoint_t failpoint,
         source_root = ".";
     }
 
-    if (build_image_path(source_root,
-                         "/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp",
-                         image_path,
-                         sizeof(image_path)) != 0) {
+    if (build_image_path(source_root, relative, path, path_size) != 0) {
         fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+    return 0;
+}
+
+static int
+run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
+                               SIXELSTATUS expected_status,
+                               int fstatic,
+                               char const *expected_message,
+                               char const *label)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    cancel_flag = 0;
+    message = NULL;
+    result = 1;
+
+    if (webpfi_build_source_path(
+            "/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp",
+            image_path,
+            sizeof(image_path),
+            label) != 0) {
         return 1;
     }
 
@@ -236,7 +356,7 @@ run_decoder_setup_fail_case(webp_fi_failpoint_t failpoint,
     g_webp_fi_failpoint = failpoint;
     status = load_with_libwebp(chunk,
                                0,
-                               0,
+                               fstatic,
                                0,
                                256,
                                NULL,
@@ -247,10 +367,11 @@ run_decoder_setup_fail_case(webp_fi_failpoint_t failpoint,
                                NULL);
     g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
 
-    if (status != SIXEL_WEBP_ERROR) {
+    if (status != expected_status) {
         fprintf(stderr,
-                "%s: expected SIXEL_WEBP_ERROR, got %d\n",
+                "%s: expected %d, got %d\n",
                 label,
+                (int)expected_status,
                 (int)status);
         goto cleanup;
     }
@@ -280,7 +401,6 @@ run_demux_fail_case(char const *label)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_chunk_t *chunk;
-    char const *source_root;
     char image_path[PATH_MAX];
     int cancel_flag;
     char const *message;
@@ -289,27 +409,14 @@ run_demux_fail_case(char const *label)
     status = SIXEL_FALSE;
     allocator = NULL;
     chunk = NULL;
-    source_root = NULL;
     cancel_flag = 0;
     message = NULL;
     result = 1;
 
-    source_root = getenv("MESON_SOURCE_ROOT");
-    if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
-    }
-    if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
-    }
-    if (source_root == NULL) {
-        source_root = ".";
-    }
-
-    if (build_image_path(source_root,
-                         WEBP_IMAGE_PATH,
-                         image_path,
-                         sizeof(image_path)) != 0) {
-        fprintf(stderr, "%s: failed to build image path\n", label);
+    if (webpfi_build_source_path(WEBP_IMAGE_PATH,
+                                 image_path,
+                                 sizeof(image_path),
+                                 label) != 0) {
         return 1;
     }
 
@@ -368,16 +475,16 @@ cleanup:
 }
 
 static int
-run_static_decode_fail_case(webp_fi_failpoint_t failpoint,
-                            char const *image_relative_path,
-                            char const *force_rgb_env_value,
-                            char const *expected_message,
-                            char const *label)
+run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
+                        char const *image_relative_path,
+                        char const *force_rgb_env_value,
+                        SIXELSTATUS expected_status,
+                        char const *expected_message,
+                        char const *label)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_chunk_t *chunk;
-    char const *source_root;
     char image_path[PATH_MAX];
     int cancel_flag;
     unsigned char *pixels;
@@ -391,7 +498,6 @@ run_static_decode_fail_case(webp_fi_failpoint_t failpoint,
     status = SIXEL_FALSE;
     allocator = NULL;
     chunk = NULL;
-    source_root = NULL;
     cancel_flag = 0;
     pixels = NULL;
     width = 0;
@@ -401,22 +507,10 @@ run_static_decode_fail_case(webp_fi_failpoint_t failpoint,
     message = NULL;
     result = 1;
 
-    source_root = getenv("MESON_SOURCE_ROOT");
-    if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
-    }
-    if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
-    }
-    if (source_root == NULL) {
-        source_root = ".";
-    }
-
-    if (build_image_path(source_root,
-                         image_relative_path,
-                         image_path,
-                         sizeof(image_path)) != 0) {
-        fprintf(stderr, "%s: failed to build image path\n", label);
+    if (webpfi_build_source_path(image_relative_path,
+                                 image_path,
+                                 sizeof(image_path),
+                                 label) != 0) {
         return 1;
     }
 
@@ -458,10 +552,11 @@ run_static_decode_fail_case(webp_fi_failpoint_t failpoint,
                        NULL);
     g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
 
-    if (status != SIXEL_BAD_INPUT) {
+    if (status != expected_status) {
         fprintf(stderr,
-                "%s: expected SIXEL_BAD_INPUT, got %d\n",
+                "%s: expected %d, got %d\n",
                 label,
+                (int)expected_status,
                 (int)status);
         goto cleanup;
     }
@@ -491,10 +586,26 @@ cleanup:
 }
 
 static int
+run_fault_case_from_spec(webp_lossy_decode_fault_case_t const *spec)
+{
+    if (spec == NULL) {
+        return 1;
+    }
+    return run_load_webp_fail_case(spec->failpoint,
+                                   WEBP_IMAGE_PATH,
+                                   "0",
+                                   spec->expected_status,
+                                   spec->expected_message,
+                                   spec->label);
+}
+
+static int
 run_fault_options_init_case(void)
 {
-    return run_decoder_setup_fail_case(
+    return run_animation_decode_fail_case(
         WEBP_FI_FAIL_OPTIONS_INIT,
+        SIXEL_WEBP_ERROR,
+        0,
         "load_with_libwebp: WebPAnimDecoderOptionsInit failed.",
         "libwebp fault injection options-init");
 }
@@ -502,8 +613,10 @@ run_fault_options_init_case(void)
 static int
 run_fault_decoder_new_case(void)
 {
-    return run_decoder_setup_fail_case(
+    return run_animation_decode_fail_case(
         WEBP_FI_FAIL_DECODER_NEW,
+        SIXEL_WEBP_ERROR,
+        0,
         "load_with_libwebp: WebPAnimDecoderNew failed.",
         "libwebp fault injection decoder-new");
 }
@@ -511,8 +624,10 @@ run_fault_decoder_new_case(void)
 static int
 run_fault_decoder_getinfo_case(void)
 {
-    return run_decoder_setup_fail_case(
+    return run_animation_decode_fail_case(
         WEBP_FI_FAIL_DECODER_GET_INFO,
+        SIXEL_WEBP_ERROR,
+        0,
         "load_with_libwebp: WebPAnimDecoderGetInfo failed.",
         "libwebp fault injection decoder-getinfo");
 }
@@ -520,8 +635,10 @@ run_fault_decoder_getinfo_case(void)
 static int
 run_fault_decoder_getnext_case(void)
 {
-    return run_decoder_setup_fail_case(
+    return run_animation_decode_fail_case(
         WEBP_FI_FAIL_DECODER_GET_NEXT,
+        SIXEL_WEBP_ERROR,
+        0,
         "load_with_libwebp: WebPAnimDecoderGetNext failed.",
         "libwebp fault injection decoder-getnext");
 }
@@ -529,10 +646,11 @@ run_fault_decoder_getnext_case(void)
 static int
 run_fault_static_rgbinto_case(void)
 {
-    return run_static_decode_fail_case(
+    return run_load_webp_fail_case(
         WEBP_FI_FAIL_STATIC_RGB_INTO,
         WEBP_IMAGE_PATH,
         "1",
+        SIXEL_BAD_INPUT,
         "load_webp: WebPDecodeRGBInto failed.",
         "libwebp fault injection static-rgbinto");
 }
@@ -540,12 +658,263 @@ run_fault_static_rgbinto_case(void)
 static int
 run_fault_static_rgbainto_case(void)
 {
-    return run_static_decode_fail_case(
+    return run_load_webp_fail_case(
         WEBP_FI_FAIL_STATIC_RGBA_INTO,
         "/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp",
         "0",
+        SIXEL_BAD_INPUT,
         "load_webp: WebPDecodeRGBAInto failed.",
         "libwebp fault injection static-rgbainto");
+}
+
+static int
+run_fault_no_frames_case(void)
+{
+    return run_animation_decode_fail_case(
+        WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES,
+        SIXEL_BAD_INPUT,
+        1,
+        "load_with_libwebp: no frames in animated WebP stream.",
+        "libwebp fault injection decoder-has-more-frames");
+}
+
+static int
+run_fault_lossy_init_config_case(void)
+{
+    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[0]);
+}
+
+static int
+run_fault_lossy_decode_case(void)
+{
+    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[1]);
+}
+
+static int
+run_fault_lossy_yuv_plane_missing_case(void)
+{
+    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[2]);
+}
+
+static int
+run_fault_lossy_yuv_stride_invalid_case(void)
+{
+    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[3]);
+}
+
+static int
+run_fault_lossy_dimensions_mismatch_case(void)
+{
+    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[4]);
+}
+
+static void
+webpfi_write_u32le(unsigned char *dst, unsigned int value)
+{
+    dst[0] = (unsigned char)(value & 0xffu);
+    dst[1] = (unsigned char)((value >> 8u) & 0xffu);
+    dst[2] = (unsigned char)((value >> 16u) & 0xffu);
+    dst[3] = (unsigned char)((value >> 24u) & 0xffu);
+}
+
+static int
+run_fault_no_anmf_case(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    unsigned char *wrapped_data;
+    size_t wrapped_size;
+    unsigned char input[] = {
+        'R', 'I', 'F', 'F',
+        0x24, 0x00, 0x00, 0x00,
+        'W', 'E', 'B', 'P',
+        'V', 'P', '8', 'X',
+        0x0a, 0x00, 0x00, 0x00,
+        0x02, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00,
+        'A', 'N', 'I', 'M',
+        0x06, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00
+    };
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    wrapped_data = NULL;
+    wrapped_size = 0u;
+    message = NULL;
+    result = 1;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "libwebp fault injection no-anmf: allocator init failed\n");
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    status = webp_extract_first_animation_subframe_as_riff(&wrapped_data,
+                                                           &wrapped_size,
+                                                           input,
+                                                           sizeof(input),
+                                                           allocator);
+    if (status != SIXEL_BAD_INPUT) {
+        fprintf(stderr,
+                "libwebp fault injection no-anmf: expected SIXEL_BAD_INPUT, got %d\n",
+                (int)status);
+        goto cleanup;
+    }
+
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message,
+               "load_with_libwebp: no ANMF chunk found in animated WebP stream.") ==
+            NULL) {
+        fprintf(stderr,
+                "libwebp fault injection no-anmf: missing diagnostic (actual='%s')\n",
+                message != NULL ? message : "(null)");
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_allocator_free(allocator, wrapped_data);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
+run_fast_frame_count_limit_case(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    unsigned char *buffer;
+    sixel_chunk_t chunk;
+    size_t frame_count;
+    size_t riff_size;
+    size_t total_size;
+    size_t offset;
+    size_t i;
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    buffer = NULL;
+    memset(&chunk, 0, sizeof(chunk));
+    frame_count = (size_t)WEBP_MAX_ANIMATION_FRAMES + 1u;
+    riff_size = 0u;
+    total_size = 0u;
+    offset = 0u;
+    i = 0u;
+    message = NULL;
+    result = 1;
+
+    riff_size = 4u;
+    riff_size += 8u + 10u;
+    riff_size += 8u + 6u;
+    if (frame_count > (SIZE_MAX - riff_size) / (8u + 16u)) {
+        return 1;
+    }
+    riff_size += frame_count * (8u + 16u);
+    if (riff_size > (size_t)UINT_MAX) {
+        return 1;
+    }
+    total_size = riff_size + 8u;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "libwebp fault injection frame-limit-fast: allocator init failed\n");
+        return 1;
+    }
+
+    buffer = (unsigned char *)sixel_allocator_malloc(allocator, total_size);
+    if (buffer == NULL) {
+        fprintf(stderr,
+                "libwebp fault injection frame-limit-fast: allocation failed\n");
+        goto cleanup;
+    }
+    memset(buffer, 0, total_size);
+
+    memcpy(buffer + offset, "RIFF", 4u);
+    offset += 4u;
+    webpfi_write_u32le(buffer + offset, (unsigned int)riff_size);
+    offset += 4u;
+    memcpy(buffer + offset, "WEBP", 4u);
+    offset += 4u;
+
+    memcpy(buffer + offset, "VP8X", 4u);
+    offset += 4u;
+    webpfi_write_u32le(buffer + offset, 10u);
+    offset += 4u;
+    buffer[offset + 0u] = WEBP_VP8X_FLAG_ANIMATION;
+    offset += 10u;
+
+    memcpy(buffer + offset, "ANIM", 4u);
+    offset += 4u;
+    webpfi_write_u32le(buffer + offset, 6u);
+    offset += 4u;
+    offset += 6u;
+
+    for (i = 0u; i < frame_count; ++i) {
+        memcpy(buffer + offset, "ANMF", 4u);
+        offset += 4u;
+        webpfi_write_u32le(buffer + offset, 16u);
+        offset += 4u;
+        offset += 16u;
+    }
+
+    if (offset != total_size) {
+        fprintf(stderr,
+                "libwebp fault injection frame-limit-fast: internal size mismatch\n");
+        goto cleanup;
+    }
+
+    chunk.buffer = buffer;
+    chunk.size = total_size;
+    chunk.max_size = total_size;
+    chunk.allocator = allocator;
+
+    sixel_helper_set_additional_message(NULL);
+    status = load_with_libwebp(&chunk,
+                               0,
+                               0,
+                               0,
+                               256,
+                               NULL,
+                               SIXEL_LOOP_DISABLE,
+                               0,
+                               0,
+                               capture_noop_frame,
+                               NULL);
+    if (status != SIXEL_BAD_INPUT) {
+        fprintf(stderr,
+                "libwebp fault injection frame-limit-fast: expected SIXEL_BAD_INPUT, got %d\n",
+                (int)status);
+        goto cleanup;
+    }
+
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message,
+               "load_with_libwebp: animation frame count exceeds limit.") ==
+            NULL) {
+        fprintf(stderr,
+                "libwebp fault injection frame-limit-fast: missing diagnostic (actual='%s')\n",
+                message != NULL ? message : "(null)");
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_allocator_free(allocator, buffer);
+    sixel_allocator_unref(allocator);
+    return result;
 }
 #endif
 
@@ -641,6 +1010,121 @@ test_loader_0033_loader_libwebp_fault_static_rgbainto(int argc, char **argv)
 
 #if HAVE_WEBP
     return run_fault_static_rgbainto_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0034_loader_libwebp_fault_lossy_init_config(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_lossy_init_config_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0035_loader_libwebp_fault_lossy_decode(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_lossy_decode_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0036_loader_libwebp_fault_lossy_yuv_plane_missing(int argc,
+                                                               char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_lossy_yuv_plane_missing_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0037_loader_libwebp_fault_lossy_yuv_stride_invalid(int argc,
+                                                                char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_lossy_yuv_stride_invalid_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0038_loader_libwebp_fault_lossy_dimensions_mismatch(int argc,
+                                                                 char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_lossy_dimensions_mismatch_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0039_loader_libwebp_fault_no_frames(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_no_frames_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0040_loader_libwebp_fault_no_anmf(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_no_anmf_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0041_loader_libwebp_frame_count_limit_fast(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fast_frame_count_limit_case();
 #else
     fprintf(stderr, "libwebp loader unavailable\n");
     return SIXEL_TEST_SKIP;

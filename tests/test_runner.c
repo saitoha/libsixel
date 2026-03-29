@@ -66,6 +66,19 @@ int test_loader_0032_loader_libwebp_fault_static_rgbinto(int argc,
                                                          char **argv);
 int test_loader_0033_loader_libwebp_fault_static_rgbainto(int argc,
                                                           char **argv);
+int test_loader_0034_loader_libwebp_fault_lossy_init_config(int argc,
+                                                             char **argv);
+int test_loader_0035_loader_libwebp_fault_lossy_decode(int argc, char **argv);
+int test_loader_0036_loader_libwebp_fault_lossy_yuv_plane_missing(int argc,
+                                                                   char **argv);
+int test_loader_0037_loader_libwebp_fault_lossy_yuv_stride_invalid(int argc,
+                                                                    char **argv);
+int test_loader_0038_loader_libwebp_fault_lossy_dimensions_mismatch(int argc,
+                                                                     char **argv);
+int test_loader_0039_loader_libwebp_fault_no_frames(int argc, char **argv);
+int test_loader_0040_loader_libwebp_fault_no_anmf(int argc, char **argv);
+int test_loader_0041_loader_libwebp_frame_count_limit_fast(int argc,
+                                                           char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -152,6 +165,22 @@ static test_entry_t const test_entries[] = {
       test_loader_0032_loader_libwebp_fault_static_rgbinto },
     { "loader/0033_loader_libwebp_fault_static_rgbainto",
       test_loader_0033_loader_libwebp_fault_static_rgbainto },
+    { "loader/0034_loader_libwebp_fault_lossy_init_config",
+      test_loader_0034_loader_libwebp_fault_lossy_init_config },
+    { "loader/0035_loader_libwebp_fault_lossy_decode",
+      test_loader_0035_loader_libwebp_fault_lossy_decode },
+    { "loader/0036_loader_libwebp_fault_lossy_yuv_plane_missing",
+      test_loader_0036_loader_libwebp_fault_lossy_yuv_plane_missing },
+    { "loader/0037_loader_libwebp_fault_lossy_yuv_stride_invalid",
+      test_loader_0037_loader_libwebp_fault_lossy_yuv_stride_invalid },
+    { "loader/0038_loader_libwebp_fault_lossy_dimensions_mismatch",
+      test_loader_0038_loader_libwebp_fault_lossy_dimensions_mismatch },
+    { "loader/0039_loader_libwebp_fault_no_frames",
+      test_loader_0039_loader_libwebp_fault_no_frames },
+    { "loader/0040_loader_libwebp_fault_no_anmf",
+      test_loader_0040_loader_libwebp_fault_no_anmf },
+    { "loader/0041_loader_libwebp_frame_count_limit_fast",
+      test_loader_0041_loader_libwebp_frame_count_limit_fast },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
