@@ -146,6 +146,16 @@ sixel_builtin_hdr_apply_postprocess(
     SIXELSTATUS hint_status,
     int enable_cms);
 
+static SIXELSTATUS
+sixel_builtin_hdr_assign_decoded_frame(
+    sixel_chunk_t const *chunk,
+    sixel_frame_t *frame,
+    unsigned char *pixels,
+    int width,
+    int height,
+    int hdr_pixelformat,
+    int hdr_colorspace);
+
 static int
 sixel_builtin_hdr_ascii_case_equal(char const *left, char const *right)
 {
@@ -1471,6 +1481,37 @@ sixel_builtin_hdr_apply_postprocess(
                                           &profile_trace);
 }
 
+static SIXELSTATUS
+sixel_builtin_hdr_assign_decoded_frame(
+    sixel_chunk_t const *chunk,
+    sixel_frame_t *frame,
+    unsigned char *pixels,
+    int width,
+    int height,
+    int hdr_pixelformat,
+    int hdr_colorspace)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (chunk == NULL || frame == NULL || pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_frame_set_width(frame, width);
+    sixel_frame_set_height(frame, height);
+    sixel_frame_set_loop_count(frame, 1);
+    status = sixel_frame_set_pixelformat(frame, hdr_pixelformat);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(chunk->allocator, pixels);
+        return status;
+    }
+    sixel_frame_set_colorspace(frame, hdr_colorspace);
+    sixel_frame_set_pixels(frame, pixels);
+
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 sixel_builtin_load_hdr_frame(
     sixel_chunk_t const *chunk,
@@ -1517,16 +1558,16 @@ sixel_builtin_load_hdr_frame(
         return status;
     }
 
-    sixel_frame_set_width(frame, width);
-    sixel_frame_set_height(frame, height);
-    sixel_frame_set_loop_count(frame, 1);
-    status = sixel_frame_set_pixelformat(frame, hdr_pixelformat);
+    status = sixel_builtin_hdr_assign_decoded_frame(chunk,
+                                                    frame,
+                                                    pixels,
+                                                    width,
+                                                    height,
+                                                    hdr_pixelformat,
+                                                    hdr_colorspace);
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(chunk->allocator, pixels);
         return status;
     }
-    sixel_frame_set_colorspace(frame, hdr_colorspace);
-    sixel_frame_set_pixels(frame, pixels);
 
     sixel_builtin_hdr_apply_postprocess(pixels,
                                         width,
