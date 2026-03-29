@@ -29,7 +29,17 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Llibpng:cms_engine=none! \
     exit 0
 }
 
-grep -q 'formats: source=pal8 work=pal8' "${log_lo}" && {
+pal8_path_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"formats: source=pal8 work=pal8"*)
+            pal8_path_found=1
+            break
+            ;;
+    esac
+done < "${log_lo}"
+
+test "${pal8_path_found}" -eq 0 || {
     echo "not ok 1 - libpng reqcolors=255 unexpectedly kept pal8 work format"
     exit 0
 }

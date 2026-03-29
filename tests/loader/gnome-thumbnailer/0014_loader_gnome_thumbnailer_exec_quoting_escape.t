@@ -31,7 +31,32 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
     exit 0
 }
 
-awk '/a3=value with space|a4=escaped token|a5=%/ { ++cnt; } END { if (cnt != 3) exit 1; }' "${log_file}" || {
+has_a3=0
+has_a4=0
+has_a5=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"a3=value with space"*)
+            has_a3=1
+            ;;
+        *"a4=escaped token"*)
+            has_a4=1
+            ;;
+        *"a5=%"*)
+            has_a5=1
+            ;;
+    esac
+done < "${log_file}"
+
+test "${has_a3}" -eq 1 || {
+    echo "not ok" 1 - "Exec quote and escape parsing failed"
+    exit 0
+}
+test "${has_a4}" -eq 1 || {
+    echo "not ok" 1 - "Exec quote and escape parsing failed"
+    exit 0
+}
+test "${has_a5}" -eq 1 || {
     echo "not ok" 1 - "Exec quote and escape parsing failed"
     exit 0
 }

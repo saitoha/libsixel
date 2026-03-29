@@ -27,8 +27,17 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! "${input_png}" >"${output_
     exit 0
 }
 
-grep -E "load_with_gdkpixbuf: generic loader (write|close) failed" \
-    "${error_log}" >/dev/null || {
+error_detail_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"load_with_gdkpixbuf: generic loader write failed"*|*"load_with_gdkpixbuf: generic loader close failed"*)
+            error_detail_found=1
+            break
+            ;;
+    esac
+done < "${error_log}"
+
+test "${error_detail_found}" -eq 1 || {
     echo "not ok" 1 - "corrupted PNG failure did not include gdk-pixbuf diagnostics"
     exit 0
 }
