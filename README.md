@@ -1030,7 +1030,9 @@ Builtin PSD missing merged/composite image policy:
 | layer-only PSD with pixel layers in RGB/Gray/Duotone/Lab/CMYK (`8/16/32bpc`) | decode via layer parser/compositor fallback (multi-layer, blend modes, clipping group, raster mask channel `-2/-3`) |
 | layer-only PSD where base mode/depth is outside fallback scope (for example Indexed, Bitmap) | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
 | layer-only PSD outside fallback layout constraints | deterministic unsupported (`builtin PSD: unsupported layer fallback layout`) |
-| layer-only PSD with non-pixel payload / vector mask / layer effects / knockout / unknown blend key | deterministic unsupported (`unsupported non-pixel layer in layer fallback`, `unsupported vector mask in layer fallback`, `unsupported layer effects in layer fallback`, `unsupported knockout in layer fallback`, `unsupported layer blend mode`) |
+| layer-only PSD with non-pixel payload and decodable pixel channels | payload is ignored and pixel channels are composited (`builtin PSD: ignoring non-pixel payload in layer fallback` info trace) |
+| layer-only PSD with non-pixel payload and no decodable pixel channels | layer is skipped (`builtin PSD: ignoring non-pixel payload in layer fallback` info trace) |
+| layer-only PSD with vector mask / layer effects / knockout / unknown blend key | deterministic unsupported (`unsupported vector mask in layer fallback`, `unsupported layer effects in layer fallback`, `unsupported knockout in layer fallback`, `unsupported layer blend mode`) |
 | composite image payload exists but raw/RLE/ZIP stream is truncated | deterministic malformed decode error (not treated as layer-only fallback) |
 
 When running under GNOME or other desktops that implement the FreeDesktop.org

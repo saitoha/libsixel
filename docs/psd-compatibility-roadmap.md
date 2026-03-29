@@ -70,8 +70,13 @@ Key points used by this roadmap:
     `channels==4` (`4ch->CMYK8/16/32`).
   - Layer-only layouts outside this fallback surface a deterministic unsupported
     trace (`unsupported layer fallback layout`).
-  - Non-pixel payload, vector mask, layer effects, knockout, and unknown blend
-    key are deterministic unsupported in fallback.
+  - Non-pixel payload is tolerated in fallback:
+    - layers with decodable pixel channels are composited normally, and
+    - layers without decodable pixel channels are skipped.
+    Each case emits info trace
+    (`builtin PSD: ignoring non-pixel payload in layer fallback`).
+  - Vector mask, layer effects, knockout, and unknown blend key remain
+    deterministic unsupported in fallback.
   - When image data exists but raw/RLE payload is too short, return malformed
     (do not conflate truncation with layer-only PSD policy).
 - Existing regression includes ICC and alpha combinations on Raw/ZIP/ZIP+Prediction
@@ -86,8 +91,9 @@ Key points used by this roadmap:
     (`RGB8/16/32`, `CMYK8/16/32`)
   - multi-layer missing-composite coverage for RGB8:
     normal blend decode, clipping-group decode, raster-mask decode,
-    and deterministic unsupported traces for unknown blend/non-pixel/vector
-    mask/layer effects/knockout.
+    deterministic unsupported traces for unknown blend/vector
+    mask/layer effects/knockout, and informational non-pixel ignore trace
+    coverage (pixel-present and no-pixel skip cases).
   - multi-layer missing-composite normal-blend decode coverage for
     RGB16/RGB32/Lab16/CMYK16.
   - multi-layer missing-composite clipping-group and raster-mask decode
@@ -96,7 +102,9 @@ Key points used by this roadmap:
     `3ch->RGB16/RGB32` and `4ch->CMYK16/CMYK32` for normal, clipping-group,
     and raster-mask paths.
   - mode7 multi-layer unsupported trace coverage:
-    unknown blend/non-pixel/vector mask/layer effects/knockout.
+    unknown blend/vector mask/layer effects/knockout.
+  - mode7 multi-layer informational non-pixel ignore trace coverage
+    (pixel-present and no-pixel skip cases).
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
@@ -146,8 +154,9 @@ Key points used by this roadmap:
 
 ### Level 3 (P3): Robustness and Extended Compatibility
 
-- Extend layer fallback beyond pixel-layer scope (non-pixel layer classes,
-  vector/effects/knockout semantics) toward higher Photoshop parity.
+- Extend layer fallback beyond the current non-pixel payload ignore policy
+  toward semantic support for non-pixel layer classes, plus
+  vector/effects/knockout semantics, for higher Photoshop parity.
 - PSB planning and parser extension.
 - Performance tuning and memory-reuse optimization.
 
@@ -232,9 +241,9 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Extend layer-fallback semantics beyond pixel-layer scope in a staged way
-   (non-pixel classes, vector/effects/knockout behavior), while keeping
-   deterministic unsupported traces for anything not yet implemented.
+1. Extend layer-fallback semantics beyond the current staged baseline:
+   non-pixel payload is now tolerated by pixel-first composition / no-pixel
+   skip, while vector/effects/knockout remain deterministic unsupported.
 2. Lock ICC-application policy by output format (RGB/Linear RGB/Lab paths) and
    keep README/trace contracts synchronized with implementation.
 3. Keep PSB (`8BPB`) out of scope for this milestone, but maintain and test a
