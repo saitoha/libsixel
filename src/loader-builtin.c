@@ -1924,6 +1924,33 @@ typedef struct sixel_builtin_apng_state {
     uint32_t expected_sequence;
 } sixel_builtin_apng_state_t;
 
+typedef struct sixel_builtin_apng_runtime {
+    unsigned char const *p;
+    size_t remain;
+    size_t canvas_bytes;
+    int seen_actl;
+    int saw_animation;
+    int has_frame;
+    int source_frame_no;
+    int num_frames;
+    int num_plays;
+    int loop_no;
+    int frames_in_loop;
+    int emit_callback;
+    int seen_fctl;
+    int seen_idat;
+    int alpha_zero_is_transparent;
+    int color_type;
+    int has_alpha_chunk;
+    int has_trns_chunk;
+    int trns_keycolor_mode;
+    uint32_t length;
+    uint32_t canvas_width;
+    uint32_t canvas_height;
+    uint32_t sequence_no;
+    uint32_t fd_sequence;
+} sixel_builtin_apng_runtime_t;
+
 static uint32_t
 sixel_builtin_read_be32(unsigned char const *p)
 {
@@ -2525,6 +2552,484 @@ sixel_builtin_apng_resolve_alpha_zero_transparent(
     return 0;
 }
 
+static void
+sixel_builtin_apng_release_loop_buffers(
+    sixel_builtin_apng_state_t *state,
+    sixel_allocator_t *allocator)
+{
+    if (state == NULL || allocator == NULL) {
+        return;
+    }
+    sixel_allocator_free(allocator, state->shared_chunks);
+    sixel_allocator_free(allocator, state->chunk_base);
+    state->shared_chunks = NULL;
+    state->shared_chunks_size = 0u;
+    state->shared_chunks_capacity = 0u;
+    state->chunk_base = NULL;
+    state->chunk_size = 0u;
+    state->chunk_capacity = 0u;
+}
+
+static void
+sixel_builtin_apng_init_runtime(
+    sixel_builtin_apng_runtime_t *runtime,
+    int trns_keycolor_mode)
+{
+    if (runtime == NULL) {
+        return;
+    }
+    memset(runtime, 0, sizeof(*runtime));
+    runtime->emit_callback = 1;
+    runtime->color_type = (-1);
+    runtime->trns_keycolor_mode = trns_keycolor_mode;
+}
+
+static void
+sixel_builtin_apng_begin_loop_iteration(
+    sixel_builtin_apng_state_t *state,
+    sixel_builtin_apng_frame_control_t *control,
+    sixel_builtin_apng_canvas_t *canvas,
+    sixel_builtin_apng_runtime_t *runtime,
+    sixel_chunk_t const *pchunk)
+{
+    if (state == NULL ||
+        control == NULL ||
+        canvas == NULL ||
+        runtime == NULL ||
+        pchunk == NULL ||
+        pchunk->size < 8) {
+        return;
+    }
+
+    memset(state, 0, sizeof(*state));
+    memset(control, 0, sizeof(*control));
+    runtime->p = pchunk->buffer + 8;
+    runtime->remain = pchunk->size - 8;
+    runtime->seen_actl = 0;
+    runtime->has_frame = 0;
+    runtime->source_frame_no = 0;
+    runtime->frames_in_loop = 0;
+    runtime->seen_fctl = 0;
+    runtime->seen_idat = 0;
+    runtime->alpha_zero_is_transparent = 0;
+    runtime->color_type = (-1);
+    runtime->has_alpha_chunk = 0;
+    runtime->has_trns_chunk = 0;
+    runtime->emit_callback = 1;
+    runtime->length = 0u;
+    runtime->sequence_no = 0u;
+    runtime->fd_sequence = 0u;
+    if (runtime->loop_no > 0 && runtime->canvas_bytes > 0u) {
+        memset(canvas->pixels, 0, runtime->canvas_bytes);
+        memset(canvas->backup, 0, runtime->canvas_bytes);
+    }
+}
+
+static SIXELSTATUS
+sixel_builtin_apng_prepare_canvas_from_ihdr(
+    sixel_chunk_t const *pchunk,
+    sixel_builtin_apng_canvas_t *canvas,
+    sixel_builtin_apng_runtime_t *runtime)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (pchunk == NULL || canvas == NULL || runtime == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (runtime->canvas_bytes != 0u) {
+        return SIXEL_OK;
+    }
+
+    runtime->canvas_width = sixel_builtin_read_be32(runtime->p + 8);
+    runtime->canvas_height = sixel_builtin_read_be32(runtime->p + 12);
+    if (runtime->canvas_width == 0u ||
+        runtime->canvas_height == 0u ||
+        runtime->canvas_width > INT_MAX ||
+        runtime->canvas_height > INT_MAX) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    canvas->width = (int)runtime->canvas_width;
+    canvas->height = (int)runtime->canvas_height;
+    runtime->canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4u;
+    canvas->pixels = (unsigned char *)sixel_allocator_malloc(
+        pchunk->allocator,
+        runtime->canvas_bytes);
+    canvas->backup = (unsigned char *)sixel_allocator_malloc(
+        pchunk->allocator,
+        runtime->canvas_bytes);
+    if (canvas->pixels == NULL || canvas->backup == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        return status;
+    }
+    memset(canvas->pixels, 0, runtime->canvas_bytes);
+    memset(canvas->backup, 0, runtime->canvas_bytes);
+    return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_apng_flush_pending_frame(
+    sixel_builtin_apng_state_t *state,
+    sixel_builtin_apng_frame_control_t *control,
+    sixel_builtin_apng_canvas_t *canvas,
+    sixel_builtin_apng_runtime_t *runtime,
+    int start_frame_no,
+    int fstatic,
+    unsigned char *bgcolor,
+    sixel_load_image_function fn_load,
+    void *context,
+    sixel_allocator_t *allocator,
+    int *stop_after_emit)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (stop_after_emit != NULL) {
+        *stop_after_emit = 0;
+    }
+    if (state == NULL ||
+        control == NULL ||
+        canvas == NULL ||
+        runtime == NULL ||
+        allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (state->chunk_size == 0u) {
+        return SIXEL_OK;
+    }
+
+    status = sixel_builtin_apng_emit_pending_frame(
+        state,
+        control,
+        runtime->loop_no,
+        start_frame_no,
+        runtime->frames_in_loop,
+        runtime->source_frame_no,
+        fstatic,
+        runtime->num_frames,
+        bgcolor,
+        runtime->alpha_zero_is_transparent,
+        canvas,
+        fn_load,
+        context,
+        allocator,
+        &runtime->emit_callback);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    ++runtime->source_frame_no;
+    ++runtime->frames_in_loop;
+    state->chunk_size = 0u;
+    if (fstatic && runtime->emit_callback != 0 && stop_after_emit != NULL) {
+        *stop_after_emit = 1;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_builtin_apng_process_chunk(
+    sixel_chunk_t const *pchunk,
+    sixel_builtin_apng_state_t *state,
+    sixel_builtin_apng_frame_control_t *control,
+    sixel_builtin_apng_canvas_t *canvas,
+    sixel_builtin_apng_runtime_t *runtime,
+    unsigned char *bgcolor,
+    int enable_cms,
+    int fstatic,
+    int *start_frame_no,
+    sixel_load_image_function fn_load,
+    void *context,
+    int *stop_decode,
+    int *stop_scan)
+{
+    SIXELSTATUS status;
+    int stop_after_emit;
+
+    status = SIXEL_OK;
+    stop_after_emit = 0;
+    if (stop_decode != NULL) {
+        *stop_decode = 0;
+    }
+    if (stop_scan != NULL) {
+        *stop_scan = 0;
+    }
+    if (pchunk == NULL ||
+        state == NULL ||
+        control == NULL ||
+        canvas == NULL ||
+        runtime == NULL ||
+        start_frame_no == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    runtime->length = sixel_builtin_read_be32(runtime->p);
+    if ((size_t)runtime->length > runtime->remain - 12u) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (memcmp(runtime->p + 4, "IHDR", 4) == 0) {
+        if (runtime->length != 13u) {
+            return SIXEL_BAD_INPUT;
+        }
+        state->ihdr = runtime->p + 8;
+        state->ihdr_size = runtime->length;
+        runtime->color_type = (int)runtime->p[17];
+        runtime->has_alpha_chunk =
+            (runtime->color_type & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0
+                ? 1
+                : 0;
+        status = sixel_builtin_apng_prepare_canvas_from_ihdr(pchunk,
+                                                             canvas,
+                                                             runtime);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        runtime->alpha_zero_is_transparent =
+            sixel_builtin_apng_resolve_alpha_zero_transparent(
+                runtime->trns_keycolor_mode,
+                bgcolor,
+                enable_cms,
+                runtime->has_trns_chunk,
+                runtime->has_alpha_chunk);
+    } else if (memcmp(runtime->p + 4, "acTL", 4) == 0) {
+        if (runtime->length != 8u) {
+            return SIXEL_BAD_INPUT;
+        }
+        runtime->seen_actl = 1;
+        runtime->saw_animation = 1;
+        runtime->num_frames = (int)sixel_builtin_read_be32(runtime->p + 8);
+        runtime->num_plays = (int)sixel_builtin_read_be32(runtime->p + 12);
+        state->expected_sequence = 0u;
+        if (runtime->num_frames <= 0) {
+            return SIXEL_BAD_INPUT;
+        }
+        if (runtime->loop_no == 0 && *start_frame_no != INT_MIN) {
+            status = sixel_builtin_resolve_animation_start_frame_no(
+                *start_frame_no,
+                runtime->num_frames,
+                start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+    } else if (memcmp(runtime->p + 4, "fcTL", 4) == 0 &&
+               runtime->seen_actl != 0) {
+        if (runtime->has_frame != 0 && state->chunk_size > 0u) {
+            status = sixel_builtin_apng_flush_pending_frame(
+                state,
+                control,
+                canvas,
+                runtime,
+                *start_frame_no,
+                fstatic,
+                bgcolor,
+                fn_load,
+                context,
+                pchunk->allocator,
+                &stop_after_emit);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            if (stop_after_emit != 0 && stop_decode != NULL) {
+                *stop_decode = 1;
+                return SIXEL_OK;
+            }
+        }
+        if (!sixel_builtin_apng_parse_fctl(runtime->p + 8,
+                                           runtime->length,
+                                           &runtime->sequence_no,
+                                           control)) {
+            return SIXEL_BAD_INPUT;
+        }
+        if (runtime->sequence_no != state->expected_sequence) {
+            return SIXEL_BAD_INPUT;
+        }
+        ++state->expected_sequence;
+        if (control->width == 0u ||
+            control->height == 0u ||
+            control->x_offset > (uint32_t)canvas->width ||
+            control->y_offset > (uint32_t)canvas->height ||
+            control->width > (uint32_t)canvas->width - control->x_offset ||
+            control->height > (uint32_t)canvas->height - control->y_offset) {
+            return SIXEL_BAD_INPUT;
+        }
+        runtime->seen_fctl = 1;
+        runtime->has_frame = 1;
+    } else if (memcmp(runtime->p + 4, "fdAT", 4) == 0 &&
+               runtime->seen_actl != 0) {
+        if (runtime->has_frame == 0 || runtime->seen_fctl == 0 ||
+            runtime->length < 4u) {
+            return SIXEL_BAD_INPUT;
+        }
+        runtime->fd_sequence = sixel_builtin_read_be32(runtime->p + 8);
+        if (runtime->fd_sequence != state->expected_sequence) {
+            return SIXEL_BAD_INPUT;
+        }
+        ++state->expected_sequence;
+        if (!sixel_builtin_apng_append_chunk(state,
+                                             "IDAT",
+                                             runtime->p + 12,
+                                             runtime->length - 4u,
+                                             pchunk->allocator)) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+    } else if (memcmp(runtime->p + 4, "IDAT", 4) == 0) {
+        if (runtime->seen_actl != 0 && runtime->has_frame == 0) {
+            return SIXEL_BAD_INPUT;
+        }
+        if (!sixel_builtin_apng_append_chunk(state,
+                                             "IDAT",
+                                             runtime->p + 8,
+                                             runtime->length,
+                                             pchunk->allocator)) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        if (runtime->seen_actl != 0 &&
+            runtime->seen_fctl == 0 &&
+            runtime->seen_idat == 0) {
+            control->width = (uint32_t)canvas->width;
+            control->height = (uint32_t)canvas->height;
+            control->x_offset = 0u;
+            control->y_offset = 0u;
+            control->delay_cs = 0u;
+            control->dispose_op = 0u;
+            control->blend_op = 0u;
+        }
+        runtime->seen_idat = 1;
+        runtime->has_frame = 1;
+    } else if (memcmp(runtime->p + 4, "IEND", 4) == 0) {
+        if (stop_scan != NULL) {
+            *stop_scan = 1;
+        }
+    } else if (memcmp(runtime->p + 4, "tRNS", 4) == 0) {
+        runtime->has_trns_chunk = 1;
+        runtime->alpha_zero_is_transparent =
+            sixel_builtin_apng_resolve_alpha_zero_transparent(
+                runtime->trns_keycolor_mode,
+                bgcolor,
+                enable_cms,
+                runtime->has_trns_chunk,
+                runtime->has_alpha_chunk);
+    } else if (memcmp(runtime->p + 4, "acTL", 4) != 0 &&
+               memcmp(runtime->p + 4, "fcTL", 4) != 0 &&
+               memcmp(runtime->p + 4, "fdAT", 4) != 0 &&
+               memcmp(runtime->p + 4, "IHDR", 4) != 0 &&
+               memcmp(runtime->p + 4, "IEND", 4) != 0 &&
+               state->chunk_size == 0u) {
+        if (!sixel_builtin_apng_append_shared_chunk(state,
+                                                    runtime->p,
+                                                    (size_t)runtime->length
+                                                        + 12u,
+                                                    pchunk->allocator)) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_builtin_apng_scan_loop_chunks(
+    sixel_chunk_t const *pchunk,
+    sixel_builtin_apng_state_t *state,
+    sixel_builtin_apng_frame_control_t *control,
+    sixel_builtin_apng_canvas_t *canvas,
+    sixel_builtin_apng_runtime_t *runtime,
+    unsigned char *bgcolor,
+    int enable_cms,
+    int fstatic,
+    int *start_frame_no,
+    sixel_load_image_function fn_load,
+    void *context,
+    int *stop_decode)
+{
+    SIXELSTATUS status;
+    int stop_scan;
+
+    status = SIXEL_OK;
+    stop_scan = 0;
+    if (pchunk == NULL ||
+        state == NULL ||
+        control == NULL ||
+        canvas == NULL ||
+        runtime == NULL ||
+        start_frame_no == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (stop_decode != NULL) {
+        *stop_decode = 0;
+    }
+
+    while (runtime->remain >= 12u) {
+        if (sixel_loader_callback_is_canceled(context)) {
+            return SIXEL_INTERRUPTED;
+        }
+        stop_scan = 0;
+        status = sixel_builtin_apng_process_chunk(
+            pchunk,
+            state,
+            control,
+            canvas,
+            runtime,
+            bgcolor,
+            enable_cms,
+            fstatic,
+            start_frame_no,
+            fn_load,
+            context,
+            stop_decode,
+            &stop_scan);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (stop_decode != NULL && *stop_decode != 0) {
+            return SIXEL_OK;
+        }
+        if (stop_scan != 0) {
+            break;
+        }
+        runtime->p += (size_t)runtime->length + 12u;
+        runtime->remain -= (size_t)runtime->length + 12u;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_builtin_apng_complete_loop_iteration(
+    sixel_builtin_apng_state_t *state,
+    sixel_builtin_apng_runtime_t *runtime,
+    int loop_control,
+    sixel_allocator_t *allocator,
+    int *stop_loop)
+{
+    if (state == NULL || runtime == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (stop_loop != NULL) {
+        *stop_loop = 0;
+    }
+    if (runtime->frames_in_loop == 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (runtime->num_frames > 0 &&
+        runtime->frames_in_loop != runtime->num_frames) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    ++runtime->loop_no;
+    sixel_builtin_apng_release_loop_buffers(state, allocator);
+    if (stop_loop != NULL &&
+        sixel_builtin_apng_should_stop_loop(loop_control,
+                                            runtime->frames_in_loop,
+                                            runtime->loop_no,
+                                            runtime->num_plays)) {
+        *stop_loop = 1;
+    }
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_builtin_load_apng_frames(
     sixel_chunk_t const *pchunk,
@@ -2540,60 +3045,26 @@ sixel_builtin_load_apng_frames(
     sixel_builtin_apng_state_t state;
     sixel_builtin_apng_frame_control_t control;
     sixel_builtin_apng_canvas_t canvas;
-    unsigned char const *p;
-    size_t remain;
-    size_t canvas_bytes;
-    int seen_actl;
-    int saw_animation;
-    int has_frame;
-    int source_frame_no;
-    int num_frames;
-    int num_plays;
-    int loop_no;
-    int frames_in_loop;
-    int emit_callback;
-    int seen_fctl;
-    int seen_idat;
-    int alpha_zero_is_transparent;
-    int color_type;
-    int has_alpha_chunk;
-    int has_trns_chunk;
+    sixel_builtin_apng_runtime_t runtime;
+    int apng_start_frame_no;
+    int stop_decode;
+    int stop_loop;
     int trns_keycolor_mode;
-    uint32_t length;
-    uint32_t canvas_width;
-    uint32_t canvas_height;
-    uint32_t sequence_no;
-    uint32_t fd_sequence;
 
     status = SIXEL_FALSE;
     memset(&state, 0, sizeof(state));
     memset(&control, 0, sizeof(control));
     memset(&canvas, 0, sizeof(canvas));
-    p = NULL;
-    remain = 0;
-    canvas_bytes = 0;
-    seen_actl = 0;
-    saw_animation = 0;
-    has_frame = 0;
-    source_frame_no = 0;
-    num_frames = 0;
-    num_plays = 0;
-    loop_no = 0;
-    frames_in_loop = 0;
-    emit_callback = 1;
-    seen_fctl = 0;
-    seen_idat = 0;
-    alpha_zero_is_transparent = 0;
-    color_type = (-1);
-    has_alpha_chunk = 0;
-    has_trns_chunk = 0;
+    memset(&runtime, 0, sizeof(runtime));
+    apng_start_frame_no = start_frame_no;
+    stop_decode = 0;
+    stop_loop = 0;
     trns_keycolor_mode = sixel_builtin_trns_keycolor_mode();
-    length = 0;
-    canvas_width = 0;
-    canvas_height = 0;
-    sequence_no = 0;
-    fd_sequence = 0;
+    sixel_builtin_apng_init_runtime(&runtime, trns_keycolor_mode);
 
+    if (pchunk == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (pchunk->size < 8) {
         return SIXEL_FALSE;
     }
@@ -2604,288 +3075,63 @@ sixel_builtin_load_apng_frames(
             goto end;
         }
 
-        memset(&state, 0, sizeof(state));
-        memset(&control, 0, sizeof(control));
-        p = pchunk->buffer + 8;
-        remain = pchunk->size - 8;
-        seen_actl = 0;
-        has_frame = 0;
-        source_frame_no = 0;
-        frames_in_loop = 0;
-        seen_fctl = 0;
-        seen_idat = 0;
-        alpha_zero_is_transparent = 0;
-        color_type = (-1);
-        has_alpha_chunk = 0;
-        has_trns_chunk = 0;
-
-        if (loop_no > 0 && canvas_bytes > 0) {
-            memset(canvas.pixels, 0, canvas_bytes);
-            memset(canvas.backup, 0, canvas_bytes);
+        sixel_builtin_apng_begin_loop_iteration(&state,
+                                                &control,
+                                                &canvas,
+                                                &runtime,
+                                                pchunk);
+        stop_decode = 0;
+        status = sixel_builtin_apng_scan_loop_chunks(
+            pchunk,
+            &state,
+            &control,
+            &canvas,
+            &runtime,
+            bgcolor,
+            enable_cms,
+            fstatic,
+            &apng_start_frame_no,
+            fn_load,
+            context,
+            &stop_decode);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
-
-        while (remain >= 12) {
-            if (sixel_loader_callback_is_canceled(context)) {
-                status = SIXEL_INTERRUPTED;
-                goto end;
-            }
-
-            length = sixel_builtin_read_be32(p);
-            if ((size_t)length > remain - 12) {
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-
-            if (memcmp(p + 4, "IHDR", 4) == 0) {
-                if (length != 13) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                state.ihdr = p + 8;
-                state.ihdr_size = length;
-                color_type = (int)p[17];
-                has_alpha_chunk = (color_type
-                                   & SIXEL_BUILTIN_PNG_COLOR_MASK_ALPHA) != 0
-                    ? 1
-                    : 0;
-                if (canvas_bytes == 0) {
-                    canvas_width = sixel_builtin_read_be32(p + 8);
-                    canvas_height = sixel_builtin_read_be32(p + 12);
-                    if (canvas_width == 0 || canvas_height == 0 ||
-                        canvas_width > INT_MAX || canvas_height > INT_MAX) {
-                        status = SIXEL_BAD_INPUT;
-                        goto end;
-                    }
-                    canvas.width = (int)canvas_width;
-                    canvas.height = (int)canvas_height;
-                    canvas_bytes = (size_t)canvas.width
-                                 * (size_t)canvas.height * 4;
-                    canvas.pixels = (unsigned char *)sixel_allocator_malloc(
-                        pchunk->allocator,
-                        canvas_bytes);
-                    canvas.backup = (unsigned char *)sixel_allocator_malloc(
-                        pchunk->allocator,
-                        canvas_bytes);
-                    if (canvas.pixels == NULL || canvas.backup == NULL) {
-                        status = SIXEL_BAD_ALLOCATION;
-                        goto end;
-                    }
-                    memset(canvas.pixels, 0, canvas_bytes);
-                    memset(canvas.backup, 0, canvas_bytes);
-                }
-                alpha_zero_is_transparent =
-                    sixel_builtin_apng_resolve_alpha_zero_transparent(
-                        trns_keycolor_mode,
-                        bgcolor,
-                        enable_cms,
-                        has_trns_chunk,
-                        has_alpha_chunk);
-            } else if (memcmp(p + 4, "acTL", 4) == 0) {
-                if (length != 8) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                seen_actl = 1;
-                saw_animation = 1;
-                num_frames = (int)sixel_builtin_read_be32(p + 8);
-                num_plays = (int)sixel_builtin_read_be32(p + 12);
-                state.expected_sequence = 0;
-                if (num_frames <= 0) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                if (loop_no == 0 && start_frame_no != INT_MIN) {
-                    status = sixel_builtin_resolve_animation_start_frame_no(
-                        start_frame_no,
-                        num_frames,
-                        &start_frame_no);
-                    if (SIXEL_FAILED(status)) {
-                        goto end;
-                    }
-                }
-            } else if (memcmp(p + 4, "fcTL", 4) == 0 && seen_actl) {
-                if (has_frame && state.chunk_size > 0) {
-                    status = sixel_builtin_apng_emit_pending_frame(
-                        &state,
-                        &control,
-                        loop_no,
-                        start_frame_no,
-                        frames_in_loop,
-                        source_frame_no,
-                        fstatic,
-                        num_frames,
-                        bgcolor,
-                        alpha_zero_is_transparent,
-                        &canvas,
-                        fn_load,
-                        context,
-                        pchunk->allocator,
-                        &emit_callback);
-                    if (SIXEL_FAILED(status)) {
-                        goto end;
-                    }
-                    ++source_frame_no;
-                    ++frames_in_loop;
-                    if (fstatic && emit_callback) {
-                        status = SIXEL_OK;
-                        goto end;
-                    }
-                    state.chunk_size = 0;
-                }
-
-                if (!sixel_builtin_apng_parse_fctl(p + 8,
-                                                   length,
-                                                   &sequence_no,
-                                                   &control)) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                if (sequence_no != state.expected_sequence) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                ++state.expected_sequence;
-                if (control.width == 0 || control.height == 0 ||
-                    control.x_offset > (uint32_t)canvas.width ||
-                    control.y_offset > (uint32_t)canvas.height ||
-                    control.width > (uint32_t)canvas.width
-                                    - control.x_offset ||
-                    control.height > (uint32_t)canvas.height
-                                     - control.y_offset) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                seen_fctl = 1;
-                has_frame = 1;
-            } else if (memcmp(p + 4, "fdAT", 4) == 0 && seen_actl) {
-                if (!has_frame || !seen_fctl || length < 4) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                fd_sequence = sixel_builtin_read_be32(p + 8);
-                if (fd_sequence != state.expected_sequence) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                ++state.expected_sequence;
-                if (!sixel_builtin_apng_append_chunk(
-                        &state,
-                        "IDAT",
-                        p + 12,
-                        length - 4,
-                        pchunk->allocator)) {
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto end;
-                }
-            } else if (memcmp(p + 4, "IDAT", 4) == 0) {
-                if (seen_actl && !has_frame) {
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-                if (!sixel_builtin_apng_append_chunk(
-                        &state,
-                        "IDAT",
-                        p + 8,
-                        length,
-                        pchunk->allocator)) {
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto end;
-                }
-                if (seen_actl && !seen_fctl && !seen_idat) {
-                    control.width = (uint32_t)canvas.width;
-                    control.height = (uint32_t)canvas.height;
-                    control.x_offset = 0;
-                    control.y_offset = 0;
-                    control.delay_cs = 0;
-                    control.dispose_op = 0;
-                    control.blend_op = 0;
-                }
-                seen_idat = 1;
-                has_frame = 1;
-            } else if (memcmp(p + 4, "IEND", 4) == 0) {
-                break;
-            } else if (memcmp(p + 4, "tRNS", 4) == 0) {
-                has_trns_chunk = 1;
-                alpha_zero_is_transparent =
-                    sixel_builtin_apng_resolve_alpha_zero_transparent(
-                        trns_keycolor_mode,
-                        bgcolor,
-                        enable_cms,
-                        has_trns_chunk,
-                        has_alpha_chunk);
-            } else if (memcmp(p + 4, "acTL", 4) != 0 &&
-                       memcmp(p + 4, "fcTL", 4) != 0 &&
-                       memcmp(p + 4, "fdAT", 4) != 0 &&
-                       memcmp(p + 4, "IHDR", 4) != 0 &&
-                       memcmp(p + 4, "IEND", 4) != 0 &&
-                       state.chunk_size == 0) {
-                if (!sixel_builtin_apng_append_shared_chunk(
-                        &state,
-                        p,
-                        (size_t)length + 12,
-                        pchunk->allocator)) {
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto end;
-                }
-            }
-
-            p += (size_t)length + 12;
-            remain -= (size_t)length + 12;
-        }
-
-        if (!seen_actl || !has_frame) {
+        if (!runtime.seen_actl || !runtime.has_frame) {
             status = SIXEL_FALSE;
             goto end;
         }
-
-        if (state.chunk_size > 0) {
-            status = sixel_builtin_apng_emit_pending_frame(
-                &state,
-                &control,
-                loop_no,
-                start_frame_no,
-                frames_in_loop,
-                source_frame_no,
-                fstatic,
-                num_frames,
-                bgcolor,
-                alpha_zero_is_transparent,
-                &canvas,
-                fn_load,
-                context,
-                pchunk->allocator,
-                &emit_callback);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            ++source_frame_no;
-            ++frames_in_loop;
-            if (fstatic && emit_callback) {
-                status = SIXEL_OK;
-                goto end;
-            }
-        }
-
-        if (frames_in_loop == 0) {
-            status = SIXEL_BAD_INPUT;
+        status = sixel_builtin_apng_flush_pending_frame(
+            &state,
+            &control,
+            &canvas,
+            &runtime,
+            apng_start_frame_no,
+            fstatic,
+            bgcolor,
+            fn_load,
+            context,
+            pchunk->allocator,
+            &stop_decode);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
-        if (num_frames > 0 && frames_in_loop != num_frames) {
-            status = SIXEL_BAD_INPUT;
+        if (stop_decode != 0) {
+            status = SIXEL_OK;
             goto end;
         }
 
-        ++loop_no;
-
-        sixel_allocator_free(pchunk->allocator, state.shared_chunks);
-        sixel_allocator_free(pchunk->allocator, state.chunk_base);
-        state.shared_chunks = NULL;
-        state.chunk_base = NULL;
-
-        if (sixel_builtin_apng_should_stop_loop(loop_control,
-                                                frames_in_loop,
-                                                loop_no,
-                                                num_plays)) {
+        stop_loop = 0;
+        status = sixel_builtin_apng_complete_loop_iteration(
+            &state,
+            &runtime,
+            loop_control,
+            pchunk->allocator,
+            &stop_loop);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (stop_loop != 0) {
             status = SIXEL_OK;
             goto end;
         }
@@ -2894,9 +3140,8 @@ sixel_builtin_load_apng_frames(
 end:
     sixel_allocator_free(pchunk->allocator, canvas.pixels);
     sixel_allocator_free(pchunk->allocator, canvas.backup);
-    sixel_allocator_free(pchunk->allocator, state.shared_chunks);
-    sixel_allocator_free(pchunk->allocator, state.chunk_base);
-    if (!saw_animation && status == SIXEL_FALSE) {
+    sixel_builtin_apng_release_loop_buffers(&state, pchunk->allocator);
+    if (!runtime.saw_animation && status == SIXEL_FALSE) {
         return SIXEL_FALSE;
     }
     return status;
