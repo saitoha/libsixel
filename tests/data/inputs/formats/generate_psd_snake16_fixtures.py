@@ -1367,6 +1367,18 @@ def generate(out_dir: pathlib.Path):
         color_mode=4,
         variants=["raw", "rle", "zip", "zip_pred"],
     )
+    write_file(
+        out_dir / "snake16_cmyk16_missing_composite_marker.psd",
+        build_psd_missing_composite_marker(
+            channels=4,
+            depth=16,
+            color_mode=4,
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk16_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_cmyk16(cmyk16_planes),
+    )
 
     # 32-bit fixtures
     write_variants(
@@ -1462,6 +1474,18 @@ def generate(out_dir: pathlib.Path):
         depth=32,
         color_mode=4,
         variants=["raw", "rle", "zip", "zip_pred"],
+    )
+    write_file(
+        out_dir / "snake16_cmyk32_missing_composite_marker.psd",
+        build_psd_missing_composite_marker(
+            channels=4,
+            depth=32,
+            color_mode=4,
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk32_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_cmyk32(cmyk32_planes),
     )
 
     # Multichannel (mode=7) fixtures:

@@ -558,7 +558,9 @@ sixel_builtin_validate_psd_info(
                    info->channels >= 1u) ||
                   (info->color_mode == 9u && info->channels >= 3u) ||
                   (info->color_mode == 4u &&
-                   info->depth == 8u &&
+                   (info->depth == 8u ||
+                    info->depth == 16u ||
+                    info->depth == 32u) &&
                    info->channels >= 4u) ||
                   (info->color_mode == 7u &&
                    ((info->channels == 3u) ||
@@ -4169,7 +4171,8 @@ sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_16bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 7u ||
+    if ((info->color_mode != 4u &&
+         info->color_mode != 7u) ||
         info->depth != 16u ||
         info->channels < 4u) {
         return SIXEL_BAD_INPUT;
@@ -4616,8 +4619,10 @@ sixel_builtin_decode_psd_cmyk_16bit(
         pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->color_mode == 7u &&
-        info->channels == 4u &&
+    if ((info->color_mode == 4u ||
+         (info->color_mode == 7u &&
+          info->channels == 4u)) &&
+        info->channels >= 4u &&
         info->image_data_offset >= chunk->size) {
         return sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_16bit(
             chunk,
@@ -8587,7 +8592,8 @@ sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_32bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 7u ||
+    if ((info->color_mode != 4u &&
+         info->color_mode != 7u) ||
         info->depth != 32u ||
         info->channels < 4u) {
         return SIXEL_BAD_INPUT;
@@ -9035,8 +9041,10 @@ sixel_builtin_decode_psd_cmyk_32bit(
         pixel_count > SIZE_MAX / (4u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->color_mode == 7u &&
-        info->channels == 4u &&
+    if ((info->color_mode == 4u ||
+         (info->color_mode == 7u &&
+          info->channels == 4u)) &&
+        info->channels >= 4u &&
         info->image_data_offset >= chunk->size) {
         return sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_32bit(
             chunk,
