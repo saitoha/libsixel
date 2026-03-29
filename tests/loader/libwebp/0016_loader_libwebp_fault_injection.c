@@ -13,6 +13,7 @@
 
 typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_NONE = 0,
+    WEBP_FI_FAIL_DEMUX,
     WEBP_FI_FAIL_OPTIONS_INIT,
     WEBP_FI_FAIL_DECODER_NEW,
     WEBP_FI_FAIL_DECODER_GET_INFO,
@@ -122,12 +123,22 @@ webpfi_WebPDecodeRGBAInto(uint8_t const *data,
                                      output_stride);
 }
 
+static WebPDemuxer *
+webpfi_WebPDemux(WebPData const *webp_data)
+{
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DEMUX) {
+        return NULL;
+    }
+    return WebPDemuxInternal(webp_data, 0, NULL, WEBP_DEMUX_ABI_VERSION);
+}
+
 #define WebPAnimDecoderOptionsInit webpfi_WebPAnimDecoderOptionsInit
 #define WebPAnimDecoderNew webpfi_WebPAnimDecoderNew
 #define WebPAnimDecoderGetInfo webpfi_WebPAnimDecoderGetInfo
 #define WebPAnimDecoderGetNext webpfi_WebPAnimDecoderGetNext
 #define WebPDecodeRGBInto webpfi_WebPDecodeRGBInto
 #define WebPDecodeRGBAInto webpfi_WebPDecodeRGBAInto
+#define WebPDemux webpfi_WebPDemux
 
 /*
  * Avoid global symbol collisions with the linked libsixel objects while
@@ -158,6 +169,7 @@ webpfi_WebPDecodeRGBAInto(uint8_t const *data,
 #undef WebPAnimDecoderGetNext
 #undef WebPDecodeRGBInto
 #undef WebPDecodeRGBAInto
+#undef WebPDemux
 
 static SIXELSTATUS
 capture_noop_frame(sixel_frame_t *frame, void *data)
@@ -249,6 +261,99 @@ run_decoder_setup_fail_case(webp_fi_failpoint_t failpoint,
                 "%s: missing diagnostic '%s' (actual='%s')\n",
                 label,
                 expected_message,
+                message != NULL ? message : "(null)");
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    return result;
+}
+
+static int
+run_demux_fail_case(char const *label)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    message = NULL;
+    result = 1;
+
+    source_root = getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (build_image_path(source_root,
+                         WEBP_IMAGE_PATH,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator init failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read input chunk\n", label);
+        goto cleanup;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    g_webp_fi_failpoint = WEBP_FI_FAIL_DEMUX;
+    status = load_with_libwebp(chunk,
+                               1,
+                               0,
+                               0,
+                               256,
+                               NULL,
+                               SIXEL_LOOP_DISABLE,
+                               0,
+                               0,
+                               capture_noop_frame,
+                               NULL);
+    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+
+    if (status != SIXEL_BAD_INPUT) {
+        fprintf(stderr,
+                "%s: expected SIXEL_BAD_INPUT, got %d\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message, "load_with_libwebp: WebPDemux failed.") == NULL) {
+        fprintf(stderr,
+                "%s: missing demux diagnostic (actual='%s')\n",
+                label,
                 message != NULL ? message : "(null)");
         goto cleanup;
     }
@@ -389,6 +494,11 @@ static int
 run_libwebp_fault_injection_test(void)
 {
     int status;
+
+    status = run_demux_fail_case("libwebp fault injection demux");
+    if (status != 0) {
+        return status;
+    }
 
     status = run_decoder_setup_fail_case(
         WEBP_FI_FAIL_OPTIONS_INIT,
