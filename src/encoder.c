@@ -1956,7 +1956,7 @@ sixel_encoder_parse_sample_target(char const *text, size_t *value_out)
     return 1;
 }
 
-int
+SIXEL_INTERNAL_API int
 sixel_encoder_should_hide_animation_cursor(
     int is_multiframe,
     int fstatic,

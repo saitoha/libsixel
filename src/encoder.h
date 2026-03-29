@@ -39,7 +39,7 @@ struct sixel_logger;
 
 #include "planner.h"
 
-int
+SIXEL_INTERNAL_API int
 sixel_encoder_should_hide_animation_cursor(int is_multiframe,
                                            int fstatic,
                                            int outfd_is_tty,
