@@ -69,6 +69,57 @@ stbi_failure_reason(void);
 void
 stbi_image_free(void *retval_from_stbi_load);
 
+typedef struct sixel_builtin_hdr_profile_hint {
+    int has_format;
+    int format_kind;
+    int format_malformed;
+    int has_gamma;
+    double gamma;
+    int gamma_malformed;
+    int has_primaries;
+    double white_x;
+    double white_y;
+    double red_x;
+    double red_y;
+    double green_x;
+    double green_y;
+    double blue_x;
+    double blue_y;
+    int primaries_malformed;
+    int has_exposure;
+    double exposure_scale;
+    int exposure_malformed;
+    int has_colorcorr;
+    double colorcorr_r;
+    double colorcorr_g;
+    double colorcorr_b;
+    int colorcorr_malformed;
+    int has_pixaspect;
+    double pixaspect;
+    int pixaspect_malformed;
+    int has_view;
+    int view_malformed;
+    int has_resolution;
+    int orientation_axis1;
+    int orientation_axis1_sign;
+    int orientation_axis1_length;
+    int orientation_axis2;
+    int orientation_axis2_sign;
+    int orientation_axis2_length;
+    size_t pixel_data_offset;
+    int width;
+    int height;
+    int resolution_malformed;
+    int malformed;
+} sixel_builtin_hdr_profile_hint_t;
+
+#define SIXEL_BUILTIN_HDR_FORMAT_UNKNOWN 0
+#define SIXEL_BUILTIN_HDR_FORMAT_RGBE    1
+#define SIXEL_BUILTIN_HDR_FORMAT_XYZE    2
+
+#define SIXEL_BUILTIN_HDR_AXIS_X         0
+#define SIXEL_BUILTIN_HDR_AXIS_Y         1
+
 static SIXELSTATUS
 sixel_builtin_decode_hdr_float32_with_hint(
     sixel_chunk_t const *chunk,
@@ -79,6 +130,21 @@ sixel_builtin_decode_hdr_float32_with_hint(
     int *pcolorspace,
     sixel_builtin_hdr_profile_hint_t *out_hint,
     SIXELSTATUS *out_hint_status);
+
+static SIXELSTATUS
+sixel_builtin_parse_hdr_profile_hint(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_hdr_profile_hint_t *out_hint);
+
+static void
+sixel_builtin_hdr_apply_postprocess(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    sixel_builtin_hdr_profile_hint_t const *hint,
+    SIXELSTATUS hint_status,
+    int enable_cms);
 
 static int
 sixel_builtin_hdr_ascii_case_equal(char const *left, char const *right)
@@ -1373,7 +1439,7 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
     }
 }
 
-void
+static void
 sixel_builtin_hdr_apply_postprocess(
     unsigned char *pixels,
     int width,
@@ -2156,7 +2222,7 @@ sixel_builtin_decode_hdr_float32(
                                                       NULL);
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_builtin_parse_hdr_profile_hint(
     sixel_chunk_t const *chunk,
     sixel_builtin_hdr_profile_hint_t *out_hint)
