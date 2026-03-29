@@ -5,6 +5,7 @@ set -eu
 
 src_root=${1:-$(cd "$(dirname "$0")/../../.." && pwd)}
 build_root=${2:-$src_root}
+run_staticcheck=${3:-${RUN_STATICCHECK:-0}}
 
 set -- "$src_root"/tests/loader/libwebp/*.t
 test -f "$1" || {
@@ -30,6 +31,7 @@ set +a
 
 missing_exports=
 for required_export in IMG2SIXEL_PATH SIXEL2PNG_PATH LSQA_PATH TEST_RUNNER_PATH LIBSIXEL_LIBDIR; do
+    required_value=
     eval "required_value=\${$required_export-}"
     case "$required_value" in
         '')
@@ -73,6 +75,7 @@ if test -d "$LIBSIXEL_LIBDIR"; then
 fi
 
 tmp_root=$(mktemp -d "${TMPDIR:-/tmp}/run-loader-libwebp-regression.XXXXXX")
+# shellcheck disable=SC2329
 cleanup() {
     rm -rf "$tmp_root"
 }
@@ -130,6 +133,33 @@ for test_path in $(printf '%s\n' "$@" | LC_ALL=C sort); do
             ;;
     esac
 done
+
+case "$run_staticcheck" in
+    1|yes|true)
+        libwebp_tests=$(printf '%s ' "$src_root"/tests/loader/libwebp/*.t)
+        case "${libwebp_tests}" in
+            '')
+                ;;
+            *)
+                if ! TEST_FILES="$libwebp_tests" \
+                    /bin/sh "$src_root/tests/_static/sh/staticcheck-test-plan-single.sh"; then
+                    failed=$((failed + 1))
+                    status=1
+                    printf 'FAIL staticcheck-test-plan-single (loader/libwebp)\n' >&2
+                fi
+                if command -v shellcheck >/dev/null 2>&1; then
+                    if ! shellcheck "$src_root"/tests/loader/libwebp/*.t; then
+                        failed=$((failed + 1))
+                        status=1
+                        printf 'FAIL shellcheck (loader/libwebp/*.t)\n' >&2
+                    fi
+                fi
+                ;;
+        esac
+        ;;
+    *)
+        ;;
+esac
 
 if [ "$status" -eq 0 ]; then
     printf 'WebP regression: PASS (%s tests)\n' "$total"
