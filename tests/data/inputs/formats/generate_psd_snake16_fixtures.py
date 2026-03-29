@@ -3443,6 +3443,129 @@ def generate(out_dir: pathlib.Path):
         build_psd_layer_only_single_cmyk8(cmyk8_planes, color_mode=7),
     )
     write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_normal.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer: opaque black patch (PSD CMYK polarity inverted)
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(0, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    # bottom layer: snake base
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_clipping.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top clipped layer: full-canvas black clipped by base below
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_rgb8_patch_plane(255, 0, 0, HEIGHT, WIDTH),
+                        build_rgb8_patch_plane(255, 0, 0, HEIGHT, WIDTH),
+                        build_rgb8_patch_plane(255, 0, 0, HEIGHT, WIDTH),
+                        build_rgb8_patch_plane(0, 0, 0, HEIGHT, WIDTH),
+                    ],
+                    "blend_key": b"norm",
+                    "clipping": 1,
+                },
+                {
+                    # clipping base: opaque white patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_mask.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer with raster user mask channel (-2)
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3, -2],
+                    "planes": [
+                        build_rgb8_patch_plane(255, 0, 0, HEIGHT, WIDTH),
+                        build_rgb8_patch_plane(255, 0, 0, HEIGHT, WIDTH),
+                        build_rgb8_patch_plane(255, 0, 0, HEIGHT, WIDTH),
+                        build_rgb8_patch_plane(0, 0, 0, HEIGHT, WIDTH),
+                        alpha8_plane,
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_tysh.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=7,
