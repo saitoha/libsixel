@@ -724,7 +724,8 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
     ssize_t written;
     ssize_t read_size;
     int readable;
-    int wait_ms;
+    int remaining_ms;
+    int slice_ms;
     int wait_usec;
     int raw_active;
     size_t response_size;
@@ -735,7 +736,8 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
     written = 0;
     read_size = 0;
     readable = 0;
-    wait_ms = 0;
+    remaining_ms = 0;
+    slice_ms = 0;
     wait_usec = 0;
     raw_active = 0;
     response_size = 0u;
@@ -748,7 +750,7 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
     if (timeout_ms < 0) {
         timeout_ms = 0;
     }
-    wait_ms = timeout_ms;
+    remaining_ms = timeout_ms;
 
     ttyfd = sixel_compat_open("/dev/tty", O_RDWR);
     if (ttyfd < 0) {
@@ -772,17 +774,30 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
 
     for (;;) {
         wait_usec = 0;
-        if (wait_ms > 0) {
-            wait_usec = 1000;
-            --wait_ms;
+        if (remaining_ms > 0) {
+            /*
+             * Poll in small slices so a partial OSC response can be consumed
+             * across multiple reads while still honoring the total timeout.
+             */
+            slice_ms = remaining_ms;
+            if (slice_ms > 10) {
+                slice_ms = 10;
+            }
+            wait_usec = slice_ms * 1000;
+        } else {
+            slice_ms = 0;
         }
         status = sixel_tty_wait_fd_readable(ttyfd, wait_usec, &readable);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
         if (!readable) {
-            status = SIXEL_FALSE;
-            goto cleanup;
+            if (remaining_ms <= 0) {
+                status = SIXEL_FALSE;
+                goto cleanup;
+            }
+            remaining_ms -= slice_ms;
+            continue;
         }
         if (response_size + 1u >= sizeof(response)) {
             status = SIXEL_BAD_ARGUMENT;
