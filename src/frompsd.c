@@ -2903,6 +2903,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int clip_alpha_valid;
     int preserve_alpha;
     int cms_applied;
+    int has_transparency;
     int i;
     SIXELSTATUS status;
 
@@ -2914,6 +2915,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     clip_alpha_valid = 0;
     preserve_alpha = 0;
     cms_applied = 0;
+    has_transparency = 0;
     i = 0;
     status = SIXEL_FALSE;
 
@@ -2929,7 +2931,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    preserve_alpha = (bgcolor == NULL) ? 1 : 0;
+    preserve_alpha = 0;
 
     status = sixel_builtin_psd_parse_layer_model(chunk, info, &model);
     if (SIXEL_FAILED(status)) {
@@ -3045,6 +3047,17 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
         sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
     }
+    if (bgcolor == NULL) {
+        size_t alpha_index;
+
+        for (alpha_index = 0u; alpha_index < pixel_count; ++alpha_index) {
+            if (canvas_alpha[alpha_index] < 0.999999f) {
+                has_transparency = 1;
+                break;
+            }
+        }
+    }
+    preserve_alpha = (bgcolor == NULL && has_transparency != 0) ? 1 : 0;
 
     status = sixel_builtin_psd_finalize_multilayer_output(
         chunk,

@@ -171,6 +171,13 @@ def expand_u8_plane_to_u16be(plane_u8: bytes) -> bytes:
     return bytes(out)
 
 
+def expand_u8_plane_to_f32be(plane_u8: bytes) -> bytes:
+    out = bytearray()
+    for v in plane_u8:
+        out += struct.pack(">f", v / 255.0)
+    return bytes(out)
+
+
 def planes_from_rgb8(rgb_pixels):
     planes = [bytearray(), bytearray(), bytearray()]
     for r, g, b in rgb_pixels:
@@ -1124,6 +1131,20 @@ def build_rgb8_patch_plane(value: int, top: int, left: int, bottom: int, right: 
     return bytes([value] * (w * h))
 
 
+def build_u16_patch_plane(value: int, top: int, left: int, bottom: int, right: int):
+    w = right - left
+    h = bottom - top
+    sample = struct.pack(">H", value & 0xFFFF)
+    return sample * (w * h)
+
+
+def build_f32_patch_plane(value: float, top: int, left: int, bottom: int, right: int):
+    w = right - left
+    h = bottom - top
+    sample = struct.pack(">f", float(value))
+    return sample * (w * h)
+
+
 def build_psd_missing_composite_marker(
     *,
     channels,
@@ -1222,6 +1243,7 @@ def generate(out_dir: pathlib.Path):
 
     alpha8_plane = build_alpha8_fade_plane()
     alpha16_plane = expand_u8_plane_to_u16be(alpha8_plane)
+    alpha32_plane = expand_u8_plane_to_f32be(alpha8_plane)
     alpha1_plane = build_alpha1_plane()
 
     indexed_planes, indexed_color_mode_data = build_indexed_mode(rgb)
@@ -1660,6 +1682,125 @@ def generate(out_dir: pathlib.Path):
         build_psd_layer_only_single_rgb16(rgb16_planes),
     )
     write_file(
+        out_dir / "snake16_rgb16_missing_composite_multilayer_normal.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=16,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer: opaque black patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    # bottom layer: snake base
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb16_missing_composite_multilayer_clipping.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=16,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top clipped layer: full-canvas black clipped by base below
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_u16_patch_plane(0x0000, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0x0000, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0x0000, 0, 0, HEIGHT, WIDTH),
+                    ],
+                    "blend_key": b"norm",
+                    "clipping": 1,
+                },
+                {
+                    # clipping base: opaque white patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb16_missing_composite_multilayer_mask.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=16,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer with raster user mask channel (-2)
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, -2],
+                    "planes": [
+                        build_u16_patch_plane(0x0000, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0xFFFF, 0, 0, HEIGHT, WIDTH),
+                        build_u16_patch_plane(0x0000, 0, 0, HEIGHT, WIDTH),
+                        alpha16_plane,
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb16_missing_composite_marker.psd",
         build_psd_missing_composite_marker(
             channels=3,
@@ -1737,6 +1878,41 @@ def generate(out_dir: pathlib.Path):
         out_dir / "snake16_lab16_missing_composite_single_layer.psd",
         build_psd_layer_only_single_rgb16(lab16_planes, color_mode=9),
     )
+    write_file(
+        out_dir / "snake16_lab16_missing_composite_multilayer_normal.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=9,
+            depth=16,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer: opaque neutral black in Lab16
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                        build_u16_patch_plane(0x8000, 4, 4, 12, 12),
+                        build_u16_patch_plane(0x8000, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    # bottom layer: snake base
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": lab16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
 
     write_variants(
         out_dir,
@@ -1759,6 +1935,42 @@ def generate(out_dir: pathlib.Path):
         out_dir / "snake16_cmyk16_missing_composite_single_layer.psd",
         build_psd_layer_only_single_cmyk16(cmyk16_planes),
     )
+    write_file(
+        out_dir / "snake16_cmyk16_missing_composite_multilayer_normal.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=16,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer: opaque black patch (PSD CMYK polarity is inverted)
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0xFFFF, 4, 4, 12, 12),
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    # bottom layer: snake base
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
 
     # 32-bit fixtures
     write_variants(
@@ -1773,6 +1985,125 @@ def generate(out_dir: pathlib.Path):
     write_file(
         out_dir / "snake16_rgb32_missing_composite_single_layer.psd",
         build_psd_layer_only_single_rgb32(rgb32_planes),
+    )
+    write_file(
+        out_dir / "snake16_rgb32_missing_composite_multilayer_normal.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=32,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer: opaque black patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_f32_patch_plane(0.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(0.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(0.0, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    # bottom layer: snake base
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb32_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb32_missing_composite_multilayer_clipping.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=32,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top clipped layer: full-canvas black clipped by base below
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_f32_patch_plane(0.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(0.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(0.0, 0, 0, HEIGHT, WIDTH),
+                    ],
+                    "blend_key": b"norm",
+                    "clipping": 1,
+                },
+                {
+                    # clipping base: opaque white patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb32_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb32_missing_composite_multilayer_mask.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=32,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer with raster user mask channel (-2)
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, -2],
+                    "planes": [
+                        build_f32_patch_plane(0.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(1.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(0.0, 0, 0, HEIGHT, WIDTH),
+                        alpha32_plane,
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb32_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
     )
     write_variants(
         out_dir,
