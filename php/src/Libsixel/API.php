@@ -15,6 +15,7 @@ final class API
 typedef int SIXELSTATUS;
 typedef struct sixel_encoder sixel_encoder_t;
 typedef struct sixel_decoder sixel_decoder_t;
+typedef struct sixel_loader sixel_loader_t;
 
 SIXELSTATUS sixel_encoder_new(sixel_encoder_t **ppencoder, void *allocator);
 void sixel_encoder_unref(sixel_encoder_t *encoder);
@@ -25,6 +26,10 @@ SIXELSTATUS sixel_decoder_new(sixel_decoder_t **ppdecoder, void *allocator);
 void sixel_decoder_unref(sixel_decoder_t *decoder);
 SIXELSTATUS sixel_decoder_setopt(sixel_decoder_t *decoder, int arg, const char *value);
 SIXELSTATUS sixel_decoder_decode(sixel_decoder_t *decoder);
+
+SIXELSTATUS sixel_loader_new(sixel_loader_t **pploader, void *allocator);
+void sixel_loader_unref(sixel_loader_t *loader);
+SIXELSTATUS sixel_loader_setopt(sixel_loader_t *loader, int option, void const *value);
 
 const char *sixel_helper_format_error(SIXELSTATUS status);
 void sixel_set_threads(int nthreads);
@@ -178,6 +183,87 @@ CDEF;
         }
         $status = (int)self::ffi()->sixel_decoder_decode($decoder);
         self::throwOnError($status, 'sixel_decoder_decode');
+    }
+
+    public static function loaderNew()
+    {
+        $ffi = self::ffi();
+        $out = $ffi->new('sixel_loader_t *[1]');
+        $status = (int) $ffi->sixel_loader_new($out, null);
+        self::throwOnError($status, 'sixel_loader_new');
+        return $out[0];
+    }
+
+    public static function loaderUnref($loader): void
+    {
+        if ($loader !== null) {
+            self::ffi()->sixel_loader_unref($loader);
+        }
+    }
+
+    public static function loaderSetopt($loader, int $option, $value): void
+    {
+        $ffi = self::ffi();
+        $pointer = null;
+        $keepalive = null;
+
+        /*
+         * These options are interpreted as pointers to int values by the C API.
+         * Accept both native integers and numeric strings to match the behavior
+         * of other language bindings.
+         */
+        $intOptions = [
+            Constants::SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+            Constants::SIXEL_LOADER_OPTION_USE_PALETTE,
+            Constants::SIXEL_LOADER_OPTION_REQCOLORS,
+            Constants::SIXEL_LOADER_OPTION_LOOP_CONTROL,
+            Constants::SIXEL_LOADER_OPTION_INSECURE,
+            Constants::SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE,
+            Constants::SIXEL_LOADER_OPTION_START_FRAME_NO,
+        ];
+
+        if (in_array($option, $intOptions, true)) {
+            if ($value !== null) {
+                if (is_int($value)) {
+                    $parsed = $value;
+                } elseif (is_string($value)) {
+                    $text = trim($value);
+                    if (!preg_match('/^[+-]?[0-9]+$/', $text)) {
+                        throw new \InvalidArgumentException(
+                            'integer loader option requires numeric string or integer'
+                        );
+                    }
+                    $parsed = (int) $text;
+                } else {
+                    throw new \InvalidArgumentException(
+                        'integer loader option requires numeric string or integer'
+                    );
+                }
+
+                /* Keep the backing storage alive for the native call. */
+                $keepalive = $ffi->new('int[1]');
+                $keepalive[0] = $parsed;
+                $pointer = $ffi->cast('void *', \FFI::addr($keepalive[0]));
+            }
+        } elseif ($option === Constants::SIXEL_LOADER_OPTION_LOADER_ORDER) {
+            /* Loader order is a string selector such as "builtin". */
+            if ($value !== null && !is_string($value)) {
+                throw new \InvalidArgumentException(
+                    'loader order option requires string or null'
+                );
+            }
+            $pointer = $value;
+        } else {
+            if ($value !== null && !is_string($value)) {
+                throw new \InvalidArgumentException(
+                    'loader option value must be string or null'
+                );
+            }
+            $pointer = $value;
+        }
+
+        $status = (int) $ffi->sixel_loader_setopt($loader, $option, $pointer);
+        self::throwOnError($status, 'sixel_loader_setopt');
     }
 
     public static function formatError(int $status): string
