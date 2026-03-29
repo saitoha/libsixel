@@ -23232,10 +23232,22 @@ int
 main (void)
 {
 CGSize size = CGSizeMake(1.0f, 1.0f);
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 CGImageRef image = QLThumbnailImageCreate(NULL, NULL, size, NULL);
 if (image) {
     CGImageRelease(image);
 }
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#elif defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
   ;
   return 0;
 }

@@ -2786,10 +2786,23 @@ case $host_os in
 #include <QuickLook/QuickLook.h>
 #include <CoreGraphics/CoreGraphics.h>]],
                                  [[CGSize size = CGSizeMake(1.0f, 1.0f);
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 CGImageRef image = QLThumbnailImageCreate(NULL, NULL, size, NULL);
 if (image) {
     CGImageRelease(image);
-}]])],
+}
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#elif defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
+]])],
                 [have_quicklook_preview=yes],
                 [have_quicklook_preview=no])
             LIBS="$saved_LIBS"
