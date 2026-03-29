@@ -30,19 +30,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
+set +x
 output_six_text=""
-while IFS= read -r output_six_line || test -n "
-${output_six_line}"; do
-    case "${output_six_text}" in
-        "")
-            output_six_text=${output_six_line}
-            ;;
-        *)
-            output_six_text="${output_six_text}
-${output_six_line}"
-            ;;
-    esac
-done < "${output_six}"
+IFS= read -r output_six_text < "${output_six}" || test -n "${output_six_text}"
 case "${output_six_text}" in
     *"$(printf '\033')P0;1q"*)
         echo "ok 1 - a_dither 8bit keeps keycolor header"
