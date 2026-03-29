@@ -2244,6 +2244,41 @@ def generate(out_dir: pathlib.Path):
         out_dir / "snake16_mode7_rgb16_missing_composite_single_layer.psd",
         build_psd_layer_only_single_rgb16(rgb16_planes, color_mode=7),
     )
+    write_file(
+        out_dir / "snake16_mode7_rgb16_missing_composite_multilayer_normal.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=16,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer: opaque black patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                        build_u16_patch_plane(0x0000, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    # bottom layer: snake base
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
     write_variants(
         out_dir,
         "snake16_mode7_rgb32",
