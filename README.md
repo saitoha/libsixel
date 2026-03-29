@@ -1020,7 +1020,7 @@ Builtin PSD Multichannel (mode 7) policy:
 | `mode=7`, `channels=3`, `depth=8/16/32` | decode via RGB path (`3ch->RGB`) |
 | `mode=7`, `channels=4`, `depth=8/16/32` | decode via CMYK path (`4ch->CMYK`) |
 | `mode=7`, `channels!=3/4` or unsupported depth | deterministic unsupported (`builtin PSD: unsupported Multichannel channel count ...` / bit-depth trace) |
-| layer-only `mode=7` PSD without merged/composite image (single full-canvas layer) | decode via minimal layer fallback (`3ch->RGB8/16/32`, `4ch->CMYK8/16`) |
+| layer-only `mode=7` PSD without merged/composite image (single full-canvas layer) | decode via minimal layer fallback (`3ch->RGB8/16/32`, `4ch->CMYK8/16/32`) |
 | layer-only `mode=7` PSD outside fallback scope/layout | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image` / `builtin PSD: unsupported layer fallback layout`) |
 
 Builtin PSD missing merged/composite image policy:
@@ -1028,7 +1028,7 @@ Builtin PSD missing merged/composite image policy:
 | Condition | Behavior |
 | --- | --- |
 | layer-only PSD with single full-canvas 8/16/32-bit layer in RGB/Gray/Duotone/Lab, and 8-bit CMYK | decode via minimal layer fallback |
-| layer-only PSD where base mode/depth is outside fallback scope (for example Indexed, CMYK16/32, Bitmap) | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
+| layer-only PSD where base mode/depth is outside fallback scope (for example Indexed, Bitmap, native `mode=4` CMYK16/32) | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
 | layer-only PSD outside fallback layout constraints | deterministic unsupported (`builtin PSD: unsupported layer fallback layout`) |
 | composite image payload exists but raw/RLE/ZIP stream is truncated | deterministic malformed decode error (not treated as layer-only fallback) |
 
