@@ -42,6 +42,7 @@ stamp-h1
 .dirstamp
 configure~
 ltmain.sh
+ac-check-funcs.*
 
 # coverage
 *.info
