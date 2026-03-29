@@ -3703,6 +3703,14 @@ sixel_builtin_try_load_indexed_tga(
     status = SIXEL_OK;
 
 cleanup:
+    /*
+     * stbi__tga_load_palette() can return pixels == NULL after freeing the
+     * temporary packed palette internally. In that case, the palette pointer
+     * is stale and must not be released again here.
+     */
+    if (pixels == NULL) {
+        palette = NULL;
+    }
     if (palette != NULL) {
         stbi_free(palette);
         palette = NULL;
@@ -3825,6 +3833,14 @@ sixel_builtin_load_png_keycolor_or_rgba(
         goto cleanup;
     }
 
+    /*
+     * stbi__png_load_palette() can return pixels == NULL after freeing the
+     * temporary packed palette internally. In that case, the palette pointer
+     * is stale and must not be released again on the fallback path.
+     */
+    if (pixels == NULL) {
+        palette = NULL;
+    }
     if (palette != NULL) {
         stbi_free(palette);
         palette = NULL;
