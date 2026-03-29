@@ -16,6 +16,7 @@ test -x "${LSQA_PATH-}" || {
 
 echo "1..1"
 set -v
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_pic="${TOP_SRCDIR}/tests/data/inputs/formats/pic_valid_snake16_raw_rgb.pic"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/pic_snake16_reference.ppm"
