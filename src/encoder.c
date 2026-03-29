@@ -2504,6 +2504,15 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
                                    context->encoder->encode_policy);
     sixel_output_set_ormode(context->output, context->encoder->ormode);
 
+    /*
+     * Check cancellation before issuing DECRC for animated updates.
+     * This keeps the cursor at the bottom-left of the last rendered frame
+     * when SIGINT arrives between frames.
+     */
+    if (context->encoder->cancel_flag && *context->encoder->cancel_flag) {
+        return SIXEL_INTERRUPTED;
+    }
+
     if (sixel_frame_get_multiframe(context->frame)
         && !context->encoder->fstatic) {
         outfd_is_tty = sixel_compat_isatty(context->encoder->outfd);
@@ -2530,10 +2539,6 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
                                context->encoder->outfd,
                                height,
                                context->is_animation);
-    }
-
-    if (context->encoder->cancel_flag && *context->encoder->cancel_flag) {
-        return SIXEL_INTERRUPTED;
     }
 
     if (context->encoder->fdrcs) {
