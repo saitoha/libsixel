@@ -160,6 +160,13 @@ sixel_builtin_hdr_assign_decoded_frame(
     int hdr_colorspace);
 
 static int
+sixel_builtin_hdr_parse_primaries_line(char const *line,
+                                       sixel_builtin_hdr_profile_hint_t *hint);
+
+static int
+sixel_builtin_hdr_parse_format_line(char const *line, int *format_kind);
+
+static int
 sixel_builtin_hdr_ascii_case_equal(char const *left, char const *right)
 {
     size_t index;
@@ -343,6 +350,201 @@ sixel_builtin_hdr_parse_pixaspect_line(char const *line, double *pixaspect)
 
     *pixaspect = values[0];
     return 1;
+}
+
+static void
+sixel_builtin_hdr_mark_malformed(int *field_malformed,
+                                 sixel_builtin_hdr_profile_hint_t *hint)
+{
+    if (field_malformed != NULL) {
+        *field_malformed = 1;
+    }
+    if (hint != NULL) {
+        hint->malformed = 1;
+    }
+}
+
+static int
+sixel_builtin_hdr_multiply_positive(double base,
+                                    double factor,
+                                    double *out_value)
+{
+    double product;
+
+    product = 0.0;
+    if (out_value == NULL) {
+        return 0;
+    }
+    if (!isfinite(base) || !isfinite(factor)) {
+        return 0;
+    }
+    if (base <= 0.0 || factor <= 0.0) {
+        return 0;
+    }
+    if (base > DBL_MAX / factor) {
+        return 0;
+    }
+
+    product = base * factor;
+    if (!isfinite(product) || product <= 0.0) {
+        return 0;
+    }
+
+    *out_value = product;
+    return 1;
+}
+
+static int
+sixel_builtin_hdr_parse_header_metadata_line(
+    char const *line,
+    sixel_builtin_hdr_profile_hint_t *hint)
+{
+    double gamma_value;
+    double exposure_value;
+    double exposure_scale;
+    double base_scale;
+    double colorcorr_r;
+    double colorcorr_g;
+    double colorcorr_b;
+    double pixaspect;
+    int format_kind;
+
+    gamma_value = 0.0;
+    exposure_value = 0.0;
+    exposure_scale = 1.0;
+    base_scale = 1.0;
+    colorcorr_r = 0.0;
+    colorcorr_g = 0.0;
+    colorcorr_b = 0.0;
+    pixaspect = 0.0;
+    format_kind = SIXEL_BUILTIN_HDR_FORMAT_UNKNOWN;
+
+    if (line == NULL || hint == NULL) {
+        return 0;
+    }
+
+    if (sixel_builtin_hdr_ascii_has_prefix(line, "GAMMA=")) {
+        if (sixel_builtin_hdr_parse_gamma_line(line + 6, &gamma_value)) {
+            hint->gamma = gamma_value;
+            hint->has_gamma = 1;
+        } else {
+            sixel_builtin_hdr_mark_malformed(&hint->gamma_malformed, hint);
+        }
+        return 1;
+    }
+
+    if (sixel_builtin_hdr_ascii_has_prefix(line, "PRIMARIES=")) {
+        if (!sixel_builtin_hdr_parse_primaries_line(line + 10, hint)) {
+            sixel_builtin_hdr_mark_malformed(&hint->primaries_malformed,
+                                             hint);
+        }
+        return 1;
+    }
+
+    if (sixel_builtin_hdr_ascii_has_prefix(line, "EXPOSURE=")) {
+        if (!sixel_builtin_hdr_parse_exposure_line(line + 9,
+                                                   &exposure_value)) {
+            sixel_builtin_hdr_mark_malformed(&hint->exposure_malformed, hint);
+            return 1;
+        }
+        exposure_scale = hint->has_exposure ? hint->exposure_scale : 1.0;
+        if (!sixel_builtin_hdr_multiply_positive(exposure_scale,
+                                                 exposure_value,
+                                                 &exposure_scale)) {
+            sixel_builtin_hdr_mark_malformed(&hint->exposure_malformed, hint);
+            return 1;
+        }
+        hint->exposure_scale = exposure_scale;
+        hint->has_exposure = 1;
+        return 1;
+    }
+
+    if (sixel_builtin_hdr_ascii_has_prefix(line, "COLORCORR=")) {
+        if (!sixel_builtin_hdr_parse_colorcorr_line(line + 10,
+                                                    &colorcorr_r,
+                                                    &colorcorr_g,
+                                                    &colorcorr_b)) {
+            sixel_builtin_hdr_mark_malformed(&hint->colorcorr_malformed, hint);
+            return 1;
+        }
+
+        base_scale = hint->has_colorcorr ? hint->colorcorr_r : 1.0;
+        if (!sixel_builtin_hdr_multiply_positive(base_scale,
+                                                 colorcorr_r,
+                                                 &colorcorr_r)) {
+            sixel_builtin_hdr_mark_malformed(&hint->colorcorr_malformed, hint);
+            return 1;
+        }
+        base_scale = hint->has_colorcorr ? hint->colorcorr_g : 1.0;
+        if (!sixel_builtin_hdr_multiply_positive(base_scale,
+                                                 colorcorr_g,
+                                                 &colorcorr_g)) {
+            sixel_builtin_hdr_mark_malformed(&hint->colorcorr_malformed, hint);
+            return 1;
+        }
+        base_scale = hint->has_colorcorr ? hint->colorcorr_b : 1.0;
+        if (!sixel_builtin_hdr_multiply_positive(base_scale,
+                                                 colorcorr_b,
+                                                 &colorcorr_b)) {
+            sixel_builtin_hdr_mark_malformed(&hint->colorcorr_malformed, hint);
+            return 1;
+        }
+
+        hint->has_colorcorr = 1;
+        hint->colorcorr_r = colorcorr_r;
+        hint->colorcorr_g = colorcorr_g;
+        hint->colorcorr_b = colorcorr_b;
+        return 1;
+    }
+
+    if (sixel_builtin_hdr_ascii_has_prefix(line, "PIXASPECT=")) {
+        if (!sixel_builtin_hdr_parse_pixaspect_line(line + 10,
+                                                    &pixaspect)) {
+            sixel_builtin_hdr_mark_malformed(&hint->pixaspect_malformed, hint);
+            return 1;
+        }
+        base_scale = hint->has_pixaspect ? hint->pixaspect : 1.0;
+        if (!sixel_builtin_hdr_multiply_positive(base_scale,
+                                                 pixaspect,
+                                                 &pixaspect)) {
+            sixel_builtin_hdr_mark_malformed(&hint->pixaspect_malformed, hint);
+            return 1;
+        }
+        hint->has_pixaspect = 1;
+        hint->pixaspect = pixaspect;
+        return 1;
+    }
+
+    if (sixel_builtin_hdr_ascii_has_prefix(line, "VIEW=")) {
+        if (line[5] == '\0') {
+            sixel_builtin_hdr_mark_malformed(&hint->view_malformed, hint);
+            return 1;
+        }
+        hint->has_view = 1;
+        return 1;
+    }
+
+    if (sixel_builtin_hdr_ascii_has_prefix(line, "FORMAT=")) {
+        if (!sixel_builtin_hdr_parse_format_line(line + 7, &format_kind)) {
+            sixel_builtin_hdr_mark_malformed(&hint->format_malformed, hint);
+            return 1;
+        }
+        hint->has_format = 1;
+        hint->format_kind = format_kind;
+        return 1;
+    }
+
+    return 0;
+}
+
+static void
+sixel_builtin_hdr_mark_resolution_malformed(
+    sixel_builtin_hdr_profile_hint_t *hint)
+{
+    sixel_builtin_hdr_mark_malformed(NULL, hint);
+    if (hint != NULL) {
+        hint->resolution_malformed = 1;
+    }
 }
 
 static int
@@ -2257,14 +2459,6 @@ sixel_builtin_parse_hdr_profile_hint(
     char line[1024];
     int in_header;
     int have_resolution_line;
-    double gamma_value;
-    double exposure_value;
-    double exposure_scale;
-    double colorcorr_r;
-    double colorcorr_g;
-    double colorcorr_b;
-    double pixaspect;
-    int format_kind;
 
     cursor = 0u;
     line_start = 0u;
@@ -2272,14 +2466,6 @@ sixel_builtin_parse_hdr_profile_hint(
     line_length = 0u;
     in_header = 1;
     have_resolution_line = 0;
-    gamma_value = 0.0;
-    exposure_value = 0.0;
-    exposure_scale = 1.0;
-    colorcorr_r = 1.0;
-    colorcorr_g = 1.0;
-    colorcorr_b = 1.0;
-    pixaspect = 1.0;
-    format_kind = SIXEL_BUILTIN_HDR_FORMAT_UNKNOWN;
 
     if (chunk == NULL || chunk->buffer == NULL || out_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -2327,140 +2513,7 @@ sixel_builtin_parse_hdr_profile_hint(
 
             memcpy(line, chunk->buffer + line_start, line_length);
             line[line_length] = '\0';
-
-            if (sixel_builtin_hdr_ascii_has_prefix(line, "GAMMA=")) {
-                if (sixel_builtin_hdr_parse_gamma_line(line + 6,
-                                                       &gamma_value)) {
-                    out_hint->gamma = gamma_value;
-                    out_hint->has_gamma = 1;
-                } else {
-                    out_hint->gamma_malformed = 1;
-                    out_hint->malformed = 1;
-                }
-                continue;
-            }
-            if (sixel_builtin_hdr_ascii_has_prefix(line, "PRIMARIES=")) {
-                if (!sixel_builtin_hdr_parse_primaries_line(line + 10,
-                                                            out_hint)) {
-                    out_hint->primaries_malformed = 1;
-                    out_hint->malformed = 1;
-                }
-                continue;
-            }
-            if (sixel_builtin_hdr_ascii_has_prefix(line, "EXPOSURE=")) {
-                if (!sixel_builtin_hdr_parse_exposure_line(line + 9,
-                                                           &exposure_value)) {
-                    out_hint->exposure_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-                exposure_scale = out_hint->has_exposure
-                               ? out_hint->exposure_scale
-                               : 1.0;
-                if (!isfinite(exposure_scale) ||
-                    exposure_scale <= 0.0 ||
-                    exposure_scale > DBL_MAX / exposure_value) {
-                    out_hint->exposure_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-                exposure_scale *= exposure_value;
-                if (!isfinite(exposure_scale) || exposure_scale <= 0.0) {
-                    out_hint->exposure_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-                out_hint->exposure_scale = exposure_scale;
-                out_hint->has_exposure = 1;
-                continue;
-            }
-            if (sixel_builtin_hdr_ascii_has_prefix(line, "COLORCORR=")) {
-                if (!sixel_builtin_hdr_parse_colorcorr_line(line + 10,
-                                                            &colorcorr_r,
-                                                            &colorcorr_g,
-                                                            &colorcorr_b)) {
-                    out_hint->colorcorr_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-
-                if (out_hint->has_colorcorr) {
-                    if (out_hint->colorcorr_r > DBL_MAX / colorcorr_r ||
-                        out_hint->colorcorr_g > DBL_MAX / colorcorr_g ||
-                        out_hint->colorcorr_b > DBL_MAX / colorcorr_b) {
-                        out_hint->colorcorr_malformed = 1;
-                        out_hint->malformed = 1;
-                        continue;
-                    }
-                    colorcorr_r *= out_hint->colorcorr_r;
-                    colorcorr_g *= out_hint->colorcorr_g;
-                    colorcorr_b *= out_hint->colorcorr_b;
-                }
-
-                if (!isfinite(colorcorr_r) ||
-                    !isfinite(colorcorr_g) ||
-                    !isfinite(colorcorr_b) ||
-                    colorcorr_r <= 0.0 ||
-                    colorcorr_g <= 0.0 ||
-                    colorcorr_b <= 0.0) {
-                    out_hint->colorcorr_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-
-                out_hint->has_colorcorr = 1;
-                out_hint->colorcorr_r = colorcorr_r;
-                out_hint->colorcorr_g = colorcorr_g;
-                out_hint->colorcorr_b = colorcorr_b;
-                continue;
-            }
-            if (sixel_builtin_hdr_ascii_has_prefix(line, "PIXASPECT=")) {
-                if (!sixel_builtin_hdr_parse_pixaspect_line(line + 10,
-                                                            &pixaspect)) {
-                    out_hint->pixaspect_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-
-                if (out_hint->has_pixaspect) {
-                    if (out_hint->pixaspect > DBL_MAX / pixaspect) {
-                        out_hint->pixaspect_malformed = 1;
-                        out_hint->malformed = 1;
-                        continue;
-                    }
-                    pixaspect *= out_hint->pixaspect;
-                }
-
-                if (!isfinite(pixaspect) || pixaspect <= 0.0) {
-                    out_hint->pixaspect_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-
-                out_hint->has_pixaspect = 1;
-                out_hint->pixaspect = pixaspect;
-                continue;
-            }
-            if (sixel_builtin_hdr_ascii_has_prefix(line, "VIEW=")) {
-                if (line[5] == '\0') {
-                    out_hint->view_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-                out_hint->has_view = 1;
-                continue;
-            }
-            if (sixel_builtin_hdr_ascii_has_prefix(line, "FORMAT=")) {
-                if (!sixel_builtin_hdr_parse_format_line(line + 7,
-                                                         &format_kind)) {
-                    out_hint->format_malformed = 1;
-                    out_hint->malformed = 1;
-                    continue;
-                }
-                out_hint->has_format = 1;
-                out_hint->format_kind = format_kind;
-                continue;
-            }
+            sixel_builtin_hdr_parse_header_metadata_line(line, out_hint);
             continue;
         }
 
@@ -2468,16 +2521,14 @@ sixel_builtin_parse_hdr_profile_hint(
             continue;
         }
         if (line_length >= sizeof(line)) {
-            out_hint->resolution_malformed = 1;
-            out_hint->malformed = 1;
+            sixel_builtin_hdr_mark_resolution_malformed(out_hint);
             break;
         }
 
         memcpy(line, chunk->buffer + line_start, line_length);
         line[line_length] = '\0';
         if (!sixel_builtin_hdr_parse_resolution_line(line, out_hint)) {
-            out_hint->resolution_malformed = 1;
-            out_hint->malformed = 1;
+            sixel_builtin_hdr_mark_resolution_malformed(out_hint);
             break;
         }
         out_hint->pixel_data_offset = cursor;
@@ -2485,8 +2536,7 @@ sixel_builtin_parse_hdr_profile_hint(
     }
 
     if (!out_hint->has_resolution) {
-        out_hint->resolution_malformed = 1;
-        out_hint->malformed = 1;
+        sixel_builtin_hdr_mark_resolution_malformed(out_hint);
     }
 
     return SIXEL_OK;
