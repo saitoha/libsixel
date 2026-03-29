@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper that dispatches to the unified C test runner.
+# TAP wrapper for libwebp options-init fault-injection case.
 
 set -eux
 
@@ -17,14 +17,14 @@ set -v
 
 status=0
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "loader/0024_loader_libwebp_fault_injection" 2>&1) || status=$?
+    "loader/0026_loader_libwebp_fault_options_init" 2>&1) || status=$?
 
 case "${status}" in
     0)
-        echo "ok" 1 - "loader/0024_loader_libwebp_fault_injection"
+        echo "ok" 1 - "loader/0026_loader_libwebp_fault_options_init"
         ;;
     *)
-        echo "not ok" 1 - "loader/0024_loader_libwebp_fault_injection"
+        echo "not ok" 1 - "loader/0026_loader_libwebp_fault_options_init"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         ;;

@@ -491,57 +491,55 @@ cleanup:
 }
 
 static int
-run_libwebp_fault_injection_test(void)
+run_fault_options_init_case(void)
 {
-    int status;
-
-    status = run_demux_fail_case("libwebp fault injection demux");
-    if (status != 0) {
-        return status;
-    }
-
-    status = run_decoder_setup_fail_case(
+    return run_decoder_setup_fail_case(
         WEBP_FI_FAIL_OPTIONS_INIT,
         "load_with_libwebp: WebPAnimDecoderOptionsInit failed.",
         "libwebp fault injection options-init");
-    if (status != 0) {
-        return status;
-    }
+}
 
-    status = run_decoder_setup_fail_case(
+static int
+run_fault_decoder_new_case(void)
+{
+    return run_decoder_setup_fail_case(
         WEBP_FI_FAIL_DECODER_NEW,
         "load_with_libwebp: WebPAnimDecoderNew failed.",
         "libwebp fault injection decoder-new");
-    if (status != 0) {
-        return status;
-    }
+}
 
-    status = run_decoder_setup_fail_case(
+static int
+run_fault_decoder_getinfo_case(void)
+{
+    return run_decoder_setup_fail_case(
         WEBP_FI_FAIL_DECODER_GET_INFO,
         "load_with_libwebp: WebPAnimDecoderGetInfo failed.",
         "libwebp fault injection decoder-getinfo");
-    if (status != 0) {
-        return status;
-    }
+}
 
-    status = run_decoder_setup_fail_case(
+static int
+run_fault_decoder_getnext_case(void)
+{
+    return run_decoder_setup_fail_case(
         WEBP_FI_FAIL_DECODER_GET_NEXT,
         "load_with_libwebp: WebPAnimDecoderGetNext failed.",
         "libwebp fault injection decoder-getnext");
-    if (status != 0) {
-        return status;
-    }
+}
 
-    status = run_static_decode_fail_case(
+static int
+run_fault_static_rgbinto_case(void)
+{
+    return run_static_decode_fail_case(
         WEBP_FI_FAIL_STATIC_RGB_INTO,
         WEBP_IMAGE_PATH,
         "1",
         "load_webp: WebPDecodeRGBInto failed.",
         "libwebp fault injection static-rgbinto");
-    if (status != 0) {
-        return status;
-    }
+}
 
+static int
+run_fault_static_rgbainto_case(void)
+{
     return run_static_decode_fail_case(
         WEBP_FI_FAIL_STATIC_RGBA_INTO,
         "/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp",
@@ -552,13 +550,97 @@ run_libwebp_fault_injection_test(void)
 #endif
 
 int
-test_loader_0024_loader_libwebp_fault_injection(int argc, char **argv)
+test_loader_0024_loader_libwebp_fault_demux(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
 
 #if HAVE_WEBP
-    return run_libwebp_fault_injection_test();
+    return run_demux_fail_case("libwebp fault injection demux");
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0026_loader_libwebp_fault_options_init(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_options_init_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0027_loader_libwebp_fault_decoder_new(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_decoder_new_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0028_loader_libwebp_fault_decoder_getinfo(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_decoder_getinfo_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0029_loader_libwebp_fault_decoder_getnext(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_decoder_getnext_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0032_loader_libwebp_fault_static_rgbinto(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_static_rgbinto_case();
+#else
+    fprintf(stderr, "libwebp loader unavailable\n");
+    return SIXEL_TEST_SKIP;
+#endif
+}
+
+int
+test_loader_0033_loader_libwebp_fault_static_rgbainto(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+
+#if HAVE_WEBP
+    return run_fault_static_rgbainto_case();
 #else
     fprintf(stderr, "libwebp loader unavailable\n");
     return SIXEL_TEST_SKIP;
