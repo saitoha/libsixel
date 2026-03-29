@@ -462,8 +462,8 @@ def build_psd_bytes(
 
 
 def build_psd_layer_only_single_rgb8(planes, *, color_mode=3, alpha_plane=None):
-    if color_mode not in (3, 9):
-        raise RuntimeError("layer-only RGB8 fixture supports color_mode 3/9")
+    if color_mode not in (3, 7, 9):
+        raise RuntimeError("layer-only RGB8 fixture supports color_mode 3/7/9")
     if len(planes) < 3:
         raise RuntimeError("layer-only RGB fixture requires R/G/B planes")
     row_bytes = WIDTH
@@ -519,7 +519,9 @@ def build_psd_layer_only_single_rgb8(planes, *, color_mode=3, alpha_plane=None):
     return bytes(out)
 
 
-def build_psd_layer_only_single_cmyk8(planes, *, alpha_plane=None):
+def build_psd_layer_only_single_cmyk8(planes, *, color_mode=4, alpha_plane=None):
+    if color_mode not in (4, 7):
+        raise RuntimeError("layer-only CMYK8 fixture supports color_mode 4/7")
     if len(planes) < 4:
         raise RuntimeError("layer-only CMYK8 fixture requires C/M/Y/K planes")
     row_bytes = WIDTH
@@ -566,7 +568,7 @@ def build_psd_layer_only_single_cmyk8(planes, *, alpha_plane=None):
     out += struct.pack(">I", HEIGHT)
     out += struct.pack(">I", WIDTH)
     out += struct.pack(">H", 8)
-    out += struct.pack(">H", 4)
+    out += struct.pack(">H", color_mode)
     out += struct.pack(">I", 0)  # color mode data length
     out += struct.pack(">I", 0)  # image resources length
     out += struct.pack(">I", len(layer_and_mask))
@@ -1364,6 +1366,10 @@ def generate(out_dir: pathlib.Path):
             color_mode=7,
         ),
     )
+    write_file(
+        out_dir / "snake16_mode7_rgb8_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb8(rgb8_planes, color_mode=7),
+    )
     write_variants(
         out_dir,
         "snake16_mode7_rgb16",
@@ -1414,6 +1420,10 @@ def generate(out_dir: pathlib.Path):
             depth=8,
             color_mode=7,
         ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_cmyk8(cmyk8_planes, color_mode=7),
     )
     write_variants(
         out_dir,

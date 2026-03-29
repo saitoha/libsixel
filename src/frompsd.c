@@ -196,6 +196,12 @@ sixel_builtin_read_u16be(unsigned char const *p)
     return ((unsigned int)p[0] << 8) | (unsigned int)p[1];
 }
 
+static uint16_t
+sixel_builtin_read_u16be_as_u16(unsigned char const *p)
+{
+    return (uint16_t)sixel_builtin_read_u16be(p);
+}
+
 static void
 sixel_builtin_write_u16be(unsigned char *p, unsigned int value)
 {
@@ -553,7 +559,10 @@ sixel_builtin_validate_psd_info(
                   (info->color_mode == 9u && info->channels >= 3u) ||
                   (info->color_mode == 4u &&
                    info->depth == 8u &&
-                   info->channels >= 4u)))) {
+                   info->channels >= 4u) ||
+                  (info->color_mode == 7u &&
+                   info->depth == 8u &&
+                   (info->channels == 3u || info->channels == 4u))))) {
                 allow_layer_fallback = 1;
             } else {
                 sixel_builtin_psd_set_message(
@@ -1102,7 +1111,8 @@ sixel_builtin_psd_decode_layer_channel_16bit(
             return 0;
         }
         for (i = 0u; i < pixel_count; ++i) {
-            dst[i] = sixel_builtin_read_u16be(data + payload_offset + i * 2u);
+            dst[i] = sixel_builtin_read_u16be_as_u16(
+                data + payload_offset + i * 2u);
         }
         return 1;
     }
@@ -1138,7 +1148,7 @@ sixel_builtin_psd_decode_layer_channel_16bit(
     }
 
     for (i = 0u; i < pixel_count; ++i) {
-        dst[i] = sixel_builtin_read_u16be(dst_bytes + i * 2u);
+        dst[i] = sixel_builtin_read_u16be_as_u16(dst_bytes + i * 2u);
     }
 
     return 1;
@@ -3243,7 +3253,9 @@ sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_8bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode != 4u || info->depth != 8u || info->channels < 4u) {
+    if ((info->color_mode != 4u && info->color_mode != 7u) ||
+        info->depth != 8u ||
+        info->channels < 4u) {
         return SIXEL_BAD_INPUT;
     }
     if (info->image_data_offset < chunk->size) {
@@ -3747,7 +3759,9 @@ sixel_builtin_decode_psd_cmyk_8bit(
     if (pixel_count > SIZE_MAX / 3u) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->color_mode == 4u && info->image_data_offset >= chunk->size) {
+    if ((info->color_mode == 4u ||
+         (info->color_mode == 7u && info->channels == 4u)) &&
+        info->image_data_offset >= chunk->size) {
         return sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_8bit(
             chunk,
             info,
@@ -6478,7 +6492,8 @@ sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode == 3u) {
+    if (info->color_mode == 3u ||
+        (info->color_mode == 7u && info->channels == 3u)) {
         decode_rgb = 1;
         min_channels = 3u;
     } else if (info->color_mode == 1u || info->color_mode == 8u) {

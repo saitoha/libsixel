@@ -1020,7 +1020,8 @@ Builtin PSD Multichannel (mode 7) policy:
 | `mode=7`, `channels=3`, `depth=8/16/32` | decode via RGB path (`3ch->RGB`) |
 | `mode=7`, `channels=4`, `depth=8/16/32` | decode via CMYK path (`4ch->CMYK`) |
 | `mode=7`, `channels!=3/4` or unsupported depth | deterministic unsupported (`builtin PSD: unsupported Multichannel channel count ...` / bit-depth trace) |
-| layer-only `mode=7` PSD without merged/composite image | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
+| layer-only `mode=7` PSD without merged/composite image (`3ch/4ch`, 8-bit, single full-canvas layer) | decode via minimal layer fallback (`3ch->RGB8`, `4ch->CMYK8`) |
+| layer-only `mode=7` PSD outside fallback scope/layout | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image` / `builtin PSD: unsupported layer fallback layout`) |
 
 Builtin PSD missing merged/composite image policy:
 

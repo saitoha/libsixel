@@ -17,11 +17,11 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_mode7_cmyk8_missing_c
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: unsupported file without merged/composite image"*)
-        echo "ok" 1 - "mode7 CMYK8 missing-composite marker is rejected as unsupported"
+    *"builtin PSD: unsupported layer fallback layout"*)
+        echo "ok" 1 - "mode7 CMYK8 missing-composite marker is rejected as unsupported layout"
         ;;
     *)
-        echo "not ok" 1 - "mode7 CMYK8 missing-composite unsupported trace is missing"
+        echo "not ok" 1 - "mode7 CMYK8 missing-composite unsupported-layout trace is missing"
         exit 0
         ;;
 esac
