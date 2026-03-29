@@ -41,12 +41,20 @@
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif  /* HAVE_STDLIB_H */
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif  /* HAVE_STDINT_H */
 #if HAVE_STRING_H
 #include <string.h>
 #endif  /* HAVE_STRING_H */
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif  /* HAVE_SYS_STAT_H */
+
+/* Keep SIZE_MAX available even on strict C99 environments. */
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t)-1)
+#endif
 
 #include <sixel.h>
 
