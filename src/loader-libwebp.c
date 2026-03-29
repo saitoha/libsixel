@@ -745,8 +745,82 @@ webp_resolve_background_linear(float bg_linear[3], unsigned char *bgcolor)
 }
 
 static SIXELSTATUS
+webp_roundtrip_target_to_linear(float *pixels, size_t pixel_count)
+{
+    SIXELSTATUS status;
+    size_t size_bytes;
+    int target_colorspace;
+
+    status = SIXEL_OK;
+    size_bytes = 0u;
+    target_colorspace = SIXEL_COLORSPACE_LINEAR;
+    if (pixels == NULL || pixel_count == 0u) {
+        return SIXEL_OK;
+    }
+
+    target_colorspace = loader_cms_target_colorspace();
+    if (target_colorspace == SIXEL_COLORSPACE_LINEAR) {
+        return SIXEL_OK;
+    }
+    if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    size_bytes = pixel_count * 3u * sizeof(float);
+
+    status = sixel_helper_convert_colorspace(
+        (unsigned char *)pixels,
+        size_bytes,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        target_colorspace);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return sixel_helper_convert_colorspace(
+        (unsigned char *)pixels,
+        size_bytes,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        target_colorspace,
+        SIXEL_COLORSPACE_LINEAR);
+}
+
+static SIXELSTATUS
+webp_roundtrip_background_to_linear(float bg_linear[3])
+{
+    SIXELSTATUS status;
+    float bg_pixel[3];
+    int channel;
+
+    status = SIXEL_OK;
+    bg_pixel[0] = 0.0f;
+    bg_pixel[1] = 0.0f;
+    bg_pixel[2] = 0.0f;
+    channel = 0;
+    if (bg_linear == NULL) {
+        return SIXEL_OK;
+    }
+
+    for (channel = 0; channel < 3; ++channel) {
+        bg_pixel[channel] = webp_clamp_unit_float(bg_linear[channel]);
+    }
+
+    status = webp_roundtrip_target_to_linear(bg_pixel, 1u);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        bg_linear[channel] = webp_clamp_unit_float(bg_pixel[channel]);
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 webp_blend_rgba_background_linear(sixel_frame_t *frame,
                                   unsigned char *bgcolor,
+                                  int enable_cms,
+                                  int cms_converted,
                                   sixel_allocator_t *allocator)
 {
     unsigned char *src;
@@ -759,6 +833,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     float alpha;
     float bg_linear[3];
     int has_transparency;
+    SIXELSTATUS status;
 
     src = NULL;
     dst = NULL;
@@ -772,6 +847,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     bg_linear[1] = 0.0f;
     bg_linear[2] = 0.0f;
     has_transparency = 0;
+    status = SIXEL_OK;
 
     if (frame == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -815,6 +891,12 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     }
 
     webp_resolve_background_linear(bg_linear, bgcolor);
+    if (enable_cms && cms_converted) {
+        status = webp_roundtrip_background_to_linear(bg_linear);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
     for (i = 0u; i < pixel_count; ++i) {
         src_offset = i * 4u;
         dst_offset = i * 3u;
@@ -1050,6 +1132,12 @@ webp_decode_lossy_to_float32(unsigned char **result,
 
     if (has_transparency) {
         webp_resolve_background_linear(bg_linear, bgcolor);
+        if (enable_cms && cms_converted) {
+            status = webp_roundtrip_background_to_linear(bg_linear);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 offset = ((size_t)y * (size_t)width + (size_t)x) * 3u;
@@ -2248,7 +2336,11 @@ webp_finalize_frame_output(sixel_frame_t *frame,
         frame->transparent = -1;
         frame->alpha_zero_is_transparent = 1;
     } else {
-        status = webp_blend_rgba_background_linear(frame, bgcolor, allocator);
+        status = webp_blend_rgba_background_linear(frame,
+                                                   bgcolor,
+                                                   enable_cms,
+                                                   cms_converted,
+                                                   allocator);
         if (SIXEL_FAILED(status)) {
             return status;
         }
