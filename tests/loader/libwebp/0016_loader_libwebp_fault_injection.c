@@ -16,7 +16,9 @@ typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_OPTIONS_INIT,
     WEBP_FI_FAIL_DECODER_NEW,
     WEBP_FI_FAIL_DECODER_GET_INFO,
-    WEBP_FI_FAIL_DECODER_GET_NEXT
+    WEBP_FI_FAIL_DECODER_GET_NEXT,
+    WEBP_FI_FAIL_STATIC_RGB_INTO,
+    WEBP_FI_FAIL_STATIC_RGBA_INTO
 } webp_fi_failpoint_t;
 
 static webp_fi_failpoint_t g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
@@ -33,6 +35,18 @@ static int (*g_real_WebPAnimDecoderGetNext)(WebPAnimDecoder *,
                                             uint8_t **,
                                             int *) =
     WebPAnimDecoderGetNext;
+static uint8_t *(*g_real_WebPDecodeRGBInto)(uint8_t const *,
+                                            size_t,
+                                            uint8_t *,
+                                            size_t,
+                                            int) =
+    WebPDecodeRGBInto;
+static uint8_t *(*g_real_WebPDecodeRGBAInto)(uint8_t const *,
+                                             size_t,
+                                             uint8_t *,
+                                             size_t,
+                                             int) =
+    WebPDecodeRGBAInto;
 
 static int
 webpfi_WebPAnimDecoderOptionsInit(WebPAnimDecoderOptions *options)
@@ -74,10 +88,46 @@ webpfi_WebPAnimDecoderGetNext(WebPAnimDecoder *decoder,
     return g_real_WebPAnimDecoderGetNext(decoder, buf_ptr, timestamp);
 }
 
+static uint8_t *
+webpfi_WebPDecodeRGBInto(uint8_t const *data,
+                         size_t data_size,
+                         uint8_t *output_buffer,
+                         size_t output_buffer_size,
+                         int output_stride)
+{
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_STATIC_RGB_INTO) {
+        return NULL;
+    }
+    return g_real_WebPDecodeRGBInto(data,
+                                    data_size,
+                                    output_buffer,
+                                    output_buffer_size,
+                                    output_stride);
+}
+
+static uint8_t *
+webpfi_WebPDecodeRGBAInto(uint8_t const *data,
+                          size_t data_size,
+                          uint8_t *output_buffer,
+                          size_t output_buffer_size,
+                          int output_stride)
+{
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_STATIC_RGBA_INTO) {
+        return NULL;
+    }
+    return g_real_WebPDecodeRGBAInto(data,
+                                     data_size,
+                                     output_buffer,
+                                     output_buffer_size,
+                                     output_stride);
+}
+
 #define WebPAnimDecoderOptionsInit webpfi_WebPAnimDecoderOptionsInit
 #define WebPAnimDecoderNew webpfi_WebPAnimDecoderNew
 #define WebPAnimDecoderGetInfo webpfi_WebPAnimDecoderGetInfo
 #define WebPAnimDecoderGetNext webpfi_WebPAnimDecoderGetNext
+#define WebPDecodeRGBInto webpfi_WebPDecodeRGBInto
+#define WebPDecodeRGBAInto webpfi_WebPDecodeRGBAInto
 
 /*
  * Avoid global symbol collisions with the linked libsixel objects while
@@ -106,6 +156,8 @@ webpfi_WebPAnimDecoderGetNext(WebPAnimDecoder *decoder,
 #undef WebPAnimDecoderNew
 #undef WebPAnimDecoderGetInfo
 #undef WebPAnimDecoderGetNext
+#undef WebPDecodeRGBInto
+#undef WebPDecodeRGBAInto
 
 static SIXELSTATUS
 capture_noop_frame(sixel_frame_t *frame, void *data)
@@ -211,6 +263,129 @@ cleanup:
 }
 
 static int
+run_static_decode_fail_case(webp_fi_failpoint_t failpoint,
+                            char const *image_relative_path,
+                            char const *force_rgb_env_value,
+                            char const *expected_message,
+                            char const *label)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    unsigned char *pixels;
+    int width;
+    int height;
+    int pixelformat;
+    int cms_converted;
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    pixels = NULL;
+    width = 0;
+    height = 0;
+    pixelformat = 0;
+    cms_converted = 0;
+    message = NULL;
+    result = 1;
+
+    source_root = getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (build_image_path(source_root,
+                         image_relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator init failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read input chunk\n", label);
+        goto cleanup;
+    }
+
+    if (force_rgb_env_value == NULL) {
+        force_rgb_env_value = "0";
+    }
+    if (sixel_compat_setenv("SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
+                            force_rgb_env_value) != 0) {
+        fprintf(stderr, "%s: failed to configure force-rgb env\n", label);
+        goto cleanup;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    g_webp_fi_failpoint = failpoint;
+    status = load_webp(&pixels,
+                       chunk->buffer,
+                       chunk->size,
+                       &width,
+                       &height,
+                       &pixelformat,
+                       0,
+                       NULL,
+                       0u,
+                       &cms_converted,
+                       NULL,
+                       allocator,
+                       NULL);
+    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+
+    if (status != SIXEL_BAD_INPUT) {
+        fprintf(stderr,
+                "%s: expected SIXEL_BAD_INPUT, got %d\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    message = sixel_helper_get_additional_message();
+    if (message == NULL || strstr(message, expected_message) == NULL) {
+        fprintf(stderr,
+                "%s: missing diagnostic '%s' (actual='%s')\n",
+                label,
+                expected_message,
+                message != NULL ? message : "(null)");
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    (void)sixel_compat_setenv("SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
+                              "0");
+    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    if (pixels != NULL) {
+        sixel_allocator_free(allocator, pixels);
+    }
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
 run_libwebp_fault_injection_test(void)
 {
     int status;
@@ -239,10 +414,30 @@ run_libwebp_fault_injection_test(void)
         return status;
     }
 
-    return run_decoder_setup_fail_case(
+    status = run_decoder_setup_fail_case(
         WEBP_FI_FAIL_DECODER_GET_NEXT,
         "load_with_libwebp: WebPAnimDecoderGetNext failed.",
         "libwebp fault injection decoder-getnext");
+    if (status != 0) {
+        return status;
+    }
+
+    status = run_static_decode_fail_case(
+        WEBP_FI_FAIL_STATIC_RGB_INTO,
+        WEBP_IMAGE_PATH,
+        "1",
+        "load_webp: WebPDecodeRGBInto failed.",
+        "libwebp fault injection static-rgbinto");
+    if (status != 0) {
+        return status;
+    }
+
+    return run_static_decode_fail_case(
+        WEBP_FI_FAIL_STATIC_RGBA_INTO,
+        "/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp",
+        "0",
+        "load_webp: WebPDecodeRGBAInto failed.",
+        "libwebp fault injection static-rgbainto");
 }
 #endif
 
