@@ -142,6 +142,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 	loader/librsvg/0023_loader_librsvg_pixelformat.c \
 	loader/librsvg/0025_loader_librsvg_decode_mode.c \
+	loader/0050_loader_osc11_colorspec_parser.c \
+	loader/0051_loader_osc11_response_parser.c \
+	loader/0052_loader_osc11_query_control.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	diagnostics/probe/0001_probe_parse.c \
@@ -189,6 +192,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/libpng/test_runner-0022_loader_libpng_indexed_png_reqcolors_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0050_loader_osc11_colorspec_parser.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0051_loader_osc11_response_parser.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0052_loader_osc11_query_control.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
@@ -288,6 +294,9 @@ am__depfiles_remade =  \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po \
+	loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Po \
+	loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Po \
+	loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
@@ -985,6 +994,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -1059,6 +1071,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0023_loader_librsvg_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/librsvg/0025_loader_librsvg_decode_mode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0050_loader_osc11_colorspec_parser.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0051_loader_osc11_response_parser.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0052_loader_osc11_query_control.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -1332,6 +1347,18 @@ loader/librsvg/test_runner-0023_loader_librsvg_pixelformat.$(OBJEXT):  \
 loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.$(OBJEXT):  \
 	loader/librsvg/$(am__dirstamp) \
 	loader/librsvg/$(DEPDIR)/$(am__dirstamp)
+loader/$(am__dirstamp):
+	@$(MKDIR_P) loader
+	@: >>loader/$(am__dirstamp)
+loader/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/$(DEPDIR)
+	@: >>loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0050_loader_osc11_colorspec_parser.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0051_loader_osc11_response_parser.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0052_loader_osc11_query_control.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1421,6 +1448,7 @@ mostlyclean-compile:
 	-rm -f cli/aborttrace/*.$(OBJEXT)
 	-rm -f diagnostics/probe/*.$(OBJEXT)
 	-rm -f extension/gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f loader/*.$(OBJEXT)
 	-rm -f loader/builtin/*.$(OBJEXT)
 	-rm -f loader/coregraphics/*.$(OBJEXT)
 	-rm -f loader/gd/*.$(OBJEXT)
@@ -1455,6 +1483,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
@@ -1976,6 +2007,48 @@ loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj: loader/librsvg/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/librsvg/0025_loader_librsvg_decode_mode.c' object='loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/librsvg/test_runner-0025_loader_librsvg_decode_mode.obj `if test -f 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; then $(CYGPATH_W) 'loader/librsvg/0025_loader_librsvg_decode_mode.c'; else $(CYGPATH_W) '$(srcdir)/loader/librsvg/0025_loader_librsvg_decode_mode.c'; fi`
+
+loader/test_runner-0050_loader_osc11_colorspec_parser.o: loader/0050_loader_osc11_colorspec_parser.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0050_loader_osc11_colorspec_parser.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Tpo -c -o loader/test_runner-0050_loader_osc11_colorspec_parser.o `test -f 'loader/0050_loader_osc11_colorspec_parser.c' || echo '$(srcdir)/'`loader/0050_loader_osc11_colorspec_parser.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Tpo loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0050_loader_osc11_colorspec_parser.c' object='loader/test_runner-0050_loader_osc11_colorspec_parser.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0050_loader_osc11_colorspec_parser.o `test -f 'loader/0050_loader_osc11_colorspec_parser.c' || echo '$(srcdir)/'`loader/0050_loader_osc11_colorspec_parser.c
+
+loader/test_runner-0050_loader_osc11_colorspec_parser.obj: loader/0050_loader_osc11_colorspec_parser.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0050_loader_osc11_colorspec_parser.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Tpo -c -o loader/test_runner-0050_loader_osc11_colorspec_parser.obj `if test -f 'loader/0050_loader_osc11_colorspec_parser.c'; then $(CYGPATH_W) 'loader/0050_loader_osc11_colorspec_parser.c'; else $(CYGPATH_W) '$(srcdir)/loader/0050_loader_osc11_colorspec_parser.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Tpo loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0050_loader_osc11_colorspec_parser.c' object='loader/test_runner-0050_loader_osc11_colorspec_parser.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0050_loader_osc11_colorspec_parser.obj `if test -f 'loader/0050_loader_osc11_colorspec_parser.c'; then $(CYGPATH_W) 'loader/0050_loader_osc11_colorspec_parser.c'; else $(CYGPATH_W) '$(srcdir)/loader/0050_loader_osc11_colorspec_parser.c'; fi`
+
+loader/test_runner-0051_loader_osc11_response_parser.o: loader/0051_loader_osc11_response_parser.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0051_loader_osc11_response_parser.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Tpo -c -o loader/test_runner-0051_loader_osc11_response_parser.o `test -f 'loader/0051_loader_osc11_response_parser.c' || echo '$(srcdir)/'`loader/0051_loader_osc11_response_parser.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Tpo loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0051_loader_osc11_response_parser.c' object='loader/test_runner-0051_loader_osc11_response_parser.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0051_loader_osc11_response_parser.o `test -f 'loader/0051_loader_osc11_response_parser.c' || echo '$(srcdir)/'`loader/0051_loader_osc11_response_parser.c
+
+loader/test_runner-0051_loader_osc11_response_parser.obj: loader/0051_loader_osc11_response_parser.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0051_loader_osc11_response_parser.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Tpo -c -o loader/test_runner-0051_loader_osc11_response_parser.obj `if test -f 'loader/0051_loader_osc11_response_parser.c'; then $(CYGPATH_W) 'loader/0051_loader_osc11_response_parser.c'; else $(CYGPATH_W) '$(srcdir)/loader/0051_loader_osc11_response_parser.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Tpo loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0051_loader_osc11_response_parser.c' object='loader/test_runner-0051_loader_osc11_response_parser.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0051_loader_osc11_response_parser.obj `if test -f 'loader/0051_loader_osc11_response_parser.c'; then $(CYGPATH_W) 'loader/0051_loader_osc11_response_parser.c'; else $(CYGPATH_W) '$(srcdir)/loader/0051_loader_osc11_response_parser.c'; fi`
+
+loader/test_runner-0052_loader_osc11_query_control.o: loader/0052_loader_osc11_query_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0052_loader_osc11_query_control.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Tpo -c -o loader/test_runner-0052_loader_osc11_query_control.o `test -f 'loader/0052_loader_osc11_query_control.c' || echo '$(srcdir)/'`loader/0052_loader_osc11_query_control.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Tpo loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0052_loader_osc11_query_control.c' object='loader/test_runner-0052_loader_osc11_query_control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0052_loader_osc11_query_control.o `test -f 'loader/0052_loader_osc11_query_control.c' || echo '$(srcdir)/'`loader/0052_loader_osc11_query_control.c
+
+loader/test_runner-0052_loader_osc11_query_control.obj: loader/0052_loader_osc11_query_control.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0052_loader_osc11_query_control.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Tpo -c -o loader/test_runner-0052_loader_osc11_query_control.obj `if test -f 'loader/0052_loader_osc11_query_control.c'; then $(CYGPATH_W) 'loader/0052_loader_osc11_query_control.c'; else $(CYGPATH_W) '$(srcdir)/loader/0052_loader_osc11_query_control.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Tpo loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0052_loader_osc11_query_control.c' object='loader/test_runner-0052_loader_osc11_query_control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0052_loader_osc11_query_control.obj `if test -f 'loader/0052_loader_osc11_query_control.c'; then $(CYGPATH_W) 'loader/0052_loader_osc11_query_control.c'; else $(CYGPATH_W) '$(srcdir)/loader/0052_loader_osc11_query_control.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -2501,6 +2574,8 @@ distclean-generic:
 	-$(am__rm_f) diagnostics/probe/$(am__dirstamp)
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) loader/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/$(am__dirstamp)
 	-$(am__rm_f) loader/builtin/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/builtin/$(am__dirstamp)
 	-$(am__rm_f) loader/coregraphics/$(DEPDIR)/$(am__dirstamp)
@@ -2555,6 +2630,9 @@ distclean: distclean-am
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
@@ -2646,6 +2724,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0005_context_free.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0006_loader_module.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0050_loader_osc11_colorspec_parser.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0051_loader_osc11_response_parser.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0052_loader_osc11_query_control.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
