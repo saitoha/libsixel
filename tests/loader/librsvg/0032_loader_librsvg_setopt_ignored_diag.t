@@ -31,7 +31,7 @@ case "${msg}" in
         ;;
 esac
 
-test -n "${rc-}" && {
+test "${rc-}" -ne 0 && {
     echo "not ok 1 - loader/0023_loader_librsvg_pixelformat setopt_diag"
     exit 0
 }
