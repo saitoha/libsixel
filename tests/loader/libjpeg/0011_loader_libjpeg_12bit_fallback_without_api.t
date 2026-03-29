@@ -24,6 +24,7 @@ set -v
 
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit.jpg"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-jpeg-12bit-fallback.six"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L libjpeg,builtin! \
     "${input_jpeg}" -o "${output_sixel}" 2>&1 || true)

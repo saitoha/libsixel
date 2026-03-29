@@ -1103,6 +1103,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-runner-dllexport.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-test-plan-single.sh \
+    _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
@@ -2727,6 +2728,7 @@ uninstall-am:
 	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-test-plan-single \
+	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
@@ -2743,6 +2745,7 @@ staticcheck: \
 	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-test-plan-single \
+	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
@@ -2835,6 +2838,16 @@ staticcheck-test-plan-single:
 		--enable-hard-errors \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-plan-single.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-artifact-local-dir-mkdir:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-artifact-local-dir-mkdir" \
+		--log-file staticcheck-artifact-local-dir-mkdir.log \
+		--trs-file staticcheck-artifact-local-dir-mkdir.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-binding-loader-setopt-sync:
