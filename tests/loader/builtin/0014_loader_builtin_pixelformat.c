@@ -14,6 +14,7 @@
  * - PSD RGB16/RGB32 callbacks keep float precision (RGBFLOAT32)
  * - PSD CMYK32/Lab32 callbacks keep float precision family
  * - PSD RGB8+alpha callback stays RGB888 (mask side-channel handles alpha)
+ * - PIC RGBA callback keeps alpha-zero mask and applies bgcolor blend
  */
 
 #include <math.h>
@@ -42,6 +43,161 @@ typedef struct builtin_loader_env_dispatch_group {
     builtin_loader_env_dispatch_entry_t const *entries;
     size_t entry_count;
 } builtin_loader_env_dispatch_group_t;
+
+typedef struct pic_rgba_alpha_probe_context {
+    int callback_count;
+    int pixelformat;
+    int width;
+    int height;
+    int alpha_zero_is_transparent;
+    int has_transparent_mask;
+    size_t transparent_mask_size;
+    unsigned char pixels[16];
+    unsigned char transparent_mask[4];
+} pic_rgba_alpha_probe_context_t;
+
+static SIXELSTATUS
+capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
+{
+    pic_rgba_alpha_probe_context_t *context;
+
+    context = (pic_rgba_alpha_probe_context_t *)data;
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->callback_count += 1;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
+    context->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    context->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
+    context->transparent_mask_size = frame->transparent_mask_size;
+
+    if (frame->pixels.u8ptr != NULL &&
+        context->pixelformat == SIXEL_PIXELFORMAT_RGBA8888 &&
+        context->width == 2 &&
+        context->height == 2) {
+        memcpy(context->pixels, frame->pixels.u8ptr, sizeof(context->pixels));
+    }
+    if (frame->transparent_mask != NULL && frame->transparent_mask_size >= 4u) {
+        memcpy(context->transparent_mask,
+               frame->transparent_mask,
+               sizeof(context->transparent_mask));
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
+{
+    static unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
+    static unsigned char const expected_first_three_pixels[12] = {
+        0xffu, 0x00u, 0x00u, 0xffu,
+        0x7eu, 0xfeu, 0x7eu, 0xffu,
+        0xbeu, 0xbeu, 0xfeu, 0xffu
+    };
+    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
+    builtin_loader_probe_options_t options;
+    pic_rgba_alpha_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    result = 1;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_white;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader pic rgba alpha mask/bgcolor numeric",
+        "/tests/data/inputs/formats/pic_valid_raw_rgba_2x2.pic",
+        &options,
+        capture_pic_rgba_alpha_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.alpha_zero_is_transparent != 1) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "alpha_zero_is_transparent mismatch (%d)\n",
+                probe.alpha_zero_is_transparent);
+        return 1;
+    }
+    if (probe.has_transparent_mask != 1 || probe.transparent_mask_size < 4u) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "transparent mask missing (%d, %zu)\n",
+                probe.has_transparent_mask,
+                probe.transparent_mask_size);
+        return 1;
+    }
+    if (memcmp(probe.transparent_mask,
+               expected_mask,
+               sizeof(expected_mask)) != 0) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "transparent mask mismatch\n");
+        return 1;
+    }
+    if (memcmp(probe.pixels,
+               expected_first_three_pixels,
+               sizeof(expected_first_three_pixels)) != 0) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "unexpected semi-alpha composite values\n");
+        return 1;
+    }
+    if (probe.pixels[15] != 0u) {
+        fprintf(stderr,
+                "builtin loader pic rgba alpha mask/bgcolor numeric: "
+                "alpha-zero pixel did not stay transparent\n");
+        return 1;
+    }
+
+    return 0;
+}
 
 static int
 run_builtin_loader_env_dispatch(
@@ -123,6 +279,14 @@ run_builtin_loader_test(void)
           run_builtin_loader_hdr_header_exposure_multi_numeric_test },
         { "SIXEL_TEST_HDR_NUMERIC_HEADER_EXPOSURE_DISABLED",
           run_builtin_loader_hdr_header_exposure_disabled_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_XYZE",
+          run_builtin_loader_hdr_xyze_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_COLORCORR_SINGLE",
+          run_builtin_loader_hdr_colorcorr_single_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_COLORCORR_MULTI",
+          run_builtin_loader_hdr_colorcorr_multi_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_ORIENTATION_ALL",
+          run_builtin_loader_hdr_orientation_numeric_test },
         { "SIXEL_TEST_HDR_NUMERIC_GAMMA_INVALID_PRIMARIES_VALID",
           run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test },
         { "SIXEL_TEST_HDR_NUMERIC_PRIMARIES_INVALID_GAMMA_VALID",
@@ -134,7 +298,9 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV",
           run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test },
         { "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS",
-          run_builtin_loader_hdr_duplicate_header_metadata_numeric_test }
+          run_builtin_loader_hdr_duplicate_header_metadata_numeric_test },
+        { "SIXEL_TEST_HDR_NUMERIC_PIXASPECT_VIEW_METADATA",
+          run_builtin_loader_hdr_pixaspect_view_metadata_numeric_test }
     };
     static builtin_loader_env_dispatch_entry_t const gif_env_dispatch[] = {
         { "SIXEL_TEST_GIF_LOOP_DISABLE_LOOP0_ONCE",
@@ -158,7 +324,9 @@ run_builtin_loader_test(void)
     };
     static builtin_loader_env_dispatch_entry_t const psd_env_dispatch[] = {
         { "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE",
-          run_builtin_loader_psd_validate_defensive_test }
+          run_builtin_loader_psd_validate_defensive_test },
+        { "SIXEL_TEST_PIC_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
+          run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test }
     };
     static builtin_loader_env_dispatch_group_t const env_dispatch_groups[] = {
         {

@@ -652,6 +652,8 @@ typedef struct builtin_loader_probe_options {
     int require_static;
     int use_palette;
     int reqcolors;
+    int set_bgcolor;
+    unsigned char const *bgcolor;
     int set_loop_control;
     int loop_control;
     int set_cms_engine;
@@ -677,6 +679,8 @@ run_builtin_loader_probe_case(char const *label,
     int require_static;
     int use_palette;
     int reqcolors;
+    int set_bgcolor;
+    unsigned char const *bgcolor;
     int loop_control;
     int cms_engine;
     int result;
@@ -690,6 +694,8 @@ run_builtin_loader_probe_case(char const *label,
     require_static = 0;
     use_palette = 0;
     reqcolors = 256;
+    set_bgcolor = 0;
+    bgcolor = NULL;
     loop_control = SIXEL_LOOP_AUTO;
     cms_engine = SIXEL_CMS_ENGINE_NONE;
     result = 1;
@@ -734,6 +740,8 @@ run_builtin_loader_probe_case(char const *label,
     require_static = options->require_static;
     use_palette = options->use_palette;
     reqcolors = options->reqcolors;
+    set_bgcolor = options->set_bgcolor;
+    bgcolor = options->bgcolor;
     loop_control = options->loop_control;
     cms_engine = options->cms_engine;
 
@@ -754,6 +762,14 @@ run_builtin_loader_probe_case(char const *label,
                                            &reqcolors);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
+    }
+    if (set_bgcolor != 0) {
+        status = sixel_loader_component_setopt(component,
+                                               SIXEL_LOADER_OPTION_BGCOLOR,
+                                               bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
     }
     if (options->set_loop_control != 0) {
         status = sixel_loader_component_setopt(component,
@@ -791,4 +807,3 @@ cleanup:
     sixel_allocator_unref(allocator);
     return result;
 }
-
