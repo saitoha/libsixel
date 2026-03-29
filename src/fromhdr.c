@@ -420,8 +420,10 @@ static int
 sixel_builtin_hdr_parse_resolution_line(char const *line,
                                         sixel_builtin_hdr_profile_hint_t *hint)
 {
-    char token1[3];
-    char token2[3];
+    char axis1_token_sign;
+    char axis1_token_axis;
+    char axis2_token_sign;
+    char axis2_token_axis;
     char tail;
     int matched;
     int axis1_len;
@@ -433,8 +435,10 @@ sixel_builtin_hdr_parse_resolution_line(char const *line,
     int width;
     int height;
 
-    token1[0] = '\0';
-    token2[0] = '\0';
+    axis1_token_sign = '\0';
+    axis1_token_axis = '\0';
+    axis2_token_sign = '\0';
+    axis2_token_axis = '\0';
     tail = '\0';
     matched = 0;
     axis1_len = 0;
@@ -450,54 +454,48 @@ sixel_builtin_hdr_parse_resolution_line(char const *line,
         return 0;
     }
 
-    matched = sscanf(line, " %2s %d %2s %d %c",
-                     token1,
-                     &axis1_len,
-                     token2,
-                     &axis2_len,
-                     &tail);
-    if (matched != 4) {
-        return 0;
-    }
-    if (token1[0] == '\0' ||
-        token1[1] == '\0' ||
-        token1[2] != '\0' ||
-        token2[0] == '\0' ||
-        token2[1] == '\0' ||
-        token2[2] != '\0') {
+    matched = sixel_compat_sscanf(line, " %c%c %d %c%c %d %c",
+                                  &axis1_token_sign,
+                                  &axis1_token_axis,
+                                  &axis1_len,
+                                  &axis2_token_sign,
+                                  &axis2_token_axis,
+                                  &axis2_len,
+                                  &tail);
+    if (matched != 6) {
         return 0;
     }
     if (axis1_len <= 0 || axis2_len <= 0) {
         return 0;
     }
 
-    if (token1[0] == '+') {
+    if (axis1_token_sign == '+') {
         axis1_sign = 1;
-    } else if (token1[0] == '-') {
+    } else if (axis1_token_sign == '-') {
         axis1_sign = -1;
     } else {
         return 0;
     }
 
-    if (token2[0] == '+') {
+    if (axis2_token_sign == '+') {
         axis2_sign = 1;
-    } else if (token2[0] == '-') {
+    } else if (axis2_token_sign == '-') {
         axis2_sign = -1;
     } else {
         return 0;
     }
 
-    if (token1[1] == 'X' || token1[1] == 'x') {
+    if (axis1_token_axis == 'X' || axis1_token_axis == 'x') {
         axis1 = SIXEL_BUILTIN_HDR_AXIS_X;
-    } else if (token1[1] == 'Y' || token1[1] == 'y') {
+    } else if (axis1_token_axis == 'Y' || axis1_token_axis == 'y') {
         axis1 = SIXEL_BUILTIN_HDR_AXIS_Y;
     } else {
         return 0;
     }
 
-    if (token2[1] == 'X' || token2[1] == 'x') {
+    if (axis2_token_axis == 'X' || axis2_token_axis == 'x') {
         axis2 = SIXEL_BUILTIN_HDR_AXIS_X;
-    } else if (token2[1] == 'Y' || token2[1] == 'y') {
+    } else if (axis2_token_axis == 'Y' || axis2_token_axis == 'y') {
         axis2 = SIXEL_BUILTIN_HDR_AXIS_Y;
     } else {
         return 0;
