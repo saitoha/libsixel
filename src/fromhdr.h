@@ -29,15 +29,6 @@
 
 #include "chunk.h"
 
-SIXELSTATUS
-sixel_builtin_decode_hdr_float32(
-    sixel_chunk_t const *chunk,
-    unsigned char **ppixels,
-    int *pwidth,
-    int *pheight,
-    int *ppixelformat,
-    int *pcolorspace);
-
 /* Decode HDR into frame storage and apply builtin HDR postprocess controls. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_builtin_load_hdr_frame(
