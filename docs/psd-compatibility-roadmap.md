@@ -88,6 +88,8 @@ Key points used by this roadmap:
   - CMYK-mapped mode7 ICC trace coverage (valid profile no-false-failure,
     invalid profile, and malformed resource section), including
     missing-composite multi-layer normal path for `4ch->CMYK8/16/32`
+    (`CMYK8` bad-profile failure trace, `CMYK16/32` bad-profile decode without
+    malformed-resource misclassification, malformed-resource trace for all).
   - mode7 missing-composite policy traces across mapped depth variants
     (`RGB8/16/32`, `CMYK8/16/32`)
   - multi-layer missing-composite coverage for RGB8:
