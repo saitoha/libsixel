@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify layer-only RGB16 PSD is deterministically rejected as unsupported
-# when merged/composite image data is missing.
+# Verify malformed layer-marker RGB16 PSD is deterministically rejected
+# by layer-fallback layout checks.
 
 set -eux
 
@@ -16,11 +16,11 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_rgb16_missing_composi
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: unsupported file without merged/composite image"*)
-        echo "ok" 1 - "layer-only RGB16 PSD is rejected as unsupported outside fallback scope"
+    *"builtin PSD: unsupported layer fallback layout"*)
+        echo "ok" 1 - "RGB16 marker fixture is rejected by layer-fallback layout checks"
         ;;
     *)
-        echo "not ok" 1 - "rgb16 missing-composite unsupported trace is missing"
+        echo "not ok" 1 - "rgb16 layer-fallback layout unsupported trace is missing"
         exit 0
         ;;
 esac

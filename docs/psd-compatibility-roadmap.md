@@ -57,7 +57,7 @@ Key points used by this roadmap:
   - Multichannel bit depths other than `8/16/32`
   - Bitmap 1-bit with ZIP+Prediction
 - Composite-missing policy:
-  - Minimal fallback is supported for 8-bit RGB/Gray/Duotone layer-only PSDs:
+  - Minimal fallback is supported for 8/16-bit RGB/Gray/Duotone layer-only PSDs:
     single full-canvas layer with decodable base-color channels.
   - Layer-only PSD layouts outside that minimal fallback surface a deterministic
     unsupported trace (`unsupported layer fallback layout`).
