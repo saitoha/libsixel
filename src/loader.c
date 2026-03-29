@@ -185,6 +185,7 @@ typedef struct sixel_loader_manager_trace_context {
 typedef struct sixel_loader_osc11_bg_query_job {
     sixel_thread_t thread;
     sixel_atomic_u32_t finished;
+    sixel_atomic_u32_t stop_requested;
     unsigned char bgcolor[3];
     SIXELSTATUS status;
     int timeout_ms;
@@ -193,6 +194,9 @@ typedef struct sixel_loader_osc11_bg_query_job {
 
 static int
 loader_osc11_bg_query_thread_main(void *context);
+
+static int
+loader_osc11_bg_query_should_stop(void *context);
 
 static void
 loader_osc11_bg_query_job_init(sixel_loader_osc11_bg_query_job_t *job);
@@ -335,12 +339,35 @@ loader_osc11_bg_query_thread_main(void *context)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    job->status = sixel_tty_query_osc11_bgcolor(job->bgcolor,
-                                                job->timeout_ms);
+    job->status = sixel_tty_query_osc11_bgcolor_with_drain(
+        job->bgcolor,
+        job->timeout_ms,
+        loader_osc11_bg_query_should_stop,
+        job);
     sixel_fence_release();
     (void)sixel_atomic_fetch_add_u32(&job->finished, 1u);
 
     return job->status;
+}
+
+static int
+loader_osc11_bg_query_should_stop(void *context)
+{
+    sixel_loader_osc11_bg_query_job_t *job;
+    unsigned int stop_requested;
+
+    job = (sixel_loader_osc11_bg_query_job_t *)context;
+    stop_requested = 0u;
+    if (job == NULL) {
+        return 1;
+    }
+
+    stop_requested = sixel_atomic_fetch_add_u32(&job->stop_requested, 0u);
+    if (stop_requested != 0u) {
+        return 1;
+    }
+
+    return 0;
 }
 
 static void
@@ -351,6 +378,7 @@ loader_osc11_bg_query_job_init(sixel_loader_osc11_bg_query_job_t *job)
     }
 
     job->finished = 0u;
+    job->stop_requested = 0u;
     job->bgcolor[0] = 0u;
     job->bgcolor[1] = 0u;
     job->bgcolor[2] = 0u;
@@ -411,6 +439,11 @@ loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job)
         return;
     }
 
+    /*
+     * Ask the reader thread to stop only when loader teardown begins. This
+     * keeps draining late OSC11 bytes during the active conversion window.
+     */
+    (void)sixel_atomic_fetch_add_u32(&job->stop_requested, 1u);
     sixel_thread_join(&job->thread);
     job->started = 0;
 }

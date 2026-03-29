@@ -712,7 +712,11 @@ sixel_tty_wait_stdin(int usec)
 }
 
 SIXELSTATUS
-sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
+sixel_tty_query_osc11_bgcolor_with_drain(
+    unsigned char *bgcolor,
+    int timeout_ms,
+    sixel_tty_query_stop_function should_stop,
+    void *context)
 {
 #if HAVE_FCNTL_H && HAVE_SYS_SELECT_H && HAVE_TERMIOS_H && HAVE_ISATTY \
     && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
@@ -728,6 +732,8 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
     int slice_ms;
     int wait_usec;
     int raw_active;
+    int keep_draining;
+    int stop_requested;
     size_t response_size;
     char response[512];
 
@@ -740,6 +746,8 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
     slice_ms = 0;
     wait_usec = 0;
     raw_active = 0;
+    keep_draining = 0;
+    stop_requested = 0;
     response_size = 0u;
     response[0] = '\0';
 
@@ -749,6 +757,9 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
 
     if (timeout_ms < 0) {
         timeout_ms = 0;
+    }
+    if (should_stop != NULL) {
+        keep_draining = 1;
     }
     remaining_ms = timeout_ms;
 
@@ -773,8 +784,17 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
     }
 
     for (;;) {
+        stop_requested = 0;
+        if (keep_draining != 0) {
+            stop_requested = should_stop(context);
+        }
+
         wait_usec = 0;
-        if (remaining_ms > 0) {
+        if (stop_requested != 0) {
+            /* Drain whatever is already queued before leaving. */
+            wait_usec = 0;
+            slice_ms = 0;
+        } else if (remaining_ms > 0) {
             /*
              * Poll in small slices so a partial OSC response can be consumed
              * across multiple reads while still honoring the total timeout.
@@ -786,17 +806,25 @@ sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
             wait_usec = slice_ms * 1000;
         } else {
             slice_ms = 0;
+            if (keep_draining != 0) {
+                wait_usec = 10 * 1000;
+            }
         }
         status = sixel_tty_wait_fd_readable(ttyfd, wait_usec, &readable);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
         if (!readable) {
-            if (remaining_ms <= 0) {
+            if (stop_requested != 0) {
+                goto cleanup;
+            }
+            if (remaining_ms <= 0 && keep_draining == 0) {
                 status = SIXEL_FALSE;
                 goto cleanup;
             }
-            remaining_ms -= slice_ms;
+            if (remaining_ms > 0) {
+                remaining_ms -= slice_ms;
+            }
             continue;
         }
         if (response_size + 1u >= sizeof(response)) {
@@ -835,8 +863,19 @@ cleanup:
 #else
     (void)bgcolor;
     (void)timeout_ms;
+    (void)should_stop;
+    (void)context;
     return SIXEL_NOT_IMPLEMENTED;
 #endif
+}
+
+SIXELSTATUS
+sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
+{
+    return sixel_tty_query_osc11_bgcolor_with_drain(bgcolor,
+                                                    timeout_ms,
+                                                    NULL,
+                                                    NULL);
 }
 
 

@@ -59,6 +59,15 @@ sixel_tty_parse_osc11_response(unsigned char *bgcolor,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms);
 
+typedef int (*sixel_tty_query_stop_function)(void *context);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_query_osc11_bgcolor_with_drain(
+    unsigned char *bgcolor,
+    int timeout_ms,
+    sixel_tty_query_stop_function should_stop,
+    void *context);
+
 #endif /* LIBSIXEL_TTY_H */
 
 /* emacs Local Variables:      */
