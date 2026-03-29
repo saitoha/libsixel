@@ -50,6 +50,19 @@ int
 sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
                                 int *start_frame_no);
 
+typedef int (*sixel_loader_wait_predicate_t)(void *context);
+
+SIXEL_INTERNAL_API int
+sixel_loader_is_osc11_bg_query_enabled(char const *value);
+
+SIXEL_INTERNAL_API int
+sixel_loader_parse_osc11_bg_query_timeout_ms(char const *value);
+
+SIXEL_INTERNAL_API int
+sixel_loader_wait_for_condition(sixel_loader_wait_predicate_t predicate,
+                                void *context,
+                                int timeout_ms);
+
 
 #ifdef __cplusplus
 }

@@ -32,6 +32,9 @@
 #include <string.h>
 
 #include <stdint.h>
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
 
 #if HAVE_TIME_H
 # include <time.h>
@@ -62,11 +65,15 @@
 /* Some systems expose winsize/TIOCGWINSZ in sys/ttycom.h. */
 # include <sys/ttycom.h>
 #endif  /* HAVE_SYS_TTYCOM_H */
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif  /* HAVE_FCNTL_H */
 
 #include <sixel.h>
 #include "tty.h"
 #include "compat_stub.h"
 #include "loader-common.h"
+#include "rgblookup.h"
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -97,6 +104,22 @@ sixel_tty_term_supports_ansi(const char *term);
 
 static int
 sixel_tty_term_supports_color(const char *term, const char *colorterm);
+
+static char *
+sixel_tty_strdup(char const *text);
+
+static SIXELSTATUS
+sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable);
+
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+static SIXELSTATUS
+sixel_tty_cbreak_fd(int fd,
+                    struct termios *old_termios,
+                    struct termios *new_termios);
+
+static SIXELSTATUS
+sixel_tty_restore_fd(int fd, struct termios *old_termios);
+#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
 
 static int
 sixel_tty_term_supports_ansi(const char *term)
@@ -209,6 +232,236 @@ sixel_tty_term_supports_color(const char *term, const char *colorterm)
     return 0;
 }
 
+static char *
+sixel_tty_strdup(char const *text)
+{
+    char *copy;
+    size_t length;
+
+    copy = NULL;
+    length = 0u;
+
+    if (text == NULL) {
+        return NULL;
+    }
+
+    length = strlen(text);
+    copy = (char *)malloc(length + 1u);
+    if (copy == NULL) {
+        return NULL;
+    }
+
+    memcpy(copy, text, length + 1u);
+    return copy;
+}
+
+SIXELSTATUS
+sixel_tty_parse_colorspec(unsigned char *bgcolor, char const *text)
+{
+    SIXELSTATUS status;
+    char *p;
+    unsigned char components[3];
+    int component_index;
+    unsigned long value;
+    char *endptr;
+    char *buf;
+    struct color const *named_color;
+    size_t name_length;
+
+    status = SIXEL_BAD_ARGUMENT;
+    p = NULL;
+    components[0] = 0u;
+    components[1] = 0u;
+    components[2] = 0u;
+    component_index = 0;
+    value = 0u;
+    endptr = NULL;
+    buf = NULL;
+    named_color = NULL;
+    name_length = 0u;
+
+    if (bgcolor == NULL || text == NULL || text[0] == '\0') {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    name_length = strlen(text);
+    if (name_length > (size_t)UINT_MAX) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    named_color = lookup_rgb(text, (unsigned int)name_length);
+    if (named_color != NULL) {
+        bgcolor[0] = named_color->r;
+        bgcolor[1] = named_color->g;
+        bgcolor[2] = named_color->b;
+        return SIXEL_OK;
+    }
+
+    if (text[0] == 'r' && text[1] == 'g' && text[2] == 'b'
+            && text[3] == ':') {
+        p = buf = sixel_tty_strdup(text + 4);
+        if (buf == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        while (*p != '\0') {
+            value = 0u;
+            for (endptr = p; endptr - p <= 12; ++endptr) {
+                if (*endptr >= '0' && *endptr <= '9') {
+                    value = (value << 4) | (unsigned long)(*endptr - '0');
+                } else if (*endptr >= 'a' && *endptr <= 'f') {
+                    value = (value << 4)
+                        | (unsigned long)(*endptr - 'a' + 10);
+                } else if (*endptr >= 'A' && *endptr <= 'F') {
+                    value = (value << 4)
+                        | (unsigned long)(*endptr - 'A' + 10);
+                } else {
+                    break;
+                }
+            }
+            if (endptr - p == 0 || endptr - p > 4) {
+                break;
+            }
+            value = value << ((4 - (endptr - p)) * 4) >> 8;
+            components[component_index++] = (unsigned char)value;
+            p = endptr;
+            if (component_index == 3) {
+                break;
+            }
+            if (*p == '\0' || *p != '/') {
+                break;
+            }
+            ++p;
+        }
+        if (component_index != 3 || *p != '\0' || *p == '/') {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        bgcolor[0] = components[0];
+        bgcolor[1] = components[1];
+        bgcolor[2] = components[2];
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    if (*text == '#') {
+        buf = sixel_tty_strdup(text + 1);
+        if (buf == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        for (p = endptr = buf; endptr - p <= 12; ++endptr) {
+            if (*endptr >= '0' && *endptr <= '9') {
+                *endptr = (char)(*endptr - '0');
+            } else if (*endptr >= 'a' && *endptr <= 'f') {
+                *endptr = (char)(*endptr - 'a' + 10);
+            } else if (*endptr >= 'A' && *endptr <= 'F') {
+                *endptr = (char)(*endptr - 'A' + 10);
+            } else if (*endptr == '\0') {
+                break;
+            } else {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+        }
+        if (endptr - p > 12) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        switch (endptr - p) {
+        case 3:
+            bgcolor[0] = (unsigned char)(p[0] << 4);
+            bgcolor[1] = (unsigned char)(p[1] << 4);
+            bgcolor[2] = (unsigned char)(p[2] << 4);
+            break;
+        case 6:
+            bgcolor[0] = (unsigned char)(p[0] << 4 | p[1]);
+            bgcolor[1] = (unsigned char)(p[2] << 4 | p[3]);
+            bgcolor[2] = (unsigned char)(p[4] << 4 | p[4]);
+            break;
+        case 9:
+            bgcolor[0] = (unsigned char)(p[0] << 4 | p[1]);
+            bgcolor[1] = (unsigned char)(p[3] << 4 | p[4]);
+            bgcolor[2] = (unsigned char)(p[6] << 4 | p[7]);
+            break;
+        case 12:
+            bgcolor[0] = (unsigned char)(p[0] << 4 | p[1]);
+            bgcolor[1] = (unsigned char)(p[4] << 4 | p[5]);
+            bgcolor[2] = (unsigned char)(p[8] << 4 | p[9]);
+            break;
+        default:
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    status = SIXEL_BAD_ARGUMENT;
+
+end:
+    if (buf != NULL) {
+        free(buf);
+    }
+
+    return status;
+}
+
+SIXELSTATUS
+sixel_tty_parse_osc11_response(unsigned char *bgcolor,
+                               char const *response,
+                               size_t response_size)
+{
+    size_t index;
+    size_t start;
+    size_t end;
+    char *colorspec;
+    SIXELSTATUS status;
+
+    index = 0u;
+    start = 0u;
+    end = 0u;
+    colorspec = NULL;
+    status = SIXEL_BAD_ARGUMENT;
+
+    if (bgcolor == NULL || response == NULL || response_size == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (index = 0u; index + 5u <= response_size; ++index) {
+        if ((unsigned char)response[index + 0u] != 0x1bu
+            || response[index + 1u] != ']'
+            || response[index + 2u] != '1'
+            || response[index + 3u] != '1'
+            || response[index + 4u] != ';') {
+            continue;
+        }
+        start = index + 5u;
+        for (end = start; end < response_size; ++end) {
+            if ((unsigned char)response[end] == 0x07u) {
+                break;
+            }
+            if ((unsigned char)response[end] == 0x1bu
+                    && end + 1u < response_size
+                    && response[end + 1u] == '\\') {
+                break;
+            }
+        }
+        if (end >= response_size || end <= start) {
+            continue;
+        }
+        colorspec = (char *)malloc(end - start + 1u);
+        if (colorspec == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(colorspec, response + start, end - start);
+        colorspec[end - start] = '\0';
+        status = sixel_tty_parse_colorspec(bgcolor, colorspec);
+        free(colorspec);
+        return status;
+    }
+
+    return status;
+}
+
 SIXELAPI void
 sixel_tty_init_output_device(int fd)
 {
@@ -293,38 +546,122 @@ sixel_tty_get_output_state(void)
     return &tty_output_state;
 }
 
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
-SIXELSTATUS
-sixel_tty_cbreak(struct termios *old_termios, struct termios *new_termios)
+static SIXELSTATUS
+sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
+#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
+    fd_set rfds;
+    struct timeval tv;
     int ret;
+#endif  /* HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__) */
 
-    /* set the terminal to cbreak mode */
-    ret = tcgetattr(STDIN_FILENO, old_termios);
-    if (ret != 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_tty_cbreak: tcgetattr() failed.");
-        goto end;
+    status = SIXEL_FALSE;
+#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
+    ret = 0;
+    if (is_readable != NULL) {
+        *is_readable = 0;
+    }
+    if (fd < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (usec < 0) {
+        usec = 0;
     }
 
-    (void) memcpy(new_termios, old_termios, sizeof(*old_termios));
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
+    ret = select(fd + 1, &rfds, NULL, NULL, &tv);
+    if (ret < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        return status;
+    }
+    if (is_readable != NULL && ret > 0 && FD_ISSET(fd, &rfds)) {
+        *is_readable = 1;
+    }
+    status = SIXEL_OK;
+#else
+    (void)fd;
+    (void)usec;
+    if (is_readable != NULL) {
+        *is_readable = 0;
+    }
+#endif
+
+    return status;
+}
+
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+static SIXELSTATUS
+sixel_tty_cbreak_fd(int fd,
+                    struct termios *old_termios,
+                    struct termios *new_termios)
+{
+    SIXELSTATUS status;
+    int ret;
+
+    status = SIXEL_FALSE;
+    ret = 0;
+
+    if (fd < 0 || old_termios == NULL || new_termios == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    ret = tcgetattr(fd, old_termios);
+    if (ret != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        return status;
+    }
+
+    (void)memcpy(new_termios, old_termios, sizeof(*old_termios));
     new_termios->c_lflag &= (tcflag_t)~(ECHO | ICANON);
     new_termios->c_cc[VMIN] = 1;
     new_termios->c_cc[VTIME] = 0;
 
-    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, new_termios);
+    ret = tcsetattr(fd, TCSAFLUSH, new_termios);
     if (ret != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_tty_cbreak: tcsetattr() failed.");
-        goto end;
+        return status;
     }
 
     status = SIXEL_OK;
+    return status;
+}
 
-end:
+static SIXELSTATUS
+sixel_tty_restore_fd(int fd, struct termios *old_termios)
+{
+    SIXELSTATUS status;
+    int ret;
+
+    status = SIXEL_FALSE;
+    ret = 0;
+
+    if (fd < 0 || old_termios == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    ret = tcsetattr(fd, TCSAFLUSH, old_termios);
+    if (ret != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        return status;
+    }
+
+    status = SIXEL_OK;
+    return status;
+}
+
+SIXELSTATUS
+sixel_tty_cbreak(struct termios *old_termios, struct termios *new_termios)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    status = sixel_tty_cbreak_fd(STDIN_FILENO, old_termios, new_termios);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_tty_cbreak: tcsetattr() failed.");
+    }
     return status;
 }
 #endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
@@ -335,16 +672,14 @@ SIXELSTATUS
 sixel_tty_restore(struct termios *old_termios)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int ret;
 
     sixel_trace_topic_message("lifecycle",
         "tty restore begin: tcsetattr(TCSAFLUSH)");
-    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, old_termios);
-    if (ret != 0) {
+    status = sixel_tty_restore_fd(STDIN_FILENO, old_termios);
+    if (SIXEL_FAILED(status)) {
         sixel_trace_topic_message("lifecycle",
             "tty restore failed: errno=%d",
             errno);
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
             "sixel_tty_restore: tcsetattr() failed.");
         goto end;
@@ -352,8 +687,6 @@ sixel_tty_restore(struct termios *old_termios)
 
     sixel_trace_topic_message("lifecycle",
         "tty restore end: success");
-    status = SIXEL_OK;
-
 end:
     return status;
 }
@@ -363,35 +696,132 @@ end:
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec)
 {
-#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
-    fd_set rfds;
-    struct timeval tv;
-    int ret = 0;
-#endif  /* HAVE_SYS_SELECT_H */
+    int readable;
     SIXELSTATUS status = SIXEL_FALSE;
 
-#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
-    tv.tv_sec = usec / 1000000;
-    tv.tv_usec = usec % 1000000;
-    FD_ZERO(&rfds);
-    FD_SET(STDIN_FILENO, &rfds);
-    ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
-    if (ret < 0) {
+    readable = 0;
+    status = sixel_tty_wait_fd_readable(STDIN_FILENO, usec, &readable);
+    if (SIXEL_FAILED(status)) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
             "sixel_tty_wait_stdin: select() failed.");
-        goto end;
+        return status;
     }
 
-    /* success */
-    status = SIXEL_OK;
-#else
-    (void) usec;
-    goto end;
-#endif  /* HAVE_SYS_SELECT_H */
+    return SIXEL_OK;
+}
 
-end:
+SIXELSTATUS
+sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms)
+{
+#if HAVE_FCNTL_H && HAVE_SYS_SELECT_H && HAVE_TERMIOS_H && HAVE_ISATTY \
+    && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+    static char const query[] = "\033]11;?\007";
+    SIXELSTATUS status;
+    struct termios old_termios;
+    struct termios new_termios;
+    int ttyfd;
+    ssize_t written;
+    ssize_t read_size;
+    int readable;
+    int wait_ms;
+    int wait_usec;
+    int raw_active;
+    size_t response_size;
+    char response[512];
+
+    status = SIXEL_FALSE;
+    ttyfd = -1;
+    written = 0;
+    read_size = 0;
+    readable = 0;
+    wait_ms = 0;
+    wait_usec = 0;
+    raw_active = 0;
+    response_size = 0u;
+    response[0] = '\0';
+
+    if (bgcolor == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (timeout_ms < 0) {
+        timeout_ms = 0;
+    }
+    wait_ms = timeout_ms;
+
+    ttyfd = sixel_compat_open("/dev/tty", O_RDWR);
+    if (ttyfd < 0) {
+        return SIXEL_FALSE;
+    }
+    if (!sixel_compat_isatty(ttyfd)) {
+        goto cleanup;
+    }
+
+    status = sixel_tty_cbreak_fd(ttyfd, &old_termios, &new_termios);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    raw_active = 1;
+
+    written = sixel_compat_write(ttyfd, query, sizeof(query) - 1u);
+    if (written != (ssize_t)(sizeof(query) - 1u)) {
+        status = SIXEL_FALSE;
+        goto cleanup;
+    }
+
+    for (;;) {
+        wait_usec = 0;
+        if (wait_ms > 0) {
+            wait_usec = 1000;
+            --wait_ms;
+        }
+        status = sixel_tty_wait_fd_readable(ttyfd, wait_usec, &readable);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        if (!readable) {
+            status = SIXEL_FALSE;
+            goto cleanup;
+        }
+        if (response_size + 1u >= sizeof(response)) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        read_size = read(ttyfd,
+                         response + response_size,
+                         sizeof(response) - response_size - 1u);
+        if (read_size <= 0) {
+            status = SIXEL_FALSE;
+            goto cleanup;
+        }
+        response_size += (size_t)read_size;
+        response[response_size] = '\0';
+
+        status = sixel_tty_parse_osc11_response(bgcolor,
+                                                response,
+                                                response_size);
+        if (SIXEL_SUCCEEDED(status)) {
+            goto cleanup;
+        }
+        if (status == SIXEL_BAD_ALLOCATION) {
+            goto cleanup;
+        }
+    }
+
+cleanup:
+    if (raw_active != 0) {
+        (void)sixel_tty_restore_fd(ttyfd, &old_termios);
+    }
+    if (ttyfd >= 0) {
+        (void)sixel_compat_close(ttyfd);
+    }
     return status;
+#else
+    (void)bgcolor;
+    (void)timeout_ms;
+    return SIXEL_NOT_IMPLEMENTED;
+#endif
 }
 
 

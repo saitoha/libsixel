@@ -116,7 +116,22 @@
 #include "encoder.h"
 #include "logger.h"
 #include "options.h"
+#include "tty.h"
+#include "threading.h"
+#include "sleep.h"
 #include "sixel_atomic.h"
+
+#ifndef STDOUT_FILENO
+# define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+# define STDERR_FILENO 2
+#endif
+
+#define SIXEL_LOADER_OSC11_BG_QUERY_ENV "SIXEL_LOADER_OSC11_BG_QUERY"
+#define SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV \
+    "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS"
+#define SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS 50
 
 /*
  * Internal loader state carried across backends.  The fields mirror the
@@ -167,6 +182,35 @@ typedef struct sixel_loader_manager_trace_context {
     size_t input_bytes;
 } sixel_loader_manager_trace_context_t;
 
+typedef struct sixel_loader_osc11_bg_query_job {
+    sixel_thread_t thread;
+    sixel_atomic_u32_t finished;
+    unsigned char bgcolor[3];
+    SIXELSTATUS status;
+    int timeout_ms;
+    int started;
+} sixel_loader_osc11_bg_query_job_t;
+
+static int
+loader_osc11_bg_query_thread_main(void *context);
+
+static void
+loader_osc11_bg_query_job_init(sixel_loader_osc11_bg_query_job_t *job);
+
+static int
+loader_osc11_bg_query_job_is_finished(void *context);
+
+static int
+loader_osc11_bg_query_job_apply_if_ready(
+    sixel_loader_t *loader,
+    sixel_loader_osc11_bg_query_job_t *job);
+
+static void
+loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job);
+
+static int
+loader_can_query_osc11_bgcolor(sixel_loader_t const *loader);
+
 int
 sixel_loader_callback_is_canceled(void *data)
 {
@@ -206,6 +250,189 @@ loader_strdup(char const *text, sixel_allocator_t *allocator)
     memcpy(copy, text, length);
 
     return copy;
+}
+
+int
+sixel_loader_is_osc11_bg_query_enabled(char const *value)
+{
+    if (value == NULL) {
+        return 0;
+    }
+
+    if (strcmp(value, "1") == 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+sixel_loader_parse_osc11_bg_query_timeout_ms(char const *value)
+{
+    long parsed;
+    char *endptr;
+
+    parsed = 0L;
+    endptr = NULL;
+
+    if (value == NULL || value[0] == '\0') {
+        return SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
+    }
+
+    errno = 0;
+    parsed = strtol(value, &endptr, 10);
+    if (endptr == value || *endptr != '\0' ||
+            errno == ERANGE || parsed < 0L ||
+            parsed > (long)INT_MAX) {
+        return SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
+    }
+
+    return (int)parsed;
+}
+
+int
+sixel_loader_wait_for_condition(sixel_loader_wait_predicate_t predicate,
+                                void *context,
+                                int timeout_ms)
+{
+    int elapsed;
+
+    elapsed = 0;
+
+    if (predicate == NULL) {
+        return 0;
+    }
+    if (timeout_ms < 0) {
+        timeout_ms = 0;
+    }
+
+    if (predicate(context)) {
+        return 1;
+    }
+
+    /*
+     * Keep polling intervals short so the loader can continue as soon as the
+     * background query completes, while still bounding total wait time.
+     */
+    while (elapsed < timeout_ms) {
+        sixel_sleep(1000u);
+        if (predicate(context)) {
+            return 1;
+        }
+        ++elapsed;
+    }
+
+    return predicate(context);
+}
+
+static int
+loader_osc11_bg_query_thread_main(void *context)
+{
+    sixel_loader_osc11_bg_query_job_t *job;
+
+    job = (sixel_loader_osc11_bg_query_job_t *)context;
+    if (job == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    job->status = sixel_tty_query_osc11_bgcolor(job->bgcolor,
+                                                job->timeout_ms);
+    sixel_fence_release();
+    (void)sixel_atomic_fetch_add_u32(&job->finished, 1u);
+
+    return job->status;
+}
+
+static void
+loader_osc11_bg_query_job_init(sixel_loader_osc11_bg_query_job_t *job)
+{
+    if (job == NULL) {
+        return;
+    }
+
+    job->finished = 0u;
+    job->bgcolor[0] = 0u;
+    job->bgcolor[1] = 0u;
+    job->bgcolor[2] = 0u;
+    job->status = SIXEL_FALSE;
+    job->timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
+    job->started = 0;
+}
+
+static int
+loader_osc11_bg_query_job_is_finished(void *context)
+{
+    sixel_loader_osc11_bg_query_job_t *job;
+    unsigned int finished;
+
+    job = (sixel_loader_osc11_bg_query_job_t *)context;
+    finished = 0u;
+
+    if (job == NULL || job->started == 0) {
+        return 0;
+    }
+
+    finished = sixel_atomic_fetch_add_u32(&job->finished, 0u);
+    if (finished == 0u) {
+        return 0;
+    }
+
+    sixel_fence_acquire();
+    return 1;
+}
+
+static int
+loader_osc11_bg_query_job_apply_if_ready(
+    sixel_loader_t *loader,
+    sixel_loader_osc11_bg_query_job_t *job)
+{
+    if (loader == NULL || job == NULL) {
+        return 0;
+    }
+    if (loader_osc11_bg_query_job_is_finished(job) == 0) {
+        return 0;
+    }
+    if (SIXEL_FAILED(job->status)) {
+        return 0;
+    }
+
+    loader->bgcolor[0] = job->bgcolor[0];
+    loader->bgcolor[1] = job->bgcolor[1];
+    loader->bgcolor[2] = job->bgcolor[2];
+    loader->has_bgcolor = 1;
+
+    return 1;
+}
+
+static void
+loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job)
+{
+    if (job == NULL || job->started == 0) {
+        return;
+    }
+
+    sixel_thread_join(&job->thread);
+    job->started = 0;
+}
+
+static int
+loader_can_query_osc11_bgcolor(sixel_loader_t const *loader)
+{
+    char const *env_value;
+
+    env_value = sixel_compat_getenv(SIXEL_LOADER_OSC11_BG_QUERY_ENV);
+    if (loader == NULL || loader->has_bgcolor != 0) {
+        return 0;
+    }
+    if (!sixel_loader_is_osc11_bg_query_enabled(env_value)) {
+        return 0;
+    }
+    if (sixel_compat_isatty(STDOUT_FILENO) == 0 &&
+            sixel_compat_isatty(STDERR_FILENO) == 0) {
+        return 0;
+    }
+
+    return 1;
 }
 
 
@@ -1425,6 +1652,11 @@ sixel_loader_load_file(
     sixel_loader_manager_trace_context_t trace_context;
     sixel_option_argument_list_resolution_t order_resolution;
     sixel_loader_suboptions_t active_suboptions;
+    sixel_loader_osc11_bg_query_job_t osc11_query_job;
+    char const *osc11_timeout_env;
+    int osc11_timeout_ms;
+    int thread_status;
+    int wait_result;
 
     pchunk = NULL;
     plan = NULL;
@@ -1439,8 +1671,13 @@ sixel_loader_load_file(
     env_order = NULL;
     active_order_resolution = NULL;
     selected_name = NULL;
+    osc11_timeout_env = NULL;
+    osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
+    thread_status = SIXEL_FALSE;
+    wait_result = 0;
     sixel_option_init_argument_list_resolution(&order_resolution);
     loader_manager_init_loader_suboptions(&active_suboptions);
+    loader_osc11_bg_query_job_init(&osc11_query_job);
     memset(&option_context, 0, sizeof(option_context));
     memset(&trace_context, 0, sizeof(trace_context));
 
@@ -1480,6 +1717,37 @@ sixel_loader_load_file(
     reqcolors = loader->reqcolors;
     if (reqcolors > SIXEL_PALETTE_MAX) {
         reqcolors = SIXEL_PALETTE_MAX;
+    }
+
+    osc11_timeout_env = sixel_compat_getenv(
+        SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV);
+    osc11_timeout_ms = sixel_loader_parse_osc11_bg_query_timeout_ms(
+        osc11_timeout_env);
+
+    /*
+     * Launch OSC11 probing before sixel_chunk_new() so the terminal roundtrip
+     * overlaps with input loading. If thread creation is unavailable, fall
+     * back to synchronous probing and keep failures non-fatal.
+     */
+    if (loader_can_query_osc11_bgcolor(loader) != 0) {
+        osc11_query_job.timeout_ms = osc11_timeout_ms;
+        thread_status = sixel_thread_create(
+            &osc11_query_job.thread,
+            loader_osc11_bg_query_thread_main,
+            &osc11_query_job);
+        if (SIXEL_SUCCEEDED(thread_status)) {
+            osc11_query_job.started = 1;
+        } else {
+            osc11_query_job.status = sixel_tty_query_osc11_bgcolor(
+                osc11_query_job.bgcolor,
+                osc11_query_job.timeout_ms);
+            if (SIXEL_SUCCEEDED(osc11_query_job.status)) {
+                loader->bgcolor[0] = osc11_query_job.bgcolor[0];
+                loader->bgcolor[1] = osc11_query_job.bgcolor[1];
+                loader->bgcolor[2] = osc11_query_job.bgcolor[2];
+                loader->has_bgcolor = 1;
+            }
+        }
     }
 
     status = sixel_chunk_new(&pchunk,
@@ -1575,6 +1843,23 @@ sixel_loader_load_file(
         goto end;
     }
 
+    /*
+     * Before propagating component options, wait at most once for OSC11 query
+     * completion. Timeout keeps the previous behavior (no explicit bgcolor).
+     */
+    if (osc11_query_job.started != 0 && loader->has_bgcolor == 0) {
+        wait_result = loader_osc11_bg_query_job_is_finished(&osc11_query_job);
+        if (wait_result == 0) {
+            wait_result = sixel_loader_wait_for_condition(
+                loader_osc11_bg_query_job_is_finished,
+                &osc11_query_job,
+                osc11_timeout_ms);
+            (void)wait_result;
+        }
+        (void)loader_osc11_bg_query_job_apply_if_ready(loader,
+                                                       &osc11_query_job);
+    }
+
     option_context.loader = loader;
     option_context.reqcolors = reqcolors;
     option_context.suboptions = active_suboptions;
@@ -1631,6 +1916,7 @@ sixel_loader_load_file(
     }
 
 end:
+    loader_osc11_bg_query_job_join(&osc11_query_job);
     loader_chain_unref(chain);
     chain = NULL;
     loader_manager_unref(manager);
