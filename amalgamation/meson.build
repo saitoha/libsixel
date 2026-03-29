@@ -101,7 +101,6 @@ amalgamation_units = files(
 
 amalgamation_headers = files(
   '../include/sixel.h.in',
-  '../src/sixel_threads_config.h',
   '../src/sixel_atomic.h',
   '../src/threading.h',
   '../src/threadpool.h',
