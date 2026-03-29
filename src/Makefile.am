@@ -209,6 +209,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/clipboard.h \
                 $(srcdir)/encoder.c \
                 $(srcdir)/encoder.h \
+                $(srcdir)/mapfile.c \
+                $(srcdir)/mapfile.h \
+                $(srcdir)/drcs.c \
+                $(srcdir)/drcs.h \
                 $(srcdir)/planner.c \
                 $(srcdir)/planner.h \
                 $(srcdir)/decoder.c \
