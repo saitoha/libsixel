@@ -226,6 +226,13 @@ def generate(out_dir: pathlib.Path) -> None:
         (out_dir / "stbi_minimal_mode7_cmyk8_valid_icc_profile.psd").read_bytes()
     )
 
+    mode7_cmyk8_valid_icc = bytearray((out_dir / "stbi_minimal_cmyk8.psd").read_bytes())
+    write_u16be(mode7_cmyk8_valid_icc, 24, 7)
+    write_file(
+        out_dir / "stbi_minimal_mode7_cmyk8_valid_icc_profile.psd",
+        replace_image_resources(bytes(mode7_cmyk8_valid_icc), mode7_valid_icc_resource),
+    )
+
     mode7_cmyk16_valid_icc = bytearray((out_dir / "stbi_minimal_cmyk16_raw.psd").read_bytes())
     write_u16be(mode7_cmyk16_valid_icc, 24, 7)
     write_file(
