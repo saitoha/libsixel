@@ -34,8 +34,17 @@ test "${command_status}" -ne 0 || {
 # - WinHTTP may fail at CrackUrl/Connect/SendRequest/... stages.
 # - libcurl may fail at setopt/perform stages depending on URL parsing.
 # Keep the check broad enough to accept backend-consistent failures.
-printf '%s\n' "${capture_output}" |
-awk '/^curl_easy_/ { ++m } /^WinHttp/ { ++m } /^fetchGetURL\(\)/ { ++m } /runtime error: unable/ { ++m } END { if (!m) exit 1; }' || {
+case "${capture_output}" in
+    *"curl_easy_"*|*"WinHttp"*|*"fetchGetURL()"*|*"runtime error: unable"*) ;;
+    *)
+        echo "not ok" 1 - "missing formatted network failure message"
+        printf '%s\n' '--- stderr ---' >&2
+        printf '%s\n' "${capture_output}" >&2
+        exit 0
+        ;;
+esac
+
+test -n "${capture_output}" || {
     echo "not ok" 1 - "missing formatted network failure message"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${capture_output}" >&2

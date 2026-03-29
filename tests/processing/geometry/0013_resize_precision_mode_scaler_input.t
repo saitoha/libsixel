@@ -27,7 +27,15 @@ PPM
 }
 printf '%s' "${resize_log}" >&2
 
-printf '%s' "${resize_log}" | grep -q "resize: mode=.*input=linear-f32" || {
+case "${resize_log}" in
+    *"resize: mode="*"input=linear-f32"*) ;;
+    *)
+        echo "not ok" 1 - "missing scaler input declaration"
+        exit 0
+        ;;
+esac
+
+test -n "${resize_log}" || {
     echo "not ok" 1 - "missing scaler input declaration"
     exit 0
 }

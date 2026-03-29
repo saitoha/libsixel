@@ -21,8 +21,23 @@ pipeline_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 -v -o
 }
 printf '%s' "${pipeline_log}" >&2
 
-summary=$(printf '%s' "${pipeline_log}" | grep "bands=" | head -n 1) || summary=""
-printf '%s' "${summary}" | grep -q '^    bands=' || {
+case "${pipeline_log}" in
+    *"    bands="*) ;;
+    *)
+        echo "not ok" 1 - "baseline bands/queue/mode"
+        exit 0
+        ;;
+esac
+
+case "${pipeline_log}" in
+    *"bands="*) ;;
+    *)
+        echo "not ok" 1 - "baseline bands/queue/mode"
+        exit 0
+        ;;
+esac
+
+test -n "${pipeline_log}" || {
     echo "not ok" 1 - "baseline bands/queue/mode"
     exit 0
 }

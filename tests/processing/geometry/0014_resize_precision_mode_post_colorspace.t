@@ -27,12 +27,28 @@ PPM
 }
 printf '%s' "${resize_log}" >&2
 
-printf '%s' "${resize_log}" | grep -q "scale -> colorspace(post)" || {
+case "${resize_log}" in
+    *"scale -> colorspace(post)"*) ;;
+    *)
+        echo "not ok" 1 - "missing scale -> colorspace(post)"
+        exit 0
+        ;;
+esac
+
+test -n "${resize_log}" || {
     echo "not ok" 1 - "missing scale -> colorspace(post)"
     exit 0
 }
 
-printf '%s' "${resize_log}" | grep -q "colorspace(post) -> dither" || {
+case "${resize_log}" in
+    *"colorspace(post) -> dither"*) ;;
+    *)
+        echo "not ok" 1 - "missing colorspace(post) -> dither"
+        exit 0
+        ;;
+esac
+
+test -n "${resize_log}" || {
     echo "not ok" 1 - "missing colorspace(post) -> dither"
     exit 0
 }

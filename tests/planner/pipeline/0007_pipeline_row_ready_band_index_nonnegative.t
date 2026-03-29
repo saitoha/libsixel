@@ -22,12 +22,28 @@ SIXEL_LOG_PATH="${log_file}"         SIXEL_THREADS=6         SIXEL_DITHER_PARALL
     exit 0
 }
 
-grep -q '"event":"row_ready"' "${log_file}" || {
+row_ready_seen=0
+row_ready_job_nonnegative=0
+while IFS= read -r line; do
+    case "${line}" in
+        *'"event":"row_ready"'*)
+            row_ready_seen=1
+            case "${line}" in
+                *'"job":-'*) ;;
+                *'"job":'*[0-9]*)
+                    row_ready_job_nonnegative=1
+                    ;;
+            esac
+            ;;
+    esac
+done < "${log_file}"
+
+test "${row_ready_seen}" -eq 1 || {
     echo "ok" 1 - "row_ready unavailable in serial environment"
     exit 0
 }
 
-grep -q '"event":"row_ready".*"job":[0-9][0-9]*' "${log_file}" || {
+test "${row_ready_job_nonnegative}" -eq 1 || {
     echo "not ok" 1 - "row_ready jobs are non-negative"
     exit 0
 }

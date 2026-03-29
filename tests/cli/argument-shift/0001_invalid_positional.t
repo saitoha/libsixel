@@ -12,10 +12,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 # Skip temporarily on Windows environments while addressing
 # intermittent failures specific to that platform.
 os_name=$(uname -s || echo "unknown")
-printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin' && {
-    printf "1..0 # SKIP temporarily disabled on Windows due to instability\n"
-    exit 0
-}
+case "${os_name}" in
+    *[Mm][Ii][Nn][Gg][Ww]*|*[Mm][Ss][Yy][Ss]*|*[Cc][Yy][Gg][Ww][Ii][Nn]*)
+        printf "1..0 # SKIP temporarily disabled on Windows due to instability\n"
+        exit 0
+        ;;
+esac
 
 
 echo "1..1"

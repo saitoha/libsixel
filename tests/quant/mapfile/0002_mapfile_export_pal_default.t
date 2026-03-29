@@ -21,7 +21,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M "${pal_default}" -o "${ARTIFACT_LOCAL_D
     exit 0
 }
 
-head -n 1 "${pal_default}" | grep -q "JASC-PAL" || {
+IFS= read -r pal_header < "${pal_default}" || pal_header=""
+case "${pal_header}" in
+    *"JASC-PAL"*) ;;
+    *)
+        echo "not ok" 1 - "PAL palette missing JASC-PAL header"
+        exit 0
+        ;;
+esac
+
+test -n "${pal_header}" || {
     echo "not ok" 1 - "PAL palette missing JASC-PAL header"
     exit 0
 }

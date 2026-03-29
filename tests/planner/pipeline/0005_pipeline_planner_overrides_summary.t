@@ -26,7 +26,15 @@ pipeline_log=$(
 }
 printf '%s' "${pipeline_log}" >&2
 
-printf '%s\n' "${pipeline_log}" | awk '/bands=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
+case "${pipeline_log}" in
+    *"bands="*) ;;
+    *)
+        echo "not ok" 1 - "override bands/queue/mode"
+        exit 0
+        ;;
+esac
+
+test -n "${pipeline_log}" || {
     echo "not ok" 1 - "override bands/queue/mode"
     exit 0
 }

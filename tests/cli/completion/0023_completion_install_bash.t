@@ -32,14 +32,36 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${complet
     exit 0
 }
 
-test -f "${target_path}" && \
-    grep '# bash completion for img2sixel' "${target_path}" >/dev/null 2>&1 && {
+bash_header_found=0
+test -f "${target_path}" && {
+    while IFS= read -r line; do
+        case "${line}" in
+            *"# bash completion for img2sixel"*)
+                bash_header_found=1
+                break
+                ;;
+        esac
+    done < "${target_path}"
+}
+
+test "${bash_header_found}" -eq 1 && {
     echo "ok" 1 - "bash completion installed"
     exit 0
 }
 
-test -f "${legacy_path}" && \
-    grep '# bash completion for img2sixel' "${legacy_path}" >/dev/null 2>&1 && {
+bash_header_found=0
+test -f "${legacy_path}" && {
+    while IFS= read -r line; do
+        case "${line}" in
+            *"# bash completion for img2sixel"*)
+                bash_header_found=1
+                break
+                ;;
+        esac
+    done < "${legacy_path}"
+}
+
+test "${bash_header_found}" -eq 1 && {
     echo "ok" 1 - "bash completion installed"
     exit 0
 }

@@ -20,7 +20,16 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -V >"${version_output}" || {
     exit 0
 }
 
-grep -q '^sixel2png ' "${version_output}" || {
+IFS= read -r version_line < "${version_output}" || version_line=""
+case "${version_line}" in
+    sixel2png\ *) ;;
+    *)
+        echo "not ok" 1 - "version header missing"
+        exit 0
+        ;;
+esac
+
+test -n "${version_line}" || {
     echo "not ok" 1 - "version header missing"
     exit 0
 }

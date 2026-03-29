@@ -21,14 +21,20 @@ test "${rc:-0}" -eq 77 && {
     exit 0
 }
 
-printf '%s' "${abort_output}" | grep "libsixel: abort() detected" >/dev/null || {
-    echo "not ok" 1 - "abort trace missing"
-    exit 0
-}
-printf '%s' "${abort_output}" | grep "libsixel: abort trace complete" >/dev/null || {
-    echo "not ok" 1 - "abort trace missing"
-    exit 0
-}
+case "${abort_output}" in
+    *"libsixel: abort() detected"*) ;;
+    *)
+        echo "not ok" 1 - "abort trace missing"
+        exit 0
+        ;;
+esac
+case "${abort_output}" in
+    *"libsixel: abort trace complete"*) ;;
+    *)
+        echo "not ok" 1 - "abort trace missing"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "abort trace emitted"
 
