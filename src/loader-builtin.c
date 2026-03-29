@@ -1969,46 +1969,76 @@ sixel_builtin_crc32_update(unsigned char const *data, size_t length,
 }
 
 static int
-sixel_builtin_apng_ensure_shared_capacity(
-    sixel_builtin_apng_state_t *state,
+sixel_builtin_apng_ensure_buffer_capacity(
+    unsigned char **buffer,
+    size_t current_size,
+    size_t *pcapacity,
     size_t append_size,
+    size_t initial_capacity,
     sixel_allocator_t *allocator)
 {
     unsigned char *next;
     size_t needed;
     size_t next_capacity;
 
-    if (append_size > SIZE_MAX - state->shared_chunks_size) {
+    next = NULL;
+    needed = 0u;
+    next_capacity = 0u;
+    if (buffer == NULL ||
+        pcapacity == NULL ||
+        allocator == NULL) {
         return 0;
     }
-    needed = state->shared_chunks_size + append_size;
-    if (needed <= state->shared_chunks_capacity) {
+    if (append_size > SIZE_MAX - current_size) {
+        return 0;
+    }
+
+    needed = current_size + append_size;
+    if (needed <= *pcapacity) {
         return 1;
     }
 
-    next_capacity = state->shared_chunks_capacity;
-    if (next_capacity == 0) {
-        next_capacity = 1024;
+    next_capacity = *pcapacity;
+    if (next_capacity == 0u) {
+        next_capacity = initial_capacity;
     }
     while (next_capacity < needed) {
-        if (next_capacity > SIZE_MAX / 2) {
+        if (next_capacity > SIZE_MAX / 2u) {
             return 0;
         }
-        next_capacity *= 2;
+        next_capacity *= 2u;
     }
 
     next = (unsigned char *)sixel_allocator_malloc(allocator, next_capacity);
     if (next == NULL) {
         return 0;
     }
-    if (state->shared_chunks_size > 0 && state->shared_chunks != NULL) {
-        memcpy(next, state->shared_chunks, state->shared_chunks_size);
+    if (current_size > 0u && *buffer != NULL) {
+        memcpy(next, *buffer, current_size);
     }
 
-    sixel_allocator_free(allocator, state->shared_chunks);
-    state->shared_chunks = next;
-    state->shared_chunks_capacity = next_capacity;
+    sixel_allocator_free(allocator, *buffer);
+    *buffer = next;
+    *pcapacity = next_capacity;
     return 1;
+}
+
+static int
+sixel_builtin_apng_ensure_shared_capacity(
+    sixel_builtin_apng_state_t *state,
+    size_t append_size,
+    sixel_allocator_t *allocator)
+{
+    if (state == NULL) {
+        return 0;
+    }
+    return sixel_builtin_apng_ensure_buffer_capacity(
+        &state->shared_chunks,
+        state->shared_chunks_size,
+        &state->shared_chunks_capacity,
+        append_size,
+        1024u,
+        allocator);
 }
 
 static int
@@ -2036,41 +2066,16 @@ sixel_builtin_apng_ensure_chunk_capacity(
     size_t append_size,
     sixel_allocator_t *allocator)
 {
-    unsigned char *next;
-    size_t needed;
-    size_t next_capacity;
-
-    if (append_size > SIZE_MAX - state->chunk_size) {
+    if (state == NULL) {
         return 0;
     }
-    needed = state->chunk_size + append_size;
-    if (needed <= state->chunk_capacity) {
-        return 1;
-    }
-
-    next_capacity = state->chunk_capacity;
-    if (next_capacity == 0) {
-        next_capacity = 4096;
-    }
-    while (next_capacity < needed) {
-        if (next_capacity > SIZE_MAX / 2) {
-            return 0;
-        }
-        next_capacity *= 2;
-    }
-
-    next = (unsigned char *)sixel_allocator_malloc(allocator, next_capacity);
-    if (next == NULL) {
-        return 0;
-    }
-    if (state->chunk_size > 0 && state->chunk_base != NULL) {
-        memcpy(next, state->chunk_base, state->chunk_size);
-    }
-
-    sixel_allocator_free(allocator, state->chunk_base);
-    state->chunk_base = next;
-    state->chunk_capacity = next_capacity;
-    return 1;
+    return sixel_builtin_apng_ensure_buffer_capacity(
+        &state->chunk_base,
+        state->chunk_size,
+        &state->chunk_capacity,
+        append_size,
+        4096u,
+        allocator);
 }
 
 static int
