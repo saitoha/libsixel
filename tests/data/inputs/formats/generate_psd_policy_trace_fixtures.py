@@ -436,6 +436,13 @@ def generate(out_dir: pathlib.Path) -> None:
     mode7_malformed_resources = extract_image_resources_bytes(
         (out_dir / "stbi_minimal_mode7_bad_resource_signature.psd").read_bytes()
     )
+    mode4_valid_icc_resource = extract_icc_resource_block(
+        (out_dir / "stbi_minimal_mode7_cmyk8_valid_icc_profile.psd").read_bytes()
+    )
+    mode4_bad_icc_resource = build_invalid_icc_resource_block()
+    mode4_malformed_resources = extract_image_resources_bytes(
+        (out_dir / "stbi_minimal_bad_resource_signature.psd").read_bytes()
+    )
     for depth_tag in ("8", "16", "32"):
         source_path = (
             out_dir
@@ -458,6 +465,28 @@ def generate(out_dir: pathlib.Path) -> None:
             out_dir
             / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal_malformed_resource.psd",
             replace_image_resources(source_path.read_bytes(), mode7_malformed_resources),
+        )
+
+    # Native CMYK missing-composite multi-layer ICC policy fixtures.
+    for depth_tag in ("8", "16", "32"):
+        source_path = (
+            out_dir
+            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal.psd"
+        )
+        write_file(
+            out_dir
+            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal_valid_icc_profile.psd",
+            replace_image_resources(source_path.read_bytes(), mode4_valid_icc_resource),
+        )
+        write_file(
+            out_dir
+            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal_bad_icc_profile.psd",
+            replace_image_resources(source_path.read_bytes(), mode4_bad_icc_resource),
+        )
+        write_file(
+            out_dir
+            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal_malformed_resource.psd",
+            replace_image_resources(source_path.read_bytes(), mode4_malformed_resources),
         )
 
 

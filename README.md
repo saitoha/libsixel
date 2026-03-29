@@ -1055,7 +1055,8 @@ mask remains unchanged.
 For `mode=7` mapped CMYK decode (`channels=4`), invalid/malformed ICC resource
 traces follow the same CMYK contract as native `mode=4`, and valid embedded ICC
 paths are expected to avoid false `embedded ICC conversion failed` traces.
-For missing-composite multi-layer fallback on `mode=7` CMYK-mapped paths:
+For missing-composite multi-layer fallback on CMYK paths (`mode=4` and
+`mode=7` `channels=4`):
 `CMYK8` bad ICC bytes keep `embedded ICC conversion failed` trace behavior,
 while `CMYK16/32` bad ICC bytes are not misclassified as malformed resources;
 malformed resource sections keep the deterministic
