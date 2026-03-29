@@ -194,7 +194,7 @@ sixel_helper_set_builtin_enable_cms(int enable)
     }
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_helper_set_loader_background_colorspace(int colorspace)
 {
     if (colorspace == SIXEL_COLORSPACE_GAMMA ||
@@ -229,7 +229,7 @@ loader_background_initialize_colorspace(void)
     }
 }
 
-int
+SIXEL_INTERNAL_API int
 loader_background_colorspace(void)
 {
     int override_value;
