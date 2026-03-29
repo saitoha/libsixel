@@ -112,6 +112,23 @@ static SIXELSTATUS
 sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable);
 
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+#define SIXEL_TTY_ABORT_RESTORE_MAX 8
+
+typedef struct sixel_tty_abort_restore_slot {
+    volatile int active;
+    int fd;
+    struct termios old_termios;
+} sixel_tty_abort_restore_slot_t;
+
+static sixel_tty_abort_restore_slot_t
+    g_tty_abort_restore_slots[SIXEL_TTY_ABORT_RESTORE_MAX];
+
+static SIXELSTATUS
+sixel_tty_register_cbreak_fd(int fd, struct termios const *old_termios);
+
+static void
+sixel_tty_unregister_cbreak_fd(int fd);
+
 static SIXELSTATUS
 sixel_tty_cbreak_fd(int fd,
                     struct termios *old_termios,
@@ -595,6 +612,66 @@ sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable)
 
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
 static SIXELSTATUS
+sixel_tty_register_cbreak_fd(int fd, struct termios const *old_termios)
+{
+    int index;
+    int slot;
+
+    index = 0;
+    slot = -1;
+
+    if (fd < 0 || old_termios == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
+        if (g_tty_abort_restore_slots[index].active != 0) {
+            if (g_tty_abort_restore_slots[index].fd == fd) {
+                slot = index;
+                break;
+            }
+            continue;
+        }
+        if (slot < 0) {
+            slot = index;
+        }
+    }
+
+    if (slot < 0) {
+        return SIXEL_FALSE;
+    }
+
+    g_tty_abort_restore_slots[slot].old_termios = *old_termios;
+    g_tty_abort_restore_slots[slot].fd = fd;
+    g_tty_abort_restore_slots[slot].active = 1;
+
+    return SIXEL_OK;
+}
+
+static void
+sixel_tty_unregister_cbreak_fd(int fd)
+{
+    int index;
+
+    index = 0;
+
+    if (fd < 0) {
+        return;
+    }
+
+    for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
+        if (g_tty_abort_restore_slots[index].active == 0) {
+            continue;
+        }
+        if (g_tty_abort_restore_slots[index].fd != fd) {
+            continue;
+        }
+        g_tty_abort_restore_slots[index].active = 0;
+        g_tty_abort_restore_slots[index].fd = -1;
+    }
+}
+
+static SIXELSTATUS
 sixel_tty_cbreak_fd(int fd,
                     struct termios *old_termios,
                     struct termios *new_termios)
@@ -626,6 +703,8 @@ sixel_tty_cbreak_fd(int fd,
         return status;
     }
 
+    (void)sixel_tty_register_cbreak_fd(fd, old_termios);
+
     status = SIXEL_OK;
     return status;
 }
@@ -649,8 +728,42 @@ sixel_tty_restore_fd(int fd, struct termios *old_termios)
         return status;
     }
 
+    sixel_tty_unregister_cbreak_fd(fd);
+
     status = SIXEL_OK;
     return status;
+}
+
+SIXEL_INTERNAL_API void
+sixel_tty_restore_cbreak_for_abort(void)
+{
+    int index;
+    int fd;
+    struct termios old_termios;
+
+    index = 0;
+    fd = -1;
+    memset(&old_termios, 0, sizeof(old_termios));
+
+    /*
+     * Abort handlers can interrupt normal cleanup while the terminal still
+     * runs in cbreak mode. Restore every tracked descriptor best-effort so
+     * the shell is usable after abnormal termination.
+     */
+    for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
+        if (g_tty_abort_restore_slots[index].active == 0) {
+            continue;
+        }
+
+        fd = g_tty_abort_restore_slots[index].fd;
+        old_termios = g_tty_abort_restore_slots[index].old_termios;
+        g_tty_abort_restore_slots[index].active = 0;
+        g_tty_abort_restore_slots[index].fd = -1;
+
+        if (fd >= 0) {
+            (void)tcsetattr(fd, TCSAFLUSH, &old_termios);
+        }
+    }
 }
 
 SIXELSTATUS
@@ -665,6 +778,13 @@ sixel_tty_cbreak(struct termios *old_termios, struct termios *new_termios)
     return status;
 }
 #endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
+
+#if !HAVE_TERMIOS_H || !HAVE_SYS_IOCTL_H || !HAVE_ISATTY
+SIXEL_INTERNAL_API void
+sixel_tty_restore_cbreak_for_abort(void)
+{
+}
+#endif  /* !HAVE_TERMIOS_H || !HAVE_SYS_IOCTL_H || !HAVE_ISATTY */
 
 
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
@@ -855,6 +975,7 @@ sixel_tty_query_osc11_bgcolor_with_drain(
 cleanup:
     if (raw_active != 0) {
         (void)sixel_tty_restore_fd(ttyfd, &old_termios);
+        sixel_tty_unregister_cbreak_fd(ttyfd);
     }
     if (ttyfd >= 0) {
         (void)sixel_compat_close(ttyfd);

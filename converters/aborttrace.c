@@ -103,6 +103,12 @@ void backtrace_symbols_fd(void *const *buffer, int size, int fd);
 #define SIXEL_ABORTTRACE_STDERR_FD 2
 #define SIXEL_ABORTTRACE_MAX_FRAMES 64
 
+/*
+ * Keep aborttrace independent from private src/ headers by declaring the
+ * emergency tty restore hook locally.
+ */
+void sixel_tty_restore_cbreak_for_abort(void);
+
 static volatile sig_atomic_t g_aborttrace_installed = 0;
 
 #if defined(SA_SIGINFO) && (defined(__GLIBC__) || \
@@ -482,6 +488,8 @@ sixel_aborttrace_signal_handler(int signum)
 {
     (void)signum;
 
+    sixel_tty_restore_cbreak_for_abort();
+
     /* DbgHelp routines are not async-signal-safe.  The handler is only used
      * for debugging when abort() is otherwise unhandled, so the trade-off is
      * acceptable and keeps sanitizers in charge of their own handlers.
@@ -569,6 +577,8 @@ sixel_aborttrace_signal_handler_siginfo(int signum, siginfo_t *info,
     (void)info;
     (void)context;
 
+    sixel_tty_restore_cbreak_for_abort();
+
     /* The glibc backtrace helpers are not async-signal-safe.  We only call
      * them while the process is already aborting to aid post-mortem work.
      */
@@ -588,6 +598,8 @@ sixel_aborttrace_signal_handler_simple(int signum)
      * delivered through sa_handler.
      */
     (void)signum;
+
+    sixel_tty_restore_cbreak_for_abort();
 
     sixel_aborttrace_log_banner();
     sixel_aborttrace_dump_frames();
