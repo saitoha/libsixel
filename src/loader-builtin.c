@@ -4634,6 +4634,184 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+sixel_builtin_load_stbi_png_path(
+    sixel_builtin_load_request_t const *load_request,
+    sixel_builtin_load_context_t const *load_context,
+    sixel_frame_t *frame,
+    int chunk_size,
+    stbi__context *stb_context,
+    stbi__result_info *ri,
+    int png_keycolor_mode,
+    int *animation_handled)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (animation_handled != NULL) {
+        *animation_handled = 0;
+    }
+    if (load_request == NULL ||
+        load_context == NULL ||
+        load_request->chunk == NULL ||
+        frame == NULL ||
+        stb_context == NULL ||
+        ri == NULL ||
+        animation_handled == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * Try APNG first for builtin PNG path. Regular PNG input returns
+     * SIXEL_FALSE and then falls through to existing single-frame
+     * decode logic.
+     */
+    status = sixel_builtin_load_apng_frames(load_request->chunk,
+                                            load_request->fstatic,
+                                            load_request->bgcolor,
+                                            load_request->enable_cms,
+                                            load_request->loop_control,
+                                            load_context->start_frame_no,
+                                            load_request->fn_load,
+                                            load_request->callback_context);
+    if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
+        *animation_handled = 1;
+        return status;
+    }
+
+    status = sixel_builtin_load_png_single_frame(load_request->chunk,
+                                                 chunk_size,
+                                                 frame,
+                                                 stb_context,
+                                                 ri,
+                                                 load_request->fuse_palette,
+                                                 load_request->reqcolors,
+                                                 load_request->enable_cms,
+                                                 png_keycolor_mode,
+                                                 load_request->bgcolor);
+    return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_load_stbi_nonpng_path(
+    sixel_builtin_load_request_t const *load_request,
+    sixel_frame_t *frame,
+    int chunk_size,
+    stbi__context *stb_context,
+    stbi__result_info *ri,
+    int is_jpeg,
+    int is_psd,
+#if HAVE_LCMS2
+    int is_tiff,
+#endif
+    unsigned char **icc_profile,
+    size_t *icc_profile_length,
+    unsigned char **psd_transparent_mask,
+    size_t *psd_transparent_mask_size)
+{
+    if (load_request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_builtin_load_nonpng_single_frame(
+        load_request->chunk,
+        chunk_size,
+        frame,
+        stb_context,
+        ri,
+        load_request->fuse_palette,
+        load_request->bgcolor,
+        load_request->enable_cms,
+        is_jpeg,
+        is_psd,
+#if HAVE_LCMS2
+        is_tiff,
+#endif
+        icc_profile,
+        icc_profile_length,
+        psd_transparent_mask,
+        psd_transparent_mask_size);
+}
+
+static SIXELSTATUS
+sixel_builtin_load_stbi_path(
+    sixel_builtin_load_request_t const *load_request,
+    sixel_builtin_load_context_t const *load_context,
+    sixel_frame_t **pframe,
+    stbi__context *stb_context,
+    stbi__result_info *ri,
+    int is_png,
+    int is_jpeg,
+    int is_psd,
+#if HAVE_LCMS2
+    int is_tiff,
+#endif
+    unsigned char **icc_profile,
+    size_t *icc_profile_length,
+    unsigned char **psd_transparent_mask,
+    size_t *psd_transparent_mask_size,
+    int *animation_handled)
+{
+    SIXELSTATUS status;
+    int chunk_size;
+    int png_keycolor_mode;
+
+    status = SIXEL_FALSE;
+    chunk_size = 0;
+    png_keycolor_mode = 0;
+    if (load_request == NULL ||
+        load_request->chunk == NULL ||
+        load_context == NULL ||
+        pframe == NULL ||
+        stb_context == NULL ||
+        ri == NULL ||
+        icc_profile == NULL ||
+        icc_profile_length == NULL ||
+        psd_transparent_mask == NULL ||
+        psd_transparent_mask_size == NULL ||
+        animation_handled == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *animation_handled = 0;
+    status = sixel_builtin_prepare_frame_and_chunk_size(load_request->chunk,
+                                                        pframe,
+                                                        &chunk_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    stbi_allocator = load_request->chunk->allocator;
+    if (is_png) {
+        png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
+            load_request->chunk,
+            load_request->bgcolor,
+            load_request->enable_cms);
+        return sixel_builtin_load_stbi_png_path(load_request,
+                                                load_context,
+                                                *pframe,
+                                                chunk_size,
+                                                stb_context,
+                                                ri,
+                                                png_keycolor_mode,
+                                                animation_handled);
+    }
+    return sixel_builtin_load_stbi_nonpng_path(
+        load_request,
+        *pframe,
+        chunk_size,
+        stb_context,
+        ri,
+        is_jpeg,
+        is_psd,
+#if HAVE_LCMS2
+        is_tiff,
+#endif
+        icc_profile,
+        icc_profile_length,
+        psd_transparent_mask,
+        psd_transparent_mask_size);
+}
+
 SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const *pchunk,
@@ -4657,7 +4835,6 @@ load_with_builtin(
     int is_png;
     int is_jpeg;
     int is_psd;
-    int png_keycolor_mode;
     unsigned char *icc_profile;
     size_t icc_profile_length;
     unsigned char *psd_transparent_mask;
@@ -4665,6 +4842,7 @@ load_with_builtin(
     sixel_builtin_load_request_t load_request;
     sixel_builtin_load_context_t load_context;
     sixel_builtin_decode_path_t decode_path;
+    int animation_handled;
 #if HAVE_LCMS2
     int is_tiff;
 #endif
@@ -4678,7 +4856,6 @@ load_with_builtin(
     is_png = 0;
     is_jpeg = 0;
     is_psd = 0;
-    png_keycolor_mode = 0;
     icc_profile = NULL;
     icc_profile_length = 0u;
     psd_transparent_mask = NULL;
@@ -4696,6 +4873,7 @@ load_with_builtin(
     load_request.callback_context = context;
     memset(&load_context, 0, sizeof(load_context));
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
+    animation_handled = 0;
 #if HAVE_LCMS2
     is_tiff = 0;
 #endif
@@ -4770,71 +4948,27 @@ load_with_builtin(
 
     case SIXEL_BUILTIN_DECODE_PATH_STBI:
     default:
-        status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
-                                                            &frame,
-                                                            &chunk_size);
+        status = sixel_builtin_load_stbi_path(&load_request,
+                                              &load_context,
+                                              &frame,
+                                              &stb_context,
+                                              &ri,
+                                              is_png,
+                                              is_jpeg,
+                                              is_psd,
+#if HAVE_LCMS2
+                                              is_tiff,
+#endif
+                                              &icc_profile,
+                                              &icc_profile_length,
+                                              &psd_transparent_mask,
+                                              &psd_transparent_mask_size,
+                                              &animation_handled);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        stbi_allocator = pchunk->allocator;
-        if (is_png) {
-            png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
-                pchunk,
-                bgcolor,
-                enable_cms);
-        }
-        if (is_png) {
-            /*
-             * Try APNG first for builtin PNG path. Regular PNG input returns
-             * SIXEL_FALSE and then falls through to existing single-frame
-             * decode logic.
-             */
-            status = sixel_builtin_load_apng_frames(pchunk,
-                                                    fstatic,
-                                                    bgcolor,
-                                                    enable_cms,
-                                                    loop_control,
-                                                    load_context.start_frame_no,
-                                                    fn_load,
-                                                    context);
-            if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
-                goto end;
-            }
-            status = sixel_builtin_load_png_single_frame(pchunk,
-                                                         chunk_size,
-                                                         frame,
-                                                         &stb_context,
-                                                         &ri,
-                                                         fuse_palette,
-                                                         reqcolors,
-                                                         enable_cms,
-                                                         png_keycolor_mode,
-                                                         bgcolor);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        } else {
-            status = sixel_builtin_load_nonpng_single_frame(
-                pchunk,
-                chunk_size,
-                frame,
-                &stb_context,
-                &ri,
-                fuse_palette,
-                bgcolor,
-                enable_cms,
-                is_jpeg,
-                is_psd,
-#if HAVE_LCMS2
-                is_tiff,
-#endif
-                &icc_profile,
-                &icc_profile_length,
-                &psd_transparent_mask,
-                &psd_transparent_mask_size);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
+        if (animation_handled != 0) {
+            goto end;
         }
     }
 
