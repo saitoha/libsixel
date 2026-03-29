@@ -95,14 +95,18 @@ Key points used by this roadmap:
     mask/layer effects/knockout, and informational non-pixel ignore trace
     coverage (pixel-present and no-pixel skip cases).
   - multi-layer missing-composite normal-blend decode coverage for
-    RGB16/RGB32/Lab16/CMYK16.
+    RGB16/RGB32/Lab16/CMYK8/CMYK16/CMYK32.
   - multi-layer missing-composite clipping-group and raster-mask decode
-    coverage for RGB16/RGB32.
+    coverage for RGB16/RGB32/CMYK8/CMYK16/CMYK32.
+  - multi-layer missing-composite unsupported trace coverage for
+    CMYK8/CMYK16/CMYK32:
+    unknown blend/vector mask/layer effects/knockout.
   - mode7 multi-layer missing-composite decode coverage:
     `3ch->RGB16/RGB32` and `4ch->CMYK16/CMYK32` for normal, clipping-group,
     and raster-mask paths.
   - mode7 multi-layer unsupported trace coverage:
-    unknown blend/vector mask/layer effects/knockout.
+    unknown blend/vector mask/layer effects/knockout
+    (RGB8 and CMYK8/CMYK16/CMYK32 mapped paths).
   - mode7 multi-layer informational non-pixel ignore trace coverage
     (pixel-present and no-pixel skip cases).
 - Validation trace coverage includes:
@@ -241,10 +245,10 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Extend layer-fallback semantics beyond the current staged baseline:
-   non-pixel payload is now tolerated by pixel-first composition / no-pixel
-   skip, while vector/effects/knockout remain deterministic unsupported.
-2. Lock ICC-application policy by output format (RGB/Linear RGB/Lab paths) and
+1. Lock ICC-application policy by output format (RGB/Linear RGB/Lab paths) and
    keep README/trace contracts synchronized with implementation.
-3. Keep PSB (`8BPB`) out of scope for this milestone, but maintain and test a
+2. Keep PSB (`8BPB`) out of scope for this milestone, but maintain and test a
    migration boundary from PSD parser/decoder primitives.
+3. Add broader PSD matrix smoke execution in CI around the expanded
+   missing-composite fallback surface (`CMYK8/16/32`, mode7 mapped paths)
+   to catch regressions earlier than full suite jobs.
