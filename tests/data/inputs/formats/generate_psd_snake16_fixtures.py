@@ -2228,6 +2228,129 @@ def generate(out_dir: pathlib.Path):
         out_dir / "snake16_cmyk32_missing_composite_single_layer.psd",
         build_psd_layer_only_single_cmyk32(cmyk32_planes),
     )
+    write_file(
+        out_dir / "snake16_cmyk32_missing_composite_multilayer_normal.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=32,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer: opaque black patch (PSD CMYK polarity inverted)
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(0.0, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    # bottom layer: snake base
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk32_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk32_missing_composite_multilayer_clipping.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=32,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top clipped layer: full-canvas black clipped by base below
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_f32_patch_plane(1.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(1.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(1.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(0.0, 0, 0, HEIGHT, WIDTH),
+                    ],
+                    "blend_key": b"norm",
+                    "clipping": 1,
+                },
+                {
+                    # clipping base: opaque white patch
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": [
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                        build_f32_patch_plane(1.0, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk32_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk32_missing_composite_multilayer_mask.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=32,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    # top layer with raster user mask channel (-2)
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3, -2],
+                    "planes": [
+                        build_f32_patch_plane(1.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(1.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(1.0, 0, 0, HEIGHT, WIDTH),
+                        build_f32_patch_plane(0.0, 0, 0, HEIGHT, WIDTH),
+                        alpha32_plane,
+                    ],
+                    "blend_key": b"norm",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk32_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
 
     # Multichannel (mode=7) fixtures:
     # - channels=3 behaves like RGB
