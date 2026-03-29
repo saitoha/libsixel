@@ -39,6 +39,7 @@
 #include "allocator.h"
 #include "cms.h"
 #include "frompsd.h"
+#include "loader-common.h"
 #include "pixelformat.h"
 
 #define SIXEL_FROMPSD_MAX_CHANNELS 56u
@@ -1062,6 +1063,38 @@ typedef struct sixel_builtin_psd_layer_buffers {
     float *alpha;
     size_t pixel_count;
 } sixel_builtin_psd_layer_buffers_t;
+
+static int
+sixel_builtin_psd_layer_has_decodable_pixel_channels(
+    sixel_builtin_psd_info_t const *info,
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    if (info == NULL || layer == NULL) {
+        return 0;
+    }
+    if (info->color_mode == 3u ||
+        (info->color_mode == 7u && info->channels == 3u)) {
+        return layer->red_channel_index >= 0 &&
+            layer->green_channel_index >= 0 &&
+            layer->blue_channel_index >= 0;
+    }
+    if (info->color_mode == 1u || info->color_mode == 8u) {
+        return layer->gray_channel_index >= 0;
+    }
+    if (info->color_mode == 4u ||
+        (info->color_mode == 7u && info->channels == 4u)) {
+        return layer->c_channel_index >= 0 &&
+            layer->m_channel_index >= 0 &&
+            layer->y_channel_index >= 0 &&
+            layer->k_channel_index >= 0;
+    }
+    if (info->color_mode == 9u) {
+        return layer->red_channel_index >= 0 &&
+            layer->green_channel_index >= 0 &&
+            layer->blue_channel_index >= 0;
+    }
+    return 0;
+}
 
 static void
 sixel_builtin_psd_layer_model_init(sixel_builtin_psd_layer_model_t *model)
@@ -2972,10 +3005,16 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         src_layer.pixel_count = 0u;
 
         if (layer->has_non_pixel_payload != 0) {
-            sixel_helper_set_additional_message(
-                "builtin PSD: unsupported non-pixel layer in layer fallback");
-            status = SIXEL_STBI_ERROR;
-            goto cleanup;
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: ignoring non-pixel payload in layer fallback");
+            if (!sixel_builtin_psd_layer_has_decodable_pixel_channels(info,
+                                                                       layer)) {
+                if (layer->clipping == 0u) {
+                    clip_alpha_valid = 0;
+                }
+                continue;
+            }
         }
         if (layer->has_vector_mask != 0) {
             sixel_helper_set_additional_message(
