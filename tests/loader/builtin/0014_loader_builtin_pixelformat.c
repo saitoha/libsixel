@@ -1842,93 +1842,182 @@ hdr_test_compare_probe(char const *label,
 }
 
 static int
+hdr_test_parse_choice(char const *text,
+                      int default_value,
+                      char const * const *keys,
+                      int const *values,
+                      size_t count,
+                      int *out_value)
+{
+    size_t index;
+
+    index = 0u;
+    if (keys == NULL || values == NULL || out_value == NULL) {
+        return 1;
+    }
+    if (text == NULL || text[0] == '\0') {
+        *out_value = default_value;
+        return 0;
+    }
+
+    for (index = 0u; index < count; ++index) {
+        if (strcmp(text, keys[index]) == 0) {
+            *out_value = values[index];
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int
 hdr_test_parse_gamma_mode(char const *text,
                           hdr_test_gamma_mode_t *out_mode)
 {
+    static char const * const keys[] = {
+        "none",
+        "2.2",
+        "2_2"
+    };
+    static int const values[] = {
+        HDR_TEST_GAMMA_NONE,
+        HDR_TEST_GAMMA_22,
+        HDR_TEST_GAMMA_22
+    };
+    int parsed;
+
+    parsed = HDR_TEST_GAMMA_NONE;
     if (out_mode == NULL) {
         return 1;
     }
-    if (text == NULL || text[0] == '\0' || strcmp(text, "none") == 0) {
-        *out_mode = HDR_TEST_GAMMA_NONE;
-        return 0;
+    if (hdr_test_parse_choice(text,
+                              HDR_TEST_GAMMA_NONE,
+                              keys,
+                              values,
+                              sizeof(keys) / sizeof(keys[0]),
+                              &parsed) != 0) {
+        return 1;
     }
-    if (strcmp(text, "2.2") == 0 || strcmp(text, "2_2") == 0) {
-        *out_mode = HDR_TEST_GAMMA_22;
-        return 0;
-    }
-    return 1;
+    *out_mode = (hdr_test_gamma_mode_t)parsed;
+    return 0;
 }
 
 static int
 hdr_test_parse_primaries_mode(char const *text,
                               hdr_test_primaries_mode_t *out_mode)
 {
+    static char const * const keys[] = {
+        "none",
+        "bt2020"
+    };
+    static int const values[] = {
+        HDR_TEST_PRIMARIES_NONE,
+        HDR_TEST_PRIMARIES_BT2020
+    };
+    int parsed;
+
+    parsed = HDR_TEST_PRIMARIES_NONE;
     if (out_mode == NULL) {
         return 1;
     }
-    if (text == NULL || text[0] == '\0' || strcmp(text, "none") == 0) {
-        *out_mode = HDR_TEST_PRIMARIES_NONE;
-        return 0;
+    if (hdr_test_parse_choice(text,
+                              HDR_TEST_PRIMARIES_NONE,
+                              keys,
+                              values,
+                              sizeof(keys) / sizeof(keys[0]),
+                              &parsed) != 0) {
+        return 1;
     }
-    if (strcmp(text, "bt2020") == 0) {
-        *out_mode = HDR_TEST_PRIMARIES_BT2020;
-        return 0;
-    }
-    return 1;
+    *out_mode = (hdr_test_primaries_mode_t)parsed;
+    return 0;
 }
 
 static int
 hdr_test_parse_tonemap_mode(char const *text,
                             hdr_test_tonemap_mode_t *out_mode)
 {
+    static char const * const keys[] = {
+        "none",
+        "reinhard"
+    };
+    static int const values[] = {
+        HDR_TEST_TONEMAP_NONE,
+        HDR_TEST_TONEMAP_REINHARD
+    };
+    int parsed;
+
+    parsed = HDR_TEST_TONEMAP_NONE;
     if (out_mode == NULL) {
         return 1;
     }
-    if (text == NULL || text[0] == '\0' || strcmp(text, "none") == 0) {
-        *out_mode = HDR_TEST_TONEMAP_NONE;
-        return 0;
+    if (hdr_test_parse_choice(text,
+                              HDR_TEST_TONEMAP_NONE,
+                              keys,
+                              values,
+                              sizeof(keys) / sizeof(keys[0]),
+                              &parsed) != 0) {
+        return 1;
     }
-    if (strcmp(text, "reinhard") == 0) {
-        *out_mode = HDR_TEST_TONEMAP_REINHARD;
-        return 0;
-    }
-    return 1;
+    *out_mode = (hdr_test_tonemap_mode_t)parsed;
+    return 0;
 }
 
 static int
 hdr_test_parse_fallback_mode(char const *text,
                              hdr_test_fallback_mode_t *out_mode)
 {
+    static char const * const keys[] = {
+        "linear-srgb",
+        "srgb"
+    };
+    static int const values[] = {
+        HDR_TEST_FALLBACK_LINEAR_SRGB,
+        HDR_TEST_FALLBACK_SRGB
+    };
+    int parsed;
+
+    parsed = HDR_TEST_FALLBACK_LINEAR_SRGB;
     if (out_mode == NULL) {
         return 1;
     }
-    if (text == NULL || text[0] == '\0' ||
-        strcmp(text, "linear-srgb") == 0) {
-        *out_mode = HDR_TEST_FALLBACK_LINEAR_SRGB;
-        return 0;
+    if (hdr_test_parse_choice(text,
+                              HDR_TEST_FALLBACK_LINEAR_SRGB,
+                              keys,
+                              values,
+                              sizeof(keys) / sizeof(keys[0]),
+                              &parsed) != 0) {
+        return 1;
     }
-    if (strcmp(text, "srgb") == 0) {
-        *out_mode = HDR_TEST_FALLBACK_SRGB;
-        return 0;
-    }
-    return 1;
+    *out_mode = (hdr_test_fallback_mode_t)parsed;
+    return 0;
 }
 
 static int
 hdr_test_parse_cms_engine(char const *text, int *out_cms_engine)
 {
+    static char const * const keys[] = {
+        "none",
+        "auto"
+    };
+    static int const values[] = {
+        SIXEL_CMS_ENGINE_NONE,
+        SIXEL_CMS_ENGINE_AUTO
+    };
+    int parsed;
+
+    parsed = SIXEL_CMS_ENGINE_NONE;
     if (out_cms_engine == NULL) {
         return 1;
     }
-    if (text == NULL || text[0] == '\0' || strcmp(text, "none") == 0) {
-        *out_cms_engine = SIXEL_CMS_ENGINE_NONE;
-        return 0;
+    if (hdr_test_parse_choice(text,
+                              SIXEL_CMS_ENGINE_NONE,
+                              keys,
+                              values,
+                              sizeof(keys) / sizeof(keys[0]),
+                              &parsed) != 0) {
+        return 1;
     }
-    if (strcmp(text, "auto") == 0) {
-        *out_cms_engine = SIXEL_CMS_ENGINE_AUTO;
-        return 0;
-    }
-    return 1;
+    *out_cms_engine = parsed;
+    return 0;
 }
 
 static int
