@@ -195,6 +195,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
     -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
     -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
+    -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
+    -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
+    -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -241,6 +244,9 @@ test_runner_SOURCES = test_runner.c \
     loader/libpng/0022_loader_libpng_indexed_png_reqcolors_fallback.c \
     loader/librsvg/0023_loader_librsvg_pixelformat.c \
     loader/librsvg/0025_loader_librsvg_decode_mode.c \
+    loader/0050_loader_osc11_colorspec_parser.c \
+    loader/0051_loader_osc11_response_parser.c \
+    loader/0052_loader_osc11_query_control.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \

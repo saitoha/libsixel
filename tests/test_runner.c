@@ -95,6 +95,9 @@ int test_loader_0048_loader_libwebp_fault_anmf_payload_too_small(int argc,
                                                                  char **argv);
 int test_loader_0049_loader_libwebp_fault_anmf_extract_malloc(int argc,
                                                               char **argv);
+int test_loader_0050_loader_osc11_colorspec_parser(int argc, char **argv);
+int test_loader_0051_loader_osc11_response_parser(int argc, char **argv);
+int test_loader_0052_loader_osc11_query_control(int argc, char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -213,6 +216,12 @@ static test_entry_t const test_entries[] = {
       test_loader_0048_loader_libwebp_fault_anmf_payload_too_small },
     { "loader/0049_loader_libwebp_fault_anmf_extract_malloc",
       test_loader_0049_loader_libwebp_fault_anmf_extract_malloc },
+    { "loader/0050_loader_osc11_colorspec_parser",
+      test_loader_0050_loader_osc11_colorspec_parser },
+    { "loader/0051_loader_osc11_response_parser",
+      test_loader_0051_loader_osc11_response_parser },
+    { "loader/0052_loader_osc11_query_control",
+      test_loader_0052_loader_osc11_query_control },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
