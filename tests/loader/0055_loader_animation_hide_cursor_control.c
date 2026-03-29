@@ -70,6 +70,21 @@ run_cleanup_helper_cases(void)
         fprintf(stderr, "restore helper should be idempotent\n");
         return 1;
     }
+    status = sixel_tty_begin_animation_input_guard();
+    if (status != SIXEL_OK && status != SIXEL_FALSE) {
+        fprintf(stderr, "unexpected animation input guard begin status\n");
+        return 1;
+    }
+    status = sixel_tty_end_animation_input_guard();
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "animation input guard end should allow no-op\n");
+        return 1;
+    }
+    status = sixel_tty_end_animation_input_guard();
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "animation input guard end should be idempotent\n");
+        return 1;
+    }
 
     status = sixel_tty_hide_cursor(-1);
     if (status != SIXEL_BAD_ARGUMENT) {
