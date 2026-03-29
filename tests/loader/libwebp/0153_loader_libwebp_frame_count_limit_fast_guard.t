@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper for fast in-memory animation frame-count limit guard.
+# TAP wrapper for fast in-memory frame-count limit guard case.
 
 set -eux
 
