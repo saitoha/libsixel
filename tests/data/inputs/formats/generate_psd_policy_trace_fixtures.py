@@ -102,6 +102,23 @@ def replace_image_resources(data: bytes, resources: bytes) -> bytes:
     return bytes(out)
 
 
+def extract_image_resources_bytes(data: bytes) -> bytes:
+    """Extract raw bytes of image resources section."""
+    _, resources_data_offset, resources_end = locate_image_resources(data)
+    return data[resources_data_offset:resources_end]
+
+
+def build_invalid_icc_resource_block() -> bytes:
+    """Build a structurally valid but semantically invalid ICC resource block."""
+    block = bytearray()
+    block += b"8BIM"
+    block += struct.pack(">H", 0x040F)
+    block += b"\x00\x00"  # empty Pascal name + even padding
+    block += struct.pack(">I", 4)
+    block += b"\x00\x01\x02\x03"
+    return bytes(block)
+
+
 def write_file(path: pathlib.Path, data: bytes) -> None:
     path.write_bytes(data)
     print(path)
@@ -415,6 +432,10 @@ def generate(out_dir: pathlib.Path) -> None:
     mode7_valid_icc_resource = extract_icc_resource_block(
         (out_dir / "stbi_minimal_mode7_cmyk8_valid_icc_profile.psd").read_bytes()
     )
+    mode7_bad_icc_resource = build_invalid_icc_resource_block()
+    mode7_malformed_resources = extract_image_resources_bytes(
+        (out_dir / "stbi_minimal_mode7_bad_resource_signature.psd").read_bytes()
+    )
     for depth_tag in ("8", "16", "32"):
         source_path = (
             out_dir
@@ -427,6 +448,16 @@ def generate(out_dir: pathlib.Path) -> None:
         write_file(
             target_path,
             replace_image_resources(source_path.read_bytes(), mode7_valid_icc_resource),
+        )
+        write_file(
+            out_dir
+            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal_bad_icc_profile.psd",
+            replace_image_resources(source_path.read_bytes(), mode7_bad_icc_resource),
+        )
+        write_file(
+            out_dir
+            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal_malformed_resource.psd",
+            replace_image_resources(source_path.read_bytes(), mode7_malformed_resources),
         )
 
 

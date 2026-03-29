@@ -3590,7 +3590,7 @@ sixel_builtin_psd_trace_skip_icc_reason(
 {
     if (psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED) {
         sixel_builtin_psd_trace_malformed_icc();
-    } else if (psd_custom_decode_mode == SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_8BIT &&
+    } else if (sixel_builtin_psd_mode_is_cmyk(psd_custom_decode_mode) &&
                psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
                !psd_cmyk_icc_applied) {
         sixel_builtin_psd_trace_embedded_icc_failure();
