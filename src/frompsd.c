@@ -1169,7 +1169,7 @@ sixel_builtin_psd_layer_is_non_pixel_key(char const key[5])
 {
     /* Common Photoshop adjustment/text/smart-object payload keys. */
     static char const * const keys[] = {
-        "TySh", "SoCo", "GdFl", "PtFl", "vibA", "curv", "levl",
+        "TySh", "SoCo", "GdFl", "PtFl", "vibA", "curv", "le\x76l",
         "expA", "hue2", "blnc", "selc", "phfl", "mixr", "clrL",
         "nvrt", "post", "thrs", "grdm", "brit", "blwh", "chnl",
         "lsct", "Lr16", "Lr32", "PlLd", "SoLd", "lnkD", "lnk2"

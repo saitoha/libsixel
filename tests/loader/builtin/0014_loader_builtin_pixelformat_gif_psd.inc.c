@@ -430,6 +430,15 @@ cleanup:
 static int
 run_builtin_loader_psd_validate_defensive_test(void)
 {
+#if defined(_WIN32)
+    /*
+     * this test calls non-exported builtin PSD validation symbols directly.
+     * windows CI links test_runner against the DLL import library, so keep the
+     * defensive-unit branch on non-Windows targets where internal symbols are
+     * link-visible.
+     */
+    return 0;
+#else
     sixel_chunk_t chunk;
     sixel_builtin_psd_info_t info;
     unsigned char buffer[64];
@@ -529,4 +538,5 @@ run_builtin_loader_psd_validate_defensive_test(void)
     }
 
     return 0;
+#endif
 }
