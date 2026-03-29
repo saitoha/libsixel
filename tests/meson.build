@@ -167,7 +167,8 @@ test_runner_tests_sources_text = run_command(
   '\\( -path "./.perl-test-venv" -o -path "./.python-test-venv" ' +
   '-o -path "./.ruby-test-venv" -o -path "./.php-test-venv" ' +
   '-o -path "./_artifacts" \\) ' +
-  '-prune -o -type f \\( -name "*.c" -o -name "*.h" \\) -print | ' +
+  '-prune -o -type f \\( -name "*.c" -o -name "*.h" \\) ' +
+  '! -name "*.inc.c" -print | ' +
   'LC_ALL=C sort | sed "s|^\\./||"',
   'meson-test-runner-sources',
   meson.current_source_dir(),
