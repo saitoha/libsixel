@@ -96,7 +96,9 @@ typedef struct webp_animation_decode_control {
 
 #define WEBP_MAX_DIMENSION        32767
 #define WEBP_MAX_IMAGE_PIXELS     ((size_t)268435456u)
+#ifndef WEBP_MAX_ANIMATION_FRAMES
 #define WEBP_MAX_ANIMATION_FRAMES 65535
+#endif
 #define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
 #define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)1048576u)
 #define WEBP_VP8X_FLAG_ANIMATION  0x02u
@@ -1157,6 +1159,7 @@ load_webp(unsigned char **result,
                            webp_decode_status_name(feature_status),
                            (int)feature_status);
             sixel_helper_set_additional_message(error_message);
+            status = SIXEL_BAD_INPUT;
             return status;
         }
     }
