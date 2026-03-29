@@ -389,6 +389,40 @@ gif_resolve_background_color(
     }
 }
 
+static void
+gif_resolve_composition_background_color(
+    gif_t const      /* in */ *g,
+    unsigned char const /* in */ *bgcolor,
+    unsigned char    /* out */ *bg_r,
+    unsigned char    /* out */ *bg_g,
+    unsigned char    /* out */ *bg_b,
+    unsigned char    /* out */ *bg_a)
+{
+    int preserve_transparency;
+
+    preserve_transparency = 0;
+    if (bgcolor != NULL) {
+        if (bg_r != NULL) {
+            *bg_r = bgcolor[0];
+        }
+        if (bg_g != NULL) {
+            *bg_g = bgcolor[1];
+        }
+        if (bg_b != NULL) {
+            *bg_b = bgcolor[2];
+        }
+    } else {
+        gif_resolve_background_color(g, bg_r, bg_g, bg_b);
+        if (g != NULL && g->preserve_transparency != 0) {
+            preserve_transparency = 1;
+        }
+    }
+
+    if (bg_a != NULL) {
+        *bg_a = preserve_transparency != 0 ? 0u : 0xffu;
+    }
+}
+
 
 static size_t
 gif_history_required_bytes(
@@ -1463,8 +1497,12 @@ gif_load_next(
         }
         bcount = pcount * (size_t)GIF_RGB_STRIDE;
 
-        gif_resolve_background_color(g, &bg_r, &bg_g, &bg_b);
-        bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
+        gif_resolve_composition_background_color(g,
+                                                 bgcolor,
+                                                 &bg_r,
+                                                 &bg_g,
+                                                 &bg_b,
+                                                 &bg_a);
 
         if (g->is_multiframe && g->history != NULL && gif_dirty_has_pixels(g)) {
             dirty_min_x = g->dirty_min_x;
@@ -1873,7 +1911,9 @@ gif_reload_header_and_validate_canvas(gif_context_t *s,
 }
 
 static void
-gif_reset_canvas_for_loop(gif_t *g, size_t pcount)
+gif_reset_canvas_for_loop(gif_t *g,
+                          size_t pcount,
+                          unsigned char const *bgcolor)
 {
     size_t i;
     size_t pixel_offset;
@@ -1892,8 +1932,12 @@ gif_reset_canvas_for_loop(gif_t *g, size_t pcount)
         return;
     }
 
-    gif_resolve_background_color(g, &bg_r, &bg_g, &bg_b);
-    bg_a = g->preserve_transparency != 0 ? 0u : 0xffu;
+    gif_resolve_composition_background_color(g,
+                                             bgcolor,
+                                             &bg_r,
+                                             &bg_g,
+                                             &bg_b,
+                                             &bg_a);
     for (i = 0u; i < pcount; ++i) {
         pixel_offset = i * (size_t)GIF_RGB_STRIDE;
         g->out[pixel_offset + 0] = bg_r;
@@ -2230,7 +2274,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
         goto end;
     }
 
-    gif_reset_canvas_for_loop(g, pcount);
+    gif_reset_canvas_for_loop(g, pcount, bgcolor);
     sixel_frame_set_loop_count(frame, 0);
     *pg = g;
     *pframe = frame;
@@ -2332,6 +2376,7 @@ static SIXELSTATUS
 gif_prepare_loop_iteration(gif_context_t *s,
                            gif_t *g,
                            sixel_frame_t *frame,
+                           unsigned char const *bgcolor,
                            size_t *pcount,
                            gif_decode_progress_t *progress)
 {
@@ -2357,7 +2402,7 @@ gif_prepare_loop_iteration(gif_context_t *s,
     if (status != SIXEL_OK) {
         return status;
     }
-    gif_reset_canvas_for_loop(g, *pcount);
+    gif_reset_canvas_for_loop(g, *pcount, bgcolor);
     g->is_multiframe = 0;
     g->is_terminated = 0;
     return SIXEL_OK;
@@ -2382,7 +2427,12 @@ gif_decode_animation_loops(gif_context_t *s,
     }
 
     for (;;) { /* per loop */
-        status = gif_prepare_loop_iteration(s, g, frame, &pcount, &progress);
+        status = gif_prepare_loop_iteration(s,
+                                            g,
+                                            frame,
+                                            request->bgcolor,
+                                            &pcount,
+                                            &progress);
         if (SIXEL_FAILED(status)) {
             return status;
         }

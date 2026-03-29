@@ -100,6 +100,7 @@ int test_loader_0051_loader_osc11_response_parser(int argc, char **argv);
 int test_loader_0052_loader_osc11_query_control(int argc, char **argv);
 int test_loader_0053_loader_background_colorspace_override(int argc,
                                                             char **argv);
+int test_loader_0054_loader_gif_bgcolor_canvas_fill(int argc, char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -226,6 +227,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0052_loader_osc11_query_control },
     { "loader/0053_loader_background_colorspace_override",
       test_loader_0053_loader_background_colorspace_override },
+    { "loader/0054_loader_gif_bgcolor_canvas_fill",
+      test_loader_0054_loader_gif_bgcolor_canvas_fill },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

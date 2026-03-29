@@ -248,6 +248,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0051_loader_osc11_response_parser.c \
     loader/0052_loader_osc11_query_control.c \
     loader/0053_loader_background_colorspace_override.c \
+    loader/0054_loader_gif_bgcolor_canvas_fill.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \
