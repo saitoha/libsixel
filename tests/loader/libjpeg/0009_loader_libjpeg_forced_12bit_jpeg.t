@@ -26,6 +26,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-jpeg-12bit.six"
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libjpeg! "${input_jpeg}" -o "${output_sixel}" || {
     echo "not ok" 1 - "forced libjpeg 12-bit JPEG decode failed"

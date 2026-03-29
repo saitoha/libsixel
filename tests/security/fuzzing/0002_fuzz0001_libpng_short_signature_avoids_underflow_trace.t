@@ -13,8 +13,8 @@ echo "1..1"
 set -v
 
 fuzz_input="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0001/libpng_short_signature.bin"
+mkdir -p "${ARTIFACT_LOCAL_DIR-/tmp}"
 trace_log="${ARTIFACT_LOCAL_DIR-/tmp}/fuzz0001_libpng_short_signature.trace"
-mkdir -p "$(dirname "${trace_log}")"
 
 set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=apng_decode -Llibpng! "${fuzz_input}" -o /dev/null \
