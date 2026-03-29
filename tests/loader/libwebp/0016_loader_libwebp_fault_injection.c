@@ -15,7 +15,8 @@ typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_NONE = 0,
     WEBP_FI_FAIL_OPTIONS_INIT,
     WEBP_FI_FAIL_DECODER_NEW,
-    WEBP_FI_FAIL_DECODER_GET_INFO
+    WEBP_FI_FAIL_DECODER_GET_INFO,
+    WEBP_FI_FAIL_DECODER_GET_NEXT
 } webp_fi_failpoint_t;
 
 static webp_fi_failpoint_t g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
@@ -28,6 +29,10 @@ static WebPAnimDecoder *(*g_real_WebPAnimDecoderNew)(WebPData const *,
 static int (*g_real_WebPAnimDecoderGetInfo)(WebPAnimDecoder const *,
                                             WebPAnimInfo *) =
     WebPAnimDecoderGetInfo;
+static int (*g_real_WebPAnimDecoderGetNext)(WebPAnimDecoder *,
+                                            uint8_t **,
+                                            int *) =
+    WebPAnimDecoderGetNext;
 
 static int
 webpfi_WebPAnimDecoderOptionsInit(WebPAnimDecoderOptions *options)
@@ -58,9 +63,21 @@ webpfi_WebPAnimDecoderGetInfo(WebPAnimDecoder const *decoder,
     return g_real_WebPAnimDecoderGetInfo(decoder, anim_info);
 }
 
+static int
+webpfi_WebPAnimDecoderGetNext(WebPAnimDecoder *decoder,
+                              uint8_t **buf_ptr,
+                              int *timestamp)
+{
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_GET_NEXT) {
+        return 0;
+    }
+    return g_real_WebPAnimDecoderGetNext(decoder, buf_ptr, timestamp);
+}
+
 #define WebPAnimDecoderOptionsInit webpfi_WebPAnimDecoderOptionsInit
 #define WebPAnimDecoderNew webpfi_WebPAnimDecoderNew
 #define WebPAnimDecoderGetInfo webpfi_WebPAnimDecoderGetInfo
+#define WebPAnimDecoderGetNext webpfi_WebPAnimDecoderGetNext
 
 /*
  * Avoid global symbol collisions with the linked libsixel objects while
@@ -88,6 +105,7 @@ webpfi_WebPAnimDecoderGetInfo(WebPAnimDecoder const *decoder,
 #undef WebPAnimDecoderOptionsInit
 #undef WebPAnimDecoderNew
 #undef WebPAnimDecoderGetInfo
+#undef WebPAnimDecoderGetNext
 
 static SIXELSTATUS
 capture_noop_frame(sixel_frame_t *frame, void *data)
@@ -213,10 +231,18 @@ run_libwebp_fault_injection_test(void)
         return status;
     }
 
-    return run_decoder_setup_fail_case(
+    status = run_decoder_setup_fail_case(
         WEBP_FI_FAIL_DECODER_GET_INFO,
         "load_with_libwebp: WebPAnimDecoderGetInfo failed.",
         "libwebp fault injection decoder-getinfo");
+    if (status != 0) {
+        return status;
+    }
+
+    return run_decoder_setup_fail_case(
+        WEBP_FI_FAIL_DECODER_GET_NEXT,
+        "load_with_libwebp: WebPAnimDecoderGetNext failed.",
+        "libwebp fault injection decoder-getnext");
 }
 #endif
 
