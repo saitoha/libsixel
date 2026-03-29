@@ -86,7 +86,8 @@ Key points used by this roadmap:
   - `Raw/RLE/ZIP/ZIP+Prediction` decode regressions
   - policy traces for invalid channel-count/depth combinations
   - CMYK-mapped mode7 ICC trace coverage (valid profile no-false-failure,
-    invalid profile, and malformed resource section)
+    invalid profile, and malformed resource section), including
+    missing-composite multi-layer normal path for `4ch->CMYK8/16/32`
   - mode7 missing-composite policy traces across mapped depth variants
     (`RGB8/16/32`, `CMYK8/16/32`)
   - multi-layer missing-composite coverage for RGB8:
