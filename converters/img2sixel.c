@@ -851,7 +851,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_OSC11_BG_QUERY",
         "enable OSC11 background color probing in loaders.\n"
         "Only the exact value '1' enables probing. Defaults to off, but\n"
-        "img2sixel sets it to '1' when the variable is unset."
+        "img2sixel sets it to '1' when the variable is unset.\n"
+        "When OSC11 succeeds, background colorspace is forced to gamma."
     },
     {
         "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS",
@@ -974,7 +975,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_BACKGROUND_COLORSPACE",
         "set how loader background colors are interpreted during alpha\n"
-        "composition. Accepts gamma (default) or linear."
+        "composition. Accepts gamma (default) or linear.\n"
+        "Ignored when background color comes from OSC11 query."
     },
     {
         "SIXEL_LOADER_ORIENTATION",

@@ -1688,6 +1688,7 @@ sixel_loader_load_file(
     sixel_loader_osc11_bg_query_job_t osc11_query_job;
     char const *osc11_timeout_env;
     int osc11_timeout_ms;
+    int osc11_bgcolor_applied;
     int thread_status;
     int wait_result;
 
@@ -1706,6 +1707,7 @@ sixel_loader_load_file(
     selected_name = NULL;
     osc11_timeout_env = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
+    osc11_bgcolor_applied = 0;
     thread_status = SIXEL_FALSE;
     wait_result = 0;
     sixel_option_init_argument_list_resolution(&order_resolution);
@@ -1779,6 +1781,7 @@ sixel_loader_load_file(
                 loader->bgcolor[1] = osc11_query_job.bgcolor[1];
                 loader->bgcolor[2] = osc11_query_job.bgcolor[2];
                 loader->has_bgcolor = 1;
+                osc11_bgcolor_applied = 1;
             }
         }
     }
@@ -1889,8 +1892,19 @@ sixel_loader_load_file(
                 osc11_timeout_ms);
             (void)wait_result;
         }
-        (void)loader_osc11_bg_query_job_apply_if_ready(loader,
-                                                       &osc11_query_job);
+        if (loader_osc11_bg_query_job_apply_if_ready(loader,
+                                                     &osc11_query_job) != 0) {
+            osc11_bgcolor_applied = 1;
+        }
+    }
+
+    if (osc11_bgcolor_applied != 0) {
+        /*
+         * OSC11 replies are terminal UI colors and therefore gamma-encoded.
+         * Force gamma interpretation for this load even when the process
+         * default requested a different background color space.
+         */
+        sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
     }
 
     option_context.loader = loader;
@@ -1949,6 +1963,9 @@ sixel_loader_load_file(
     }
 
 end:
+    if (osc11_bgcolor_applied != 0) {
+        sixel_helper_set_loader_background_colorspace(-1);
+    }
     loader_osc11_bg_query_job_join(&osc11_query_job);
     loader_chain_unref(chain);
     chain = NULL;

@@ -866,7 +866,9 @@ SIXEL_LOADER_OSC11_BG_QUERY
                            Only the exact value "1" enables it.
                            Default is off. img2sixel sets this
                            variable to "1" only when it is
-                           unset.
+                           unset. When probing succeeds, the
+                           returned background is treated as
+                           gamma.
 SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
                            timeout in milliseconds for the
                            loader OSC11 background query wait.
@@ -887,6 +889,12 @@ SIXEL_LOADER_PRIORITY_LIST override default loader search order.
                            as the -L/--loaders option (including
                            prefixes and the trailing "!") and is
                            ignored when that option is set.
+SIXEL_LOADER_BACKGROUND_COLORSPACE
+                           set background colorspace used for
+                           loader-side alpha composition.
+                           Accepts gamma (default) or linear.
+                           Ignored when bgcolor comes from
+                           SIXEL_LOADER_OSC11_BG_QUERY.
 SIXEL_LOADER_ORIENTATION   default EXIF orientation handling for
                            libjpeg/libpng/libwebp loaders.
                            Accepts on/off (preferred) and 1/0 aliases.
