@@ -92,6 +92,11 @@
 # endif
 #endif
 
+/* for msvc */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
+
 /*
  * Cache describing the capabilities of the active output device.
  * The struct lives in static storage because the helper routines are
@@ -821,6 +826,66 @@ sixel_tty_restore_cursor(int fd)
     return SIXEL_OK;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_begin_animation_input_guard(void)
+{
+    SIXELSTATUS status;
+    struct termios old_termios;
+    struct termios new_termios;
+    int slot;
+
+    status = SIXEL_FALSE;
+    slot = -1;
+    memset(&old_termios, 0, sizeof(old_termios));
+    memset(&new_termios, 0, sizeof(new_termios));
+
+    if (!sixel_compat_isatty(STDIN_FILENO)) {
+        return SIXEL_FALSE;
+    }
+
+    slot = sixel_tty_reserve_abort_restore_slot(STDIN_FILENO);
+    if (slot < 0) {
+        return SIXEL_FALSE;
+    }
+    if (g_tty_abort_restore_slots[slot].has_saved_termios != 0) {
+        return SIXEL_OK;
+    }
+
+    status = sixel_tty_cbreak_fd(STDIN_FILENO, &old_termios, &new_termios);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_end_animation_input_guard(void)
+{
+    SIXELSTATUS status;
+    int slot;
+
+    status = SIXEL_FALSE;
+    slot = -1;
+
+    slot = sixel_tty_find_abort_restore_slot(STDIN_FILENO);
+    if (slot < 0) {
+        return SIXEL_OK;
+    }
+    if (g_tty_abort_restore_slots[slot].has_saved_termios == 0) {
+        return SIXEL_OK;
+    }
+
+    status = sixel_tty_restore_fd(
+        STDIN_FILENO,
+        &g_tty_abort_restore_slots[slot].old_termios);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_tty_cbreak_fd(int fd,
                     struct termios *old_termios,
@@ -912,7 +977,8 @@ sixel_tty_restore_cbreak_for_abort(void)
         }
 
         fd = g_tty_abort_restore_slots[index].fd;
-        has_saved_termios = g_tty_abort_restore_slots[index].has_saved_termios;
+        has_saved_termios =
+            g_tty_abort_restore_slots[index].has_saved_termios;
         old_termios = g_tty_abort_restore_slots[index].old_termios;
         if (g_tty_abort_restore_slots[index].cursor_hidden != 0 && fd >= 0) {
             sequence_size = sizeof(g_tty_show_cursor_seq) - 1u;
@@ -1005,6 +1071,18 @@ sixel_tty_restore_cursor(int fd)
         return SIXEL_FALSE;
     }
 
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_begin_animation_input_guard(void)
+{
+    return SIXEL_FALSE;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_end_animation_input_guard(void)
+{
     return SIXEL_OK;
 }
 

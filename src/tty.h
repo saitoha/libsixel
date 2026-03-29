@@ -77,6 +77,12 @@ sixel_tty_hide_cursor(int fd);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_restore_cursor(int fd);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_begin_animation_input_guard(void);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_end_animation_input_guard(void);
+
 SIXEL_INTERNAL_API void
 sixel_tty_restore_cbreak_for_abort(void);
 

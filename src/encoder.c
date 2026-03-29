@@ -2515,6 +2515,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
             outfd_is_tty,
             hide_cursor_env);
         if (should_hide_cursor != 0) {
+            (void)sixel_tty_begin_animation_input_guard();
             (void)sixel_tty_hide_cursor(context->encoder->outfd);
         }
         if (sixel_frame_get_loop_no(context->frame) != 0
@@ -8042,6 +8043,7 @@ end:
     saved_errno = errno;
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
     sixel_encoder_frame_pipeline_dispose(&load_context.frame_pipeline);
+    (void)sixel_tty_end_animation_input_guard();
     if (encoder != NULL) {
         (void)sixel_tty_restore_cursor(encoder->outfd);
     }
@@ -8283,6 +8285,7 @@ sixel_encoder_encode_bytes(
     status = SIXEL_OK;
 
 end:
+    (void)sixel_tty_end_animation_input_guard();
     if (encoder != NULL) {
         (void)sixel_tty_restore_cursor(encoder->outfd);
     }
