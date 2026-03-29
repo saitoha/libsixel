@@ -414,6 +414,7 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
     g_webp_fi_failpoint = failpoint;
     status = load_with_libwebp(chunk,
                                0,
+                               0,
                                fstatic,
                                0,
                                256,
@@ -494,6 +495,7 @@ run_demux_fail_case(char const *label)
     g_webp_fi_failpoint = WEBP_FI_FAIL_DEMUX;
     status = load_with_libwebp(chunk,
                                1,
+                               0,
                                0,
                                0,
                                256,
@@ -1106,6 +1108,7 @@ run_fast_frame_count_limit_case(void)
 
     sixel_helper_set_additional_message(NULL);
     status = load_with_libwebp(&chunk,
+                               0,
                                0,
                                0,
                                0,
