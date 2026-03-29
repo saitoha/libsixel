@@ -217,13 +217,10 @@ int
 test_loader_0023_loader_librsvg_pixelformat(int argc, char **argv)
 {
 #if HAVE_LIBRSVG
-    char const *mode;
-
-    mode = NULL;
     if (argc > 1 && argv != NULL) {
-        mode = argv[1];
+        return run_librsvg_loader_test_mode(argv[1]);
     }
-    return run_librsvg_loader_test_mode(mode);
+    return run_librsvg_loader_test_mode(NULL);
 #else
     (void)argc;
     (void)argv;
