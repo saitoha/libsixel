@@ -92,6 +92,11 @@ Key points used by this roadmap:
     RGB16/RGB32/Lab16/CMYK16.
   - multi-layer missing-composite clipping-group and raster-mask decode
     coverage for RGB16/RGB32.
+  - mode7 multi-layer missing-composite decode coverage:
+    `3ch->RGB16/RGB32` and `4ch->CMYK16/CMYK32` for normal, clipping-group,
+    and raster-mask paths.
+  - mode7 multi-layer unsupported trace coverage:
+    unknown blend/non-pixel/vector mask/layer effects/knockout.
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
@@ -227,9 +232,10 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Expand multi-layer LSQA matrix from RGB8 to representative 16/32-bit and
-   non-RGB pixel paths (CMYK/Lab) with static expected assets.
-2. Keep unsupported-policy matrix synchronized as decode scope changes:
-   every policy rejection path must keep deterministic trace coverage.
-3. Keep PSB (`8BPB`) out of scope for this milestone, but maintain a migration
-   boundary from PSD parser/decoder primitives.
+1. Extend layer-fallback semantics beyond pixel-layer scope in a staged way
+   (non-pixel classes, vector/effects/knockout behavior), while keeping
+   deterministic unsupported traces for anything not yet implemented.
+2. Lock ICC-application policy by output format (RGB/Linear RGB/Lab paths) and
+   keep README/trace contracts synchronized with implementation.
+3. Keep PSB (`8BPB`) out of scope for this milestone, but maintain and test a
+   migration boundary from PSD parser/decoder primitives.

@@ -2223,6 +2223,159 @@ def generate(out_dir: pathlib.Path):
         out_dir / "snake16_mode7_rgb8_missing_composite_single_layer.psd",
         build_psd_layer_only_single_rgb8(rgb8_planes, color_mode=7),
     )
+    write_file(
+        out_dir / "snake16_mode7_rgb8_missing_composite_multilayer_unknown_blend.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 4,
+                    "left": 4,
+                    "bottom": 12,
+                    "right": 12,
+                    "channel_ids": [0, 1, 2],
+                    "planes": [
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(0, 4, 4, 12, 12),
+                        build_rgb8_patch_plane(255, 4, 4, 12, 12),
+                    ],
+                    "blend_key": b"zzzz",
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_tysh.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"TySh", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_rgb8_missing_composite_multilayer_vector_mask.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"vmsk", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_rgb8_missing_composite_multilayer_layer_effects.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"lfx2", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_rgb8_missing_composite_multilayer_knockout.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"knko", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
     write_variants(
         out_dir,
         "snake16_mode7_rgb16",
