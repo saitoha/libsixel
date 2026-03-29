@@ -69,6 +69,17 @@ stbi_failure_reason(void);
 void
 stbi_image_free(void *retval_from_stbi_load);
 
+static SIXELSTATUS
+sixel_builtin_decode_hdr_float32_with_hint(
+    sixel_chunk_t const *chunk,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat,
+    int *pcolorspace,
+    sixel_builtin_hdr_profile_hint_t *out_hint,
+    SIXELSTATUS *out_hint_status);
+
 static int
 sixel_builtin_hdr_ascii_case_equal(char const *left, char const *right)
 {
@@ -1424,12 +1435,14 @@ sixel_builtin_load_hdr_frame(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_builtin_decode_hdr_float32(chunk,
-                                              &pixels,
-                                              &frame->width,
-                                              &frame->height,
-                                              &hdr_pixelformat,
-                                              &hdr_colorspace);
+    status = sixel_builtin_decode_hdr_float32_with_hint(chunk,
+                                                        &pixels,
+                                                        &frame->width,
+                                                        &frame->height,
+                                                        &hdr_pixelformat,
+                                                        &hdr_colorspace,
+                                                        &hint,
+                                                        &hint_status);
     if (status != SIXEL_OK) {
         return status;
     }
@@ -1438,12 +1451,6 @@ sixel_builtin_load_hdr_frame(
     frame->loop_count = 1;
     frame->pixelformat = hdr_pixelformat;
     frame->colorspace = hdr_colorspace;
-
-    hint_status = sixel_builtin_parse_hdr_profile_hint(chunk, &hint);
-    if (SIXEL_FAILED(hint_status)) {
-        hint_status = SIXEL_FALSE;
-        sixel_builtin_hdr_init_profile_hint(&hint);
-    }
 
     sixel_builtin_hdr_apply_postprocess(pixels,
                                         frame->width,
@@ -1990,14 +1997,16 @@ sixel_builtin_decode_hdr_float32_custom(
     return SIXEL_OK;
 }
 
-SIXELSTATUS
-sixel_builtin_decode_hdr_float32(
+static SIXELSTATUS
+sixel_builtin_decode_hdr_float32_with_hint(
     sixel_chunk_t const *chunk,
     unsigned char **ppixels,
     int *pwidth,
     int *pheight,
     int *ppixelformat,
-    int *pcolorspace)
+    int *pcolorspace,
+    sixel_builtin_hdr_profile_hint_t *out_hint,
+    SIXELSTATUS *out_hint_status)
 {
     float *decoded_pixels;
     int depth;
@@ -2023,6 +2032,13 @@ sixel_builtin_decode_hdr_float32(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (out_hint != NULL) {
+        sixel_builtin_hdr_init_profile_hint(out_hint);
+    }
+    if (out_hint_status != NULL) {
+        *out_hint_status = SIXEL_FALSE;
+    }
+
     *ppixels = NULL;
     *pwidth = 0;
     *pheight = 0;
@@ -2039,6 +2055,13 @@ sixel_builtin_decode_hdr_float32(
     }
 
     hint_status = sixel_builtin_parse_hdr_profile_hint(chunk, &hint);
+    if (out_hint != NULL) {
+        *out_hint = hint;
+    }
+    if (out_hint_status != NULL) {
+        *out_hint_status = hint_status;
+    }
+
     stbi_hdr_detected = stbi_is_hdr_from_memory(chunk->buffer,
                                                 (int)chunk->size);
     if (!stbi_hdr_detected &&
@@ -2102,6 +2125,25 @@ sixel_builtin_decode_hdr_float32(
     *pcolorspace = SIXEL_COLORSPACE_LINEAR;
 
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_builtin_decode_hdr_float32(
+    sixel_chunk_t const *chunk,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat,
+    int *pcolorspace)
+{
+    return sixel_builtin_decode_hdr_float32_with_hint(chunk,
+                                                      ppixels,
+                                                      pwidth,
+                                                      pheight,
+                                                      ppixelformat,
+                                                      pcolorspace,
+                                                      NULL,
+                                                      NULL);
 }
 
 SIXELSTATUS
