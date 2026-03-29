@@ -49,6 +49,7 @@
 
 #include "cms.h"
 #include "compat_stub.h"
+#include "frame.h"
 #include "fromhdr.h"
 #include "loader-common.h"
 
