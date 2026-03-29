@@ -23248,6 +23248,7 @@ if (image) {
 #elif defined(__GNUC__)
 # pragma GCC diagnostic pop
 #endif
+
   ;
   return 0;
 }
