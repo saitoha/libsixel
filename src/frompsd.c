@@ -561,8 +561,8 @@ sixel_builtin_validate_psd_info(
                    info->depth == 8u &&
                    info->channels >= 4u) ||
                   (info->color_mode == 7u &&
-                   info->depth == 8u &&
-                   (info->channels == 3u || info->channels == 4u))))) {
+                   ((info->channels == 3u) ||
+                    (info->depth == 8u && info->channels == 4u)))))) {
                 allow_layer_fallback = 1;
             } else {
                 sixel_builtin_psd_set_message(
@@ -4837,7 +4837,8 @@ sixel_builtin_decode_psd_single_layer_missing_composite_16bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode == 3u) {
+    if (info->color_mode == 3u ||
+        (info->color_mode == 7u && info->channels == 3u)) {
         decode_rgb = 1;
         min_channels = 3u;
     } else if (info->color_mode == 1u || info->color_mode == 8u) {
@@ -5672,7 +5673,8 @@ sixel_builtin_decode_psd_single_layer_missing_composite_32bit(
     sixel_builtin_psd_init_transparent_mask_output(
         ptransparent_mask,
         ptransparent_mask_size);
-    if (info->color_mode == 3u) {
+    if (info->color_mode == 3u ||
+        (info->color_mode == 7u && info->channels == 3u)) {
         decode_rgb = 1;
         min_channels = 3u;
     } else if (info->color_mode == 1u || info->color_mode == 8u) {

@@ -59,8 +59,9 @@ Key points used by this roadmap:
 - Composite-missing policy:
   - Minimal fallback is supported for 8/16/32-bit RGB/Gray/Duotone/Lab layer-only PSDs,
     and 8-bit CMYK layer-only PSDs.
-    For Multichannel (`mode=7`), minimal fallback currently applies only to
-    `channels==3/4` on 8-bit (`3ch->RGB8`, `4ch->CMYK8`).
+    For Multichannel (`mode=7`), minimal fallback currently applies to
+    `channels==3` on `8/16/32-bit` (`3ch->RGB8/16/32`) and
+    `channels==4` on `8-bit` (`4ch->CMYK8`).
     Fallback layout is limited to a single full-canvas layer with decodable
     base-color channels.
   - Layer-only PSD layouts outside that minimal fallback surface a deterministic

@@ -639,8 +639,8 @@ def build_psd_layer_only_single_gray8(
 
 
 def build_psd_layer_only_single_rgb16(planes, *, color_mode=3, alpha_plane=None):
-    if color_mode not in (3, 9):
-        raise RuntimeError("layer-only RGB16 fixture supports color_mode 3/9")
+    if color_mode not in (3, 7, 9):
+        raise RuntimeError("layer-only RGB16 fixture supports color_mode 3/7/9")
     if len(planes) < 3:
         raise RuntimeError("layer-only RGB16 fixture requires R/G/B planes")
     row_bytes = WIDTH * 2
@@ -753,8 +753,8 @@ def build_psd_layer_only_single_gray16(
 
 
 def build_psd_layer_only_single_rgb32(planes, *, color_mode=3, alpha_plane=None):
-    if color_mode not in (3, 9):
-        raise RuntimeError("layer-only RGB32 fixture supports color_mode 3/9")
+    if color_mode not in (3, 7, 9):
+        raise RuntimeError("layer-only RGB32 fixture supports color_mode 3/7/9")
     if len(planes) < 3:
         raise RuntimeError("layer-only RGB32 fixture requires R/G/B planes")
     row_bytes = WIDTH * 4
@@ -1387,6 +1387,10 @@ def generate(out_dir: pathlib.Path):
             color_mode=7,
         ),
     )
+    write_file(
+        out_dir / "snake16_mode7_rgb16_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb16(rgb16_planes, color_mode=7),
+    )
     write_variants(
         out_dir,
         "snake16_mode7_rgb32",
@@ -1403,6 +1407,10 @@ def generate(out_dir: pathlib.Path):
             depth=32,
             color_mode=7,
         ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_rgb32_missing_composite_single_layer.psd",
+        build_psd_layer_only_single_rgb32(rgb32_planes, color_mode=7),
     )
     write_variants(
         out_dir,
