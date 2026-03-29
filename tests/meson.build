@@ -361,14 +361,24 @@ mkdir -p "$coverage_root"
 status=0
 
 for test_path in $(find "$source_root/tests/bindings/ruby" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort); do
-  test_name=$(basename "$test_path" .rb)
+  test_name="${test_path##*/}"
+  test_name="${test_name%.rb}"
   artifact_dir="$artifact_root/$test_name"
   log_path="$artifact_root/$test_name.log"
   coverage_path="$coverage_root/$test_name.marshal"
   mkdir -p "$artifact_dir"
   echo "==> $test_name.rb"
-  if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_RUBY" "$coverage_runner" "$test_path" "$coverage_path" >"$log_path" 2>&1; then
-    if grep -Eq '^not ok([[:space:]]|$)' "$log_path"; then
+  if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_RUBY" --disable-gems "$coverage_runner" "$test_path" "$coverage_path" >"$log_path" 2>&1; then
+    tap_not_ok=0
+    while IFS= read -r tap_line || test -n "$tap_line"; do
+      case "$tap_line" in
+        "not ok"|"not ok "*)
+          tap_not_ok=1
+          break
+          ;;
+      esac
+    done < "$log_path"
+    if test "$tap_not_ok" -ne 0; then
       echo "not ok - $test_name.rb (TAP not ok found)"
       sed -n '1,120p' "$log_path"
       status=1
@@ -380,7 +390,7 @@ for test_path in $(find "$source_root/tests/bindings/ruby" -maxdepth 1 -type f -
   fi
 done
 
-"$SIXEL_TEST_RUBY" "$coverage_converter" "$coverage_root" "$lcov_path" "$source_root" || status=1
+"$SIXEL_TEST_RUBY" --disable-gems "$coverage_converter" "$coverage_root" "$lcov_path" "$source_root" || status=1
 echo "ruby coverage exported to $lcov_path"
 
 if test "$status" -ne 0; then
