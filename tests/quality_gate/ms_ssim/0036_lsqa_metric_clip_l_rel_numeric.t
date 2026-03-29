@@ -14,8 +14,22 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m CLIP_L_REL "${image_ref}" "${image_o
     exit 0
 }
 
-printf '%s\n' "${value}" |
-    awk '/^[+-]?[0-9]+([.][0-9]+)?([eE][+-]?[0-9]+)?$/{ok=1} END{exit ok?0:1}' || {
+case "${value}" in
+    ""|*[!0123456789+.eE-]*)
+        echo "not ok" 1 - "CLIP_L_REL returned non-numeric output: ${value}"
+        exit 0
+        ;;
+esac
+
+case "${value}" in
+    *[0123456789]*) ;;
+    *)
+        echo "not ok" 1 - "CLIP_L_REL returned non-numeric output: ${value}"
+        exit 0
+        ;;
+esac
+
+test -n "${value}" || {
     echo "not ok" 1 - "CLIP_L_REL returned non-numeric output: ${value}"
     exit 0
 }

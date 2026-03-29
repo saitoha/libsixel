@@ -12,12 +12,29 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 printf '1..1\n'
 set -v
 
-sum1=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -H | awk '/^-[A-Za-z0-9],/ { print $1, $2; } /^-[A-Za-z0-9] / { print $1, $2, $3; }' | tr -d \\r | cksum)
+sum1=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -H \
+    | sed -n \
+        -e '/^-[A-Za-z0-9],/s/^\([^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
+        -e '/^-[A-Za-z0-9] /s/^\([^[:space:]]*[[:space:]][^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
+    | tr -d \\r \
+    | cksum)
 
-sum2=$(awk '
-/^\.B \\-\\?[A-Za-z0-9],/ { gsub(/\\/, ""); print $2, $3; }
-/^\.B \\-\\?[A-Za-z0-9] / { gsub(/\\fP|\\fI|\\/, ""); print $2, $3, $4; }
-' "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
+sum2=$(sed -n \
+    -e '/^\.B \\-[A-Za-z0-9],/{
+            s/\\//g
+            s/^\.B[[:space:]]*//
+            s/[[:space:]][[:space:]]*/ /g
+            s/^\([^ ]* [^ ]*\).*/\1/p
+        }' \
+    -e '/^\.B \\-[A-Za-z0-9] /{
+            s/\\fP//g
+            s/\\fI//g
+            s/\\//g
+            s/^\.B[[:space:]]*//
+            s/[[:space:]][[:space:]]*/ /g
+            s/^\([^ ]* [^ ]* [^ ]*\).*/\1/p
+        }' \
+    "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 
 test "${sum1}" = "${sum2}" || {
     echo "not ok" 1 - "--help diverges from manpage"

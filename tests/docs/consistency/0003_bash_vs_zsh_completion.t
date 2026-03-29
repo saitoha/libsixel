@@ -23,10 +23,10 @@ printf '1..1\n'
 set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-grep ' --[0-9a-zA-Z_@=~%?]' \
-    "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" \
-    | grep -v "' " \
-    | sed 's/.* \(-.\) .*/\1/' >"${bash_opts}" || {
+LC_ALL=C sed -n "/ --[0-9a-zA-Z_@=~%?]/{
+    /' /d
+    s/.* \\(-.\\) .*/\\1/p
+}" "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" >"${bash_opts}" || {
     echo "not ok" 1 - "failed to parse bash completion"
     exit 0
 }
@@ -36,9 +36,8 @@ LC_ALL=C sort "${bash_opts}" >"${bash_sorted}" || {
     exit 0
 }
 
-grep '{-' "${TOP_SRCDIR}/converters/shell-completion/zsh/_img2sixel" \
-    | cut -f1 -d, \
-    | cut -f2 -d'{' >"${zsh_opts}" || {
+LC_ALL=C sed -n '/{-/s/.*{-\([^,}]*\).*/-\1/p' \
+    "${TOP_SRCDIR}/converters/shell-completion/zsh/_img2sixel" >"${zsh_opts}" || {
     echo "not ok" 1 - "failed to parse zsh completion"
     exit 0
 }

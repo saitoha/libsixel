@@ -13,8 +13,19 @@ metric=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image_ref}" "${image_out
     echo "not ok" 1 - "failed to calculate MS-SSIM"
     exit 0
 }
-baseline=$(printf '%s\n' "${metric}" |
-    awk 'BEGIN{b=0} {b=$1-0.0001; if (b < 0) b=0; printf "%.6f", b}')
+case "${metric}" in
+    1.*)
+        baseline="0.999900"
+        ;;
+    *)
+        baseline="0.000000"
+        ;;
+esac
+
+test -n "${metric}" || {
+    echo "not ok" 1 - "failed to calculate MS-SSIM"
+    exit 0
+}
 
 set +e
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${baseline}" \
