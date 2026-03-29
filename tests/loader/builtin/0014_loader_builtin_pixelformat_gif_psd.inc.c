@@ -36,6 +36,8 @@ run_builtin_loader_gif_sequence_test(
     options.require_static = 0;
     options.use_palette = 1;
     options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
     options.set_loop_control = 1;
     options.loop_control = loop_control;
     options.set_cms_engine = 0;
@@ -190,6 +192,8 @@ run_builtin_loader_gif_unbounded_loop_probe_test(
     options.require_static = 0;
     options.use_palette = 1;
     options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
     options.set_loop_control = 1;
     options.loop_control = loop_control;
     options.set_cms_engine = 0;

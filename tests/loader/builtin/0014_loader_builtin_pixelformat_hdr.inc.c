@@ -20,6 +20,8 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
     options.require_static = 1;
     options.use_palette = 0;
     options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
     options.set_loop_control = 0;
     options.loop_control = SIXEL_LOOP_AUTO;
     options.set_cms_engine = 1;
@@ -87,6 +89,9 @@ typedef enum hdr_numeric_static_case_id {
     HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE,
     HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_MULTI,
     HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_DISABLED,
+    HDR_NUMERIC_STATIC_CASE_XYZE_FORMAT,
+    HDR_NUMERIC_STATIC_CASE_COLORCORR_SINGLE,
+    HDR_NUMERIC_STATIC_CASE_COLORCORR_MULTI,
     HDR_NUMERIC_STATIC_CASE_EXPOSURE_OVERFLOW_NONE,
     HDR_NUMERIC_STATIC_CASE_EXPOSURE_OVERFLOW_REINHARD
 } hdr_numeric_static_case_id_t;
@@ -138,7 +143,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
         SIXEL_COLORSPACE_LINEAR,
-        { 1.0f, 0.5f, 0.25f },
+        { 0.25f, 0.125f, 0.0625f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
         0.0f,
@@ -156,7 +161,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
         SIXEL_COLORSPACE_LINEAR,
-        { 4.0f, 2.0f, 1.0f },
+        { 0.0625f, 0.03125f, 0.015625f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
         0.0f,
@@ -175,6 +180,61 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
         SIXEL_COLORSPACE_LINEAR,
         { 0.5f, 0.25f, 0.125f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    },
+    {
+        "builtin loader hdr xyze numeric",
+        "/tests/data/inputs/formats/stbi_midtones_xyze.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 1.1738129f, 0.0f, 0.10894224f },
+        0.0012f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    },
+    {
+        "builtin loader hdr colorcorr single numeric",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_colorcorr_2_4_8.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 0.25f, 0.0625f, 0.015625f },
+        0.0007f,
+        HDR_NUMERIC_CASE_VALIDATE_EXACT,
+        0.0f,
+        0.0f,
+        0,
+        0.0f
+    },
+    {
+        "builtin loader hdr colorcorr multi numeric",
+        "/tests/data/inputs/formats/"
+        "stbi_midtones_hdrmeta_colorcorr_2x4x8_multiline.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        { 0.25f, 0.0625f, 0.015625f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
         0.0f,
@@ -303,6 +363,228 @@ run_builtin_loader_hdr_static_numeric_case(
                 probe.first_pixel[0],
                 spec->channel0_less_than);
         return 1;
+    }
+
+    return 0;
+}
+
+typedef struct hdr_orientation_case_spec {
+    char const *label;
+    char const *sample_path;
+} hdr_orientation_case_spec_t;
+
+typedef struct hdr_orientation_probe_context {
+    int callback_count;
+    int pixelformat;
+    int colorspace;
+    int width;
+    int height;
+    float pixels[12];
+} hdr_orientation_probe_context_t;
+
+static hdr_orientation_case_spec_t const hdr_orientation_cases[] = {
+    {
+        "builtin hdr orientation -Y +X",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_mY_pX.hdr"
+    },
+    {
+        "builtin hdr orientation -Y -X",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_mY_mX.hdr"
+    },
+    {
+        "builtin hdr orientation +Y +X",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_pY_pX.hdr"
+    },
+    {
+        "builtin hdr orientation +Y -X",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_pY_mX.hdr"
+    },
+    {
+        "builtin hdr orientation +X +Y",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_pX_pY.hdr"
+    },
+    {
+        "builtin hdr orientation +X -Y",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_pX_mY.hdr"
+    },
+    {
+        "builtin hdr orientation -X +Y",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_mX_pY.hdr"
+    },
+    {
+        "builtin hdr orientation -X -Y",
+        "/tests/data/inputs/formats/stbi_corner2x2_orient_mX_mY.hdr"
+    }
+};
+
+static SIXELSTATUS
+capture_hdr_orientation_probe(sixel_frame_t *frame, void *data)
+{
+    hdr_orientation_probe_context_t *context;
+    float const *pixels;
+    size_t sample_count;
+    size_t index;
+
+    context = (hdr_orientation_probe_context_t *)data;
+    pixels = NULL;
+    sample_count = 0u;
+    index = 0u;
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->callback_count += 1;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->colorspace = sixel_frame_get_colorspace(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
+    for (index = 0u;
+         index < sizeof(context->pixels) / sizeof(context->pixels[0]);
+         ++index) {
+        context->pixels[index] = 0.0f;
+    }
+
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(context->pixelformat) ||
+        context->width <= 0 ||
+        context->height <= 0) {
+        return SIXEL_OK;
+    }
+
+    pixels = sixel_frame_get_pixels_float32(frame);
+    if (pixels == NULL) {
+        return SIXEL_OK;
+    }
+    if (context->width > 2 || context->height > 2) {
+        return SIXEL_OK;
+    }
+    sample_count = (size_t)context->width * (size_t)context->height * 3u;
+    if (sample_count > sizeof(context->pixels) / sizeof(context->pixels[0])) {
+        sample_count = sizeof(context->pixels) / sizeof(context->pixels[0]);
+    }
+
+    for (index = 0u; index < sample_count; ++index) {
+        context->pixels[index] = pixels[index];
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+run_builtin_loader_hdr_orientation_probe_case(
+    hdr_orientation_case_spec_t const *spec,
+    hdr_orientation_probe_context_t *context)
+{
+    SIXELSTATUS status;
+    builtin_loader_probe_options_t options;
+    int result;
+
+    status = SIXEL_FALSE;
+    result = 1;
+    if (spec == NULL || context == NULL) {
+        return 1;
+    }
+
+    memset(context, 0, sizeof(*context));
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+    result = run_builtin_loader_probe_case(spec->label,
+                                           spec->sample_path,
+                                           &options,
+                                           capture_hdr_orientation_probe,
+                                           context,
+                                           &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                spec->label,
+                (int)status);
+        return 1;
+    }
+    if (context->callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch\n", spec->label);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_hdr_orientation_numeric_test(void)
+{
+    static float const expected_pixels[12] = {
+        0.5f, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f,
+        0.0f, 0.0f, 0.5f,
+        0.5f, 0.5f, 0.5f
+    };
+    hdr_orientation_probe_context_t probe;
+    size_t case_index;
+    size_t sample_index;
+    float tolerance;
+    int result;
+
+    probe = (hdr_orientation_probe_context_t){ 0 };
+    case_index = 0u;
+    sample_index = 0u;
+    tolerance = 0.0007f;
+    result = 1;
+    if (hdr_test_configure_loader_env_default("1") != 0) {
+        return 1;
+    }
+
+    for (case_index = 0u;
+         case_index < sizeof(hdr_orientation_cases) /
+                      sizeof(hdr_orientation_cases[0]);
+         ++case_index) {
+        result = run_builtin_loader_hdr_orientation_probe_case(
+            &hdr_orientation_cases[case_index],
+            &probe);
+        if (result != 0) {
+            return result;
+        }
+        if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+            probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+            fprintf(stderr,
+                    "%s: frame contract mismatch (pf=%d cs=%d)\n",
+                    hdr_orientation_cases[case_index].label,
+                    probe.pixelformat,
+                    probe.colorspace);
+            return 1;
+        }
+        if (probe.width != 2 || probe.height != 2) {
+            fprintf(stderr,
+                    "%s: geometry mismatch (%dx%d)\n",
+                    hdr_orientation_cases[case_index].label,
+                    probe.width,
+                    probe.height);
+            return 1;
+        }
+        for (sample_index = 0u;
+             sample_index <
+             sizeof(expected_pixels) / sizeof(expected_pixels[0]);
+             ++sample_index) {
+            if (!float_approx_equal(probe.pixels[sample_index],
+                                    expected_pixels[sample_index],
+                                    tolerance)) {
+                fprintf(stderr,
+                        "%s: sample %zu mismatch (actual=%f expected=%f)\n",
+                        hdr_orientation_cases[case_index].label,
+                        sample_index,
+                        probe.pixels[sample_index],
+                        expected_pixels[sample_index]);
+                return 1;
+            }
+        }
     }
 
     return 0;
@@ -622,7 +904,8 @@ static int
 run_builtin_loader_hdr_header_exposure_multi_numeric_test(void)
 {
     return run_builtin_loader_hdr_static_numeric_case(
-        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_MULTI]);
+        &hdr_numeric_static_cases[
+            HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_MULTI]);
 }
 
 static int
@@ -631,6 +914,27 @@ run_builtin_loader_hdr_header_exposure_disabled_numeric_test(void)
     return run_builtin_loader_hdr_static_numeric_case(
         &hdr_numeric_static_cases[
             HDR_NUMERIC_STATIC_CASE_HEADER_EXPOSURE_DISABLED]);
+}
+
+static int
+run_builtin_loader_hdr_xyze_numeric_test(void)
+{
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_XYZE_FORMAT]);
+}
+
+static int
+run_builtin_loader_hdr_colorcorr_single_numeric_test(void)
+{
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_COLORCORR_SINGLE]);
+}
+
+static int
+run_builtin_loader_hdr_colorcorr_multi_numeric_test(void)
+{
+    return run_builtin_loader_hdr_static_numeric_case(
+        &hdr_numeric_static_cases[HDR_NUMERIC_STATIC_CASE_COLORCORR_MULTI]);
 }
 
 static int
@@ -753,6 +1057,7 @@ typedef enum hdr_numeric_compare_case_id {
     HDR_NUMERIC_COMPARE_MIXED_HEADER_EXPOSURE_INVALID,
     HDR_NUMERIC_COMPARE_INVALID_USE_HEADER_EXPOSURE_ENV,
     HDR_NUMERIC_COMPARE_DUPLICATE_HEADER_METADATA,
+    HDR_NUMERIC_COMPARE_PIXASPECT_VIEW_METADATA,
     HDR_NUMERIC_COMPARE_INVALID_FALLBACK,
     HDR_NUMERIC_COMPARE_INVALID_TONEMAP,
     HDR_NUMERIC_COMPARE_INVALID_EXPOSURE
@@ -825,6 +1130,22 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         NULL,
         "builtin hdr duplicate metadata",
         0.0012f
+    },
+    {
+        "linear-srgb",
+        "0",
+        "none",
+        "1",
+        "builtin hdr pixaspect/view baseline",
+        "/tests/data/inputs/formats/stbi_midtones.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        "builtin hdr pixaspect/view metadata",
+        "/tests/data/inputs/formats/stbi_midtones_hdrmeta_pixaspect_view.hdr",
+        SIXEL_CMS_ENGINE_NONE,
+        NULL,
+        NULL,
+        "builtin hdr pixaspect/view metadata",
+        0.0007f
     },
     {
         "linear-srgb",
@@ -962,6 +1283,14 @@ run_builtin_loader_hdr_duplicate_header_metadata_numeric_test(void)
             HDR_NUMERIC_COMPARE_DUPLICATE_HEADER_METADATA]);
 }
 
+static int
+run_builtin_loader_hdr_pixaspect_view_metadata_numeric_test(void)
+{
+    return run_builtin_loader_hdr_compare_case(
+        &hdr_numeric_compare_cases[
+            HDR_NUMERIC_COMPARE_PIXASPECT_VIEW_METADATA]);
+}
+
 static char const *
 hdr_test_fixture_for_axes(hdr_test_gamma_mode_t gamma_mode,
                           hdr_test_primaries_mode_t primaries_mode)
@@ -978,7 +1307,8 @@ hdr_test_fixture_for_axes(hdr_test_gamma_mode_t gamma_mode,
         primaries_mode == HDR_TEST_PRIMARIES_BT2020) {
         return "/tests/data/inputs/formats/stbi_midtones_hdrmeta_bt2020.hdr";
     }
-    return "/tests/data/inputs/formats/stbi_midtones_hdrmeta_gamma22_bt2020.hdr";
+    return "/tests/data/inputs/formats/"
+           "stbi_midtones_hdrmeta_gamma22_bt2020.hdr";
 }
 
 static int
@@ -995,7 +1325,8 @@ hdr_test_compare_probe(char const *label,
     if (left->pixelformat != right->pixelformat ||
         left->colorspace != right->colorspace) {
         fprintf(stderr,
-                "%s: frame contract mismatch (actual pf=%d cs=%d, expected pf=%d cs=%d)\n",
+                "%s: frame contract mismatch "
+                "(actual pf=%d cs=%d, expected pf=%d cs=%d)\n",
                 label,
                 left->pixelformat,
                 left->colorspace,
@@ -1274,7 +1605,8 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
         hdr_test_parse_cms_engine(cms_text, &cms_engine) != 0 ||
         hdr_test_parse_fallback_mode(fallback_text, &fallback_mode) != 0) {
         fprintf(stderr,
-                "builtin loader hdr single-case numeric: invalid case env values\n");
+                "builtin loader hdr single-case numeric: "
+                "invalid case env values\n");
         return 1;
     }
 
@@ -1295,7 +1627,8 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
                                       tonemap_text,
                                       "1") != 0) {
         fprintf(stderr,
-                "builtin loader hdr single-case numeric: failed to set loader env\n");
+                "builtin loader hdr single-case numeric: "
+                "failed to set loader env\n");
         return 1;
     }
 
@@ -1328,7 +1661,8 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
     if (probe.pixelformat != expected_pixelformat ||
         probe.colorspace != expected_colorspace) {
         fprintf(stderr,
-                "%s: frame contract mismatch (pf=%d expected=%d cs=%d expected=%d)\n",
+                "%s: frame contract mismatch "
+                "(pf=%d expected=%d cs=%d expected=%d)\n",
                 label,
                 probe.pixelformat,
                 expected_pixelformat,
@@ -1386,4 +1720,3 @@ run_builtin_loader_hdr_invalid_exposure_numeric_test(void)
     return run_builtin_loader_hdr_compare_case(
         &hdr_numeric_compare_cases[HDR_NUMERIC_COMPARE_INVALID_EXPOSURE]);
 }
-
