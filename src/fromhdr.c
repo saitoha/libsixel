@@ -2244,25 +2244,6 @@ sixel_builtin_decode_hdr_float32_with_hint(
     return SIXEL_OK;
 }
 
-SIXELSTATUS
-sixel_builtin_decode_hdr_float32(
-    sixel_chunk_t const *chunk,
-    unsigned char **ppixels,
-    int *pwidth,
-    int *pheight,
-    int *ppixelformat,
-    int *pcolorspace)
-{
-    return sixel_builtin_decode_hdr_float32_with_hint(chunk,
-                                                      ppixels,
-                                                      pwidth,
-                                                      pheight,
-                                                      ppixelformat,
-                                                      pcolorspace,
-                                                      NULL,
-                                                      NULL);
-}
-
 static SIXELSTATUS
 sixel_builtin_parse_hdr_profile_hint(
     sixel_chunk_t const *chunk,
