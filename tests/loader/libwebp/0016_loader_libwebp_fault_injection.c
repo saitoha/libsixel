@@ -780,6 +780,41 @@ run_fault_get_features_static_case(void)
 }
 
 static int
+run_fault_static_malloc_case(void)
+{
+    return run_load_webp_fail_case(
+        WEBP_FI_FAIL_STATIC_ALLOC,
+        WEBP_IMAGE_PATH,
+        "1",
+        SIXEL_BAD_ALLOCATION,
+        "load_webp: sixel_allocator_malloc() failed.",
+        "libwebp fault injection static-malloc");
+}
+
+static int
+run_fault_lossy_malloc_case(void)
+{
+    return run_load_webp_fail_case(
+        WEBP_FI_FAIL_LOSSY_ALLOC,
+        WEBP_IMAGE_PATH,
+        "0",
+        SIXEL_BAD_ALLOCATION,
+        "webp_decode_lossy_to_float32: sixel_allocator_malloc() failed.",
+        "libwebp fault injection lossy-malloc");
+}
+
+static int
+run_fault_animation_canvas_malloc_case(void)
+{
+    return run_animation_decode_fail_case(
+        WEBP_FI_FAIL_ANIMATION_CANVAS_ALLOC,
+        SIXEL_BAD_ALLOCATION,
+        0,
+        "load_with_libwebp: sixel_allocator_malloc() failed.",
+        "libwebp fault injection animation-canvas-malloc");
+}
+
+static int
 run_fault_no_frames_case(void)
 {
     return run_animation_decode_fail_case(
@@ -1101,6 +1136,8 @@ WEBP_FI_TEST_ENTRY(test_loader_0033_loader_libwebp_fault_static_rgbainto,
                    run_fault_static_rgbainto_case)
 WEBP_FI_TEST_ENTRY(test_loader_0043_loader_libwebp_fault_get_features_static,
                    run_fault_get_features_static_case)
+WEBP_FI_TEST_ENTRY(test_loader_0045_loader_libwebp_fault_static_malloc,
+                   run_fault_static_malloc_case)
 WEBP_FI_TEST_ENTRY(test_loader_0034_loader_libwebp_fault_lossy_init_config,
                    run_fault_lossy_init_config_case)
 WEBP_FI_TEST_ENTRY(test_loader_0035_loader_libwebp_fault_lossy_decode,
@@ -1111,8 +1148,12 @@ WEBP_FI_TEST_ENTRY(test_loader_0037_loader_libwebp_fault_lossy_yuv_stride_invali
                    run_fault_lossy_yuv_stride_invalid_case)
 WEBP_FI_TEST_ENTRY(test_loader_0038_loader_libwebp_fault_lossy_dimensions_mismatch,
                    run_fault_lossy_dimensions_mismatch_case)
+WEBP_FI_TEST_ENTRY(test_loader_0047_loader_libwebp_fault_lossy_malloc,
+                   run_fault_lossy_malloc_case)
 WEBP_FI_TEST_ENTRY(test_loader_0039_loader_libwebp_fault_no_frames,
                    run_fault_no_frames_case)
+WEBP_FI_TEST_ENTRY(test_loader_0046_loader_libwebp_fault_animation_canvas_malloc,
+                   run_fault_animation_canvas_malloc_case)
 WEBP_FI_TEST_ENTRY(test_loader_0040_loader_libwebp_fault_no_anmf,
                    run_fault_no_anmf_case)
 WEBP_FI_TEST_ENTRY(test_loader_0041_loader_libwebp_frame_count_limit_fast,
