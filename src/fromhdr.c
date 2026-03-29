@@ -160,6 +160,28 @@ sixel_builtin_hdr_assign_decoded_frame(
     int hdr_colorspace);
 
 static int
+sixel_builtin_hdr_hint_has_decodable_stream(
+    SIXELSTATUS hint_status,
+    sixel_builtin_hdr_profile_hint_t const *hint);
+
+static int
+sixel_builtin_hdr_should_prefer_custom_decode(
+    SIXELSTATUS hint_status,
+    sixel_builtin_hdr_profile_hint_t const *hint,
+    int stbi_hdr_detected);
+
+static SIXELSTATUS
+sixel_builtin_hdr_try_decode_with_stbi(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_hdr_profile_hint_t const *hint,
+    SIXELSTATUS hint_status,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat,
+    int *pcolorspace);
+
+static int
 sixel_builtin_hdr_parse_primaries_line(char const *line,
                                        sixel_builtin_hdr_profile_hint_t *hint);
 
@@ -2317,6 +2339,115 @@ sixel_builtin_decode_hdr_float32_custom(
     return SIXEL_OK;
 }
 
+static int
+sixel_builtin_hdr_hint_has_decodable_stream(
+    SIXELSTATUS hint_status,
+    sixel_builtin_hdr_profile_hint_t const *hint)
+{
+    if (!SIXEL_SUCCEEDED(hint_status) || hint == NULL) {
+        return 0;
+    }
+    if (!hint->has_format || !hint->has_resolution) {
+        return 0;
+    }
+    if (hint->format_kind != SIXEL_BUILTIN_HDR_FORMAT_RGBE &&
+        hint->format_kind != SIXEL_BUILTIN_HDR_FORMAT_XYZE) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
+sixel_builtin_hdr_should_prefer_custom_decode(
+    SIXELSTATUS hint_status,
+    sixel_builtin_hdr_profile_hint_t const *hint,
+    int stbi_hdr_detected)
+{
+    if (!sixel_builtin_hdr_hint_has_decodable_stream(hint_status, hint)) {
+        return 0;
+    }
+    if (hint->format_kind == SIXEL_BUILTIN_HDR_FORMAT_XYZE) {
+        return 1;
+    }
+    if (!sixel_builtin_hdr_is_canonical_orientation(hint)) {
+        return 1;
+    }
+    if (!stbi_hdr_detected) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static SIXELSTATUS
+sixel_builtin_hdr_try_decode_with_stbi(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_hdr_profile_hint_t const *hint,
+    SIXELSTATUS hint_status,
+    unsigned char **ppixels,
+    int *pwidth,
+    int *pheight,
+    int *ppixelformat,
+    int *pcolorspace)
+{
+    float *decoded_pixels;
+    int depth;
+    char const *reason;
+
+    decoded_pixels = NULL;
+    depth = 0;
+    reason = NULL;
+
+    if (chunk == NULL ||
+        chunk->buffer == NULL ||
+        hint == NULL ||
+        ppixels == NULL ||
+        pwidth == NULL ||
+        pheight == NULL ||
+        ppixelformat == NULL ||
+        pcolorspace == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    decoded_pixels = stbi_loadf_from_memory(chunk->buffer,
+                                            (int)chunk->size,
+                                            pwidth,
+                                            pheight,
+                                            &depth,
+                                            3);
+    if (decoded_pixels == NULL) {
+        if (sixel_builtin_hdr_hint_has_decodable_stream(hint_status, hint) &&
+            hint->format_kind == SIXEL_BUILTIN_HDR_FORMAT_RGBE) {
+            return sixel_builtin_decode_hdr_float32_custom(chunk,
+                                                           hint,
+                                                           ppixels,
+                                                           pwidth,
+                                                           pheight,
+                                                           ppixelformat,
+                                                           pcolorspace);
+        }
+        reason = stbi_failure_reason();
+        if (reason != NULL) {
+            sixel_helper_set_additional_message(reason);
+        }
+        return SIXEL_STBI_ERROR;
+    }
+
+    if (*pwidth <= 0 || *pheight <= 0) {
+        stbi_image_free(decoded_pixels);
+        sixel_helper_set_additional_message(
+            "builtin HDR: invalid image dimensions.");
+        return SIXEL_STBI_ERROR;
+    }
+
+    *ppixels = (unsigned char *)decoded_pixels;
+    *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    *pcolorspace = SIXEL_COLORSPACE_LINEAR;
+
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_builtin_decode_hdr_float32_with_hint(
     sixel_chunk_t const *chunk,
@@ -2328,17 +2459,11 @@ sixel_builtin_decode_hdr_float32_with_hint(
     sixel_builtin_hdr_profile_hint_t *out_hint,
     SIXELSTATUS *out_hint_status)
 {
-    float *decoded_pixels;
-    int depth;
     int stbi_hdr_detected;
-    char const *reason;
     SIXELSTATUS hint_status;
     sixel_builtin_hdr_profile_hint_t hint;
 
-    decoded_pixels = NULL;
-    depth = 0;
     stbi_hdr_detected = 0;
-    reason = NULL;
     hint_status = SIXEL_FALSE;
     sixel_builtin_hdr_init_profile_hint(&hint);
 
@@ -2385,20 +2510,13 @@ sixel_builtin_decode_hdr_float32_with_hint(
     stbi_hdr_detected = stbi_is_hdr_from_memory(chunk->buffer,
                                                 (int)chunk->size);
     if (!stbi_hdr_detected &&
-        !(SIXEL_SUCCEEDED(hint_status) &&
-          hint.has_format &&
-          hint.has_resolution &&
-          (hint.format_kind == SIXEL_BUILTIN_HDR_FORMAT_RGBE ||
-           hint.format_kind == SIXEL_BUILTIN_HDR_FORMAT_XYZE))) {
+        !sixel_builtin_hdr_hint_has_decodable_stream(hint_status, &hint)) {
         return SIXEL_FALSE;
     }
 
-    if (SIXEL_SUCCEEDED(hint_status) &&
-        hint.has_format &&
-        hint.has_resolution &&
-        (hint.format_kind == SIXEL_BUILTIN_HDR_FORMAT_XYZE ||
-         !sixel_builtin_hdr_is_canonical_orientation(&hint) ||
-         !stbi_hdr_detected)) {
+    if (sixel_builtin_hdr_should_prefer_custom_decode(hint_status,
+                                                      &hint,
+                                                      stbi_hdr_detected)) {
         return sixel_builtin_decode_hdr_float32_custom(chunk,
                                                        &hint,
                                                        ppixels,
@@ -2408,43 +2526,14 @@ sixel_builtin_decode_hdr_float32_with_hint(
                                                        pcolorspace);
     }
 
-    decoded_pixels = stbi_loadf_from_memory(chunk->buffer,
-                                            (int)chunk->size,
-                                            pwidth,
-                                            pheight,
-                                            &depth,
-                                            3);
-    if (decoded_pixels == NULL) {
-        if (SIXEL_SUCCEEDED(hint_status) &&
-            hint.has_format &&
-            hint.has_resolution &&
-            hint.format_kind == SIXEL_BUILTIN_HDR_FORMAT_RGBE) {
-            return sixel_builtin_decode_hdr_float32_custom(chunk,
-                                                           &hint,
-                                                           ppixels,
-                                                           pwidth,
-                                                           pheight,
-                                                           ppixelformat,
-                                                           pcolorspace);
-        }
-        reason = stbi_failure_reason();
-        if (reason != NULL) {
-            sixel_helper_set_additional_message(reason);
-        }
-        return SIXEL_STBI_ERROR;
-    }
-    if (*pwidth <= 0 || *pheight <= 0) {
-        stbi_image_free(decoded_pixels);
-        sixel_helper_set_additional_message(
-            "builtin HDR: invalid image dimensions.");
-        return SIXEL_STBI_ERROR;
-    }
-
-    *ppixels = (unsigned char *)decoded_pixels;
-    *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    *pcolorspace = SIXEL_COLORSPACE_LINEAR;
-
-    return SIXEL_OK;
+    return sixel_builtin_hdr_try_decode_with_stbi(chunk,
+                                                  &hint,
+                                                  hint_status,
+                                                  ppixels,
+                                                  pwidth,
+                                                  pheight,
+                                                  ppixelformat,
+                                                  pcolorspace);
 }
 
 static SIXELSTATUS
