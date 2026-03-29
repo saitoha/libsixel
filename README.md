@@ -860,6 +860,18 @@ SIXEL_BGCOLOR              specify background color.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+SIXEL_LOADER_OSC11_BG_QUERY
+                           enable loader-side OSC11 background
+                           color query when no bgcolor was set.
+                           Only the exact value "1" enables it.
+                           Default is off. img2sixel sets this
+                           variable to "1" only when it is
+                           unset.
+SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
+                           timeout in milliseconds for the
+                           loader OSC11 background query wait.
+                           Default is 50. Invalid values fall
+                           back to 50.
 SIXEL_THREADS              override encoder thread count.
                            Accepts positive integers or the word
                            'auto' to match the hardware thread

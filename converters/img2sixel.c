@@ -848,6 +848,17 @@ static cli_env_help_t const g_env_help_table[] = {
         "rgb:rrrr/gggg/bbbb"
     },
     {
+        "SIXEL_LOADER_OSC11_BG_QUERY",
+        "enable OSC11 background color probing in loaders.\n"
+        "Only the exact value '1' enables probing. Defaults to off, but\n"
+        "img2sixel sets it to '1' when the variable is unset."
+    },
+    {
+        "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS",
+        "max wait time in milliseconds for OSC11 background color probing.\n"
+        "Defaults to 50. Invalid values fall back to 50."
+    },
+    {
         "SIXEL_COLORS",
         "specify palette size (default 256). Overrides -p/--colors when set."
     },
@@ -2241,6 +2252,21 @@ main(int argc, char *argv[])
             parsed_options[parsed_count - 1u].token);
         status = SIXEL_BAD_ARGUMENT;
         goto unknown_option_error;
+    }
+
+    /*
+     * img2sixel enables loader-side OSC11 probing by default only when the
+     * variable is unset. User-provided values (including empty strings) win.
+     */
+    if (img2sixel_compat_getenv("SIXEL_LOADER_OSC11_BG_QUERY") == NULL) {
+        if (img2sixel_compat_setenv("SIXEL_LOADER_OSC11_BG_QUERY",
+                                    "1") != 0) {
+            sixel_helper_set_additional_message(
+                "failed to set environment variable "
+                "'SIXEL_LOADER_OSC11_BG_QUERY'.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto error;
+        }
     }
 
     status = sixel_encoder_new(&encoder, NULL);
