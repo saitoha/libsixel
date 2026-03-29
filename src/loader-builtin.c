@@ -3672,7 +3672,8 @@ sixel_builtin_try_load_indexed_tga(
                                     &palette_colors,
                                     ri);
     if (pixels == NULL || palette == NULL) {
-        return SIXEL_OK;
+        status = SIXEL_OK;
+        goto cleanup;
     }
 
     status = convert_palette_to_rgb(&frame->palette,
@@ -3682,17 +3683,28 @@ sixel_builtin_try_load_indexed_tga(
                                     bgcolor,
                                     chunk->allocator);
     if (SIXEL_FAILED(status)) {
-        stbi_free(palette);
-        sixel_allocator_free(chunk->allocator, pixels);
-        return status;
+        goto cleanup;
     }
+    palette = NULL;
 
     frame->ncolors = palette_colors;
     frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
     sixel_frame_set_pixels(frame, pixels);
+    pixels = NULL;
     frame->loop_count = 1;
     *loaded = 1;
-    return SIXEL_OK;
+    status = SIXEL_OK;
+
+cleanup:
+    if (palette != NULL) {
+        stbi_free(palette);
+        palette = NULL;
+    }
+    if (pixels != NULL) {
+        sixel_allocator_free(chunk->allocator, pixels);
+        pixels = NULL;
+    }
+    return status;
 }
 
 static SIXELSTATUS
@@ -3770,11 +3782,10 @@ sixel_builtin_load_png_keycolor_or_rgba(
                                         palette_comp,
                                         bgcolor,
                                         chunk->allocator);
-        palette = NULL;
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(chunk->allocator, pixels);
-            return status;
+            goto cleanup;
         }
+        palette = NULL;
 
         frame->ncolors = palette_colors;
         frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
@@ -3801,8 +3812,10 @@ sixel_builtin_load_png_keycolor_or_rgba(
             }
         }
         sixel_frame_set_pixels(frame, pixels);
+        pixels = NULL;
         frame->loop_count = 1;
-        return SIXEL_OK;
+        status = SIXEL_OK;
+        goto cleanup;
     }
 
     if (palette != NULL) {
@@ -3821,15 +3834,28 @@ sixel_builtin_load_png_keycolor_or_rgba(
                                    4);
     if (pixels == NULL) {
         sixel_helper_set_additional_message(stbi_failure_reason());
-        return SIXEL_STBI_ERROR;
+        status = SIXEL_STBI_ERROR;
+        goto cleanup;
     }
 
     sixel_frame_set_pixels(frame, pixels);
+    pixels = NULL;
     frame->loop_count = 1;
     frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     frame->alpha_zero_is_transparent = 1;
-    return SIXEL_OK;
+    status = SIXEL_OK;
+
+cleanup:
+    if (palette != NULL) {
+        stbi_free(palette);
+        palette = NULL;
+    }
+    if (pixels != NULL) {
+        sixel_allocator_free(chunk->allocator, pixels);
+        pixels = NULL;
+    }
+    return status;
 }
 
 static SIXELSTATUS
