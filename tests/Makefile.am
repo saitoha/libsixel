@@ -304,6 +304,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-test-plan-single \
+	staticcheck-test-no-grep-awk \
 	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
@@ -321,6 +322,7 @@ staticcheck: \
 	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-test-plan-single \
+	staticcheck-test-no-grep-awk \
 	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
@@ -414,6 +416,16 @@ staticcheck-test-plan-single:
 		--enable-hard-errors \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-plan-single.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-no-grep-awk:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-no-grep-awk" \
+		--log-file staticcheck-test-no-grep-awk.log \
+		--trs-file staticcheck-test-no-grep-awk.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-no-grep-awk.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-artifact-local-dir-mkdir:
@@ -1046,6 +1058,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-runner-dllexport.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-test-plan-single.sh \
+    _static/sh/staticcheck-test-no-grep-awk.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
