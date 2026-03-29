@@ -21,7 +21,17 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -q "Unexpected characters in value" "${err_file}" || {
+err_match=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"Unexpected characters in value"*)
+            err_match=1
+            break
+            ;;
+    esac
+done < "${err_file}"
+
+test "${err_match}" -eq 1 || {
     echo "not ok" 1 - "baseline trailing garbage was not rejected as expected"
     exit 0
 }

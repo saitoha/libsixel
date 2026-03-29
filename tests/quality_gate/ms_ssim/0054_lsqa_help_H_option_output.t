@@ -15,7 +15,17 @@ ${SIXEL_RUNTIME-} "${LSQA_PATH}" -H >"${out_file}" || {
     exit 0
 }
 
-awk '/Usage: lsqa/ { m++ } /Options:/ { m++ } END { if (! m) exit 1 }' "${out_file}" || {
+help_marker_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"Usage: lsqa"*|*"Options:"*)
+            help_marker_found=1
+            break
+            ;;
+    esac
+done < "${out_file}"
+
+test "${help_marker_found}" -eq 1 || {
     echo "not ok" 1 - "lsqa -H did not print expected help output"
     exit 0
 }
