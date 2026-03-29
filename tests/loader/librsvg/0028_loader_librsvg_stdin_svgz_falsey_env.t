@@ -20,8 +20,9 @@ svgz_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-transparent-2color.sv
 status=0
 msg=$(
     set +xv
+    SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ='  no  '
+    export SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=no \
         -L librsvg! - -o/dev/null 2>&1 \
         <"${svgz_path}"
 ) || status="$?"

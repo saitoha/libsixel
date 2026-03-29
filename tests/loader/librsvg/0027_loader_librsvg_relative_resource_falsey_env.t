@@ -20,8 +20,9 @@ svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-relative-image.svg"
 esc="$(printf '\033')"
 sixel_output=$(
     set +xv
+    SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES='  false  '
+    export SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=false \
         -L librsvg! "${svg_path}"
 ) || {
     echo "not ok" 1 - "relative-resource falsey env conversion failed"
