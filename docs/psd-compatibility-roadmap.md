@@ -88,6 +88,10 @@ Key points used by this roadmap:
     normal blend decode, clipping-group decode, raster-mask decode,
     and deterministic unsupported traces for unknown blend/non-pixel/vector
     mask/layer effects/knockout.
+  - multi-layer missing-composite normal-blend decode coverage for
+    RGB16/RGB32/Lab16/CMYK16.
+  - multi-layer missing-composite clipping-group and raster-mask decode
+    coverage for RGB16/RGB32.
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
