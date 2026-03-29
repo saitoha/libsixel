@@ -17,6 +17,7 @@ typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_OPTIONS_INIT,
     WEBP_FI_FAIL_DECODER_NEW,
     WEBP_FI_FAIL_DECODER_GET_INFO,
+    WEBP_FI_FAIL_DECODER_FRAME_COUNT_LIMIT,
     WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES,
     WEBP_FI_FAIL_DECODER_GET_NEXT,
     WEBP_FI_FAIL_LOSSY_INIT_CONFIG,
@@ -86,10 +87,20 @@ static int
 webpfi_WebPAnimDecoderGetInfo(WebPAnimDecoder const *decoder,
                               WebPAnimInfo *anim_info)
 {
+    int status;
+
+    status = 0;
+
     if (g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_GET_INFO) {
         return 0;
     }
-    return g_real_WebPAnimDecoderGetInfo(decoder, anim_info);
+    status = g_real_WebPAnimDecoderGetInfo(decoder, anim_info);
+    if (status != 0 &&
+        g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_FRAME_COUNT_LIMIT &&
+        anim_info != NULL) {
+        anim_info->frame_count = 65536u;
+    }
+    return status;
 }
 
 static int
@@ -664,6 +675,17 @@ run_fault_decoder_getnext_case(void)
 }
 
 static int
+run_fault_decoder_frame_count_limit_case(void)
+{
+    return run_animation_decode_fail_case(
+        WEBP_FI_FAIL_DECODER_FRAME_COUNT_LIMIT,
+        SIXEL_BAD_INPUT,
+        0,
+        "load_with_libwebp: animation frame count exceeds limit.",
+        "libwebp fault injection decoder-frame-count-limit");
+}
+
+static int
 run_fault_static_rgbinto_case(void)
 {
     return run_load_webp_fail_case(
@@ -973,6 +995,8 @@ WEBP_FI_TEST_ENTRY(test_loader_0028_loader_libwebp_fault_decoder_getinfo,
                    run_fault_decoder_getinfo_case)
 WEBP_FI_TEST_ENTRY(test_loader_0029_loader_libwebp_fault_decoder_getnext,
                    run_fault_decoder_getnext_case)
+WEBP_FI_TEST_ENTRY(test_loader_0042_loader_libwebp_frame_count_limit_decoder_guard,
+                   run_fault_decoder_frame_count_limit_case)
 WEBP_FI_TEST_ENTRY(test_loader_0032_loader_libwebp_fault_static_rgbinto,
                    run_fault_static_rgbinto_case)
 WEBP_FI_TEST_ENTRY(test_loader_0033_loader_libwebp_fault_static_rgbainto,
