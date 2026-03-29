@@ -789,6 +789,17 @@ rgb:rrr/ggg/bbb
 rgb:rrrr/gggg/bbbb
 .br
 .TP 5
+.B SIXEL_LOADER_OSC11_BG_QUERY
+.br
+enable loader-side OSC11 background color query when no background color was
+provided. Only the exact value \(dq1\(dq enables probing. Default is off.
+\fIimg2sixel\fP sets this variable to \(dq1\(dq only when it is unset.
+.TP 5
+.B SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
+.br
+timeout in milliseconds for the loader OSC11 background color query wait.
+Defaults to 50. Invalid values fall back to 50.
+.TP 5
 .B SIXEL_COLORS
 .br
 specify number of colors to reduce the image to (default=256).
