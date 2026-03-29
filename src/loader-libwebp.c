@@ -2529,6 +2529,10 @@ webp_extract_first_animation_subframe_as_riff(unsigned char **output_data,
         offset += chunk_total_size;
     }
 
+    /*
+     * Defensive fallback: current RIFF validation for animated VP8X streams
+     * requires at least one ANMF chunk before this helper is called.
+     */
     sixel_helper_set_additional_message(
         "load_with_libwebp: no ANMF chunk found in animated WebP stream.");
     return SIXEL_BAD_INPUT;
@@ -2988,7 +2992,22 @@ load_with_libwebp(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    /*
+     * Keep the RIFF pre-scan frame limit guard even for animation streams
+     * that will later use WebPAnimDecoderGetInfo(). This early check rejects
+     * hostile ANMF fan-out before decoder allocation/work begins.
+     */
+    sixel_trace_topic_message(
+        "webp_decode",
+        "animation frame guard source=riff hint=%lu limit=%d",
+        (unsigned long)animation_frame_count_hint,
+        WEBP_MAX_ANIMATION_FRAMES);
     if (animation_frame_count_hint > WEBP_MAX_ANIMATION_FRAMES) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "animation frame guard tripped source=riff hint=%lu limit=%d",
+            (unsigned long)animation_frame_count_hint,
+            WEBP_MAX_ANIMATION_FRAMES);
         sixel_helper_set_additional_message(
             "load_with_libwebp: animation frame count exceeds limit.");
         status = SIXEL_BAD_INPUT;
@@ -3078,7 +3097,24 @@ load_with_libwebp(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    /*
+     * Re-check the frame limit against libwebp's parsed animation info.
+     * This remains as a second defensive boundary for decode-time metadata.
+     */
+    sixel_trace_topic_message(
+        "webp_decode",
+        "animation frame guard source=decoder count=%u riff_hint=%lu limit=%d",
+        anim_info.frame_count,
+        (unsigned long)animation_frame_count_hint,
+        WEBP_MAX_ANIMATION_FRAMES);
     if (anim_info.frame_count > WEBP_MAX_ANIMATION_FRAMES) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "animation frame guard tripped source=decoder "
+            "count=%u riff_hint=%lu limit=%d",
+            anim_info.frame_count,
+            (unsigned long)animation_frame_count_hint,
+            WEBP_MAX_ANIMATION_FRAMES);
         sixel_helper_set_additional_message(
             "load_with_libwebp: animation frame count exceeds limit.");
         status = SIXEL_BAD_INPUT;
