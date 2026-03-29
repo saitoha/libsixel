@@ -1077,15 +1077,14 @@ sixel_builtin_psd_decode_layer_channel_16bit(
     if (data == NULL || dst == NULL || width == 0u || height == 0u) {
         return 0;
     }
-    if ((size_t)width > SIZE_MAX / (size_t)height ||
-        (size_t)width > SIZE_MAX / 2u) {
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
         return 0;
     }
     pixel_count = (size_t)width * (size_t)height;
-    row_bytes = (size_t)width * 2u;
     if (pixel_count > SIZE_MAX / 2u) {
         return 0;
     }
+    row_bytes = (size_t)width * 2u;
     dst_bytes = (unsigned char *)dst;
 
     if (length < 2u) {
@@ -1179,15 +1178,14 @@ sixel_builtin_psd_decode_layer_channel_32bit(
     if (data == NULL || dst == NULL || width == 0u || height == 0u) {
         return 0;
     }
-    if ((size_t)width > SIZE_MAX / (size_t)height ||
-        (size_t)width > SIZE_MAX / 4u) {
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
         return 0;
     }
     pixel_count = (size_t)width * (size_t)height;
-    row_bytes = (size_t)width * 4u;
     if (pixel_count > SIZE_MAX / 4u) {
         return 0;
     }
+    row_bytes = (size_t)width * 4u;
     dst_bytes = (unsigned char *)dst;
 
     if (length < 2u) {
