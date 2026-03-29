@@ -96,6 +96,16 @@ run_cleanup_helper_cases(void)
         fprintf(stderr, "restore helper must reject invalid fd\n");
         return 1;
     }
+    status = sixel_tty_restore_animation_cursor_to_bottom(-1, 1);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        fprintf(stderr, "bottom restore helper must reject invalid fd\n");
+        return 1;
+    }
+    status = sixel_tty_restore_animation_cursor_to_bottom(STDOUT_FILENO, 0);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        fprintf(stderr, "bottom restore helper must reject invalid height\n");
+        return 1;
+    }
 
     return 0;
 }

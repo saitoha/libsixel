@@ -2460,6 +2460,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     }
 
     status = SIXEL_OK;
+    height = 0;
     outfd_is_tty = 0;
     should_hide_cursor = 0;
     hide_cursor_env = NULL;
@@ -2578,6 +2579,14 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode_frame: write_callback() failed.");
             return status;
+        }
+        if (sixel_frame_get_multiframe(context->frame)
+            && !context->encoder->fstatic
+            && outfd_is_tty != 0
+            && height > 0) {
+            (void)sixel_tty_restore_animation_cursor_to_bottom(
+                context->encoder->outfd,
+                height);
         }
         return SIXEL_INTERRUPTED;
     }

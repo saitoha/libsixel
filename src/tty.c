@@ -886,6 +886,67 @@ sixel_tty_end_animation_input_guard(void)
     return SIXEL_OK;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_restore_animation_cursor_to_bottom(int outfd, int height)
+{
+    SIXELSTATUS status;
+    ssize_t written;
+#if defined(TIOCGWINSZ)
+    struct winsize size;
+    int nwrite;
+    int cellheight;
+    char sequence[64];
+#endif
+
+    status = SIXEL_FALSE;
+    written = 0;
+#if defined(TIOCGWINSZ)
+    memset(&size, 0, sizeof(size));
+    nwrite = 0;
+    cellheight = 0;
+    memset(sequence, 0, sizeof(sequence));
+#endif
+
+    if (outfd < 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_compat_isatty(outfd)) {
+        return SIXEL_FALSE;
+    }
+
+#if defined(TIOCGWINSZ)
+    if (ioctl(outfd, TIOCGWINSZ, &size) == 0
+        && size.ws_ypixel > 0
+        && size.ws_row > 0) {
+        cellheight = (height * size.ws_row + size.ws_ypixel - 1)
+            / size.ws_ypixel;
+        if (cellheight < 1) {
+            cellheight = 1;
+        }
+        nwrite = sixel_compat_snprintf(sequence,
+                                       sizeof(sequence),
+                                       "\0338\033[%dB\r",
+                                       cellheight);
+        if (nwrite <= 0 || nwrite >= (int)sizeof(sequence)) {
+            return SIXEL_FALSE;
+        }
+        written = sixel_compat_write(outfd, sequence, (size_t)nwrite);
+        if (written != (ssize_t)nwrite) {
+            return SIXEL_FALSE;
+        }
+        return SIXEL_OK;
+    }
+#endif
+
+    written = sixel_compat_write(outfd, "\0338\r", 3u);
+    if (written != 3) {
+        return SIXEL_FALSE;
+    }
+
+    status = SIXEL_OK;
+    return status;
+}
+
 static SIXELSTATUS
 sixel_tty_cbreak_fd(int fd,
                     struct termios *old_termios,
@@ -1084,6 +1145,14 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_end_animation_input_guard(void)
 {
     return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_restore_animation_cursor_to_bottom(int outfd, int height)
+{
+    (void)outfd;
+    (void)height;
+    return SIXEL_FALSE;
 }
 
 SIXEL_INTERNAL_API void
