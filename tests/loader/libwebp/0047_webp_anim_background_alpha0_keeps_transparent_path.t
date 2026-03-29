@@ -32,19 +32,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#000 "${in
     exit 0
 }
 
+set +x
 out_default_text=""
-while IFS= read -r out_default_line || test -n "
-${out_default_line}"; do
-    case "${out_default_text}" in
-        "")
-            out_default_text=${out_default_line}
-            ;;
-        *)
-            out_default_text="${out_default_text}
-${out_default_line}"
-            ;;
-    esac
-done < "${out_default}"
+IFS= read -r out_default_text < "${out_default}" || test -n "${out_default_text}"
 case "${out_default_text}" in
     *"${keycolor_header}"*)
         default_has_keycolor=1
@@ -55,18 +45,7 @@ case "${out_default_text}" in
 esac
 
 out_black_text=""
-while IFS= read -r out_black_line || test -n "
-${out_black_line}"; do
-    case "${out_black_text}" in
-        "")
-            out_black_text=${out_black_line}
-            ;;
-        *)
-            out_black_text="${out_black_text}
-${out_black_line}"
-            ;;
-    esac
-done < "${out_black}"
+IFS= read -r out_black_text < "${out_black}" || test -n "${out_black_text}"
 case "${out_black_text}" in
     *"${keycolor_header}"*)
         black_has_keycolor=1

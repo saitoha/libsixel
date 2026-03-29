@@ -28,19 +28,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1
     exit 0
 }
 
+set +x
 out_text=""
-while IFS= read -r out_line || test -n "
-${out_line}"; do
-    case "${out_text}" in
-        "")
-            out_text=${out_line}
-            ;;
-        *)
-            out_text="${out_text}
-${out_line}"
-            ;;
-    esac
-done < "${out}"
+IFS= read -r out_text < "${out}" || test -n "${out_text}"
 case "${out_text}" in
     *"$(printf '\033')P0;1q"*)
         echo "not ok 1 - repeated short -% did not use last value"

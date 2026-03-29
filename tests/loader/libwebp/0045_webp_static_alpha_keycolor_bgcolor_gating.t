@@ -44,19 +44,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#fff "${in
     exit 0
 }
 
+set +x
 out_default_text=""
-while IFS= read -r out_default_line || test -n "
-${out_default_line}"; do
-    case "${out_default_text}" in
-        "")
-            out_default_text=${out_default_line}
-            ;;
-        *)
-            out_default_text="${out_default_text}
-${out_default_line}"
-            ;;
-    esac
-done < "${out_default}"
+IFS= read -r out_default_text < "${out_default}" || test -n "${out_default_text}"
 case "${out_default_text}" in
     *"${keycolor_header}"*)
         default_has_keycolor=1
@@ -67,18 +57,7 @@ case "${out_default_text}" in
 esac
 
 out_black_text=""
-while IFS= read -r out_black_line || test -n "
-${out_black_line}"; do
-    case "${out_black_text}" in
-        "")
-            out_black_text=${out_black_line}
-            ;;
-        *)
-            out_black_text="${out_black_text}
-${out_black_line}"
-            ;;
-    esac
-done < "${out_black}"
+IFS= read -r out_black_text < "${out_black}" || test -n "${out_black_text}"
 case "${out_black_text}" in
     *"${keycolor_header}"*)
         black_has_keycolor=1
@@ -89,18 +68,7 @@ case "${out_black_text}" in
 esac
 
 out_default_cms_text=""
-while IFS= read -r out_default_cms_line || test -n "
-${out_default_cms_line}"; do
-    case "${out_default_cms_text}" in
-        "")
-            out_default_cms_text=${out_default_cms_line}
-            ;;
-        *)
-            out_default_cms_text="${out_default_cms_text}
-${out_default_cms_line}"
-            ;;
-    esac
-done < "${out_default_cms}"
+IFS= read -r out_default_cms_text < "${out_default_cms}" || test -n "${out_default_cms_text}"
 case "${out_default_cms_text}" in
     *"${keycolor_header}"*)
         cms_has_keycolor=1
@@ -111,18 +79,7 @@ case "${out_default_cms_text}" in
 esac
 
 out_white_text=""
-while IFS= read -r out_white_line || test -n "
-${out_white_line}"; do
-    case "${out_white_text}" in
-        "")
-            out_white_text=${out_white_line}
-            ;;
-        *)
-            out_white_text="${out_white_text}
-${out_white_line}"
-            ;;
-    esac
-done < "${out_white}"
+IFS= read -r out_white_text < "${out_white}" || test -n "${out_white_text}"
 case "${out_white_text}" in
     *"${keycolor_header}"*)
         white_has_keycolor=1

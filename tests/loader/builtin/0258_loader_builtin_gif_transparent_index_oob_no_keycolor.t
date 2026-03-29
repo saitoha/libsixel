@@ -24,19 +24,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
     exit 0
 }
 
+set +x
 out_six_text=""
-while IFS= read -r out_six_line || test -n "
-${out_six_line}"; do
-    case "${out_six_text}" in
-        "")
-            out_six_text=${out_six_line}
-            ;;
-        *)
-            out_six_text="${out_six_text}
-${out_six_line}"
-            ;;
-    esac
-done < "${out_six}"
+IFS= read -r out_six_text < "${out_six}" || test -n "${out_six_text}"
 case "${out_six_text}" in
     *"${keycolor_header}"*)
         echo "not ok" 1 - "transparent-index-oob unexpectedly emitted keycolor header"
