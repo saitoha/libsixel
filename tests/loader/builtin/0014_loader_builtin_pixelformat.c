@@ -15,6 +15,8 @@
  * - PSD CMYK32/Lab32 callbacks keep float precision family
  * - PSD RGB8+alpha callback stays RGB888 (mask side-channel handles alpha)
  * - PIC RGBA callback keeps alpha-zero mask and applies bgcolor blend
+ * - TGA RGBA callback keeps alpha-zero mask and returns RGB888
+ * - TGA indexed RGBA callback keeps PAL8 and collapses transparent index
  */
 
 #include <math.h>
@@ -55,6 +57,33 @@ typedef struct pic_rgba_alpha_probe_context {
     unsigned char pixels[16];
     unsigned char transparent_mask[4];
 } pic_rgba_alpha_probe_context_t;
+
+typedef struct tga_rgba_alpha_probe_context {
+    int callback_count;
+    int pixelformat;
+    int width;
+    int height;
+    int transparent;
+    int alpha_zero_is_transparent;
+    int has_transparent_mask;
+    size_t transparent_mask_size;
+    unsigned char pixels[12];
+    unsigned char transparent_mask[4];
+} tga_rgba_alpha_probe_context_t;
+
+typedef struct tga_pal_rgba_probe_context {
+    int callback_count;
+    int pixelformat;
+    int width;
+    int height;
+    int ncolors;
+    int transparent;
+    int alpha_zero_is_transparent;
+    int has_transparent_mask;
+    size_t transparent_mask_size;
+    unsigned char pixels[4];
+    unsigned char palette[12];
+} tga_pal_rgba_probe_context_t;
 
 static SIXELSTATUS
 capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
@@ -200,6 +229,354 @@ run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
 }
 
 static int
+verify_tga_rgba_alpha_probe(
+    char const *label,
+    tga_rgba_alpha_probe_context_t const *probe,
+    unsigned char const *expected_pixels,
+    unsigned char const *expected_mask)
+{
+    if (label == NULL ||
+        probe == NULL ||
+        expected_pixels == NULL ||
+        expected_mask == NULL) {
+        return 1;
+    }
+    if (probe->callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch (%d)\n",
+                label,
+                probe->callback_count);
+        return 1;
+    }
+    if (probe->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
+                label,
+                probe->pixelformat);
+        return 1;
+    }
+    if (probe->width != 2 || probe->height != 2) {
+        fprintf(stderr, "%s: geometry mismatch (%dx%d)\n",
+                label,
+                probe->width,
+                probe->height);
+        return 1;
+    }
+    if (probe->transparent != -1) {
+        fprintf(stderr, "%s: transparent index mismatch (%d)\n",
+                label,
+                probe->transparent);
+        return 1;
+    }
+    if (probe->alpha_zero_is_transparent != 1) {
+        fprintf(stderr, "%s: alpha_zero_is_transparent mismatch (%d)\n",
+                label,
+                probe->alpha_zero_is_transparent);
+        return 1;
+    }
+    if (probe->has_transparent_mask != 1 || probe->transparent_mask_size < 4u) {
+        fprintf(stderr, "%s: transparent mask missing (%d, %zu)\n",
+                label,
+                probe->has_transparent_mask,
+                probe->transparent_mask_size);
+        return 1;
+    }
+    if (memcmp(probe->transparent_mask, expected_mask, 4u) != 0) {
+        fprintf(stderr, "%s: transparent mask mismatch\n", label);
+        return 1;
+    }
+    if (memcmp(probe->pixels, expected_pixels, 12u) != 0) {
+        fprintf(stderr, "%s: composite RGB mismatch\n", label);
+        return 1;
+    }
+
+    return 0;
+}
+
+static SIXELSTATUS
+capture_tga_rgba_alpha_probe(sixel_frame_t *frame, void *data)
+{
+    tga_rgba_alpha_probe_context_t *context;
+
+    context = (tga_rgba_alpha_probe_context_t *)data;
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->callback_count += 1;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
+    context->transparent = sixel_frame_get_transparent(frame);
+    context->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    context->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
+    context->transparent_mask_size = frame->transparent_mask_size;
+    if (frame->pixels.u8ptr != NULL &&
+        context->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+        context->width == 2 &&
+        context->height == 2) {
+        memcpy(context->pixels, frame->pixels.u8ptr, sizeof(context->pixels));
+    }
+    if (frame->transparent_mask != NULL && frame->transparent_mask_size >= 4u) {
+        memcpy(context->transparent_mask,
+               frame->transparent_mask,
+               sizeof(context->transparent_mask));
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+capture_tga_pal_rgba_probe(sixel_frame_t *frame, void *data)
+{
+    tga_pal_rgba_probe_context_t *context;
+
+    context = (tga_pal_rgba_probe_context_t *)data;
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->callback_count += 1;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
+    context->ncolors = sixel_frame_get_ncolors(frame);
+    context->transparent = sixel_frame_get_transparent(frame);
+    context->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    context->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
+    context->transparent_mask_size = frame->transparent_mask_size;
+    if (frame->pixels.u8ptr != NULL &&
+        context->pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
+        context->width == 2 &&
+        context->height == 2) {
+        memcpy(context->pixels, frame->pixels.u8ptr, sizeof(context->pixels));
+    }
+    if (frame->palette != NULL && context->ncolors >= 4) {
+        memcpy(context->palette, frame->palette, sizeof(context->palette));
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test(void)
+{
+    static unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
+    static unsigned char const expected_black_rgb[12] = {
+        0xffu, 0x00u, 0x00u,
+        0x00u, 0x7fu, 0x00u,
+        0x00u, 0x00u, 0x3fu,
+        0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const expected_white_rgb[12] = {
+        0xffu, 0x00u, 0x00u,
+        0x7eu, 0xfeu, 0x7eu,
+        0xbeu, 0xbeu, 0xfeu,
+        0xfeu, 0xfeu, 0xfeu
+    };
+    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
+    builtin_loader_probe_options_t options;
+    tga_rgba_alpha_probe_context_t probe_black;
+    tga_rgba_alpha_probe_context_t probe_white;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    result = 1;
+    memset(&options, 0, sizeof(options));
+    memset(&probe_black, 0, sizeof(probe_black));
+    memset(&probe_white, 0, sizeof(probe_white));
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader tga rgba alpha mask/bgcolor numeric (default black)",
+        "/tests/data/inputs/formats/tga-rgba-2x2-top-left.tga",
+        &options,
+        capture_tga_rgba_alpha_probe,
+        &probe_black,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader tga rgba alpha mask/bgcolor numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    result = verify_tga_rgba_alpha_probe(
+        "builtin loader tga rgba alpha mask/bgcolor numeric (default black)",
+        &probe_black,
+        expected_black_rgb,
+        expected_mask);
+    if (result != 0) {
+        return result;
+    }
+
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_white;
+    result = run_builtin_loader_probe_case(
+        "builtin loader tga rgba alpha mask/bgcolor numeric (white bgcolor)",
+        "/tests/data/inputs/formats/tga-rgba-2x2-top-left.tga",
+        &options,
+        capture_tga_rgba_alpha_probe,
+        &probe_white,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader tga rgba alpha mask/bgcolor numeric: "
+                "loader failed with bgcolor (%d)\n",
+                (int)status);
+        return 1;
+    }
+    result = verify_tga_rgba_alpha_probe(
+        "builtin loader tga rgba alpha mask/bgcolor numeric (white bgcolor)",
+        &probe_white,
+        expected_white_rgb,
+        expected_mask);
+    if (result != 0) {
+        return result;
+    }
+    if (memcmp(probe_black.pixels, probe_white.pixels, 12u) == 0) {
+        fprintf(stderr,
+                "builtin loader tga rgba alpha mask/bgcolor numeric: "
+                "bgcolor did not affect composite RGB\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_tga_pal_rgba_transparent_index_numeric_test(void)
+{
+    static unsigned char const expected_pixels[4] = {
+        0u, 1u, 1u, 3u
+    };
+    static unsigned char const expected_palette[12] = {
+        0xffu, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u,
+        0xffu, 0xffu, 0x00u
+    };
+    builtin_loader_probe_options_t options;
+    tga_pal_rgba_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    result = 1;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+
+    options.require_static = 1;
+    options.use_palette = 1;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader tga indexed rgba transparent index numeric",
+        "/tests/data/inputs/formats/tga-pal-rgba-2x2-top-left.tga",
+        &options,
+        capture_tga_pal_rgba_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_PAL8) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.ncolors != 4) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "ncolors mismatch (%d)\n",
+                probe.ncolors);
+        return 1;
+    }
+    if (probe.transparent != 1) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "transparent index mismatch (%d)\n",
+                probe.transparent);
+        return 1;
+    }
+    if (probe.alpha_zero_is_transparent != 0) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "alpha_zero_is_transparent mismatch (%d)\n",
+                probe.alpha_zero_is_transparent);
+        return 1;
+    }
+    if (probe.has_transparent_mask != 0 || probe.transparent_mask_size != 0u) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "unexpected transparent mask (%d, %zu)\n",
+                probe.has_transparent_mask,
+                probe.transparent_mask_size);
+        return 1;
+    }
+    if (memcmp(probe.pixels, expected_pixels, sizeof(expected_pixels)) != 0) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "collapsed palette index mismatch\n");
+        return 1;
+    }
+    if (memcmp(probe.palette,
+               expected_palette,
+               sizeof(expected_palette)) != 0) {
+        fprintf(stderr,
+                "builtin loader tga indexed rgba transparent index numeric: "
+                "palette composite mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_env_dispatch(
     builtin_loader_env_dispatch_entry_t const *entries,
     size_t entry_count)
@@ -322,6 +699,12 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_GIF_LOOP_FORCE_LOOP2_UNBOUNDED",
           run_builtin_loader_gif_loop_force_loop2_unbounded_test }
     };
+    static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
+        { "SIXEL_TEST_TGA_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
+          run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test },
+        { "SIXEL_TEST_TGA_NUMERIC_PAL_RGBA_TRANSPARENT_INDEX",
+          run_builtin_loader_tga_pal_rgba_transparent_index_numeric_test }
+    };
     static builtin_loader_env_dispatch_entry_t const psd_env_dispatch[] = {
         { "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE",
           run_builtin_loader_psd_validate_defensive_test },
@@ -336,6 +719,10 @@ run_builtin_loader_test(void)
         {
             gif_env_dispatch,
             sizeof(gif_env_dispatch) / sizeof(gif_env_dispatch[0])
+        },
+        {
+            tga_env_dispatch,
+            sizeof(tga_env_dispatch) / sizeof(tga_env_dispatch[0])
         },
         {
             psd_env_dispatch,

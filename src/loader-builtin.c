@@ -857,6 +857,16 @@ convert_palette_to_rgb(
     return status;
 }
 
+static unsigned char
+sixel_builtin_blend_channel_with_bg(
+    unsigned int channel,
+    unsigned int alpha,
+    unsigned int bg_channel)
+{
+    return (unsigned char)((channel * alpha
+                            + bg_channel * (0xffu - alpha)) >> 8);
+}
+
 typedef union _fn_pointer {
     sixel_load_image_function fn;
     void *                    p;
@@ -2978,12 +2988,24 @@ sixel_builtin_try_load_indexed_tga(
     unsigned char *palette;
     int palette_comp;
     int palette_colors;
+    int palette_keycolor_index;
+    int palette_zero_alpha_count;
+    size_t palette_pixel_count;
+    size_t palette_pixel_index;
+    unsigned int palette_index;
+    unsigned char palette_zero_alpha_map[SIXEL_PALETTE_MAX];
 
     status = SIXEL_OK;
     pixels = NULL;
     palette = NULL;
     palette_comp = 0;
     palette_colors = 0;
+    palette_keycolor_index = -1;
+    palette_zero_alpha_count = 0;
+    palette_pixel_count = 0u;
+    palette_pixel_index = 0u;
+    palette_index = 0u;
+    memset(palette_zero_alpha_map, 0, sizeof(palette_zero_alpha_map));
     if (chunk == NULL ||
         chunk_size <= 0 ||
         frame == NULL ||
@@ -3010,6 +3032,21 @@ sixel_builtin_try_load_indexed_tga(
         status = SIXEL_OK;
         goto cleanup;
     }
+    if (palette_comp == 4 &&
+        palette_colors > 0) {
+        for (palette_index = 0u;
+             palette_index < (unsigned int)palette_colors &&
+             palette_index < SIXEL_PALETTE_MAX;
+             ++palette_index) {
+            if (palette[palette_index * 4u + 3u] == 0u) {
+                if (palette_keycolor_index < 0) {
+                    palette_keycolor_index = (int)palette_index;
+                }
+                palette_zero_alpha_map[palette_index] = 1u;
+                ++palette_zero_alpha_count;
+            }
+        }
+    }
 
     status = convert_palette_to_rgb(&frame->palette,
                                     &palette,
@@ -3024,6 +3061,28 @@ sixel_builtin_try_load_indexed_tga(
 
     frame->ncolors = palette_colors;
     frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    if (palette_keycolor_index >= 0) {
+        sixel_frame_set_transparent(frame, palette_keycolor_index);
+    }
+    if (palette_zero_alpha_count > 1 &&
+        palette_keycolor_index >= 0 &&
+        frame->width > 0 &&
+        frame->height > 0 &&
+        (size_t)frame->width <= SIZE_MAX / (size_t)frame->height) {
+        palette_pixel_count = (size_t)frame->width * (size_t)frame->height;
+        for (palette_pixel_index = 0u;
+             palette_pixel_index < palette_pixel_count;
+             ++palette_pixel_index) {
+            palette_index = pixels[palette_pixel_index];
+            if ((int)palette_index != palette_keycolor_index &&
+                palette_index < SIXEL_PALETTE_MAX &&
+                palette_zero_alpha_map[palette_index] != 0u) {
+                pixels[palette_pixel_index] =
+                    (unsigned char)palette_keycolor_index;
+            }
+        }
+    }
     sixel_frame_set_pixels(frame, pixels);
     pixels = NULL;
     frame->loop_count = 1;
@@ -3818,8 +3877,153 @@ sixel_builtin_apply_pic_alpha_policy(
 }
 
 static SIXELSTATUS
+sixel_builtin_apply_tga_truecolor_alpha_policy(
+    sixel_frame_t *frame,
+    unsigned char *bgcolor)
+{
+    SIXELSTATUS status;
+    unsigned char *transparent_mask;
+    unsigned char *pixels;
+    size_t pixel_count;
+    size_t index;
+    unsigned int alpha;
+    unsigned int r;
+    unsigned int g;
+    unsigned int b;
+    unsigned int bg_r;
+    unsigned int bg_g;
+    unsigned int bg_b;
+    int has_zero_alpha;
+
+    status = SIXEL_FALSE;
+    transparent_mask = NULL;
+    pixels = NULL;
+    pixel_count = 0u;
+    index = 0u;
+    alpha = 0u;
+    r = 0u;
+    g = 0u;
+    b = 0u;
+    bg_r = 0u;
+    bg_g = 0u;
+    bg_b = 0u;
+    has_zero_alpha = 0;
+    if (frame == NULL || frame->allocator == NULL ||
+        frame->pixels.u8ptr == NULL ||
+        frame->width <= 0 ||
+        frame->height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (bgcolor != NULL) {
+        bg_r = bgcolor[0];
+        bg_g = bgcolor[1];
+        bg_b = bgcolor[2];
+    }
+
+    transparent_mask = (unsigned char *)sixel_allocator_malloc(
+        frame->allocator,
+        pixel_count);
+    if (transparent_mask == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin TGA: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    pixels = frame->pixels.u8ptr;
+    for (index = 0u; index < pixel_count; ++index) {
+        alpha = pixels[index * 4u + 3u];
+        transparent_mask[index] = alpha == 0u ? 1u : 0u;
+        if (alpha == 0u) {
+            has_zero_alpha = 1;
+        }
+        if (alpha < 0xffu) {
+            r = sixel_builtin_blend_channel_with_bg(
+                pixels[index * 4u + 0u],
+                alpha,
+                bg_r);
+            g = sixel_builtin_blend_channel_with_bg(
+                pixels[index * 4u + 1u],
+                alpha,
+                bg_g);
+            b = sixel_builtin_blend_channel_with_bg(
+                pixels[index * 4u + 2u],
+                alpha,
+                bg_b);
+        } else {
+            r = pixels[index * 4u + 0u];
+            g = pixels[index * 4u + 1u];
+            b = pixels[index * 4u + 2u];
+        }
+        pixels[index * 3u + 0u] = (unsigned char)r;
+        pixels[index * 3u + 1u] = (unsigned char)g;
+        pixels[index * 3u + 2u] = (unsigned char)b;
+    }
+
+    if (frame->transparent_mask != NULL) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+    }
+    if (has_zero_alpha != 0) {
+        frame->transparent_mask = transparent_mask;
+        frame->transparent_mask_size = pixel_count;
+        frame->alpha_zero_is_transparent = 1;
+        transparent_mask = NULL;
+    } else {
+        frame->alpha_zero_is_transparent = 0;
+    }
+    frame->transparent = -1;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+
+    status = SIXEL_OK;
+    sixel_allocator_free(frame->allocator, transparent_mask);
+    return status;
+}
+
+static int
+sixel_builtin_tga_has_truecolor_alpha(
+    sixel_chunk_t const *chunk,
+    int chunk_size)
+{
+    stbi__context stb_context;
+    int tga_width;
+    int tga_height;
+    int tga_comp;
+
+    tga_width = 0;
+    tga_height = 0;
+    tga_comp = 0;
+    if (chunk == NULL ||
+        chunk->buffer == NULL ||
+        chunk_size < 18) {
+        return 0;
+    }
+    if (chunk->buffer[1] != 0u) {
+        return 0;
+    }
+    if (chunk->buffer[2] != 2u &&
+        chunk->buffer[2] != 10u) {
+        return 0;
+    }
+    if (chunk->buffer[16] != 32u) {
+        return 0;
+    }
+    stbi__start_mem(&stb_context, chunk->buffer, chunk_size);
+    if (!stbi__tga_info(&stb_context, &tga_width, &tga_height, &tga_comp)) {
+        return 0;
+    }
+    return tga_comp == 4 ? 1 : 0;
+}
+
+static SIXELSTATUS
 sixel_builtin_load_nonpng_rgb8_fallback(
     sixel_chunk_t const *chunk,
+    int chunk_size,
     sixel_frame_t *frame,
     stbi__context *stb_context,
     unsigned char *bgcolor,
@@ -3837,6 +4041,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     unsigned char *pixels;
     int depth;
     int req_comp;
+    int tga_truecolor_alpha;
     int nwrite;
     char message[80];
 #if HAVE_LCMS2
@@ -3847,12 +4052,16 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     pixels = NULL;
     depth = 0;
     req_comp = 3;
+    tga_truecolor_alpha = 0;
     nwrite = 0;
     message[0] = '\0';
 #if HAVE_LCMS2
     tiff_photometric = (uint16_t)0xffffu;
 #endif
-    if (chunk == NULL || frame == NULL || stb_context == NULL) {
+    if (chunk == NULL ||
+        chunk_size <= 0 ||
+        frame == NULL ||
+        stb_context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 #if HAVE_LCMS2
@@ -3862,7 +4071,9 @@ sixel_builtin_load_nonpng_rgb8_fallback(
 #else
     (void)enable_cms;
 #endif
-    if (is_pic) {
+    tga_truecolor_alpha = sixel_builtin_tga_has_truecolor_alpha(chunk,
+                                                                 chunk_size);
+    if (is_pic || tga_truecolor_alpha != 0) {
         req_comp = 4;
     }
 
@@ -3923,6 +4134,12 @@ sixel_builtin_load_nonpng_rgb8_fallback(
             status = SIXEL_STBI_ERROR;
             break;
         }
+        return status;
+    }
+    if (tga_truecolor_alpha != 0) {
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        status = sixel_builtin_apply_tga_truecolor_alpha_policy(frame, bgcolor);
         return status;
     }
     switch (depth) {
@@ -4040,6 +4257,7 @@ sixel_builtin_load_nonpng_single_frame(
     }
     status = sixel_builtin_load_nonpng_rgb8_fallback(
         chunk,
+        chunk_size,
         frame,
         stb_context,
         bgcolor,
