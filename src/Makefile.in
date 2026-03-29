@@ -232,13 +232,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-gnome-thumbnailer.h \
 	$(srcdir)/loader-libjpeg.h $(srcdir)/loader-libpng.h \
 	$(srcdir)/loader-libtiff.h $(srcdir)/loader-librsvg.h \
-	$(srcdir)/loader-librsvg-test.h \
-	$(srcdir)/loader-libwebp.h $(srcdir)/loader-quicklook.h \
-	$(srcdir)/loader-registry.h $(srcdir)/loader-wic.h \
-	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/frompng.c \
-	$(srcdir)/frompng.h $(srcdir)/fromhdr.c $(srcdir)/fromhdr.h \
-	$(srcdir)/frompsd.c $(srcdir)/frompsd.h $(srcdir)/fromgif.c \
-	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/loader-librsvg-test.h $(srcdir)/loader-libwebp.h \
+	$(srcdir)/loader-quicklook.h $(srcdir)/loader-registry.h \
+	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
+	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
+	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \

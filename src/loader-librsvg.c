@@ -80,12 +80,40 @@ typedef struct sixel_loader_librsvg_component {
 #define LIBRSVG_CONTEXT_PARSE_STDIN_SVGZ_TEMPFILE \
     "librsvg_render_to_frame: unable to parse stdin .svgz via " \
     "temporary file."
+#define LIBRSVG_CONTEXT_RENDER_DOCUMENT_FAILED \
+    "librsvg_render_to_frame: rsvg_handle_render_document failed."
+#define LIBRSVG_CONTEXT_TEMP_SVGZ_OPEN_FAILED \
+    "librsvg_write_chunk_to_temp_svgz: g_file_open_tmp failed."
 #define LIBRSVG_MESSAGE_STDIN_SVGZ_REJECTED \
     "librsvg_render_to_frame: gzip-compressed SVG (.svgz) " \
     "requires file-path decode, prior decompression, or " \
     "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ=1."
 #define LIBRSVG_MESSAGE_UNSUPPORTED_DECODE_MODE \
     "librsvg_render_to_frame: unsupported decode mode."
+#define LIBRSVG_MESSAGE_TRACE_DECODE_MODE_UNKNOWN \
+    "librsvg: decode_mode=unknown"
+#define LIBRSVG_MESSAGE_TEMP_SVGZ_WRITE_FAILED \
+    "librsvg_write_chunk_to_temp_svgz: " \
+    "failed to write temporary .svgz file."
+#define LIBRSVG_MESSAGE_TEMP_SVGZ_CLOSE_FAILED \
+    "librsvg_write_chunk_to_temp_svgz: " \
+    "failed to close temporary .svgz file."
+#define LIBRSVG_MESSAGE_TEMP_SVGZ_EMPTY_INPUT \
+    "librsvg_write_chunk_to_temp_svgz: empty input."
+#define LIBRSVG_MESSAGE_INVALID_DIMENSIONS \
+    "librsvg_render_to_frame: invalid dimensions."
+#define LIBRSVG_MESSAGE_DIMENSIONS_EXCEED_LIMIT \
+    "librsvg_render_to_frame: dimensions exceed limit."
+#define LIBRSVG_MESSAGE_DIMENSIONS_OVERFLOW \
+    "librsvg_render_to_frame: dimensions overflow pixel count."
+#define LIBRSVG_MESSAGE_IMAGE_EXCEEDS_PIXEL_LIMIT \
+    "librsvg_render_to_frame: image exceeds pixel limit."
+#define LIBRSVG_MESSAGE_CAIRO_SURFACE_CREATE_FAILED \
+    "librsvg_render_to_frame: cairo_image_surface_create failed."
+#define LIBRSVG_MESSAGE_CAIRO_CREATE_FAILED \
+    "librsvg_render_to_frame: cairo_create failed."
+#define LIBRSVG_MESSAGE_CAIRO_SURFACE_ACCESS_FAILED \
+    "librsvg_render_to_frame: cairo surface access failed."
 
 typedef struct sixel_librsvg_open_result {
     RsvgHandle *handle;
@@ -789,8 +817,7 @@ librsvg_write_buffer_to_fd(int fd,
         written = sixel_compat_write(fd, buffer + offset, size - offset);
         if (written <= 0) {
             sixel_helper_set_additional_message(
-                "librsvg_write_chunk_to_temp_svgz: "
-                "failed to write temporary .svgz file.");
+                LIBRSVG_MESSAGE_TEMP_SVGZ_WRITE_FAILED);
             return SIXEL_LIBC_ERROR;
         }
         offset += (size_t)written;
@@ -808,8 +835,7 @@ librsvg_close_temp_svgz_fd(int *fd)
 
     if (sixel_compat_close(*fd) != 0) {
         sixel_helper_set_additional_message(
-            "librsvg_write_chunk_to_temp_svgz: "
-            "failed to close temporary .svgz file.");
+            LIBRSVG_MESSAGE_TEMP_SVGZ_CLOSE_FAILED);
         *fd = (-1);
         return SIXEL_LIBC_ERROR;
     }
@@ -850,9 +876,8 @@ librsvg_open_temp_svgz_file(int *fd_out, char **path_out)
 
     fd = g_file_open_tmp("libsixel-librsvg-XXXXXX.svgz", &path, &gerror);
     if (fd < 0 || path == NULL) {
-        librsvg_set_error_message(
-            "librsvg_write_chunk_to_temp_svgz: g_file_open_tmp failed.",
-            gerror);
+        librsvg_set_error_message(LIBRSVG_CONTEXT_TEMP_SVGZ_OPEN_FAILED,
+                                  gerror);
         if (fd >= 0) {
             (void)sixel_compat_close(fd);
         }
@@ -882,7 +907,7 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
     *path_out = NULL;
     if (chunk->buffer == NULL || chunk->size == 0u) {
         sixel_helper_set_additional_message(
-            "librsvg_write_chunk_to_temp_svgz: empty input.");
+            LIBRSVG_MESSAGE_TEMP_SVGZ_EMPTY_INPUT);
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -938,7 +963,8 @@ librsvg_trace_decode_mode(sixel_librsvg_decode_mode_t mode)
                                     "librsvg: decode_mode=%s",
                                     mode_name);
     if (written < 0) {
-        sixel_trace_topic_message("loader", "librsvg: decode_mode=unknown");
+        sixel_trace_topic_message("loader",
+                                  LIBRSVG_MESSAGE_TRACE_DECODE_MODE_UNKNOWN);
         return;
     }
     message[sizeof(message) - 1] = '\0';
@@ -1361,24 +1387,24 @@ librsvg_validate_canvas_size(int width, int height, size_t *pixel_total_out)
 
     if (width <= 0 || height <= 0) {
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: invalid dimensions.");
+            LIBRSVG_MESSAGE_INVALID_DIMENSIONS);
         return SIXEL_BAD_INPUT;
     }
     if (width > LIBRSVG_MAX_DIMENSION || height > LIBRSVG_MAX_DIMENSION) {
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: dimensions exceed limit.");
+            LIBRSVG_MESSAGE_DIMENSIONS_EXCEED_LIMIT);
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: dimensions overflow pixel count.");
+            LIBRSVG_MESSAGE_DIMENSIONS_OVERFLOW);
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
     pixel_total = (size_t)width * (size_t)height;
     if (pixel_total > LIBRSVG_MAX_IMAGE_PIXELS) {
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: image exceeds pixel limit.");
+            LIBRSVG_MESSAGE_IMAGE_EXCEEDS_PIXEL_LIMIT);
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
@@ -1440,7 +1466,7 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
     cairo_stat = cairo_surface_status(surface);
     if (cairo_stat != CAIRO_STATUS_SUCCESS) {
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: cairo_image_surface_create failed.");
+            LIBRSVG_MESSAGE_CAIRO_SURFACE_CREATE_FAILED);
         librsvg_destroy_cairo_surface(&surface);
         return SIXEL_BAD_ALLOCATION;
     }
@@ -1449,7 +1475,7 @@ librsvg_prepare_render_surface(cairo_surface_t **surface_out,
     cairo_stat = cairo_status(cr);
     if (cairo_stat != CAIRO_STATUS_SUCCESS) {
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: cairo_create failed.");
+            LIBRSVG_MESSAGE_CAIRO_CREATE_FAILED);
         librsvg_destroy_cairo_context(&cr);
         librsvg_destroy_cairo_surface(&surface);
         return SIXEL_BAD_ALLOCATION;
@@ -1480,7 +1506,7 @@ librsvg_render_document(RsvgHandle *handle, cairo_t *cr, int width, int height)
     if (!rsvg_handle_render_document(handle, cr, &viewport, &gerror)) {
         status = librsvg_fail_with_gerror(
             SIXEL_BAD_INPUT,
-            "librsvg_render_to_frame: rsvg_handle_render_document failed.",
+            LIBRSVG_CONTEXT_RENDER_DOCUMENT_FAILED,
             gerror);
     } else {
         status = SIXEL_OK;
@@ -1491,116 +1517,42 @@ librsvg_render_document(RsvgHandle *handle, cairo_t *cr, int width, int height)
 }
 
 static SIXELSTATUS
-librsvg_unpack_surface_pixels_rgba(unsigned char *pixels,
-                                   unsigned char const *row,
-                                   size_t row_stride,
-                                   int width,
-                                   int height,
-                                   int *has_non_opaque_alpha_out)
+librsvg_unpack_surface_argb32_pixel(uint32_t pixel,
+                                    int inspect_alpha,
+                                    unsigned char *dst,
+                                    int *has_non_opaque_alpha_out)
 {
-    size_t pixel_index;
-    int x;
-    int y;
-    uint32_t const *src;
-    uint32_t pixel;
-    size_t dst;
     unsigned int alpha;
     unsigned int red;
     unsigned int green;
     unsigned int blue;
-    int has_non_opaque_alpha;
 
-    pixel_index = 0u;
-    x = 0;
-    y = 0;
-    src = NULL;
-    pixel = 0u;
-    dst = 0u;
     alpha = 0u;
     red = 0u;
     green = 0u;
     blue = 0u;
-    has_non_opaque_alpha = 0;
-    if (pixels == NULL ||
-            row == NULL ||
-            width <= 0 ||
-            height <= 0 ||
-            has_non_opaque_alpha_out == NULL) {
+    if (dst == NULL || has_non_opaque_alpha_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    for (y = 0; y < height; ++y) {
-        src = (uint32_t const *)(row + (size_t)y * row_stride);
-        for (x = 0; x < width; ++x) {
-            pixel_index = (size_t)y * (size_t)width + (size_t)x;
-            pixel = src[x];
-            alpha = (pixel >> 24) & 0xffu;
-            red = (pixel >> 16) & 0xffu;
-            green = (pixel >> 8) & 0xffu;
-            blue = pixel & 0xffu;
-            if (alpha != 255u) {
-                has_non_opaque_alpha = 1;
-            }
-            dst = pixel_index * 4u;
-            pixels[dst + 0] = librsvg_unpremultiply_channel(red, alpha);
-            pixels[dst + 1] = librsvg_unpremultiply_channel(green, alpha);
-            pixels[dst + 2] = librsvg_unpremultiply_channel(blue, alpha);
-            pixels[dst + 3] = (unsigned char)alpha;
+    alpha = (pixel >> 24) & 0xffu;
+    red = (pixel >> 16) & 0xffu;
+    green = (pixel >> 8) & 0xffu;
+    blue = pixel & 0xffu;
+    if (inspect_alpha != 0) {
+        if (alpha != 255u) {
+            *has_non_opaque_alpha_out = 1;
         }
+        dst[0] = librsvg_unpremultiply_channel(red, alpha);
+        dst[1] = librsvg_unpremultiply_channel(green, alpha);
+        dst[2] = librsvg_unpremultiply_channel(blue, alpha);
+        dst[3] = (unsigned char)alpha;
+        return SIXEL_OK;
     }
 
-    *has_non_opaque_alpha_out = has_non_opaque_alpha;
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-librsvg_unpack_surface_pixels_rgb(unsigned char *pixels,
-                                  unsigned char const *row,
-                                  size_t row_stride,
-                                  int width,
-                                  int height)
-{
-    size_t pixel_index;
-    int x;
-    int y;
-    uint32_t const *src;
-    uint32_t pixel;
-    size_t dst;
-    unsigned int red;
-    unsigned int green;
-    unsigned int blue;
-
-    pixel_index = 0u;
-    x = 0;
-    y = 0;
-    src = NULL;
-    pixel = 0u;
-    dst = 0u;
-    red = 0u;
-    green = 0u;
-    blue = 0u;
-    if (pixels == NULL ||
-            row == NULL ||
-            width <= 0 ||
-            height <= 0) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    for (y = 0; y < height; ++y) {
-        src = (uint32_t const *)(row + (size_t)y * row_stride);
-        for (x = 0; x < width; ++x) {
-            pixel_index = (size_t)y * (size_t)width + (size_t)x;
-            pixel = src[x];
-            red = (pixel >> 16) & 0xffu;
-            green = (pixel >> 8) & 0xffu;
-            blue = pixel & 0xffu;
-            dst = pixel_index * 3u;
-            pixels[dst + 0] = (unsigned char)red;
-            pixels[dst + 1] = (unsigned char)green;
-            pixels[dst + 2] = (unsigned char)blue;
-        }
-    }
-
+    dst[0] = (unsigned char)red;
+    dst[1] = (unsigned char)green;
+    dst[2] = (unsigned char)blue;
     return SIXEL_OK;
 }
 
@@ -1613,6 +1565,25 @@ librsvg_unpack_surface_pixels(unsigned char *pixels,
                               int inspect_alpha,
                               int *has_non_opaque_alpha_out)
 {
+    size_t pixel_index;
+    size_t output_stride;
+    int x;
+    int y;
+    uint32_t const *src;
+    uint32_t pixel;
+    size_t dst;
+    int has_non_opaque_alpha;
+    SIXELSTATUS status;
+
+    pixel_index = 0u;
+    output_stride = 0u;
+    x = 0;
+    y = 0;
+    src = NULL;
+    pixel = 0u;
+    dst = 0u;
+    has_non_opaque_alpha = 0;
+    status = SIXEL_FALSE;
     if (pixels == NULL ||
             row == NULL ||
             width <= 0 ||
@@ -1620,23 +1591,27 @@ librsvg_unpack_surface_pixels(unsigned char *pixels,
             has_non_opaque_alpha_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    output_stride = inspect_alpha != 0 ? 4u : 3u;
 
-    if (inspect_alpha) {
-        return librsvg_unpack_surface_pixels_rgba(
-            pixels,
-            row,
-            row_stride,
-            width,
-            height,
-            has_non_opaque_alpha_out);
+    for (y = 0; y < height; ++y) {
+        src = (uint32_t const *)(row + (size_t)y * row_stride);
+        for (x = 0; x < width; ++x) {
+            pixel_index = (size_t)y * (size_t)width + (size_t)x;
+            pixel = src[x];
+            dst = pixel_index * output_stride;
+            status = librsvg_unpack_surface_argb32_pixel(
+                pixel,
+                inspect_alpha,
+                pixels + dst,
+                &has_non_opaque_alpha);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
     }
 
-    *has_non_opaque_alpha_out = 0;
-    return librsvg_unpack_surface_pixels_rgb(pixels,
-                                             row,
-                                             row_stride,
-                                             width,
-                                             height);
+    *has_non_opaque_alpha_out = has_non_opaque_alpha;
+    return SIXEL_OK;
 }
 
 static void
@@ -1734,7 +1709,7 @@ librsvg_get_surface_data(cairo_surface_t *surface,
     row_stride = (size_t)cairo_image_surface_get_stride(surface);
     if (row == NULL || row_stride == 0u) {
         sixel_helper_set_additional_message(
-            "librsvg_render_to_frame: cairo surface access failed.");
+            LIBRSVG_MESSAGE_CAIRO_SURFACE_ACCESS_FAILED);
         return SIXEL_BAD_INPUT;
     }
 
@@ -1843,87 +1818,14 @@ librsvg_prepare_frame_surface(sixel_frame_t const *frame,
                                           bgcolor);
 }
 
-static SIXELSTATUS
-librsvg_open_and_prepare_frame_geometry(
-    sixel_frame_t *frame,
-    sixel_librsvg_render_request_t const *request,
-    sixel_librsvg_render_context_t *render_ctx)
-{
-    SIXELSTATUS status;
-
-    if (frame == NULL ||
-            request == NULL ||
-            render_ctx == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    status = librsvg_open_handle(request->chunk,
-                                 request->policy,
-                                 &render_ctx->open_result);
-    if (SIXEL_SUCCEEDED(status)) {
-        status = librsvg_prepare_frame_geometry(frame,
-                                                render_ctx->open_result.handle,
-                                                &render_ctx->pixel_total);
-    }
-
-    return status;
-}
-
-static SIXELSTATUS
-librsvg_prepare_render_context(
-    sixel_frame_t *frame,
-    sixel_librsvg_render_request_t const *request,
-    sixel_librsvg_render_context_t *render_ctx)
-{
-    SIXELSTATUS status;
-
-    if (frame == NULL ||
-            request == NULL ||
-            render_ctx == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    status = librsvg_open_and_prepare_frame_geometry(frame,
-                                                     request,
-                                                     render_ctx);
-    if (SIXEL_SUCCEEDED(status)) {
-        status = librsvg_prepare_frame_surface(frame,
-                                               request->bgcolor,
-                                               render_ctx);
-    }
-    return status;
-}
-
-static SIXELSTATUS
-librsvg_render_context_to_frame_pixels(
-    sixel_frame_t *frame,
-    sixel_librsvg_render_request_t const *request,
-    sixel_librsvg_render_context_t *render_ctx)
-{
-    SIXELSTATUS status;
-
-    if (frame == NULL ||
-            request == NULL ||
-            render_ctx == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    status = librsvg_render_document(render_ctx->open_result.handle,
-                                     render_ctx->cr,
-                                     frame->width,
-                                     frame->height);
-    if (SIXEL_SUCCEEDED(status)) {
-        status = librsvg_convert_surface_to_frame_pixels(
-            frame,
-            request->allocator,
-            render_ctx->surface,
-            request->bgcolor,
-            render_ctx->pixel_total);
-    }
-
-    return status;
-}
-
+/*
+ * Render pipeline stages:
+ * 1) open source into RsvgHandle
+ * 2) resolve geometry and validate canvas
+ * 3) prepare cairo surface/context with optional background
+ * 4) render SVG into cairo surface
+ * 5) convert cairo pixels into frame RGB/RGBA buffer
+ */
 static SIXELSTATUS
 librsvg_render_to_frame(sixel_frame_t *frame,
                         sixel_chunk_t const *chunk,
@@ -1944,14 +1846,33 @@ librsvg_render_to_frame(sixel_frame_t *frame,
                                          bgcolor,
                                          policy);
     if (SIXEL_SUCCEEDED(status)) {
-        status = librsvg_prepare_render_context(frame,
-                                                &request,
-                                                &render_ctx);
+        status = librsvg_open_handle(request.chunk,
+                                     request.policy,
+                                     &render_ctx.open_result);
     }
     if (SIXEL_SUCCEEDED(status)) {
-        status = librsvg_render_context_to_frame_pixels(frame,
-                                                        &request,
-                                                        &render_ctx);
+        status = librsvg_prepare_frame_geometry(frame,
+                                                render_ctx.open_result.handle,
+                                                &render_ctx.pixel_total);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_prepare_frame_surface(frame,
+                                               request.bgcolor,
+                                               &render_ctx);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_render_document(render_ctx.open_result.handle,
+                                         render_ctx.cr,
+                                         frame->width,
+                                         frame->height);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = librsvg_convert_surface_to_frame_pixels(
+            frame,
+            request.allocator,
+            render_ctx.surface,
+            request.bgcolor,
+            render_ctx.pixel_total);
     }
     librsvg_render_context_cleanup(&render_ctx);
 
