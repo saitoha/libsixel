@@ -61,8 +61,14 @@ int loader_libpng_get_enable_cms(void);
 void sixel_helper_set_libpng_enable_cms(int enable);
 int loader_builtin_get_enable_cms(void);
 void sixel_helper_set_builtin_enable_cms(int enable);
-void sixel_helper_set_loader_background_colorspace(int colorspace);
-int loader_background_colorspace(void);
+/*
+ * Keep these exported: test runners call them through the shared libsixel
+ * library on Windows.
+ */
+SIXEL_INTERNAL_API void
+sixel_helper_set_loader_background_colorspace(int colorspace);
+SIXEL_INTERNAL_API int
+loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
 int loader_cms_target_colorspace(void);
 /* Keep this exported: test runners call it via the shared libsixel DLL. */
