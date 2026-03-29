@@ -49,7 +49,6 @@
 
 #include "cms.h"
 #include "compat_stub.h"
-#include "frame.h"
 #include "fromhdr.h"
 #include "loader-common.h"
 
@@ -1420,6 +1419,8 @@ sixel_builtin_load_hdr_frame(
     unsigned char *pixels;
     SIXELSTATUS hint_status;
     sixel_builtin_hdr_profile_hint_t hint;
+    int width;
+    int height;
     int hdr_pixelformat;
     int hdr_colorspace;
     int target_pixelformat;
@@ -1428,6 +1429,8 @@ sixel_builtin_load_hdr_frame(
     pixels = NULL;
     hint_status = SIXEL_FALSE;
     sixel_builtin_hdr_init_profile_hint(&hint);
+    width = 0;
+    height = 0;
     hdr_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
     target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
@@ -1438,8 +1441,8 @@ sixel_builtin_load_hdr_frame(
 
     status = sixel_builtin_decode_hdr_float32_with_hint(chunk,
                                                         &pixels,
-                                                        &frame->width,
-                                                        &frame->height,
+                                                        &width,
+                                                        &height,
                                                         &hdr_pixelformat,
                                                         &hdr_colorspace,
                                                         &hint,
@@ -1448,14 +1451,20 @@ sixel_builtin_load_hdr_frame(
         return status;
     }
 
+    sixel_frame_set_width(frame, width);
+    sixel_frame_set_height(frame, height);
+    sixel_frame_set_loop_count(frame, 1);
+    status = sixel_frame_set_pixelformat(frame, hdr_pixelformat);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(chunk->allocator, pixels);
+        return status;
+    }
+    sixel_frame_set_colorspace(frame, hdr_colorspace);
     sixel_frame_set_pixels(frame, pixels);
-    frame->loop_count = 1;
-    frame->pixelformat = hdr_pixelformat;
-    frame->colorspace = hdr_colorspace;
 
     sixel_builtin_hdr_apply_postprocess(pixels,
-                                        frame->width,
-                                        frame->height,
+                                        width,
+                                        height,
                                         hdr_pixelformat,
                                         &hint,
                                         hint_status,
