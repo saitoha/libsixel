@@ -73,6 +73,12 @@ typedef struct sixel_loader_librsvg_component {
     "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES"
 #define LIBRSVG_ENV_ALLOW_STDIN_SVGZ \
     "SIXEL_LOADER_LIBRSVG_ALLOW_STDIN_SVGZ"
+#define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_OPEN \
+    "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN"
+#define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_WRITE \
+    "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_WRITE"
+#define LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_CLOSE \
+    "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_CLOSE"
 #define LIBRSVG_CONTEXT_PARSE_FILE \
     "librsvg_render_to_frame: unable to parse SVG file."
 #define LIBRSVG_CONTEXT_PARSE_DATA \
@@ -268,43 +274,46 @@ librsvg_destroy_cairo_surface(cairo_surface_t **surface)
 }
 
 static int
-librsvg_equals_nocase(char const *lhs, char const *rhs)
+librsvg_span_equals_nocase(char const *value,
+                           size_t begin,
+                           size_t end,
+                           char const *token)
 {
-    unsigned char lch;
-    unsigned char rch;
+    size_t index;
+    size_t token_length;
 
-    lch = 0u;
-    rch = 0u;
-    if (lhs == NULL || rhs == NULL) {
+    index = 0u;
+    token_length = 0u;
+    if (value == NULL || token == NULL || end < begin) {
+        return 0;
+    }
+    token_length = strlen(token);
+    if (end - begin != token_length) {
         return 0;
     }
 
-    while (*lhs != '\0' && *rhs != '\0') {
-        lch = (unsigned char)*lhs;
-        rch = (unsigned char)*rhs;
-        if (tolower(lch) != tolower(rch)) {
+    for (index = 0u; index < token_length; ++index) {
+        if (tolower((unsigned char)value[begin + index]) !=
+                tolower((unsigned char)token[index])) {
             return 0;
         }
-        ++lhs;
-        ++rhs;
     }
-
-    return *lhs == '\0' && *rhs == '\0';
+    return 1;
 }
 
 /*
  * Treat common textual false values as disabled flags.
  */
 static int
-librsvg_string_is_falsey(char const *value)
+librsvg_span_is_falsey(char const *value, size_t begin, size_t end)
 {
-    if (value == NULL) {
+    if (value == NULL || end <= begin) {
         return 0;
     }
-    if (librsvg_equals_nocase(value, "0") ||
-            librsvg_equals_nocase(value, "off") ||
-            librsvg_equals_nocase(value, "false") ||
-            librsvg_equals_nocase(value, "no")) {
+    if (librsvg_span_equals_nocase(value, begin, end, "0") ||
+            librsvg_span_equals_nocase(value, begin, end, "off") ||
+            librsvg_span_equals_nocase(value, begin, end, "false") ||
+            librsvg_span_equals_nocase(value, begin, end, "no")) {
         return 1;
     }
     return 0;
@@ -314,10 +323,12 @@ static int
 librsvg_env_is_enabled(char const *name)
 {
     char const *value;
-    size_t index;
+    size_t begin;
+    size_t end;
 
     value = NULL;
-    index = 0u;
+    begin = 0u;
+    end = 0u;
     if (name == NULL) {
         return 0;
     }
@@ -326,14 +337,21 @@ librsvg_env_is_enabled(char const *name)
     if (value == NULL) {
         return 0;
     }
-    while (value[index] != '\0' &&
-           isspace((unsigned char)value[index]) != 0) {
-        ++index;
+    while (value[begin] != '\0' &&
+           isspace((unsigned char)value[begin]) != 0) {
+        ++begin;
     }
-    if (value[index] == '\0') {
+    end = begin;
+    while (value[end] != '\0') {
+        ++end;
+    }
+    while (end > begin && isspace((unsigned char)value[end - 1u]) != 0) {
+        --end;
+    }
+    if (end <= begin) {
         return 0;
     }
-    if (librsvg_string_is_falsey(value + index)) {
+    if (librsvg_span_is_falsey(value, begin, end)) {
         return 0;
     }
     return 1;
@@ -812,6 +830,14 @@ librsvg_write_buffer_to_fd(int fd,
     if (fd < 0 || buffer == NULL || size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
+    /*
+     * Test-only failpoint for deterministic stdin .svgz write-path coverage.
+     */
+    if (librsvg_env_is_enabled(LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_WRITE)) {
+        sixel_helper_set_additional_message(
+            LIBRSVG_MESSAGE_TEMP_SVGZ_WRITE_FAILED);
+        return SIXEL_LIBC_ERROR;
+    }
 
     while (offset < size) {
         written = sixel_compat_write(fd, buffer + offset, size - offset);
@@ -831,6 +857,15 @@ librsvg_close_temp_svgz_fd(int *fd)
 {
     if (fd == NULL || *fd < 0) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    /*
+     * Test-only failpoint for deterministic stdin .svgz close-path coverage.
+     */
+    if (librsvg_env_is_enabled(LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_CLOSE)) {
+        sixel_helper_set_additional_message(
+            LIBRSVG_MESSAGE_TEMP_SVGZ_CLOSE_FAILED);
+        *fd = (-1);
+        return SIXEL_LIBC_ERROR;
     }
 
     if (sixel_compat_close(*fd) != 0) {
@@ -873,6 +908,14 @@ librsvg_open_temp_svgz_file(int *fd_out, char **path_out)
     }
     *fd_out = (-1);
     *path_out = NULL;
+    /*
+     * Test-only failpoint for deterministic stdin .svgz open-path coverage.
+     */
+    if (librsvg_env_is_enabled(LIBRSVG_ENV_TEST_FAIL_TEMP_SVGZ_OPEN)) {
+        sixel_helper_set_additional_message(
+            LIBRSVG_CONTEXT_TEMP_SVGZ_OPEN_FAILED);
+        return SIXEL_LIBC_ERROR;
+    }
 
     fd = g_file_open_tmp("libsixel-librsvg-XXXXXX.svgz", &path, &gerror);
     if (fd < 0 || path == NULL) {
