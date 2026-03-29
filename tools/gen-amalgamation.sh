@@ -523,8 +523,15 @@ emit_all_units() {
 
         case "${unit}" in
             gdk-pixbuf-loader/*.c|tests/*.c)
+                case "${unit}" in
+                    *.inc.c)
+                        # Include fragments are pulled by their parent C files.
+                        continue
+                        ;;
+                esac
                 guard=$(echo "${unit}" | \
-                    sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
+                    sed 's/.*\///;s/.c$//' | tr '[:lower:]-.' '[:upper:]__')
+                guard=$(echo "${guard}" | sed 's/[^A-Z0-9_]/_/g')
                 case "${guard}" in
                     [0-9]*)
                         guard="TEST_${guard}"

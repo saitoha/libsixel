@@ -87,7 +87,7 @@ extern "C" {
 #endif
 
 /* apply palette */
-sixel_index_t *
+SIXEL_INTERNAL_API sixel_index_t *
 sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
                            unsigned char       /* in */ *pixels,
                            int                 /* in */ width,
@@ -98,7 +98,7 @@ sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
  * dithering pipeline. The mask pointer is borrowed and must stay valid
  * for the duration of sixel_dither_apply_palette().
  */
-void
+SIXEL_INTERNAL_API void
 sixel_dither_set_pipeline_transparent_mask_hint(
     sixel_dither_t *dither,
     unsigned char const *transparent_mask,

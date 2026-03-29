@@ -1021,6 +1021,21 @@ static cli_env_help_t const g_env_help_table[] = {
         "spooling input to a temporary .svgz file first."
     },
     {
+        "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_OPEN",
+        "test-only failpoint for SVGZ stdin spool path: force temporary\n"
+        "file open failure before librsvg decode starts."
+    },
+    {
+        "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_WRITE",
+        "test-only failpoint for SVGZ stdin spool path: force temporary\n"
+        "file write failure while buffering compressed SVG input."
+    },
+    {
+        "SIXEL_LOADER_LIBRSVG_TEST_FAIL_TEMP_SVGZ_CLOSE",
+        "test-only failpoint for SVGZ stdin spool path: force temporary\n"
+        "file close failure after buffered write completion."
+    },
+    {
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
         "override CMS backend for libjpeg loader conversion.\n"
         "Overrides SIXEL_LOADER_CMS_ENGINE."
