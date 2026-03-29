@@ -34,26 +34,28 @@ trace_log=$(
     exit 0
 }
 
-actual_sequence=$(
-    printf '%s\n' "${trace_log}" | awk '
-        /callback frame_no=/ && /handoff=/ {
-            frame = ""
-            loop = ""
-            for (i = 1; i <= NF; ++i) {
-                token = $i
-                if (token ~ /^frame_no=/) {
-                    sub(/^frame_no=/, "", token)
-                    frame = token
-                } else if (token ~ /^loop_no=/) {
-                    sub(/^loop_no=/, "", token)
-                    loop = token
-                }
-            }
-            if (frame != "" && loop != "") {
-                print loop ":" frame
-            }
-        }'
-)
+actual_sequence=""
+while IFS= read -r line; do
+    case "${line}" in
+        *"callback frame_no="*"handoff="*)
+            frame_part=${line#*frame_no=}
+            frame_no=${frame_part%% *}
+            loop_part=${line#*loop_no=}
+            loop_no=${loop_part%% *}
+            case "${actual_sequence}" in
+                "")
+                    actual_sequence="${loop_no}:${frame_no}"
+                    ;;
+                *)
+                    actual_sequence="${actual_sequence}
+${loop_no}:${frame_no}"
+                    ;;
+            esac
+            ;;
+    esac
+done <<__TRACE_EOF__
+${trace_log}
+__TRACE_EOF__
 
 test "${actual_sequence}" = "${expected_sequence}" || {
     echo "not ok 1 - libpng APNG start=-1 keycolor sequence mismatch"

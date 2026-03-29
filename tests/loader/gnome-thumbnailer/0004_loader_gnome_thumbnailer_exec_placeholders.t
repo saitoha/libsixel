@@ -32,7 +32,40 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
     exit 0
 }
 
-awk '/^uri=file:\/\/|^size=123$|^mime=image\/png$|^percent=%$/ { ++cnt; } END { if (cnt != 4) exit 1; } ' "${log_file}" || {
+has_uri=0
+has_size=0
+has_mime=0
+has_percent=0
+while IFS= read -r line; do
+    case "${line}" in
+        uri=file://*)
+            has_uri=1
+            ;;
+        size=123)
+            has_size=1
+            ;;
+        mime=image/png)
+            has_mime=1
+            ;;
+        percent=%)
+            has_percent=1
+            ;;
+    esac
+done < "${log_file}"
+
+test "${has_uri}" -eq 1 || {
+    echo "not ok" 1 - "gnome-thumbnailer Exec placeholder test failed"
+    exit 0
+}
+test "${has_size}" -eq 1 || {
+    echo "not ok" 1 - "gnome-thumbnailer Exec placeholder test failed"
+    exit 0
+}
+test "${has_mime}" -eq 1 || {
+    echo "not ok" 1 - "gnome-thumbnailer Exec placeholder test failed"
+    exit 0
+}
+test "${has_percent}" -eq 1 || {
     echo "not ok" 1 - "gnome-thumbnailer Exec placeholder test failed"
     exit 0
 }

@@ -31,7 +31,17 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
     exit 0
 }
 
-awk -v expected="%x" '$0 == expected { found = 1; exit } END { if (!found) exit 1 }' "${log_file}" || {
+unknown_placeholder_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        "%x")
+            unknown_placeholder_found=1
+            break
+            ;;
+    esac
+done < "${log_file}"
+
+test "${unknown_placeholder_found}" -eq 1 || {
     echo "not ok" 1 - "unknown placeholder handling failed"
     exit 0
 }
