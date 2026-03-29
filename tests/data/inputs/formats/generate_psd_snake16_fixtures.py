@@ -2795,6 +2795,66 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_tysh.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=16,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk16_planes,
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"TySh", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=16,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"TySh", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_mode7_cmyk16_missing_composite_multilayer_clipping.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=7,
