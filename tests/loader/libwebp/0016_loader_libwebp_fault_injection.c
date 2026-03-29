@@ -733,6 +733,17 @@ run_fault_decoder_frame_count_limit_case(void)
 }
 
 static int
+run_fault_get_features_animation_case(void)
+{
+    return run_animation_decode_fail_case(
+        WEBP_FI_FAIL_GET_FEATURES,
+        SIXEL_BAD_INPUT,
+        0,
+        "load_with_libwebp: WebPGetFeatures failed",
+        "libwebp fault injection animated-get-features");
+}
+
+static int
 run_fault_static_rgbinto_case(void)
 {
     return run_load_webp_fail_case(
@@ -754,6 +765,18 @@ run_fault_static_rgbainto_case(void)
         SIXEL_BAD_INPUT,
         "load_webp: WebPDecodeRGBAInto failed.",
         "libwebp fault injection static-rgbainto");
+}
+
+static int
+run_fault_get_features_static_case(void)
+{
+    return run_load_webp_fail_case(
+        WEBP_FI_FAIL_GET_FEATURES,
+        WEBP_IMAGE_PATH,
+        "0",
+        SIXEL_BAD_INPUT,
+        "load_webp: WebPGetFeatures failed",
+        "libwebp fault injection static-get-features");
 }
 
 static int
@@ -1070,10 +1093,14 @@ WEBP_FI_TEST_ENTRY(test_loader_0029_loader_libwebp_fault_decoder_getnext,
                    run_fault_decoder_getnext_case)
 WEBP_FI_TEST_ENTRY(test_loader_0042_loader_libwebp_frame_count_limit_decoder_guard,
                    run_fault_decoder_frame_count_limit_case)
+WEBP_FI_TEST_ENTRY(test_loader_0044_loader_libwebp_fault_get_features_animation,
+                   run_fault_get_features_animation_case)
 WEBP_FI_TEST_ENTRY(test_loader_0032_loader_libwebp_fault_static_rgbinto,
                    run_fault_static_rgbinto_case)
 WEBP_FI_TEST_ENTRY(test_loader_0033_loader_libwebp_fault_static_rgbainto,
                    run_fault_static_rgbainto_case)
+WEBP_FI_TEST_ENTRY(test_loader_0043_loader_libwebp_fault_get_features_static,
+                   run_fault_get_features_static_case)
 WEBP_FI_TEST_ENTRY(test_loader_0034_loader_libwebp_fault_lossy_init_config,
                    run_fault_lossy_init_config_case)
 WEBP_FI_TEST_ENTRY(test_loader_0035_loader_libwebp_fault_lossy_decode,
