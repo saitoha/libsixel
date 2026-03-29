@@ -9,10 +9,15 @@ set -v
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
-value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m CLIP_L_REL "${image_ref}" "${image_out}" | tr -d '\r') || {
+value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m CLIP_L_REL "${image_ref}" "${image_out}") || {
     echo "not ok" 1 - "lsqa CLIP_L_REL execution failed"
     exit 0
 }
+
+cr=$(printf '\r')
+case "${value}" in
+    *"${cr}") value=${value%"${cr}"} ;;
+esac
 
 case "${value}" in
     ""|*[!0123456789+.eE-]*)

@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 fuzz_input="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0001/libpng_short_signature.bin"
-mkdir -p "${ARTIFACT_LOCAL_DIR-/tmp}"
+test -d "${ARTIFACT_LOCAL_DIR-/tmp}" || mkdir -p "${ARTIFACT_LOCAL_DIR-/tmp}"
 trace_log="${ARTIFACT_LOCAL_DIR-/tmp}/fuzz0001_libpng_short_signature.trace"
 
 set +e
@@ -32,7 +32,10 @@ test "${command_status}" -le 3 || {
     exit 0
 }
 
-trace_text="$(cat "${trace_log}")"
+trace_text=
+while IFS= read -r trace_line || test -n "${trace_line}"; do
+    trace_text="${trace_text}${trace_line}"
+done < "${trace_log}"
 case "${trace_text}" in
     *remain=1844674407370955*)
         echo "not ok 1 - fuzz0001 still triggers APNG size underflow"
