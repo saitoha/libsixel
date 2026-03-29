@@ -27,19 +27,42 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_file}" \
     exit 0
 }
 
-grep -q '"event":"row_ready"' "${log_file}" || {
+row_ready_seen=0
+dither_threads=0
+seen_jobs=""
+while IFS= read -r line; do
+    case "${line}" in
+        *'"event":"row_ready"'*)
+            row_ready_seen=1
+            ;;
+    esac
+    case "${line}" in
+        *'"worker":"dither"'*'"job":'*)
+            job_part=${line#*\"job\":}
+            job_part=${job_part%%,*}
+            job_part=${job_part%%\}*}
+            job_part=${job_part%% *}
+            case "${job_part}" in
+                ''|*[!0-9-]*) ;;
+                *)
+                    case " ${seen_jobs} " in
+                        *" ${job_part} "*) ;;
+                        *)
+                            seen_jobs="${seen_jobs} ${job_part}"
+                            dither_threads=$((dither_threads + 1))
+                            ;;
+                    esac
+                    ;;
+            esac
+            ;;
+    esac
+done < "${log_file}"
+
+test "${row_ready_seen}" -eq 1 || {
     echo "ok" 1 - "row_ready span unavailable in serial environment"
     exit 0
 }
 
-dither_threads=$(awk '/"worker":"dither"/ {
-    key = $0
-    sub(/.*"job":/, "", key)
-    if (!(key in v)) {
-        v[key] = 1
-        ++count
-    }
-} END {print count + 0}' "${log_file}")
 test "${dither_threads}" -ge 1 || {
     echo "not ok" 1 - "row_ready spans multiple bands"
     exit 0

@@ -21,7 +21,17 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCD
     exit 0
 }
 
-grep '#compdef img2sixel' "${output_file}" >/dev/null 2>&1 || {
+zsh_header_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"#compdef img2sixel"*)
+            zsh_header_found=1
+            break
+            ;;
+    esac
+done < "${output_file}"
+
+test "${zsh_header_found}" -eq 1 || {
     echo "not ok" 1 - "missing zsh completion header"
     exit 0
 }

@@ -20,7 +20,16 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -H 1>"${help_output}" || {
     exit 0
 }
 
-grep -q '^Usage: sixel2png' "${help_output}" || {
+IFS= read -r help_line < "${help_output}" || help_line=""
+case "${help_line}" in
+    Usage:\ sixel2png*) ;;
+    *)
+        echo "not ok" 1 - "help usage header missing"
+        exit 0
+        ;;
+esac
+
+test -n "${help_line}" || {
     echo "not ok" 1 - "help usage header missing"
     exit 0
 }

@@ -22,19 +22,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M pal-riff:"${riff_palette}" \
     exit 0
 }
 
-dd if="${riff_palette}" bs=1 count=4 2>/dev/null | awk '
-    BEGIN {
-        ORS = ""
-    }
-    {
-        header = header $0
-    }
-    END {
-        if (header != "RIFF") {
-            exit 1
-        }
-    }
-' || {
+header=$(dd if="${riff_palette}" bs=1 count=4 2>/dev/null || :)
+case "${header}" in
+    RIFF) ;;
+    *)
+        echo "not ok" 1 - "RIFF palette export missing RIFF header"
+        exit 0
+        ;;
+esac
+
+test -n "${header}" || {
     echo "not ok" 1 - "RIFF palette export missing RIFF header"
     exit 0
 }

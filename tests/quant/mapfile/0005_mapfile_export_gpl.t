@@ -21,7 +21,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOC
     exit 0
 }
 
-head -n 1 "${gpl_palette}" | grep -q "GIMP Palette" || {
+IFS= read -r gpl_header < "${gpl_palette}" || gpl_header=""
+case "${gpl_header}" in
+    *"GIMP Palette"*) ;;
+    *)
+        echo "not ok" 1 - "GPL palette missing GIMP header"
+        exit 0
+        ;;
+esac
+
+test -n "${gpl_header}" || {
     echo "not ok" 1 - "GPL palette missing GIMP header"
     exit 0
 }

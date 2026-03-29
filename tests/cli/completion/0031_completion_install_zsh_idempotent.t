@@ -34,8 +34,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${complet
     exit 0
 }
 
-fpath_count=$(grep -c "^fpath+=(\"\$HOME/.zfunc\")$" "${rc_path}")
-compinit_count=$(grep -c '^autoload -Uz compinit && compinit -u$' "${rc_path}")
+while IFS= read -r line; do
+    case "${line}" in
+        "fpath+=(\"\$HOME/.zfunc\")")
+            fpath_count=$((fpath_count + 1))
+            ;;
+        "autoload -Uz compinit && compinit -u")
+            compinit_count=$((compinit_count + 1))
+            ;;
+    esac
+done < "${rc_path}"
 
 test "${fpath_count}" -eq 1 || {
     echo "not ok" 1 - "zsh fpath line was duplicated"

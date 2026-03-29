@@ -35,17 +35,45 @@ test -f "${target_path}" || {
     exit 0
 }
 
-grep '#compdef img2sixel' "${target_path}" >/dev/null 2>&1 || {
+target_header_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"#compdef img2sixel"*)
+            target_header_found=1
+            break
+            ;;
+    esac
+done < "${target_path}"
+
+test "${target_header_found}" -eq 1 || {
     echo "not ok" 1 - "zsh completion not installed"
     exit 0
 }
 
-grep "fpath+=(\"\$HOME/.zfunc\")" "${rc_path}" >/dev/null 2>&1 || {
+test -f "${rc_path}" || {
     echo "not ok" 1 - "zsh completion not installed"
     exit 0
 }
 
-grep 'autoload -Uz compinit && compinit -u' "${rc_path}" >/dev/null 2>&1 || {
+fpath_line_found=0
+compinit_line_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        "fpath+=(\"\$HOME/.zfunc\")")
+            fpath_line_found=1
+            ;;
+        "autoload -Uz compinit && compinit -u")
+            compinit_line_found=1
+            ;;
+    esac
+done < "${rc_path}"
+
+test "${fpath_line_found}" -eq 1 || {
+    echo "not ok" 1 - "zsh completion not installed"
+    exit 0
+}
+
+test "${compinit_line_found}" -eq 1 || {
     echo "not ok" 1 - "zsh completion not installed"
     exit 0
 }

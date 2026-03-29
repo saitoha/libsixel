@@ -26,7 +26,15 @@ pipeline_log=$(
 }
 printf '%s' "${pipeline_log}" >&2
 
-printf '%s\n' "${pipeline_log}" | awk '/band_height=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
+case "${pipeline_log}" in
+    *"band_height="*) ;;
+    *)
+        echo "not ok" 1 - "override thread split"
+        exit 0
+        ;;
+esac
+
+test -n "${pipeline_log}" || {
     echo "not ok" 1 - "override thread split"
     exit 0
 }

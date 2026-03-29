@@ -20,12 +20,25 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 all >"${output_file}" || {
     exit 0
 }
 
-grep '# bash completion for img2sixel' "${output_file}" >/dev/null || {
+bash_header_found=0
+zsh_header_found=0
+while IFS= read -r line; do
+    case "${line}" in
+        *"# bash completion for img2sixel"*)
+            bash_header_found=1
+            ;;
+        *"#compdef img2sixel"*)
+            zsh_header_found=1
+            ;;
+    esac
+done < "${output_file}"
+
+test "${bash_header_found}" -eq 1 || {
     echo "not ok" 1 - "missing bash completion header in combined output"
     exit 0
 }
 
-grep '#compdef img2sixel' "${output_file}" >/dev/null || {
+test "${zsh_header_found}" -eq 1 || {
     echo "not ok" 1 - "missing zsh completion header in combined output"
     exit 0
 }
