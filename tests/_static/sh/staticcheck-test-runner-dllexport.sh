@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for test_runner calls that require dllexport in sixel.h.in.
+# Emit TAP for test_runner calls that require dllexport in visible headers.
 
 set -eu
 
@@ -20,20 +20,41 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 decls_file=$tmpdir/decls.tsv
 calls_file=$tmpdir/calls.tsv
 missing_file=$tmpdir/missing.tsv
+headers_file=$tmpdir/headers.txt
 
-awk '
+printf '%s\n' "$header_file" > "$headers_file"
+
+find "$tests_root" -type f -name '*.c' -exec awk '
+{
+    if (match($0, /^[[:space:]]*#include[[:space:]]+"src\/[A-Za-z0-9_.\/-]+\.h"/)) {
+        token = substr($0, RSTART, RLENGTH)
+        sub(/^[[:space:]]*#include[[:space:]]+"/, "", token)
+        sub(/"$/, "", token)
+        print token
+    }
+}
+' {} + | LC_ALL=C sort -u | awk -v root="$src_root" '
+{
+    printf "%s/%s\n", root, $0
+}
+' >> "$headers_file"
+LC_ALL=C sort -u "$headers_file" -o "$headers_file"
+
+# shellcheck disable=SC2016
+tr '\n' '\0' < "$headers_file" | xargs -0 awk '
 BEGIN {
     export_marker = ""
 }
 {
-    if ($0 ~ /^[[:space:]]*(SIXELAPI|SIXEL_INTERNAL_API).*sixel_[A-Za-z0-9_]+[[:space:]]*\(/) {
-        match($0, /sixel_[A-Za-z0-9_]+[[:space:]]*\(/)
-        token = substr($0, RSTART, RLENGTH)
-        name = token
-        sub(/[[:space:]]*\(.*/, "", name)
-        printf "%s\t%d\t1\n", name, NR
-        export_marker = ""
-        next
+    if ($0 ~ /^[[:space:]]*(SIXELAPI|SIXEL_INTERNAL_API).*([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*\(/) {
+        token = $0
+        sub(/^.*[[:space:]]/, "", token)
+        sub(/[[:space:]]*\(.*/, "", token)
+        if (token ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
+            printf "%s\t%s:%d\t1\n", token, FILENAME, FNR
+            export_marker = ""
+            next
+        }
     }
 
     if ($0 ~ /^[[:space:]]*SIXELAPI([[:space:]]|$)/) {
@@ -45,15 +66,16 @@ BEGIN {
         next
     }
 
-    if (match($0, /^[[:space:]]*sixel_[A-Za-z0-9_]+[[:space:]]*\(/)) {
+    if (match($0, /^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(/)) {
         token = substr($0, RSTART, RLENGTH)
+        sub(/^[[:space:]]*/, "", token)
         name = token
         sub(/[[:space:]]*\(.*/, "", name)
         exported = 0
         if (export_marker == "SIXELAPI" || export_marker == "SIXEL_INTERNAL_API") {
             exported = 1
         }
-        printf "%s\t%d\t%d\n", name, NR, exported
+        printf "%s\t%s:%d\t%d\n", name, FILENAME, FNR, exported
         export_marker = ""
         next
     }
@@ -62,23 +84,30 @@ BEGIN {
         export_marker = ""
     }
 }
-' "$header_file" > "$decls_file"
+' | LC_ALL=C sort -u > "$decls_file"
 
 find "$tests_root" -type f -name '*.c' -exec awk '
 {
     line = $0
-    while (match(line, /sixel_[A-Za-z0-9_]+[[:space:]]*\(/)) {
+    while (match(line, /[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(/)) {
         token = substr(line, RSTART, RLENGTH)
         name = token
         sub(/[[:space:]]*\(.*/, "", name)
-        printf "%s\t%s:%d\n", name, FILENAME, NR
+        if (name != "if" &&
+            name != "for" &&
+            name != "while" &&
+            name != "switch" &&
+            name != "return" &&
+            name != "sizeof") {
+            printf "%s\t%s:%d\n", name, FILENAME, NR
+        }
         line = substr(line, RSTART + RLENGTH)
     }
 }
 ' {} + | LC_ALL=C sort -u > "$calls_file"
 
 if test ! -s "$calls_file"; then
-    echo "ok 1 # SKIP no sixel_* calls found in tests"
+    echo "ok 1 # SKIP no callable symbol references found in tests"
     exit 0
 fi
 
@@ -101,11 +130,11 @@ FNR == NR {
 ' "$calls_file" "$decls_file" > "$missing_file"
 
 if test ! -s "$missing_file"; then
-    echo "ok 1 - test_runner sixel.h.in calls are dllexport-ready"
+    echo "ok 1 - test_runner header calls are dllexport-ready"
     exit 0
 fi
 
-echo "not ok 1 - test_runner sixel.h.in calls are dllexport-ready"
+echo "not ok 1 - test_runner header calls are dllexport-ready"
 awk '
 BEGIN {
     FS = "\t"
@@ -118,7 +147,7 @@ FNR == NR {
     name = $1
     callsite = $2
     if (name in missing_line) {
-        printf "# include/sixel.h.in:%s %s lacks SIXELAPI/SIXEL_INTERNAL_API (called from %s)\n",
+        printf "# %s %s lacks SIXELAPI/SIXEL_INTERNAL_API (called from %s)\n",
                missing_line[name], name, callsite
     }
 }
