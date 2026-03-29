@@ -629,6 +629,11 @@ staticcheck_cases = [
     [meson.current_source_dir() / '_static/sh/staticcheck-test-plan-single.sh',
       meson.project_source_root()],
   ],
+  [
+    'staticcheck-test-runner-dllexport',
+    [meson.current_source_dir() / '_static/sh/staticcheck-test-runner-dllexport.sh',
+      meson.project_source_root()],
+  ],
 ]
 
 foreach static_case : staticcheck_cases
@@ -640,7 +645,7 @@ run_target('staticcheck',
   command: [
     sh,
     '-c',
-    'set -eu; "$1" "$2" "$3"; "$4" "$5" "$6" "$7"; "$8" "$9" "${10}"; "${11}" "${12}" "${13}"; "${14}" "${15}" "${16}"; "${17}" "${18}"; "${19}" "${20}"; "${21}" "${22}"; "${23}" "${24}"; "${25}" "${26}"; "${27}" "${28}"; "${29}" "${30}"',
+    'set -eu; "$1" "$2" "$3"; "$4" "$5" "$6" "$7"; "$8" "$9" "${10}"; "${11}" "${12}" "${13}"; "${14}" "${15}" "${16}"; "${17}" "${18}"; "${19}" "${20}"; "${21}" "${22}"; "${23}" "${24}"; "${25}" "${26}"; "${27}" "${28}"; "${29}" "${30}"; "${31}" "${32}"',
     'sh',
     staticcheck_cases[0][1][0],
     staticcheck_cases[0][1][1],
@@ -672,4 +677,6 @@ run_target('staticcheck',
     staticcheck_cases[10][1][1],
     staticcheck_cases[11][1][0],
     staticcheck_cases[11][1][1],
+    staticcheck_cases[12][1][0],
+    staticcheck_cases[12][1][1],
   ])

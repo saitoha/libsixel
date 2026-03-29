@@ -301,6 +301,7 @@ AM_LOG_FLAGS =
 	staticcheck-codespell \
 	staticcheck-python-compileall \
 	staticcheck-private-includes \
+	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-test-plan-single \
 	staticcheck-binding-loader-setopt-sync \
@@ -316,6 +317,7 @@ staticcheck: \
 	staticcheck-codespell \
 	staticcheck-python-compileall \
 	staticcheck-private-includes \
+	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-test-plan-single \
 	staticcheck-binding-loader-setopt-sync \
@@ -380,6 +382,16 @@ staticcheck-private-includes:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-private-includes.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-test-runner-dllexport:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-runner-dllexport" \
+		--log-file staticcheck-test-runner-dllexport.log \
+		--trs-file staticcheck-test-runner-dllexport.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-runner-dllexport.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-makefile-recipes:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -1016,6 +1028,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-private-includes.sh \
+    _static/sh/staticcheck-test-runner-dllexport.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
