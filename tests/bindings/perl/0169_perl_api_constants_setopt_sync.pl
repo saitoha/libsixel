@@ -14,7 +14,7 @@ if (!$loaded) {
     plan skip_all => "libsixel perl binding failed to load: $@";
 }
 
-plan tests => 2;
+plan tests => 1;
 
 my $header = ($ENV{TOP_SRCDIR} // '.') . '/include/sixel.h.in';
 my @expected;
@@ -25,6 +25,9 @@ my $name;
 my $fh;
 my $ok_loader;
 my $loader;
+my $constants_ok;
+my $loader_err;
+my $ok_all;
 
 open $fh, '<', $header or die "cannot open $header: $!";
 while ($line = <$fh>) {
@@ -44,8 +47,7 @@ for $name (@expected) {
     }
 }
 
-ok(@missing == 0, 'setopt-related constants are synchronized with header');
-diag('missing constants: ' . join(', ', @missing)) if @missing;
+$constants_ok = @missing == 0;
 
 $ok_loader = eval {
     $loader = Image::LibSIXEL::sixel_loader_new(undef);
@@ -57,6 +59,13 @@ $ok_loader = eval {
     Image::LibSIXEL::sixel_loader_unref($loader);
     1;
 };
+$loader_err = $@;
 
-ok($ok_loader, 'loader setopt accepts start-frame option');
-diag($@) if !$ok_loader && $@ ne '';
+$ok_all = $constants_ok && $ok_loader;
+ok(
+    $ok_all,
+    'setopt-related constants and loader setopt behavior are synchronized'
+);
+
+diag('missing constants: ' . join(', ', @missing)) if !$constants_ok && @missing;
+diag($loader_err) if !$ok_loader && $loader_err ne '';
