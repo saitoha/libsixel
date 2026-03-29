@@ -960,6 +960,58 @@ run_fault_no_anmf_case(void)
 }
 
 static int
+run_fault_anmf_payload_too_small_case(void)
+{
+    unsigned char const input[] = {
+        'R', 'I', 'F', 'F',
+        0x20, 0x00, 0x00, 0x00,
+        'W', 'E', 'B', 'P',
+        'A', 'N', 'M', 'F',
+        0x13, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00,
+        0x00
+    };
+
+    return run_extract_subframe_fail_case(
+        input,
+        sizeof(input),
+        WEBP_FI_FAIL_NONE,
+        SIXEL_BAD_INPUT,
+        "load_with_libwebp: ANMF payload is too small.",
+        "libwebp fault injection anmf-too-small");
+}
+
+static int
+run_fault_anmf_extract_malloc_case(void)
+{
+    unsigned char const input[] = {
+        'R', 'I', 'F', 'F',
+        0x24, 0x00, 0x00, 0x00,
+        'W', 'E', 'B', 'P',
+        'A', 'N', 'M', 'F',
+        0x18, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+        'V', 'P', '8', ' ',
+        0x00, 0x00, 0x00, 0x00
+    };
+
+    return run_extract_subframe_fail_case(
+        input,
+        sizeof(input),
+        WEBP_FI_FAIL_ANMF_EXTRACT_ALLOC,
+        SIXEL_BAD_ALLOCATION,
+        "load_with_libwebp: sixel_allocator_malloc() failed.",
+        "libwebp fault injection anmf-extract-malloc");
+}
+
+static int
 run_fast_frame_count_limit_case(void)
 {
     SIXELSTATUS status;
@@ -1156,6 +1208,10 @@ WEBP_FI_TEST_ENTRY(test_loader_0046_loader_libwebp_fault_animation_canvas_malloc
                    run_fault_animation_canvas_malloc_case)
 WEBP_FI_TEST_ENTRY(test_loader_0040_loader_libwebp_fault_no_anmf,
                    run_fault_no_anmf_case)
+WEBP_FI_TEST_ENTRY(test_loader_0048_loader_libwebp_fault_anmf_payload_too_small,
+                   run_fault_anmf_payload_too_small_case)
+WEBP_FI_TEST_ENTRY(test_loader_0049_loader_libwebp_fault_anmf_extract_malloc,
+                   run_fault_anmf_extract_malloc_case)
 WEBP_FI_TEST_ENTRY(test_loader_0041_loader_libwebp_frame_count_limit_fast,
                    run_fast_frame_count_limit_case)
 

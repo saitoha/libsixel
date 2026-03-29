@@ -91,6 +91,10 @@ int test_loader_0046_loader_libwebp_fault_animation_canvas_malloc(int argc,
                                                                   char **argv);
 int test_loader_0047_loader_libwebp_fault_lossy_malloc(int argc,
                                                        char **argv);
+int test_loader_0048_loader_libwebp_fault_anmf_payload_too_small(int argc,
+                                                                 char **argv);
+int test_loader_0049_loader_libwebp_fault_anmf_extract_malloc(int argc,
+                                                              char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -205,6 +209,10 @@ static test_entry_t const test_entries[] = {
       test_loader_0046_loader_libwebp_fault_animation_canvas_malloc },
     { "loader/0047_loader_libwebp_fault_lossy_malloc",
       test_loader_0047_loader_libwebp_fault_lossy_malloc },
+    { "loader/0048_loader_libwebp_fault_anmf_payload_too_small",
+      test_loader_0048_loader_libwebp_fault_anmf_payload_too_small },
+    { "loader/0049_loader_libwebp_fault_anmf_extract_malloc",
+      test_loader_0049_loader_libwebp_fault_anmf_extract_malloc },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
