@@ -14,6 +14,7 @@
 typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_NONE = 0,
     WEBP_FI_FAIL_DEMUX,
+    WEBP_FI_FAIL_GET_FEATURES,
     WEBP_FI_FAIL_OPTIONS_INIT,
     WEBP_FI_FAIL_DECODER_NEW,
     WEBP_FI_FAIL_DECODER_GET_INFO,
@@ -25,8 +26,12 @@ typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING,
     WEBP_FI_FAIL_LOSSY_YUV_STRIDE_INVALID,
     WEBP_FI_FAIL_LOSSY_DIMENSION_MISMATCH,
+    WEBP_FI_FAIL_LOSSY_ALLOC,
     WEBP_FI_FAIL_STATIC_RGB_INTO,
-    WEBP_FI_FAIL_STATIC_RGBA_INTO
+    WEBP_FI_FAIL_STATIC_RGBA_INTO,
+    WEBP_FI_FAIL_STATIC_ALLOC,
+    WEBP_FI_FAIL_ANIMATION_CANVAS_ALLOC,
+    WEBP_FI_FAIL_ANMF_EXTRACT_ALLOC
 } webp_fi_failpoint_t;
 
 static webp_fi_failpoint_t g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
@@ -47,6 +52,10 @@ static int (*g_real_WebPAnimDecoderGetNext)(WebPAnimDecoder *,
     WebPAnimDecoderGetNext;
 static int (*g_real_WebPInitDecoderConfig)(WebPDecoderConfig *) =
     WebPInitDecoderConfig;
+static VP8StatusCode (*g_real_WebPGetFeatures)(uint8_t const *,
+                                               size_t,
+                                               WebPBitstreamFeatures *) =
+    WebPGetFeatures;
 static VP8StatusCode (*g_real_WebPDecode)(uint8_t const *,
                                           size_t,
                                           WebPDecoderConfig *) =
@@ -63,6 +72,9 @@ static uint8_t *(*g_real_WebPDecodeRGBAInto)(uint8_t const *,
                                              size_t,
                                              int) =
     WebPDecodeRGBAInto;
+static void *(*g_real_sixel_allocator_malloc)(sixel_allocator_t *,
+                                              size_t) =
+    sixel_allocator_malloc;
 
 static int
 webpfi_WebPAnimDecoderOptionsInit(WebPAnimDecoderOptions *options)
@@ -130,6 +142,17 @@ webpfi_WebPInitDecoderConfig(WebPDecoderConfig *config)
         return 0;
     }
     return g_real_WebPInitDecoderConfig(config);
+}
+
+static VP8StatusCode
+webpfi_WebPGetFeatures(uint8_t const *data,
+                       size_t data_size,
+                       WebPBitstreamFeatures *features)
+{
+    if (g_webp_fi_failpoint == WEBP_FI_FAIL_GET_FEATURES) {
+        return VP8_STATUS_BITSTREAM_ERROR;
+    }
+    return g_real_WebPGetFeatures(data, data_size, features);
 }
 
 static VP8StatusCode
@@ -212,16 +235,36 @@ webpfi_WebPDemux(WebPData const *webp_data)
     return WebPDemuxInternal(webp_data, 0, NULL, WEBP_DEMUX_ABI_VERSION);
 }
 
+static void *
+webpfi_sixel_allocator_malloc(sixel_allocator_t *allocator, size_t nbytes)
+{
+    switch (g_webp_fi_failpoint) {
+    case WEBP_FI_FAIL_LOSSY_ALLOC:
+    case WEBP_FI_FAIL_STATIC_ALLOC:
+    case WEBP_FI_FAIL_ANIMATION_CANVAS_ALLOC:
+    case WEBP_FI_FAIL_ANMF_EXTRACT_ALLOC:
+        return NULL;
+    default:
+        break;
+    }
+    return g_real_sixel_allocator_malloc(allocator, nbytes);
+}
+
 #define WebPAnimDecoderOptionsInit webpfi_WebPAnimDecoderOptionsInit
 #define WebPAnimDecoderNew webpfi_WebPAnimDecoderNew
 #define WebPAnimDecoderGetInfo webpfi_WebPAnimDecoderGetInfo
 #define WebPAnimDecoderHasMoreFrames webpfi_WebPAnimDecoderHasMoreFrames
 #define WebPAnimDecoderGetNext webpfi_WebPAnimDecoderGetNext
 #define WebPInitDecoderConfig webpfi_WebPInitDecoderConfig
+#define WebPGetFeatures webpfi_WebPGetFeatures
 #define WebPDecode webpfi_WebPDecode
 #define WebPDecodeRGBInto webpfi_WebPDecodeRGBInto
 #define WebPDecodeRGBAInto webpfi_WebPDecodeRGBAInto
 #define WebPDemux webpfi_WebPDemux
+#define sixel_allocator_malloc webpfi_sixel_allocator_malloc
+
+#define WEBP_FI_MAX_ANIMATION_FRAMES 1024
+#define WEBP_MAX_ANIMATION_FRAMES WEBP_FI_MAX_ANIMATION_FRAMES
 
 /*
  * Avoid global symbol collisions with the linked libsixel objects while
@@ -252,10 +295,14 @@ webpfi_WebPDemux(WebPData const *webp_data)
 #undef WebPAnimDecoderHasMoreFrames
 #undef WebPAnimDecoderGetNext
 #undef WebPInitDecoderConfig
+#undef WebPGetFeatures
 #undef WebPDecode
 #undef WebPDecodeRGBInto
 #undef WebPDecodeRGBAInto
 #undef WebPDemux
+#undef sixel_allocator_malloc
+
+#undef WEBP_MAX_ANIMATION_FRAMES
 
 typedef struct webp_lossy_decode_fault_case {
     webp_fi_failpoint_t failpoint;
@@ -760,13 +807,78 @@ webpfi_write_u32le(unsigned char *dst, unsigned int value)
 }
 
 static int
-run_fault_no_anmf_case(void)
+run_extract_subframe_fail_case(unsigned char const *input,
+                               size_t input_size,
+                               webp_fi_failpoint_t failpoint,
+                               SIXELSTATUS expected_status,
+                               char const *expected_message,
+                               char const *label)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     unsigned char *wrapped_data;
     size_t wrapped_size;
-    unsigned char input[] = {
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    wrapped_data = NULL;
+    wrapped_size = 0u;
+    message = NULL;
+    result = 1;
+
+    if (input == NULL || input_size == 0u || expected_message == NULL ||
+        label == NULL) {
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator init failed\n", label);
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    g_webp_fi_failpoint = failpoint;
+    status = webp_extract_first_animation_subframe_as_riff(&wrapped_data,
+                                                           &wrapped_size,
+                                                           input,
+                                                           input_size,
+                                                           allocator);
+    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    if (status != expected_status) {
+        fprintf(stderr,
+                "%s: expected %d, got %d\n",
+                label,
+                (int)expected_status,
+                (int)status);
+        goto cleanup;
+    }
+
+    message = sixel_helper_get_additional_message();
+    if (message == NULL || strstr(message, expected_message) == NULL) {
+        fprintf(stderr,
+                "%s: missing diagnostic '%s' (actual='%s')\n",
+                label,
+                expected_message,
+                message != NULL ? message : "(null)");
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    sixel_allocator_free(allocator, wrapped_data);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
+run_fault_no_anmf_case(void)
+{
+    unsigned char const input[] = {
         'R', 'I', 'F', 'F',
         0x24, 0x00, 0x00, 0x00,
         'W', 'E', 'B', 'P',
@@ -780,52 +892,13 @@ run_fault_no_anmf_case(void)
         0x00, 0x00, 0x00, 0x00,
         0x00, 0x00
     };
-    char const *message;
-    int result;
-
-    status = SIXEL_FALSE;
-    allocator = NULL;
-    wrapped_data = NULL;
-    wrapped_size = 0u;
-    message = NULL;
-    result = 1;
-
-    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "libwebp fault injection no-anmf: allocator init failed\n");
-        return 1;
-    }
-
-    sixel_helper_set_additional_message(NULL);
-    status = webp_extract_first_animation_subframe_as_riff(&wrapped_data,
-                                                           &wrapped_size,
-                                                           input,
-                                                           sizeof(input),
-                                                           allocator);
-    if (status != SIXEL_BAD_INPUT) {
-        fprintf(stderr,
-                "libwebp fault injection no-anmf: expected SIXEL_BAD_INPUT, got %d\n",
-                (int)status);
-        goto cleanup;
-    }
-
-    message = sixel_helper_get_additional_message();
-    if (message == NULL ||
-        strstr(message,
-               "load_with_libwebp: no ANMF chunk found in animated WebP stream.") ==
-            NULL) {
-        fprintf(stderr,
-                "libwebp fault injection no-anmf: missing diagnostic (actual='%s')\n",
-                message != NULL ? message : "(null)");
-        goto cleanup;
-    }
-
-    result = 0;
-
-cleanup:
-    sixel_allocator_free(allocator, wrapped_data);
-    sixel_allocator_unref(allocator);
-    return result;
+    return run_extract_subframe_fail_case(
+        input,
+        sizeof(input),
+        WEBP_FI_FAIL_NONE,
+        SIXEL_BAD_INPUT,
+        "load_with_libwebp: no ANMF chunk found in animated WebP stream.",
+        "libwebp fault injection no-anmf");
 }
 
 static int
@@ -847,7 +920,7 @@ run_fast_frame_count_limit_case(void)
     allocator = NULL;
     buffer = NULL;
     memset(&chunk, 0, sizeof(chunk));
-    frame_count = (size_t)WEBP_MAX_ANIMATION_FRAMES + 1u;
+    frame_count = (size_t)WEBP_FI_MAX_ANIMATION_FRAMES + 1u;
     riff_size = 0u;
     total_size = 0u;
     offset = 0u;
