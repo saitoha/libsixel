@@ -600,6 +600,26 @@ run_fault_case_from_spec(webp_lossy_decode_fault_case_t const *spec)
 }
 
 static int
+run_lossy_fault_case(webp_fi_failpoint_t failpoint)
+{
+    size_t index;
+    webp_lossy_decode_fault_case_t const *spec;
+
+    index = 0u;
+    spec = NULL;
+
+    for (index = 0u; index < (sizeof(g_lossy_decode_fault_cases) /
+                              sizeof(g_lossy_decode_fault_cases[0])); index++) {
+        if (g_lossy_decode_fault_cases[index].failpoint == failpoint) {
+            spec = &g_lossy_decode_fault_cases[index];
+            break;
+        }
+    }
+
+    return run_fault_case_from_spec(spec);
+}
+
+static int
 run_fault_options_init_case(void)
 {
     return run_animation_decode_fail_case(
@@ -681,31 +701,31 @@ run_fault_no_frames_case(void)
 static int
 run_fault_lossy_init_config_case(void)
 {
-    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[0]);
+    return run_lossy_fault_case(WEBP_FI_FAIL_LOSSY_INIT_CONFIG);
 }
 
 static int
 run_fault_lossy_decode_case(void)
 {
-    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[1]);
+    return run_lossy_fault_case(WEBP_FI_FAIL_LOSSY_DECODE);
 }
 
 static int
 run_fault_lossy_yuv_plane_missing_case(void)
 {
-    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[2]);
+    return run_lossy_fault_case(WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING);
 }
 
 static int
 run_fault_lossy_yuv_stride_invalid_case(void)
 {
-    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[3]);
+    return run_lossy_fault_case(WEBP_FI_FAIL_LOSSY_YUV_STRIDE_INVALID);
 }
 
 static int
 run_fault_lossy_dimensions_mismatch_case(void)
 {
-    return run_fault_case_from_spec(&g_lossy_decode_fault_cases[4]);
+    return run_lossy_fault_case(WEBP_FI_FAIL_LOSSY_DIMENSION_MISMATCH);
 }
 
 static void
@@ -916,220 +936,65 @@ cleanup:
     sixel_allocator_unref(allocator);
     return result;
 }
-#endif
 
-int
-test_loader_0024_loader_libwebp_fault_demux(int argc, char **argv)
+static int
+run_fault_demux_case(void)
 {
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
     return run_demux_fail_case("libwebp fault injection demux");
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
 }
-
-int
-test_loader_0026_loader_libwebp_fault_options_init(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
+#endif
 
 #if HAVE_WEBP
-    return run_fault_options_init_case();
+#define WEBP_FI_TEST_ENTRY(test_name, run_case) \
+    int test_name(int argc, char **argv)        \
+    {                                            \
+        (void)argc;                              \
+        (void)argv;                              \
+        return run_case();                       \
+    }
 #else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
+#define WEBP_FI_TEST_ENTRY(test_name, run_case)          \
+    int test_name(int argc, char **argv)                 \
+    {                                                     \
+        (void)argc;                                       \
+        (void)argv;                                       \
+        fprintf(stderr, "libwebp loader unavailable\n");  \
+        return SIXEL_TEST_SKIP;                           \
+    }
 #endif
-}
 
-int
-test_loader_0027_loader_libwebp_fault_decoder_new(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
+WEBP_FI_TEST_ENTRY(test_loader_0024_loader_libwebp_fault_demux,
+                   run_fault_demux_case)
+WEBP_FI_TEST_ENTRY(test_loader_0026_loader_libwebp_fault_options_init,
+                   run_fault_options_init_case)
+WEBP_FI_TEST_ENTRY(test_loader_0027_loader_libwebp_fault_decoder_new,
+                   run_fault_decoder_new_case)
+WEBP_FI_TEST_ENTRY(test_loader_0028_loader_libwebp_fault_decoder_getinfo,
+                   run_fault_decoder_getinfo_case)
+WEBP_FI_TEST_ENTRY(test_loader_0029_loader_libwebp_fault_decoder_getnext,
+                   run_fault_decoder_getnext_case)
+WEBP_FI_TEST_ENTRY(test_loader_0032_loader_libwebp_fault_static_rgbinto,
+                   run_fault_static_rgbinto_case)
+WEBP_FI_TEST_ENTRY(test_loader_0033_loader_libwebp_fault_static_rgbainto,
+                   run_fault_static_rgbainto_case)
+WEBP_FI_TEST_ENTRY(test_loader_0034_loader_libwebp_fault_lossy_init_config,
+                   run_fault_lossy_init_config_case)
+WEBP_FI_TEST_ENTRY(test_loader_0035_loader_libwebp_fault_lossy_decode,
+                   run_fault_lossy_decode_case)
+WEBP_FI_TEST_ENTRY(test_loader_0036_loader_libwebp_fault_lossy_yuv_plane_missing,
+                   run_fault_lossy_yuv_plane_missing_case)
+WEBP_FI_TEST_ENTRY(test_loader_0037_loader_libwebp_fault_lossy_yuv_stride_invalid,
+                   run_fault_lossy_yuv_stride_invalid_case)
+WEBP_FI_TEST_ENTRY(test_loader_0038_loader_libwebp_fault_lossy_dimensions_mismatch,
+                   run_fault_lossy_dimensions_mismatch_case)
+WEBP_FI_TEST_ENTRY(test_loader_0039_loader_libwebp_fault_no_frames,
+                   run_fault_no_frames_case)
+WEBP_FI_TEST_ENTRY(test_loader_0040_loader_libwebp_fault_no_anmf,
+                   run_fault_no_anmf_case)
+WEBP_FI_TEST_ENTRY(test_loader_0041_loader_libwebp_frame_count_limit_fast,
+                   run_fast_frame_count_limit_case)
 
-#if HAVE_WEBP
-    return run_fault_decoder_new_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0028_loader_libwebp_fault_decoder_getinfo(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_decoder_getinfo_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0029_loader_libwebp_fault_decoder_getnext(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_decoder_getnext_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0032_loader_libwebp_fault_static_rgbinto(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_static_rgbinto_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0033_loader_libwebp_fault_static_rgbainto(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_static_rgbainto_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0034_loader_libwebp_fault_lossy_init_config(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_lossy_init_config_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0035_loader_libwebp_fault_lossy_decode(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_lossy_decode_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0036_loader_libwebp_fault_lossy_yuv_plane_missing(int argc,
-                                                               char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_lossy_yuv_plane_missing_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0037_loader_libwebp_fault_lossy_yuv_stride_invalid(int argc,
-                                                                char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_lossy_yuv_stride_invalid_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0038_loader_libwebp_fault_lossy_dimensions_mismatch(int argc,
-                                                                 char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_lossy_dimensions_mismatch_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0039_loader_libwebp_fault_no_frames(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_no_frames_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0040_loader_libwebp_fault_no_anmf(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fault_no_anmf_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
-
-int
-test_loader_0041_loader_libwebp_frame_count_limit_fast(int argc, char **argv)
-{
-    (void)argc;
-    (void)argv;
-
-#if HAVE_WEBP
-    return run_fast_frame_count_limit_case();
-#else
-    fprintf(stderr, "libwebp loader unavailable\n");
-    return SIXEL_TEST_SKIP;
-#endif
-}
+#undef WEBP_FI_TEST_ENTRY
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
