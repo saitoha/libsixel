@@ -59,6 +59,7 @@ configure_test_dither(sixel_dither_t *dither,
     return SIXEL_OK;
 }
 
+#if !defined(_WIN32)
 static int
 test_transparent_mask_fence_core(int parallel_active)
 {
@@ -213,6 +214,7 @@ test_transparent_mask_fence_parallel(void)
     return test_transparent_mask_fence_core(1);
 }
 #endif  /* SIXEL_ENABLE_THREADS */
+#endif  /* !defined(_WIN32) */
 
 static int
 test_dither_updates_pixelformat_and_progress(void)
@@ -306,6 +308,7 @@ test_filter_0009_filter_dither(int argc, char **argv)
         fprintf(stderr, "dither filter sets format and progress failed\n");
         success = 0;
     }
+#if !defined(_WIN32)
     if (!test_transparent_mask_fence_serial()) {
         fprintf(stderr, "transparent mask fence serial path failed\n");
         success = 0;
@@ -316,6 +319,7 @@ test_filter_0009_filter_dither(int argc, char **argv)
         success = 0;
     }
 #endif  /* SIXEL_ENABLE_THREADS */
+#endif  /* !defined(_WIN32) */
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
