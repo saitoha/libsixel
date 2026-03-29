@@ -20,6 +20,7 @@
 #include "src/filter.h"
 #include "tests/processing/filter/filter_test_common.h"
 
+#if !defined(_WIN32)
 static SIXELSTATUS
 configure_test_dither(sixel_dither_t *dither,
                       int width,
@@ -59,7 +60,6 @@ configure_test_dither(sixel_dither_t *dither,
     return SIXEL_OK;
 }
 
-#if !defined(_WIN32)
 static int
 test_transparent_mask_fence_core(int parallel_active)
 {
