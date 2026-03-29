@@ -25,6 +25,8 @@
 #ifndef LIBSIXEL_TTY_H
 #define LIBSIXEL_TTY_H
 
+#include <stddef.h>
+
 struct sixel_tty_output_state {
     int is_tty;
     int use_ansi_sequences;
@@ -45,6 +47,17 @@ sixel_tty_scroll(
     int outfd,
     int height,
     int is_animation);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_parse_colorspec(unsigned char *bgcolor, char const *text);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_parse_osc11_response(unsigned char *bgcolor,
+                               char const *response,
+                               size_t response_size);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms);
 
 #endif /* LIBSIXEL_TTY_H */
 
