@@ -99,6 +99,9 @@
  */
 static struct sixel_tty_output_state tty_output_state = {0, 0, 0, 0};
 
+static char const g_tty_hide_cursor_seq[] = "\033[?25l";
+static char const g_tty_show_cursor_seq[] = "\033[?25h";
+
 static int
 sixel_tty_term_supports_ansi(const char *term);
 
@@ -117,6 +120,8 @@ sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable);
 typedef struct sixel_tty_abort_restore_slot {
     volatile int active;
     int fd;
+    int has_saved_termios;
+    volatile int cursor_hidden;
     struct termios old_termios;
 } sixel_tty_abort_restore_slot_t;
 
@@ -128,6 +133,12 @@ sixel_tty_register_cbreak_fd(int fd, struct termios const *old_termios);
 
 static void
 sixel_tty_unregister_cbreak_fd(int fd);
+
+static int
+sixel_tty_find_abort_restore_slot(int fd);
+
+static int
+sixel_tty_reserve_abort_restore_slot(int fd);
 
 static SIXELSTATUS
 sixel_tty_cbreak_fd(int fd,
@@ -611,8 +622,30 @@ sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable)
 }
 
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
-static SIXELSTATUS
-sixel_tty_register_cbreak_fd(int fd, struct termios const *old_termios)
+static int
+sixel_tty_find_abort_restore_slot(int fd)
+{
+    int index;
+
+    index = 0;
+    if (fd < 0) {
+        return -1;
+    }
+
+    for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
+        if (g_tty_abort_restore_slots[index].active == 0) {
+            continue;
+        }
+        if (g_tty_abort_restore_slots[index].fd == fd) {
+            return index;
+        }
+    }
+
+    return -1;
+}
+
+static int
+sixel_tty_reserve_abort_restore_slot(int fd)
 {
     int index;
     int slot;
@@ -620,28 +653,55 @@ sixel_tty_register_cbreak_fd(int fd, struct termios const *old_termios)
     index = 0;
     slot = -1;
 
+    if (fd < 0) {
+        return -1;
+    }
+
+    slot = sixel_tty_find_abort_restore_slot(fd);
+    if (slot >= 0) {
+        return slot;
+    }
+
+    for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
+        if (g_tty_abort_restore_slots[index].active == 0) {
+            slot = index;
+            break;
+        }
+    }
+
+    if (slot < 0) {
+        return -1;
+    }
+
+    g_tty_abort_restore_slots[slot].active = 1;
+    g_tty_abort_restore_slots[slot].fd = fd;
+    g_tty_abort_restore_slots[slot].cursor_hidden = 0;
+    g_tty_abort_restore_slots[slot].has_saved_termios = 0;
+    memset(&g_tty_abort_restore_slots[slot].old_termios,
+           0,
+           sizeof(g_tty_abort_restore_slots[slot].old_termios));
+
+    return slot;
+}
+
+static SIXELSTATUS
+sixel_tty_register_cbreak_fd(int fd, struct termios const *old_termios)
+{
+    int slot;
+
+    slot = -1;
+
     if (fd < 0 || old_termios == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
-        if (g_tty_abort_restore_slots[index].active != 0) {
-            if (g_tty_abort_restore_slots[index].fd == fd) {
-                slot = index;
-                break;
-            }
-            continue;
-        }
-        if (slot < 0) {
-            slot = index;
-        }
-    }
-
+    slot = sixel_tty_reserve_abort_restore_slot(fd);
     if (slot < 0) {
         return SIXEL_FALSE;
     }
 
     g_tty_abort_restore_slots[slot].old_termios = *old_termios;
+    g_tty_abort_restore_slots[slot].has_saved_termios = 1;
     g_tty_abort_restore_slots[slot].fd = fd;
     g_tty_abort_restore_slots[slot].active = 1;
 
@@ -651,24 +711,114 @@ sixel_tty_register_cbreak_fd(int fd, struct termios const *old_termios)
 static void
 sixel_tty_unregister_cbreak_fd(int fd)
 {
-    int index;
+    int slot;
 
-    index = 0;
+    slot = -1;
 
     if (fd < 0) {
         return;
     }
 
-    for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
-        if (g_tty_abort_restore_slots[index].active == 0) {
-            continue;
-        }
-        if (g_tty_abort_restore_slots[index].fd != fd) {
-            continue;
-        }
-        g_tty_abort_restore_slots[index].active = 0;
-        g_tty_abort_restore_slots[index].fd = -1;
+    slot = sixel_tty_find_abort_restore_slot(fd);
+    if (slot < 0) {
+        return;
     }
+
+    g_tty_abort_restore_slots[slot].has_saved_termios = 0;
+    if (g_tty_abort_restore_slots[slot].cursor_hidden == 0) {
+        g_tty_abort_restore_slots[slot].active = 0;
+        g_tty_abort_restore_slots[slot].fd = -1;
+    }
+}
+
+SIXEL_INTERNAL_API int
+sixel_tty_is_animation_hide_cursor_enabled(char const *value)
+{
+    if (value == NULL) {
+        return 0;
+    }
+
+    if (strcmp(value, "1") == 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_hide_cursor(int fd)
+{
+    ssize_t written;
+    size_t sequence_size;
+    int slot;
+
+    written = 0;
+    sequence_size = 0u;
+    slot = -1;
+
+    if (fd < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_compat_isatty(fd)) {
+        return SIXEL_FALSE;
+    }
+
+    slot = sixel_tty_reserve_abort_restore_slot(fd);
+    if (slot < 0) {
+        return SIXEL_FALSE;
+    }
+    if (g_tty_abort_restore_slots[slot].cursor_hidden != 0) {
+        return SIXEL_OK;
+    }
+
+    sequence_size = sizeof(g_tty_hide_cursor_seq) - 1u;
+    written = sixel_compat_write(fd, g_tty_hide_cursor_seq, sequence_size);
+    if (written != (ssize_t)sequence_size) {
+        return SIXEL_FALSE;
+    }
+
+    g_tty_abort_restore_slots[slot].cursor_hidden = 1;
+
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_restore_cursor(int fd)
+{
+    ssize_t written;
+    size_t sequence_size;
+    int slot;
+
+    written = 0;
+    sequence_size = 0u;
+    slot = -1;
+
+    if (fd < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    slot = sixel_tty_find_abort_restore_slot(fd);
+    if (slot < 0) {
+        return SIXEL_OK;
+    }
+
+    if (g_tty_abort_restore_slots[slot].cursor_hidden != 0) {
+        sequence_size = sizeof(g_tty_show_cursor_seq) - 1u;
+        written = sixel_compat_write(fd,
+                                     g_tty_show_cursor_seq,
+                                     sequence_size);
+        if (written != (ssize_t)sequence_size) {
+            return SIXEL_FALSE;
+        }
+        g_tty_abort_restore_slots[slot].cursor_hidden = 0;
+    }
+
+    if (g_tty_abort_restore_slots[slot].has_saved_termios == 0) {
+        g_tty_abort_restore_slots[slot].active = 0;
+        g_tty_abort_restore_slots[slot].fd = -1;
+    }
+
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -739,16 +889,22 @@ sixel_tty_restore_cbreak_for_abort(void)
 {
     int index;
     int fd;
+    ssize_t written;
+    size_t sequence_size;
+    int has_saved_termios;
     struct termios old_termios;
 
     index = 0;
     fd = -1;
+    written = 0;
+    sequence_size = 0u;
+    has_saved_termios = 0;
     memset(&old_termios, 0, sizeof(old_termios));
 
     /*
      * Abort handlers can interrupt normal cleanup while the terminal still
-     * runs in cbreak mode. Restore every tracked descriptor best-effort so
-     * the shell is usable after abnormal termination.
+     * runs in cbreak mode or with hidden cursor state. Restore both resources
+     * best-effort so the shell is usable after abnormal termination.
      */
     for (index = 0; index < SIXEL_TTY_ABORT_RESTORE_MAX; ++index) {
         if (g_tty_abort_restore_slots[index].active == 0) {
@@ -756,11 +912,19 @@ sixel_tty_restore_cbreak_for_abort(void)
         }
 
         fd = g_tty_abort_restore_slots[index].fd;
+        has_saved_termios = g_tty_abort_restore_slots[index].has_saved_termios;
         old_termios = g_tty_abort_restore_slots[index].old_termios;
+        if (g_tty_abort_restore_slots[index].cursor_hidden != 0 && fd >= 0) {
+            sequence_size = sizeof(g_tty_show_cursor_seq) - 1u;
+            written = write(fd, g_tty_show_cursor_seq, sequence_size);
+            (void)written;
+            g_tty_abort_restore_slots[index].cursor_hidden = 0;
+        }
+        g_tty_abort_restore_slots[index].has_saved_termios = 0;
         g_tty_abort_restore_slots[index].active = 0;
         g_tty_abort_restore_slots[index].fd = -1;
 
-        if (fd >= 0) {
+        if (fd >= 0 && has_saved_termios != 0) {
             (void)tcsetattr(fd, TCSAFLUSH, &old_termios);
         }
     }
@@ -780,6 +944,70 @@ sixel_tty_cbreak(struct termios *old_termios, struct termios *new_termios)
 #endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
 
 #if !HAVE_TERMIOS_H || !HAVE_SYS_IOCTL_H || !HAVE_ISATTY
+SIXEL_INTERNAL_API int
+sixel_tty_is_animation_hide_cursor_enabled(char const *value)
+{
+    if (value == NULL) {
+        return 0;
+    }
+
+    if (strcmp(value, "1") == 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_hide_cursor(int fd)
+{
+    ssize_t written;
+    size_t sequence_size;
+
+    written = 0;
+    sequence_size = 0u;
+
+    if (fd < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_compat_isatty(fd)) {
+        return SIXEL_FALSE;
+    }
+
+    sequence_size = sizeof(g_tty_hide_cursor_seq) - 1u;
+    written = sixel_compat_write(fd, g_tty_hide_cursor_seq, sequence_size);
+    if (written != (ssize_t)sequence_size) {
+        return SIXEL_FALSE;
+    }
+
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_restore_cursor(int fd)
+{
+    ssize_t written;
+    size_t sequence_size;
+
+    written = 0;
+    sequence_size = 0u;
+
+    if (fd < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_compat_isatty(fd)) {
+        return SIXEL_OK;
+    }
+
+    sequence_size = sizeof(g_tty_show_cursor_seq) - 1u;
+    written = sixel_compat_write(fd, g_tty_show_cursor_seq, sequence_size);
+    if (written != (ssize_t)sequence_size) {
+        return SIXEL_FALSE;
+    }
+
+    return SIXEL_OK;
+}
+
 SIXEL_INTERNAL_API void
 sixel_tty_restore_cbreak_for_abort(void)
 {
@@ -975,7 +1203,6 @@ sixel_tty_query_osc11_bgcolor_with_drain(
 cleanup:
     if (raw_active != 0) {
         (void)sixel_tty_restore_fd(ttyfd, &old_termios);
-        sixel_tty_unregister_cbreak_fd(ttyfd);
     }
     if (ttyfd >= 0) {
         (void)sixel_compat_close(ttyfd);

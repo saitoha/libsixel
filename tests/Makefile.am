@@ -198,6 +198,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0050_LOADER_OSC11_COLORSPEC_PARSER \
     -DBUILD_TEST_0051_LOADER_OSC11_RESPONSE_PARSER \
     -DBUILD_TEST_0052_LOADER_OSC11_QUERY_CONTROL \
+    -DBUILD_TEST_0055_LOADER_ANIMATION_HIDE_CURSOR_CONTROL \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -249,6 +250,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0052_loader_osc11_query_control.c \
     loader/0053_loader_background_colorspace_override.c \
     loader/0054_loader_gif_bgcolor_canvas_fill.c \
+    loader/0055_loader_animation_hide_cursor_control.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \

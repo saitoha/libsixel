@@ -122,6 +122,8 @@
 #define SIXEL_ENCODER_LUT_POLICY_ENVVAR "SIXEL_DITHER_LOOKUP_POLICY"
 #define SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR \
     "SIXEL_PALETTE_SAMPLE_TARGET"
+#define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
+    "SIXEL_ANIMATION_HIDE_CURSOR"
 
 typedef enum sixel_encoder_precision_mode {
     SIXEL_ENCODER_PRECISION_MODE_AUTO = 0,
@@ -1954,6 +1956,29 @@ sixel_encoder_parse_sample_target(char const *text, size_t *value_out)
     return 1;
 }
 
+int
+sixel_encoder_should_hide_animation_cursor(
+    int is_multiframe,
+    int fstatic,
+    int outfd_is_tty,
+    char const *env_value)
+{
+    if (is_multiframe == 0) {
+        return 0;
+    }
+    if (fstatic != 0) {
+        return 0;
+    }
+    if (outfd_is_tty == 0) {
+        return 0;
+    }
+    if (!sixel_tty_is_animation_hide_cursor_enabled(env_value)) {
+        return 0;
+    }
+
+    return 1;
+}
+
 
 typedef struct sixel_encode_dag_context {
     sixel_encoder_t *encoder;
@@ -2426,12 +2451,18 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     SIXELSTATUS status;
     int height;
     int nwrite;
+    int outfd_is_tty;
+    int should_hide_cursor;
+    char const *hide_cursor_env;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     status = SIXEL_OK;
+    outfd_is_tty = 0;
+    should_hide_cursor = 0;
+    hide_cursor_env = NULL;
 
     if (context->output) {
         sixel_output_ref(context->output);
@@ -2475,6 +2506,17 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
 
     if (sixel_frame_get_multiframe(context->frame)
         && !context->encoder->fstatic) {
+        outfd_is_tty = sixel_compat_isatty(context->encoder->outfd);
+        hide_cursor_env = sixel_compat_getenv(
+            SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR);
+        should_hide_cursor = sixel_encoder_should_hide_animation_cursor(
+            sixel_frame_get_multiframe(context->frame),
+            context->encoder->fstatic,
+            outfd_is_tty,
+            hide_cursor_env);
+        if (should_hide_cursor != 0) {
+            (void)sixel_tty_hide_cursor(context->encoder->outfd);
+        }
         if (sixel_frame_get_loop_no(context->frame) != 0
             || sixel_frame_get_frame_no(context->frame) != 0) {
             context->is_animation = 1;
@@ -8001,6 +8043,9 @@ end:
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
     sixel_encoder_frame_pipeline_dispose(&load_context.frame_pipeline);
     if (encoder != NULL) {
+        (void)sixel_tty_restore_cursor(encoder->outfd);
+    }
+    if (encoder != NULL) {
         sixel_encoder_log_stage(encoder,
                                 NULL,
                                 "main",
@@ -8238,6 +8283,9 @@ sixel_encoder_encode_bytes(
     status = SIXEL_OK;
 
 end:
+    if (encoder != NULL) {
+        (void)sixel_tty_restore_cursor(encoder->outfd);
+    }
     if (frame != NULL) {
         /*
          * The encoder owns the buffers allocated above, so a single unref

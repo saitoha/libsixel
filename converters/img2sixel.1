@@ -801,6 +801,13 @@ When probing succeeds, the loader treats the returned background as gamma.
 timeout in milliseconds for the loader OSC11 background color query wait.
 Defaults to 50. Invalid values fall back to 50.
 .TP 5
+.B SIXEL_ANIMATION_HIDE_CURSOR
+.br
+hide the terminal cursor with DECTCEM (\fBESC[?25l\fP) while animated frames
+are emitted to a tty output. Only the exact value \(dq1\(dq enables this
+behavior. Default is off. \fIimg2sixel\fP sets this variable to \(dq1\(dq
+only when it is unset.
+.TP 5
 .B SIXEL_COLORS
 .br
 specify number of colors to reduce the image to (default=256).

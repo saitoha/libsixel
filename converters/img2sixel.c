@@ -860,6 +860,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "Defaults to 50. Invalid values fall back to 50."
     },
     {
+        "SIXEL_ANIMATION_HIDE_CURSOR",
+        "hide terminal cursor with DECTCEM during animated TTY output.\n"
+        "Only the exact value '1' enables this behavior. Defaults to off,\n"
+        "but img2sixel sets it to '1' when the variable is unset."
+    },
+    {
         "SIXEL_COLORS",
         "specify palette size (default 256). Overrides -p/--colors when set."
     },
@@ -2266,6 +2272,21 @@ main(int argc, char *argv[])
             sixel_helper_set_additional_message(
                 "failed to set environment variable "
                 "'SIXEL_LOADER_OSC11_BG_QUERY'.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto error;
+        }
+    }
+
+    /*
+     * Enable DECTCEM cursor hide for animated tty output only when the user
+     * did not configure the variable.
+     */
+    if (img2sixel_compat_getenv("SIXEL_ANIMATION_HIDE_CURSOR") == NULL) {
+        if (img2sixel_compat_setenv("SIXEL_ANIMATION_HIDE_CURSOR",
+                                    "1") != 0) {
+            sixel_helper_set_additional_message(
+                "failed to set environment variable "
+                "'SIXEL_ANIMATION_HIDE_CURSOR'.");
             status = SIXEL_RUNTIME_ERROR;
             goto error;
         }

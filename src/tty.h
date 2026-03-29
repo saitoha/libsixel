@@ -68,6 +68,15 @@ sixel_tty_query_osc11_bgcolor_with_drain(
     sixel_tty_query_stop_function should_stop,
     void *context);
 
+SIXEL_INTERNAL_API int
+sixel_tty_is_animation_hide_cursor_enabled(char const *value);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_hide_cursor(int fd);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_restore_cursor(int fd);
+
 SIXEL_INTERNAL_API void
 sixel_tty_restore_cbreak_for_abort(void);
 
