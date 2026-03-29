@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_embedded_esrgb_converted_srgb_noicc.ppm"

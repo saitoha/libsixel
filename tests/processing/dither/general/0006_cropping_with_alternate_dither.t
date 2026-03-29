@@ -10,7 +10,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/crop-alt-dither.sixel"

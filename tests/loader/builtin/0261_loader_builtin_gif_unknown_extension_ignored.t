@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 printf '1..1\n'
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 base_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 unknown_ext_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-unknown-extension-safe.gif"

@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-repeated-short-last0-tbbn0g04.six"
@@ -23,7 +23,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1
     exit 0
 }
 
-case "$(cat "${out}")" in
+out_text=""
+while IFS= read -r out_line || test -n "
+${out_line}"; do
+    case "${out_text}" in
+        "")
+            out_text=${out_line}
+            ;;
+        *)
+            out_text="${out_text}
+${out_line}"
+            ;;
+    esac
+done < "${out}"
+case "${out_text}" in
     *"$(printf '\033')P0;1q"*)
         echo "not ok 1 - builtin repeated short -% did not use last value"
         ;;

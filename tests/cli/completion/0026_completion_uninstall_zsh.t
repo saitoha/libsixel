@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 printf '1..1\n'
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 completion_home="${ARTIFACT_LOCAL_DIR}"
 target_path="${completion_home}/.zfunc/_img2sixel"

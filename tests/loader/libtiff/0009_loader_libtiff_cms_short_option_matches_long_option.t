@@ -17,7 +17,7 @@ test "${HAVE_LIBTIFF-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_tiff="${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff"
 output_long="${ARTIFACT_LOCAL_DIR}/libtiff_cms_long_option.six"

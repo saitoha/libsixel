@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 gpl_palette="${ARTIFACT_LOCAL_DIR}/palette-stdin.gpl"

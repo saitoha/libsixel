@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 server_port_base=4443
 max_port_attempts=5
@@ -52,12 +52,34 @@ server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
         --requests 5 &
     echo $! >"${server_pid_file}"
 )
-server_pid=$(cat "${server_pid_file}")
+server_pid=""
+while IFS= read -r server_pid_line || test -n "${server_pid_line}"; do
+    case "${server_pid}" in
+        "")
+            server_pid=${server_pid_line}
+            ;;
+        *)
+            server_pid="${server_pid}
+${server_pid_line}"
+            ;;
+    esac
+done < "${server_pid_file}"
 
 server_port=""
 for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
     test -s "${port_file}" && {
-        server_port=$(cat "${port_file}")
+        server_port=""
+        while IFS= read -r server_port_line || test -n "${server_port_line}"; do
+            case "${server_port}" in
+                "")
+                    server_port=${server_port_line}
+                    ;;
+                *)
+                    server_port="${server_port}
+${server_port_line}"
+                    ;;
+            esac
+        done < "${port_file}"
         break
     }
 

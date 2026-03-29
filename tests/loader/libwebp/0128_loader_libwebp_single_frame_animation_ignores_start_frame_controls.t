@@ -15,7 +15,7 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossy-8x8-1frame-anim-min.webp"
 out_default="${ARTIFACT_LOCAL_DIR}/webp-anim1-default.six"

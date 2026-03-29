@@ -6,7 +6,7 @@ set -eux
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 rc=0
 cli_output_file="${ARTIFACT_LOCAL_DIR}/cli_option_requires_argument.out"

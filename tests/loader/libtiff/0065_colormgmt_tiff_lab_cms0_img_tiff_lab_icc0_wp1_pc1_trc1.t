@@ -16,7 +16,7 @@ test "${HAVE_LIBTIFF-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_tiff="${TOP_SRCDIR}/tests/data/colormgmt/input/tiff/lab/img_tiff_lab_icc0_wp1_pc1_trc1.tiff"
 reference_six="${TOP_SRCDIR}/tests/data/colormgmt/reference/tiff/lab/img_tiff_lab_icc0_wp1_pc1_trc1.six"

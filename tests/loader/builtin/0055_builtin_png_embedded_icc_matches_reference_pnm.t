@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0001_map8_embedded_icc_converted_srgb_noicc.ppm"

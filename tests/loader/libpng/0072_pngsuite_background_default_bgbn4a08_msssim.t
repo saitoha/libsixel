@@ -18,7 +18,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/background/bgbn4a08.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0064_pngsuite_background_default_bgbn4a08_msssim.ppm"

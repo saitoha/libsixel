@@ -10,7 +10,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_six="${TOP_SRCDIR}/images/map8.six"
 target_txt="${ARTIFACT_LOCAL_DIR}/sixel-inspection.txt"

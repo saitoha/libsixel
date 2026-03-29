@@ -15,7 +15,7 @@ test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
@@ -30,7 +30,18 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "THUMB_LOG=${default_log}" \
     -L gnome-thumbnailer! "${input_png}" >/dev/null
 
-default_size=$(cat "${default_log}")
+default_size=""
+while IFS= read -r default_size_line || test -n "${default_size_line}"; do
+    case "${default_size}" in
+        "")
+            default_size=${default_size_line}
+            ;;
+        *)
+            default_size="${default_size}
+${default_size_line}"
+            ;;
+    esac
+done < "${default_log}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "XDG_DATA_DIRS=${xdg_data_home}" \
@@ -39,7 +50,18 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=abc" \
     -L gnome-thumbnailer! "${input_png}" >/dev/null
 
-invalid_size=$(cat "${invalid_log}")
+invalid_size=""
+while IFS= read -r invalid_size_line || test -n "${invalid_size_line}"; do
+    case "${invalid_size}" in
+        "")
+            invalid_size=${invalid_size_line}
+            ;;
+        *)
+            invalid_size="${invalid_size}
+${invalid_size_line}"
+            ;;
+    esac
+done < "${invalid_log}"
 
 test -n "${default_size}" || {
     echo "not ok" 1 - "invalid size env fallback check failed"

@@ -16,7 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_duotone32_missing_composite_single_layer.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_gray32_expected.ppm"

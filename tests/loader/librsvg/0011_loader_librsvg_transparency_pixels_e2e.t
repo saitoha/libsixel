@@ -20,7 +20,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-transparent-2color.svg"
 default_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-default.six"

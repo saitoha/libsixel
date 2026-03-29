@@ -15,7 +15,7 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_static_gif.sixel"
