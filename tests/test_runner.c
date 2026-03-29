@@ -79,6 +79,8 @@ int test_loader_0039_loader_libwebp_fault_no_frames(int argc, char **argv);
 int test_loader_0040_loader_libwebp_fault_no_anmf(int argc, char **argv);
 int test_loader_0041_loader_libwebp_frame_count_limit_fast(int argc,
                                                            char **argv);
+int test_loader_0042_loader_libwebp_frame_count_limit_decoder_guard(int argc,
+                                                                     char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -181,6 +183,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0040_loader_libwebp_fault_no_anmf },
     { "loader/0041_loader_libwebp_frame_count_limit_fast",
       test_loader_0041_loader_libwebp_frame_count_limit_fast },
+    { "loader/0042_loader_libwebp_frame_count_limit_decoder_guard",
+      test_loader_0042_loader_libwebp_frame_count_limit_decoder_guard },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
