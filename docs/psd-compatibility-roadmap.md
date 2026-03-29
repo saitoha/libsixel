@@ -57,8 +57,8 @@ Key points used by this roadmap:
   - Multichannel bit depths other than `8/16/32`
   - Bitmap 1-bit with ZIP+Prediction
 - Composite-missing policy:
-  - Minimal fallback is supported for 8/16/32-bit RGB/Gray/Duotone/Lab layer-only PSDs,
-    and 8-bit CMYK layer-only PSDs.
+  - Minimal fallback is supported for 8/16/32-bit RGB/Gray/Duotone/Lab/CMYK
+    layer-only PSDs.
     For Multichannel (`mode=7`), minimal fallback currently applies to
     `channels==3` on `8/16/32-bit` (`3ch->RGB8/16/32`) and
     `channels==4` on `8/16/32-bit` (`4ch->CMYK8/16/32`).
