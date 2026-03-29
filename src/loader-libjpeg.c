@@ -92,6 +92,7 @@ typedef struct sixel_loader_libjpeg_component {
     int loop_control;
     int has_start_frame_no;
     int start_frame_no;
+    int enable_orientation;
 } sixel_loader_libjpeg_component_t;
 
 typedef struct sixel_loader_libjpeg_error_context {
@@ -1454,6 +1455,95 @@ end:
     return status;
 }
 
+static unsigned short
+jpeg_read_u16be(unsigned char const *p)
+{
+    if (p == NULL) {
+        return 0u;
+    }
+
+    return (unsigned short)((unsigned short)p[0] << 8u |
+                            (unsigned short)p[1]);
+}
+
+/*
+ * Scan JPEG APP1 markers and parse Exif orientation when present.
+ *
+ * The parser ignores unknown APP1 payloads (for example XMP) and keeps the
+ * default orientation if the metadata is missing or malformed.
+ */
+static int
+jpeg_parse_exif_orientation(unsigned char const *data,
+                            size_t size,
+                            int *orientation)
+{
+    size_t offset;
+    unsigned char marker;
+    unsigned short segment_length;
+    size_t payload_size;
+
+    offset = 0u;
+    marker = 0u;
+    segment_length = 0u;
+    payload_size = 0u;
+    if (data == NULL || orientation == NULL || size < 4u) {
+        return 0;
+    }
+    if (data[0] != (unsigned char)0xff || data[1] != (unsigned char)0xd8) {
+        return 0;
+    }
+
+    offset = 2u;
+    while (offset + 1u < size) {
+        if (data[offset] != (unsigned char)0xff) {
+            ++offset;
+            continue;
+        }
+        while (offset < size && data[offset] == (unsigned char)0xff) {
+            ++offset;
+        }
+        if (offset >= size) {
+            break;
+        }
+
+        marker = data[offset];
+        ++offset;
+        if (marker == (unsigned char)0xd9 || marker == (unsigned char)0xda) {
+            break;
+        }
+        if (marker == (unsigned char)0x01 ||
+            (marker >= (unsigned char)0xd0 &&
+             marker <= (unsigned char)0xd7)) {
+            continue;
+        }
+        if (offset + 2u > size) {
+            break;
+        }
+
+        segment_length = jpeg_read_u16be(data + offset);
+        offset += 2u;
+        if (segment_length < 2u) {
+            break;
+        }
+        payload_size = (size_t)segment_length - 2u;
+        if (offset > size || payload_size > size - offset) {
+            break;
+        }
+
+        if (marker == (unsigned char)0xe1 && payload_size >= 6u &&
+            memcmp(data + offset, "Exif\0\0", 6u) == 0 &&
+            loader_exif_parse_orientation(data + offset,
+                                          payload_size,
+                                          orientation)) {
+            return 1;
+        }
+
+        offset += payload_size;
+    }
+
+    return 0;
+}
+
 /*
  * Dedicated libjpeg loader wiring minimal pipeline.
  *
@@ -1465,6 +1555,7 @@ static SIXELSTATUS
 load_with_libjpeg(
     sixel_chunk_t const       /* in */     *pchunk,
     int                       /* in */     enable_cms,
+    int                       /* in */     enable_orientation,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
@@ -1479,11 +1570,13 @@ load_with_libjpeg(
     sixel_frame_t *frame;
     unsigned char *pixels;
     int pixelformat;
+    int exif_orientation;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    exif_orientation = 1;
 
     (void)fstatic;
     (void)fuse_palette;
@@ -1491,6 +1584,12 @@ load_with_libjpeg(
     (void)loop_control;
     (void)start_frame_no_set;
     (void)start_frame_no;
+
+    if (enable_orientation) {
+        (void)jpeg_parse_exif_orientation(pchunk->buffer,
+                                          pchunk->size,
+                                          &exif_orientation);
+    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -1522,6 +1621,13 @@ load_with_libjpeg(
     status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+
+    if (enable_orientation && exif_orientation >= 2 && exif_orientation <= 8) {
+        status = loader_frame_apply_orientation(frame, exif_orientation);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = fn_load(frame, context);
@@ -1600,6 +1706,10 @@ sixel_loader_libjpeg_setopt(sixel_loader_component_t *component,
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_ORIENTATION:
+        flag = (int const *)value;
+        self->enable_orientation = (flag == NULL || *flag != 0) ? 1 : 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
         flag = (int const *)value;
         if (flag != NULL && *flag >= 0) {
@@ -1675,6 +1785,7 @@ sixel_loader_libjpeg_load(sixel_loader_component_t *component,
 
     return load_with_libjpeg(chunk,
                              self->enable_cms,
+                             self->enable_orientation,
                              self->fstatic,
                              self->fuse_palette,
                              self->reqcolors,
@@ -1724,6 +1835,7 @@ sixel_loader_libjpeg_new(sixel_allocator_t *allocator,
     self->allocator = allocator;
     self->ref = 1u;
     self->enable_cms = 0;
+    self->enable_orientation = 1;
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
     sixel_allocator_ref(allocator);

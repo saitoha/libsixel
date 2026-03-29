@@ -498,8 +498,10 @@ show debugging info and print the planner DAG (Directed Acyclic Graph).
 .B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names. Each entry may be abbreviated by a unique prefix,
-and a trailing "!" disables fallback loaders. The libpng, libjpeg, libwebp,
-libtiff, and builtin loaders accept
+and a trailing "!" disables fallback loaders. The libpng, libjpeg, and
+libwebp loaders accept
+\fBorientation=on|off\fP (short form \fBo=\fP..., default on).
+The libpng, libjpeg, libwebp, libtiff, and builtin loaders accept
 \fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBe=\fP...,
 default none).
 The WIC loader also accepts suboptions such as \fBwic:ico_minsize=SIZE\fP to pick
@@ -904,6 +906,27 @@ override the default loader priority. Accepts the same comma separated
 names recognised by \fB-L\fP/\fB--loaders\fP, including prefix matches and
 the trailing "!" suffix. The environment setting is ignored when the
 command-line option is present.
+.TP 5
+.B SIXEL_LOADER_ORIENTATION
+.br
+set the default EXIF orientation handling for libjpeg/libpng/libwebp
+loaders. Accepts "on"/"off" (preferred) and "1"/"0" aliases.
+defaults to on.
+.TP 5
+.B SIXEL_LOADER_LIBJPEG_ORIENTATION
+.br
+override EXIF orientation handling for the libjpeg loader.
+overrides \fBSIXEL_LOADER_ORIENTATION\fP.
+.TP 5
+.B SIXEL_LOADER_LIBPNG_ORIENTATION
+.br
+override EXIF orientation handling for the libpng loader.
+overrides \fBSIXEL_LOADER_ORIENTATION\fP.
+.TP 5
+.B SIXEL_LOADER_LIBWEBP_ORIENTATION
+.br
+override EXIF orientation handling for the libwebp loader.
+overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 .TP 5
 .B SIXEL_LOADER_ANIMATION_START_FRAME_NO
 .br

@@ -51,6 +51,7 @@
 
 #include "cms.h"
 #include "compat_stub.h"
+#include "frame.h"
 #include "loader-common.h"
 #include "logger.h"
 
@@ -284,6 +285,424 @@ sixel_helper_set_loader_cms_engine(int engine)
 
     sixel_cms_set_engine((sixel_cms_engine_t)engine);
 }
+
+static unsigned short
+loader_exif_read_u16(unsigned char const *data, int little_endian)
+{
+    if (data == NULL) {
+        return 0u;
+    }
+    if (little_endian) {
+        return (unsigned short)((unsigned short)data[0] |
+                                (unsigned short)data[1] << 8u);
+    }
+
+    return (unsigned short)((unsigned short)data[0] << 8u |
+                            (unsigned short)data[1]);
+}
+
+static unsigned int
+loader_exif_read_u32(unsigned char const *data, int little_endian)
+{
+    if (data == NULL) {
+        return 0u;
+    }
+    if (little_endian) {
+        return (unsigned int)data[0] |
+               ((unsigned int)data[1] << 8u) |
+               ((unsigned int)data[2] << 16u) |
+               ((unsigned int)data[3] << 24u);
+    }
+
+    return ((unsigned int)data[0] << 24u) |
+           ((unsigned int)data[1] << 16u) |
+           ((unsigned int)data[2] << 8u) |
+           (unsigned int)data[3];
+}
+
+int
+loader_exif_parse_orientation(unsigned char const *data,
+                              size_t size,
+                              int *orientation)
+{
+    int little_endian;
+    unsigned short magic;
+    unsigned int ifd_offset;
+    unsigned short entry_count;
+    size_t entries_offset;
+    size_t index;
+    unsigned short tag;
+    unsigned short type;
+    unsigned int count;
+    unsigned int value_field;
+    int parsed_orientation;
+
+    little_endian = 0;
+    magic = 0u;
+    ifd_offset = 0u;
+    entry_count = 0u;
+    entries_offset = 0u;
+    index = 0u;
+    tag = 0u;
+    type = 0u;
+    count = 0u;
+    value_field = 0u;
+    parsed_orientation = 0;
+
+    if (data == NULL || orientation == NULL) {
+        return 0;
+    }
+
+    if (size >= 6u && memcmp(data, "Exif\0\0", 6u) == 0) {
+        data += 6u;
+        size -= 6u;
+    }
+
+    if (size < 8u) {
+        return 0;
+    }
+    if (data[0] == (unsigned char)'I' && data[1] == (unsigned char)'I') {
+        little_endian = 1;
+    } else if (data[0] == (unsigned char)'M' &&
+               data[1] == (unsigned char)'M') {
+        little_endian = 0;
+    } else {
+        return 0;
+    }
+
+    magic = loader_exif_read_u16(data + 2u, little_endian);
+    if (magic != 42u) {
+        return 0;
+    }
+
+    ifd_offset = loader_exif_read_u32(data + 4u, little_endian);
+    if ((size_t)ifd_offset > size - 2u) {
+        return 0;
+    }
+    entry_count = loader_exif_read_u16(data + ifd_offset, little_endian);
+    entries_offset = (size_t)ifd_offset + 2u;
+    if (entry_count > 0u &&
+        entries_offset > size - (size_t)entry_count * 12u) {
+        return 0;
+    }
+
+    for (index = 0u; index < (size_t)entry_count; ++index) {
+        unsigned char const *entry;
+
+        entry = data + entries_offset + index * 12u;
+        tag = loader_exif_read_u16(entry, little_endian);
+        if (tag != 0x0112u) {
+            continue;
+        }
+
+        type = loader_exif_read_u16(entry + 2u, little_endian);
+        count = loader_exif_read_u32(entry + 4u, little_endian);
+        value_field = loader_exif_read_u32(entry + 8u, little_endian);
+        if (type != 3u || count == 0u) {
+            return 0;
+        }
+
+        if (count == 1u) {
+            if (little_endian) {
+                parsed_orientation = (int)(value_field & 0xffffu);
+            } else {
+                parsed_orientation = (int)((value_field >> 16u) & 0xffffu);
+            }
+        } else {
+            if ((size_t)value_field > size - 2u) {
+                return 0;
+            }
+            parsed_orientation = (int)loader_exif_read_u16(
+                data + value_field,
+                little_endian);
+        }
+
+        if (parsed_orientation < 1 || parsed_orientation > 8) {
+            return 0;
+        }
+
+        *orientation = parsed_orientation;
+        return 1;
+    }
+
+    return 0;
+}
+
+static void
+loader_exif_map_coordinates(int orientation,
+                            int src_width,
+                            int src_height,
+                            int dst_x,
+                            int dst_y,
+                            int *src_x,
+                            int *src_y)
+{
+    int mapped_x;
+    int mapped_y;
+
+    mapped_x = dst_x;
+    mapped_y = dst_y;
+    switch (orientation) {
+    case 2:
+        mapped_x = src_width - 1 - dst_x;
+        mapped_y = dst_y;
+        break;
+    case 3:
+        mapped_x = src_width - 1 - dst_x;
+        mapped_y = src_height - 1 - dst_y;
+        break;
+    case 4:
+        mapped_x = dst_x;
+        mapped_y = src_height - 1 - dst_y;
+        break;
+    case 5:
+        mapped_x = dst_y;
+        mapped_y = dst_x;
+        break;
+    case 6:
+        mapped_x = dst_y;
+        mapped_y = src_height - 1 - dst_x;
+        break;
+    case 7:
+        mapped_x = src_width - 1 - dst_y;
+        mapped_y = src_height - 1 - dst_x;
+        break;
+    case 8:
+        mapped_x = src_width - 1 - dst_y;
+        mapped_y = dst_x;
+        break;
+    case 1:
+    default:
+        mapped_x = dst_x;
+        mapped_y = dst_y;
+        break;
+    }
+
+    if (src_x != NULL) {
+        *src_x = mapped_x;
+    }
+    if (src_y != NULL) {
+        *src_y = mapped_y;
+    }
+}
+
+SIXELSTATUS
+loader_frame_apply_orientation(sixel_frame_t *frame,
+                               int orientation)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    int src_width;
+    int src_height;
+    int dst_width;
+    int dst_height;
+    size_t src_pixel_count;
+    size_t dst_pixel_count;
+    int depth;
+    int channels;
+    int x;
+    int y;
+    int src_x;
+    int src_y;
+    size_t src_index;
+    size_t dst_index;
+    unsigned char *src_bytes;
+    unsigned char *dst_bytes;
+    float *src_floats;
+    float *dst_floats;
+    unsigned char *src_mask;
+    unsigned char *dst_mask;
+    size_t pixel_stride;
+
+    status = SIXEL_OK;
+    allocator = NULL;
+    src_width = 0;
+    src_height = 0;
+    dst_width = 0;
+    dst_height = 0;
+    src_pixel_count = 0u;
+    dst_pixel_count = 0u;
+    depth = 0;
+    channels = 0;
+    x = 0;
+    y = 0;
+    src_x = 0;
+    src_y = 0;
+    src_index = 0u;
+    dst_index = 0u;
+    src_bytes = NULL;
+    dst_bytes = NULL;
+    src_floats = NULL;
+    dst_floats = NULL;
+    src_mask = NULL;
+    dst_mask = NULL;
+    pixel_stride = 0u;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (orientation <= 1 || orientation > 8) {
+        return SIXEL_OK;
+    }
+    if (frame->width <= 0 || frame->height <= 0 || frame->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    src_width = frame->width;
+    src_height = frame->height;
+    if ((size_t)src_width > SIZE_MAX / (size_t)src_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    src_pixel_count = (size_t)src_width * (size_t)src_height;
+    if (orientation >= 5 && orientation <= 8) {
+        dst_width = src_height;
+        dst_height = src_width;
+    } else {
+        dst_width = src_width;
+        dst_height = src_height;
+    }
+    if ((size_t)dst_width > SIZE_MAX / (size_t)dst_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    dst_pixel_count = (size_t)dst_width * (size_t)dst_height;
+    allocator = frame->allocator;
+    depth = sixel_helper_compute_depth(frame->pixelformat);
+    if (depth <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+        if (depth <= 0 || depth % (int)sizeof(float) != 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        channels = depth / (int)sizeof(float);
+        if (channels <= 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (frame->pixels.f32ptr == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if ((size_t)channels > SIZE_MAX / sizeof(float)) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        pixel_stride = (size_t)depth;
+        if (dst_pixel_count > SIZE_MAX / pixel_stride) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+
+        dst_floats = (float *)sixel_allocator_malloc(allocator,
+                                                     dst_pixel_count *
+                                                     pixel_stride);
+        if (dst_floats == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        src_floats = frame->pixels.f32ptr;
+        for (y = 0; y < dst_height; ++y) {
+            for (x = 0; x < dst_width; ++x) {
+                loader_exif_map_coordinates(orientation,
+                                            src_width,
+                                            src_height,
+                                            x,
+                                            y,
+                                            &src_x,
+                                            &src_y);
+                src_index = (size_t)src_y * (size_t)src_width + (size_t)src_x;
+                dst_index = (size_t)y * (size_t)dst_width + (size_t)x;
+                memcpy((unsigned char *)(dst_floats + dst_index * channels),
+                       (unsigned char const *)(src_floats +
+                                               src_index * channels),
+                       pixel_stride);
+            }
+        }
+        frame->pixels.f32ptr = dst_floats;
+        sixel_allocator_free(allocator, src_floats);
+    } else {
+        if (frame->pixelformat == SIXEL_PIXELFORMAT_PAL1 ||
+            frame->pixelformat == SIXEL_PIXELFORMAT_PAL2 ||
+            frame->pixelformat == SIXEL_PIXELFORMAT_PAL4 ||
+            frame->pixelformat == SIXEL_PIXELFORMAT_G1 ||
+            frame->pixelformat == SIXEL_PIXELFORMAT_G2 ||
+            frame->pixelformat == SIXEL_PIXELFORMAT_G4) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (depth <= 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (frame->pixels.u8ptr == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        pixel_stride = (size_t)depth;
+        if (dst_pixel_count > SIZE_MAX / pixel_stride) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+
+        dst_bytes = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                             dst_pixel_count *
+                                                             pixel_stride);
+        if (dst_bytes == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        src_bytes = frame->pixels.u8ptr;
+        for (y = 0; y < dst_height; ++y) {
+            for (x = 0; x < dst_width; ++x) {
+                loader_exif_map_coordinates(orientation,
+                                            src_width,
+                                            src_height,
+                                            x,
+                                            y,
+                                            &src_x,
+                                            &src_y);
+                src_index = (size_t)src_y * (size_t)src_width + (size_t)src_x;
+                dst_index = (size_t)y * (size_t)dst_width + (size_t)x;
+                memcpy(dst_bytes + dst_index * pixel_stride,
+                       src_bytes + src_index * pixel_stride,
+                       pixel_stride);
+            }
+        }
+        frame->pixels.u8ptr = dst_bytes;
+        sixel_allocator_free(allocator, src_bytes);
+    }
+
+    src_mask = frame->transparent_mask;
+    dst_mask = NULL;
+    if (src_mask != NULL) {
+        if (frame->transparent_mask_size != src_pixel_count) {
+            sixel_allocator_free(allocator, src_mask);
+            frame->transparent_mask = NULL;
+            frame->transparent_mask_size = 0u;
+        } else {
+            dst_mask = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                               dst_pixel_count);
+            if (dst_mask == NULL) {
+                return SIXEL_BAD_ALLOCATION;
+            }
+            for (y = 0; y < dst_height; ++y) {
+                for (x = 0; x < dst_width; ++x) {
+                    loader_exif_map_coordinates(orientation,
+                                                src_width,
+                                                src_height,
+                                                x,
+                                                y,
+                                                &src_x,
+                                                &src_y);
+                    src_index = (size_t)src_y * (size_t)src_width +
+                                (size_t)src_x;
+                    dst_index = (size_t)y * (size_t)dst_width + (size_t)x;
+                    dst_mask[dst_index] = src_mask[src_index];
+                }
+            }
+            frame->transparent_mask = dst_mask;
+            frame->transparent_mask_size = dst_pixel_count;
+            sixel_allocator_free(allocator, src_mask);
+        }
+    }
+
+    frame->width = dst_width;
+    frame->height = dst_height;
+
+    return status;
+}
+
 void
 loader_thumbnailer_initialize_size_hint(void)
 {

@@ -42,8 +42,14 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_cms_engine[] = 
     { "colorsync", SIXEL_CMS_ENGINE_COLORSYNC }
 };
 
+static sixel_suboption_choice_t const
+g_suboption_choices_loader_orientation[] = {
+    { "on", 1 },
+    { "off", 0 }
+};
+
 #if HAVE_LIBPNG
-static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
+static sixel_suboption_key_t const g_subkeys_loader_libpng[] = {
     {
         "cms_engine",
         "e",
@@ -52,12 +58,21 @@ static sixel_suboption_key_t const g_subkeys_loader_libpng_cms[] = {
         g_suboption_choices_loader_cms_engine,
         sizeof(g_suboption_choices_loader_cms_engine)
             / sizeof(g_suboption_choices_loader_cms_engine[0])
+    },
+    {
+        "orientation",
+        "o",
+        "SIXEL_LOADER_LIBPNG_ORIENTATION",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_orientation,
+        sizeof(g_suboption_choices_loader_orientation)
+            / sizeof(g_suboption_choices_loader_orientation[0])
     }
 };
 #endif
 
 #if HAVE_JPEG
-static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
+static sixel_suboption_key_t const g_subkeys_loader_libjpeg[] = {
     {
         "cms_engine",
         "e",
@@ -66,12 +81,21 @@ static sixel_suboption_key_t const g_subkeys_loader_libjpeg_cms[] = {
         g_suboption_choices_loader_cms_engine,
         sizeof(g_suboption_choices_loader_cms_engine)
             / sizeof(g_suboption_choices_loader_cms_engine[0])
+    },
+    {
+        "orientation",
+        "o",
+        "SIXEL_LOADER_LIBJPEG_ORIENTATION",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_orientation,
+        sizeof(g_suboption_choices_loader_orientation)
+            / sizeof(g_suboption_choices_loader_orientation[0])
     }
 };
 #endif
 
 #if HAVE_WEBP
-static sixel_suboption_key_t const g_subkeys_loader_libwebp_cms[] = {
+static sixel_suboption_key_t const g_subkeys_loader_libwebp[] = {
     {
         "cms_engine",
         "e",
@@ -80,6 +104,15 @@ static sixel_suboption_key_t const g_subkeys_loader_libwebp_cms[] = {
         g_suboption_choices_loader_cms_engine,
         sizeof(g_suboption_choices_loader_cms_engine)
             / sizeof(g_suboption_choices_loader_cms_engine[0])
+    },
+    {
+        "orientation",
+        "o",
+        "SIXEL_LOADER_LIBWEBP_ORIENTATION",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_orientation,
+        sizeof(g_suboption_choices_loader_orientation)
+            / sizeof(g_suboption_choices_loader_orientation[0])
     }
 };
 #endif
@@ -132,27 +165,27 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
     {
         "libpng",
         SIXEL_LOADER_SCHEMA_CHOICE_LIBPNG,
-        g_subkeys_loader_libpng_cms,
-        sizeof(g_subkeys_loader_libpng_cms)
-            / sizeof(g_subkeys_loader_libpng_cms[0])
+        g_subkeys_loader_libpng,
+        sizeof(g_subkeys_loader_libpng)
+            / sizeof(g_subkeys_loader_libpng[0])
     },
 #endif
 #if HAVE_JPEG
     {
         "libjpeg",
         SIXEL_LOADER_SCHEMA_CHOICE_LIBJPEG,
-        g_subkeys_loader_libjpeg_cms,
-        sizeof(g_subkeys_loader_libjpeg_cms)
-            / sizeof(g_subkeys_loader_libjpeg_cms[0])
+        g_subkeys_loader_libjpeg,
+        sizeof(g_subkeys_loader_libjpeg)
+            / sizeof(g_subkeys_loader_libjpeg[0])
     },
 #endif
 #if HAVE_WEBP
     {
         "libwebp",
         SIXEL_LOADER_SCHEMA_CHOICE_LIBWEBP,
-        g_subkeys_loader_libwebp_cms,
-        sizeof(g_subkeys_loader_libwebp_cms)
-            / sizeof(g_subkeys_loader_libwebp_cms[0])
+        g_subkeys_loader_libwebp,
+        sizeof(g_subkeys_loader_libwebp)
+            / sizeof(g_subkeys_loader_libwebp[0])
     },
 #endif
 #if HAVE_LIBTIFF

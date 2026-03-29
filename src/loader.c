@@ -493,6 +493,42 @@ loader_apply_component_options(sixel_loader_component_t *component,
         return status;
     }
 
+    suboption_value = suboptions->libjpeg_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'libjpeg-enable-orientation'.");
+        return status;
+    }
+
+    suboption_value = suboptions->libpng_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'libpng-enable-orientation'.");
+        return status;
+    }
+
+    suboption_value = suboptions->libwebp_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'libwebp-enable-orientation'.");
+        return status;
+    }
+
     if (component_name != NULL && strcmp(component_name, "libpng") == 0) {
         suboption_value = suboptions->libpng_cms_engine;
     } else if (component_name != NULL &&

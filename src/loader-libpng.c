@@ -91,6 +91,7 @@ typedef struct sixel_loader_libpng_component {
     int has_start_frame_no;
     int start_frame_no;
     int enable_cms;
+    int enable_orientation;
 } sixel_loader_libpng_component_t;
 
 /*
@@ -3019,6 +3020,60 @@ read_be32(unsigned char const *p)
     return value;
 }
 
+/*
+ * Extract EXIF orientation from PNG/APNG eXIf chunk.
+ *
+ * PNG stores eXIf as a standalone chunk payload, so the TIFF/EXIF parser can
+ * consume it directly.
+ */
+static int
+libpng_parse_exif_orientation(unsigned char const *buffer,
+                              size_t size,
+                              int *orientation)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    size_t offset;
+    png_uint_32 chunk_length;
+    size_t chunk_total;
+    unsigned char const *chunk_type;
+
+    offset = 0u;
+    chunk_length = 0u;
+    chunk_total = 0u;
+    chunk_type = NULL;
+    if (buffer == NULL || orientation == NULL || size < 8u) {
+        return 0;
+    }
+    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+
+    offset = sizeof(png_signature);
+    while (offset + 12u <= size) {
+        chunk_length = read_be32(buffer + offset);
+        chunk_total = 12u + (size_t)chunk_length;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+
+        chunk_type = buffer + offset + 4u;
+        if (memcmp(chunk_type, "eXIf", 4u) == 0 &&
+            loader_exif_parse_orientation(buffer + offset + 8u,
+                                          (size_t)chunk_length,
+                                          orientation)) {
+            return 1;
+        }
+        if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+        offset += chunk_total;
+    }
+
+    return 0;
+}
+
 static void
 write_be32(unsigned char *p, png_uint_32 value)
 {
@@ -3554,6 +3609,7 @@ emit_apng_frame(
     int                            emit_callback,
     unsigned char                 *bgcolor,
     int                            alpha_zero_is_transparent,
+    int                            exif_orientation,
     int                            reqcolors,
     int                            fuse_palette,
     sixel_apng_canvas_t           *canvas,
@@ -3667,6 +3723,13 @@ emit_apng_frame(
     sixel_frame_set_pixels(frame, emitted);
     emitted = NULL;
 
+    if (exif_orientation >= 2 && exif_orientation <= 8) {
+        status = loader_frame_apply_orientation(frame, exif_orientation);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
     if (!frame->alpha_zero_is_transparent) {
         status = sixel_frame_strip_alpha(frame, bgcolor);
         if (SIXEL_FAILED(status)) {
@@ -3700,6 +3763,7 @@ load_apng_frames(
     int                        fuse_palette,
     int                        reqcolors,
     unsigned char             *bgcolor,
+    int                        exif_orientation,
     int                        enable_cms,
     int                        loop_control,
     int                        start_frame_no,
@@ -3939,6 +4003,7 @@ load_apng_frames(
                                          emit_callback,
                                          bgcolor,
                                          alpha_zero_is_transparent,
+                                         exif_orientation,
                                          reqcolors,
                                          fuse_palette,
                                          &canvas,
@@ -4104,12 +4169,13 @@ load_apng_frames(
                                  emit_frame_no,
                                  loop_no,
                                  (!fstatic && num_frames > 1),
-                                 emit_callback,
-                                 bgcolor,
-                                 alpha_zero_is_transparent,
-                                 reqcolors,
-                                 fuse_palette,
-                                 &canvas,
+                                  emit_callback,
+                                  bgcolor,
+                                  alpha_zero_is_transparent,
+                                  exif_orientation,
+                                  reqcolors,
+                                  fuse_palette,
+                                  &canvas,
                                  fn_load,
                                  context,
                                  pchunk->allocator);
@@ -4211,6 +4277,7 @@ load_with_libpng(
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no_override,
     int                       /* in */     enable_cms_override,
+    int                       /* in */     enable_orientation_override,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -4222,6 +4289,8 @@ load_with_libpng(
     int cms_applied;
     int alpha_zero_is_transparent;
     int cms_target_pixelformat;
+    int enable_orientation;
+    int exif_orientation;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -4231,6 +4300,8 @@ load_with_libpng(
     cms_applied = 0;
     alpha_zero_is_transparent = 0;
     cms_target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    enable_orientation = enable_orientation_override != 0 ? 1 : 0;
+    exif_orientation = 1;
 
     (void)fstatic;
     (void)loop_control;
@@ -4243,12 +4314,18 @@ load_with_libpng(
             goto end;
         }
     }
+    if (enable_orientation) {
+        (void)libpng_parse_exif_orientation(pchunk->buffer,
+                                            pchunk->size,
+                                            &exif_orientation);
+    }
 
     status = load_apng_frames(pchunk,
                               fstatic,
                               fuse_palette,
                               reqcolors,
                               bgcolor,
+                              exif_orientation,
                               enable_cms,
                               loop_control,
                               start_frame_no,
@@ -4297,6 +4374,28 @@ load_with_libpng(
             && frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         cms_target_pixelformat = loader_cms_target_pixelformat();
         status = sixel_frame_set_pixelformat(frame, cms_target_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
+    if (enable_orientation && exif_orientation >= 2 && exif_orientation <= 8) {
+        if (frame->pixelformat == SIXEL_PIXELFORMAT_PAL1 ||
+            frame->pixelformat == SIXEL_PIXELFORMAT_PAL2 ||
+            frame->pixelformat == SIXEL_PIXELFORMAT_PAL4) {
+            status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_PAL8);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        } else if (frame->pixelformat == SIXEL_PIXELFORMAT_G1 ||
+                   frame->pixelformat == SIXEL_PIXELFORMAT_G2 ||
+                   frame->pixelformat == SIXEL_PIXELFORMAT_G4) {
+            status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+        status = loader_frame_apply_orientation(frame, exif_orientation);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -4427,6 +4526,10 @@ sixel_loader_libpng_setopt(sixel_loader_component_t *component,
         flag = (int const *)value;
         self->enable_cms = (flag != NULL && *flag != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_ORIENTATION:
+        flag = (int const *)value;
+        self->enable_orientation = (flag == NULL || *flag != 0) ? 1 : 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
         flag = (int const *)value;
         if (flag != NULL && *flag >= 0) {
@@ -4468,6 +4571,7 @@ sixel_loader_libpng_load(sixel_loader_component_t *component,
                             self->has_start_frame_no,
                             self->start_frame_no,
                             self->enable_cms,
+                            self->enable_orientation,
                             fn_load,
                             context);
 }
@@ -4512,6 +4616,7 @@ sixel_loader_libpng_new(sixel_allocator_t *allocator,
     self->reqcolors = 256;
     self->start_frame_no = INT_MIN;
     self->enable_cms = 0;
+    self->enable_orientation = 1;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;
     return SIXEL_OK;
