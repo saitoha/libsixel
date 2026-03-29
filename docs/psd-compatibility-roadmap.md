@@ -57,15 +57,21 @@ Key points used by this roadmap:
   - Multichannel bit depths other than `8/16/32`
   - Bitmap 1-bit with ZIP+Prediction
 - Composite-missing policy:
-  - Minimal fallback is supported for 8/16/32-bit RGB/Gray/Duotone/Lab/CMYK
-    layer-only PSDs.
-    For Multichannel (`mode=7`), minimal fallback currently applies to
-    `channels==3` on `8/16/32-bit` (`3ch->RGB8/16/32`) and
-    `channels==4` on `8/16/32-bit` (`4ch->CMYK8/16/32`).
-    Fallback layout is limited to a single full-canvas layer with decodable
-    base-color channels.
-  - Layer-only PSD layouts outside that minimal fallback surface a deterministic
-    unsupported trace (`unsupported layer fallback layout`).
+  - Pixel-layer fallback is supported for 8/16/32-bit RGB/Gray/Duotone/Lab/CMYK
+    layer-only PSDs with merged/composite image missing.
+    The fallback parser/compositor handles multi-layer stacking with:
+    - layer geometry offsets,
+    - blend-key mapping (known keys only),
+    - per-layer opacity/visibility,
+    - clipping groups (base + clipped stack),
+    - raster mask channels (`-2`/`-3`) and extra alpha (`-1`).
+  - For Multichannel (`mode=7`), fallback applies to mapped paths only:
+    `channels==3` (`3ch->RGB8/16/32`) and
+    `channels==4` (`4ch->CMYK8/16/32`).
+  - Layer-only layouts outside this fallback surface a deterministic unsupported
+    trace (`unsupported layer fallback layout`).
+  - Non-pixel payload, vector mask, layer effects, knockout, and unknown blend
+    key are deterministic unsupported in fallback.
   - When image data exists but raw/RLE payload is too short, return malformed
     (do not conflate truncation with layer-only PSD policy).
 - Existing regression includes ICC and alpha combinations on Raw/ZIP/ZIP+Prediction
@@ -78,6 +84,10 @@ Key points used by this roadmap:
     invalid profile, and malformed resource section)
   - mode7 missing-composite policy traces across mapped depth variants
     (`RGB8/16/32`, `CMYK8/16/32`)
+  - multi-layer missing-composite coverage for RGB8:
+    normal blend decode, clipping-group decode, raster-mask decode,
+    and deterministic unsupported traces for unknown blend/non-pixel/vector
+    mask/layer effects/knockout.
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
@@ -127,7 +137,8 @@ Key points used by this roadmap:
 
 ### Level 3 (P3): Robustness and Extended Compatibility
 
-- Optional handling of merged-composite absence via layer section.
+- Extend layer fallback beyond pixel-layer scope (non-pixel layer classes,
+  vector/effects/knockout semantics) toward higher Photoshop parity.
 - PSB planning and parser extension.
 - Performance tuning and memory-reuse optimization.
 
@@ -212,10 +223,9 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Keep unsupported-policy matrix synchronized as decode scope changes:
+1. Expand multi-layer LSQA matrix from RGB8 to representative 16/32-bit and
+   non-RGB pixel paths (CMYK/Lab) with static expected assets.
+2. Keep unsupported-policy matrix synchronized as decode scope changes:
    every policy rejection path must keep deterministic trace coverage.
-2. Keep defensive-branch policy explicit:
-   unit-test directly reachable validate guards, and document
-   policy-bounded guards as defensive-only.
 3. Keep PSB (`8BPB`) out of scope for this milestone, but maintain a migration
    boundary from PSD parser/decoder primitives.
