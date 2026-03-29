@@ -8,8 +8,13 @@ echo "1..1"
 set -v
 
 output=$(
-   ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env SIXEL_PALETTE_KMEANS_INITTYPE=pca "palette/0001_kmeans_init" --cache | tr -d '\r'
+   ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env SIXEL_PALETTE_KMEANS_INITTYPE=pca "palette/0001_kmeans_init" --cache
 )
+
+cr=$(printf '\r')
+case "${output}" in
+    *"${cr}") output=${output%"${cr}"} ;;
+esac
 
 test "${output}" = "pca pca" || {
     echo "not ok" 1 - "cache check returned ${output}"

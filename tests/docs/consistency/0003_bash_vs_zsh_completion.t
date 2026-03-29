@@ -14,14 +14,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 
-command -v diff >/dev/null 2>&1 || {
-    printf "1..0 # SKIP diff not available\n";
+command -v cmp >/dev/null 2>&1 || {
+    printf "1..0 # SKIP cmp not available\n";
     exit 0
 }
 
 printf '1..1\n'
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 LC_ALL=C sed -n "/ --[0-9a-zA-Z_@=~%?]/{
     /' /d
@@ -47,7 +47,7 @@ LC_ALL=C sort "${zsh_opts}" >"${zsh_sorted}" || {
     exit 0
 }
 
-diff -u "${bash_sorted}" "${zsh_sorted}" || {
+cmp -s "${bash_sorted}" "${zsh_sorted}" || {
     echo "not ok" 1 - "bash completion diverges from zsh completion"
     exit 0
 }

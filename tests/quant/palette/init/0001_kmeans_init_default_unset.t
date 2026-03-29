@@ -8,8 +8,13 @@ echo "1..1"
 set -v
 
 output=$(
-   ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env SIXEL_PALETTE_KMEANS_INITTYPE= "palette/0001_kmeans_init" | tr -d '\r'
+   ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env SIXEL_PALETTE_KMEANS_INITTYPE= "palette/0001_kmeans_init"
 ) || output=""
+
+cr=$(printf '\r')
+case "${output}" in
+    *"${cr}") output=${output%"${cr}"} ;;
+esac
 
 test "${output}" = "none" || {
     echo "not ok" 1 - "unexpected kmeans init output: ${output}"
