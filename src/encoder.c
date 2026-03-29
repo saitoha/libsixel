@@ -8858,6 +8858,36 @@ load_image_callback(sixel_frame_t *frame, void *data)
     return status;
 }
 
+static int
+temp_directory_is_writable(char const *tmpdir)
+{
+    struct stat temp_stat;
+    int access_mode;
+    int stat_result;
+    int access_result;
+
+    if (tmpdir == NULL || tmpdir[0] == '\0') {
+        return 0;
+    }
+
+    stat_result = sixel_compat_stat(tmpdir, &temp_stat);
+    if (stat_result != 0 || !S_ISDIR(temp_stat.st_mode)) {
+        return 0;
+    }
+
+#if defined(W_OK)
+    access_mode = W_OK;
+#else
+    access_mode = F_OK;
+#endif
+    access_result = sixel_compat_access(tmpdir, access_mode);
+    if (access_result != 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 static char *
 create_temp_template_with_prefix(sixel_allocator_t *allocator,
                                  char const *prefix,
@@ -8887,6 +8917,16 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
 #else
         tmpdir = "/tmp";
 #endif
+    }
+    if (!temp_directory_is_writable(tmpdir)) {
+#if !defined(_WIN32)
+        if (temp_directory_is_writable("/tmp")) {
+            tmpdir = "/tmp";
+        } else
+#endif
+        {
+            tmpdir = ".";
+        }
     }
 
     tmpdir_len = strlen(tmpdir);
@@ -9280,6 +9320,8 @@ sixel_encoder_encode(
     char *png_tmpnam_result = NULL;
     int png_open_flags = 0;
     int png_retry_flags = 0;
+    int png_open_attempt;
+    int png_open_errno;
     sixel_clipboard_spec_t clipboard_spec;
     char clipboard_input_format[32];
     char *clipboard_input_path;
@@ -9293,6 +9335,7 @@ sixel_encoder_encode(
     int logger_prepared;
     sixel_encoder_load_context_t load_context;
     SIXELSTATUS pipeline_wait_status;
+    int saved_errno;
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -9306,6 +9349,9 @@ sixel_encoder_encode(
     path_check = 0;
     logger_prepared = 0;
     pipeline_wait_status = SIXEL_OK;
+    png_open_attempt = 0;
+    png_open_errno = 0;
+    saved_errno = 0;
     memset(&load_context, 0, sizeof(load_context));
     sixel_logger_init(&logger);
     sixel_logger_prepare_env(&logger);
@@ -9453,23 +9499,51 @@ sixel_encoder_encode(
 #if defined(O_EXCL)
         png_retry_flags &= ~O_EXCL;
 #endif
-        encoder->outfd = sixel_compat_open(png_temp_path,
-                                           png_open_flags,
-                                           S_IRUSR | S_IWUSR);
-#if defined(O_EXCL)
-        if (encoder->outfd < 0
-                && (errno == EBADF || errno == EINVAL)) {
-            /*
-             * Some virtual filesystems used by Emscripten reject O_EXCL
-             * with EBADF/EINVAL even when the generated path is unique.
-             * Retry without O_EXCL to avoid flaky prefixed PNG output.
-             */
+        png_open_errno = 0;
+        for (png_open_attempt = 0; png_open_attempt < 4; ++png_open_attempt) {
             encoder->outfd = sixel_compat_open(png_temp_path,
-                                               png_retry_flags,
+                                               png_open_flags,
                                                S_IRUSR | S_IWUSR);
-        }
+#if defined(O_EXCL)
+            if (encoder->outfd < 0
+                    && (errno == EBADF
+                        || errno == EINVAL
+                        || errno == ENOENT)) {
+                /*
+                 * Emscripten virtual filesystems can reject O_EXCL with
+                 * inconsistent errno values even when the generated path is
+                 * valid. Retry without O_EXCL before treating it as fatal.
+                 */
+                encoder->outfd = sixel_compat_open(png_temp_path,
+                                                   png_retry_flags,
+                                                   S_IRUSR | S_IWUSR);
+            }
 #endif
+            if (encoder->outfd >= 0) {
+                break;
+            }
+            png_open_errno = errno;
+            if (png_open_errno != EEXIST) {
+                break;
+            }
+
+            /*
+             * mktemp() reserves a path, but another worker can still claim
+             * the same name before open(). Regenerate and retry on EEXIST.
+             */
+            if (sixel_compat_mktemp(png_temp_path, png_temp_capacity) != 0) {
+                png_tmpnam_result = sixel_compat_tmpnam(png_temp_path,
+                                                        png_temp_capacity);
+                if (png_tmpnam_result == NULL) {
+                    break;
+                }
+                png_temp_capacity = strlen(png_temp_path) + 1u;
+            }
+        }
         if (encoder->outfd < 0) {
+            if (png_open_errno != 0) {
+                errno = png_open_errno;
+            }
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode: failed to create the PNG target file.");
             status = SIXEL_LIBC_ERROR;
@@ -9775,6 +9849,7 @@ load_end:
     /* the status may not be SIXEL_OK */
 
 end:
+    saved_errno = errno;
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
     sixel_encoder_frame_pipeline_dispose(&load_context.frame_pipeline);
     if (encoder != NULL) {
@@ -9838,6 +9913,7 @@ end:
         sixel_allocator_unref(encode_allocator);
         encode_allocator = NULL;
     }
+    errno = saved_errno;
 
     return status;
 }
