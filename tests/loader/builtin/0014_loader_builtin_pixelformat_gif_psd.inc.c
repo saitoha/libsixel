@@ -438,6 +438,7 @@ run_builtin_loader_psd_validate_defensive_test(void)
     int colorspace;
     char message[128];
     int status;
+    int use_32bit_overflow_case;
 
     memset(&chunk, 0, sizeof(chunk));
     memset(&info, 0, sizeof(info));
@@ -446,6 +447,12 @@ run_builtin_loader_psd_validate_defensive_test(void)
     decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_NONE;
     skip_icc_conversion = 0;
     colorspace = SIXEL_COLORSPACE_GAMMA;
+    use_32bit_overflow_case = 0;
+    /*
+     * SIZE_MAX can be toolchain-dependent in split include units, so keep the
+     * branch selection tied to the actual size_t width of this build target.
+     */
+    use_32bit_overflow_case = (sizeof(size_t) <= 4u);
 
     status = sixel_builtin_validate_psd_info(NULL,
                                              NULL,
@@ -492,7 +499,7 @@ run_builtin_loader_psd_validate_defensive_test(void)
         return 1;
     }
 
-#if SIZE_MAX <= 0xffffffffULL
+    if (use_32bit_overflow_case) {
         info.version = 1u;
         info.channels = 3u;
         info.width = 300000u;
@@ -519,7 +526,7 @@ run_builtin_loader_psd_validate_defensive_test(void)
                     message);
             return 1;
         }
-#endif
+    }
 
     return 0;
 }

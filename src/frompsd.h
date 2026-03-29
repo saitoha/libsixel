@@ -87,7 +87,7 @@ int
 sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
                              sixel_builtin_psd_info_t *info);
 
-int
+SIXEL_INTERNAL_API int
 sixel_builtin_validate_psd_info(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,

@@ -1021,6 +1021,9 @@ check-php: prepare-binding-artifacts
 TEST_DATA_DIRS = data
 
 EXTRA_DIST = $(HELPER_FILES) \
+    loader/builtin/0014_loader_builtin_pixelformat_common.inc.c \
+    loader/builtin/0014_loader_builtin_pixelformat_hdr.inc.c \
+    loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
