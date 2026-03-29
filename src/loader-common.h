@@ -61,6 +61,7 @@ int loader_libpng_get_enable_cms(void);
 void sixel_helper_set_libpng_enable_cms(int enable);
 int loader_builtin_get_enable_cms(void);
 void sixel_helper_set_builtin_enable_cms(int enable);
+void sixel_helper_set_loader_background_colorspace(int colorspace);
 int loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
 int loader_cms_target_colorspace(void);

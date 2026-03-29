@@ -794,6 +794,7 @@ rgb:rrrr/gggg/bbbb
 enable loader-side OSC11 background color query when no background color was
 provided. Only the exact value \(dq1\(dq enables probing. Default is off.
 \fIimg2sixel\fP sets this variable to \(dq1\(dq only when it is unset.
+When probing succeeds, the loader treats the returned background as gamma.
 .TP 5
 .B SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
 .br
@@ -917,6 +918,12 @@ override the default loader priority. Accepts the same comma separated
 names recognised by \fB-L\fP/\fB--loaders\fP, including prefix matches and
 the trailing "!" suffix. The environment setting is ignored when the
 command-line option is present.
+.TP 5
+.B SIXEL_LOADER_BACKGROUND_COLORSPACE
+.br
+set how loader background colors are interpreted during alpha composition.
+accepts "gamma" (default) or "linear".
+ignored when OSC11 query supplies the background color.
 .TP 5
 .B SIXEL_LOADER_ORIENTATION
 .br

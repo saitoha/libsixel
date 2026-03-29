@@ -63,6 +63,16 @@
 #include "loader-common.h"
 #include "logger.h"
 
+#if defined(_MSC_VER)
+# define SIXEL_LOADER_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+# define SIXEL_LOADER_TLS _Thread_local
+#elif defined(__GNUC__) || defined(__clang__)
+# define SIXEL_LOADER_TLS __thread
+#else
+# define SIXEL_LOADER_TLS
+#endif
+
 static int loader_trace_enabled;
 static int thumbnailer_default_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
 static int thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
@@ -76,9 +86,16 @@ static int builtin_enable_cms_default = 0;
 static int builtin_enable_cms = 0;
 static int loader_background_colorspace_initialized;
 static int loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+/*
+ * Per-thread temporary override used by loader.c when OSC11 provides
+ * a terminal UI background color.
+ */
+static SIXEL_LOADER_TLS int loader_background_colorspace_override = -1;
 static int loader_cms_target_initialized;
 static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
+
+#undef SIXEL_LOADER_TLS
 
 #define SIXEL_ENV_WIC_ICO_MINSIZE "SIXEL_LOADER_WIC_ICO_MINSIZE"
 #define SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY "SIXEL_LODER_WIC_ICO_MINSIZE"
@@ -177,6 +194,17 @@ sixel_helper_set_builtin_enable_cms(int enable)
     }
 }
 
+void
+sixel_helper_set_loader_background_colorspace(int colorspace)
+{
+    if (colorspace == SIXEL_COLORSPACE_GAMMA ||
+            colorspace == SIXEL_COLORSPACE_LINEAR) {
+        loader_background_colorspace_override = colorspace;
+    } else {
+        loader_background_colorspace_override = -1;
+    }
+}
+
 static void
 loader_background_initialize_colorspace(void)
 {
@@ -204,6 +232,14 @@ loader_background_initialize_colorspace(void)
 int
 loader_background_colorspace(void)
 {
+    int override_value;
+
+    override_value = loader_background_colorspace_override;
+    if (override_value == SIXEL_COLORSPACE_GAMMA ||
+            override_value == SIXEL_COLORSPACE_LINEAR) {
+        return override_value;
+    }
+
     loader_background_initialize_colorspace();
 
     return loader_background_colorspace_value;
