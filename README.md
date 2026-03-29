@@ -874,6 +874,13 @@ SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
                            loader OSC11 background query wait.
                            Default is 50. Invalid values fall
                            back to 50.
+SIXEL_ANIMATION_HIDE_CURSOR
+                           hide cursor with DECTCEM
+                           (`ESC[?25l`) while animated frames are
+                           emitted to tty output. Only the exact
+                           value "1" enables it. Default is off.
+                           img2sixel sets it to "1" only when the
+                           variable is unset.
 SIXEL_THREADS              override encoder thread count.
                            Accepts positive integers or the word
                            'auto' to match the hardware thread

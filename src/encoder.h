@@ -39,6 +39,12 @@ struct sixel_logger;
 
 #include "planner.h"
 
+int
+sixel_encoder_should_hide_animation_cursor(int is_multiframe,
+                                           int fstatic,
+                                           int outfd_is_tty,
+                                           char const *env_value);
+
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
 #define SIXEL_COLOR_OPTION_MONOCHROME       1   /* use monochrome palette */
