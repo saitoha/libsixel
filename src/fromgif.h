@@ -31,8 +31,11 @@
 extern "C" {
 #endif
 
-/* load gif */
-int
+/*
+ * Internal GIF decoder entrypoint.
+ * Keep this exported on Windows for test_runner and internal loaders.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
 load_gif(
     unsigned char       /* in */ *buffer,
     int                 /* in */ size,

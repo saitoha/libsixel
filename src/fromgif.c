@@ -2455,7 +2455,7 @@ gif_decode_animation_loops(gif_context_t *s,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 load_gif(
     unsigned char       /* in */ *buffer,
     int                 /* in */ size,
