@@ -55,7 +55,17 @@ int test_loader_0017_loader_libwebp_pixelformat(int argc, char **argv);
 int test_loader_0018_loader_libwebp_animation_frames(int argc, char **argv);
 int test_loader_0019_loader_libwebp_palette_promotion_guard(int argc,
                                                              char **argv);
-int test_loader_0024_loader_libwebp_fault_injection(int argc, char **argv);
+int test_loader_0024_loader_libwebp_fault_demux(int argc, char **argv);
+int test_loader_0026_loader_libwebp_fault_options_init(int argc, char **argv);
+int test_loader_0027_loader_libwebp_fault_decoder_new(int argc, char **argv);
+int test_loader_0028_loader_libwebp_fault_decoder_getinfo(int argc,
+                                                          char **argv);
+int test_loader_0029_loader_libwebp_fault_decoder_getnext(int argc,
+                                                          char **argv);
+int test_loader_0032_loader_libwebp_fault_static_rgbinto(int argc,
+                                                         char **argv);
+int test_loader_0033_loader_libwebp_fault_static_rgbainto(int argc,
+                                                          char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -128,8 +138,20 @@ static test_entry_t const test_entries[] = {
       test_loader_0018_loader_libwebp_animation_frames },
     { "loader/0019_loader_libwebp_palette_promotion_guard",
       test_loader_0019_loader_libwebp_palette_promotion_guard },
-    { "loader/0024_loader_libwebp_fault_injection",
-      test_loader_0024_loader_libwebp_fault_injection },
+    { "loader/0024_loader_libwebp_fault_demux",
+      test_loader_0024_loader_libwebp_fault_demux },
+    { "loader/0026_loader_libwebp_fault_options_init",
+      test_loader_0026_loader_libwebp_fault_options_init },
+    { "loader/0027_loader_libwebp_fault_decoder_new",
+      test_loader_0027_loader_libwebp_fault_decoder_new },
+    { "loader/0028_loader_libwebp_fault_decoder_getinfo",
+      test_loader_0028_loader_libwebp_fault_decoder_getinfo },
+    { "loader/0029_loader_libwebp_fault_decoder_getnext",
+      test_loader_0029_loader_libwebp_fault_decoder_getnext },
+    { "loader/0032_loader_libwebp_fault_static_rgbinto",
+      test_loader_0032_loader_libwebp_fault_static_rgbinto },
+    { "loader/0033_loader_libwebp_fault_static_rgbainto",
+      test_loader_0033_loader_libwebp_fault_static_rgbainto },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",
