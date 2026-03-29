@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn4a08.png"
 out_empty="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-env-empty-basn4a08.six"

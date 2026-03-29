@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 printf '1..1\n'
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-index-oob-static.gif"
 out_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_index_oob.six"
@@ -24,7 +24,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
     exit 0
 }
 
-case "$(cat "${out_six}")" in
+out_six_text=""
+while IFS= read -r out_six_line || test -n "
+${out_six_line}"; do
+    case "${out_six_text}" in
+        "")
+            out_six_text=${out_six_line}
+            ;;
+        *)
+            out_six_text="${out_six_text}
+${out_six_line}"
+            ;;
+    esac
+done < "${out_six}"
+case "${out_six_text}" in
     *"${keycolor_header}"*)
         echo "not ok" 1 - "transparent-index-oob unexpectedly emitted keycolor header"
         exit 0

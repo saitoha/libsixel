@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-dispose2.gif"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_default.six"
@@ -35,7 +35,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
     exit 0
 }
 
-case "$(cat "${out_default}")" in
+out_default_text=""
+while IFS= read -r out_default_line || test -n "
+${out_default_line}"; do
+    case "${out_default_text}" in
+        "")
+            out_default_text=${out_default_line}
+            ;;
+        *)
+            out_default_text="${out_default_text}
+${out_default_line}"
+            ;;
+    esac
+done < "${out_default}"
+case "${out_default_text}" in
     *"${keycolor_header}"*)
         default_has_keycolor=1
         ;;
@@ -44,7 +57,20 @@ case "$(cat "${out_default}")" in
         ;;
 esac
 
-case "$(cat "${out_bgcolor}")" in
+out_bgcolor_text=""
+while IFS= read -r out_bgcolor_line || test -n "
+${out_bgcolor_line}"; do
+    case "${out_bgcolor_text}" in
+        "")
+            out_bgcolor_text=${out_bgcolor_line}
+            ;;
+        *)
+            out_bgcolor_text="${out_bgcolor_text}
+${out_bgcolor_line}"
+            ;;
+    esac
+done < "${out_bgcolor}"
+case "${out_bgcolor_text}" in
     *"${keycolor_header}"*)
         bgcolor_has_keycolor=1
         ;;

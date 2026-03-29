@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp"
 out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-default.six"
@@ -44,7 +44,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S -B#fff "${in
     exit 0
 }
 
-case "$(cat "${out_default}")" in
+out_default_text=""
+while IFS= read -r out_default_line || test -n "
+${out_default_line}"; do
+    case "${out_default_text}" in
+        "")
+            out_default_text=${out_default_line}
+            ;;
+        *)
+            out_default_text="${out_default_text}
+${out_default_line}"
+            ;;
+    esac
+done < "${out_default}"
+case "${out_default_text}" in
     *"${keycolor_header}"*)
         default_has_keycolor=1
         ;;
@@ -53,7 +66,20 @@ case "$(cat "${out_default}")" in
         ;;
 esac
 
-case "$(cat "${out_black}")" in
+out_black_text=""
+while IFS= read -r out_black_line || test -n "
+${out_black_line}"; do
+    case "${out_black_text}" in
+        "")
+            out_black_text=${out_black_line}
+            ;;
+        *)
+            out_black_text="${out_black_text}
+${out_black_line}"
+            ;;
+    esac
+done < "${out_black}"
+case "${out_black_text}" in
     *"${keycolor_header}"*)
         black_has_keycolor=1
         ;;
@@ -62,7 +88,20 @@ case "$(cat "${out_black}")" in
         ;;
 esac
 
-case "$(cat "${out_default_cms}")" in
+out_default_cms_text=""
+while IFS= read -r out_default_cms_line || test -n "
+${out_default_cms_line}"; do
+    case "${out_default_cms_text}" in
+        "")
+            out_default_cms_text=${out_default_cms_line}
+            ;;
+        *)
+            out_default_cms_text="${out_default_cms_text}
+${out_default_cms_line}"
+            ;;
+    esac
+done < "${out_default_cms}"
+case "${out_default_cms_text}" in
     *"${keycolor_header}"*)
         cms_has_keycolor=1
         ;;
@@ -71,7 +110,20 @@ case "$(cat "${out_default_cms}")" in
         ;;
 esac
 
-case "$(cat "${out_white}")" in
+out_white_text=""
+while IFS= read -r out_white_line || test -n "
+${out_white_line}"; do
+    case "${out_white_text}" in
+        "")
+            out_white_text=${out_white_line}
+            ;;
+        *)
+            out_white_text="${out_white_text}
+${out_white_line}"
+            ;;
+    esac
+done < "${out_white}"
+case "${out_white_text}" in
     *"${keycolor_header}"*)
         white_has_keycolor=1
         ;;

@@ -16,7 +16,7 @@ test "${HAVE_JPEG-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
 output_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libjpeg_ref_cms1.six"

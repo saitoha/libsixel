@@ -16,7 +16,7 @@ command -v zsh >/dev/null || {
 
 echo '1..1'
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 completion_home="${ARTIFACT_LOCAL_DIR}"
 rc_path="${completion_home}/.zshrc"
 fpath_count=0

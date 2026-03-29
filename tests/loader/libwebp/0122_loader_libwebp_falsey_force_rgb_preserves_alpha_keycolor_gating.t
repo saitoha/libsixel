@@ -15,7 +15,7 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp"
 out_default="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-default-falsey.six"
@@ -40,7 +40,20 @@ SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=n \
     exit 0
 }
 
-case "$(cat "${out_default}")" in
+out_default_text=""
+while IFS= read -r out_default_line || test -n "
+${out_default_line}"; do
+    case "${out_default_text}" in
+        "")
+            out_default_text=${out_default_line}
+            ;;
+        *)
+            out_default_text="${out_default_text}
+${out_default_line}"
+            ;;
+    esac
+done < "${out_default}"
+case "${out_default_text}" in
     *"${keycolor_header}"*)
         default_has_keycolor=1
         ;;
@@ -49,7 +62,20 @@ case "$(cat "${out_default}")" in
         ;;
 esac
 
-case "$(cat "${out_falsey}")" in
+out_falsey_text=""
+while IFS= read -r out_falsey_line || test -n "
+${out_falsey_line}"; do
+    case "${out_falsey_text}" in
+        "")
+            out_falsey_text=${out_falsey_line}
+            ;;
+        *)
+            out_falsey_text="${out_falsey_text}
+${out_falsey_line}"
+            ;;
+    esac
+done < "${out_falsey}"
+case "${out_falsey_text}" in
     *"${keycolor_header}"*)
         falsey_has_keycolor=1
         ;;
@@ -58,7 +84,20 @@ case "$(cat "${out_falsey}")" in
         ;;
 esac
 
-case "$(cat "${out_falsey_bg}")" in
+out_falsey_bg_text=""
+while IFS= read -r out_falsey_bg_line || test -n "
+${out_falsey_bg_line}"; do
+    case "${out_falsey_bg_text}" in
+        "")
+            out_falsey_bg_text=${out_falsey_bg_line}
+            ;;
+        *)
+            out_falsey_bg_text="${out_falsey_bg_text}
+${out_falsey_bg_line}"
+            ;;
+    esac
+done < "${out_falsey_bg}"
+case "${out_falsey_bg_text}" in
     *"${keycolor_header}"*)
         falsey_bg_has_keycolor=1
         ;;

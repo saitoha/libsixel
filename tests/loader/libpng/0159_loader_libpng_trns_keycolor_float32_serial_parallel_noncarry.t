@@ -16,7 +16,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-float32-fs-parallel-tbbn0g04.six"
@@ -29,7 +29,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-case "$(cat "${output_six}")" in
+output_six_text=""
+while IFS= read -r output_six_line || test -n "
+${output_six_line}"; do
+    case "${output_six_text}" in
+        "")
+            output_six_text=${output_six_line}
+            ;;
+        *)
+            output_six_text="${output_six_text}
+${output_six_line}"
+            ;;
+    esac
+done < "${output_six}"
+case "${output_six_text}" in
     *"$(printf '\033')P0;1q"*)
         echo "ok 1 - float32 fs parallel keeps keycolor header"
         ;;

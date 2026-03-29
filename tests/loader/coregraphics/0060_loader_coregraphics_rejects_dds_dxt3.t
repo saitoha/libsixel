@@ -45,7 +45,7 @@ test "${dds_supported}" -eq 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 lsqa_floor=0.95
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt3.dds"

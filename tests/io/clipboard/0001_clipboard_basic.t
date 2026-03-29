@@ -20,7 +20,7 @@ test -n "${LSQA_PATH-}" || {
 }
 printf '1..1\n'
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 sixel_src="${TOP_SRCDIR}/images/snake-progressive-16x16.jpg"
 sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"

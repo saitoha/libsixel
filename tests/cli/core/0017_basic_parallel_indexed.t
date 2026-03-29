@@ -16,7 +16,7 @@ command -v cmp >/dev/null 2>&1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 parallel_indexed_1="${ARTIFACT_LOCAL_DIR}/parallel-indexed-1.png"
 parallel_indexed_4="${ARTIFACT_LOCAL_DIR}/parallel-indexed-4.png"

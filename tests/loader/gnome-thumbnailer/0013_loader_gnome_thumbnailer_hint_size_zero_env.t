@@ -15,7 +15,7 @@ test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
@@ -33,7 +33,18 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-default_size=$(cat "${default_log}")
+default_size=""
+while IFS= read -r default_size_line || test -n "${default_size_line}"; do
+    case "${default_size}" in
+        "")
+            default_size=${default_size_line}
+            ;;
+        *)
+            default_size="${default_size}
+${default_size_line}"
+            ;;
+    esac
+done < "${default_log}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "XDG_DATA_DIRS=${xdg_data_home}" \
@@ -45,7 +56,18 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-zero_size=$(cat "${zero_log}")
+zero_size=""
+while IFS= read -r zero_size_line || test -n "${zero_size_line}"; do
+    case "${zero_size}" in
+        "")
+            zero_size=${zero_size_line}
+            ;;
+        *)
+            zero_size="${zero_size}
+${zero_size_line}"
+            ;;
+    esac
+done < "${zero_log}"
 
 test -n "${default_size}" || {
     echo "not ok" 1 - "zero hint-size env fallback check failed"

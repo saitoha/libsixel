@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-2frame-min.webp"
 out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-start-frame-default.six"
@@ -45,7 +45,20 @@ cmp -s "${out_default}" "${out_start1}" && {
     exit 0
 }
 
-case "$(cat "${out_start1}")" in
+out_start1_text=""
+while IFS= read -r out_start1_line || test -n "
+${out_start1_line}"; do
+    case "${out_start1_text}" in
+        "")
+            out_start1_text=${out_start1_line}
+            ;;
+        *)
+            out_start1_text="${out_start1_text}
+${out_start1_line}"
+            ;;
+    esac
+done < "${out_start1}"
+case "${out_start1_text}" in
     *"${keycolor_header}"*)
         start1_has_keycolor=1
         ;;
@@ -54,7 +67,20 @@ case "$(cat "${out_start1}")" in
         ;;
 esac
 
-case "$(cat "${out_start1_bg}")" in
+out_start1_bg_text=""
+while IFS= read -r out_start1_bg_line || test -n "
+${out_start1_bg_line}"; do
+    case "${out_start1_bg_text}" in
+        "")
+            out_start1_bg_text=${out_start1_bg_line}
+            ;;
+        *)
+            out_start1_bg_text="${out_start1_bg_text}
+${out_start1_bg_line}"
+            ;;
+    esac
+done < "${out_start1_bg}"
+case "${out_start1_bg_text}" in
     *"${keycolor_header}"*)
         start1_bg_has_keycolor=1
         ;;

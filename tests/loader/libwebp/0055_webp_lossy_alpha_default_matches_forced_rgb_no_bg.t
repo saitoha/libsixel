@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp"
 out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-default-path.six"
@@ -33,7 +33,20 @@ SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE=1 \
     exit 0
 }
 
-case "$(cat "${out_default}")" in
+out_default_text=""
+while IFS= read -r out_default_line || test -n "
+${out_default_line}"; do
+    case "${out_default_text}" in
+        "")
+            out_default_text=${out_default_line}
+            ;;
+        *)
+            out_default_text="${out_default_text}
+${out_default_line}"
+            ;;
+    esac
+done < "${out_default}"
+case "${out_default_text}" in
     *"${keycolor_header}"*)
         default_has_keycolor=1
         ;;
@@ -42,7 +55,20 @@ case "$(cat "${out_default}")" in
         ;;
 esac
 
-case "$(cat "${out_forced_rgb}")" in
+out_forced_rgb_text=""
+while IFS= read -r out_forced_rgb_line || test -n "
+${out_forced_rgb_line}"; do
+    case "${out_forced_rgb_text}" in
+        "")
+            out_forced_rgb_text=${out_forced_rgb_line}
+            ;;
+        *)
+            out_forced_rgb_text="${out_forced_rgb_text}
+${out_forced_rgb_line}"
+            ;;
+    esac
+done < "${out_forced_rgb}"
+case "${out_forced_rgb_text}" in
     *"${keycolor_header}"*)
         forced_has_keycolor=1
         ;;

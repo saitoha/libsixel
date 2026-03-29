@@ -16,7 +16,7 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_ico_multisize_prefix.six"

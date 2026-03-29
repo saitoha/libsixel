@@ -5,7 +5,7 @@ set -eux
 
 echo "1..1"
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 reference_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"

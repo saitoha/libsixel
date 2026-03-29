@@ -7,7 +7,7 @@ set -eux
 
 printf '1..1\n'
 set -v
-mkdir -p "${ARTIFACT_LOCAL_DIR}"
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 "${TOP_SRCDIR}/tests/docs/consistency/list_envvars.sh" --check \
         --source-root "${TOP_SRCDIR}" > "${ARTIFACT_LOCAL_DIR}/output.txt" || {
