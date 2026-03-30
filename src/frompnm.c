@@ -28,6 +28,7 @@
 #endif
 
 /* STDC_HEADERS */
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -69,6 +70,16 @@ pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
     } while (line[0] == '#');
 
     return p;
+}
+
+static int
+pnm_decimal_append_checked(int *value, int digit)
+{
+    if (*value > (INT_MAX - digit) / 10) {
+        return 0;
+    }
+    *value = *value * 10 + digit;
+    return 1;
 }
 
 
@@ -170,7 +181,12 @@ load_pnm(unsigned char      /* in */  *p,
     /* parse width */
     width = 0;
     for (; *s >= '0' && *s <= '9'; ++s) {
-        width = width * 10 + (*s - '0');
+        if (!pnm_decimal_append_checked(&width, *s - '0')) {
+            sixel_helper_set_additional_message(
+                "load_pnm: invalid data detected: "
+                "integer overflow while parsing width");
+            goto invalid;
+        }
         if (width > PNM_MAX_WIDTH) {
             status = SIXEL_RUNTIME_ERROR;
             sixel_compat_snprintf(
@@ -190,7 +206,12 @@ load_pnm(unsigned char      /* in */  *p,
     /* parse height */
     height = 0;
     for (; *s >= '0' && *s <= '9'; ++s) {
-        height = height * 10 + (*s - '0');
+        if (!pnm_decimal_append_checked(&height, *s - '0')) {
+            sixel_helper_set_additional_message(
+                "load_pnm: invalid data detected: "
+                "integer overflow while parsing height");
+            goto invalid;
+        }
         if (height > PNM_MAX_HEIGHT) {
             status = SIXEL_RUNTIME_ERROR;
             sixel_compat_snprintf(
@@ -219,7 +240,12 @@ load_pnm(unsigned char      /* in */  *p,
         s = tmp;
         deps = 0;
         for (; *s >= '0' && *s <= '9'; ++s) {
-            deps = deps * 10 + (*s - '0');
+            if (!pnm_decimal_append_checked(&deps, *s - '0')) {
+                sixel_helper_set_additional_message(
+                    "load_pnm: invalid data detected: "
+                    "integer overflow while parsing depth");
+                goto invalid;
+            }
         }
         if (deps > PNM_MAX_DEPTH) {
             status = SIXEL_RUNTIME_ERROR;
@@ -270,8 +296,14 @@ load_pnm(unsigned char      /* in */  *p,
                         if (*s != '\0')
                             s++;
                     } else {
-                        while (isdigit(*s) && n >= 0) {
-                            n = n * 10 + (*s++ - '0');
+                        while (isdigit((unsigned char)*s) && n >= 0) {
+                            if (!pnm_decimal_append_checked(&n, *s - '0')) {
+                                sixel_helper_set_additional_message(
+                                    "load_pnm: invalid data detected: "
+                                    "integer overflow while parsing sample");
+                                goto invalid;
+                            }
+                            s++;
                         }
                         while (*s == ' ') {
                             s++;
@@ -294,6 +326,16 @@ load_pnm(unsigned char      /* in */  *p,
             }
             if (i < b) {
                 break;
+            }
+            if (maps > 0) {
+                for (i = 0; i < b; i++) {
+                    if (component[i] < 0 || component[i] > deps) {
+                        sixel_helper_set_additional_message(
+                            "load_pnm: invalid data detected: "
+                            "sample value out of range");
+                        goto invalid;
+                    }
+                }
             }
 
             switch(maps) {
