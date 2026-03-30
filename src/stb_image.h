@@ -2443,7 +2443,7 @@ stbi_inline static stbi_uc stbi__clamp(int x)
 
 // derived from jidctint -- DCT_ISLOW
 #define STBI__IDCT_1D(s0,s1,s2,s3,s4,s5,s6,s7) \
-   long long t0,t1,t2,t3,p1,p2,p3,p4,p5,x0,x1,x2,x3; \
+   int t0,t1,t2,t3,p1,p2,p3,p4,p5,x0,x1,x2,x3; \
    p2 = s2;                                    \
    p3 = s6;                                    \
    p1 = (p2+p3) * stbi__f2f(0.5411961f);       \
@@ -2513,10 +2513,10 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
    }
 
    for (i=0, v=val, o=out; i < 8; ++i,v+=8,o+=out_stride) {
-      long long y0;
-      long long y1;
-      long long y2;
-      long long y3;
+      int y0;
+      int y1;
+      int y2;
+      int y3;
       // no fast case since the first 1D IDCT spread components out
       STBI__IDCT_1D(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7])
       // constants scaled things up by 1<<12, plus we had 1<<2 from first
@@ -2525,20 +2525,20 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
       // so we want to round that, which means adding 0.5 * 1<<17,
       // aka 65536. Also, we'll end up with -128 to 127 that we want
       // to encode as 0..255 by adding 128, so we'll add that before the shift
-      y0 = (long long)x0 + 65536LL + (128LL << 17);
-      y1 = (long long)x1 + 65536LL + (128LL << 17);
-      y2 = (long long)x2 + 65536LL + (128LL << 17);
-      y3 = (long long)x3 + 65536LL + (128LL << 17);
+      y0 = x0 + 65536 + (128 << 17);
+      y1 = x1 + 65536 + (128 << 17);
+      y2 = x2 + 65536 + (128 << 17);
+      y3 = x3 + 65536 + (128 << 17);
       // tried computing the shifts into temps, or'ing the temps to see
       // if any were out of range, but that was slower
-      o[0] = stbi__clamp((int)((y0 + (long long)t3) >> 17));
-      o[7] = stbi__clamp((int)((y0 - (long long)t3) >> 17));
-      o[1] = stbi__clamp((int)((y1 + (long long)t2) >> 17));
-      o[6] = stbi__clamp((int)((y1 - (long long)t2) >> 17));
-      o[2] = stbi__clamp((int)((y2 + (long long)t1) >> 17));
-      o[5] = stbi__clamp((int)((y2 - (long long)t1) >> 17));
-      o[3] = stbi__clamp((int)((y3 + (long long)t0) >> 17));
-      o[4] = stbi__clamp((int)((y3 - (long long)t0) >> 17));
+      o[0] = stbi__clamp((y0 + t3) >> 17);
+      o[7] = stbi__clamp((y0 - t3) >> 17);
+      o[1] = stbi__clamp((y1 + t2) >> 17);
+      o[6] = stbi__clamp((y1 - t2) >> 17);
+      o[2] = stbi__clamp((y2 + t1) >> 17);
+      o[5] = stbi__clamp((y2 - t1) >> 17);
+      o[3] = stbi__clamp((y3 + t0) >> 17);
+      o[4] = stbi__clamp((y3 - t0) >> 17);
    }
 }
 
@@ -2588,23 +2588,23 @@ static void stbi__idct_block_16(stbi__uint16 *out, int out_stride, short data[64
    }
 
    for (i=0, v=val, o=out; i < 8; ++i,v+=8,o+=out_stride) {
-      long long y0;
-      long long y1;
-      long long y2;
-      long long y3;
+      int y0;
+      int y1;
+      int y2;
+      int y3;
       STBI__IDCT_1D(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7])
-      y0 = (long long)x0 + (long long)round_bias;
-      y1 = (long long)x1 + (long long)round_bias;
-      y2 = (long long)x2 + (long long)round_bias;
-      y3 = (long long)x3 + (long long)round_bias;
-      o[0] = stbi__clamp_16((int)((y0 + (long long)t3) >> 17), max_value);
-      o[7] = stbi__clamp_16((int)((y0 - (long long)t3) >> 17), max_value);
-      o[1] = stbi__clamp_16((int)((y1 + (long long)t2) >> 17), max_value);
-      o[6] = stbi__clamp_16((int)((y1 - (long long)t2) >> 17), max_value);
-      o[2] = stbi__clamp_16((int)((y2 + (long long)t1) >> 17), max_value);
-      o[5] = stbi__clamp_16((int)((y2 - (long long)t1) >> 17), max_value);
-      o[3] = stbi__clamp_16((int)((y3 + (long long)t0) >> 17), max_value);
-      o[4] = stbi__clamp_16((int)((y3 - (long long)t0) >> 17), max_value);
+      y0 = x0 + round_bias;
+      y1 = x1 + round_bias;
+      y2 = x2 + round_bias;
+      y3 = x3 + round_bias;
+      o[0] = stbi__clamp_16((y0 + t3) >> 17, max_value);
+      o[7] = stbi__clamp_16((y0 - t3) >> 17, max_value);
+      o[1] = stbi__clamp_16((y1 + t2) >> 17, max_value);
+      o[6] = stbi__clamp_16((y1 - t2) >> 17, max_value);
+      o[2] = stbi__clamp_16((y2 + t1) >> 17, max_value);
+      o[5] = stbi__clamp_16((y2 - t1) >> 17, max_value);
+      o[3] = stbi__clamp_16((y3 + t0) >> 17, max_value);
+      o[4] = stbi__clamp_16((y3 - t0) >> 17, max_value);
    }
 }
 

@@ -177,6 +177,8 @@ decoder_clipboard_create_spool(sixel_allocator_t *allocator,
     size_t template_capacity;
     int open_flags;
     int open_mode;
+    int open_attempt;
+    int open_errno;
     int fd;
     char *tmpname_result;
 
@@ -215,8 +217,37 @@ decoder_clipboard_create_spool(sixel_allocator_t *allocator,
     open_flags |= O_EXCL;
 #endif
     open_mode = S_IRUSR | S_IWUSR;
-    fd = sixel_compat_open(template_path, open_flags, open_mode);
+    open_errno = 0;
+    open_attempt = 0;
+    for (open_attempt = 0; open_attempt < 4; ++open_attempt) {
+        fd = sixel_compat_open(template_path, open_flags, open_mode);
+        if (fd >= 0) {
+            break;
+        }
+        open_errno = errno;
+        if (open_errno != EEXIST) {
+            break;
+        }
+        /*
+         * Emscripten mktemp implementations can return reused names.
+         * Regenerate the path and retry when the generated file already exists.
+         */
+        if (sixel_compat_mktemp(template_path, template_capacity) != 0) {
+            tmpname_result = sixel_compat_tmpnam(template_path,
+                                                 template_capacity);
+            if (tmpname_result == NULL) {
+                sixel_helper_set_additional_message(
+                    "clipboard: failed to reserve spool template.");
+                status = SIXEL_LIBC_ERROR;
+                goto end;
+            }
+            template_capacity = strlen(template_path) + 1u;
+        }
+    }
     if (fd < 0) {
+        if (open_errno != 0) {
+            errno = open_errno;
+        }
         sixel_helper_set_additional_message(
             "clipboard: failed to open spool file.");
         status = SIXEL_LIBC_ERROR;
