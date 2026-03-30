@@ -789,7 +789,16 @@ sixel_compat_getenv(const char *name)
 SIXEL_COMPAT_API int
 sixel_compat_isatty(int fd)
 {
-#if defined(_WIN32)
+#if defined(__EMSCRIPTEN__)
+    /*
+     * Emscripten's Node.js runtime may miss the tty ioctl that libc
+     * `isatty()` expects. Treat all descriptors as non-interactive so
+     * tests can continue without crashing inside the runtime shim.
+     */
+    (void)fd;
+
+    return 0;
+#elif defined(_WIN32)
     return _isatty(fd);
 #else
     return isatty(fd);

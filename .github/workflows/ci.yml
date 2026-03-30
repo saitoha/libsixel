@@ -156,6 +156,7 @@ jobs:
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/afl-out-img2sixel
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader-builtin
       FUZZ_BUILTIN_ARGS: ${{ matrix.fuzz_builtin_args || '' }}
+      AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: '1'
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)

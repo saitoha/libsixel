@@ -93,6 +93,15 @@ fi
 mkdir -p "$output_dir"
 echo "fuzz-cli-img2sixel: base args='$base_args'"
 
+set -- "$fuzz_afl"
+set -- "$@" -i "$input_dir"
+set -- "$@" -o "$output_dir"
+set -- "$@" --
+set -- "$@" env
+set -- "$@" FUZZ_IMG2SIXEL="$img2sixel"
+set -- "$@" FUZZ_IMG2SIXEL_BASE_ARGS="$base_args"
+set -- "$@" "$wrapper" @@
+
 if test "$fuzz_timeout" -gt 0; then
   if ! command -v timeout >/dev/null 2>&1; then
     echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
@@ -100,14 +109,7 @@ if test "$fuzz_timeout" -gt 0; then
   fi
   echo "Running img2sixel fuzzing for ${fuzz_timeout}s"
   set +e
-  timeout "$fuzz_timeout" "$fuzz_afl" \
-    -i "$input_dir" \
-    -o "$output_dir" \
-    -- \
-    env \
-    FUZZ_IMG2SIXEL="$img2sixel" \
-    FUZZ_IMG2SIXEL_BASE_ARGS="$base_args" \
-    "$wrapper" @@
+  timeout "$fuzz_timeout" "$@"
   rc=$?
   set -e
   if test "$rc" -eq 124; then
@@ -118,14 +120,7 @@ if test "$fuzz_timeout" -gt 0; then
 fi
 
 echo "Running img2sixel fuzzing without timeout"
-exec "$fuzz_afl" \
-  -i "$input_dir" \
-  -o "$output_dir" \
-  -- \
-  env \
-  FUZZ_IMG2SIXEL="$img2sixel" \
-  FUZZ_IMG2SIXEL_BASE_ARGS="$base_args" \
-  "$wrapper" @@
+exec "$@"
 ''',
               'sh',
               img2sixel_exe.full_path(),

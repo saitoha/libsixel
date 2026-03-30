@@ -29,7 +29,7 @@ sum1=$(sed -n \
     "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 
 sum2=$(sed -n \
-    's/^[[:space:]]*\(-[0-9A-Za-z]\)[[:space:]][[:space:]]*\(--[^[:space:]]*\)[[:space:]][[:space:]]*\\$/\1 \2/p' \
+    's/^[[:space:]]*\(-[0-9A-Za-z]\)[[:space:]][[:space:]]*\(--[^[:space:]]*\).*/\1 \2/p' \
     "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" | cksum)
 
 test "${sum1}" = "${sum2}" || {

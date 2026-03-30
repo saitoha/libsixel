@@ -14,8 +14,8 @@ set -v
 
 sum1=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -H \
     | sed -n \
-        -e '/^-[A-Za-z0-9],/s/^\([^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
-        -e '/^-[A-Za-z0-9] /s/^\([^[:space:]]*[[:space:]][^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
+        -e '/^[[:space:]]*-[A-Za-z0-9],/s/^[[:space:]]*\([^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
+        -e '/^[[:space:]]*-[A-Za-z0-9] /s/^[[:space:]]*\([^[:space:]]*[[:space:]][^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
     | tr -d \\r \
     | cksum)
 
