@@ -14,16 +14,11 @@ test "${HAVE_QUICKLOOK-}" = 1 || {
     exit 0
 }
 
-test -n "${SIXEL_TEST_QUICKLOOK_MOV-}" || {
-    printf "1..0 # SKIP set SIXEL_TEST_QUICKLOOK_MOV to a decodable mov file\n"
-    exit 0
-}
-
 echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
-    "${SIXEL_TEST_QUICKLOOK_MOV}" >/dev/null || {
+    "${TOP_SRCDIR}/tests/data/inputs/quicklook/sample.mov" >/dev/null || {
     echo "not ok" 1 - "quicklook MOV still-frame decode failed"
     exit 0
 }
