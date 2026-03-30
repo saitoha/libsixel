@@ -44,6 +44,35 @@ def locate_offsets(data: bytes) -> tuple[int, int, int]:
     return layer_length_field_offset, compression_offset, image_data_offset
 
 
+def convert_psd_minimal_to_psb(data: bytes, *, convert_rle_row_table: bool) -> bytes:
+    """Convert minimal PSD bytes to PSB bytes (version=2)."""
+    layer_len_off, compression_off, image_data_off = locate_offsets(data)
+    layer_mask_len = read_u32be(data, layer_len_off)
+    channels = read_u16be(data, 12)
+    height = read_u32be(data, 14)
+    compression = read_u16be(data, compression_off)
+    out = bytearray()
+
+    out += data[:layer_len_off]
+    out += struct.pack(">Q", layer_mask_len)
+    out += data[layer_len_off + 4 : compression_off]
+    out += data[compression_off : compression_off + 2]
+    if convert_rle_row_table and compression == 1:
+        table_entries = channels * height
+        table_bytes = table_entries * 2
+        old_table = data[image_data_off : image_data_off + table_bytes]
+        if len(old_table) != table_bytes:
+            raise RuntimeError("invalid PSD RLE row table")
+        for i in range(table_entries):
+            row_length = read_u16be(old_table, i * 2)
+            out += struct.pack(">I", row_length)
+        out += data[image_data_off + table_bytes :]
+    else:
+        out += data[image_data_off:]
+    write_u16be(out, 4, 2)
+    return bytes(out)
+
+
 def locate_image_resources(data: bytes) -> tuple[int, int, int]:
     """Return (image_resources_length_offset, resources_data_offset, resources_end)."""
     offset = 26
@@ -129,10 +158,14 @@ def generate(out_dir: pathlib.Path) -> None:
     base = base_path.read_bytes()
     layer_len_off, compression_off, image_data_off = locate_offsets(base)
 
-    # Unsupported: header version must be 1.
-    version2 = bytearray(base)
-    write_u16be(version2, 4, 2)
-    write_file(out_dir / "stbi_minimal_version2_rgb.psd", bytes(version2))
+    # PSB minimal fixtures: version=2 and 64-bit layer/mask section length field.
+    version2 = convert_psd_minimal_to_psb(base, convert_rle_row_table=False)
+    write_file(out_dir / "stbi_minimal_version2_rgb.psd", version2)
+    version2_rle = convert_psd_minimal_to_psb(
+        (out_dir / "stbi_minimal_rle.psd").read_bytes(),
+        convert_rle_row_table=True,
+    )
+    write_file(out_dir / "stbi_minimal_version2_rgb_rle.psd", version2_rle)
 
     # Unsupported: compression id must be 0..3.
     compression4 = bytearray(base)

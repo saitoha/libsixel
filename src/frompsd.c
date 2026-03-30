@@ -235,6 +235,67 @@ sixel_builtin_read_u32be(unsigned char const *p)
            (uint32_t)p[3];
 }
 
+static int
+sixel_builtin_read_u64be_size_checked(unsigned char const *p, size_t *out_value)
+{
+    uint64_t value;
+    uint64_t max_size_value;
+
+    value = 0u;
+    max_size_value = 0u;
+
+    if (p == NULL || out_value == NULL) {
+        return 0;
+    }
+    value = ((uint64_t)p[0] << 56) |
+            ((uint64_t)p[1] << 48) |
+            ((uint64_t)p[2] << 40) |
+            ((uint64_t)p[3] << 32) |
+            ((uint64_t)p[4] << 24) |
+            ((uint64_t)p[5] << 16) |
+            ((uint64_t)p[6] << 8) |
+            (uint64_t)p[7];
+    max_size_value = (uint64_t)SIZE_MAX;
+    if (value > max_size_value) {
+        return 0;
+    }
+    *out_value = (size_t)value;
+    return 1;
+}
+
+static size_t
+sixel_builtin_psd_layer_mask_length_field_size(sixel_builtin_psd_info_t const *info)
+{
+    if (info != NULL && info->version == 2u) {
+        return 8u;
+    }
+    return 4u;
+}
+
+static size_t
+sixel_builtin_psd_rle_row_length_field_size(sixel_builtin_psd_info_t const *info)
+{
+    if (info != NULL && info->version == 2u) {
+        return 4u;
+    }
+    return 2u;
+}
+
+static size_t
+sixel_builtin_psd_read_rle_row_length(
+    sixel_builtin_psd_info_t const *info,
+    unsigned char const *row_table,
+    size_t row_index)
+{
+    if (row_table == NULL) {
+        return 0u;
+    }
+    if (sixel_builtin_psd_rle_row_length_field_size(info) == 4u) {
+        return sixel_builtin_read_u32be_size(row_table + row_index);
+    }
+    return (size_t)sixel_builtin_read_u16be(row_table + row_index);
+}
+
 static int16_t
 sixel_builtin_read_i16be(unsigned char const *p)
 {
@@ -367,9 +428,16 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
                                     sixel_builtin_psd_info_t const *info)
 {
     size_t layer_info_length;
+    size_t layer_info_length_field_size;
 
     layer_info_length = 0u;
+    layer_info_length_field_size = 0u;
     if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
+        return -1;
+    }
+    layer_info_length_field_size =
+        sixel_builtin_psd_layer_mask_length_field_size(info);
+    if (layer_info_length_field_size == 0u) {
         return -1;
     }
     if (info->layer_mask_length == 0u) {
@@ -379,13 +447,22 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
         info->layer_mask_length > chunk->size - info->layer_mask_offset) {
         return -1;
     }
-    if (info->layer_mask_length < 4u) {
+    if (info->layer_mask_length < layer_info_length_field_size) {
         return 0;
     }
 
-    layer_info_length = sixel_builtin_read_u32be_size(chunk->buffer +
-                                                       info->layer_mask_offset);
-    if (layer_info_length > info->layer_mask_length - 4u) {
+    if (layer_info_length_field_size == 8u) {
+        if (!sixel_builtin_read_u64be_size_checked(
+                chunk->buffer + info->layer_mask_offset,
+                &layer_info_length)) {
+            return -1;
+        }
+    } else {
+        layer_info_length = sixel_builtin_read_u32be_size(
+            chunk->buffer + info->layer_mask_offset);
+    }
+    if (layer_info_length >
+        info->layer_mask_length - layer_info_length_field_size) {
         return -1;
     }
 
@@ -458,6 +535,7 @@ sixel_builtin_validate_psd_info(
     size_t total_bytes;
     size_t table_entries;
     size_t table_bytes;
+    size_t row_length_field_size;
     int nwrite;
 
     ignored_message[0] = '\0';
@@ -479,6 +557,7 @@ sixel_builtin_validate_psd_info(
     total_bytes = 0u;
     table_entries = 0u;
     table_bytes = 0u;
+    row_length_field_size = 2u;
     nwrite = 0;
 
     if (pdecode_mode != NULL) {
@@ -500,11 +579,12 @@ sixel_builtin_validate_psd_info(
         return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
     }
 
-    if (info->version != 1u) {
-        sixel_builtin_psd_set_message(
-            message,
-            message_size,
-            "builtin PSD: unsupported version (expected 1)");
+    if (info->version != 1u && info->version != 2u) {
+        nwrite = snprintf(message,
+                          message_size,
+                          "builtin PSD: unsupported version (%u; expected 1 or 2)",
+                          info->version);
+        (void)nwrite;
         return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
     }
 
@@ -549,6 +629,13 @@ sixel_builtin_validate_psd_info(
     }
     image_data_length = chunk->size - info->image_data_offset;
     if (image_data_length == 0u) {
+        if (info->version == 2u) {
+            sixel_builtin_psd_set_message(
+                message,
+                message_size,
+                "builtin PSD: unsupported PSB file without merged/composite image");
+            return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
+        }
         layer_state = sixel_builtin_psd_has_layer_records(chunk, info);
         if (layer_state < 0) {
             sixel_builtin_psd_set_message(
@@ -815,14 +902,17 @@ sixel_builtin_validate_psd_info(
                 return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
             }
             table_entries = (size_t)info->height * (size_t)info->channels;
-            if (table_entries > SIZE_MAX / 2u) {
+            row_length_field_size = sixel_builtin_psd_rle_row_length_field_size(
+                info);
+            if (row_length_field_size == 0u ||
+                table_entries > SIZE_MAX / row_length_field_size) {
                 sixel_builtin_psd_set_message(
                     message,
                     message_size,
                     "builtin PSD: malformed RLE row table overflow");
                 return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
             }
-            table_bytes = table_entries * 2u;
+            table_bytes = table_entries * row_length_field_size;
             if (table_bytes > image_data_length) {
                 sixel_builtin_psd_set_message(
                     message,
@@ -853,11 +943,13 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     size_t size;
     size_t offset;
     size_t section_length;
+    size_t layer_mask_length_field_size;
 
     buffer = NULL;
     size = 0u;
     offset = 0u;
     section_length = 0u;
+    layer_mask_length_field_size = 0u;
     if (chunk == NULL || chunk->buffer == NULL || info == NULL ||
         chunk->size < 30u) {
         return 0;
@@ -875,6 +967,8 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     info->width = (unsigned int)sixel_builtin_read_u32be_size(buffer + 18u);
     info->depth = sixel_builtin_read_u16be(buffer + 22u);
     info->color_mode = sixel_builtin_read_u16be(buffer + 24u);
+    layer_mask_length_field_size =
+        sixel_builtin_psd_layer_mask_length_field_size(info);
 
     offset = 26u;
     if (offset + 4u > size) {
@@ -901,11 +995,18 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     info->image_resources_length = section_length;
     offset += section_length;
 
-    if (offset + 4u > size) {
+    if (offset + layer_mask_length_field_size > size) {
         return 0;
     }
-    section_length = sixel_builtin_read_u32be_size(buffer + offset);
-    offset += 4u;
+    if (layer_mask_length_field_size == 8u) {
+        if (!sixel_builtin_read_u64be_size_checked(buffer + offset,
+                                                   &section_length)) {
+            return 0;
+        }
+    } else {
+        section_length = sixel_builtin_read_u32be_size(buffer + offset);
+    }
+    offset += layer_mask_length_field_size;
     if (section_length > size - offset) {
         return 0;
     }
@@ -3772,6 +3873,7 @@ sixel_builtin_decode_psd_8bit_channel(sixel_chunk_t const *chunk,
     size_t offset;
     size_t table_entries;
     size_t table_bytes;
+    size_t row_length_field_size;
     unsigned char const *row_table;
     size_t data_cursor;
     unsigned int channel;
@@ -3789,6 +3891,7 @@ sixel_builtin_decode_psd_8bit_channel(sixel_chunk_t const *chunk,
     offset = 0u;
     table_entries = 0u;
     table_bytes = 0u;
+    row_length_field_size = 2u;
     row_table = NULL;
     data_cursor = 0u;
     channel = 0u;
@@ -3835,10 +3938,13 @@ sixel_builtin_decode_psd_8bit_channel(sixel_chunk_t const *chunk,
             return 0;
         }
         table_entries = (size_t)info->height * (size_t)info->channels;
-        if (table_entries > SIZE_MAX / 2u) {
+        row_length_field_size = sixel_builtin_psd_rle_row_length_field_size(
+            info);
+        if (row_length_field_size == 0u ||
+            table_entries > SIZE_MAX / row_length_field_size) {
             return 0;
         }
-        table_bytes = table_entries * 2u;
+        table_bytes = table_entries * row_length_field_size;
         if (info->image_data_offset > chunk->size ||
             table_bytes > chunk->size - info->image_data_offset) {
             return 0;
@@ -3848,8 +3954,12 @@ sixel_builtin_decode_psd_8bit_channel(sixel_chunk_t const *chunk,
 
         for (channel = 0u; channel < info->channels; ++channel) {
             for (row = 0u; row < info->height; ++row) {
-                row_index = ((size_t)channel * (size_t)info->height + (size_t)row) * 2u;
-                row_length = (size_t)sixel_builtin_read_u16be(row_table + row_index);
+                row_index = ((size_t)channel * (size_t)info->height +
+                             (size_t)row) * row_length_field_size;
+                row_length = sixel_builtin_psd_read_rle_row_length(
+                    info,
+                    row_table,
+                    row_index);
                 if (data_cursor > chunk->size || row_length > chunk->size - data_cursor) {
                     return 0;
                 }
@@ -3904,6 +4014,7 @@ sixel_builtin_decode_psd_16bit_channel(sixel_chunk_t const *chunk,
     size_t offset;
     size_t table_entries;
     size_t table_bytes;
+    size_t row_length_field_size;
     unsigned char const *row_table;
     size_t data_cursor;
     unsigned int channel;
@@ -3927,6 +4038,7 @@ sixel_builtin_decode_psd_16bit_channel(sixel_chunk_t const *chunk,
     offset = 0u;
     table_entries = 0u;
     table_bytes = 0u;
+    row_length_field_size = 2u;
     row_table = NULL;
     data_cursor = 0u;
     channel = 0u;
@@ -3986,10 +4098,13 @@ sixel_builtin_decode_psd_16bit_channel(sixel_chunk_t const *chunk,
             goto fail;
         }
         table_entries = (size_t)info->height * (size_t)info->channels;
-        if (table_entries > SIZE_MAX / 2u) {
+        row_length_field_size = sixel_builtin_psd_rle_row_length_field_size(
+            info);
+        if (row_length_field_size == 0u ||
+            table_entries > SIZE_MAX / row_length_field_size) {
             goto fail;
         }
-        table_bytes = table_entries * 2u;
+        table_bytes = table_entries * row_length_field_size;
         if (info->image_data_offset > chunk->size ||
             table_bytes > chunk->size - info->image_data_offset) {
             goto fail;
@@ -3999,8 +4114,12 @@ sixel_builtin_decode_psd_16bit_channel(sixel_chunk_t const *chunk,
 
         for (channel = 0u; channel < info->channels; ++channel) {
             for (row = 0u; row < info->height; ++row) {
-                row_index = ((size_t)channel * (size_t)info->height + (size_t)row) * 2u;
-                row_length = (size_t)sixel_builtin_read_u16be(row_table + row_index);
+                row_index = ((size_t)channel * (size_t)info->height +
+                             (size_t)row) * row_length_field_size;
+                row_length = sixel_builtin_psd_read_rle_row_length(
+                    info,
+                    row_table,
+                    row_index);
                 if (data_cursor > chunk->size || row_length > chunk->size - data_cursor) {
                     goto fail;
                 }
@@ -4157,6 +4276,7 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
     size_t offset;
     size_t table_entries;
     size_t table_bytes;
+    size_t row_length_field_size;
     unsigned char const *row_table;
     size_t data_cursor;
     unsigned int channel;
@@ -4178,6 +4298,7 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
     offset = 0u;
     table_entries = 0u;
     table_bytes = 0u;
+    row_length_field_size = 2u;
     row_table = NULL;
     data_cursor = 0u;
     channel = 0u;
@@ -4235,10 +4356,13 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
             goto fail;
         }
         table_entries = (size_t)info->height * (size_t)info->channels;
-        if (table_entries > SIZE_MAX / 2u) {
+        row_length_field_size = sixel_builtin_psd_rle_row_length_field_size(
+            info);
+        if (row_length_field_size == 0u ||
+            table_entries > SIZE_MAX / row_length_field_size) {
             goto fail;
         }
-        table_bytes = table_entries * 2u;
+        table_bytes = table_entries * row_length_field_size;
         if (info->image_data_offset > chunk->size ||
             table_bytes > chunk->size - info->image_data_offset) {
             goto fail;
@@ -4249,9 +4373,11 @@ sixel_builtin_decode_psd_32bit_channel(sixel_chunk_t const *chunk,
         for (channel = 0u; channel < info->channels; ++channel) {
             for (row = 0u; row < info->height; ++row) {
                 row_index = ((size_t)channel * (size_t)info->height +
-                             (size_t)row) * 2u;
-                row_length = (size_t)sixel_builtin_read_u16be(
-                    row_table + row_index);
+                             (size_t)row) * row_length_field_size;
+                row_length = sixel_builtin_psd_read_rle_row_length(
+                    info,
+                    row_table,
+                    row_index);
                 if (data_cursor > chunk->size ||
                     row_length > chunk->size - data_cursor) {
                     goto fail;
@@ -4314,6 +4440,7 @@ sixel_builtin_decode_psd_bitmap_channel(sixel_chunk_t const *chunk,
     size_t offset;
     size_t table_entries;
     size_t table_bytes;
+    size_t row_length_field_size;
     unsigned char const *row_table;
     size_t data_cursor;
     unsigned int channel;
@@ -4330,6 +4457,7 @@ sixel_builtin_decode_psd_bitmap_channel(sixel_chunk_t const *chunk,
     offset = 0u;
     table_entries = 0u;
     table_bytes = 0u;
+    row_length_field_size = 2u;
     row_table = NULL;
     data_cursor = 0u;
     channel = 0u;
@@ -4370,10 +4498,13 @@ sixel_builtin_decode_psd_bitmap_channel(sixel_chunk_t const *chunk,
             return 0;
         }
         table_entries = (size_t)info->height * (size_t)info->channels;
-        if (table_entries > SIZE_MAX / 2u) {
+        row_length_field_size = sixel_builtin_psd_rle_row_length_field_size(
+            info);
+        if (row_length_field_size == 0u ||
+            table_entries > SIZE_MAX / row_length_field_size) {
             return 0;
         }
-        table_bytes = table_entries * 2u;
+        table_bytes = table_entries * row_length_field_size;
         if (info->image_data_offset > chunk->size ||
             table_bytes > chunk->size - info->image_data_offset) {
             return 0;
@@ -4383,8 +4514,12 @@ sixel_builtin_decode_psd_bitmap_channel(sixel_chunk_t const *chunk,
 
         for (channel = 0u; channel < info->channels; ++channel) {
             for (row = 0u; row < info->height; ++row) {
-                row_index = ((size_t)channel * (size_t)info->height + (size_t)row) * 2u;
-                row_length = (size_t)sixel_builtin_read_u16be(row_table + row_index);
+                row_index = ((size_t)channel * (size_t)info->height +
+                             (size_t)row) * row_length_field_size;
+                row_length = sixel_builtin_psd_read_rle_row_length(
+                    info,
+                    row_table,
+                    row_index);
                 if (data_cursor > chunk->size || row_length > chunk->size - data_cursor) {
                     return 0;
                 }
