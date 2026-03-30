@@ -92,8 +92,10 @@ Key points used by this roadmap:
     - layers without decodable pixel channels:
       - render synthetic fill for `SoCo` (descriptor/SXFL; descriptor color
         object supports RGB, CMYK, Grayscale, HSB, and Lab classes),
-        `GdFl` (descriptor/SXFL, including nested `Grad` object form), and
-        `PtFl` (descriptor/SXFL) payloads, or
+        `GdFl` (descriptor/SXFL, including nested `Grad` object form and
+        descriptor color objects for RGB/CMYK/Grayscale/HSB/Lab), and
+        `PtFl` (descriptor/SXFL; descriptor color objects for
+        RGB/CMYK/Grayscale/HSB/Lab) payloads, or
       - skip layer when no supported fill payload is present.
   - Vector mask, layer effects, knockout, and unknown blend key use
     deterministic degrade behavior in fallback:
@@ -139,6 +141,13 @@ Key points used by this roadmap:
     (RGB8 and CMYK8/CMYK16/CMYK32 mapped paths).
   - mode7 multi-layer non-pixel trace coverage
     (pixel-present ignore, no-pixel skip, and fill render cases).
+  - descriptor fill LSQA coverage now includes:
+    - `SoCo` descriptor color-object paths (`RGB/CMYK/Grayscale/HSB/Lab`)
+      across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
+    - `GdFl` descriptor stop-color paths (`CMYK/Grayscale/HSB/Lab`) and
+      nested `Grad` form on the same surfaces, and
+    - `PtFl` descriptor color-object paths (`CMYK/Grayscale/HSB`) on the same
+      surfaces.
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
@@ -282,6 +291,7 @@ Minimum fixture naming convention:
    - broaden missing-composite matrix/trace coverage to larger layouts, and
    - design/implement large-document boundary handling beyond the current
      parser/fallback surface.
-3. Add broader PSD matrix smoke execution in CI around the expanded
-   missing-composite fallback surface (`CMYK8/16/32`, mode7 mapped paths)
-   to catch regressions earlier than full suite jobs.
+3. Harden descriptor malformed diagnostics and regressions for
+   `SoCo/GdFl/PtFl` (deterministic trace contracts on malformed descriptor
+   payloads and malformed resource combinations), while keeping the current
+   full PSD suite policy as the primary CI regression gate.
