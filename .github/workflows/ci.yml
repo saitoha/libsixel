@@ -97,6 +97,105 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  fuzz:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-afl-fuzz-cli-img2sixel
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=afl-clang-fast CXX=afl-clang-fast++
+            check_target: fuzz-cli-img2sixel
+            extra_packages: >-
+              clang
+              afl++
+            exec_type: bash
+            fuzz_timeout: '300'
+
+          - label: Meson-ubuntu-x86_64-afl-fuzz-cli-img2sixel
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=afl-clang-fast CXX=afl-clang-fast++
+            check_target: compile fuzz-cli-img2sixel
+            extra_packages: >-
+              meson
+              clang
+              afl++
+            exec_type: bash
+            fuzz_timeout: '300'
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5
+
+    env:
+      FUZZ_TIMEOUT: ${{ matrix.fuzz_timeout || '' }}
+      FUZZ_OUTPUT_DIR: ${{ runner.temp }}/afl-out-img2sixel
+      FUZZ_BUILTIN_CORPUS: ${{ runner.temp }}/fuzz-corpus-loader-builtin
+      FUZZ_BUILTIN_ARGS: ${{ matrix.fuzz_builtin_args || '' }}
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
   staticcheck:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
