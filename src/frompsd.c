@@ -1900,6 +1900,605 @@ sixel_builtin_psd_descriptor_read_numeric_value(
 }
 
 static int
+sixel_builtin_psd_descriptor_read_bool_value(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    char const type[5],
+    int *out_value)
+{
+    size_t cursor;
+
+    cursor = 0u;
+    if (data == NULL || pcursor == NULL || type == NULL || out_value == NULL) {
+        return 0;
+    }
+    if (memcmp(type, "bool", 4u) != 0) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (cursor + 1u > data_length) {
+        return 0;
+    }
+    *out_value = data[cursor] != 0u ? 1 : 0;
+    cursor += 1u;
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_descriptor_read_enum_value(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    char const type[5],
+    char out_value[5])
+{
+    size_t cursor;
+    char enum_type[5];
+
+    cursor = 0u;
+    enum_type[0] = '\0';
+    enum_type[1] = '\0';
+    enum_type[2] = '\0';
+    enum_type[3] = '\0';
+    enum_type[4] = '\0';
+    if (data == NULL || pcursor == NULL || type == NULL || out_value == NULL) {
+        return 0;
+    }
+    if (memcmp(type, "enum", 4u) != 0) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                data_length,
+                                                &cursor,
+                                                enum_type) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                data_length,
+                                                &cursor,
+                                                out_value)) {
+        return 0;
+    }
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_descriptor_parse_rgb_object(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    float out_rgb[3])
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key[5];
+    char type[5];
+    double red;
+    double green;
+    double blue;
+    double component_max;
+    int has_red;
+    int has_green;
+    int has_blue;
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    type[0] = '\0';
+    type[1] = '\0';
+    type[2] = '\0';
+    type[3] = '\0';
+    type[4] = '\0';
+    red = 0.0;
+    green = 0.0;
+    blue = 0.0;
+    component_max = 0.0;
+    has_red = 0;
+    has_green = 0;
+    has_blue = 0;
+    if (data == NULL || pcursor == NULL || out_rgb == NULL) {
+        return 0;
+    }
+
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          data_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                data_length,
+                                                &cursor,
+                                                key)) {
+        return 0;
+    }
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        double numeric;
+        numeric = 0.0;
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if ((memcmp(key, "Rd  ", 4u) == 0 ||
+             memcmp(key, "Grn ", 4u) == 0 ||
+             memcmp(key, "Bl  ", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            data_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (memcmp(key, "Rd  ", 4u) == 0) {
+                red = numeric;
+                has_red = 1;
+            } else if (memcmp(key, "Grn ", 4u) == 0) {
+                green = numeric;
+                has_green = 1;
+            } else {
+                blue = numeric;
+                has_blue = 1;
+            }
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     data_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    if (has_red == 0 || has_green == 0 || has_blue == 0) {
+        return 0;
+    }
+    component_max = fmax(red, fmax(green, blue));
+    if (component_max <= 1.0) {
+        red *= 255.0;
+        green *= 255.0;
+        blue *= 255.0;
+    }
+    if (red < 0.0) {
+        red = 0.0;
+    } else if (red > 255.0) {
+        red = 255.0;
+    }
+    if (green < 0.0) {
+        green = 0.0;
+    } else if (green > 255.0) {
+        green = 255.0;
+    }
+    if (blue < 0.0) {
+        blue = 0.0;
+    } else if (blue > 255.0) {
+        blue = 255.0;
+    }
+    sixel_builtin_psd_fill_set_rgb_from_u8(out_rgb,
+                                           (unsigned char)(red + 0.5),
+                                           (unsigned char)(green + 0.5),
+                                           (unsigned char)(blue + 0.5));
+    *pcursor = cursor;
+    return 1;
+}
+
+static float
+sixel_builtin_psd_descriptor_normalize_gradient_position(double value)
+{
+    float normalized;
+
+    normalized = 0.0f;
+    if (value != value) {
+        return 0.0f;
+    }
+    if (value <= 1.0) {
+        normalized = (float)value;
+    } else if (value <= 100.0) {
+        normalized = (float)(value / 100.0);
+    } else if (value <= 4096.0) {
+        normalized = (float)(value / 4096.0);
+    } else {
+        normalized = (float)(value / 65535.0);
+    }
+    return sixel_builtin_psd_clamp01(normalized);
+}
+
+static float
+sixel_builtin_psd_descriptor_normalize_gradient_alpha(double value)
+{
+    float normalized;
+
+    normalized = 0.0f;
+    if (value != value) {
+        return 1.0f;
+    }
+    if (value <= 1.0) {
+        normalized = (float)value;
+    } else if (value <= 100.0) {
+        normalized = (float)(value / 100.0);
+    } else if (value <= 255.0) {
+        normalized = (float)(value / 255.0);
+    } else {
+        normalized = 1.0f;
+    }
+    return sixel_builtin_psd_clamp_alpha_float32(normalized);
+}
+
+static int
+sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    float *out_pos,
+    float out_rgb[3],
+    float *out_alpha)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key[5];
+    char type[5];
+    double location;
+    double alpha;
+    int has_location;
+    int has_color;
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    type[0] = '\0';
+    type[1] = '\0';
+    type[2] = '\0';
+    type[3] = '\0';
+    type[4] = '\0';
+    location = 0.0;
+    alpha = 1.0;
+    has_location = 0;
+    has_color = 0;
+    if (data == NULL || pcursor == NULL || out_pos == NULL ||
+        out_rgb == NULL || out_alpha == NULL) {
+        return 0;
+    }
+
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          data_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                data_length,
+                                                &cursor,
+                                                key)) {
+        return 0;
+    }
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "Lctn", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            data_length,
+                                                            &cursor,
+                                                            type,
+                                                            &location)) {
+            has_location = 1;
+            continue;
+        }
+        if (memcmp(key, "Opct", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            data_length,
+                                                            &cursor,
+                                                            type,
+                                                            &alpha)) {
+            continue;
+        }
+        if (memcmp(key, "Clr ", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_parse_rgb_object(data,
+                                                               data_length,
+                                                               &cursor,
+                                                               out_rgb)) {
+                return 0;
+            }
+            has_color = 1;
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     data_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    if (has_color == 0) {
+        return 0;
+    }
+    if (has_location == 0) {
+        location = 0.0;
+    }
+    *out_pos = sixel_builtin_psd_descriptor_normalize_gradient_position(location);
+    *out_alpha = sixel_builtin_psd_descriptor_normalize_gradient_alpha(alpha);
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_gdfl_descriptor_payload(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key[5];
+    char type[5];
+    unsigned char gradient_type;
+    int gradient_reverse;
+    float gradient_angle_deg;
+    float gradient_scale;
+    size_t stop_count;
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    type[0] = '\0';
+    type[1] = '\0';
+    type[2] = '\0';
+    type[3] = '\0';
+    type[4] = '\0';
+    gradient_type = 0u;
+    gradient_reverse = 0;
+    gradient_angle_deg = 0.0f;
+    gradient_scale = 1.0f;
+    stop_count = 0u;
+    if (data == NULL || layer == NULL) {
+        return 0;
+    }
+
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          key_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                key_length,
+                                                &cursor,
+                                                key)) {
+        return 0;
+    }
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "Type", 4u) == 0) {
+            char enum_value[5];
+            enum_value[0] = '\0';
+            enum_value[1] = '\0';
+            enum_value[2] = '\0';
+            enum_value[3] = '\0';
+            enum_value[4] = '\0';
+            if (!sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                              key_length,
+                                                              &cursor,
+                                                              type,
+                                                              enum_value)) {
+                return 0;
+            }
+            if (memcmp(enum_value, "Rdl ", 4u) == 0) {
+                gradient_type = 1u;
+            } else if (memcmp(enum_value, "Angl", 4u) == 0) {
+                gradient_type = 2u;
+            } else if (memcmp(enum_value, "Rflc", 4u) == 0) {
+                gradient_type = 3u;
+            } else if (memcmp(enum_value, "Dmnd", 4u) == 0) {
+                gradient_type = 4u;
+            } else {
+                gradient_type = 0u;
+            }
+            continue;
+        }
+        if (memcmp(key, "Rvrs", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                              key_length,
+                                                              &cursor,
+                                                              type,
+                                                              &gradient_reverse)) {
+                return 0;
+            }
+            continue;
+        }
+        if (memcmp(key, "Angl", 4u) == 0) {
+            double numeric;
+            numeric = 0.0;
+            if (!sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                 key_length,
+                                                                 &cursor,
+                                                                 type,
+                                                                 &numeric)) {
+                return 0;
+            }
+            gradient_angle_deg = (float)numeric;
+            continue;
+        }
+        if (memcmp(key, "Scl ", 4u) == 0) {
+            double numeric;
+            numeric = 0.0;
+            if (!sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                 key_length,
+                                                                 &cursor,
+                                                                 type,
+                                                                 &numeric)) {
+                return 0;
+            }
+            if (numeric > 4.0) {
+                numeric /= 100.0;
+            }
+            if (numeric > 0.0) {
+                gradient_scale = (float)numeric;
+            }
+            continue;
+        }
+        if (memcmp(key, "Clrs", 4u) == 0 &&
+            memcmp(type, "VlLs", 4u) == 0) {
+            size_t list_count;
+            size_t j;
+            char list_type[5];
+
+            list_count = 0u;
+            j = 0u;
+            list_type[0] = '\0';
+            list_type[1] = '\0';
+            list_type[2] = '\0';
+            list_type[3] = '\0';
+            list_type[4] = '\0';
+            if (cursor + 4u > key_length) {
+                return 0;
+            }
+            list_count = sixel_builtin_read_u32be_size(data + cursor);
+            cursor += 4u;
+            for (j = 0u; j < list_count; ++j) {
+                if (!sixel_builtin_psd_descriptor_read_type(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            list_type)) {
+                    return 0;
+                }
+                if (memcmp(list_type, "Objc", 4u) == 0) {
+                    float stop_pos;
+                    float stop_rgb[3];
+                    float stop_alpha;
+                    stop_pos = 0.0f;
+                    stop_rgb[0] = 0.0f;
+                    stop_rgb[1] = 0.0f;
+                    stop_rgb[2] = 0.0f;
+                    stop_alpha = 1.0f;
+                    if (!sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
+                            data,
+                            key_length,
+                            &cursor,
+                            &stop_pos,
+                            stop_rgb,
+                            &stop_alpha)) {
+                        return 0;
+                    }
+                    if (stop_count < SIXEL_BUILTIN_PSD_FILL_STOP_MAX) {
+                        layer->fill_gradient_stop_pos[stop_count] = stop_pos;
+                        layer->fill_gradient_stop_rgb[stop_count][0] = stop_rgb[0];
+                        layer->fill_gradient_stop_rgb[stop_count][1] = stop_rgb[1];
+                        layer->fill_gradient_stop_rgb[stop_count][2] = stop_rgb[2];
+                        layer->fill_gradient_stop_alpha[stop_count] = stop_alpha;
+                        ++stop_count;
+                    }
+                } else if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                                    key_length,
+                                                                    &cursor,
+                                                                    list_type,
+                                                                    0u)) {
+                    return 0;
+                }
+            }
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    if (stop_count == 0u) {
+        return 0;
+    }
+
+    if (stop_count > 1u) {
+        size_t a;
+        for (a = 0u; a + 1u < stop_count; ++a) {
+            size_t b;
+            for (b = a + 1u; b < stop_count; ++b) {
+                if (layer->fill_gradient_stop_pos[b] < layer->fill_gradient_stop_pos[a]) {
+                    float tmp_pos;
+                    float tmp_alpha;
+                    float tmp_rgb0;
+                    float tmp_rgb1;
+                    float tmp_rgb2;
+                    tmp_pos = layer->fill_gradient_stop_pos[a];
+                    tmp_alpha = layer->fill_gradient_stop_alpha[a];
+                    tmp_rgb0 = layer->fill_gradient_stop_rgb[a][0];
+                    tmp_rgb1 = layer->fill_gradient_stop_rgb[a][1];
+                    tmp_rgb2 = layer->fill_gradient_stop_rgb[a][2];
+                    layer->fill_gradient_stop_pos[a] = layer->fill_gradient_stop_pos[b];
+                    layer->fill_gradient_stop_alpha[a] = layer->fill_gradient_stop_alpha[b];
+                    layer->fill_gradient_stop_rgb[a][0] = layer->fill_gradient_stop_rgb[b][0];
+                    layer->fill_gradient_stop_rgb[a][1] = layer->fill_gradient_stop_rgb[b][1];
+                    layer->fill_gradient_stop_rgb[a][2] = layer->fill_gradient_stop_rgb[b][2];
+                    layer->fill_gradient_stop_pos[b] = tmp_pos;
+                    layer->fill_gradient_stop_alpha[b] = tmp_alpha;
+                    layer->fill_gradient_stop_rgb[b][0] = tmp_rgb0;
+                    layer->fill_gradient_stop_rgb[b][1] = tmp_rgb1;
+                    layer->fill_gradient_stop_rgb[b][2] = tmp_rgb2;
+                }
+            }
+        }
+    }
+
+    layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_GDFL;
+    layer->fill_gradient_type = gradient_type;
+    layer->fill_gradient_reverse = gradient_reverse;
+    layer->fill_gradient_angle_deg = gradient_angle_deg;
+    layer->fill_gradient_scale = gradient_scale > 0.0f ? gradient_scale : 1.0f;
+    layer->fill_gradient_stop_count = stop_count;
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_soco_descriptor_payload(
     unsigned char const *data,
     size_t key_length,
@@ -2225,6 +2824,10 @@ sixel_builtin_psd_parse_fill_payload(
     }
     if (memcmp(key, "SoCo", 4u) == 0) {
         (void)sixel_builtin_psd_parse_soco_descriptor_payload(data,
+                                                              key_length,
+                                                              layer);
+    } else if (memcmp(key, "GdFl", 4u) == 0) {
+        (void)sixel_builtin_psd_parse_gdfl_descriptor_payload(data,
                                                               key_length,
                                                               layer);
     }
