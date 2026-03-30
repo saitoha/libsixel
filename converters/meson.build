@@ -60,6 +60,79 @@ if img2sixel_opt.enabled()
       install: true)
   endif
   img2sixel_deps = [img2sixel_exe]
+
+  run_target('fuzz-cli-img2sixel',
+    command: [sh, '-c', '''
+set -eu
+
+img2sixel="$1"
+source_root="$2"
+build_root="$3"
+fuzz_afl="${FUZZ_AFL:-afl-fuzz}"
+fuzz_timeout="${FUZZ_TIMEOUT:-0}"
+input_dir="${FUZZ_INPUT_DIR:-$source_root/images}"
+output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel}"
+base_args="${FUZZ_IMG2SIXEL_BASE_ARGS:-}"
+wrapper="$source_root/tools/fuzz-img2sixel-cli.sh"
+
+if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
+  echo "error: $fuzz_afl is not installed" >&2
+  exit 1
+fi
+
+if test ! -x "$img2sixel"; then
+  echo "error: img2sixel binary was not found: $img2sixel" >&2
+  exit 1
+fi
+
+if test ! -r "$wrapper"; then
+  echo "error: fuzz wrapper is missing: $wrapper" >&2
+  exit 1
+fi
+
+mkdir -p "$output_dir"
+echo "fuzz-cli-img2sixel: base args='$base_args'"
+
+if test "$fuzz_timeout" -gt 0; then
+  if ! command -v timeout >/dev/null 2>&1; then
+    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
+    exit 1
+  fi
+  echo "Running img2sixel fuzzing for ${fuzz_timeout}s"
+  set +e
+  timeout "$fuzz_timeout" "$fuzz_afl" \
+    -i "$input_dir" \
+    -o "$output_dir" \
+    -- \
+    env \
+    FUZZ_IMG2SIXEL="$img2sixel" \
+    FUZZ_IMG2SIXEL_BASE_ARGS="$base_args" \
+    "$wrapper" @@
+  rc=$?
+  set -e
+  if test "$rc" -eq 124; then
+    echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+echo "Running img2sixel fuzzing without timeout"
+exec "$fuzz_afl" \
+  -i "$input_dir" \
+  -o "$output_dir" \
+  -- \
+  env \
+  FUZZ_IMG2SIXEL="$img2sixel" \
+  FUZZ_IMG2SIXEL_BASE_ARGS="$base_args" \
+  "$wrapper" @@
+''',
+              'sh',
+              img2sixel_exe.full_path(),
+              meson.project_source_root(),
+              meson.project_build_root()],
+    depends: [img2sixel_exe])
+
   if shebang_enabled
     shebang_targets += [custom_target('img2sixel_shebang',
       input: img2sixel_exe,
