@@ -12,24 +12,33 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 printf '1..1\n'
 set -v
 
-sum1=$(sed -n \
-    -e '/^\.B \\-[A-Za-z0-9],/{
-            s/[\\,]//g
-            s/^\.B[[:space:]]*//
-            s/[[:space:]][[:space:]]*/ /g
-            s/^\([^ ]* [^ ]*\).*/\1/p
-        }' \
-    -e '/^\.B \\-[A-Za-z0-9] /{
-            s/\\//g
-            s/=/ /g
-            s/^\.B[[:space:]]*//
-            s/[[:space:]][[:space:]]*/ /g
-            s/^\([^ ]*\) [^ ]* \([^ ]*\).*/\1 \2/p
+sum1=$(awk '
+        /^\.B \\-[A-Za-z0-9],/ {
+            line = $0
+            gsub(/[\\,]/, "", line)
+            sub(/^\.B[[:space:]]*/, "", line)
+            gsub(/[[:space:]][[:space:]]*/, " ", line)
+            split(line, fields, " ")
+            print fields[1], fields[2]
+            next
+        }
+        /^\.B \\-[A-Za-z0-9] / {
+            line = $0
+            gsub(/\\/, "", line)
+            gsub(/=/, " ", line)
+            sub(/^\.B[[:space:]]*/, "", line)
+            gsub(/[[:space:]][[:space:]]*/, " ", line)
+            split(line, fields, " ")
+            print fields[1], fields[3]
+            next
         }' \
     "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 
-sum2=$(sed -n \
-    's/^[[:space:]]*\(-[0-9A-Za-z]\)[[:space:]][[:space:]]*\(--[^[:space:]]*\)[[:space:]][[:space:]]*\\$/\1 \2/p' \
+sum2=$(awk '
+        /^[[:space:]]*-[0-9A-Za-z][[:space:]][[:space:]]*--[^ ]*/ {
+            print $1, $2
+            next
+        }' \
     "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" | cksum)
 
 test "${sum1}" = "${sum2}" || {

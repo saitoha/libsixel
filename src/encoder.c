@@ -5053,6 +5053,8 @@ sixel_encoder_setopt(
     unsigned int path_flags;
     char const *mapfile_view;
     int path_check;
+    int output_open_flags;
+    int tile_open_flags;
 
     sixel_encoder_ref(encoder);
     opt_copy = NULL;
@@ -5063,6 +5065,8 @@ sixel_encoder_setopt(
     path_flags = 0u;
     mapfile_view = NULL;
     path_check = 0;
+    output_open_flags = 0;
+    tile_open_flags = 0;
     parsed_value = 0L;
     suffix = NULL;
     geometry_ok = 0;
@@ -5265,8 +5269,16 @@ sixel_encoder_setopt(
             if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
                 (void)sixel_compat_close(encoder->outfd);
             }
+            output_open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_BINARY)
+            /*
+             * Keep the output stream in binary mode on Windows so SIXEL and
+             * PNG bytes are not rewritten by text-mode newline conversion.
+             */
+            output_open_flags |= O_BINARY;
+#endif
             encoder->outfd = sixel_compat_open(value,
-                                               O_RDWR | O_CREAT | O_TRUNC,
+                                               output_open_flags,
                                                S_IRUSR | S_IWUSR);
         }
         break;
@@ -6319,9 +6331,12 @@ sixel_encoder_setopt(
             if (strcmp(drcs_arg_path, "-") == 0) {
                 encoder->tile_outfd = STDOUT_FILENO;
             } else {
+                tile_open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_BINARY)
+                tile_open_flags |= O_BINARY;
+#endif
                 encoder->tile_outfd = sixel_compat_open(drcs_arg_path,
-                                                       O_RDWR | O_CREAT |
-                                                       O_TRUNC,
+                                                       tile_open_flags,
                                                        S_IRUSR | S_IWUSR);
                 if (encoder->tile_outfd < 0) {
                     sixel_helper_set_additional_message(
@@ -7266,6 +7281,9 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     }
 
     open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_BINARY)
+    open_flags |= O_BINARY;
+#endif
 #if defined(O_EXCL)
     open_flags |= O_EXCL;
 #endif
@@ -7697,6 +7715,9 @@ sixel_encoder_encode(
             (void)sixel_compat_close(encoder->outfd);
         }
         png_open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_BINARY)
+        png_open_flags |= O_BINARY;
+#endif
 #if defined(O_EXCL)
         png_open_flags |= O_EXCL;
 #endif
