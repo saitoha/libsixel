@@ -3597,11 +3597,6 @@ sixel_builtin_psd_trace_skip_icc_reason(
                psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND &&
                !psd_cmyk_icc_applied) {
         sixel_builtin_psd_trace_embedded_icc_failure();
-    } else if (sixel_builtin_psd_mode_is_lab(psd_custom_decode_mode) &&
-               psd_icc_status == SIXEL_BUILTIN_ICC_EXTRACT_FOUND) {
-        loader_trace_message(
-            "builtin PSD: skipping embedded ICC conversion "
-            "for Lab custom decode path");
     }
 }
 
@@ -3615,15 +3610,43 @@ sixel_builtin_psd_apply_embedded_icc(
     size_t icc_profile_length)
 {
     int cms_converted;
+    sixel_cms_engine_t cms_engine;
 
     cms_converted = 0;
-    cms_converted = sixel_cms_convert_to_srgb_with_profile_bytes(
-        pixels,
-        width,
-        height,
-        pixelformat,
-        icc_profile,
-        icc_profile_length);
+    cms_engine = sixel_cms_get_engine();
+    if (pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        cms_converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
+            pixels,
+            width,
+            height,
+            pixelformat,
+            icc_profile,
+            icc_profile_length);
+    } else if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
+        cms_converted = sixel_cms_convert_to_cielab_with_profile_bytes(
+            pixels,
+            width,
+            height,
+            pixelformat,
+            icc_profile,
+            icc_profile_length);
+        if (!cms_converted &&
+            (cms_engine == SIXEL_CMS_ENGINE_BUILTIN ||
+             cms_engine == SIXEL_CMS_ENGINE_NONE)) {
+            loader_trace_message(
+                "builtin PSD: skipping embedded ICC conversion "
+                "for CIELAB path (cms backend unsupported)");
+            return 0;
+        }
+    } else {
+        cms_converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+            pixels,
+            width,
+            height,
+            pixelformat,
+            icc_profile,
+            icc_profile_length);
+    }
     if (!cms_converted) {
         sixel_builtin_psd_trace_embedded_icc_failure();
     }

@@ -164,6 +164,80 @@ def build_alpha1_plane():
     return build_bitmap_plane(bits)
 
 
+def build_sxfl_soco_payload(r: int, g: int, b: int) -> bytes:
+    return bytes(
+        [
+            ord("S"),
+            ord("X"),
+            ord("F"),
+            ord("L"),
+            1,  # version
+            1,  # kind SoCo
+            0,
+            0,
+            r & 0xFF,
+            g & 0xFF,
+            b & 0xFF,
+        ]
+    )
+
+
+def build_sxfl_gdfl_payload(
+    *,
+    gradient_type: int,
+    reverse: bool,
+    angle_deg: float,
+    scale: float,
+    stops,
+) -> bytes:
+    out = bytearray()
+    out += b"SXFL"
+    out += bytes([1, 2])  # version=1, kind=GdFl
+    out += bytes([gradient_type & 0xFF, 1 if reverse else 0])
+    angle_i16 = int(max(-3276.8, min(3276.7, angle_deg)) * 10.0)
+    out += struct.pack(">h", angle_i16)
+    scale_u16 = int(max(0.01, min(655.35, scale)) * 100.0 + 0.5)
+    out += struct.pack(">H", scale_u16)
+    out += bytes([min(255, len(stops))])
+    for pos, r, g, b, a in stops[:255]:
+        p = int(max(0.0, min(1.0, pos)) * 65535.0 + 0.5)
+        out += struct.pack(">H", p)
+        out += bytes(
+            [
+                int(max(0, min(255, r))),
+                int(max(0, min(255, g))),
+                int(max(0, min(255, b))),
+                int(max(0, min(255, a))),
+            ]
+        )
+    return bytes(out)
+
+
+def build_sxfl_ptfl_payload(
+    *,
+    tile: int,
+    fg_rgb,
+    bg_rgb,
+) -> bytes:
+    return bytes(
+        [
+            ord("S"),
+            ord("X"),
+            ord("F"),
+            ord("L"),
+            1,  # version
+            3,  # kind PtFl
+            max(1, min(255, int(tile))),
+            int(max(0, min(255, fg_rgb[0]))),
+            int(max(0, min(255, fg_rgb[1]))),
+            int(max(0, min(255, fg_rgb[2]))),
+            int(max(0, min(255, bg_rgb[0]))),
+            int(max(0, min(255, bg_rgb[1]))),
+            int(max(0, min(255, bg_rgb[2]))),
+        ]
+    )
+
+
 def expand_u8_plane_to_u16be(plane_u8: bytes) -> bytes:
     out = bytearray()
     for v in plane_u8:
@@ -1493,6 +1567,119 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_soco.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"SoCo", build_sxfl_soco_payload(255, 48, 64))],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_sxfl_gdfl_payload(
+                                gradient_type=0,
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale=1.0,
+                                stops=[
+                                    (0.0, 255, 32, 32, 255),
+                                    (1.0, 32, 64, 255, 255),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_ptfl.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_sxfl_ptfl_payload(
+                                tile=4,
+                                fg_rgb=(250, 250, 250),
+                                bg_rgb=(30, 30, 30),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_vector_mask.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -2531,6 +2718,36 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_soco.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"SoCo", build_sxfl_soco_payload(255, 48, 64))],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_cmyk8_missing_composite_multilayer_unknown_blend.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=4,
@@ -3038,6 +3255,36 @@ def generate(out_dir: pathlib.Path):
                     "planes": [],
                     "blend_key": b"norm",
                     "additional_blocks": [(b"TySh", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_rgb8_missing_composite_multilayer_fill_soco.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"SoCo", build_sxfl_soco_payload(255, 48, 64))],
                 },
                 {
                     "top": 0,
@@ -3612,6 +3859,36 @@ def generate(out_dir: pathlib.Path):
                     "planes": [],
                     "blend_key": b"norm",
                     "additional_blocks": [(b"TySh", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_soco.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [(b"SoCo", build_sxfl_soco_payload(255, 48, 64))],
                 },
                 {
                     "top": 0,
