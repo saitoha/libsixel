@@ -1965,7 +1965,7 @@ sixel_builtin_psd_descriptor_read_enum_value(
 }
 
 static int
-sixel_builtin_psd_descriptor_parse_rgb_object(
+sixel_builtin_psd_descriptor_parse_color_object(
     unsigned char const *data,
     size_t data_length,
     size_t *pcursor,
@@ -1976,17 +1976,32 @@ sixel_builtin_psd_descriptor_parse_rgb_object(
     size_t i;
     char key[5];
     char type[5];
+    char class_key[5];
     double red;
     double green;
     double blue;
+    double cyan;
+    double magenta;
+    double yellow;
+    double black;
     double component_max;
     int has_red;
     int has_green;
     int has_blue;
+    int has_cyan;
+    int has_magenta;
+    int has_yellow;
+    int has_black;
+    int is_rgb_class;
 
     cursor = 0u;
     item_count = 0u;
     i = 0u;
+    class_key[0] = '\0';
+    class_key[1] = '\0';
+    class_key[2] = '\0';
+    class_key[3] = '\0';
+    class_key[4] = '\0';
     key[0] = '\0';
     key[1] = '\0';
     key[2] = '\0';
@@ -2000,10 +2015,19 @@ sixel_builtin_psd_descriptor_parse_rgb_object(
     red = 0.0;
     green = 0.0;
     blue = 0.0;
+    cyan = 0.0;
+    magenta = 0.0;
+    yellow = 0.0;
+    black = 0.0;
     component_max = 0.0;
     has_red = 0;
     has_green = 0;
     has_blue = 0;
+    has_cyan = 0;
+    has_magenta = 0;
+    has_yellow = 0;
+    has_black = 0;
+    is_rgb_class = 0;
     if (data == NULL || pcursor == NULL || out_rgb == NULL) {
         return 0;
     }
@@ -2015,7 +2039,15 @@ sixel_builtin_psd_descriptor_parse_rgb_object(
         !sixel_builtin_psd_descriptor_read_key4(data,
                                                 data_length,
                                                 &cursor,
-                                                key)) {
+                                                class_key)) {
+        return 0;
+    }
+    if (memcmp(class_key, "RGBC", 4u) == 0) {
+        is_rgb_class = 1;
+    } else if (memcmp(class_key, "CMYC", 4u) == 0 ||
+               memcmp(class_key, "CMYK", 4u) == 0) {
+        is_rgb_class = 0;
+    } else {
         return 0;
     }
     if (cursor + 4u > data_length) {
@@ -2036,25 +2068,52 @@ sixel_builtin_psd_descriptor_parse_rgb_object(
                                                     type)) {
             return 0;
         }
-        if ((memcmp(key, "Rd  ", 4u) == 0 ||
-             memcmp(key, "Grn ", 4u) == 0 ||
-             memcmp(key, "Bl  ", 4u) == 0) &&
-            sixel_builtin_psd_descriptor_read_numeric_value(data,
-                                                            data_length,
-                                                            &cursor,
-                                                            type,
-                                                            &numeric)) {
-            if (memcmp(key, "Rd  ", 4u) == 0) {
-                red = numeric;
-                has_red = 1;
-            } else if (memcmp(key, "Grn ", 4u) == 0) {
-                green = numeric;
-                has_green = 1;
-            } else {
-                blue = numeric;
-                has_blue = 1;
+        if (is_rgb_class != 0) {
+            if ((memcmp(key, "Rd  ", 4u) == 0 ||
+                 memcmp(key, "Grn ", 4u) == 0 ||
+                 memcmp(key, "Bl  ", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                if (memcmp(key, "Rd  ", 4u) == 0) {
+                    red = numeric;
+                    has_red = 1;
+                } else if (memcmp(key, "Grn ", 4u) == 0) {
+                    green = numeric;
+                    has_green = 1;
+                } else {
+                    blue = numeric;
+                    has_blue = 1;
+                }
+                continue;
             }
-            continue;
+        } else {
+            if ((memcmp(key, "Cyn ", 4u) == 0 ||
+                 memcmp(key, "Mgnt", 4u) == 0 ||
+                 memcmp(key, "Ylw ", 4u) == 0 ||
+                 memcmp(key, "Blck", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                if (memcmp(key, "Cyn ", 4u) == 0) {
+                    cyan = numeric;
+                    has_cyan = 1;
+                } else if (memcmp(key, "Mgnt", 4u) == 0) {
+                    magenta = numeric;
+                    has_magenta = 1;
+                } else if (memcmp(key, "Ylw ", 4u) == 0) {
+                    yellow = numeric;
+                    has_yellow = 1;
+                } else {
+                    black = numeric;
+                    has_black = 1;
+                }
+                continue;
+            }
         }
         if (!sixel_builtin_psd_descriptor_skip_value(data,
                                                      data_length,
@@ -2064,30 +2123,83 @@ sixel_builtin_psd_descriptor_parse_rgb_object(
             return 0;
         }
     }
-    if (has_red == 0 || has_green == 0 || has_blue == 0) {
-        return 0;
+    if (is_rgb_class != 0) {
+        if (has_red == 0 || has_green == 0 || has_blue == 0) {
+            return 0;
+        }
+        component_max = fmax(red, fmax(green, blue));
+        if (component_max <= 1.0) {
+            red *= 255.0;
+            green *= 255.0;
+            blue *= 255.0;
+        }
+        if (red < 0.0) {
+            red = 0.0;
+        } else if (red > 255.0) {
+            red = 255.0;
+        }
+        if (green < 0.0) {
+            green = 0.0;
+        } else if (green > 255.0) {
+            green = 255.0;
+        }
+        if (blue < 0.0) {
+            blue = 0.0;
+        } else if (blue > 255.0) {
+            blue = 255.0;
+        }
+    } else {
+        double red01;
+        double green01;
+        double blue01;
+
+        if (has_cyan == 0 || has_magenta == 0 || has_yellow == 0 || has_black == 0) {
+            return 0;
+        }
+        component_max = fmax(cyan,
+                             fmax(magenta,
+                                  fmax(yellow, black)));
+        if (component_max > 1.0) {
+            if (component_max <= 100.0) {
+                cyan /= 100.0;
+                magenta /= 100.0;
+                yellow /= 100.0;
+                black /= 100.0;
+            } else {
+                cyan /= 255.0;
+                magenta /= 255.0;
+                yellow /= 255.0;
+                black /= 255.0;
+            }
+        }
+        if (cyan < 0.0) {
+            cyan = 0.0;
+        } else if (cyan > 1.0) {
+            cyan = 1.0;
+        }
+        if (magenta < 0.0) {
+            magenta = 0.0;
+        } else if (magenta > 1.0) {
+            magenta = 1.0;
+        }
+        if (yellow < 0.0) {
+            yellow = 0.0;
+        } else if (yellow > 1.0) {
+            yellow = 1.0;
+        }
+        if (black < 0.0) {
+            black = 0.0;
+        } else if (black > 1.0) {
+            black = 1.0;
+        }
+        red01 = (1.0 - cyan) * (1.0 - black);
+        green01 = (1.0 - magenta) * (1.0 - black);
+        blue01 = (1.0 - yellow) * (1.0 - black);
+        red = red01 * 255.0;
+        green = green01 * 255.0;
+        blue = blue01 * 255.0;
     }
-    component_max = fmax(red, fmax(green, blue));
-    if (component_max <= 1.0) {
-        red *= 255.0;
-        green *= 255.0;
-        blue *= 255.0;
-    }
-    if (red < 0.0) {
-        red = 0.0;
-    } else if (red > 255.0) {
-        red = 255.0;
-    }
-    if (green < 0.0) {
-        green = 0.0;
-    } else if (green > 255.0) {
-        green = 255.0;
-    }
-    if (blue < 0.0) {
-        blue = 0.0;
-    } else if (blue > 255.0) {
-        blue = 255.0;
-    }
+
     sixel_builtin_psd_fill_set_rgb_from_u8(out_rgb,
                                            (unsigned char)(red + 0.5),
                                            (unsigned char)(green + 0.5),
@@ -2224,10 +2336,10 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
         }
         if (memcmp(key, "Clr ", 4u) == 0 &&
             memcmp(type, "Objc", 4u) == 0) {
-            if (!sixel_builtin_psd_descriptor_parse_rgb_object(data,
-                                                               data_length,
-                                                               &cursor,
-                                                               out_rgb)) {
+            if (!sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                                 data_length,
+                                                                 &cursor,
+                                                                 out_rgb)) {
                 return 0;
             }
             has_color = 1;
@@ -2741,10 +2853,10 @@ sixel_builtin_psd_parse_ptfl_descriptor_payload(
         }
         if (memcmp(key, "FgCl", 4u) == 0 &&
             memcmp(type, "Objc", 4u) == 0) {
-            if (!sixel_builtin_psd_descriptor_parse_rgb_object(data,
-                                                               key_length,
-                                                               &cursor,
-                                                               layer->fill_pattern_fg_rgb)) {
+            if (!sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                                 key_length,
+                                                                 &cursor,
+                                                                 layer->fill_pattern_fg_rgb)) {
                 return 0;
             }
             has_fg = 1;
@@ -2752,10 +2864,10 @@ sixel_builtin_psd_parse_ptfl_descriptor_payload(
         }
         if (memcmp(key, "BgCl", 4u) == 0 &&
             memcmp(type, "Objc", 4u) == 0) {
-            if (!sixel_builtin_psd_descriptor_parse_rgb_object(data,
-                                                               key_length,
-                                                               &cursor,
-                                                               layer->fill_pattern_bg_rgb)) {
+            if (!sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                                 key_length,
+                                                                 &cursor,
+                                                                 layer->fill_pattern_bg_rgb)) {
                 return 0;
             }
             has_bg = 1;
@@ -2791,12 +2903,6 @@ sixel_builtin_psd_parse_soco_descriptor_payload(
     size_t i;
     char key[5];
     char type[5];
-    double red;
-    double green;
-    double blue;
-    int has_red;
-    int has_green;
-    int has_blue;
 
     cursor = 0u;
     item_count = 0u;
@@ -2811,12 +2917,6 @@ sixel_builtin_psd_parse_soco_descriptor_payload(
     type[2] = '\0';
     type[3] = '\0';
     type[4] = '\0';
-    red = 0.0;
-    green = 0.0;
-    blue = 0.0;
-    has_red = 0;
-    has_green = 0;
-    has_blue = 0;
     if (data == NULL || layer == NULL) {
         return 0;
     }
@@ -2848,115 +2948,20 @@ sixel_builtin_psd_parse_soco_descriptor_payload(
         if (memcmp(key, "Clr ", 4u) == 0 &&
             memcmp(type, "Objc", 4u) == 0) {
             size_t obj_cursor;
-            size_t obj_item_count;
-            size_t j;
-            char obj_key[5];
-            char obj_type[5];
-            double component;
-            double max_component;
+            float fill_rgb[3];
 
             obj_cursor = cursor;
-            obj_item_count = 0u;
-            j = 0u;
-            obj_key[0] = '\0';
-            obj_key[1] = '\0';
-            obj_key[2] = '\0';
-            obj_key[3] = '\0';
-            obj_key[4] = '\0';
-            obj_type[0] = '\0';
-            obj_type[1] = '\0';
-            obj_type[2] = '\0';
-            obj_type[3] = '\0';
-            obj_type[4] = '\0';
-            component = 0.0;
-            max_component = 0.0;
-            if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
-                                                                  key_length,
-                                                                  &obj_cursor) ||
-                !sixel_builtin_psd_descriptor_read_key4(data,
-                                                        key_length,
-                                                        &obj_cursor,
-                                                        obj_key)) {
-                return 0;
-            }
-            if (obj_cursor + 4u > key_length) {
-                return 0;
-            }
-            obj_item_count = sixel_builtin_read_u32be_size(data + obj_cursor);
-            obj_cursor += 4u;
-            for (j = 0u; j < obj_item_count; ++j) {
-                if (!sixel_builtin_psd_descriptor_read_key4(data,
-                                                            key_length,
-                                                            &obj_cursor,
-                                                            obj_key) ||
-                    !sixel_builtin_psd_descriptor_read_type(data,
-                                                            key_length,
-                                                            &obj_cursor,
-                                                            obj_type)) {
-                    return 0;
-                }
-                if (memcmp(obj_key, "Rd  ", 4u) == 0 ||
-                    memcmp(obj_key, "Grn ", 4u) == 0 ||
-                    memcmp(obj_key, "Bl  ", 4u) == 0) {
-                    if (!sixel_builtin_psd_descriptor_read_numeric_value(
-                            data,
-                            key_length,
-                            &obj_cursor,
-                            obj_type,
-                            &component)) {
-                        return 0;
-                    }
-                    if (memcmp(obj_key, "Rd  ", 4u) == 0) {
-                        red = component;
-                        has_red = 1;
-                    } else if (memcmp(obj_key, "Grn ", 4u) == 0) {
-                        green = component;
-                        has_green = 1;
-                    } else {
-                        blue = component;
-                        has_blue = 1;
-                    }
-                } else if (!sixel_builtin_psd_descriptor_skip_value(data,
-                                                                    key_length,
-                                                                    &obj_cursor,
-                                                                    obj_type,
-                                                                    0u)) {
-                    return 0;
-                }
-            }
-            if (has_red != 0 && has_green != 0 && has_blue != 0) {
-                int red_u8;
-                int green_u8;
-                int blue_u8;
-                max_component = fmax(red, fmax(green, blue));
-                if (max_component <= 1.0) {
-                    red *= 255.0;
-                    green *= 255.0;
-                    blue *= 255.0;
-                }
-                red_u8 = (int)(red + 0.5);
-                green_u8 = (int)(green + 0.5);
-                blue_u8 = (int)(blue + 0.5);
-                if (red_u8 < 0) {
-                    red_u8 = 0;
-                } else if (red_u8 > 255) {
-                    red_u8 = 255;
-                }
-                if (green_u8 < 0) {
-                    green_u8 = 0;
-                } else if (green_u8 > 255) {
-                    green_u8 = 255;
-                }
-                if (blue_u8 < 0) {
-                    blue_u8 = 0;
-                } else if (blue_u8 > 255) {
-                    blue_u8 = 255;
-                }
+            fill_rgb[0] = 0.0f;
+            fill_rgb[1] = 0.0f;
+            fill_rgb[2] = 0.0f;
+            if (sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                                key_length,
+                                                                &obj_cursor,
+                                                                fill_rgb)) {
                 layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_SOCO;
-                sixel_builtin_psd_fill_set_rgb_from_u8(layer->fill_solid_rgb,
-                                                       (unsigned char)red_u8,
-                                                       (unsigned char)green_u8,
-                                                       (unsigned char)blue_u8);
+                layer->fill_solid_rgb[0] = fill_rgb[0];
+                layer->fill_solid_rgb[1] = fill_rgb[1];
+                layer->fill_solid_rgb[2] = fill_rgb[2];
                 return 1;
             }
             if (!sixel_builtin_psd_descriptor_skip_value(data,

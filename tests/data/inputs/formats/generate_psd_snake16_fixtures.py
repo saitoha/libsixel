@@ -219,6 +219,35 @@ def build_descriptor_soco_payload(r: int, g: int, b: int) -> bytes:
     return bytes(root)
 
 
+def build_descriptor_soco_payload_cmyk(c: float, m: float, y: float, k: float) -> bytes:
+    c = float(max(0.0, min(100.0, c)))
+    m = float(max(0.0, min(100.0, m)))
+    y = float(max(0.0, min(100.0, y)))
+    k = float(max(0.0, min(100.0, k)))
+
+    color_object = bytearray()
+    color_object += _descriptor_unicode("")
+    color_object += _descriptor_key4(b"CMYC")
+    color_object += struct.pack(">I", 4)
+    color_object += _descriptor_key4(b"Cyn ")
+    color_object += b"doub" + struct.pack(">d", c)
+    color_object += _descriptor_key4(b"Mgnt")
+    color_object += b"doub" + struct.pack(">d", m)
+    color_object += _descriptor_key4(b"Ylw ")
+    color_object += b"doub" + struct.pack(">d", y)
+    color_object += _descriptor_key4(b"Blck")
+    color_object += b"doub" + struct.pack(">d", k)
+
+    root = bytearray()
+    root += _descriptor_unicode("")
+    root += _descriptor_key4(b"SoCo")
+    root += struct.pack(">I", 1)
+    root += _descriptor_key4(b"Clr ")
+    root += b"Objc"
+    root += color_object
+    return bytes(root)
+
+
 def build_descriptor_gdfl_payload(
     *,
     gradient_type_key: bytes,
@@ -1785,6 +1814,46 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"SoCo",
+                            build_descriptor_soco_payload_cmyk(
+                                0.0,
+                                81.17647058823529,
+                                74.90196078431373,
+                                0.0,
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -3082,6 +3151,46 @@ def generate(out_dir: pathlib.Path):
                     "blend_key": b"norm",
                     "additional_blocks": [
                         (b"SoCo", build_descriptor_soco_payload(255, 48, 64))
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_soco_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"SoCo",
+                            build_descriptor_soco_payload_cmyk(
+                                0.0,
+                                81.17647058823529,
+                                74.90196078431373,
+                                0.0,
+                            ),
+                        )
                     ],
                 },
                 {
@@ -4398,6 +4507,46 @@ def generate(out_dir: pathlib.Path):
                     "blend_key": b"norm",
                     "additional_blocks": [
                         (b"SoCo", build_descriptor_soco_payload(255, 48, 64))
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_soco_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"SoCo",
+                            build_descriptor_soco_payload_cmyk(
+                                0.0,
+                                81.17647058823529,
+                                74.90196078431373,
+                                0.0,
+                            ),
+                        )
                     ],
                 },
                 {
