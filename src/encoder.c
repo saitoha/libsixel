@@ -7261,6 +7261,7 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     char *template_path;
     size_t template_capacity;
     int open_flags;
+    int retry_flags;
     int open_attempt;
     int open_errno;
     int fd;
@@ -7270,6 +7271,7 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     template_path = NULL;
     template_capacity = 0u;
     open_flags = 0;
+    retry_flags = 0;
     fd = (-1);
     tmpname_result = NULL;
 
@@ -7299,13 +7301,31 @@ clipboard_create_spool(sixel_allocator_t *allocator,
 #if defined(O_BINARY)
     open_flags |= O_BINARY;
 #endif
+    retry_flags = open_flags;
 #if defined(O_EXCL)
     open_flags |= O_EXCL;
+    retry_flags &= ~O_EXCL;
 #endif
     open_attempt = 0;
     open_errno = 0;
     for (open_attempt = 0; open_attempt < 4; ++open_attempt) {
         fd = sixel_compat_open(template_path, open_flags, S_IRUSR | S_IWUSR);
+#if defined(O_EXCL)
+        if (fd < 0
+                && (errno == EBADF
+                    || errno == EINVAL
+                    || errno == ENOENT
+                    || errno == EACCES)) {
+            /*
+             * Some Windows CRT configurations reject O_EXCL for paths that are
+             * otherwise valid. Retry without O_EXCL before treating it as
+             * fatal.
+             */
+            fd = sixel_compat_open(template_path,
+                                   retry_flags,
+                                   S_IRUSR | S_IWUSR);
+        }
+#endif
         if (fd >= 0) {
             break;
         }
@@ -8053,7 +8073,20 @@ load_end:
     }
 
     if (encoder->output_is_png) {
-        png_final_path = encoder->output_png_to_stdout ? "-" : encoder->png_output_path;
+        if (encoder->outfd >= 0
+                && encoder->outfd != STDOUT_FILENO
+                && encoder->outfd != STDERR_FILENO) {
+            /*
+             * Close the staging descriptor before decoding so Windows CRT
+             * share-mode semantics cannot block readback of the temporary
+             * SIXEL payload.
+             */
+            (void)sixel_compat_close(encoder->outfd);
+            encoder->outfd = STDOUT_FILENO;
+        }
+        png_final_path = encoder->output_png_to_stdout
+            ? "-"
+            : encoder->png_output_path;
         if (! encoder->output_png_to_stdout && png_final_path == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode: missing PNG output path.");
