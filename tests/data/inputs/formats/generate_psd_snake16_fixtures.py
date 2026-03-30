@@ -182,6 +182,43 @@ def build_sxfl_soco_payload(r: int, g: int, b: int) -> bytes:
     )
 
 
+def _descriptor_unicode(text: str) -> bytes:
+    encoded = text.encode("utf-16be")
+    return struct.pack(">I", len(text)) + encoded
+
+
+def _descriptor_key4(key4: bytes) -> bytes:
+    if len(key4) != 4:
+        raise ValueError(f"descriptor key must be 4 bytes, got {key4!r}")
+    return struct.pack(">I", 0) + key4
+
+
+def build_descriptor_soco_payload(r: int, g: int, b: int) -> bytes:
+    r = int(max(0, min(255, r)))
+    g = int(max(0, min(255, g)))
+    b = int(max(0, min(255, b)))
+
+    color_object = bytearray()
+    color_object += _descriptor_unicode("")
+    color_object += _descriptor_key4(b"RGBC")
+    color_object += struct.pack(">I", 3)
+    color_object += _descriptor_key4(b"Rd  ")
+    color_object += b"doub" + struct.pack(">d", float(r))
+    color_object += _descriptor_key4(b"Grn ")
+    color_object += b"doub" + struct.pack(">d", float(g))
+    color_object += _descriptor_key4(b"Bl  ")
+    color_object += b"doub" + struct.pack(">d", float(b))
+
+    root = bytearray()
+    root += _descriptor_unicode("")
+    root += _descriptor_key4(b"SoCo")
+    root += struct.pack(">I", 1)
+    root += _descriptor_key4(b"Clr ")
+    root += b"Objc"
+    root += color_object
+    return bytes(root)
+
+
 def build_sxfl_gdfl_payload(
     *,
     gradient_type: int,
@@ -1583,6 +1620,38 @@ def generate(out_dir: pathlib.Path):
                     "planes": [],
                     "blend_key": b"norm",
                     "additional_blocks": [(b"SoCo", build_sxfl_soco_payload(255, 48, 64))],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (b"SoCo", build_descriptor_soco_payload(255, 48, 64))
+                    ],
                 },
                 {
                     "top": 0,

@@ -90,7 +90,8 @@ Key points used by this roadmap:
     - layers with decodable pixel channels are composited normally
       (non-pixel payload ignored, info trace), and
     - layers without decodable pixel channels:
-      - render synthetic fill for `SoCo`/`GdFl`/`PtFl` payloads, or
+      - render synthetic fill for `SoCo` (descriptor/SXFL),
+        `GdFl` (SXFL), and `PtFl` (SXFL) payloads, or
       - skip layer when no supported fill payload is present.
   - Vector mask, layer effects, knockout, and unknown blend key use
     deterministic degrade behavior in fallback:
