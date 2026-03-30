@@ -17,7 +17,8 @@ noinst_PROGRAMS = fuzz-loader-builtin-libfuzzer
 endif
 
 EXTRA_DIST = \
-    fuzz-loader-builtin-libfuzzer.c
+    fuzz-loader-builtin-libfuzzer.c \
+    loader-builtin.dict
 
 fuzz_loader_builtin_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-loader-builtin-libfuzzer.c
@@ -44,8 +45,10 @@ fuzz_loader_builtin_libfuzzer_LDADD = \
 
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
+FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
 
-.PHONY: run-loader-builtin
+.PHONY: run-loader-builtin run-loader-builtin-formats \
+    $(FUZZ_BUILTIN_FORMATS:%=run-loader-builtin-%)
 
 run-loader-builtin: fuzz-loader-builtin-libfuzzer$(EXEEXT)
 	@set -eu; \
@@ -55,3 +58,20 @@ run-loader-builtin: fuzz-loader-builtin-libfuzzer$(EXEEXT)
 	echo "fuzz: running $$target $(FUZZ_BUILTIN_ARGS) $$corpus"; \
 	exec "$$target" $(FUZZ_BUILTIN_ARGS) "$$corpus"
 
+run-loader-builtin-%: fuzz-loader-builtin-libfuzzer$(EXEEXT)
+	@set -eu; \
+	format="$*"; \
+	target="$(abs_builddir)/fuzz-loader-builtin-libfuzzer$(EXEEXT)"; \
+	corpus="$(FUZZ_BUILTIN_CORPUS)/$$format"; \
+	mkdir -p "$$corpus"; \
+	echo "fuzz[$$format]: running $$target $(FUZZ_BUILTIN_ARGS) $$corpus"; \
+	FUZZ_BUILTIN_FORCE_FORMAT="$$format" \
+		exec "$$target" $(FUZZ_BUILTIN_ARGS) "$$corpus"
+
+run-loader-builtin-formats: fuzz-loader-builtin-libfuzzer$(EXEEXT)
+	@set -eu; \
+	for format in $(FUZZ_BUILTIN_FORMATS); do \
+		$(MAKE) $(AM_MAKEFLAGS) run-loader-builtin-$$format \
+			FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
+			FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)' || exit $$?; \
+	done

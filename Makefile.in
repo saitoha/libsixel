@@ -1140,6 +1140,16 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
 	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \
+	fuzz-run-loader-builtin-formats \
+	fuzz-run-loader-builtin-png \
+	fuzz-run-loader-builtin-gif \
+	fuzz-run-loader-builtin-jpeg \
+	fuzz-run-loader-builtin-pnm \
+	fuzz-run-loader-builtin-sixel \
+	fuzz-run-loader-builtin-hdr \
+	fuzz-run-loader-builtin-psd \
+	fuzz-run-loader-builtin-pic \
+	fuzz-run-loader-builtin-bmp \
 	check-python check-ruby check-perl check-php
 
 check-python:
@@ -1164,6 +1174,7 @@ FUZZ_IMG2SIXEL ?= $(abs_top_builddir)/converters/img2sixel$(EXEEXT)
 FUZZ_IMG2SIXEL_BASE_ARGS ?=
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
+FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
 
 install-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
@@ -1189,6 +1200,9 @@ fuzz-cli-img2sixel: all
 	fi; \
 	mkdir -p "$(FUZZ_OUTPUT_DIR)"; \
 	echo "fuzz-cli-img2sixel: base args='$(FUZZ_IMG2SIXEL_BASE_ARGS)'"; \
+	FUZZ_IMG2SIXEL="$(FUZZ_IMG2SIXEL)"; \
+	FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)"; \
+	export FUZZ_IMG2SIXEL FUZZ_IMG2SIXEL_BASE_ARGS; \
 	if [ "$(FUZZ_TIMEOUT)" -gt 0 ]; then \
 		if ! command -v timeout >/dev/null 2>&1; then \
 			echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2; \
@@ -1200,9 +1214,6 @@ fuzz-cli-img2sixel: all
 			-i "$(FUZZ_INPUT_DIR)" \
 			-o "$(FUZZ_OUTPUT_DIR)" \
 			-- \
-			env \
-			FUZZ_IMG2SIXEL="$(FUZZ_IMG2SIXEL)" \
-			FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)" \
 			"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@; \
 		rc=$$?; \
 		set -e; \
@@ -1217,9 +1228,6 @@ fuzz-cli-img2sixel: all
 		-i "$(FUZZ_INPUT_DIR)" \
 		-o "$(FUZZ_OUTPUT_DIR)" \
 		-- \
-		env \
-		FUZZ_IMG2SIXEL="$(FUZZ_IMG2SIXEL)" \
-		FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)" \
 		"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@
 
 fuzz-loader-builtin:
@@ -1228,6 +1236,18 @@ fuzz-loader-builtin:
 
 fuzz-run-loader-builtin:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin \
+		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
+		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-loader-builtin-%:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin-$* \
+		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
+		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-loader-builtin-formats:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin-formats \
 		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
 		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
 	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }

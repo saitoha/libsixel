@@ -127,28 +127,235 @@ jobs:
             exec_type: bash
             fuzz_timeout: '300'
 
-          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-formats
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: CC=clang CXX=clang++
             setup_options: --enable-fuzz
-            check_target: fuzz-run-loader-builtin
+            check_target: fuzz-run-loader-builtin-formats
             extra_packages: >-
               clang
             exec_type: bash
-            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -fork=2 -rss_limit_mb=4096
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
 
-          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-formats
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: CC=clang CXX=clang++
             setup_options: -Dfuzz=true
-            check_target: compile fuzz-run-loader-builtin
+            check_target: compile fuzz-run-loader-builtin-formats
             extra_packages: >-
               meson
               clang
             exec_type: bash
-            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -fork=2 -rss_limit_mb=4096
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-png
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-png
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-png
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-png
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-gif
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-gif
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-gif
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-gif
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-jpeg
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-jpeg
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-jpeg
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-jpeg
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-pnm
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-pnm
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-pnm
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-pnm
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-sixel
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-sixel
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-sixel
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-sixel
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-hdr
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-hdr
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-hdr
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-hdr
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-psd
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-psd
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-psd
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-psd
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-pic
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-pic
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-pic
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-pic
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Autotools-ubuntu-x86_64-clang-fuzz-loader-builtin-bmp
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: --enable-fuzz
+            check_target: fuzz-run-loader-builtin-bmp
+            extra_packages: >-
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
+
+          - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin-bmp
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: CC=clang CXX=clang++
+            setup_options: -Dfuzz=true
+            check_target: compile fuzz-run-loader-builtin-bmp
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+            fuzz_builtin_args: -max_total_time=30 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096
 
     env:
       FUZZ_TIMEOUT: ${{ matrix.fuzz_timeout || '' }}

@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -31,6 +32,308 @@ static sixel_loader_factory_t *g_factory = NULL;
 static sixel_loader_component_t *g_component = NULL;
 static int g_fuzz_ready = 0;
 static unsigned char g_empty_input[1];
+static unsigned char *g_forced_chunk_buffer = NULL;
+static size_t g_forced_chunk_capacity = 0u;
+
+typedef enum fuzz_builtin_force_format {
+    FUZZ_FORCE_FORMAT_AUTO = 0,
+    FUZZ_FORCE_FORMAT_PNG,
+    FUZZ_FORCE_FORMAT_GIF,
+    FUZZ_FORCE_FORMAT_JPEG,
+    FUZZ_FORCE_FORMAT_PNM,
+    FUZZ_FORCE_FORMAT_SIXEL,
+    FUZZ_FORCE_FORMAT_HDR,
+    FUZZ_FORCE_FORMAT_PSD,
+    FUZZ_FORCE_FORMAT_PIC,
+    FUZZ_FORCE_FORMAT_BMP
+} fuzz_builtin_force_format_t;
+
+static fuzz_builtin_force_format_t g_force_format = FUZZ_FORCE_FORMAT_AUTO;
+
+static fuzz_builtin_force_format_t
+fuzz_parse_force_format(char const *value)
+{
+    if (value == NULL || value[0] == '\0') {
+        return FUZZ_FORCE_FORMAT_AUTO;
+    }
+    if (strcmp(value, "auto") == 0 || strcmp(value, "any") == 0) {
+        return FUZZ_FORCE_FORMAT_AUTO;
+    }
+    if (strcmp(value, "png") == 0) {
+        return FUZZ_FORCE_FORMAT_PNG;
+    }
+    if (strcmp(value, "gif") == 0) {
+        return FUZZ_FORCE_FORMAT_GIF;
+    }
+    if (strcmp(value, "jpeg") == 0 || strcmp(value, "jpg") == 0) {
+        return FUZZ_FORCE_FORMAT_JPEG;
+    }
+    if (strcmp(value, "pnm") == 0) {
+        return FUZZ_FORCE_FORMAT_PNM;
+    }
+    if (strcmp(value, "sixel") == 0) {
+        return FUZZ_FORCE_FORMAT_SIXEL;
+    }
+    if (strcmp(value, "hdr") == 0) {
+        return FUZZ_FORCE_FORMAT_HDR;
+    }
+    if (strcmp(value, "psd") == 0) {
+        return FUZZ_FORCE_FORMAT_PSD;
+    }
+    if (strcmp(value, "pic") == 0) {
+        return FUZZ_FORCE_FORMAT_PIC;
+    }
+    if (strcmp(value, "bmp") == 0) {
+        return FUZZ_FORCE_FORMAT_BMP;
+    }
+    return FUZZ_FORCE_FORMAT_AUTO;
+}
+
+static int
+fuzz_forced_chunk_reserve(size_t size)
+{
+    unsigned char *next;
+
+    if (size == 0u) {
+        size = 1u;
+    }
+    if (size <= g_forced_chunk_capacity) {
+        return 1;
+    }
+
+    next = (unsigned char *)realloc(g_forced_chunk_buffer, size);
+    if (next == NULL) {
+        return 0;
+    }
+    g_forced_chunk_buffer = next;
+    g_forced_chunk_capacity = size;
+    return 1;
+}
+
+static void
+fuzz_apply_magic(unsigned char *buffer,
+                 size_t size,
+                 size_t offset,
+                 unsigned char const *magic,
+                 size_t magic_size)
+{
+    size_t copy_size;
+
+    if (buffer == NULL || magic == NULL || offset >= size || magic_size == 0u) {
+        return;
+    }
+    copy_size = magic_size;
+    if (copy_size > size - offset) {
+        copy_size = size - offset;
+    }
+    if (copy_size > 0u) {
+        memcpy(buffer + offset, magic, copy_size);
+    }
+}
+
+static int
+fuzz_prepare_input_forced_format(uint8_t const *data,
+                                 size_t size,
+                                 unsigned char const **out_data,
+                                 size_t *out_size)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    static unsigned char const gif_header[13] = {
+        'G', 'I', 'F', '8', '9', 'a',
+        0x01u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const jpeg_header[4] = {
+        0xffu, 0xd8u, 0xffu, 0xd9u
+    };
+    static unsigned char const pnm_prefix[11] = {
+        'P', '6', '\n', '1', ' ', '1', '\n', '2', '5', '5', '\n'
+    };
+    static unsigned char const sixel_prefix[5] = {
+        0x1bu, 0x50u, 0x71u, 0x1bu, 0x5cu
+    };
+    static unsigned char const hdr_template[] =
+        "#?RADIANCE\n"
+        "FORMAT=32-bit_rle_rgbe\n"
+        "\n"
+        "-Y 1 +X 1\n"
+        "\x80\x80\x80\x80";
+    static unsigned char const psd_header[40] = {
+        '8', 'B', 'P', 'S', 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x08u, 0x00u, 0x03u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const pic_magic_start[4] = {
+        0x53u, 0x80u, 0xf6u, 0x34u
+    };
+    static unsigned char const pic_magic_mark[4] = {
+        'P', 'I', 'C', 'T'
+    };
+    static unsigned char const bmp_header[58] = {
+        'B', 'M', 0x3au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x36u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u,
+        0x18u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u
+    };
+    size_t target_size;
+
+    if (out_data == NULL || out_size == NULL) {
+        return 0;
+    }
+
+    if (g_force_format == FUZZ_FORCE_FORMAT_AUTO) {
+        *out_data = (unsigned char const *)(uintptr_t)data;
+        *out_size = size;
+        return 1;
+    }
+
+    target_size = size;
+    switch (g_force_format) {
+    case FUZZ_FORCE_FORMAT_PNG:
+        if (target_size < sizeof(png_signature)) {
+            target_size = sizeof(png_signature);
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_GIF:
+        if (target_size < sizeof(gif_header)) {
+            target_size = sizeof(gif_header);
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_JPEG:
+        if (target_size < sizeof(jpeg_header)) {
+            target_size = sizeof(jpeg_header);
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_PNM:
+        if (target_size < sizeof(pnm_prefix) + 3u) {
+            target_size = sizeof(pnm_prefix) + 3u;
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_SIXEL:
+        if (target_size < sizeof(sixel_prefix)) {
+            target_size = sizeof(sixel_prefix);
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_HDR:
+        if (target_size < sizeof(hdr_template) - 1u) {
+            target_size = sizeof(hdr_template) - 1u;
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_PSD:
+        if (target_size < sizeof(psd_header) + 3u) {
+            target_size = sizeof(psd_header) + 3u;
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_PIC:
+        if (target_size < 92u) {
+            target_size = 92u;
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_BMP:
+        if (target_size < sizeof(bmp_header)) {
+            target_size = sizeof(bmp_header);
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_AUTO:
+    default:
+        break;
+    }
+
+    if (!fuzz_forced_chunk_reserve(target_size)) {
+        return 0;
+    }
+
+    if (size > 0u && data != NULL) {
+        memcpy(g_forced_chunk_buffer, data, size);
+    }
+    if (target_size > size) {
+        memset(g_forced_chunk_buffer + size, 0, target_size - size);
+    }
+
+    switch (g_force_format) {
+    case FUZZ_FORCE_FORMAT_PNG:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         png_signature,
+                         sizeof(png_signature));
+        break;
+    case FUZZ_FORCE_FORMAT_GIF:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         gif_header,
+                         sizeof(gif_header));
+        break;
+    case FUZZ_FORCE_FORMAT_JPEG:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         jpeg_header,
+                         sizeof(jpeg_header));
+        break;
+    case FUZZ_FORCE_FORMAT_PNM:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         pnm_prefix,
+                         sizeof(pnm_prefix));
+        break;
+    case FUZZ_FORCE_FORMAT_SIXEL:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         sixel_prefix,
+                         sizeof(sixel_prefix));
+        break;
+    case FUZZ_FORCE_FORMAT_HDR:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         hdr_template,
+                         sizeof(hdr_template) - 1u);
+        break;
+    case FUZZ_FORCE_FORMAT_PSD:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         psd_header,
+                         sizeof(psd_header));
+        break;
+    case FUZZ_FORCE_FORMAT_PIC:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         pic_magic_start,
+                         sizeof(pic_magic_start));
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         88u,
+                         pic_magic_mark,
+                         sizeof(pic_magic_mark));
+        break;
+    case FUZZ_FORCE_FORMAT_BMP:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         bmp_header,
+                         sizeof(bmp_header));
+        break;
+    case FUZZ_FORCE_FORMAT_AUTO:
+    default:
+        break;
+    }
+
+    *out_data = g_forced_chunk_buffer;
+    *out_size = target_size;
+    return 1;
+}
 
 static uint64_t
 fuzz_data_mix64(uint8_t const *data, size_t size)
@@ -145,6 +448,9 @@ fuzz_builtin_loader_dispose(void)
         sixel_allocator_unref(g_allocator);
         g_allocator = NULL;
     }
+    free(g_forced_chunk_buffer);
+    g_forced_chunk_buffer = NULL;
+    g_forced_chunk_capacity = 0u;
 
     g_fuzz_ready = 0;
 }
@@ -190,6 +496,9 @@ LLVMFuzzerInitialize(int *argc, char ***argv)
     (void)argc;
     (void)argv;
 
+    g_force_format = fuzz_parse_force_format(
+        getenv("FUZZ_BUILTIN_FORCE_FORMAT"));
+
     if (fuzz_builtin_loader_init()) {
         (void)atexit(fuzz_builtin_loader_dispose);
     }
@@ -203,6 +512,8 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     enum { FUZZ_MAX_INPUT_BYTES = 4 * 1024 * 1024 };
 
     sixel_chunk_t chunk;
+    unsigned char const *payload_data;
+    size_t payload_size;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -226,7 +537,16 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
         return 0;
     }
 
-    fuzz_pick_loader_options(data, size,
+    payload_data = (unsigned char const *)(uintptr_t)data;
+    payload_size = size;
+    if (!fuzz_prepare_input_forced_format(data,
+                                          size,
+                                          &payload_data,
+                                          &payload_size)) {
+        return 0;
+    }
+
+    fuzz_pick_loader_options(payload_data, payload_size,
                              &fstatic,
                              &fuse_palette,
                              &reqcolors,
@@ -262,13 +582,13 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     }
     sixel_helper_set_builtin_enable_cms(enable_cms);
 
-    if (size == 0u) {
+    if (payload_size == 0u) {
         chunk.buffer = g_empty_input;
     } else {
-        chunk.buffer = (unsigned char *)(uintptr_t)data;
+        chunk.buffer = (unsigned char *)(uintptr_t)payload_data;
     }
-    chunk.size = size;
-    chunk.max_size = size;
+    chunk.size = payload_size;
+    chunk.max_size = payload_size;
     chunk.source_path = NULL;
     chunk.allocator = g_allocator;
 
