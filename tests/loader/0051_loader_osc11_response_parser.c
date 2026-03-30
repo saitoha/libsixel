@@ -26,7 +26,7 @@ typedef struct osc11_failure_case {
 } osc11_failure_case_t;
 
 static int
-run_success_cases(void)
+run_osc11_success_cases(void)
 {
     static osc11_success_case_t const cases[] = {
         { "\033]11;#112233\007", 0x11u, 0x22u, 0x33u },
@@ -76,7 +76,7 @@ run_success_cases(void)
 }
 
 static int
-run_failure_cases(void)
+run_osc11_failure_cases(void)
 {
     static osc11_failure_case_t const cases[] = {
         { "#112233\007" },
@@ -120,12 +120,12 @@ test_loader_0051_loader_osc11_response_parser(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    status = run_success_cases();
+    status = run_osc11_success_cases();
     if (status != 0) {
         return EXIT_FAILURE;
     }
 
-    status = run_failure_cases();
+    status = run_osc11_failure_cases();
     if (status != 0) {
         return EXIT_FAILURE;
     }
