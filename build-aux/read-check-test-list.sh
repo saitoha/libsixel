@@ -68,6 +68,14 @@ esac
                 # staticcheck target instead of runtime test suites.
                 next
             }
+            if (path == "docs/consistency/0001_help_vs_man.t") {
+                # This check is now covered by staticcheck.
+                next
+            }
+            if (path == "docs/consistency/0002_man_vs_bash_completion.t") {
+                # This check is now covered by staticcheck.
+                next
+            }
             if (ruby_tests_mode == "skip" &&
                 path ~ /^bindings\/ruby\/[0-9][0-9][0-9][0-9]_.+\.rb$/) {
                 next

@@ -319,6 +319,8 @@ AM_LOG_FLAGS =
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
+	staticcheck-docs-help-vs-man \
+	staticcheck-docs-man-vs-bash-completion \
 	staticcheck-docs-envvars-help-table \
 	staticcheck-c-header-modeline
 
@@ -337,6 +339,8 @@ staticcheck: \
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
+	staticcheck-docs-help-vs-man \
+	staticcheck-docs-man-vs-bash-completion \
 	staticcheck-docs-envvars-help-table \
 	staticcheck-c-header-modeline
 
@@ -486,6 +490,26 @@ staticcheck-docs-envvars-help-table:
 		--trs-file staticcheck-docs-envvars-help-table.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-envvars-help-table.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-docs-help-vs-man:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-docs-help-vs-man" \
+		--log-file staticcheck-docs-help-vs-man.log \
+		--trs-file staticcheck-docs-help-vs-man.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-help-vs-man.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-docs-man-vs-bash-completion:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-docs-man-vs-bash-completion" \
+		--log-file staticcheck-docs-man-vs-bash-completion.log \
+		--trs-file staticcheck-docs-man-vs-bash-completion.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-man-vs-bash-completion.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-c-header-modeline:
@@ -1083,6 +1107,8 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
+    _static/sh/staticcheck-docs-help-vs-man.sh \
+    _static/sh/staticcheck-docs-man-vs-bash-completion.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
     _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \
