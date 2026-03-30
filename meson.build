@@ -152,6 +152,39 @@ if get_option('tests')
 endif
 fuzz_enabled = get_option('fuzz')
 fuzz_message = fuzz_enabled ? 'yes' : 'no'
+objc_forced_off_for_fuzz = false
+
+if fuzz_enabled
+  fuzz_instrument_c_args = ['-fsanitize=fuzzer-no-link,address,undefined']
+  fuzz_instrument_link_args = ['-fsanitize=address,undefined']
+
+  foreach arg : fuzz_instrument_c_args
+    if not cc.has_argument(arg)
+      error('fuzz option requires compiler support for ' + arg)
+    endif
+  endforeach
+  foreach arg : fuzz_instrument_link_args
+    if not cc.has_link_argument(arg)
+      error('fuzz option requires linker support for ' + arg)
+    endif
+  endforeach
+
+  add_project_arguments(fuzz_instrument_c_args, language: 'c')
+  # Some Darwin targets link as Objective-C while pulling instrumented C objects.
+  # Ensure sanitizer runtimes are present for those link steps too.
+  add_project_link_arguments(fuzz_instrument_link_args, language: ['c', 'objc'])
+
+  if host_system == 'darwin' and have_objc
+    if cc.version() != objc.version()
+      warning(
+        'fuzz=true on macOS detected mixed toolchains (C=' + cc.version() + ', ObjC=' + objc.version() + '). ' +
+        'Disabling Objective-C integrations (Quick Look/AppKit) for this fuzz build to avoid sanitizer runtime mismatch.'
+      )
+      have_objc = false
+      objc_forced_off_for_fuzz = true
+    endif
+  endif
+endif
 
 if host_system == 'emscripten'
   # Emscripten -s settings below are link-time settings.
@@ -1348,10 +1381,14 @@ if host_system == 'darwin'
       required: quicklook_ext_opt.enabled())
     if quicklook_ext_dep.found() and quicklook_register_dep.found()
       if not have_objc
-        if quicklook_ext_opt.enabled()
+        if quicklook_ext_opt.enabled() and not objc_forced_off_for_fuzz
           error('Quick Look extension requires an Objective-C compiler')
         endif
-        quicklook_extension_message = 'no (Objective-C compiler unavailable)'
+        if objc_forced_off_for_fuzz
+          quicklook_extension_message = 'no (disabled for fuzz toolchain compatibility)'
+        else
+          quicklook_extension_message = 'no (Objective-C compiler unavailable)'
+        endif
       else
         openurls_returns_running_application = objc.compiles('''
             #import <Foundation/Foundation.h>
@@ -1425,7 +1462,7 @@ endif
 
 if host_system == 'darwin'
   if not appkit_opt.disabled()
-    if not have_objc and appkit_opt.enabled()
+    if not have_objc and appkit_opt.enabled() and not objc_forced_off_for_fuzz
       error('AppKit clipboard backend requires an Objective-C compiler')
     endif
     if have_objc
