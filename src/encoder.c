@@ -5273,10 +5273,12 @@ sixel_encoder_setopt(
         }
 
         /*
-         * Keep "png:" prefix handling in the application layer and pass only
-         * filesystem/stdout targets to the compat open wrapper.
+         * Keep "png:" prefix handling in the application layer. Plain SIXEL
+         * outputs open the target here, while PNG targets open a dedicated
+         * staging file later in sixel_encoder_encode().
          */
         if (!encoder->clipboard_output_active
+                && !encoder->output_is_png
                 && outfile_open_path != NULL
                 && strcmp(outfile_open_path, "-") != 0) {
             if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
@@ -7315,7 +7317,8 @@ clipboard_create_spool(sixel_allocator_t *allocator,
                 && (errno == EBADF
                     || errno == EINVAL
                     || errno == ENOENT
-                    || errno == EACCES)) {
+                    || errno == EACCES
+                    || errno == EPERM)) {
             /*
              * Some Windows CRT configurations reject O_EXCL for paths that are
              * otherwise valid. Retry without O_EXCL before treating it as
@@ -7798,7 +7801,9 @@ sixel_encoder_encode(
             if (encoder->outfd < 0
                     && (errno == EBADF
                         || errno == EINVAL
-                        || errno == ENOENT)) {
+                        || errno == ENOENT
+                        || errno == EACCES
+                        || errno == EPERM)) {
                 /*
                  * Emscripten virtual filesystems can reject O_EXCL with
                  * inconsistent errno values even when the generated path is
