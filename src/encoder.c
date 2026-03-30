@@ -5052,6 +5052,7 @@ sixel_encoder_setopt(
     size_t mapfile_full_length;
     unsigned int path_flags;
     char const *mapfile_view;
+    char const *outfile_open_path;
     int path_check;
     int output_open_flags;
     int tile_open_flags;
@@ -5064,6 +5065,7 @@ sixel_encoder_setopt(
     mapfile_length = 0u;
     path_flags = 0u;
     mapfile_view = NULL;
+    outfile_open_path = NULL;
     path_check = 0;
     output_open_flags = 0;
     tile_open_flags = 0;
@@ -5079,6 +5081,7 @@ sixel_encoder_setopt(
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
+        outfile_open_path = value;
         if (*value == '\0') {
             sixel_helper_set_additional_message(
                 "no file name specified.");
@@ -5184,6 +5187,9 @@ sixel_encoder_setopt(
                     }
                 }
             }
+            outfile_open_path = encoder->output_png_to_stdout
+                ? "-"
+                : encoder->png_output_path;
         } else {
             encoder->output_is_png = 0;
             encoder->output_png_to_stdout = 0;
@@ -5263,9 +5269,16 @@ sixel_encoder_setopt(
                                           strlen(value) + 1,
                                           value);
             }
+            outfile_open_path = value;
         }
 
-        if (!encoder->clipboard_output_active && strcmp(value, "-") != 0) {
+        /*
+         * Keep "png:" prefix handling in the application layer and pass only
+         * filesystem/stdout targets to the compat open wrapper.
+         */
+        if (!encoder->clipboard_output_active
+                && outfile_open_path != NULL
+                && strcmp(outfile_open_path, "-") != 0) {
             if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
                 (void)sixel_compat_close(encoder->outfd);
             }
@@ -5277,7 +5290,7 @@ sixel_encoder_setopt(
              */
             output_open_flags |= O_BINARY;
 #endif
-            encoder->outfd = sixel_compat_open(value,
+            encoder->outfd = sixel_compat_open(outfile_open_path,
                                                output_open_flags,
                                                S_IRUSR | S_IWUSR);
         }
