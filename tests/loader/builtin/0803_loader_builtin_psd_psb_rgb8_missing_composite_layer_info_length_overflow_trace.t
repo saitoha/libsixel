@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify PSB missing-composite fixture with truncated tail is detected as malformed.
+# Verify PSB missing-composite fixture with layer-info length overflow is diagnosed.
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py
 
@@ -13,15 +13,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_psb_rgb8_missing_composite_multilayer_normal_truncated.psd"
+input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_psb_rgb8_missing_composite_multilayer_layer_info_length_overflow.psd"
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: malformed PSB layer/mask length"*|*"builtin PSD: malformed section length/offset"*)
-        echo "ok" 1 - "truncated PSB missing-composite fixture is malformed"
+    *"builtin PSD: malformed PSB layer info length"*)
+        echo "ok" 1 - "PSB layer-info length overflow emits dedicated malformed trace"
         ;;
     *)
-        echo "not ok" 1 - "PSB truncated malformed trace is missing"
+        echo "not ok" 1 - "PSB layer-info length overflow trace is missing"
         exit 0
         ;;
 esac

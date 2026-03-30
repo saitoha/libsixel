@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin PSD reports malformed layer/mask section when image data is
+# Verify builtin PSD reports malformed layer metadata when image data is
 # absent and layer section metadata is inconsistent.
 
 set -eux
@@ -16,7 +16,7 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_missing_image_da
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"builtin PSD: malformed layer/mask section"*)
+    *"builtin PSD: malformed layer/mask section"*|*"builtin PSD: malformed layer record table"*)
         echo "ok" 1 - "broken layer metadata is reported as malformed"
         ;;
     *)

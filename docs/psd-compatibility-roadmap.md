@@ -83,6 +83,9 @@ Key points used by this roadmap:
   - The same fallback policy now applies to PSB (`8BPB+version=2`) inputs when
     layer/mask structures are parser-compatible; malformed PSB layer metadata
     is reported as malformed (not silently downgraded).
+  - PSB malformed boundary diagnostics are split into fixed trace contracts for:
+    `layer/mask length`, `layer info length`, `layer channel length`,
+    `RLE row table (too short)`, and `RLE row length`.
   - Non-pixel payload is tolerated in fallback:
     - layers with decodable pixel channels are composited normally
       (non-pixel payload ignored, info trace), and
@@ -272,9 +275,10 @@ Minimum fixture naming convention:
 
 1. Extend non-pixel semantics beyond fill payloads while preserving current
    deterministic degrade traces for unsupported semantics.
-2. Extend PSB (`8BPB+version=2`) coverage beyond the current partial surface:
-   - broaden missing-composite matrix/trace coverage, and
-   - harden malformed diagnostics for more PSB-specific boundary cases.
+2. Extend PSB (`8BPB+version=2`) from current partial support toward parity:
+   - broaden missing-composite matrix/trace coverage to larger layouts, and
+   - design/implement large-document boundary handling beyond the current
+     parser/fallback surface.
 3. Add broader PSD matrix smoke execution in CI around the expanded
    missing-composite fallback surface (`CMYK8/16/32`, mode7 mapped paths)
    to catch regressions earlier than full suite jobs.

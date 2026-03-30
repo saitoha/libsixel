@@ -398,6 +398,42 @@ sixel_builtin_psd_set_message(char *message,
     (void)snprintf(message, message_size, "%s", text);
 }
 
+static int
+sixel_builtin_psd_is_psb(sixel_builtin_psd_info_t const *info)
+{
+    return info != NULL && info->version == 2u;
+}
+
+static char const *
+sixel_builtin_psd_malformed_layer_mask_length_message(
+    sixel_builtin_psd_info_t const *info)
+{
+    if (sixel_builtin_psd_is_psb(info)) {
+        return "builtin PSD: malformed PSB layer/mask length";
+    }
+    return "builtin PSD: malformed layer/mask section";
+}
+
+static char const *
+sixel_builtin_psd_malformed_layer_info_length_message(
+    sixel_builtin_psd_info_t const *info)
+{
+    if (sixel_builtin_psd_is_psb(info)) {
+        return "builtin PSD: malformed PSB layer info length";
+    }
+    return "builtin PSD: malformed layer record table";
+}
+
+static char const *
+sixel_builtin_psd_malformed_layer_channel_length_message(
+    sixel_builtin_psd_info_t const *info)
+{
+    if (sixel_builtin_psd_is_psb(info)) {
+        return "builtin PSD: malformed PSB layer channel length";
+    }
+    return "builtin PSD: malformed layer channel length";
+}
+
 static void
 sixel_builtin_psd_init_transparent_mask_output(
     unsigned char **ptransparent_mask,
@@ -493,25 +529,27 @@ static int
 sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
                                     sixel_builtin_psd_info_t const *info)
 {
+#define SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_MASK (-1)
+#define SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_INFO (-2)
     size_t layer_info_length;
     size_t layer_info_length_field_size;
 
     layer_info_length = 0u;
     layer_info_length_field_size = 0u;
     if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
-        return -1;
+        return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_MASK;
     }
     layer_info_length_field_size =
         sixel_builtin_psd_layer_mask_length_field_size(info);
     if (layer_info_length_field_size == 0u) {
-        return -1;
+        return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_MASK;
     }
     if (info->layer_mask_length == 0u) {
         return 0;
     }
     if (info->layer_mask_offset > chunk->size ||
         info->layer_mask_length > chunk->size - info->layer_mask_offset) {
-        return -1;
+        return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_MASK;
     }
     if (info->layer_mask_length < layer_info_length_field_size) {
         return 0;
@@ -521,7 +559,7 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
         if (!sixel_builtin_read_u64be_size_checked(
                 chunk->buffer + info->layer_mask_offset,
                 &layer_info_length)) {
-            return -1;
+            return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_INFO;
         }
     } else {
         layer_info_length = sixel_builtin_read_u32be_size(
@@ -529,10 +567,12 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
     }
     if (layer_info_length >
         info->layer_mask_length - layer_info_length_field_size) {
-        return -1;
+        return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_INFO;
     }
 
     return layer_info_length > 0u ? 1 : 0;
+#undef SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_MASK
+#undef SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_INFO
 }
 
 static int
@@ -697,10 +737,17 @@ sixel_builtin_validate_psd_info(
     if (image_data_length == 0u) {
         layer_state = sixel_builtin_psd_has_layer_records(chunk, info);
         if (layer_state < 0) {
-            sixel_builtin_psd_set_message(
-                message,
-                message_size,
-                "builtin PSD: malformed layer/mask section");
+            if (layer_state == -2) {
+                sixel_builtin_psd_set_message(
+                    message,
+                    message_size,
+                    sixel_builtin_psd_malformed_layer_info_length_message(info));
+            } else {
+                sixel_builtin_psd_set_message(
+                    message,
+                    message_size,
+                    sixel_builtin_psd_malformed_layer_mask_length_message(info));
+            }
             return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
         }
         if (layer_state > 0) {
@@ -1057,11 +1104,19 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     offset += section_length;
 
     if (offset + layer_mask_length_field_size > size) {
+        if (is_psb_alias != 0 && info->version == 2u) {
+            sixel_helper_set_additional_message(
+                sixel_builtin_psd_malformed_layer_mask_length_message(info));
+        }
         return 0;
     }
     if (layer_mask_length_field_size == 8u) {
         if (!sixel_builtin_read_u64be_size_checked(buffer + offset,
                                                    &section_length)) {
+            if (is_psb_alias != 0 && info->version == 2u) {
+                sixel_helper_set_additional_message(
+                    sixel_builtin_psd_malformed_layer_mask_length_message(info));
+            }
             return 0;
         }
     } else {
@@ -1069,6 +1124,10 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     }
     offset += layer_mask_length_field_size;
     if (section_length > size - offset) {
+        if (is_psb_alias != 0 && info->version == 2u) {
+            sixel_helper_set_additional_message(
+                sixel_builtin_psd_malformed_layer_mask_length_message(info));
+        }
         return 0;
     }
     info->layer_mask_offset = offset;
@@ -2254,7 +2313,7 @@ sixel_builtin_psd_parse_layer_model(
         layer_channel_length_field_size == 0u ||
         layer_channel_length_field_size > SIZE_MAX - 2u) {
         sixel_helper_set_additional_message(
-            "builtin PSD: malformed layer info section");
+            sixel_builtin_psd_malformed_layer_mask_length_message(info));
         return SIXEL_STBI_ERROR;
     }
     channel_entry_bytes = 2u + layer_channel_length_field_size;
@@ -2263,7 +2322,7 @@ sixel_builtin_psd_parse_layer_model(
         info->layer_mask_offset > chunk->size ||
         info->layer_mask_length > chunk->size - info->layer_mask_offset) {
         sixel_helper_set_additional_message(
-            "builtin PSD: malformed layer info section");
+            sixel_builtin_psd_malformed_layer_mask_length_message(info));
         return SIXEL_STBI_ERROR;
     }
     buffer = chunk->buffer;
@@ -2273,7 +2332,7 @@ sixel_builtin_psd_parse_layer_model(
                                                      layer_info_length_field_size,
                                                      &layer_info_length)) {
         sixel_helper_set_additional_message(
-            "builtin PSD: malformed layer record table");
+            sixel_builtin_psd_malformed_layer_info_length_message(info));
         return SIXEL_STBI_ERROR;
     }
     cursor = section_offset + layer_info_length_field_size;
@@ -2281,7 +2340,7 @@ sixel_builtin_psd_parse_layer_model(
         layer_info_length > section_end - cursor ||
         cursor + layer_info_length > chunk->size) {
         sixel_helper_set_additional_message(
-            "builtin PSD: malformed layer record table");
+            sixel_builtin_psd_malformed_layer_info_length_message(info));
         return SIXEL_STBI_ERROR;
     }
     layer_info_end = cursor + layer_info_length;
@@ -2363,7 +2422,7 @@ sixel_builtin_psd_parse_layer_model(
                     layer_channel_length_field_size,
                     &channel_length)) {
                 sixel_helper_set_additional_message(
-                    "builtin PSD: malformed layer channel length");
+                    sixel_builtin_psd_malformed_layer_channel_length_message(info));
                 return SIXEL_STBI_ERROR;
             }
             layer->channels[c].channel_id = channel_id;
@@ -2371,7 +2430,7 @@ sixel_builtin_psd_parse_layer_model(
             layer->channels[c].data_offset = 0u;
             if (channel_length < 2u) {
                 sixel_helper_set_additional_message(
-                    "builtin PSD: malformed layer channel length");
+                    sixel_builtin_psd_malformed_layer_channel_length_message(info));
                 return SIXEL_STBI_ERROR;
             }
             if (channel_id == 0 && layer->red_channel_index < 0) {
@@ -2440,7 +2499,7 @@ sixel_builtin_psd_parse_layer_model(
         for (c = 0u; c < (size_t)layer->channel_count; ++c) {
             if (layer->channels[c].length > layer_info_end - cursor) {
                 sixel_helper_set_additional_message(
-                    "builtin PSD: malformed layer channel stream");
+                    sixel_builtin_psd_malformed_layer_channel_length_message(info));
                 return SIXEL_STBI_ERROR;
             }
             layer->channels[c].data_offset = cursor;
@@ -3934,6 +3993,9 @@ sixel_builtin_psd_decode_layer_channel_8bit(
     size_t row_length_field_size,
     unsigned char *dst)
 {
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION (-1)
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE (-2)
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH (-3)
     unsigned int compression;
     size_t payload_offset;
     size_t payload_length;
@@ -3980,18 +4042,18 @@ sixel_builtin_psd_decode_layer_channel_8bit(
     }
 
     if (compression != 1u) {
-        return -1;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION;
     }
     row_bytes = (size_t)width;
     if (payload_length / row_length_field_size < (size_t)height) {
-        return 0;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE;
     }
     if ((size_t)height > SIZE_MAX / row_length_field_size) {
         return 0;
     }
     row_table_bytes = (size_t)height * row_length_field_size;
     if (payload_length < row_table_bytes) {
-        return 0;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE;
     }
 
     row_data_offset = payload_offset + row_table_bytes;
@@ -4004,7 +4066,7 @@ sixel_builtin_psd_decode_layer_channel_8bit(
                 data + payload_offset + row * row_length_field_size);
         }
         if (row_length > length - row_data_offset) {
-            return 0;
+            return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH;
         }
         if (!sixel_builtin_psd_unpack_packbits_row(data + row_data_offset,
                                                    row_length,
@@ -4019,6 +4081,9 @@ sixel_builtin_psd_decode_layer_channel_8bit(
     }
 
     return 1;
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH
 }
 
 static int
@@ -4030,6 +4095,9 @@ sixel_builtin_psd_decode_layer_channel_16bit(
     size_t row_length_field_size,
     uint16_t *dst)
 {
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION (-1)
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE (-2)
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH (-3)
     unsigned int compression;
     size_t payload_offset;
     size_t payload_length;
@@ -4089,17 +4157,17 @@ sixel_builtin_psd_decode_layer_channel_16bit(
     }
 
     if (compression != 1u) {
-        return -1;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION;
     }
     if (payload_length / row_length_field_size < (size_t)height) {
-        return 0;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE;
     }
     if ((size_t)height > SIZE_MAX / row_length_field_size) {
         return 0;
     }
     row_table_bytes = (size_t)height * row_length_field_size;
     if (payload_length < row_table_bytes) {
-        return 0;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE;
     }
 
     row_data_offset = payload_offset + row_table_bytes;
@@ -4112,7 +4180,7 @@ sixel_builtin_psd_decode_layer_channel_16bit(
                 data + payload_offset + row * row_length_field_size);
         }
         if (row_length > length - row_data_offset) {
-            return 0;
+            return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH;
         }
         if (!sixel_builtin_psd_unpack_packbits_row(data + row_data_offset,
                                                    row_length,
@@ -4131,6 +4199,9 @@ sixel_builtin_psd_decode_layer_channel_16bit(
     }
 
     return 1;
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH
 }
 
 static int
@@ -4142,6 +4213,9 @@ sixel_builtin_psd_decode_layer_channel_32bit(
     size_t row_length_field_size,
     float *dst)
 {
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION (-1)
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE (-2)
+#define SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH (-3)
     unsigned int compression;
     size_t payload_offset;
     size_t payload_length;
@@ -4203,17 +4277,17 @@ sixel_builtin_psd_decode_layer_channel_32bit(
     }
 
     if (compression != 1u) {
-        return -1;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION;
     }
     if (payload_length / row_length_field_size < (size_t)height) {
-        return 0;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE;
     }
     if ((size_t)height > SIZE_MAX / row_length_field_size) {
         return 0;
     }
     row_table_bytes = (size_t)height * row_length_field_size;
     if (payload_length < row_table_bytes) {
-        return 0;
+        return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE;
     }
 
     row_data_offset = payload_offset + row_table_bytes;
@@ -4226,7 +4300,7 @@ sixel_builtin_psd_decode_layer_channel_32bit(
                 data + payload_offset + row * row_length_field_size);
         }
         if (row_length > length - row_data_offset) {
-            return 0;
+            return SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH;
         }
         if (!sixel_builtin_psd_unpack_packbits_row(data + row_data_offset,
                                                    row_length,
@@ -4246,6 +4320,9 @@ sixel_builtin_psd_decode_layer_channel_32bit(
     }
 
     return 1;
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_UNSUPPORTED_COMPRESSION
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_TABLE
+#undef SIXEL_BUILTIN_PSD_LAYER_DECODE_MALFORMED_ROW_LENGTH
 }
 
 static SIXELSTATUS
@@ -4297,9 +4374,15 @@ sixel_builtin_psd_decode_layer_plane_rgb8_with_row_length(
         return SIXEL_OK;
     }
 
-    if (decode_status < 0) {
+    if (decode_status == -1) {
         sixel_helper_set_additional_message(
             "builtin PSD: unsupported layer channel compression");
+    } else if (decode_status == -2 && row_length_field_size == 4u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed PSB RLE row table (too short)");
+    } else if (decode_status == -3 && row_length_field_size == 4u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed PSB RLE row length");
     } else {
         sixel_helper_set_additional_message(
             "builtin PSD: malformed layer channel stream");
@@ -4356,9 +4439,15 @@ sixel_builtin_psd_decode_layer_plane_rgb16_with_row_length(
         return SIXEL_OK;
     }
 
-    if (decode_status < 0) {
+    if (decode_status == -1) {
         sixel_helper_set_additional_message(
             "builtin PSD: unsupported layer channel compression");
+    } else if (decode_status == -2 && row_length_field_size == 4u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed PSB RLE row table (too short)");
+    } else if (decode_status == -3 && row_length_field_size == 4u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed PSB RLE row length");
     } else {
         sixel_helper_set_additional_message(
             "builtin PSD: malformed layer channel stream");
@@ -4415,9 +4504,15 @@ sixel_builtin_psd_decode_layer_plane_rgb32_with_row_length(
         return SIXEL_OK;
     }
 
-    if (decode_status < 0) {
+    if (decode_status == -1) {
         sixel_helper_set_additional_message(
             "builtin PSD: unsupported layer channel compression");
+    } else if (decode_status == -2 && row_length_field_size == 4u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed PSB RLE row table (too short)");
+    } else if (decode_status == -3 && row_length_field_size == 4u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: malformed PSB RLE row length");
     } else {
         sixel_helper_set_additional_message(
             "builtin PSD: malformed layer channel stream");

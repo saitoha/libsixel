@@ -3703,9 +3703,15 @@ sixel_builtin_load_psd_single_frame(
 
     *mask = NULL;
     *mask_size = 0u;
+    sixel_helper_set_additional_message(NULL);
     if (!sixel_builtin_parse_psd_info(chunk, &psd_info)) {
-        sixel_helper_set_additional_message(
-            "builtin PSD: malformed section length/offset");
+        char const *additional_message;
+
+        additional_message = sixel_helper_get_additional_message();
+        if (additional_message == NULL || additional_message[0] == '\0') {
+            sixel_helper_set_additional_message(
+                "builtin PSD: malformed section length/offset");
+        }
         return SIXEL_STBI_ERROR;
     }
     psd_validation_status = sixel_builtin_validate_psd_info(

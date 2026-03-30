@@ -28,6 +28,18 @@ def read_u32be(data: bytes, off: int) -> int:
     return struct.unpack_from(">I", data, off)[0]
 
 
+def read_u64be(data: bytes, off: int) -> int:
+    return struct.unpack_from(">Q", data, off)[0]
+
+
+def write_u32be(buf: bytearray, off: int, value: int) -> None:
+    struct.pack_into(">I", buf, off, value & 0xFFFFFFFF)
+
+
+def write_u64be(buf: bytearray, off: int, value: int) -> None:
+    struct.pack_into(">Q", buf, off, value & 0xFFFFFFFFFFFFFFFF)
+
+
 def packbits_encode_row(row: bytes) -> bytes:
     out = bytearray()
     i = 0
@@ -323,6 +335,189 @@ def write_truncated_fixture(src_name: str, dst_name: str, *, drop_tail_bytes: in
     print(dst)
 
 
+def locate_psb_sections(data: bytes) -> dict[str, int]:
+    if len(data) < 26 or data[:4] != b"8BPB" or read_u16be(data, 4) != 2:
+        raise RuntimeError("fixture is not PSB version=2")
+
+    off = 26
+    color_mode_len = read_u32be(data, off)
+    off += 4 + color_mode_len
+    image_resources_len = read_u32be(data, off)
+    off += 4 + image_resources_len
+
+    layer_mask_length_off = off
+    layer_mask_length = read_u64be(data, layer_mask_length_off)
+    off += 8
+    layer_mask_offset = off
+    if layer_mask_offset + layer_mask_length > len(data):
+        raise RuntimeError("invalid PSB layer/mask length")
+    return {
+        "layer_mask_length_off": layer_mask_length_off,
+        "layer_mask_length": layer_mask_length,
+        "layer_mask_offset": layer_mask_offset,
+        "layer_info_length_off": layer_mask_offset,
+    }
+
+
+def parse_psb_first_channel(data: bytes) -> dict[str, int]:
+    sections = locate_psb_sections(data)
+    layer_mask_offset = sections["layer_mask_offset"]
+    layer_mask_length = sections["layer_mask_length"]
+    layer_info_length = read_u64be(data, layer_mask_offset)
+    layer_info_offset = layer_mask_offset + 8
+    layer_info_end = layer_info_offset + layer_info_length
+    layer_mask_end = layer_mask_offset + layer_mask_length
+    if layer_info_length < 2 or layer_info_end > layer_mask_end:
+        raise RuntimeError("invalid PSB layer info length")
+
+    cursor = layer_info_offset
+    layer_count_raw = read_i16be(data, cursor)
+    layer_count = abs(layer_count_raw)
+    cursor += 2
+    if layer_count <= 0:
+        raise RuntimeError("invalid layer count")
+
+    channel_entries: list[dict[str, int]] = []
+    first_channel_length_off = -1
+
+    for layer_index in range(layer_count):
+        if cursor + 18 > layer_info_end:
+            raise RuntimeError("short layer geometry")
+        cursor += 16
+        channel_count = read_u16be(data, cursor)
+        cursor += 2
+        if channel_count <= 0:
+            raise RuntimeError("invalid channel count")
+        for channel_index in range(channel_count):
+            if cursor + 10 > layer_info_end:
+                raise RuntimeError("short layer channel table")
+            length_off = cursor + 2
+            channel_length = read_u64be(data, length_off)
+            if layer_index == 0 and channel_index == 0:
+                first_channel_length_off = length_off
+            channel_entries.append(
+                {
+                    "length_off": length_off,
+                    "length": channel_length,
+                }
+            )
+            cursor += 10
+        if cursor + 16 > layer_info_end:
+            raise RuntimeError("short layer blend block")
+        extra_len = read_u32be(data, cursor + 12)
+        cursor += 16
+        if cursor + extra_len > layer_info_end:
+            raise RuntimeError("short layer extra data")
+        cursor += extra_len
+
+    channel_data_cursor = cursor
+    first_channel_data_offset = -1
+    for i, entry in enumerate(channel_entries):
+        channel_length = entry["length"]
+        if channel_data_cursor + channel_length > layer_info_end:
+            raise RuntimeError("short layer channel stream")
+        if i == 0:
+            first_channel_data_offset = channel_data_cursor
+        channel_data_cursor += channel_length
+
+    if first_channel_length_off < 0 or first_channel_data_offset < 0:
+        raise RuntimeError("failed to locate first channel")
+    return {
+        "first_channel_length_off": first_channel_length_off,
+        "first_channel_length": read_u64be(data, first_channel_length_off),
+        "first_channel_data_offset": first_channel_data_offset,
+    }
+
+
+def parse_psb_first_layer_geometry(data: bytes) -> dict[str, int]:
+    sections = locate_psb_sections(data)
+    layer_mask_offset = sections["layer_mask_offset"]
+    layer_mask_length = sections["layer_mask_length"]
+    layer_info_length = read_u64be(data, layer_mask_offset)
+    layer_info_offset = layer_mask_offset + 8
+    layer_info_end = layer_info_offset + layer_info_length
+    if layer_info_length < 2 or layer_info_end > layer_mask_offset + layer_mask_length:
+        raise RuntimeError("invalid PSB layer info length")
+    cursor = layer_info_offset
+    layer_count = abs(read_i16be(data, cursor))
+    cursor += 2
+    if layer_count <= 0 or cursor + 18 > layer_info_end:
+        raise RuntimeError("missing first layer geometry")
+    return {
+        "top_off": cursor + 0,
+        "left_off": cursor + 4,
+        "bottom_off": cursor + 8,
+        "right_off": cursor + 12,
+        "top": struct.unpack_from(">i", data, cursor + 0)[0],
+        "left": struct.unpack_from(">i", data, cursor + 4)[0],
+        "bottom": struct.unpack_from(">i", data, cursor + 8)[0],
+        "right": struct.unpack_from(">i", data, cursor + 12)[0],
+    }
+
+
+def mutate_psb_layer_mask_length_overflow(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    sections = locate_psb_sections(data)
+    overflow_length = len(data) - sections["layer_mask_offset"] + 1
+    write_u64be(data, sections["layer_mask_length_off"], overflow_length)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_layer_info_length_overflow(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    sections = locate_psb_sections(data)
+    overflow_length = sections["layer_mask_length"] + 1
+    write_u64be(data, sections["layer_info_length_off"], overflow_length)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_channel_length_overflow(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    channel = parse_psb_first_channel(data)
+    overflow_length = len(data)
+    write_u64be(data, channel["first_channel_length_off"], overflow_length)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_rle_row_table_too_short(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    channel = parse_psb_first_channel(data)
+    geom = parse_psb_first_layer_geometry(data)
+    if read_u16be(data, channel["first_channel_data_offset"]) != 1:
+        raise RuntimeError("first channel is not RLE payload")
+    # Force a much larger layer height while preserving payload.
+    # This keeps the layer stream structurally valid and makes the PSB
+    # 4-byte row-table requirement exceed available payload bytes.
+    new_bottom = geom["top"] + 1000
+    write_u32be(data, geom["bottom_off"], new_bottom)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_rle_row_length_overrun(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    channel = parse_psb_first_channel(data)
+    if read_u16be(data, channel["first_channel_data_offset"]) != 1:
+        raise RuntimeError("first channel is not RLE payload")
+    first_row_length_off = channel["first_channel_data_offset"] + 2
+    write_u32be(data, first_row_length_off, 0x7FFFFFFF)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
 def main() -> None:
     # Representative PSB(v2) missing-composite fixtures used by loader tests.
     convert_fixture(
@@ -422,6 +617,26 @@ def main() -> None:
         "snake16_psb_rgb8_missing_composite_multilayer_normal.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_normal_truncated.psd",
         drop_tail_bytes=17,
+    )
+    mutate_psb_layer_mask_length_overflow(
+        "snake16_psb_rgb8_missing_composite_multilayer_normal.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_layer_mask_length_overflow.psd",
+    )
+    mutate_psb_layer_info_length_overflow(
+        "snake16_psb_rgb8_missing_composite_multilayer_normal.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_layer_info_length_overflow.psd",
+    )
+    mutate_psb_channel_length_overflow(
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_channel_length_overflow.psd",
+    )
+    mutate_psb_rle_row_table_too_short(
+        "snake16_psb_rgb8_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_rle_row_table_too_short.psd",
+    )
+    mutate_psb_rle_row_length_overrun(
+        "snake16_psb_rgb8_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_rle_row_length_overrun.psd",
     )
 
 
