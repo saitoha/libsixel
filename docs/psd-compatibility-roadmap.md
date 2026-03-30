@@ -96,6 +96,8 @@ Key points used by this roadmap:
         descriptor color objects for RGB/CMYK/Grayscale/HSB/Lab), and
         `PtFl` (descriptor/SXFL; descriptor color objects for
         RGB/CMYK/Grayscale/HSB/Lab) payloads, or
+      - skip malformed fill-descriptor payloads (`SoCo/GdFl/PtFl`) with
+        deterministic trace (`malformed non-pixel fill payload; skipping layer`), or
       - skip layer when no supported fill payload is present.
   - Vector mask, layer effects, knockout, and unknown blend key use
     deterministic degrade behavior in fallback:
@@ -148,6 +150,11 @@ Key points used by this roadmap:
       nested `Grad` form on the same surfaces, and
     - `PtFl` descriptor color-object paths (`CMYK/Grayscale/HSB`) on the same
       surfaces.
+  - descriptor malformed regression now includes:
+    - structurally malformed fill additional-block length contracts
+      (`malformed layer extra data`), and
+    - descriptor-invalid payload contracts that keep decode success with
+      deterministic skip trace (`malformed non-pixel fill payload; skipping layer`).
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
@@ -291,7 +298,6 @@ Minimum fixture naming convention:
    - broaden missing-composite matrix/trace coverage to larger layouts, and
    - design/implement large-document boundary handling beyond the current
      parser/fallback surface.
-3. Harden descriptor malformed diagnostics and regressions for
-   `SoCo/GdFl/PtFl` (deterministic trace contracts on malformed descriptor
-   payloads and malformed resource combinations), while keeping the current
-   full PSD suite policy as the primary CI regression gate.
+3. Expand non-pixel semantics incrementally beyond fill payloads
+   (for example, `TySh`-class payload interpretation), while preserving
+   deterministic degrade contracts for unsupported semantics.
