@@ -1066,6 +1066,13 @@ while `CMYK16/32` bad ICC bytes are not misclassified as malformed resources;
 malformed resource sections keep the deterministic
 `malformed ICC resource section; skipping ICC conversion` trace.
 
+Builtin PSB (`8BPB`) header policy:
+
+| Condition | Behavior |
+| --- | --- |
+| `8BPB` + `version=2` | accepted and decoded through builtin PSD/PSB parser paths |
+| `8BPB` + `version!=2` | deterministic malformed header rejection |
+
 Builtin PSD Multichannel (mode 7) policy:
 
 | Condition | Behavior |
@@ -1083,6 +1090,7 @@ Builtin PSD missing merged/composite image policy:
 | layer-only PSD with pixel layers in RGB/Gray/Duotone/Lab/CMYK (`8/16/32bpc`) | decode via layer parser/compositor fallback (multi-layer, blend modes, clipping group, raster mask channel `-2/-3`) |
 | layer-only PSD where base mode/depth is outside fallback scope (for example Indexed, Bitmap) | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
 | layer-only PSD outside fallback layout constraints | deterministic unsupported (`builtin PSD: unsupported layer fallback layout`) |
+| layer-only PSB (`8BPB+version=2`) with parser-compatible layer records in fallback scope | decode via the same layer parser/compositor fallback policy as PSD |
 | layer-only PSD with non-pixel payload and decodable pixel channels | payload is ignored and pixel channels are composited (`builtin PSD: ignoring non-pixel payload in layer fallback` info trace) |
 | layer-only PSD with non-pixel payload, no decodable pixel channels, and fill payload (`SoCo`/`GdFl`/`PtFl`) | render synthetic fill layer and composite (`builtin PSD: rendering non-pixel fill payload in layer fallback`) |
 | layer-only PSD with non-pixel payload, no decodable pixel channels, and no supported fill payload | layer is skipped (`builtin PSD: ignoring non-pixel payload in layer fallback` info trace) |

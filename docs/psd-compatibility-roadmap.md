@@ -7,12 +7,17 @@ This document defines how `src/loader-builtin.c` will move from the current
 
 - In scope:
   - PSD (`8BPS`, version 1) composite image decode for single-frame inputs.
+  - PSB header alias (`8BPB`, version 2) with parser-compatible decode paths:
+    - composite-image decode (existing PSD matrix), and
+    - missing-composite layer fallback where layer layout is compatible with the
+      current fallback parser/compositor.
   - Feature parity for "basic subformats": color mode, bit depth, compression,
     alpha/background behavior, and embedded ICC usage.
 - Out of scope for initial milestone:
   - Full Photoshop-parity layered reconstruction (non-pixel semantics beyond
     current fill support, vector/effects/knockout full semantics).
-  - PSB (`8BPB`, version 2) large-document support.
+  - PSB large-document parity (full large-size/section coverage beyond the
+    current parser/fallback surface).
 
 ## Normative Reference
 
@@ -33,6 +38,10 @@ Key points used by this roadmap:
 
 - Decoder path is `src/frompsd.c` custom composite decoder (no PSD decode
   fallback to `stb_image`).
+- Signature/version policy:
+  - `8BPS` supports version `1/2` per existing parser policy.
+  - `8BPB` is accepted only with `version=2`; `8BPB+version!=2` is rejected as
+    malformed header.
 - Header/metadata validation is centralized with explicit policy:
   - channels `1..56`
   - width/height `1..300000`
@@ -71,6 +80,9 @@ Key points used by this roadmap:
     `channels==4` (`4ch->CMYK8/16/32`).
   - Layer-only layouts outside this fallback surface a deterministic unsupported
     trace (`unsupported layer fallback layout`).
+  - The same fallback policy now applies to PSB (`8BPB+version=2`) inputs when
+    layer/mask structures are parser-compatible; malformed PSB layer metadata
+    is reported as malformed (not silently downgraded).
   - Non-pixel payload is tolerated in fallback:
     - layers with decodable pixel channels are composited normally
       (non-pixel payload ignored, info trace), and
@@ -260,8 +272,9 @@ Minimum fixture naming convention:
 
 1. Extend non-pixel semantics beyond fill payloads while preserving current
    deterministic degrade traces for unsupported semantics.
-2. Keep PSB (`8BPB`) out of scope for this milestone, but maintain and test a
-   migration boundary from PSD parser/decoder primitives.
+2. Extend PSB (`8BPB+version=2`) coverage beyond the current partial surface:
+   - broaden missing-composite matrix/trace coverage, and
+   - harden malformed diagnostics for more PSB-specific boundary cases.
 3. Add broader PSD matrix smoke execution in CI around the expanded
    missing-composite fallback surface (`CMYK8/16/32`, mode7 mapped paths)
    to catch regressions earlier than full suite jobs.
