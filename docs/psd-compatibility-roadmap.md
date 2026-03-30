@@ -91,7 +91,7 @@ Key points used by this roadmap:
       (non-pixel payload ignored, info trace), and
     - layers without decodable pixel channels:
       - render synthetic fill for `SoCo` (descriptor/SXFL),
-        `GdFl` (descriptor/SXFL), and `PtFl` (SXFL) payloads, or
+        `GdFl` (descriptor/SXFL), and `PtFl` (descriptor/SXFL) payloads, or
       - skip layer when no supported fill payload is present.
   - Vector mask, layer effects, knockout, and unknown blend key use
     deterministic degrade behavior in fallback:

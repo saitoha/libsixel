@@ -2499,6 +2499,126 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
 }
 
 static int
+sixel_builtin_psd_parse_ptfl_descriptor_payload(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key[5];
+    char type[5];
+    int has_fg;
+    int has_bg;
+    unsigned int tile;
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    type[0] = '\0';
+    type[1] = '\0';
+    type[2] = '\0';
+    type[3] = '\0';
+    type[4] = '\0';
+    has_fg = 0;
+    has_bg = 0;
+    tile = 4u;
+    if (data == NULL || layer == NULL) {
+        return 0;
+    }
+
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          key_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                key_length,
+                                                &cursor,
+                                                key)) {
+        return 0;
+    }
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "Sz  ", 4u) == 0) {
+            double numeric;
+            numeric = 0.0;
+            if (!sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                 key_length,
+                                                                 &cursor,
+                                                                 type,
+                                                                 &numeric)) {
+                return 0;
+            }
+            if (numeric < 1.0) {
+                tile = 1u;
+            } else if (numeric > 65535.0) {
+                tile = 65535u;
+            } else {
+                tile = (unsigned int)(numeric + 0.5);
+            }
+            continue;
+        }
+        if (memcmp(key, "FgCl", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_parse_rgb_object(data,
+                                                               key_length,
+                                                               &cursor,
+                                                               layer->fill_pattern_fg_rgb)) {
+                return 0;
+            }
+            has_fg = 1;
+            continue;
+        }
+        if (memcmp(key, "BgCl", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_parse_rgb_object(data,
+                                                               key_length,
+                                                               &cursor,
+                                                               layer->fill_pattern_bg_rgb)) {
+                return 0;
+            }
+            has_bg = 1;
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    if (has_fg == 0 || has_bg == 0) {
+        return 0;
+    }
+    if (tile < 1u) {
+        tile = 1u;
+    }
+    layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_PTFL;
+    layer->fill_pattern_tile = tile;
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_soco_descriptor_payload(
     unsigned char const *data,
     size_t key_length,
@@ -2828,6 +2948,10 @@ sixel_builtin_psd_parse_fill_payload(
                                                               layer);
     } else if (memcmp(key, "GdFl", 4u) == 0) {
         (void)sixel_builtin_psd_parse_gdfl_descriptor_payload(data,
+                                                              key_length,
+                                                              layer);
+    } else if (memcmp(key, "PtFl", 4u) == 0) {
+        (void)sixel_builtin_psd_parse_ptfl_descriptor_payload(data,
                                                               key_length,
                                                               layer);
     }

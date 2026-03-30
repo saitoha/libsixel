@@ -337,6 +337,42 @@ def build_sxfl_ptfl_payload(
     )
 
 
+def build_descriptor_ptfl_payload(
+    *,
+    tile: int,
+    fg_rgb,
+    bg_rgb,
+) -> bytes:
+    def build_rgb_object(rgb) -> bytes:
+        r = int(max(0, min(255, rgb[0])))
+        g = int(max(0, min(255, rgb[1])))
+        b = int(max(0, min(255, rgb[2])))
+        out = bytearray()
+        out += _descriptor_unicode("")
+        out += _descriptor_key4(b"RGBC")
+        out += struct.pack(">I", 3)
+        out += _descriptor_key4(b"Rd  ")
+        out += b"doub" + struct.pack(">d", float(r))
+        out += _descriptor_key4(b"Grn ")
+        out += b"doub" + struct.pack(">d", float(g))
+        out += _descriptor_key4(b"Bl  ")
+        out += b"doub" + struct.pack(">d", float(b))
+        return bytes(out)
+
+    tile_i = int(max(1, min(65535, tile)))
+    out = bytearray()
+    out += _descriptor_unicode("")
+    out += _descriptor_key4(b"PtFl")
+    out += struct.pack(">I", 3)
+    out += _descriptor_key4(b"Sz  ")
+    out += b"long" + struct.pack(">I", tile_i)
+    out += _descriptor_key4(b"FgCl")
+    out += b"Objc" + build_rgb_object(fg_rgb)
+    out += _descriptor_key4(b"BgCl")
+    out += b"Objc" + build_rgb_object(bg_rgb)
+    return bytes(out)
+
+
 def expand_u8_plane_to_u16be(plane_u8: bytes) -> bytes:
     out = bytearray()
     for v in plane_u8:
@@ -1835,6 +1871,45 @@ def generate(out_dir: pathlib.Path):
                         (
                             b"PtFl",
                             build_sxfl_ptfl_payload(
+                                tile=4,
+                                fg_rgb=(250, 250, 250),
+                                bg_rgb=(30, 30, 30),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
                                 tile=4,
                                 fg_rgb=(250, 250, 250),
                                 bg_rgb=(30, 30, 30),
