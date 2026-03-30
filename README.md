@@ -1050,8 +1050,12 @@ Builtin PSD transparency summary:
 | PSD has alpha, with `-B` | composite against `-B` color into opaque 3ch output | keycolor transparency path is disabled |
 | PSD partial alpha (`0 < alpha < max`) | precomposite color against black before storing 3ch | final SIXEL still uses key transparency for `alpha == 0` only |
 
-Embedded ICC conversion on PSD applies to RGB color data only; the transparent
-mask remains unchanged.
+Embedded ICC conversion on PSD is applied by output pixel format while keeping
+the transparent mask unchanged:
+- `RGB888` / `RGBFLOAT32`: convert to sRGB
+- `LINEARRGBFLOAT32`: convert to linear sRGB
+- `CIELABFLOAT32`: convert to CIELAB (D50) when CMS backend supports Lab
+  transforms; otherwise emit deterministic skip trace for unsupported backend.
 For `mode=7` mapped CMYK decode (`channels=4`), invalid/malformed ICC resource
 traces follow the same CMYK contract as native `mode=4`, and valid embedded ICC
 paths are expected to avoid false `embedded ICC conversion failed` traces.
@@ -1080,8 +1084,10 @@ Builtin PSD missing merged/composite image policy:
 | layer-only PSD where base mode/depth is outside fallback scope (for example Indexed, Bitmap) | deterministic unsupported (`builtin PSD: unsupported file without merged/composite image`) |
 | layer-only PSD outside fallback layout constraints | deterministic unsupported (`builtin PSD: unsupported layer fallback layout`) |
 | layer-only PSD with non-pixel payload and decodable pixel channels | payload is ignored and pixel channels are composited (`builtin PSD: ignoring non-pixel payload in layer fallback` info trace) |
-| layer-only PSD with non-pixel payload and no decodable pixel channels | layer is skipped (`builtin PSD: ignoring non-pixel payload in layer fallback` info trace) |
-| layer-only PSD with vector mask / layer effects / knockout / unknown blend key | deterministic unsupported (`unsupported vector mask in layer fallback`, `unsupported layer effects in layer fallback`, `unsupported knockout in layer fallback`, `unsupported layer blend mode`) |
+| layer-only PSD with non-pixel payload, no decodable pixel channels, and fill payload (`SoCo`/`GdFl`/`PtFl`) | render synthetic fill layer and composite (`builtin PSD: rendering non-pixel fill payload in layer fallback`) |
+| layer-only PSD with non-pixel payload, no decodable pixel channels, and no supported fill payload | layer is skipped (`builtin PSD: ignoring non-pixel payload in layer fallback` info trace) |
+| layer-only PSD with vector mask / layer effects / knockout | decode continues with deterministic info traces (`ignoring vector mask/layer effects/knockout in layer fallback`) |
+| layer-only PSD with unknown blend key | decode continues with deterministic fallback (`builtin PSD: unknown layer blend mode; falling back to Normal`) |
 | composite image payload exists but raw/RLE/ZIP stream is truncated | deterministic malformed decode error (not treated as layer-only fallback) |
 
 When running under GNOME or other desktops that implement the FreeDesktop.org

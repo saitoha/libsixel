@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify Lab ZIP+Prediction path keeps ICC-skip trace behavior.
+# Verify Lab ZIP+Prediction path does not emit false ICC failure traces.
 
 set -eux
 
@@ -14,16 +14,35 @@ set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_lab8_zip_pred_icc.psd"
 
+trace_log=''
+command_status=0
+
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms=auto! \
-    "${input_psd}" -o /dev/null 2>&1 || true)
+    "${input_psd}" -o /dev/null 2>&1) || command_status=$?
+
+test "${command_status}" -eq 0 || {
+    echo "not ok" 1 - "Lab ZIP+Prediction decode failed unexpectedly: ${trace_log}"
+    exit 0
+}
 
 case "${trace_log}" in
+    *"builtin PSD: malformed embedded ICC resource"*|\
+    *"builtin PSD: failed to apply embedded ICC profile"*|\
     *"builtin PSD: skipping embedded ICC conversion for Lab custom decode path"*)
-        echo "ok" 1 - "Lab ZIP+Prediction ICC skip trace is preserved"
+        echo "not ok" 1 - "Lab ZIP+Prediction produced unexpected ICC trace"
+        exit 0
         ;;
     *)
-        echo "not ok" 1 - "Lab ZIP+Prediction ICC skip trace is missing"
-        exit 0
+        echo "ok" 1 - "Lab ZIP+Prediction keeps ICC trace contract without false failure"
+        ;;
+esac
+
+case "${trace_log}" in
+    *"builtin PSD: skipping embedded ICC conversion for CIELAB path (cms backend unsupported)"*)
+        echo "# backend without CMS CIELAB path reported skip as expected"
+        ;;
+    *)
+        :
         ;;
 esac
 

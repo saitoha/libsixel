@@ -10,8 +10,8 @@ This document defines how `src/loader-builtin.c` will move from the current
   - Feature parity for "basic subformats": color mode, bit depth, compression,
     alpha/background behavior, and embedded ICC usage.
 - Out of scope for initial milestone:
-- Full layered reconstruction when merged/composite image is absent
-  (beyond minimal single-layer 8-bit RGB/Gray/Duotone fallback).
+  - Full Photoshop-parity layered reconstruction (non-pixel semantics beyond
+    current fill support, vector/effects/knockout full semantics).
   - PSB (`8BPB`, version 2) large-document support.
 
 ## Normative Reference
@@ -46,8 +46,9 @@ Key points used by this roadmap:
   - RGB 8/16-bit: Raw/RLE/ZIP/ZIP+Prediction
   - RGB 32-bit: Raw/RLE/ZIP/ZIP+Prediction (`RGBFLOAT32`)
   - CMYK 8/16/32-bit: Raw/RLE/ZIP/ZIP+Prediction
-    (`LINEARRGBFLOAT32` for 16/32-bit; ICC skipped for non-RGB outputs)
-  - Lab 8/16/32-bit: Raw/RLE/ZIP/ZIP+Prediction (`CIELABFLOAT32`, ICC skipped)
+    (`LINEARRGBFLOAT32` for 16/32-bit; ICC applied by output format policy)
+  - Lab 8/16/32-bit: Raw/RLE/ZIP/ZIP+Prediction
+    (`CIELABFLOAT32`; ICC applied on CIELAB path when backend supports it)
   - Multichannel (mode 7):
     - `channels==3`: mapped to RGB decode mode
     - `channels==4`: mapped to CMYK decode mode
@@ -71,12 +72,15 @@ Key points used by this roadmap:
   - Layer-only layouts outside this fallback surface a deterministic unsupported
     trace (`unsupported layer fallback layout`).
   - Non-pixel payload is tolerated in fallback:
-    - layers with decodable pixel channels are composited normally, and
-    - layers without decodable pixel channels are skipped.
-    Each case emits info trace
-    (`builtin PSD: ignoring non-pixel payload in layer fallback`).
-  - Vector mask, layer effects, knockout, and unknown blend key remain
-    deterministic unsupported in fallback.
+    - layers with decodable pixel channels are composited normally
+      (non-pixel payload ignored, info trace), and
+    - layers without decodable pixel channels:
+      - render synthetic fill for `SoCo`/`GdFl`/`PtFl` payloads, or
+      - skip layer when no supported fill payload is present.
+  - Vector mask, layer effects, knockout, and unknown blend key use
+    deterministic degrade behavior in fallback:
+    - vector/effects/knockout are ignored with info trace, and
+    - unknown blend key falls back to `Normal` with info trace.
   - When image data exists but raw/RLE payload is too short, return malformed
     (do not conflate truncation with layer-only PSD policy).
 - Existing regression includes ICC and alpha combinations on Raw/ZIP/ZIP+Prediction
@@ -99,24 +103,24 @@ Key points used by this roadmap:
     (`RGB8/16/32`, `CMYK8/16/32`)
   - multi-layer missing-composite coverage for RGB8:
     normal blend decode, clipping-group decode, raster-mask decode,
-    deterministic unsupported traces for unknown blend/vector
-    mask/layer effects/knockout, and informational non-pixel ignore trace
-    coverage (pixel-present and no-pixel skip cases).
+    informational degrade traces for unknown blend/vector
+    mask/layer effects/knockout, and non-pixel trace coverage
+    (pixel-present ignore, no-pixel skip, and fill render cases).
   - multi-layer missing-composite normal-blend decode coverage for
     RGB16/RGB32/Lab16/CMYK8/CMYK16/CMYK32.
   - multi-layer missing-composite clipping-group and raster-mask decode
     coverage for RGB16/RGB32/CMYK8/CMYK16/CMYK32.
-  - multi-layer missing-composite unsupported trace coverage for
+  - multi-layer missing-composite degrade trace coverage for
     CMYK8/CMYK16/CMYK32:
     unknown blend/vector mask/layer effects/knockout.
   - mode7 multi-layer missing-composite decode coverage:
     `3ch->RGB16/RGB32` and `4ch->CMYK16/CMYK32` for normal, clipping-group,
     and raster-mask paths.
-  - mode7 multi-layer unsupported trace coverage:
+  - mode7 multi-layer degrade trace coverage:
     unknown blend/vector mask/layer effects/knockout
     (RGB8 and CMYK8/CMYK16/CMYK32 mapped paths).
-  - mode7 multi-layer informational non-pixel ignore trace coverage
-    (pixel-present and no-pixel skip cases).
+  - mode7 multi-layer non-pixel trace coverage
+    (pixel-present ignore, no-pixel skip, and fill render cases).
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
@@ -213,7 +217,8 @@ Definition of done:
 
 ### Phase D: ICC and Alpha Coherence
 
-1. Keep ICC conversion on RGB channels only, never mutate transparent masks.
+1. Apply ICC conversion by output format policy (`RGB`, `LINEARRGB`,
+   `CIELAB`) and never mutate transparent masks.
 2. Keep alpha policy stable:
    - no `--bgcolor`: `3ch + transparent mask`, key transparency at encode.
    - with `--bgcolor`: opaque composite output.
@@ -230,8 +235,8 @@ Definition of done:
 1. Detect missing merged/composite image.
 2. Decide policy:
    - explicit unsupported error (for unsupported layouts), and
-   - minimal layer reconstruction path
-     (single-layer 8-bit RGB/Gray/Duotone).
+   - multi-layer pixel reconstruction with deterministic degrade policy for
+     partial non-pixel semantics (fill support + info traces).
 3. Document behavior in README/changelog.
 
 Definition of done:
@@ -253,8 +258,8 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Lock ICC-application policy by output format (RGB/Linear RGB/Lab paths) and
-   keep README/trace contracts synchronized with implementation.
+1. Extend non-pixel semantics beyond fill payloads while preserving current
+   deterministic degrade traces for unsupported semantics.
 2. Keep PSB (`8BPB`) out of scope for this milestone, but maintain and test a
    migration boundary from PSD parser/decoder primitives.
 3. Add broader PSD matrix smoke execution in CI around the expanded
