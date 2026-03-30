@@ -2682,6 +2682,45 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("cmyk", 0.0, 0.0, 0.0, 1.9607843137254901),
+                                bg_rgb=("cmyk", 0.0, 0.0, 0.0, 88.23529411764706),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_vector_mask.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -4314,6 +4353,45 @@ def generate(out_dir: pathlib.Path):
                                 tile=4,
                                 fg_rgb=("hsb", 0.0, 0.0, 98.0392156862745),
                                 bg_rgb=("hsb", 0.0, 0.0, 11.764705882352942),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_ptfl_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("cmyk", 0.0, 0.0, 0.0, 1.9607843137254901),
+                                bg_rgb=("cmyk", 0.0, 0.0, 0.0, 88.23529411764706),
                             ),
                         )
                     ],
@@ -6050,6 +6128,45 @@ def generate(out_dir: pathlib.Path):
                                 tile=4,
                                 fg_rgb=("hsb", 0.0, 0.0, 98.0392156862745),
                                 bg_rgb=("hsb", 0.0, 0.0, 11.764705882352942),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_ptfl_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("cmyk", 0.0, 0.0, 0.0, 1.9607843137254901),
+                                bg_rgb=("cmyk", 0.0, 0.0, 0.0, 88.23529411764706),
                             ),
                         )
                     ],
