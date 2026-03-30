@@ -92,6 +92,14 @@ fi
 
 mkdir -p "$output_dir"
 echo "fuzz-cli-img2sixel: base args='$base_args'"
+export FUZZ_IMG2SIXEL="$img2sixel"
+export FUZZ_IMG2SIXEL_BASE_ARGS="$base_args"
+
+set -- "$fuzz_afl"
+set -- "$@" -i "$input_dir"
+set -- "$@" -o "$output_dir"
+set -- "$@" --
+set -- "$@" "$wrapper" @@
 
 set -- "$fuzz_afl"
 set -- "$@" -i "$input_dir"

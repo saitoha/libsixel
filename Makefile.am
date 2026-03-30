@@ -81,15 +81,8 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
 	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \
 	fuzz-run-loader-builtin-formats \
-	fuzz-run-loader-builtin-png \
-	fuzz-run-loader-builtin-gif \
-	fuzz-run-loader-builtin-jpeg \
-	fuzz-run-loader-builtin-pnm \
-	fuzz-run-loader-builtin-sixel \
-	fuzz-run-loader-builtin-hdr \
-	fuzz-run-loader-builtin-psd \
-	fuzz-run-loader-builtin-pic \
-	fuzz-run-loader-builtin-bmp \
+	fuzz-run-struct-push-set \
+	fuzz-run-struct-full-set \
 	check-python check-ruby check-perl check-php
 
 check-python:
@@ -118,14 +111,27 @@ FUZZ_IMG2SIXEL_BASE_ARGS ?=
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
 FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
+FUZZ_STRUCT_TARGETS = \
+	png-chunk \
+	png-apng \
+	jpeg-icc \
+	pnm-ascii \
+	psd-resource \
+	gif-block \
+	sixel-stream \
+	hdr-header \
+	pic-structure \
+	bmp-dib
+FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
+FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 
 install-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
-	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
+	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
 
 uninstall-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
-	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
+	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
 
 fuzz-cli-img2sixel: all
 	@set -eu; \
@@ -193,6 +199,24 @@ fuzz-run-loader-builtin-formats:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin-formats \
 		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
 		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-struct-%:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-struct-$* \
+		FUZZ_STRUCT_CORPUS='$(FUZZ_STRUCT_CORPUS)' \
+		FUZZ_STRUCT_ARGS='$(FUZZ_STRUCT_ARGS)'
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-struct-push-set:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-struct-push-set \
+		FUZZ_STRUCT_CORPUS='$(FUZZ_STRUCT_CORPUS)' \
+		FUZZ_STRUCT_ARGS='$(FUZZ_STRUCT_ARGS)'
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-struct-full-set:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-struct-full-set \
+		FUZZ_STRUCT_CORPUS='$(FUZZ_STRUCT_CORPUS)' \
+		FUZZ_STRUCT_ARGS='$(FUZZ_STRUCT_ARGS)'
 	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}

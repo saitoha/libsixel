@@ -12,18 +12,59 @@ VPATH = @srcdir@
 FUZZ_CFLAGS = @FUZZ_CFLAGS@
 FUZZ_LDFLAGS = @FUZZ_LDFLAGS@
 
+FUZZ_STRUCT_TARGETS = \
+    png-chunk \
+    png-apng \
+    jpeg-icc \
+    pnm-ascii \
+    psd-resource \
+    gif-block \
+    sixel-stream \
+    hdr-header \
+    pic-structure \
+    bmp-dib
+
+FUZZ_STRUCT_PUSH_SET = \
+    png-chunk \
+    png-apng \
+    jpeg-icc \
+    pnm-ascii \
+    psd-resource
+
+FUZZ_STRUCT_FULL_SET = $(FUZZ_STRUCT_TARGETS)
+
 if COND_FUZZ
-noinst_PROGRAMS = fuzz-loader-builtin-libfuzzer
+noinst_PROGRAMS = \
+    fuzz-loader-builtin-libfuzzer \
+    fuzz-loader-builtin-struct-png-chunk-libfuzzer \
+    fuzz-loader-builtin-struct-png-apng-libfuzzer \
+    fuzz-loader-builtin-struct-jpeg-icc-libfuzzer \
+    fuzz-loader-builtin-struct-pnm-ascii-libfuzzer \
+    fuzz-loader-builtin-struct-psd-resource-libfuzzer \
+    fuzz-loader-builtin-struct-gif-block-libfuzzer \
+    fuzz-loader-builtin-struct-sixel-stream-libfuzzer \
+    fuzz-loader-builtin-struct-hdr-header-libfuzzer \
+    fuzz-loader-builtin-struct-pic-structure-libfuzzer \
+    fuzz-loader-builtin-struct-bmp-dib-libfuzzer
 endif
 
 EXTRA_DIST = \
     fuzz-loader-builtin-libfuzzer.c \
+    fuzz-loader-builtin-struct-common.h \
+    fuzz-loader-builtin-struct-runtime.c \
+    fuzz-loader-builtin-struct-png-chunk-libfuzzer.c \
+    fuzz-loader-builtin-struct-png-apng-libfuzzer.c \
+    fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.c \
+    fuzz-loader-builtin-struct-pnm-ascii-libfuzzer.c \
+    fuzz-loader-builtin-struct-psd-resource-libfuzzer.c \
+    fuzz-loader-builtin-struct-gif-block-libfuzzer.c \
+    fuzz-loader-builtin-struct-sixel-stream-libfuzzer.c \
+    fuzz-loader-builtin-struct-hdr-header-libfuzzer.c \
+    fuzz-loader-builtin-struct-pic-structure-libfuzzer.c \
+    fuzz-loader-builtin-struct-bmp-dib-libfuzzer.c \
     loader-builtin.dict
 
-fuzz_loader_builtin_libfuzzer_SOURCES = \
-    $(srcdir)/fuzz-loader-builtin-libfuzzer.c
-
-fuzz_loader_builtin_libfuzzer_CPPFLAGS = \
+FUZZ_COMMON_CPPFLAGS = \
     -I$(top_builddir) \
     -I$(top_builddir)/include \
     -I$(top_srcdir) \
@@ -31,24 +72,114 @@ fuzz_loader_builtin_libfuzzer_CPPFLAGS = \
     -I$(top_srcdir)/src \
     $(AM_CPPFLAGS)
 
-fuzz_loader_builtin_libfuzzer_CFLAGS = \
+FUZZ_COMMON_CFLAGS = \
     $(CFLAGS) \
     $(AM_CFLAGS) \
     $(FUZZ_CFLAGS)
 
-fuzz_loader_builtin_libfuzzer_LDFLAGS = \
+FUZZ_COMMON_LINK_FLAGS = \
     $(FUZZ_LDFLAGS)
 
-fuzz_loader_builtin_libfuzzer_LDADD = \
+FUZZ_COMMON_LINK_LIBS = \
     $(top_builddir)/src/libsixel.la \
     $(LIBS)
+
+fuzz_loader_builtin_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-libfuzzer.c
+
+fuzz_loader_builtin_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_png_chunk_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-png-chunk-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_png_chunk_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_png_chunk_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_png_chunk_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_png_chunk_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_png_apng_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-png-apng-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_png_apng_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_png_apng_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_png_apng_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_png_apng_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_pnm_ascii_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-pnm-ascii-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_pnm_ascii_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_pnm_ascii_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_pnm_ascii_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_pnm_ascii_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_psd_resource_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-psd-resource-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_psd_resource_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_psd_resource_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_psd_resource_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_psd_resource_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_gif_block_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-gif-block-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_gif_block_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_gif_block_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_gif_block_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_gif_block_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_sixel_stream_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-sixel-stream-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_sixel_stream_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_sixel_stream_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_sixel_stream_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_sixel_stream_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_hdr_header_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-hdr-header-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_hdr_header_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_hdr_header_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_hdr_header_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_hdr_header_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_pic_structure_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-pic-structure-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_pic_structure_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_pic_structure_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_pic_structure_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_pic_structure_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_bmp_dib_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-bmp-dib-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_bmp_dib_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_bmp_dib_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_bmp_dib_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_bmp_dib_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
 FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
+FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
+FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 
 .PHONY: run-loader-builtin run-loader-builtin-formats \
-    $(FUZZ_BUILTIN_FORMATS:%=run-loader-builtin-%)
+    run-struct-push-set run-struct-full-set
 
 run-loader-builtin: fuzz-loader-builtin-libfuzzer$(EXEEXT)
 	@set -eu; \
@@ -74,4 +205,29 @@ run-loader-builtin-formats: fuzz-loader-builtin-libfuzzer$(EXEEXT)
 		$(MAKE) $(AM_MAKEFLAGS) run-loader-builtin-$$format \
 			FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
 			FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)' || exit $$?; \
+	done
+
+run-struct-%: fuzz-loader-builtin-struct-%-libfuzzer$(EXEEXT)
+	@set -eu; \
+	name="$*"; \
+	target="$(abs_builddir)/fuzz-loader-builtin-struct-$$name-libfuzzer$(EXEEXT)"; \
+	corpus="$(FUZZ_STRUCT_CORPUS)/$$name"; \
+	mkdir -p "$$corpus"; \
+	echo "fuzz[struct:$$name]: running $$target $(FUZZ_STRUCT_ARGS) $$corpus"; \
+	exec "$$target" $(FUZZ_STRUCT_ARGS) "$$corpus"
+
+run-struct-push-set:
+	@set -eu; \
+	for name in $(FUZZ_STRUCT_PUSH_SET); do \
+		$(MAKE) $(AM_MAKEFLAGS) run-struct-$$name \
+			FUZZ_STRUCT_CORPUS='$(FUZZ_STRUCT_CORPUS)' \
+			FUZZ_STRUCT_ARGS='$(FUZZ_STRUCT_ARGS)' || exit $$?; \
+	done
+
+run-struct-full-set:
+	@set -eu; \
+	for name in $(FUZZ_STRUCT_FULL_SET); do \
+		$(MAKE) $(AM_MAKEFLAGS) run-struct-$$name \
+			FUZZ_STRUCT_CORPUS='$(FUZZ_STRUCT_CORPUS)' \
+			FUZZ_STRUCT_ARGS='$(FUZZ_STRUCT_ARGS)' || exit $$?; \
 	done
