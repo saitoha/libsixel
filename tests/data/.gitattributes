@@ -10,6 +10,8 @@
 *.ico binary
 *.jpg binary
 *.jxl binary
+*.mov binary
+*.mp4 binary
 *.pbm binary
 *.pdf binary
 *.pgm binary
