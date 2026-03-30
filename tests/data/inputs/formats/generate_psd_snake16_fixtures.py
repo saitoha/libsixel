@@ -355,6 +355,21 @@ def build_descriptor_gdfl_payload(
         obj += b"doub" + struct.pack(">d", float(max(-128.0, min(127.0, b_star))))
         return bytes(obj)
 
+    def build_cmyk_object(cyan: float, magenta: float, yellow: float, black: float) -> bytes:
+        obj = bytearray()
+        obj += _descriptor_unicode("")
+        obj += _descriptor_key4(b"CMYC")
+        obj += struct.pack(">I", 4)
+        obj += _descriptor_key4(b"Cyn ")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, cyan))))
+        obj += _descriptor_key4(b"Mgnt")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, magenta))))
+        obj += _descriptor_key4(b"Ylw ")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, yellow))))
+        obj += _descriptor_key4(b"Blck")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, black))))
+        return bytes(obj)
+
     def build_stop_object(pos: float, color_object: bytes, opacity_percent: float) -> bytes:
         loc = int(max(0.0, min(1.0, pos)) * 4096.0 + 0.5)
         opct = float(max(0.0, min(100.0, opacity_percent)))
@@ -385,6 +400,11 @@ def build_descriptor_gdfl_payload(
                 color_object = bytes(color_spec)
             elif isinstance(color_spec, tuple) and len(color_spec) == 4 and color_spec[0] == "lab":
                 color_object = build_lab_object(color_spec[1], color_spec[2], color_spec[3])
+            elif isinstance(color_spec, tuple) and len(color_spec) == 5 and color_spec[0] == "cmyk":
+                color_object = build_cmyk_object(color_spec[1],
+                                                 color_spec[2],
+                                                 color_spec[3],
+                                                 color_spec[4])
             else:
                 raise ValueError(f"unsupported gradient stop color spec: {color_spec!r}")
         else:
@@ -2150,6 +2170,58 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (
+                                        0.0,
+                                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
+                                    (
+                                        1.0,
+                                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_lab.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -3594,6 +3666,58 @@ def generate(out_dir: pathlib.Path):
                                 stops=[
                                     (0.0, 255, 32, 32, 100.0),
                                     (1.0, 32, 64, 255, 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (
+                                        0.0,
+                                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
+                                    (
+                                        1.0,
+                                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
                                 ],
                             ),
                         )
@@ -5104,6 +5228,58 @@ def generate(out_dir: pathlib.Path):
                                 stops=[
                                     (0.0, 255, 32, 32, 100.0),
                                     (1.0, 32, 64, 255, 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_cmyk.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (
+                                        0.0,
+                                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
+                                    (
+                                        1.0,
+                                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
                                 ],
                             ),
                         )
