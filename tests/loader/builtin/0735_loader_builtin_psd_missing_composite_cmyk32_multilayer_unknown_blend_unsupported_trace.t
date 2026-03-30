@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_cmyk32_missing_composite_multilayer_unknown_blend.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_cmyk32_normal_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/0735_loader_builtin_psd_missing_composite_cmyk32_multilayer_unknown_blend_unsupported_trace_output.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/out.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
 command_status=0
