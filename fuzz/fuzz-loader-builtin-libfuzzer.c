@@ -32,13 +32,24 @@ static sixel_loader_component_t *g_component = NULL;
 static int g_fuzz_ready = 0;
 static unsigned char g_empty_input[1];
 
-static unsigned char
-fuzz_data_byte(uint8_t const *data, size_t size, size_t index)
+static uint64_t
+fuzz_data_mix64(uint8_t const *data, size_t size)
 {
-    if (data == NULL || index >= size) {
-        return 0;
+    uint64_t h;
+    size_t i;
+
+    h = UINT64_C(1469598103934665603);
+    if (data == NULL) {
+        return h;
     }
-    return (unsigned char)data[index];
+
+    for (i = 0; i < size; ++i) {
+        h ^= (uint64_t)data[i];
+        h *= UINT64_C(1099511628211);
+    }
+    h ^= (uint64_t)size;
+
+    return h;
 }
 
 static int
@@ -81,6 +92,32 @@ fuzz_pick_start_frame(unsigned char byte)
     default:
         return INT_MAX;
     }
+}
+
+static void
+fuzz_pick_loader_options(uint8_t const *data, size_t size,
+                         int *fstatic, int *fuse_palette, int *reqcolors,
+                         int *loop_control, int *start_frame_no,
+                         int *enable_cms, int *use_bgcolor,
+                         unsigned char bgcolor[3])
+{
+    uint64_t h;
+
+    /*
+     * Keep the full input as decoder payload and derive runtime knobs from a
+     * stable hash so magic bytes at the beginning are not consumed as options.
+     */
+    h = fuzz_data_mix64(data, size);
+    *fstatic = (int)(h & UINT64_C(1));
+    *fuse_palette = (int)((h >> 1) & UINT64_C(1));
+    *reqcolors = fuzz_pick_reqcolors((unsigned char)(h >> 8));
+    *loop_control = fuzz_pick_loop_control((unsigned char)(h >> 16));
+    *start_frame_no = fuzz_pick_start_frame((unsigned char)(h >> 24));
+    *enable_cms = (int)((h >> 32) & UINT64_C(1));
+    *use_bgcolor = (int)((h >> 33) & UINT64_C(1));
+    bgcolor[0] = (unsigned char)(h >> 40);
+    bgcolor[1] = (unsigned char)(h >> 48);
+    bgcolor[2] = (unsigned char)(h >> 56);
 }
 
 static SIXELSTATUS
@@ -189,16 +226,15 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
         return 0;
     }
 
-    fstatic = (int)(fuzz_data_byte(data, size, 0) & 1u);
-    fuse_palette = (int)(fuzz_data_byte(data, size, 1) & 1u);
-    reqcolors = fuzz_pick_reqcolors(fuzz_data_byte(data, size, 2));
-    loop_control = fuzz_pick_loop_control(fuzz_data_byte(data, size, 3));
-    start_frame_no = fuzz_pick_start_frame(fuzz_data_byte(data, size, 4));
-    enable_cms = (int)(fuzz_data_byte(data, size, 5) & 1u);
-    use_bgcolor = (int)(fuzz_data_byte(data, size, 6) & 1u);
-    bgcolor[0] = fuzz_data_byte(data, size, 7);
-    bgcolor[1] = fuzz_data_byte(data, size, 8);
-    bgcolor[2] = fuzz_data_byte(data, size, 9);
+    fuzz_pick_loader_options(data, size,
+                             &fstatic,
+                             &fuse_palette,
+                             &reqcolors,
+                             &loop_control,
+                             &start_frame_no,
+                             &enable_cms,
+                             &use_bgcolor,
+                             bgcolor);
 
     (void)sixel_loader_component_setopt(g_component,
                                         SIXEL_LOADER_OPTION_REQUIRE_STATIC,

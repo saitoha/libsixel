@@ -136,7 +136,7 @@ jobs:
             extra_packages: >-
               clang
             exec_type: bash
-            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5
+            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -fork=2 -rss_limit_mb=4096
 
           - label: Meson-ubuntu-x86_64-clang-fuzz-loader-builtin
             buildtool: meson
@@ -148,14 +148,21 @@ jobs:
               meson
               clang
             exec_type: bash
-            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5
+            fuzz_builtin_args: -max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -fork=2 -rss_limit_mb=4096
 
     env:
       FUZZ_TIMEOUT: ${{ matrix.fuzz_timeout || '' }}
       FUZZ_INPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-input-img2sixel
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/afl-out-img2sixel
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader-builtin
-      FUZZ_BUILTIN_ARGS: ${{ matrix.fuzz_builtin_args || '' }}
+      FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader-builtin
+      FUZZ_BUILTIN_ARGS: ${{ format('{0} -dict={1}/fuzz/loader-builtin.dict -artifact_prefix={1}/.tmp/fuzz-artifacts-loader-builtin/', matrix.fuzz_builtin_args || '', github.workspace) }}
+      AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: '1'
+      AFL_SKIP_CPUFREQ: '1'
+      AFL_AUTORESUME: '1'
+      AFL_NO_UI: '1'
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
@@ -190,14 +197,34 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Restore builtin fuzz corpus cache
+        if: contains(matrix.check_target, 'fuzz-run-loader-builtin')
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.FUZZ_BUILTIN_CORPUS }}
+          key: fuzz-corpus-loader-builtin-${{ matrix.buildtool }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            fuzz-corpus-loader-builtin-${{ matrix.buildtool }}-${{ github.ref_name }}-
+            fuzz-corpus-loader-builtin-${{ matrix.buildtool }}-
+
       - name: Seed fuzz corpora
         shell: bash
         run: |
           set -euo pipefail
 
-          mkdir -p "$FUZZ_INPUT_DIR" "$FUZZ_BUILTIN_CORPUS"
+          mkdir -p "$FUZZ_INPUT_DIR" "$FUZZ_BUILTIN_CORPUS" "$FUZZ_BUILTIN_ARTIFACT_DIR"
           cp -a images/. "$FUZZ_INPUT_DIR/"
           cp -a images/. "$FUZZ_BUILTIN_CORPUS/"
+
+          if test -d fuzz/images; then
+            cp -a fuzz/images/. "$FUZZ_BUILTIN_CORPUS/" || true
+          fi
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
 
           while IFS= read -r -d '' seed; do
             cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
@@ -206,7 +233,8 @@ jobs:
                -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
                -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
                -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
-               -o -name '*.six' -o -name '*.pic' -o -name '*.tga' \) \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bin' \) \
             -print0)
 
           echo "fuzz-input seed files: $(find "$FUZZ_INPUT_DIR" -type f | wc -l)"
@@ -218,6 +246,18 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-${{ matrix.label }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ env.FUZZ_OUTPUT_DIR }}
+            ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
+            ${{ env.FUZZ_BUILTIN_CORPUS }}
 
   staticcheck:
     name: ${{ matrix.label }}
