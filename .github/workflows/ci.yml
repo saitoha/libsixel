@@ -152,6 +152,7 @@ jobs:
 
     env:
       FUZZ_TIMEOUT: ${{ matrix.fuzz_timeout || '' }}
+      FUZZ_INPUT_DIR: ${{ runner.temp }}/fuzz-input-img2sixel
       FUZZ_OUTPUT_DIR: ${{ runner.temp }}/afl-out-img2sixel
       FUZZ_BUILTIN_CORPUS: ${{ runner.temp }}/fuzz-corpus-loader-builtin
       FUZZ_BUILTIN_ARGS: ${{ matrix.fuzz_builtin_args || '' }}
@@ -188,6 +189,28 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
+
+      - name: Seed fuzz corpora
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$FUZZ_INPUT_DIR" "$FUZZ_BUILTIN_CORPUS"
+          cp -a images/. "$FUZZ_INPUT_DIR/"
+          cp -a images/. "$FUZZ_BUILTIN_CORPUS/"
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.pic' -o -name '*.tga' \) \
+            -print0)
+
+          echo "fuzz-input seed files: $(find "$FUZZ_INPUT_DIR" -type f | wc -l)"
+          echo "builtin-corpus seed files: $(find "$FUZZ_BUILTIN_CORPUS" -type f | wc -l)"
 
       - name: Run CI steps
         uses: ./.github/actions/ci-steps

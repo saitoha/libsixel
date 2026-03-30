@@ -30,6 +30,10 @@ endif
 if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
+if COND_FUZZ
+MAYBE_FUZZ_INSTRUMENT_CFLAGS = @FUZZ_CFLAGS@
+MAYBE_FUZZ_INSTRUMENT_LDFLAGS = -fsanitize=address,undefined
+endif
 
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
 
@@ -285,11 +289,14 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
-                @THREAD_CFLAGS@
+                @THREAD_CFLAGS@ \
+                $(MAYBE_FUZZ_INSTRUMENT_CFLAGS)
 if BUILDING_ON_WINDOWS
-libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
+libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE) \
+                $(MAYBE_FUZZ_INSTRUMENT_LDFLAGS)
 else
-libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
+libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE) \
+                $(MAYBE_FUZZ_INSTRUMENT_LDFLAGS)
 endif
 libsixel_la_LIBADD = -lm \
                 $(LIBCURL_LIBS) \
