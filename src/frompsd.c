@@ -1988,6 +1988,9 @@ sixel_builtin_psd_descriptor_parse_color_object(
     double hue;
     double saturation;
     double brightness;
+    double lab_l;
+    double lab_a;
+    double lab_b;
     double component_max;
     int has_red;
     int has_green;
@@ -2000,9 +2003,14 @@ sixel_builtin_psd_descriptor_parse_color_object(
     int has_hue;
     int has_saturation;
     int has_brightness;
+    int has_lab_l;
+    int has_lab_a;
+    int has_lab_b;
     int is_rgb_class;
     int is_gray_class;
     int is_hsb_class;
+    int is_lab_class;
+    SIXELSTATUS status;
 
     cursor = 0u;
     item_count = 0u;
@@ -2033,6 +2041,9 @@ sixel_builtin_psd_descriptor_parse_color_object(
     hue = 0.0;
     saturation = 0.0;
     brightness = 0.0;
+    lab_l = 0.0;
+    lab_a = 0.0;
+    lab_b = 0.0;
     component_max = 0.0;
     has_red = 0;
     has_green = 0;
@@ -2045,9 +2056,14 @@ sixel_builtin_psd_descriptor_parse_color_object(
     has_hue = 0;
     has_saturation = 0;
     has_brightness = 0;
+    has_lab_l = 0;
+    has_lab_a = 0;
+    has_lab_b = 0;
     is_rgb_class = 0;
     is_gray_class = 0;
     is_hsb_class = 0;
+    is_lab_class = 0;
+    status = SIXEL_FALSE;
     if (data == NULL || pcursor == NULL || out_rgb == NULL) {
         return 0;
     }
@@ -2069,6 +2085,10 @@ sixel_builtin_psd_descriptor_parse_color_object(
     } else if (memcmp(class_key, "HSBC", 4u) == 0 ||
                memcmp(class_key, "HSB ", 4u) == 0) {
         is_hsb_class = 1;
+    } else if (memcmp(class_key, "LbCl", 4u) == 0 ||
+               memcmp(class_key, "LABC", 4u) == 0 ||
+               memcmp(class_key, "LabC", 4u) == 0) {
+        is_lab_class = 1;
     } else if (memcmp(class_key, "CMYC", 4u) == 0 ||
                memcmp(class_key, "CMYK", 4u) == 0) {
         is_rgb_class = 0;
@@ -2158,6 +2178,40 @@ sixel_builtin_psd_descriptor_parse_color_object(
                                                                 &numeric)) {
                 brightness = numeric;
                 has_brightness = 1;
+                continue;
+            }
+        } else if (is_lab_class != 0) {
+            if ((memcmp(key, "Lmnc", 4u) == 0 ||
+                 memcmp(key, "L   ", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                lab_l = numeric;
+                has_lab_l = 1;
+                continue;
+            }
+            if ((memcmp(key, "A   ", 4u) == 0 ||
+                 memcmp(key, "a   ", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                lab_a = numeric;
+                has_lab_a = 1;
+                continue;
+            }
+            if ((memcmp(key, "B   ", 4u) == 0 ||
+                 memcmp(key, "b   ", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                lab_b = numeric;
+                has_lab_b = 1;
                 continue;
             }
         } else {
@@ -2321,6 +2375,74 @@ sixel_builtin_psd_descriptor_parse_color_object(
         red = (r1 + m) * 255.0;
         green = (g1 + m) * 255.0;
         blue = (b1 + m) * 255.0;
+    } else if (is_lab_class != 0) {
+        float lab_pixel[3];
+
+        if (has_lab_l == 0 || has_lab_a == 0 || has_lab_b == 0) {
+            return 0;
+        }
+
+        if (lab_l >= 0.0 && lab_l <= 1.0) {
+            lab_l *= 100.0;
+        } else if (lab_l > 100.0 && lab_l <= 255.0) {
+            lab_l = (lab_l / 255.0) * 100.0;
+        }
+        if (lab_l < 0.0) {
+            lab_l = 0.0;
+        } else if (lab_l > 100.0) {
+            lab_l = 100.0;
+        }
+
+        if (lab_a >= -1.5 && lab_a <= 1.5) {
+            lab_a *= 128.0;
+        } else if (lab_a >= 128.0 && lab_a <= 255.0) {
+            lab_a = lab_a - 128.0;
+        }
+        if (lab_b >= -1.5 && lab_b <= 1.5) {
+            lab_b *= 128.0;
+        } else if (lab_b >= 128.0 && lab_b <= 255.0) {
+            lab_b = lab_b - 128.0;
+        }
+        if (lab_a < -192.0) {
+            lab_a = -192.0;
+        } else if (lab_a > 192.0) {
+            lab_a = 192.0;
+        }
+        if (lab_b < -192.0) {
+            lab_b = -192.0;
+        } else if (lab_b > 192.0) {
+            lab_b = 192.0;
+        }
+
+        lab_pixel[0] = (float)(lab_l / 100.0);
+        lab_pixel[1] = sixel_builtin_psd_lab_clamp_ab((float)(lab_a / 128.0));
+        lab_pixel[2] = sixel_builtin_psd_lab_clamp_ab((float)(lab_b / 128.0));
+        status = sixel_helper_convert_colorspace((unsigned char *)lab_pixel,
+                                                 sizeof(lab_pixel),
+                                                 SIXEL_PIXELFORMAT_CIELABFLOAT32,
+                                                 SIXEL_COLORSPACE_CIELAB,
+                                                 SIXEL_COLORSPACE_GAMMA);
+        if (SIXEL_FAILED(status)) {
+            return 0;
+        }
+        red = (double)lab_pixel[0] * 255.0;
+        green = (double)lab_pixel[1] * 255.0;
+        blue = (double)lab_pixel[2] * 255.0;
+        if (red < 0.0) {
+            red = 0.0;
+        } else if (red > 255.0) {
+            red = 255.0;
+        }
+        if (green < 0.0) {
+            green = 0.0;
+        } else if (green > 255.0) {
+            green = 255.0;
+        }
+        if (blue < 0.0) {
+            blue = 0.0;
+        } else if (blue > 255.0) {
+            blue = 255.0;
+        }
     } else {
         double red01;
         double green01;
