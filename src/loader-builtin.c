@@ -688,10 +688,14 @@ sixel_builtin_tiff_photometric_supports_icc(uint16_t photometric)
 static int
 chunk_is_psd(sixel_chunk_t const *chunk)
 {
+    if (chunk == NULL || chunk->buffer == NULL) {
+        return 0;
+    }
     if (chunk->size < 4u) {
         return 0;
     }
-    if (memcmp(chunk->buffer, "8BPS", 4u) == 0) {
+    if (memcmp(chunk->buffer, "8BPS", 4u) == 0 ||
+        memcmp(chunk->buffer, "8BPB", 4u) == 0) {
         return 1;
     }
     return 0;
