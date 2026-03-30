@@ -101,7 +101,7 @@ jobs:
 
   fuzz_push_minimal:
     if: github.event_name == 'push'
-    name: fuzz-push-${{ matrix.buildtool }}-${{ matrix.target }}
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -188,7 +188,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fuzz-push-${{ matrix.buildtool }}-${{ matrix.target }}
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
           if-no-files-found: ignore
           retention-days: 7
           path: |
@@ -197,7 +197,7 @@ jobs:
 
   fuzz_nightly_full:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    name: fuzz-nightly-${{ matrix.buildtool }}-${{ matrix.target }}
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -284,7 +284,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fuzz-nightly-${{ matrix.buildtool }}-${{ matrix.target }}
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
           if-no-files-found: ignore
           retention-days: 7
           path: |
