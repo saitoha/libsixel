@@ -248,6 +248,26 @@ def build_descriptor_soco_payload_cmyk(c: float, m: float, y: float, k: float) -
     return bytes(root)
 
 
+def build_descriptor_soco_payload_gray(gray: float) -> bytes:
+    gray = float(max(0.0, min(100.0, gray)))
+
+    color_object = bytearray()
+    color_object += _descriptor_unicode("")
+    color_object += _descriptor_key4(b"Grsc")
+    color_object += struct.pack(">I", 1)
+    color_object += _descriptor_key4(b"Gry ")
+    color_object += b"doub" + struct.pack(">d", gray)
+
+    root = bytearray()
+    root += _descriptor_unicode("")
+    root += _descriptor_key4(b"SoCo")
+    root += struct.pack(">I", 1)
+    root += _descriptor_key4(b"Clr ")
+    root += b"Objc"
+    root += color_object
+    return bytes(root)
+
+
 def build_descriptor_gdfl_payload(
     *,
     gradient_type_key: bytes,
@@ -1854,6 +1874,38 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (b"SoCo", build_descriptor_soco_payload_gray(50.0))
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -3191,6 +3243,38 @@ def generate(out_dir: pathlib.Path):
                                 0.0,
                             ),
                         )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_soco_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (b"SoCo", build_descriptor_soco_payload_gray(50.0))
                     ],
                 },
                 {
@@ -4547,6 +4631,38 @@ def generate(out_dir: pathlib.Path):
                                 0.0,
                             ),
                         )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_soco_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (b"SoCo", build_descriptor_soco_payload_gray(50.0))
                     ],
                 },
                 {

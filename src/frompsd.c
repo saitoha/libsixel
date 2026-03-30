@@ -1984,6 +1984,7 @@ sixel_builtin_psd_descriptor_parse_color_object(
     double magenta;
     double yellow;
     double black;
+    double gray;
     double component_max;
     int has_red;
     int has_green;
@@ -1992,7 +1993,9 @@ sixel_builtin_psd_descriptor_parse_color_object(
     int has_magenta;
     int has_yellow;
     int has_black;
+    int has_gray;
     int is_rgb_class;
+    int is_gray_class;
 
     cursor = 0u;
     item_count = 0u;
@@ -2019,6 +2022,7 @@ sixel_builtin_psd_descriptor_parse_color_object(
     magenta = 0.0;
     yellow = 0.0;
     black = 0.0;
+    gray = 0.0;
     component_max = 0.0;
     has_red = 0;
     has_green = 0;
@@ -2027,7 +2031,9 @@ sixel_builtin_psd_descriptor_parse_color_object(
     has_magenta = 0;
     has_yellow = 0;
     has_black = 0;
+    has_gray = 0;
     is_rgb_class = 0;
+    is_gray_class = 0;
     if (data == NULL || pcursor == NULL || out_rgb == NULL) {
         return 0;
     }
@@ -2044,6 +2050,8 @@ sixel_builtin_psd_descriptor_parse_color_object(
     }
     if (memcmp(class_key, "RGBC", 4u) == 0) {
         is_rgb_class = 1;
+    } else if (memcmp(class_key, "Grsc", 4u) == 0) {
+        is_gray_class = 1;
     } else if (memcmp(class_key, "CMYC", 4u) == 0 ||
                memcmp(class_key, "CMYK", 4u) == 0) {
         is_rgb_class = 0;
@@ -2087,6 +2095,18 @@ sixel_builtin_psd_descriptor_parse_color_object(
                     blue = numeric;
                     has_blue = 1;
                 }
+                continue;
+            }
+        } else if (is_gray_class != 0) {
+            if ((memcmp(key, "Gry ", 4u) == 0 ||
+                 memcmp(key, "gray", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                gray = numeric;
+                has_gray = 1;
                 continue;
             }
         } else {
@@ -2148,6 +2168,23 @@ sixel_builtin_psd_descriptor_parse_color_object(
         } else if (blue > 255.0) {
             blue = 255.0;
         }
+    } else if (is_gray_class != 0) {
+        if (has_gray == 0) {
+            return 0;
+        }
+        if (gray <= 1.0) {
+            gray *= 255.0;
+        } else if (gray <= 100.0) {
+            gray *= 2.55;
+        }
+        if (gray < 0.0) {
+            gray = 0.0;
+        } else if (gray > 255.0) {
+            gray = 255.0;
+        }
+        red = gray;
+        green = gray;
+        blue = gray;
     } else {
         double red01;
         double green01;
