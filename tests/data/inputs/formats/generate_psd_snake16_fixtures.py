@@ -1673,6 +1673,56 @@ def write_file(path: pathlib.Path, data: bytes):
     print(path)
 
 
+def mutate_first_additional_block_length(
+    data: bytes,
+    *,
+    key: bytes,
+    malformed_length: int,
+) -> bytes:
+    marker = b"8BIM" + key
+    marker_offset = data.find(marker)
+    if marker_offset < 0:
+        raise RuntimeError(f"additional block marker not found: {key!r}")
+    if len(key) != 4:
+        raise RuntimeError("additional block key must be 4 bytes")
+    out = bytearray(data)
+    out[marker_offset + 8:marker_offset + 12] = struct.pack(">I", malformed_length)
+    return bytes(out)
+
+
+def write_descriptor_malformed_fixtures(out_dir: pathlib.Path):
+    # Corrupt the fill additional-block length so parser hits deterministic
+    # malformed layer extra-data diagnostics.
+    malformed_length = 0x7FFFFFFF
+    variants = [
+        (
+            "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor.psd",
+            b"SoCo",
+            "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
+        ),
+        (
+            "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor.psd",
+            b"GdFl",
+            "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_malformed.psd",
+        ),
+        (
+            "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor.psd",
+            b"PtFl",
+            "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_malformed.psd",
+        ),
+    ]
+    for base_name, key, malformed_name in variants:
+        base = (out_dir / base_name).read_bytes()
+        write_file(
+            out_dir / malformed_name,
+            mutate_first_additional_block_length(
+                base,
+                key=key,
+                malformed_length=malformed_length,
+            ),
+        )
+
+
 def write_variants(
     out_dir: pathlib.Path,
     base_name: str,
@@ -7000,6 +7050,7 @@ def generate(out_dir: pathlib.Path):
             compression=0,
         ),
     )
+    write_descriptor_malformed_fixtures(out_dir)
 
 
 def main(argv):
