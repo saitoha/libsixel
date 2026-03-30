@@ -342,7 +342,20 @@ def build_descriptor_gdfl_payload(
         obj += b"doub" + struct.pack(">d", float(max(0, min(255, int(b)))))
         return bytes(obj)
 
-    def build_stop_object(pos: float, r: int, g: int, b: int, opacity_percent: float) -> bytes:
+    def build_lab_object(l_star: float, a_star: float, b_star: float) -> bytes:
+        obj = bytearray()
+        obj += _descriptor_unicode("")
+        obj += _descriptor_key4(b"LbCl")
+        obj += struct.pack(">I", 3)
+        obj += _descriptor_key4(b"Lmnc")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, l_star))))
+        obj += _descriptor_key4(b"A   ")
+        obj += b"doub" + struct.pack(">d", float(max(-128.0, min(127.0, a_star))))
+        obj += _descriptor_key4(b"B   ")
+        obj += b"doub" + struct.pack(">d", float(max(-128.0, min(127.0, b_star))))
+        return bytes(obj)
+
+    def build_stop_object(pos: float, color_object: bytes, opacity_percent: float) -> bytes:
         loc = int(max(0.0, min(1.0, pos)) * 4096.0 + 0.5)
         opct = float(max(0.0, min(100.0, opacity_percent)))
         obj = bytearray()
@@ -352,7 +365,7 @@ def build_descriptor_gdfl_payload(
         obj += _descriptor_key4(b"Lctn")
         obj += b"long" + struct.pack(">I", loc)
         obj += _descriptor_key4(b"Clr ")
-        obj += b"Objc" + build_rgb_object(r, g, b)
+        obj += b"Objc" + color_object
         obj += _descriptor_key4(b"Opct")
         obj += b"UntF" + b"#Prc" + struct.pack(">d", opct)
         return bytes(obj)
@@ -362,9 +375,22 @@ def build_descriptor_gdfl_payload(
 
     clrs = bytearray()
     clrs += struct.pack(">I", len(stops))
-    for pos, r, g, b, a in stops:
+    for stop in stops:
+        if len(stop) == 5:
+            pos, r, g, b, opacity = stop
+            color_object = build_rgb_object(r, g, b)
+        elif len(stop) == 3:
+            pos, color_spec, opacity = stop
+            if isinstance(color_spec, (bytes, bytearray)):
+                color_object = bytes(color_spec)
+            elif isinstance(color_spec, tuple) and len(color_spec) == 4 and color_spec[0] == "lab":
+                color_object = build_lab_object(color_spec[1], color_spec[2], color_spec[3])
+            else:
+                raise ValueError(f"unsupported gradient stop color spec: {color_spec!r}")
+        else:
+            raise ValueError(f"unsupported gradient stop shape: {stop!r}")
         clrs += b"Objc"
-        clrs += build_stop_object(pos, r, g, b, a)
+        clrs += build_stop_object(pos, color_object, opacity)
 
     root = bytearray()
     root += _descriptor_unicode("")
@@ -2124,6 +2150,50 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_lab.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, ("lab", 53.389, 0.0, 0.0), 100.0),
+                                    (1.0, ("lab", 53.389, 0.0, 0.0), 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir
         / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_grad_nested.psd",
         build_psd_layer_only_multilayer_custom(
@@ -3524,6 +3594,50 @@ def generate(out_dir: pathlib.Path):
                                 stops=[
                                     (0.0, 255, 32, 32, 100.0),
                                     (1.0, 32, 64, 255, 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_lab.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, ("lab", 53.389, 0.0, 0.0), 100.0),
+                                    (1.0, ("lab", 53.389, 0.0, 0.0), 100.0),
                                 ],
                             ),
                         )
@@ -4990,6 +5104,50 @@ def generate(out_dir: pathlib.Path):
                                 stops=[
                                     (0.0, 255, 32, 32, 100.0),
                                     (1.0, 32, 64, 255, 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_lab.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, ("lab", 53.389, 0.0, 0.0), 100.0),
+                                    (1.0, ("lab", 53.389, 0.0, 0.0), 100.0),
                                 ],
                             ),
                         )
