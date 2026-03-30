@@ -362,14 +362,8 @@ jobs:
       FUZZ_INPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-input-img2sixel
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/afl-out-img2sixel
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader-builtin
-      FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader-builtin
-      FUZZ_BUILTIN_ARGS: ${{ format('{0} -dict={1}/fuzz/loader-builtin.dict -artifact_prefix={1}/.tmp/fuzz-artifacts-loader-builtin/', matrix.fuzz_builtin_args || '', github.workspace) }}
+      FUZZ_BUILTIN_ARGS: ${{ matrix.fuzz_builtin_args || '' }}
       AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: '1'
-      AFL_SKIP_CPUFREQ: '1'
-      AFL_AUTORESUME: '1'
-      AFL_NO_UI: '1'
-      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
-      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)

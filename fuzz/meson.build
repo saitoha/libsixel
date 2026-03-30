@@ -17,11 +17,18 @@ foreach arg : required_fuzz_c_args
   endif
 endforeach
 
-foreach arg : required_fuzz_link_args
-  if not cc.has_link_argument(arg)
-    error('fuzz option requires linker support for ' + arg)
-  endif
-endforeach
+fuzz_link_probe_source = '''
+int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size)
+{
+  (void)data;
+  (void)size;
+  return 0;
+}
+'''
+if not cc.links(fuzz_link_probe_source, args: required_fuzz_link_args)
+  error('fuzz option requires linker support for '
+        + ' '.join(required_fuzz_link_args))
+endif
 
 fuzz_loader_builtin = executable('fuzz-loader-builtin-libfuzzer',
   'fuzz-loader-builtin-libfuzzer.c',

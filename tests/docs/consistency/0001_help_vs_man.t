@@ -13,15 +13,9 @@ printf '1..1\n'
 set -v
 
 sum1=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -H \
-    | awk '
-        /^[[:space:]]*-[A-Za-z0-9],/ {
-            print $1, $2
-            next
-        }
-        /^[[:space:]]*-[A-Za-z0-9] / {
-            print $1, $2, $3
-            next
-        }' \
+    | sed -n \
+        -e '/^[[:space:]]*-[A-Za-z0-9],/s/^[[:space:]]*\([^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
+        -e '/^[[:space:]]*-[A-Za-z0-9] /s/^[[:space:]]*\([^[:space:]]*[[:space:]][^[:space:]]*[[:space:]][^[:space:]]*\).*/\1/p' \
     | tr -d \\r \
     | cksum)
 
