@@ -808,8 +808,6 @@ zshcompletiondir = @zshcompletiondir@
 @WANT_AMALGAMATED_LIB_TRUE@nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-@COND_FUZZ_TRUE@MAYBE_FUZZ_INSTRUMENT_CFLAGS = @FUZZ_CFLAGS@
-@COND_FUZZ_TRUE@MAYBE_FUZZ_INSTRUMENT_LDFLAGS = -fsanitize=address,undefined
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* $(am__append_5)
 lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
@@ -1031,15 +1029,10 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
-                @THREAD_CFLAGS@ \
-                $(MAYBE_FUZZ_INSTRUMENT_CFLAGS)
+                @THREAD_CFLAGS@
 
-@BUILDING_ON_WINDOWS_FALSE@libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE) \
-@BUILDING_ON_WINDOWS_FALSE@                $(MAYBE_FUZZ_INSTRUMENT_LDFLAGS)
-
-@BUILDING_ON_WINDOWS_TRUE@libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE) \
-@BUILDING_ON_WINDOWS_TRUE@                $(MAYBE_FUZZ_INSTRUMENT_LDFLAGS)
-
+@BUILDING_ON_WINDOWS_FALSE@libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
+@BUILDING_ON_WINDOWS_TRUE@libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 libsixel_la_LIBADD = -lm \
                 $(LIBCURL_LIBS) \
                 $(LIBFETCH_LIBS) \

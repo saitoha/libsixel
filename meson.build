@@ -150,7 +150,6 @@ endif
 if get_option('tests')
   conf.set('HAVE_TESTS', 1)
 endif
-libsixel_extra_link_args = []
 fuzz_enabled = get_option('fuzz')
 fuzz_message = fuzz_enabled ? 'yes' : 'no'
 objc_forced_off_for_fuzz = false
@@ -169,12 +168,6 @@ if fuzz_enabled
       error('fuzz option requires linker support for ' + arg)
     endif
   endforeach
-
-  add_project_arguments(fuzz_instrument_c_args, language: 'c')
-  # Some Darwin targets link as Objective-C while pulling instrumented C objects.
-  # Ensure sanitizer runtimes are present for those link steps too.
-  add_project_link_arguments(fuzz_instrument_link_args, language: ['c', 'objc'])
-  libsixel_extra_link_args += fuzz_instrument_link_args
 
   if host_system == 'darwin' and have_objc
     if cc.version() != objc.version()
