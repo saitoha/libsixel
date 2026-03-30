@@ -167,13 +167,13 @@ fuzz-cli-img2sixel: all
 
 fuzz-loader-builtin:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) fuzz-loader-builtin-libfuzzer$(EXEEXT)
-	@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
 
 fuzz-run-loader-builtin:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin \
 		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
 		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
-	@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
