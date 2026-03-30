@@ -48,7 +48,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i "${sixel_tmp}" -o png:clipboard: |
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" clipboard: -o clipboard: || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" -o clipboard: clipboard: || {
     printf "ok 1 # SKIP clipboard backend unavailable\n"
     exit 0
 }

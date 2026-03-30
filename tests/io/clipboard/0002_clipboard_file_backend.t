@@ -56,7 +56,7 @@ test "${png_signature_cksum}" = "4074750897 8" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" clipboard: -o clipboard: || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" -o clipboard: clipboard: || {
     echo "not ok" 1 - "failed to read/write fake clipboard SIXEL payload"
     exit 0
 }
