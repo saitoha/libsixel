@@ -152,9 +152,9 @@ jobs:
 
     env:
       FUZZ_TIMEOUT: ${{ matrix.fuzz_timeout || '' }}
-      FUZZ_INPUT_DIR: ${{ runner.temp }}/fuzz-input-img2sixel
-      FUZZ_OUTPUT_DIR: ${{ runner.temp }}/afl-out-img2sixel
-      FUZZ_BUILTIN_CORPUS: ${{ runner.temp }}/fuzz-corpus-loader-builtin
+      FUZZ_INPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-input-img2sixel
+      FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/afl-out-img2sixel
+      FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader-builtin
       FUZZ_BUILTIN_ARGS: ${{ matrix.fuzz_builtin_args || '' }}
 
     steps:
