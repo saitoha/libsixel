@@ -2253,6 +2253,244 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
     return 1;
 }
 
+static unsigned char
+sixel_builtin_psd_descriptor_gradient_type_from_enum(char const enum_value[5])
+{
+    if (enum_value == NULL) {
+        return 0u;
+    }
+    if (memcmp(enum_value, "Rdl ", 4u) == 0) {
+        return 1u;
+    }
+    if (memcmp(enum_value, "Angl", 4u) == 0) {
+        return 2u;
+    }
+    if (memcmp(enum_value, "Rflc", 4u) == 0) {
+        return 3u;
+    }
+    if (memcmp(enum_value, "Dmnd", 4u) == 0) {
+        return 4u;
+    }
+    return 0u;
+}
+
+static int
+sixel_builtin_psd_parse_gdfl_descriptor_stop_list(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    sixel_builtin_psd_layer_record_t *layer,
+    size_t *pstop_count)
+{
+    size_t cursor;
+    size_t list_count;
+    size_t j;
+    char list_type[5];
+    size_t stop_count;
+
+    cursor = 0u;
+    list_count = 0u;
+    j = 0u;
+    list_type[0] = '\0';
+    list_type[1] = '\0';
+    list_type[2] = '\0';
+    list_type[3] = '\0';
+    list_type[4] = '\0';
+    stop_count = 0u;
+    if (data == NULL || pcursor == NULL || layer == NULL || pstop_count == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    stop_count = *pstop_count;
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    list_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (j = 0u; j < list_count; ++j) {
+        if (!sixel_builtin_psd_descriptor_read_type(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    list_type)) {
+            return 0;
+        }
+        if (memcmp(list_type, "Objc", 4u) == 0) {
+            float stop_pos;
+            float stop_rgb[3];
+            float stop_alpha;
+            stop_pos = 0.0f;
+            stop_rgb[0] = 0.0f;
+            stop_rgb[1] = 0.0f;
+            stop_rgb[2] = 0.0f;
+            stop_alpha = 1.0f;
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
+                    data,
+                    data_length,
+                    &cursor,
+                    &stop_pos,
+                    stop_rgb,
+                    &stop_alpha)) {
+                return 0;
+            }
+            if (stop_count < SIXEL_BUILTIN_PSD_FILL_STOP_MAX) {
+                layer->fill_gradient_stop_pos[stop_count] = stop_pos;
+                layer->fill_gradient_stop_rgb[stop_count][0] = stop_rgb[0];
+                layer->fill_gradient_stop_rgb[stop_count][1] = stop_rgb[1];
+                layer->fill_gradient_stop_rgb[stop_count][2] = stop_rgb[2];
+                layer->fill_gradient_stop_alpha[stop_count] = stop_alpha;
+                ++stop_count;
+            }
+        } else if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                            data_length,
+                                                            &cursor,
+                                                            list_type,
+                                                            0u)) {
+            return 0;
+        }
+    }
+    *pstop_count = stop_count;
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_gdfl_descriptor_grad_object(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    unsigned char *pgradient_type,
+    size_t *pstop_count,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key[5];
+    char type[5];
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    type[0] = '\0';
+    type[1] = '\0';
+    type[2] = '\0';
+    type[3] = '\0';
+    type[4] = '\0';
+    if (data == NULL || pcursor == NULL || pgradient_type == NULL ||
+        pstop_count == NULL || layer == NULL) {
+        return 0;
+    }
+
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          data_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                data_length,
+                                                &cursor,
+                                                key)) {
+        return 0;
+    }
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "Type", 4u) == 0) {
+            char enum_value[5];
+            enum_value[0] = '\0';
+            enum_value[1] = '\0';
+            enum_value[2] = '\0';
+            enum_value[3] = '\0';
+            enum_value[4] = '\0';
+            if (!sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                              data_length,
+                                                              &cursor,
+                                                              type,
+                                                              enum_value)) {
+                return 0;
+            }
+            *pgradient_type =
+                sixel_builtin_psd_descriptor_gradient_type_from_enum(enum_value);
+            continue;
+        }
+        if (memcmp(key, "Clrs", 4u) == 0 &&
+            memcmp(type, "VlLs", 4u) == 0) {
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_stop_list(data,
+                                                                   data_length,
+                                                                   &cursor,
+                                                                   layer,
+                                                                   pstop_count)) {
+                return 0;
+            }
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     data_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    *pcursor = cursor;
+    return 1;
+}
+
+static void
+sixel_builtin_psd_sort_gradient_stops(sixel_builtin_psd_layer_record_t *layer,
+                                      size_t stop_count)
+{
+    size_t a;
+
+    if (layer == NULL || stop_count <= 1u) {
+        return;
+    }
+    for (a = 0u; a + 1u < stop_count; ++a) {
+        size_t b;
+        for (b = a + 1u; b < stop_count; ++b) {
+            if (layer->fill_gradient_stop_pos[b] < layer->fill_gradient_stop_pos[a]) {
+                float tmp_pos;
+                float tmp_alpha;
+                float tmp_rgb0;
+                float tmp_rgb1;
+                float tmp_rgb2;
+                tmp_pos = layer->fill_gradient_stop_pos[a];
+                tmp_alpha = layer->fill_gradient_stop_alpha[a];
+                tmp_rgb0 = layer->fill_gradient_stop_rgb[a][0];
+                tmp_rgb1 = layer->fill_gradient_stop_rgb[a][1];
+                tmp_rgb2 = layer->fill_gradient_stop_rgb[a][2];
+                layer->fill_gradient_stop_pos[a] = layer->fill_gradient_stop_pos[b];
+                layer->fill_gradient_stop_alpha[a] = layer->fill_gradient_stop_alpha[b];
+                layer->fill_gradient_stop_rgb[a][0] = layer->fill_gradient_stop_rgb[b][0];
+                layer->fill_gradient_stop_rgb[a][1] = layer->fill_gradient_stop_rgb[b][1];
+                layer->fill_gradient_stop_rgb[a][2] = layer->fill_gradient_stop_rgb[b][2];
+                layer->fill_gradient_stop_pos[b] = tmp_pos;
+                layer->fill_gradient_stop_alpha[b] = tmp_alpha;
+                layer->fill_gradient_stop_rgb[b][0] = tmp_rgb0;
+                layer->fill_gradient_stop_rgb[b][1] = tmp_rgb1;
+                layer->fill_gradient_stop_rgb[b][2] = tmp_rgb2;
+            }
+        }
+    }
+}
+
 static int
 sixel_builtin_psd_parse_gdfl_descriptor_payload(
     unsigned char const *data,
@@ -2331,17 +2569,8 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
                                                               enum_value)) {
                 return 0;
             }
-            if (memcmp(enum_value, "Rdl ", 4u) == 0) {
-                gradient_type = 1u;
-            } else if (memcmp(enum_value, "Angl", 4u) == 0) {
-                gradient_type = 2u;
-            } else if (memcmp(enum_value, "Rflc", 4u) == 0) {
-                gradient_type = 3u;
-            } else if (memcmp(enum_value, "Dmnd", 4u) == 0) {
-                gradient_type = 4u;
-            } else {
-                gradient_type = 0u;
-            }
+            gradient_type =
+                sixel_builtin_psd_descriptor_gradient_type_from_enum(enum_value);
             continue;
         }
         if (memcmp(key, "Rvrs", 4u) == 0) {
@@ -2387,62 +2616,24 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
         }
         if (memcmp(key, "Clrs", 4u) == 0 &&
             memcmp(type, "VlLs", 4u) == 0) {
-            size_t list_count;
-            size_t j;
-            char list_type[5];
-
-            list_count = 0u;
-            j = 0u;
-            list_type[0] = '\0';
-            list_type[1] = '\0';
-            list_type[2] = '\0';
-            list_type[3] = '\0';
-            list_type[4] = '\0';
-            if (cursor + 4u > key_length) {
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_stop_list(data,
+                                                                   key_length,
+                                                                   &cursor,
+                                                                   layer,
+                                                                   &stop_count)) {
                 return 0;
             }
-            list_count = sixel_builtin_read_u32be_size(data + cursor);
-            cursor += 4u;
-            for (j = 0u; j < list_count; ++j) {
-                if (!sixel_builtin_psd_descriptor_read_type(data,
-                                                            key_length,
-                                                            &cursor,
-                                                            list_type)) {
-                    return 0;
-                }
-                if (memcmp(list_type, "Objc", 4u) == 0) {
-                    float stop_pos;
-                    float stop_rgb[3];
-                    float stop_alpha;
-                    stop_pos = 0.0f;
-                    stop_rgb[0] = 0.0f;
-                    stop_rgb[1] = 0.0f;
-                    stop_rgb[2] = 0.0f;
-                    stop_alpha = 1.0f;
-                    if (!sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
-                            data,
-                            key_length,
-                            &cursor,
-                            &stop_pos,
-                            stop_rgb,
-                            &stop_alpha)) {
-                        return 0;
-                    }
-                    if (stop_count < SIXEL_BUILTIN_PSD_FILL_STOP_MAX) {
-                        layer->fill_gradient_stop_pos[stop_count] = stop_pos;
-                        layer->fill_gradient_stop_rgb[stop_count][0] = stop_rgb[0];
-                        layer->fill_gradient_stop_rgb[stop_count][1] = stop_rgb[1];
-                        layer->fill_gradient_stop_rgb[stop_count][2] = stop_rgb[2];
-                        layer->fill_gradient_stop_alpha[stop_count] = stop_alpha;
-                        ++stop_count;
-                    }
-                } else if (!sixel_builtin_psd_descriptor_skip_value(data,
-                                                                    key_length,
-                                                                    &cursor,
-                                                                    list_type,
-                                                                    0u)) {
-                    return 0;
-                }
+            continue;
+        }
+        if (memcmp(key, "Grad", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_grad_object(data,
+                                                                     key_length,
+                                                                     &cursor,
+                                                                     &gradient_type,
+                                                                     &stop_count,
+                                                                     layer)) {
+                return 0;
             }
             continue;
         }
@@ -2458,36 +2649,7 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
         return 0;
     }
 
-    if (stop_count > 1u) {
-        size_t a;
-        for (a = 0u; a + 1u < stop_count; ++a) {
-            size_t b;
-            for (b = a + 1u; b < stop_count; ++b) {
-                if (layer->fill_gradient_stop_pos[b] < layer->fill_gradient_stop_pos[a]) {
-                    float tmp_pos;
-                    float tmp_alpha;
-                    float tmp_rgb0;
-                    float tmp_rgb1;
-                    float tmp_rgb2;
-                    tmp_pos = layer->fill_gradient_stop_pos[a];
-                    tmp_alpha = layer->fill_gradient_stop_alpha[a];
-                    tmp_rgb0 = layer->fill_gradient_stop_rgb[a][0];
-                    tmp_rgb1 = layer->fill_gradient_stop_rgb[a][1];
-                    tmp_rgb2 = layer->fill_gradient_stop_rgb[a][2];
-                    layer->fill_gradient_stop_pos[a] = layer->fill_gradient_stop_pos[b];
-                    layer->fill_gradient_stop_alpha[a] = layer->fill_gradient_stop_alpha[b];
-                    layer->fill_gradient_stop_rgb[a][0] = layer->fill_gradient_stop_rgb[b][0];
-                    layer->fill_gradient_stop_rgb[a][1] = layer->fill_gradient_stop_rgb[b][1];
-                    layer->fill_gradient_stop_rgb[a][2] = layer->fill_gradient_stop_rgb[b][2];
-                    layer->fill_gradient_stop_pos[b] = tmp_pos;
-                    layer->fill_gradient_stop_alpha[b] = tmp_alpha;
-                    layer->fill_gradient_stop_rgb[b][0] = tmp_rgb0;
-                    layer->fill_gradient_stop_rgb[b][1] = tmp_rgb1;
-                    layer->fill_gradient_stop_rgb[b][2] = tmp_rgb2;
-                }
-            }
-        }
-    }
+    sixel_builtin_psd_sort_gradient_stops(layer, stop_count);
 
     layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_GDFL;
     layer->fill_gradient_type = gradient_type;

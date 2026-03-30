@@ -226,6 +226,7 @@ def build_descriptor_gdfl_payload(
     angle_deg: float,
     scale_percent: float,
     stops,
+    use_nested_grad: bool = False,
 ) -> bytes:
     def build_rgb_object(r: int, g: int, b: int) -> bytes:
         obj = bytearray()
@@ -267,17 +268,37 @@ def build_descriptor_gdfl_payload(
     root = bytearray()
     root += _descriptor_unicode("")
     root += _descriptor_key4(b"GrFl")
-    root += struct.pack(">I", 5)
-    root += _descriptor_key4(b"Type")
-    root += b"enum" + _descriptor_key4(b"GrdT") + _descriptor_key4(gradient_type_key)
-    root += _descriptor_key4(b"Rvrs")
-    root += b"bool" + (b"\x01" if reverse else b"\x00")
-    root += _descriptor_key4(b"Angl")
-    root += b"UntF" + b"#Ang" + struct.pack(">d", float(angle_deg))
-    root += _descriptor_key4(b"Scl ")
-    root += b"UntF" + b"#Prc" + struct.pack(">d", float(scale_percent))
-    root += _descriptor_key4(b"Clrs")
-    root += b"VlLs" + clrs
+    if use_nested_grad:
+        grad = bytearray()
+        grad += _descriptor_unicode("")
+        grad += _descriptor_key4(b"Grdn")
+        grad += struct.pack(">I", 2)
+        grad += _descriptor_key4(b"Type")
+        grad += b"enum" + _descriptor_key4(b"GrdT") + _descriptor_key4(gradient_type_key)
+        grad += _descriptor_key4(b"Clrs")
+        grad += b"VlLs" + clrs
+
+        root += struct.pack(">I", 4)
+        root += _descriptor_key4(b"Rvrs")
+        root += b"bool" + (b"\x01" if reverse else b"\x00")
+        root += _descriptor_key4(b"Angl")
+        root += b"UntF" + b"#Ang" + struct.pack(">d", float(angle_deg))
+        root += _descriptor_key4(b"Scl ")
+        root += b"UntF" + b"#Prc" + struct.pack(">d", float(scale_percent))
+        root += _descriptor_key4(b"Grad")
+        root += b"Objc" + grad
+    else:
+        root += struct.pack(">I", 5)
+        root += _descriptor_key4(b"Type")
+        root += b"enum" + _descriptor_key4(b"GrdT") + _descriptor_key4(gradient_type_key)
+        root += _descriptor_key4(b"Rvrs")
+        root += b"bool" + (b"\x01" if reverse else b"\x00")
+        root += _descriptor_key4(b"Angl")
+        root += b"UntF" + b"#Ang" + struct.pack(">d", float(angle_deg))
+        root += _descriptor_key4(b"Scl ")
+        root += b"UntF" + b"#Prc" + struct.pack(">d", float(scale_percent))
+        root += _descriptor_key4(b"Clrs")
+        root += b"VlLs" + clrs
     return bytes(root)
 
 
@@ -1852,6 +1873,52 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_grad_nested.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, 255, 32, 32, 100.0),
+                                    (1.0, 32, 64, 255, 100.0),
+                                ],
+                                use_nested_grad=True,
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_fill_ptfl.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -3057,6 +3124,52 @@ def generate(out_dir: pathlib.Path):
                                     (0.0, 255, 32, 32, 100.0),
                                     (1.0, 32, 64, 255, 100.0),
                                 ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_grad_nested.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, 255, 32, 32, 100.0),
+                                    (1.0, 32, 64, 255, 100.0),
+                                ],
+                                use_nested_grad=True,
                             ),
                         )
                     ],
@@ -4327,6 +4440,52 @@ def generate(out_dir: pathlib.Path):
                                     (0.0, 255, 32, 32, 100.0),
                                     (1.0, 32, 64, 255, 100.0),
                                 ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_grad_nested.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, 255, 32, 32, 100.0),
+                                    (1.0, 32, 64, 255, 100.0),
+                                ],
+                                use_nested_grad=True,
                             ),
                         )
                     ],
