@@ -1985,6 +1985,9 @@ sixel_builtin_psd_descriptor_parse_color_object(
     double yellow;
     double black;
     double gray;
+    double hue;
+    double saturation;
+    double brightness;
     double component_max;
     int has_red;
     int has_green;
@@ -1994,8 +1997,12 @@ sixel_builtin_psd_descriptor_parse_color_object(
     int has_yellow;
     int has_black;
     int has_gray;
+    int has_hue;
+    int has_saturation;
+    int has_brightness;
     int is_rgb_class;
     int is_gray_class;
+    int is_hsb_class;
 
     cursor = 0u;
     item_count = 0u;
@@ -2023,6 +2030,9 @@ sixel_builtin_psd_descriptor_parse_color_object(
     yellow = 0.0;
     black = 0.0;
     gray = 0.0;
+    hue = 0.0;
+    saturation = 0.0;
+    brightness = 0.0;
     component_max = 0.0;
     has_red = 0;
     has_green = 0;
@@ -2032,8 +2042,12 @@ sixel_builtin_psd_descriptor_parse_color_object(
     has_yellow = 0;
     has_black = 0;
     has_gray = 0;
+    has_hue = 0;
+    has_saturation = 0;
+    has_brightness = 0;
     is_rgb_class = 0;
     is_gray_class = 0;
+    is_hsb_class = 0;
     if (data == NULL || pcursor == NULL || out_rgb == NULL) {
         return 0;
     }
@@ -2052,6 +2066,9 @@ sixel_builtin_psd_descriptor_parse_color_object(
         is_rgb_class = 1;
     } else if (memcmp(class_key, "Grsc", 4u) == 0) {
         is_gray_class = 1;
+    } else if (memcmp(class_key, "HSBC", 4u) == 0 ||
+               memcmp(class_key, "HSB ", 4u) == 0) {
+        is_hsb_class = 1;
     } else if (memcmp(class_key, "CMYC", 4u) == 0 ||
                memcmp(class_key, "CMYK", 4u) == 0) {
         is_rgb_class = 0;
@@ -2107,6 +2124,40 @@ sixel_builtin_psd_descriptor_parse_color_object(
                                                                 &numeric)) {
                 gray = numeric;
                 has_gray = 1;
+                continue;
+            }
+        } else if (is_hsb_class != 0) {
+            if ((memcmp(key, "H   ", 4u) == 0 ||
+                 memcmp(key, "hue ", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                hue = numeric;
+                has_hue = 1;
+                continue;
+            }
+            if ((memcmp(key, "Strt", 4u) == 0 ||
+                 memcmp(key, "sat ", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                saturation = numeric;
+                has_saturation = 1;
+                continue;
+            }
+            if ((memcmp(key, "Brgh", 4u) == 0 ||
+                 memcmp(key, "bri ", 4u) == 0) &&
+                sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                                data_length,
+                                                                &cursor,
+                                                                type,
+                                                                &numeric)) {
+                brightness = numeric;
+                has_brightness = 1;
                 continue;
             }
         } else {
@@ -2185,6 +2236,91 @@ sixel_builtin_psd_descriptor_parse_color_object(
         red = gray;
         green = gray;
         blue = gray;
+    } else if (is_hsb_class != 0) {
+        double h_norm;
+        double s_norm;
+        double v_norm;
+        double chroma;
+        double h_prime;
+        double x;
+        double m;
+        double r1;
+        double g1;
+        double b1;
+
+        if (has_hue == 0 || has_saturation == 0 || has_brightness == 0) {
+            return 0;
+        }
+        if (hue <= 1.0 && hue >= 0.0) {
+            h_norm = hue * 360.0;
+        } else {
+            h_norm = hue;
+        }
+        while (h_norm < 0.0) {
+            h_norm += 360.0;
+        }
+        while (h_norm >= 360.0) {
+            h_norm -= 360.0;
+        }
+
+        if (saturation <= 1.0 && saturation >= 0.0) {
+            s_norm = saturation;
+        } else if (saturation <= 100.0) {
+            s_norm = saturation / 100.0;
+        } else if (saturation <= 255.0) {
+            s_norm = saturation / 255.0;
+        } else {
+            s_norm = 1.0;
+        }
+        if (brightness <= 1.0 && brightness >= 0.0) {
+            v_norm = brightness;
+        } else if (brightness <= 100.0) {
+            v_norm = brightness / 100.0;
+        } else if (brightness <= 255.0) {
+            v_norm = brightness / 255.0;
+        } else {
+            v_norm = 1.0;
+        }
+        if (s_norm < 0.0) {
+            s_norm = 0.0;
+        } else if (s_norm > 1.0) {
+            s_norm = 1.0;
+        }
+        if (v_norm < 0.0) {
+            v_norm = 0.0;
+        } else if (v_norm > 1.0) {
+            v_norm = 1.0;
+        }
+
+        chroma = v_norm * s_norm;
+        h_prime = h_norm / 60.0;
+        x = chroma * (1.0 - fabs(fmod(h_prime, 2.0) - 1.0));
+        m = v_norm - chroma;
+        r1 = 0.0;
+        g1 = 0.0;
+        b1 = 0.0;
+        if (h_prime < 1.0) {
+            r1 = chroma;
+            g1 = x;
+        } else if (h_prime < 2.0) {
+            r1 = x;
+            g1 = chroma;
+        } else if (h_prime < 3.0) {
+            g1 = chroma;
+            b1 = x;
+        } else if (h_prime < 4.0) {
+            g1 = x;
+            b1 = chroma;
+        } else if (h_prime < 5.0) {
+            r1 = x;
+            b1 = chroma;
+        } else {
+            r1 = chroma;
+            b1 = x;
+        }
+        red = (r1 + m) * 255.0;
+        green = (g1 + m) * 255.0;
+        blue = (b1 + m) * 255.0;
     } else {
         double red01;
         double green01;
