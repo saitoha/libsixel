@@ -1690,6 +1690,36 @@ def mutate_first_additional_block_length(
     return bytes(out)
 
 
+def mutate_first_additional_block_type(
+    data: bytes,
+    *,
+    key: bytes,
+    expected_type: bytes,
+    mutated_type: bytes,
+) -> bytes:
+    marker = b"8BIM" + key
+    marker_offset = data.find(marker)
+    if marker_offset < 0:
+        raise RuntimeError(f"additional block marker not found: {key!r}")
+    if len(key) != 4:
+        raise RuntimeError("additional block key must be 4 bytes")
+    if len(expected_type) != 4 or len(mutated_type) != 4:
+        raise RuntimeError("descriptor type must be 4 bytes")
+    payload_length = struct.unpack_from(">I", data, marker_offset + 8)[0]
+    payload_offset = marker_offset + 12
+    payload_end = payload_offset + payload_length
+    if payload_end > len(data):
+        raise RuntimeError("invalid additional block payload length")
+    type_offset = data.find(expected_type, payload_offset, payload_end)
+    if type_offset < 0:
+        raise RuntimeError(
+            f"descriptor type not found in additional block: {expected_type!r}"
+        )
+    out = bytearray(data)
+    out[type_offset:type_offset + 4] = mutated_type
+    return bytes(out)
+
+
 def write_descriptor_malformed_fixtures(out_dir: pathlib.Path):
     # Corrupt the fill additional-block length so parser hits deterministic
     # malformed layer extra-data diagnostics.
@@ -1719,6 +1749,34 @@ def write_descriptor_malformed_fixtures(out_dir: pathlib.Path):
                 base,
                 key=key,
                 malformed_length=malformed_length,
+            ),
+        )
+    invalid_payload_variants = [
+        (
+            "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor.psd",
+            b"SoCo",
+            "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_invalid_payload.psd",
+        ),
+        (
+            "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor.psd",
+            b"GdFl",
+            "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_invalid_payload.psd",
+        ),
+        (
+            "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor.psd",
+            b"PtFl",
+            "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_invalid_payload.psd",
+        ),
+    ]
+    for base_name, key, invalid_name in invalid_payload_variants:
+        base = (out_dir / base_name).read_bytes()
+        write_file(
+            out_dir / invalid_name,
+            mutate_first_additional_block_type(
+                base,
+                key=key,
+                expected_type=b"Objc",
+                mutated_type=b"BADC",
             ),
         )
 

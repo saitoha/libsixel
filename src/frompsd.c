@@ -1280,6 +1280,8 @@ typedef struct sixel_builtin_psd_layer_record {
     int user_mask_channel_index;
     int real_mask_channel_index;
     int has_non_pixel_payload;
+    int has_fill_payload;
+    int has_malformed_fill_payload;
     int has_vector_mask;
     int has_layer_effects;
     int has_knockout;
@@ -3388,7 +3390,7 @@ sixel_builtin_psd_parse_fill_payload_sxfl(
     return 0;
 }
 
-static void
+static int
 sixel_builtin_psd_parse_fill_payload(
     char const key[5],
     unsigned char const *data,
@@ -3396,27 +3398,28 @@ sixel_builtin_psd_parse_fill_payload(
     sixel_builtin_psd_layer_record_t *layer)
 {
     if (key == NULL || data == NULL || layer == NULL) {
-        return;
+        return 0;
     }
     if (sixel_builtin_psd_parse_fill_payload_sxfl(key,
                                                   data,
                                                   key_length,
                                                   layer)) {
-        return;
+        return 1;
     }
     if (memcmp(key, "SoCo", 4u) == 0) {
-        (void)sixel_builtin_psd_parse_soco_descriptor_payload(data,
-                                                              key_length,
-                                                              layer);
+        return sixel_builtin_psd_parse_soco_descriptor_payload(data,
+                                                               key_length,
+                                                               layer);
     } else if (memcmp(key, "GdFl", 4u) == 0) {
-        (void)sixel_builtin_psd_parse_gdfl_descriptor_payload(data,
-                                                              key_length,
-                                                              layer);
+        return sixel_builtin_psd_parse_gdfl_descriptor_payload(data,
+                                                               key_length,
+                                                               layer);
     } else if (memcmp(key, "PtFl", 4u) == 0) {
-        (void)sixel_builtin_psd_parse_ptfl_descriptor_payload(data,
-                                                              key_length,
-                                                              layer);
+        return sixel_builtin_psd_parse_ptfl_descriptor_payload(data,
+                                                               key_length,
+                                                               layer);
     }
+    return 0;
 }
 
 static int
@@ -3857,6 +3860,8 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->user_mask_channel_index = -1;
     layer->real_mask_channel_index = -1;
     layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_NONE;
+    layer->has_fill_payload = 0;
+    layer->has_malformed_fill_payload = 0;
     layer->fill_solid_rgb[0] = 0.0f;
     layer->fill_solid_rgb[1] = 0.0f;
     layer->fill_solid_rgb[2] = 0.0f;
@@ -3891,11 +3896,13 @@ sixel_builtin_psd_parse_layer_extra_data(
     size_t cursor;
     size_t block_length;
     size_t key_length;
+    int parsed_fill;
     char key[5];
 
     cursor = 0u;
     block_length = 0u;
     key_length = 0u;
+    parsed_fill = 0;
     key[0] = '\0';
     key[1] = '\0';
     key[2] = '\0';
@@ -3966,10 +3973,14 @@ sixel_builtin_psd_parse_layer_extra_data(
         if (memcmp(key, "SoCo", 4u) == 0 ||
             memcmp(key, "GdFl", 4u) == 0 ||
             memcmp(key, "PtFl", 4u) == 0) {
-            sixel_builtin_psd_parse_fill_payload(key,
-                                                 buffer + cursor,
-                                                 key_length,
-                                                 layer);
+            layer->has_fill_payload = 1;
+            parsed_fill = sixel_builtin_psd_parse_fill_payload(key,
+                                                               buffer + cursor,
+                                                               key_length,
+                                                               layer);
+            if (parsed_fill == 0) {
+                layer->has_malformed_fill_payload = 1;
+            }
         }
         if (memcmp(key, "vmsk", 4u) == 0 ||
             memcmp(key, "vsms", 4u) == 0) {
@@ -5668,6 +5679,13 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             if (synthetic_fill == 0 &&
                 !sixel_builtin_psd_layer_has_decodable_pixel_channels(info,
                                                                        layer)) {
+                if (layer->has_fill_payload != 0 &&
+                    layer->has_malformed_fill_payload != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: malformed non-pixel fill payload; "
+                        "skipping layer");
+                }
                 if (layer->clipping == 0u) {
                     clip_alpha_valid = 0;
                 }
