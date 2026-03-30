@@ -273,6 +273,8 @@ sixel_cms_map_format_lcms(sixel_cms_pixel_format_t format)
         return TYPE_CMYK_16;
     case SIXEL_CMS_PIXELFORMAT_CMYK_F32:
         return TYPE_CMYK_FLT;
+    case SIXEL_CMS_PIXELFORMAT_LAB_F32:
+        return TYPE_Lab_FLT;
     case SIXEL_CMS_PIXELFORMAT_RGB_F32:
         return TYPE_RGB_FLT;
     case SIXEL_CMS_PIXELFORMAT_RGB_8:
@@ -468,6 +470,9 @@ sixel_cms_parse_icc_colorspace_signature(unsigned char const *data,
     if (memcmp(signature, "CMYK", 4u) == 0) {
         return SIXEL_CMS_COLORSPACE_CMYK;
     }
+    if (memcmp(signature, "Lab ", 4u) == 0) {
+        return SIXEL_CMS_COLORSPACE_LAB;
+    }
 
     return SIXEL_CMS_COLORSPACE_UNKNOWN;
 }
@@ -526,6 +531,8 @@ sixel_cms_profile_open_lcms2(sixel_cms_profile_t *profile,
         profile->colorspace = SIXEL_CMS_COLORSPACE_RGB;
     } else if (signature == cmsSigCmykData) {
         profile->colorspace = SIXEL_CMS_COLORSPACE_CMYK;
+    } else if (signature == cmsSigLabData) {
+        profile->colorspace = SIXEL_CMS_COLORSPACE_LAB;
     } else {
         profile->colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     }
@@ -603,6 +610,23 @@ sixel_cms_profile_create_rgb_gamma_chrm_lcms2(
 
     profile->backend = SIXEL_CMS_PROFILE_BACKEND_LCMS2;
     profile->colorspace = SIXEL_CMS_COLORSPACE_RGB;
+    return 1;
+}
+
+static int
+sixel_cms_profile_create_cielab_d50_lcms2(sixel_cms_profile_t *profile)
+{
+    if (profile == NULL) {
+        return 0;
+    }
+
+    profile->lcms_handle = cmsCreateLab4Profile(NULL);
+    if (profile->lcms_handle == NULL) {
+        return 0;
+    }
+
+    profile->backend = SIXEL_CMS_PROFILE_BACKEND_LCMS2;
+    profile->colorspace = SIXEL_CMS_COLORSPACE_LAB;
     return 1;
 }
 #endif
@@ -826,6 +850,24 @@ sixel_cms_profile_create_rgb_gamma_chrm_colorsync(
     return 1;
 }
 
+static int
+sixel_cms_profile_create_cielab_d50_colorsync(sixel_cms_profile_t *profile)
+{
+    if (profile == NULL) {
+        return 0;
+    }
+
+    profile->colorsync_handle = ColorSyncProfileCreateWithName(
+        kColorSyncGenericLabProfile);
+    if (profile->colorsync_handle == NULL) {
+        return 0;
+    }
+
+    profile->backend = SIXEL_CMS_PROFILE_BACKEND_COLORSYNC;
+    profile->colorspace = SIXEL_CMS_COLORSPACE_LAB;
+    return 1;
+}
+
 static CFStringRef
 sixel_cms_colorsync_intent_to_cfstring(int intent)
 {
@@ -899,6 +941,15 @@ sixel_cms_colorsync_map_format(sixel_cms_pixel_format_t format,
         value_layout |= kColorSyncByteOrder32Little;
 #endif
         *bytes_per_pixel = 4u * sizeof(float);
+        break;
+    case SIXEL_CMS_PIXELFORMAT_LAB_F32:
+        *depth = kColorSync32BitFloat;
+#if WORDS_BIGENDIAN
+        value_layout |= kColorSyncByteOrder32Big;
+#else
+        value_layout |= kColorSyncByteOrder32Little;
+#endif
+        *bytes_per_pixel = 3u * sizeof(float);
         break;
     default:
         return 0;
@@ -1118,6 +1169,38 @@ sixel_cms_create_linear_srgb_profile(void)
         SIXEL_SRGB_GREEN_Y,
         SIXEL_SRGB_BLUE_X,
         SIXEL_SRGB_BLUE_Y);
+}
+
+SIXELAPI sixel_cms_profile_t *
+sixel_cms_create_cielab_d50_profile(void)
+{
+    sixel_cms_profile_t *profile;
+    sixel_cms_engine_t engine;
+
+    profile = sixel_cms_allocate_profile();
+    if (profile == NULL) {
+        return NULL;
+    }
+
+    engine = sixel_cms_get_engine();
+    if (engine == SIXEL_CMS_ENGINE_NONE) {
+        free(profile);
+        return NULL;
+    }
+#if HAVE_LCMS2
+    if (engine == SIXEL_CMS_ENGINE_LCMS2 &&
+        sixel_cms_profile_create_cielab_d50_lcms2(profile)) {
+        return profile;
+    }
+#endif
+#if SIXEL_CMS_HAVE_COLORSYNC
+    if (engine == SIXEL_CMS_ENGINE_COLORSYNC &&
+        sixel_cms_profile_create_cielab_d50_colorsync(profile)) {
+        return profile;
+    }
+#endif
+    free(profile);
+    return NULL;
 }
 
 SIXELAPI sixel_cms_profile_t *
@@ -2108,6 +2191,89 @@ sixel_cms_convert_to_linearrgb_with_profile_bytes(
                                                         height,
                                                         pixelformat,
                                                         src_profile);
+    sixel_cms_close_profile(src_profile);
+
+    return converted;
+}
+
+SIXELAPI int
+sixel_cms_convert_profile_to_cielab(unsigned char *pixels,
+                                    int width,
+                                    int height,
+                                    int pixelformat,
+                                    sixel_cms_profile_t *src_profile)
+{
+    sixel_cms_profile_t *dst_profile;
+    sixel_cms_transform_t *transform;
+    size_t pixel_count;
+    int converted;
+
+    dst_profile = NULL;
+    transform = NULL;
+    pixel_count = 0u;
+    converted = 0;
+    if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
+        return 0;
+    }
+    if (pixelformat != SIXEL_PIXELFORMAT_CIELABFLOAT32) {
+        return 0;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return 0;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+
+    dst_profile = sixel_cms_create_cielab_d50_profile();
+    if (dst_profile != NULL) {
+        transform = sixel_cms_create_transform(src_profile,
+                                               SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                               dst_profile,
+                                               SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                               SIXEL_CMS_TRANSFORM_DEFAULT);
+        if (transform != NULL &&
+            sixel_cms_do_transform(transform, pixels, pixels, pixel_count)) {
+            converted = 1;
+        }
+    }
+    if (transform != NULL) {
+        sixel_cms_delete_transform(transform);
+    }
+    if (dst_profile != NULL) {
+        sixel_cms_close_profile(dst_profile);
+    }
+
+    return converted;
+}
+
+int
+sixel_cms_convert_to_cielab_with_profile_bytes(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length)
+{
+    sixel_cms_profile_t *src_profile;
+    int converted;
+
+    src_profile = NULL;
+    converted = 0;
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        profile == NULL || profile_length == 0u) {
+        return 0;
+    }
+
+    src_profile = sixel_cms_open_profile_from_mem(profile, profile_length);
+    if (src_profile == NULL) {
+        return 0;
+    }
+
+    converted = sixel_cms_convert_profile_to_cielab(pixels,
+                                                     width,
+                                                     height,
+                                                     pixelformat,
+                                                     src_profile);
     sixel_cms_close_profile(src_profile);
 
     return converted;

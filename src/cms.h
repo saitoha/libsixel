@@ -31,7 +31,8 @@ typedef enum sixel_cms_color_space {
     SIXEL_CMS_COLORSPACE_UNKNOWN = 0,
     SIXEL_CMS_COLORSPACE_RGB,
     SIXEL_CMS_COLORSPACE_GRAY,
-    SIXEL_CMS_COLORSPACE_CMYK
+    SIXEL_CMS_COLORSPACE_CMYK,
+    SIXEL_CMS_COLORSPACE_LAB
 } sixel_cms_color_space_t;
 
 typedef enum sixel_cms_pixel_format {
@@ -41,7 +42,8 @@ typedef enum sixel_cms_pixel_format {
     SIXEL_CMS_PIXELFORMAT_RGB_F32,
     SIXEL_CMS_PIXELFORMAT_CMYK_8,
     SIXEL_CMS_PIXELFORMAT_CMYK_16,
-    SIXEL_CMS_PIXELFORMAT_CMYK_F32
+    SIXEL_CMS_PIXELFORMAT_CMYK_F32,
+    SIXEL_CMS_PIXELFORMAT_LAB_F32
 } sixel_cms_pixel_format_t;
 
 enum {
@@ -81,6 +83,9 @@ sixel_cms_convert_to_srgb_with_profile_bytes(
 SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_linear_srgb_profile(void);
 
+SIXEL_INTERNAL_API sixel_cms_profile_t *
+sixel_cms_create_cielab_d50_profile(void);
+
 SIXEL_INTERNAL_API int
 sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
                                        int width,
@@ -90,6 +95,22 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
 
 int
 sixel_cms_convert_to_linearrgb_with_profile_bytes(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *profile,
+    size_t profile_length);
+
+SIXEL_INTERNAL_API int
+sixel_cms_convert_profile_to_cielab(unsigned char *pixels,
+                                    int width,
+                                    int height,
+                                    int pixelformat,
+                                    sixel_cms_profile_t *src_profile);
+
+int
+sixel_cms_convert_to_cielab_with_profile_bytes(
     unsigned char *pixels,
     int width,
     int height,
