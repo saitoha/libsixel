@@ -539,10 +539,10 @@ def build_descriptor_ptfl_payload(
     fg_rgb,
     bg_rgb,
 ) -> bytes:
-    def build_rgb_object(rgb) -> bytes:
-        r = int(max(0, min(255, rgb[0])))
-        g = int(max(0, min(255, rgb[1])))
-        b = int(max(0, min(255, rgb[2])))
+    def build_rgb_object(r: int, g: int, b: int) -> bytes:
+        r = int(max(0, min(255, r)))
+        g = int(max(0, min(255, g)))
+        b = int(max(0, min(255, b)))
         out = bytearray()
         out += _descriptor_unicode("")
         out += _descriptor_key4(b"RGBC")
@@ -555,6 +555,96 @@ def build_descriptor_ptfl_payload(
         out += b"doub" + struct.pack(">d", float(b))
         return bytes(out)
 
+    def build_cmyk_object(cyan: float, magenta: float, yellow: float, black: float) -> bytes:
+        out = bytearray()
+        out += _descriptor_unicode("")
+        out += _descriptor_key4(b"CMYC")
+        out += struct.pack(">I", 4)
+        out += _descriptor_key4(b"Cyn ")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, cyan))))
+        out += _descriptor_key4(b"Mgnt")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, magenta))))
+        out += _descriptor_key4(b"Ylw ")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, yellow))))
+        out += _descriptor_key4(b"Blck")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, black))))
+        return bytes(out)
+
+    def build_gray_object(gray: float) -> bytes:
+        out = bytearray()
+        out += _descriptor_unicode("")
+        out += _descriptor_key4(b"Grsc")
+        out += struct.pack(">I", 1)
+        out += _descriptor_key4(b"Gry ")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, gray))))
+        return bytes(out)
+
+    def build_hsb_object(hue_deg: float, saturation_pct: float, brightness_pct: float) -> bytes:
+        out = bytearray()
+        out += _descriptor_unicode("")
+        out += _descriptor_key4(b"HSBC")
+        out += struct.pack(">I", 3)
+        out += _descriptor_key4(b"H   ")
+        out += b"doub" + struct.pack(">d", float(hue_deg))
+        out += _descriptor_key4(b"Strt")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, saturation_pct))))
+        out += _descriptor_key4(b"Brgh")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, brightness_pct))))
+        return bytes(out)
+
+    def build_lab_object(l_star: float, a_star: float, b_star: float) -> bytes:
+        out = bytearray()
+        out += _descriptor_unicode("")
+        out += _descriptor_key4(b"LbCl")
+        out += struct.pack(">I", 3)
+        out += _descriptor_key4(b"Lmnc")
+        out += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, l_star))))
+        out += _descriptor_key4(b"A   ")
+        out += b"doub" + struct.pack(">d", float(max(-128.0, min(127.0, a_star))))
+        out += _descriptor_key4(b"B   ")
+        out += b"doub" + struct.pack(">d", float(max(-128.0, min(127.0, b_star))))
+        return bytes(out)
+
+    def build_color_object(color_spec) -> bytes:
+        if (
+            isinstance(color_spec, (tuple, list))
+            and len(color_spec) == 3
+            and not isinstance(color_spec[0], str)
+        ):
+            return build_rgb_object(color_spec[0], color_spec[1], color_spec[2])
+        if (
+            isinstance(color_spec, tuple)
+            and len(color_spec) == 5
+            and color_spec[0] == "cmyk"
+        ):
+            return build_cmyk_object(color_spec[1],
+                                     color_spec[2],
+                                     color_spec[3],
+                                     color_spec[4])
+        if (
+            isinstance(color_spec, tuple)
+            and len(color_spec) == 2
+            and color_spec[0] == "gray"
+        ):
+            return build_gray_object(color_spec[1])
+        if (
+            isinstance(color_spec, tuple)
+            and len(color_spec) == 4
+            and color_spec[0] == "hsb"
+        ):
+            return build_hsb_object(color_spec[1],
+                                    color_spec[2],
+                                    color_spec[3])
+        if (
+            isinstance(color_spec, tuple)
+            and len(color_spec) == 4
+            and color_spec[0] == "lab"
+        ):
+            return build_lab_object(color_spec[1],
+                                    color_spec[2],
+                                    color_spec[3])
+        raise ValueError(f"unsupported PtFl descriptor color spec: {color_spec!r}")
+
     tile_i = int(max(1, min(65535, tile)))
     out = bytearray()
     out += _descriptor_unicode("")
@@ -563,9 +653,9 @@ def build_descriptor_ptfl_payload(
     out += _descriptor_key4(b"Sz  ")
     out += b"long" + struct.pack(">I", tile_i)
     out += _descriptor_key4(b"FgCl")
-    out += b"Objc" + build_rgb_object(fg_rgb)
+    out += b"Objc" + build_color_object(fg_rgb)
     out += _descriptor_key4(b"BgCl")
-    out += b"Objc" + build_rgb_object(bg_rgb)
+    out += b"Objc" + build_color_object(bg_rgb)
     return bytes(out)
 
 
@@ -2514,6 +2604,84 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("gray", 98.0392156862745),
+                                bg_rgb=("gray", 11.764705882352942),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_hsb.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("hsb", 0.0, 0.0, 98.0392156862745),
+                                bg_rgb=("hsb", 0.0, 0.0, 11.764705882352942),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_vector_mask.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -4068,6 +4236,84 @@ def generate(out_dir: pathlib.Path):
                                 tile=4,
                                 fg_rgb=(250, 250, 250),
                                 bg_rgb=(30, 30, 30),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_ptfl_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("gray", 98.0392156862745),
+                                bg_rgb=("gray", 11.764705882352942),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_ptfl_descriptor_hsb.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("hsb", 0.0, 0.0, 98.0392156862745),
+                                bg_rgb=("hsb", 0.0, 0.0, 11.764705882352942),
                             ),
                         )
                     ],
@@ -5726,6 +5972,84 @@ def generate(out_dir: pathlib.Path):
                                 tile=4,
                                 fg_rgb=(250, 250, 250),
                                 bg_rgb=(30, 30, 30),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_ptfl_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("gray", 98.0392156862745),
+                                bg_rgb=("gray", 11.764705882352942),
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_ptfl_descriptor_hsb.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"PtFl",
+                            build_descriptor_ptfl_payload(
+                                tile=4,
+                                fg_rgb=("hsb", 0.0, 0.0, 98.0392156862745),
+                                bg_rgb=("hsb", 0.0, 0.0, 11.764705882352942),
                             ),
                         )
                     ],
