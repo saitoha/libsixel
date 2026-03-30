@@ -640,16 +640,64 @@ sixel_builtin_hdr_parse_format_line(char const *line, int *format_kind)
     return 0;
 }
 
+static char const *
+sixel_builtin_hdr_skip_ascii_space(char const *cursor)
+{
+    if (cursor == NULL) {
+        return NULL;
+    }
+
+    while (*cursor != '\0' &&
+           isspace((unsigned char)*cursor)) {
+        ++cursor;
+    }
+
+    return cursor;
+}
+
+static int
+sixel_builtin_hdr_parse_positive_decimal(char const **pcursor, int *value)
+{
+    char const *cursor;
+    int digit;
+    int parsed;
+
+    cursor = NULL;
+    digit = 0;
+    parsed = 0;
+
+    if (pcursor == NULL || *pcursor == NULL || value == NULL) {
+        return 0;
+    }
+
+    cursor = *pcursor;
+    while (*cursor != '\0' &&
+           isdigit((unsigned char)*cursor)) {
+        digit = *cursor - '0';
+        if (parsed > (INT_MAX - digit) / 10) {
+            return 0;
+        }
+        parsed = parsed * 10 + digit;
+        ++cursor;
+    }
+    if (cursor == *pcursor || parsed <= 0) {
+        return 0;
+    }
+
+    *value = parsed;
+    *pcursor = cursor;
+    return 1;
+}
+
 static int
 sixel_builtin_hdr_parse_resolution_line(char const *line,
                                         sixel_builtin_hdr_profile_hint_t *hint)
 {
-    char axis1_token_sign;
+    char const *cursor;
     char axis1_token_axis;
-    char axis2_token_sign;
+    char axis1_token_sign;
     char axis2_token_axis;
-    char tail;
-    int matched;
+    char axis2_token_sign;
     int axis1_len;
     int axis2_len;
     int axis1;
@@ -659,12 +707,11 @@ sixel_builtin_hdr_parse_resolution_line(char const *line,
     int width;
     int height;
 
-    axis1_token_sign = '\0';
+    cursor = NULL;
     axis1_token_axis = '\0';
-    axis2_token_sign = '\0';
+    axis1_token_sign = '\0';
     axis2_token_axis = '\0';
-    tail = '\0';
-    matched = 0;
+    axis2_token_sign = '\0';
     axis1_len = 0;
     axis2_len = 0;
     axis1 = 0;
@@ -678,18 +725,54 @@ sixel_builtin_hdr_parse_resolution_line(char const *line,
         return 0;
     }
 
-    matched = sixel_compat_sscanf(line, " %c%c %d %c%c %d %c",
-                                  &axis1_token_sign,
-                                  &axis1_token_axis,
-                                  &axis1_len,
-                                  &axis2_token_sign,
-                                  &axis2_token_axis,
-                                  &axis2_len,
-                                  &tail);
-    if (matched != 6) {
+    /*
+     * Parse the orientation line manually to avoid scanf_s vararg contract
+     * differences on MSVC. The expected form is:
+     *   [+|-][XY] <len> [+|-][XY] <len>
+     */
+    cursor = sixel_builtin_hdr_skip_ascii_space(line);
+    if (cursor == NULL || *cursor == '\0') {
         return 0;
     }
-    if (axis1_len <= 0 || axis2_len <= 0) {
+
+    axis1_token_sign = *cursor;
+    if (axis1_token_sign != '+' && axis1_token_sign != '-') {
+        return 0;
+    }
+    ++cursor;
+    if (*cursor == '\0') {
+        return 0;
+    }
+    axis1_token_axis = *cursor;
+    ++cursor;
+
+    cursor = sixel_builtin_hdr_skip_ascii_space(cursor);
+    if (!sixel_builtin_hdr_parse_positive_decimal(&cursor, &axis1_len)) {
+        return 0;
+    }
+
+    cursor = sixel_builtin_hdr_skip_ascii_space(cursor);
+    if (cursor == NULL || *cursor == '\0') {
+        return 0;
+    }
+    axis2_token_sign = *cursor;
+    if (axis2_token_sign != '+' && axis2_token_sign != '-') {
+        return 0;
+    }
+    ++cursor;
+    if (*cursor == '\0') {
+        return 0;
+    }
+    axis2_token_axis = *cursor;
+    ++cursor;
+
+    cursor = sixel_builtin_hdr_skip_ascii_space(cursor);
+    if (!sixel_builtin_hdr_parse_positive_decimal(&cursor, &axis2_len)) {
+        return 0;
+    }
+
+    cursor = sixel_builtin_hdr_skip_ascii_space(cursor);
+    if (cursor == NULL || *cursor != '\0') {
         return 0;
     }
 
