@@ -13,6 +13,14 @@
 # include <unistd.h>
 #endif
 
+#ifndef STDOUT_FILENO
+/*
+ * Keep the test portable to toolchains that do not provide unistd.h
+ * (for example MSVC). libsixel treats file descriptor 1 as stdout.
+ */
+# define STDOUT_FILENO 1
+#endif
+
 #include <sixel.h>
 #include "src/encoder.h"
 #include "src/tty.h"

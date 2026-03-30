@@ -26,7 +26,7 @@ typedef struct colorspec_failure_case {
 } colorspec_failure_case_t;
 
 static int
-run_success_cases(void)
+run_colorspec_success_cases(void)
 {
     static colorspec_success_case_t const cases[] = {
         { "#123", 0x10u, 0x20u, 0x30u },
@@ -75,7 +75,7 @@ run_success_cases(void)
 }
 
 static int
-run_failure_cases(void)
+run_colorspec_failure_cases(void)
 {
     static colorspec_failure_case_t const cases[] = {
         { "" },
@@ -116,12 +116,12 @@ test_loader_0050_loader_osc11_colorspec_parser(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    status = run_success_cases();
+    status = run_colorspec_success_cases();
     if (status != 0) {
         return EXIT_FAILURE;
     }
 
-    status = run_failure_cases();
+    status = run_colorspec_failure_cases();
     if (status != 0) {
         return EXIT_FAILURE;
     }
