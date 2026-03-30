@@ -718,30 +718,33 @@ chunk_is_sixel(sixel_chunk_t const *chunk)
     unsigned char *p;
     unsigned char *end;
 
-    p = chunk->buffer;
-    end = p + chunk->size;
-
-    if (chunk->size < 3) {
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 3u) {
         return 0;
     }
+
+    p = chunk->buffer;
+    end = p + chunk->size;
 
     p++;
     if (p >= end) {
         return 0;
     }
     if (*(p - 1) == 0x90 || (*(p - 1) == 0x1b && *p == 0x50)) {
-        while (p++ < end) {
+        while (p < end) {
             if (*p == 0x71) {
                 return 1;
             } else if (*p == 0x18 || *p == 0x1a) {
                 return 0;
             } else if (*p < 0x20) {
+                p++;
                 continue;
             } else if (*p < 0x30) {
                 return 0;
             } else if (*p < 0x40) {
+                p++;
                 continue;
             }
+            p++;
         }
     }
     return 0;
