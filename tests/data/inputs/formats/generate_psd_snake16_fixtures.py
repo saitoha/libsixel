@@ -370,6 +370,28 @@ def build_descriptor_gdfl_payload(
         obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, black))))
         return bytes(obj)
 
+    def build_gray_object(gray: float) -> bytes:
+        obj = bytearray()
+        obj += _descriptor_unicode("")
+        obj += _descriptor_key4(b"Grsc")
+        obj += struct.pack(">I", 1)
+        obj += _descriptor_key4(b"Gry ")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, gray))))
+        return bytes(obj)
+
+    def build_hsb_object(hue_deg: float, saturation_pct: float, brightness_pct: float) -> bytes:
+        obj = bytearray()
+        obj += _descriptor_unicode("")
+        obj += _descriptor_key4(b"HSBC")
+        obj += struct.pack(">I", 3)
+        obj += _descriptor_key4(b"H   ")
+        obj += b"doub" + struct.pack(">d", float(hue_deg))
+        obj += _descriptor_key4(b"Strt")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, saturation_pct))))
+        obj += _descriptor_key4(b"Brgh")
+        obj += b"doub" + struct.pack(">d", float(max(0.0, min(100.0, brightness_pct))))
+        return bytes(obj)
+
     def build_stop_object(pos: float, color_object: bytes, opacity_percent: float) -> bytes:
         loc = int(max(0.0, min(1.0, pos)) * 4096.0 + 0.5)
         opct = float(max(0.0, min(100.0, opacity_percent)))
@@ -405,6 +427,12 @@ def build_descriptor_gdfl_payload(
                                                  color_spec[2],
                                                  color_spec[3],
                                                  color_spec[4])
+            elif isinstance(color_spec, tuple) and len(color_spec) == 2 and color_spec[0] == "gray":
+                color_object = build_gray_object(color_spec[1])
+            elif isinstance(color_spec, tuple) and len(color_spec) == 4 and color_spec[0] == "hsb":
+                color_object = build_hsb_object(color_spec[1],
+                                                color_spec[2],
+                                                color_spec[3])
             else:
                 raise ValueError(f"unsupported gradient stop color spec: {color_spec!r}")
         else:
@@ -2222,6 +2250,102 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, ("gray", 50.0), 100.0),
+                                    (1.0, ("gray", 50.0), 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_hsb.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (
+                                        0.0,
+                                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
+                                        100.0,
+                                    ),
+                                    (
+                                        1.0,
+                                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
+                                        100.0,
+                                    ),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_lab.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=3,
@@ -3716,6 +3840,102 @@ def generate(out_dir: pathlib.Path):
                                     (
                                         1.0,
                                         ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, ("gray", 50.0), 100.0),
+                                    (1.0, ("gray", 50.0), 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_hsb.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=4,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (
+                                        0.0,
+                                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
+                                        100.0,
+                                    ),
+                                    (
+                                        1.0,
+                                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
                                         100.0,
                                     ),
                                 ],
@@ -5278,6 +5498,102 @@ def generate(out_dir: pathlib.Path):
                                     (
                                         1.0,
                                         ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                                        100.0,
+                                    ),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_gray.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (0.0, ("gray", 50.0), 100.0),
+                                    (1.0, ("gray", 50.0), 100.0),
+                                ],
+                            ),
+                        )
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_fill_gdfl_descriptor_hsb.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"GdFl",
+                            build_descriptor_gdfl_payload(
+                                gradient_type_key=b"Lnr ",
+                                reverse=False,
+                                angle_deg=0.0,
+                                scale_percent=100.0,
+                                stops=[
+                                    (
+                                        0.0,
+                                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
+                                        100.0,
+                                    ),
+                                    (
+                                        1.0,
+                                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
                                         100.0,
                                     ),
                                 ],
