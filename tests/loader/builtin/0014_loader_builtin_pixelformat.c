@@ -30,9 +30,9 @@
 #include "src/loader-common.h"
 
 
-#include "0014_loader_builtin_pixelformat_common.inc.c"
-#include "0014_loader_builtin_pixelformat_hdr.inc.c"
-#include "0014_loader_builtin_pixelformat_gif_psd.inc.c"
+#include "tests/loader/builtin/0014_loader_builtin_pixelformat_common.inc.c"
+#include "tests/loader/builtin/0014_loader_builtin_pixelformat_hdr.inc.c"
+#include "tests/loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c"
 
 typedef int (*builtin_loader_env_test_fn_t)(void);
 

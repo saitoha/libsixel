@@ -26,7 +26,7 @@
 #include "src/tty.h"
 
 static int
-run_enable_flag_cases(void)
+run_animation_hide_cursor_enable_flag_cases(void)
 {
     if (!sixel_tty_is_animation_hide_cursor_enabled("1")) {
         fprintf(stderr, "expected only \"1\" to enable cursor hide\n");
@@ -126,7 +126,7 @@ test_loader_0055_loader_animation_hide_cursor_control(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    status = run_enable_flag_cases();
+    status = run_animation_hide_cursor_enable_flag_cases();
     if (status != 0) {
         return EXIT_FAILURE;
     }
