@@ -99,7 +99,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
-  fuzz_push_minimal:
+  fuzz_push_full:
     if: github.event_name == 'push'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
@@ -107,7 +107,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [png-chunk, png-apng, jpeg-icc, pnm-ascii, psd-resource]
+        target: [png-chunk, png-apng, jpeg-icc, pnm-ascii, psd-resource, gif-block, sixel-stream, hdr-header, pic-structure, bmp-dib]
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct/${{ matrix.target }}
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
@@ -290,6 +290,198 @@ jobs:
           path: |
             ${{ env.FUZZ_STRUCT_ARTIFACT_DIR }}
             ${{ env.FUZZ_STRUCT_CORPUS }}
+
+  fuzz_push_loader_formats:
+    if: github.event_name == 'push'
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtool: [autotools, meson]
+        target: [png, gif, jpeg, pnm, sixel, hdr, psd, pic, bmp]
+    env:
+      FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/${{ matrix.target }}
+      FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=60 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang meson ninja-build autoconf automake libtool pkg-config make
+
+      - name: Restore loader-format fuzz corpus cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.FUZZ_BUILTIN_CORPUS }}
+          key: fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
+            fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-loader-${{ matrix.buildtool }}-${{ matrix.target }}-
+
+      - name: Seed loader-format fuzz corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FUZZ_BUILTIN_CORPUS" "$FUZZ_BUILTIN_ARTIFACT_DIR"
+
+          if test -d fuzz/images; then
+            cp -a fuzz/images/. "$FUZZ_BUILTIN_CORPUS/" || true
+          fi
+          cp -a images/. "$FUZZ_BUILTIN_CORPUS/" || true
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          echo "loader-corpus seed files: $(find "$FUZZ_BUILTIN_CORPUS" -type f | wc -l)"
+
+      - name: Build and run loader-format fuzz target
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            CC=clang CXX=clang++ ./configure --enable-fuzz
+            make -j"$(nproc)"
+            make "fuzz-run-loader-builtin-${{ matrix.target }}"
+          else
+            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
+            meson compile -C builddir -v
+            meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}"
+          fi
+
+      - name: Upload loader-format fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
+            ${{ env.FUZZ_BUILTIN_CORPUS }}
+
+  fuzz_nightly_loader_formats:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtool: [autotools, meson]
+        target: [png, gif, jpeg, pnm, sixel, hdr, psd, pic, bmp]
+    env:
+      FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/${{ matrix.target }}
+      FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang meson ninja-build autoconf automake libtool pkg-config make
+
+      - name: Restore loader-format fuzz corpus cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.FUZZ_BUILTIN_CORPUS }}
+          key: fuzz-corpus-loader-nightly-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            fuzz-corpus-loader-nightly-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
+            fuzz-corpus-loader-nightly-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-loader-${{ matrix.buildtool }}-${{ matrix.target }}-
+
+      - name: Seed loader-format fuzz corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FUZZ_BUILTIN_CORPUS" "$FUZZ_BUILTIN_ARTIFACT_DIR"
+
+          if test -d fuzz/images; then
+            cp -a fuzz/images/. "$FUZZ_BUILTIN_CORPUS/" || true
+          fi
+          cp -a images/. "$FUZZ_BUILTIN_CORPUS/" || true
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          echo "loader-corpus seed files: $(find "$FUZZ_BUILTIN_CORPUS" -type f | wc -l)"
+
+      - name: Build and run loader-format fuzz target
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            CC=clang CXX=clang++ ./configure --enable-fuzz
+            make -j"$(nproc)"
+            make "fuzz-run-loader-builtin-${{ matrix.target }}"
+          else
+            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
+            meson compile -C builddir -v
+            meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}"
+          fi
+
+      - name: Upload loader-format fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
+            ${{ env.FUZZ_BUILTIN_CORPUS }}
 
   staticcheck:
     name: ${{ matrix.label }}
