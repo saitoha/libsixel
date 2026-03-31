@@ -7304,7 +7304,11 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     open_flags |= O_BINARY;
 #endif
     retry_flags = open_flags;
-#if defined(O_EXCL)
+    /*
+     * MSVC reports spurious failures with O_EXCL on temp paths produced by
+     * _mktemp_s(), so keep temp spool creation on O_CREAT|O_TRUNC there.
+     */
+#if defined(O_EXCL) && !defined(_MSC_VER)
     open_flags |= O_EXCL;
     retry_flags &= ~O_EXCL;
 #endif
@@ -7312,7 +7316,7 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     open_errno = 0;
     for (open_attempt = 0; open_attempt < 4; ++open_attempt) {
         fd = sixel_compat_open(template_path, open_flags, S_IRUSR | S_IWUSR);
-#if defined(O_EXCL)
+#if defined(O_EXCL) && !defined(_MSC_VER)
         if (fd < 0
                 && (errno == EBADF
                     || errno == EINVAL
@@ -7785,11 +7789,15 @@ sixel_encoder_encode(
 #if defined(O_BINARY)
         png_open_flags |= O_BINARY;
 #endif
-#if defined(O_EXCL)
+        /*
+         * Keep the staging open sequence aligned with clipboard spool creation
+         * and avoid MSVC O_EXCL false negatives on generated temp paths.
+         */
+#if defined(O_EXCL) && !defined(_MSC_VER)
         png_open_flags |= O_EXCL;
 #endif
         png_retry_flags = png_open_flags;
-#if defined(O_EXCL)
+#if defined(O_EXCL) && !defined(_MSC_VER)
         png_retry_flags &= ~O_EXCL;
 #endif
         png_open_errno = 0;
@@ -7797,7 +7805,7 @@ sixel_encoder_encode(
             encoder->outfd = sixel_compat_open(png_temp_path,
                                                png_open_flags,
                                                S_IRUSR | S_IWUSR);
-#if defined(O_EXCL)
+#if defined(O_EXCL) && !defined(_MSC_VER)
             if (encoder->outfd < 0
                     && (errno == EBADF
                         || errno == EINVAL
