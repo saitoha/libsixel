@@ -33,15 +33,14 @@ text_prefix_cksum=
 lsqa_floor="0.98"
 
 set -- --env SIXEL_CLIPBOARD_BACKEND=file \
-    --env SIXEL_DEBUG_TEMP=1 \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_clipboard_dir}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" "${sixel_src}" >"${sixel_tmp}" || {
+SIXEL_DEBUG_TEMP=1 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" "${sixel_src}" >"${sixel_tmp}" || {
     echo "not ok" 1 - "failed to prepare sixel input"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i "${sixel_tmp}" -o png:clipboard: || {
+SIXEL_DEBUG_TEMP=1 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i "${sixel_tmp}" -o png:clipboard: || {
     echo "not ok" 1 - "failed to write PNG into fake clipboard"
     exit 0
 }
@@ -57,7 +56,7 @@ test "${png_signature_cksum}" = "4074750897 8" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" -o clipboard: clipboard: || {
+SIXEL_DEBUG_TEMP=1 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" -o clipboard: clipboard: || {
     echo "not ok" 1 - "failed to read/write fake clipboard SIXEL payload"
     exit 0
 }
