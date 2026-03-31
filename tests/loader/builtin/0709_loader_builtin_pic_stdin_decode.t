@@ -1,4 +1,9 @@
 #!/bin/sh
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
+    exit 0
+}
+
 set -eux
 
 input_pic="${TOP_SRCDIR}/tests/data/inputs/formats/pic_valid_raw_rgb_2x2.pic"
