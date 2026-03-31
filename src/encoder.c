@@ -7136,6 +7136,7 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     char *template_path;
     int needs_separator;
     size_t maximum_tmpdir_len;
+    char separator;
 
     tmpdir = sixel_compat_getenv("TMPDIR");
 #if defined(_WIN32)
@@ -7181,6 +7182,16 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     if (tmpdir_len > maximum_tmpdir_len - (suffix_len + 2)) {
         return NULL;
     }
+    separator = '/';
+#if defined(_WIN32)
+    /*
+     * Keep POSIX-style tmp roots (for example "/tmp") slash-delimited on
+     * Windows so downstream path conversion can resolve them reliably.
+     */
+    if (strchr(tmpdir, '\\') != NULL && strchr(tmpdir, '/') == NULL) {
+        separator = '\\';
+    }
+#endif
     needs_separator = 1;
     if (tmpdir_len > 0) {
         if (tmpdir[tmpdir_len - 1] == '/' || tmpdir[tmpdir_len - 1] == '\\') {
@@ -7195,13 +7206,8 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     }
 
     if (needs_separator) {
-#if defined(_WIN32)
         (void) snprintf(template_path, template_len,
-                        "%s\\%s-XXXXXX", tmpdir, prefix);
-#else
-        (void) snprintf(template_path, template_len,
-                        "%s/%s-XXXXXX", tmpdir, prefix);
-#endif
+                        "%s%c%s-XXXXXX", tmpdir, separator, prefix);
     } else {
         (void) snprintf(template_path, template_len,
                         "%s%s-XXXXXX", tmpdir, prefix);
