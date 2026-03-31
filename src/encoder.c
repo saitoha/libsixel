@@ -7110,7 +7110,14 @@ temp_directory_is_writable(char const *tmpdir)
         return 0;
     }
 
-#if defined(W_OK)
+#if defined(_WIN32)
+    /*
+     * MSVC's _access(..., W_OK) can report false negatives for writable
+     * directories. For temp probing on Windows, existence is enough because
+     * the subsequent open() path is the authoritative write check.
+     */
+    access_mode = F_OK;
+#elif defined(W_OK)
     access_mode = W_OK;
 #else
     access_mode = F_OK;
@@ -7185,10 +7192,13 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     separator = '/';
 #if defined(_WIN32)
     /*
-     * Keep POSIX-style tmp roots (for example "/tmp") slash-delimited on
-     * Windows so downstream path conversion can resolve them reliably.
+     * Prefer Windows separators for native roots (for example "." or
+     * "C:\\temp"), but keep slash-only roots (for example "/tmp")
+     * slash-delimited.
      */
-    if (strchr(tmpdir, '\\') != NULL && strchr(tmpdir, '/') == NULL) {
+    if (strchr(tmpdir, '\\') != NULL) {
+        separator = '\\';
+    } else if (strchr(tmpdir, '/') == NULL) {
         separator = '\\';
     }
 #endif
