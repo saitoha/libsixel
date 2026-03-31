@@ -5074,6 +5074,39 @@ def generate(out_dir: pathlib.Path):
         ),
     )
     write_file(
+        out_dir
+        / "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_tysh_descriptor.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (b"TySh", build_descriptor_soco_payload(255, 48, 64))
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
         out_dir / "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh.psd",
         build_psd_layer_only_multilayer_custom(
             color_mode=7,
@@ -5090,6 +5123,39 @@ def generate(out_dir: pathlib.Path):
                     "planes": [],
                     "blend_key": b"norm",
                     "additional_blocks": [(b"TySh", b"\x00")],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (b"TySh", build_descriptor_soco_payload(255, 48, 64))
+                    ],
                 },
                 {
                     "top": 0,
