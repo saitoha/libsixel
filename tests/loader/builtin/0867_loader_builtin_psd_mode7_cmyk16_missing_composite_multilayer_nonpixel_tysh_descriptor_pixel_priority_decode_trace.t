@@ -21,7 +21,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_tysh_descriptor.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_cmyk16_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/psd_mode7_cmyk16_missing_composite_multilayer_nonpixel_tysh_descriptor_output.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
 command_status=0

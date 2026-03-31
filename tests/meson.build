@@ -244,6 +244,7 @@ python_tap_wrapper_file = configure_file(
   copy: true,
 )
 
+test_artifact_seq = 0
 foreach t : tests
   parts = t.split('/')
   test_base = parts[parts.length() - 1]
@@ -260,7 +261,12 @@ foreach t : tests
   if test_category == ''
     test_category = '.'
   endif
-  test_artifact_dir = artifact_root / test_category / test_base
+  test_case_id = 't'
+  if test_base.contains('_')
+    test_case_id = test_base.split('_')[0]
+  endif
+  test_artifact_leaf = '@0@-@1@'.format(test_case_id, test_artifact_seq)
+  test_artifact_dir = artifact_root / test_category / test_artifact_leaf
   test_env = environment()
   foreach setting : base_env_settings
     test_env.set(setting[0], setting[1])
@@ -279,6 +285,7 @@ foreach t : tests
     env: test_env,
     timeout: 90,
     suite: ['tap'])
+  test_artifact_seq += 1
 endforeach
 
 add_test_setup('ci', timeout_multiplier: 1)
@@ -359,13 +366,20 @@ mkdir -p "$artifact_root"
 rm -rf "$coverage_root"
 mkdir -p "$coverage_root"
 status=0
+test_seq=0
 
 for test_path in $(find "$source_root/tests/bindings/ruby" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort); do
   test_name="${test_path##*/}"
   test_name="${test_name%.rb}"
-  artifact_dir="$artifact_root/$test_name"
-  log_path="$artifact_root/$test_name.log"
-  coverage_path="$coverage_root/$test_name.marshal"
+  test_seq=$((test_seq + 1))
+  test_id="${test_name%%_*}"
+  case "$test_id" in
+    [0-9][0-9][0-9][0-9]) ;;
+    *) test_id=t ;;
+  esac
+  artifact_dir="$artifact_root/$test_id-$test_seq"
+  log_path="$artifact_root/$test_id-$test_seq.log"
+  coverage_path="$coverage_root/$test_id-$test_seq.marshal"
   mkdir -p "$artifact_dir"
   echo "==> $test_name.rb"
   if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_RUBY" --disable-gems "$coverage_runner" "$test_path" "$coverage_path" >"$log_path" 2>&1; then
@@ -464,11 +478,18 @@ mkdir -p "$artifact_root"
 rm -rf "$coverage_root"
 mkdir -p "$coverage_root"
 status=0
+test_seq=0
 
 for test_path in $(find "$source_root/tests/bindings/perl" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.pl' | LC_ALL=C sort); do
   test_name=$(basename "$test_path" .pl)
-  artifact_dir="$artifact_root/$test_name"
-  log_path="$artifact_root/$test_name.log"
+  test_seq=$((test_seq + 1))
+  test_id="${test_name%%_*}"
+  case "$test_id" in
+    [0-9][0-9][0-9][0-9]) ;;
+    *) test_id=t ;;
+  esac
+  artifact_dir="$artifact_root/$test_id-$test_seq"
+  log_path="$artifact_root/$test_id-$test_seq.log"
   mkdir -p "$artifact_dir"
   echo "==> $test_name.pl"
   if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$build_root/src" "$SIXEL_TEST_PERL" -MDevel::Cover=-db,$coverage_root,-silent,1 "$test_path" >"$log_path" 2>&1; then
@@ -537,12 +558,19 @@ lcov_path="$build_root/php-coverage.info"
 mkdir -p "$artifact_root"
 rm -rf "$coverage_root"
 mkdir -p "$coverage_root"
+test_seq=0
 
 for test_path in $(find "$source_root/tests/bindings/php" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.php' | LC_ALL=C sort); do
   test_name=$(basename "$test_path" .php)
-  artifact_dir="$artifact_root/$test_name"
-  log_path="$artifact_root/$test_name.log"
-  coverage_path="$coverage_root/$test_name.json"
+  test_seq=$((test_seq + 1))
+  test_id="${test_name%%_*}"
+  case "$test_id" in
+    [0-9][0-9][0-9][0-9]) ;;
+    *) test_id=t ;;
+  esac
+  artifact_dir="$artifact_root/$test_id-$test_seq"
+  log_path="$artifact_root/$test_id-$test_seq.log"
+  coverage_path="$coverage_root/$test_id-$test_seq.json"
   mkdir -p "$artifact_dir"
   echo "==> $test_name.php"
   if ARTIFACT_LOCAL_DIR="$artifact_dir" TOP_SRCDIR="$source_root" TOP_BUILDDIR="$build_root" LIBSIXEL_LIBDIR="$SIXEL_TEST_PHP_LIBDIR" LIBSIXEL_LIBPATH="$SIXEL_TEST_PHP_LIBPATH" SIXEL_TEST_PHP_BINDING_ROOT="$SIXEL_TEST_PHP_BINDING_ROOT" "$SIXEL_TEST_PHPDBG" -d ffi.enable=true -qrr "$coverage_runner" "$test_path" "$coverage_path" >"$log_path" 2>&1; then

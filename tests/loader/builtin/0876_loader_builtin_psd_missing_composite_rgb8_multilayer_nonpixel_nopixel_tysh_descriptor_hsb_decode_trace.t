@@ -19,7 +19,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_hsb.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_expected.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/psd_missing_composite_rgb8_multilayer_nonpixel_nopixel_tysh_descriptor_hsb_output.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
 command_status=0
