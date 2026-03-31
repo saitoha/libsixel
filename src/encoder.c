@@ -7140,20 +7140,6 @@ temp_debug_log(char const *stage,
                   error_number != 0 ? error_message : "");
 }
 
-static void
-temp_debug_log_note(char const *stage,
-                    char const *note)
-{
-    if (!temp_debug_enabled()) {
-        return;
-    }
-
-    (void)fprintf(stderr,
-                  "debug(temp): stage=%s note=%s\n",
-                  stage != NULL ? stage : "(null)",
-                  note != NULL ? note : "(null)");
-}
-
 static int
 temp_directory_is_writable(char const *tmpdir)
 {
@@ -7162,27 +7148,17 @@ temp_directory_is_writable(char const *tmpdir)
     int stat_result;
     int access_result;
     int saved_errno;
-    char note_buffer[96];
-    int note_size;
 
     if (tmpdir == NULL || tmpdir[0] == '\0') {
         temp_debug_log("tmpdir_empty", tmpdir, 0);
         return 0;
     }
-    temp_debug_log("tmpdir_probe", tmpdir, 0);
 
     stat_result = sixel_compat_stat(tmpdir, &temp_stat);
     if (stat_result != 0 || !S_ISDIR(temp_stat.st_mode)) {
         saved_errno = errno;
         temp_debug_log("tmpdir_stat_fail", tmpdir, saved_errno);
         return 0;
-    }
-    note_size = sixel_compat_snprintf(note_buffer,
-                                      sizeof(note_buffer),
-                                      "stat_mode=0%o",
-                                      (unsigned int)temp_stat.st_mode);
-    if (note_size > 0 && (size_t)note_size < sizeof(note_buffer)) {
-        temp_debug_log_note("tmpdir_stat_ok", note_buffer);
     }
 
 #if defined(_WIN32)
@@ -7203,13 +7179,6 @@ temp_directory_is_writable(char const *tmpdir)
         temp_debug_log("tmpdir_access_fail", tmpdir, saved_errno);
         return 0;
     }
-    note_size = sixel_compat_snprintf(note_buffer,
-                                      sizeof(note_buffer),
-                                      "access_mode=%d",
-                                      access_mode);
-    if (note_size > 0 && (size_t)note_size < sizeof(note_buffer)) {
-        temp_debug_log_note("tmpdir_access_mode", note_buffer);
-    }
 
     temp_debug_log("tmpdir_access_ok", tmpdir, 0);
     return 1;
@@ -7229,22 +7198,14 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     int needs_separator;
     size_t maximum_tmpdir_len;
     char separator;
-    int tmpdir_writable;
-    char note_buffer[128];
-    int note_size;
 
     tmpdir = sixel_compat_getenv("TMPDIR");
-    temp_debug_log("tmpdir_env_tmpdir", tmpdir, 0);
 #if defined(_WIN32)
     if (tmpdir == NULL || tmpdir[0] == '\0') {
-        temp_debug_log_note("tmpdir_env_tmpdir_empty", "trying TEMP");
         tmpdir = sixel_compat_getenv("TEMP");
-        temp_debug_log("tmpdir_env_temp", tmpdir, 0);
     }
     if (tmpdir == NULL || tmpdir[0] == '\0') {
-        temp_debug_log_note("tmpdir_env_temp_empty", "trying TMP");
         tmpdir = sixel_compat_getenv("TMP");
-        temp_debug_log("tmpdir_env_tmp", tmpdir, 0);
     }
 #endif
     if (tmpdir == NULL || tmpdir[0] == '\0') {
@@ -7253,23 +7214,16 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
 #else
         tmpdir = "/tmp";
 #endif
-        temp_debug_log("tmpdir_defaulted", tmpdir, 0);
     }
-    tmpdir_writable = temp_directory_is_writable(tmpdir);
-    if (!tmpdir_writable) {
-        temp_debug_log("tmpdir_primary_rejected", tmpdir, 0);
+    if (!temp_directory_is_writable(tmpdir)) {
 #if !defined(_WIN32)
         if (temp_directory_is_writable("/tmp")) {
-            temp_debug_log_note("tmpdir_fallback_selected", "using /tmp");
             tmpdir = "/tmp";
         } else
 #endif
         {
-            temp_debug_log_note("tmpdir_fallback_selected", "using .");
             tmpdir = ".";
         }
-    } else {
-        temp_debug_log_note("tmpdir_primary_selected", "primary accepted");
     }
     temp_debug_log("tmpdir_selected", tmpdir, 0);
 
@@ -7277,40 +7231,17 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     prefix_len = 0u;
     suffix_len = 0u;
     if (prefix == NULL) {
-        temp_debug_log_note("template_prefix_null", "prefix is null");
         return NULL;
     }
 
     prefix_len = strlen(prefix);
     suffix_len = prefix_len + strlen("-XXXXXX");
     maximum_tmpdir_len = (size_t)INT_MAX;
-    note_size = sixel_compat_snprintf(
-        note_buffer,
-        sizeof(note_buffer),
-        "tmpdir_len=%lu prefix_len=%lu suffix_len=%lu",
-        (unsigned long)tmpdir_len,
-        (unsigned long)prefix_len,
-        (unsigned long)suffix_len);
-    if (note_size > 0 && (size_t)note_size < sizeof(note_buffer)) {
-        temp_debug_log_note("template_length_inputs", note_buffer);
-    }
 
     if (maximum_tmpdir_len <= suffix_len + 2) {
-        temp_debug_log_note("template_length_guard_fail",
-                            "INT_MAX bound too small");
         return NULL;
     }
     if (tmpdir_len > maximum_tmpdir_len - (suffix_len + 2)) {
-        note_size = sixel_compat_snprintf(note_buffer,
-                                          sizeof(note_buffer),
-                                          "tmpdir_len=%lu max=%lu",
-                                          (unsigned long)tmpdir_len,
-                                          (unsigned long)(
-                                              maximum_tmpdir_len -
-                                              (suffix_len + 2)));
-        if (note_size > 0 && (size_t)note_size < sizeof(note_buffer)) {
-            temp_debug_log_note("template_length_overflow", note_buffer);
-        }
         return NULL;
     }
     separator = '/';
@@ -7332,26 +7263,10 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
             needs_separator = 0;
         }
     }
-    note_size = sixel_compat_snprintf(note_buffer,
-                                      sizeof(note_buffer),
-                                      "needs_separator=%d separator=%c",
-                                      needs_separator,
-                                      separator);
-    if (note_size > 0 && (size_t)note_size < sizeof(note_buffer)) {
-        temp_debug_log_note("template_separator", note_buffer);
-    }
 
     template_len = tmpdir_len + suffix_len + 2;
-    note_size = sixel_compat_snprintf(note_buffer,
-                                      sizeof(note_buffer),
-                                      "template_len=%lu",
-                                      (unsigned long)template_len);
-    if (note_size > 0 && (size_t)note_size < sizeof(note_buffer)) {
-        temp_debug_log_note("template_alloc_request", note_buffer);
-    }
     template_path = (char *)sixel_allocator_malloc(allocator, template_len);
     if (template_path == NULL) {
-        temp_debug_log("template_alloc_failed", tmpdir, errno);
         return NULL;
     }
 
