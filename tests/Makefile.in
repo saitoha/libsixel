@@ -2892,6 +2892,28 @@ uninstall-am:
 	staticcheck-docs-envvars-help-table \
 	staticcheck-c-header-modeline
 
+# Keep Autotools staticcheck semantics aligned with Meson:
+# FAIL/ERROR must propagate as a non-zero exit status.
+staticcheck \
+staticcheck-actionlint \
+staticcheck-shellcheck \
+staticcheck-codespell \
+staticcheck-python-compileall \
+staticcheck-private-includes \
+staticcheck-test-runner-dllexport \
+staticcheck-makefile-recipes \
+staticcheck-test-plan-single \
+staticcheck-test-no-grep-awk \
+staticcheck-artifact-local-dir-mkdir \
+staticcheck-binding-loader-setopt-sync \
+staticcheck-build-doc-configure-help \
+staticcheck-build-doc-meson-options \
+staticcheck-docs-help-vs-man \
+staticcheck-docs-man-vs-bash-completion \
+staticcheck-docs-envvars-help-table \
+staticcheck-c-header-modeline: \
+	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
+
 staticcheck: \
 	staticcheck-clean \
 	staticcheck-actionlint \
