@@ -33,6 +33,7 @@ text_prefix_cksum=
 lsqa_floor="0.98"
 
 set -- --env SIXEL_CLIPBOARD_BACKEND=file \
+    --env SIXEL_DEBUG_TEMP=1 \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_clipboard_dir}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" "${sixel_src}" >"${sixel_tmp}" || {

@@ -19,7 +19,7 @@ cd "${ARTIFACT_LOCAL_DIR}" || {
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 filename_png="snake-filename.png"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o "${filename_png}" "${snake_jpg}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DEBUG_TEMP=1 -o "${filename_png}" "${snake_jpg}" || {
     echo "not ok" 1 - "filename-driven PNG conversion failed"
     exit 0
 }
