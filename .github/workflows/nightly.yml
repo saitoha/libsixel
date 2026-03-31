@@ -120,8 +120,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
-    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
+    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang) (attempt 1)
+      id: setup_msys2_clang_mingw_1
       if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.msystem != 'MSYS'
+      continue-on-error: true
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.msystem }}
@@ -133,8 +135,72 @@ jobs:
         pacboy: >-
           cc:p
 
-    - name: Setup MSYS2 (Windows, MSVC)
+    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang) (attempt 2)
+      id: setup_msys2_clang_mingw_2
+      if: >-
+        runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.msystem != 'MSYS'
+            && steps.setup_msys2_clang_mingw_1.outcome != 'success'
+      continue-on-error: true
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        release: false
+        update: true
+        install: >-
+          make
+          zip
+        pacboy: >-
+          cc:p
+
+    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang) (attempt 3)
+      if: >-
+        runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.msystem != 'MSYS'
+            && steps.setup_msys2_clang_mingw_1.outcome != 'success'
+            && steps.setup_msys2_clang_mingw_2.outcome != 'success'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        release: false
+        update: true
+        install: >-
+          make
+          zip
+        pacboy: >-
+          cc:p
+
+    - name: Setup MSYS2 (Windows, MSVC) (attempt 1)
+      id: setup_msys2_msvc_1
       if: runner.os == 'Windows' && matrix.compiler == 'cl'
+      continue-on-error: true
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        release: false
+        update: true
+        install: >-
+          make
+          zip
+
+    - name: Setup MSYS2 (Windows, MSVC) (attempt 2)
+      id: setup_msys2_msvc_2
+      if: >-
+        runner.os == 'Windows' && matrix.compiler == 'cl'
+            && steps.setup_msys2_msvc_1.outcome != 'success'
+      continue-on-error: true
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        release: false
+        update: true
+        install: >-
+          make
+          zip
+
+    - name: Setup MSYS2 (Windows, MSVC) (attempt 3)
+      if: >-
+        runner.os == 'Windows' && matrix.compiler == 'cl'
+            && steps.setup_msys2_msvc_1.outcome != 'success'
+            && steps.setup_msys2_msvc_2.outcome != 'success'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.msystem }}
