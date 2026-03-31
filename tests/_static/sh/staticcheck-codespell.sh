@@ -50,7 +50,8 @@ while IFS= read -r file_path; do
     test -n "$file_path" || continue
     index=$((index + 1))
     echo "# [codespell ${index}/${total}] $file_path"
-    if ! "$codespell_bin" -L 'ser,sie' "$file_path"; then
+    # "doub" and "alis" are PSD descriptor type identifiers.
+    if ! "$codespell_bin" -L 'ser,sie,doub,alis' "$file_path"; then
         failed=1
     fi
 done < "$tmpfile"
