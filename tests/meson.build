@@ -244,7 +244,6 @@ python_tap_wrapper_file = configure_file(
   copy: true,
 )
 
-test_artifact_seq = 0
 foreach t : tests
   parts = t.split('/')
   test_base = parts[parts.length() - 1]
@@ -261,11 +260,13 @@ foreach t : tests
   if test_category == ''
     test_category = '.'
   endif
-  test_case_id = 't'
-  if test_base.contains('_')
-    test_case_id = test_base.split('_')[0]
+  test_artifact_leaf = test_base
+  if test_artifact_leaf.substring(43) != ''
+    test_artifact_leaf = '@0@...@1@'.format(
+      test_artifact_leaf.substring(0, 20),
+      test_artifact_leaf.substring(-20),
+    )
   endif
-  test_artifact_leaf = '@0@-@1@'.format(test_case_id, test_artifact_seq)
   test_artifact_dir = artifact_root / test_category / test_artifact_leaf
   test_env = environment()
   foreach setting : base_env_settings
@@ -285,7 +286,6 @@ foreach t : tests
     env: test_env,
     timeout: 90,
     suite: ['tap'])
-  test_artifact_seq += 1
 endforeach
 
 add_test_setup('ci', timeout_multiplier: 1)

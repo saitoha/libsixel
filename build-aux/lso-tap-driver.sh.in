@@ -159,17 +159,9 @@ kill_delay=10
 
 test_script=$1
 test_name_base=${test_name##*[/\\]}
-test_name_stem=${test_name_base%.*}
-artifact_case_id=t
-artifact_hash=0
-case "${test_name_stem}" in
-  [0-9][0-9][0-9][0-9]|[0-9][0-9][0-9][0-9]_*)
-    artifact_case_id=${test_name_stem%%_*}
-    ;;
-esac
-if command -v cksum >/dev/null 2>&1; then
-  artifact_hash=$(printf '%s' "${test_name_base}" | cksum 2>/dev/null || printf '0 0')
-  artifact_hash=${artifact_hash%% *}
+artifact_leaf=${test_name_base}
+if [ ${#artifact_leaf} -gt 43 ]; then
+  artifact_leaf="${artifact_leaf%${artifact_leaf#????????????????????}}...${artifact_leaf#${artifact_leaf%????????????????????}}"
 fi
 test_dir=${test_script%[/\\]*}
 if [ "${test_dir}" = "${test_script}" ]; then
@@ -177,7 +169,7 @@ if [ "${test_dir}" = "${test_script}" ]; then
 fi
 category_name=${test_dir#*tests/}
 artifact_root="${TOP_BUILDDIR}/tests/_artifacts"
-ARTIFACT_LOCAL_DIR="${artifact_root}/${category_name}/${artifact_case_id}-${artifact_hash}"
+ARTIFACT_LOCAL_DIR="${artifact_root}/${category_name}/${artifact_leaf}"
 export test_dir
 export category_name
 export ARTIFACT_LOCAL_DIR

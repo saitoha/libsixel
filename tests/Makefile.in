@@ -3461,12 +3461,19 @@ check-ruby: prepare-binding-artifacts
 	rm -rf "$$coverage_root"; \
 	mkdir -p "$$coverage_root"; \
 	status=0; \
+	test_seq=0; \
 	for test_path in `find '$(abs_top_srcdir)/tests/bindings/ruby' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort`; do \
 	    test_name="$${test_path##*/}"; \
 	    test_name="$${test_name%.rb}"; \
-	    artifact_dir="$$artifact_root/$$test_name"; \
-	    log_path="$$artifact_root/$$test_name.log"; \
-	    coverage_path="$$coverage_root/$$test_name.marshal"; \
+	    test_seq=$$((test_seq + 1)); \
+	    test_id="$${test_name%%_*}"; \
+	    case "$$test_id" in \
+	        [0-9][0-9][0-9][0-9]) ;; \
+	        *) test_id=t ;; \
+	    esac; \
+	    artifact_dir="$$artifact_root/$$test_id-$$test_seq"; \
+	    log_path="$$artifact_root/$$test_id-$$test_seq.log"; \
+	    coverage_path="$$coverage_root/$$test_id-$$test_seq.marshal"; \
 	    mkdir -p "$$artifact_dir"; \
 	    echo "==> $$test_name.rb"; \
 	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
@@ -3555,10 +3562,17 @@ check-perl:
 	rm -rf "$$coverage_root"; \
 	mkdir -p "$$coverage_root"; \
 	status=0; \
+	test_seq=0; \
 	for test_path in `find '$(abs_top_srcdir)/tests/bindings/perl' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.pl' | LC_ALL=C sort`; do \
 	    test_name=`basename "$$test_path" .pl`; \
-	    artifact_dir="$$artifact_root/$$test_name"; \
-	    log_path="$$artifact_root/$$test_name.log"; \
+	    test_seq=$$((test_seq + 1)); \
+	    test_id="$${test_name%%_*}"; \
+	    case "$$test_id" in \
+	        [0-9][0-9][0-9][0-9]) ;; \
+	        *) test_id=t ;; \
+	    esac; \
+	    artifact_dir="$$artifact_root/$$test_id-$$test_seq"; \
+	    log_path="$$artifact_root/$$test_id-$$test_seq.log"; \
 	    mkdir -p "$$artifact_dir"; \
 	    echo "==> $$test_name.pl"; \
 	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
@@ -3620,11 +3634,18 @@ check-php: prepare-binding-artifacts
 	mkdir -p "$$artifact_root"; \
 	rm -rf "$$coverage_root"; \
 	mkdir -p "$$coverage_root"; \
+	test_seq=0; \
 	for test_path in `find '$(abs_top_srcdir)/tests/bindings/php' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.php' | LC_ALL=C sort`; do \
 	    test_name=`basename "$$test_path" .php`; \
-	    artifact_dir="$$artifact_root/$$test_name"; \
-	    log_path="$$artifact_root/$$test_name.log"; \
-	    coverage_path="$$coverage_root/$$test_name.json"; \
+	    test_seq=$$((test_seq + 1)); \
+	    test_id="$${test_name%%_*}"; \
+	    case "$$test_id" in \
+	        [0-9][0-9][0-9][0-9]) ;; \
+	        *) test_id=t ;; \
+	    esac; \
+	    artifact_dir="$$artifact_root/$$test_id-$$test_seq"; \
+	    log_path="$$artifact_root/$$test_id-$$test_seq.log"; \
+	    coverage_path="$$coverage_root/$$test_id-$$test_seq.json"; \
 	    mkdir -p "$$artifact_dir"; \
 	    echo "==> $$test_name.php"; \
 	    if ARTIFACT_LOCAL_DIR="$$artifact_dir" \
