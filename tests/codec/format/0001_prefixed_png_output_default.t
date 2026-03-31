@@ -19,7 +19,7 @@ cd "${ARTIFACT_LOCAL_DIR}" || {
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 prefixed_png="snake-prefixed.png"
 
-SIXEL_DEBUG_TEMP=1 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o "png:${prefixed_png}" "${snake_jpg}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DEBUG_TEMP=1 -o "png:${prefixed_png}" "${snake_jpg}" || {
     echo "not ok" 1 - "prefixed PNG conversion failed"
     exit 0
 }
