@@ -3970,9 +3970,17 @@ sixel_builtin_psd_parse_layer_extra_data(
         if (sixel_builtin_psd_layer_is_non_pixel_key(key)) {
             layer->has_non_pixel_payload = 1;
         }
-        if (memcmp(key, "SoCo", 4u) == 0 ||
-            memcmp(key, "GdFl", 4u) == 0 ||
-            memcmp(key, "PtFl", 4u) == 0) {
+        if (memcmp(key, "TySh", 4u) == 0) {
+            parsed_fill = sixel_builtin_psd_parse_soco_descriptor_payload(
+                buffer + cursor,
+                key_length,
+                layer);
+            if (parsed_fill != 0) {
+                layer->has_fill_payload = 1;
+            }
+        } else if (memcmp(key, "SoCo", 4u) == 0 ||
+                   memcmp(key, "GdFl", 4u) == 0 ||
+                   memcmp(key, "PtFl", 4u) == 0) {
             layer->has_fill_payload = 1;
             parsed_fill = sixel_builtin_psd_parse_fill_payload(key,
                                                                buffer + cursor,
