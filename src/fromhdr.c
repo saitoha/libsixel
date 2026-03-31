@@ -1815,7 +1815,15 @@ sixel_builtin_hdr_assign_decoded_frame(
         return status;
     }
     sixel_frame_set_colorspace(frame, hdr_colorspace);
-    sixel_frame_set_pixels(frame, pixels);
+    /*
+     * Keep the frame union aligned with the decoded storage type. Explicitly
+     * using the float32 setter avoids toolchain-specific reinterpretation.
+     */
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(hdr_pixelformat)) {
+        sixel_frame_set_pixels_float32(frame, (float *)pixels);
+    } else {
+        sixel_frame_set_pixels(frame, pixels);
+    }
 
     return SIXEL_OK;
 }
@@ -2362,6 +2370,174 @@ sixel_builtin_hdr_write_scanline_samples(
 }
 
 static SIXELSTATUS
+sixel_builtin_hdr_write_legacy_stream_sample(
+    sixel_builtin_hdr_profile_hint_t const *hint,
+    size_t scanline_length,
+    size_t pixel_index,
+    unsigned char const rgbe[4],
+    unsigned char *pixels)
+{
+    int scanline_index;
+    int sample_index;
+    int x;
+    int y;
+    size_t pixel_offset;
+    double sample_rgb[3];
+
+    scanline_index = 0;
+    sample_index = 0;
+    x = 0;
+    y = 0;
+    pixel_offset = 0u;
+    sample_rgb[0] = 0.0;
+    sample_rgb[1] = 0.0;
+    sample_rgb[2] = 0.0;
+    if (hint == NULL ||
+        rgbe == NULL ||
+        pixels == NULL ||
+        scanline_length == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    scanline_index = (int)(pixel_index / scanline_length);
+    sample_index = (int)(pixel_index % scanline_length);
+    if (!sixel_builtin_hdr_map_scan_position(hint,
+                                             scanline_index,
+                                             sample_index,
+                                             &x,
+                                             &y)) {
+        sixel_helper_set_additional_message(
+            "builtin HDR: invalid orientation mapping.");
+        return SIXEL_STBI_ERROR;
+    }
+
+    sixel_builtin_hdr_rgbe_to_float(rgbe, sample_rgb);
+    if (hint->format_kind == SIXEL_BUILTIN_HDR_FORMAT_XYZE) {
+        sixel_builtin_hdr_xyz_to_linearrgb(sample_rgb);
+    }
+
+    pixel_offset = ((size_t)y * (size_t)hint->width + (size_t)x) * 3u;
+    ((float *)pixels)[pixel_offset + 0u] = (float)sample_rgb[0];
+    ((float *)pixels)[pixel_offset + 1u] = (float)sample_rgb[1];
+    ((float *)pixels)[pixel_offset + 2u] = (float)sample_rgb[2];
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_builtin_hdr_decode_legacy_stream(
+    sixel_chunk_t const *chunk,
+    size_t *cursor,
+    sixel_builtin_hdr_profile_hint_t const *hint,
+    size_t scanline_length,
+    size_t scanline_count,
+    unsigned char *pixels)
+{
+    size_t total_pixels;
+    size_t pixel_index;
+    size_t run_length_multiplier;
+    size_t run_length;
+    size_t repeat_index;
+    unsigned char rgbe[4];
+    unsigned char previous_rgbe[4];
+    int have_previous;
+    SIXELSTATUS status;
+
+    total_pixels = 0u;
+    pixel_index = 0u;
+    run_length_multiplier = 1u;
+    run_length = 0u;
+    repeat_index = 0u;
+    rgbe[0] = 0u;
+    rgbe[1] = 0u;
+    rgbe[2] = 0u;
+    rgbe[3] = 0u;
+    previous_rgbe[0] = 0u;
+    previous_rgbe[1] = 0u;
+    previous_rgbe[2] = 0u;
+    previous_rgbe[3] = 0u;
+    have_previous = 0;
+    status = SIXEL_FALSE;
+    if (chunk == NULL ||
+        chunk->buffer == NULL ||
+        cursor == NULL ||
+        hint == NULL ||
+        scanline_length == 0u ||
+        pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (scanline_count > SIZE_MAX / scanline_length) {
+        sixel_helper_set_additional_message(
+            "builtin HDR: invalid image dimensions.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    total_pixels = scanline_count * scanline_length;
+
+    while (pixel_index < total_pixels) {
+        if (!sixel_builtin_hdr_read_pixel(chunk->buffer,
+                                          chunk->size,
+                                          cursor,
+                                          rgbe)) {
+            sixel_helper_set_additional_message(
+                "builtin HDR: truncated pixel stream.");
+            return SIXEL_STBI_ERROR;
+        }
+
+        if (rgbe[0] == 1u && rgbe[1] == 1u && rgbe[2] == 1u) {
+            if (!have_previous) {
+                sixel_helper_set_additional_message(
+                    "builtin HDR: invalid legacy run-length stream.");
+                return SIXEL_STBI_ERROR;
+            }
+            run_length = (size_t)rgbe[3] * run_length_multiplier;
+            if (run_length == 0u || run_length > total_pixels - pixel_index) {
+                sixel_helper_set_additional_message(
+                    "builtin HDR: invalid legacy run-length stream.");
+                return SIXEL_STBI_ERROR;
+            }
+            for (repeat_index = 0u;
+                 repeat_index < run_length;
+                 ++repeat_index) {
+                status = sixel_builtin_hdr_write_legacy_stream_sample(
+                    hint,
+                    scanline_length,
+                    pixel_index,
+                    previous_rgbe,
+                    pixels);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                ++pixel_index;
+            }
+            if (run_length_multiplier > SIZE_MAX / 256u) {
+                sixel_helper_set_additional_message(
+                    "builtin HDR: invalid legacy run-length stream.");
+                return SIXEL_STBI_ERROR;
+            }
+            run_length_multiplier *= 256u;
+            continue;
+        }
+
+        previous_rgbe[0] = rgbe[0];
+        previous_rgbe[1] = rgbe[1];
+        previous_rgbe[2] = rgbe[2];
+        previous_rgbe[3] = rgbe[3];
+        have_previous = 1;
+        run_length_multiplier = 1u;
+        status = sixel_builtin_hdr_write_legacy_stream_sample(hint,
+                                                              scanline_length,
+                                                              pixel_index,
+                                                              rgbe,
+                                                              pixels);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        ++pixel_index;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_builtin_decode_hdr_float32_custom(
     sixel_chunk_t const *chunk,
     sixel_builtin_hdr_profile_hint_t const *hint,
@@ -2381,6 +2557,8 @@ sixel_builtin_decode_hdr_float32_custom(
     size_t scanline_bytes;
     size_t cursor;
     int scanline_index;
+    unsigned char first_pixel[4];
+    int use_new_rle;
     SIXELSTATUS status;
 
     pixels = NULL;
@@ -2393,6 +2571,11 @@ sixel_builtin_decode_hdr_float32_custom(
     scanline_bytes = 0u;
     cursor = 0u;
     scanline_index = 0;
+    first_pixel[0] = 0u;
+    first_pixel[1] = 0u;
+    first_pixel[2] = 0u;
+    first_pixel[3] = 0u;
+    use_new_rle = 0;
     status = SIXEL_FALSE;
 
     if (chunk == NULL ||
@@ -2479,6 +2662,51 @@ sixel_builtin_decode_hdr_float32_custom(
     }
 
     cursor = hint->pixel_data_offset;
+    if (scanline_count > 0u) {
+        if (chunk->size - cursor < 4u) {
+            return sixel_builtin_hdr_custom_decode_fail(
+                chunk,
+                pixels,
+                scanline_rgbe,
+                SIXEL_STBI_ERROR,
+                "builtin HDR: truncated pixel stream.");
+        }
+        first_pixel[0] = chunk->buffer[cursor + 0u];
+        first_pixel[1] = chunk->buffer[cursor + 1u];
+        first_pixel[2] = chunk->buffer[cursor + 2u];
+        first_pixel[3] = chunk->buffer[cursor + 3u];
+        use_new_rle = sixel_builtin_hdr_scanline_uses_new_rle(scanline_length,
+                                                              first_pixel);
+    }
+
+    /*
+     * Legacy RGBE does not provide per-scanline headers. Decode the payload
+     * as one stream and derive scanline/sample coordinates from pixel index.
+     */
+    if (!use_new_rle) {
+        status = sixel_builtin_hdr_decode_legacy_stream(chunk,
+                                                        &cursor,
+                                                        hint,
+                                                        scanline_length,
+                                                        scanline_count,
+                                                        pixels);
+        if (SIXEL_FAILED(status)) {
+            return sixel_builtin_hdr_custom_decode_fail(
+                chunk,
+                pixels,
+                scanline_rgbe,
+                status,
+                NULL);
+        }
+        sixel_allocator_free(chunk->allocator, scanline_rgbe);
+        *ppixels = pixels;
+        *pwidth = hint->width;
+        *pheight = hint->height;
+        *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        *pcolorspace = SIXEL_COLORSPACE_LINEAR;
+        return SIXEL_OK;
+    }
+
     for (scanline_index = 0;
          scanline_index < (int)scanline_count;
          ++scanline_index) {
