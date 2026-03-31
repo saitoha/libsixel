@@ -7094,70 +7094,19 @@ load_image_callback(sixel_frame_t *frame, void *data)
 }
 
 static int
-temp_debug_enabled(void)
-{
-    char const *flag;
-
-    flag = sixel_compat_getenv("SIXEL_DEBUG_TEMP");
-    if (flag == NULL || flag[0] == '\0') {
-        return 0;
-    }
-    if (flag[0] == '0' && flag[1] == '\0') {
-        return 0;
-    }
-
-    return 1;
-}
-
-static void
-temp_debug_log(char const *stage,
-               char const *path,
-               int error_number)
-{
-    char error_buffer[128];
-    char const *error_message;
-
-    if (!temp_debug_enabled()) {
-        return;
-    }
-
-    error_message = "";
-    error_buffer[0] = '\0';
-    if (error_number != 0) {
-        error_message = sixel_compat_strerror(error_number,
-                                              error_buffer,
-                                              sizeof(error_buffer));
-        if (error_message == NULL) {
-            error_message = "(unknown)";
-        }
-    }
-
-    (void)fprintf(stderr,
-                  "debug(temp): stage=%s path=%s errno=%d message=%s\n",
-                  stage != NULL ? stage : "(null)",
-                  path != NULL ? path : "(null)",
-                  error_number,
-                  error_number != 0 ? error_message : "");
-}
-
-static int
 temp_directory_is_writable(char const *tmpdir)
 {
     struct stat temp_stat;
     int access_mode;
     int stat_result;
     int access_result;
-    int saved_errno;
 
     if (tmpdir == NULL || tmpdir[0] == '\0') {
-        temp_debug_log("tmpdir_empty", tmpdir, 0);
         return 0;
     }
 
     stat_result = sixel_compat_stat(tmpdir, &temp_stat);
     if (stat_result != 0 || !S_ISDIR(temp_stat.st_mode)) {
-        saved_errno = errno;
-        temp_debug_log("tmpdir_stat_fail", tmpdir, saved_errno);
         return 0;
     }
 
@@ -7175,12 +7124,9 @@ temp_directory_is_writable(char const *tmpdir)
 #endif
     access_result = sixel_compat_access(tmpdir, access_mode);
     if (access_result != 0) {
-        saved_errno = errno;
-        temp_debug_log("tmpdir_access_fail", tmpdir, saved_errno);
         return 0;
     }
 
-    temp_debug_log("tmpdir_access_ok", tmpdir, 0);
     return 1;
 }
 
@@ -7225,7 +7171,6 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
             tmpdir = ".";
         }
     }
-    temp_debug_log("tmpdir_selected", tmpdir, 0);
 
     tmpdir_len = strlen(tmpdir);
     prefix_len = 0u;
@@ -7277,7 +7222,6 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
         (void) snprintf(template_path, template_len,
                         "%s%s-XXXXXX", tmpdir, prefix);
     }
-    temp_debug_log("template_built", template_path, 0);
 
     if (capacity_out != NULL) {
         *capacity_out = template_len;
@@ -7358,10 +7302,8 @@ clipboard_create_spool(sixel_allocator_t *allocator,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    temp_debug_log("clipboard_template_allocated", template_path, 0);
 
     if (sixel_compat_mktemp(template_path, template_capacity) != 0) {
-        temp_debug_log("clipboard_mktemp_failed", template_path, errno);
         tmpname_result = sixel_compat_tmpnam(template_path,
                                              template_capacity);
         if (tmpname_result == NULL) {
@@ -7371,7 +7313,6 @@ clipboard_create_spool(sixel_allocator_t *allocator,
             goto end;
         }
         template_capacity = strlen(template_path) + 1u;
-        temp_debug_log("clipboard_tmpnam_fallback", template_path, 0);
     }
 
     open_flags = O_RDWR | O_CREAT | O_TRUNC;
@@ -7412,7 +7353,6 @@ clipboard_create_spool(sixel_allocator_t *allocator,
             break;
         }
         open_errno = errno;
-        temp_debug_log("clipboard_open_failed", template_path, open_errno);
         if (open_errno != EEXIST) {
             break;
         }
@@ -7421,9 +7361,6 @@ clipboard_create_spool(sixel_allocator_t *allocator,
          * Regenerate the path and retry when the generated file exists.
          */
         if (sixel_compat_mktemp(template_path, template_capacity) != 0) {
-            temp_debug_log("clipboard_mktemp_retry_failed",
-                           template_path,
-                           errno);
             tmpname_result = sixel_compat_tmpnam(template_path,
                                                  template_capacity);
             if (tmpname_result == NULL) {
@@ -7433,7 +7370,6 @@ clipboard_create_spool(sixel_allocator_t *allocator,
                 goto end;
             }
             template_capacity = strlen(template_path) + 1u;
-            temp_debug_log("clipboard_tmpnam_retry", template_path, 0);
         }
     }
     if (fd < 0) {
@@ -7851,9 +7787,7 @@ sixel_encoder_encode(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        temp_debug_log("png_template_allocated", png_temp_path, 0);
         if (sixel_compat_mktemp(png_temp_path, png_temp_capacity) != 0) {
-            temp_debug_log("png_mktemp_failed", png_temp_path, errno);
             png_tmpnam_result = sixel_compat_tmpnam(png_temp_path,
                                                    png_temp_capacity);
             if (png_tmpnam_result == NULL) {
@@ -7863,7 +7797,6 @@ sixel_encoder_encode(
                 goto end;
             }
             png_temp_capacity = strlen(png_temp_path) + 1u;
-            temp_debug_log("png_tmpnam_fallback", png_temp_path, 0);
         }
         if (encoder->outfd >= 0 && encoder->outfd != STDOUT_FILENO) {
             (void)sixel_compat_close(encoder->outfd);
@@ -7909,7 +7842,6 @@ sixel_encoder_encode(
                 break;
             }
             png_open_errno = errno;
-            temp_debug_log("png_open_failed", png_temp_path, png_open_errno);
             if (png_open_errno != EEXIST) {
                 break;
             }
@@ -7919,16 +7851,12 @@ sixel_encoder_encode(
              * the same name before open(). Regenerate and retry on EEXIST.
              */
             if (sixel_compat_mktemp(png_temp_path, png_temp_capacity) != 0) {
-                temp_debug_log("png_mktemp_retry_failed",
-                               png_temp_path,
-                               errno);
                 png_tmpnam_result = sixel_compat_tmpnam(png_temp_path,
                                                         png_temp_capacity);
                 if (png_tmpnam_result == NULL) {
                     break;
                 }
                 png_temp_capacity = strlen(png_temp_path) + 1u;
-                temp_debug_log("png_tmpnam_retry", png_temp_path, 0);
             }
         }
         if (encoder->outfd < 0) {
