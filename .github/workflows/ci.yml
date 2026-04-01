@@ -305,6 +305,7 @@ jobs:
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
       FUZZ_TIMEOUT: 60
+      AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
 
     steps:
       - uses: actions/checkout@v6
