@@ -148,8 +148,17 @@ Key points used by this roadmap:
       across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
     - `GdFl` descriptor stop-color paths (`CMYK/Grayscale/HSB/Lab`) and
       nested `Grad` form on the same surfaces, and
-    - `PtFl` descriptor color-object paths (`CMYK/Grayscale/HSB`) on the same
-      surfaces.
+    - `PtFl` descriptor color-object paths (`CMYK/Grayscale/HSB/Lab`) on the
+      same surfaces.
+  - PSB (`8BPB+version=2`) non-pixel + ICC parity coverage now includes
+    native `mode=4` CMYK and mode7-mapped CMYK (`channels=4`) paths for
+    `8/16/32bpc` missing-composite multi-layer fallback:
+    - valid ICC no-false-failure traces across TySh descriptor/wrapped and
+      fill descriptor (`SoCo/GdFl/PtFl`) matrices,
+    - bad ICC rotation contract (`CMYK8` keeps conversion-failure trace;
+      `CMYK16/32` avoid malformed-resource misclassification), and
+    - malformed resource rotation contract (deterministic malformed-resource
+      trace with decode success).
   - descriptor malformed regression now includes:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
@@ -301,5 +310,5 @@ Minimum fixture naming convention:
    - broaden missing-composite matrix/trace coverage to larger layouts, and
    - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
-3. Expand PSB parity for non-pixel + ICC combinations across CMYK/mode7 mapped
-   paths, and keep the no-false-failure trace contract fixed under regression.
+3. Increase cross-mode visual quality regression density for non-pixel payload
+   rendering (LSQA) while keeping current ICC/trace contracts fixed.

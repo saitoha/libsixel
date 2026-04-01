@@ -1065,6 +1065,10 @@ For missing-composite multi-layer fallback on CMYK paths (`mode=4` and
 while `CMYK16/32` bad ICC bytes are not misclassified as malformed resources;
 malformed resource sections keep the deterministic
 `malformed ICC resource section; skipping ICC conversion` trace.
+The same ICC contract is fixed on PSB (`8BPB+version=2`) non-pixel fallback
+surfaces for both native CMYK (`mode=4`) and mode7-mapped CMYK (`channels=4`)
+across `8/16/32bpc`, covering TySh descriptor/wrapped variants and fill payload
+descriptors (`SoCo/GdFl/PtFl`, RGB/CMYK/Grayscale/HSB/Lab descriptor objects).
 
 Builtin PSB (`8BPB`) header policy:
 

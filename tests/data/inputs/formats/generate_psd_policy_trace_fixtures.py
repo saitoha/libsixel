@@ -153,6 +153,54 @@ def write_file(path: pathlib.Path, data: bytes) -> None:
     print(path)
 
 
+def write_valid_icc_variants(
+    out_dir: pathlib.Path,
+    *,
+    source_names: list[str],
+    valid_resource: bytes,
+) -> None:
+    for source_name in source_names:
+        source_path = out_dir / source_name
+        if not source_path.exists():
+            raise RuntimeError(f"source fixture not found: {source_name}")
+        write_file(
+            out_dir / source_name.replace(".psd", "_valid_icc_profile.psd"),
+            replace_image_resources(source_path.read_bytes(), valid_resource),
+        )
+
+
+def write_bad_icc_variants(
+    out_dir: pathlib.Path,
+    *,
+    source_names: list[str],
+    bad_resource: bytes,
+) -> None:
+    for source_name in source_names:
+        source_path = out_dir / source_name
+        if not source_path.exists():
+            raise RuntimeError(f"source fixture not found: {source_name}")
+        write_file(
+            out_dir / source_name.replace(".psd", "_bad_icc_profile.psd"),
+            replace_image_resources(source_path.read_bytes(), bad_resource),
+        )
+
+
+def write_malformed_icc_variants(
+    out_dir: pathlib.Path,
+    *,
+    source_names: list[str],
+    malformed_resources: bytes,
+) -> None:
+    for source_name in source_names:
+        source_path = out_dir / source_name
+        if not source_path.exists():
+            raise RuntimeError(f"source fixture not found: {source_name}")
+        write_file(
+            out_dir / source_name.replace(".psd", "_malformed_resource.psd"),
+            replace_image_resources(source_path.read_bytes(), malformed_resources),
+        )
+
+
 def generate(out_dir: pathlib.Path) -> None:
     base_path = out_dir / "stbi_minimal.psd"
     base = base_path.read_bytes()
@@ -460,7 +508,7 @@ def generate(out_dir: pathlib.Path) -> None:
         bytes(fallback_stream_decode_short),
     )
 
-    # Mode7 CMYK-mapped missing-composite multi-layer valid-ICC fixtures.
+    # Missing-composite CMYK ICC policy fixtures for mode4/mode7 paths.
     # Reuse known-good ICC image-resource block from minimal valid profile.
     mode7_valid_icc_resource = extract_icc_resource_block(
         (out_dir / "stbi_minimal_mode7_cmyk8_valid_icc_profile.psd").read_bytes()
@@ -476,50 +524,119 @@ def generate(out_dir: pathlib.Path) -> None:
     mode4_malformed_resources = extract_image_resources_bytes(
         (out_dir / "stbi_minimal_bad_resource_signature.psd").read_bytes()
     )
+    tysh_valid_suffixes = [
+        "nonpixel_tysh_descriptor",
+        "nonpixel_nopixel_tysh_descriptor",
+        "nonpixel_nopixel_tysh_descriptor_gray",
+        "nonpixel_nopixel_tysh_descriptor_cmyk",
+        "nonpixel_nopixel_tysh_descriptor_hsb",
+        "nonpixel_nopixel_tysh_descriptor_lab",
+        "nonpixel_nopixel_tysh_wrapped_descriptor",
+        "nonpixel_nopixel_tysh_wrapped_unknown_descriptor",
+        "nonpixel_nopixel_tysh_wrapped_malformed_descriptor",
+    ]
+    fill_valid_suffixes = [
+        "fill_soco_descriptor",
+        "fill_soco_descriptor_cmyk",
+        "fill_soco_descriptor_gray",
+        "fill_soco_descriptor_hsb",
+        "fill_soco_descriptor_lab",
+        "fill_gdfl_descriptor",
+        "fill_gdfl_descriptor_cmyk",
+        "fill_gdfl_descriptor_gray",
+        "fill_gdfl_descriptor_hsb",
+        "fill_gdfl_descriptor_lab",
+        "fill_ptfl_descriptor",
+        "fill_ptfl_descriptor_cmyk",
+        "fill_ptfl_descriptor_gray",
+        "fill_ptfl_descriptor_hsb",
+        "fill_ptfl_descriptor_lab",
+    ]
+    tysh_bad_rotation = {
+        "8": "nonpixel_nopixel_tysh_descriptor_gray",
+        "16": "nonpixel_nopixel_tysh_descriptor_hsb",
+        "32": "nonpixel_nopixel_tysh_descriptor_cmyk",
+    }
+    tysh_malformed_rotation = {
+        "8": "nonpixel_nopixel_tysh_descriptor_cmyk",
+        "16": "nonpixel_nopixel_tysh_descriptor_lab",
+        "32": "nonpixel_nopixel_tysh_descriptor_gray",
+    }
+    fill_bad_rotation = {
+        "8": "fill_soco_descriptor",
+        "16": "fill_gdfl_descriptor_gray",
+        "32": "fill_ptfl_descriptor_lab",
+    }
+    fill_malformed_rotation = {
+        "8": "fill_soco_descriptor_cmyk",
+        "16": "fill_gdfl_descriptor_hsb",
+        "32": "fill_ptfl_descriptor",
+    }
+
     for depth_tag in ("8", "16", "32"):
-        source_path = (
-            out_dir
-            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal.psd"
+        mode7_prefix = f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer"
+        mode4_prefix = f"snake16_cmyk{depth_tag}_missing_composite_multilayer"
+
+        mode7_valid_sources = (
+            [f"{mode7_prefix}_normal.psd"]
+            + [f"{mode7_prefix}_{suffix}.psd" for suffix in tysh_valid_suffixes]
+            + [f"{mode7_prefix}_{suffix}.psd" for suffix in fill_valid_suffixes]
         )
-        target_path = (
-            out_dir
-            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal_valid_icc_profile.psd"
+        mode4_valid_sources = (
+            [f"{mode4_prefix}_normal.psd"]
+            + [f"{mode4_prefix}_{suffix}.psd" for suffix in tysh_valid_suffixes]
+            + [f"{mode4_prefix}_{suffix}.psd" for suffix in fill_valid_suffixes]
         )
-        write_file(
-            target_path,
-            replace_image_resources(source_path.read_bytes(), mode7_valid_icc_resource),
+        write_valid_icc_variants(
+            out_dir,
+            source_names=mode7_valid_sources,
+            valid_resource=mode7_valid_icc_resource,
         )
-        write_file(
-            out_dir
-            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal_bad_icc_profile.psd",
-            replace_image_resources(source_path.read_bytes(), mode7_bad_icc_resource),
-        )
-        write_file(
-            out_dir
-            / f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer_normal_malformed_resource.psd",
-            replace_image_resources(source_path.read_bytes(), mode7_malformed_resources),
+        write_valid_icc_variants(
+            out_dir,
+            source_names=mode4_valid_sources,
+            valid_resource=mode4_valid_icc_resource,
         )
 
-    # Native CMYK missing-composite multi-layer ICC policy fixtures.
-    for depth_tag in ("8", "16", "32"):
-        source_path = (
-            out_dir
-            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal.psd"
+        mode7_bad_sources = [
+            f"{mode7_prefix}_normal.psd",
+            f"{mode7_prefix}_{tysh_bad_rotation[depth_tag]}.psd",
+            f"{mode7_prefix}_{fill_bad_rotation[depth_tag]}.psd",
+        ]
+        mode7_malformed_sources = [
+            f"{mode7_prefix}_normal.psd",
+            f"{mode7_prefix}_{tysh_malformed_rotation[depth_tag]}.psd",
+            f"{mode7_prefix}_{fill_malformed_rotation[depth_tag]}.psd",
+        ]
+        mode4_bad_sources = [
+            f"{mode4_prefix}_normal.psd",
+            f"{mode4_prefix}_{tysh_bad_rotation[depth_tag]}.psd",
+            f"{mode4_prefix}_{fill_bad_rotation[depth_tag]}.psd",
+        ]
+        mode4_malformed_sources = [
+            f"{mode4_prefix}_normal.psd",
+            f"{mode4_prefix}_{tysh_malformed_rotation[depth_tag]}.psd",
+            f"{mode4_prefix}_{fill_malformed_rotation[depth_tag]}.psd",
+        ]
+        write_bad_icc_variants(
+            out_dir,
+            source_names=mode7_bad_sources,
+            bad_resource=mode7_bad_icc_resource,
         )
-        write_file(
-            out_dir
-            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal_valid_icc_profile.psd",
-            replace_image_resources(source_path.read_bytes(), mode4_valid_icc_resource),
+        write_malformed_icc_variants(
+            out_dir,
+            source_names=mode7_malformed_sources,
+            malformed_resources=mode7_malformed_resources,
         )
-        write_file(
-            out_dir
-            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal_bad_icc_profile.psd",
-            replace_image_resources(source_path.read_bytes(), mode4_bad_icc_resource),
+        write_bad_icc_variants(
+            out_dir,
+            source_names=mode4_bad_sources,
+            bad_resource=mode4_bad_icc_resource,
         )
-        write_file(
-            out_dir
-            / f"snake16_cmyk{depth_tag}_missing_composite_multilayer_normal_malformed_resource.psd",
-            replace_image_resources(source_path.read_bytes(), mode4_malformed_resources),
+        write_malformed_icc_variants(
+            out_dir,
+            source_names=mode4_malformed_sources,
+            malformed_resources=mode4_malformed_resources,
         )
 
 

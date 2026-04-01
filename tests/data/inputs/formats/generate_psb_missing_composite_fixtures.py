@@ -676,30 +676,80 @@ def main() -> None:
         "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_malformed_descriptor.psd",
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_malformed_descriptor.psd",
     )
-    convert_fixture(
-        "snake16_cmyk16_missing_composite_multilayer_normal_valid_icc_profile.psd",
-        "snake16_psb_cmyk16_missing_composite_multilayer_normal_valid_icc_profile.psd",
-    )
-    convert_fixture(
-        "snake16_cmyk16_missing_composite_multilayer_normal_bad_icc_profile.psd",
-        "snake16_psb_cmyk16_missing_composite_multilayer_normal_bad_icc_profile.psd",
-    )
-    convert_fixture(
-        "snake16_cmyk16_missing_composite_multilayer_normal_malformed_resource.psd",
-        "snake16_psb_cmyk16_missing_composite_multilayer_normal_malformed_resource.psd",
-    )
-    convert_fixture(
-        "snake16_mode7_cmyk32_missing_composite_multilayer_normal_valid_icc_profile.psd",
-        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_valid_icc_profile.psd",
-    )
-    convert_fixture(
-        "snake16_mode7_cmyk32_missing_composite_multilayer_normal_bad_icc_profile.psd",
-        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_bad_icc_profile.psd",
-    )
-    convert_fixture(
-        "snake16_mode7_cmyk32_missing_composite_multilayer_normal_malformed_resource.psd",
-        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_malformed_resource.psd",
-    )
+    icc_valid_suffixes = [
+        "normal",
+        "nonpixel_tysh_descriptor",
+        "nonpixel_nopixel_tysh_descriptor",
+        "nonpixel_nopixel_tysh_descriptor_gray",
+        "nonpixel_nopixel_tysh_descriptor_cmyk",
+        "nonpixel_nopixel_tysh_descriptor_hsb",
+        "nonpixel_nopixel_tysh_descriptor_lab",
+        "nonpixel_nopixel_tysh_wrapped_descriptor",
+        "nonpixel_nopixel_tysh_wrapped_unknown_descriptor",
+        "nonpixel_nopixel_tysh_wrapped_malformed_descriptor",
+        "fill_soco_descriptor",
+        "fill_soco_descriptor_cmyk",
+        "fill_soco_descriptor_gray",
+        "fill_soco_descriptor_hsb",
+        "fill_soco_descriptor_lab",
+        "fill_gdfl_descriptor",
+        "fill_gdfl_descriptor_cmyk",
+        "fill_gdfl_descriptor_gray",
+        "fill_gdfl_descriptor_hsb",
+        "fill_gdfl_descriptor_lab",
+        "fill_ptfl_descriptor",
+        "fill_ptfl_descriptor_cmyk",
+        "fill_ptfl_descriptor_gray",
+        "fill_ptfl_descriptor_hsb",
+        "fill_ptfl_descriptor_lab",
+    ]
+    tysh_bad_rotation = {
+        "8": "nonpixel_nopixel_tysh_descriptor_gray",
+        "16": "nonpixel_nopixel_tysh_descriptor_hsb",
+        "32": "nonpixel_nopixel_tysh_descriptor_cmyk",
+    }
+    tysh_malformed_rotation = {
+        "8": "nonpixel_nopixel_tysh_descriptor_cmyk",
+        "16": "nonpixel_nopixel_tysh_descriptor_lab",
+        "32": "nonpixel_nopixel_tysh_descriptor_gray",
+    }
+    fill_bad_rotation = {
+        "8": "fill_soco_descriptor",
+        "16": "fill_gdfl_descriptor_gray",
+        "32": "fill_ptfl_descriptor_lab",
+    }
+    fill_malformed_rotation = {
+        "8": "fill_soco_descriptor_cmyk",
+        "16": "fill_gdfl_descriptor_hsb",
+        "32": "fill_ptfl_descriptor",
+    }
+    for mode_prefix in ("cmyk", "mode7_cmyk"):
+        for depth_tag in ("8", "16", "32"):
+            src_base = f"snake16_{mode_prefix}{depth_tag}_missing_composite_multilayer"
+            dst_base = f"snake16_psb_{mode_prefix}{depth_tag}_missing_composite_multilayer"
+            for suffix in icc_valid_suffixes:
+                convert_fixture(
+                    f"{src_base}_{suffix}_valid_icc_profile.psd",
+                    f"{dst_base}_{suffix}_valid_icc_profile.psd",
+                )
+            for suffix in [
+                "normal",
+                tysh_bad_rotation[depth_tag],
+                fill_bad_rotation[depth_tag],
+            ]:
+                convert_fixture(
+                    f"{src_base}_{suffix}_bad_icc_profile.psd",
+                    f"{dst_base}_{suffix}_bad_icc_profile.psd",
+                )
+            for suffix in [
+                "normal",
+                tysh_malformed_rotation[depth_tag],
+                fill_malformed_rotation[depth_tag],
+            ]:
+                convert_fixture(
+                    f"{src_base}_{suffix}_malformed_resource.psd",
+                    f"{dst_base}_{suffix}_malformed_resource.psd",
+                )
     convert_fixture(
         "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",

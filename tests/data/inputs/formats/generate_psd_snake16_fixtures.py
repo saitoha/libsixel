@@ -1865,6 +1865,315 @@ def write_variants(
         )
 
 
+def build_cmyk_multilayer_nonpixel_fixture(
+    *,
+    color_mode: int,
+    depth: int,
+    base_planes,
+    additional_block_key: bytes,
+    additional_block_payload: bytes,
+    first_layer_has_pixels: bool,
+):
+    if first_layer_has_pixels:
+        first_layer_channel_ids = [0, 1, 2, 3]
+        first_layer_planes = base_planes
+    else:
+        first_layer_channel_ids = []
+        first_layer_planes = []
+    return build_psd_layer_only_multilayer_custom(
+        color_mode=color_mode,
+        depth=depth,
+        channels_header=4,
+        color_mode_data=b"",
+        layers=[
+            {
+                "top": 0,
+                "left": 0,
+                "bottom": HEIGHT,
+                "right": WIDTH,
+                "channel_ids": first_layer_channel_ids,
+                "planes": first_layer_planes,
+                "blend_key": b"norm",
+                "additional_blocks": [
+                    (additional_block_key, additional_block_payload),
+                ],
+            },
+            {
+                "top": 0,
+                "left": 0,
+                "bottom": HEIGHT,
+                "right": WIDTH,
+                "channel_ids": [0, 1, 2, 3],
+                "planes": base_planes,
+                "blend_key": b"norm",
+            },
+        ],
+    )
+
+
+def write_cmyk_tysh_nonpixel_suite(
+    out_dir: pathlib.Path,
+    *,
+    prefix: str,
+    color_mode: int,
+    depth: int,
+    base_planes,
+):
+    tysh_payloads = [
+        ("nonpixel_tysh", build_sxfl_soco_payload(255, 48, 64), True),
+        ("nonpixel_tysh_descriptor", build_descriptor_soco_payload(255, 48, 64), True),
+        ("nonpixel_nopixel_tysh", build_sxfl_soco_payload(255, 48, 64), False),
+        (
+            "nonpixel_nopixel_tysh_descriptor",
+            build_descriptor_soco_payload(255, 48, 64),
+            False,
+        ),
+        (
+            "nonpixel_nopixel_tysh_wrapped_descriptor",
+            build_tysh_wrapped_descriptor_payload(
+                build_descriptor_soco_payload(255, 48, 64)
+            ),
+            False,
+        ),
+        (
+            "nonpixel_nopixel_tysh_wrapped_unknown_descriptor",
+            build_tysh_wrapped_descriptor_payload(
+                build_descriptor_tysh_unknown_then_color_payload(255, 48, 64)
+            ),
+            False,
+        ),
+        (
+            "nonpixel_nopixel_tysh_wrapped_malformed_descriptor",
+            build_tysh_wrapped_descriptor_payload(
+                build_descriptor_tysh_malformed_payload()
+            ),
+            False,
+        ),
+        (
+            "nonpixel_nopixel_tysh_descriptor_gray",
+            build_descriptor_soco_payload_gray(50.0),
+            False,
+        ),
+        (
+            "nonpixel_nopixel_tysh_descriptor_cmyk",
+            build_descriptor_soco_payload_cmyk(
+                0.0,
+                81.17647058823529,
+                74.90196078431373,
+                0.0,
+            ),
+            False,
+        ),
+        (
+            "nonpixel_nopixel_tysh_descriptor_hsb",
+            build_descriptor_soco_payload_hsb(
+                355.3623188405797,
+                81.17647058823529,
+                100.0,
+            ),
+            False,
+        ),
+        (
+            "nonpixel_nopixel_tysh_descriptor_lab",
+            build_descriptor_soco_payload_lab(53.389, 0.0, 0.0),
+            False,
+        ),
+    ]
+    for suffix, payload, first_layer_has_pixels in tysh_payloads:
+        write_file(
+            out_dir / f"{prefix}_{suffix}.psd",
+            build_cmyk_multilayer_nonpixel_fixture(
+                color_mode=color_mode,
+                depth=depth,
+                base_planes=base_planes,
+                additional_block_key=b"TySh",
+                additional_block_payload=payload,
+                first_layer_has_pixels=first_layer_has_pixels,
+            ),
+        )
+
+
+def write_cmyk_fill_descriptor_suite(
+    out_dir: pathlib.Path,
+    *,
+    prefix: str,
+    color_mode: int,
+    depth: int,
+    base_planes,
+):
+    fill_payloads = [
+        ("fill_soco_descriptor", b"SoCo", build_descriptor_soco_payload(255, 48, 64)),
+        (
+            "fill_soco_descriptor_cmyk",
+            b"SoCo",
+            build_descriptor_soco_payload_cmyk(
+                0.0,
+                81.17647058823529,
+                74.90196078431373,
+                0.0,
+            ),
+        ),
+        ("fill_soco_descriptor_gray", b"SoCo", build_descriptor_soco_payload_gray(50.0)),
+        (
+            "fill_soco_descriptor_hsb",
+            b"SoCo",
+            build_descriptor_soco_payload_hsb(
+                355.3623188405797,
+                81.17647058823529,
+                100.0,
+            ),
+        ),
+        (
+            "fill_soco_descriptor_lab",
+            b"SoCo",
+            build_descriptor_soco_payload_lab(53.389, 0.0, 0.0),
+        ),
+        (
+            "fill_gdfl_descriptor",
+            b"GdFl",
+            build_descriptor_gdfl_payload(
+                gradient_type_key=b"Lnr ",
+                reverse=False,
+                angle_deg=0.0,
+                scale_percent=100.0,
+                stops=[
+                    (0.0, 255, 32, 32, 100.0),
+                    (1.0, 32, 64, 255, 100.0),
+                ],
+            ),
+        ),
+        (
+            "fill_gdfl_descriptor_cmyk",
+            b"GdFl",
+            build_descriptor_gdfl_payload(
+                gradient_type_key=b"Lnr ",
+                reverse=False,
+                angle_deg=0.0,
+                scale_percent=100.0,
+                stops=[
+                    (
+                        0.0,
+                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                        100.0,
+                    ),
+                    (
+                        1.0,
+                        ("cmyk", 0.0, 81.17647058823529, 74.90196078431373, 0.0),
+                        100.0,
+                    ),
+                ],
+            ),
+        ),
+        (
+            "fill_gdfl_descriptor_gray",
+            b"GdFl",
+            build_descriptor_gdfl_payload(
+                gradient_type_key=b"Lnr ",
+                reverse=False,
+                angle_deg=0.0,
+                scale_percent=100.0,
+                stops=[
+                    (0.0, ("gray", 50.0), 100.0),
+                    (1.0, ("gray", 50.0), 100.0),
+                ],
+            ),
+        ),
+        (
+            "fill_gdfl_descriptor_hsb",
+            b"GdFl",
+            build_descriptor_gdfl_payload(
+                gradient_type_key=b"Lnr ",
+                reverse=False,
+                angle_deg=0.0,
+                scale_percent=100.0,
+                stops=[
+                    (
+                        0.0,
+                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
+                        100.0,
+                    ),
+                    (
+                        1.0,
+                        ("hsb", 355.3623188405797, 81.17647058823529, 100.0),
+                        100.0,
+                    ),
+                ],
+            ),
+        ),
+        (
+            "fill_gdfl_descriptor_lab",
+            b"GdFl",
+            build_descriptor_gdfl_payload(
+                gradient_type_key=b"Lnr ",
+                reverse=False,
+                angle_deg=0.0,
+                scale_percent=100.0,
+                stops=[
+                    (0.0, ("lab", 53.389, 0.0, 0.0), 100.0),
+                    (1.0, ("lab", 53.389, 0.0, 0.0), 100.0),
+                ],
+            ),
+        ),
+        (
+            "fill_ptfl_descriptor",
+            b"PtFl",
+            build_descriptor_ptfl_payload(
+                tile=4,
+                fg_rgb=(250, 250, 250),
+                bg_rgb=(30, 30, 30),
+            ),
+        ),
+        (
+            "fill_ptfl_descriptor_gray",
+            b"PtFl",
+            build_descriptor_ptfl_payload(
+                tile=4,
+                fg_rgb=("gray", 98.0392156862745),
+                bg_rgb=("gray", 11.764705882352942),
+            ),
+        ),
+        (
+            "fill_ptfl_descriptor_hsb",
+            b"PtFl",
+            build_descriptor_ptfl_payload(
+                tile=4,
+                fg_rgb=("hsb", 0.0, 0.0, 98.0392156862745),
+                bg_rgb=("hsb", 0.0, 0.0, 11.764705882352942),
+            ),
+        ),
+        (
+            "fill_ptfl_descriptor_cmyk",
+            b"PtFl",
+            build_descriptor_ptfl_payload(
+                tile=4,
+                fg_rgb=("cmyk", 0.0, 0.0, 0.0, 1.9607843137254901),
+                bg_rgb=("cmyk", 0.0, 0.0, 0.0, 88.23529411764706),
+            ),
+        ),
+        (
+            "fill_ptfl_descriptor_lab",
+            b"PtFl",
+            build_descriptor_ptfl_payload(
+                tile=4,
+                fg_rgb=("lab", 98.0392156862745, 0.0, 0.0),
+                bg_rgb=("lab", 11.764705882352942, 0.0, 0.0),
+            ),
+        ),
+    ]
+    for suffix, block_key, payload in fill_payloads:
+        write_file(
+            out_dir / f"{prefix}_{suffix}.psd",
+            build_cmyk_multilayer_nonpixel_fixture(
+                color_mode=color_mode,
+                depth=depth,
+                base_planes=base_planes,
+                additional_block_key=block_key,
+                additional_block_payload=payload,
+                first_layer_has_pixels=False,
+            ),
+        )
+
+
 def generate(out_dir: pathlib.Path):
     src_png = out_dir.parent / "snake_64.png"
     rgb = split_rgb(run_magick_rgb(src_png))
@@ -8581,6 +8890,60 @@ def generate(out_dir: pathlib.Path):
             ],
         ),
     )
+
+    # Additional CMYK non-pixel suites for ICC parity expansion.
+    for depth_tag, depth_value, base_planes in [
+        ("8", 8, cmyk8_planes),
+        ("16", 16, cmyk16_planes),
+        ("32", 32, cmyk32_planes),
+    ]:
+        write_cmyk_tysh_nonpixel_suite(
+            out_dir,
+            prefix=f"snake16_cmyk{depth_tag}_missing_composite_multilayer",
+            color_mode=4,
+            depth=depth_value,
+            base_planes=base_planes,
+        )
+
+    for depth_tag, depth_value, base_planes in [
+        ("16", 16, cmyk16_planes),
+        ("32", 32, cmyk32_planes),
+    ]:
+        write_cmyk_fill_descriptor_suite(
+            out_dir,
+            prefix=f"snake16_cmyk{depth_tag}_missing_composite_multilayer",
+            color_mode=4,
+            depth=depth_value,
+            base_planes=base_planes,
+        )
+        write_cmyk_fill_descriptor_suite(
+            out_dir,
+            prefix=f"snake16_mode7_cmyk{depth_tag}_missing_composite_multilayer",
+            color_mode=7,
+            depth=depth_value,
+            base_planes=base_planes,
+        )
+
+    # Keep 8bpc fill parity complete by adding the Lab descriptor variant.
+    for prefix, color_mode in [
+        ("snake16_cmyk8_missing_composite_multilayer", 4),
+        ("snake16_mode7_cmyk8_missing_composite_multilayer", 7),
+    ]:
+        write_file(
+            out_dir / f"{prefix}_fill_ptfl_descriptor_lab.psd",
+            build_cmyk_multilayer_nonpixel_fixture(
+                color_mode=color_mode,
+                depth=8,
+                base_planes=cmyk8_planes,
+                additional_block_key=b"PtFl",
+                additional_block_payload=build_descriptor_ptfl_payload(
+                    tile=4,
+                    fg_rgb=("lab", 98.0392156862745, 0.0, 0.0),
+                    bg_rgb=("lab", 11.764705882352942, 0.0, 0.0),
+                ),
+                first_layer_has_pixels=False,
+            ),
+        )
 
     write_variants(
         out_dir,
