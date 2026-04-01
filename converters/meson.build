@@ -37,6 +37,8 @@ sixel2png_opt = get_option('sixel2png')
 
 img2sixel_deps = []
 if img2sixel_opt.enabled()
+  img2sixel_core_sources = ['img2sixel.c', 'completion_utils.c', 'compat.c', 'path.c', completion_embed]
+  img2sixel_core_sources += sources_common + aborttrace_sources
   if amalgamated_tools_enabled
     img2sixel_exe = executable('img2sixel', amalgamation_out,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
@@ -48,8 +50,7 @@ if img2sixel_opt.enabled()
       install: true)
   else
     img2sixel_exe = executable('img2sixel',
-      ['img2sixel.c', 'completion_utils.c', 'compat.c', 'path.c', completion_embed]
-        + sources_common + aborttrace_sources,
+      img2sixel_core_sources,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H'],
       objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
@@ -59,19 +60,64 @@ if img2sixel_opt.enabled()
       build_rpath: src_build_dir,
       install: true)
   endif
-  img2sixel_fuzz_harness = executable('fuzz-img2sixel-afl-persistent',
-    ['../fuzz/fuzz-img2sixel-afl-persistent.c'],
-    c_args: libsixel_posix_defs,
-    objc_args: libsixel_posix_defs,
-    dependencies: [libsixel_dep],
-    include_directories: [project_inc],
-    build_rpath: src_build_dir,
-    install: false)
+  img2sixel_deps = [img2sixel_exe]
 
-  img2sixel_deps = [img2sixel_exe, img2sixel_fuzz_harness]
+  img2sixel_cli_fuzz_supported = false
+  if fuzz_enabled
+    # The AFL persistent CLI harnesses depend on POSIX process-environment
+    # APIs (setenv/unsetenv). Some Windows toolchains (for example
+    # x86_64-w64-windows-gnu) do not provide these symbols.
+    img2sixel_cli_fuzz_supported = cc.has_function('setenv',
+      prefix: '#include <stdlib.h>')
+    if not img2sixel_cli_fuzz_supported
+      message('img2sixel AFL persistent CLI harnesses are disabled: setenv() is unavailable on this toolchain')
+    endif
+  endif
 
-  run_target('fuzz-cli-img2sixel',
-    command: [sh, '-c', '''
+  if img2sixel_cli_fuzz_supported
+    img2sixel_fuzz_harness = executable('fuzz-img2sixel-afl-persistent',
+      ['../fuzz/fuzz-img2sixel-afl-persistent.c'],
+      c_args: libsixel_posix_defs,
+      objc_args: libsixel_posix_defs,
+      dependencies: [libsixel_dep],
+      include_directories: [project_inc],
+      build_rpath: src_build_dir,
+      install: false)
+
+    img2sixel_cli_parser_harness = executable('fuzz-img2sixel-cli-parser-afl-persistent',
+      ['../fuzz/fuzz-img2sixel-cli-parser-afl-persistent.c'] + img2sixel_core_sources,
+      c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                     '-DHAVE_COMPLETION_EMBED_H',
+                                     '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                        '-DHAVE_COMPLETION_EMBED_H',
+                                        '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      dependencies: [libsixel_dep] + aborttrace_deps_local,
+      include_directories: [project_inc, local_inc],
+      build_rpath: src_build_dir,
+      install: false)
+
+    img2sixel_cli_boundary_harness = executable('fuzz-img2sixel-cli-boundary-afl-persistent',
+      ['../fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c'] + img2sixel_core_sources,
+      c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                     '-DHAVE_COMPLETION_EMBED_H',
+                                     '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                        '-DHAVE_COMPLETION_EMBED_H',
+                                        '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      dependencies: [libsixel_dep] + aborttrace_deps_local,
+      include_directories: [project_inc, local_inc],
+      build_rpath: src_build_dir,
+      install: false)
+
+    img2sixel_deps += [
+      img2sixel_fuzz_harness,
+      img2sixel_cli_parser_harness,
+      img2sixel_cli_boundary_harness,
+    ]
+
+    run_target('fuzz-cli-img2sixel',
+      command: [sh, '-c', '''
 set -eu
 
 harness="$1"
@@ -158,12 +204,129 @@ fi
 echo "Running img2sixel fuzzing without timeout"
 exec "$@"
 ''',
-              'sh',
-              img2sixel_fuzz_harness.full_path(),
-              img2sixel_exe.full_path(),
-              meson.project_source_root(),
-              meson.project_build_root()],
-    depends: [img2sixel_fuzz_harness, img2sixel_exe])
+                'sh',
+                img2sixel_fuzz_harness.full_path(),
+                img2sixel_exe.full_path(),
+                meson.project_source_root(),
+                meson.project_build_root()],
+      depends: [img2sixel_fuzz_harness, img2sixel_exe])
+
+    run_target('fuzz-cli-img2sixel-parser',
+      command: [sh, '-c', '''
+set -eu
+
+harness="$1"
+source_root="$2"
+build_root="$3"
+fuzz_afl="${FUZZ_AFL:-afl-fuzz}"
+fuzz_timeout="${FUZZ_TIMEOUT:-0}"
+default_input_dir="$source_root/fuzz/corpus/img2sixel-cli"
+if test ! -d "$default_input_dir"; then
+  default_input_dir="$source_root/images"
+fi
+input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
+output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-parser}"
+
+if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
+  echo "error: $fuzz_afl is not installed" >&2
+  exit 1
+fi
+if test ! -d "$input_dir"; then
+  echo "error: fuzz input directory was not found: $input_dir" >&2
+  exit 1
+fi
+if test ! -x "$harness"; then
+  echo "error: parser harness was not found: $harness" >&2
+  exit 1
+fi
+
+mkdir -p "$output_dir"
+set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
+
+if test "$fuzz_timeout" -gt 0; then
+  if ! command -v timeout >/dev/null 2>&1; then
+    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
+    exit 1
+  fi
+  echo "Running img2sixel parser fuzzing for ${fuzz_timeout}s"
+  set +e
+  timeout "$fuzz_timeout" "$@"
+  rc=$?
+  set -e
+  if test "$rc" -eq 124; then
+    echo "fuzz-cli-img2sixel-parser: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+echo "Running img2sixel parser fuzzing without timeout"
+exec "$@"
+''',
+                'sh',
+                img2sixel_cli_parser_harness.full_path(),
+                meson.project_source_root(),
+                meson.project_build_root()],
+      depends: [img2sixel_cli_parser_harness])
+
+    run_target('fuzz-cli-img2sixel-boundary',
+      command: [sh, '-c', '''
+set -eu
+
+harness="$1"
+source_root="$2"
+build_root="$3"
+fuzz_afl="${FUZZ_AFL:-afl-fuzz}"
+fuzz_timeout="${FUZZ_TIMEOUT:-0}"
+default_input_dir="$source_root/fuzz/corpus/img2sixel-cli"
+if test ! -d "$default_input_dir"; then
+  default_input_dir="$source_root/images"
+fi
+input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
+output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-boundary}"
+
+if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
+  echo "error: $fuzz_afl is not installed" >&2
+  exit 1
+fi
+if test ! -d "$input_dir"; then
+  echo "error: fuzz input directory was not found: $input_dir" >&2
+  exit 1
+fi
+if test ! -x "$harness"; then
+  echo "error: boundary harness was not found: $harness" >&2
+  exit 1
+fi
+
+mkdir -p "$output_dir"
+set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
+
+if test "$fuzz_timeout" -gt 0; then
+  if ! command -v timeout >/dev/null 2>&1; then
+    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
+    exit 1
+  fi
+  echo "Running img2sixel boundary/env fuzzing for ${fuzz_timeout}s"
+  set +e
+  timeout "$fuzz_timeout" "$@"
+  rc=$?
+  set -e
+  if test "$rc" -eq 124; then
+    echo "fuzz-cli-img2sixel-boundary: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+echo "Running img2sixel boundary/env fuzzing without timeout"
+exec "$@"
+''',
+                'sh',
+                img2sixel_cli_boundary_harness.full_path(),
+                meson.project_source_root(),
+                meson.project_build_root()],
+      depends: [img2sixel_cli_boundary_harness])
+  endif
 
   if shebang_enabled
     shebang_targets += [custom_target('img2sixel_shebang',
