@@ -63,10 +63,14 @@ if img2sixel_opt.enabled()
   img2sixel_deps = [img2sixel_exe]
 
   # The AFL persistent CLI harnesses depend on POSIX process-environment
-  # APIs (setenv/unsetenv). Some Windows toolchains (for example
-  # x86_64-w64-windows-gnu) do not provide these symbols.
-  img2sixel_cli_fuzz_supported = cc.has_function('setenv',
-    prefix: '#include <stdlib.h>')
+  # APIs (setenv/unsetenv). Linux/Unix toolchains provide these reliably;
+  # Windows toolchains may not.
+  img2sixel_cli_fuzz_supported = host_machine.system() != 'windows'
+  if host_machine.system() == 'windows'
+    img2sixel_cli_fuzz_supported = cc.has_function('setenv',
+      prefix: '#include <stdlib.h>',
+      args: libsixel_posix_defs)
+  endif
   if not img2sixel_cli_fuzz_supported
     message('img2sixel AFL persistent CLI harnesses are disabled: setenv() is unavailable on this toolchain')
   endif

@@ -218,8 +218,7 @@ fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_
 
 if HAVE_COREGRAPHICS
 fuzz_loader_coregraphics_libfuzzer_SOURCES = \
-    $(srcdir)/fuzz-loader-component-libfuzzer.c \
-    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+    $(srcdir)/fuzz-loader-component-libfuzzer.c
 fuzz_loader_coregraphics_libfuzzer_CPPFLAGS = \
     $(FUZZ_COMMON_CPPFLAGS) \
     -DFUZZ_LOADER_COMPONENT_NAME=\"coregraphics\"
@@ -230,8 +229,7 @@ endif
 
 if HAVE_WIC
 fuzz_loader_wic_libfuzzer_SOURCES = \
-    $(srcdir)/fuzz-loader-component-libfuzzer.c \
-    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+    $(srcdir)/fuzz-loader-component-libfuzzer.c
 fuzz_loader_wic_libfuzzer_CPPFLAGS = \
     $(FUZZ_COMMON_CPPFLAGS) \
     -DFUZZ_LOADER_COMPONENT_NAME=\"wic\"

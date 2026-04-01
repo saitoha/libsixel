@@ -171,7 +171,7 @@ done
 
 if conf.get('HAVE_COREGRAPHICS', 0) == 1
   fuzz_loader_coregraphics = executable('fuzz-loader-coregraphics-libfuzzer',
-    ['fuzz-loader-component-libfuzzer.c', 'fuzz-loader-builtin-struct-runtime.c'],
+    ['fuzz-loader-component-libfuzzer.c'],
     include_directories: project_inc,
     dependencies: [libsixel_dep],
     c_args: fuzz_common_c_args + ['-DFUZZ_LOADER_COMPONENT_NAME="coregraphics"'],
@@ -209,7 +209,7 @@ endif
 
 if conf.get('HAVE_WIC', 0) == 1
   fuzz_loader_wic = executable('fuzz-loader-wic-libfuzzer',
-    ['fuzz-loader-component-libfuzzer.c', 'fuzz-loader-builtin-struct-runtime.c'],
+    ['fuzz-loader-component-libfuzzer.c'],
     include_directories: project_inc,
     dependencies: [libsixel_dep],
     c_args: fuzz_common_c_args + ['-DFUZZ_LOADER_COMPONENT_NAME="wic"'],

@@ -256,6 +256,10 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 		echo "error: persistent harness was not found: $$fuzz_runner" >&2; \
 		exit 1; \
 	fi; \
+	if [ -d "$(abs_top_builddir)/src/.libs" ]; then \
+		LD_LIBRARY_PATH="$(abs_top_builddir)/src/.libs$${LD_LIBRARY_PATH+:$$LD_LIBRARY_PATH}"; \
+		export LD_LIBRARY_PATH; \
+	fi; \
 	if [ -n "$(FUZZ_IMG2SIXEL_BASE_ARGS)" ]; then \
 		echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"; \
 	fi; \
@@ -267,16 +271,16 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 		fi; \
 		echo "Running img2sixel fuzzing for $(FUZZ_TIMEOUT)s"; \
 		set +e; \
-			timeout "$(FUZZ_TIMEOUT)" "$(FUZZ_AFL)" \
-				-i "$(FUZZ_INPUT_DIR)" \
-				-o "$(FUZZ_OUTPUT_DIR)" \
-				-- \
-				"$$fuzz_runner"; \
-			rc=$$?; \
-			set -e; \
-			if [ $$rc -eq 124 ]; then \
-				echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=$(FUZZ_TIMEOUT)s"; \
-				exit 0; \
+		timeout "$(FUZZ_TIMEOUT)" "$(FUZZ_AFL)" \
+			-i "$(FUZZ_INPUT_DIR)" \
+			-o "$(FUZZ_OUTPUT_DIR)" \
+			-- \
+			"$$fuzz_runner"; \
+		rc=$$?; \
+		set -e; \
+		if [ $$rc -eq 124 ]; then \
+			echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=$(FUZZ_TIMEOUT)s"; \
+			exit 0; \
 		fi; \
 		exit $$rc; \
 	fi; \
