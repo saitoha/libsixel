@@ -55,23 +55,6 @@
 #include "fromhdr.h"
 #include "loader-common.h"
 
-int
-stbi_is_hdr_from_memory(unsigned char const *buffer, int len);
-
-float *
-stbi_loadf_from_memory(unsigned char const *buffer,
-                       int len,
-                       int *x,
-                       int *y,
-                       int *channels_in_file,
-                       int desired_channels);
-
-char const *
-stbi_failure_reason(void);
-
-void
-stbi_image_free(void *retval_from_stbi_load);
-
 typedef struct sixel_builtin_hdr_profile_hint {
     int has_format;
     int format_kind;
@@ -163,23 +146,6 @@ static int
 sixel_builtin_hdr_hint_has_decodable_stream(
     SIXELSTATUS hint_status,
     sixel_builtin_hdr_profile_hint_t const *hint);
-
-static int
-sixel_builtin_hdr_should_prefer_custom_decode(
-    SIXELSTATUS hint_status,
-    sixel_builtin_hdr_profile_hint_t const *hint,
-    int stbi_hdr_detected);
-
-static SIXELSTATUS
-sixel_builtin_hdr_try_decode_with_stbi(
-    sixel_chunk_t const *chunk,
-    sixel_builtin_hdr_profile_hint_t const *hint,
-    SIXELSTATUS hint_status,
-    unsigned char **ppixels,
-    int *pwidth,
-    int *pheight,
-    int *ppixelformat,
-    int *pcolorspace);
 
 static int
 sixel_builtin_hdr_parse_primaries_line(char const *line,
@@ -828,20 +794,6 @@ sixel_builtin_hdr_parse_resolution_line(char const *line,
     hint->width = width;
     hint->height = height;
     return 1;
-}
-
-static int
-sixel_builtin_hdr_is_canonical_orientation(
-    sixel_builtin_hdr_profile_hint_t const *hint)
-{
-    if (hint == NULL || !hint->has_resolution) {
-        return 0;
-    }
-
-    return hint->orientation_axis1 == SIXEL_BUILTIN_HDR_AXIS_Y &&
-           hint->orientation_axis1_sign < 0 &&
-           hint->orientation_axis2 == SIXEL_BUILTIN_HDR_AXIS_X &&
-           hint->orientation_axis2_sign > 0;
 }
 
 static void
@@ -2766,104 +2718,6 @@ sixel_builtin_hdr_hint_has_decodable_stream(
     return 1;
 }
 
-static int
-sixel_builtin_hdr_should_prefer_custom_decode(
-    SIXELSTATUS hint_status,
-    sixel_builtin_hdr_profile_hint_t const *hint,
-    int stbi_hdr_detected)
-{
-    if (!sixel_builtin_hdr_hint_has_decodable_stream(hint_status, hint)) {
-        return 0;
-    }
-    /*
-     * Legacy RGBE streams (scanline length < 8) have no per-scanline header.
-     * Decode them in the built-in path to avoid platform-dependent behavior
-     * in third-party fallback code.
-     */
-    if (hint->orientation_axis2_length < 8) {
-        return 1;
-    }
-    if (hint->format_kind == SIXEL_BUILTIN_HDR_FORMAT_XYZE) {
-        return 1;
-    }
-    if (!sixel_builtin_hdr_is_canonical_orientation(hint)) {
-        return 1;
-    }
-    if (!stbi_hdr_detected) {
-        return 1;
-    }
-
-    return 0;
-}
-
-static SIXELSTATUS
-sixel_builtin_hdr_try_decode_with_stbi(
-    sixel_chunk_t const *chunk,
-    sixel_builtin_hdr_profile_hint_t const *hint,
-    SIXELSTATUS hint_status,
-    unsigned char **ppixels,
-    int *pwidth,
-    int *pheight,
-    int *ppixelformat,
-    int *pcolorspace)
-{
-    float *decoded_pixels;
-    int depth;
-    char const *reason;
-
-    decoded_pixels = NULL;
-    depth = 0;
-    reason = NULL;
-
-    if (chunk == NULL ||
-        chunk->buffer == NULL ||
-        hint == NULL ||
-        ppixels == NULL ||
-        pwidth == NULL ||
-        pheight == NULL ||
-        ppixelformat == NULL ||
-        pcolorspace == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    decoded_pixels = stbi_loadf_from_memory(chunk->buffer,
-                                            (int)chunk->size,
-                                            pwidth,
-                                            pheight,
-                                            &depth,
-                                            3);
-    if (decoded_pixels == NULL) {
-        if (sixel_builtin_hdr_hint_has_decodable_stream(hint_status, hint) &&
-            hint->format_kind == SIXEL_BUILTIN_HDR_FORMAT_RGBE) {
-            return sixel_builtin_decode_hdr_float32_custom(chunk,
-                                                           hint,
-                                                           ppixels,
-                                                           pwidth,
-                                                           pheight,
-                                                           ppixelformat,
-                                                           pcolorspace);
-        }
-        reason = stbi_failure_reason();
-        if (reason != NULL) {
-            sixel_helper_set_additional_message(reason);
-        }
-        return SIXEL_STBI_ERROR;
-    }
-
-    if (*pwidth <= 0 || *pheight <= 0) {
-        stbi_image_free(decoded_pixels);
-        sixel_helper_set_additional_message(
-            "builtin HDR: invalid image dimensions.");
-        return SIXEL_STBI_ERROR;
-    }
-
-    *ppixels = (unsigned char *)decoded_pixels;
-    *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    *pcolorspace = SIXEL_COLORSPACE_LINEAR;
-
-    return SIXEL_OK;
-}
-
 static SIXELSTATUS
 sixel_builtin_decode_hdr_float32_with_hint(
     sixel_chunk_t const *chunk,
@@ -2875,11 +2729,9 @@ sixel_builtin_decode_hdr_float32_with_hint(
     sixel_builtin_hdr_profile_hint_t *out_hint,
     SIXELSTATUS *out_hint_status)
 {
-    int stbi_hdr_detected;
     SIXELSTATUS hint_status;
     sixel_builtin_hdr_profile_hint_t hint;
 
-    stbi_hdr_detected = 0;
     hint_status = SIXEL_FALSE;
     sixel_builtin_hdr_init_profile_hint(&hint);
 
@@ -2909,11 +2761,6 @@ sixel_builtin_decode_hdr_float32_with_hint(
     if (chunk->size == 0u) {
         return SIXEL_FALSE;
     }
-    if (chunk->size > (size_t)INT_MAX) {
-        sixel_helper_set_additional_message(
-            "builtin HDR: input chunk is too large.");
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
 
     hint_status = sixel_builtin_parse_hdr_profile_hint(chunk, &hint);
     if (out_hint != NULL) {
@@ -2923,33 +2770,20 @@ sixel_builtin_decode_hdr_float32_with_hint(
         *out_hint_status = hint_status;
     }
 
-    stbi_hdr_detected = stbi_is_hdr_from_memory(chunk->buffer,
-                                                (int)chunk->size);
-    if (!stbi_hdr_detected &&
-        !sixel_builtin_hdr_hint_has_decodable_stream(hint_status, &hint)) {
+    if (!sixel_builtin_hdr_hint_has_decodable_stream(hint_status, &hint)) {
         return SIXEL_FALSE;
     }
-
-    if (sixel_builtin_hdr_should_prefer_custom_decode(hint_status,
-                                                      &hint,
-                                                      stbi_hdr_detected)) {
-        return sixel_builtin_decode_hdr_float32_custom(chunk,
-                                                       &hint,
-                                                       ppixels,
-                                                       pwidth,
-                                                       pheight,
-                                                       ppixelformat,
-                                                       pcolorspace);
-    }
-
-    return sixel_builtin_hdr_try_decode_with_stbi(chunk,
-                                                  &hint,
-                                                  hint_status,
-                                                  ppixels,
-                                                  pwidth,
-                                                  pheight,
-                                                  ppixelformat,
-                                                  pcolorspace);
+    /*
+     * Decode all supported HDR streams through the built-in decoder so
+     * behavior stays identical across toolchains and runtimes.
+     */
+    return sixel_builtin_decode_hdr_float32_custom(chunk,
+                                                   &hint,
+                                                   ppixels,
+                                                   pwidth,
+                                                   pheight,
+                                                   ppixelformat,
+                                                   pcolorspace);
 }
 
 typedef struct sixel_builtin_hdr_line_reader {
@@ -3055,12 +2889,16 @@ sixel_builtin_parse_hdr_profile_hint(
     char line[1024];
     int in_header;
     int have_resolution_line;
+    int header_line_index;
+    int have_signature;
 
     sixel_builtin_hdr_line_reader_init(&reader, chunk);
     line_start = 0u;
     line_length = 0u;
     in_header = 1;
     have_resolution_line = 0;
+    header_line_index = 0;
+    have_signature = 0;
 
     if (chunk == NULL || chunk->buffer == NULL || out_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3088,7 +2926,18 @@ sixel_builtin_parse_hdr_profile_hint(
                                                        line_length)) {
                 continue;
             }
+            if (header_line_index == 0) {
+                if (!sixel_builtin_hdr_ascii_case_equal(line,
+                                                        "#?RADIANCE") &&
+                    !sixel_builtin_hdr_ascii_case_equal(line, "#?RGBE")) {
+                    return SIXEL_FALSE;
+                }
+                have_signature = 1;
+                ++header_line_index;
+                continue;
+            }
             sixel_builtin_hdr_parse_header_metadata_line(line, out_hint);
+            ++header_line_index;
             continue;
         }
 
@@ -3112,6 +2961,9 @@ sixel_builtin_parse_hdr_profile_hint(
         have_resolution_line = 1;
     }
 
+    if (!have_signature) {
+        return SIXEL_FALSE;
+    }
     if (!out_hint->has_resolution) {
         sixel_builtin_hdr_mark_resolution_malformed(out_hint);
     }

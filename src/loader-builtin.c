@@ -148,6 +148,11 @@ stbi_free(void *p)
 #define STBI_NO_GIF
 #define STBI_NO_PNM
 #define STBI_NO_PSD
+/*
+ * Keep HDR decode behavior deterministic in fromhdr.c and disable the
+ * stb_image HDR path.
+ */
+#define STBI_NO_HDR
 #if HAVE_NEON && HAVE_ARM_NEON_H
 # define STBI_NEON 1
 # define STBI_NO_SIMD 1
