@@ -13,12 +13,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-gpl_palette="${ARTIFACT_LOCAL_DIR}/invalid-component-suffix.gpl"
-
-{
-    printf 'GIMP Palette\n'
-    printf '0 0 0x\n'
-} >"${gpl_palette}"
+gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-invalid-component-suffix.gpl"
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
           -m "${gpl_palette}" "${snake_png}" \

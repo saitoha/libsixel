@@ -13,9 +13,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-act_palette="${ARTIFACT_LOCAL_DIR}/oversized-input.act"
-
-dd if=/dev/zero bs=1048576 count=17 of="${act_palette}" 2>/dev/null
+act_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-oversized-17mib.act"
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
           -m "${act_palette}" "${snake_png}" \

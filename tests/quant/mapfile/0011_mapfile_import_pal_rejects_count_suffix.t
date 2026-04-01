@@ -13,13 +13,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-pal_palette="${ARTIFACT_LOCAL_DIR}/invalid-count-suffix.pal"
-
-{
-    printf 'JASC-PAL\n'
-    printf '0100\n'
-    printf '256x\n'
-} >"${pal_palette}"
+pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-invalid-count-suffix.pal"
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
           -m "${pal_palette}" "${snake_png}" \

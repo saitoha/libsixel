@@ -13,16 +13,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-act_palette="${ARTIFACT_LOCAL_DIR}/invalid-count-over-256.act"
-
-{
-    i=0
-    while test "${i}" -lt 768; do
-        printf '\000'
-        i=$((i + 1))
-    done
-    printf '\001\001\000\000'
-} >"${act_palette}"
+act_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-invalid-count-over-256.act"
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
           -m "${act_palette}" "${snake_png}" \
