@@ -56,6 +56,9 @@
 #define SIZE_MAX ((size_t)-1)
 #endif
 
+/* Keep palette mapfile reads bounded to avoid excessive memory growth. */
+#define SIXEL_MAPFILE_READ_MAX_BYTES (16u * 1024u * 1024u)
+
 #include <sixel.h>
 
 #include "compat_stub.h"
@@ -257,6 +260,20 @@ sixel_palette_has_utf8_bom(unsigned char const *data, size_t size)
     return 0;
 }
 
+static int
+sixel_palette_tail_is_blank(char const *tail)
+{
+    if (tail == NULL) {
+        return 0;
+    }
+
+    while (*tail == ' ' || *tail == '\t') {
+        ++tail;
+    }
+
+    return *tail == '\0';
+}
+
 
 /*
  * Materialize palette bytes from a stream.
@@ -319,6 +336,14 @@ sixel_palette_read_stream(FILE *stream,
             goto cleanup;
         }
         needed = used + read_bytes;
+        /* Hard-cap mapfile payload growth to 16 MiB. */
+        if (needed > SIXEL_MAPFILE_READ_MAX_BYTES) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_read_stream: palette input exceeds "
+                "16 MiB limit.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
 
         if (needed > capacity) {
             new_capacity = capacity;
@@ -565,8 +590,16 @@ sixel_palette_parse_act(unsigned char const *data,
             "sixel_palette_parse_act: ACT start index out of range.");
         return SIXEL_BAD_INPUT;
     }
-    if (exported_colors <= 0 || exported_colors > 256) {
+    /*
+     * Keep legacy ACT behavior for count 0 (means 256), but reject
+     * explicit values above the 8-bit palette limit.
+     */
+    if (exported_colors <= 0) {
         exported_colors = 256;
+    } else if (exported_colors > 256) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_act: invalid ACT color count.");
+        return SIXEL_BAD_INPUT;
     }
     if (start_index + exported_colors > 256) {
         sixel_helper_set_additional_message(
@@ -658,6 +691,11 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
             "sixel_palette_parse_pal_jasc: empty palette.");
         return SIXEL_BAD_INPUT;
     }
+    if (size > SIZE_MAX - 1u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: size overflow.");
+        return SIXEL_BAD_ALLOCATION;
+    }
 
     text = (char *)sixel_allocator_malloc(encoder->allocator, size + 1u);
     if (text == NULL) {
@@ -724,7 +762,9 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
         }
         if (stage == 2) {
             component = strtol(line, &parse_end, 10);
-            if (parse_end == line || component <= 0L || component > 256L) {
+            /* Reject glued suffixes such as "256x" in strict mode. */
+            if (parse_end == line || component <= 0L || component > 256L
+                    || !sixel_palette_tail_is_blank(parse_end)) {
                 sixel_helper_set_additional_message(
                     "sixel_palette_parse_pal_jasc: invalid color count.");
                 status = SIXEL_BAD_INPUT;
@@ -771,6 +811,13 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
             while (*line == ' ' || *line == '\t') {
                 ++line;
             }
+        }
+        /* A JASC color row must be exactly 3 numeric components. */
+        if (*line != '\0') {
+            sixel_helper_set_additional_message(
+                "sixel_palette_parse_pal_jasc: invalid component.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
         }
 
         if (parsed_colors >= exported_colors) {
@@ -854,6 +901,10 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     unsigned int version;
     unsigned int index;
     size_t palette_offset;
+    size_t remaining;
+    size_t chunk_payload_limit;
+    size_t chunk_padded_size;
+    size_t next_offset;
 
     status = SIXEL_FALSE;
     offset = 0u;
@@ -866,6 +917,10 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     version = 0u;
     index = 0u;
     palette_offset = 0u;
+    remaining = 0u;
+    chunk_payload_limit = 0u;
+    chunk_padded_size = 0u;
+    next_offset = 0u;
 
     if (encoder == NULL || dither == NULL) {
         sixel_helper_set_additional_message(
@@ -884,10 +939,16 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     }
 
     offset = 12u;
-    while (offset + 8u <= size) {
+    /*
+     * Keep chunk traversal overflow-safe by checking remaining bytes
+     * with subtraction before any additive offset arithmetic.
+     */
+    while (offset <= size && size - offset >= 8u) {
+        remaining = size - offset;
         chunk = data + offset;
         chunk_size = (size_t)sixel_palette_read_le32(chunk + 4);
-        if (offset + 8u + chunk_size > size) {
+        chunk_payload_limit = remaining - 8u;
+        if (chunk_size > chunk_payload_limit) {
             sixel_helper_set_additional_message(
                 "sixel_palette_parse_pal_riff: chunk extends past end.");
             return SIXEL_BAD_INPUT;
@@ -895,10 +956,30 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
         if (memcmp(chunk, "data", 4) == 0) {
             break;
         }
-        offset += 8u + ((chunk_size + 1u) & ~1u);
+        chunk_padded_size = chunk_size;
+        if ((chunk_padded_size & 1u) != 0u) {
+            if (chunk_padded_size == SIZE_MAX) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_pal_riff: size overflow.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+            ++chunk_padded_size;
+        }
+        if (chunk_padded_size > chunk_payload_limit) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_parse_pal_riff: chunk extends past end.");
+            return SIXEL_BAD_INPUT;
+        }
+        if (offset > SIZE_MAX - 8u - chunk_padded_size) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_parse_pal_riff: size overflow.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        next_offset = offset + 8u + chunk_padded_size;
+        offset = next_offset;
     }
 
-    if (offset + 8u > size || chunk == NULL ||
+    if (offset > size || size - offset < 8u || chunk == NULL ||
             memcmp(chunk, "data", 4) != 0) {
         sixel_helper_set_additional_message(
             "sixel_palette_parse_pal_riff: missing data chunk.");
@@ -1025,6 +1106,11 @@ sixel_palette_parse_gpl(unsigned char const *data,
             "sixel_palette_parse_gpl: empty palette.");
         return SIXEL_BAD_INPUT;
     }
+    if (size > SIZE_MAX - 1u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: size overflow.");
+        return SIXEL_BAD_ALLOCATION;
+    }
 
     text = (char *)sixel_allocator_malloc(encoder->allocator, size + 1u);
     if (text == NULL) {
@@ -1103,6 +1189,17 @@ sixel_palette_parse_gpl(unsigned char const *data,
         while (value_index < 3) {
             component = strtol(line, &parse_end, 10);
             if (parse_end == line || component < 0L || component > 255L) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_gpl: invalid component.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
+            /*
+             * Keep GPL compatibility with optional trailing labels,
+             * but reject numeric tokens with glued suffixes like "0x".
+             */
+            if (*parse_end != '\0' && *parse_end != ' '
+                    && *parse_end != '\t') {
                 sixel_helper_set_additional_message(
                     "sixel_palette_parse_gpl: invalid component.");
                 status = SIXEL_BAD_INPUT;

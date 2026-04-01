@@ -5469,6 +5469,15 @@ sixel_encoder_setopt(
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }
+            if (libc_buffer_size > SIZE_MAX - mapfile_offset) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: mapfile path is too long.");
+                sixel_allocator_free(encoder->allocator, libc_buffer);
+                sixel_allocator_free(encoder->allocator, mapfile_copy);
+                mapfile_copy = NULL;
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
             mapfile_full_length = mapfile_offset + libc_buffer_size;
             mapfile_normalized = (char *)sixel_allocator_malloc(
                 encoder->allocator, mapfile_full_length);
