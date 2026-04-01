@@ -79,7 +79,9 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
-	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \
+	fuzz-cli-img2sixel fuzz-cli-img2sixel-parser \
+	fuzz-cli-img2sixel-boundary fuzz-cli-img2sixel-all \
+	fuzz-loader-builtin fuzz-run-loader-builtin \
 	fuzz-run-loader-builtin-formats \
 	fuzz-run-loader-coregraphics \
 	fuzz-run-loader-wic \
@@ -112,6 +114,32 @@ FUZZ_IMG2SIXEL ?= $(abs_top_builddir)/converters/img2sixel$(EXEEXT)
 FUZZ_IMG2SIXEL_BASE_ARGS ?=
 FUZZ_IMG2SIXEL_MODE ?= persistent
 FUZZ_IMG2SIXEL_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-afl-persistent$(EXEEXT)
+FUZZ_IMG2SIXEL_RUNNER ?= $(FUZZ_IMG2SIXEL_PERSISTENT)
+FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-parser-afl-persistent$(EXEEXT)
+FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-boundary-afl-persistent$(EXEEXT)
+FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
+	-DHAVE_CONFIG_H \
+	-DBUILD_IMG2SIXEL \
+	-DHAVE_COMPLETION_EMBED_H \
+	-DLIBSIXEL_IMG2SIXEL_EMBEDDED \
+	-I$(top_builddir) \
+	-I$(top_srcdir) \
+	-I$(top_builddir)/converters \
+	-I$(top_srcdir)/converters \
+	-I$(top_builddir)/include \
+	-I$(top_srcdir)/include
+FUZZ_IMG2SIXEL_EMBED_SOURCES = \
+	$(top_srcdir)/converters/img2sixel.c \
+	$(top_srcdir)/converters/completion_utils.c \
+	$(top_srcdir)/converters/compat.c \
+	$(top_srcdir)/converters/path.c \
+	$(top_srcdir)/converters/cli.c \
+	$(top_srcdir)/converters/malloc_stub.c \
+	$(top_srcdir)/converters/aborttrace.c
+FUZZ_IMG2SIXEL_EMBED_LIBS = $(top_builddir)/src/libsixel.la $(LIBS)
+if HAVE_ABORT_TRACE
+FUZZ_IMG2SIXEL_EMBED_LIBS += $(ABORTTRACE_LIBS)
+endif
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
 FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
@@ -147,6 +175,24 @@ $(FUZZ_IMG2SIXEL_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-afl-persistent.c
 		-I$(top_srcdir)/include \
 		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-afl-persistent.c" \
 		$(top_builddir)/src/libsixel.la $(LIBS)
+
+$(FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-parser-afl-persistent.c $(FUZZ_IMG2SIXEL) $(top_builddir)/src/libsixel.la
+	@set -eu; \
+	mkdir -p "$(dir $@)"; \
+	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
+		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
+		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-parser-afl-persistent.c" \
+		$(FUZZ_IMG2SIXEL_EMBED_SOURCES) \
+		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
+
+$(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c $(FUZZ_IMG2SIXEL) $(top_builddir)/src/libsixel.la
+	@set -eu; \
+	mkdir -p "$(dir $@)"; \
+	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
+		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
+		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c" \
+		$(FUZZ_IMG2SIXEL_EMBED_SOURCES) \
+		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
 
 fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 	@set -eu; \
@@ -199,14 +245,14 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 			-- \
 			"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@; \
 	fi; \
-	if [ ! -x "$(FUZZ_IMG2SIXEL_PERSISTENT)" ]; then \
-		echo "error: persistent harness was not found: $(FUZZ_IMG2SIXEL_PERSISTENT)" >&2; \
+	if [ ! -x "$(FUZZ_IMG2SIXEL_RUNNER)" ]; then \
+		echo "error: persistent harness was not found: $(FUZZ_IMG2SIXEL_RUNNER)" >&2; \
 		exit 1; \
 	fi; \
 	if [ -n "$(FUZZ_IMG2SIXEL_BASE_ARGS)" ]; then \
 		echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"; \
 	fi; \
-	echo "fuzz-cli-img2sixel: mode=persistent harness='$(FUZZ_IMG2SIXEL_PERSISTENT)'"; \
+	echo "fuzz-cli-img2sixel: mode=persistent harness='$(FUZZ_IMG2SIXEL_RUNNER)'"; \
 	if [ "$(FUZZ_TIMEOUT)" -gt 0 ]; then \
 		if ! command -v timeout >/dev/null 2>&1; then \
 			echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2; \
@@ -218,7 +264,7 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 			-i "$(FUZZ_INPUT_DIR)" \
 			-o "$(FUZZ_OUTPUT_DIR)" \
 			-- \
-			"$(FUZZ_IMG2SIXEL_PERSISTENT)"; \
+			"$(FUZZ_IMG2SIXEL_RUNNER)"; \
 		rc=$$?; \
 		set -e; \
 		if [ $$rc -eq 124 ]; then \
@@ -232,7 +278,21 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 		-i "$(FUZZ_INPUT_DIR)" \
 		-o "$(FUZZ_OUTPUT_DIR)" \
 		-- \
-		"$(FUZZ_IMG2SIXEL_PERSISTENT)"
+		"$(FUZZ_IMG2SIXEL_RUNNER)"
+
+fuzz-cli-img2sixel-parser: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT)
+	@$(MAKE) $(AM_MAKEFLAGS) fuzz-cli-img2sixel \
+		FUZZ_IMG2SIXEL_MODE='persistent' \
+		FUZZ_IMG2SIXEL_RUNNER='$(FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT)' \
+		FUZZ_OUTPUT_DIR='$(FUZZ_OUTPUT_DIR)/parser'
+
+fuzz-cli-img2sixel-boundary: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT)
+	@$(MAKE) $(AM_MAKEFLAGS) fuzz-cli-img2sixel \
+		FUZZ_IMG2SIXEL_MODE='persistent' \
+		FUZZ_IMG2SIXEL_RUNNER='$(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT)' \
+		FUZZ_OUTPUT_DIR='$(FUZZ_OUTPUT_DIR)/boundary'
+
+fuzz-cli-img2sixel-all: fuzz-cli-img2sixel fuzz-cli-img2sixel-parser fuzz-cli-img2sixel-boundary
 
 fuzz-loader-builtin:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) fuzz-loader-builtin-libfuzzer$(EXEEXT)

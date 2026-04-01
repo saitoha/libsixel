@@ -293,15 +293,16 @@ jobs:
 
   fuzz_push_cli_img2sixel:
     if: github.event_name == 'push'
-    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
+        target: [combo, parser, boundary]
     env:
       FUZZ_INPUT_DIR: ${{ github.workspace }}/fuzz/corpus/img2sixel-cli
-      FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}
+      FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
       FUZZ_TIMEOUT: 60
 
@@ -325,21 +326,28 @@ jobs:
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           mkdir -p "$FUZZ_OUTPUT_DIR"
 
+          fuzz_target='fuzz-cli-img2sixel'
+          if [ "${{ matrix.target }}" = "parser" ]; then
+            fuzz_target='fuzz-cli-img2sixel-parser'
+          elif [ "${{ matrix.target }}" = "boundary" ]; then
+            fuzz_target='fuzz-cli-img2sixel-boundary'
+          fi
+
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=afl-clang-fast CXX=afl-clang-fast++ ./configure
             make -j"$(nproc)"
-            make fuzz-cli-img2sixel
+            make "$fuzz_target"
           else
             CC=afl-clang-fast CXX=afl-clang-fast++ meson setup builddir
             meson compile -C builddir -v
-            meson compile -C builddir fuzz-cli-img2sixel
+            meson compile -C builddir "$fuzz_target"
           fi
 
       - name: Upload img2sixel CLI fuzz artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}
           if-no-files-found: ignore
           retention-days: 7
           path: |
@@ -424,11 +432,10 @@ jobs:
           set -euxo pipefail
           LLVM_PREFIX="$(brew --prefix llvm)"
           export PATH="$LLVM_PREFIX/bin:$PWD/build-aux:$PWD/bin:$PATH"
-          export CC=clang
-          export CXX=clang++
+          export CC="$LLVM_PREFIX/bin/clang"
+          export CXX="$LLVM_PREFIX/bin/clang++"
           export FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer,address,undefined"
           export FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
-          export LDFLAGS="-fuse-ld=lld -L$LLVM_PREFIX/lib ${LDFLAGS:-}"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             ./configure --enable-fuzz --with-coregraphics
@@ -530,6 +537,30 @@ jobs:
             -print0)
 
           echo "wic-corpus seed files: $(find "$FUZZ_COMPONENT_CORPUS" -type f | wc -l)"
+
+          cat > /tmp/libfuzzer_probe.c <<'EOF'
+          int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size) {
+            (void)data;
+            (void)size;
+            return 0;
+          }
+          EOF
+
+          if ! clang -x c -c /tmp/libfuzzer_probe.c \
+            -fsanitize=fuzzer-no-link,address,undefined \
+            -o /tmp/libfuzzer_probe.o > /tmp/libfuzzer_probe_compile.log 2>&1; then
+            echo "::warning::libFuzzer compile flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
+            sed -n '1,80p' /tmp/libfuzzer_probe_compile.log || true
+            exit 0
+          fi
+
+          if ! clang -x c /tmp/libfuzzer_probe.c \
+            -fsanitize=fuzzer,address,undefined \
+            -o /tmp/libfuzzer_probe.exe > /tmp/libfuzzer_probe_link.log 2>&1; then
+            echo "::warning::libFuzzer link flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
+            sed -n '1,80p' /tmp/libfuzzer_probe_link.log || true
+            exit 0
+          fi
 
           CC=clang CXX=clang++ meson setup builddir -Dfuzz=true -Dwic=enabled
           meson compile -C builddir -v fuzz-run-loader-wic

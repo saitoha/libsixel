@@ -61,6 +61,8 @@ endif
 endif
 
 EXTRA_DIST = \
+    fuzz-img2sixel-cli-parser-afl-persistent.c \
+    fuzz-img2sixel-cli-boundary-afl-persistent.c \
     fuzz-img2sixel-afl-persistent.c \
     corpus/img2sixel-cli/seed-lzw-cs0.gif \
     corpus/img2sixel-cli/seed-min.hdr \

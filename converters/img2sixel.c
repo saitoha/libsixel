@@ -2044,7 +2044,7 @@ typedef struct img2sixel_parsed_option {
 } img2sixel_parsed_option_t;
 
 int
-main(int argc, char *argv[])
+img2sixel_main(int argc, char *argv[])
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
@@ -2448,6 +2448,14 @@ end:
                                  exit_code);
     return exit_code;
 }
+
+#if !defined(LIBSIXEL_IMG2SIXEL_EMBEDDED)
+int
+main(int argc, char *argv[])
+{
+    return img2sixel_main(argc, argv);
+}
+#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
