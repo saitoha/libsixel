@@ -23,33 +23,43 @@ expected_sequence="0:0
 1:0
 1:1"
 
-actual_sequence=$(
+trace_log=$(
     set +xv
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode \
         -Llibpng! -lauto -g \
-        "${image_apng}" -o/dev/null 2>&1 \
-        | awk '/callback frame_no=.*handoff=/ {
-            frame_no = $0
-            sub(/^.*frame_no=/, "", frame_no)
-            sub(/ .*/, "", frame_no)
-            loop_no = $0
-            sub(/^.*loop_no=/, "", loop_no)
-            sub(/ .*/, "", loop_no)
-            sub(/\r$/, "", frame_no)
-            sub(/\r$/, "", loop_no)
-            if (sequence != "") {
-                sequence = sequence "\n"
-            }
-            sequence = sequence loop_no ":" frame_no
-        }
-        END {
-            printf "%s", sequence
-        }'
+        "${image_apng}" -o/dev/null 2>&1
 ) || {
     echo "not ok" 1 - "libpng APNG trace run failed"
     exit 0
 }
+
+actual_sequence=""
+old_ifs=${IFS}
+IFS='
+'
+set -f
+for line in ${trace_log}; do
+    case "${line}" in
+        *"callback frame_no="*"handoff="*)
+            frame_part=${line#*frame_no=}
+            frame_no=${frame_part%% *}
+            loop_part=${line#*loop_no=}
+            loop_no=${loop_part%% *}
+            case "${actual_sequence}" in
+                "")
+                    actual_sequence="${loop_no}:${frame_no}"
+                    ;;
+                *)
+                    actual_sequence="${actual_sequence}
+${loop_no}:${frame_no}"
+                    ;;
+            esac
+            ;;
+    esac
+done
+set +f
+IFS=${old_ifs}
 
 test "${actual_sequence}" = "${expected_sequence}" || {
     echo "not ok" 1 - "libpng APNG frame_no sequence mismatch"
