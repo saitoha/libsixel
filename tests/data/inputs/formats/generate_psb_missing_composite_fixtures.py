@@ -637,6 +637,18 @@ def main() -> None:
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_malformed_resource.psd",
     )
     convert_fixture(
+        "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
+    )
+    convert_fixture(
+        "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_malformed.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_malformed.psd",
+    )
+    convert_fixture(
+        "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_malformed.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_malformed.psd",
+    )
+    convert_fixture(
         "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_invalid_payload.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_fill_soco_descriptor_invalid_payload.psd",
     )
