@@ -7429,7 +7429,9 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     char *template_path;
     size_t template_capacity;
     int open_flags;
+#if defined(O_EXCL) && !defined(_MSC_VER)
     int retry_flags;
+#endif
     int open_attempt;
     int open_errno;
     int fd;
@@ -7439,7 +7441,9 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     template_path = NULL;
     template_capacity = 0u;
     open_flags = 0;
+#if defined(O_EXCL) && !defined(_MSC_VER)
     retry_flags = 0;
+#endif
     fd = (-1);
     tmpname_result = NULL;
 
@@ -7472,7 +7476,9 @@ clipboard_create_spool(sixel_allocator_t *allocator,
 #if defined(O_BINARY)
     open_flags |= O_BINARY;
 #endif
+#if defined(O_EXCL) && !defined(_MSC_VER)
     retry_flags = open_flags;
+#endif
     /*
      * MSVC reports spurious failures with O_EXCL on temp paths produced by
      * _mktemp_s(), so keep temp spool creation on O_CREAT|O_TRUNC there.
@@ -7787,7 +7793,9 @@ sixel_encoder_encode(
     size_t png_temp_capacity = 0u;
     char *png_tmpnam_result = NULL;
     int png_open_flags = 0;
+#if defined(O_EXCL) && !defined(_MSC_VER)
     int png_retry_flags = 0;
+#endif
     int png_open_attempt;
     int png_open_errno;
     sixel_clipboard_spec_t clipboard_spec;
@@ -7972,9 +7980,7 @@ sixel_encoder_encode(
          */
 #if defined(O_EXCL) && !defined(_MSC_VER)
         png_open_flags |= O_EXCL;
-#endif
         png_retry_flags = png_open_flags;
-#if defined(O_EXCL) && !defined(_MSC_VER)
         png_retry_flags &= ~O_EXCL;
 #endif
         png_open_errno = 0;
