@@ -96,16 +96,17 @@ host_triplet = @host@
 @HAVE_WICCODEC_TRUE@am__append_5 = wic
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_6 = quicklook-extension
 @COND_FUZZ_TRUE@am__append_7 = fuzz
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_8 = all-gdk-pixbuf-loader
+@HAVE_ABORT_TRACE_TRUE@am__append_8 = $(ABORTTRACE_LIBS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_9 = all-gdk-pixbuf-loader
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_10 = all-quicklook-extension
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_10 = all-gdk-pixbuf-loader
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_11 = all-quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_12 = all-wic
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_12 = all-quicklook-extension
 @HAVE_WICCODEC_TRUE@am__append_13 = all-wic
-@HAVE_RUBY_TRUE@am__append_14 = all-ruby
+@HAVE_WICCODEC_TRUE@am__append_14 = all-wic
 @HAVE_RUBY_TRUE@am__append_15 = all-ruby
-@HAVE_PHP_TRUE@am__append_16 = all-php
+@HAVE_RUBY_TRUE@am__append_16 = all-ruby
 @HAVE_PHP_TRUE@am__append_17 = all-php
+@HAVE_PHP_TRUE@am__append_18 = all-php
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -577,6 +578,29 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 # Accept both explicit jobs options and GNU make jobserver tokens.
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
 AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
+FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
+	-DHAVE_CONFIG_H \
+	-DBUILD_IMG2SIXEL \
+	-DHAVE_COMPLETION_EMBED_H \
+	-DLIBSIXEL_IMG2SIXEL_EMBEDDED \
+	-I$(top_builddir) \
+	-I$(top_srcdir) \
+	-I$(top_builddir)/converters \
+	-I$(top_srcdir)/converters \
+	-I$(top_builddir)/include \
+	-I$(top_srcdir)/include
+
+FUZZ_IMG2SIXEL_EMBED_SOURCES = \
+	$(top_srcdir)/converters/img2sixel.c \
+	$(top_srcdir)/converters/completion_utils.c \
+	$(top_srcdir)/converters/compat.c \
+	$(top_srcdir)/converters/path.c \
+	$(top_srcdir)/converters/cli.c \
+	$(top_srcdir)/converters/malloc_stub.c \
+	$(top_srcdir)/converters/aborttrace.c
+
+FUZZ_IMG2SIXEL_EMBED_LIBS = $(top_builddir)/src/libsixel.la $(LIBS) \
+	$(am__append_8)
 FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
 FUZZ_STRUCT_TARGETS = \
 	png-chunk \
@@ -596,11 +620,11 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = ltmain.sh $(builddir)/package.json $(builddir)/*.log
 PHASE2_ALL_TARGETS = all-converters-objs all-assessment-objs all-tools \
-	all-python $(am__append_8) $(am__append_10) $(am__append_12) \
-	$(am__append_14) $(am__append_16)
-PHASE3_ALL_TARGETS = all-converters all-assessment all-tools \
 	all-python $(am__append_9) $(am__append_11) $(am__append_13) \
 	$(am__append_15) $(am__append_17)
+PHASE3_ALL_TARGETS = all-converters all-assessment all-tools \
+	all-python $(am__append_10) $(am__append_12) $(am__append_14) \
+	$(am__append_16) $(am__append_18)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1189,27 +1213,6 @@ FUZZ_IMG2SIXEL_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-afl-persist
 FUZZ_IMG2SIXEL_RUNNER ?= $(FUZZ_IMG2SIXEL_PERSISTENT)
 FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-parser-afl-persistent$(EXEEXT)
 FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-boundary-afl-persistent$(EXEEXT)
-FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
-	-DHAVE_CONFIG_H \
-	-DBUILD_IMG2SIXEL \
-	-DHAVE_COMPLETION_EMBED_H \
-	-DLIBSIXEL_IMG2SIXEL_EMBEDDED \
-	-I$(top_builddir) \
-	-I$(top_srcdir) \
-	-I$(top_builddir)/converters \
-	-I$(top_srcdir)/converters \
-	-I$(top_builddir)/include \
-	-I$(top_srcdir)/include
-FUZZ_IMG2SIXEL_EMBED_SOURCES = \
-	$(top_srcdir)/converters/img2sixel.c \
-	$(top_srcdir)/converters/completion_utils.c \
-	$(top_srcdir)/converters/compat.c \
-	$(top_srcdir)/converters/path.c \
-	$(top_srcdir)/converters/cli.c \
-	$(top_srcdir)/converters/malloc_stub.c \
-	$(top_srcdir)/converters/aborttrace.c
-FUZZ_IMG2SIXEL_EMBED_LIBS = $(top_builddir)/src/libsixel.la $(LIBS)
-@HAVE_ABORT_TRACE_TRUE@FUZZ_IMG2SIXEL_EMBED_LIBS += $(ABORTTRACE_LIBS)
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
 FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
