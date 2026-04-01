@@ -3418,6 +3418,27 @@ sixel_builtin_psd_parse_tysh_payload(
 }
 
 static int
+sixel_builtin_psd_tysh_payload_looks_wrapped(
+    unsigned char const *data,
+    size_t key_length)
+{
+    size_t cursor;
+
+    cursor = 0u;
+    if (data == NULL || key_length < 56u) {
+        return 0;
+    }
+    if (sixel_builtin_read_u32be_size(data) != 1u) {
+        return 0;
+    }
+    cursor = 4u + 48u;  /* version + matrix */
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_fill_payload_sxfl(
     char const key[5],
     unsigned char const *data,
@@ -4113,6 +4134,11 @@ sixel_builtin_psd_parse_layer_extra_data(
                 layer);
             if (parsed_fill != 0) {
                 layer->has_fill_payload = 1;
+            } else if (sixel_builtin_psd_tysh_payload_looks_wrapped(
+                           buffer + cursor,
+                           key_length)) {
+                layer->has_fill_payload = 1;
+                layer->has_malformed_fill_payload = 1;
             }
         } else if (memcmp(key, "SoCo", 4u) == 0 ||
                    memcmp(key, "GdFl", 4u) == 0 ||
