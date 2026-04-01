@@ -249,6 +249,7 @@ load_with_wic(
     int                     start_frame_no;
     int                     resolved_start_frame_no;
     int                     frame_count_int;
+    char const             *additional_message;
 
     set_palette = 0;
     selected_frame_index = 0;
@@ -650,8 +651,12 @@ load_with_wic(
 
         status = fn_load(frame, context);
         if (SIXEL_FAILED(status)) {
-            sixel_helper_set_additional_message(
-                "load_with_wic: frame callback returned failure.");
+            additional_message = sixel_helper_get_additional_message();
+            if (additional_message == NULL ||
+                additional_message[0] == '\0') {
+                sixel_helper_set_additional_message(
+                    "load_with_wic: frame callback returned failure.");
+            }
             hr = E_FAIL;
             goto end;
         }
@@ -725,7 +730,8 @@ end:
     CoUninitialize();
 
     if (FAILED(hr)) {
-        if (sixel_helper_get_additional_message() == NULL) {
+        additional_message = sixel_helper_get_additional_message();
+        if (additional_message == NULL || additional_message[0] == '\0') {
             sixel_helper_set_additional_message(
                 "load_with_wic: unexpected WIC backend failure.");
         }
