@@ -291,6 +291,60 @@ jobs:
             ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
             ${{ env.FUZZ_BUILTIN_CORPUS }}
 
+  fuzz_push_cli_img2sixel:
+    if: github.event_name == 'push'
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtool: [autotools, meson]
+    env:
+      FUZZ_INPUT_DIR: ${{ github.workspace }}/fuzz/corpus/img2sixel-cli
+      FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}
+      FUZZ_AFL: afl-fuzz
+      FUZZ_TIMEOUT: 60
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            afl++ clang meson ninja-build autoconf automake libtool pkg-config make
+
+      - name: Build and run img2sixel CLI fuzz target
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          mkdir -p "$FUZZ_OUTPUT_DIR"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            CC=afl-clang-fast CXX=afl-clang-fast++ ./configure
+            make -j"$(nproc)"
+            make fuzz-cli-img2sixel
+          else
+            CC=afl-clang-fast CXX=afl-clang-fast++ meson setup builddir
+            meson compile -C builddir -v
+            meson compile -C builddir fuzz-cli-img2sixel
+          fi
+
+      - name: Upload img2sixel CLI fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ env.FUZZ_OUTPUT_DIR }}
+
   fuzz_push_loader_coregraphics:
     if: github.event_name == 'push'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics

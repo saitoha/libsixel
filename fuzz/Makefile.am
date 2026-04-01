@@ -61,6 +61,19 @@ endif
 endif
 
 EXTRA_DIST = \
+    fuzz-img2sixel-afl-persistent.c \
+    corpus/img2sixel-cli/seed-lzw-cs0.gif \
+    corpus/img2sixel-cli/seed-min.hdr \
+    corpus/img2sixel-cli/seed-min.psd \
+    corpus/img2sixel-cli/seed-min.six \
+    corpus/img2sixel-cli/seed-overflow.p3 \
+    corpus/img2sixel-cli/seed-pal8.bmp \
+    corpus/img2sixel-cli/seed-progressive.jpg \
+    corpus/img2sixel-cli/seed-rgba.png \
+    corpus/img2sixel-cli/seed-short.bin \
+    corpus/img2sixel-cli/seed-snake64.pbm \
+    corpus/img2sixel-cli/seed-static.gif \
+    corpus/img2sixel-cli/seed-truncated.pic \
     fuzz-loader-builtin-libfuzzer.c \
     fuzz-loader-component-libfuzzer.c \
     fuzz-loader-builtin-struct-common.h \

@@ -101,10 +101,10 @@ if [ "${FUZZ_IMG2SIXEL_BASE_ARGS:-}" != "" ]; then
 fi
 
 if [ $((b0 % 2)) -eq 0 ]; then
-    set -- "$@" --center
+    set -- "$@" --select-color=center
 fi
 if [ $((b1 % 2)) -eq 0 ]; then
-    set -- "$@" --pipe-mode
+    set -- "$@" --invert
 fi
 if [ $((b2 % 2)) -eq 0 ]; then
     set -- "$@" --ignore-delay

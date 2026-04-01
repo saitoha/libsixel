@@ -59,18 +59,33 @@ if img2sixel_opt.enabled()
       build_rpath: src_build_dir,
       install: true)
   endif
-  img2sixel_deps = [img2sixel_exe]
+  img2sixel_fuzz_harness = executable('fuzz-img2sixel-afl-persistent',
+    ['../fuzz/fuzz-img2sixel-afl-persistent.c'],
+    c_args: libsixel_posix_defs,
+    objc_args: libsixel_posix_defs,
+    dependencies: [libsixel_dep],
+    include_directories: [project_inc],
+    build_rpath: src_build_dir,
+    install: false)
+
+  img2sixel_deps = [img2sixel_exe, img2sixel_fuzz_harness]
 
   run_target('fuzz-cli-img2sixel',
     command: [sh, '-c', '''
 set -eu
 
-img2sixel="$1"
-source_root="$2"
-build_root="$3"
+harness="$1"
+img2sixel="$2"
+source_root="$3"
+build_root="$4"
 fuzz_afl="${FUZZ_AFL:-afl-fuzz}"
 fuzz_timeout="${FUZZ_TIMEOUT:-0}"
-input_dir="${FUZZ_INPUT_DIR:-$source_root/images}"
+mode="${FUZZ_IMG2SIXEL_MODE:-persistent}"
+default_input_dir="$source_root/fuzz/corpus/img2sixel-cli"
+if test ! -d "$default_input_dir"; then
+  default_input_dir="$source_root/images"
+fi
+input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
 output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel}"
 base_args="${FUZZ_IMG2SIXEL_BASE_ARGS:-}"
 wrapper="$source_root/tools/fuzz-img2sixel-cli.sh"
@@ -80,35 +95,48 @@ if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
   exit 1
 fi
 
-if test ! -x "$img2sixel"; then
-  echo "error: img2sixel binary was not found: $img2sixel" >&2
-  exit 1
-fi
-
-if test ! -r "$wrapper"; then
-  echo "error: fuzz wrapper is missing: $wrapper" >&2
+if test ! -d "$input_dir"; then
+  echo "error: fuzz input directory was not found: $input_dir" >&2
   exit 1
 fi
 
 mkdir -p "$output_dir"
-echo "fuzz-cli-img2sixel: base args='$base_args'"
-export FUZZ_IMG2SIXEL="$img2sixel"
-export FUZZ_IMG2SIXEL_BASE_ARGS="$base_args"
 
-set -- "$fuzz_afl"
-set -- "$@" -i "$input_dir"
-set -- "$@" -o "$output_dir"
-set -- "$@" --
-set -- "$@" "$wrapper" @@
+if test "$mode" = "legacy"; then
+  if test ! -x "$img2sixel"; then
+    echo "error: img2sixel binary was not found: $img2sixel" >&2
+    exit 1
+  fi
 
-set -- "$fuzz_afl"
-set -- "$@" -i "$input_dir"
-set -- "$@" -o "$output_dir"
-set -- "$@" --
-set -- "$@" env
-set -- "$@" FUZZ_IMG2SIXEL="$img2sixel"
-set -- "$@" FUZZ_IMG2SIXEL_BASE_ARGS="$base_args"
-set -- "$@" "$wrapper" @@
+  if test ! -r "$wrapper"; then
+    echo "error: fuzz wrapper is missing: $wrapper" >&2
+    exit 1
+  fi
+
+  echo "fuzz-cli-img2sixel: mode=legacy base args='$base_args'"
+  set -- "$fuzz_afl"
+  set -- "$@" -i "$input_dir"
+  set -- "$@" -o "$output_dir"
+  set -- "$@" --
+  set -- "$@" env
+  set -- "$@" FUZZ_IMG2SIXEL="$img2sixel"
+  set -- "$@" FUZZ_IMG2SIXEL_BASE_ARGS="$base_args"
+  set -- "$@" "$wrapper" @@
+else
+  if test ! -x "$harness"; then
+    echo "error: persistent harness was not found: $harness" >&2
+    exit 1
+  fi
+  if test -n "$base_args"; then
+    echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"
+  fi
+  echo "fuzz-cli-img2sixel: mode=persistent harness='$harness'"
+  set -- "$fuzz_afl"
+  set -- "$@" -i "$input_dir"
+  set -- "$@" -o "$output_dir"
+  set -- "$@" --
+  set -- "$@" "$harness"
+fi
 
 if test "$fuzz_timeout" -gt 0; then
   if ! command -v timeout >/dev/null 2>&1; then
@@ -131,10 +159,11 @@ echo "Running img2sixel fuzzing without timeout"
 exec "$@"
 ''',
               'sh',
+              img2sixel_fuzz_harness.full_path(),
               img2sixel_exe.full_path(),
               meson.project_source_root(),
               meson.project_build_root()],
-    depends: [img2sixel_exe])
+    depends: [img2sixel_fuzz_harness, img2sixel_exe])
 
   if shebang_enabled
     shebang_targets += [custom_target('img2sixel_shebang',

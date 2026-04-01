@@ -106,10 +106,12 @@ endif
 
 FUZZ_AFL ?= afl-fuzz
 FUZZ_TIMEOUT ?= 0
-FUZZ_INPUT_DIR ?= $(top_srcdir)/images
+FUZZ_INPUT_DIR ?= $(top_srcdir)/fuzz/corpus/img2sixel-cli
 FUZZ_OUTPUT_DIR ?= $(abs_top_builddir)/afl-out/img2sixel
 FUZZ_IMG2SIXEL ?= $(abs_top_builddir)/converters/img2sixel$(EXEEXT)
 FUZZ_IMG2SIXEL_BASE_ARGS ?=
+FUZZ_IMG2SIXEL_MODE ?= persistent
+FUZZ_IMG2SIXEL_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-afl-persistent$(EXEEXT)
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
 FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
@@ -137,25 +139,74 @@ uninstall-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
 	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
 
-fuzz-cli-img2sixel: all
+$(FUZZ_IMG2SIXEL_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-afl-persistent.c $(top_builddir)/src/libsixel.la
+	@set -eu; \
+	mkdir -p "$(dir $@)"; \
+	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
+		-I$(top_builddir)/include \
+		-I$(top_srcdir)/include \
+		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-afl-persistent.c" \
+		$(top_builddir)/src/libsixel.la $(LIBS)
+
+fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 	@set -eu; \
 	if ! command -v "$(FUZZ_AFL)" >/dev/null 2>&1; then \
 		echo "error: $(FUZZ_AFL) is not installed" >&2; \
 		exit 1; \
 	fi; \
-	if [ ! -x "$(FUZZ_IMG2SIXEL)" ]; then \
-		echo "error: img2sixel binary was not found: $(FUZZ_IMG2SIXEL)" >&2; \
-		exit 1; \
-	fi; \
-	if [ ! -r "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" ]; then \
-		echo "error: fuzz wrapper is missing: tools/fuzz-img2sixel-cli.sh" >&2; \
+	if [ ! -d "$(FUZZ_INPUT_DIR)" ]; then \
+		echo "error: fuzz input directory was not found: $(FUZZ_INPUT_DIR)" >&2; \
 		exit 1; \
 	fi; \
 	mkdir -p "$(FUZZ_OUTPUT_DIR)"; \
-	echo "fuzz-cli-img2sixel: base args='$(FUZZ_IMG2SIXEL_BASE_ARGS)'"; \
-	FUZZ_IMG2SIXEL="$(FUZZ_IMG2SIXEL)"; \
-	FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)"; \
-	export FUZZ_IMG2SIXEL FUZZ_IMG2SIXEL_BASE_ARGS; \
+	if [ "$(FUZZ_IMG2SIXEL_MODE)" = "legacy" ]; then \
+		if [ ! -x "$(FUZZ_IMG2SIXEL)" ]; then \
+			echo "error: img2sixel binary was not found: $(FUZZ_IMG2SIXEL)" >&2; \
+			exit 1; \
+		fi; \
+		if [ ! -r "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" ]; then \
+			echo "error: fuzz wrapper is missing: tools/fuzz-img2sixel-cli.sh" >&2; \
+			exit 1; \
+		fi; \
+		echo "fuzz-cli-img2sixel: mode=legacy base args='$(FUZZ_IMG2SIXEL_BASE_ARGS)'"; \
+		FUZZ_IMG2SIXEL="$(FUZZ_IMG2SIXEL)"; \
+		FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)"; \
+		export FUZZ_IMG2SIXEL FUZZ_IMG2SIXEL_BASE_ARGS; \
+		if [ "$(FUZZ_TIMEOUT)" -gt 0 ]; then \
+			if ! command -v timeout >/dev/null 2>&1; then \
+				echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2; \
+				exit 1; \
+			fi; \
+			echo "Running img2sixel fuzzing for $(FUZZ_TIMEOUT)s"; \
+			set +e; \
+			timeout "$(FUZZ_TIMEOUT)" "$(FUZZ_AFL)" \
+				-i "$(FUZZ_INPUT_DIR)" \
+				-o "$(FUZZ_OUTPUT_DIR)" \
+				-- \
+				"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@; \
+			rc=$$?; \
+			set -e; \
+			if [ $$rc -eq 124 ]; then \
+				echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=$(FUZZ_TIMEOUT)s"; \
+				exit 0; \
+			fi; \
+			exit $$rc; \
+		fi; \
+		echo "Running img2sixel fuzzing without timeout"; \
+		exec "$(FUZZ_AFL)" \
+			-i "$(FUZZ_INPUT_DIR)" \
+			-o "$(FUZZ_OUTPUT_DIR)" \
+			-- \
+			"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@; \
+	fi; \
+	if [ ! -x "$(FUZZ_IMG2SIXEL_PERSISTENT)" ]; then \
+		echo "error: persistent harness was not found: $(FUZZ_IMG2SIXEL_PERSISTENT)" >&2; \
+		exit 1; \
+	fi; \
+	if [ -n "$(FUZZ_IMG2SIXEL_BASE_ARGS)" ]; then \
+		echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"; \
+	fi; \
+	echo "fuzz-cli-img2sixel: mode=persistent harness='$(FUZZ_IMG2SIXEL_PERSISTENT)'"; \
 	if [ "$(FUZZ_TIMEOUT)" -gt 0 ]; then \
 		if ! command -v timeout >/dev/null 2>&1; then \
 			echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2; \
@@ -167,7 +218,7 @@ fuzz-cli-img2sixel: all
 			-i "$(FUZZ_INPUT_DIR)" \
 			-o "$(FUZZ_OUTPUT_DIR)" \
 			-- \
-			"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@; \
+			"$(FUZZ_IMG2SIXEL_PERSISTENT)"; \
 		rc=$$?; \
 		set -e; \
 		if [ $$rc -eq 124 ]; then \
@@ -177,11 +228,11 @@ fuzz-cli-img2sixel: all
 		exit $$rc; \
 	fi; \
 	echo "Running img2sixel fuzzing without timeout"; \
-	"$(FUZZ_AFL)" \
+	exec "$(FUZZ_AFL)" \
 		-i "$(FUZZ_INPUT_DIR)" \
 		-o "$(FUZZ_OUTPUT_DIR)" \
 		-- \
-		"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@
+		"$(FUZZ_IMG2SIXEL_PERSISTENT)"
 
 fuzz-loader-builtin:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) fuzz-loader-builtin-libfuzzer$(EXEEXT)
