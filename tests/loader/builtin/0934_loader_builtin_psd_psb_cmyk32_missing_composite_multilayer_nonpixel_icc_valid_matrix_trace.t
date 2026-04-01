@@ -12,6 +12,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+test "${HAVE_LCMS2-}" = 1 || {
+    printf "1..0 # SKIP lcms2 support is disabled in this build\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 
