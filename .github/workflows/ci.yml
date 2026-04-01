@@ -2457,6 +2457,74 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+
+  coverage-autotools-cygwin64-msvc:
+    needs: [smoke]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-cygwin64-msvc-coverage
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-gcov
+            extra_packages: >-
+              make
+              lcov
+            exec_type: cygwin
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
   core-autotools-ubuntu:
     needs: [coverage-autotools]
     name: ${{ matrix.label }}
@@ -3547,7 +3615,7 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   coveralls:
-    needs: [coverage-autotools, coverage-meson, emscripten-coverage, python-coverage, ruby-coverage, perl-coverage, php-coverage]
+    needs: [coverage-autotools, coverage-meson, coverage-autotools-cygwin64-msvc, emscripten-coverage, python-coverage, ruby-coverage, perl-coverage, php-coverage]
     runs-on: ubuntu-latest
     steps:
       - name: Finalize Coveralls
