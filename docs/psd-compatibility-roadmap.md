@@ -162,6 +162,9 @@ Key points used by this roadmap:
       `CMYK16/32` avoid malformed-resource misclassification), and
     - malformed resource rotation contract (deterministic malformed-resource
       trace with decode success).
+  - PSB missing-composite non-pixel decode coverage also includes
+    TySh EngineData `FillColor [...]` no-pixel fallback surfaces for
+    native CMYK8 and mode7-mapped CMYK8 paths.
   - descriptor malformed regression now includes:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
