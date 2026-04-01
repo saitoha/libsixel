@@ -11,20 +11,9 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size)
   return 0;
 }
 '''
-fuzz_mode_candidates = []
-if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
-  fuzz_mode_candidates += [
-    ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
-    ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
-  ]
-else
-  fuzz_mode_candidates += [
-    ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
-    ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
-  ]
-endif
-
-fuzz_mode_candidates += [
+fuzz_mode_candidates = [
+  ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+  ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
   ['-fsanitize=fuzzer-no-link', '-fsanitize=fuzzer'],
   ['-fsanitize=fuzzer', '-fsanitize=fuzzer'],
 ]

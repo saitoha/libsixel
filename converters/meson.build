@@ -62,16 +62,13 @@ if img2sixel_opt.enabled()
   endif
   img2sixel_deps = [img2sixel_exe]
 
-  img2sixel_cli_fuzz_supported = false
-  if fuzz_enabled
-    # The AFL persistent CLI harnesses depend on POSIX process-environment
-    # APIs (setenv/unsetenv). Some Windows toolchains (for example
-    # x86_64-w64-windows-gnu) do not provide these symbols.
-    img2sixel_cli_fuzz_supported = cc.has_function('setenv',
-      prefix: '#include <stdlib.h>')
-    if not img2sixel_cli_fuzz_supported
-      message('img2sixel AFL persistent CLI harnesses are disabled: setenv() is unavailable on this toolchain')
-    endif
+  # The AFL persistent CLI harnesses depend on POSIX process-environment
+  # APIs (setenv/unsetenv). Some Windows toolchains (for example
+  # x86_64-w64-windows-gnu) do not provide these symbols.
+  img2sixel_cli_fuzz_supported = cc.has_function('setenv',
+    prefix: '#include <stdlib.h>')
+  if not img2sixel_cli_fuzz_supported
+    message('img2sixel AFL persistent CLI harnesses are disabled: setenv() is unavailable on this toolchain')
   endif
 
   if img2sixel_cli_fuzz_supported
@@ -82,6 +79,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep],
       include_directories: [project_inc],
       build_rpath: src_build_dir,
+      build_by_default: false,
       install: false)
 
     img2sixel_cli_parser_harness = executable('fuzz-img2sixel-cli-parser-afl-persistent',
@@ -95,6 +93,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
+      build_by_default: false,
       install: false)
 
     img2sixel_cli_boundary_harness = executable('fuzz-img2sixel-cli-boundary-afl-persistent',
@@ -108,6 +107,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
+      build_by_default: false,
       install: false)
 
     img2sixel_deps += [

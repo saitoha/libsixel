@@ -344,6 +344,16 @@ jobs:
             meson compile -C builddir "$fuzz_target"
           fi
 
+      - name: Pack img2sixel CLI fuzz artifacts
+        if: always()
+        shell: bash
+        run: |
+          set -euxo pipefail
+          archive="${FUZZ_OUTPUT_DIR}.tar.gz"
+          if [ -d "$FUZZ_OUTPUT_DIR" ]; then
+            tar -C "$FUZZ_OUTPUT_DIR" -czf "$archive" .
+          fi
+
       - name: Upload img2sixel CLI fuzz artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -352,7 +362,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
           path: |
-            ${{ env.FUZZ_OUTPUT_DIR }}
+            ${{ env.FUZZ_OUTPUT_DIR }}.tar.gz
 
   fuzz_push_loader_coregraphics:
     if: github.event_name == 'push'
@@ -435,7 +445,7 @@ jobs:
           export PATH="$LLVM_PREFIX/bin:$PWD/build-aux:$PWD/bin:$PATH"
           export CC="$LLVM_PREFIX/bin/clang"
           export CXX="$LLVM_PREFIX/bin/clang++"
-          export FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer,address,undefined"
+          export FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
           export FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then

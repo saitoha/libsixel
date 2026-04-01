@@ -1304,14 +1304,21 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 			-- \
 			"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@; \
 	fi; \
-	if [ ! -x "$(FUZZ_IMG2SIXEL_RUNNER)" ]; then \
-		echo "error: persistent harness was not found: $(FUZZ_IMG2SIXEL_RUNNER)" >&2; \
+	fuzz_runner="$(FUZZ_IMG2SIXEL_RUNNER)"; \
+	if [ -f "$$fuzz_runner" ] && head -n 1 "$$fuzz_runner" | grep -q '^#!'; then \
+		fuzz_runner_candidate="$$(dirname "$$fuzz_runner")/.libs/$$(basename "$$fuzz_runner")"; \
+		if [ -x "$$fuzz_runner_candidate" ]; then \
+			fuzz_runner="$$fuzz_runner_candidate"; \
+		fi; \
+	fi; \
+	if [ ! -x "$$fuzz_runner" ]; then \
+		echo "error: persistent harness was not found: $$fuzz_runner" >&2; \
 		exit 1; \
 	fi; \
 	if [ -n "$(FUZZ_IMG2SIXEL_BASE_ARGS)" ]; then \
 		echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"; \
 	fi; \
-	echo "fuzz-cli-img2sixel: mode=persistent harness='$(FUZZ_IMG2SIXEL_RUNNER)'"; \
+	echo "fuzz-cli-img2sixel: mode=persistent harness='$$fuzz_runner'"; \
 	if [ "$(FUZZ_TIMEOUT)" -gt 0 ]; then \
 		if ! command -v timeout >/dev/null 2>&1; then \
 			echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2; \
@@ -1319,16 +1326,16 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 		fi; \
 		echo "Running img2sixel fuzzing for $(FUZZ_TIMEOUT)s"; \
 		set +e; \
-		timeout "$(FUZZ_TIMEOUT)" "$(FUZZ_AFL)" \
-			-i "$(FUZZ_INPUT_DIR)" \
-			-o "$(FUZZ_OUTPUT_DIR)" \
-			-- \
-			"$(FUZZ_IMG2SIXEL_RUNNER)"; \
-		rc=$$?; \
-		set -e; \
-		if [ $$rc -eq 124 ]; then \
-			echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=$(FUZZ_TIMEOUT)s"; \
-			exit 0; \
+			timeout "$(FUZZ_TIMEOUT)" "$(FUZZ_AFL)" \
+				-i "$(FUZZ_INPUT_DIR)" \
+				-o "$(FUZZ_OUTPUT_DIR)" \
+				-- \
+				"$$fuzz_runner"; \
+			rc=$$?; \
+			set -e; \
+			if [ $$rc -eq 124 ]; then \
+				echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=$(FUZZ_TIMEOUT)s"; \
+				exit 0; \
 		fi; \
 		exit $$rc; \
 	fi; \
@@ -1337,7 +1344,7 @@ fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
 		-i "$(FUZZ_INPUT_DIR)" \
 		-o "$(FUZZ_OUTPUT_DIR)" \
 		-- \
-		"$(FUZZ_IMG2SIXEL_RUNNER)"
+		"$$fuzz_runner"
 
 fuzz-cli-img2sixel-parser: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT)
 	@$(MAKE) $(AM_MAKEFLAGS) fuzz-cli-img2sixel \
@@ -1376,12 +1383,14 @@ fuzz-run-loader-builtin-formats:
 	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
 
 fuzz-run-loader-coregraphics:
+	@COND_FUZZ_TRUE@$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-coregraphics \
 		FUZZ_COMPONENT_CORPUS='$(FUZZ_BUILTIN_CORPUS)/component' \
 		FUZZ_COMPONENT_ARGS='$(FUZZ_BUILTIN_ARGS)'
 	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
 
 fuzz-run-loader-wic:
+	@COND_FUZZ_TRUE@$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-wic \
 		FUZZ_COMPONENT_CORPUS='$(FUZZ_BUILTIN_CORPUS)/component' \
 		FUZZ_COMPONENT_ARGS='$(FUZZ_BUILTIN_ARGS)'

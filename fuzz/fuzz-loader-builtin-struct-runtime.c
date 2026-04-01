@@ -26,7 +26,7 @@
 # define FUZZ_LOADER_COMPONENT_NAME "builtin"
 #endif
 
-static char const g_loader_component_name[] = FUZZ_LOADER_COMPONENT_NAME;
+static char const *const g_loader_component_name = FUZZ_LOADER_COMPONENT_NAME;
 
 static sixel_allocator_t *g_allocator = NULL;
 static sixel_loader_factory_t *g_factory = NULL;
