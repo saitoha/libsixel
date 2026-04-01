@@ -22,6 +22,12 @@
 
 #include "fuzz-loader-builtin-struct-common.h"
 
+#ifndef FUZZ_LOADER_COMPONENT_NAME
+# define FUZZ_LOADER_COMPONENT_NAME "builtin"
+#endif
+
+static char const g_loader_component_name[] = FUZZ_LOADER_COMPONENT_NAME;
+
 static sixel_allocator_t *g_allocator = NULL;
 static sixel_loader_factory_t *g_factory = NULL;
 static sixel_loader_component_t *g_component = NULL;
@@ -169,7 +175,7 @@ fuzz_loader_builtin_runtime_init(void)
     }
 
     status = loader_factory_create_component(g_factory,
-                                             "builtin",
+                                             g_loader_component_name,
                                              g_allocator,
                                              &g_component);
     if (SIXEL_FAILED(status)) {

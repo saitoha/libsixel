@@ -661,6 +661,8 @@ HAVE_WICCODEC_FALSE
 HAVE_WICCODEC_TRUE
 HAVE_WIC_FALSE
 HAVE_WIC_TRUE
+HAVE_COREGRAPHICS_FALSE
+HAVE_COREGRAPHICS_TRUE
 HAVE_PNG_FALSE
 HAVE_PNG_TRUE
 HAVE_JPEG_FALSE
@@ -29454,6 +29456,14 @@ else
   HAVE_PNG_FALSE=
 fi
 
+ if test x$have_coregraphics = xyes; then
+  HAVE_COREGRAPHICS_TRUE=
+  HAVE_COREGRAPHICS_FALSE='#'
+else
+  HAVE_COREGRAPHICS_TRUE='#'
+  HAVE_COREGRAPHICS_FALSE=
+fi
+
  if test x$have_wic = xyes; then
   HAVE_WIC_TRUE=
   HAVE_WIC_FALSE='#'
@@ -29796,6 +29806,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PNG_TRUE}" && test -z "${HAVE_PNG_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_COREGRAPHICS_TRUE}" && test -z "${HAVE_COREGRAPHICS_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_COREGRAPHICS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_WIC_TRUE}" && test -z "${HAVE_WIC_FALSE}"; then

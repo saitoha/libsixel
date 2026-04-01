@@ -81,6 +81,8 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
 	fuzz-cli-img2sixel fuzz-loader-builtin fuzz-run-loader-builtin \
 	fuzz-run-loader-builtin-formats \
+	fuzz-run-loader-coregraphics \
+	fuzz-run-loader-wic \
 	fuzz-run-struct-push-set \
 	fuzz-run-struct-full-set \
 	check-python check-ruby check-perl check-php
@@ -199,6 +201,18 @@ fuzz-run-loader-builtin-formats:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-builtin-formats \
 		FUZZ_BUILTIN_CORPUS='$(FUZZ_BUILTIN_CORPUS)' \
 		FUZZ_BUILTIN_ARGS='$(FUZZ_BUILTIN_ARGS)'
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-loader-coregraphics:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-coregraphics \
+		FUZZ_COMPONENT_CORPUS='$(FUZZ_BUILTIN_CORPUS)/component' \
+		FUZZ_COMPONENT_ARGS='$(FUZZ_BUILTIN_ARGS)'
+	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
+
+fuzz-run-loader-wic:
+	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) run-loader-wic \
+		FUZZ_COMPONENT_CORPUS='$(FUZZ_BUILTIN_CORPUS)/component' \
+		FUZZ_COMPONENT_ARGS='$(FUZZ_BUILTIN_ARGS)'
 	@@COND_FUZZ_FALSE@{ echo "error: fuzz targets are disabled. reconfigure with --enable-fuzz" >&2; exit 1; }
 
 fuzz-run-struct-%:

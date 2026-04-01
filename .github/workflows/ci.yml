@@ -291,6 +291,207 @@ jobs:
             ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
             ${{ env.FUZZ_BUILTIN_CORPUS }}
 
+  fuzz_push_loader_coregraphics:
+    if: github.event_name == 'push'
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtool: [autotools, meson]
+    env:
+      FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/coregraphics
+      FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=60 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
+
+    steps:
+      - name: Disable Spotlight (macOS)
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          brew update
+          brew install llvm meson ninja autoconf automake libtool pkg-config
+
+      - name: Restore coregraphics fuzz corpus cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.FUZZ_COMPONENT_CORPUS }}
+          key: fuzz-corpus-loader-coregraphics-push-${{ matrix.buildtool }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            fuzz-corpus-loader-coregraphics-push-${{ matrix.buildtool }}-${{ github.ref_name }}-
+            fuzz-corpus-loader-coregraphics-push-${{ matrix.buildtool }}-
+            fuzz-corpus-loader-coregraphics-${{ matrix.buildtool }}-
+
+      - name: Seed coregraphics fuzz corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FUZZ_COMPONENT_CORPUS" "$FUZZ_COMPONENT_ARTIFACT_DIR"
+
+          if test -d fuzz/images; then
+            cp -a fuzz/images/. "$FUZZ_COMPONENT_CORPUS/" || true
+          fi
+          cp -a images/. "$FUZZ_COMPONENT_CORPUS/" || true
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          echo "coregraphics-corpus seed files: $(find "$FUZZ_COMPONENT_CORPUS" -type f | wc -l)"
+
+      - name: Build and run coregraphics loader fuzz harness
+        shell: bash
+        run: |
+          set -euxo pipefail
+          LLVM_PREFIX="$(brew --prefix llvm)"
+          export PATH="$LLVM_PREFIX/bin:$PWD/build-aux:$PWD/bin:$PATH"
+          export CC=clang
+          export CXX=clang++
+          export LDFLAGS="-L$LLVM_PREFIX/lib ${LDFLAGS:-}"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            ./configure --enable-fuzz --with-coregraphics
+            make -j"$(sysctl -n hw.ncpu)"
+            make fuzz-run-loader-coregraphics
+          else
+            meson setup builddir -Dfuzz=true -Dcoregraphics=enabled
+            meson compile -C builddir -v
+            meson compile -C builddir fuzz-run-loader-coregraphics
+          fi
+
+      - name: Upload coregraphics fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ env.FUZZ_COMPONENT_ARTIFACT_DIR }}
+            ${{ env.FUZZ_COMPONENT_CORPUS }}
+
+  fuzz_push_loader_wic:
+    if: github.event_name == 'push'
+    name: ${{ matrix.label }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Meson-msys2-clang64-x86_64-fuzz-loader-wic
+            msystem: CLANG64
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        shell: pwsh
+        run: |
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
+
+      - name: Disable Windows Search Indexer (Windows)
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Configure git EOL
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: >-
+            make
+            mingw-w64-clang-x86_64-toolchain
+            mingw-w64-clang-x86_64-meson
+            mingw-w64-clang-x86_64-ninja
+            mingw-w64-clang-x86_64-pkgconf
+
+      - name: Build and run wic loader fuzz harness
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+          workspace="$(pwd)"
+          export FUZZ_COMPONENT_CORPUS="$workspace/.tmp/fuzz-corpus-loader/wic"
+          export FUZZ_COMPONENT_ARTIFACT_DIR="$workspace/.tmp/fuzz-artifacts-loader/wic"
+          export FUZZ_COMPONENT_ARGS="-max_total_time=60 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict=$workspace/fuzz/loader-builtin.dict -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
+          export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
+          export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1:report_error_type=1"
+          export PATH="/clang64/bin:$PATH"
+
+          mkdir -p "$FUZZ_COMPONENT_CORPUS" "$FUZZ_COMPONENT_ARTIFACT_DIR"
+          if test -d fuzz/images; then
+            cp -a fuzz/images/. "$FUZZ_COMPONENT_CORPUS/" || true
+          fi
+          cp -a images/. "$FUZZ_COMPONENT_CORPUS/" || true
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          echo "wic-corpus seed files: $(find "$FUZZ_COMPONENT_CORPUS" -type f | wc -l)"
+
+          CC=clang CXX=clang++ meson setup builddir -Dfuzz=true -Dwic=enabled
+          meson compile -C builddir -v
+          meson compile -C builddir fuzz-run-loader-wic
+
+      - name: Upload wic fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.label }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/wic
+            ${{ github.workspace }}/.tmp/fuzz-corpus-loader/wic
+
   staticcheck:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}

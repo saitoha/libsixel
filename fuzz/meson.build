@@ -159,6 +159,82 @@ done
             meson.project_source_root()],
   depends: [fuzz_loader_builtin])
 
+if conf.get('HAVE_COREGRAPHICS', 0) == 1
+  fuzz_loader_coregraphics = executable('fuzz-loader-coregraphics-libfuzzer',
+    ['fuzz-loader-component-libfuzzer.c', 'fuzz-loader-builtin-struct-runtime.c'],
+    include_directories: project_inc,
+    dependencies: [libsixel_dep],
+    c_args: fuzz_common_c_args + ['-DFUZZ_LOADER_COMPONENT_NAME="coregraphics"'],
+    link_args: fuzz_common_link_args,
+    build_by_default: true,
+  )
+
+  run_target('fuzz-run-loader-coregraphics',
+    command: [sh, '-c', '''
+set -eu
+
+target="$1"
+source_root="$2"
+name="$3"
+corpus_base="${FUZZ_COMPONENT_CORPUS:-${FUZZ_BUILTIN_CORPUS:-$source_root/images}/component}"
+args="${FUZZ_COMPONENT_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
+corpus="$corpus_base/$name"
+
+mkdir -p "$corpus"
+echo "fuzz-run-loader[$name]: target=$target corpus=$corpus"
+if test -n "$args"; then
+  echo "fuzz-run-loader[$name]: args=$args"
+  # shellcheck disable=SC2086
+  exec "$target" $args "$corpus"
+fi
+
+exec "$target" "$corpus"
+''',
+              'sh',
+              fuzz_loader_coregraphics.full_path(),
+              meson.project_source_root(),
+              'coregraphics'],
+    depends: [fuzz_loader_coregraphics])
+endif
+
+if conf.get('HAVE_WIC', 0) == 1
+  fuzz_loader_wic = executable('fuzz-loader-wic-libfuzzer',
+    ['fuzz-loader-component-libfuzzer.c', 'fuzz-loader-builtin-struct-runtime.c'],
+    include_directories: project_inc,
+    dependencies: [libsixel_dep],
+    c_args: fuzz_common_c_args + ['-DFUZZ_LOADER_COMPONENT_NAME="wic"'],
+    link_args: fuzz_common_link_args,
+    build_by_default: true,
+  )
+
+  run_target('fuzz-run-loader-wic',
+    command: [sh, '-c', '''
+set -eu
+
+target="$1"
+source_root="$2"
+name="$3"
+corpus_base="${FUZZ_COMPONENT_CORPUS:-${FUZZ_BUILTIN_CORPUS:-$source_root/images}/component}"
+args="${FUZZ_COMPONENT_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
+corpus="$corpus_base/$name"
+
+mkdir -p "$corpus"
+echo "fuzz-run-loader[$name]: target=$target corpus=$corpus"
+if test -n "$args"; then
+  echo "fuzz-run-loader[$name]: args=$args"
+  # shellcheck disable=SC2086
+  exec "$target" $args "$corpus"
+fi
+
+exec "$target" "$corpus"
+''',
+              'sh',
+              fuzz_loader_wic.full_path(),
+              meson.project_source_root(),
+              'wic'],
+    depends: [fuzz_loader_wic])
+endif
+
 fuzz_struct_specs = [
   ['png-chunk', 'fuzz-loader-builtin-struct-png-chunk-libfuzzer.c'],
   ['png-apng', 'fuzz-loader-builtin-struct-png-apng-libfuzzer.c'],
