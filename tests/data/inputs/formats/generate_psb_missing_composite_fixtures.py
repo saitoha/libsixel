@@ -577,6 +577,38 @@ def main() -> None:
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_mask.psd",
     )
     convert_fixture(
+        "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_gray.psd",
+        "snake16_psb_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_gray.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_cmyk.psd",
+        "snake16_psb_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_cmyk.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_hsb.psd",
+        "snake16_psb_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_hsb.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_lab.psd",
+        "snake16_psb_mode7_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_lab.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_gray.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_gray.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_cmyk.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_cmyk.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_hsb.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_hsb.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_lab.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_lab.psd",
+    )
+    convert_fixture(
         "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
     )
