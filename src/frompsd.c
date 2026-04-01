@@ -3282,6 +3282,58 @@ sixel_builtin_psd_parse_soco_descriptor_payload(
 }
 
 static int
+sixel_builtin_psd_parse_soco_descriptor_payload_loose(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t obj_cursor;
+    float fill_rgb[3];
+    static unsigned char const clr_objc_key0[12] = {
+        0x00u, 0x00u, 0x00u, 0x00u,
+        0x43u, 0x6cu, 0x72u, 0x20u,
+        0x4fu, 0x62u, 0x6au, 0x63u
+    };
+    static unsigned char const clr_objc_key4[12] = {
+        0x00u, 0x00u, 0x00u, 0x04u,
+        0x43u, 0x6cu, 0x72u, 0x20u,
+        0x4fu, 0x62u, 0x6au, 0x63u
+    };
+
+    cursor = 0u;
+    obj_cursor = 0u;
+    fill_rgb[0] = 0.0f;
+    fill_rgb[1] = 0.0f;
+    fill_rgb[2] = 0.0f;
+    if (data == NULL || layer == NULL || key_length < 12u) {
+        return 0;
+    }
+    for (cursor = 0u; cursor + 12u <= key_length; ++cursor) {
+        if (memcmp(data + cursor, clr_objc_key0, 12u) != 0 &&
+            memcmp(data + cursor, clr_objc_key4, 12u) != 0) {
+            continue;
+        }
+        obj_cursor = cursor + 12u;
+        fill_rgb[0] = 0.0f;
+        fill_rgb[1] = 0.0f;
+        fill_rgb[2] = 0.0f;
+        if (!sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                             key_length,
+                                                             &obj_cursor,
+                                                             fill_rgb)) {
+            continue;
+        }
+        layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_SOCO;
+        layer->fill_solid_rgb[0] = fill_rgb[0];
+        layer->fill_solid_rgb[1] = fill_rgb[1];
+        layer->fill_solid_rgb[2] = fill_rgb[2];
+        return 1;
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_parse_tysh_payload(
     unsigned char const *data,
     size_t key_length,
@@ -3318,34 +3370,47 @@ sixel_builtin_psd_parse_tysh_payload(
     }
     cursor += 4u;  /* text descriptor version */
     descriptor_start = cursor;
-    if (!sixel_builtin_psd_descriptor_skip_object(data, key_length, &cursor, 0u)) {
-        return 0;
-    }
-    descriptor_end = cursor;
-    if (descriptor_end > descriptor_start &&
-        sixel_builtin_psd_parse_soco_descriptor_payload(
-            data + descriptor_start,
-            descriptor_end - descriptor_start,
-            layer)) {
-        return 1;
+    if (sixel_builtin_psd_descriptor_skip_object(data, key_length, &cursor, 0u)) {
+        descriptor_end = cursor;
+        if (descriptor_end > descriptor_start &&
+            sixel_builtin_psd_parse_soco_descriptor_payload(
+                data + descriptor_start,
+                descriptor_end - descriptor_start,
+                layer)) {
+            return 1;
+        }
     }
 
     /* Optional warp descriptor follows in many TySh payloads.
      * Parse opportunistically, but keep this path non-fatal.
      */
-    if (cursor + 8u > key_length) {
-        return 0;
-    }
-    cursor += 8u;  /* warp version + warp descriptor version */
-    descriptor_start = cursor;
-    if (!sixel_builtin_psd_descriptor_skip_object(data, key_length, &cursor, 0u)) {
-        return 0;
-    }
-    descriptor_end = cursor;
     if (descriptor_end > descriptor_start &&
-        sixel_builtin_psd_parse_soco_descriptor_payload(
+        descriptor_end + 8u <= key_length) {
+        cursor = descriptor_end + 8u;  /* warp version + warp descriptor version */
+        descriptor_start = cursor;
+        if (sixel_builtin_psd_descriptor_skip_object(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     0u)) {
+            descriptor_end = cursor;
+            if (descriptor_end > descriptor_start &&
+                sixel_builtin_psd_parse_soco_descriptor_payload(
+                    data + descriptor_start,
+                    descriptor_end - descriptor_start,
+                    layer)) {
+                return 1;
+            }
+        }
+    }
+
+    /* Lenient fallback for TySh wrappers that carry additional/unknown items:
+     * scan for Clr/Objc signatures and parse only the color object.
+     */
+    descriptor_start = 4u + 48u + 4u;
+    if (descriptor_start < key_length &&
+        sixel_builtin_psd_parse_soco_descriptor_payload_loose(
             data + descriptor_start,
-            descriptor_end - descriptor_start,
+            key_length - descriptor_start,
             layer)) {
         return 1;
     }
