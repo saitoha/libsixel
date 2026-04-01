@@ -2775,6 +2775,14 @@ sixel_builtin_hdr_should_prefer_custom_decode(
     if (!sixel_builtin_hdr_hint_has_decodable_stream(hint_status, hint)) {
         return 0;
     }
+    /*
+     * Legacy RGBE streams (scanline length < 8) have no per-scanline header.
+     * Decode them in the built-in path to avoid platform-dependent behavior
+     * in third-party fallback code.
+     */
+    if (hint->orientation_axis2_length < 8) {
+        return 1;
+    }
     if (hint->format_kind == SIXEL_BUILTIN_HDR_FORMAT_XYZE) {
         return 1;
     }
