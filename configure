@@ -4275,53 +4275,16 @@ AMTAR='$${TAR-tar}'
 
 
 # We'll loop over all known methods to create a tar archive until one works.
-_am_tools='gnutar plaintar pax cpio none'
+_am_tools='gnutar  pax cpio none'
 
-# The POSIX 1988 'ustar' format is defined with fixed-size fields.
-      # There is notably a 21 bits limit for the UID and the GID.  In fact,
-      # the 'pax' utility can hang on bigger UID/GID (see automake bug#8343
-      # and bug#13588).
-      am_max_uid=2097151 # 2^21 - 1
-      am_max_gid=$am_max_uid
-      # The $UID and $GID variables are not portable, so we need to resort
-      # to the POSIX-mandated id(1) utility.  Errors in the 'id' calls
-      # below are definitely unexpected, so allow the users to see them
-      # (that is, avoid stderr redirection).
-      am_uid=`id -u || echo unknown`
-      am_gid=`id -g || echo unknown`
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether UID '$am_uid' is supported by ustar format" >&5
-printf %s "checking whether UID '$am_uid' is supported by ustar format... " >&6; }
-      if test x$am_uid = xunknown; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: ancient id detected; assuming current UID is ok, but dist-ustar might not work" >&5
-printf "%s\n" "$as_me: WARNING: ancient id detected; assuming current UID is ok, but dist-ustar might not work" >&2;}
-      elif test $am_uid -le $am_max_uid; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-      else
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        _am_tools=none
-      fi
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether GID '$am_gid' is supported by ustar format" >&5
-printf %s "checking whether GID '$am_gid' is supported by ustar format... " >&6; }
-      if test x$gm_gid = xunknown; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: ancient id detected; assuming current GID is ok, but dist-ustar might not work" >&5
-printf "%s\n" "$as_me: WARNING: ancient id detected; assuming current GID is ok, but dist-ustar might not work" >&2;}
-      elif test $am_gid -le $am_max_gid; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-      else
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        _am_tools=none
-      fi
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking how to create a ustar tar archive" >&5
-printf %s "checking how to create a ustar tar archive... " >&6; }
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking how to create a pax tar archive" >&5
+printf %s "checking how to create a pax tar archive... " >&6; }
 
   # Go ahead even if we have the value already cached.  We do so because we
   # need to set the values for the 'am__tar' and 'am__untar' variables.
-  _am_tools=${am_cv_prog_tar_ustar-$_am_tools}
+  _am_tools=${am_cv_prog_tar_pax-$_am_tools}
 
   for _am_tool in $_am_tools; do
     case $_am_tool in
@@ -4333,8 +4296,8 @@ printf %s "checking how to create a ustar tar archive... " >&6; }
    echo "$as_me:$LINENO: \$? = $ac_status" >&5
    (exit $ac_status); } && break
       done
-      am__tar="$_am_tar --format=ustar -chf - "'"$$tardir"'
-      am__tar_="$_am_tar --format=ustar -chf - "'"$tardir"'
+      am__tar="$_am_tar --format=posix -chf - "'"$$tardir"'
+      am__tar_="$_am_tar --format=posix -chf - "'"$tardir"'
       am__untar="$_am_tar -xf -"
       ;;
     plaintar)
@@ -4346,14 +4309,14 @@ printf %s "checking how to create a ustar tar archive... " >&6; }
       am__untar='tar xf -'
       ;;
     pax)
-      am__tar='pax -L -x ustar -w "$$tardir"'
-      am__tar_='pax -L -x ustar -w "$tardir"'
+      am__tar='pax -L -x pax -w "$$tardir"'
+      am__tar_='pax -L -x pax -w "$tardir"'
       am__untar='pax -r'
       ;;
     cpio)
-      am__tar='find "$$tardir" -print | cpio -o -H ustar -L'
-      am__tar_='find "$tardir" -print | cpio -o -H ustar -L'
-      am__untar='cpio -i -H ustar -d'
+      am__tar='find "$$tardir" -print | cpio -o -H pax -L'
+      am__tar_='find "$tardir" -print | cpio -o -H pax -L'
+      am__untar='cpio -i -H pax -d'
       ;;
     none)
       am__tar=false
@@ -4364,7 +4327,7 @@ printf %s "checking how to create a ustar tar archive... " >&6; }
 
     # If the value was cached, stop now.  We just wanted to have am__tar
     # and am__untar set.
-    test -n "${am_cv_prog_tar_ustar}" && break
+    test -n "${am_cv_prog_tar_pax}" && break
 
     # tar/untar a dummy directory, and stop if the command works.
     rm -rf conftest.dir
@@ -4392,16 +4355,16 @@ printf %s "checking how to create a ustar tar archive... " >&6; }
   done
   rm -rf conftest.dir
 
-  if test ${am_cv_prog_tar_ustar+y}
+  if test ${am_cv_prog_tar_pax+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) am_cv_prog_tar_ustar=$_am_tool ;;
+  e) am_cv_prog_tar_pax=$_am_tool ;;
 esac
 fi
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $am_cv_prog_tar_ustar" >&5
-printf "%s\n" "$am_cv_prog_tar_ustar" >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $am_cv_prog_tar_pax" >&5
+printf "%s\n" "$am_cv_prog_tar_pax" >&6; }
 
 
 

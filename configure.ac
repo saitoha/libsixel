@@ -18,7 +18,7 @@ AC_SUBST([PACKAGE_DESCRIPTION],
 #])
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
 AC_REQUIRE_AUX_FILE([ar-lib])
 AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
