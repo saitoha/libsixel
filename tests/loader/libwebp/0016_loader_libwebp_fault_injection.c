@@ -6,7 +6,7 @@
 
 #include "tests/loader/pixelformat_test_common.h"
 
-#if HAVE_WEBP
+#if HAVE_WEBP && !defined(BUILD_TEST_RUNNER)
 #include <webp/decode.h>
 #include <webp/demux.h>
 #include <webp/mux.h>
@@ -1152,7 +1152,7 @@ run_fault_demux_case(void)
 }
 #endif
 
-#if HAVE_WEBP
+#if HAVE_WEBP && !defined(BUILD_TEST_RUNNER)
 #define WEBP_FI_TEST_ENTRY(test_name, run_case) \
     int test_name(int argc, char **argv)        \
     {                                            \
@@ -1160,13 +1160,24 @@ run_fault_demux_case(void)
         (void)argv;                              \
         return run_case();                       \
     }
-#else
+#elif HAVE_WEBP
 #define WEBP_FI_TEST_ENTRY(test_name, run_case)          \
     int test_name(int argc, char **argv)                 \
     {                                                     \
         (void)argc;                                       \
         (void)argv;                                       \
-        fprintf(stderr, "libwebp loader unavailable\n");  \
+        fprintf(stderr,                                   \
+                "libwebp fault injection unavailable in " \
+                "amalgamation mode\n");                  \
+        return SIXEL_TEST_SKIP;                           \
+    }
+#else
+#define WEBP_FI_TEST_ENTRY(test_name, run_case)         \
+    int test_name(int argc, char **argv)                \
+    {                                                    \
+        (void)argc;                                      \
+        (void)argv;                                      \
+        fprintf(stderr, "libwebp loader unavailable\n"); \
         return SIXEL_TEST_SKIP;                           \
     }
 #endif
