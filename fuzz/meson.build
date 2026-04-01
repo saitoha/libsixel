@@ -3,20 +3,6 @@
 # Copyright (c) 2026 libsixel developers. See `AUTHORS`.
 #
 
-required_fuzz_c_args = [
-  '-fsanitize=fuzzer-no-link',
-  '-fsanitize=address,undefined',
-]
-required_fuzz_link_args = [
-  '-fsanitize=fuzzer,address,undefined',
-]
-
-foreach arg : required_fuzz_c_args
-  if not cc.has_argument(arg)
-    error('fuzz option requires compiler support for ' + arg)
-  endif
-endforeach
-
 fuzz_link_probe_source = '''
 int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size)
 {
@@ -25,19 +11,54 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size)
   return 0;
 }
 '''
-if not cc.links(fuzz_link_probe_source, args: required_fuzz_link_args)
-  error('fuzz option requires linker support for '
-        + ' '.join(required_fuzz_link_args))
+fuzz_mode_candidates = []
+if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
+  fuzz_mode_candidates += [
+    ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+    ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+  ]
+else
+  fuzz_mode_candidates += [
+    ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+    ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+  ]
 endif
+
+fuzz_mode_candidates += [
+  ['-fsanitize=fuzzer-no-link', '-fsanitize=fuzzer'],
+  ['-fsanitize=fuzzer', '-fsanitize=fuzzer'],
+]
+
+selected_fuzz_c_arg = ''
+selected_fuzz_link_arg = ''
+foreach mode : fuzz_mode_candidates
+  fuzz_c_arg = mode[0]
+  fuzz_link_arg = mode[1]
+  if not cc.has_argument(fuzz_c_arg)
+    continue
+  endif
+  if cc.links(fuzz_link_probe_source, args: [fuzz_c_arg, fuzz_link_arg])
+    selected_fuzz_c_arg = fuzz_c_arg
+    selected_fuzz_link_arg = fuzz_link_arg
+    break
+  endif
+endforeach
+
+if selected_fuzz_c_arg == ''
+  error('fuzz option requires a libFuzzer-capable toolchain; '
+        + 'no supported sanitizer flag combination was found')
+endif
+message('fuzz: using compile flag "' + selected_fuzz_c_arg
+        + '" and link flag "' + selected_fuzz_link_arg + '"')
 
 fuzz_common_c_args = [
   '-O1',
   '-g',
   '-fno-omit-frame-pointer',
-  '-fsanitize=fuzzer-no-link,address,undefined',
+  selected_fuzz_c_arg,
 ]
 fuzz_common_link_args = [
-  '-fsanitize=fuzzer,address,undefined',
+  selected_fuzz_link_arg,
 ]
 
 fuzz_loader_builtin = executable('fuzz-loader-builtin-libfuzzer',
