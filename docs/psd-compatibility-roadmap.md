@@ -154,7 +154,8 @@ Key points used by this roadmap:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
     - descriptor-invalid payload contracts that keep decode success with
-      deterministic skip trace (`malformed non-pixel fill payload; skipping layer`).
+      deterministic skip trace (`malformed non-pixel fill payload; skipping layer`)
+      on both PSD and PSB RGB8 fallback paths (`SoCo/GdFl/PtFl`).
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),
@@ -292,12 +293,13 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Extend non-pixel semantics beyond fill payloads while preserving current
-   deterministic degrade traces for unsupported semantics.
-2. Extend PSB (`8BPB+version=2`) from current partial support toward parity:
+1. Extend non-pixel semantics beyond current fill payload support while
+   preserving deterministic degrade traces for unsupported semantics
+   (for example richer `TySh` payload interpretation beyond color-descriptor fill).
+2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
+   large-document parity:
    - broaden missing-composite matrix/trace coverage to larger layouts, and
-   - design/implement large-document boundary handling beyond the current
+   - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
-3. Expand non-pixel semantics incrementally beyond fill payloads
-   (for example, `TySh`-class payload interpretation), while preserving
-   deterministic degrade contracts for unsupported semantics.
+3. Expand PSB parity for non-pixel + ICC combinations across CMYK/mode7 mapped
+   paths, and keep the no-false-failure trace contract fixed under regression.
