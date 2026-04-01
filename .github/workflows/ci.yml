@@ -107,7 +107,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [png-chunk, png-apng, jpeg-icc, pnm-ascii, psd-resource, gif-block, sixel-stream, hdr-header, pic-structure, bmp-dib]
+        target: [png-chunk, png-apng, jpeg-icc, pnm-ascii, psd-resource, gif-block, sixel-stream, hdr-header, pic-structure, bmp-dib, mapfile-spec, mapfile-palette]
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct/${{ matrix.target }}
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}

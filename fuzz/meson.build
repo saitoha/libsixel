@@ -236,16 +236,18 @@ exec "$target" "$corpus"
 endif
 
 fuzz_struct_specs = [
-  ['png-chunk', 'fuzz-loader-builtin-struct-png-chunk-libfuzzer.c'],
-  ['png-apng', 'fuzz-loader-builtin-struct-png-apng-libfuzzer.c'],
-  ['jpeg-icc', 'fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.c'],
-  ['pnm-ascii', 'fuzz-loader-builtin-struct-pnm-ascii-libfuzzer.c'],
-  ['psd-resource', 'fuzz-loader-builtin-struct-psd-resource-libfuzzer.c'],
-  ['gif-block', 'fuzz-loader-builtin-struct-gif-block-libfuzzer.c'],
-  ['sixel-stream', 'fuzz-loader-builtin-struct-sixel-stream-libfuzzer.c'],
-  ['hdr-header', 'fuzz-loader-builtin-struct-hdr-header-libfuzzer.c'],
-  ['pic-structure', 'fuzz-loader-builtin-struct-pic-structure-libfuzzer.c'],
-  ['bmp-dib', 'fuzz-loader-builtin-struct-bmp-dib-libfuzzer.c'],
+  ['png-chunk', 'fuzz-loader-builtin-struct-png-chunk-libfuzzer.c', true],
+  ['png-apng', 'fuzz-loader-builtin-struct-png-apng-libfuzzer.c', true],
+  ['jpeg-icc', 'fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.c', true],
+  ['pnm-ascii', 'fuzz-loader-builtin-struct-pnm-ascii-libfuzzer.c', true],
+  ['psd-resource', 'fuzz-loader-builtin-struct-psd-resource-libfuzzer.c', true],
+  ['gif-block', 'fuzz-loader-builtin-struct-gif-block-libfuzzer.c', true],
+  ['sixel-stream', 'fuzz-loader-builtin-struct-sixel-stream-libfuzzer.c', true],
+  ['hdr-header', 'fuzz-loader-builtin-struct-hdr-header-libfuzzer.c', true],
+  ['pic-structure', 'fuzz-loader-builtin-struct-pic-structure-libfuzzer.c', true],
+  ['bmp-dib', 'fuzz-loader-builtin-struct-bmp-dib-libfuzzer.c', true],
+  ['mapfile-spec', 'fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c', false],
+  ['mapfile-palette', 'fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c', false],
 ]
 
 fuzz_struct_push_set = [
@@ -267,6 +269,8 @@ fuzz_struct_full_set = [
   'hdr-header',
   'pic-structure',
   'bmp-dib',
+  'mapfile-spec',
+  'mapfile-palette',
 ]
 
 struct_exe_by_name = {}
@@ -274,8 +278,13 @@ struct_exe_by_name = {}
 foreach spec : fuzz_struct_specs
   struct_name = spec[0]
   struct_src = spec[1]
+  struct_needs_runtime = spec[2]
+  struct_sources = [struct_src]
+  if struct_needs_runtime
+    struct_sources += ['fuzz-loader-builtin-struct-runtime.c']
+  endif
   struct_exe = executable('fuzz-loader-builtin-struct-' + struct_name + '-libfuzzer',
-    [struct_src, 'fuzz-loader-builtin-struct-runtime.c'],
+    struct_sources,
     include_directories: project_inc,
     dependencies: [libsixel_dep],
     c_args: fuzz_common_c_args,
@@ -379,6 +388,8 @@ target_sixel_stream="$8"
 target_hdr_header="$9"
 target_pic_structure="${10}"
 target_bmp_dib="${11}"
+target_mapfile_spec="${12}"
+target_mapfile_palette="${13}"
 corpus_base="${FUZZ_STRUCT_CORPUS:-${FUZZ_BUILTIN_CORPUS:-$source_root/images}/struct}"
 args="${FUZZ_STRUCT_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
 
@@ -407,6 +418,8 @@ run_one sixel-stream "$target_sixel_stream"
 run_one hdr-header "$target_hdr_header"
 run_one pic-structure "$target_pic_structure"
 run_one bmp-dib "$target_bmp_dib"
+run_one mapfile-spec "$target_mapfile_spec"
+run_one mapfile-palette "$target_mapfile_palette"
 ''',
             'sh',
             meson.project_source_root(),
@@ -419,7 +432,9 @@ run_one bmp-dib "$target_bmp_dib"
             struct_exe_by_name['sixel-stream'].full_path(),
             struct_exe_by_name['hdr-header'].full_path(),
             struct_exe_by_name['pic-structure'].full_path(),
-            struct_exe_by_name['bmp-dib'].full_path()],
+            struct_exe_by_name['bmp-dib'].full_path(),
+            struct_exe_by_name['mapfile-spec'].full_path(),
+            struct_exe_by_name['mapfile-palette'].full_path()],
   depends: [
     struct_exe_by_name['png-chunk'],
     struct_exe_by_name['png-apng'],
@@ -431,6 +446,8 @@ run_one bmp-dib "$target_bmp_dib"
     struct_exe_by_name['hdr-header'],
     struct_exe_by_name['pic-structure'],
     struct_exe_by_name['bmp-dib'],
+    struct_exe_by_name['mapfile-spec'],
+    struct_exe_by_name['mapfile-palette'],
   ])
 
 # vim: set et ts=2:

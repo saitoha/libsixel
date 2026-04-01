@@ -22,7 +22,9 @@ FUZZ_STRUCT_TARGETS = \
     sixel-stream \
     hdr-header \
     pic-structure \
-    bmp-dib
+    bmp-dib \
+    mapfile-spec \
+    mapfile-palette
 
 FUZZ_STRUCT_PUSH_SET = \
     png-chunk \
@@ -45,7 +47,9 @@ noinst_PROGRAMS = \
     fuzz-loader-builtin-struct-sixel-stream-libfuzzer \
     fuzz-loader-builtin-struct-hdr-header-libfuzzer \
     fuzz-loader-builtin-struct-pic-structure-libfuzzer \
-    fuzz-loader-builtin-struct-bmp-dib-libfuzzer
+    fuzz-loader-builtin-struct-bmp-dib-libfuzzer \
+    fuzz-loader-builtin-struct-mapfile-spec-libfuzzer \
+    fuzz-loader-builtin-struct-mapfile-palette-libfuzzer
 if HAVE_COREGRAPHICS
 noinst_PROGRAMS += \
     fuzz-loader-coregraphics-libfuzzer
@@ -71,6 +75,8 @@ EXTRA_DIST = \
     fuzz-loader-builtin-struct-hdr-header-libfuzzer.c \
     fuzz-loader-builtin-struct-pic-structure-libfuzzer.c \
     fuzz-loader-builtin-struct-bmp-dib-libfuzzer.c \
+    fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c \
+    fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c \
     loader-builtin.dict
 
 FUZZ_COMMON_CPPFLAGS = \
@@ -180,6 +186,20 @@ fuzz_loader_builtin_struct_bmp_dib_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
 fuzz_loader_builtin_struct_bmp_dib_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 fuzz_loader_builtin_struct_bmp_dib_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 fuzz_loader_builtin_struct_bmp_dib_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c
+fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c
+fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
 if HAVE_COREGRAPHICS
 fuzz_loader_coregraphics_libfuzzer_SOURCES = \

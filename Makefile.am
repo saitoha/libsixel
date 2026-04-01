@@ -123,7 +123,9 @@ FUZZ_STRUCT_TARGETS = \
 	sixel-stream \
 	hdr-header \
 	pic-structure \
-	bmp-dib
+	bmp-dib \
+	mapfile-spec \
+	mapfile-palette
 FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
 FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 
