@@ -341,6 +341,26 @@ def build_tysh_wrapped_descriptor_payload(text_descriptor_payload: bytes) -> byt
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_payload(r: int, g: int, b: int) -> bytes:
+    r = float(max(0, min(255, r))) / 255.0
+    g = float(max(0, min(255, g))) / 255.0
+    b = float(max(0, min(255, b))) / 255.0
+
+    # Keep the descriptor body intentionally non-decodable so TySh fallback
+    # exercises the EngineData FillColor parser path.
+    engine_data = (
+        f"/EngineData << /FillColor [{r:.6f} {g:.6f} {b:.6f}] >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_descriptor_tysh_unknown_then_color_payload(r: int, g: int, b: int) -> bytes:
     color_object = bytearray()
     color_object += _descriptor_unicode("")
@@ -8904,6 +8924,33 @@ def generate(out_dir: pathlib.Path):
             depth=depth_value,
             base_planes=base_planes,
         )
+
+    write_file(
+        out_dir / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_payload(
+                255, 48, 64
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_payload(
+                255, 48, 64
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
 
     for depth_tag, depth_value, base_planes in [
         ("16", 16, cmyk16_planes),

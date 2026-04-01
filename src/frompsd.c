@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <sixel.h>
@@ -3334,6 +3335,239 @@ sixel_builtin_psd_parse_soco_descriptor_payload_loose(
 }
 
 static int
+sixel_builtin_psd_ascii_is_space(unsigned char value)
+{
+    return value == (unsigned char)' ' ||
+           value == (unsigned char)'\t' ||
+           value == (unsigned char)'\n' ||
+           value == (unsigned char)'\r' ||
+           value == (unsigned char)'\f' ||
+           value == (unsigned char)'\v';
+}
+
+static int
+sixel_builtin_psd_ascii_is_numeric_char(unsigned char value)
+{
+    return (value >= (unsigned char)'0' && value <= (unsigned char)'9') ||
+           value == (unsigned char)'+' ||
+           value == (unsigned char)'-' ||
+           value == (unsigned char)'.' ||
+           value == (unsigned char)'e' ||
+           value == (unsigned char)'E';
+}
+
+static int
+sixel_builtin_psd_parse_ascii_float(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    double *out_value)
+{
+    size_t cursor;
+    size_t start;
+    size_t token_length;
+    char token[64];
+    char *endp;
+    double parsed;
+
+    cursor = 0u;
+    start = 0u;
+    token_length = 0u;
+    endp = NULL;
+    parsed = 0.0;
+    if (data == NULL || pcursor == NULL || out_value == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    while (cursor < data_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+        ++cursor;
+    }
+    start = cursor;
+    while (cursor < data_length &&
+           sixel_builtin_psd_ascii_is_numeric_char(data[cursor])) {
+        ++cursor;
+    }
+    if (cursor == start) {
+        return 0;
+    }
+    token_length = cursor - start;
+    if (token_length == 0u || token_length >= sizeof(token)) {
+        return 0;
+    }
+    memcpy(token, data + start, token_length);
+    token[token_length] = '\0';
+    parsed = strtod(token, &endp);
+    if (endp == NULL || *endp != '\0') {
+        return 0;
+    }
+    *out_value = parsed;
+    *pcursor = cursor;
+    return 1;
+}
+
+static float
+sixel_builtin_psd_normalize_rgb_engine_component(double value)
+{
+    if (value != value) {
+        return 0.0f;
+    }
+    if (value <= 1.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)value);
+    }
+    if (value <= 255.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)(value / 255.0));
+    }
+    return value < 0.0 ? 0.0f : 1.0f;
+}
+
+static float
+sixel_builtin_psd_normalize_gray_engine_component(double value)
+{
+    if (value != value) {
+        return 0.0f;
+    }
+    if (value <= 1.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)value);
+    }
+    if (value <= 100.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)(value / 100.0));
+    }
+    if (value <= 255.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)(value / 255.0));
+    }
+    return value < 0.0 ? 0.0f : 1.0f;
+}
+
+static float
+sixel_builtin_psd_normalize_cmyk_engine_component(double value)
+{
+    if (value != value) {
+        return 0.0f;
+    }
+    if (value <= 1.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)value);
+    }
+    if (value <= 100.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)(value / 100.0));
+    }
+    if (value <= 255.0 && value >= 0.0) {
+        return sixel_builtin_psd_clamp01((float)(value / 255.0));
+    }
+    return value < 0.0 ? 0.0f : 1.0f;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    static char const token[] = "/FillColor";
+    size_t i;
+    size_t cursor;
+    size_t count;
+    double components[4];
+    float r;
+    float g;
+    float b;
+    float c;
+    float m;
+    float y;
+    float k;
+
+    i = 0u;
+    cursor = 0u;
+    count = 0u;
+    components[0] = 0.0;
+    components[1] = 0.0;
+    components[2] = 0.0;
+    components[3] = 0.0;
+    r = 0.0f;
+    g = 0.0f;
+    b = 0.0f;
+    c = 0.0f;
+    m = 0.0f;
+    y = 0.0f;
+    k = 0.0f;
+    if (data == NULL || layer == NULL || key_length < sizeof(token)) {
+        return 0;
+    }
+
+    for (i = 0u; i + sizeof(token) - 1u <= key_length; ++i) {
+        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
+            continue;
+        }
+        cursor = i + sizeof(token) - 1u;
+        while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor >= key_length || data[cursor] != (unsigned char)'[') {
+            continue;
+        }
+        ++cursor;
+        count = 0u;
+        while (cursor < key_length && count < 4u) {
+            while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+                ++cursor;
+            }
+            if (cursor >= key_length) {
+                break;
+            }
+            if (data[cursor] == (unsigned char)']') {
+                ++cursor;
+                break;
+            }
+            if (!sixel_builtin_psd_parse_ascii_float(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     &components[count])) {
+                break;
+            }
+            ++count;
+            while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+                ++cursor;
+            }
+            if (cursor < key_length && data[cursor] == (unsigned char)']') {
+                ++cursor;
+                break;
+            }
+        }
+        if (count == 0u) {
+            continue;
+        }
+
+        if (count >= 4u) {
+            c = sixel_builtin_psd_normalize_cmyk_engine_component(components[0]);
+            m = sixel_builtin_psd_normalize_cmyk_engine_component(components[1]);
+            y = sixel_builtin_psd_normalize_cmyk_engine_component(components[2]);
+            k = sixel_builtin_psd_normalize_cmyk_engine_component(components[3]);
+            r = (1.0f - c) * (1.0f - k);
+            g = (1.0f - m) * (1.0f - k);
+            b = (1.0f - y) * (1.0f - k);
+        } else if (count >= 3u) {
+            r = sixel_builtin_psd_normalize_rgb_engine_component(components[0]);
+            g = sixel_builtin_psd_normalize_rgb_engine_component(components[1]);
+            b = sixel_builtin_psd_normalize_rgb_engine_component(components[2]);
+        } else {
+            r = sixel_builtin_psd_normalize_gray_engine_component(components[0]);
+            g = r;
+            b = r;
+        }
+
+        layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_SOCO;
+        layer->fill_solid_rgb[0] = sixel_builtin_psd_gamma_to_linear(
+            sixel_builtin_psd_clamp01(r));
+        layer->fill_solid_rgb[1] = sixel_builtin_psd_gamma_to_linear(
+            sixel_builtin_psd_clamp01(g));
+        layer->fill_solid_rgb[2] = sixel_builtin_psd_gamma_to_linear(
+            sixel_builtin_psd_clamp01(b));
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 sixel_builtin_psd_parse_tysh_payload(
     unsigned char const *data,
     size_t key_length,
@@ -3409,6 +3643,13 @@ sixel_builtin_psd_parse_tysh_payload(
     descriptor_start = 4u + 48u + 4u;
     if (descriptor_start < key_length &&
         sixel_builtin_psd_parse_soco_descriptor_payload_loose(
+            data + descriptor_start,
+            key_length - descriptor_start,
+            layer)) {
+        return 1;
+    }
+    if (descriptor_start < key_length &&
+        sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
             data + descriptor_start,
             key_length - descriptor_start,
             layer)) {

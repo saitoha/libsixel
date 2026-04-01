@@ -143,6 +143,9 @@ Key points used by this roadmap:
     (RGB8 and CMYK8/CMYK16/CMYK32 mapped paths).
   - mode7 multi-layer non-pixel trace coverage
     (pixel-present ignore, no-pixel skip, and fill render cases).
+  - TySh EngineData `FillColor [...]` fallback parsing now complements
+    descriptor/SXFL paths for no-pixel non-pixel layers
+    (CMYK8 and mode7-mapped CMYK8 coverage).
   - descriptor fill LSQA coverage now includes:
     - `SoCo` descriptor color-object paths (`RGB/CMYK/Grayscale/HSB/Lab`)
       across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
