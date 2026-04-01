@@ -7098,7 +7098,7 @@ temp_debug_enabled(void)
 {
     char const *flag;
 
-    flag = sixel_compat_getenv("SIXEL_DEBUG_TEMP");
+    flag = sixel_compat_getenv("_SIXEL_DEBUG_TEMP");
     if (flag == NULL || flag[0] == '\0') {
         return 0;
     }
