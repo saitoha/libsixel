@@ -99,3 +99,9 @@ python/libsixel_wheel.egg-info/
 ruby/dist/
 converters/jpegref
 tests/snake_64_metrics.json
+
+# fuzz runtime outputs
+.tmp/
+fuzz/fuzz-*-libfuzzer
+fuzz/fuzz-*-libfuzzer.exe
+images/component/
