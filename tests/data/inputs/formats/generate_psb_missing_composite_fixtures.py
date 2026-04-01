@@ -577,6 +577,10 @@ def main() -> None:
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_mask.psd",
     )
     convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
+    )
+    convert_fixture(
         "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_unknown_descriptor.psd",
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_unknown_descriptor.psd",
     )
@@ -595,6 +599,10 @@ def main() -> None:
     convert_fixture(
         "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_malformed_descriptor.psd",
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_malformed_descriptor.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
     )
     convert_fixture(
         "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_unknown_descriptor.psd",
