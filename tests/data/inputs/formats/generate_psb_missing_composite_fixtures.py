@@ -636,6 +636,18 @@ def main() -> None:
         "snake16_mode7_cmyk32_missing_composite_multilayer_normal_malformed_resource.psd",
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_malformed_resource.psd",
     )
+    convert_fixture(
+        "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_invalid_payload.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_fill_soco_descriptor_invalid_payload.psd",
+    )
+    convert_fixture(
+        "snake16_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_invalid_payload.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_fill_gdfl_descriptor_invalid_payload.psd",
+    )
+    convert_fixture(
+        "snake16_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_invalid_payload.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_fill_ptfl_descriptor_invalid_payload.psd",
+    )
 
     # RLE row-table(4-byte) path fixture for PSB layer channel decoding.
     convert_fixture(
