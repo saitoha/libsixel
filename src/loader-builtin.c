@@ -3443,10 +3443,18 @@ typedef struct sixel_builtin_psd_decode_basic_entry {
     sixel_builtin_psd_decode_basic_fn_t fn;
 } sixel_builtin_psd_decode_basic_entry_t;
 
-#if defined(__GNUC__) && !defined(__PCC__)
-# define SIXEL_BUILTIN_PSD_HELPER_UNUSED __attribute__((unused))
-#else
-# define SIXEL_BUILTIN_PSD_HELPER_UNUSED
+#if defined(__has_attribute)
+# if __has_attribute(unused)
+#  define SIXEL_BUILTIN_PSD_HELPER_UNUSED __attribute__((unused))
+# endif
+#endif
+
+#ifndef SIXEL_BUILTIN_PSD_HELPER_UNUSED
+# if defined(__GNUC__) && !defined(__PCC__)
+#  define SIXEL_BUILTIN_PSD_HELPER_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_BUILTIN_PSD_HELPER_UNUSED
+# endif
 #endif
 
 static int SIXEL_BUILTIN_PSD_HELPER_UNUSED
