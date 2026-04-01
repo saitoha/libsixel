@@ -2583,7 +2583,7 @@ jobs:
 
 
   core-autotools-msys2-variants:
-    needs: [coverage-autotools]
+    needs: [smoke]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -5028,7 +5028,7 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   haiku:
-    needs: [openbsd]
+    needs: [netbsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:

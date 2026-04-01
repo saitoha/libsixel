@@ -3282,6 +3282,77 @@ sixel_builtin_psd_parse_soco_descriptor_payload(
 }
 
 static int
+sixel_builtin_psd_parse_tysh_payload(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t descriptor_start;
+    size_t descriptor_end;
+
+    cursor = 0u;
+    descriptor_start = 0u;
+    descriptor_end = 0u;
+    if (data == NULL || layer == NULL) {
+        return 0;
+    }
+
+    /* Backward-compatible path used by existing minimal fixtures. */
+    if (sixel_builtin_psd_parse_soco_descriptor_payload(data, key_length, layer)) {
+        return 1;
+    }
+
+    /* TySh common structure:
+     * version(4) + transform(6*8) + text_desc_version(4) + descriptor...
+     */
+    if (key_length < 56u) {
+        return 0;
+    }
+    if (sixel_builtin_read_u32be_size(data) != 1u) {
+        return 0;
+    }
+    cursor = 4u + 48u;  /* version + matrix */
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    cursor += 4u;  /* text descriptor version */
+    descriptor_start = cursor;
+    if (!sixel_builtin_psd_descriptor_skip_object(data, key_length, &cursor, 0u)) {
+        return 0;
+    }
+    descriptor_end = cursor;
+    if (descriptor_end > descriptor_start &&
+        sixel_builtin_psd_parse_soco_descriptor_payload(
+            data + descriptor_start,
+            descriptor_end - descriptor_start,
+            layer)) {
+        return 1;
+    }
+
+    /* Optional warp descriptor follows in many TySh payloads.
+     * Parse opportunistically, but keep this path non-fatal.
+     */
+    if (cursor + 8u > key_length) {
+        return 0;
+    }
+    cursor += 8u;  /* warp version + warp descriptor version */
+    descriptor_start = cursor;
+    if (!sixel_builtin_psd_descriptor_skip_object(data, key_length, &cursor, 0u)) {
+        return 0;
+    }
+    descriptor_end = cursor;
+    if (descriptor_end > descriptor_start &&
+        sixel_builtin_psd_parse_soco_descriptor_payload(
+            data + descriptor_start,
+            descriptor_end - descriptor_start,
+            layer)) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_parse_fill_payload_sxfl(
     char const key[5],
     unsigned char const *data,
@@ -3971,7 +4042,7 @@ sixel_builtin_psd_parse_layer_extra_data(
             layer->has_non_pixel_payload = 1;
         }
         if (memcmp(key, "TySh", 4u) == 0) {
-            parsed_fill = sixel_builtin_psd_parse_soco_descriptor_payload(
+            parsed_fill = sixel_builtin_psd_parse_tysh_payload(
                 buffer + cursor,
                 key_length,
                 layer);

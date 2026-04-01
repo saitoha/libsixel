@@ -320,6 +320,27 @@ def build_descriptor_soco_payload_lab(l_star: float, a_star: float, b_star: floa
     return bytes(root)
 
 
+def build_tysh_wrapped_descriptor_payload(text_descriptor_payload: bytes) -> bytes:
+    if not text_descriptor_payload:
+        raise ValueError("text descriptor payload must not be empty")
+
+    warp_descriptor = bytearray()
+    warp_descriptor += _descriptor_unicode("")
+    warp_descriptor += _descriptor_key4(b"warp")
+    warp_descriptor += struct.pack(">I", 0)
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += text_descriptor_payload
+    payload += struct.pack(">I", 1)  # warp version
+    payload += struct.pack(">I", 16)  # warp descriptor version
+    payload += warp_descriptor
+    payload += struct.pack(">iiii", 0, 0, WIDTH, HEIGHT)  # text bounds
+    return bytes(payload)
+
+
 def build_descriptor_gdfl_payload(
     *,
     gradient_type_key: bytes,
@@ -2147,6 +2168,44 @@ def generate(out_dir: pathlib.Path):
                     "blend_key": b"norm",
                     "additional_blocks": [
                         (b"TySh", build_descriptor_soco_payload(255, 48, 64))
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2],
+                    "planes": rgb8_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_rgb8_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=3,
+            depth=8,
+            channels_header=3,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"TySh",
+                            build_tysh_wrapped_descriptor_payload(
+                                build_descriptor_soco_payload(255, 48, 64)
+                            ),
+                        )
                     ],
                 },
                 {
@@ -7208,6 +7267,44 @@ def generate(out_dir: pathlib.Path):
                     "blend_key": b"norm",
                     "additional_blocks": [
                         (b"TySh", build_descriptor_soco_payload(255, 48, 64))
+                    ],
+                },
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [0, 1, 2, 3],
+                    "planes": cmyk16_planes,
+                    "blend_key": b"norm",
+                },
+            ],
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_wrapped_descriptor.psd",
+        build_psd_layer_only_multilayer_custom(
+            color_mode=7,
+            depth=16,
+            channels_header=4,
+            color_mode_data=b"",
+            layers=[
+                {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": HEIGHT,
+                    "right": WIDTH,
+                    "channel_ids": [],
+                    "planes": [],
+                    "blend_key": b"norm",
+                    "additional_blocks": [
+                        (
+                            b"TySh",
+                            build_tysh_wrapped_descriptor_payload(
+                                build_descriptor_soco_payload(255, 48, 64)
+                            ),
+                        )
                     ],
                 },
                 {
