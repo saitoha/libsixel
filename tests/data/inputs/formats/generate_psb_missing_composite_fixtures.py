@@ -966,7 +966,9 @@ def main() -> None:
             dst_base = f"snake16_psb_{mode_prefix}{depth_tag}_missing_composite_multilayer"
             for suffix in [
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_cmyk",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab",
             ]:

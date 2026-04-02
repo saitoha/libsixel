@@ -3453,8 +3453,9 @@ typedef enum sixel_builtin_psd_tysh_engine_fillcolor_kind {
     SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN = 0,
     SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_GRAY = 1,
     SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB = 2,
-    SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK = 3,
-    SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB = 4
+    SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB = 3,
+    SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK = 4,
+    SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB = 5
 } sixel_builtin_psd_tysh_engine_fillcolor_kind_t;
 
 static int
@@ -3534,6 +3535,10 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
                 memcmp(data + token_begin, "/RGB", 4u) == 0) {
                 return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB;
             }
+            if (token_end - token_begin == 4u &&
+                memcmp(data + token_begin, "/HSB", 4u) == 0) {
+                return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB;
+            }
             if (token_end - token_begin == 5u &&
                 memcmp(data + token_begin, "/CMYK", 5u) == 0) {
                 return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
@@ -3604,6 +3609,26 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
             "/Grsc",
             5u)) {
         return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_GRAY;
+    }
+    if (sixel_builtin_psd_contains_ascii_token_in_range(
+            data,
+            begin,
+            end,
+            "/HSB",
+            4u) ||
+        sixel_builtin_psd_contains_ascii_token_in_range(
+            data,
+            begin,
+            end,
+            "/HSBC",
+            5u) ||
+        sixel_builtin_psd_contains_ascii_token_in_range(
+            data,
+            begin,
+            end,
+            "/Hsb",
+            4u)) {
+        return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB;
     }
     if (sixel_builtin_psd_contains_ascii_token_in_range(
             data,
@@ -3822,6 +3847,114 @@ sixel_builtin_psd_parse_tysh_fillcolor_engine_array(
     return 1;
 }
 
+static void
+sixel_builtin_psd_hsb_engine_components_to_rgb(
+    double hue,
+    double saturation,
+    double brightness,
+    float *pr,
+    float *pg,
+    float *pb)
+{
+    double h_norm;
+    double s_norm;
+    double v_norm;
+    double chroma;
+    double h_prime;
+    double x;
+    double m;
+    double r1;
+    double g1;
+    double b1;
+
+    h_norm = 0.0;
+    s_norm = 0.0;
+    v_norm = 0.0;
+    chroma = 0.0;
+    h_prime = 0.0;
+    x = 0.0;
+    m = 0.0;
+    r1 = 0.0;
+    g1 = 0.0;
+    b1 = 0.0;
+
+    if (hue == hue && hue >= 0.0 && hue <= 1.0) {
+        h_norm = hue * 360.0;
+    } else if (hue == hue) {
+        h_norm = hue;
+    }
+    while (h_norm < 0.0) {
+        h_norm += 360.0;
+    }
+    while (h_norm >= 360.0) {
+        h_norm -= 360.0;
+    }
+
+    if (saturation == saturation && saturation >= 0.0 && saturation <= 1.0) {
+        s_norm = saturation;
+    } else if (saturation == saturation && saturation <= 100.0) {
+        s_norm = saturation / 100.0;
+    } else if (saturation == saturation && saturation <= 255.0) {
+        s_norm = saturation / 255.0;
+    } else if (saturation == saturation) {
+        s_norm = 1.0;
+    }
+    if (s_norm < 0.0) {
+        s_norm = 0.0;
+    } else if (s_norm > 1.0) {
+        s_norm = 1.0;
+    }
+
+    if (brightness == brightness && brightness >= 0.0 && brightness <= 1.0) {
+        v_norm = brightness;
+    } else if (brightness == brightness && brightness <= 100.0) {
+        v_norm = brightness / 100.0;
+    } else if (brightness == brightness && brightness <= 255.0) {
+        v_norm = brightness / 255.0;
+    } else if (brightness == brightness) {
+        v_norm = 1.0;
+    }
+    if (v_norm < 0.0) {
+        v_norm = 0.0;
+    } else if (v_norm > 1.0) {
+        v_norm = 1.0;
+    }
+
+    chroma = v_norm * s_norm;
+    h_prime = h_norm / 60.0;
+    x = chroma * (1.0 - fabs(fmod(h_prime, 2.0) - 1.0));
+    m = v_norm - chroma;
+    if (h_prime < 1.0) {
+        r1 = chroma;
+        g1 = x;
+    } else if (h_prime < 2.0) {
+        r1 = x;
+        g1 = chroma;
+    } else if (h_prime < 3.0) {
+        g1 = chroma;
+        b1 = x;
+    } else if (h_prime < 4.0) {
+        g1 = x;
+        b1 = chroma;
+    } else if (h_prime < 5.0) {
+        r1 = x;
+        b1 = chroma;
+    } else {
+        r1 = chroma;
+        b1 = x;
+    }
+
+    if (pr != NULL) {
+        *pr = sixel_builtin_psd_clamp01((float)(r1 + m));
+    }
+    if (pg != NULL) {
+        *pg = sixel_builtin_psd_clamp01((float)(g1 + m));
+    }
+    if (pb != NULL) {
+        *pb = sixel_builtin_psd_clamp01((float)(b1 + m));
+    }
+}
+
 static int
 sixel_builtin_psd_apply_tysh_fillcolor_engine_components(
     sixel_builtin_psd_layer_record_t *layer,
@@ -3867,6 +4000,14 @@ sixel_builtin_psd_apply_tysh_fillcolor_engine_components(
         r = (1.0f - c) * (1.0f - k);
         g = (1.0f - m) * (1.0f - k);
         b = (1.0f - y) * (1.0f - k);
+    } else if (color_kind == SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB &&
+               count >= 3u) {
+        sixel_builtin_psd_hsb_engine_components_to_rgb(components[0],
+                                                       components[1],
+                                                       components[2],
+                                                       &r,
+                                                       &g,
+                                                       &b);
     } else if ((color_kind == SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB &&
                 count >= 3u) ||
                (color_kind == SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN &&
