@@ -143,9 +143,13 @@ Key points used by this roadmap:
     (RGB8 and CMYK8/CMYK16/CMYK32 mapped paths).
   - mode7 multi-layer non-pixel trace coverage
     (pixel-present ignore, no-pixel skip, and fill render cases).
-  - TySh EngineData `FillColor [...]` fallback parsing now complements
-    descriptor/SXFL paths for no-pixel non-pixel layers
-    (CMYK8 and mode7-mapped CMYK8 coverage).
+  - TySh EngineData fallback parsing now complements descriptor/SXFL paths for
+    no-pixel non-pixel layers:
+    - direct `FillColor [...]`,
+    - `FillColor << /Values [...] >>`, and
+    - `StyleRun/StyleSheetData`-nested
+      `FillColor << /ColorSpace /{Gray|RGB|CMYK|Lab} /Values [...] >>`
+      parsing.
   - descriptor fill LSQA coverage now includes:
     - `SoCo` descriptor color-object paths (`RGB/CMYK/Grayscale/HSB/Lab`)
       across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
@@ -163,8 +167,11 @@ Key points used by this roadmap:
     - malformed resource rotation contract (deterministic malformed-resource
       trace with decode success).
   - PSB missing-composite non-pixel decode coverage also includes
-    TySh EngineData `FillColor [...]` no-pixel fallback surfaces for
-    native CMYK8 and mode7-mapped CMYK8 paths.
+    TySh EngineData no-pixel fallback surfaces for native CMYK and
+    mode7-mapped CMYK paths:
+    - `FillColor [...]` / `FillColor << /Values [...] >>` on CMYK8, and
+    - `StyleRun/StyleSheetData` `FillColor /Values` CMYK surfaces on
+      `8/16/32bpc`.
   - descriptor malformed regression now includes:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
@@ -308,13 +315,15 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Extend non-pixel semantics beyond current fill payload support while
+1. Extend non-pixel semantics beyond current fill/TySh fill-color support while
    preserving deterministic degrade traces for unsupported semantics
-   (for example richer `TySh` payload interpretation beyond color-descriptor fill).
+   (for example richer `TySh` text-style payload interpretation beyond
+   `FillColor` extraction).
 2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
    large-document parity:
    - broaden missing-composite matrix/trace coverage to larger layouts, and
    - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
 3. Increase cross-mode visual quality regression density for non-pixel payload
-   rendering (LSQA) while keeping current ICC/trace contracts fixed.
+   rendering (LSQA), including Lab/Gray style payload baselines, while keeping
+   current ICC/trace contracts fixed.

@@ -30,6 +30,8 @@ for suffix in \
     nonpixel_nopixel_tysh_enginedata_fillcolor_rgb \
     nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk \
     nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray \
+    nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_cmyk \
+    nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab \
     nonpixel_nopixel_tysh_descriptor_gray \
     nonpixel_nopixel_tysh_descriptor_cmyk \
     nonpixel_nopixel_tysh_descriptor_hsb \
