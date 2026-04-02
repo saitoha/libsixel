@@ -52,6 +52,10 @@ option('perl', type: 'feature', value: 'disabled', description: 'Enable Perl bin
 option('tests', type: 'boolean', value: true, description: 'Build tests')
 option('fuzz', type: 'boolean', value: false,
        description: 'Build libFuzzer targets under fuzz/')
+option('fuzz_sanitizers', type: 'combo',
+       choices: ['auto', 'full', 'fuzzer'],
+       value: 'auto',
+       description: 'Fuzz sanitizer profile (auto: prefer address+undefined, fuzzer: libFuzzer only)')
 option('amalgamated_lib', type: 'boolean', value: false,
        description: 'Build libsixel from the amalgamated translation unit')
 option('amalgamated_tools', type: 'boolean', value: false,

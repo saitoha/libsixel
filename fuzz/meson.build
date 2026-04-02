@@ -11,12 +11,25 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size)
   return 0;
 }
 '''
-fuzz_mode_candidates = [
-  ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
-  ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
-  ['-fsanitize=fuzzer-no-link', '-fsanitize=fuzzer'],
-  ['-fsanitize=fuzzer', '-fsanitize=fuzzer'],
-]
+fuzz_sanitizer_mode = get_option('fuzz_sanitizers')
+if fuzz_sanitizer_mode == 'full'
+  fuzz_mode_candidates = [
+    ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+    ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+  ]
+elif fuzz_sanitizer_mode == 'fuzzer'
+  fuzz_mode_candidates = [
+    ['-fsanitize=fuzzer-no-link', '-fsanitize=fuzzer'],
+    ['-fsanitize=fuzzer', '-fsanitize=fuzzer'],
+  ]
+else
+  fuzz_mode_candidates = [
+    ['-fsanitize=fuzzer-no-link,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+    ['-fsanitize=fuzzer,address,undefined', '-fsanitize=fuzzer,address,undefined'],
+    ['-fsanitize=fuzzer-no-link', '-fsanitize=fuzzer'],
+    ['-fsanitize=fuzzer', '-fsanitize=fuzzer'],
+  ]
+endif
 
 selected_fuzz_c_arg = ''
 selected_fuzz_link_arg = ''
@@ -34,10 +47,11 @@ foreach mode : fuzz_mode_candidates
 endforeach
 
 if selected_fuzz_c_arg == ''
-  error('fuzz option requires a libFuzzer-capable toolchain; '
-        + 'no supported sanitizer flag combination was found')
+  error('fuzz option requires a libFuzzer-capable toolchain for mode "'
+        + fuzz_sanitizer_mode
+        + '"; no supported sanitizer flag combination was found')
 endif
-message('fuzz: using compile flag "' + selected_fuzz_c_arg
+message('fuzz: mode "' + fuzz_sanitizer_mode + '" using compile flag "' + selected_fuzz_c_arg
         + '" and link flag "' + selected_fuzz_link_arg + '"')
 
 fuzz_common_c_args = [

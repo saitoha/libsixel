@@ -12,6 +12,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#if defined(_WIN32) && defined(_MSC_VER)
+# include <windows.h>
+# define FUZZ_HAVE_WINDOWS_SEH 1
+#else
+# define FUZZ_HAVE_WINDOWS_SEH 0
+#endif
+
 #include <sixel.h>
 
 #include "chunk.h"
@@ -31,6 +38,42 @@ static sixel_loader_component_t *g_component = NULL;
 static int g_runtime_ready = 0;
 static int g_atexit_registered = 0;
 static unsigned char g_empty_input[1];
+static SIXELSTATUS fuzz_frame_callback(sixel_frame_t *frame, void *context);
+
+static int
+fuzz_component_is_wic(void)
+{
+    return FUZZ_LOADER_COMPONENT_NAME[0] == 'w'
+        && FUZZ_LOADER_COMPONENT_NAME[1] == 'i'
+        && FUZZ_LOADER_COMPONENT_NAME[2] == 'c'
+        && FUZZ_LOADER_COMPONENT_NAME[3] == '\0';
+}
+
+static SIXELSTATUS
+fuzz_loader_component_load_safe(sixel_chunk_t const *chunk)
+{
+#if FUZZ_HAVE_WINDOWS_SEH
+    if (fuzz_component_is_wic()) {
+        __try {
+            return sixel_loader_component_load(g_component,
+                                               chunk,
+                                               fuzz_frame_callback,
+                                               NULL);
+        } __except (EXCEPTION_EXECUTE_HANDLER) {
+            /*
+             * Keep fuzzing after WIC/COM exceptions so the process does not
+             * terminate on single malformed seeds.
+             */
+            return SIXEL_WIC_ERROR;
+        }
+    }
+#endif
+
+    return sixel_loader_component_load(g_component,
+                                       chunk,
+                                       fuzz_frame_callback,
+                                       NULL);
+}
 
 static uint64_t
 fuzz_data_mix64(uint8_t const *data, size_t size)
@@ -205,10 +248,7 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     chunk.source_path = NULL;
     chunk.allocator = g_allocator;
 
-    (void)sixel_loader_component_load(g_component,
-                                      &chunk,
-                                      fuzz_frame_callback,
-                                      NULL);
+    (void)fuzz_loader_component_load_safe(&chunk);
     return 0;
 }
 
