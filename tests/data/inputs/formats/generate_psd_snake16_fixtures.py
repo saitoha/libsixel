@@ -9122,6 +9122,24 @@ def generate(out_dir: pathlib.Path):
                 ),
             )
             write_file(
+                out_dir / f"{base_name}_values_named_device_rgb.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                        (
+                            1.0,
+                            48.0 / 255.0,
+                            64.0 / 255.0,
+                        ),
+                        color_space="DeviceRGB",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
                 out_dir / f"{base_name}_values_named_device_cmyk.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
                     color_mode=color_mode,
@@ -9136,6 +9154,20 @@ def generate(out_dir: pathlib.Path):
                             0.0,
                         ),
                         color_space="DeviceCMYK",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_values_named_device_gray.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                        (50.0,),
+                        color_space="DeviceGray",
                     ),
                     first_layer_has_pixels=False,
                 ),
@@ -9191,6 +9223,24 @@ def generate(out_dir: pathlib.Path):
                 ),
             )
             write_file(
+                out_dir / f"{base_name}_stylesheet_values_named_device_rgb.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_payload(
+                        (
+                            1.0,
+                            48.0 / 255.0,
+                            64.0 / 255.0,
+                        ),
+                        color_space="DeviceRGB",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
                 out_dir / f"{base_name}_stylesheet_values_named_device_cmyk.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
                     color_mode=color_mode,
@@ -9205,6 +9255,20 @@ def generate(out_dir: pathlib.Path):
                             0.0,
                         ),
                         color_space="DeviceCMYK",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_stylesheet_values_named_device_gray.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_payload(
+                        (50.0,),
+                        color_space="DeviceGray",
                     ),
                     first_layer_has_pixels=False,
                 ),
