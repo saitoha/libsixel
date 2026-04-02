@@ -8948,94 +8948,63 @@ def generate(out_dir: pathlib.Path):
             base_planes=base_planes,
         )
 
-    write_file(
-        out_dir / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd",
-        build_cmyk_multilayer_nonpixel_fixture(
-            color_mode=4,
-            depth=8,
-            base_planes=cmyk8_planes,
-            additional_block_key=b"TySh",
-            additional_block_payload=build_tysh_enginedata_fillcolor_payload(
-                255, 48, 64
-            ),
-            first_layer_has_pixels=False,
-        ),
-    )
-    write_file(
-        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd",
-        build_cmyk_multilayer_nonpixel_fixture(
-            color_mode=7,
-            depth=8,
-            base_planes=cmyk8_planes,
-            additional_block_key=b"TySh",
-            additional_block_payload=build_tysh_enginedata_fillcolor_payload(
-                255, 48, 64
-            ),
-            first_layer_has_pixels=False,
-        ),
-    )
-    write_file(
-        out_dir / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk.psd",
-        build_cmyk_multilayer_nonpixel_fixture(
-            color_mode=4,
-            depth=8,
-            base_planes=cmyk8_planes,
-            additional_block_key=b"TySh",
-            additional_block_payload=build_tysh_enginedata_fillcolor_values_payload(
-                (
-                    0.0,
-                    81.17647058823529,
-                    74.90196078431373,
-                    0.0,
-                )
-            ),
-            first_layer_has_pixels=False,
-        ),
-    )
-    write_file(
-        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk.psd",
-        build_cmyk_multilayer_nonpixel_fixture(
-            color_mode=7,
-            depth=8,
-            base_planes=cmyk8_planes,
-            additional_block_key=b"TySh",
-            additional_block_payload=build_tysh_enginedata_fillcolor_values_payload(
-                (
-                    0.0,
-                    81.17647058823529,
-                    74.90196078431373,
-                    0.0,
-                )
-            ),
-            first_layer_has_pixels=False,
-        ),
-    )
-    write_file(
-        out_dir / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray.psd",
-        build_cmyk_multilayer_nonpixel_fixture(
-            color_mode=4,
-            depth=8,
-            base_planes=cmyk8_planes,
-            additional_block_key=b"TySh",
-            additional_block_payload=build_tysh_enginedata_fillcolor_values_payload(
-                (50.0,)
-            ),
-            first_layer_has_pixels=False,
-        ),
-    )
-    write_file(
-        out_dir / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray.psd",
-        build_cmyk_multilayer_nonpixel_fixture(
-            color_mode=7,
-            depth=8,
-            base_planes=cmyk8_planes,
-            additional_block_key=b"TySh",
-            additional_block_payload=build_tysh_enginedata_fillcolor_values_payload(
-                (50.0,)
-            ),
-            first_layer_has_pixels=False,
-        ),
-    )
+    for depth_tag, depth_value, base_planes in [
+        ("8", 8, cmyk8_planes),
+        ("16", 16, cmyk16_planes),
+        ("32", 32, cmyk32_planes),
+    ]:
+        for color_mode in (4, 7):
+            mode_prefix = ""
+            if color_mode == 7:
+                mode_prefix = "mode7_"
+            base_name = (
+                f"snake16_{mode_prefix}cmyk{depth_tag}_missing_composite_multilayer_"
+                "nonpixel_nopixel_tysh_enginedata_fillcolor"
+            )
+            write_file(
+                out_dir / f"{base_name}_rgb.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_payload(
+                        255, 48, 64
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_values_cmyk.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_values_payload(
+                        (
+                            0.0,
+                            81.17647058823529,
+                            74.90196078431373,
+                            0.0,
+                        )
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_values_gray.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_values_payload(
+                        (50.0,)
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
 
     for depth_tag, depth_value, base_planes in [
         ("16", 16, cmyk16_planes),
