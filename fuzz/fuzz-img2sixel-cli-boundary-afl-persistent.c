@@ -796,6 +796,11 @@ main(void)
     }
     (void)close(palette_out_fd);
 
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wunused-variable"
+# pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
+#endif
     __AFL_FUZZ_INIT();
 
 #ifdef __AFL_HAVE_MANUAL_CONTROL
@@ -831,6 +836,9 @@ main(void)
                            palette_path,
                            palette_out_path);
     }
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 
     (void)close(input_fd);
     (void)close(palette_fd);
