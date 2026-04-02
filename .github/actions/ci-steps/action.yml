@@ -514,6 +514,9 @@ runs:
         PATH="$PWD/build-aux:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        if test "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}" = "1"; then
+          export _SIXEL_DEBUG_TEMP=1
+        fi
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build and test (Meson, Cygwin)

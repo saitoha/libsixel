@@ -3021,6 +3021,7 @@ jobs:
             extra_packages: >-
               make
             exec_type: cygwin
+            debug_temp: "1"
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
