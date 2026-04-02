@@ -992,6 +992,15 @@ def main() -> None:
                     f"{src_base}_{suffix}_bad_icc_profile.psd",
                     f"{dst_base}_{suffix}_bad_icc_profile.psd",
                 )
+            if depth_tag == "8":
+                for suffix in [
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
+                ]:
+                    convert_fixture(
+                        f"{src_base}_{suffix}_bad_icc_profile.psd",
+                        f"{dst_base}_{suffix}_bad_icc_profile.psd",
+                    )
             for suffix in [
                 "normal",
                 tysh_malformed_rotation[depth_tag],
@@ -1001,6 +1010,15 @@ def main() -> None:
                     f"{src_base}_{suffix}_malformed_resource.psd",
                     f"{dst_base}_{suffix}_malformed_resource.psd",
                 )
+            if depth_tag == "8":
+                for suffix in [
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
+                ]:
+                    convert_fixture(
+                        f"{src_base}_{suffix}_malformed_resource.psd",
+                        f"{dst_base}_{suffix}_malformed_resource.psd",
+                    )
     convert_fixture(
         "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
