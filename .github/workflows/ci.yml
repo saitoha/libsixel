@@ -690,7 +690,10 @@ jobs:
           $artifactDir = Join-Path $workspace '.tmp\fuzz-artifacts-loader\wic'
           New-Item -ItemType Directory -Force -Path $targetCorpus, $artifactDir | Out-Null
 
-          $env:ASAN_OPTIONS = 'detect_leaks=0:abort_on_error=1'
+          # WIC (windowscodecs/combase) can trigger allocator-size probes on
+          # foreign pointers under ASan on Windows; disable that noisy check so
+          # this job can surface actionable libsixel-side faults.
+          $env:ASAN_OPTIONS = 'detect_leaks=0:abort_on_error=1:check_malloc_usable_size=0'
           $env:UBSAN_OPTIONS = 'halt_on_error=1:print_stacktrace=1:report_error_type=1'
 
           $probeSource = Join-Path $env:TEMP 'libfuzzer_probe.c'
