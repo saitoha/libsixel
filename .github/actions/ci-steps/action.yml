@@ -592,7 +592,6 @@ runs:
         }
 
         Get-ChildItem -Path $workspace -Filter *.coverage -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
-        $includeFiles = (Join-Path $workspace '**')
 
         $drive = $workspace.Substring(0, 1).ToLowerInvariant()
         $rest = $workspace.Substring(2).Replace('\', '/')
@@ -604,9 +603,9 @@ runs:
         $bashScript = "unset MSVC_PATH __VSCMD_PREINIT_PATH; cd '$workspaceCygwin'; if test '$debugTemp' = '1'; then export _SIXEL_DEBUG_TEMP=1; fi; $makeCmd $checkTarget"
 
         if ($coverageTool.ToLower().EndsWith('.dll')) {
-          & dotnet $coverageTool collect --include-files $includeFiles -- $cygwinBash '-o' 'igncr' '-lc' $bashScript
+          & dotnet $coverageTool collect -- $cygwinBash '-o' 'igncr' '-lc' $bashScript
         } else {
-          & $coverageTool collect --include-files $includeFiles -- $cygwinBash '-o' 'igncr' '-lc' $bashScript
+          & $coverageTool collect -- $cygwinBash '-o' 'igncr' '-lc' $bashScript
         }
         if ($LASTEXITCODE -ne 0) {
           throw "Microsoft.CodeCoverage collect failed with exit code $LASTEXITCODE"

@@ -2840,7 +2840,7 @@ jobs:
             setup_prefix: >-
               CC=cl
               LD=link
-              LDFLAGS="/PROFILE"
+              LDFLAGS="-Wl,-PROFILE"
               AR="sh ar-lib lib"
               ARFLAGS=cr
               NM="dumpbin -symbols"
