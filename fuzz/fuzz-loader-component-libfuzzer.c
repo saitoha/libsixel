@@ -54,7 +54,11 @@ static SIXELSTATUS
 fuzz_frame_callback(sixel_frame_t *frame, void *context)
 {
     (void)context;
-    return frame == NULL ? SIXEL_BAD_ARGUMENT : SIXEL_OK;
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    (void)sixel_frame_set_delay(frame, 0);
+    return SIXEL_OK;
 }
 
 static void
@@ -139,6 +143,8 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     int fstatic;
     int fuse_palette;
     int reqcolors;
+    int loop_control;
+    int start_frame_no;
     int enable_cms;
     int use_bgcolor;
     unsigned char bgcolor[3];
@@ -157,6 +163,8 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     fstatic = (int)(h & UINT64_C(1));
     fuse_palette = (int)((h >> 1) & UINT64_C(1));
     reqcolors = 2 + ((int)((h >> 8) & UINT64_C(0xff)) % (SIXEL_PALETTE_MAX - 1));
+    loop_control = SIXEL_LOOP_DISABLE;
+    start_frame_no = 0;
     enable_cms = (int)((h >> 16) & UINT64_C(1));
     use_bgcolor = (int)((h >> 17) & UINT64_C(1));
     bgcolor[0] = (unsigned char)(h >> 24);
@@ -172,6 +180,12 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     (void)sixel_loader_component_setopt(g_component,
                                         SIXEL_LOADER_OPTION_REQCOLORS,
                                         &reqcolors);
+    (void)sixel_loader_component_setopt(g_component,
+                                        SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                        &loop_control);
+    (void)sixel_loader_component_setopt(g_component,
+                                        SIXEL_LOADER_OPTION_START_FRAME_NO,
+                                        &start_frame_no);
     if (use_bgcolor) {
         (void)sixel_loader_component_setopt(g_component,
                                             SIXEL_LOADER_OPTION_BGCOLOR,

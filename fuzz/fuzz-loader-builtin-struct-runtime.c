@@ -61,42 +61,6 @@ fuzz_pick_reqcolors(unsigned char byte)
     return 2 + ((int)byte % (SIXEL_PALETTE_MAX - 1));
 }
 
-static int
-fuzz_pick_loop_control(unsigned char byte)
-{
-    switch (byte % 3u) {
-    case 0u:
-        return SIXEL_LOOP_AUTO;
-    case 1u:
-        return SIXEL_LOOP_FORCE;
-    default:
-        return SIXEL_LOOP_DISABLE;
-    }
-}
-
-static int
-fuzz_pick_start_frame(unsigned char byte)
-{
-    switch (byte % 8u) {
-    case 0u:
-        return -2;
-    case 1u:
-        return -1;
-    case 2u:
-        return 0;
-    case 3u:
-        return 1;
-    case 4u:
-        return 2;
-    case 5u:
-        return 3;
-    case 6u:
-        return 8;
-    default:
-        return INT_MAX;
-    }
-}
-
 static void
 fuzz_pick_loader_options(uint8_t const *data,
                          size_t size,
@@ -115,8 +79,11 @@ fuzz_pick_loader_options(uint8_t const *data,
     *fstatic = (int)(h & UINT64_C(1));
     *fuse_palette = (int)((h >> 1) & UINT64_C(1));
     *reqcolors = fuzz_pick_reqcolors((unsigned char)(h >> 8));
-    *loop_control = fuzz_pick_loop_control((unsigned char)(h >> 16));
-    *start_frame_no = fuzz_pick_start_frame((unsigned char)(h >> 24));
+    /*
+     * Avoid unbounded animation traversal in fuzz mode.
+     */
+    *loop_control = SIXEL_LOOP_DISABLE;
+    *start_frame_no = 0;
     *enable_cms = (int)((h >> 32) & UINT64_C(1));
     *use_bgcolor = (int)((h >> 33) & UINT64_C(1));
     bgcolor[0] = (unsigned char)(h >> 40);
@@ -131,6 +98,7 @@ fuzz_frame_callback(sixel_frame_t *frame, void *context)
     if (frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    (void)sixel_frame_set_delay(frame, 0);
     return SIXEL_OK;
 }
 
