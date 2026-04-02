@@ -1031,6 +1031,11 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
         next_offset = offset + 8u + chunk_padded_size;
         offset = next_offset;
     }
+    if (offset != size) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: trailing bytes after chunks.");
+        return SIXEL_BAD_INPUT;
+    }
 
     if (data_chunk == NULL) {
         sixel_helper_set_additional_message(
@@ -1046,7 +1051,11 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
         return SIXEL_BAD_INPUT;
     }
     version = sixel_palette_read_le16(chunk + 8);
-    (void)version;
+    if (version != 0x0300u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: invalid RIFF palette version.");
+        return SIXEL_BAD_INPUT;
+    }
     entry_count = sixel_palette_read_le16(chunk + 10);
     if (entry_count == 0u || entry_count > 256u) {
         sixel_helper_set_additional_message(
