@@ -739,8 +739,16 @@ def main() -> None:
         "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk_bad_icc_profile.psd",
     )
     convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_bad_icc_profile.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_bad_icc_profile.psd",
+    )
+    convert_fixture(
         "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk_bad_icc_profile.psd",
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk_bad_icc_profile.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_bad_icc_profile.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_bad_icc_profile.psd",
     )
     convert_fixture(
         "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray_bad_icc_profile.psd",
@@ -787,8 +795,16 @@ def main() -> None:
         "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk_malformed_resource.psd",
     )
     convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_malformed_resource.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_malformed_resource.psd",
+    )
+    convert_fixture(
         "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk_malformed_resource.psd",
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk_malformed_resource.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_malformed_resource.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk_malformed_resource.psd",
     )
     convert_fixture(
         "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray_malformed_resource.psd",
@@ -903,6 +919,7 @@ def main() -> None:
         "nonpixel_nopixel_tysh_wrapped_malformed_descriptor",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_rgb",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cmyk",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_cmyk",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
