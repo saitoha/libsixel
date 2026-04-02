@@ -911,6 +911,10 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     size_t chunk_payload_limit;
     size_t chunk_padded_size;
     size_t next_offset;
+    unsigned int riff_size_declared;
+    size_t riff_size_expected;
+    unsigned char const *data_chunk;
+    size_t data_chunk_size;
 
     status = SIXEL_FALSE;
     offset = 0u;
@@ -927,6 +931,10 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     chunk_payload_limit = 0u;
     chunk_padded_size = 0u;
     next_offset = 0u;
+    riff_size_declared = 0u;
+    riff_size_expected = 0u;
+    data_chunk = NULL;
+    data_chunk_size = 0u;
 
     if (encoder == NULL || dither == NULL) {
         sixel_helper_set_additional_message(
@@ -941,6 +949,14 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     if (memcmp(data, "RIFF", 4) != 0 || memcmp(data + 8, "PAL ", 4) != 0) {
         sixel_helper_set_additional_message(
             "sixel_palette_parse_pal_riff: missing RIFF header.");
+        return SIXEL_BAD_INPUT;
+    }
+    riff_size_declared = sixel_palette_read_le32(data + 4);
+    riff_size_expected = size - 8u;
+    if (riff_size_expected > 0xffffffffu ||
+            riff_size_declared != (unsigned int)riff_size_expected) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: RIFF size mismatch.");
         return SIXEL_BAD_INPUT;
     }
 
@@ -960,7 +976,13 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
             return SIXEL_BAD_INPUT;
         }
         if (memcmp(chunk, "data", 4) == 0) {
-            break;
+            if (data_chunk != NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_pal_riff: duplicate data chunk.");
+                return SIXEL_BAD_INPUT;
+            }
+            data_chunk = chunk;
+            data_chunk_size = chunk_size;
         }
         chunk_padded_size = chunk_size;
         if ((chunk_padded_size & 1u) != 0u) {
@@ -985,12 +1007,13 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
         offset = next_offset;
     }
 
-    if (offset > size || size - offset < 8u || chunk == NULL ||
-            memcmp(chunk, "data", 4) != 0) {
+    if (data_chunk == NULL) {
         sixel_helper_set_additional_message(
             "sixel_palette_parse_pal_riff: missing data chunk.");
         return SIXEL_BAD_INPUT;
     }
+    chunk = data_chunk;
+    chunk_size = data_chunk_size;
 
     if (chunk_size < 4u) {
         sixel_helper_set_additional_message(
