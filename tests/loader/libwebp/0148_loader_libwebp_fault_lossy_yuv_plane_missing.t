@@ -3,14 +3,11 @@
 
 set -eux
 
-case "${HAVE_WEBP-}" in
-    1)
-        ;;
-    *)
-        printf "1..0 # SKIP libwebp loader is unavailable\n"
-        exit 0
-        ;;
-esac
+test "${HAVE_WEBP-}" = 1 || {
+    printf "1..0 # SKIP libwebp loader is unavailable\n"
+    exit 0
+}
+
 
 echo "1..1"
 set -v
