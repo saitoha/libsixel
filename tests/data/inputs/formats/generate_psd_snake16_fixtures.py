@@ -622,6 +622,46 @@ def build_tysh_enginedata_fillcolor_dual_scope_nested_values_precedence_payload(
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_values_named_malformed_payload(
+    *,
+    color_space: str,
+    token_name: str = "Color",
+) -> bytes:
+    if color_space not in (
+        "Gray",
+        "RGB",
+        "HSB",
+        "CMYK",
+        "Lab",
+        "DeviceGray",
+        "DeviceRGB",
+        "DeviceCMYK",
+        "CIELab",
+    ):
+        raise ValueError(
+            "color_space must be Gray/RGB/HSB/CMYK/Lab/"
+            "DeviceGray/DeviceRGB/DeviceCMYK/CIELab"
+        )
+    if token_name not in ("FillColor", "Color"):
+        raise ValueError("token_name must be FillColor or Color")
+
+    # Malformed by design: /Values array contains color-space token only and no
+    # numeric components. This should deterministically trigger skip trace.
+    engine_data = (
+        "/EngineData << "
+        f"/{token_name} << /Type /SolidColor /Values [/{color_space}] >> "
+        ">>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_values_named_object_payload(
     components: tuple[float, ...],
     *,
@@ -9419,6 +9459,20 @@ def generate(out_dir: pathlib.Path):
                         additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
                             (53.389, 0.0, 0.0),
                             color_space="CIELab",
+                            token_name="Color",
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
+                write_file(
+                    out_dir / f"{base_name}_color_values_named_device_rgb_malformed_payload.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_values_named_malformed_payload(
+                            color_space="DeviceRGB",
                             token_name="Color",
                         ),
                         first_layer_has_pixels=False,
