@@ -261,6 +261,35 @@ sixel_palette_has_utf8_bom(unsigned char const *data, size_t size)
 }
 
 static int
+sixel_palette_has_non_utf8_text_bom(unsigned char const *data, size_t size)
+{
+    if (data == NULL || size < 2u) {
+        return 0;
+    }
+    /*
+     * Text palettes are UTF-8 only. Reject UTF-16/UTF-32 BOM markers
+     * explicitly so diagnostics stay deterministic.
+     */
+    if (size >= 4u) {
+        if (data[0] == 0xffu && data[1] == 0xfeu
+                && data[2] == 0x00u && data[3] == 0x00u) {
+            return 1;
+        }
+        if (data[0] == 0x00u && data[1] == 0x00u
+                && data[2] == 0xfeu && data[3] == 0xffu) {
+            return 1;
+        }
+    }
+    if (data[0] == 0xffu && data[1] == 0xfeu) {
+        return 1;
+    }
+    if (data[0] == 0xfeu && data[1] == 0xffu) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
 sixel_palette_tail_is_blank(char const *tail)
 {
     if (tail == NULL) {
@@ -715,6 +744,11 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
         sixel_helper_set_additional_message(
             "sixel_palette_parse_pal_jasc: size overflow.");
         return SIXEL_BAD_ALLOCATION;
+    }
+    if (sixel_palette_has_non_utf8_text_bom(data, size)) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: unsupported text encoding.");
+        return SIXEL_BAD_INPUT;
     }
     if (sixel_palette_contains_nul_byte(data, size)) {
         sixel_helper_set_additional_message(
@@ -1173,6 +1207,11 @@ sixel_palette_parse_gpl(unsigned char const *data,
         sixel_helper_set_additional_message(
             "sixel_palette_parse_gpl: size overflow.");
         return SIXEL_BAD_ALLOCATION;
+    }
+    if (sixel_palette_has_non_utf8_text_bom(data, size)) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: unsupported text encoding.");
+        return SIXEL_BAD_INPUT;
     }
     if (sixel_palette_contains_nul_byte(data, size)) {
         sixel_helper_set_additional_message(
