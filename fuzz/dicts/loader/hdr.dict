@@ -1,3 +1,3 @@
-"#?RADIANCE\n"
-"FORMAT=32-bit_rle_rgbe\n"
-"-Y 1 +X 1\n"
+"#?RADIANCE\x0a"
+"FORMAT=32-bit_rle_rgbe\x0a"
+"-Y 1 +X 1\x0a"

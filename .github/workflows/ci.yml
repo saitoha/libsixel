@@ -584,7 +584,8 @@ jobs:
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             ./configure --enable-fuzz --with-coregraphics
-            make -j"$(sysctl -n hw.ncpu)"
+            make -C src -j"$(sysctl -n hw.ncpu)" libsixel.la
+            make -C fuzz -j"$(sysctl -n hw.ncpu)" fuzz-loader-coregraphics-libfuzzer
             harness="$PWD/fuzz/fuzz-loader-coregraphics-libfuzzer"
             target_corpus="$FUZZ_COMPONENT_CORPUS/coregraphics"
             if [ ! -x "$harness" ]; then
@@ -603,14 +604,14 @@ jobs:
               echo "coregraphics-corpus: no files to merge"
             fi
             rm -rf "$merge_seed"
-            make fuzz-run-loader-coregraphics \
-              FUZZ_BUILTIN_CORPUS="$PWD/.tmp/fuzz-corpus-loader" \
+            make -C fuzz run-loader-coregraphics \
+              FUZZ_COMPONENT_CORPUS="$FUZZ_COMPONENT_CORPUS" \
               FUZZ_COMPONENT_ARGS="$fuzz_args" 2>&1 \
               | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
               | tee "$run_log"
           else
             meson setup builddir -Dfuzz=true -Dcoregraphics=enabled
-            meson compile -C builddir -v
+            meson compile -C builddir -v fuzz-loader-coregraphics-libfuzzer
             harness="$PWD/builddir/fuzz/fuzz-loader-coregraphics-libfuzzer"
             target_corpus="$FUZZ_COMPONENT_CORPUS/coregraphics"
             if [ ! -x "$harness" ]; then
@@ -751,17 +752,17 @@ jobs:
           if ! clang -x c -c /tmp/libfuzzer_probe.c \
             -fsanitize=fuzzer-no-link,address,undefined \
             -o /tmp/libfuzzer_probe.o > /tmp/libfuzzer_probe_compile.log 2>&1; then
-            echo "::error::libFuzzer compile flags are unsupported on this MSYS2 clang target; cannot run fuzz-run-loader-wic."
+            echo "::warning::libFuzzer compile flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
             sed -n '1,80p' /tmp/libfuzzer_probe_compile.log || true
-            exit 1
+            exit 0
           fi
 
           if ! clang -x c /tmp/libfuzzer_probe.c \
             -fsanitize=fuzzer,address,undefined \
             -o /tmp/libfuzzer_probe.exe > /tmp/libfuzzer_probe_link.log 2>&1; then
-            echo "::error::libFuzzer link flags are unsupported on this MSYS2 clang target; cannot run fuzz-run-loader-wic."
+            echo "::warning::libFuzzer link flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
             sed -n '1,80p' /tmp/libfuzzer_probe_link.log || true
-            exit 1
+            exit 0
           fi
 
           run_log="$FUZZ_COMPONENT_ARTIFACT_DIR/run.log"
