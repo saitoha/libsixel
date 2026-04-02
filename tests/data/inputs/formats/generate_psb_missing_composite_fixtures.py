@@ -972,11 +972,13 @@ def main() -> None:
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_device_rgb",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_device_cmyk",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_device_gray",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_cielab",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_cmyk",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_device_rgb",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_device_cmyk",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_device_gray",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_cielab",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab",
             ]:
