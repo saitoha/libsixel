@@ -500,10 +500,6 @@ sixel_palette_guess_format(unsigned char const *data, size_t size)
         return SIXEL_PALETTE_FORMAT_NONE;
     }
 
-    if (size == 256u * 3u || size == 256u * 3u + 4u) {
-        return SIXEL_PALETTE_FORMAT_ACT;
-    }
-
     if (size >= 12u && memcmp(data, "RIFF", 4) == 0
             && memcmp(data + 8, "PAL ", 4) == 0) {
         return SIXEL_PALETTE_FORMAT_PAL_RIFF;
@@ -519,6 +515,9 @@ sixel_palette_guess_format(unsigned char const *data, size_t size)
     }
     if (data_size >= 12u && memcmp(data + offset, "GIMP Palette", 12) == 0) {
         return SIXEL_PALETTE_FORMAT_GPL;
+    }
+    if (size == 256u * 3u || size == 256u * 3u + 4u) {
+        return SIXEL_PALETTE_FORMAT_ACT;
     }
 
     return SIXEL_PALETTE_FORMAT_NONE;

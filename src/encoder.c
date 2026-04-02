@@ -2973,6 +2973,14 @@ sixel_prepare_specified_palette(
                 status = SIXEL_BAD_INPUT;
                 goto palette_cleanup;
             }
+            if (need_detection
+                    && format_detected == SIXEL_PALETTE_FORMAT_ACT) {
+                sixel_helper_set_additional_message(
+                    "sixel_prepare_specified_palette: ambiguous ACT "
+                    "payload without extension; use act:PATH.");
+                status = SIXEL_BAD_INPUT;
+                goto palette_cleanup;
+            }
             format_final = format_detected;
         } else if (format_final == SIXEL_PALETTE_FORMAT_PAL_AUTO) {
             format_detected = sixel_palette_guess_format(buffer,
