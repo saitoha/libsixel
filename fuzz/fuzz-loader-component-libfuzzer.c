@@ -195,7 +195,9 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
                                             SIXEL_LOADER_OPTION_BGCOLOR,
                                             NULL);
     }
-    sixel_helper_set_builtin_enable_cms(enable_cms);
+    (void)sixel_loader_component_setopt(g_component,
+                                        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS,
+                                        &enable_cms);
 
     chunk.buffer = size == 0u ? g_empty_input : (unsigned char *)(uintptr_t)data;
     chunk.size = size;
