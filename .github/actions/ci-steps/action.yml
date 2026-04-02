@@ -604,9 +604,9 @@ runs:
         $bashScript = "cd '$workspaceCygwin'; if test '$debugTemp' = '1'; then export _SIXEL_DEBUG_TEMP=1; fi; $makeCmd $checkTarget"
 
         if ($coverageTool.ToLower().EndsWith('.dll')) {
-          & dotnet $coverageTool collect --include-files $includeFiles $cygwinBash '-o' 'igncr' '-lc' $bashScript
+          & dotnet $coverageTool collect --include-files $includeFiles -- $cygwinBash '-o' 'igncr' '-lc' $bashScript
         } else {
-          & $coverageTool collect --include-files $includeFiles $cygwinBash '-o' 'igncr' '-lc' $bashScript
+          & $coverageTool collect --include-files $includeFiles -- $cygwinBash '-o' 'igncr' '-lc' $bashScript
         }
         if ($LASTEXITCODE -ne 0) {
           throw "Microsoft.CodeCoverage collect failed with exit code $LASTEXITCODE"
