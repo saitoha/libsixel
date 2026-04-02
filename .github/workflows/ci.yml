@@ -111,7 +111,7 @@ jobs:
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
-      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-struct/{1}/', github.workspace, matrix.target) }}
+      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-struct/{1}/', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -223,7 +223,7 @@ jobs:
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
-      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -407,7 +407,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -571,7 +571,7 @@ jobs:
           workspace="$(pwd)"
           export FUZZ_COMPONENT_CORPUS="$workspace/.tmp/fuzz-corpus-loader/component"
           export FUZZ_COMPONENT_ARTIFACT_DIR="$workspace/.tmp/fuzz-artifacts-loader/wic"
-          export FUZZ_COMPONENT_ARGS="-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict=$workspace/fuzz/loader-builtin.dict -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
+          export FUZZ_COMPONENT_ARGS="-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict=$workspace/fuzz/loader-builtin.dict -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
           export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
           export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1:report_error_type=1"
           export PATH="/clang64/bin:$PATH"
