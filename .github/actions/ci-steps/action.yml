@@ -517,7 +517,106 @@ runs:
         if test "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}" = "1"; then
           export _SIXEL_DEBUG_TEMP=1
         fi
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+        if test "${{ fromJSON(inputs.matrix_json).coverage_provider || '' }}" = "msvc-codecoverage"; then
+          echo "Skipping make check here; dedicated MSVC CodeCoverage step will execute tests."
+        else
+          ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+        fi
+
+    - name: Build and test (Autotools, Cygwin, MSVC CodeCoverage)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+            && (fromJSON(inputs.matrix_json).coverage_provider || '') == 'msvc-codecoverage' }}
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+
+        $workspace = (Resolve-Path $env:GITHUB_WORKSPACE).Path
+        Set-Location $workspace
+
+        $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+        if (-not (Test-Path $vswhere)) {
+          throw "vswhere.exe not found: $vswhere"
+        }
+
+        $vsInstallPath = (& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.TestTools.BuildTools -property installationPath | Select-Object -First 1).Trim()
+        if ([string]::IsNullOrWhiteSpace($vsInstallPath)) {
+          throw 'Visual Studio installation path was not detected.'
+        }
+
+        $coverageTool = $null
+        $coverageCandidates = @(
+          (Join-Path $vsInstallPath 'Common7\IDE\Extensions\Microsoft\CodeCoverage.Console\Microsoft.CodeCoverage.Console.exe'),
+          (Join-Path $vsInstallPath 'Common7\IDE\Extensions\Microsoft\CodeCoverage.Console\Microsoft.CodeCoverage.Console.dll')
+        )
+        foreach ($candidate in $coverageCandidates) {
+          if (Test-Path $candidate) {
+            $coverageTool = $candidate
+            break
+          }
+        }
+        if (-not $coverageTool) {
+          $found = Get-ChildItem -Path $vsInstallPath -Filter 'Microsoft.CodeCoverage.Console.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($found) {
+            $coverageTool = $found.FullName
+          }
+        }
+        if (-not $coverageTool) {
+          throw "Microsoft.CodeCoverage.Console tool was not found under $vsInstallPath"
+        }
+
+        $dotnetTools = Join-Path $env:USERPROFILE '.dotnet\tools'
+        $env:PATH = "$dotnetTools;$env:PATH"
+        if (-not (Get-Command dotnet-coverage -ErrorAction SilentlyContinue)) {
+          & dotnet tool install --global dotnet-coverage
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to install dotnet-coverage.'
+          }
+        }
+
+        $cygwinBash = 'C:\cygwin\bin\bash.exe'
+        if (-not (Test-Path $cygwinBash)) {
+          throw "Cygwin bash not found: $cygwinBash"
+        }
+
+        Get-ChildItem -Path $workspace -Filter *.coverage -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
+        $includeFiles = (Join-Path $workspace '**')
+
+        $drive = $workspace.Substring(0, 1).ToLowerInvariant()
+        $rest = $workspace.Substring(2).Replace('\', '/')
+        $workspaceCygwin = "/cygdrive/$drive$rest"
+
+        $makeCmd = "${{ fromJSON(inputs.matrix_json).make || 'make' }}"
+        $checkTarget = "${{ fromJSON(inputs.matrix_json).check_target || 'check' }}"
+        $debugTemp = "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}"
+        $bashScript = "cd '$workspaceCygwin'; if test '$debugTemp' = '1'; then export _SIXEL_DEBUG_TEMP=1; fi; $makeCmd $checkTarget"
+
+        if ($coverageTool.ToLower().EndsWith('.dll')) {
+          & dotnet $coverageTool collect --include-files $includeFiles $cygwinBash '-o' 'igncr' '-lc' $bashScript
+        } else {
+          & $coverageTool collect --include-files $includeFiles $cygwinBash '-o' 'igncr' '-lc' $bashScript
+        }
+        if ($LASTEXITCODE -ne 0) {
+          throw "Microsoft.CodeCoverage collect failed with exit code $LASTEXITCODE"
+        }
+
+        $coverageFiles = @(Get-ChildItem -Path $workspace -Filter *.coverage -Recurse -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName)
+        if (-not $coverageFiles) {
+          throw 'No .coverage file was produced by Microsoft.CodeCoverage collect.'
+        }
+
+        $coberturaPath = Join-Path $workspace 'coverage.cobertura.xml'
+        if (Test-Path $coberturaPath) {
+          Remove-Item $coberturaPath -Force
+        }
+        & dotnet-coverage merge -f cobertura -o $coberturaPath @coverageFiles
+        if ($LASTEXITCODE -ne 0) {
+          throw "dotnet-coverage merge failed with exit code $LASTEXITCODE"
+        }
+        if (-not (Test-Path $coberturaPath) -or (Get-Item $coberturaPath).Length -eq 0) {
+          throw 'coverage.cobertura.xml was not generated or is empty.'
+        }
 
     - name: Build and test (Meson, Cygwin)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
@@ -1026,6 +1125,7 @@ runs:
             && (contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
                 || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage')
                 || contains(fromJSON(inputs.matrix_json).label, '-coverage'))
+            && (fromJSON(inputs.matrix_json).coverage_provider || '') != 'msvc-codecoverage'
             && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
       shell: C:\cygwin\bin\bash.exe -o igncr {0}
       run: |
@@ -1148,6 +1248,8 @@ runs:
           **/*.trs
           **/_artifacts/**
           coverage.info
+          coverage.cobertura.xml
+          output.coverage
           python-coverage.info
           ruby-coverage.info
           perl-coverage.info
@@ -1182,6 +1284,32 @@ runs:
 
         if ! grep -q '^SF:' coverage.info; then
           echo "coverage.info does not contain SF records; skip Coveralls upload"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        echo "upload_ready=true" >> "$GITHUB_OUTPUT"
+
+    - name: Validate coverage.cobertura.xml
+      id: cobertura_coverage_check
+      if: ${{ hashFiles('coverage.cobertura.xml') != '' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        if ! test -s coverage.cobertura.xml; then
+          echo "coverage.cobertura.xml is empty; skip Coveralls upload"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        if ! grep -q '<coverage' coverage.cobertura.xml; then
+          echo "coverage.cobertura.xml does not include a <coverage> root; skip Coveralls upload"
+          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        if ! grep -q '<class ' coverage.cobertura.xml; then
+          echo "coverage.cobertura.xml does not contain class entries; skip Coveralls upload"
           echo "upload_ready=false" >> "$GITHUB_OUTPUT"
           exit 0
         fi
@@ -1357,6 +1485,46 @@ runs:
       with:
         github-token: ${{ inputs.github_token }}
         path-to-lcov: coverage.info
+        flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
+        parallel: true
+
+    - name: Upload Cobertura to Coveralls (per-flag, parallel)
+      id: coveralls_upload_cobertura
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      if: >-
+        ${{ hashFiles('coverage.cobertura.xml') != ''
+            && steps.cobertura_coverage_check.outputs.upload_ready == 'true' }}
+      with:
+        github-token: ${{ inputs.github_token }}
+        file: coverage.cobertura.xml
+        format: cobertura
+        base-path: ${{ github.workspace }}
+        flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
+        parallel: true
+
+    - name: Wait before Coveralls retry (cobertura per-flag)
+      if: >-
+        ${{ hashFiles('coverage.cobertura.xml') != ''
+            && steps.cobertura_coverage_check.outputs.upload_ready == 'true'
+            && steps.coveralls_upload_cobertura.outcome == 'failure' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 5
+
+    - name: Upload Cobertura to Coveralls (per-flag, retry)
+      if: >-
+        ${{ hashFiles('coverage.cobertura.xml') != ''
+            && steps.cobertura_coverage_check.outputs.upload_ready == 'true'
+            && steps.coveralls_upload_cobertura.outcome == 'failure' }}
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ inputs.github_token }}
+        file: coverage.cobertura.xml
+        format: cobertura
+        base-path: ${{ github.workspace }}
         flag-name: ${{ fromJSON(inputs.matrix_json).label || '' }}
         parallel: true
 

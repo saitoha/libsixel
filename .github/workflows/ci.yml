@@ -2801,6 +2801,7 @@ jobs:
             setup_prefix: >-
               CC=cl
               LD=link
+              LDFLAGS="/PROFILE"
               AR="sh ar-lib lib"
               ARFLAGS=cr
               NM="dumpbin -symbols"
@@ -2808,10 +2809,9 @@ jobs:
               RANLIB=:
             setup_options: >-
               --host=x86_64-pc-windows-msvc
-              --enable-gcov
             extra_packages: >-
               make
-              lcov
+            coverage_provider: msvc-codecoverage
             exec_type: cygwin
 
     steps:
