@@ -3,10 +3,11 @@
  */
 
 #include <string.h>
+#include <errno.h>
 
 #include "tests/loader/pixelformat_test_common.h"
 
-#if HAVE_WEBP && !defined(BUILD_TEST_RUNNER)
+#if HAVE_WEBP
 #include <webp/decode.h>
 #include <webp/demux.h>
 #include <webp/mux.h>
@@ -36,6 +37,20 @@ typedef enum webp_fi_failpoint {
 
 static webp_fi_failpoint_t g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
 
+#if defined(BUILD_TEST_RUNNER)
+static void webp_loader_libwebp_test_set_failpoint(int failpoint);
+#endif
+
+static void
+webpfi_set_failpoint(webp_fi_failpoint_t failpoint)
+{
+    g_webp_fi_failpoint = failpoint;
+#if defined(BUILD_TEST_RUNNER)
+    webp_loader_libwebp_test_set_failpoint((int)failpoint);
+#endif
+}
+
+#if !defined(BUILD_TEST_RUNNER)
 static int (*g_real_WebPAnimDecoderOptionsInit)(WebPAnimDecoderOptions *) =
     WebPAnimDecoderOptionsInit;
 static WebPAnimDecoder *(*g_real_WebPAnimDecoderNew)(WebPData const *,
@@ -303,6 +318,11 @@ webpfi_sixel_allocator_malloc(sixel_allocator_t *allocator, size_t nbytes)
 #undef sixel_allocator_malloc
 
 #undef WEBP_MAX_ANIMATION_FRAMES
+#endif
+
+#ifndef WEBP_FI_MAX_ANIMATION_FRAMES
+#define WEBP_FI_MAX_ANIMATION_FRAMES 1024
+#endif
 
 typedef struct webp_lossy_decode_fault_case {
     webp_fi_failpoint_t failpoint;
@@ -411,7 +431,7 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
     }
 
     sixel_helper_set_additional_message(NULL);
-    g_webp_fi_failpoint = failpoint;
+    webpfi_set_failpoint(failpoint);
     status = load_with_libwebp(chunk,
                                0,
                                0,
@@ -424,7 +444,7 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
                                0,
                                capture_noop_frame,
                                NULL);
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
 
     if (status != expected_status) {
         fprintf(stderr,
@@ -450,7 +470,7 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
 cleanup:
     sixel_chunk_destroy(chunk);
     sixel_allocator_unref(allocator);
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     return result;
 }
 
@@ -492,7 +512,7 @@ run_demux_fail_case(char const *label)
     }
 
     sixel_helper_set_additional_message(NULL);
-    g_webp_fi_failpoint = WEBP_FI_FAIL_DEMUX;
+    webpfi_set_failpoint(WEBP_FI_FAIL_DEMUX);
     status = load_with_libwebp(chunk,
                                1,
                                0,
@@ -505,7 +525,7 @@ run_demux_fail_case(char const *label)
                                0,
                                capture_noop_frame,
                                NULL);
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
 
     if (status != SIXEL_BAD_INPUT) {
         fprintf(stderr,
@@ -530,7 +550,7 @@ run_demux_fail_case(char const *label)
 cleanup:
     sixel_chunk_destroy(chunk);
     sixel_allocator_unref(allocator);
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     return result;
 }
 
@@ -596,7 +616,7 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
     }
 
     sixel_helper_set_additional_message(NULL);
-    g_webp_fi_failpoint = failpoint;
+    webpfi_set_failpoint(failpoint);
     status = load_webp(&pixels,
                        chunk->buffer,
                        chunk->size,
@@ -610,7 +630,7 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
                        NULL,
                        allocator,
                        NULL);
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
 
     if (status != expected_status) {
         fprintf(stderr,
@@ -636,7 +656,7 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
 cleanup:
     (void)sixel_compat_setenv("SIXEL_LOADER_LIBWEBP_LOSSY_USE_RGB_DECODE",
                               "0");
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     if (pixels != NULL) {
         sixel_allocator_free(allocator, pixels);
     }
@@ -900,13 +920,13 @@ run_extract_subframe_fail_case(unsigned char const *input,
     }
 
     sixel_helper_set_additional_message(NULL);
-    g_webp_fi_failpoint = failpoint;
+    webpfi_set_failpoint(failpoint);
     status = webp_extract_first_animation_subframe_as_riff(&wrapped_data,
                                                            &wrapped_size,
                                                            input,
                                                            input_size,
                                                            allocator);
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     if (status != expected_status) {
         fprintf(stderr,
                 "%s: expected %d, got %d\n",
@@ -929,7 +949,7 @@ run_extract_subframe_fail_case(unsigned char const *input,
     result = 0;
 
 cleanup:
-    g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+    webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     sixel_allocator_free(allocator, wrapped_data);
     sixel_allocator_unref(allocator);
     return result;
@@ -1152,24 +1172,13 @@ run_fault_demux_case(void)
 }
 #endif
 
-#if HAVE_WEBP && !defined(BUILD_TEST_RUNNER)
+#if HAVE_WEBP
 #define WEBP_FI_TEST_ENTRY(test_name, run_case) \
     int test_name(int argc, char **argv)        \
     {                                            \
         (void)argc;                              \
         (void)argv;                              \
         return run_case();                       \
-    }
-#elif HAVE_WEBP
-#define WEBP_FI_TEST_ENTRY(test_name, run_case)          \
-    int test_name(int argc, char **argv)                 \
-    {                                                     \
-        (void)argc;                                       \
-        (void)argv;                                       \
-        fprintf(stderr,                                   \
-                "libwebp fault injection unavailable in " \
-                "amalgamation mode\n");                  \
-        return SIXEL_TEST_SKIP;                           \
     }
 #else
 #define WEBP_FI_TEST_ENTRY(test_name, run_case)         \

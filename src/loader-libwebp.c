@@ -101,9 +101,240 @@ typedef struct webp_animation_decode_control {
 #ifndef WEBP_MAX_ANIMATION_FRAMES
 #define WEBP_MAX_ANIMATION_FRAMES 65535
 #endif
+#if defined(BUILD_TEST_0016_LOADER_LIBWEBP_FAULT_INJECTION)
+#undef WEBP_MAX_ANIMATION_FRAMES
+#define WEBP_MAX_ANIMATION_FRAMES 1024
+#endif
 #define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
 #define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)1048576u)
 #define WEBP_VP8X_FLAG_ANIMATION  0x02u
+
+enum {
+    SIXEL_WEBP_FI_FAIL_NONE = 0,
+    SIXEL_WEBP_FI_FAIL_DEMUX,
+    SIXEL_WEBP_FI_FAIL_GET_FEATURES,
+    SIXEL_WEBP_FI_FAIL_OPTIONS_INIT,
+    SIXEL_WEBP_FI_FAIL_DECODER_NEW,
+    SIXEL_WEBP_FI_FAIL_DECODER_GET_INFO,
+    SIXEL_WEBP_FI_FAIL_DECODER_FRAME_COUNT_LIMIT,
+    SIXEL_WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES,
+    SIXEL_WEBP_FI_FAIL_DECODER_GET_NEXT,
+    SIXEL_WEBP_FI_FAIL_LOSSY_INIT_CONFIG,
+    SIXEL_WEBP_FI_FAIL_LOSSY_DECODE,
+    SIXEL_WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING,
+    SIXEL_WEBP_FI_FAIL_LOSSY_YUV_STRIDE_INVALID,
+    SIXEL_WEBP_FI_FAIL_LOSSY_DIMENSION_MISMATCH,
+    SIXEL_WEBP_FI_FAIL_LOSSY_ALLOC,
+    SIXEL_WEBP_FI_FAIL_STATIC_RGB_INTO,
+    SIXEL_WEBP_FI_FAIL_STATIC_RGBA_INTO,
+    SIXEL_WEBP_FI_FAIL_STATIC_ALLOC,
+    SIXEL_WEBP_FI_FAIL_ANIMATION_CANVAS_ALLOC,
+    SIXEL_WEBP_FI_FAIL_ANMF_EXTRACT_ALLOC
+};
+
+#if defined(BUILD_TEST_0016_LOADER_LIBWEBP_FAULT_INJECTION)
+static int g_sixel_webp_fi_failpoint = SIXEL_WEBP_FI_FAIL_NONE;
+static void
+webp_loader_libwebp_test_set_failpoint(int failpoint)
+{
+    g_sixel_webp_fi_failpoint = failpoint;
+}
+#else
+#define webp_loader_libwebp_test_set_failpoint(failpoint) ((void)(failpoint))
+#endif
+
+static int
+webp_loader_libwebp_test_failpoint_is(int failpoint)
+{
+#if defined(BUILD_TEST_0016_LOADER_LIBWEBP_FAULT_INJECTION)
+    return g_sixel_webp_fi_failpoint == failpoint;
+#else
+    (void)failpoint;
+    return 0;
+#endif
+}
+
+static int
+webp_loader_libwebp_AnimDecoderOptionsInit(WebPAnimDecoderOptions *options)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_OPTIONS_INIT)) {
+        return 0;
+    }
+    return WebPAnimDecoderOptionsInit(options);
+}
+
+static WebPAnimDecoder *
+webp_loader_libwebp_AnimDecoderNew(WebPData const *webp_data,
+                                   WebPAnimDecoderOptions const *options)
+{
+    if (webp_loader_libwebp_test_failpoint_is(SIXEL_WEBP_FI_FAIL_DECODER_NEW)) {
+        return NULL;
+    }
+    return WebPAnimDecoderNew(webp_data, options);
+}
+
+static int
+webp_loader_libwebp_AnimDecoderGetInfo(WebPAnimDecoder const *decoder,
+                                       WebPAnimInfo *anim_info)
+{
+    int status;
+
+    status = 0;
+
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_DECODER_GET_INFO)) {
+        return 0;
+    }
+
+    status = WebPAnimDecoderGetInfo(decoder, anim_info);
+    if (status != 0 &&
+        webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_DECODER_FRAME_COUNT_LIMIT) &&
+        anim_info != NULL) {
+        anim_info->frame_count = 65536u;
+    }
+
+    return status;
+}
+
+static int
+webp_loader_libwebp_AnimDecoderHasMoreFrames(WebPAnimDecoder const *decoder)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES)) {
+        return 0;
+    }
+    return WebPAnimDecoderHasMoreFrames(decoder);
+}
+
+static int
+webp_loader_libwebp_AnimDecoderGetNext(WebPAnimDecoder *decoder,
+                                       uint8_t **buf_ptr,
+                                       int *timestamp)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_DECODER_GET_NEXT)) {
+        return 0;
+    }
+    return WebPAnimDecoderGetNext(decoder, buf_ptr, timestamp);
+}
+
+static int
+webp_loader_libwebp_InitDecoderConfig(WebPDecoderConfig *config)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_LOSSY_INIT_CONFIG)) {
+        return 0;
+    }
+    return WebPInitDecoderConfig(config);
+}
+
+static VP8StatusCode
+webp_loader_libwebp_GetFeatures(unsigned char const *data,
+                                size_t data_size,
+                                WebPBitstreamFeatures *features)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_GET_FEATURES)) {
+        return VP8_STATUS_BITSTREAM_ERROR;
+    }
+    return WebPGetFeatures(data, data_size, features);
+}
+
+static VP8StatusCode
+webp_loader_libwebp_Decode(unsigned char const *data,
+                           size_t data_size,
+                           WebPDecoderConfig *config)
+{
+    VP8StatusCode status;
+
+    status = VP8_STATUS_OK;
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_LOSSY_DECODE)) {
+        return VP8_STATUS_BITSTREAM_ERROR;
+    }
+
+    status = WebPDecode(data, data_size, config);
+    if (status != VP8_STATUS_OK || config == NULL) {
+        return status;
+    }
+
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING)) {
+        config->output.u.YUVA.y = NULL;
+    } else if (webp_loader_libwebp_test_failpoint_is(
+                   SIXEL_WEBP_FI_FAIL_LOSSY_YUV_STRIDE_INVALID)) {
+        config->output.u.YUVA.y_stride = 0;
+    } else if (webp_loader_libwebp_test_failpoint_is(
+                   SIXEL_WEBP_FI_FAIL_LOSSY_DIMENSION_MISMATCH)) {
+        config->output.width += 1;
+    }
+
+    return status;
+}
+
+static unsigned char *
+webp_loader_libwebp_DecodeRGBInto(unsigned char const *data,
+                                  size_t data_size,
+                                  unsigned char *output_buffer,
+                                  size_t output_buffer_size,
+                                  int output_stride)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_STATIC_RGB_INTO)) {
+        return NULL;
+    }
+    return WebPDecodeRGBInto(data,
+                             data_size,
+                             output_buffer,
+                             output_buffer_size,
+                             output_stride);
+}
+
+static unsigned char *
+webp_loader_libwebp_DecodeRGBAInto(unsigned char const *data,
+                                   size_t data_size,
+                                   unsigned char *output_buffer,
+                                   size_t output_buffer_size,
+                                   int output_stride)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_STATIC_RGBA_INTO)) {
+        return NULL;
+    }
+    return WebPDecodeRGBAInto(data,
+                              data_size,
+                              output_buffer,
+                              output_buffer_size,
+                              output_stride);
+}
+
+static WebPDemuxer *
+webp_loader_libwebp_Demux(WebPData const *webp_data)
+{
+    if (webp_loader_libwebp_test_failpoint_is(SIXEL_WEBP_FI_FAIL_DEMUX)) {
+        return NULL;
+    }
+    return WebPDemux(webp_data);
+}
+
+static void *
+webp_loader_libwebp_allocator_malloc(sixel_allocator_t *allocator,
+                                     size_t nbytes)
+{
+    if (webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_LOSSY_ALLOC) ||
+        webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_STATIC_ALLOC) ||
+        webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_ANIMATION_CANVAS_ALLOC) ||
+        webp_loader_libwebp_test_failpoint_is(
+            SIXEL_WEBP_FI_FAIL_ANMF_EXTRACT_ALLOC)) {
+        return NULL;
+    }
+    return sixel_allocator_malloc(allocator, nbytes);
+}
 
 static int
 webp_convert_embedded_icc_to_srgb(unsigned char *pixels,
@@ -885,7 +1116,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     bytes = pixel_count * 3u * sizeof(float);
-    dst = (float *)sixel_allocator_malloc(allocator, bytes);
+    dst = (float *)webp_loader_libwebp_allocator_malloc(allocator, bytes);
     if (dst == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -1007,7 +1238,7 @@ webp_decode_lossy_to_float32(unsigned char **result,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (!WebPInitDecoderConfig(&config)) {
+    if (!webp_loader_libwebp_InitDecoderConfig(&config)) {
         sixel_helper_set_additional_message(
             "webp_decode_lossy_to_float32: WebPInitDecoderConfig failed.");
         return SIXEL_WEBP_ERROR;
@@ -1016,7 +1247,7 @@ webp_decode_lossy_to_float32(unsigned char **result,
     config.options.use_threads = 1;
     config.output.colorspace = has_alpha ? MODE_YUVA : MODE_YUV;
 
-    decode_status = WebPDecode(data, datasize, &config);
+    decode_status = webp_loader_libwebp_Decode(data, datasize, &config);
     if (decode_status != VP8_STATUS_OK) {
         (void)snprintf(error_message,
                        sizeof(error_message),
@@ -1066,7 +1297,8 @@ webp_decode_lossy_to_float32(unsigned char **result,
         goto end;
     }
     float_bytes = pixel_count * 3u * sizeof(float);
-    float_pixels = (float *)sixel_allocator_malloc(allocator, float_bytes);
+    float_pixels = (float *)webp_loader_libwebp_allocator_malloc(allocator,
+                                                                 float_bytes);
     if (float_pixels == NULL) {
         sixel_helper_set_additional_message(
             "webp_decode_lossy_to_float32: sixel_allocator_malloc() failed.");
@@ -1241,7 +1473,9 @@ load_webp(unsigned char **result,
             return status;
         }
 
-        feature_status = WebPGetFeatures(data, datasize, &features);
+        feature_status = webp_loader_libwebp_GetFeatures(data,
+                                                         datasize,
+                                                         &features);
         if (feature_status != VP8_STATUS_OK) {
             (void)snprintf(error_message,
                            sizeof(error_message),
@@ -1321,7 +1555,8 @@ load_webp(unsigned char **result,
     }
 
     size = stride * (size_t)*pheight;
-    *result = (unsigned char *)sixel_allocator_malloc(allocator, size);
+    *result = (unsigned char *)webp_loader_libwebp_allocator_malloc(allocator,
+                                                                    size);
     if (*result == NULL) {
         sixel_helper_set_additional_message(
             "load_webp: sixel_allocator_malloc() failed.");
@@ -1329,16 +1564,22 @@ load_webp(unsigned char **result,
     }
 
     if (features.has_alpha) {
-        if (WebPDecodeRGBAInto(data, datasize, *result, size,
-                               (int)stride) == NULL) {
+        if (webp_loader_libwebp_DecodeRGBAInto(data,
+                                               datasize,
+                                               *result,
+                                               size,
+                                               (int)stride) == NULL) {
             sixel_helper_set_additional_message(
                 "load_webp: WebPDecodeRGBAInto failed.");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
     } else {
-        if (WebPDecodeRGBInto(data, datasize, *result, size,
-                              (int)stride) == NULL) {
+        if (webp_loader_libwebp_DecodeRGBInto(data,
+                                              datasize,
+                                              *result,
+                                              size,
+                                              (int)stride) == NULL) {
             sixel_helper_set_additional_message(
                 "load_webp: WebPDecodeRGBInto failed.");
             status = SIXEL_BAD_INPUT;
@@ -1415,7 +1656,7 @@ webp_extract_icc_profile(WebPDemuxer const *demux,
         goto cleanup;
     }
 
-    *icc_profile = (unsigned char *)sixel_allocator_malloc(
+    *icc_profile = (unsigned char *)webp_loader_libwebp_allocator_malloc(
         allocator,
         chunk_iter.chunk.size);
     if (*icc_profile == NULL) {
@@ -1601,7 +1842,9 @@ cleanup:
         return 0;
     }
     rgb_bytes = pixel_count * 3u;
-    rgb_pixels = (unsigned char *)sixel_allocator_malloc(allocator, rgb_bytes);
+    rgb_pixels = (unsigned char *)webp_loader_libwebp_allocator_malloc(
+        allocator,
+        rgb_bytes);
     if (rgb_pixels == NULL) {
         return 0;
     }
@@ -2122,13 +2365,15 @@ loader_try_promote_pal8(
         return SIXEL_BAD_INPUT;
     }
 
-    indices = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                      (size_t)pixel_total);
+    indices = (unsigned char *)webp_loader_libwebp_allocator_malloc(
+        allocator,
+        (size_t)pixel_total);
     if (indices == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
-    palette = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                      (size_t)maxcolors * 3U);
+    palette = (unsigned char *)webp_loader_libwebp_allocator_malloc(
+        allocator,
+        (size_t)maxcolors * 3U);
     if (palette == NULL) {
         sixel_allocator_free(allocator, indices);
         return SIXEL_BAD_ALLOCATION;
@@ -2140,16 +2385,17 @@ loader_try_promote_pal8(
     }
     table_mask = table_size - 1U;
 
-    keys = (unsigned int *)sixel_allocator_malloc(allocator,
-                                                  sizeof(unsigned int) *
-                                                  table_size);
+    keys = (unsigned int *)webp_loader_libwebp_allocator_malloc(
+        allocator,
+        sizeof(unsigned int) * table_size);
     if (keys == NULL) {
         sixel_allocator_free(allocator, palette);
         sixel_allocator_free(allocator, indices);
         return SIXEL_BAD_ALLOCATION;
     }
-    values = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                     table_size);
+    values = (unsigned char *)webp_loader_libwebp_allocator_malloc(
+        allocator,
+        table_size);
     if (values == NULL) {
         sixel_allocator_free(allocator, keys);
         sixel_allocator_free(allocator, palette);
@@ -2463,7 +2709,9 @@ webp_clone_decoder_canvas_pixels(unsigned char **ppixels,
     *ppixels = NULL;
     *cms_converted = 0;
 
-    pixels = (unsigned char *)sixel_allocator_malloc(allocator, frame_bytes);
+    pixels = (unsigned char *)webp_loader_libwebp_allocator_malloc(
+        allocator,
+        frame_bytes);
     if (pixels == NULL) {
         sixel_helper_set_additional_message(
             "load_with_libwebp: sixel_allocator_malloc() failed.");
@@ -2651,8 +2899,10 @@ webp_extract_first_animation_subframe_as_riff(unsigned char **output_data,
             }
             wrapped_size = 12u + subframe_size;
             wrapped_riff_size_u32 = (unsigned int)(4u + subframe_size);
-            wrapped_data = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                                   wrapped_size);
+            wrapped_data =
+                (unsigned char *)webp_loader_libwebp_allocator_malloc(
+                    allocator,
+                    wrapped_size);
             if (wrapped_data == NULL) {
                 sixel_helper_set_additional_message(
                     "load_with_libwebp: sixel_allocator_malloc() failed.");
@@ -2821,13 +3071,15 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
     previous_timestamp = 0;
     next_delay = 0;
     for (frame_no = 0; frame_no <= resolved_start_frame_no; frame_no++) {
-        if (!WebPAnimDecoderHasMoreFrames(decoder)) {
+        if (!webp_loader_libwebp_AnimDecoderHasMoreFrames(decoder)) {
             sixel_helper_set_additional_message(
                 "load_with_libwebp: no frames in animated WebP stream.");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        if (!WebPAnimDecoderGetNext(decoder, &decoded_frame, &timestamp)) {
+        if (!webp_loader_libwebp_AnimDecoderGetNext(decoder,
+                                                    &decoded_frame,
+                                                    &timestamp)) {
             sixel_helper_set_additional_message(
                 "load_with_libwebp: WebPAnimDecoderGetNext failed.");
             status = SIXEL_WEBP_ERROR;
@@ -2968,8 +3220,10 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
         emitted_frame_no = 0;
         previous_timestamp = 0;
 
-        while (WebPAnimDecoderHasMoreFrames(decoder)) {
-            if (!WebPAnimDecoderGetNext(decoder, &decoded_frame, &timestamp)) {
+        while (webp_loader_libwebp_AnimDecoderHasMoreFrames(decoder)) {
+            if (!webp_loader_libwebp_AnimDecoderGetNext(decoder,
+                                                        &decoded_frame,
+                                                        &timestamp)) {
                 sixel_helper_set_additional_message(
                     "load_with_libwebp: WebPAnimDecoderGetNext failed.");
                 status = SIXEL_WEBP_ERROR;
@@ -3166,9 +3420,9 @@ load_with_libwebp(
         goto end;
     }
 
-    feature_status = WebPGetFeatures(pchunk->buffer,
-                                     pchunk->size,
-                                     &stream_features);
+    feature_status = webp_loader_libwebp_GetFeatures(pchunk->buffer,
+                                                     pchunk->size,
+                                                     &stream_features);
     if (feature_status != VP8_STATUS_OK) {
         webp_set_get_features_error_message(feature_status);
         status = SIXEL_BAD_INPUT;
@@ -3185,7 +3439,7 @@ load_with_libwebp(
     }
 
     if (enable_cms || fuse_palette || enable_orientation) {
-        demux = WebPDemux(&webp_data);
+        demux = webp_loader_libwebp_Demux(&webp_data);
         if (demux == NULL) {
             sixel_helper_set_additional_message(
                 "load_with_libwebp: WebPDemux failed.");
@@ -3222,7 +3476,7 @@ load_with_libwebp(
         goto end;
     }
 
-    if (!WebPAnimDecoderOptionsInit(&decoder_options)) {
+    if (!webp_loader_libwebp_AnimDecoderOptionsInit(&decoder_options)) {
         sixel_helper_set_additional_message(
             "load_with_libwebp: WebPAnimDecoderOptionsInit failed.");
         status = SIXEL_WEBP_ERROR;
@@ -3230,7 +3484,8 @@ load_with_libwebp(
     }
     decoder_options.color_mode = MODE_RGBA;
     decoder_options.use_threads = 1;
-    decoder = WebPAnimDecoderNew(&webp_data, &decoder_options);
+    decoder = webp_loader_libwebp_AnimDecoderNew(&webp_data,
+                                                 &decoder_options);
     if (decoder == NULL) {
         sixel_helper_set_additional_message(
             "load_with_libwebp: WebPAnimDecoderNew failed.");
@@ -3238,7 +3493,7 @@ load_with_libwebp(
         goto end;
     }
 
-    if (!WebPAnimDecoderGetInfo(decoder, &anim_info)) {
+    if (!webp_loader_libwebp_AnimDecoderGetInfo(decoder, &anim_info)) {
         sixel_helper_set_additional_message(
             "load_with_libwebp: WebPAnimDecoderGetInfo failed.");
         status = SIXEL_WEBP_ERROR;
@@ -3540,7 +3795,7 @@ sixel_loader_libwebp_new(sixel_allocator_t *allocator,
 
     *ppcomponent = NULL;
     self = (sixel_loader_libwebp_component_t *)
-        sixel_allocator_malloc(allocator, sizeof(*self));
+        webp_loader_libwebp_allocator_malloc(allocator, sizeof(*self));
     if (self == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }

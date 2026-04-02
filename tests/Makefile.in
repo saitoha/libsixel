@@ -959,8 +959,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
-# Keep the fault-injection libwebp test out of amalgamation mode because
-# it directly includes src/loader-libwebp.c with symbol rewriting.
+# Keep fault-injection coverage enabled in amalgamation mode as well, so
+# behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_RUNNER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SIXEL_PIXBUF_LOADER \

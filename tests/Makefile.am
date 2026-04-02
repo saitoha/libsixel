@@ -151,8 +151,8 @@ endif
 
 if WANT_AMALGAMATED_TOOLS
 nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
-# Keep the fault-injection libwebp test out of amalgamation mode because
-# it directly includes src/loader-libwebp.c with symbol rewriting.
+# Keep fault-injection coverage enabled in amalgamation mode as well, so
+# behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_RUNNER \
     -DBUILD_SIXEL_PIXBUF_LOADER \
