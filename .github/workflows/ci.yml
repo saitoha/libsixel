@@ -497,7 +497,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=15 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -ignore_timeouts=1 -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -558,6 +558,11 @@ jobs:
                -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
             -print0)
 
+          # This seed repeatedly triggers ImageIO-side timeout traces on macOS
+          # coregraphics fuzz runs, making the job flaky without actionable
+          # libsixel signal.
+          find "$target_corpus" -type f -name 'gif-transparent-anim-dispose2.gif' -print -delete || true
+
           echo "coregraphics-corpus seed files: $(find "$target_corpus" -type f | wc -l)"
 
       - name: Build and run coregraphics loader fuzz harness
@@ -597,7 +602,7 @@ jobs:
             mkdir -p "$merge_seed"
             if find "$target_corpus" -type f -print -quit | grep -q .; then
               cp -a "$target_corpus"/. "$merge_seed"/
-              "$harness" -merge=1 -reduce_inputs=1 -timeout=15 -ignore_timeouts=1 -rss_limit_mb=4096 \
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
                 -dict="$dict_merged" "$target_corpus" "$merge_seed" \
                 2>&1 | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d'
             else
@@ -623,7 +628,7 @@ jobs:
             mkdir -p "$merge_seed"
             if find "$target_corpus" -type f -print -quit | grep -q .; then
               cp -a "$target_corpus"/. "$merge_seed"/
-              "$harness" -merge=1 -reduce_inputs=1 -timeout=15 -ignore_timeouts=1 -rss_limit_mb=4096 \
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
                 -dict="$dict_merged" "$target_corpus" "$merge_seed" \
                 2>&1 | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d'
             else
