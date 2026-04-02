@@ -113,21 +113,21 @@ check_pattern() {
     fi
 }
 
-check_fixed() {
+check_pattern '^[[:space:]]*if[[:space:]]' \
+    'if is forbidden in tests/*.t'
+check_pattern '^[[:space:]]*[a-z_]+\(\)' \
+    'shell functions are forbidden in tests/*.t'
+check_pattern_multiline() {
     pattern=$1
     message=$2
     # shellcheck disable=SC2086
-    if rg -n -F "${pattern}" ${resolved_files}; then
+    if rg -n -U --pcre2 "${pattern}" ${resolved_files}; then
         echo "ERROR: ${message}"
         failed=1
     fi
 }
 
-check_pattern '^[[:space:]]*if[[:space:]]' \
-    'if is forbidden in tests/*.t'
-check_pattern '^[[:space:]]*[a-z_]+\(\)' \
-    'shell functions are forbidden in tests/*.t'
-check_fixed '|| {' \
+check_pattern_multiline '(?ms)\|\|[[:space:]]*\{(?:(?!^[[:space:]]*}[[:space:]]*$).)*\|\|[[:space:]]*\{' \
     'nested || { ... } blocks are forbidden in tests/*.t'
 check_pattern '^[[:space:]]*\[[^]]*\]' \
     "use test syntax instead of bracket syntax in tests/*.t"

@@ -7,23 +7,15 @@
 
 set -eux
 
-case "${HAVE_IMG2SIXEL-}" in
-    1)
-        ;;
-    *)
-        printf "1..0 # SKIP img2sixel is disabled in this build\n"
-        exit 0
-        ;;
-esac
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
 
-case "${HAVE_LCMS2-}" in
-    1)
-        ;;
-    *)
-        printf "1..0 # SKIP lcms2 support is disabled in this build\n"
-        exit 0
-        ;;
-esac
+test "${HAVE_LCMS2-}" = 1 || {
+    printf "1..0 # SKIP lcms2 support is disabled in this build\n"
+    exit 0
+}
 
 echo "1..1"
 set -v
@@ -66,15 +58,11 @@ for suffix in \
     trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms=auto! \
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
-    case "${command_status}" in
-        0)
-            ;;
-        *)
-            echo "not ok" 1 - "PSB mode7 CMYK32 non-pixel valid ICC matrix decode failed for ${suffix}: ${trace_log}"
-            status=1
-            break
-            ;;
-    esac
+    test "${command_status}" -eq 0 || {
+        echo "not ok" 1 - "PSB mode7 CMYK32 non-pixel valid ICC matrix decode failed for ${suffix}: ${trace_log}"
+        status=1
+        break
+    }
 
     case "${trace_log}" in
         *"embedded ICC conversion failed"*)
