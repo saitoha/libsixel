@@ -986,6 +986,8 @@ def main() -> None:
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab",
                 "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_precedence",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_values_precedence",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_nested_values_precedence",
             ]:
                 convert_fixture(
                     f"{src_base}_{suffix}.psd",
