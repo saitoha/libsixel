@@ -538,6 +538,7 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_cmyk",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab",
     ]
     tysh_enginedata_suffixes = [
@@ -545,6 +546,7 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_cmyk",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab",
     ]
     fill_valid_suffixes = [

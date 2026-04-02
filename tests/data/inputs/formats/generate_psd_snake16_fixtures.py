@@ -9060,6 +9060,20 @@ def generate(out_dir: pathlib.Path):
                 ),
             )
             write_file(
+                out_dir / f"{base_name}_stylesheet_values_gray.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_payload(
+                        (50.0,),
+                        color_space="Gray",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
                 out_dir / f"{base_name}_stylesheet_values_lab.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
                     color_mode=color_mode,
