@@ -721,12 +721,12 @@ jobs:
             '}'
           ) | Set-Content -LiteralPath $probeSource -Encoding ASCII
 
-          & clang -x c -c $probeSource -fsanitize=fuzzer-no-link,address,undefined -o (Join-Path $env:TEMP 'libfuzzer_probe.obj')
+          & clang -x c -c $probeSource "-fsanitize=fuzzer-no-link,address,undefined" -o (Join-Path $env:TEMP 'libfuzzer_probe.obj')
           if ($LASTEXITCODE -ne 0) {
             throw "libFuzzer compile flags are unsupported in this MSVC ABI toolchain."
           }
 
-          & clang -x c $probeSource -fsanitize=fuzzer,address,undefined -o (Join-Path $env:TEMP 'libfuzzer_probe.exe')
+          & clang -x c $probeSource "-fsanitize=fuzzer,address,undefined" -o (Join-Path $env:TEMP 'libfuzzer_probe.exe')
           if ($LASTEXITCODE -ne 0) {
             throw "libFuzzer link flags are unsupported in this MSVC ABI toolchain."
           }
