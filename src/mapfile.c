@@ -757,6 +757,12 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
             continue;
         }
         if (stage == 1) {
+            if (strcmp(line, "0100") != 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_pal_jasc: invalid version.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
             stage = 2;
             continue;
         }
