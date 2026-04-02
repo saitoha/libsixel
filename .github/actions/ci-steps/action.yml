@@ -548,7 +548,7 @@ runs:
         } else {
           $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
           if (Test-Path $vswhere) {
-            $vsInstallPathRaw = & $vswhere -latest -products * -property installationPath | Select-Object -First 1
+            $vsInstallPathRaw = & $vswhere -latest -products '*' -property installationPath | Select-Object -First 1
             $vsInstallPath = ''
             if ($vsInstallPathRaw) {
               $vsInstallPath = $vsInstallPathRaw.ToString().Trim()
