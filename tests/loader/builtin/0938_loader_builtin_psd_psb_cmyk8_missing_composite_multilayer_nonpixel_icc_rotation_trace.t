@@ -19,7 +19,7 @@ base_dir="${TOP_SRCDIR}/tests/data/inputs/formats"
 status=0
 trace_log=''
 
-for suffix in normal nonpixel_nopixel_tysh_descriptor_gray fill_soco_descriptor
+for suffix in normal nonpixel_nopixel_tysh_descriptor_gray nonpixel_nopixel_tysh_enginedata_fillcolor_rgb fill_soco_descriptor
  do
     input_psd="${base_dir}/snake16_psb_cmyk8_missing_composite_multilayer_${suffix}_bad_icc_profile.psd"
     command_status=0
@@ -45,7 +45,7 @@ for suffix in normal nonpixel_nopixel_tysh_descriptor_gray fill_soco_descriptor
 
 test "${status}" -eq 0 || exit 0
 
-for suffix in normal nonpixel_nopixel_tysh_descriptor_cmyk fill_soco_descriptor_cmyk
+for suffix in normal nonpixel_nopixel_tysh_descriptor_cmyk nonpixel_nopixel_tysh_enginedata_fillcolor_rgb fill_soco_descriptor_cmyk
  do
     input_psd="${base_dir}/snake16_psb_cmyk8_missing_composite_multilayer_${suffix}_malformed_resource.psd"
     command_status=0

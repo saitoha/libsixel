@@ -534,6 +534,7 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_wrapped_descriptor",
         "nonpixel_nopixel_tysh_wrapped_unknown_descriptor",
         "nonpixel_nopixel_tysh_wrapped_malformed_descriptor",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_rgb",
     ]
     fill_valid_suffixes = [
         "fill_soco_descriptor",
@@ -618,6 +619,19 @@ def generate(out_dir: pathlib.Path) -> None:
             f"{mode4_prefix}_{tysh_malformed_rotation[depth_tag]}.psd",
             f"{mode4_prefix}_{fill_malformed_rotation[depth_tag]}.psd",
         ]
+        if depth_tag == "8":
+            mode7_bad_sources.append(
+                f"{mode7_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
+            )
+            mode7_malformed_sources.append(
+                f"{mode7_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
+            )
+            mode4_bad_sources.append(
+                f"{mode4_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
+            )
+            mode4_malformed_sources.append(
+                f"{mode4_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
+            )
         write_bad_icc_variants(
             out_dir,
             source_names=mode7_bad_sources,
