@@ -3531,8 +3531,16 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
                 memcmp(data + token_begin, "/Lab", 4u) == 0) {
                 return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB;
             }
+            if (token_end - token_begin == 7u &&
+                memcmp(data + token_begin, "/CIELab", 7u) == 0) {
+                return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB;
+            }
             if (token_end - token_begin == 4u &&
                 memcmp(data + token_begin, "/RGB", 4u) == 0) {
+                return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB;
+            }
+            if (token_end - token_begin == 10u &&
+                memcmp(data + token_begin, "/DeviceRGB", 10u) == 0) {
                 return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB;
             }
             if (token_end - token_begin == 4u &&
@@ -3543,8 +3551,16 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
                 memcmp(data + token_begin, "/CMYK", 5u) == 0) {
                 return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
             }
+            if (token_end - token_begin == 11u &&
+                memcmp(data + token_begin, "/DeviceCMYK", 11u) == 0) {
+                return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
+            }
             if (token_end - token_begin == 5u &&
                 memcmp(data + token_begin, "/Gray", 5u) == 0) {
+                return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_GRAY;
+            }
+            if (token_end - token_begin == 11u &&
+                memcmp(data + token_begin, "/DeviceGray", 11u) == 0) {
                 return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_GRAY;
             }
         }
@@ -3562,6 +3578,12 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
             end,
             "/LAB",
             4u) ||
+        sixel_builtin_psd_contains_ascii_token_in_range(
+            data,
+            begin,
+            end,
+            "/CIELab",
+            7u) ||
         sixel_builtin_psd_contains_ascii_token_in_range(
             data,
             begin,
@@ -3586,6 +3608,12 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
             data,
             begin,
             end,
+            "/DeviceCMYK",
+            11u) ||
+        sixel_builtin_psd_contains_ascii_token_in_range(
+            data,
+            begin,
+            end,
             "/Cmyk",
             5u)) {
         return SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
@@ -3602,6 +3630,12 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
             end,
             "/Gry",
             4u) ||
+        sixel_builtin_psd_contains_ascii_token_in_range(
+            data,
+            begin,
+            end,
+            "/DeviceGray",
+            11u) ||
         sixel_builtin_psd_contains_ascii_token_in_range(
             data,
             begin,
@@ -3636,6 +3670,12 @@ sixel_builtin_psd_detect_tysh_engine_fillcolor_kind(
             end,
             "/RGB",
             4u) ||
+        sixel_builtin_psd_contains_ascii_token_in_range(
+            data,
+            begin,
+            end,
+            "/DeviceRGB",
+            10u) ||
         sixel_builtin_psd_contains_ascii_token_in_range(
             data,
             begin,

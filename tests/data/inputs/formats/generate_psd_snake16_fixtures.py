@@ -393,8 +393,21 @@ def build_tysh_enginedata_fillcolor_values_named_payload(
         raise ValueError("components must not be empty")
     if len(components) > 4:
         raise ValueError("components must be 1..4 values")
-    if color_space not in ("Gray", "RGB", "HSB", "CMYK", "Lab"):
-        raise ValueError("color_space must be Gray/RGB/HSB/CMYK/Lab")
+    if color_space not in (
+        "Gray",
+        "RGB",
+        "HSB",
+        "CMYK",
+        "Lab",
+        "DeviceGray",
+        "DeviceRGB",
+        "DeviceCMYK",
+        "CIELab",
+    ):
+        raise ValueError(
+            "color_space must be Gray/RGB/HSB/CMYK/Lab/"
+            "DeviceGray/DeviceRGB/DeviceCMYK/CIELab"
+        )
 
     values = " ".join(f"{float(component):.6f}" for component in components)
 
@@ -424,8 +437,21 @@ def build_tysh_enginedata_stylesheet_fillcolor_values_payload(
         raise ValueError("components must not be empty")
     if len(components) > 4:
         raise ValueError("components must be 1..4 values")
-    if color_space not in ("Gray", "RGB", "HSB", "CMYK", "Lab"):
-        raise ValueError("color_space must be Gray/RGB/HSB/CMYK/Lab")
+    if color_space not in (
+        "Gray",
+        "RGB",
+        "HSB",
+        "CMYK",
+        "Lab",
+        "DeviceGray",
+        "DeviceRGB",
+        "DeviceCMYK",
+        "CIELab",
+    ):
+        raise ValueError(
+            "color_space must be Gray/RGB/HSB/CMYK/Lab/"
+            "DeviceGray/DeviceRGB/DeviceCMYK/CIELab"
+        )
 
     values = " ".join(f"{float(component):.6f}" for component in components)
 
@@ -9096,6 +9122,25 @@ def generate(out_dir: pathlib.Path):
                 ),
             )
             write_file(
+                out_dir / f"{base_name}_values_named_device_cmyk.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                        (
+                            0.0,
+                            81.17647058823529,
+                            74.90196078431373,
+                            0.0,
+                        ),
+                        color_space="DeviceCMYK",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
                 out_dir / f"{base_name}_values_gray.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
                     color_mode=color_mode,
@@ -9141,6 +9186,25 @@ def generate(out_dir: pathlib.Path):
                             100.0,
                         ),
                         color_space="HSB",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_stylesheet_values_named_device_cmyk.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_payload(
+                        (
+                            0.0,
+                            81.17647058823529,
+                            74.90196078431373,
+                            0.0,
+                        ),
+                        color_space="DeviceCMYK",
                     ),
                     first_layer_has_pixels=False,
                 ),
