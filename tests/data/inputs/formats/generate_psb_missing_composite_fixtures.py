@@ -996,6 +996,7 @@ def main() -> None:
             if depth_tag == "8":
                 for suffix in [
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_cmyk",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_cmyk",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_stylesheet_color_values_precedence",
                 ]:
                     convert_fixture(

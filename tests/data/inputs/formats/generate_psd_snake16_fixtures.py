@@ -394,6 +394,7 @@ def build_tysh_enginedata_fillcolor_values_named_payload(
     components: tuple[float, ...],
     *,
     color_space: str,
+    token_name: str = "FillColor",
 ) -> bytes:
     if not components:
         raise ValueError("components must not be empty")
@@ -414,14 +415,16 @@ def build_tysh_enginedata_fillcolor_values_named_payload(
             "color_space must be Gray/RGB/HSB/CMYK/Lab/"
             "DeviceGray/DeviceRGB/DeviceCMYK/CIELab"
         )
+    if token_name not in ("FillColor", "Color"):
+        raise ValueError("token_name must be FillColor or Color")
 
     values = " ".join(f"{float(component):.6f}" for component in components)
 
     # Keep descriptor bytes intentionally non-decodable so TySh fallback reaches
-    # the EngineData /FillColor << /Values [/ColorSpace ...] >> parser path.
+    # the EngineData color payload parser path.
     engine_data = (
         "/EngineData << "
-        f"/FillColor << /Type /SolidColor /Values [/{color_space} {values}] >> "
+        f"/{token_name} << /Type /SolidColor /Values [/{color_space} {values}] >> "
         ">>"
     ).encode("ascii")
 
@@ -9347,6 +9350,26 @@ def generate(out_dir: pathlib.Path):
                                 74.90196078431373,
                                 0.0,
                             ),
+                            token_name="Color",
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
+                write_file(
+                    out_dir / f"{base_name}_color_values_named_device_cmyk.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                            (
+                                0.0,
+                                81.17647058823529,
+                                74.90196078431373,
+                                0.0,
+                            ),
+                            color_space="DeviceCMYK",
                             token_name="Color",
                         ),
                         first_layer_has_pixels=False,
