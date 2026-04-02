@@ -601,7 +601,7 @@ runs:
         $makeCmd = "${{ fromJSON(inputs.matrix_json).make || 'make' }}"
         $checkTarget = "${{ fromJSON(inputs.matrix_json).check_target || 'check' }}"
         $debugTemp = "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}"
-        $bashScript = "cd '$workspaceCygwin'; if test '$debugTemp' = '1'; then export _SIXEL_DEBUG_TEMP=1; fi; $makeCmd $checkTarget"
+        $bashScript = "unset MSVC_PATH __VSCMD_PREINIT_PATH; cd '$workspaceCygwin'; if test '$debugTemp' = '1'; then export _SIXEL_DEBUG_TEMP=1; fi; $makeCmd $checkTarget"
 
         if ($coverageTool.ToLower().EndsWith('.dll')) {
           & dotnet $coverageTool collect --include-files $includeFiles -- $cygwinBash '-o' 'igncr' '-lc' $bashScript
