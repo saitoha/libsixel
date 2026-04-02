@@ -233,12 +233,12 @@ jobs:
             meson compile -C builddir "fuzz-run-struct-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
 
-          if ! grep -q 'DONE   cov:' "$run_log"; then
+          if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
             echo "::error::libFuzzer did not report completion for struct target '${{ matrix.target }}'."
             exit 1
           fi
 
-          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
+          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
           if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
             echo "::error::struct target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
             exit 1
@@ -391,12 +391,12 @@ jobs:
             meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
 
-          if ! grep -q 'DONE   cov:' "$run_log"; then
+          if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
             echo "::error::libFuzzer did not report completion for loader-format target '${{ matrix.target }}'."
             exit 1
           fi
 
-          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
+          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
           if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
             echo "::error::loader-format target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
             exit 1
@@ -636,12 +636,12 @@ jobs:
               | tee "$run_log"
           fi
 
-          if ! grep -q 'DONE   cov:' "$run_log"; then
+          if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
             echo "::error::libFuzzer did not report completion for coregraphics loader target."
             exit 1
           fi
 
-          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
+          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
           if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
             echo "::error::coregraphics loader coverage too low: cov=$cov (expected >= $min_cov)."
             exit 1
@@ -839,12 +839,13 @@ jobs:
             throw "fuzz-loader-wic execution failed with exit code $LASTEXITCODE."
           }
 
-          $done = Select-String -Path $runLog -Pattern 'DONE   cov:' | Select-Object -Last 1
-          if (-not $done) {
+          $completed = Select-String -Path $runLog -Pattern 'DONE   cov:|INFO: exiting: 0' | Select-Object -Last 1
+          if (-not $completed) {
             throw "libFuzzer did not report completion for wic loader target."
           }
-          if ($done.Line -notmatch 'cov: ([0-9]+)') {
-            throw "could not parse final coverage from: $($done.Line)"
+          $covLine = Select-String -Path $runLog -Pattern 'cov: [0-9]+' | Select-Object -Last 1
+          if (-not $covLine -or $covLine.Line -notmatch 'cov: ([0-9]+)') {
+            throw "could not parse final coverage from run.log."
           }
           $cov = [int]$Matches[1]
           if ($cov -lt 10) {
