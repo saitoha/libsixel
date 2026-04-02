@@ -216,7 +216,7 @@ runs:
 
     - name: Resolve Cygwin package list
       id: cygwin_packages
-      if: ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
+      if: ${{ startsWith(fromJSON(inputs.matrix_json).exec_type || '', 'cygwin') }}
       shell: pwsh
       run: |
         $raw = "${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}"
@@ -228,7 +228,7 @@ runs:
         "packages=$csv" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
     - name: Setup Cygwin (primary mirror)
       id: cygwin_setup_primary
-      if: ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
+      if: ${{ startsWith(fromJSON(inputs.matrix_json).exec_type || '', 'cygwin') }}
       continue-on-error: true
       uses: cygwin/cygwin-install-action@v6
       with:
@@ -239,7 +239,7 @@ runs:
 
     - name: Wait before Cygwin mirror fallback
       if: >-
-        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+        ${{ startsWith(fromJSON(inputs.matrix_json).exec_type || '', 'cygwin')
             && steps.cygwin_setup_primary.outcome == 'failure' }}
       shell: pwsh
       run: |
@@ -248,7 +248,7 @@ runs:
     - name: Setup Cygwin (mirror fallback #1)
       id: cygwin_setup_fallback_1
       if: >-
-        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+        ${{ startsWith(fromJSON(inputs.matrix_json).exec_type || '', 'cygwin')
             && steps.cygwin_setup_primary.outcome == 'failure' }}
       continue-on-error: true
       uses: cygwin/cygwin-install-action@v6
@@ -260,7 +260,7 @@ runs:
 
     - name: Wait before Cygwin mirror fallback #2
       if: >-
-        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+        ${{ startsWith(fromJSON(inputs.matrix_json).exec_type || '', 'cygwin')
             && steps.cygwin_setup_primary.outcome == 'failure'
             && steps.cygwin_setup_fallback_1.outcome == 'failure' }}
       shell: pwsh
@@ -270,7 +270,7 @@ runs:
     - name: Setup Cygwin (mirror fallback #2)
       id: cygwin_setup_fallback_2
       if: >-
-        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+        ${{ startsWith(fromJSON(inputs.matrix_json).exec_type || '', 'cygwin')
             && steps.cygwin_setup_primary.outcome == 'failure'
             && steps.cygwin_setup_fallback_1.outcome == 'failure' }}
       continue-on-error: true
@@ -283,7 +283,7 @@ runs:
 
     - name: Validate Cygwin setup result
       if: >-
-        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+        ${{ startsWith(fromJSON(inputs.matrix_json).exec_type || '', 'cygwin')
             && steps.cygwin_setup_primary.outcome == 'failure'
             && steps.cygwin_setup_fallback_1.outcome == 'failure'
             && steps.cygwin_setup_fallback_2.outcome == 'failure' }}
@@ -517,17 +517,23 @@ runs:
         if test "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}" = "1"; then
           export _SIXEL_DEBUG_TEMP=1
         fi
-        if test "${{ fromJSON(inputs.matrix_json).coverage_provider || '' }}" = "msvc-codecoverage"; then
-          echo "Skipping make check here; dedicated MSVC CodeCoverage step will execute tests."
-        else
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
-        fi
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
-    - name: Build and test (Autotools, Cygwin, MSVC CodeCoverage)
+    - name: Build only (Autotools, Cygwin, MSVC CodeCoverage)
       if: >-
         ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
-            && fromJSON(inputs.matrix_json).exec_type == 'cygwin'
-            && (fromJSON(inputs.matrix_json).coverage_provider || '') == 'msvc-codecoverage' }}
+            && fromJSON(inputs.matrix_json).exec_type == 'cygwin-msvc-codecoverage' }}
+      shell: C:\cygwin\bin\bash.exe -o igncr {0}
+      run: |
+        set -exv
+        PATH="$PWD/build-aux:$PATH"
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+
+    - name: Run tests with Microsoft CodeCoverage (Autotools, Cygwin)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'cygwin-msvc-codecoverage' }}
       shell: pwsh
       run: |
         $ErrorActionPreference = 'Stop'
@@ -1125,7 +1131,6 @@ runs:
             && (contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
                 || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage')
                 || contains(fromJSON(inputs.matrix_json).label, '-coverage'))
-            && (fromJSON(inputs.matrix_json).coverage_provider || '') != 'msvc-codecoverage'
             && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
       shell: C:\cygwin\bin\bash.exe -o igncr {0}
       run: |

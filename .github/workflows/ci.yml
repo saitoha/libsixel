@@ -2853,8 +2853,7 @@ jobs:
               --host=x86_64-pc-windows-msvc
             extra_packages: >-
               make
-            coverage_provider: msvc-codecoverage
-            exec_type: cygwin
+            exec_type: cygwin-msvc-codecoverage
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
