@@ -534,7 +534,6 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_wrapped_descriptor",
         "nonpixel_nopixel_tysh_wrapped_unknown_descriptor",
         "nonpixel_nopixel_tysh_wrapped_malformed_descriptor",
-        "nonpixel_nopixel_tysh_enginedata_fillcolor_rgb",
     ]
     fill_valid_suffixes = [
         "fill_soco_descriptor",
@@ -588,6 +587,18 @@ def generate(out_dir: pathlib.Path) -> None:
             + [f"{mode4_prefix}_{suffix}.psd" for suffix in tysh_valid_suffixes]
             + [f"{mode4_prefix}_{suffix}.psd" for suffix in fill_valid_suffixes]
         )
+        if depth_tag == "8":
+            tysh_enginedata_suffixes = [
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_rgb",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_values_cmyk",
+                "nonpixel_nopixel_tysh_enginedata_fillcolor_values_gray",
+            ]
+            mode7_valid_sources.extend(
+                f"{mode7_prefix}_{suffix}.psd" for suffix in tysh_enginedata_suffixes
+            )
+            mode4_valid_sources.extend(
+                f"{mode4_prefix}_{suffix}.psd" for suffix in tysh_enginedata_suffixes
+            )
         write_valid_icc_variants(
             out_dir,
             source_names=mode7_valid_sources,
@@ -620,18 +631,11 @@ def generate(out_dir: pathlib.Path) -> None:
             f"{mode4_prefix}_{fill_malformed_rotation[depth_tag]}.psd",
         ]
         if depth_tag == "8":
-            mode7_bad_sources.append(
-                f"{mode7_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
-            )
-            mode7_malformed_sources.append(
-                f"{mode7_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
-            )
-            mode4_bad_sources.append(
-                f"{mode4_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
-            )
-            mode4_malformed_sources.append(
-                f"{mode4_prefix}_nonpixel_nopixel_tysh_enginedata_fillcolor_rgb.psd"
-            )
+            for suffix in tysh_enginedata_suffixes:
+                mode7_bad_sources.append(f"{mode7_prefix}_{suffix}.psd")
+                mode7_malformed_sources.append(f"{mode7_prefix}_{suffix}.psd")
+                mode4_bad_sources.append(f"{mode4_prefix}_{suffix}.psd")
+                mode4_malformed_sources.append(f"{mode4_prefix}_{suffix}.psd")
         write_bad_icc_variants(
             out_dir,
             source_names=mode7_bad_sources,
