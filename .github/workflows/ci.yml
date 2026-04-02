@@ -109,9 +109,9 @@ jobs:
         buildtool: [autotools, meson]
         target: [png-chunk, png-apng, jpeg-icc, pnm-ascii, psd-resource, gif-block, sixel-stream, hdr-header, pic-structure, bmp-dib, mapfile-spec, mapfile-palette]
     env:
-      FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct/${{ matrix.target }}
+      FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
-      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time=60 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-struct/{1}/', github.workspace, matrix.target) }}
+      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-struct/{1}/', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -131,7 +131,7 @@ jobs:
       - name: Restore struct fuzz corpus cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.FUZZ_STRUCT_CORPUS }}
+          path: ${{ env.FUZZ_STRUCT_CORPUS }}/${{ matrix.target }}
           key: fuzz-corpus-struct-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             fuzz-corpus-struct-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
@@ -142,21 +142,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$FUZZ_STRUCT_CORPUS" "$FUZZ_STRUCT_ARTIFACT_DIR"
+          target_corpus="$FUZZ_STRUCT_CORPUS/${{ matrix.target }}"
+          mkdir -p "$target_corpus" "$FUZZ_STRUCT_ARTIFACT_DIR"
 
           if test -d fuzz/images; then
-            cp -a fuzz/images/. "$FUZZ_STRUCT_CORPUS/" || true
+            cp -a fuzz/images/. "$target_corpus/" || true
           fi
-          cp -a images/. "$FUZZ_STRUCT_CORPUS/" || true
+          cp -a images/. "$target_corpus/" || true
 
           if test -d tests/data/security/fuzzing/data; then
             while IFS= read -r -d '' seed; do
-              cp -n "$seed" "$FUZZ_STRUCT_CORPUS/" || true
+              cp -n "$seed" "$target_corpus/" || true
             done < <(find tests/data/security/fuzzing/data -type f -print0)
           fi
 
           while IFS= read -r -d '' seed; do
-            cp -n "$seed" "$FUZZ_STRUCT_CORPUS/" || true
+            cp -n "$seed" "$target_corpus/" || true
           done < <(find tests/data -type f \
             \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
                -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
@@ -166,22 +167,37 @@ jobs:
                -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
             -print0)
 
-          echo "struct-corpus seed files: $(find "$FUZZ_STRUCT_CORPUS" -type f | wc -l)"
+          echo "struct-corpus seed files (${{ matrix.target }}): $(find "$target_corpus" -type f | wc -l)"
 
       - name: Build and run struct fuzz target
         shell: bash
         run: |
           set -euxo pipefail
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          run_log="$FUZZ_STRUCT_ARTIFACT_DIR/run.log"
+          min_cov=60
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
             make -j"$(nproc)"
-            make "fuzz-run-struct-${{ matrix.target }}"
+            make "fuzz-run-struct-${{ matrix.target }}" \
+              FUZZ_STRUCT_CORPUS="$FUZZ_STRUCT_CORPUS" \
+              FUZZ_STRUCT_ARGS="$FUZZ_STRUCT_ARGS" 2>&1 | tee "$run_log"
           else
             CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
             meson compile -C builddir -v
-            meson compile -C builddir "fuzz-run-struct-${{ matrix.target }}"
+            meson compile -C builddir "fuzz-run-struct-${{ matrix.target }}" 2>&1 | tee "$run_log"
+          fi
+
+          if ! grep -q 'DONE   cov:' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for struct target '${{ matrix.target }}'."
+            exit 1
+          fi
+
+          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
+          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
+            echo "::error::struct target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
+            exit 1
           fi
 
       - name: Upload struct fuzz artifacts
@@ -205,9 +221,9 @@ jobs:
         buildtool: [autotools, meson]
         target: [png, gif, jpeg, pnm, sixel, hdr, psd, pic, bmp]
     env:
-      FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/${{ matrix.target }}
+      FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
-      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=60 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -227,7 +243,7 @@ jobs:
       - name: Restore loader-format fuzz corpus cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.FUZZ_BUILTIN_CORPUS }}
+          path: ${{ env.FUZZ_BUILTIN_CORPUS }}/${{ matrix.target }}
           key: fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
@@ -238,21 +254,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$FUZZ_BUILTIN_CORPUS" "$FUZZ_BUILTIN_ARTIFACT_DIR"
+          target_corpus="$FUZZ_BUILTIN_CORPUS/${{ matrix.target }}"
+          mkdir -p "$target_corpus" "$FUZZ_BUILTIN_ARTIFACT_DIR"
 
           if test -d fuzz/images; then
-            cp -a fuzz/images/. "$FUZZ_BUILTIN_CORPUS/" || true
+            cp -a fuzz/images/. "$target_corpus/" || true
           fi
-          cp -a images/. "$FUZZ_BUILTIN_CORPUS/" || true
+          cp -a images/. "$target_corpus/" || true
 
           if test -d tests/data/security/fuzzing/data; then
             while IFS= read -r -d '' seed; do
-              cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+              cp -n "$seed" "$target_corpus/" || true
             done < <(find tests/data/security/fuzzing/data -type f -print0)
           fi
 
           while IFS= read -r -d '' seed; do
-            cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+            cp -n "$seed" "$target_corpus/" || true
           done < <(find tests/data -type f \
             \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
                -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
@@ -262,22 +279,37 @@ jobs:
                -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
             -print0)
 
-          echo "loader-corpus seed files: $(find "$FUZZ_BUILTIN_CORPUS" -type f | wc -l)"
+          echo "loader-corpus seed files (${{ matrix.target }}): $(find "$target_corpus" -type f | wc -l)"
 
       - name: Build and run loader-format fuzz target
         shell: bash
         run: |
           set -euxo pipefail
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          run_log="$FUZZ_BUILTIN_ARTIFACT_DIR/run.log"
+          min_cov=18
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
             make -j"$(nproc)"
-            make "fuzz-run-loader-builtin-${{ matrix.target }}"
+            make "fuzz-run-loader-builtin-${{ matrix.target }}" \
+              FUZZ_BUILTIN_CORPUS="$FUZZ_BUILTIN_CORPUS" \
+              FUZZ_BUILTIN_ARGS="$FUZZ_BUILTIN_ARGS" 2>&1 | tee "$run_log"
           else
             CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
             meson compile -C builddir -v
-            meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}"
+            meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}" 2>&1 | tee "$run_log"
+          fi
+
+          if ! grep -q 'DONE   cov:' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for loader-format target '${{ matrix.target }}'."
+            exit 1
+          fi
+
+          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
+          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
+            echo "::error::loader-format target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
+            exit 1
           fi
 
       - name: Upload loader-format fuzz artifacts
@@ -304,7 +336,7 @@ jobs:
       FUZZ_INPUT_DIR: ${{ github.workspace }}/fuzz/corpus/img2sixel-cli
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
-      FUZZ_TIMEOUT: 60
+      FUZZ_TIMEOUT: 300
       AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
 
     steps:
@@ -373,9 +405,9 @@ jobs:
       matrix:
         buildtool: [autotools, meson]
     env:
-      FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/coregraphics
+      FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=60 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -411,21 +443,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$FUZZ_COMPONENT_CORPUS" "$FUZZ_COMPONENT_ARTIFACT_DIR"
+          target_corpus="$FUZZ_COMPONENT_CORPUS/coregraphics"
+          mkdir -p "$target_corpus" "$FUZZ_COMPONENT_ARTIFACT_DIR"
 
           if test -d fuzz/images; then
-            cp -a fuzz/images/. "$FUZZ_COMPONENT_CORPUS/" || true
+            cp -a fuzz/images/. "$target_corpus/" || true
           fi
-          cp -a images/. "$FUZZ_COMPONENT_CORPUS/" || true
+          cp -a images/. "$target_corpus/" || true
 
           if test -d tests/data/security/fuzzing/data; then
             while IFS= read -r -d '' seed; do
-              cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+              cp -n "$seed" "$target_corpus/" || true
             done < <(find tests/data/security/fuzzing/data -type f -print0)
           fi
 
           while IFS= read -r -d '' seed; do
-            cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+            cp -n "$seed" "$target_corpus/" || true
           done < <(find tests/data -type f \
             \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
                -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
@@ -435,7 +468,7 @@ jobs:
                -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
             -print0)
 
-          echo "coregraphics-corpus seed files: $(find "$FUZZ_COMPONENT_CORPUS" -type f | wc -l)"
+          echo "coregraphics-corpus seed files: $(find "$target_corpus" -type f | wc -l)"
 
       - name: Build and run coregraphics loader fuzz harness
         shell: bash
@@ -447,13 +480,32 @@ jobs:
           export CXX="$LLVM_PREFIX/bin/clang++"
           export FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
           export FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
+          run_log="$FUZZ_COMPONENT_ARTIFACT_DIR/run.log"
+          min_cov=10
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             ./configure --enable-fuzz --with-coregraphics
-            make -j"$(sysctl -n hw.ncpu)" fuzz-run-loader-coregraphics
+            make -j"$(sysctl -n hw.ncpu)" fuzz-run-loader-coregraphics \
+              FUZZ_BUILTIN_CORPUS="$PWD/.tmp/fuzz-corpus-loader" \
+              FUZZ_COMPONENT_ARGS="$FUZZ_COMPONENT_ARGS" 2>&1 \
+              | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
+              | tee "$run_log"
           else
             meson setup builddir -Dfuzz=true -Dcoregraphics=enabled
-            meson compile -C builddir -v fuzz-run-loader-coregraphics
+            meson compile -C builddir -v fuzz-run-loader-coregraphics 2>&1 \
+              | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
+              | tee "$run_log"
+          fi
+
+          if ! grep -q 'DONE   cov:' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for coregraphics loader target."
+            exit 1
+          fi
+
+          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
+          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
+            echo "::error::coregraphics loader coverage too low: cov=$cov (expected >= $min_cov)."
+            exit 1
           fi
 
       - name: Upload coregraphics fuzz artifacts
@@ -517,27 +569,28 @@ jobs:
         run: |
           set -euxo pipefail
           workspace="$(pwd)"
-          export FUZZ_COMPONENT_CORPUS="$workspace/.tmp/fuzz-corpus-loader/wic"
+          export FUZZ_COMPONENT_CORPUS="$workspace/.tmp/fuzz-corpus-loader/component"
           export FUZZ_COMPONENT_ARTIFACT_DIR="$workspace/.tmp/fuzz-artifacts-loader/wic"
-          export FUZZ_COMPONENT_ARGS="-max_total_time=60 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict=$workspace/fuzz/loader-builtin.dict -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
+          export FUZZ_COMPONENT_ARGS="-max_total_time=300 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict=$workspace/fuzz/loader-builtin.dict -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
           export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
           export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1:report_error_type=1"
           export PATH="/clang64/bin:$PATH"
 
-          mkdir -p "$FUZZ_COMPONENT_CORPUS" "$FUZZ_COMPONENT_ARTIFACT_DIR"
+          target_corpus="$FUZZ_COMPONENT_CORPUS/wic"
+          mkdir -p "$target_corpus" "$FUZZ_COMPONENT_ARTIFACT_DIR"
           if test -d fuzz/images; then
-            cp -a fuzz/images/. "$FUZZ_COMPONENT_CORPUS/" || true
+            cp -a fuzz/images/. "$target_corpus/" || true
           fi
-          cp -a images/. "$FUZZ_COMPONENT_CORPUS/" || true
+          cp -a images/. "$target_corpus/" || true
 
           if test -d tests/data/security/fuzzing/data; then
             while IFS= read -r -d '' seed; do
-              cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+              cp -n "$seed" "$target_corpus/" || true
             done < <(find tests/data/security/fuzzing/data -type f -print0)
           fi
 
           while IFS= read -r -d '' seed; do
-            cp -n "$seed" "$FUZZ_COMPONENT_CORPUS/" || true
+            cp -n "$seed" "$target_corpus/" || true
           done < <(find tests/data -type f \
             \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
                -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
@@ -547,7 +600,7 @@ jobs:
                -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
             -print0)
 
-          echo "wic-corpus seed files: $(find "$FUZZ_COMPONENT_CORPUS" -type f | wc -l)"
+          echo "wic-corpus seed files: $(find "$target_corpus" -type f | wc -l)"
 
           cat > /tmp/libfuzzer_probe.c <<'EOF'
           int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size) {
@@ -560,21 +613,34 @@ jobs:
           if ! clang -x c -c /tmp/libfuzzer_probe.c \
             -fsanitize=fuzzer-no-link,address,undefined \
             -o /tmp/libfuzzer_probe.o > /tmp/libfuzzer_probe_compile.log 2>&1; then
-            echo "::warning::libFuzzer compile flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
+            echo "::error::libFuzzer compile flags are unsupported on this MSYS2 clang target; cannot run fuzz-run-loader-wic."
             sed -n '1,80p' /tmp/libfuzzer_probe_compile.log || true
-            exit 0
+            exit 1
           fi
 
           if ! clang -x c /tmp/libfuzzer_probe.c \
             -fsanitize=fuzzer,address,undefined \
             -o /tmp/libfuzzer_probe.exe > /tmp/libfuzzer_probe_link.log 2>&1; then
-            echo "::warning::libFuzzer link flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
+            echo "::error::libFuzzer link flags are unsupported on this MSYS2 clang target; cannot run fuzz-run-loader-wic."
             sed -n '1,80p' /tmp/libfuzzer_probe_link.log || true
-            exit 0
+            exit 1
           fi
 
+          run_log="$FUZZ_COMPONENT_ARTIFACT_DIR/run.log"
+          min_cov=10
           CC=clang CXX=clang++ meson setup builddir -Dfuzz=true -Dwic=enabled
-          meson compile -C builddir -v fuzz-run-loader-wic
+          meson compile -C builddir -v fuzz-run-loader-wic 2>&1 | tee "$run_log"
+
+          if ! grep -q 'DONE   cov:' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for wic loader target."
+            exit 1
+          fi
+
+          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
+          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
+            echo "::error::wic loader coverage too low: cov=$cov (expected >= $min_cov)."
+            exit 1
+          fi
 
       - name: Upload wic fuzz artifacts
         if: always()
@@ -585,7 +651,7 @@ jobs:
           retention-days: 7
           path: |
             ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/wic
-            ${{ github.workspace }}/.tmp/fuzz-corpus-loader/wic
+            ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component/wic
 
   staticcheck:
     name: ${{ matrix.label }}
