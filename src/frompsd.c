@@ -3752,9 +3752,11 @@ sixel_builtin_psd_parse_tysh_fillcolor_engine_array(
     size_t *pcount)
 {
     size_t cursor;
+    size_t token_cursor;
     size_t count;
 
     cursor = 0u;
+    token_cursor = 0u;
     count = 0u;
     if (data == NULL || pcursor == NULL || components == NULL || pcount == NULL) {
         return 0;
@@ -3779,7 +3781,29 @@ sixel_builtin_psd_parse_tysh_fillcolor_engine_array(
                                                  data_length,
                                                  &cursor,
                                                  &components[count])) {
-            break;
+            /* TySh EngineData can prefix values arrays with names such as
+             * [/CMYK ...]. Skip non-numeric tokens leniently and keep
+             * collecting numeric components.
+             */
+            token_cursor = cursor;
+            if (token_cursor < data_length &&
+                data[token_cursor] == (unsigned char)'/') {
+                ++token_cursor;
+            }
+            while (token_cursor < data_length &&
+                   !sixel_builtin_psd_ascii_is_space(data[token_cursor]) &&
+                   data[token_cursor] != (unsigned char)']' &&
+                   data[token_cursor] != (unsigned char)'[' &&
+                   data[token_cursor] != (unsigned char)'<' &&
+                   data[token_cursor] != (unsigned char)'>') {
+                ++token_cursor;
+            }
+            if (token_cursor == cursor) {
+                ++cursor;
+            } else {
+                cursor = token_cursor;
+            }
+            continue;
         }
         ++count;
         while (cursor < data_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {

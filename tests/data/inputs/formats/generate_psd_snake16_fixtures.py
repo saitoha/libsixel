@@ -384,6 +384,37 @@ def build_tysh_enginedata_fillcolor_values_payload(components: tuple[float, ...]
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_values_named_payload(
+    components: tuple[float, ...],
+    *,
+    color_space: str,
+) -> bytes:
+    if not components:
+        raise ValueError("components must not be empty")
+    if len(components) > 4:
+        raise ValueError("components must be 1..4 values")
+    if color_space not in ("Gray", "RGB", "CMYK", "Lab"):
+        raise ValueError("color_space must be Gray/RGB/CMYK/Lab")
+
+    values = " ".join(f"{float(component):.6f}" for component in components)
+
+    # Keep descriptor bytes intentionally non-decodable so TySh fallback reaches
+    # the EngineData /FillColor << /Values [/ColorSpace ...] >> parser path.
+    engine_data = (
+        "/EngineData << "
+        f"/FillColor << /Type /SolidColor /Values [/{color_space} {values}] >> "
+        ">>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_stylesheet_fillcolor_values_payload(
     components: tuple[float, ...],
     *,
@@ -9027,6 +9058,26 @@ def generate(out_dir: pathlib.Path):
                     first_layer_has_pixels=False,
                 ),
             )
+            if depth_value == 8:
+                write_file(
+                    out_dir / f"{base_name}_values_named_cmyk.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                            (
+                                0.0,
+                                81.17647058823529,
+                                74.90196078431373,
+                                0.0,
+                            ),
+                            color_space="CMYK",
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
             write_file(
                 out_dir / f"{base_name}_values_gray.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
