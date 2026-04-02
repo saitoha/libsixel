@@ -488,6 +488,36 @@ def mutate_psb_channel_length_overflow(src_name: str, dst_name: str) -> None:
     print(dst)
 
 
+def mutate_psb_layer_mask_length_u64max(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    sections = locate_psb_sections(data)
+    write_u64be(data, sections["layer_mask_length_off"], 0xFFFFFFFFFFFFFFFF)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_layer_info_length_u64max(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    sections = locate_psb_sections(data)
+    write_u64be(data, sections["layer_info_length_off"], 0xFFFFFFFFFFFFFFFF)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_channel_length_u64max(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    channel = parse_psb_first_channel(data)
+    write_u64be(data, channel["first_channel_length_off"], 0xFFFFFFFFFFFFFFFF)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
 def mutate_psb_rle_row_table_too_short(src_name: str, dst_name: str) -> None:
     src = HERE / src_name
     dst = HERE / dst_name
@@ -999,6 +1029,18 @@ def main() -> None:
     mutate_psb_channel_length_overflow(
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal.psd",
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_channel_length_overflow.psd",
+    )
+    mutate_psb_layer_mask_length_u64max(
+        "snake16_psb_rgb8_missing_composite_multilayer_normal.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_layer_mask_length_u64max.psd",
+    )
+    mutate_psb_layer_info_length_u64max(
+        "snake16_psb_rgb8_missing_composite_multilayer_normal.psd",
+        "snake16_psb_rgb8_missing_composite_multilayer_layer_info_length_u64max.psd",
+    )
+    mutate_psb_channel_length_u64max(
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_channel_length_u64max.psd",
     )
     mutate_psb_rle_row_table_too_short(
         "snake16_psb_rgb8_missing_composite_multilayer_normal_rle.psd",
