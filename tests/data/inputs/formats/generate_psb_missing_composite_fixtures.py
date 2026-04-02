@@ -1055,6 +1055,16 @@ def main() -> None:
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_rle.psd",
         force_rle=True,
     )
+    convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_normal_rle.psd",
+        force_rle=True,
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_normal_rle.psd",
+        force_rle=True,
+    )
 
     # Trace fixtures (unsupported/malformed).
     convert_fixture(
@@ -1105,6 +1115,22 @@ def main() -> None:
     mutate_psb_rle_row_length_overrun(
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_rle.psd",
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_rle_row_length_overrun.psd",
+    )
+    mutate_psb_rle_row_table_too_short(
+        "snake16_psb_cmyk8_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_rle_row_table_too_short.psd",
+    )
+    mutate_psb_rle_row_length_overrun(
+        "snake16_psb_cmyk8_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_rle_row_length_overrun.psd",
+    )
+    mutate_psb_rle_row_table_too_short(
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_rle_row_table_too_short.psd",
+    )
+    mutate_psb_rle_row_length_overrun(
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_rle_row_length_overrun.psd",
     )
 
 
