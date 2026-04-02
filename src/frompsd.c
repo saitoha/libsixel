@@ -3887,6 +3887,305 @@ sixel_builtin_psd_parse_tysh_fillcolor_engine_array(
     return 1;
 }
 
+static int
+sixel_builtin_psd_ascii_is_token_delimiter(unsigned char value)
+{
+    return sixel_builtin_psd_ascii_is_space(value) ||
+           value == (unsigned char)'/' ||
+           value == (unsigned char)'[' ||
+           value == (unsigned char)']' ||
+           value == (unsigned char)'<' ||
+           value == (unsigned char)'>' ||
+           value == (unsigned char)'(' ||
+           value == (unsigned char)')' ||
+           value == (unsigned char)'{' ||
+           value == (unsigned char)'}';
+}
+
+static int
+sixel_builtin_psd_ascii_token_equals(
+    unsigned char const *data,
+    size_t token_begin,
+    size_t token_end,
+    char const *token)
+{
+    size_t token_length;
+
+    token_length = 0u;
+    if (data == NULL || token == NULL || token_end <= token_begin) {
+        return 0;
+    }
+    token_length = strlen(token);
+    if (token_length == 0u || token_end - token_begin != token_length) {
+        return 0;
+    }
+    return memcmp(data + token_begin, token, token_length) == 0;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillcolor_engine_values_dict(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    double components[4],
+    size_t *pcount,
+    sixel_builtin_psd_tysh_engine_fillcolor_kind_t *pcolor_kind)
+{
+    size_t cursor;
+    size_t dict_end;
+    size_t token_begin;
+    size_t token_end;
+    size_t parse_cursor;
+    size_t i;
+    size_t ordered_count;
+    size_t required_count;
+    int slot;
+    int slot_found[4];
+    double slot_values[4];
+    double ordered_values[4];
+    double parsed_value;
+    sixel_builtin_psd_tysh_engine_fillcolor_kind_t color_kind;
+    sixel_builtin_psd_tysh_engine_fillcolor_kind_t effective_kind;
+    sixel_builtin_psd_tysh_engine_fillcolor_kind_t inferred_kind;
+
+    cursor = 0u;
+    dict_end = 0u;
+    token_begin = 0u;
+    token_end = 0u;
+    parse_cursor = 0u;
+    i = 0u;
+    ordered_count = 0u;
+    required_count = 0u;
+    slot = -1;
+    slot_found[0] = 0;
+    slot_found[1] = 0;
+    slot_found[2] = 0;
+    slot_found[3] = 0;
+    slot_values[0] = 0.0;
+    slot_values[1] = 0.0;
+    slot_values[2] = 0.0;
+    slot_values[3] = 0.0;
+    ordered_values[0] = 0.0;
+    ordered_values[1] = 0.0;
+    ordered_values[2] = 0.0;
+    ordered_values[3] = 0.0;
+    parsed_value = 0.0;
+    color_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN;
+    effective_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN;
+    inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN;
+    if (data == NULL || pcursor == NULL || components == NULL ||
+        pcount == NULL || pcolor_kind == NULL) {
+        return 0;
+    }
+
+    cursor = *pcursor;
+    if (cursor + 1u >= data_length ||
+        data[cursor] != (unsigned char)'<' ||
+        data[cursor + 1u] != (unsigned char)'<') {
+        return 0;
+    }
+    if (!sixel_builtin_psd_find_ascii_dict_end(data,
+                                               data_length,
+                                               cursor,
+                                               &dict_end)) {
+        return 0;
+    }
+    if (dict_end <= cursor + 1u) {
+        return 0;
+    }
+    cursor += 2u;
+    color_kind = *pcolor_kind;
+
+    while (cursor < dict_end) {
+        while (cursor < dict_end && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor >= dict_end) {
+            break;
+        }
+        if (data[cursor] != (unsigned char)'/') {
+            ++cursor;
+            continue;
+        }
+        token_begin = cursor;
+        ++cursor;
+        while (cursor < dict_end &&
+               !sixel_builtin_psd_ascii_is_token_delimiter(data[cursor])) {
+            ++cursor;
+        }
+        token_end = cursor;
+        while (cursor < dict_end && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        parse_cursor = cursor;
+        if (!sixel_builtin_psd_parse_ascii_float(data,
+                                                 dict_end,
+                                                 &parse_cursor,
+                                                 &parsed_value)) {
+            continue;
+        }
+        if (ordered_count < 4u) {
+            ordered_values[ordered_count] = parsed_value;
+            ++ordered_count;
+        }
+        cursor = parse_cursor;
+        slot = -1;
+        switch (color_kind) {
+        case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_GRAY:
+            if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Gray") ||
+                sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/DeviceGray")) {
+                slot = 0;
+            }
+            break;
+        case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB:
+            if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Red")) {
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Green")) {
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Blue")) {
+                slot = 2;
+            }
+            break;
+        case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB:
+            if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Hue")) {
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Saturation")) {
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Brightness")) {
+                slot = 2;
+            }
+            break;
+        case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK:
+            if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Cyan")) {
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Magenta")) {
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Yellow")) {
+                slot = 2;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Black")) {
+                slot = 3;
+            }
+            break;
+        case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB:
+            if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/L")) {
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/A")) {
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/B")) {
+                slot = 2;
+            }
+            break;
+        case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN:
+        default:
+            if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Red")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB;
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Green")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB;
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Blue")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB;
+                slot = 2;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Hue")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB;
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Saturation")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB;
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Brightness")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB;
+                slot = 2;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Cyan")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Magenta")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Yellow")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
+                slot = 2;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Black")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK;
+                slot = 3;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/Gray") ||
+                       sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/DeviceGray")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_GRAY;
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/L")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB;
+                slot = 0;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/A")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB;
+                slot = 1;
+            } else if (sixel_builtin_psd_ascii_token_equals(data, token_begin, token_end, "/B")) {
+                inferred_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB;
+                slot = 2;
+            }
+            break;
+        }
+
+        if (slot >= 0 && slot < 4) {
+            slot_values[slot] = parsed_value;
+            slot_found[slot] = 1;
+        }
+    }
+
+    effective_kind = color_kind;
+    if (effective_kind == SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN) {
+        effective_kind = inferred_kind;
+    }
+    switch (effective_kind) {
+    case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_GRAY:
+        required_count = 1u;
+        break;
+    case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_CMYK:
+        required_count = 4u;
+        break;
+    case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN:
+        required_count = 0u;
+        break;
+    case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_RGB:
+    case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_HSB:
+    case SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_LAB:
+    default:
+        required_count = 3u;
+        break;
+    }
+    if (required_count > 0u) {
+        for (i = 0u; i < required_count; ++i) {
+            if (!slot_found[i]) {
+                if (ordered_count < required_count) {
+                    return 0;
+                }
+                for (i = 0u; i < required_count; ++i) {
+                    components[i] = ordered_values[i];
+                }
+                *pcount = required_count;
+                *pcolor_kind = effective_kind;
+                *pcursor = dict_end + 2u;
+                return 1;
+            }
+        }
+        for (i = 0u; i < required_count; ++i) {
+            components[i] = slot_values[i];
+        }
+        *pcount = required_count;
+        *pcolor_kind = effective_kind;
+        *pcursor = dict_end + 2u;
+        return 1;
+    }
+    if (ordered_count == 0u) {
+        return 0;
+    }
+    for (i = 0u; i < ordered_count; ++i) {
+        components[i] = ordered_values[i];
+    }
+    *pcount = ordered_count;
+    *pcolor_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN;
+    *pcursor = dict_end + 2u;
+    return 1;
+}
+
 static void
 sixel_builtin_psd_hsb_engine_components_to_rgb(
     double hue,
@@ -4084,6 +4383,7 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_dict(
     size_t count;
     double components[4];
     sixel_builtin_psd_tysh_engine_fillcolor_kind_t color_kind;
+    sixel_builtin_psd_tysh_engine_fillcolor_kind_t parsed_kind;
 
     j = 0u;
     values_cursor = 0u;
@@ -4093,6 +4393,7 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_dict(
     components[2] = 0.0;
     components[3] = 0.0;
     color_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN;
+    parsed_kind = SIXEL_BUILTIN_PSD_TYSH_ENGINE_FILLCOLOR_UNKNOWN;
     if (data == NULL || layer == NULL || dict_begin > dict_end) {
         return 0;
     }
@@ -4123,6 +4424,21 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_dict(
                 count,
                 color_kind);
         }
+        parsed_kind = color_kind;
+        count = 0u;
+        if (sixel_builtin_psd_parse_tysh_fillcolor_engine_values_dict(
+                data,
+                dict_end,
+                &values_cursor,
+                components,
+                &count,
+                &parsed_kind)) {
+            return sixel_builtin_psd_apply_tysh_fillcolor_engine_components(
+                layer,
+                components,
+                count,
+                parsed_kind);
+        }
     }
 
     values_cursor = dict_begin;
@@ -4142,6 +4458,28 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_dict(
             components,
             count,
             color_kind);
+    }
+    values_cursor = dict_begin;
+    while (values_cursor + 1u < dict_end &&
+           (data[values_cursor] != (unsigned char)'<' ||
+            data[values_cursor + 1u] != (unsigned char)'<')) {
+        ++values_cursor;
+    }
+    parsed_kind = color_kind;
+    count = 0u;
+    if (values_cursor + 1u < dict_end &&
+        sixel_builtin_psd_parse_tysh_fillcolor_engine_values_dict(
+            data,
+            dict_end,
+            &values_cursor,
+            components,
+            &count,
+            &parsed_kind)) {
+        return sixel_builtin_psd_apply_tysh_fillcolor_engine_components(
+            layer,
+            components,
+            count,
+            parsed_kind);
     }
     return 0;
 }

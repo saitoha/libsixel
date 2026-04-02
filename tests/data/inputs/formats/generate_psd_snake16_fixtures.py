@@ -476,6 +476,111 @@ def build_tysh_enginedata_stylesheet_fillcolor_values_payload(
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_values_named_object_payload(
+    components: tuple[float, ...],
+    *,
+    color_space: str,
+) -> bytes:
+    if not components:
+        raise ValueError("components must not be empty")
+    if len(components) > 4:
+        raise ValueError("components must be 1..4 values")
+
+    keys: tuple[str, ...]
+    if color_space in ("RGB", "DeviceRGB"):
+        keys = ("Red", "Green", "Blue")
+    elif color_space in ("CMYK", "DeviceCMYK"):
+        keys = ("Cyan", "Magenta", "Yellow", "Black")
+    elif color_space in ("Gray", "DeviceGray"):
+        keys = ("Gray",)
+    elif color_space in ("HSB",):
+        keys = ("Hue", "Saturation", "Brightness")
+    elif color_space in ("Lab", "CIELab"):
+        keys = ("L", "A", "B")
+    else:
+        raise ValueError(
+            "color_space must be Gray/RGB/HSB/CMYK/Lab/"
+            "DeviceGray/DeviceRGB/DeviceCMYK/CIELab"
+        )
+    if len(components) != len(keys):
+        raise ValueError(
+            f"components count for {color_space} must be exactly {len(keys)}"
+        )
+
+    values = " ".join(
+        f"/{key} {float(component):.6f}"
+        for key, component in zip(keys, components, strict=True)
+    )
+    engine_data = (
+        "/EngineData << "
+        f"/FillColor << /Type /SolidColor /Values << /ColorSpace /{color_space} "
+        f"{values} >> >> "
+        ">>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
+def build_tysh_enginedata_stylesheet_fillcolor_values_named_object_payload(
+    components: tuple[float, ...],
+    *,
+    color_space: str,
+) -> bytes:
+    if not components:
+        raise ValueError("components must not be empty")
+    if len(components) > 4:
+        raise ValueError("components must be 1..4 values")
+
+    keys: tuple[str, ...]
+    if color_space in ("RGB", "DeviceRGB"):
+        keys = ("Red", "Green", "Blue")
+    elif color_space in ("CMYK", "DeviceCMYK"):
+        keys = ("Cyan", "Magenta", "Yellow", "Black")
+    elif color_space in ("Gray", "DeviceGray"):
+        keys = ("Gray",)
+    elif color_space in ("HSB",):
+        keys = ("Hue", "Saturation", "Brightness")
+    elif color_space in ("Lab", "CIELab"):
+        keys = ("L", "A", "B")
+    else:
+        raise ValueError(
+            "color_space must be Gray/RGB/HSB/CMYK/Lab/"
+            "DeviceGray/DeviceRGB/DeviceCMYK/CIELab"
+        )
+    if len(components) != len(keys):
+        raise ValueError(
+            f"components count for {color_space} must be exactly {len(keys)}"
+        )
+
+    values = " ".join(
+        f"/{key} {float(component):.6f}"
+        for key, component in zip(keys, components, strict=True)
+    )
+    engine_data = (
+        "/EngineData << "
+        "/StyleRun << /RunArray [ "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/FillColor << /Type /SolidColor /Values << /ColorSpace /{color_space} "
+        f"{values} >> >> "
+        ">> >> >> "
+        "] >> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_descriptor_tysh_unknown_then_color_payload(r: int, g: int, b: int) -> bytes:
     color_object = bytearray()
     color_object += _descriptor_unicode("")
@@ -9140,6 +9245,24 @@ def generate(out_dir: pathlib.Path):
                 ),
             )
             write_file(
+                out_dir / f"{base_name}_values_named_object_device_rgb.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_values_named_object_payload(
+                        (
+                            1.0,
+                            48.0 / 255.0,
+                            64.0 / 255.0,
+                        ),
+                        color_space="DeviceRGB",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
                 out_dir / f"{base_name}_values_named_device_cmyk.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
                     color_mode=color_mode,
@@ -9147,6 +9270,25 @@ def generate(out_dir: pathlib.Path):
                     base_planes=base_planes,
                     additional_block_key=b"TySh",
                     additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                        (
+                            0.0,
+                            81.17647058823529,
+                            74.90196078431373,
+                            0.0,
+                        ),
+                        color_space="DeviceCMYK",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_values_named_object_device_cmyk.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_values_named_object_payload(
                         (
                             0.0,
                             81.17647058823529,
@@ -9255,6 +9397,24 @@ def generate(out_dir: pathlib.Path):
                 ),
             )
             write_file(
+                out_dir / f"{base_name}_stylesheet_values_named_object_device_rgb.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_named_object_payload(
+                        (
+                            1.0,
+                            48.0 / 255.0,
+                            64.0 / 255.0,
+                        ),
+                        color_space="DeviceRGB",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
                 out_dir / f"{base_name}_stylesheet_values_named_device_cmyk.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
                     color_mode=color_mode,
@@ -9262,6 +9422,25 @@ def generate(out_dir: pathlib.Path):
                     base_planes=base_planes,
                     additional_block_key=b"TySh",
                     additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_payload(
+                        (
+                            0.0,
+                            81.17647058823529,
+                            74.90196078431373,
+                            0.0,
+                        ),
+                        color_space="DeviceCMYK",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_stylesheet_values_named_object_device_cmyk.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_named_object_payload(
                         (
                             0.0,
                             81.17647058823529,
