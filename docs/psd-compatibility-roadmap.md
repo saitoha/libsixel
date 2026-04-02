@@ -148,8 +148,11 @@ Key points used by this roadmap:
     - direct `FillColor [...]`,
     - `FillColor << /Values [...] >>`, and
     - `StyleRun/StyleSheetData`-nested
-      `FillColor << /ColorSpace /{Gray|RGB|CMYK|Lab} /Values [...] >>`
+      `FillColor << /ColorSpace /{Gray|RGB|HSB|CMYK|Lab} /Values [...] >>`
       parsing.
+    - named values arrays such as
+      `FillColor << /Values [/CMYK ...] >>` and
+      `FillColor << /Values [/HSB ...] >>`.
   - descriptor fill LSQA coverage now includes:
     - `SoCo` descriptor color-object paths (`RGB/CMYK/Grayscale/HSB/Lab`)
       across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
@@ -172,6 +175,12 @@ Key points used by this roadmap:
     - `FillColor [...]` / `FillColor << /Values [...] >>` on CMYK8, and
     - `StyleRun/StyleSheetData` `FillColor /Values` CMYK surfaces on
       `8/16/32bpc`.
+  - named HSB EngineData coverage now includes:
+    - decode/LSQA matrix on PSD and PSB (`mode=4`, `mode7(4ch->CMYK)`,
+      `8/16/32bpc`) for both direct `/Values` and
+      `StyleRun/StyleSheetData` `FillColor /Values` forms,
+    - valid ICC no-false-failure matrix coverage, and
+    - PSB bad/malformed ICC rotation coverage on 8bpc.
   - descriptor malformed regression now includes:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
