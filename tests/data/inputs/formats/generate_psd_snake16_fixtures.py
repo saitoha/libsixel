@@ -476,6 +476,39 @@ def build_tysh_enginedata_stylesheet_fillcolor_values_payload(
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_dual_scope_payload(
+    *,
+    top_level_rgb: tuple[int, int, int],
+    stylesheet_rgb: tuple[int, int, int],
+) -> bytes:
+    top_r = float(max(0, min(255, top_level_rgb[0]))) / 255.0
+    top_g = float(max(0, min(255, top_level_rgb[1]))) / 255.0
+    top_b = float(max(0, min(255, top_level_rgb[2]))) / 255.0
+    style_r = float(max(0, min(255, stylesheet_rgb[0]))) / 255.0
+    style_g = float(max(0, min(255, stylesheet_rgb[1]))) / 255.0
+    style_b = float(max(0, min(255, stylesheet_rgb[2]))) / 255.0
+
+    # Include both top-level /FillColor and StyleRun/StyleSheetData /FillColor.
+    # Loader behavior should prioritize StyleSheetData when both are present.
+    engine_data = (
+        "/EngineData << "
+        f"/FillColor [{top_r:.6f} {top_g:.6f} {top_b:.6f}] "
+        "/StyleRun << /RunArray [ "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/FillColor [{style_r:.6f} {style_g:.6f} {style_b:.6f}] "
+        ">> >> >> "
+        "] >> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_values_named_object_payload(
     components: tuple[float, ...],
     *,
@@ -9504,6 +9537,20 @@ def generate(out_dir: pathlib.Path):
                     additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_payload(
                         (53.389, 0.0, 0.0),
                         color_space="Lab",
+                    ),
+                    first_layer_has_pixels=False,
+                ),
+            )
+            write_file(
+                out_dir / f"{base_name}_dual_scope_precedence.psd",
+                build_cmyk_multilayer_nonpixel_fixture(
+                    color_mode=color_mode,
+                    depth=depth_value,
+                    base_planes=base_planes,
+                    additional_block_key=b"TySh",
+                    additional_block_payload=build_tysh_enginedata_fillcolor_dual_scope_payload(
+                        top_level_rgb=(32, 64, 255),
+                        stylesheet_rgb=(255, 48, 64),
                     ),
                     first_layer_has_pixels=False,
                 ),

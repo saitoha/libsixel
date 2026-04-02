@@ -4557,8 +4557,10 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
 {
     static char const token[] = "/FillColor";
     size_t i;
+    int found;
 
     i = 0u;
+    found = 0;
     if (data == NULL || layer == NULL ||
         begin > end || end - begin < sizeof(token) - 1u) {
         return 0;
@@ -4572,10 +4574,10 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
                 end,
                 i,
                 layer)) {
-            return 1;
+            found = 1;
         }
     }
-    return 0;
+    return found;
 }
 
 static int
@@ -4621,6 +4623,19 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
                 layer)) {
             return 1;
         }
+        /* Some EngineData variants wrap StyleSheetData with additional
+         * structures that can confuse strict dict-bound slicing.
+         * Keep precedence deterministic by retrying from this StyleSheetData
+         * site to the end of EngineData before falling back to top-level
+         * FillColor parsing.
+         */
+        if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                data,
+                cursor,
+                key_length,
+                layer)) {
+            return 1;
+        }
     }
     return 0;
 }
@@ -4634,15 +4649,18 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
     if (data == NULL || layer == NULL || key_length == 0u) {
         return 0;
     }
-    if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+    /* Prefer StyleRun/StyleSheetData FillColor when both top-level and
+     * nested FillColor entries coexist in EngineData.
+     */
+    if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
             data,
-            0u,
             key_length,
             layer)) {
         return 1;
     }
-    return sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
+    return sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
         data,
+        0u,
         key_length,
         layer);
 }
