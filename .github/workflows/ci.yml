@@ -690,10 +690,11 @@ jobs:
           $artifactDir = Join-Path $workspace '.tmp\fuzz-artifacts-loader\wic'
           New-Item -ItemType Directory -Force -Path $targetCorpus, $artifactDir | Out-Null
 
-          # Run WIC fuzz in libFuzzer-only mode. The Windows codec stack uses
-          # allocator paths that are noisy under ASan/UBSan in this ABI.
-          Remove-Item Env:ASAN_OPTIONS -ErrorAction SilentlyContinue
-          Remove-Item Env:UBSAN_OPTIONS -ErrorAction SilentlyContinue
+          # WIC (windowscodecs/combase) can trigger allocator-size probes on
+          # foreign pointers under ASan on Windows; disable that noisy check so
+          # this job can surface actionable libsixel-side faults.
+          $env:ASAN_OPTIONS = 'detect_leaks=0:abort_on_error=1:check_malloc_usable_size=0'
+          $env:UBSAN_OPTIONS = 'halt_on_error=1:print_stacktrace=1:report_error_type=1'
 
           $probeSource = Join-Path $env:TEMP 'libfuzzer_probe.c'
           @(
@@ -704,14 +705,14 @@ jobs:
             '}'
           ) | Set-Content -LiteralPath $probeSource -Encoding ASCII
 
-          & clang -x c -c $probeSource "-fsanitize=fuzzer-no-link" -o (Join-Path $env:TEMP 'libfuzzer_probe.obj')
+          & clang -x c -c $probeSource "-fsanitize=fuzzer-no-link,address,undefined" -o (Join-Path $env:TEMP 'libfuzzer_probe.obj')
           if ($LASTEXITCODE -ne 0) {
-            throw "libFuzzer compile flags are unsupported in this MSVC ABI toolchain (fuzzer-no-link)."
+            throw "libFuzzer compile flags are unsupported in this MSVC ABI toolchain."
           }
 
-          & clang -x c $probeSource "-fsanitize=fuzzer" -o (Join-Path $env:TEMP 'libfuzzer_probe.exe')
+          & clang -x c $probeSource "-fsanitize=fuzzer,address,undefined" -o (Join-Path $env:TEMP 'libfuzzer_probe.exe')
           if ($LASTEXITCODE -ne 0) {
-            throw "libFuzzer link flags are unsupported in this MSVC ABI toolchain (fuzzer)."
+            throw "libFuzzer link flags are unsupported in this MSVC ABI toolchain."
           }
 
           function Copy-SeedFiles([string]$Root, [string[]]$Patterns) {
@@ -787,7 +788,7 @@ jobs:
 
           $env:CC = 'clang'
           $env:CXX = 'clang++'
-          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dfuzz_sanitizers=fuzzer -Dwic=enabled
+          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dwic=enabled
           python -m mesonbuild.mesonmain compile -C builddir -v fuzz-loader-wic-libfuzzer
 
           $harness = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer.exe'
