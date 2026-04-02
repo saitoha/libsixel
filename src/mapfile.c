@@ -1319,6 +1319,21 @@ sixel_palette_parse_gpl(unsigned char const *data,
                 ++line;
             }
         }
+        /*
+         * Keep compatibility with trailing labels (for example "Index 0"),
+         * but reject a 4th numeric token after the RGB triplet.
+         */
+        if (*line != '\0') {
+            component = strtol(line, &parse_end, 10);
+            if (parse_end != line &&
+                    (*parse_end == '\0' || *parse_end == ' '
+                     || *parse_end == '\t')) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_gpl: invalid component.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
+        }
 
         palette_bytes[parsed_colors * 3 + 0] =
             (unsigned char)values[0];
