@@ -554,6 +554,16 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_cmyk",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
+    ]
+    tysh_valid_suffixes_depth8_only = [
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_cmyk",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
     ]
     fill_valid_suffixes = [
         "fill_soco_descriptor",
@@ -607,6 +617,15 @@ def generate(out_dir: pathlib.Path) -> None:
             + [f"{mode4_prefix}_{suffix}.psd" for suffix in tysh_valid_suffixes]
             + [f"{mode4_prefix}_{suffix}.psd" for suffix in fill_valid_suffixes]
         )
+        if depth_tag == "8":
+            mode7_valid_sources.extend(
+                f"{mode7_prefix}_{suffix}.psd"
+                for suffix in tysh_valid_suffixes_depth8_only
+            )
+            mode4_valid_sources.extend(
+                f"{mode4_prefix}_{suffix}.psd"
+                for suffix in tysh_valid_suffixes_depth8_only
+            )
         write_valid_icc_variants(
             out_dir,
             source_names=mode7_valid_sources,

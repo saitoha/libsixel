@@ -9375,6 +9375,55 @@ def generate(out_dir: pathlib.Path):
                         first_layer_has_pixels=False,
                     ),
                 )
+                write_file(
+                    out_dir / f"{base_name}_color_values_named_device_rgb.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                            (
+                                1.0,
+                                48.0 / 255.0,
+                                64.0 / 255.0,
+                            ),
+                            color_space="DeviceRGB",
+                            token_name="Color",
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
+                write_file(
+                    out_dir / f"{base_name}_color_values_named_device_gray.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                            (50.0,),
+                            color_space="DeviceGray",
+                            token_name="Color",
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
+                write_file(
+                    out_dir / f"{base_name}_color_values_named_cielab.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_values_named_payload(
+                            (53.389, 0.0, 0.0),
+                            color_space="CIELab",
+                            token_name="Color",
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
             write_file(
                 out_dir / f"{base_name}_values_named_cmyk.psd",
                 build_cmyk_multilayer_nonpixel_fixture(

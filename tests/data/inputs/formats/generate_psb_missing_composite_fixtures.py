@@ -962,6 +962,12 @@ def main() -> None:
         "16": "fill_gdfl_descriptor_hsb",
         "32": "fill_ptfl_descriptor",
     }
+    tysh_color_values_named_suffixes = [
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_cmyk",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
+    ]
     for mode_prefix in ("cmyk", "mode7_cmyk"):
         for depth_tag in ("8", "16", "32"):
             src_base = f"snake16_{mode_prefix}{depth_tag}_missing_composite_multilayer"
@@ -997,6 +1003,9 @@ def main() -> None:
                 for suffix in [
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_cmyk",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_cmyk",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_stylesheet_color_values_precedence",
                 ]:
                     convert_fixture(
@@ -1026,6 +1035,11 @@ def main() -> None:
                         f"{src_base}_{suffix}_bad_icc_profile.psd",
                         f"{dst_base}_{suffix}_bad_icc_profile.psd",
                     )
+                for suffix in tysh_color_values_named_suffixes:
+                    convert_fixture(
+                        f"{src_base}_{suffix}_bad_icc_profile.psd",
+                        f"{dst_base}_{suffix}_bad_icc_profile.psd",
+                    )
             for suffix in [
                 "normal",
                 tysh_malformed_rotation[depth_tag],
@@ -1040,6 +1054,16 @@ def main() -> None:
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
                 ]:
+                    convert_fixture(
+                        f"{src_base}_{suffix}_malformed_resource.psd",
+                        f"{dst_base}_{suffix}_malformed_resource.psd",
+                    )
+                for suffix in tysh_color_values_named_suffixes:
+                    convert_fixture(
+                        f"{src_base}_{suffix}_valid_icc_profile.psd",
+                        f"{dst_base}_{suffix}_valid_icc_profile.psd",
+                    )
+                for suffix in tysh_color_values_named_suffixes:
                     convert_fixture(
                         f"{src_base}_{suffix}_malformed_resource.psd",
                         f"{dst_base}_{suffix}_malformed_resource.psd",

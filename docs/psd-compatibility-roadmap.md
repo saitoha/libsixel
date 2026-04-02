@@ -153,6 +153,8 @@ Key points used by this roadmap:
     - named values arrays such as
       `FillColor << /Values [/CMYK ...] >>` and
       `FillColor << /Values [/HSB ...] >>`.
+    - `/Color << /Values [/DeviceCMYK|DeviceRGB|DeviceGray|CIELab ...] >>`
+      parsing on native CMYK8 and mode7-mapped CMYK8 paths.
   - descriptor fill LSQA coverage now includes:
     - `SoCo` descriptor color-object paths (`RGB/CMYK/Grayscale/HSB/Lab`)
       across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
@@ -181,6 +183,11 @@ Key points used by this roadmap:
       `StyleRun/StyleSheetData` `FillColor /Values` forms,
     - valid ICC no-false-failure matrix coverage, and
     - PSB bad/malformed ICC rotation coverage on 8bpc.
+  - `/Color` named-space ICC contract coverage now includes representative
+    no-pixel TySh surfaces for PSD/PSB:
+    - valid ICC no-false-failure traces (`mode=4`, `mode7(4ch->CMYK)`),
+    - bad ICC conversion-failure trace (`mode7(4ch->CMYK)`), and
+    - malformed-resource skip trace (`mode=4`).
   - descriptor malformed regression now includes:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
@@ -324,10 +331,10 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Extend non-pixel semantics beyond current fill/TySh fill-color support while
+1. Extend non-pixel semantics beyond current fill/TySh color extraction support while
    preserving deterministic degrade traces for unsupported semantics
    (for example richer `TySh` text-style payload interpretation beyond
-   `FillColor` extraction).
+   `FillColor`/`Color` value extraction).
 2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
    large-document parity:
    - broaden missing-composite matrix/trace coverage to larger layouts, and
