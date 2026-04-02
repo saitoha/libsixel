@@ -249,6 +249,7 @@ load_with_wic(
     int                     start_frame_no;
     int                     resolved_start_frame_no;
     int                     frame_count_int;
+    int                     com_initialized;
     char const             *additional_message;
 
     set_palette = 0;
@@ -267,6 +268,7 @@ load_with_wic(
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
     frame_count_int = 0;
+    com_initialized = 0;
 
     (void) fstatic;
     (void) reqcolors;
@@ -293,6 +295,7 @@ load_with_wic(
             "load_with_wic: CoInitializeEx() failed.");
         goto end;
     }
+    com_initialized = 1;
 
     hr = CoCreateInstance(&CLSID_WICImagingFactory,
                           NULL,
@@ -682,13 +685,21 @@ load_with_wic(
         if (stream) {
              stream->lpVtbl->Release(stream);
         }
+        if (decoder) {
+             decoder->lpVtbl->Release(decoder);
+        }
         if (factory) {
              factory->lpVtbl->Release(factory);
         }
+        PropVariantClear(&prop);
+        PropVariantClear(&lp);
 
         sixel_frame_unref(frame);
 
-        CoUninitialize();
+        if (com_initialized) {
+            CoUninitialize();
+            com_initialized = 0;
+        }
 
         if (FAILED(hr)) {
             return loader_wic_status_from_hresult(hr);
@@ -722,12 +733,19 @@ end:
     if (stream) {
          stream->lpVtbl->Release(stream);
     }
+    if (decoder) {
+         decoder->lpVtbl->Release(decoder);
+    }
     if (factory) {
          factory->lpVtbl->Release(factory);
     }
+    PropVariantClear(&prop);
+    PropVariantClear(&lp);
     sixel_frame_unref(frame);
 
-    CoUninitialize();
+    if (com_initialized) {
+        CoUninitialize();
+    }
 
     if (FAILED(hr)) {
         additional_message = sixel_helper_get_additional_message();
