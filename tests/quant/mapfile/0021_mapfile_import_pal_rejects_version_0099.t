@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-version-0099-invalid.pal"
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m "${pal_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
     echo "not ok" 1 - "PAL version 0099 unexpectedly succeeded"

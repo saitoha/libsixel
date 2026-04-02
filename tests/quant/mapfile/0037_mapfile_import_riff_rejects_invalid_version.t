@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 riff_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/riff-invalid-version.pal"
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m pal-riff:"${riff_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
     echo "not ok" 1 - "RIFF invalid version unexpectedly succeeded"

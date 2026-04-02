@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 act_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-start-255-count-1.act"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${act_palette}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m "${act_palette}" \
     "${snake_png}" -o/dev/null || {
     echo "not ok" 1 - "ACT start=255,count=1 should be accepted"
     exit 0

@@ -16,12 +16,12 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 act_palette="${ARTIFACT_LOCAL_DIR}/palette.act"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six"         "${snake_png}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six"         "${snake_png}" || {
     echo "not ok" 1 - "Preparing ACT palette for import failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/from-act.six"         "${snake_png}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/from-act.six"         "${snake_png}" || {
     echo "not ok" 1 - "ACT palette conversion failed"
     exit 0
 }

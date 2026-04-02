@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 pal_file="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-embedded-nul-invalid.pal"
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m pal-jasc:"${pal_file}" "${snake_png}" \
           -o/dev/null 2>&1) && {
     echo "not ok" 1 - "JASC-PAL with embedded NUL unexpectedly succeeded"

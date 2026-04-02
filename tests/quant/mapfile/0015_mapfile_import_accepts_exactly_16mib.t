@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-exact-16mib.gpl"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m gpl:"${gpl_palette}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m gpl:"${gpl_palette}" \
     "${snake_png}" -o/dev/null || {
     echo "not ok" 1 - "exact 16 MiB palette should be accepted"
     exit 0

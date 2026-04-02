@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-version-0100-valid.pal"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${pal_palette}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m "${pal_palette}" \
     "${snake_png}" -o/dev/null || {
     echo "not ok" 1 - "PAL version 0100 should be accepted"
     exit 0

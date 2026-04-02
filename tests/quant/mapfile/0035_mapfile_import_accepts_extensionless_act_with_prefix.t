@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 act_file="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-size-only-noext"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     -m act:"${act_file}" "${snake_png}" -o/dev/null || {
     echo "not ok" 1 - "explicit act: prefix failed for extensionless ACT-sized input"
     exit 0
