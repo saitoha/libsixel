@@ -189,12 +189,46 @@ jobs:
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
             make -j"$(nproc)"
+            harness="$PWD/fuzz/fuzz-loader-builtin-struct-${{ matrix.target }}-libfuzzer"
+            target_corpus="$FUZZ_STRUCT_CORPUS/${{ matrix.target }}"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing struct harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_STRUCT_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$target_corpus" -type f -print -quit | grep -q .; then
+              cp -a "$target_corpus"/. "$merge_seed"/
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_merged" "$target_corpus" "$merge_seed"
+            else
+              echo "struct-corpus: no files to merge for ${{ matrix.target }}"
+            fi
+            rm -rf "$merge_seed"
             make "fuzz-run-struct-${{ matrix.target }}" \
               FUZZ_STRUCT_CORPUS="$FUZZ_STRUCT_CORPUS" \
               FUZZ_STRUCT_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
           else
             CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
             meson compile -C builddir -v
+            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-struct-${{ matrix.target }}-libfuzzer"
+            target_corpus="$FUZZ_STRUCT_CORPUS/${{ matrix.target }}"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing struct harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_STRUCT_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$target_corpus" -type f -print -quit | grep -q .; then
+              cp -a "$target_corpus"/. "$merge_seed"/
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_merged" "$target_corpus" "$merge_seed"
+            else
+              echo "struct-corpus: no files to merge for ${{ matrix.target }}"
+            fi
+            rm -rf "$merge_seed"
             export FUZZ_STRUCT_ARGS="$fuzz_args"
             meson compile -C builddir "fuzz-run-struct-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
@@ -311,12 +345,48 @@ jobs:
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
             make -j"$(nproc)"
+            harness="$PWD/fuzz/fuzz-loader-builtin-libfuzzer"
+            target_corpus="$FUZZ_BUILTIN_CORPUS/${{ matrix.target }}"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing loader harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$target_corpus" -type f -print -quit | grep -q .; then
+              cp -a "$target_corpus"/. "$merge_seed"/
+              FUZZ_BUILTIN_FORCE_FORMAT="${{ matrix.target }}" \
+                "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_merged" "$target_corpus" "$merge_seed"
+            else
+              echo "loader-corpus: no files to merge for ${{ matrix.target }}"
+            fi
+            rm -rf "$merge_seed"
             make "fuzz-run-loader-builtin-${{ matrix.target }}" \
               FUZZ_BUILTIN_CORPUS="$FUZZ_BUILTIN_CORPUS" \
               FUZZ_BUILTIN_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
           else
             CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
             meson compile -C builddir -v
+            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-libfuzzer"
+            target_corpus="$FUZZ_BUILTIN_CORPUS/${{ matrix.target }}"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing loader harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$target_corpus" -type f -print -quit | grep -q .; then
+              cp -a "$target_corpus"/. "$merge_seed"/
+              FUZZ_BUILTIN_FORCE_FORMAT="${{ matrix.target }}" \
+                "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_merged" "$target_corpus" "$merge_seed"
+            else
+              echo "loader-corpus: no files to merge for ${{ matrix.target }}"
+            fi
+            rm -rf "$merge_seed"
             export FUZZ_BUILTIN_ARGS="$fuzz_args"
             meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
@@ -514,13 +584,51 @@ jobs:
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             ./configure --enable-fuzz --with-coregraphics
-            make -j"$(sysctl -n hw.ncpu)" fuzz-run-loader-coregraphics \
+            make -j"$(sysctl -n hw.ncpu)"
+            harness="$PWD/fuzz/fuzz-loader-coregraphics-libfuzzer"
+            target_corpus="$FUZZ_COMPONENT_CORPUS/coregraphics"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing coregraphics harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_COMPONENT_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$target_corpus" -type f -print -quit | grep -q .; then
+              cp -a "$target_corpus"/. "$merge_seed"/
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_merged" "$target_corpus" "$merge_seed" \
+                2>&1 | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d'
+            else
+              echo "coregraphics-corpus: no files to merge"
+            fi
+            rm -rf "$merge_seed"
+            make fuzz-run-loader-coregraphics \
               FUZZ_BUILTIN_CORPUS="$PWD/.tmp/fuzz-corpus-loader" \
               FUZZ_COMPONENT_ARGS="$fuzz_args" 2>&1 \
               | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
               | tee "$run_log"
           else
             meson setup builddir -Dfuzz=true -Dcoregraphics=enabled
+            meson compile -C builddir -v
+            harness="$PWD/builddir/fuzz/fuzz-loader-coregraphics-libfuzzer"
+            target_corpus="$FUZZ_COMPONENT_CORPUS/coregraphics"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing coregraphics harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_COMPONENT_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$target_corpus" -type f -print -quit | grep -q .; then
+              cp -a "$target_corpus"/. "$merge_seed"/
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_merged" "$target_corpus" "$merge_seed" \
+                2>&1 | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d'
+            else
+              echo "coregraphics-corpus: no files to merge"
+            fi
+            rm -rf "$merge_seed"
             export FUZZ_COMPONENT_ARGS="$fuzz_args"
             meson compile -C builddir -v fuzz-run-loader-coregraphics 2>&1 \
               | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
@@ -668,6 +776,26 @@ jobs:
           fi
           export FUZZ_COMPONENT_ARGS="$FUZZ_COMPONENT_ARGS -dict=$dict_merged"
           CC=clang CXX=clang++ meson setup builddir -Dfuzz=true -Dwic=enabled
+          meson compile -C builddir -v fuzz-loader-wic-libfuzzer
+          harness="$workspace/builddir/fuzz/fuzz-loader-wic-libfuzzer"
+          if [ -x "${harness}.exe" ]; then
+            harness="${harness}.exe"
+          fi
+          if [ ! -x "$harness" ]; then
+            echo "::error::missing wic harness: $harness"
+            exit 1
+          fi
+          merge_seed="$FUZZ_COMPONENT_ARTIFACT_DIR/corpus-premerge"
+          rm -rf "$merge_seed"
+          mkdir -p "$merge_seed"
+          if find "$target_corpus" -type f -print -quit | grep -q .; then
+            cp -a "$target_corpus"/. "$merge_seed"/
+            "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+              -dict="$dict_merged" "$target_corpus" "$merge_seed"
+          else
+            echo "wic-corpus: no files to merge"
+          fi
+          rm -rf "$merge_seed"
           meson compile -C builddir -v fuzz-run-loader-wic 2>&1 | tee "$run_log"
 
           if ! grep -q 'DONE   cov:' "$run_log"; then
