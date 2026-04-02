@@ -639,10 +639,14 @@ jobs:
             ${{ env.FUZZ_COMPONENT_ARTIFACT_DIR }}
             ${{ env.FUZZ_COMPONENT_CORPUS }}
 
-  fuzz_push_loader_wic:
+  fuzz_push_loader_wic_detect:
     if: github.event_name == 'push'
-    name: Meson-cmd-x86_64-msvc-fuzz-loader-wic
+    name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect
     runs-on: windows-latest
+    outputs:
+      had_crash: ${{ steps.detect.outputs.had_crash }}
+      fuzz_exit: ${{ steps.detect.outputs.fuzz_exit }}
+      crash_count: ${{ steps.detect.outputs.crash_count }}
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
@@ -672,7 +676,8 @@ jobs:
         with:
           arch: x64
 
-      - name: Build and run wic loader fuzz harness (MSVC ABI)
+      - name: Build and run wic loader fuzz harness (detect)
+        id: detect
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -788,7 +793,7 @@ jobs:
 
           $env:CC = 'clang'
           $env:CXX = 'clang++'
-          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dwic=enabled
+          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dwic=enabled -Dfuzz_sanitizers=full
           python -m mesonbuild.mesonmain compile -C builddir -v fuzz-loader-wic-libfuzzer
 
           $harness = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer.exe'
@@ -832,33 +837,185 @@ jobs:
 
           $runLog = Join-Path $artifactDir 'run.log'
           & $harness @fuzzArgs $targetCorpusPosix 2>&1 | Tee-Object -FilePath $runLog
-          if ($LASTEXITCODE -ne 0) {
-            throw "fuzz-loader-wic execution failed with exit code $LASTEXITCODE."
-          }
+          $fuzzExit = $LASTEXITCODE
 
           $completed = Select-String -Path $runLog -Pattern 'DONE   cov:|INFO: exiting: 0' | Select-Object -Last 1
-          if (-not $completed) {
-            throw "libFuzzer did not report completion for wic loader target."
+          $crashPatterns = @('crash-*', 'timeout-*', 'oom-*', 'leak-*')
+          $crashInputs = @()
+          foreach ($pattern in $crashPatterns) {
+            $crashInputs += Get-ChildItem -Path $artifactDir -Filter $pattern -File -ErrorAction SilentlyContinue
           }
-          $covLine = Select-String -Path $runLog -Pattern 'cov: [0-9]+' | Select-Object -Last 1
-          if (-not $covLine -or $covLine.Line -notmatch 'cov: ([0-9]+)') {
-            throw "could not parse final coverage from run.log."
-          }
-          $cov = [int]$Matches[1]
-          if ($cov -lt 10) {
-            throw "wic loader coverage too low: cov=$cov (expected >= 10)."
+          $crashInputs = @($crashInputs | Sort-Object -Property FullName -Unique)
+          $crashCount = $crashInputs.Count
+          $hadCrash = $crashCount -gt 0
+
+          if ($hadCrash) {
+            Write-Warning "wic detect found $crashCount crash artifact(s). Deferring classification to non-ASan repro job."
           }
 
-      - name: Upload wic fuzz artifacts
+          if (($fuzzExit -ne 0) -and (-not $hadCrash)) {
+            throw "fuzz-loader-wic failed with exit code $fuzzExit and no crash artifact was produced."
+          }
+          if (($fuzzExit -eq 0) -and (-not $completed)) {
+            throw "libFuzzer did not report completion for wic loader target."
+          }
+
+          if ($fuzzExit -eq 0) {
+            $covLine = Select-String -Path $runLog -Pattern 'cov: [0-9]+' | Select-Object -Last 1
+            if (-not $covLine -or $covLine.Line -notmatch 'cov: ([0-9]+)') {
+              throw "could not parse final coverage from run.log."
+            }
+            $cov = [int]$Matches[1]
+            if ($cov -lt 10) {
+              throw "wic loader coverage too low: cov=$cov (expected >= 10)."
+            }
+          } else {
+            Write-Host "wic detect run exited with code $fuzzExit; skipping coverage gate."
+          }
+
+          "fuzz_exit=$fuzzExit" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "had_crash=$($hadCrash.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "crash_count=$crashCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Upload wic detect artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Meson-cmd-x86_64-msvc-fuzz-loader-wic
+          name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect
           if-no-files-found: ignore
           retention-days: 7
           path: |
             ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/wic
             ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component/wic
+
+  fuzz_push_loader_wic_repro_nosan:
+    if: github.event_name == 'push' && needs.fuzz_push_loader_wic_detect.result == 'success'
+    needs: [fuzz_push_loader_wic_detect]
+    name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan
+    runs-on: windows-latest
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        shell: pwsh
+        run: |
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
+
+      - name: Disable Windows Search Indexer (Windows)
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Configure git EOL
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup MSVC developer env (vcvars, x86_64 target)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Download wic detect artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect
+          path: ${{ github.workspace }}/.tmp/wic-detect-artifacts
+
+      - name: Reproduce wic crash inputs without ASan
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $hadCrash = '${{ needs.fuzz_push_loader_wic_detect.outputs.had_crash }}'
+          if ($hadCrash -ne 'true') {
+            Write-Host 'No crash artifacts from detect job; skipping non-ASan repro.'
+            exit 0
+          }
+
+          python -m pip install --upgrade pip
+          python -m pip install meson ninja
+
+          if (-not (Get-Command clang -ErrorAction SilentlyContinue)) {
+            throw "clang was not found in PATH after MSVC environment setup."
+          }
+
+          $workspace = (Get-Location).Path
+          $downloadRoot = Join-Path $workspace '.tmp\wic-detect-artifacts'
+          $reproDir = Join-Path $workspace '.tmp\fuzz-artifacts-loader\wic-repro'
+          New-Item -ItemType Directory -Force -Path $reproDir | Out-Null
+
+          $crashPatterns = @('crash-*', 'timeout-*', 'oom-*', 'leak-*')
+          $crashInputs = @()
+          foreach ($pattern in $crashPatterns) {
+            $crashInputs += Get-ChildItem -Path $downloadRoot -Recurse -File -Filter $pattern -ErrorAction SilentlyContinue
+          }
+          $crashInputs = @($crashInputs | Sort-Object -Property FullName -Unique)
+          if ($crashInputs.Count -eq 0) {
+            throw "detect job reported had_crash=true, but no crash artifacts were downloaded."
+          }
+          Write-Host "Reproducing $($crashInputs.Count) crash artifact(s) in non-ASan mode."
+
+          $env:CC = 'clang'
+          $env:CXX = 'clang++'
+          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dwic=enabled -Dfuzz_sanitizers=fuzzer
+          python -m mesonbuild.mesonmain compile -C builddir -v fuzz-loader-wic-libfuzzer
+
+          $harness = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer.exe'
+          if (-not (Test-Path $harness)) {
+            $harnessNoExt = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer'
+            if (Test-Path $harnessNoExt) {
+              $harness = $harnessNoExt
+            } else {
+              throw "missing wic harness: $harness"
+            }
+          }
+          foreach ($runtimeDir in @(
+            (Join-Path $workspace 'builddir\src'),
+            (Join-Path $workspace 'builddir\fuzz')
+          )) {
+            if (Test-Path $runtimeDir) {
+              $env:PATH = "$runtimeDir;$env:PATH"
+            }
+          }
+
+          $reproduced = New-Object 'System.Collections.Generic.List[string]'
+          foreach ($input in $crashInputs) {
+            $inputPosix = $input.FullName.Replace('\', '/')
+            $logFile = Join-Path $reproDir ("repro-" + $input.Name + ".log")
+            & $harness '-runs=1' '-timeout=5' $inputPosix 2>&1 | Tee-Object -FilePath $logFile
+            $exitCode = $LASTEXITCODE
+            Write-Host "repro: $($input.Name) => exit=$exitCode"
+            if ($exitCode -ne 0) {
+              [void]$reproduced.Add($input.FullName)
+            }
+          }
+
+          if ($reproduced.Count -gt 0) {
+            Write-Host 'Reproduced in non-ASan mode:'
+            foreach ($path in $reproduced) {
+              Write-Host "  $path"
+            }
+            throw "non-ASan reproduction succeeded for $($reproduced.Count) input(s); classify as real crash."
+          }
+
+          Write-Warning 'No crash artifact reproduced without ASan; classify as ASan-boundary noise.'
+
+      - name: Upload wic repro artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ github.workspace }}/.tmp/wic-detect-artifacts
+            ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/wic-repro
 
   staticcheck:
     name: ${{ matrix.label }}

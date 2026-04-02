@@ -151,6 +151,7 @@ if get_option('tests')
   conf.set('HAVE_TESTS', 1)
 endif
 fuzz_enabled = get_option('fuzz')
+fuzz_sanitizers = get_option('fuzz_sanitizers')
 fuzz_message = fuzz_enabled ? 'yes' : 'no'
 objc_forced_off_for_fuzz = false
 
@@ -158,10 +159,25 @@ if fuzz_enabled
   # Keep an early compile-side sanity check, but avoid link-side checks here.
   # On clang+MSVC toolchains, cc.has_link_argument() can report false negatives
   # for sanitizer flags even when fuzz/meson.build link probes succeed.
-  fuzz_compile_probe_args = [
-    '-fsanitize=fuzzer-no-link,address,undefined',
-    '-fsanitize=fuzzer,address,undefined',
-  ]
+  fuzz_compile_probe_args = []
+  if fuzz_sanitizers == 'full'
+    fuzz_compile_probe_args = [
+      '-fsanitize=fuzzer-no-link,address,undefined',
+      '-fsanitize=fuzzer,address,undefined',
+    ]
+  elif fuzz_sanitizers == 'fuzzer'
+    fuzz_compile_probe_args = [
+      '-fsanitize=fuzzer-no-link',
+      '-fsanitize=fuzzer',
+    ]
+  else
+    fuzz_compile_probe_args = [
+      '-fsanitize=fuzzer-no-link,address,undefined',
+      '-fsanitize=fuzzer,address,undefined',
+      '-fsanitize=fuzzer-no-link',
+      '-fsanitize=fuzzer',
+    ]
+  endif
   fuzz_compile_probe_ok = false
   foreach arg : fuzz_compile_probe_args
     if cc.has_argument(arg)
@@ -170,7 +186,8 @@ if fuzz_enabled
     endif
   endforeach
   if not fuzz_compile_probe_ok
-    error('fuzz option requires compiler support for libFuzzer sanitizer flags')
+    error('fuzz option requires compiler support for libFuzzer sanitizer flags'
+          + ' (fuzz_sanitizers=' + fuzz_sanitizers + ')')
   endif
 
   if host_system == 'darwin' and have_objc
