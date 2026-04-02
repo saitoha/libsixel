@@ -541,35 +541,40 @@ runs:
         $workspace = (Resolve-Path $env:GITHUB_WORKSPACE).Path
         Set-Location $workspace
 
-        $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-        if (-not (Test-Path $vswhere)) {
-          throw "vswhere.exe not found: $vswhere"
-        }
-
-        $vsInstallPath = (& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.TestTools.BuildTools -property installationPath | Select-Object -First 1).Trim()
-        if ([string]::IsNullOrWhiteSpace($vsInstallPath)) {
-          throw 'Visual Studio installation path was not detected.'
-        }
-
         $coverageTool = $null
-        $coverageCandidates = @(
-          (Join-Path $vsInstallPath 'Common7\IDE\Extensions\Microsoft\CodeCoverage.Console\Microsoft.CodeCoverage.Console.exe'),
-          (Join-Path $vsInstallPath 'Common7\IDE\Extensions\Microsoft\CodeCoverage.Console\Microsoft.CodeCoverage.Console.dll')
-        )
-        foreach ($candidate in $coverageCandidates) {
-          if (Test-Path $candidate) {
-            $coverageTool = $candidate
-            break
+        $coverageCommand = Get-Command 'Microsoft.CodeCoverage.Console.exe' -ErrorAction SilentlyContinue
+        if ($coverageCommand) {
+          $coverageTool = $coverageCommand.Source
+        } else {
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (Test-Path $vswhere) {
+            $vsInstallPathRaw = & $vswhere -latest -products * -property installationPath | Select-Object -First 1
+            $vsInstallPath = ''
+            if ($vsInstallPathRaw) {
+              $vsInstallPath = $vsInstallPathRaw.ToString().Trim()
+            }
+            if (-not [string]::IsNullOrWhiteSpace($vsInstallPath)) {
+              $coverageCandidates = @(
+                (Join-Path $vsInstallPath 'Common7\IDE\Extensions\Microsoft\CodeCoverage.Console\Microsoft.CodeCoverage.Console.exe'),
+                (Join-Path $vsInstallPath 'Common7\IDE\Extensions\Microsoft\CodeCoverage.Console\Microsoft.CodeCoverage.Console.dll')
+              )
+              foreach ($candidate in $coverageCandidates) {
+                if (Test-Path $candidate) {
+                  $coverageTool = $candidate
+                  break
+                }
+              }
+              if (-not $coverageTool) {
+                $found = Get-ChildItem -Path $vsInstallPath -Filter 'Microsoft.CodeCoverage.Console.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($found) {
+                  $coverageTool = $found.FullName
+                }
+              }
+            }
           }
         }
         if (-not $coverageTool) {
-          $found = Get-ChildItem -Path $vsInstallPath -Filter 'Microsoft.CodeCoverage.Console.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($found) {
-            $coverageTool = $found.FullName
-          }
-        }
-        if (-not $coverageTool) {
-          throw "Microsoft.CodeCoverage.Console tool was not found under $vsInstallPath"
+          throw 'Microsoft.CodeCoverage.Console tool was not found in PATH or Visual Studio installation.'
         }
 
         $dotnetTools = Join-Path $env:USERPROFILE '.dotnet\tools'
