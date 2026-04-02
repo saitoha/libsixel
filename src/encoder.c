@@ -7204,7 +7204,7 @@ temp_directory_is_writable(char const *tmpdir)
         temp_debug_log_note("tmpdir_stat_ok", note_buffer);
     }
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
     /*
      * The Windows MSVC-ABI CI path crashes inside access() for certain TEMP
      * values even though stat() already validated the directory. Keep the

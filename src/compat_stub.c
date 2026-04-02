@@ -1460,14 +1460,12 @@ sixel_compat_stat(const char *path, struct stat *stat_buffer)
 
 #if defined(_MSC_VER)
     /*
-     * Use the MSVC-specific stat variant that matches the active time_t
-     * size to avoid warning-as-error mismatches under /WX.
+     * Keep the function/structure mapping owned by the CRT so struct stat
+     * always matches the destination layout selected by _USE_32BIT_TIME_T.
+     * Calling _stat64* with a casted struct stat pointer can overrun the
+     * caller buffer when the layouts differ.
      */
-# if defined(_USE_32BIT_TIME_T)
-    result = _stat64i32(libc_path, (struct _stat64i32 *)stat_buffer);
-# else
-    result = _stat64(libc_path, (struct _stat64 *)stat_buffer);
-# endif
+    result = _stat(libc_path, stat_buffer);
 #else
     result = stat(libc_path, stat_buffer);
 #endif
