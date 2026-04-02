@@ -275,6 +275,27 @@ sixel_palette_tail_is_blank(char const *tail)
 }
 
 
+static int
+sixel_palette_contains_nul_byte(unsigned char const *data, size_t size)
+{
+    size_t index;
+
+    index = 0u;
+
+    if (data == NULL) {
+        return 0;
+    }
+
+    for (index = 0u; index < size; ++index) {
+        if (data[index] == '\0') {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+
 /*
  * Materialize palette bytes from a stream.
  *
@@ -695,6 +716,11 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
         sixel_helper_set_additional_message(
             "sixel_palette_parse_pal_jasc: size overflow.");
         return SIXEL_BAD_ALLOCATION;
+    }
+    if (sixel_palette_contains_nul_byte(data, size)) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: embedded NUL byte.");
+        return SIXEL_BAD_INPUT;
     }
 
     text = (char *)sixel_allocator_malloc(encoder->allocator, size + 1u);
@@ -1139,6 +1165,11 @@ sixel_palette_parse_gpl(unsigned char const *data,
         sixel_helper_set_additional_message(
             "sixel_palette_parse_gpl: size overflow.");
         return SIXEL_BAD_ALLOCATION;
+    }
+    if (sixel_palette_contains_nul_byte(data, size)) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: embedded NUL byte.");
+        return SIXEL_BAD_INPUT;
     }
 
     text = (char *)sixel_allocator_malloc(encoder->allocator, size + 1u);
