@@ -1,0 +1,11 @@
+# WIC loader likely image signatures
+"\x89PNG\x0d\x0a\x1a\x0a"
+"GIF87a"
+"GIF89a"
+"\xff\xd8\xff"
+"BM"
+"II*\x00"
+"MM\x00*"
+"RIFF"
+"WEBP"
+"8BPS"

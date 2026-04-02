@@ -111,7 +111,7 @@ jobs:
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
-      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-struct/{1}/', github.workspace, matrix.target) }}
+      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={0}/.tmp/fuzz-artifacts-struct/{1}/', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -176,16 +176,26 @@ jobs:
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_STRUCT_ARTIFACT_DIR/run.log"
           min_cov=60
+          dict_common="$PWD/fuzz/loader-builtin.dict"
+          dict_target="$PWD/fuzz/dicts/struct/${{ matrix.target }}.dict"
+          dict_merged="$FUZZ_STRUCT_ARTIFACT_DIR/dict.merged"
+          if [ -f "$dict_target" ]; then
+            awk '!seen[$0]++' "$dict_common" "$dict_target" > "$dict_merged"
+          else
+            cp "$dict_common" "$dict_merged"
+          fi
+          fuzz_args="$FUZZ_STRUCT_ARGS -dict=$dict_merged"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
             make -j"$(nproc)"
             make "fuzz-run-struct-${{ matrix.target }}" \
               FUZZ_STRUCT_CORPUS="$FUZZ_STRUCT_CORPUS" \
-              FUZZ_STRUCT_ARGS="$FUZZ_STRUCT_ARGS" 2>&1 | tee "$run_log"
+              FUZZ_STRUCT_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
           else
             CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
             meson compile -C builddir -v
+            export FUZZ_STRUCT_ARGS="$fuzz_args"
             meson compile -C builddir "fuzz-run-struct-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
 
@@ -223,7 +233,7 @@ jobs:
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
-      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -288,16 +298,26 @@ jobs:
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_BUILTIN_ARTIFACT_DIR/run.log"
           min_cov=18
+          dict_common="$PWD/fuzz/loader-builtin.dict"
+          dict_target="$PWD/fuzz/dicts/loader/${{ matrix.target }}.dict"
+          dict_merged="$FUZZ_BUILTIN_ARTIFACT_DIR/dict.merged"
+          if [ -f "$dict_target" ]; then
+            awk '!seen[$0]++' "$dict_common" "$dict_target" > "$dict_merged"
+          else
+            cp "$dict_common" "$dict_merged"
+          fi
+          fuzz_args="$FUZZ_BUILTIN_ARGS -dict=$dict_merged"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
             make -j"$(nproc)"
             make "fuzz-run-loader-builtin-${{ matrix.target }}" \
               FUZZ_BUILTIN_CORPUS="$FUZZ_BUILTIN_CORPUS" \
-              FUZZ_BUILTIN_ARGS="$FUZZ_BUILTIN_ARGS" 2>&1 | tee "$run_log"
+              FUZZ_BUILTIN_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
           else
             CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
             meson compile -C builddir -v
+            export FUZZ_BUILTIN_ARGS="$fuzz_args"
             meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
 
@@ -407,7 +427,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -dict={0}/fuzz/loader-builtin.dict -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -482,16 +502,26 @@ jobs:
           export FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
           run_log="$FUZZ_COMPONENT_ARTIFACT_DIR/run.log"
           min_cov=10
+          dict_common="$PWD/fuzz/loader-builtin.dict"
+          dict_target="$PWD/fuzz/dicts/component/coregraphics.dict"
+          dict_merged="$FUZZ_COMPONENT_ARTIFACT_DIR/dict.merged"
+          if [ -f "$dict_target" ]; then
+            awk '!seen[$0]++' "$dict_common" "$dict_target" > "$dict_merged"
+          else
+            cp "$dict_common" "$dict_merged"
+          fi
+          fuzz_args="$FUZZ_COMPONENT_ARGS -dict=$dict_merged"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             ./configure --enable-fuzz --with-coregraphics
             make -j"$(sysctl -n hw.ncpu)" fuzz-run-loader-coregraphics \
               FUZZ_BUILTIN_CORPUS="$PWD/.tmp/fuzz-corpus-loader" \
-              FUZZ_COMPONENT_ARGS="$FUZZ_COMPONENT_ARGS" 2>&1 \
+              FUZZ_COMPONENT_ARGS="$fuzz_args" 2>&1 \
               | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
               | tee "$run_log"
           else
             meson setup builddir -Dfuzz=true -Dcoregraphics=enabled
+            export FUZZ_COMPONENT_ARGS="$fuzz_args"
             meson compile -C builddir -v fuzz-run-loader-coregraphics 2>&1 \
               | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
               | tee "$run_log"
@@ -571,7 +601,7 @@ jobs:
           workspace="$(pwd)"
           export FUZZ_COMPONENT_CORPUS="$workspace/.tmp/fuzz-corpus-loader/component"
           export FUZZ_COMPONENT_ARTIFACT_DIR="$workspace/.tmp/fuzz-artifacts-loader/wic"
-          export FUZZ_COMPONENT_ARGS="-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -dict=$workspace/fuzz/loader-builtin.dict -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
+          export FUZZ_COMPONENT_ARGS="-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
           export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
           export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1:report_error_type=1"
           export PATH="/clang64/bin:$PATH"
@@ -628,6 +658,15 @@ jobs:
 
           run_log="$FUZZ_COMPONENT_ARTIFACT_DIR/run.log"
           min_cov=10
+          dict_common="$workspace/fuzz/loader-builtin.dict"
+          dict_target="$workspace/fuzz/dicts/component/wic.dict"
+          dict_merged="$FUZZ_COMPONENT_ARTIFACT_DIR/dict.merged"
+          if [ -f "$dict_target" ]; then
+            awk '!seen[$0]++' "$dict_common" "$dict_target" > "$dict_merged"
+          else
+            cp "$dict_common" "$dict_merged"
+          fi
+          export FUZZ_COMPONENT_ARGS="$FUZZ_COMPONENT_ARGS -dict=$dict_merged"
           CC=clang CXX=clang++ meson setup builddir -Dfuzz=true -Dwic=enabled
           meson compile -C builddir -v fuzz-run-loader-wic 2>&1 | tee "$run_log"
 

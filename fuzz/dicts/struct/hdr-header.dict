@@ -1,0 +1,7 @@
+# HDR header lines
+"#?RADIANCE\n"
+"FORMAT=32-bit_rle_rgbe\n"
+"EXPOSURE=1.0000000000000\n"
+"GAMMA=1.0\n"
+"-Y 1 +X 1\n"
+"+Y 1 -X 1\n"

@@ -1,0 +1,13 @@
+# palette data format markers
+"JASC-PAL\n"
+"0100\n"
+"256\n"
+"RIFF"
+"PAL "
+"data"
+"GIMP Palette\n"
+"Name: fuzz\n"
+"Columns: 4\n"
+"#\n"
+"0 0 0\n"
+"255 255 255\n"

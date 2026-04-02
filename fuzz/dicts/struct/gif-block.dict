@@ -1,0 +1,8 @@
+# GIF extension block markers
+"GIF89a"
+"GIF87a"
+"NETSCAPE2.0"
+"\x21\xf9"
+"\x21\xff"
+"\x2c"
+"\x3b"

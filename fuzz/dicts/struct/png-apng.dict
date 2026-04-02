@@ -1,0 +1,9 @@
+# APNG chunk and sequence markers
+"acTL"
+"fcTL"
+"fdAT"
+"IDAT"
+"IEND"
+"\x00\x00\x00\x00"
+"\x00\x00\x00\x01"
+"\x00\x00\x00\x02"

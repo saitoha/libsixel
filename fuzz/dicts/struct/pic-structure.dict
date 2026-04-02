@@ -1,0 +1,3 @@
+# PIC header magic
+"\x53\x80\xf6\x34"
+"PICT"
