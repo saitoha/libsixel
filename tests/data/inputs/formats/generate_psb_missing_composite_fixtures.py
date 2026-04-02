@@ -993,6 +993,15 @@ def main() -> None:
                     f"{src_base}_{suffix}.psd",
                     f"{dst_base}_{suffix}.psd",
                 )
+            if depth_tag == "8":
+                for suffix in [
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_cmyk",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_stylesheet_color_values_precedence",
+                ]:
+                    convert_fixture(
+                        f"{src_base}_{suffix}.psd",
+                        f"{dst_base}_{suffix}.psd",
+                    )
             for suffix in icc_valid_suffixes:
                 convert_fixture(
                     f"{src_base}_{suffix}_valid_icc_profile.psd",
