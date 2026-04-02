@@ -4535,12 +4535,15 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_at(
     size_t token_offset,
     sixel_builtin_psd_layer_record_t *layer)
 {
-    static char const token[] = "/FillColor";
+    static char const fill_token[] = "/FillColor";
+    static char const color_token[] = "/Color";
+    size_t token_length;
     size_t cursor;
     size_t dict_end;
     size_t count;
     double components[4];
 
+    token_length = 0u;
     cursor = 0u;
     dict_end = 0u;
     count = 0u;
@@ -4548,11 +4551,19 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_at(
     components[1] = 0.0;
     components[2] = 0.0;
     components[3] = 0.0;
-    if (data == NULL || layer == NULL ||
-        token_offset + sizeof(token) > key_length) {
+    if (data == NULL || layer == NULL || token_offset >= key_length) {
         return 0;
     }
-    cursor = token_offset + sizeof(token) - 1u;
+    if (token_offset + sizeof(fill_token) - 1u <= key_length &&
+        memcmp(data + token_offset, fill_token, sizeof(fill_token) - 1u) == 0) {
+        token_length = sizeof(fill_token) - 1u;
+    } else if (token_offset + sizeof(color_token) - 1u <= key_length &&
+               memcmp(data + token_offset, color_token, sizeof(color_token) - 1u) == 0) {
+        token_length = sizeof(color_token) - 1u;
+    } else {
+        return 0;
+    }
+    cursor = token_offset + token_length;
     while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
         ++cursor;
     }
@@ -4599,21 +4610,29 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
     size_t end,
     sixel_builtin_psd_layer_record_t *layer)
 {
-    static char const token[] = "/FillColor";
+    static char const fill_token[] = "/FillColor";
+    static char const color_token[] = "/Color";
     size_t i;
     int found;
 
     i = 0u;
     found = 0;
-    if (data == NULL || layer == NULL ||
-        begin > end || end - begin < sizeof(token) - 1u) {
+    if (data == NULL || layer == NULL || begin > end) {
         return 0;
     }
-    for (i = begin; i + sizeof(token) - 1u <= end; ++i) {
-        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
-            continue;
+    for (i = begin; i < end; ++i) {
+        if (i + sizeof(fill_token) - 1u <= end &&
+            memcmp(data + i, fill_token, sizeof(fill_token) - 1u) == 0 &&
+            sixel_builtin_psd_parse_tysh_fillcolor_enginedata_at(
+                data,
+                end,
+                i,
+                layer)) {
+            found = 1;
         }
-        if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_at(
+        if (i + sizeof(color_token) - 1u <= end &&
+            memcmp(data + i, color_token, sizeof(color_token) - 1u) == 0 &&
+            sixel_builtin_psd_parse_tysh_fillcolor_enginedata_at(
                 data,
                 end,
                 i,
