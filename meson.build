@@ -1020,21 +1020,37 @@ endif
 fetch_opt = get_option('fetch')
 fetch_dep = disabler()
 if not fetch_opt.disabled()
-  fetch_dep = dependency('libfetch',
-                         required: false,
-                         method: 'pkg-config')
   have_fetch_header = false
-
-  if fetch_dep.found()
-    have_fetch_header = cc.has_header('fetch.h', dependencies: fetch_dep)
-    if not have_fetch_header
-      fetch_dep = disabler()
+  if host_system == 'emscripten'
+    # Emscripten does not provide BSD libfetch; use the built-in Fetch API.
+    emscripten_fetch_flag = '-sFETCH=1'
+    emscripten_fetch_supported = cc.links('int main(void){return 0;}',
+                                          args: [emscripten_fetch_flag],
+                                          name: 'emscripten fetch api')
+    if emscripten_fetch_supported
+      have_fetch_header = cc.has_header('emscripten/fetch.h',
+                                        args: [emscripten_fetch_flag])
+      if have_fetch_header
+        fetch_dep = declare_dependency(
+          compile_args: [emscripten_fetch_flag],
+          link_args: [emscripten_fetch_flag])
+      endif
     endif
   else
-    fetch_lib = cc.find_library('fetch', required: false)
-    if fetch_lib.found() and cc.has_header('fetch.h')
-      fetch_dep = declare_dependency(dependencies: [fetch_lib])
-      have_fetch_header = true
+    fetch_dep = dependency('libfetch',
+                           required: false,
+                           method: 'pkg-config')
+    if fetch_dep.found()
+      have_fetch_header = cc.has_header('fetch.h', dependencies: fetch_dep)
+      if not have_fetch_header
+        fetch_dep = disabler()
+      endif
+    else
+      fetch_lib = cc.find_library('fetch', required: false)
+      if fetch_lib.found() and cc.has_header('fetch.h')
+        fetch_dep = declare_dependency(dependencies: [fetch_lib])
+        have_fetch_header = true
+      endif
     endif
   endif
 

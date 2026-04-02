@@ -64,7 +64,11 @@
 # include <sys/param.h>
 #endif
 #ifdef HAVE_LIBFETCH
-# include <fetch.h>
+# if defined(__EMSCRIPTEN__)
+#  include <emscripten/fetch.h>
+# else
+#  include <fetch.h>
+# endif
 #endif  /* HAVE_LIBFETCH */
 #if HAVE_SYS_SELECT_H
 # include <sys/select.h>
@@ -847,6 +851,88 @@ sixel_chunk_from_url_with_fetch(
     int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_FALSE;
+#if defined(__EMSCRIPTEN__)
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_t *fetch;
+    void *grown;
+    size_t fetched_size;
+    int http_status;
+    char message[256];
+
+    fetch = NULL;
+    grown = NULL;
+    fetched_size = 0;
+    http_status = 0;
+    (void)finsecure;
+
+    /*
+     * Emscripten does not ship BSD libfetch. We route --with-libfetch through
+     * the synchronous emscripten_fetch API and keep the same chunk-growth
+     * behavior used by other network backends.
+     */
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "GET");
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY
+                    | EMSCRIPTEN_FETCH_SYNCHRONOUS;
+    fetch = emscripten_fetch(&attr, url);
+    if (fetch == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "emscripten_fetch() failed.");
+        goto end;
+    }
+
+    http_status = fetch->status;
+    if (http_status != 0 && (http_status < 200 || http_status >= 400)) {
+        status = SIXEL_RUNTIME_ERROR;
+        (void)sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "emscripten_fetch() failed (HTTP status=%d).",
+            http_status);
+        sixel_helper_set_additional_message(message);
+        goto end;
+    }
+
+    if (fetch->numBytes < 0) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "emscripten_fetch() returned negative size.");
+        goto end;
+    }
+
+    fetched_size = (size_t)fetch->numBytes;
+    if (fetched_size == 0) {
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    if (pchunk->max_size - pchunk->size < fetched_size) {
+        do {
+            pchunk->max_size *= 2;
+        } while (pchunk->max_size - pchunk->size < fetched_size);
+        grown = sixel_allocator_realloc(pchunk->allocator,
+                                        pchunk->buffer,
+                                        pchunk->max_size);
+        if (grown == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "sixel_allocator_realloc() failed.");
+            goto end;
+        }
+        pchunk->buffer = (unsigned char *)grown;
+    }
+
+    memcpy(pchunk->buffer + pchunk->size, fetch->data, fetched_size);
+    pchunk->size += fetched_size;
+    status = SIXEL_OK;
+
+end:
+    if (fetch != NULL) {
+        emscripten_fetch_close(fetch);
+    }
+    return status;
+#else
 #if defined(__NetBSD__)
     fetchIO *fetch_stream = NULL;
 #else
@@ -992,6 +1078,7 @@ end:
     free(saved_host_copy);
 
     return status;
+#endif  /* defined(__EMSCRIPTEN__) */
 }
 # endif  /* HAVE_LIBFETCH */
 

@@ -25040,27 +25040,65 @@ fi
 if test x$with_libfetch != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libfetch" >&5
 printf "%s\n" "$as_me: checking for libfetch" >&6;}
-    CFLAGS_BACKUP=$CFLAGS
-    LDFLAGS_BACKUP=$LDFLAGS
-    if test x$with_libfetch != xyes -a x$with_libfetch != xauto; then
-        if test ! -d "$with_libfetch"; then
-            as_fn_error $? "\"${with_libfetch}\" is not directory" "$LINENO" 5
-        fi
-        ADDED_CFLAGS="-I${with_libfetch}/include"
-        ADDED_LIBS="-L${with_libfetch}/lib -lfetch"
-    else
-        if test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -lfetch"
-        else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -lfetch"
-        fi
-    fi
+    if test x$host_os = xemscripten; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sFETCH=1"
+        LDFLAGS="$LDFLAGS -sFETCH=1"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether emscripten accepts -sFETCH=1" >&5
+printf %s "checking whether emscripten accepts -sFETCH=1... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int
+main (void)
+{
 
-    CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
-    LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_emscripten_fetch=yes
+else case e in #(
+  e) sixel_emscripten_fetch=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_emscripten_fetch" >&5
+printf "%s\n" "$sixel_emscripten_fetch" >&6; }
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_fetch = xyes; then
+            have_fetch=yes
+            LIBFETCH_CFLAGS="-sFETCH=1"
+            LIBFETCH_LIBS="-sFETCH=1"
+        elif test x$with_libfetch = xyes; then
+            as_fn_error $? "-sFETCH=1 is not supported by this emscripten" "$LINENO" 5
+        fi
+    else
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_libfetch != xyes -a x$with_libfetch != xauto; then
+            if test ! -d "$with_libfetch"; then
+                as_fn_error $? "\"${with_libfetch}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_libfetch}/include"
+            ADDED_LIBS="-L${with_libfetch}/lib -lfetch"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lfetch"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lfetch"
+            fi
+        fi
+
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <fetch.h>
 int
@@ -25131,11 +25169,11 @@ else case e in #(
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-    CFLAGS=$CFLAGS_BACKUP
-    LDFLAGS=$LDFLAGS_BACKUP
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
 
-    if test x$have_fetch != xyes -a ! -d "$with_libfetch"; then
-        if test x${PKG_CONFIG} != x; then
+        if test x$have_fetch != xyes -a ! -d "$with_libfetch"; then
+            if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libfetch" >&5
@@ -25207,6 +25245,7 @@ else
 printf "%s\n" "yes" >&6; }
         have_fetch=yes
 fi
+            fi
         fi
     fi
 
@@ -32107,4 +32146,3 @@ echo "       fuzz targets            : $sixel_fuzz_summary"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
-

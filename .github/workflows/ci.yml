@@ -4913,6 +4913,82 @@ jobs:
               llvm
             exec_type: bash
 
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CC=emcc CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --with-png
+              --with-jpeg
+            extra_packages: >-
+              nodejs
+              lcov
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-png-jpeg
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dpng=enabled
+              -Djpeg=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CC=emcc CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libcurl
+              --with-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-libfetch
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dcurl=disabled
+              -Dfetch=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              llvm
+            exec_type: bash
+
           - label: Autotools-macos-aarch64-emscripten-coverage
             buildtool: autotools
             runner: macos-latest
