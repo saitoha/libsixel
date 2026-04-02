@@ -128,7 +128,7 @@ FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
 	-I$(top_srcdir)/converters \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/include
-FUZZ_IMG2SIXEL_EMBED_SOURCES = \
+FUZZ_IMG2SIXEL_EMBED_SRCS = \
 	$(top_srcdir)/converters/img2sixel.c \
 	$(top_srcdir)/converters/completion_utils.c \
 	$(top_srcdir)/converters/compat.c \
@@ -182,7 +182,7 @@ $(FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-p
 	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
 		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
 		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-parser-afl-persistent.c" \
-		$(FUZZ_IMG2SIXEL_EMBED_SOURCES) \
+		$(FUZZ_IMG2SIXEL_EMBED_SRCS) \
 		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
 
 $(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c $(FUZZ_IMG2SIXEL) $(top_builddir)/src/libsixel.la
@@ -191,7 +191,7 @@ $(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli
 	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
 		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
 		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c" \
-		$(FUZZ_IMG2SIXEL_EMBED_SOURCES) \
+		$(FUZZ_IMG2SIXEL_EMBED_SRCS) \
 		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
 
 fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)

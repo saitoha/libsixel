@@ -236,8 +236,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
-	build-aux/py-compile ltmain.sh
+	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
+	build-aux/missing build-aux/py-compile ltmain.sh
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -590,7 +590,7 @@ FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/include
 
-FUZZ_IMG2SIXEL_EMBED_SOURCES = \
+FUZZ_IMG2SIXEL_EMBED_SRCS = \
 	$(top_srcdir)/converters/img2sixel.c \
 	$(top_srcdir)/converters/completion_utils.c \
 	$(top_srcdir)/converters/compat.c \
@@ -1241,7 +1241,7 @@ $(FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-p
 	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
 		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
 		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-parser-afl-persistent.c" \
-		$(FUZZ_IMG2SIXEL_EMBED_SOURCES) \
+		$(FUZZ_IMG2SIXEL_EMBED_SRCS) \
 		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
 
 $(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c $(FUZZ_IMG2SIXEL) $(top_builddir)/src/libsixel.la
@@ -1250,7 +1250,7 @@ $(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli
 	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
 		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
 		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c" \
-		$(FUZZ_IMG2SIXEL_EMBED_SOURCES) \
+		$(FUZZ_IMG2SIXEL_EMBED_SRCS) \
 		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
 
 fuzz-cli-img2sixel: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_PERSISTENT)
