@@ -7175,12 +7175,14 @@ static int
 temp_directory_is_writable(char const *tmpdir)
 {
     struct stat temp_stat;
-    int access_mode;
     int stat_result;
-    int access_result;
     int saved_errno;
     char note_buffer[96];
     int note_size;
+#if !defined(_WIN32)
+    int access_mode;
+    int access_result;
+#endif
 
     if (tmpdir == NULL || tmpdir[0] == '\0') {
         temp_debug_log("tmpdir_empty", tmpdir, 0);
@@ -7204,11 +7206,13 @@ temp_directory_is_writable(char const *tmpdir)
 
 #if defined(_WIN32)
     /*
-     * MSVC's _access(..., W_OK) can report false negatives for writable
-     * directories. For temp probing on Windows, existence is enough because
-     * the subsequent open() path is the authoritative write check.
+     * The Windows MSVC-ABI CI path crashes inside access() for certain TEMP
+     * values even though stat() already validated the directory. Keep the
+     * probe aligned with the existing policy that open() is authoritative.
      */
-    access_mode = F_OK;
+    temp_debug_log_note("tmpdir_access_bypass",
+                        "using stat-only probe on windows");
+    return 1;
 #elif defined(W_OK)
     access_mode = W_OK;
 #else
