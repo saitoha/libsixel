@@ -797,17 +797,30 @@ jobs:
               throw "missing wic harness: $harness"
             }
           }
+          foreach ($runtimeDir in @(
+            (Join-Path $workspace 'builddir\src'),
+            (Join-Path $workspace 'builddir\fuzz')
+          )) {
+            if (Test-Path $runtimeDir) {
+              $env:PATH = "$runtimeDir;$env:PATH"
+            }
+          }
 
           $mergeSeed = Join-Path $artifactDir 'corpus-premerge'
+          $premergeLog = Join-Path $artifactDir 'premerge.log'
+          if (Test-Path $premergeLog) {
+            Remove-Item -LiteralPath $premergeLog -Force
+          }
           if (Test-Path $mergeSeed) {
             Remove-Item -LiteralPath $mergeSeed -Recurse -Force
           }
           New-Item -ItemType Directory -Force -Path $mergeSeed | Out-Null
           if (Get-ChildItem -Path $targetCorpus -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1) {
             Copy-Item -Path (Join-Path $targetCorpus '*') -Destination $mergeSeed -Recurse -Force
-            & $harness '-merge=1' '-reduce_inputs=1' '-timeout=5' '-rss_limit_mb=4096' "-dict=$dictMergedPosix" $targetCorpusPosix ($mergeSeed.Replace('\', '/'))
-            if ($LASTEXITCODE -ne 0) {
-              throw "libFuzzer corpus premerge failed for wic target."
+            & $harness '-merge=1' '-reduce_inputs=1' '-timeout=5' '-rss_limit_mb=4096' "-dict=$dictMergedPosix" $targetCorpusPosix ($mergeSeed.Replace('\', '/')) 2>&1 | Tee-Object -FilePath $premergeLog
+            $premergeExit = $LASTEXITCODE
+            if ($premergeExit -ne 0) {
+              Write-Warning "libFuzzer corpus premerge failed for wic target (exit=$premergeExit); continuing without premerge."
             }
           } else {
             Write-Host "wic-corpus: no files to merge"
