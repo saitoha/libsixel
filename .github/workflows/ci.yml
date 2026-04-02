@@ -660,14 +660,8 @@ jobs:
 
   fuzz_push_loader_wic:
     if: github.event_name == 'push'
-    name: ${{ matrix.label }}
+    name: Meson-cmd-x86_64-msvc-fuzz-loader-wic
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: Meson-msys2-clang64-x86_64-fuzz-loader-wic
-            msystem: CLANG64
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
@@ -692,129 +686,176 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
+      - name: Setup MSVC developer env (vcvars, x86_64 target)
+        uses: ilammy/msvc-dev-cmd@v1
         with:
-          msystem: ${{ matrix.msystem }}
-          install: >-
-            make
-            mingw-w64-clang-x86_64-toolchain
-            mingw-w64-clang-x86_64-meson
-            mingw-w64-clang-x86_64-ninja
-            mingw-w64-clang-x86_64-pkgconf
+          arch: x64
 
-      - name: Build and run wic loader fuzz harness
-        shell: msys2 {0}
+      - name: Build and run wic loader fuzz harness (MSVC ABI)
+        shell: pwsh
         run: |
-          set -euxo pipefail
-          workspace="$(pwd)"
-          export FUZZ_COMPONENT_CORPUS="$workspace/.tmp/fuzz-corpus-loader/component"
-          export FUZZ_COMPONENT_ARTIFACT_DIR="$workspace/.tmp/fuzz-artifacts-loader/wic"
-          export FUZZ_COMPONENT_ARGS="-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix=$workspace/.tmp/fuzz-artifacts-loader/wic/"
-          export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
-          export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1:report_error_type=1"
-          export PATH="/clang64/bin:$PATH"
+          $ErrorActionPreference = 'Stop'
 
-          target_corpus="$FUZZ_COMPONENT_CORPUS/wic"
-          mkdir -p "$target_corpus" "$FUZZ_COMPONENT_ARTIFACT_DIR"
-          if test -d fuzz/images; then
-            cp -a fuzz/images/. "$target_corpus/" || true
-          fi
-          cp -a images/. "$target_corpus/" || true
+          python -m pip install --upgrade pip
+          python -m pip install meson ninja
 
-          if test -d tests/data/security/fuzzing/data; then
-            while IFS= read -r -d '' seed; do
-              cp -n "$seed" "$target_corpus/" || true
-            done < <(find tests/data/security/fuzzing/data -type f -print0)
-          fi
-
-          while IFS= read -r -d '' seed; do
-            cp -n "$seed" "$target_corpus/" || true
-          done < <(find tests/data -type f \
-            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
-               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
-               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
-               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
-               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
-               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
-            -print0)
-
-          echo "wic-corpus seed files: $(find "$target_corpus" -type f | wc -l)"
-
-          cat > /tmp/libfuzzer_probe.c <<'EOF'
-          int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size) {
-            (void)data;
-            (void)size;
-            return 0;
+          if (-not (Get-Command clang -ErrorAction SilentlyContinue)) {
+            throw "clang was not found in PATH after MSVC environment setup."
           }
-          EOF
 
-          if ! clang -x c -c /tmp/libfuzzer_probe.c \
-            -fsanitize=fuzzer-no-link,address,undefined \
-            -o /tmp/libfuzzer_probe.o > /tmp/libfuzzer_probe_compile.log 2>&1; then
-            echo "::warning::libFuzzer compile flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
-            sed -n '1,80p' /tmp/libfuzzer_probe_compile.log || true
-            exit 0
-          fi
+          $workspace = (Get-Location).Path
+          $fuzzCorpusRoot = Join-Path $workspace '.tmp\fuzz-corpus-loader\component'
+          $targetCorpus = Join-Path $fuzzCorpusRoot 'wic'
+          $artifactDir = Join-Path $workspace '.tmp\fuzz-artifacts-loader\wic'
+          New-Item -ItemType Directory -Force -Path $targetCorpus, $artifactDir | Out-Null
 
-          if ! clang -x c /tmp/libfuzzer_probe.c \
-            -fsanitize=fuzzer,address,undefined \
-            -o /tmp/libfuzzer_probe.exe > /tmp/libfuzzer_probe_link.log 2>&1; then
-            echo "::warning::libFuzzer link flags are unsupported on this MSYS2 clang target; skipping fuzz-run-loader-wic."
-            sed -n '1,80p' /tmp/libfuzzer_probe_link.log || true
-            exit 0
-          fi
+          $env:ASAN_OPTIONS = 'detect_leaks=0:abort_on_error=1'
+          $env:UBSAN_OPTIONS = 'halt_on_error=1:print_stacktrace=1:report_error_type=1'
 
-          run_log="$FUZZ_COMPONENT_ARTIFACT_DIR/run.log"
-          min_cov=10
-          dict_common="$workspace/fuzz/loader-builtin.dict"
-          dict_target="$workspace/fuzz/dicts/component/wic.dict"
-          dict_merged="$FUZZ_COMPONENT_ARTIFACT_DIR/dict.merged"
-          if [ -f "$dict_target" ]; then
-            awk '!seen[$0]++' "$dict_common" "$dict_target" > "$dict_merged"
-          else
-            cp "$dict_common" "$dict_merged"
-          fi
-          export FUZZ_COMPONENT_ARGS="$FUZZ_COMPONENT_ARGS -dict=$dict_merged"
-          CC=clang CXX=clang++ meson setup builddir -Dfuzz=true -Dwic=enabled
-          meson compile -C builddir -v fuzz-loader-wic-libfuzzer
-          harness="$workspace/builddir/fuzz/fuzz-loader-wic-libfuzzer"
-          if [ -x "${harness}.exe" ]; then
-            harness="${harness}.exe"
-          fi
-          if [ ! -x "$harness" ]; then
-            echo "::error::missing wic harness: $harness"
-            exit 1
-          fi
-          merge_seed="$FUZZ_COMPONENT_ARTIFACT_DIR/corpus-premerge"
-          rm -rf "$merge_seed"
-          mkdir -p "$merge_seed"
-          if find "$target_corpus" -type f -print -quit | grep -q .; then
-            cp -a "$target_corpus"/. "$merge_seed"/
-            "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
-              -dict="$dict_merged" "$target_corpus" "$merge_seed"
-          else
-            echo "wic-corpus: no files to merge"
-          fi
-          rm -rf "$merge_seed"
-          meson compile -C builddir -v fuzz-run-loader-wic 2>&1 | tee "$run_log"
+          $probeSource = Join-Path $env:TEMP 'libfuzzer_probe.c'
+          @(
+            'int LLVMFuzzerTestOneInput(const unsigned char *data, unsigned long size) {',
+            '  (void)data;',
+            '  (void)size;',
+            '  return 0;',
+            '}'
+          ) | Set-Content -LiteralPath $probeSource -Encoding ASCII
 
-          if ! grep -q 'DONE   cov:' "$run_log"; then
-            echo "::error::libFuzzer did not report completion for wic loader target."
-            exit 1
-          fi
+          & clang -x c -c $probeSource -fsanitize=fuzzer-no-link,address,undefined -o (Join-Path $env:TEMP 'libfuzzer_probe.obj')
+          if ($LASTEXITCODE -ne 0) {
+            throw "libFuzzer compile flags are unsupported in this MSVC ABI toolchain."
+          }
 
-          cov="$(grep -E 'DONE   cov:' "$run_log" | tail -n1 | sed -E 's/.*cov: ([0-9]+).*/\1/')"
-          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
-            echo "::error::wic loader coverage too low: cov=$cov (expected >= $min_cov)."
-            exit 1
-          fi
+          & clang -x c $probeSource -fsanitize=fuzzer,address,undefined -o (Join-Path $env:TEMP 'libfuzzer_probe.exe')
+          if ($LASTEXITCODE -ne 0) {
+            throw "libFuzzer link flags are unsupported in this MSVC ABI toolchain."
+          }
+
+          function Copy-SeedFiles([string]$Root, [string[]]$Patterns) {
+            if (-not (Test-Path $Root)) {
+              return
+            }
+            $items = if ($Patterns.Count -eq 0) {
+              Get-ChildItem -Path $Root -Recurse -File
+            } else {
+              Get-ChildItem -Path $Root -Recurse -File -Include $Patterns
+            }
+            foreach ($item in $items) {
+              $dst = Join-Path $targetCorpus $item.Name
+              if (-not (Test-Path $dst)) {
+                Copy-Item -LiteralPath $item.FullName -Destination $dst
+              }
+            }
+          }
+
+          Copy-SeedFiles (Join-Path $workspace 'fuzz/images') @()
+          Copy-SeedFiles (Join-Path $workspace 'images') @()
+          Copy-SeedFiles (Join-Path $workspace 'tests/data/security/fuzzing/data') @()
+          Copy-SeedFiles (Join-Path $workspace 'tests/data') @(
+            '*.png', '*.jpg', '*.jpeg',
+            '*.gif', '*.webp', '*.tiff',
+            '*.pnm', '*.ppm', '*.pgm',
+            '*.pbm', '*.psd', '*.hdr',
+            '*.six', '*.sixel', '*.pic',
+            '*.tga', '*.bmp', '*.bin'
+          )
+
+          $seedCount = (Get-ChildItem -Path $targetCorpus -Recurse -File -ErrorAction SilentlyContinue | Measure-Object).Count
+          Write-Host "wic-corpus seed files: $seedCount"
+
+          $dictCommon = Join-Path $workspace 'fuzz/loader-builtin.dict'
+          $dictTarget = Join-Path $workspace 'fuzz/dicts/component/wic.dict'
+          $dictMerged = Join-Path $artifactDir 'dict.merged'
+          $seen = @{}
+          $mergedLines = New-Object 'System.Collections.Generic.List[string]'
+          foreach ($dict in @($dictCommon, $dictTarget)) {
+            if (-not (Test-Path $dict)) {
+              continue
+            }
+            foreach ($line in Get-Content -LiteralPath $dict) {
+              if (-not $seen.ContainsKey($line)) {
+                $seen[$line] = $true
+                [void]$mergedLines.Add($line)
+              }
+            }
+          }
+          $writer = New-Object System.IO.StreamWriter($dictMerged, $false, [System.Text.UTF8Encoding]::new($false))
+          $writer.NewLine = "`n"
+          foreach ($line in $mergedLines) {
+            $writer.WriteLine($line)
+          }
+          $writer.Dispose()
+
+          $artifactPrefix = ((Join-Path $artifactDir '').Replace('\', '/'))
+          $dictMergedPosix = $dictMerged.Replace('\', '/')
+          $targetCorpusPosix = $targetCorpus.Replace('\', '/')
+
+          $fuzzArgs = @(
+            '-max_total_time=300',
+            '-fork=2',
+            '-print_final_stats=1',
+            '-timeout=5',
+            '-use_value_profile=1',
+            '-reduce_inputs=1',
+            '-rss_limit_mb=4096',
+            "-artifact_prefix=$artifactPrefix",
+            "-dict=$dictMergedPosix"
+          )
+
+          $env:CC = 'clang'
+          $env:CXX = 'clang++'
+          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dwic=enabled
+          python -m mesonbuild.mesonmain compile -C builddir -v fuzz-loader-wic-libfuzzer
+
+          $harness = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer.exe'
+          if (-not (Test-Path $harness)) {
+            $harnessNoExt = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer'
+            if (Test-Path $harnessNoExt) {
+              $harness = $harnessNoExt
+            } else {
+              throw "missing wic harness: $harness"
+            }
+          }
+
+          $mergeSeed = Join-Path $artifactDir 'corpus-premerge'
+          if (Test-Path $mergeSeed) {
+            Remove-Item -LiteralPath $mergeSeed -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $mergeSeed | Out-Null
+          if (Get-ChildItem -Path $targetCorpus -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1) {
+            Copy-Item -Path (Join-Path $targetCorpus '*') -Destination $mergeSeed -Recurse -Force
+            & $harness '-merge=1' '-reduce_inputs=1' '-timeout=5' '-rss_limit_mb=4096' "-dict=$dictMergedPosix" $targetCorpusPosix ($mergeSeed.Replace('\', '/'))
+            if ($LASTEXITCODE -ne 0) {
+              throw "libFuzzer corpus premerge failed for wic target."
+            }
+          } else {
+            Write-Host "wic-corpus: no files to merge"
+          }
+          Remove-Item -LiteralPath $mergeSeed -Recurse -Force
+
+          $runLog = Join-Path $artifactDir 'run.log'
+          & $harness @fuzzArgs $targetCorpusPosix 2>&1 | Tee-Object -FilePath $runLog
+          if ($LASTEXITCODE -ne 0) {
+            throw "fuzz-loader-wic execution failed with exit code $LASTEXITCODE."
+          }
+
+          $done = Select-String -Path $runLog -Pattern 'DONE   cov:' | Select-Object -Last 1
+          if (-not $done) {
+            throw "libFuzzer did not report completion for wic loader target."
+          }
+          if ($done.Line -notmatch 'cov: ([0-9]+)') {
+            throw "could not parse final coverage from: $($done.Line)"
+          }
+          $cov = [int]$Matches[1]
+          if ($cov -lt 10) {
+            throw "wic loader coverage too low: cov=$cov (expected >= 10)."
+          }
 
       - name: Upload wic fuzz artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.label }}
+          name: Meson-cmd-x86_64-msvc-fuzz-loader-wic
           if-no-files-found: ignore
           retention-days: 7
           path: |
