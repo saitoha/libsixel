@@ -4851,6 +4851,7 @@ jobs:
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
               --disable-shared
+              --without-libfetch
             extra_packages: >-
               nodejs
             exec_type: bash
@@ -4861,6 +4862,7 @@ jobs:
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
+              -Dfetch=disabled
             extra_packages: >-
               meson
               nodejs
@@ -4875,6 +4877,7 @@ jobs:
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
               --disable-shared
+              --without-libfetch
             extra_packages: >-
               node
             exec_type: bash
@@ -4885,6 +4888,7 @@ jobs:
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
+              -Dfetch=disabled
             extra_packages: >-
               meson
               node
@@ -4948,6 +4952,7 @@ jobs:
               --with-shebang-file="$PWD/build-aux/shebang/node"
               --enable-sanitizer=undefined
               --disable-shared
+              --without-libfetch
             extra_packages: >-
               nodejs
             exec_type: bash
@@ -4958,6 +4963,7 @@ jobs:
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
+              -Dfetch=disabled
               -Doptimization=1
               -Db_sanitize=undefined
               -Db_ndebug=false
@@ -4974,6 +4980,7 @@ jobs:
               --with-shebang-file="$PWD/build-aux/shebang/node"
               --enable-sanitizer=undefined
               --disable-shared
+              --without-libfetch
             extra_packages: >-
               node
             exec_type: bash
@@ -4984,6 +4991,7 @@ jobs:
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
+              -Dfetch=disabled
               -Doptimization=1
               -Db_sanitize=undefined
               -Db_ndebug=false
@@ -5051,6 +5059,7 @@ jobs:
               --with-shebang-file="$PWD/build-aux/shebang/node"
               --disable-shared
               --enable-gcov
+              --without-libfetch
             extra_packages: >-
               nodejs
               lcov
@@ -5067,6 +5076,7 @@ jobs:
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
               -Db_coverage=true
+              -Dfetch=disabled
             extra_packages: >-
               meson
               nodejs
@@ -5087,6 +5097,7 @@ jobs:
               --enable-gcov
               --with-png
               --with-jpeg
+              --without-libfetch
             extra_packages: >-
               nodejs
               lcov
@@ -5103,6 +5114,7 @@ jobs:
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
               -Db_coverage=true
+              -Dfetch=disabled
               -Dpng=enabled
               -Djpeg=enabled
             extra_packages: >-
@@ -5161,6 +5173,7 @@ jobs:
               --with-shebang-file="$PWD/build-aux/shebang/node"
               --disable-shared
               --enable-gcov
+              --without-libfetch
             extra_packages: >-
               node
               gcovr
@@ -5176,6 +5189,7 @@ jobs:
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
               -Db_coverage=true
+              -Dfetch=disabled
             extra_packages: >-
               meson
               node
