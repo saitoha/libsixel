@@ -16,19 +16,27 @@ if [ ! -f "${generator}" ]; then
     exit 1
 fi
 
-# xxlarge tier only: mode(2) * depth(2) * variants(5)
-expected_count=20
-current_count=0
 webp_padded="${formats_dir}/webp-static-icc-overlimit-padded.webp"
 webp_padded_gz="${webp_padded}.gz"
-for path in \
-    "${formats_dir}"/snake16_psb_*_high_offset_*large*.psd; do
-    if [ -f "${path}" ]; then
-        current_count=$((current_count + 1))
-    fi
+fixtures_ready=1
+for mode_prefix in cmyk mode7_cmyk; do
+    for depth_tag in 16 32; do
+        base="snake16_psb_${mode_prefix}${depth_tag}_missing_composite_multilayer"
+        for suffix in \
+            "normal_high_offset_xxlarge.psd" \
+            "normal_rle_high_offset_xxlarge.psd" \
+            "normal_high_offset_xxlarge_layer_info_end_overrun.psd" \
+            "normal_high_offset_xxlarge_channel_window_overrun.psd" \
+            "normal_rle_high_offset_xxlarge_rle_payload_window_overrun.psd"; do
+            if [ ! -f "${formats_dir}/${base}_${suffix}" ]; then
+                fixtures_ready=0
+                break 3
+            fi
+        done
+    done
 done
 
-if [ "${current_count}" -ge "${expected_count}" ] && [ -f "${webp_padded}" ]; then
+if [ "${fixtures_ready}" -eq 1 ] && [ -f "${webp_padded}" ]; then
     exit 0
 fi
 
