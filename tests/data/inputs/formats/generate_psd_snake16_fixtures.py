@@ -697,6 +697,52 @@ def build_tysh_enginedata_fillcolor_dual_scope_stylesheet_array_precedence_paylo
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_stylesheet_runlength_precedence_payload(
+    *,
+    top_level_rgb: tuple[int, int, int],
+    first_stylesheet_rgb: tuple[int, int, int],
+    second_stylesheet_rgb: tuple[int, int, int],
+    first_run_length: int,
+    second_run_length: int,
+) -> bytes:
+    top_r = float(max(0, min(255, top_level_rgb[0]))) / 255.0
+    top_g = float(max(0, min(255, top_level_rgb[1]))) / 255.0
+    top_b = float(max(0, min(255, top_level_rgb[2]))) / 255.0
+    first_r = float(max(0, min(255, first_stylesheet_rgb[0]))) / 255.0
+    first_g = float(max(0, min(255, first_stylesheet_rgb[1]))) / 255.0
+    first_b = float(max(0, min(255, first_stylesheet_rgb[2]))) / 255.0
+    second_r = float(max(0, min(255, second_stylesheet_rgb[0]))) / 255.0
+    second_g = float(max(0, min(255, second_stylesheet_rgb[1]))) / 255.0
+    second_b = float(max(0, min(255, second_stylesheet_rgb[2]))) / 255.0
+    run0 = max(1, int(first_run_length))
+    run1 = max(1, int(second_run_length))
+
+    # Include /RunLengthArray + /RunArray pair so parser can select the
+    # stylesheet corresponding to the longest text run.
+    engine_data = (
+        "/EngineData << "
+        f"/FillColor [{top_r:.6f} {top_g:.6f} {top_b:.6f}] "
+        "/StyleRun << "
+        f"/RunLengthArray [{run0} {run1}] "
+        "/RunArray [ "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/FillColor [{first_r:.6f} {first_g:.6f} {first_b:.6f}] "
+        ">> >> >> "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/FillColor [{second_r:.6f} {second_g:.6f} {second_b:.6f}] "
+        ">> >> >> "
+        "] >> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_dual_scope_stylesheet_array_color_values_precedence_payload(
     *,
     top_level_rgb: tuple[int, int, int],
@@ -10061,6 +10107,23 @@ def generate(out_dir: pathlib.Path):
                             top_level_rgb=(32, 64, 255),
                             first_stylesheet_rgb=(32, 64, 255),
                             second_stylesheet_rgb=(255, 48, 64),
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
+                write_file(
+                    out_dir / f"{base_name}_stylesheet_runlength_precedence.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_precedence_payload(
+                            top_level_rgb=(32, 64, 255),
+                            first_stylesheet_rgb=(255, 48, 64),
+                            second_stylesheet_rgb=(32, 64, 255),
+                            first_run_length=20,
+                            second_run_length=1,
                         ),
                         first_layer_has_pixels=False,
                     ),
