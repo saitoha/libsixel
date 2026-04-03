@@ -20,6 +20,10 @@ env:
   # Pin vcpkg to a stable release to avoid fetching future tool builds that
   # depend on unavailable CMake versions during bootstrap.
   VCPKG_REF: 2024.12.16
+  # Enforce Node.js 24 for JavaScript actions before the hosted-runner switch.
+  # Node.js 24 becomes default on 2026-06-02 and Node.js 20 is removed on
+  # 2026-09-16.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   smoke:
@@ -129,7 +133,7 @@ jobs:
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore struct fuzz corpus cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_STRUCT_CORPUS }}/${{ matrix.target }}
           key: fuzz-corpus-struct-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -261,7 +265,7 @@ jobs:
 
       - name: Upload struct fuzz artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
           if-no-files-found: ignore
@@ -300,7 +304,7 @@ jobs:
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore loader-format fuzz corpus cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_BUILTIN_CORPUS }}/${{ matrix.target }}
           key: fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -419,7 +423,7 @@ jobs:
 
       - name: Upload loader-format fuzz artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
           if-no-files-found: ignore
@@ -493,7 +497,7 @@ jobs:
 
       - name: Upload img2sixel CLI fuzz artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}
           if-no-files-found: ignore
@@ -535,7 +539,7 @@ jobs:
           brew install llvm meson ninja autoconf automake libtool pkg-config
 
       - name: Restore coregraphics fuzz corpus cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_COMPONENT_CORPUS }}
           key: fuzz-corpus-loader-coregraphics-push-${{ matrix.buildtool }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -645,7 +649,7 @@ jobs:
 
       - name: Upload coregraphics fuzz artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
           if-no-files-found: ignore
@@ -899,7 +903,7 @@ jobs:
 
       - name: Upload wic detect artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect
           if-no-files-found: ignore
@@ -1028,7 +1032,7 @@ jobs:
 
       - name: Upload wic repro artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan
           if-no-files-found: ignore

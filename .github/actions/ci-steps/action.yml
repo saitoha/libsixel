@@ -24,6 +24,21 @@ runs:
         git config core.autocrlf false
         git reset --hard
 
+    - name: Guard against accidental gitlinks
+      shell: bash
+      run: |
+        # Git links (mode 160000) indicate submodule entries.
+        # This repository does not operate with submodules in CI.
+        git ls-files -s | awk '
+          $1 == "160000" {
+            print "Unexpected gitlink entry:", $0
+            bad = 1
+          }
+          END {
+            exit bad
+          }
+        '
+
     - name: Install extra packages (Linux)
       if: >-
         ${{ runner.os == 'Linux'
@@ -136,7 +151,7 @@ runs:
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
       if: ${{ fromJSON(inputs.matrix_json).vcpkg_packages != '' }}
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~\vcpkg\installed
@@ -313,7 +328,7 @@ runs:
 
     - name: Cache Cosmopolitan toolchain
       if: ${{ contains(fromJSON(inputs.matrix_json).setup_prefix, 'CC=cosmocc') }}
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: cosmopolitan/cosmocc.zip
         key: cosmocc-${{ hashFiles('cosmopolitan/cosmocc.zip') }}
@@ -1299,7 +1314,7 @@ runs:
 
     - name: Upload artifacts
       if: ${{ always() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ fromJSON(inputs.matrix_json).label || '' }}
         path: |

@@ -8,6 +8,12 @@ on:
 permissions:
   contents: write
 
+env:
+  # Enforce Node.js 24 for JavaScript actions before the hosted-runner switch.
+  # Node.js 24 becomes default on 2026-06-02 and Node.js 20 is removed on
+  # 2026-09-16.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   nightly:
     name: ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys }}
@@ -340,7 +346,7 @@ jobs:
         zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip libsixel
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}
         path: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip
