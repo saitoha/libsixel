@@ -2,6 +2,44 @@
 
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
+prepare_psb_large_fixtures_once() {
+  state_dir="$MESON_BUILD_ROOT/tests"
+  run_id="${MESON_TEST_RUN_ID:-$PPID}"
+  done_file="$state_dir/.psb-large-fixtures.$run_id.done"
+  lock_dir="$state_dir/.psb-large-fixtures.$run_id.lock"
+  prepare_script="$TOP_SRCDIR/tests/_static/sh/prepare-psb-large-fixtures.sh"
+
+  mkdir -p "$state_dir"
+
+  if test -f "$done_file"; then
+    return 0
+  fi
+
+  if mkdir "$lock_dir" 2>/dev/null; then
+    if ! sh "$prepare_script" "$TOP_SRCDIR"; then
+      rmdir "$lock_dir"
+      return 1
+    fi
+    : > "$done_file"
+    rmdir "$lock_dir"
+    return 0
+  fi
+
+  wait_count=0
+  while test ! -f "$done_file"; do
+    wait_count=$((wait_count + 1))
+    if test "$wait_count" -gt 600; then
+      printf '%s\n' "error: timeout waiting for PSB large fixture preparation" >&2
+      return 1
+    fi
+    sleep 0.05
+  done
+}
+
+if ! prepare_psb_large_fixtures_once; then
+  exit 1
+fi
+
 # Meson runs `sh -c SCRIPT ARG0 ARG1 ...` where ARG0 becomes `$0`.
 # Keep compatibility with both forms by preferring `$1` and falling back
 # to `$0` when no positional argument is supplied.
