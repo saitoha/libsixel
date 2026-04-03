@@ -440,7 +440,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [combo, parser, boundary]
+        target: [combo, parser, boundary, pathenv, numeric]
     env:
       FUZZ_INPUT_DIR: ${{ github.workspace }}/fuzz/corpus/img2sixel-cli
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
@@ -473,6 +473,10 @@ jobs:
             fuzz_target='fuzz-cli-img2sixel-parser'
           elif [ "${{ matrix.target }}" = "boundary" ]; then
             fuzz_target='fuzz-cli-img2sixel-boundary'
+          elif [ "${{ matrix.target }}" = "pathenv" ]; then
+            fuzz_target='fuzz-cli-img2sixel-pathenv'
+          elif [ "${{ matrix.target }}" = "numeric" ]; then
+            fuzz_target='fuzz-cli-img2sixel-numeric'
           fi
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then

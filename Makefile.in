@@ -236,8 +236,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/missing build-aux/py-compile ltmain.sh
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile ltmain.sh
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -1183,7 +1183,8 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension \
 	fuzz-cli-img2sixel fuzz-cli-img2sixel-parser \
-	fuzz-cli-img2sixel-boundary fuzz-cli-img2sixel-all \
+	fuzz-cli-img2sixel-boundary fuzz-cli-img2sixel-pathenv \
+	fuzz-cli-img2sixel-numeric fuzz-cli-img2sixel-all \
 	fuzz-loader-builtin fuzz-run-loader-builtin \
 	fuzz-run-loader-builtin-formats \
 	fuzz-run-loader-coregraphics \
@@ -1217,6 +1218,8 @@ FUZZ_IMG2SIXEL_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-afl-persist
 FUZZ_IMG2SIXEL_RUNNER ?= $(FUZZ_IMG2SIXEL_PERSISTENT)
 FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-parser-afl-persistent$(EXEEXT)
 FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-boundary-afl-persistent$(EXEEXT)
+FUZZ_IMG2SIXEL_CLI_PATHENV_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-pathenv-afl-persistent$(EXEEXT)
+FUZZ_IMG2SIXEL_CLI_NUMERIC_PERSISTENT ?= $(abs_top_builddir)/.tmp/fuzz-img2sixel-cli-numeric-afl-persistent$(EXEEXT)
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
 FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
@@ -1254,6 +1257,24 @@ $(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli
 	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
 		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
 		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c" \
+		$(FUZZ_IMG2SIXEL_EMBED_SRCS) \
+		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
+
+$(FUZZ_IMG2SIXEL_CLI_PATHENV_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c $(FUZZ_IMG2SIXEL) $(top_builddir)/src/libsixel.la
+	@set -eu; \
+	mkdir -p "$(dir $@)"; \
+	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
+		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
+		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c" \
+		$(FUZZ_IMG2SIXEL_EMBED_SRCS) \
+		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
+
+$(FUZZ_IMG2SIXEL_CLI_NUMERIC_PERSISTENT): $(top_srcdir)/fuzz/fuzz-img2sixel-cli-numeric-afl-persistent.c $(FUZZ_IMG2SIXEL) $(top_builddir)/src/libsixel.la
+	@set -eu; \
+	mkdir -p "$(dir $@)"; \
+	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) \
+		$(FUZZ_IMG2SIXEL_EMBED_CPPFLAGS) \
+		-o "$@" "$(top_srcdir)/fuzz/fuzz-img2sixel-cli-numeric-afl-persistent.c" \
 		$(FUZZ_IMG2SIXEL_EMBED_SRCS) \
 		$(FUZZ_IMG2SIXEL_EMBED_LIBS)
 
@@ -1366,7 +1387,19 @@ fuzz-cli-img2sixel-boundary: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PER
 		FUZZ_IMG2SIXEL_RUNNER='$(FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT)' \
 		FUZZ_OUTPUT_DIR='$(FUZZ_OUTPUT_DIR)/boundary'
 
-fuzz-cli-img2sixel-all: fuzz-cli-img2sixel fuzz-cli-img2sixel-parser fuzz-cli-img2sixel-boundary
+fuzz-cli-img2sixel-pathenv: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_CLI_PATHENV_PERSISTENT)
+	@$(MAKE) $(AM_MAKEFLAGS) fuzz-cli-img2sixel \
+		FUZZ_IMG2SIXEL_MODE='persistent' \
+		FUZZ_IMG2SIXEL_RUNNER='$(FUZZ_IMG2SIXEL_CLI_PATHENV_PERSISTENT)' \
+		FUZZ_OUTPUT_DIR='$(FUZZ_OUTPUT_DIR)/pathenv'
+
+fuzz-cli-img2sixel-numeric: $(FUZZ_IMG2SIXEL) $(FUZZ_IMG2SIXEL_CLI_NUMERIC_PERSISTENT)
+	@$(MAKE) $(AM_MAKEFLAGS) fuzz-cli-img2sixel \
+		FUZZ_IMG2SIXEL_MODE='persistent' \
+		FUZZ_IMG2SIXEL_RUNNER='$(FUZZ_IMG2SIXEL_CLI_NUMERIC_PERSISTENT)' \
+		FUZZ_OUTPUT_DIR='$(FUZZ_OUTPUT_DIR)/numeric'
+
+fuzz-cli-img2sixel-all: fuzz-cli-img2sixel fuzz-cli-img2sixel-parser fuzz-cli-img2sixel-boundary fuzz-cli-img2sixel-pathenv fuzz-cli-img2sixel-numeric
 
 fuzz-loader-builtin:
 	@COND_FUZZ_TRUE@$(MAKE) -C fuzz $(AM_MAKEFLAGS) fuzz-loader-builtin-libfuzzer$(EXEEXT)

@@ -114,10 +114,40 @@ if img2sixel_opt.enabled()
       build_by_default: false,
       install: false)
 
+    img2sixel_cli_pathenv_harness = executable('fuzz-img2sixel-cli-pathenv-afl-persistent',
+      ['../fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c'] + img2sixel_core_sources,
+      c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                     '-DHAVE_COMPLETION_EMBED_H',
+                                     '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                        '-DHAVE_COMPLETION_EMBED_H',
+                                        '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      dependencies: [libsixel_dep] + aborttrace_deps_local,
+      include_directories: [project_inc, local_inc],
+      build_rpath: src_build_dir,
+      build_by_default: false,
+      install: false)
+
+    img2sixel_cli_numeric_harness = executable('fuzz-img2sixel-cli-numeric-afl-persistent',
+      ['../fuzz/fuzz-img2sixel-cli-numeric-afl-persistent.c'] + img2sixel_core_sources,
+      c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                     '-DHAVE_COMPLETION_EMBED_H',
+                                     '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                        '-DHAVE_COMPLETION_EMBED_H',
+                                        '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
+      dependencies: [libsixel_dep] + aborttrace_deps_local,
+      include_directories: [project_inc, local_inc],
+      build_rpath: src_build_dir,
+      build_by_default: false,
+      install: false)
+
     img2sixel_deps += [
       img2sixel_fuzz_harness,
       img2sixel_cli_parser_harness,
       img2sixel_cli_boundary_harness,
+      img2sixel_cli_pathenv_harness,
+      img2sixel_cli_numeric_harness,
     ]
 
     run_target('fuzz-cli-img2sixel',
@@ -330,6 +360,122 @@ exec "$@"
                 meson.project_source_root(),
                 meson.project_build_root()],
       depends: [img2sixel_cli_boundary_harness])
+
+    run_target('fuzz-cli-img2sixel-pathenv',
+      command: [sh, '-c', '''
+set -eu
+
+harness="$1"
+source_root="$2"
+build_root="$3"
+fuzz_afl="${FUZZ_AFL:-afl-fuzz}"
+fuzz_timeout="${FUZZ_TIMEOUT:-0}"
+default_input_dir="$source_root/fuzz/corpus/img2sixel-cli"
+if test ! -d "$default_input_dir"; then
+  default_input_dir="$source_root/images"
+fi
+input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
+output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-pathenv}"
+
+if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
+  echo "error: $fuzz_afl is not installed" >&2
+  exit 1
+fi
+if test ! -d "$input_dir"; then
+  echo "error: fuzz input directory was not found: $input_dir" >&2
+  exit 1
+fi
+if test ! -x "$harness"; then
+  echo "error: path/env harness was not found: $harness" >&2
+  exit 1
+fi
+
+mkdir -p "$output_dir"
+set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
+
+if test "$fuzz_timeout" -gt 0; then
+  if ! command -v timeout >/dev/null 2>&1; then
+    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
+    exit 1
+  fi
+  echo "Running img2sixel path/env fuzzing for ${fuzz_timeout}s"
+  set +e
+  timeout "$fuzz_timeout" "$@"
+  rc=$?
+  set -e
+  if test "$rc" -eq 124; then
+    echo "fuzz-cli-img2sixel-pathenv: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+echo "Running img2sixel path/env fuzzing without timeout"
+exec "$@"
+''',
+                'sh',
+                img2sixel_cli_pathenv_harness.full_path(),
+                meson.project_source_root(),
+                meson.project_build_root()],
+      depends: [img2sixel_cli_pathenv_harness])
+
+    run_target('fuzz-cli-img2sixel-numeric',
+      command: [sh, '-c', '''
+set -eu
+
+harness="$1"
+source_root="$2"
+build_root="$3"
+fuzz_afl="${FUZZ_AFL:-afl-fuzz}"
+fuzz_timeout="${FUZZ_TIMEOUT:-0}"
+default_input_dir="$source_root/fuzz/corpus/img2sixel-cli"
+if test ! -d "$default_input_dir"; then
+  default_input_dir="$source_root/images"
+fi
+input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
+output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-numeric}"
+
+if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
+  echo "error: $fuzz_afl is not installed" >&2
+  exit 1
+fi
+if test ! -d "$input_dir"; then
+  echo "error: fuzz input directory was not found: $input_dir" >&2
+  exit 1
+fi
+if test ! -x "$harness"; then
+  echo "error: numeric harness was not found: $harness" >&2
+  exit 1
+fi
+
+mkdir -p "$output_dir"
+set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
+
+if test "$fuzz_timeout" -gt 0; then
+  if ! command -v timeout >/dev/null 2>&1; then
+    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
+    exit 1
+  fi
+  echo "Running img2sixel numeric fuzzing for ${fuzz_timeout}s"
+  set +e
+  timeout "$fuzz_timeout" "$@"
+  rc=$?
+  set -e
+  if test "$rc" -eq 124; then
+    echo "fuzz-cli-img2sixel-numeric: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+echo "Running img2sixel numeric fuzzing without timeout"
+exec "$@"
+''',
+                'sh',
+                img2sixel_cli_numeric_harness.full_path(),
+                meson.project_source_root(),
+                meson.project_build_root()],
+      depends: [img2sixel_cli_numeric_harness])
   endif
 
   if shebang_enabled
