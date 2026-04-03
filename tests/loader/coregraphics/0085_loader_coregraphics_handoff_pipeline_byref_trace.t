@@ -26,21 +26,18 @@ trace_output=$(
     exit 0
 }
 
-printf '%s\n' "${trace_output}" | awk '
-BEGIN {
-    decided = 0
-    byref = 0
-    fallback = 0
+test "${trace_output#*"callback handoff decided mode=pipeline"}" \
+    != "${trace_output}" || {
+    echo "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
+    exit 0
 }
-index($0, "callback handoff decided mode=pipeline") { decided = 1 }
-index($0, "enqueue by-ref") { byref = 1 }
-index($0, "worker clone fallback enabled") { fallback = 1 }
-END {
-    if (decided != 1 || byref != 1 || fallback != 0) {
-        exit 1
-    }
+
+test "${trace_output#*"enqueue by-ref"}" != "${trace_output}" || {
+    echo "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
+    exit 0
 }
-' || {
+
+test "${trace_output#*"worker clone fallback enabled"}" = "${trace_output}" || {
     echo "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
     exit 0
 }
