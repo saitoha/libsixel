@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify PSD CMYK16 TySh EngineData StyleRun RunStyle precedence:
-# longest-run RunArray entry should resolve through /RunStyle into
+# RunLength-weighted RunArray entries should resolve through /RunStyle into
 # StyleSheetSet deterministically.
 # Reference generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py

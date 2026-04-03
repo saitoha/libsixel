@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify PSB mode7 TySh EngineData StyleRun RunLengthArray precedence:
-# longest-run StyleSheetData color should be selected deterministically.
+# RunLength-weighted StyleSheetData blending should remain deterministic.
 # Reference generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py

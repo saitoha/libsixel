@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify CMYK16 TySh EngineData StyleRun RunLengthArray precedence:
-# longest-run StyleSheetData color should be selected deterministically.
+# RunLength-weighted StyleSheetData blending should remain deterministic.
 # Reference generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 #   magick -size 16x16 xc:'rgb(255,48,64)' -depth 8 -define ppm:format=raw \

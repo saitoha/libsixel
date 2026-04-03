@@ -1237,10 +1237,26 @@ def main() -> None:
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_stylesheet_array_color_values_precedence",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_stylesheet_precedence",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_precedence",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
                 ]:
                     convert_fixture(
                         f"{src_base}_{suffix}.psd",
                         f"{dst_base}_{suffix}.psd",
+                    )
+                for suffix in [
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
+                ]:
+                    convert_fixture(
+                        f"{src_base}_{suffix}_valid_icc_profile.psd",
+                        f"{dst_base}_{suffix}_valid_icc_profile.psd",
                     )
             for suffix in icc_valid_suffixes:
                 convert_fixture(
@@ -1260,6 +1276,11 @@ def main() -> None:
                 for suffix in [
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
                 ]:
                     convert_fixture(
                         f"{src_base}_{suffix}_bad_icc_profile.psd",
@@ -1283,6 +1304,11 @@ def main() -> None:
                 for suffix in [
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
                 ]:
                     convert_fixture(
                         f"{src_base}_{suffix}_malformed_resource.psd",

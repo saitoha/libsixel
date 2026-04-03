@@ -203,14 +203,14 @@ Key points used by this roadmap:
   - TySh EngineData FillColor LSQA density now includes CMYK16/32 representative
     decode+trace coverage for both `mode=4` and `mode7(4ch->CMYK)` paths.
   - TySh EngineData `StyleRun` payloads that provide
-    `/RunLengthArray + /RunArray` now deterministically select the
-    longest-run `StyleSheetData` color before falling back to generic
-    `StyleSheetData` precedence.
+    `/RunLengthArray + /RunArray` now use RunLength-weighted color
+    compositing for all decodable runs before falling back to generic
+    `StyleSheetData` precedence when no valid weighted run exists.
   - TySh EngineData `StyleRun` payloads that resolve stylesheet payloads via
-    `/StyleSheetSet` (instead of inline `RunArray` `StyleSheetData`) now
-    follow the same longest-run precedence contract.
+    `/StyleSheetSet` (instead of inline `RunArray` `StyleSheetData`) follow
+    the same RunLength-weighted contract.
   - TySh EngineData `StyleRun` payloads that use `RunStyle` references now
-    resolve through `/StyleSheetSet` using the same longest-run precedence.
+    resolve through `/StyleSheetSet` with the same weighted-run contract.
   - PSB malformed boundary parity for CMYK32 now covers both native
     `mode=4` and `mode7(4ch->CMYK)` paths with fixed trace contracts for:
     `layer/mask length`, `layer info length`, `layer channel length`

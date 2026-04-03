@@ -4849,29 +4849,23 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_stylerun_max_runlength_index(
+sixel_builtin_psd_parse_tysh_stylerun_runlength_array_range(
     unsigned char const *data,
     size_t begin,
     size_t end,
-    size_t *pindex)
+    size_t *pvalues_begin,
+    size_t *pvalues_end)
 {
     static char const token[] = "/RunLengthArray";
     size_t i;
     size_t cursor;
     size_t array_end;
-    size_t token_cursor;
-    size_t count;
-    double value;
-    double max_value;
 
     i = 0u;
     cursor = 0u;
     array_end = 0u;
-    token_cursor = 0u;
-    count = 0u;
-    value = 0.0;
-    max_value = -1.0;
-    if (data == NULL || pindex == NULL || begin > end) {
+    if (data == NULL || pvalues_begin == NULL || pvalues_end == NULL ||
+        begin > end) {
         return 0;
     }
     for (i = begin; i + sizeof(token) - 1u <= end; ++i) {
@@ -4892,46 +4886,9 @@ sixel_builtin_psd_parse_tysh_stylerun_max_runlength_index(
             array_end <= cursor + 1u) {
             continue;
         }
-        cursor += 1u;
-        count = 0u;
-        max_value = -1.0;
-        while (cursor < array_end) {
-            while (cursor < array_end &&
-                   sixel_builtin_psd_ascii_is_space(data[cursor])) {
-                ++cursor;
-            }
-            if (cursor >= array_end) {
-                break;
-            }
-            if (sixel_builtin_psd_parse_ascii_float(data,
-                                                    array_end,
-                                                    &cursor,
-                                                    &value)) {
-                if (count == 0u || value > max_value) {
-                    max_value = value;
-                    *pindex = count;
-                }
-                ++count;
-                continue;
-            }
-            token_cursor = cursor;
-            while (token_cursor < array_end &&
-                   !sixel_builtin_psd_ascii_is_space(data[token_cursor]) &&
-                   data[token_cursor] != (unsigned char)']' &&
-                   data[token_cursor] != (unsigned char)'[' &&
-                   data[token_cursor] != (unsigned char)'<' &&
-                   data[token_cursor] != (unsigned char)'>') {
-                ++token_cursor;
-            }
-            if (token_cursor == cursor) {
-                ++cursor;
-            } else {
-                cursor = token_cursor;
-            }
-        }
-        if (count > 0u) {
-            return 1;
-        }
+        *pvalues_begin = cursor + 1u;
+        *pvalues_end = array_end;
+        return 1;
     }
     return 0;
 }
@@ -5236,6 +5193,60 @@ sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
 }
 
 static int
+sixel_builtin_psd_parse_tysh_stylerun_index_color(
+    unsigned char const *data,
+    size_t stylerun_begin,
+    size_t stylerun_end,
+    size_t key_length,
+    size_t target_index,
+    float out_rgb[3])
+{
+    sixel_builtin_psd_layer_record_t layer_tmp;
+    size_t style_index;
+
+    style_index = 0u;
+    if (data == NULL || out_rgb == NULL || stylerun_begin > stylerun_end) {
+        return 0;
+    }
+
+    memset(&layer_tmp, 0, sizeof(layer_tmp));
+    if (!(sixel_builtin_psd_parse_tysh_stylerun_runarray_index(
+              data,
+              stylerun_begin,
+              stylerun_end,
+              target_index,
+              &layer_tmp) ||
+          (sixel_builtin_psd_parse_tysh_stylerun_runarray_runstyle_index(
+               data,
+               stylerun_begin,
+               stylerun_end,
+               target_index,
+               &style_index) &&
+           sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
+               data,
+               0u,
+               key_length,
+               style_index,
+               &layer_tmp)) ||
+          sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
+              data,
+              0u,
+              key_length,
+              target_index,
+              &layer_tmp))) {
+        return 0;
+    }
+    if (layer_tmp.fill_kind != SIXEL_BUILTIN_PSD_FILL_SOCO) {
+        return 0;
+    }
+
+    out_rgb[0] = layer_tmp.fill_solid_rgb[0];
+    out_rgb[1] = layer_tmp.fill_solid_rgb[1];
+    out_rgb[2] = layer_tmp.fill_solid_rgb[2];
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
     unsigned char const *data,
     size_t key_length,
@@ -5245,14 +5256,36 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
     size_t i;
     size_t cursor;
     size_t dict_end;
+    size_t runlength_begin;
+    size_t runlength_end;
+    size_t runlength_cursor;
     size_t run_index;
-    size_t style_index;
+    size_t token_cursor;
+    int has_weighted_run;
+    double runlength;
+    double total_weight;
+    double weighted_r;
+    double weighted_g;
+    double weighted_b;
+    float run_rgb[3];
 
     i = 0u;
     cursor = 0u;
     dict_end = 0u;
+    runlength_begin = 0u;
+    runlength_end = 0u;
+    runlength_cursor = 0u;
     run_index = 0u;
-    style_index = 0u;
+    token_cursor = 0u;
+    has_weighted_run = 0;
+    runlength = 0.0;
+    total_weight = 0.0;
+    weighted_r = 0.0;
+    weighted_g = 0.0;
+    weighted_b = 0.0;
+    run_rgb[0] = 0.0f;
+    run_rgb[1] = 0.0f;
+    run_rgb[2] = 0.0f;
     if (data == NULL || layer == NULL || key_length < sizeof(token)) {
         return 0;
     }
@@ -5276,37 +5309,75 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
             dict_end <= cursor + 2u) {
             continue;
         }
-        if (!sixel_builtin_psd_parse_tysh_stylerun_max_runlength_index(
+        if (!sixel_builtin_psd_parse_tysh_stylerun_runlength_array_range(
                 data,
                 cursor + 2u,
                 dict_end,
-                &run_index)) {
+                &runlength_begin,
+                &runlength_end)) {
             continue;
         }
-        if (sixel_builtin_psd_parse_tysh_stylerun_runarray_index(
-                data,
-                cursor + 2u,
-                dict_end,
-                run_index,
-                layer) ||
-            (sixel_builtin_psd_parse_tysh_stylerun_runarray_runstyle_index(
-                 data,
-                 cursor + 2u,
-                 dict_end,
-                 run_index,
-                 &style_index) &&
-             sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
-                 data,
-                 0u,
-                 key_length,
-                 style_index,
-                 layer)) ||
-            sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
-                data,
-                0u,
-                key_length,
-                run_index,
-                layer)) {
+        run_index = 0u;
+        runlength_cursor = runlength_begin;
+        has_weighted_run = 0;
+        total_weight = 0.0;
+        weighted_r = 0.0;
+        weighted_g = 0.0;
+        weighted_b = 0.0;
+        while (runlength_cursor < runlength_end) {
+            while (runlength_cursor < runlength_end &&
+                   sixel_builtin_psd_ascii_is_space(data[runlength_cursor])) {
+                ++runlength_cursor;
+            }
+            if (runlength_cursor >= runlength_end) {
+                break;
+            }
+            if (sixel_builtin_psd_parse_ascii_float(data,
+                                                    runlength_end,
+                                                    &runlength_cursor,
+                                                    &runlength)) {
+                if (runlength == runlength &&
+                    runlength > 0.0 &&
+                    sixel_builtin_psd_parse_tysh_stylerun_index_color(
+                        data,
+                        cursor + 2u,
+                        dict_end,
+                        key_length,
+                        run_index,
+                        run_rgb)) {
+                    has_weighted_run = 1;
+                    weighted_r += (double)run_rgb[0] * runlength;
+                    weighted_g += (double)run_rgb[1] * runlength;
+                    weighted_b += (double)run_rgb[2] * runlength;
+                    total_weight += runlength;
+                }
+                ++run_index;
+                continue;
+            }
+            token_cursor = runlength_cursor;
+            while (token_cursor < runlength_end &&
+                   !sixel_builtin_psd_ascii_is_space(data[token_cursor]) &&
+                   data[token_cursor] != (unsigned char)']' &&
+                   data[token_cursor] != (unsigned char)'[' &&
+                   data[token_cursor] != (unsigned char)'<' &&
+                   data[token_cursor] != (unsigned char)'>') {
+                ++token_cursor;
+            }
+            if (token_cursor == runlength_cursor) {
+                ++runlength_cursor;
+            } else {
+                runlength_cursor = token_cursor;
+            }
+        }
+        if (has_weighted_run != 0 &&
+            total_weight > 0.0) {
+            layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_SOCO;
+            layer->fill_solid_rgb[0] = sixel_builtin_psd_clamp01(
+                (float)(weighted_r / total_weight));
+            layer->fill_solid_rgb[1] = sixel_builtin_psd_clamp01(
+                (float)(weighted_g / total_weight));
+            layer->fill_solid_rgb[2] = sixel_builtin_psd_clamp01(
+                (float)(weighted_b / total_weight));
             return 1;
         }
     }

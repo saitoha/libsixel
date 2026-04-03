@@ -559,6 +559,11 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
     ]
     tysh_valid_suffixes_depth8_only = [
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_cmyk",
@@ -566,6 +571,11 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_values_rgb",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
     ]
     fill_valid_suffixes = [
         "fill_soco_descriptor",
