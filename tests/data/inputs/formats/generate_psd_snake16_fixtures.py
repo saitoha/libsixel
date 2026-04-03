@@ -9741,6 +9741,21 @@ def generate(out_dir: pathlib.Path):
                     first_layer_has_pixels=False,
                 ),
             )
+            if depth_value == 8:
+                write_file(
+                    out_dir / f"{base_name}_stylesheet_values_named_device_rgb_short_payload.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_stylesheet_fillcolor_values_payload(
+                            (1.0,),
+                            color_space="DeviceRGB",
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
             write_file(
                 out_dir / f"{base_name}_stylesheet_values_named_object_device_rgb.psd",
                 build_cmyk_multilayer_nonpixel_fixture(

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify short-component PSB mode7 TySh EngineData /Color /Values [/DeviceRGB ...]
-# payload keeps decode success and follows current fallback trace contract.
+# payload is skipped with deterministic trace and without synthetic fill
+# rendering.
 # Reference generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 #   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py
@@ -20,7 +21,9 @@ set -v
 mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb_short_payload.psd"
+reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_cmyk8_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
 command_status=0
 
@@ -43,22 +46,28 @@ case "${trace_output}" in
 esac
 
 case "${trace_output}" in
-    *"builtin PSD: rendering non-pixel fill payload in layer fallback"*)
+    *"builtin PSD: malformed non-pixel fill payload; skipping layer"*)
         ;;
     *)
-        echo "not ok" 1 - "render non-pixel fill trace is missing"
+        echo "not ok" 1 - "malformed non-pixel fill skip trace is missing"
         exit 0
         ;;
 esac
 
 case "${trace_output}" in
-    *"builtin PSD: malformed non-pixel fill payload; skipping layer"*)
-        echo "not ok" 1 - "short payload unexpectedly treated as malformed skip"
+    *"builtin PSD: rendering non-pixel fill payload in layer fallback"*)
+        echo "not ok" 1 - "short payload unexpectedly rendered synthetic fill"
         exit 0
         ;;
     *)
         ;;
 esac
 
-echo "ok" 1 - "short-component PSB mode7 TySh /Color /DeviceRGB payload follows fallback trace contract"
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear -b "MS-SSIM:${lsqa_floor}" \
+    "${reference_ppm}" "${output_sixel}" 2>&1) || {
+    echo "not ok" 1 - "short-component PSB mode7 TySh /Color /DeviceRGB payload decode fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    exit 0
+}
+
+echo "ok" 1 - "short-component PSB mode7 TySh /Color /DeviceRGB payload is skipped with deterministic trace and keeps MS-SSIM ${lsqa_floor}"
 exit 0

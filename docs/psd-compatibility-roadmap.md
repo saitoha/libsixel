@@ -188,6 +188,9 @@ Key points used by this roadmap:
     - valid ICC no-false-failure traces (`mode=4`, `mode7(4ch->CMYK)`),
     - bad ICC conversion-failure trace (`mode7(4ch->CMYK)`), and
     - malformed-resource skip trace (`mode=4`).
+  - TySh EngineData named-space short payloads now keep deterministic malformed
+    skip behavior (no synthetic fill render) for both direct `/Color /Values`
+    and `StyleRun/StyleSheetData` `FillColor /Values` paths.
   - descriptor malformed regression now includes:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
