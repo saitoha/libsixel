@@ -1896,6 +1896,7 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
     double out_linear_b;
     double const *decode_lut;
     unsigned char const *encode_lut;
+    size_t encode_lut_size;
 
     status = SIXEL_FALSE;
     color_space = NULL;
@@ -1924,6 +1925,7 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
     out_linear_b = 0.0;
     decode_lut = NULL;
     encode_lut = NULL;
+    encode_lut_size = 0u;
     if (frame == NULL || image == NULL || frame->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2020,6 +2022,7 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
         }
         decode_lut = srgb_lut_cache->decode_lut;
         encode_lut = srgb_lut_cache->encode_lut;
+        encode_lut_size = sizeof(srgb_lut_cache->encode_lut);
     }
 
     if (has_alpha_like == 0) {
@@ -2089,13 +2092,13 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
 
         out_r = coregraphics_encode_linear_to_srgb_u8(out_linear_r,
                                                       encode_lut,
-                                                      sizeof(encode_lut));
+                                                      encode_lut_size);
         out_g = coregraphics_encode_linear_to_srgb_u8(out_linear_g,
                                                       encode_lut,
-                                                      sizeof(encode_lut));
+                                                      encode_lut_size);
         out_b = coregraphics_encode_linear_to_srgb_u8(out_linear_b,
                                                       encode_lut,
-                                                      sizeof(encode_lut));
+                                                      encode_lut_size);
         pixels[index * 3u + 0u] = out_r;
         pixels[index * 3u + 1u] = out_g;
         pixels[index * 3u + 2u] = out_b;
