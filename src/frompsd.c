@@ -5403,6 +5403,89 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
 }
 
 static int
+sixel_builtin_psd_parse_tysh_fillcolor_enginedata_default_stylesheet(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    static char const token[] = "/DefaultStyleSheet";
+    size_t i;
+    size_t cursor;
+    size_t dict_end;
+    size_t array_end;
+    int found;
+
+    i = 0u;
+    cursor = 0u;
+    dict_end = 0u;
+    array_end = 0u;
+    found = 0;
+    if (data == NULL || layer == NULL || key_length < sizeof(token)) {
+        return 0;
+    }
+    for (i = 0u; i + sizeof(token) - 1u <= key_length; ++i) {
+        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
+            continue;
+        }
+        cursor = i + sizeof(token) - 1u;
+        while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor + 1u < key_length &&
+            data[cursor] == (unsigned char)'<' &&
+            data[cursor + 1u] == (unsigned char)'<') {
+            if (!sixel_builtin_psd_find_ascii_dict_end(data,
+                                                       key_length,
+                                                       cursor,
+                                                       &dict_end)) {
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor + 2u,
+                    dict_end,
+                    layer)) {
+                found = 1;
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor,
+                    key_length,
+                    layer)) {
+                found = 1;
+            }
+            continue;
+        }
+        if (cursor < key_length && data[cursor] == (unsigned char)'[') {
+            if (!sixel_builtin_psd_find_ascii_array_end(data,
+                                                        key_length,
+                                                        cursor,
+                                                        &array_end)) {
+                continue;
+            }
+            if (array_end > cursor &&
+                sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor + 1u,
+                    array_end,
+                    layer)) {
+                found = 1;
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor,
+                    key_length,
+                    layer)) {
+                found = 1;
+            }
+        }
+    }
+    return found;
+}
+
+static int
 sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
     unsigned char const *data,
     size_t key_length,
@@ -5411,8 +5494,8 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
     if (data == NULL || layer == NULL || key_length == 0u) {
         return 0;
     }
-    /* Prefer StyleRun/StyleSheetData FillColor when both top-level and
-     * nested FillColor entries coexist in EngineData.
+    /* Keep EngineData precedence deterministic:
+     * StyleRun > StyleSheetData > DefaultStyleSheet > top-level FillColor.
      */
     if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
             data,
@@ -5421,6 +5504,12 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
         return 1;
     }
     if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
+            data,
+            key_length,
+            layer)) {
+        return 1;
+    }
+    if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_default_stylesheet(
             data,
             key_length,
             layer)) {
@@ -5503,19 +5592,19 @@ sixel_builtin_psd_parse_tysh_payload(
         }
     }
 
-    /* Lenient fallback for TySh wrappers that carry additional/unknown items:
-     * scan for Clr/Objc signatures and parse only the color object.
-     */
     descriptor_start = 4u + 48u + 4u;
     if (descriptor_start < key_length &&
-        sixel_builtin_psd_parse_soco_descriptor_payload_loose(
+        sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
             data + descriptor_start,
             key_length - descriptor_start,
             layer)) {
         return 1;
     }
+    /* Lenient fallback for TySh wrappers that carry additional/unknown items:
+     * scan for Clr/Objc signatures and parse only the color object.
+     */
     if (descriptor_start < key_length &&
-        sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
+        sixel_builtin_psd_parse_soco_descriptor_payload_loose(
             data + descriptor_start,
             key_length - descriptor_start,
             layer)) {

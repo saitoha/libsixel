@@ -554,6 +554,7 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_lab",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_values_rgb",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_cmyk",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
@@ -564,6 +565,7 @@ def generate(out_dir: pathlib.Path) -> None:
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
         "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
+        "nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_values_rgb",
     ]
     fill_valid_suffixes = [
         "fill_soco_descriptor",

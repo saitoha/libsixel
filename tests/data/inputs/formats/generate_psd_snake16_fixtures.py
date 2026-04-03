@@ -849,6 +849,52 @@ def build_tysh_enginedata_fillcolor_stylesheetset_runstyle_precedence_payload(
     return bytes(payload)
 
 
+def build_tysh_enginedata_default_stylesheet_fillcolor_payload(
+    r: int,
+    g: int,
+    b: int,
+) -> bytes:
+    r_norm = float(max(0, min(255, r))) / 255.0
+    g_norm = float(max(0, min(255, g))) / 255.0
+    b_norm = float(max(0, min(255, b))) / 255.0
+
+    engine_data = (
+        "/EngineData << "
+        "/DefaultStyleSheet << "
+        f"/FillColor [{r_norm:.6f} {g_norm:.6f} {b_norm:.6f}] "
+        ">> "
+        ">>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
+def build_tysh_enginedata_default_stylesheet_malformed_payload() -> bytes:
+    # Malformed by design: DefaultStyleSheet exists, but FillColor values carry
+    # no numeric components, so parser should deterministically skip the layer.
+    engine_data = (
+        "/EngineData << "
+        "/DefaultStyleSheet << "
+        "/FillColor << /Values [/DeviceRGB] >> "
+        ">> "
+        ">>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_dual_scope_stylesheet_array_color_values_precedence_payload(
     *,
     top_level_rgb: tuple[int, int, int],
@@ -10267,6 +10313,30 @@ def generate(out_dir: pathlib.Path):
                             first_run_style_index=1,
                             second_run_style_index=0,
                         ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
+                write_file(
+                    out_dir / f"{base_name}_default_stylesheet_values_rgb.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_default_stylesheet_fillcolor_payload(
+                            255, 48, 64
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
+                write_file(
+                    out_dir / f"{base_name}_default_stylesheet_malformed_payload.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_default_stylesheet_malformed_payload(),
                         first_layer_has_pixels=False,
                     ),
                 )
