@@ -150,7 +150,6 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0055_loader_animation_hide_cursor_control.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
-	diagnostics/icc/0001_icc_parse_profile_paths.c \
 	diagnostics/probe/0001_probe_parse.c \
 	extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 	extension/gdk-pixbuf-loader/0002_incremental_load.c \
@@ -203,7 +202,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0054_loader_gif_bgcolor_canvas_fill.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0055_loader_animation_hide_cursor_control.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_parse_profile_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0002_incremental_load.$(OBJEXT) \
@@ -294,7 +292,6 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po \
 	cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
-	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Po \
 	diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po \
@@ -967,7 +964,6 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_RUNNER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SIXEL_PIXBUF_LOADER \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ICC_PARSE_PROFILE_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FILTER_CLIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_IMG2SIXEL_ABORTTRACE \
@@ -1098,7 +1094,6 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0055_loader_animation_hide_cursor_control.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_parse_profile_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0002_incremental_load.c \
@@ -1399,15 +1394,6 @@ quant/palette/$(DEPDIR)/$(am__dirstamp):
 quant/palette/test_runner-0001_kmeans_init.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
-diagnostics/icc/$(am__dirstamp):
-	@$(MKDIR_P) diagnostics/icc
-	@: >>diagnostics/icc/$(am__dirstamp)
-diagnostics/icc/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) diagnostics/icc/$(DEPDIR)
-	@: >>diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
-diagnostics/icc/test_runner-0001_icc_parse_profile_paths.$(OBJEXT):  \
-	diagnostics/icc/$(am__dirstamp) \
-	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -1486,7 +1472,6 @@ mostlyclean-compile:
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f cli/aborttrace/*.$(OBJEXT)
-	-rm -f diagnostics/icc/*.$(OBJEXT)
 	-rm -f diagnostics/probe/*.$(OBJEXT)
 	-rm -f extension/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f loader/*.$(OBJEXT)
@@ -1516,7 +1501,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po@am__quote@ # am--include-marker
@@ -2151,20 +2135,6 @@ quant/palette/test_runner-0001_kmeans_init.obj: quant/palette/0001_kmeans_init.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0001_kmeans_init.obj `if test -f 'quant/palette/0001_kmeans_init.c'; then $(CYGPATH_W) 'quant/palette/0001_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0001_kmeans_init.c'; fi`
 
-diagnostics/icc/test_runner-0001_icc_parse_profile_paths.o: diagnostics/icc/0001_icc_parse_profile_paths.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0001_icc_parse_profile_paths.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Tpo -c -o diagnostics/icc/test_runner-0001_icc_parse_profile_paths.o `test -f 'diagnostics/icc/0001_icc_parse_profile_paths.c' || echo '$(srcdir)/'`diagnostics/icc/0001_icc_parse_profile_paths.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0001_icc_parse_profile_paths.c' object='diagnostics/icc/test_runner-0001_icc_parse_profile_paths.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0001_icc_parse_profile_paths.o `test -f 'diagnostics/icc/0001_icc_parse_profile_paths.c' || echo '$(srcdir)/'`diagnostics/icc/0001_icc_parse_profile_paths.c
-
-diagnostics/icc/test_runner-0001_icc_parse_profile_paths.obj: diagnostics/icc/0001_icc_parse_profile_paths.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0001_icc_parse_profile_paths.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Tpo -c -o diagnostics/icc/test_runner-0001_icc_parse_profile_paths.obj `if test -f 'diagnostics/icc/0001_icc_parse_profile_paths.c'; then $(CYGPATH_W) 'diagnostics/icc/0001_icc_parse_profile_paths.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0001_icc_parse_profile_paths.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0001_icc_parse_profile_paths.c' object='diagnostics/icc/test_runner-0001_icc_parse_profile_paths.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0001_icc_parse_profile_paths.obj `if test -f 'diagnostics/icc/0001_icc_parse_profile_paths.c'; then $(CYGPATH_W) 'diagnostics/icc/0001_icc_parse_profile_paths.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0001_icc_parse_profile_paths.c'; fi`
-
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -2671,8 +2641,6 @@ distclean-generic:
 	-$(am__rm_f) cli/$(am__dirstamp)
 	-$(am__rm_f) cli/aborttrace/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/aborttrace/$(am__dirstamp)
-	-$(am__rm_f) diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
-	-$(am__rm_f) diagnostics/icc/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/probe/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) diagnostics/probe/$(am__dirstamp)
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
@@ -2725,7 +2693,6 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
-	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po
@@ -2823,7 +2790,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
-	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_parse_profile_paths.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po

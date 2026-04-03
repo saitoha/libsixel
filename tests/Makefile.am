@@ -156,7 +156,6 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_RUNNER \
     -DBUILD_SIXEL_PIXBUF_LOADER \
-    -DBUILD_TEST_0001_ICC_PARSE_PROFILE_PATHS \
     -DBUILD_TEST_0001_FILTER_CLIP \
     -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
     -DBUILD_TEST_0001_IMG2SIXEL_ABORTTRACE \
@@ -259,7 +258,6 @@ test_runner_SOURCES = test_runner.c \
     loader/0055_loader_animation_hide_cursor_control.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
-    diagnostics/icc/0001_icc_parse_profile_paths.c \
     diagnostics/probe/0001_probe_parse.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     extension/gdk-pixbuf-loader/0002_incremental_load.c \
