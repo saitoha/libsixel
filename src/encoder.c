@@ -202,6 +202,7 @@ typedef struct sixel_encoder_frame_handoff_meta {
     int loop_no;
     int delay;
     int multiframe;
+    int needs_preplan_clone;
 } sixel_encoder_frame_handoff_meta_t;
 
 typedef struct sixel_encoder_frame_pipeline {
@@ -870,9 +871,10 @@ error:
 }
 
 /*
- * Shared handoff frames are reused by CoreGraphics loop replay. Protect them
- * from destructive preplan operations by cloning only when planner analysis
- * indicates clip/resize/colorspace stages on the current frame.
+ * Shared handoff frames are reused by CoreGraphics loop replay. Take a single
+ * planner snapshot when the frame enters the queue and use that snapshot in
+ * the worker to decide whether destructive preplan stages require clone
+ * fallback.
  */
 static int
 sixel_encoder_handoff_needs_preplan_clone(
@@ -6784,6 +6786,7 @@ sixel_encoder_frame_pipeline_worker(void *priv)
     metadata.loop_no = 0;
     metadata.delay = 0;
     metadata.multiframe = 0;
+    metadata.needs_preplan_clone = 0;
     status = SIXEL_OK;
     queue_count_after_pop = 0;
     need_clone = 0;
@@ -6832,15 +6835,15 @@ sixel_encoder_frame_pipeline_worker(void *priv)
 
         sixel_trace_topic_message(
             SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "worker pop frame_no=%d loop_no=%d queue_count=%d",
+            "worker pop frame_no=%d loop_no=%d queue_count=%d clone=%d",
             metadata.frame_no,
             metadata.loop_no,
-            queue_count_after_pop);
+            queue_count_after_pop,
+            metadata.needs_preplan_clone);
         need_clone = 0;
         work_frame = frame;
         if (frame->handoff_shareable != 0 &&
-            sixel_encoder_handoff_needs_preplan_clone(pipeline->encoder,
-                                                      frame) != 0) {
+            metadata.needs_preplan_clone != 0) {
             status = sixel_encoder_clone_frame(
                 frame,
                 pipeline->encoder->allocator,
@@ -7002,6 +7005,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     metadata.loop_no = 0;
     metadata.delay = 0;
     metadata.multiframe = 0;
+    metadata.needs_preplan_clone = 0;
     queue_count_after_enqueue = 0;
 
     if (pipeline == NULL || frame == NULL || pipeline->initialized == 0) {
@@ -7014,13 +7018,17 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     metadata.multiframe = sixel_frame_get_multiframe(frame);
 
     if (frame->handoff_shareable != 0) {
+        metadata.needs_preplan_clone =
+            sixel_encoder_handoff_needs_preplan_clone(pipeline->encoder,
+                                                      frame);
         queue_frame = frame;
         sixel_frame_ref(queue_frame);
         sixel_trace_topic_message(
             SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "enqueue by-ref frame_no=%d loop_no=%d",
+            "enqueue by-ref frame_no=%d loop_no=%d clone=%d",
             metadata.frame_no,
-            metadata.loop_no);
+            metadata.loop_no,
+            metadata.needs_preplan_clone);
     } else {
         status = sixel_encoder_clone_frame(frame,
                                            pipeline->encoder->allocator,
