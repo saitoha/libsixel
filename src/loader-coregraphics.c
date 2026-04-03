@@ -2559,9 +2559,15 @@ load_with_coregraphics(
     int frame_orientation;
     coregraphics_png_indexed_metadata_cache_t png_indexed_cache;
     coregraphics_srgb_lut_cache_t rgba8_lut_cache;
+    CFDictionaryRef single_frame_props_cache;
+    int single_frame_delay_cache;
+    unsigned char single_frame_props_ready;
     CFDictionaryRef *frame_props_cache;
     int *frame_delay_cache;
     unsigned char *frame_props_ready;
+    CFDictionaryRef *active_frame_props_cache;
+    int *active_frame_delay_cache;
+    unsigned char *active_frame_props_ready;
     unsigned char *frame_cache_decided;
     sixel_frame_t **frame_cache;
     CFIndex cf_data_length;
@@ -2613,9 +2619,15 @@ load_with_coregraphics(
     frame_orientation = 1;
     coregraphics_png_indexed_metadata_cache_init(&png_indexed_cache);
     rgba8_lut_cache.prepared = 0;
+    single_frame_props_cache = NULL;
+    single_frame_delay_cache = 0;
+    single_frame_props_ready = 0u;
     frame_props_cache = NULL;
     frame_delay_cache = NULL;
     frame_props_ready = NULL;
+    active_frame_props_cache = NULL;
+    active_frame_delay_cache = NULL;
+    active_frame_props_ready = NULL;
     frame_cache_decided = NULL;
     frame_cache = NULL;
     cf_data_length = 0;
@@ -2755,9 +2767,10 @@ load_with_coregraphics(
          */
         metadata_slots = 1u;
     }
-    if (metadata_slots > SIZE_MAX / sizeof(*frame_props_cache) ||
-        metadata_slots > SIZE_MAX / sizeof(*frame_delay_cache) ||
-        metadata_slots > SIZE_MAX / sizeof(*frame_props_ready)) {
+    if (metadata_slots > 1u &&
+        (metadata_slots > SIZE_MAX / sizeof(*frame_props_cache) ||
+         metadata_slots > SIZE_MAX / sizeof(*frame_delay_cache) ||
+         metadata_slots > SIZE_MAX / sizeof(*frame_props_ready))) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: frame metadata is too large.");
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -2771,35 +2784,44 @@ load_with_coregraphics(
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
-    frame_props_cache = (CFDictionaryRef *)sixel_allocator_calloc(
-        frame->allocator,
-        metadata_slots,
-        sizeof(*frame_props_cache));
-    if (frame_props_cache == NULL) {
-        sixel_helper_set_additional_message(
-            "load_with_coregraphics: sixel_allocator_calloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    frame_delay_cache = (int *)sixel_allocator_calloc(frame->allocator,
-                                                      metadata_slots,
-                                                      sizeof(
-                                                          *frame_delay_cache));
-    if (frame_delay_cache == NULL) {
-        sixel_helper_set_additional_message(
-            "load_with_coregraphics: sixel_allocator_calloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    frame_props_ready = (unsigned char *)sixel_allocator_calloc(
-        frame->allocator,
-        metadata_slots,
-        sizeof(*frame_props_ready));
-    if (frame_props_ready == NULL) {
-        sixel_helper_set_additional_message(
-            "load_with_coregraphics: sixel_allocator_calloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    if (metadata_slots > 1u) {
+        frame_props_cache = (CFDictionaryRef *)sixel_allocator_calloc(
+            frame->allocator,
+            metadata_slots,
+            sizeof(*frame_props_cache));
+        if (frame_props_cache == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        frame_delay_cache = (int *)sixel_allocator_calloc(
+            frame->allocator,
+            metadata_slots,
+            sizeof(*frame_delay_cache));
+        if (frame_delay_cache == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        frame_props_ready = (unsigned char *)sixel_allocator_calloc(
+            frame->allocator,
+            metadata_slots,
+            sizeof(*frame_props_ready));
+        if (frame_props_ready == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        active_frame_props_cache = frame_props_cache;
+        active_frame_delay_cache = frame_delay_cache;
+        active_frame_props_ready = frame_props_ready;
+    } else {
+        active_frame_props_cache = &single_frame_props_cache;
+        active_frame_delay_cache = &single_frame_delay_cache;
+        active_frame_props_ready = &single_frame_props_ready;
     }
     if (frame_cache_enabled != 0) {
         frame_cache_decided = (unsigned char *)sixel_allocator_calloc(
@@ -2861,14 +2883,14 @@ load_with_coregraphics(
              * Resolve frame metadata once on first decode of each frame and
              * reuse it on replay loops to avoid repeated property lookups.
              */
-            if (frame_props_ready[frame_meta_slot] == 0u) {
-                frame_props_cache[frame_meta_slot] =
+            if (active_frame_props_ready[frame_meta_slot] == 0u) {
+                active_frame_props_cache[frame_meta_slot] =
                     CGImageSourceCopyPropertiesAtIndex(
                         source,
                         (size_t)frame_index,
                         NULL);
-                frame_delay_cache[frame_meta_slot] = 0;
-                frame_props = frame_props_cache[frame_meta_slot];
+                active_frame_delay_cache[frame_meta_slot] = 0;
+                frame_props = active_frame_props_cache[frame_meta_slot];
                 if (frame_props != NULL) {
                     frame_anim_dict = NULL;
                     frame_loop_key = NULL;
@@ -2889,12 +2911,12 @@ load_with_coregraphics(
                             frame_anim_dict,
                             frame_unclamped_delay_key,
                             frame_delay_key,
-                            &frame_delay_cache[frame_meta_slot]);
+                            &active_frame_delay_cache[frame_meta_slot]);
                     }
                 }
-                frame_props_ready[frame_meta_slot] = 1u;
+                active_frame_props_ready[frame_meta_slot] = 1u;
             }
-            frame_props = frame_props_cache[frame_meta_slot];
+            frame_props = active_frame_props_cache[frame_meta_slot];
             frame_orientation = coregraphics_resolve_exif_orientation(
                 frame_props,
                 source_orientation);
@@ -3099,7 +3121,7 @@ load_with_coregraphics(
             }
             emit_frame->frame_no = frames_in_loop;
             emit_frame->loop_count = loop_no;
-            emit_frame->delay = frame_delay_cache[frame_meta_slot];
+            emit_frame->delay = active_frame_delay_cache[frame_meta_slot];
             emit_frame->multiframe = (!fstatic && frame_count > 1
                                       && is_animation_container);
             status = fn_load(emit_frame, context);
@@ -3151,12 +3173,12 @@ end:
     if (cached_frame_tmp != NULL) {
         sixel_frame_unref(cached_frame_tmp);
     }
-    if (frame_props_cache != NULL) {
+    if (active_frame_props_cache != NULL) {
         for (prefetch_index = 0u;
              prefetch_index < metadata_slots;
              ++prefetch_index) {
-            if (frame_props_cache[prefetch_index] != NULL) {
-                CFRelease(frame_props_cache[prefetch_index]);
+            if (active_frame_props_cache[prefetch_index] != NULL) {
+                CFRelease(active_frame_props_cache[prefetch_index]);
             }
         }
     }
