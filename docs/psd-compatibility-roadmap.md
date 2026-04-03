@@ -93,7 +93,8 @@ Key points used by this roadmap:
     `RLE payload window overrun`.
     Additional large-window coverage is fixed with:
     - `high_offset_large` (1 MiB section shift), and
-    - `high_offset_xlarge` (2 MiB section shift).
+    - `high_offset_xlarge` (2 MiB section shift), and
+    - `high_offset_xxlarge` (4 MiB section shift).
     Both cover `mode=4` and `mode7(4ch->CMYK)` CMYK16/CMYK32 `normal` decode,
     with malformed traces for `channel section-window overrun` and
     `RLE payload window overrun`; CMYK32 also fixes
@@ -370,8 +371,9 @@ Minimum fixture naming convention:
 2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
    large-document parity:
    - after mode4/mode7 CMYK16/CMYK32 high-offset + `high_offset_large` (1 MiB)
-     + `high_offset_xlarge` (2 MiB) valid/malformed parity, move to
-     larger-than-2MiB section-window layouts and higher-offset cases, and
+     + `high_offset_xlarge` (2 MiB) + `high_offset_xxlarge` (4 MiB)
+     valid/malformed parity, move to larger-than-4MiB section-window layouts
+     and higher-offset cases, and
    - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
 3. Increase cross-mode visual quality regression density for non-pixel payload
