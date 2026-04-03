@@ -2559,15 +2559,12 @@ load_with_coregraphics(
     int frame_orientation;
     coregraphics_png_indexed_metadata_cache_t png_indexed_cache;
     coregraphics_srgb_lut_cache_t rgba8_lut_cache;
-    CFDictionaryRef single_frame_props_cache;
     int single_frame_delay_cache;
     int single_frame_orientation_cache;
     unsigned char single_frame_props_ready;
-    CFDictionaryRef *frame_props_cache;
     int *frame_delay_cache;
     int *frame_orientation_cache;
     unsigned char *frame_props_ready;
-    CFDictionaryRef *active_frame_props_cache;
     int *active_frame_delay_cache;
     int *active_frame_orientation_cache;
     unsigned char *active_frame_props_ready;
@@ -2622,15 +2619,12 @@ load_with_coregraphics(
     frame_orientation = 1;
     coregraphics_png_indexed_metadata_cache_init(&png_indexed_cache);
     rgba8_lut_cache.prepared = 0;
-    single_frame_props_cache = NULL;
     single_frame_delay_cache = 0;
     single_frame_orientation_cache = 1;
     single_frame_props_ready = 0u;
-    frame_props_cache = NULL;
     frame_delay_cache = NULL;
     frame_orientation_cache = NULL;
     frame_props_ready = NULL;
-    active_frame_props_cache = NULL;
     active_frame_delay_cache = NULL;
     active_frame_orientation_cache = NULL;
     active_frame_props_ready = NULL;
@@ -2774,8 +2768,7 @@ load_with_coregraphics(
         metadata_slots = 1u;
     }
     if (metadata_slots > 1u &&
-        (metadata_slots > SIZE_MAX / sizeof(*frame_props_cache) ||
-         metadata_slots > SIZE_MAX / sizeof(*frame_delay_cache) ||
+        (metadata_slots > SIZE_MAX / sizeof(*frame_delay_cache) ||
          metadata_slots > SIZE_MAX / sizeof(*frame_orientation_cache) ||
          metadata_slots > SIZE_MAX / sizeof(*frame_props_ready))) {
         sixel_helper_set_additional_message(
@@ -2792,16 +2785,6 @@ load_with_coregraphics(
         goto end;
     }
     if (metadata_slots > 1u) {
-        frame_props_cache = (CFDictionaryRef *)sixel_allocator_calloc(
-            frame->allocator,
-            metadata_slots,
-            sizeof(*frame_props_cache));
-        if (frame_props_cache == NULL) {
-            sixel_helper_set_additional_message(
-                "load_with_coregraphics: sixel_allocator_calloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
         frame_delay_cache = (int *)sixel_allocator_calloc(
             frame->allocator,
             metadata_slots,
@@ -2832,12 +2815,10 @@ load_with_coregraphics(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        active_frame_props_cache = frame_props_cache;
         active_frame_delay_cache = frame_delay_cache;
         active_frame_orientation_cache = frame_orientation_cache;
         active_frame_props_ready = frame_props_ready;
     } else {
-        active_frame_props_cache = &single_frame_props_cache;
         active_frame_delay_cache = &single_frame_delay_cache;
         single_frame_orientation_cache = source_orientation;
         active_frame_orientation_cache = &single_frame_orientation_cache;
@@ -2900,17 +2881,16 @@ load_with_coregraphics(
             }
 
             /*
-             * Resolve frame metadata once on first decode of each frame and
-             * reuse it on replay loops to avoid repeated property lookups.
+             * Resolve delay/orientation metadata once on first decode of each
+             * frame. The properties dictionary itself is transient so large
+             * animations do not retain all frame dictionaries in memory.
              */
             if (active_frame_props_ready[frame_meta_slot] == 0u) {
-                active_frame_props_cache[frame_meta_slot] =
-                    CGImageSourceCopyPropertiesAtIndex(
-                        source,
-                        (size_t)frame_index,
-                        NULL);
+                frame_props = CGImageSourceCopyPropertiesAtIndex(
+                    source,
+                    (size_t)frame_index,
+                    NULL);
                 active_frame_delay_cache[frame_meta_slot] = 0;
-                frame_props = active_frame_props_cache[frame_meta_slot];
                 if (frame_props != NULL) {
                     frame_anim_dict = NULL;
                     frame_loop_key = NULL;
@@ -2941,10 +2921,15 @@ load_with_coregraphics(
                     frame_orientation;
                 active_frame_props_ready[frame_meta_slot] = 1u;
             }
-            frame_props = active_frame_props_cache[frame_meta_slot];
             frame_orientation = active_frame_orientation_cache[
                 frame_meta_slot];
             if (cache_hit == 0) {
+                if (frame_props == NULL) {
+                    frame_props = CGImageSourceCopyPropertiesAtIndex(
+                        source,
+                        (size_t)frame_index,
+                        NULL);
+                }
                 image = CGImageSourceCreateImageAtIndex(
                     source,
                     (size_t)frame_index,
@@ -3140,6 +3125,10 @@ load_with_coregraphics(
                 CGImageRelease(image);
                 image = NULL;
             }
+            if (frame_props != NULL) {
+                CFRelease(frame_props);
+                frame_props = NULL;
+            }
             if (emit_frame == NULL) {
                 emit_frame = frame_cache[(size_t)frame_index];
             }
@@ -3197,14 +3186,8 @@ end:
     if (cached_frame_tmp != NULL) {
         sixel_frame_unref(cached_frame_tmp);
     }
-    if (active_frame_props_cache != NULL) {
-        for (prefetch_index = 0u;
-             prefetch_index < metadata_slots;
-             ++prefetch_index) {
-            if (active_frame_props_cache[prefetch_index] != NULL) {
-                CFRelease(active_frame_props_cache[prefetch_index]);
-            }
-        }
+    if (frame_props != NULL) {
+        CFRelease(frame_props);
     }
     if (image != NULL) {
         CGImageRelease(image);
@@ -3236,7 +3219,6 @@ end:
         sixel_allocator_free(frame->allocator, frame_props_ready);
         sixel_allocator_free(frame->allocator, frame_orientation_cache);
         sixel_allocator_free(frame->allocator, frame_delay_cache);
-        sixel_allocator_free(frame->allocator, frame_props_cache);
         sixel_frame_unref(frame);
     }
     return status;
