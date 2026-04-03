@@ -877,6 +877,11 @@ jobs:
           "had_crash=$($hadCrash.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           "crash_count=$crashCount" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
+          # GitHub Actions' pwsh wrapper may propagate LASTEXITCODE from the
+          # last native command. Keep detect green when crash artifacts were
+          # produced so the non-ASan repro job can classify them.
+          $global:LASTEXITCODE = 0
+
       - name: Upload wic detect artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -2998,7 +3003,6 @@ jobs:
             setup_prefix: >-
               CC=cl
               LD=link
-              LDFLAGS="-Wl,-PROFILE"
               AR="sh ar-lib lib"
               ARFLAGS=cr
               NM="dumpbin -symbols"
