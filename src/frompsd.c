@@ -5035,6 +5035,109 @@ sixel_builtin_psd_parse_tysh_stylerun_runarray_index(
 }
 
 static int
+sixel_builtin_psd_parse_tysh_stylerun_runstyle_value(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    size_t *pstyle_index)
+{
+    double parsed;
+    size_t style_index;
+
+    parsed = 0.0;
+    style_index = 0u;
+    if (data == NULL || pcursor == NULL || pstyle_index == NULL) {
+        return 0;
+    }
+    if (!sixel_builtin_psd_parse_ascii_float(data,
+                                             data_length,
+                                             pcursor,
+                                             &parsed)) {
+        return 0;
+    }
+    if (parsed != parsed ||
+        parsed < 0.0 ||
+        parsed > (double)SIZE_MAX) {
+        return 0;
+    }
+    style_index = (size_t)parsed;
+    if ((double)style_index != parsed) {
+        return 0;
+    }
+    *pstyle_index = style_index;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_stylerun_runarray_runstyle_index(
+    unsigned char const *data,
+    size_t begin,
+    size_t end,
+    size_t target_index,
+    size_t *pstyle_index)
+{
+    static char const token[] = "/RunArray";
+    static char const runstyle_token[] = "/RunStyle";
+    size_t i;
+    size_t j;
+    size_t cursor;
+    size_t array_end;
+    size_t runstyle_cursor;
+    size_t run_index;
+
+    i = 0u;
+    j = 0u;
+    cursor = 0u;
+    array_end = 0u;
+    runstyle_cursor = 0u;
+    run_index = 0u;
+    if (data == NULL || pstyle_index == NULL || begin > end) {
+        return 0;
+    }
+    for (i = begin; i + sizeof(token) - 1u <= end; ++i) {
+        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
+            continue;
+        }
+        cursor = i + sizeof(token) - 1u;
+        while (cursor < end && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor >= end || data[cursor] != (unsigned char)'[') {
+            continue;
+        }
+        if (!sixel_builtin_psd_find_ascii_array_end(data,
+                                                    end,
+                                                    cursor,
+                                                    &array_end) ||
+            array_end <= cursor + 1u) {
+            continue;
+        }
+        run_index = 0u;
+        for (j = cursor + 1u;
+             j + sizeof(runstyle_token) - 1u <= array_end;
+             ++j) {
+            if (memcmp(data + j, runstyle_token, sizeof(runstyle_token) - 1u) != 0) {
+                continue;
+            }
+            runstyle_cursor = j + sizeof(runstyle_token) - 1u;
+            if (!sixel_builtin_psd_parse_tysh_stylerun_runstyle_value(
+                    data,
+                    array_end,
+                    &runstyle_cursor,
+                    pstyle_index)) {
+                continue;
+            }
+            if (run_index == target_index) {
+                return 1;
+            }
+            ++run_index;
+            j = runstyle_cursor;
+        }
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
     unsigned char const *data,
     size_t begin,
@@ -5143,11 +5246,13 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
     size_t cursor;
     size_t dict_end;
     size_t run_index;
+    size_t style_index;
 
     i = 0u;
     cursor = 0u;
     dict_end = 0u;
     run_index = 0u;
+    style_index = 0u;
     if (data == NULL || layer == NULL || key_length < sizeof(token)) {
         return 0;
     }
@@ -5184,6 +5289,18 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
                 dict_end,
                 run_index,
                 layer) ||
+            (sixel_builtin_psd_parse_tysh_stylerun_runarray_runstyle_index(
+                 data,
+                 cursor + 2u,
+                 dict_end,
+                 run_index,
+                 &style_index) &&
+             sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
+                 data,
+                 0u,
+                 key_length,
+                 style_index,
+                 layer)) ||
             sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
                 data,
                 0u,

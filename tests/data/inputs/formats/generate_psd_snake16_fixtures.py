@@ -794,6 +794,61 @@ def build_tysh_enginedata_fillcolor_stylesheetset_runlength_precedence_payload(
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_stylesheetset_runstyle_precedence_payload(
+    *,
+    top_level_rgb: tuple[int, int, int],
+    first_stylesheet_rgb: tuple[int, int, int],
+    second_stylesheet_rgb: tuple[int, int, int],
+    first_run_length: int,
+    second_run_length: int,
+    first_run_style_index: int,
+    second_run_style_index: int,
+) -> bytes:
+    top_r = float(max(0, min(255, top_level_rgb[0]))) / 255.0
+    top_g = float(max(0, min(255, top_level_rgb[1]))) / 255.0
+    top_b = float(max(0, min(255, top_level_rgb[2]))) / 255.0
+    first_r = float(max(0, min(255, first_stylesheet_rgb[0]))) / 255.0
+    first_g = float(max(0, min(255, first_stylesheet_rgb[1]))) / 255.0
+    first_b = float(max(0, min(255, first_stylesheet_rgb[2]))) / 255.0
+    second_r = float(max(0, min(255, second_stylesheet_rgb[0]))) / 255.0
+    second_g = float(max(0, min(255, second_stylesheet_rgb[1]))) / 255.0
+    second_b = float(max(0, min(255, second_stylesheet_rgb[2]))) / 255.0
+    run0 = max(1, int(first_run_length))
+    run1 = max(1, int(second_run_length))
+    runstyle0 = max(0, int(first_run_style_index))
+    runstyle1 = max(0, int(second_run_style_index))
+
+    # Keep /RunLengthArray winner selection, but route the selected run through
+    # /RunStyle index resolution against /StyleSheetSet entries.
+    engine_data = (
+        "/EngineData << "
+        f"/FillColor [{top_r:.6f} {top_g:.6f} {top_b:.6f}] "
+        "/StyleRun << "
+        f"/RunLengthArray [{run0} {run1}] "
+        "/RunArray [ "
+        f"<< /RunStyle {runstyle0} >> "
+        f"<< /RunStyle {runstyle1} >> "
+        "] "
+        "/StyleSheetSet [ "
+        "<< /StyleSheetData << "
+        f"/FillColor [{first_r:.6f} {first_g:.6f} {first_b:.6f}] "
+        ">> >> "
+        "<< /StyleSheetData << "
+        f"/FillColor [{second_r:.6f} {second_g:.6f} {second_b:.6f}] "
+        ">> >> "
+        "] "
+        ">> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_dual_scope_stylesheet_array_color_values_precedence_payload(
     *,
     top_level_rgb: tuple[int, int, int],
@@ -10196,6 +10251,25 @@ def generate(out_dir: pathlib.Path):
                         first_layer_has_pixels=False,
                     ),
                 )
+                write_file(
+                    out_dir / f"{base_name}_stylesheetset_runstyle_precedence.psd",
+                    build_cmyk_multilayer_nonpixel_fixture(
+                        color_mode=color_mode,
+                        depth=depth_value,
+                        base_planes=base_planes,
+                        additional_block_key=b"TySh",
+                        additional_block_payload=build_tysh_enginedata_fillcolor_stylesheetset_runstyle_precedence_payload(
+                            top_level_rgb=(32, 64, 255),
+                            first_stylesheet_rgb=(32, 64, 255),
+                            second_stylesheet_rgb=(255, 48, 64),
+                            first_run_length=20,
+                            second_run_length=1,
+                            first_run_style_index=1,
+                            second_run_style_index=0,
+                        ),
+                        first_layer_has_pixels=False,
+                    ),
+                )
             write_file(
                 out_dir / f"{base_name}_dual_scope_nested_values_precedence.psd",
                 build_cmyk_multilayer_nonpixel_fixture(
@@ -10264,6 +10338,46 @@ def generate(out_dir: pathlib.Path):
                 second_stylesheet_rgb=(32, 64, 255),
                 first_run_length=20,
                 second_run_length=1,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_precedence.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=16,
+            base_planes=cmyk16_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheetset_runstyle_precedence_payload(
+                top_level_rgb=(32, 64, 255),
+                first_stylesheet_rgb=(32, 64, 255),
+                second_stylesheet_rgb=(255, 48, 64),
+                first_run_length=20,
+                second_run_length=1,
+                first_run_style_index=1,
+                second_run_style_index=0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_precedence.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=32,
+            base_planes=cmyk32_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheetset_runstyle_precedence_payload(
+                top_level_rgb=(32, 64, 255),
+                first_stylesheet_rgb=(32, 64, 255),
+                second_stylesheet_rgb=(255, 48, 64),
+                first_run_length=20,
+                second_run_length=1,
+                first_run_style_index=1,
+                second_run_style_index=0,
             ),
             first_layer_has_pixels=False,
         ),
