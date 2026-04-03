@@ -7,6 +7,10 @@ test "${HAVE_LIBCURL-}" = 1 || test "${HAVE_WINHTTP-}" = 1 || test "${HAVE_LIBFE
     printf "1..0 # SKIP network backend support is disabled in this build\n"
     exit 0
 }
+test "${HAVE_LIBFETCH-}" = 1 && test "${HAVE_EMSCRIPTEN_H-}" = 1 && {
+    printf "1..0 # SKIP emscripten fetch backend has different HTTPS diagnostics\n"
+    exit 0
+}
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
@@ -35,7 +39,7 @@ test "${command_status}" -ne 0 || {
 # - libcurl may fail at setopt/perform stages depending on URL parsing.
 # Keep the check broad enough to accept backend-consistent failures.
 case "${capture_output}" in
-    *"curl_easy_"*|*"WinHttp"*|*"fetchGetURL()"*|*"runtime error: unable"*) ;;
+    *"curl_easy_"*|*"WinHttp"*|*"fetchGetURL()"*|*"emscripten_fetch()"*|*"runtime error: unable"*) ;;
     *)
         echo "not ok" 1 - "missing formatted network failure message"
         printf '%s\n' '--- stderr ---' >&2

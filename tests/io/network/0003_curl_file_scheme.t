@@ -7,6 +7,10 @@ test "${HAVE_LIBCURL-}" = 1 || test "${HAVE_LIBFETCH-}" = 1 || {
     printf "1..0 # SKIP libcurl/libfetch support is disabled in this build\n"
     exit 0
 }
+test "${HAVE_LIBFETCH-}" = 1 && test "${HAVE_EMSCRIPTEN_H-}" = 1 && {
+    printf "1..0 # SKIP emscripten fetch backend does not support file://\n"
+    exit 0
+}
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
