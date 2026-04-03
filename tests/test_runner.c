@@ -32,6 +32,8 @@ int test_filter_0008_filter_load(int argc, char **argv);
 int test_filter_0009_filter_dither(int argc, char **argv);
 int test_filter_0010_filter_encode(int argc, char **argv);
 
+int test_icc_0001_icc_parse_profile_paths(int argc, char **argv);
+
 int test_probe_0001_probe_parse(int argc, char **argv);
 
 int test_palette_0001_kmeans_init(int argc, char **argv);
@@ -141,6 +143,8 @@ static test_entry_t const test_entries[] = {
     { "filter/0008_filter_load", test_filter_0008_filter_load },
     { "filter/0009_filter_dither", test_filter_0009_filter_dither },
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },
+    { "icc/0001_icc_parse_profile_paths",
+      test_icc_0001_icc_parse_profile_paths },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },
     { "cli/0029_cli_token_is_known_option",
