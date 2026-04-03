@@ -3819,6 +3819,48 @@ sixel_builtin_psd_find_ascii_dict_end(
 }
 
 static int
+sixel_builtin_psd_find_ascii_array_end(
+    unsigned char const *data,
+    size_t data_length,
+    size_t array_begin,
+    size_t *parray_end)
+{
+    size_t cursor;
+    unsigned int depth;
+
+    cursor = 0u;
+    depth = 0u;
+    if (data == NULL || parray_end == NULL ||
+        array_begin >= data_length ||
+        data[array_begin] != (unsigned char)'[') {
+        return 0;
+    }
+    cursor = array_begin + 1u;
+    depth = 1u;
+    while (cursor < data_length) {
+        if (data[cursor] == (unsigned char)'[') {
+            ++depth;
+            ++cursor;
+            continue;
+        }
+        if (data[cursor] == (unsigned char)']') {
+            if (depth == 0u) {
+                return 0;
+            }
+            --depth;
+            if (depth == 0u) {
+                *parray_end = cursor;
+                return 1;
+            }
+            ++cursor;
+            continue;
+        }
+        ++cursor;
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_apply_tysh_fillcolor_engine_lab(
     sixel_builtin_psd_layer_record_t *layer,
     double lab_l,
@@ -4816,11 +4858,13 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
     size_t i;
     size_t cursor;
     size_t dict_end;
+    size_t array_end;
     int found;
 
     i = 0u;
     cursor = 0u;
     dict_end = 0u;
+    array_end = 0u;
     found = 0;
     if (data == NULL || layer == NULL || key_length < sizeof(token)) {
         return 0;
@@ -4833,37 +4877,61 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
         while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
             ++cursor;
         }
-        if (cursor + 1u >= key_length ||
-            data[cursor] != (unsigned char)'<' ||
-            data[cursor + 1u] != (unsigned char)'<') {
+        if (cursor + 1u < key_length &&
+            data[cursor] == (unsigned char)'<' &&
+            data[cursor + 1u] == (unsigned char)'<') {
+            if (!sixel_builtin_psd_find_ascii_dict_end(data,
+                                                       key_length,
+                                                       cursor,
+                                                       &dict_end)) {
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor + 2u,
+                    dict_end,
+                    layer)) {
+                found = 1;
+                continue;
+            }
+            /* Some EngineData variants wrap StyleSheetData with additional
+             * structures that can confuse strict dict-bound slicing.
+             * Keep precedence deterministic by retrying from this
+             * StyleSheetData site to the end of EngineData before falling
+             * back to top-level FillColor parsing.
+             */
+            if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor,
+                    key_length,
+                    layer)) {
+                found = 1;
+            }
             continue;
         }
-        if (!sixel_builtin_psd_find_ascii_dict_end(data,
-                                                   key_length,
-                                                   cursor,
-                                                   &dict_end)) {
-            continue;
-        }
-        if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
-                data,
-                cursor + 2u,
-                dict_end,
-                layer)) {
-            found = 1;
-            continue;
-        }
-        /* Some EngineData variants wrap StyleSheetData with additional
-         * structures that can confuse strict dict-bound slicing.
-         * Keep precedence deterministic by retrying from this StyleSheetData
-         * site to the end of EngineData before falling back to top-level
-         * FillColor parsing.
-         */
-        if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
-                data,
-                cursor,
-                key_length,
-                layer)) {
-            found = 1;
+        if (cursor < key_length && data[cursor] == (unsigned char)'[') {
+            if (!sixel_builtin_psd_find_ascii_array_end(data,
+                                                        key_length,
+                                                        cursor,
+                                                        &array_end)) {
+                continue;
+            }
+            if (array_end > cursor &&
+                sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor + 1u,
+                    array_end,
+                    layer)) {
+                found = 1;
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                    data,
+                    cursor,
+                    key_length,
+                    layer)) {
+                found = 1;
+            }
         }
     }
     return found;
