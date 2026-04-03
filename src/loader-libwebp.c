@@ -107,6 +107,8 @@ typedef struct webp_animation_decode_control {
 #endif
 #define WEBP_MAX_OUTPUT_FRAMES    ((size_t)262144u)
 #define WEBP_MAX_ICC_PROFILE_BYTES ((size_t)1048576u)
+#define WEBP_FRAME_CACHE_MAX_BYTES_DEFAULT \
+    ((size_t)(64u * 1024u * 1024u))
 #define WEBP_VP8X_FLAG_ANIMATION  0x02u
 
 enum {
@@ -2212,6 +2214,32 @@ webp_compute_rgba_canvas_bytes(int width,
     return SIXEL_OK;
 }
 
+static int
+webp_can_cache_animation_frames(size_t frame_count,
+                                size_t frame_bytes,
+                                size_t *cache_estimate_bytes)
+{
+    size_t cache_limit_bytes;
+
+    cache_limit_bytes = WEBP_FRAME_CACHE_MAX_BYTES_DEFAULT;
+    if (cache_estimate_bytes != NULL) {
+        *cache_estimate_bytes = 0u;
+    }
+    if (frame_count == 0u || frame_bytes == 0u) {
+        return 0;
+    }
+    if (frame_bytes > cache_limit_bytes) {
+        return 0;
+    }
+    if (frame_count > cache_limit_bytes / frame_bytes) {
+        return 0;
+    }
+    if (cache_estimate_bytes != NULL) {
+        *cache_estimate_bytes = frame_count * frame_bytes;
+    }
+    return 1;
+}
+
 static void
 webp_set_get_features_error_message(VP8StatusCode feature_status)
 {
@@ -3143,15 +3171,21 @@ static SIXELSTATUS
 webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                                           WebPAnimInfo const *anim_info,
                                           webp_decode_common_t const *decode,
-                                          webp_animation_decode_control_t const *control,
+                                          webp_animation_decode_control_t const
+                                          *control,
                                           unsigned char *resolved_bgcolor)
 {
     SIXELSTATUS status;
     sixel_chunk_t const *chunk;
     sixel_frame_t *frame;
+    sixel_frame_t **frame_cache;
     unsigned char *pixels;
     uint8_t *decoded_frame;
     size_t frame_bytes;
+    size_t frame_cache_slots;
+    size_t frame_cache_estimate_bytes;
+    size_t frame_cache_index;
+    size_t frame_cache_cleanup_index;
     size_t emitted_total_frames;
     int timestamp;
     int previous_timestamp;
@@ -3161,13 +3195,21 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
     int loop_count;
     int decode_start_frame_no;
     int resolved_start_frame_no;
+    int frame_emit_callback;
+    int replay_from_cache;
     int cms_converted;
 
     status = SIXEL_FALSE;
+    chunk = NULL;
     frame = NULL;
+    frame_cache = NULL;
     pixels = NULL;
     decoded_frame = NULL;
     frame_bytes = 0u;
+    frame_cache_slots = 0u;
+    frame_cache_estimate_bytes = 0u;
+    frame_cache_index = 0u;
+    frame_cache_cleanup_index = 0u;
     emitted_total_frames = 0u;
     timestamp = 0;
     previous_timestamp = 0;
@@ -3177,6 +3219,8 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
     loop_count = 0;
     decode_start_frame_no = 0;
     resolved_start_frame_no = 0;
+    frame_emit_callback = 0;
+    replay_from_cache = 0;
     cms_converted = 0;
 
     if (decoder == NULL || anim_info == NULL ||
@@ -3191,9 +3235,8 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
      *   outer loop : logical animation loop
      *   inner loop : frame traversal inside a single loop
      *
-     * Create a fresh sixel_frame_t for each callback invocation. This keeps
-     * frame state isolated and avoids leaking in-place updates from one frame
-     * into the next frame.
+     * When memory allows, keep finalized frames from the first loop and replay
+     * them on later loops. This avoids decoder reset + full re-decode costs.
      */
     status = webp_compute_rgba_canvas_bytes((int)anim_info->canvas_width,
                                             (int)anim_info->canvas_height,
@@ -3202,13 +3245,32 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
         goto end;
     }
 
-    status = webp_maybe_resolve_animation_start_frame_no(control->start_frame_no_set,
-                                                         control->start_frame_no,
-                                                         anim_info->frame_count,
-                                                         &resolved_start_frame_no);
+    status = webp_maybe_resolve_animation_start_frame_no(
+        control->start_frame_no_set,
+        control->start_frame_no,
+        anim_info->frame_count,
+        &resolved_start_frame_no);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
+    frame_cache_slots = (size_t)anim_info->frame_count;
+    if (webp_can_cache_animation_frames(frame_cache_slots,
+                                        frame_bytes,
+                                        &frame_cache_estimate_bytes)) {
+        frame_cache = (sixel_frame_t **)sixel_allocator_calloc(
+            chunk->allocator,
+            frame_cache_slots,
+            sizeof(*frame_cache));
+    }
+    sixel_trace_topic_message(
+        "webp_decode",
+        "animation replay cache frames=%lu frame_bytes=%lu estimate=%lu "
+        "enabled=%d",
+        (unsigned long)frame_cache_slots,
+        (unsigned long)frame_bytes,
+        (unsigned long)frame_cache_estimate_bytes,
+        frame_cache != NULL ? 1 : 0);
 
     for (;;) {
         decode_start_frame_no = 0;
@@ -3219,93 +3281,157 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
         frame_no = 0;
         emitted_frame_no = 0;
         previous_timestamp = 0;
-
-        while (webp_loader_libwebp_AnimDecoderHasMoreFrames(decoder)) {
-            if (!webp_loader_libwebp_AnimDecoderGetNext(decoder,
-                                                        &decoded_frame,
-                                                        &timestamp)) {
-                sixel_helper_set_additional_message(
-                    "load_with_libwebp: WebPAnimDecoderGetNext failed.");
-                status = SIXEL_WEBP_ERROR;
-                goto end;
+        replay_from_cache = 0;
+        if (frame_cache != NULL && loop_count > 0) {
+            replay_from_cache = 1;
+            for (frame_cache_index = 0u;
+                 frame_cache_index < frame_cache_slots;
+                 ++frame_cache_index) {
+                if (frame_cache[frame_cache_index] == NULL) {
+                    replay_from_cache = 0;
+                    break;
+                }
             }
+        }
 
-            if (frame_no < decode_start_frame_no) {
+        if (replay_from_cache != 0) {
+            for (frame_no = 0; frame_no < (int)frame_cache_slots; ++frame_no) {
+                if (emitted_total_frames >= control->max_output_frames) {
+                    sixel_helper_set_additional_message(
+                        "load_with_libwebp: emitted frame count exceeds "
+                        "safety limit.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                frame = frame_cache[(size_t)frame_no];
+                frame->multiframe = 1;
+                frame->loop_count = loop_count;
+                frame->frame_no = emitted_frame_no;
+
+                status = decode->fn_load(frame, decode->context);
+                if (status == SIXEL_INTERRUPTED) {
+                    goto end;
+                }
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                emitted_total_frames++;
+                emitted_frame_no++;
+            }
+        } else {
+            while (webp_loader_libwebp_AnimDecoderHasMoreFrames(decoder)) {
+                if (!webp_loader_libwebp_AnimDecoderGetNext(decoder,
+                                                            &decoded_frame,
+                                                            &timestamp)) {
+                    sixel_helper_set_additional_message(
+                        "load_with_libwebp: WebPAnimDecoderGetNext failed.");
+                    status = SIXEL_WEBP_ERROR;
+                    goto end;
+                }
+
+                frame_emit_callback = 1;
+                if (frame_no < decode_start_frame_no) {
+                    frame_emit_callback = 0;
+                }
+                if (frame_emit_callback != 0 &&
+                    emitted_total_frames >= control->max_output_frames) {
+                    sixel_helper_set_additional_message(
+                        "load_with_libwebp: emitted frame count exceeds "
+                        "safety limit.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+
+                if (frame_emit_callback == 0 &&
+                    (frame_cache == NULL || loop_count != 0)) {
+                    previous_timestamp = timestamp;
+                    frame_no++;
+                    continue;
+                }
+
+                status = sixel_frame_new(&frame, chunk->allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+
+                status = webp_clone_decoder_canvas_pixels(
+                    &pixels,
+                    decoded_frame,
+                    frame_bytes,
+                    (int)anim_info->canvas_width,
+                    (int)anim_info->canvas_height,
+                    decode->enable_cms,
+                    decode->icc_profile,
+                    decode->icc_profile_length,
+                    chunk->allocator,
+                    &cms_converted);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                sixel_frame_set_pixels(frame, pixels);
+                pixels = NULL;
+
+                next_delay = timestamp - previous_timestamp;
+                if (next_delay < 0) {
+                    next_delay = 0;
+                }
+                webp_assign_rgba_canvas_frame(frame,
+                                              (int)anim_info->canvas_width,
+                                              (int)anim_info->canvas_height,
+                                              1,
+                                              loop_count,
+                                              emitted_frame_no,
+                                              next_delay / 10);
+
+                status = webp_finalize_frame_output(
+                    frame,
+                    decode->enable_cms,
+                    cms_converted,
+                    decode->allow_palette_promotion,
+                    decode->reqcolors,
+                    resolved_bgcolor,
+                    chunk->allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                if (decode->exif_orientation >= 2 &&
+                    decode->exif_orientation <= 8) {
+                    status = loader_frame_apply_orientation(
+                        frame,
+                        decode->exif_orientation);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                }
+                if (frame_emit_callback != 0) {
+                    status = decode->fn_load(frame, decode->context);
+                    if (status == SIXEL_INTERRUPTED) {
+                        goto end;
+                    }
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    emitted_total_frames++;
+                    emitted_frame_no++;
+                }
+                if (frame_cache != NULL && loop_count == 0 &&
+                    (size_t)frame_no < frame_cache_slots) {
+                    frame->handoff_shareable = 1;
+                    frame_cache[(size_t)frame_no] = frame;
+                    frame = NULL;
+                }
+
+                sixel_frame_unref(frame);
+                frame = NULL;
                 previous_timestamp = timestamp;
                 frame_no++;
-                continue;
             }
-
-            if (emitted_total_frames >= control->max_output_frames) {
-                sixel_helper_set_additional_message(
-                    "load_with_libwebp: emitted frame count exceeds safety limit.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-
-            status = sixel_frame_new(&frame, chunk->allocator);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-
-            status = webp_clone_decoder_canvas_pixels(
-                &pixels,
-                decoded_frame,
-                frame_bytes,
-                (int)anim_info->canvas_width,
-                (int)anim_info->canvas_height,
-                decode->enable_cms,
-                decode->icc_profile,
-                decode->icc_profile_length,
-                chunk->allocator,
-                &cms_converted);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            sixel_frame_set_pixels(frame, pixels);
-            pixels = NULL;
-
-            next_delay = timestamp - previous_timestamp;
-            if (next_delay < 0) {
-                next_delay = 0;
-            }
-            webp_assign_rgba_canvas_frame(frame,
-                                          (int)anim_info->canvas_width,
-                                          (int)anim_info->canvas_height,
-                                          1,
-                                          loop_count,
-                                          emitted_frame_no,
-                                          next_delay / 10);
-
-            status = webp_finalize_and_emit_frame(frame,
-                                                  decode->enable_cms,
-                                                  cms_converted,
-                                                  decode->allow_palette_promotion,
-                                                  decode->reqcolors,
-                                                  resolved_bgcolor,
-                                                  decode->exif_orientation,
-                                                  chunk->allocator,
-                                                  decode->fn_load,
-                                                  decode->context);
-            if (status == SIXEL_INTERRUPTED) {
-                goto end;
-            }
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-
-            sixel_frame_unref(frame);
-            frame = NULL;
-
-            emitted_total_frames++;
-            previous_timestamp = timestamp;
-            emitted_frame_no++;
-            frame_no++;
         }
 
         loop_count++;
 
-        if (control->loop_control == SIXEL_LOOP_DISABLE || emitted_frame_no == 1) {
+        if (control->loop_control == SIXEL_LOOP_DISABLE ||
+            emitted_frame_no == 1) {
             break;
         }
         if (control->loop_control == SIXEL_LOOP_AUTO &&
@@ -3314,12 +3440,25 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
             break;
         }
 
-        WebPAnimDecoderReset(decoder);
+        if (replay_from_cache == 0) {
+            WebPAnimDecoderReset(decoder);
+        }
     }
 
     status = SIXEL_OK;
 
 end:
+    if (chunk != NULL && frame_cache != NULL) {
+        for (frame_cache_cleanup_index = 0u;
+             frame_cache_cleanup_index < frame_cache_slots;
+             ++frame_cache_cleanup_index) {
+            sixel_frame_unref(frame_cache[frame_cache_cleanup_index]);
+        }
+        sixel_allocator_free(chunk->allocator, frame_cache);
+    }
+    if (chunk != NULL) {
+        sixel_allocator_free(chunk->allocator, pixels);
+    }
     sixel_frame_unref(frame);
     return status;
 }

@@ -2989,12 +2989,23 @@ typedef struct sixel_apng_frame_control {
     unsigned int blend_op;
 } sixel_apng_frame_control_t;
 
+#define APNG_FRAME_CACHE_MAX_BYTES_DEFAULT \
+    ((size_t)(64u * 1024u * 1024u))
+
 typedef struct sixel_apng_canvas {
     unsigned char *pixels;
     unsigned char *backup;
     int width;
     int height;
 } sixel_apng_canvas_t;
+
+typedef struct sixel_apng_replay_cache {
+    sixel_frame_t **frames;
+    size_t frame_count;
+    size_t frame_capacity;
+    size_t cached_bytes;
+    int enabled;
+} sixel_apng_replay_cache_t;
 
 typedef struct sixel_apng_state {
     unsigned char const *ihdr;
@@ -3599,6 +3610,164 @@ apng_blend_rect(
     }
 }
 
+static int
+apng_replay_cache_measure_frame_bytes(sixel_frame_t const *frame,
+                                      size_t *frame_bytes)
+{
+    int depth_result;
+    size_t depth;
+    size_t pixel_total;
+    size_t pixel_bytes;
+    size_t palette_bytes;
+    size_t mask_bytes;
+    size_t total;
+
+    depth_result = 0;
+    depth = 0u;
+    pixel_total = 0u;
+    pixel_bytes = 0u;
+    palette_bytes = 0u;
+    mask_bytes = 0u;
+    total = 0u;
+    if (frame == NULL || frame_bytes == NULL) {
+        return 0;
+    }
+
+    *frame_bytes = 0u;
+    if (frame->width <= 0 || frame->height <= 0) {
+        return 0;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return 0;
+    }
+
+    depth_result = sixel_helper_compute_depth(frame->pixelformat);
+    if (depth_result <= 0) {
+        return 0;
+    }
+    depth = (size_t)depth_result;
+    pixel_total = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_total > SIZE_MAX / depth) {
+        return 0;
+    }
+    pixel_bytes = pixel_total * depth;
+
+    if (frame->palette != NULL && frame->ncolors > 0) {
+        if (frame->ncolors > SIXEL_PALETTE_MAX ||
+            (size_t)frame->ncolors > SIZE_MAX / 3u) {
+            return 0;
+        }
+        palette_bytes = (size_t)frame->ncolors * 3u;
+    }
+    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
+        mask_bytes = frame->transparent_mask_size;
+    }
+
+    total = pixel_bytes;
+    if (total > SIZE_MAX - palette_bytes) {
+        return 0;
+    }
+    total += palette_bytes;
+    if (total > SIZE_MAX - mask_bytes) {
+        return 0;
+    }
+    total += mask_bytes;
+    *frame_bytes = total;
+    return 1;
+}
+
+static void
+apng_replay_cache_reset(sixel_apng_replay_cache_t *cache,
+                        sixel_allocator_t *allocator)
+{
+    size_t index;
+
+    index = 0u;
+    if (cache == NULL) {
+        return;
+    }
+
+    if (cache->frames != NULL) {
+        for (index = 0u; index < cache->frame_count; ++index) {
+            sixel_frame_unref(cache->frames[index]);
+        }
+        if (allocator != NULL) {
+            sixel_allocator_free(allocator, cache->frames);
+        }
+    }
+    cache->frames = NULL;
+    cache->frame_count = 0u;
+    cache->frame_capacity = 0u;
+    cache->cached_bytes = 0u;
+    cache->enabled = 0;
+}
+
+static int
+apng_replay_cache_prepare(sixel_apng_replay_cache_t *cache,
+                          sixel_allocator_t *allocator,
+                          int frame_capacity_hint)
+{
+    size_t frame_capacity;
+
+    frame_capacity = 0u;
+    if (cache == NULL || allocator == NULL || frame_capacity_hint <= 1) {
+        return 0;
+    }
+    if ((size_t)frame_capacity_hint > SIZE_MAX / sizeof(*cache->frames)) {
+        return 0;
+    }
+
+    frame_capacity = (size_t)frame_capacity_hint;
+    cache->frames = (sixel_frame_t **)sixel_allocator_calloc(
+        allocator,
+        frame_capacity,
+        sizeof(*cache->frames));
+    if (cache->frames == NULL) {
+        return 0;
+    }
+    cache->frame_count = 0u;
+    cache->frame_capacity = frame_capacity;
+    cache->cached_bytes = 0u;
+    cache->enabled = 1;
+    return 1;
+}
+
+static int
+apng_replay_cache_store_frame(sixel_apng_replay_cache_t *cache,
+                              sixel_frame_t *frame,
+                              sixel_allocator_t *allocator)
+{
+    size_t frame_bytes;
+
+    frame_bytes = 0u;
+    if (cache == NULL || frame == NULL || cache->enabled == 0) {
+        return 0;
+    }
+    if (cache->frames == NULL ||
+        cache->frame_capacity == 0u ||
+        cache->frame_count >= cache->frame_capacity) {
+        apng_replay_cache_reset(cache, allocator);
+        return 0;
+    }
+    if (!apng_replay_cache_measure_frame_bytes(frame, &frame_bytes)) {
+        apng_replay_cache_reset(cache, allocator);
+        return 0;
+    }
+    if (frame_bytes > APNG_FRAME_CACHE_MAX_BYTES_DEFAULT ||
+        cache->cached_bytes >
+        APNG_FRAME_CACHE_MAX_BYTES_DEFAULT - frame_bytes) {
+        apng_replay_cache_reset(cache, allocator);
+        return 0;
+    }
+
+    frame->handoff_shareable = 1;
+    sixel_frame_ref(frame);
+    cache->frames[cache->frame_count] = frame;
+    cache->frame_count += 1u;
+    cache->cached_bytes += frame_bytes;
+    return 1;
+}
+
 static SIXELSTATUS
 emit_apng_frame(
     sixel_apng_state_t const      *state,
@@ -3613,6 +3782,7 @@ emit_apng_frame(
     int                            reqcolors,
     int                            fuse_palette,
     sixel_apng_canvas_t           *canvas,
+    sixel_apng_replay_cache_t     *replay_cache,
     sixel_load_image_function      fn_load,
     void                          *callback_context,
     sixel_allocator_t             *allocator)
@@ -3626,16 +3796,26 @@ emit_apng_frame(
     unsigned char *subframe;
     unsigned char *emitted;
     size_t canvas_bytes;
+    int cache_frame;
     unsigned char ihdr_copy[13];
 
+    status = SIXEL_FALSE;
     frame = NULL;
     width = 0;
     height = 0;
     png_data = NULL;
     subframe = NULL;
     emitted = NULL;
+    canvas_bytes = 0u;
+    cache_frame = 0;
     (void)reqcolors;
     (void)fuse_palette;
+
+    if (replay_cache != NULL &&
+        replay_cache->enabled != 0 &&
+        loop_no == 0) {
+        cache_frame = 1;
+    }
 
     if (state->ihdr == NULL || state->ihdr_size != 13) {
         return SIXEL_BAD_INPUT;
@@ -3686,13 +3866,13 @@ emit_apng_frame(
         goto end;
     }
 
-    canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4;
+    canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4u;
     if (control->dispose_op == 2) {
         memcpy(canvas->backup, canvas->pixels, canvas_bytes);
     }
     apng_blend_rect(canvas, control, subframe);
 
-    if (!emit_callback) {
+    if (!emit_callback && !cache_frame) {
         status = SIXEL_OK;
         goto dispose;
     }
@@ -3736,8 +3916,15 @@ emit_apng_frame(
             goto end;
         }
     }
+    if (cache_frame) {
+        (void)apng_replay_cache_store_frame(replay_cache, frame, allocator);
+    }
 
-    status = fn_load(frame, callback_context);
+    if (emit_callback) {
+        status = fn_load(frame, callback_context);
+    } else {
+        status = SIXEL_OK;
+    }
 
 dispose:
 
@@ -3800,6 +3987,10 @@ load_apng_frames(
     size_t canvas_bytes;
     png_uint_32 sequence_no;
     png_uint_32 fd_sequence;
+    sixel_apng_replay_cache_t replay_cache;
+    sixel_frame_t *replay_frame;
+    size_t replay_index;
+    int replay_from_cache;
 
     status = SIXEL_FALSE;
     memset(&state, 0, sizeof(state));
@@ -3828,6 +4019,10 @@ load_apng_frames(
     canvas_bytes = 0;
     sequence_no = 0;
     fd_sequence = 0;
+    memset(&replay_cache, 0, sizeof(replay_cache));
+    replay_frame = NULL;
+    replay_index = 0u;
+    replay_from_cache = 0;
 
     /*
      * APNG parsing starts after the PNG signature. Guard against short
@@ -3855,6 +4050,62 @@ load_apng_frames(
         if (sixel_loader_callback_is_canceled(context)) {
             status = SIXEL_INTERRUPTED;
             goto end;
+        }
+        replay_from_cache = 0;
+        if (loop_no > 0 &&
+            replay_cache.enabled != 0 &&
+            replay_cache.frame_count > 0u &&
+            replay_cache.frame_count == replay_cache.frame_capacity) {
+            replay_from_cache = 1;
+        }
+        if (replay_from_cache != 0) {
+            frames_in_loop = (int)replay_cache.frame_count;
+            emit_frame_no = 0;
+            for (replay_index = 0u;
+                 replay_index < replay_cache.frame_count;
+                 ++replay_index) {
+                if (sixel_loader_callback_is_canceled(context)) {
+                    status = SIXEL_INTERRUPTED;
+                    goto end;
+                }
+                replay_frame = replay_cache.frames[replay_index];
+                if (replay_frame == NULL) {
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                sixel_frame_set_frame_no(replay_frame, emit_frame_no);
+                sixel_frame_set_loop_count(replay_frame, loop_no);
+                sixel_frame_set_multiframe(
+                    replay_frame,
+                    (!fstatic && frames_in_loop > 1));
+                status = fn_load(replay_frame, context);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                ++emit_frame_no;
+            }
+            source_frame_no = frames_in_loop;
+            ++loop_no;
+
+            stop_loop = 0;
+            if (loop_control == SIXEL_LOOP_DISABLE || frames_in_loop == 1) {
+                stop_loop = 1;
+            } else if (loop_control == SIXEL_LOOP_AUTO) {
+                if (num_plays > 0 && loop_no >= num_plays) {
+                    stop_loop = 1;
+                }
+            }
+            if (stop_loop) {
+                apng_decode_trace_message(
+                    "load_apng_frames: stop loop_no=%d frames_in_loop=%d "
+                    "num_plays=%d (cache)",
+                    loop_no,
+                    frames_in_loop,
+                    num_plays);
+                status = SIXEL_OK;
+                goto end;
+            }
+            continue;
         }
 
         memset(&state, 0, sizeof(state));
@@ -3967,6 +4218,14 @@ load_apng_frames(
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
+            if (loop_no == 0 &&
+                fstatic == 0 &&
+                loop_control != SIXEL_LOOP_DISABLE &&
+                replay_cache.frames == NULL) {
+                (void)apng_replay_cache_prepare(&replay_cache,
+                                                pchunk->allocator,
+                                                num_frames);
+            }
             if (loop_no == 0 && start_frame_no != INT_MIN) {
                 status = libpng_resolve_animation_start_frame_no(
                     start_frame_no,
@@ -4007,6 +4266,7 @@ load_apng_frames(
                                          reqcolors,
                                          fuse_palette,
                                          &canvas,
+                                         &replay_cache,
                                          fn_load,
                                          context,
                                          pchunk->allocator);
@@ -4176,6 +4436,7 @@ load_apng_frames(
                                   reqcolors,
                                   fuse_palette,
                                   &canvas,
+                                  &replay_cache,
                                  fn_load,
                                  context,
                                  pchunk->allocator);
@@ -4250,6 +4511,7 @@ end:
     sixel_allocator_free(pchunk->allocator, canvas.backup);
     sixel_allocator_free(pchunk->allocator, state.shared_chunks);
     sixel_allocator_free(pchunk->allocator, (void *)state.chunk_base);
+    apng_replay_cache_reset(&replay_cache, pchunk->allocator);
     if (!saw_animation && status == SIXEL_FALSE) {
         return SIXEL_FALSE;
     }

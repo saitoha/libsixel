@@ -88,6 +88,8 @@ typedef struct
 #define GIF_RGBA_STRIDE 4
 #define GIF_HASH_EMPTY_KEY 0xffffffffU
 #define GIF_HISTORY_BITS_PER_BYTE 8u
+#define GIF_FRAME_CACHE_MAX_BYTES_DEFAULT \
+    ((size_t)(64u * 1024u * 1024u))
 
 static size_t const gif_color_table_bytes[8] = {
     6u, 12u, 24u, 48u, 96u, 192u, 384u, 768u
@@ -132,6 +134,7 @@ typedef struct
    int is_terminated;
    int preserve_transparency;
    int stream_is_multiframe;
+   int stream_frame_count_hint;
    int global_color_table_entries;
    int color_table_entries;
    int dirty_min_x;
@@ -1848,6 +1851,7 @@ typedef struct gif_decode_request {
     void *context;
     int stream_scan_failed;
     int fstatic;
+    struct gif_replay_cache *replay_cache;
 } gif_decode_request_t;
 
 typedef struct gif_decode_progress {
@@ -1856,6 +1860,15 @@ typedef struct gif_decode_progress {
     int stream_terminated;
     int stop_decode;
 } gif_decode_progress_t;
+
+typedef struct gif_replay_cache {
+    sixel_frame_t **frames;
+    size_t frame_count;
+    size_t frame_capacity;
+    size_t cached_bytes;
+    int enabled;
+    sixel_allocator_t *allocator;
+} gif_replay_cache_t;
 
 static SIXELSTATUS
 gif_validate_canvas_requirements(gif_t *g, size_t *pcount_out)
@@ -2008,6 +2021,288 @@ gif_should_stop_after_loop(int loop_control,
         return 1;
     }
     return 0;
+}
+
+static int
+gif_replay_cache_measure_frame_bytes(sixel_frame_t const *frame,
+                                     size_t *frame_bytes)
+{
+    int depth_result;
+    size_t depth;
+    size_t pixel_total;
+    size_t pixel_bytes;
+    size_t palette_bytes;
+    size_t mask_bytes;
+    size_t total;
+
+    depth_result = 0;
+    depth = 0u;
+    pixel_total = 0u;
+    pixel_bytes = 0u;
+    palette_bytes = 0u;
+    mask_bytes = 0u;
+    total = 0u;
+    if (frame == NULL || frame_bytes == NULL) {
+        return 0;
+    }
+
+    *frame_bytes = 0u;
+    if (frame->width <= 0 || frame->height <= 0) {
+        return 0;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return 0;
+    }
+
+    depth_result = sixel_helper_compute_depth(frame->pixelformat);
+    if (depth_result <= 0) {
+        return 0;
+    }
+    depth = (size_t)depth_result;
+    pixel_total = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_total > SIZE_MAX / depth) {
+        return 0;
+    }
+    pixel_bytes = pixel_total * depth;
+    if (frame->palette != NULL && frame->ncolors > 0) {
+        if (frame->ncolors > SIXEL_PALETTE_MAX ||
+            (size_t)frame->ncolors > SIZE_MAX / 3u) {
+            return 0;
+        }
+        palette_bytes = (size_t)frame->ncolors * 3u;
+    }
+    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
+        mask_bytes = frame->transparent_mask_size;
+    }
+
+    total = pixel_bytes;
+    if (total > SIZE_MAX - palette_bytes) {
+        return 0;
+    }
+    total += palette_bytes;
+    if (total > SIZE_MAX - mask_bytes) {
+        return 0;
+    }
+    total += mask_bytes;
+    *frame_bytes = total;
+    return 1;
+}
+
+static SIXELSTATUS
+gif_replay_cache_clone_frame(sixel_frame_t *frame,
+                             sixel_allocator_t *allocator,
+                             sixel_frame_t **frame_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *clone;
+    unsigned char *pixels;
+    unsigned char *palette;
+    unsigned char *mask;
+    int palette_bytes;
+    int depth_result;
+    size_t depth;
+    size_t pixel_total;
+    size_t pixel_bytes;
+    size_t mask_bytes;
+
+    status = SIXEL_BAD_ARGUMENT;
+    clone = NULL;
+    pixels = NULL;
+    palette = NULL;
+    mask = NULL;
+    palette_bytes = 0;
+    depth_result = 0;
+    depth = 0u;
+    pixel_total = 0u;
+    pixel_bytes = 0u;
+    mask_bytes = 0u;
+    if (frame == NULL || allocator == NULL || frame_out == NULL) {
+        return status;
+    }
+
+    *frame_out = NULL;
+    status = sixel_frame_new(&clone, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    clone->width = frame->width;
+    clone->height = frame->height;
+    clone->pixelformat = frame->pixelformat;
+    clone->colorspace = frame->colorspace;
+    clone->ncolors = frame->ncolors;
+    clone->transparent = frame->transparent;
+    clone->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    clone->transparent_mask = NULL;
+    clone->transparent_mask_size = 0u;
+    clone->frame_no = frame->frame_no;
+    clone->loop_count = frame->loop_count;
+    clone->multiframe = frame->multiframe;
+    clone->delay = frame->delay;
+    clone->handoff_shareable = 0;
+
+    if (frame->palette != NULL && frame->ncolors > 0) {
+        if (frame->ncolors > SIXEL_PALETTE_MAX) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        palette_bytes = frame->ncolors * 3;
+        palette = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            (size_t)palette_bytes);
+        if (palette == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+        memcpy(palette, frame->palette, (size_t)palette_bytes);
+        clone->palette = palette;
+    }
+
+    if (frame->width > 0 && frame->height > 0) {
+        depth_result = sixel_helper_compute_depth(frame->pixelformat);
+        if (depth_result <= 0) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        depth = (size_t)depth_result;
+        pixel_total = (size_t)frame->width * (size_t)frame->height;
+        if (pixel_total > SIZE_MAX / depth) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        pixel_bytes = pixel_total * depth;
+        if (pixel_bytes > 0u) {
+            pixels = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                             pixel_bytes);
+            if (pixels == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            memcpy(pixels, sixel_frame_get_pixels(frame), pixel_bytes);
+            clone->pixels.u8ptr = pixels;
+        }
+    }
+    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
+        mask_bytes = frame->transparent_mask_size;
+        mask = (unsigned char *)sixel_allocator_malloc(allocator, mask_bytes);
+        if (mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+        memcpy(mask, frame->transparent_mask, mask_bytes);
+        clone->transparent_mask = mask;
+        clone->transparent_mask_size = mask_bytes;
+    }
+
+    *frame_out = clone;
+    return SIXEL_OK;
+
+error:
+    sixel_frame_unref(clone);
+    return status;
+}
+
+static void
+gif_replay_cache_reset(gif_replay_cache_t *cache)
+{
+    size_t index;
+
+    index = 0u;
+    if (cache == NULL) {
+        return;
+    }
+
+    if (cache->frames != NULL) {
+        for (index = 0u; index < cache->frame_count; ++index) {
+            sixel_frame_unref(cache->frames[index]);
+        }
+        sixel_allocator_free(cache->allocator, cache->frames);
+    }
+    cache->frames = NULL;
+    cache->frame_count = 0u;
+    cache->frame_capacity = 0u;
+    cache->cached_bytes = 0u;
+    cache->enabled = 0;
+    cache->allocator = NULL;
+}
+
+static void
+gif_replay_cache_prepare(gif_replay_cache_t *cache,
+                         sixel_allocator_t *allocator,
+                         int frame_capacity_hint)
+{
+    size_t frame_capacity;
+
+    frame_capacity = 0u;
+    if (cache == NULL || allocator == NULL || frame_capacity_hint <= 1) {
+        return;
+    }
+    if ((size_t)frame_capacity_hint > SIZE_MAX / sizeof(*cache->frames)) {
+        return;
+    }
+
+    frame_capacity = (size_t)frame_capacity_hint;
+    cache->frames = (sixel_frame_t **)sixel_allocator_calloc(
+        allocator,
+        frame_capacity,
+        sizeof(*cache->frames));
+    if (cache->frames == NULL) {
+        return;
+    }
+    cache->frame_count = 0u;
+    cache->frame_capacity = frame_capacity;
+    cache->cached_bytes = 0u;
+    cache->enabled = 1;
+    cache->allocator = allocator;
+}
+
+static int
+gif_replay_cache_store_frame(gif_replay_cache_t *cache,
+                             sixel_frame_t *frame)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *cached_frame;
+    size_t frame_bytes;
+
+    status = SIXEL_FALSE;
+    cached_frame = NULL;
+    frame_bytes = 0u;
+    if (cache == NULL || frame == NULL || cache->enabled == 0) {
+        return 0;
+    }
+    if (cache->frames == NULL ||
+        cache->frame_capacity == 0u ||
+        cache->allocator == NULL) {
+        cache->enabled = 0;
+        return 0;
+    }
+    if (cache->frame_count >= cache->frame_capacity) {
+        gif_replay_cache_reset(cache);
+        return 0;
+    }
+    if (!gif_replay_cache_measure_frame_bytes(frame, &frame_bytes)) {
+        gif_replay_cache_reset(cache);
+        return 0;
+    }
+    if (frame_bytes > GIF_FRAME_CACHE_MAX_BYTES_DEFAULT ||
+        cache->cached_bytes >
+        GIF_FRAME_CACHE_MAX_BYTES_DEFAULT - frame_bytes) {
+        gif_replay_cache_reset(cache);
+        return 0;
+    }
+
+    status = gif_replay_cache_clone_frame(frame,
+                                          cache->allocator,
+                                          &cached_frame);
+    if (SIXEL_FAILED(status)) {
+        gif_replay_cache_reset(cache);
+        return 0;
+    }
+    cached_frame->handoff_shareable = 1;
+    cache->frames[cache->frame_count] = cached_frame;
+    cache->frame_count += 1u;
+    cache->cached_bytes += frame_bytes;
+    return 1;
 }
 
 static SIXELSTATUS
@@ -2239,6 +2534,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
         stream_info.image_count = 1;
     }
     g->stream_is_multiframe = stream_info.image_count > 1 ? 1 : 0;
+    g->stream_frame_count_hint = stream_info.image_count;
     need_multiframe_buffers = (g->stream_is_multiframe != 0 ||
                                (stream_scan_failed != NULL &&
                                 *stream_scan_failed != 0))
@@ -2347,6 +2643,11 @@ gif_decode_one_frame(gif_context_t *s,
     }
 
     loop_no = sixel_frame_get_loop_no(frame);
+    if (request->replay_cache != NULL &&
+        loop_no == 0 &&
+        request->fstatic == 0) {
+        (void)gif_replay_cache_store_frame(request->replay_cache, frame);
+    }
     emit_frame = gif_should_emit_decoded_frame(request->start_frame_no,
                                                loop_no,
                                                progress->decoded_frame_no);
@@ -2417,14 +2718,27 @@ gif_decode_animation_loops(gif_context_t *s,
 {
     SIXELSTATUS status;
     gif_decode_progress_t progress;
+    gif_replay_cache_t *replay_cache;
+    sixel_frame_t *cached_frame;
+    size_t replay_index;
+    int current_loop_no;
+    int stream_loop_count;
+    int replay_active;
     size_t pcount;
 
     status = SIXEL_FALSE;
     memset(&progress, 0, sizeof(progress));
+    replay_cache = NULL;
+    cached_frame = NULL;
+    replay_index = 0u;
+    current_loop_no = 0;
+    stream_loop_count = -1;
+    replay_active = 0;
     pcount = 0u;
     if (s == NULL || g == NULL || frame == NULL || request == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    replay_cache = request->replay_cache;
 
     for (;;) { /* per loop */
         status = gif_prepare_loop_iteration(s,
@@ -2437,9 +2751,43 @@ gif_decode_animation_loops(gif_context_t *s,
             return status;
         }
 
-        status = gif_decode_loop_frames(s, g, frame, request, &progress);
-        if (status != SIXEL_OK) {
-            return status;
+        replay_active = 0;
+        current_loop_no = sixel_frame_get_loop_no(frame);
+        if (replay_cache != NULL &&
+            replay_cache->enabled != 0 &&
+            replay_cache->frame_count > 0u &&
+            current_loop_no > 0) {
+            replay_active = 1;
+        }
+
+        if (replay_active != 0) {
+            g->loop_count = stream_loop_count;
+            progress.decoded_frame_no = (int)replay_cache->frame_count;
+            progress.emitted_frame_no = 0;
+            progress.stream_terminated = 1;
+            progress.stop_decode = 0;
+            for (replay_index = 0u;
+                 replay_index < replay_cache->frame_count;
+                 ++replay_index) {
+                cached_frame = replay_cache->frames[replay_index];
+                if (cached_frame == NULL) {
+                    return SIXEL_RUNTIME_ERROR;
+                }
+                sixel_frame_set_loop_count(cached_frame, current_loop_no);
+                sixel_frame_set_frame_no(cached_frame,
+                                         progress.emitted_frame_no);
+                status = request->fnp.fn(cached_frame, request->context);
+                if (status != SIXEL_OK) {
+                    return status;
+                }
+                progress.emitted_frame_no += 1;
+            }
+        } else {
+            status = gif_decode_loop_frames(s, g, frame, request, &progress);
+            if (status != SIXEL_OK) {
+                return status;
+            }
+            stream_loop_count = g->loop_count;
         }
         if (progress.stop_decode != 0) {
             return SIXEL_OK;
@@ -2473,11 +2821,15 @@ load_gif(
     gif_t *g;
     SIXELSTATUS status;
     sixel_frame_t *frame;
+    gif_replay_cache_t replay_cache;
+    int replay_cache_capacity;
     gif_decode_request_t decode_request;
 
     status = SIXEL_FALSE;
     frame = NULL;
     g = NULL;
+    replay_cache_capacity = 0;
+    memset(&replay_cache, 0, sizeof(replay_cache));
     memset(&decode_request, 0, sizeof(decode_request));
 
     if (buffer == NULL || size <= 0 || fn_load == NULL || allocator == NULL) {
@@ -2492,6 +2844,7 @@ load_gif(
     decode_request.context = context;
     decode_request.stream_scan_failed = 0;
     decode_request.fstatic = fstatic;
+    decode_request.replay_cache = NULL;
 
     status = gif_prepare_decoder_state(buffer,
                                        size,
@@ -2504,6 +2857,21 @@ load_gif(
     if (status != SIXEL_OK) {
         goto end;
     }
+    /*
+     * Replay cache is useful only when multiple loops may re-emit frames.
+     * Keep static decode and single-loop decode on the legacy path.
+     */
+    if (fstatic == 0 &&
+        loop_control != SIXEL_LOOP_DISABLE &&
+        g != NULL) {
+        replay_cache_capacity = g->stream_frame_count_hint;
+        gif_replay_cache_prepare(&replay_cache,
+                                 allocator,
+                                 replay_cache_capacity);
+        if (replay_cache.enabled != 0) {
+            decode_request.replay_cache = &replay_cache;
+        }
+    }
 
     status = gif_decode_animation_loops(&s,
                                         g,
@@ -2512,6 +2880,7 @@ load_gif(
                                         loop_control);
 
 end:
+    gif_replay_cache_reset(&replay_cache);
     gif_destroy_decoder_state(allocator, g, frame);
 
     return status;
