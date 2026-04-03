@@ -663,8 +663,14 @@ def mutate_psb_high_offset_valid(src_name: str,
     print(dst)
 
 
-def generate_high_offset_large_fixtures() -> None:
+def generate_high_offset_over1m_fixtures() -> None:
     scales = (
+        ("large", 0x100000),
+        ("xlarge", 0x200000),
+        ("xxlarge", 0x400000),
+        ("xxxlarge", 0x800000),
+        ("xxxxlarge", 0x1000000),
+        ("xxxxxlarge", 0x2000000),
         ("xxxxxxlarge", 0x4000000),
         ("xxxxxxxlarge", 0x7FF0000),
     )
@@ -714,20 +720,25 @@ def parse_args() -> argparse.Namespace:
         description="Generate PSB fixtures from PSD missing-composite fixtures.",
     )
     parser.add_argument(
-        "--high-offset-large-only",
+        "--high-offset-over1m-only",
         action="store_true",
         help=(
-            "Generate only large high-offset PSB fixtures "
-            "(xxxxxxlarge/xxxxxxxlarge and derived malformed variants)."
+            "Generate only >1MiB high-offset PSB fixtures "
+            "(large..xxxxxxxlarge and derived malformed variants)."
         ),
+    )
+    parser.add_argument(
+        "--high-offset-large-only",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    if args.high_offset_large_only:
-        generate_high_offset_large_fixtures()
+    if args.high_offset_over1m_only or args.high_offset_large_only:
+        generate_high_offset_over1m_fixtures()
         return
 
     # Representative PSB(v2) missing-composite fixtures used by loader tests.

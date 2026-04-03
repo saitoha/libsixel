@@ -16,17 +16,18 @@ if [ ! -f "${generator}" ]; then
     exit 1
 fi
 
-expected_count=44
+expected_count=158
 current_count=0
+webp_padded="${formats_dir}/webp-static-icc-overlimit-padded.webp"
+webp_padded_gz="${webp_padded}.gz"
 for path in \
-    "${formats_dir}"/snake16_psb_*_high_offset_xxxxxxlarge*.psd \
-    "${formats_dir}"/snake16_psb_*_high_offset_xxxxxxxlarge*.psd; do
+    "${formats_dir}"/snake16_psb_*_high_offset_*large*.psd; do
     if [ -f "${path}" ]; then
         current_count=$((current_count + 1))
     fi
 done
 
-if [ "${current_count}" -ge "${expected_count}" ]; then
+if [ "${current_count}" -ge "${expected_count}" ] && [ -f "${webp_padded}" ]; then
     exit 0
 fi
 
@@ -43,4 +44,12 @@ if ! command -v "${python_bin}" >/dev/null 2>&1; then
 fi
 
 printf '%s\n' "prepare-psd-large-fixtures: generating missing large PSB fixtures"
-"${python_bin}" "${generator}" --high-offset-large-only
+"${python_bin}" "${generator}" --high-offset-over1m-only
+
+if [ ! -f "${webp_padded}" ]; then
+    if [ ! -f "${webp_padded_gz}" ]; then
+        printf '%s\n' "error: missing compressed fixture: ${webp_padded_gz}" >&2
+        exit 1
+    fi
+    gzip -dc "${webp_padded_gz}" > "${webp_padded}"
+fi
