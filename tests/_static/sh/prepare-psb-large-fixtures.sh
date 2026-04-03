@@ -2,22 +2,20 @@
 
 set -eu
 
-if [ "$#" -ne 1 ]; then
-    printf '%s\n' "usage: $0 TOP_SRCDIR" >&2
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+    printf '%s\n' "usage: $0 TOP_SRCDIR [TOP_BUILDDIR]" >&2
     exit 2
 fi
 
 top_srcdir=$1
-formats_dir="${top_srcdir}/tests/data/inputs/formats"
-generator="${formats_dir}/generate_psb_missing_composite_fixtures.py"
+top_builddir=${2:-$1}
+src_formats_dir="${top_srcdir}/tests/data/inputs/formats"
+dst_formats_dir="${top_builddir}/tests/data/inputs/formats"
+webp_padded="${dst_formats_dir}/webp-static-icc-overlimit-padded.webp"
+webp_padded_gz="${src_formats_dir}/webp-static-icc-overlimit-padded.webp.gz"
 
-if [ ! -f "${generator}" ]; then
-    printf '%s\n' "error: missing generator: ${generator}" >&2
-    exit 1
-fi
+mkdir -p "${dst_formats_dir}"
 
-webp_padded="${formats_dir}/webp-static-icc-overlimit-padded.webp"
-webp_padded_gz="${webp_padded}.gz"
 fixtures_ready=1
 for mode_prefix in cmyk mode7_cmyk; do
     for depth_tag in 16 32; do
@@ -28,10 +26,10 @@ for mode_prefix in cmyk mode7_cmyk; do
             "normal_high_offset_xxlarge_layer_info_end_overrun.psd" \
             "normal_high_offset_xxlarge_channel_window_overrun.psd" \
             "normal_rle_high_offset_xxlarge_rle_payload_window_overrun.psd"; do
-            if [ ! -f "${formats_dir}/${base}_${suffix}" ]; then
+            test -f "${dst_formats_dir}/${base}_${suffix}" || {
                 fixtures_ready=0
                 break 3
-            fi
+            }
         done
     done
 done
@@ -40,25 +38,34 @@ if [ "${fixtures_ready}" -eq 1 ] && [ -f "${webp_padded}" ]; then
     exit 0
 fi
 
-python_bin=${PYTHON:-python3}
-if ! command -v "${python_bin}" >/dev/null 2>&1; then
-    if command -v python3 >/dev/null 2>&1; then
-        python_bin=python3
-    elif command -v python >/dev/null 2>&1; then
-        python_bin=python
-    else
-        printf '%s\n' "error: python interpreter not found (need python3/python)" >&2
-        exit 1
-    fi
-fi
+printf '%s\n' "prepare-psd-large-fixtures: extracting packaged large fixtures"
 
-printf '%s\n' "prepare-psd-large-fixtures: generating missing large PSB fixtures"
-"${python_bin}" "${generator}" --high-offset-over1m-only
+for mode_prefix in cmyk mode7_cmyk; do
+    for depth_tag in 16 32; do
+        base="snake16_psb_${mode_prefix}${depth_tag}_missing_composite_multilayer"
+        for suffix in \
+            "normal_high_offset_xxlarge.psd" \
+            "normal_rle_high_offset_xxlarge.psd" \
+            "normal_high_offset_xxlarge_layer_info_end_overrun.psd" \
+            "normal_high_offset_xxlarge_channel_window_overrun.psd" \
+            "normal_rle_high_offset_xxlarge_rle_payload_window_overrun.psd"; do
+            fixture="${base}_${suffix}"
+            dst_file="${dst_formats_dir}/${fixture}"
+            src_file_gz="${src_formats_dir}/${fixture}.gz"
+            test -f "${dst_file}" && continue
+            test -f "${src_file_gz}" || {
+                printf '%s\n' "error: missing packaged fixture: ${src_file_gz}" >&2
+                exit 1
+            }
+            gzip -dc "${src_file_gz}" > "${dst_file}"
+        done
+    done
+done
 
-if [ ! -f "${webp_padded}" ]; then
-    if [ ! -f "${webp_padded_gz}" ]; then
-        printf '%s\n' "error: missing compressed fixture: ${webp_padded_gz}" >&2
+test -f "${webp_padded}" || {
+    test -f "${webp_padded_gz}" || {
+        printf '%s\n' "error: missing packaged fixture: ${webp_padded_gz}" >&2
         exit 1
-    fi
+    }
     gzip -dc "${webp_padded_gz}" > "${webp_padded}"
-fi
+}

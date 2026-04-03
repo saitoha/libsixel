@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify builtin loader reconstructs PSB mode7(4ch->CMYK)32 multi-layer image at xxlarge high-offset layout.
-# Fixture generation commands:
-#   python3 tests/data/inputs/formats/generate_psb_missing_composite_fixtures.py
+# Fixture is prepared under TOP_BUILDDIR/tests/data/inputs/formats
+# by tests/_static/sh/prepare-psb-large-fixtures.sh
 
 set -eux
 
@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxlarge.psd"
+input_psd="${TOP_BUILDDIR}/tests/data/inputs/formats/snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxlarge.psd"
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_cmyk32_normal_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}

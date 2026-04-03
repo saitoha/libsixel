@@ -113,6 +113,16 @@ run_command(
   check: true,
 )
 
+# Keep large generated fixtures out of the source tree and make Meson test
+# inputs match autotools by materializing them under TOP_BUILDDIR.
+run_command(
+  sh,
+  meson.project_source_root() / 'tests/_static/sh/prepare-psb-large-fixtures.sh',
+  meson.project_source_root(),
+  meson.project_build_root(),
+  check: true,
+)
+
 # Meson sets runtime library lookup via rpath/runpath, so test wrappers must
 # not override PATH/LD_LIBRARY_PATH/DYLD_LIBRARY_PATH in this execution path.
 base_env_settings += [['SIXEL_SHLIBPATH_OVERRIDES_RUNPATH', 'no']]

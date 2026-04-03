@@ -863,7 +863,7 @@ prepare-binding-artifacts:
 prepare-psd-large-fixtures:
 	@set -eu; \
 	"$(SHELL)" "$(abs_top_srcdir)/tests/_static/sh/prepare-psb-large-fixtures.sh" \
-	    "$(abs_top_srcdir)"
+	    "$(abs_top_srcdir)" "$(abs_top_builddir)"
 
 check-python: prepare-binding-artifacts
 	@set -eu; \

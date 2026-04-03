@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-icc-overlimit-padded.webp"
+input_webp="${TOP_BUILDDIR}/tests/data/inputs/formats/webp-static-icc-overlimit-padded.webp"
 out_auto="${ARTIFACT_LOCAL_DIR}/webp-oversized-icc-cms-auto.six"
 out_none="${ARTIFACT_LOCAL_DIR}/webp-oversized-icc-cms-none.six"
 
