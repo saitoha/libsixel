@@ -35,16 +35,13 @@ trace_log=$(
 }
 
 actual_sequence=""
-old_ifs=${IFS}
-IFS='
-'
-set -f
-for line in ${trace_log}; do
-    case "${line}" in
+parse_log="${trace_log}"
+while :; do
+    case "${parse_log}" in
         *"callback frame_no="*"handoff="*)
-            frame_part=${line#*frame_no=}
-            frame_no=${frame_part%% *}
-            loop_part=${line#*loop_no=}
+            callback_part=${parse_log#*callback frame_no=}
+            frame_no=${callback_part%% *}
+            loop_part=${callback_part#*loop_no=}
             loop_no=${loop_part%% *}
             case "${actual_sequence}" in
                 "")
@@ -55,11 +52,13 @@ for line in ${trace_log}; do
 ${loop_no}:${frame_no}"
                     ;;
             esac
+            parse_log=${callback_part#*handoff=}
+            ;;
+        *)
+            break
             ;;
     esac
 done
-set +f
-IFS=${old_ifs}
 
 test "${actual_sequence}" = "${expected_sequence}" || {
     echo "not ok" 1 - "libpng APNG frame_no sequence mismatch"

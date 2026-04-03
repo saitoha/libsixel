@@ -31,23 +31,30 @@ trace_log=$(
 
 actual_sequence=""
 while IFS= read -r line; do
-    case "${line}" in
-        *"callback frame_no="*"handoff="*)
-            frame_part=${line#*frame_no=}
-            frame_no=${frame_part%% *}
-            loop_part=${line#*loop_no=}
-            loop_no=${loop_part%% *}
-            case "${actual_sequence}" in
-                "")
-                    actual_sequence="${loop_no}:${frame_no}"
-                    ;;
-                *)
-                    actual_sequence="${actual_sequence}
+    parse_line="${line}"
+    while :; do
+        case "${parse_line}" in
+            *"callback frame_no="*"handoff="*)
+                callback_part=${parse_line#*callback frame_no=}
+                frame_no=${callback_part%% *}
+                loop_part=${callback_part#*loop_no=}
+                loop_no=${loop_part%% *}
+                case "${actual_sequence}" in
+                    "")
+                        actual_sequence="${loop_no}:${frame_no}"
+                        ;;
+                    *)
+                        actual_sequence="${actual_sequence}
 ${loop_no}:${frame_no}"
-                    ;;
-            esac
-            ;;
-    esac
+                        ;;
+                esac
+                parse_line=${callback_part#*handoff=}
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
 done <<__TRACE_EOF__
 ${trace_log}
 __TRACE_EOF__

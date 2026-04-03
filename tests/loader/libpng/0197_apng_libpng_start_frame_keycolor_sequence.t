@@ -34,12 +34,13 @@ trace_log=$(
 }
 
 actual_sequence=""
-while IFS= read -r line; do
-    case "${line}" in
+parse_log="${trace_log}"
+while :; do
+    case "${parse_log}" in
         *"callback frame_no="*"handoff="*)
-            frame_part=${line#*frame_no=}
-            frame_no=${frame_part%% *}
-            loop_part=${line#*loop_no=}
+            callback_part=${parse_log#*callback frame_no=}
+            frame_no=${callback_part%% *}
+            loop_part=${callback_part#*loop_no=}
             loop_no=${loop_part%% *}
             case "${actual_sequence}" in
                 "")
@@ -50,11 +51,13 @@ while IFS= read -r line; do
 ${loop_no}:${frame_no}"
                     ;;
             esac
+            parse_log=${callback_part#*handoff=}
+            ;;
+        *)
+            break
             ;;
     esac
-done <<__TRACE_EOF__
-${trace_log}
-__TRACE_EOF__
+done
 
 test "${actual_sequence}" = "${expected_sequence}" || {
     echo "not ok 1 - libpng APNG start=1 keycolor sequence mismatch"
