@@ -197,6 +197,9 @@ Key points used by this roadmap:
     `/RunLengthArray + /RunArray` now deterministically select the
     longest-run `StyleSheetData` color before falling back to generic
     `StyleSheetData` precedence.
+  - TySh EngineData `StyleRun` payloads that resolve stylesheet payloads via
+    `/StyleSheetSet` (instead of inline `RunArray` `StyleSheetData`) now
+    follow the same longest-run precedence contract.
   - PSB large-size boundary handling in layer fallback now uses a shared
     layer-info window validator (`8BPB+version=2` and PSD path share
     overflow/overrun gate logic).

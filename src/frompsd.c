@@ -5035,6 +5035,104 @@ sixel_builtin_psd_parse_tysh_stylerun_runarray_index(
 }
 
 static int
+sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
+    unsigned char const *data,
+    size_t begin,
+    size_t end,
+    size_t target_index,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    static char const token[] = "/StyleSheetSet";
+    static char const stylesheet_token[] = "/StyleSheetData";
+    size_t i;
+    size_t j;
+    size_t cursor;
+    size_t array_end;
+    size_t stylesheet_cursor;
+    size_t stylesheet_end;
+    size_t style_index;
+
+    i = 0u;
+    j = 0u;
+    cursor = 0u;
+    array_end = 0u;
+    stylesheet_cursor = 0u;
+    stylesheet_end = 0u;
+    style_index = 0u;
+    if (data == NULL || layer == NULL || begin > end) {
+        return 0;
+    }
+    for (i = begin; i + sizeof(token) - 1u <= end; ++i) {
+        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
+            continue;
+        }
+        cursor = i + sizeof(token) - 1u;
+        while (cursor < end && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor >= end || data[cursor] != (unsigned char)'[') {
+            continue;
+        }
+        if (!sixel_builtin_psd_find_ascii_array_end(data,
+                                                    end,
+                                                    cursor,
+                                                    &array_end) ||
+            array_end <= cursor + 1u) {
+            continue;
+        }
+        style_index = 0u;
+        for (j = cursor + 1u;
+             j + sizeof(stylesheet_token) - 1u <= array_end;
+             ++j) {
+            if (memcmp(data + j, stylesheet_token, sizeof(stylesheet_token) - 1u) != 0) {
+                continue;
+            }
+            stylesheet_cursor = j + sizeof(stylesheet_token) - 1u;
+            while (stylesheet_cursor < array_end &&
+                   sixel_builtin_psd_ascii_is_space(data[stylesheet_cursor])) {
+                ++stylesheet_cursor;
+            }
+            if (stylesheet_cursor + 1u < array_end &&
+                data[stylesheet_cursor] == (unsigned char)'<' &&
+                data[stylesheet_cursor + 1u] == (unsigned char)'<') {
+                if (style_index == target_index &&
+                    sixel_builtin_psd_find_ascii_dict_end(
+                        data,
+                        array_end,
+                        stylesheet_cursor,
+                        &stylesheet_end) &&
+                    stylesheet_end > stylesheet_cursor + 2u &&
+                    sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                        data,
+                        stylesheet_cursor + 2u,
+                        stylesheet_end,
+                        layer)) {
+                    return 1;
+                }
+            } else if (stylesheet_cursor < array_end &&
+                       data[stylesheet_cursor] == (unsigned char)'[') {
+                if (style_index == target_index &&
+                    sixel_builtin_psd_find_ascii_array_end(
+                        data,
+                        array_end,
+                        stylesheet_cursor,
+                        &stylesheet_end) &&
+                    stylesheet_end > stylesheet_cursor + 1u &&
+                    sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
+                        data,
+                        stylesheet_cursor + 1u,
+                        stylesheet_end,
+                        layer)) {
+                    return 1;
+                }
+            }
+            ++style_index;
+        }
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
     unsigned char const *data,
     size_t key_length,
@@ -5084,6 +5182,12 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylerun(
                 data,
                 cursor + 2u,
                 dict_end,
+                run_index,
+                layer) ||
+            sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_index(
+                data,
+                0u,
+                key_length,
                 run_index,
                 layer)) {
             return 1;
