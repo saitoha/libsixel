@@ -1047,6 +1047,10 @@ runs:
           fi
         fi
         if [ "$coverage_captured" -ne 1 ] && command -v gcovr >/dev/null 2>&1; then
+          # Generated rgblookup.h maps lines to rgblookup.gperf via #line.
+          # In some out-of-tree builds the virtual builddir path does not
+          # exist, so exclude that source to prevent gcovr report failures.
+          GCOVR_GPERF_EXCLUDE='.*rgblookup\.gperf$'
           GCOV_TOOL=""
           # Prefer llvm-cov for clang coverage so gcovr can read
           # llvm-generated profiling data correctly.
@@ -1061,14 +1065,17 @@ runs:
             # gcovr may fail to resolve working dirs for a subset of *.gcda.
             # Ignore those errors and fall back to auto gcov selection.
             if ! gcovr -r . --lcov -o coverage.info \
+              --exclude "$GCOVR_GPERF_EXCLUDE" \
               --gcov-executable "$GCOV_TOOL" \
               --gcov-ignore-errors=no_working_dir_found; then
               echo "gcovr with explicit gcov tool failed; retrying with auto gcov selection"
               gcovr -r . --lcov -o coverage.info \
+                --exclude "$GCOVR_GPERF_EXCLUDE" \
                 --gcov-ignore-errors=no_working_dir_found || true
             fi
           else
             gcovr -r . --lcov -o coverage.info \
+              --exclude "$GCOVR_GPERF_EXCLUDE" \
               --gcov-ignore-errors=no_working_dir_found || true
           fi
         elif [ "$coverage_captured" -ne 1 ] && command -v lcov >/dev/null 2>&1; then
@@ -1113,8 +1120,10 @@ runs:
           echo "coverage.info already exists; skipping capture"
           exit 0
         fi
+        GCOVR_GPERF_EXCLUDE='.*rgblookup\.gperf$'
         if command -v gcovr >/dev/null 2>&1; then
-          gcovr -r . --lcov -o coverage.info
+          gcovr -r . --lcov -o coverage.info \
+            --exclude "$GCOVR_GPERF_EXCLUDE"
           cat coverage.info
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
@@ -1127,6 +1136,13 @@ runs:
           head -n40 coverage.info
         else
           echo "No gcovr or lcov found; skipping coverage capture"
+        fi
+        if [ -f coverage.info ]; then
+          # Normalize both POSIX/MSYS and Windows path styles for Coveralls.
+          sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#; s#^SF:${PWD}\\\\builddir\\\\#SF:#; s#^SF:${PWD}\\\\#SF:#; s#^SF:[A-Za-z]:/#SF:#; s#^SF:/#SF:#; s#^SF:\\\\#SF:#" \
+            coverage.info > coverage.info.tmp
+          mv coverage.info.tmp coverage.info
+          head -n40 coverage.info
         fi
 
     - name: Capture coverage (Cygwin)
@@ -1143,6 +1159,7 @@ runs:
           echo "coverage.info already exists; skipping capture"
           exit 0
         fi
+        GCOVR_GPERF_EXCLUDE='.*rgblookup\.gperf$'
         if command -v gcovr >/dev/null 2>&1; then
           GCOV_TOOL=""
           # clang-cl generated coverage needs llvm-cov gcov for format compatibility.
@@ -1154,14 +1171,17 @@ runs:
 
           if [ -n "$GCOV_TOOL" ]; then
             if ! gcovr -r . --lcov -o coverage.info -j 1 \
+              --exclude "$GCOVR_GPERF_EXCLUDE" \
               --gcov-executable "$GCOV_TOOL" \
               --gcov-ignore-errors=no_working_dir_found; then
               echo "gcovr with explicit gcov tool failed; retrying with auto gcov selection"
               gcovr -r . --lcov -o coverage.info -j 1 \
+                --exclude "$GCOVR_GPERF_EXCLUDE" \
                 --gcov-ignore-errors=no_working_dir_found || true
             fi
           else
             gcovr -r . --lcov -o coverage.info -j 1 \
+              --exclude "$GCOVR_GPERF_EXCLUDE" \
               --gcov-ignore-errors=no_working_dir_found || true
           fi
           if [ -f coverage.info ]; then
@@ -1184,14 +1204,17 @@ runs:
 
             if [ -n "$GCOV_TOOL" ]; then
               if ! python3 -m gcovr -r . --lcov -o coverage.info -j 1 \
+                --exclude "$GCOVR_GPERF_EXCLUDE" \
                 --gcov-executable "$GCOV_TOOL" \
                 --gcov-ignore-errors=no_working_dir_found; then
                 echo "python3 -m gcovr with explicit gcov tool failed; retrying with auto gcov selection"
                 python3 -m gcovr -r . --lcov -o coverage.info -j 1 \
+                  --exclude "$GCOVR_GPERF_EXCLUDE" \
                   --gcov-ignore-errors=no_working_dir_found || true
               fi
             else
               python3 -m gcovr -r . --lcov -o coverage.info -j 1 \
+                --exclude "$GCOVR_GPERF_EXCLUDE" \
                 --gcov-ignore-errors=no_working_dir_found || true
             fi
             if [ -f coverage.info ]; then
@@ -1230,6 +1253,13 @@ runs:
           fi
         else
           echo "No gcovr or lcov found; skipping coverage capture"
+        fi
+        if [ -f coverage.info ]; then
+          # Normalize both POSIX/Cygwin and Windows path styles for Coveralls.
+          sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#; s#^SF:${PWD}\\\\builddir\\\\#SF:#; s#^SF:${PWD}\\\\#SF:#; s#^SF:[A-Za-z]:/#SF:#; s#^SF:/#SF:#; s#^SF:\\\\#SF:#" \
+            coverage.info > coverage.info.tmp
+          mv coverage.info.tmp coverage.info
+          head -n40 coverage.info
         fi
 
     - name: Fetch BSD artifacts from VM
