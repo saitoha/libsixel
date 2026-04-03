@@ -267,6 +267,7 @@ meson setup builddir
 | `-Dphp=` | feature, `disabled` | Build the bundled PHP FFI package artifact under `build/php/dist/`. |
 | `-Dperl=` | feature, `disabled` | Enable Perl binding tests. |
 | `-Dfuzz=` | boolean, `false` | Build libFuzzer targets under `fuzz/`. |
+| `-Dfuzz_sanitizers=` | combo, `auto` | Select sanitizer profile for fuzz targets (`auto`, `full`, or `fuzzer`). |
 | `-Dtests=` | boolean, `true` | Build the test suites. |
 | `-Damalgamated_lib=` | boolean, `false` | Build `libsixel` from the amalgamated translation unit. |
 | `-Damalgamated_tools=` | boolean, `false` | Build CLI tools from the amalgamated translation unit. |
