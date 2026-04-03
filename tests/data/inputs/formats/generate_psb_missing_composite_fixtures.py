@@ -1010,6 +1010,7 @@ def main() -> None:
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb_short_payload",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_device_rgb_short_payload",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_stylesheet_color_values_precedence",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_stylesheet_precedence",
                 ]:
                     convert_fixture(
                         f"{src_base}_{suffix}.psd",

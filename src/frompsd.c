@@ -4816,10 +4816,12 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
     size_t i;
     size_t cursor;
     size_t dict_end;
+    int found;
 
     i = 0u;
     cursor = 0u;
     dict_end = 0u;
+    found = 0;
     if (data == NULL || layer == NULL || key_length < sizeof(token)) {
         return 0;
     }
@@ -4847,7 +4849,8 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
                 cursor + 2u,
                 dict_end,
                 layer)) {
-            return 1;
+            found = 1;
+            continue;
         }
         /* Some EngineData variants wrap StyleSheetData with additional
          * structures that can confuse strict dict-bound slicing.
@@ -4860,10 +4863,10 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
                 cursor,
                 key_length,
                 layer)) {
-            return 1;
+            found = 1;
         }
     }
-    return 0;
+    return found;
 }
 
 static int
