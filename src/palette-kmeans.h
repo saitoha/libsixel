@@ -60,6 +60,11 @@ typedef enum sixel_kmeans_softdist_mode {
     SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR = 0,
 } sixel_kmeans_softdist_mode;
 
+typedef enum sixel_kmeans_feedback_mode {
+    SIXEL_PALETTE_KMEANS_FEEDBACK_OFF = 0,
+    SIXEL_PALETTE_KMEANS_FEEDBACK_ON,
+} sixel_kmeans_feedback_mode;
+
 SIXELSTATUS
 sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned char const *data,
@@ -133,6 +138,13 @@ sixel_set_kmeans_autoratio_override(int enabled,
 
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_autoratio(void);
+
+void
+sixel_set_kmeans_feedback_mode_override(int enabled,
+                                        sixel_kmeans_feedback_mode mode);
+
+SIXEL_INTERNAL_API sixel_kmeans_feedback_mode
+sixel_get_kmeans_feedback_mode(void);
 
 SIXELSTATUS
 sixel_kmeans_choose_initial_centroids(double *centers,

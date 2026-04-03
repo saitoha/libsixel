@@ -519,6 +519,11 @@ static sixel_suboption_choice_t const g_option_choices_kmeans_softdist[] = {
     { "trilinear", SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR }
 };
 
+static sixel_suboption_choice_t const g_option_choices_kmeans_feedback[] = {
+    { "off", SIXEL_PALETTE_KMEANS_FEEDBACK_OFF },
+    { "on", SIXEL_PALETTE_KMEANS_FEEDBACK_ON }
+};
+
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     {
         "inittype",
@@ -579,6 +584,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "feedback",
+        "f",
+        "SIXEL_PALETTE_KMEANS_FEEDBACK",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kmeans_feedback,
+        sizeof(g_option_choices_kmeans_feedback)
+        / sizeof(g_option_choices_kmeans_feedback[0])
     }
 };
 
@@ -3631,6 +3645,10 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_autoratio_override(
         encoder->quantize_model_kmeans_autoratio_override,
         encoder->quantize_model_kmeans_autoratio);
+    sixel_set_kmeans_feedback_mode_override(
+        encoder->quantize_model_kmeans_feedback_override,
+        (sixel_kmeans_feedback_mode)
+            encoder->quantize_model_kmeans_feedback_mode);
     status = sixel_dither_initialize(*dither,
                                      palette_pixels,
                                      sixel_frame_get_width(palette_frame),
@@ -3652,6 +3670,9 @@ sixel_encoder_prepare_palette(
         0,
         SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
     sixel_set_kmeans_autoratio_override(0, 32u);
+    sixel_set_kmeans_feedback_mode_override(
+        0,
+        SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -4548,6 +4569,9 @@ sixel_encoder_new(
         = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
     (*ppencoder)->quantize_model_kmeans_autoratio_override = 0;
     (*ppencoder)->quantize_model_kmeans_autoratio = 32u;
+    (*ppencoder)->quantize_model_kmeans_feedback_override = 0;
+    (*ppencoder)->quantize_model_kmeans_feedback_mode
+        = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
@@ -6022,6 +6046,7 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmeans_mapping_override = 0;
         encoder->quantize_model_kmeans_softdist_override = 0;
         encoder->quantize_model_kmeans_autoratio_override = 0;
+        encoder->quantize_model_kmeans_feedback_override = 0;
 
         q_index = 0u;
         while (q_index < q_resolution->assignment_count) {
@@ -6102,6 +6127,17 @@ sixel_encoder_setopt(
                 }
                 encoder->quantize_model_kmeans_autoratio_override = 1;
                 encoder->quantize_model_kmeans_autoratio = q_autoratio;
+            } else if (q_key != NULL && strcmp(q_key, "feedback") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q feedback resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_feedback_override = 1;
+                encoder->quantize_model_kmeans_feedback_mode = match_value;
             }
             ++q_index;
         }

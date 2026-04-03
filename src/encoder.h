@@ -90,6 +90,8 @@ struct sixel_encoder {
     int quantize_model_kmeans_softdist_mode;
     int quantize_model_kmeans_autoratio_override;
     unsigned int quantize_model_kmeans_autoratio;
+    int quantize_model_kmeans_feedback_override;
+    int quantize_model_kmeans_feedback_mode;
     int final_merge_mode;
     int lut_policy;
     int sixel_reversible;

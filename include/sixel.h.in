@@ -410,6 +410,8 @@ typedef int SIXELSTATUS;
                                                       trilinear
                                                     autoratio (or r):
                                                       integer in 1-1048576
+                                                    feedback (or f):
+                                                      off, on
                                                 */
 #define SIXEL_OPTFLAG_FINAL_MERGE       ('F')  /* -F MODE, --final-merge=MODE:
                                                   final merge policy.

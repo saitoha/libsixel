@@ -24,7 +24,7 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
     exit 0
 }
 
-test "${msg#*valid keys*binning*mapping*autoratio*}" != "${msg}" || {
+test "${msg#*valid keys*binning*mapping*autoratio*feedback*}" != "${msg}" || {
     echo "not ok" 1 - "missing histogram key list in unknown key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

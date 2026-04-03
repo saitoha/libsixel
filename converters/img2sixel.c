@@ -247,6 +247,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 :autoratio=RATIO (:r=RATIO)\n"
         "                                   auto mode threshold ratio\n"
         "                                   (1-1048576, default 32).\n"
+        "                                 :feedback=MODE (:f=MODE)\n"
+        "                                   residual histogram feedback:\n"
+        "                                     off|on (default off)\n"
     },
     {
         'F',
@@ -1215,6 +1218,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_KMEANS_AUTORATIO",
         "k-means auto-binning density ratio threshold (1-1048576,\n"
         "default 32)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_FEEDBACK",
+        "k-means residual histogram feedback switch: off or on\n"
+        "(default off)."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

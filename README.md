@@ -490,6 +490,7 @@ Options:
                              mapping (or m)   -> uniform or srgb
                              softdist (or d)  -> trilinear
                              autoratio (or r) -> integer in 1-1048576
+                             feedback (or f)  -> off or on
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colors. Accepts image files and
                            palette files in Adobe Color Table (*.act),

@@ -239,6 +239,10 @@ _quantizemodel() {
                      "${prefix}${key}=32" \
                      "${prefix}${key}=64"
           return 0
+        elif [[ ${key} == f || ${key} == feedback ]]; then
+          compadd -- "${prefix}${key}=off" \
+                     "${prefix}${key}=on"
+          return 0
         fi
       else
         prefix=${current%${segment}}
@@ -248,7 +252,8 @@ _quantizemodel() {
                    "${prefix}n=" "${prefix}binbits=" \
                    "${prefix}m=" "${prefix}mapping=" \
                    "${prefix}d=" "${prefix}softdist=" \
-                   "${prefix}r=" "${prefix}autoratio="
+                   "${prefix}r=" "${prefix}autoratio=" \
+                   "${prefix}f=" "${prefix}feedback="
         return 0
       fi
     fi

@@ -521,6 +521,8 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #            trilinear
                                       #          autoratio (or r):
                                       #            integer in 1-1048576
+                                      #          feedback (or f):
+                                      #            off, on
 SIXEL_OPTFLAG_FINAL_MERGE     = 'F'  # -F MODE, --final-merge=MODE: final merge policy
 
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:

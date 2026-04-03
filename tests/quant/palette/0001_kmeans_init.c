@@ -84,10 +84,23 @@ test_sixel_kmeans_softdist_mode_to_string(sixel_kmeans_softdist_mode mode)
     }
 }
 
+static char const *
+test_sixel_kmeans_feedback_mode_to_string(sixel_kmeans_feedback_mode mode)
+{
+    switch (mode) {
+    case SIXEL_PALETTE_KMEANS_FEEDBACK_ON:
+        return "on";
+    case SIXEL_PALETTE_KMEANS_FEEDBACK_OFF:
+    default:
+        return "off";
+    }
+}
+
 static void
 test_print_kmeans_histogram_settings(void)
 {
-    printf("binning=%s binbits=%u mapping=%s softdist=%s autoratio=%u\n",
+    printf("binning=%s binbits=%u mapping=%s softdist=%s autoratio=%u "
+           "feedback=%s\n",
            test_sixel_kmeans_binning_mode_to_string(
                sixel_get_kmeans_binning_mode()),
            sixel_get_kmeans_binbits(),
@@ -95,7 +108,9 @@ test_print_kmeans_histogram_settings(void)
                sixel_get_kmeans_mapping_mode()),
            test_sixel_kmeans_softdist_mode_to_string(
                sixel_get_kmeans_softdist_mode()),
-           sixel_get_kmeans_autoratio());
+           sixel_get_kmeans_autoratio(),
+           test_sixel_kmeans_feedback_mode_to_string(
+               sixel_get_kmeans_feedback_mode()));
 }
 
 int
@@ -138,6 +153,9 @@ test_palette_0001_kmeans_init(int argc, char **argv)
             1,
             SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
         sixel_set_kmeans_autoratio_override(1, 17u);
+        sixel_set_kmeans_feedback_mode_override(
+            1,
+            SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
         test_print_kmeans_histogram_settings();
 
         return 0;

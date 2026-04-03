@@ -115,6 +115,8 @@ Supported k-means suboptions:
 \fBsoftdist\fP (or short key \fBd\fP): \fBtrilinear\fP.
 .br
 \fBautoratio\fP (or short key \fBr\fP): integer value in 1-1048576.
+.br
+\fBfeedback\fP (or short key \fBf\fP): \fBoff\fP or \fBon\fP.
 .TP 5
 .B \-F \fIMODE\fP, \-\-final\-merge=\fIMODE\fP
 control the post\-merge stage after palette construction. \fIMODE\fP accepts
@@ -1072,6 +1074,10 @@ k-means soft-binning kernel. Currently supports trilinear.
 .B SIXEL_PALETTE_KMEANS_AUTORATIO
 .br
 k-means auto-binning density ratio threshold (1-1048576, default 32).
+.TP 5
+.B SIXEL_PALETTE_KMEANS_FEEDBACK
+.br
+k-means residual histogram feedback switch: off or on (default off).
 .TP 5
 .B SIXEL_PALETTE_LUMIN_FACTOR_R
 .br

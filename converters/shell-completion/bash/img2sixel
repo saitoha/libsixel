@@ -153,6 +153,11 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == f || ${quant_key} == feedback ]]; then
+                    for quant_candidate in off on; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 fi
                 return 0
             fi
@@ -161,7 +166,8 @@ _img2sixel()
             for quant_candidate in \
                 i= inittype= t= threshold= \
                 b= binning= n= binbits= m= mapping= \
-                d= softdist= r= autoratio=; do
+                d= softdist= r= autoratio= \
+                f= feedback=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
