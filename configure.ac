@@ -3325,7 +3325,13 @@ if test x$with_libfetch != xno; then
         if test x$sixel_emscripten_fetch = xyes; then
             have_fetch=yes
             LIBFETCH_CFLAGS=""
-            LIBFETCH_LIBS="-sFETCH=1"
+            LIBFETCH_LIBS=""
+            dnl Ensure -sFETCH=1 reaches final executable link lines even
+            dnl when libsixel is built as a static archive.
+            case " $LDFLAGS " in
+            *" -sFETCH=1 "*) ;;
+            *) LDFLAGS="$LDFLAGS -sFETCH=1" ;;
+            esac
         elif test x$with_libfetch = xyes; then
             AC_MSG_ERROR([-sFETCH=1 is not supported by this emscripten])
         fi
