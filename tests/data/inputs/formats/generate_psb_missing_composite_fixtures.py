@@ -2069,6 +2069,97 @@ def main() -> None:
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxlarge.psd",
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxlarge_rle_payload_window_overrun.psd",
     )
+    # Keep generated files under the default 128 MiB allocator ceiling and
+    # below the chunk grow boundary (next realloc to 256 MiB).
+    # 0x8000000 (+source bytes) would exceed SIXEL_ALLOCATE_BYTES_MAX.
+    mutate_psb_high_offset_valid(
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        padding_bytes=0x7FF0000,
+    )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_layer_info_end_overrun.psd",
+    )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_layer_info_end_overrun.psd",
+    )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_layer_info_end_overrun.psd",
+    )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_layer_info_end_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_channel_window_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_channel_window_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_channel_window_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_xxxxxxxlarge_channel_window_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_cmyk16_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge_rle_payload_window_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge_rle_payload_window_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge_rle_payload_window_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_xxxxxxxlarge_rle_payload_window_overrun.psd",
+    )
     mutate_psb_rle_row_table_too_short(
         "snake16_psb_cmyk8_missing_composite_multilayer_normal_rle.psd",
         "snake16_psb_cmyk8_missing_composite_multilayer_rle_row_table_too_short.psd",
