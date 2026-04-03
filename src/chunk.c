@@ -463,6 +463,13 @@ sixel_chunk_from_file(
 
     for (;;) {
         if (pchunk->max_size - pchunk->size < bucket_size) {
+            if (pchunk->max_size > SIZE_MAX / 2u ||
+                pchunk->max_size > SIXEL_ALLOCATE_BYTES_MAX / 2u) {
+                sixel_helper_set_additional_message(
+                    "sixel_chunk_from_file: input exceeds allocation limit.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
             pchunk->max_size *= 2;
             pchunk->buffer = (unsigned char *)sixel_allocator_realloc(pchunk->allocator,
                                                                       pchunk->buffer,

@@ -18,7 +18,7 @@ trace_log=
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in
-    *"bad allocation error"*|*"sixel_chunk_from_file: sixel_allocator_realloc() failed."*)
+    *"sixel_chunk_from_file: input exceeds allocation limit."*|*"bad allocation error"*)
         echo "ok" 1 - "PSB mode7(4ch->CMYK)16 xxxxxxxlarge over-limit keeps deterministic allocation failure trace"
         ;;
     *)
