@@ -193,6 +193,10 @@ Key points used by this roadmap:
     and `StyleRun/StyleSheetData` `FillColor /Values` paths.
   - TySh EngineData FillColor LSQA density now includes CMYK16/32 representative
     decode+trace coverage for both `mode=4` and `mode7(4ch->CMYK)` paths.
+  - TySh EngineData `StyleRun` payloads that provide
+    `/RunLengthArray + /RunArray` now deterministically select the
+    longest-run `StyleSheetData` color before falling back to generic
+    `StyleSheetData` precedence.
   - PSB large-size boundary handling in layer fallback now uses a shared
     layer-info window validator (`8BPB+version=2` and PSD path share
     overflow/overrun gate logic).
