@@ -200,6 +200,11 @@ Key points used by this roadmap:
   - TySh EngineData `StyleRun` payloads that resolve stylesheet payloads via
     `/StyleSheetSet` (instead of inline `RunArray` `StyleSheetData`) now
     follow the same longest-run precedence contract.
+  - PSB malformed boundary parity for CMYK32 now covers both native
+    `mode=4` and `mode7(4ch->CMYK)` paths with fixed trace contracts for:
+    `layer/mask length`, `layer info length`, `layer channel length`
+    (`overflow`/`UINT64_MAX`), `RLE row table (too short)`, and
+    `RLE row length`.
   - PSB large-size boundary handling in layer fallback now uses a shared
     layer-info window validator (`8BPB+version=2` and PSD path share
     overflow/overrun gate logic).
@@ -352,7 +357,8 @@ Minimum fixture naming convention:
    `FillColor`/`Color` value extraction).
 2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
    large-document parity:
-   - broaden missing-composite matrix/trace coverage to larger layouts, and
+   - after mode4/mode7 CMYK32 malformed-boundary parity, move to larger
+     section-window layouts and high-offset cases, and
    - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
 3. Increase cross-mode visual quality regression density for non-pixel payload

@@ -1129,6 +1129,11 @@ def main() -> None:
         force_rle=True,
     )
     convert_fixture(
+        "snake16_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        force_rle=True,
+    )
+    convert_fixture(
         "snake16_cmyk8_missing_composite_multilayer_normal.psd",
         "snake16_psb_cmyk8_missing_composite_multilayer_normal_rle.psd",
         force_rle=True,
@@ -1165,6 +1170,10 @@ def main() -> None:
         "snake16_psb_cmyk8_missing_composite_multilayer_normal.psd",
         "snake16_psb_cmyk8_missing_composite_multilayer_channel_length_overflow.psd",
     )
+    mutate_psb_channel_length_overflow(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_channel_length_overflow.psd",
+    )
     mutate_psb_layer_mask_length_u64max(
         "snake16_psb_rgb8_missing_composite_multilayer_normal.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_layer_mask_length_u64max.psd",
@@ -1180,6 +1189,14 @@ def main() -> None:
     mutate_psb_layer_info_length_u64max(
         "snake16_psb_cmyk8_missing_composite_multilayer_normal.psd",
         "snake16_psb_cmyk8_missing_composite_multilayer_layer_info_length_u64max.psd",
+    )
+    mutate_psb_layer_mask_length_u64max(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_layer_mask_length_u64max.psd",
+    )
+    mutate_psb_layer_info_length_u64max(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_layer_info_length_u64max.psd",
     )
     mutate_psb_layer_mask_length_u64max(
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_descriptor_gray.psd",
@@ -1208,6 +1225,10 @@ def main() -> None:
     mutate_psb_channel_length_u64max(
         "snake16_psb_cmyk8_missing_composite_multilayer_normal.psd",
         "snake16_psb_cmyk8_missing_composite_multilayer_channel_length_u64max.psd",
+    )
+    mutate_psb_channel_length_u64max(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_channel_length_u64max.psd",
     )
     mutate_psb_rle_row_table_too_short(
         "snake16_psb_rgb8_missing_composite_multilayer_normal_rle.psd",
@@ -1240,6 +1261,14 @@ def main() -> None:
     mutate_psb_rle_row_length_overrun(
         "snake16_psb_cmyk8_missing_composite_multilayer_normal_rle.psd",
         "snake16_psb_cmyk8_missing_composite_multilayer_rle_row_length_overrun.psd",
+    )
+    mutate_psb_rle_row_table_too_short(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_rle_row_table_too_short.psd",
+    )
+    mutate_psb_rle_row_length_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_rle_row_length_overrun.psd",
     )
     mutate_psb_rle_row_table_too_short(
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_normal_rle.psd",
