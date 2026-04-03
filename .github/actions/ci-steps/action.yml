@@ -179,7 +179,16 @@ runs:
       with:
         msystem: ${{ fromJSON(inputs.matrix_json).msystem || '' }}
         #update: true
+        location: ${{ runner.temp }}\msys64-ci-attempt-1
         install: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+
+    - name: Wait before MSYS2 retry (attempt 2)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).msystem != ''
+            && steps.setup_msys2_1.outcome != 'success' }}
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 10
 
     - name: Setup MSYS2 (Windows) (attempt 2)
       id: setup_msys2_2
@@ -191,7 +200,17 @@ runs:
       with:
         msystem: ${{ fromJSON(inputs.matrix_json).msystem || '' }}
         #update: true
+        location: ${{ runner.temp }}\msys64-ci-attempt-2
         install: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+
+    - name: Wait before MSYS2 retry (attempt 3)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).msystem != ''
+            && steps.setup_msys2_1.outcome != 'success'
+            && steps.setup_msys2_2.outcome != 'success' }}
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 30
 
     - name: Setup MSYS2 (Windows) (attempt 3)
       if: >-
@@ -202,6 +221,7 @@ runs:
       with:
         msystem: ${{ fromJSON(inputs.matrix_json).msystem || '' }}
         #update: true
+        location: ${{ runner.temp }}\msys64-ci-attempt-3
         install: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
 
     - name: Create junction to Git for Windows

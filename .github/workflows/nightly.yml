@@ -129,11 +129,20 @@ jobs:
         msystem: ${{ matrix.msystem }}
         release: false
         update: true
+        location: ${{ runner.temp }}\msys64-nightly-mingw-attempt-1
         install: >-
           make
           zip
         pacboy: >-
           cc:p
+
+    - name: Wait before MSYS2 retry (MinGW/UCRT/Clang attempt 2)
+      if: >-
+        runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.msystem != 'MSYS'
+            && steps.setup_msys2_clang_mingw_1.outcome != 'success'
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 10
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang) (attempt 2)
       id: setup_msys2_clang_mingw_2
@@ -146,11 +155,21 @@ jobs:
         msystem: ${{ matrix.msystem }}
         release: false
         update: true
+        location: ${{ runner.temp }}\msys64-nightly-mingw-attempt-2
         install: >-
           make
           zip
         pacboy: >-
           cc:p
+
+    - name: Wait before MSYS2 retry (MinGW/UCRT/Clang attempt 3)
+      if: >-
+        runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.msystem != 'MSYS'
+            && steps.setup_msys2_clang_mingw_1.outcome != 'success'
+            && steps.setup_msys2_clang_mingw_2.outcome != 'success'
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 30
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang) (attempt 3)
       if: >-
@@ -162,6 +181,7 @@ jobs:
         msystem: ${{ matrix.msystem }}
         release: false
         update: true
+        location: ${{ runner.temp }}\msys64-nightly-mingw-attempt-3
         install: >-
           make
           zip
@@ -177,9 +197,18 @@ jobs:
         msystem: ${{ matrix.msystem }}
         release: false
         update: true
+        location: ${{ runner.temp }}\msys64-nightly-msvc-attempt-1
         install: >-
           make
           zip
+
+    - name: Wait before MSYS2 retry (MSVC attempt 2)
+      if: >-
+        runner.os == 'Windows' && matrix.compiler == 'cl'
+            && steps.setup_msys2_msvc_1.outcome != 'success'
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 10
 
     - name: Setup MSYS2 (Windows, MSVC) (attempt 2)
       id: setup_msys2_msvc_2
@@ -192,9 +221,19 @@ jobs:
         msystem: ${{ matrix.msystem }}
         release: false
         update: true
+        location: ${{ runner.temp }}\msys64-nightly-msvc-attempt-2
         install: >-
           make
           zip
+
+    - name: Wait before MSYS2 retry (MSVC attempt 3)
+      if: >-
+        runner.os == 'Windows' && matrix.compiler == 'cl'
+            && steps.setup_msys2_msvc_1.outcome != 'success'
+            && steps.setup_msys2_msvc_2.outcome != 'success'
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 30
 
     - name: Setup MSYS2 (Windows, MSVC) (attempt 3)
       if: >-
@@ -206,6 +245,7 @@ jobs:
         msystem: ${{ matrix.msystem }}
         release: false
         update: true
+        location: ${{ runner.temp }}\msys64-nightly-msvc-attempt-3
         install: >-
           make
           zip
