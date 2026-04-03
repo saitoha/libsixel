@@ -359,6 +359,38 @@ def locate_psb_sections(data: bytes) -> dict[str, int]:
     }
 
 
+def locate_psb_top_sections(data: bytes) -> dict[str, int]:
+    if len(data) < 26 or data[:4] != b"8BPB" or read_u16be(data, 4) != 2:
+        raise RuntimeError("fixture is not PSB version=2")
+
+    off = 26
+    color_mode_length_off = off
+    color_mode_length = read_u32be(data, color_mode_length_off)
+    off += 4 + color_mode_length
+    image_resources_length_off = off
+    image_resources_length = read_u32be(data, image_resources_length_off)
+    off += 4
+    image_resources_data_off = off
+    layer_mask_length_off = image_resources_data_off + image_resources_length
+    if layer_mask_length_off + 8 > len(data):
+        raise RuntimeError("short PSB layer/mask header")
+
+    layer_mask_length = read_u64be(data, layer_mask_length_off)
+    layer_mask_offset = layer_mask_length_off + 8
+    if layer_mask_offset + layer_mask_length > len(data):
+        raise RuntimeError("invalid PSB layer/mask length")
+    return {
+        "color_mode_length_off": color_mode_length_off,
+        "color_mode_length": color_mode_length,
+        "image_resources_length_off": image_resources_length_off,
+        "image_resources_length": image_resources_length,
+        "image_resources_data_off": image_resources_data_off,
+        "layer_mask_length_off": layer_mask_length_off,
+        "layer_mask_length": layer_mask_length,
+        "layer_mask_offset": layer_mask_offset,
+    }
+
+
 def parse_psb_first_channel(data: bytes) -> dict[str, int]:
     sections = locate_psb_sections(data)
     layer_mask_offset = sections["layer_mask_offset"]
@@ -422,10 +454,13 @@ def parse_psb_first_channel(data: bytes) -> dict[str, int]:
 
     if first_channel_length_off < 0 or first_channel_data_offset < 0:
         raise RuntimeError("failed to locate first channel")
+    first_channel_max_length = layer_info_end - first_channel_data_offset
     return {
         "first_channel_length_off": first_channel_length_off,
         "first_channel_length": read_u64be(data, first_channel_length_off),
         "first_channel_data_offset": first_channel_data_offset,
+        "first_channel_max_length": first_channel_max_length,
+        "layer_info_end": layer_info_end,
     }
 
 
@@ -545,6 +580,85 @@ def mutate_psb_rle_row_length_overrun(src_name: str, dst_name: str) -> None:
     first_row_length_off = channel["first_channel_data_offset"] + 2
     write_u32be(data, first_row_length_off, 0x7FFFFFFF)
     dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_layer_info_end_overrun(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    sections = locate_psb_sections(data)
+    write_u64be(
+        data,
+        sections["layer_info_length_off"],
+        sections["layer_mask_length"] + 1,
+    )
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_channel_window_overrun(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    channel = parse_psb_first_channel(data)
+    write_u64be(
+        data,
+        channel["first_channel_length_off"],
+        channel["first_channel_max_length"] + 1,
+    )
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_rle_payload_window_overrun(src_name: str, dst_name: str) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = bytearray(src.read_bytes())
+    channel = parse_psb_first_channel(data)
+    geom = parse_psb_first_layer_geometry(data)
+    if read_u16be(data, channel["first_channel_data_offset"]) != 1:
+        raise RuntimeError("first channel is not RLE payload")
+    height = geom["bottom"] - geom["top"]
+    if height <= 0:
+        raise RuntimeError("invalid layer height")
+    row_table_bytes = height * 4
+    if channel["first_channel_length"] <= 2 + row_table_bytes:
+        raise RuntimeError("RLE payload does not have row data")
+    available_row_payload = channel["first_channel_length"] - 2 - row_table_bytes
+    if available_row_payload >= 0xFFFFFFFF:
+        raise RuntimeError("row payload too large for overflow fixture")
+    first_row_length_off = channel["first_channel_data_offset"] + 2
+    write_u32be(data, first_row_length_off, available_row_payload + 1)
+    dst.write_bytes(bytes(data))
+    print(dst)
+
+
+def mutate_psb_high_offset_valid(src_name: str,
+                                 dst_name: str,
+                                 *,
+                                 padding_bytes: int = 0x20000) -> None:
+    src = HERE / src_name
+    dst = HERE / dst_name
+    data = src.read_bytes()
+    sections = locate_psb_top_sections(data)
+    if padding_bytes <= 0:
+        raise RuntimeError("padding_bytes must be positive")
+    image_resources_length = sections["image_resources_length"]
+    if image_resources_length > 0xFFFFFFFF - padding_bytes:
+        raise RuntimeError("image resources length overflow")
+
+    insert_off = sections["layer_mask_length_off"]
+    out = bytearray()
+    out += data[:insert_off]
+    out += bytes(padding_bytes)
+    out += data[insert_off:]
+    write_u32be(
+        out,
+        sections["image_resources_length_off"],
+        image_resources_length + padding_bytes,
+    )
+    dst.write_bytes(bytes(out))
     print(dst)
 
 
@@ -1230,6 +1344,22 @@ def main() -> None:
         "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
         "snake16_psb_cmyk32_missing_composite_multilayer_channel_length_u64max.psd",
     )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_layer_info_end_overrun.psd",
+    )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_layer_info_end_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_channel_window_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_channel_window_overrun.psd",
+    )
     mutate_psb_rle_row_table_too_short(
         "snake16_psb_rgb8_missing_composite_multilayer_normal_rle.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_rle_row_table_too_short.psd",
@@ -1253,6 +1383,54 @@ def main() -> None:
     mutate_psb_rle_row_length_overrun(
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle.psd",
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_rle_row_length_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_rle_payload_window_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_rle_payload_window_overrun.psd",
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset.psd",
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset.psd",
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset.psd",
+    )
+    mutate_psb_high_offset_valid(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset.psd",
+    )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset_layer_info_end_overrun.psd",
+    )
+    mutate_psb_layer_info_end_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_layer_info_end_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_high_offset_channel_window_overrun.psd",
+    )
+    mutate_psb_channel_window_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_high_offset_channel_window_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset.psd",
+        "snake16_psb_cmyk32_missing_composite_multilayer_normal_rle_high_offset_rle_payload_window_overrun.psd",
+    )
+    mutate_psb_rle_payload_window_overrun(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal_rle_high_offset_rle_payload_window_overrun.psd",
     )
     mutate_psb_rle_row_table_too_short(
         "snake16_psb_cmyk8_missing_composite_multilayer_normal_rle.psd",
