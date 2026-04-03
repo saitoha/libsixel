@@ -2888,6 +2888,15 @@ load_with_coregraphics(
                 }
 
                 if (frame_cache != NULL) {
+                    if (frame_cache_decided[(size_t)frame_index] == 0u &&
+                        frame_cache_used_bytes >= frame_cache_max_bytes) {
+                        /*
+                         * Once cache usage reaches the configured cap, every
+                         * remaining frame must bypass cache. Mark it decided
+                         * early so later loops skip temporary-frame probes.
+                         */
+                        frame_cache_decided[(size_t)frame_index] = 1u;
+                    }
                     if (frame_cache_decided[(size_t)frame_index] == 0u) {
                         status = sixel_frame_new(&cached_frame_tmp,
                                                  pchunk->allocator);
