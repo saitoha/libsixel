@@ -1007,6 +1007,7 @@ def main() -> None:
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_gray",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_cielab",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb_malformed_payload",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_color_values_named_device_rgb_short_payload",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_stylesheet_color_values_precedence",
                 ]:
                     convert_fixture(
