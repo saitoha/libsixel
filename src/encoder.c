@@ -503,6 +503,22 @@ static sixel_suboption_choice_t const g_option_choices_kmeans_init_type[] = {
     { "pca", SIXEL_PALETTE_KMEANS_INIT_PCA }
 };
 
+static sixel_suboption_choice_t const g_option_choices_kmeans_binning[] = {
+    { "auto", SIXEL_PALETTE_KMEANS_BINNING_AUTO },
+    { "none", SIXEL_PALETTE_KMEANS_BINNING_NONE },
+    { "hard", SIXEL_PALETTE_KMEANS_BINNING_HARD },
+    { "soft", SIXEL_PALETTE_KMEANS_BINNING_SOFT }
+};
+
+static sixel_suboption_choice_t const g_option_choices_kmeans_mapping[] = {
+    { "uniform", SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM },
+    { "srgb", SIXEL_PALETTE_KMEANS_MAPPING_SRGB }
+};
+
+static sixel_suboption_choice_t const g_option_choices_kmeans_softdist[] = {
+    { "trilinear", SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR }
+};
+
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     {
         "inittype",
@@ -517,6 +533,49 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
         "threshold",
         "t",
         "SIXEL_PALETTE_KMEANS_THRESHOLD",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "binning",
+        "b",
+        "SIXEL_PALETTE_KMEANS_BINNING",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kmeans_binning,
+        sizeof(g_option_choices_kmeans_binning)
+        / sizeof(g_option_choices_kmeans_binning[0])
+    },
+    {
+        "binbits",
+        "n",
+        "SIXEL_PALETTE_KMEANS_BINBITS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "mapping",
+        "m",
+        "SIXEL_PALETTE_KMEANS_MAPPING",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kmeans_mapping,
+        sizeof(g_option_choices_kmeans_mapping)
+        / sizeof(g_option_choices_kmeans_mapping[0])
+    },
+    {
+        "softdist",
+        "d",
+        "SIXEL_PALETTE_KMEANS_SOFTDIST",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kmeans_softdist,
+        sizeof(g_option_choices_kmeans_softdist)
+        / sizeof(g_option_choices_kmeans_softdist[0])
+    },
+    {
+        "autoratio",
+        "r",
+        "SIXEL_PALETTE_KMEANS_AUTORATIO",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -3554,6 +3613,24 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_threshold_override(
         encoder->quantize_model_kmeans_threshold_override,
         encoder->quantize_model_kmeans_threshold);
+    sixel_set_kmeans_binning_mode_override(
+        encoder->quantize_model_kmeans_binning_override,
+        (sixel_kmeans_binning_mode)
+            encoder->quantize_model_kmeans_binning_mode);
+    sixel_set_kmeans_binbits_override(
+        encoder->quantize_model_kmeans_binbits_override,
+        encoder->quantize_model_kmeans_binbits);
+    sixel_set_kmeans_mapping_mode_override(
+        encoder->quantize_model_kmeans_mapping_override,
+        (sixel_kmeans_mapping_mode)
+            encoder->quantize_model_kmeans_mapping_mode);
+    sixel_set_kmeans_softdist_mode_override(
+        encoder->quantize_model_kmeans_softdist_override,
+        (sixel_kmeans_softdist_mode)
+            encoder->quantize_model_kmeans_softdist_mode);
+    sixel_set_kmeans_autoratio_override(
+        encoder->quantize_model_kmeans_autoratio_override,
+        encoder->quantize_model_kmeans_autoratio);
     status = sixel_dither_initialize(*dither,
                                      palette_pixels,
                                      sixel_frame_get_width(palette_frame),
@@ -3564,6 +3641,17 @@ sixel_encoder_prepare_palette(
                                      encoder->quality_mode);
     sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
     sixel_set_kmeans_threshold_override(0, 0.125);
+    sixel_set_kmeans_binning_mode_override(
+        0,
+        SIXEL_PALETTE_KMEANS_BINNING_AUTO);
+    sixel_set_kmeans_binbits_override(0, 6u);
+    sixel_set_kmeans_mapping_mode_override(
+        0,
+        SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM);
+    sixel_set_kmeans_softdist_mode_override(
+        0,
+        SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
+    sixel_set_kmeans_autoratio_override(0, 32u);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -4447,6 +4535,19 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmeans_init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     (*ppencoder)->quantize_model_kmeans_threshold_override = 0;
     (*ppencoder)->quantize_model_kmeans_threshold = 0.125;
+    (*ppencoder)->quantize_model_kmeans_binning_override = 0;
+    (*ppencoder)->quantize_model_kmeans_binning_mode
+        = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+    (*ppencoder)->quantize_model_kmeans_binbits_override = 0;
+    (*ppencoder)->quantize_model_kmeans_binbits = 6u;
+    (*ppencoder)->quantize_model_kmeans_mapping_override = 0;
+    (*ppencoder)->quantize_model_kmeans_mapping_mode
+        = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
+    (*ppencoder)->quantize_model_kmeans_softdist_override = 0;
+    (*ppencoder)->quantize_model_kmeans_softdist_mode
+        = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
+    (*ppencoder)->quantize_model_kmeans_autoratio_override = 0;
+    (*ppencoder)->quantize_model_kmeans_autoratio = 32u;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
@@ -4969,6 +5070,68 @@ sixel_encoder_parse_quantize_threshold_text(
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_kmeans_binbits_text(
+    char const *text,
+    unsigned int *bits_out)
+{
+    char *endptr;
+    long parsed;
+
+    endptr = NULL;
+    parsed = 0L;
+    if (text == NULL || bits_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno != 0 ||
+            parsed < 4L ||
+            parsed > 8L) {
+        sixel_helper_set_additional_message(
+            "-Q binbits must be in range 4-8.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *bits_out = (unsigned int)parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_kmeans_autoratio_text(
+    char const *text,
+    unsigned int *ratio_out)
+{
+    char *endptr;
+    long parsed;
+
+    endptr = NULL;
+    parsed = 0L;
+    if (text == NULL || ratio_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno != 0 ||
+            parsed < 1L ||
+            parsed > 1048576L) {
+        sixel_helper_set_additional_message(
+            "-Q autoratio must be in range 1-1048576.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *ratio_out = (unsigned int)parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_quantize_model_resolution(
     sixel_option_argument_resolution_t const *resolution)
 {
@@ -4976,13 +5139,21 @@ sixel_encoder_validate_quantize_model_resolution(
     sixel_suboption_assignment_t const *assignment;
     char const *key_name;
     SIXELSTATUS threshold_status;
+    SIXELSTATUS binbits_status;
+    SIXELSTATUS autoratio_status;
     double threshold;
+    unsigned int binbits;
+    unsigned int autoratio;
 
     index = 0u;
     assignment = NULL;
     key_name = NULL;
     threshold_status = SIXEL_OK;
+    binbits_status = SIXEL_OK;
+    autoratio_status = SIXEL_OK;
     threshold = 0.0;
+    binbits = 0u;
+    autoratio = 0u;
     if (resolution == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4996,6 +5167,20 @@ sixel_encoder_validate_quantize_model_resolution(
                 &threshold);
             if (SIXEL_FAILED(threshold_status)) {
                 return threshold_status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "binbits") == 0) {
+            binbits_status = sixel_encoder_parse_kmeans_binbits_text(
+                assignment->resolved_value_text,
+                &binbits);
+            if (SIXEL_FAILED(binbits_status)) {
+                return binbits_status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "autoratio") == 0) {
+            autoratio_status = sixel_encoder_parse_kmeans_autoratio_text(
+                assignment->resolved_value_text,
+                &autoratio);
+            if (SIXEL_FAILED(autoratio_status)) {
+                return autoratio_status;
             }
         }
         ++index;
@@ -5117,6 +5302,8 @@ sixel_encoder_setopt(
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
+    unsigned int q_binbits;
+    unsigned int q_autoratio;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     char match_detail[128];
@@ -5163,6 +5350,8 @@ sixel_encoder_setopt(
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
+    q_binbits = 0u;
+    q_autoratio = 0u;
     q_assignment = NULL;
     q_key = NULL;
 
@@ -5828,6 +6017,11 @@ sixel_encoder_setopt(
         encoder->quantize_model = q_resolution->resolved_base_value;
         encoder->quantize_model_kmeans_init_override = 0;
         encoder->quantize_model_kmeans_threshold_override = 0;
+        encoder->quantize_model_kmeans_binning_override = 0;
+        encoder->quantize_model_kmeans_binbits_override = 0;
+        encoder->quantize_model_kmeans_mapping_override = 0;
+        encoder->quantize_model_kmeans_softdist_override = 0;
+        encoder->quantize_model_kmeans_autoratio_override = 0;
 
         q_index = 0u;
         while (q_index < q_resolution->assignment_count) {
@@ -5855,6 +6049,59 @@ sixel_encoder_setopt(
                 }
                 encoder->quantize_model_kmeans_threshold_override = 1;
                 encoder->quantize_model_kmeans_threshold = q_threshold;
+            } else if (q_key != NULL && strcmp(q_key, "binning") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q binning resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_binning_override = 1;
+                encoder->quantize_model_kmeans_binning_mode = match_value;
+            } else if (q_key != NULL && strcmp(q_key, "binbits") == 0) {
+                status = sixel_encoder_parse_kmeans_binbits_text(
+                    q_assignment->resolved_value_text,
+                    &q_binbits);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_binbits_override = 1;
+                encoder->quantize_model_kmeans_binbits = q_binbits;
+            } else if (q_key != NULL && strcmp(q_key, "mapping") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q mapping resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_mapping_override = 1;
+                encoder->quantize_model_kmeans_mapping_mode = match_value;
+            } else if (q_key != NULL && strcmp(q_key, "softdist") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q softdist resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_softdist_override = 1;
+                encoder->quantize_model_kmeans_softdist_mode = match_value;
+            } else if (q_key != NULL && strcmp(q_key, "autoratio") == 0) {
+                status = sixel_encoder_parse_kmeans_autoratio_text(
+                    q_assignment->resolved_value_text,
+                    &q_autoratio);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_autoratio_override = 1;
+                encoder->quantize_model_kmeans_autoratio = q_autoratio;
             }
             ++q_index;
         }

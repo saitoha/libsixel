@@ -80,6 +80,16 @@ struct sixel_encoder {
     int quantize_model_kmeans_init_type;
     int quantize_model_kmeans_threshold_override;
     double quantize_model_kmeans_threshold;
+    int quantize_model_kmeans_binning_override;
+    int quantize_model_kmeans_binning_mode;
+    int quantize_model_kmeans_binbits_override;
+    unsigned int quantize_model_kmeans_binbits;
+    int quantize_model_kmeans_mapping_override;
+    int quantize_model_kmeans_mapping_mode;
+    int quantize_model_kmeans_softdist_override;
+    int quantize_model_kmeans_softdist_mode;
+    int quantize_model_kmeans_autoratio_override;
+    unsigned int quantize_model_kmeans_autoratio;
     int final_merge_mode;
     int lut_policy;
     int sixel_reversible;

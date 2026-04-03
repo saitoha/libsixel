@@ -44,6 +44,22 @@ typedef enum sixel_kmeans_init_type {
     SIXEL_PALETTE_KMEANS_INIT_PCA,
 } sixel_kmeans_init_type;
 
+typedef enum sixel_kmeans_binning_mode {
+    SIXEL_PALETTE_KMEANS_BINNING_AUTO = 0,
+    SIXEL_PALETTE_KMEANS_BINNING_NONE,
+    SIXEL_PALETTE_KMEANS_BINNING_HARD,
+    SIXEL_PALETTE_KMEANS_BINNING_SOFT,
+} sixel_kmeans_binning_mode;
+
+typedef enum sixel_kmeans_mapping_mode {
+    SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM = 0,
+    SIXEL_PALETTE_KMEANS_MAPPING_SRGB,
+} sixel_kmeans_mapping_mode;
+
+typedef enum sixel_kmeans_softdist_mode {
+    SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR = 0,
+} sixel_kmeans_softdist_mode;
+
 SIXELSTATUS
 sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned char const *data,
@@ -82,6 +98,41 @@ sixel_get_kmeans_init_type(void);
 void
 sixel_set_kmeans_init_type_override(int enabled,
                                     sixel_kmeans_init_type init_type);
+
+void
+sixel_set_kmeans_binning_mode_override(int enabled,
+                                       sixel_kmeans_binning_mode mode);
+
+SIXEL_INTERNAL_API sixel_kmeans_binning_mode
+sixel_get_kmeans_binning_mode(void);
+
+void
+sixel_set_kmeans_binbits_override(int enabled,
+                                  unsigned int bits);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_binbits(void);
+
+void
+sixel_set_kmeans_mapping_mode_override(int enabled,
+                                       sixel_kmeans_mapping_mode mode);
+
+SIXEL_INTERNAL_API sixel_kmeans_mapping_mode
+sixel_get_kmeans_mapping_mode(void);
+
+void
+sixel_set_kmeans_softdist_mode_override(int enabled,
+                                        sixel_kmeans_softdist_mode mode);
+
+SIXEL_INTERNAL_API sixel_kmeans_softdist_mode
+sixel_get_kmeans_softdist_mode(void);
+
+void
+sixel_set_kmeans_autoratio_override(int enabled,
+                                    unsigned int ratio);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_autoratio(void);
 
 SIXELSTATUS
 sixel_kmeans_choose_initial_centroids(double *centers,

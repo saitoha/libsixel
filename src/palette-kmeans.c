@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
@@ -78,6 +79,22 @@
 static SIXEL_TLS int sixel_kmeans_init_type_override_enabled = 0;
 static SIXEL_TLS sixel_kmeans_init_type sixel_kmeans_init_type_override_value
     = SIXEL_PALETTE_KMEANS_INIT_AUTO;
+static SIXEL_TLS int sixel_kmeans_binning_mode_override_enabled = 0;
+static SIXEL_TLS sixel_kmeans_binning_mode
+    sixel_kmeans_binning_mode_override_value
+        = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+static SIXEL_TLS int sixel_kmeans_binbits_override_enabled = 0;
+static SIXEL_TLS unsigned int sixel_kmeans_binbits_override_value = 6u;
+static SIXEL_TLS int sixel_kmeans_mapping_mode_override_enabled = 0;
+static SIXEL_TLS sixel_kmeans_mapping_mode
+    sixel_kmeans_mapping_mode_override_value
+        = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
+static SIXEL_TLS int sixel_kmeans_softdist_mode_override_enabled = 0;
+static SIXEL_TLS sixel_kmeans_softdist_mode
+    sixel_kmeans_softdist_mode_override_value
+        = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
+static SIXEL_TLS int sixel_kmeans_autoratio_override_enabled = 0;
+static SIXEL_TLS unsigned int sixel_kmeans_autoratio_override_value = 32u;
 
 #undef SIXEL_TLS
 
@@ -225,6 +242,262 @@ sixel_get_kmeans_init_type(void)
                  sixel_kmeans_init_type_to_string(resolved));
 
     return resolved;
+}
+
+static sixel_kmeans_binning_mode
+sixel_kmeans_resolve_binning_mode(sixel_kmeans_binning_mode mode)
+{
+    switch (mode) {
+    case SIXEL_PALETTE_KMEANS_BINNING_NONE:
+    case SIXEL_PALETTE_KMEANS_BINNING_HARD:
+    case SIXEL_PALETTE_KMEANS_BINNING_SOFT:
+    case SIXEL_PALETTE_KMEANS_BINNING_AUTO:
+        return mode;
+    default:
+        return SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+    }
+}
+
+void
+sixel_set_kmeans_binning_mode_override(int enabled,
+                                       sixel_kmeans_binning_mode mode)
+{
+    sixel_kmeans_binning_mode_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_binning_mode_override_value
+        = sixel_kmeans_resolve_binning_mode(mode);
+}
+
+SIXEL_INTERNAL_API sixel_kmeans_binning_mode
+sixel_get_kmeans_binning_mode(void)
+{
+    char const *env_value;
+    static int loaded = 0;
+    static sixel_kmeans_binning_mode cached
+        = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+
+    env_value = NULL;
+    if (sixel_kmeans_binning_mode_override_enabled) {
+        return sixel_kmeans_binning_mode_override_value;
+    }
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_BINNING");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (sixel_compat_strcasecmp(env_value, "none") == 0) {
+            cached = SIXEL_PALETTE_KMEANS_BINNING_NONE;
+        } else if (sixel_compat_strcasecmp(env_value, "hard") == 0) {
+            cached = SIXEL_PALETTE_KMEANS_BINNING_HARD;
+        } else if (sixel_compat_strcasecmp(env_value, "soft") == 0) {
+            cached = SIXEL_PALETTE_KMEANS_BINNING_SOFT;
+        } else if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
+            cached = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+        }
+    }
+
+    return cached;
+}
+
+void
+sixel_set_kmeans_binbits_override(int enabled,
+                                  unsigned int bits)
+{
+    sixel_kmeans_binbits_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_binbits_override_value = bits;
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_binbits(void)
+{
+    char const *env_value;
+    char *endptr;
+    long parsed;
+    static int loaded = 0;
+    static unsigned int cached = 6u;
+
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0L;
+    if (sixel_kmeans_binbits_override_enabled) {
+        if (sixel_kmeans_binbits_override_value < 4u) {
+            return 4u;
+        }
+        if (sixel_kmeans_binbits_override_value > 8u) {
+            return 8u;
+        }
+        return sixel_kmeans_binbits_override_value;
+    }
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_BINBITS");
+    if (env_value != NULL && env_value[0] != '\0') {
+        errno = 0;
+        parsed = strtol(env_value, &endptr, 10);
+        if (endptr != env_value && endptr != NULL && endptr[0] == '\0'
+                && errno == 0) {
+            if (parsed < 4L) {
+                parsed = 4L;
+            }
+            if (parsed > 8L) {
+                parsed = 8L;
+            }
+            cached = (unsigned int)parsed;
+        }
+    }
+
+    return cached;
+}
+
+static sixel_kmeans_mapping_mode
+sixel_kmeans_resolve_mapping_mode(sixel_kmeans_mapping_mode mode)
+{
+    switch (mode) {
+    case SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM:
+    case SIXEL_PALETTE_KMEANS_MAPPING_SRGB:
+        return mode;
+    default:
+        return SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
+    }
+}
+
+void
+sixel_set_kmeans_mapping_mode_override(int enabled,
+                                       sixel_kmeans_mapping_mode mode)
+{
+    sixel_kmeans_mapping_mode_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_mapping_mode_override_value
+        = sixel_kmeans_resolve_mapping_mode(mode);
+}
+
+SIXEL_INTERNAL_API sixel_kmeans_mapping_mode
+sixel_get_kmeans_mapping_mode(void)
+{
+    char const *env_value;
+    static int loaded = 0;
+    static sixel_kmeans_mapping_mode cached
+        = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
+
+    env_value = NULL;
+    if (sixel_kmeans_mapping_mode_override_enabled) {
+        return sixel_kmeans_mapping_mode_override_value;
+    }
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_MAPPING");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (sixel_compat_strcasecmp(env_value, "srgb") == 0) {
+            cached = SIXEL_PALETTE_KMEANS_MAPPING_SRGB;
+        } else if (sixel_compat_strcasecmp(env_value, "uniform") == 0) {
+            cached = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
+        }
+    }
+
+    return cached;
+}
+
+static sixel_kmeans_softdist_mode
+sixel_kmeans_resolve_softdist_mode(sixel_kmeans_softdist_mode mode)
+{
+    switch (mode) {
+    case SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR:
+        return mode;
+    default:
+        return SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
+    }
+}
+
+void
+sixel_set_kmeans_softdist_mode_override(int enabled,
+                                        sixel_kmeans_softdist_mode mode)
+{
+    sixel_kmeans_softdist_mode_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_softdist_mode_override_value
+        = sixel_kmeans_resolve_softdist_mode(mode);
+}
+
+SIXEL_INTERNAL_API sixel_kmeans_softdist_mode
+sixel_get_kmeans_softdist_mode(void)
+{
+    char const *env_value;
+    static int loaded = 0;
+    static sixel_kmeans_softdist_mode cached
+        = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
+
+    env_value = NULL;
+    if (sixel_kmeans_softdist_mode_override_enabled) {
+        return sixel_kmeans_softdist_mode_override_value;
+    }
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_SOFTDIST");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (sixel_compat_strcasecmp(env_value, "trilinear") == 0) {
+            cached = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
+        }
+    }
+
+    return cached;
+}
+
+void
+sixel_set_kmeans_autoratio_override(int enabled,
+                                    unsigned int ratio)
+{
+    sixel_kmeans_autoratio_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_autoratio_override_value = ratio;
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_autoratio(void)
+{
+    char const *env_value;
+    char *endptr;
+    long parsed;
+    static int loaded = 0;
+    static unsigned int cached = 32u;
+
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0L;
+    if (sixel_kmeans_autoratio_override_enabled) {
+        if (sixel_kmeans_autoratio_override_value < 1u) {
+            return 1u;
+        }
+        return sixel_kmeans_autoratio_override_value;
+    }
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_AUTORATIO");
+    if (env_value != NULL && env_value[0] != '\0') {
+        errno = 0;
+        parsed = strtol(env_value, &endptr, 10);
+        if (endptr != env_value && endptr != NULL && endptr[0] == '\0'
+                && errno == 0) {
+            if (parsed < 1L) {
+                parsed = 1L;
+            }
+            if (parsed > 1048576L) {
+                parsed = 1048576L;
+            }
+            cached = (unsigned int)parsed;
+        }
+    }
+
+    return cached;
 }
 
 static int
@@ -533,6 +806,7 @@ static SIXELSTATUS
 sixel_kmeans_seed_legacy(double *centers,
                          unsigned int k,
                          double const *samples,
+                         double const *weights,
                          unsigned int sample_count,
                          double *distance_cache)
 {
@@ -541,10 +815,12 @@ sixel_kmeans_seed_legacy(double *centers,
     unsigned int sample_index;
     unsigned int center_index;
     unsigned int replace;
+    unsigned int first_index;
     double total_weight;
     double random_point;
     double distance;
     double diff;
+    double sample_weight;
     unsigned long rand_value;
 
     channel = 0U;
@@ -552,12 +828,42 @@ sixel_kmeans_seed_legacy(double *centers,
     sample_index = 0U;
     center_index = 0U;
     replace = 0U;
+    first_index = 0U;
     total_weight = 0.0;
     random_point = 0.0;
     distance = 0.0;
     diff = 0.0;
+    sample_weight = 1.0;
     rand_value = (unsigned long)rand();
-    replace = (unsigned int)(rand_value % sample_count);
+    replace = 0U;
+    if (weights != NULL) {
+        for (sample_index = 0U; sample_index < sample_count; ++sample_index) {
+            sample_weight = weights[sample_index];
+            if (sample_weight > 0.0) {
+                total_weight += sample_weight;
+            }
+        }
+        if (total_weight > 0.0) {
+            random_point = ((double)rand() / ((double)RAND_MAX + 1.0))
+                * total_weight;
+            first_index = 0U;
+            while (first_index + 1U < sample_count) {
+                sample_weight = weights[first_index];
+                if (sample_weight > 0.0) {
+                    if (random_point <= sample_weight) {
+                        break;
+                    }
+                    random_point -= sample_weight;
+                }
+                ++first_index;
+            }
+            replace = first_index;
+        } else {
+            replace = (unsigned int)(rand_value % sample_count);
+        }
+    } else {
+        replace = (unsigned int)(rand_value % sample_count);
+    }
     for (channel = 0U; channel < 3U; ++channel) {
         centers[channel] = (double)samples[replace * 3U + channel];
     }
@@ -574,7 +880,14 @@ sixel_kmeans_seed_legacy(double *centers,
         total_weight = 0.0;
         for (sample_index = 0U; sample_index < sample_count;
                 ++sample_index) {
-            total_weight += distance_cache[sample_index];
+            sample_weight = 1.0;
+            if (weights != NULL) {
+                sample_weight = weights[sample_index];
+            }
+            if (sample_weight <= 0.0) {
+                continue;
+            }
+            total_weight += distance_cache[sample_index] * sample_weight;
         }
         random_point = 0.0;
         if (total_weight > 0.0) {
@@ -583,8 +896,14 @@ sixel_kmeans_seed_legacy(double *centers,
         }
         sample_index = 0U;
         while (sample_index + 1U < sample_count &&
-               random_point > distance_cache[sample_index]) {
-            random_point -= distance_cache[sample_index];
+               random_point > 0.0) {
+            sample_weight = 1.0;
+            if (weights != NULL) {
+                sample_weight = weights[sample_index];
+            }
+            if (sample_weight > 0.0) {
+                random_point -= distance_cache[sample_index] * sample_weight;
+            }
             ++sample_index;
         }
         for (channel = 0U; channel < 3U; ++channel) {
@@ -663,6 +982,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
     status = sixel_kmeans_seed_legacy(centers,
                                       k,
                                       samples,
+                                      weights,
                                       sample_count,
                                       scratch_distances);
     if (scratch_distances != distance_cache) {
@@ -827,7 +1147,7 @@ sixel_palette_count_unique_within_limit(unsigned char const *data,
 
 static double
 sixel_palette_kmeans_sum_float_to_byte(double component,
-                                       unsigned long sample_total,
+                                       double sample_total,
                                        unsigned int channel,
                                        double const *scale,
                                        double const *offset)
@@ -848,7 +1168,7 @@ sixel_palette_kmeans_sum_float_to_byte(double component,
 
 static double
 sixel_palette_kmeans_sum_byte_to_float(double component,
-                                       unsigned long sample_total,
+                                       double sample_total,
                                        unsigned int channel,
                                        double const *scale,
                                        double const *offset)
@@ -865,6 +1185,632 @@ sixel_palette_kmeans_sum_byte_to_float(double component,
     restored = component - (double)sample_total * offset[channel];
     restored /= scale[channel];
     return restored;
+}
+
+typedef struct sixel_kmeans_bin_entry {
+    uint32_t key;
+    double weight;
+    double sum[3];
+} sixel_kmeans_bin_entry_t;
+
+typedef struct sixel_kmeans_histogram {
+    sixel_kmeans_bin_entry_t *entries;
+    unsigned int capacity;
+    unsigned int mask;
+    unsigned int size;
+    unsigned int binbits;
+    unsigned int bin_count;
+} sixel_kmeans_histogram_t;
+
+static uint32_t
+sixel_kmeans_hash_u32(uint32_t key)
+{
+    key ^= key >> 16;
+    key *= 0x7feb352dU;
+    key ^= key >> 15;
+    key *= 0x846ca68bU;
+    key ^= key >> 16;
+
+    return key;
+}
+
+static unsigned int
+sixel_kmeans_histogram_recommended_capacity(size_t expected)
+{
+    unsigned int capacity;
+    size_t threshold;
+
+    capacity = 8u;
+    threshold = 0u;
+    while (capacity < (1u << 30)) {
+        threshold = (size_t)capacity * 7u / 10u;
+        if (threshold >= expected) {
+            break;
+        }
+        capacity <<= 1u;
+    }
+
+    return capacity;
+}
+
+static SIXELSTATUS
+sixel_kmeans_histogram_init(sixel_kmeans_histogram_t *histogram,
+                            size_t expected_entries,
+                            unsigned int binbits,
+                            sixel_allocator_t *allocator)
+{
+    size_t i;
+    unsigned int capacity;
+
+    i = 0u;
+    capacity = 0u;
+    if (histogram == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (binbits < 4u || binbits > 8u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    histogram->entries = NULL;
+    histogram->capacity = 0u;
+    histogram->mask = 0u;
+    histogram->size = 0u;
+    histogram->binbits = binbits;
+    histogram->bin_count = 1u << binbits;
+
+    capacity = sixel_kmeans_histogram_recommended_capacity(expected_entries);
+    histogram->entries = (sixel_kmeans_bin_entry_t *)sixel_allocator_malloc(
+        allocator, (size_t)capacity * sizeof(sixel_kmeans_bin_entry_t));
+    if (histogram->entries == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (i = 0u; i < (size_t)capacity; ++i) {
+        histogram->entries[i].key = UINT32_MAX;
+        histogram->entries[i].weight = 0.0;
+        histogram->entries[i].sum[0] = 0.0;
+        histogram->entries[i].sum[1] = 0.0;
+        histogram->entries[i].sum[2] = 0.0;
+    }
+    histogram->capacity = capacity;
+    histogram->mask = capacity - 1u;
+
+    return SIXEL_OK;
+}
+
+static void
+sixel_kmeans_histogram_dispose(sixel_kmeans_histogram_t *histogram,
+                               sixel_allocator_t *allocator)
+{
+    if (histogram == NULL || allocator == NULL) {
+        return;
+    }
+    if (histogram->entries != NULL) {
+        sixel_allocator_free(allocator, histogram->entries);
+    }
+    histogram->entries = NULL;
+    histogram->capacity = 0u;
+    histogram->mask = 0u;
+    histogram->size = 0u;
+    histogram->binbits = 0u;
+    histogram->bin_count = 0u;
+}
+
+static SIXELSTATUS
+sixel_kmeans_histogram_grow(sixel_kmeans_histogram_t *histogram,
+                            sixel_allocator_t *allocator)
+{
+    sixel_kmeans_bin_entry_t *grown;
+    unsigned int old_capacity;
+    unsigned int new_capacity;
+    unsigned int old_mask;
+    unsigned int slot;
+    unsigned int probe;
+    unsigned int index;
+
+    grown = NULL;
+    old_capacity = 0u;
+    new_capacity = 0u;
+    old_mask = 0u;
+    slot = 0u;
+    probe = 0u;
+    index = 0u;
+    if (histogram == NULL || allocator == NULL || histogram->entries == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    old_capacity = histogram->capacity;
+    if (old_capacity == 0u || old_capacity >= (1u << 30)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    new_capacity = old_capacity << 1u;
+    old_mask = new_capacity - 1u;
+    grown = (sixel_kmeans_bin_entry_t *)sixel_allocator_malloc(
+        allocator, (size_t)new_capacity * sizeof(sixel_kmeans_bin_entry_t));
+    if (grown == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (index = 0u; index < new_capacity; ++index) {
+        grown[index].key = UINT32_MAX;
+        grown[index].weight = 0.0;
+        grown[index].sum[0] = 0.0;
+        grown[index].sum[1] = 0.0;
+        grown[index].sum[2] = 0.0;
+    }
+
+    for (index = 0u; index < old_capacity; ++index) {
+        if (histogram->entries[index].key == UINT32_MAX) {
+            continue;
+        }
+        slot = sixel_kmeans_hash_u32(histogram->entries[index].key) & old_mask;
+        while (grown[slot].key != UINT32_MAX) {
+            probe = (slot + 1u) & old_mask;
+            slot = probe;
+        }
+        grown[slot] = histogram->entries[index];
+    }
+
+    sixel_allocator_free(allocator, histogram->entries);
+    histogram->entries = grown;
+    histogram->capacity = new_capacity;
+    histogram->mask = old_mask;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kmeans_histogram_add(sixel_kmeans_histogram_t *histogram,
+                           uint32_t key,
+                           double weight,
+                           double const sample[3],
+                           sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    unsigned int slot;
+    unsigned int probe;
+    double *sum;
+
+    status = SIXEL_OK;
+    slot = 0u;
+    probe = 0u;
+    sum = NULL;
+    if (histogram == NULL || histogram->entries == NULL ||
+            sample == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (weight <= 0.0) {
+        return SIXEL_OK;
+    }
+
+    if ((size_t)(histogram->size + 1u) * 10u
+            > (size_t)histogram->capacity * 7u) {
+        status = sixel_kmeans_histogram_grow(histogram, allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    slot = sixel_kmeans_hash_u32(key) & histogram->mask;
+    while (histogram->entries[slot].key != UINT32_MAX
+            && histogram->entries[slot].key != key) {
+        probe = (slot + 1u) & histogram->mask;
+        slot = probe;
+    }
+    if (histogram->entries[slot].key == UINT32_MAX) {
+        histogram->entries[slot].key = key;
+        histogram->entries[slot].weight = 0.0;
+        histogram->entries[slot].sum[0] = 0.0;
+        histogram->entries[slot].sum[1] = 0.0;
+        histogram->entries[slot].sum[2] = 0.0;
+        histogram->size += 1u;
+    }
+    histogram->entries[slot].weight += weight;
+    sum = histogram->entries[slot].sum;
+    sum[0] += sample[0] * weight;
+    sum[1] += sample[1] * weight;
+    sum[2] += sample[2] * weight;
+
+    return SIXEL_OK;
+}
+
+static double
+sixel_kmeans_clamp_unit(double value)
+{
+    if (value < 0.0) {
+        return 0.0;
+    }
+    if (value > 1.0) {
+        return 1.0;
+    }
+    return value;
+}
+
+static double
+sixel_kmeans_srgb_encode(double value)
+{
+    double clamped;
+
+    clamped = sixel_kmeans_clamp_unit(value);
+    if (clamped <= 0.0031308) {
+        return clamped * 12.92;
+    }
+    return 1.055 * pow(clamped, 1.0 / 2.4) - 0.055;
+}
+
+static double
+sixel_kmeans_map_sample_to_unit(double sample,
+                                int input_is_float32,
+                                int pixelformat,
+                                unsigned int channel,
+                                double const *scale,
+                                double const *offset,
+                                sixel_kmeans_mapping_mode mapping_mode)
+{
+    double unit;
+
+    unit = 0.0;
+    if (input_is_float32) {
+        if (scale != NULL && offset != NULL && scale[channel] > 0.0) {
+            unit = sample * scale[channel];
+            unit += offset[channel];
+            unit /= 255.0;
+        }
+    } else {
+        (void)pixelformat;
+        unit = sample / 255.0;
+    }
+    unit = sixel_kmeans_clamp_unit(unit);
+    if (mapping_mode == SIXEL_PALETTE_KMEANS_MAPPING_SRGB) {
+        unit = sixel_kmeans_srgb_encode(unit);
+    }
+    return sixel_kmeans_clamp_unit(unit);
+}
+
+static uint32_t
+sixel_kmeans_pack_bin_key(unsigned int r,
+                          unsigned int g,
+                          unsigned int b,
+                          unsigned int bits)
+{
+    return (uint32_t)((r << (bits * 2u)) | (g << bits) | b);
+}
+
+static SIXELSTATUS
+sixel_kmeans_histogram_add_hard(sixel_kmeans_histogram_t *histogram,
+                                double const sample[3],
+                                double const mapped[3],
+                                sixel_allocator_t *allocator)
+{
+    unsigned int index[3];
+    unsigned int channel;
+    double scaled;
+    uint32_t key;
+
+    index[0] = 0u;
+    index[1] = 0u;
+    index[2] = 0u;
+    channel = 0u;
+    scaled = 0.0;
+    key = 0u;
+    for (channel = 0u; channel < 3u; ++channel) {
+        scaled = mapped[channel] * (double)histogram->bin_count;
+        if (scaled >= (double)histogram->bin_count) {
+            scaled = (double)histogram->bin_count - 1.0;
+        }
+        if (scaled < 0.0) {
+            scaled = 0.0;
+        }
+        index[channel] = (unsigned int)scaled;
+    }
+    key = sixel_kmeans_pack_bin_key(index[0],
+                                    index[1],
+                                    index[2],
+                                    histogram->binbits);
+
+    return sixel_kmeans_histogram_add(histogram, key, 1.0, sample, allocator);
+}
+
+static SIXELSTATUS
+sixel_kmeans_histogram_add_soft_trilinear(sixel_kmeans_histogram_t *histogram,
+                                          double const sample[3],
+                                          double const mapped[3],
+                                          sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    double coord[3];
+    double frac[3];
+    unsigned int low[3];
+    unsigned int high[3];
+    double weight_axis[3][2];
+    unsigned int bit0;
+    unsigned int bit1;
+    unsigned int bit2;
+    unsigned int index0;
+    unsigned int index1;
+    unsigned int index2;
+    double weight;
+    double low_as_double;
+    uint32_t key;
+
+    status = SIXEL_OK;
+    coord[0] = 0.0;
+    coord[1] = 0.0;
+    coord[2] = 0.0;
+    frac[0] = 0.0;
+    frac[1] = 0.0;
+    frac[2] = 0.0;
+    low[0] = 0u;
+    low[1] = 0u;
+    low[2] = 0u;
+    high[0] = 0u;
+    high[1] = 0u;
+    high[2] = 0u;
+    weight_axis[0][0] = 0.0;
+    weight_axis[0][1] = 0.0;
+    weight_axis[1][0] = 0.0;
+    weight_axis[1][1] = 0.0;
+    weight_axis[2][0] = 0.0;
+    weight_axis[2][1] = 0.0;
+    bit0 = 0u;
+    bit1 = 0u;
+    bit2 = 0u;
+    index0 = 0u;
+    index1 = 0u;
+    index2 = 0u;
+    weight = 0.0;
+    low_as_double = 0.0;
+    key = 0u;
+
+    for (bit0 = 0u; bit0 < 3u; ++bit0) {
+        low_as_double = 0.0;
+        coord[bit0] = mapped[bit0] * (double)(histogram->bin_count - 1u);
+        if (coord[bit0] < 0.0) {
+            coord[bit0] = 0.0;
+        }
+        if (coord[bit0] > (double)(histogram->bin_count - 1u)) {
+            coord[bit0] = (double)(histogram->bin_count - 1u);
+        }
+        low_as_double = floor(coord[bit0]);
+        if (low_as_double < 0.0) {
+            low_as_double = 0.0;
+        }
+        if (low_as_double > (double)(histogram->bin_count - 1u)) {
+            low_as_double = (double)(histogram->bin_count - 1u);
+        }
+        low[bit0] = (unsigned int)low_as_double;
+        high[bit0] = low[bit0];
+        if (high[bit0] + 1u < histogram->bin_count) {
+            high[bit0] += 1u;
+        }
+        frac[bit0] = coord[bit0] - (double)low[bit0];
+        if (high[bit0] == low[bit0]) {
+            frac[bit0] = 0.0;
+        }
+        weight_axis[bit0][0] = 1.0 - frac[bit0];
+        weight_axis[bit0][1] = frac[bit0];
+    }
+
+    for (bit0 = 0u; bit0 < 2u; ++bit0) {
+        for (bit1 = 0u; bit1 < 2u; ++bit1) {
+            for (bit2 = 0u; bit2 < 2u; ++bit2) {
+                index0 = (bit0 == 0u) ? low[0] : high[0];
+                index1 = (bit1 == 0u) ? low[1] : high[1];
+                index2 = (bit2 == 0u) ? low[2] : high[2];
+                weight = weight_axis[0][bit0]
+                    * weight_axis[1][bit1]
+                    * weight_axis[2][bit2];
+                if (weight <= 0.0) {
+                    continue;
+                }
+                key = sixel_kmeans_pack_bin_key(index0,
+                                                index1,
+                                                index2,
+                                                histogram->binbits);
+                status = sixel_kmeans_histogram_add(histogram,
+                                                    key,
+                                                    weight,
+                                                    sample,
+                                                    allocator);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static sixel_kmeans_binning_mode
+sixel_kmeans_resolve_binning_for_input(sixel_kmeans_binning_mode mode,
+                                       unsigned int sample_count,
+                                       unsigned int reqcolors,
+                                       unsigned int autoratio)
+{
+    unsigned int colors;
+    unsigned int ratio;
+    unsigned int threshold;
+
+    colors = reqcolors;
+    ratio = autoratio;
+    threshold = 0u;
+    if (mode != SIXEL_PALETTE_KMEANS_BINNING_AUTO) {
+        return mode;
+    }
+
+    if (colors == 0u) {
+        colors = 1u;
+    }
+    if (ratio == 0u) {
+        ratio = 1u;
+    }
+    if (colors > UINT_MAX / ratio) {
+        threshold = UINT_MAX;
+    } else {
+        threshold = colors * ratio;
+    }
+
+    if (sample_count >= threshold) {
+        return SIXEL_PALETTE_KMEANS_BINNING_SOFT;
+    }
+
+    return SIXEL_PALETTE_KMEANS_BINNING_HARD;
+}
+
+static SIXELSTATUS
+sixel_kmeans_build_weighted_histogram(
+    double const *samples,
+    unsigned int sample_count,
+    int input_is_float32,
+    int pixelformat,
+    double const *scale,
+    double const *offset,
+    sixel_kmeans_binning_mode mode,
+    unsigned int binbits,
+    sixel_kmeans_mapping_mode mapping_mode,
+    sixel_kmeans_softdist_mode softdist_mode,
+    sixel_allocator_t *allocator,
+    double **compressed_samples_out,
+    double **weights_out,
+    unsigned int *compressed_count_out)
+{
+    SIXELSTATUS status;
+    sixel_kmeans_histogram_t histogram;
+    size_t expected_entries;
+    unsigned int index;
+    unsigned int channel;
+    unsigned int output_index;
+    double sample[3];
+    double mapped[3];
+    double *compressed_samples;
+    double *weights;
+    sixel_kmeans_bin_entry_t const *entry;
+
+    status = SIXEL_FALSE;
+    histogram.entries = NULL;
+    histogram.capacity = 0u;
+    histogram.mask = 0u;
+    histogram.size = 0u;
+    histogram.binbits = 0u;
+    histogram.bin_count = 0u;
+    expected_entries = 0u;
+    index = 0u;
+    channel = 0u;
+    output_index = 0u;
+    sample[0] = 0.0;
+    sample[1] = 0.0;
+    sample[2] = 0.0;
+    mapped[0] = 0.0;
+    mapped[1] = 0.0;
+    mapped[2] = 0.0;
+    compressed_samples = NULL;
+    weights = NULL;
+    entry = NULL;
+
+    if (samples == NULL || allocator == NULL ||
+            compressed_samples_out == NULL ||
+            weights_out == NULL ||
+            compressed_count_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *compressed_samples_out = NULL;
+    *weights_out = NULL;
+    *compressed_count_out = 0u;
+    if (sample_count == 0u) {
+        return SIXEL_OK;
+    }
+
+    expected_entries = (size_t)sample_count;
+    if (mode == SIXEL_PALETTE_KMEANS_BINNING_SOFT) {
+        if (expected_entries > SIZE_MAX / 8u) {
+            expected_entries = SIZE_MAX / 8u;
+        }
+        expected_entries *= 8u;
+    }
+
+    status = sixel_kmeans_histogram_init(&histogram,
+                                         expected_entries,
+                                         binbits,
+                                         allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    for (index = 0u; index < sample_count; ++index) {
+        sample[0] = samples[(size_t)index * 3u + 0u];
+        sample[1] = samples[(size_t)index * 3u + 1u];
+        sample[2] = samples[(size_t)index * 3u + 2u];
+        for (channel = 0u; channel < 3u; ++channel) {
+            mapped[channel] = sixel_kmeans_map_sample_to_unit(
+                sample[channel],
+                input_is_float32,
+                pixelformat,
+                channel,
+                scale,
+                offset,
+                mapping_mode);
+        }
+        if (mode == SIXEL_PALETTE_KMEANS_BINNING_SOFT) {
+            if (softdist_mode == SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR) {
+                status = sixel_kmeans_histogram_add_soft_trilinear(
+                    &histogram,
+                    sample,
+                    mapped,
+                    allocator);
+            } else {
+                status = SIXEL_BAD_ARGUMENT;
+            }
+        } else {
+            status = sixel_kmeans_histogram_add_hard(
+                &histogram,
+                sample,
+                mapped,
+                allocator);
+        }
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+
+    compressed_samples = (double *)sixel_allocator_malloc(
+        allocator, (size_t)histogram.size * 3u * sizeof(double));
+    weights = (double *)sixel_allocator_malloc(
+        allocator, (size_t)histogram.size * sizeof(double));
+    if (compressed_samples == NULL || weights == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+
+    output_index = 0u;
+    for (index = 0u; index < histogram.capacity; ++index) {
+        entry = histogram.entries + index;
+        if (entry->key == UINT32_MAX || entry->weight <= 0.0) {
+            continue;
+        }
+        weights[output_index] = entry->weight;
+        for (channel = 0u; channel < 3u; ++channel) {
+            compressed_samples[(size_t)output_index * 3u + channel]
+                = entry->sum[channel] / entry->weight;
+        }
+        ++output_index;
+    }
+
+    *compressed_samples_out = compressed_samples;
+    *weights_out = weights;
+    *compressed_count_out = output_index;
+    compressed_samples = NULL;
+    weights = NULL;
+    status = SIXEL_OK;
+
+cleanup:
+    if (compressed_samples != NULL) {
+        sixel_allocator_free(allocator, compressed_samples);
+    }
+    if (weights != NULL) {
+        sixel_allocator_free(allocator, weights);
+    }
+    sixel_kmeans_histogram_dispose(&histogram, allocator);
+
+    return status;
 }
 
 /*
@@ -909,6 +1855,8 @@ build_palette_kmeans(unsigned char **result,
     unsigned int sample_cap;
     unsigned int valid_seen;
     unsigned int sample_count;
+    unsigned int work_sample_count;
+    unsigned int compressed_count;
     unsigned int k;
     unsigned int index;
     unsigned int channel;
@@ -923,11 +1871,21 @@ build_palette_kmeans(unsigned char **result,
     unsigned int source;
     unsigned int swap_temp;
     unsigned int base;
+    unsigned int binbits;
+    unsigned int autoratio;
     double removed_component;
+    double sample_weight;
+    double old_weight;
+    double cluster_weight;
+    double farthest_sample_weight;
     unsigned int unique_colors;
     unsigned int *membership;
     unsigned int *order;
     double *samples;
+    double *work_samples;
+    double *work_weights;
+    double *compressed_samples;
+    double *compressed_weights;
     unsigned char *palette;
     unsigned char *new_palette;
     double *centers;
@@ -939,6 +1897,8 @@ build_palette_kmeans(unsigned char **result,
     double farthest_distance;
     double delta;
     double lloyd_threshold;
+    double merge_component;
+    double restored_component;
     double float32_channel_scale[3];
     double float32_channel_offset[3];
     double float32_lloyd_scale;
@@ -947,7 +1907,12 @@ build_palette_kmeans(unsigned char **result,
     float *float_palette;
     float *float_palette_new;
     sixel_kmeans_init_type init_type;
-    unsigned long *counts;
+    sixel_kmeans_binning_mode binning_mode;
+    sixel_kmeans_binning_mode resolved_binning_mode;
+    sixel_kmeans_mapping_mode mapping_mode;
+    sixel_kmeans_softdist_mode softdist_mode;
+    unsigned long *merge_weights;
+    double *cluster_weights;
     double *accum;
     double *channel_sum;
     double *merge_sums;
@@ -987,6 +1952,8 @@ build_palette_kmeans(unsigned char **result,
     sample_cap = 0U;
     valid_seen = 0U;
     sample_count = 0U;
+    work_sample_count = 0U;
+    compressed_count = 0U;
     k = 0U;
     index = 0U;
     channel = 0U;
@@ -1001,16 +1968,27 @@ build_palette_kmeans(unsigned char **result,
     source = 0U;
     swap_temp = 0U;
     base = 0U;
+    binbits = 0U;
+    autoratio = 0U;
     removed_component = 0.0;
+    sample_weight = 0.0;
+    old_weight = 0.0;
+    cluster_weight = 0.0;
+    farthest_sample_weight = 0.0;
     unique_colors = 0U;
     membership = NULL;
     order = NULL;
     samples = NULL;
+    work_samples = NULL;
+    work_weights = NULL;
+    compressed_samples = NULL;
+    compressed_weights = NULL;
     palette = NULL;
     new_palette = NULL;
     centers = NULL;
     distance_cache = NULL;
-    counts = NULL;
+    merge_weights = NULL;
+    cluster_weights = NULL;
     accum = NULL;
     channel_sum = NULL;
     merge_sums = NULL;
@@ -1022,6 +2000,8 @@ build_palette_kmeans(unsigned char **result,
     farthest_base = 0U;
     delta = 0.0;
     lloyd_threshold = 0.0;
+    merge_component = 0.0;
+    restored_component = 0.0;
     unique_buffer = NULL;
     unique_pixels = 0U;
     apply_merge = 0;
@@ -1059,6 +2039,10 @@ build_palette_kmeans(unsigned char **result,
     float_palette = NULL;
     float_palette_new = NULL;
     init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
+    binning_mode = SIXEL_PALETTE_KMEANS_BINNING_AUTO;
+    resolved_binning_mode = SIXEL_PALETTE_KMEANS_BINNING_NONE;
+    mapping_mode = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
+    softdist_mode = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
 
     if (result != NULL) {
         *result = NULL;
@@ -1197,6 +2181,47 @@ build_palette_kmeans(unsigned char **result,
     if (reqcolors == 0U) {
         reqcolors = 1U;
     }
+    binning_mode = sixel_get_kmeans_binning_mode();
+    binbits = sixel_get_kmeans_binbits();
+    mapping_mode = sixel_get_kmeans_mapping_mode();
+    softdist_mode = sixel_get_kmeans_softdist_mode();
+    autoratio = sixel_get_kmeans_autoratio();
+    resolved_binning_mode = sixel_kmeans_resolve_binning_for_input(
+        binning_mode,
+        sample_count,
+        reqcolors,
+        autoratio);
+    work_samples = samples;
+    work_weights = NULL;
+    work_sample_count = sample_count;
+    if (resolved_binning_mode == SIXEL_PALETTE_KMEANS_BINNING_HARD
+            || resolved_binning_mode == SIXEL_PALETTE_KMEANS_BINNING_SOFT) {
+        status = sixel_kmeans_build_weighted_histogram(
+            samples,
+            sample_count,
+            input_is_,
+            pixelformat,
+            float32_channel_scale,
+            float32_channel_offset,
+            resolved_binning_mode,
+            binbits,
+            mapping_mode,
+            softdist_mode,
+            allocator,
+            &compressed_samples,
+            &compressed_weights,
+            &compressed_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (compressed_count == 0U) {
+            goto end;
+        }
+        work_samples = compressed_samples;
+        work_weights = compressed_weights;
+        work_sample_count = compressed_count;
+    }
+
     resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
     apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD);
     if (apply_merge) {
@@ -1257,8 +2282,8 @@ build_palette_kmeans(unsigned char **result,
         overshoot = sixel_final_merge_target(reqcolors, resolved_merge);
         sixel_debugf("overshoot: %u", overshoot);
     }
-    if (overshoot > sample_count) {
-        overshoot = sample_count;
+    if (overshoot > work_sample_count) {
+        overshoot = work_sample_count;
     }
     k = overshoot;
     if (k == 0U) {
@@ -1268,14 +2293,14 @@ build_palette_kmeans(unsigned char **result,
     centers = (double *)sixel_allocator_malloc(
         allocator, (size_t)k * 3U * sizeof(double));
     distance_cache = (double *)sixel_allocator_malloc(
-        allocator, (size_t)sample_count * sizeof(double));
-    counts = (unsigned long *)sixel_allocator_malloc(
-        allocator, (size_t)k * sizeof(unsigned long));
+        allocator, (size_t)work_sample_count * sizeof(double));
+    cluster_weights = (double *)sixel_allocator_malloc(
+        allocator, (size_t)k * sizeof(double));
     accum = (double *)sixel_allocator_malloc(
         allocator, (size_t)k * 3U * sizeof(double));
     membership = (unsigned int *)sixel_allocator_malloc(
-        allocator, (size_t)sample_count * sizeof(unsigned int));
-    if (centers == NULL || distance_cache == NULL || counts == NULL
+        allocator, (size_t)work_sample_count * sizeof(unsigned int));
+    if (centers == NULL || distance_cache == NULL || cluster_weights == NULL
             || accum == NULL || membership == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -1284,9 +2309,9 @@ build_palette_kmeans(unsigned char **result,
     init_type = sixel_get_kmeans_init_type();
     status = sixel_kmeans_choose_initial_centroids(centers,
                                                    k,
-                                                   samples,
-                                                   NULL,
-                                                   sample_count,
+                                                   work_samples,
+                                                   work_weights,
+                                                   work_sample_count,
                                                    use_reversible,
                                                    pixelformat,
                                                    distance_cache,
@@ -1340,7 +2365,7 @@ build_palette_kmeans(unsigned char **result,
     (void)snprintf(log_detail,
                    sizeof(log_detail),
                    "samples=%u k=%u init=%s",
-                   sample_count,
+                   work_sample_count,
                    k,
                    sixel_kmeans_init_type_to_string(init_type));
     sixel_palette_kmeans_log_finish(logger,
@@ -1361,17 +2386,26 @@ build_palette_kmeans(unsigned char **result,
                                                        "palette/iterate",
                                                        "iterate");
         for (index = 0U; index < k; ++index) {
-            counts[index] = 0UL;
+            cluster_weights[index] = 0.0;
         }
         for (index = 0U; index < k * 3U; ++index) {
             accum[index] = 0.0;
         }
-        for (sample_index = 0U; sample_index < sample_count;
+        for (sample_index = 0U; sample_index < work_sample_count;
                 ++sample_index) {
+            sample_weight = 1.0;
+            if (work_weights != NULL) {
+                sample_weight = work_weights[sample_index];
+            }
+            if (sample_weight <= 0.0) {
+                distance_cache[sample_index] = 0.0;
+                membership[sample_index] = 0U;
+                continue;
+            }
             best_index = 0U;
             distance = 0.0;
             for (channel = 0U; channel < 3U; ++channel) {
-                diff = (double)samples[sample_index * 3U + channel]
+                diff = (double)work_samples[sample_index * 3U + channel]
                     - centers[channel];
                 distance += diff * diff;
             }
@@ -1380,7 +2414,7 @@ build_palette_kmeans(unsigned char **result,
                     ++center_index) {
                 distance = 0.0;
                 for (channel = 0U; channel < 3U; ++channel) {
-                    diff = (double)samples[sample_index * 3U + channel]
+                    diff = (double)work_samples[sample_index * 3U + channel]
                         - centers[center_index * 3U + channel];
                     distance += diff * diff;
                 }
@@ -1390,21 +2424,21 @@ build_palette_kmeans(unsigned char **result,
                 }
             }
             membership[sample_index] = best_index;
-            distance_cache[sample_index] = best_distance;
-            counts[best_index] += 1UL;
+            distance_cache[sample_index] = best_distance * sample_weight;
+            cluster_weights[best_index] += sample_weight;
             channel_sum = accum + (size_t)best_index * 3U;
             for (channel = 0U; channel < 3U; ++channel) {
                 channel_sum[channel] +=
-                    samples[sample_index * 3U + channel];
+                    work_samples[sample_index * 3U + channel] * sample_weight;
             }
         }
         for (center_index = 0U; center_index < k; ++center_index) {
-            if (counts[center_index] != 0UL) {
+            if (cluster_weights[center_index] > 0.0) {
                 continue;
             }
             farthest_distance = -1.0;
             farthest_index = 0U;
-            for (sample_index = 0U; sample_index < sample_count;
+            for (sample_index = 0U; sample_index < work_sample_count;
                     ++sample_index) {
                 if (distance_cache[sample_index] > farthest_distance) {
                     farthest_distance = distance_cache[sample_index];
@@ -1413,30 +2447,42 @@ build_palette_kmeans(unsigned char **result,
             }
             old_cluster = membership[farthest_index];
             farthest_base = (size_t)farthest_index * 3U;
-            if (counts[old_cluster] > 0UL) {
-                counts[old_cluster] -= 1UL;
+            farthest_sample_weight = 1.0;
+            if (work_weights != NULL) {
+                farthest_sample_weight = work_weights[farthest_index];
+            }
+            old_weight = cluster_weights[old_cluster];
+            if (old_weight > 0.0) {
                 channel_sum = accum + (size_t)old_cluster * 3U;
                 for (channel = 0U; channel < 3U; ++channel) {
                     removed_component =
-                        samples[farthest_base + channel];
+                        work_samples[farthest_base + channel]
+                        * farthest_sample_weight;
                     channel_sum[channel] -= removed_component;
                     if (channel_sum[channel] < 0.0) {
                         channel_sum[channel] = 0.0;
                     }
                 }
+                old_weight -= farthest_sample_weight;
+                if (old_weight < 0.0) {
+                    old_weight = 0.0;
+                }
+                cluster_weights[old_cluster] = old_weight;
             }
             membership[farthest_index] = center_index;
-            counts[center_index] = 1UL;
+            cluster_weights[center_index] = farthest_sample_weight;
             channel_sum = accum + (size_t)center_index * 3U;
             for (channel = 0U; channel < 3U; ++channel) {
                 channel_sum[channel] =
-                    samples[farthest_base + channel];
+                    work_samples[farthest_base + channel]
+                    * farthest_sample_weight;
             }
             distance_cache[farthest_index] = 0.0;
         }
         delta = 0.0;
         for (center_index = 0U; center_index < k; ++center_index) {
-            if (counts[center_index] == 0UL) {
+            cluster_weight = cluster_weights[center_index];
+            if (cluster_weight <= 0.0) {
                 continue;
             }
             /*
@@ -1450,7 +2496,7 @@ build_palette_kmeans(unsigned char **result,
             channel_sum = accum + (size_t)center_index * 3U;
             for (channel = 0U; channel < 3U; ++channel) {
                 snapped_center[channel] = channel_sum[channel]
-                    / (double)counts[center_index];
+                    / cluster_weight;
             }
             sixel_palette_snap_triple(snapped_center,
                                       use_reversible,
@@ -1511,32 +2557,50 @@ build_palette_kmeans(unsigned char **result,
          */
         merge_sums = (double *)sixel_allocator_malloc(
             allocator, (size_t)k * 3U * sizeof(double));
-        if (merge_sums == NULL) {
+        merge_weights = (unsigned long *)sixel_allocator_malloc(
+            allocator, (size_t)k * sizeof(unsigned long));
+        if (merge_sums == NULL || merge_weights == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        for (index = 0U; index < k * 3U; ++index) {
-            double component;
-            unsigned int merge_channel;
-            unsigned int merge_cluster;
-
-            component = accum[index];
-            merge_channel = index % 3U;
-            merge_cluster = index / 3U;
-            if (input_is_) {
-                component = sixel_palette_kmeans_sum_float_to_byte(
-                    component,
-                    counts[merge_cluster],
-                    merge_channel,
-                    float32_channel_scale,
-                    float32_channel_offset);
+        for (index = 0U; index < k; ++index) {
+            cluster_weight = cluster_weights[index];
+            if (cluster_weight <= 0.0) {
+                merge_weights[index] = 1UL;
+                merge_sums[index * 3U + 0U] = 0.0;
+                merge_sums[index * 3U + 1U] = 0.0;
+                merge_sums[index * 3U + 2U] = 0.0;
+                continue;
             }
-            if (component < 0.0) {
-                component = 0.0;
+            if (cluster_weight > (double)ULONG_MAX) {
+                merge_weights[index] = ULONG_MAX;
+            } else {
+                merge_weights[index] = (unsigned long)(cluster_weight + 0.5);
+                if (merge_weights[index] == 0UL) {
+                    merge_weights[index] = 1UL;
+                }
             }
-            merge_sums[index] = component;
+            for (channel = 0U; channel < 3U; ++channel) {
+                merge_component = accum[index * 3U + channel] / cluster_weight;
+                if (input_is_) {
+                    merge_component = sixel_palette_kmeans_sum_float_to_byte(
+                        merge_component,
+                        1.0,
+                        channel,
+                        float32_channel_scale,
+                        float32_channel_offset);
+                }
+                if (merge_component < 0.0) {
+                    merge_component = 0.0;
+                }
+                if (merge_component > 255.0) {
+                    merge_component = 255.0;
+                }
+                merge_sums[index * 3U + channel]
+                    = merge_component * (double)merge_weights[index];
+            }
         }
-        cluster_total = sixel_palette_apply_merge(counts,
+        cluster_total = sixel_palette_apply_merge(merge_weights,
                                                   merge_sums,
                                                   3U,
                                                   (int)k,
@@ -1555,52 +2619,65 @@ build_palette_kmeans(unsigned char **result,
         if (k == 0U) {
             k = 1U;
         }
-        for (index = 0U; index < k * 3U; ++index) {
-            double restored;
-            unsigned int merge_channel;
-            unsigned int merge_cluster;
-
-            /* Translate merged 0-255 sums back to the original sample scale */
-            restored = merge_sums[index];
-            merge_channel = index % 3U;
-            merge_cluster = index / 3U;
-            if (input_is_) {
-                restored = sixel_palette_kmeans_sum_byte_to_float(
-                    restored,
-                    counts[merge_cluster],
-                    merge_channel,
-                    float32_channel_scale,
-                    float32_channel_offset);
+        for (index = 0U; index < k; ++index) {
+            cluster_weight = (double)merge_weights[index];
+            if (cluster_weight < 1.0) {
+                cluster_weight = 1.0;
             }
-            accum[index] = restored;
+            cluster_weights[index] = cluster_weight;
+            for (channel = 0U; channel < 3U; ++channel) {
+                restored_component = merge_sums[index * 3U + channel];
+                if (input_is_) {
+                    restored_component = sixel_palette_kmeans_sum_byte_to_float(
+                        restored_component,
+                        cluster_weight,
+                        channel,
+                        float32_channel_scale,
+                        float32_channel_offset);
+                }
+                accum[index * 3U + channel] = restored_component;
+            }
         }
         sixel_allocator_free(allocator, merge_sums);
         merge_sums = NULL;
+        sixel_allocator_free(allocator, merge_weights);
+        merge_weights = NULL;
         for (center_index = 0U; center_index < k; ++center_index) {
-            if (counts[center_index] == 0UL) {
-                counts[center_index] = 1UL;
+            cluster_weight = cluster_weights[center_index];
+            if (cluster_weight <= 0.0) {
+                cluster_weight = 1.0;
+                cluster_weights[center_index] = cluster_weight;
             }
             channel_sum = accum + (size_t)center_index * 3U;
             for (channel = 0U; channel < 3U; ++channel) {
                 centers[center_index * 3U + channel] =
                     (double)channel_sum[channel]
-                    / (double)counts[center_index];
+                    / cluster_weight;
             }
         }
         for (iteration = 0U; iteration < refine_iterations; ++iteration) {
             ++merge_iterations;
             for (index = 0U; index < k; ++index) {
-                counts[index] = 0UL;
+                cluster_weights[index] = 0.0;
             }
             for (index = 0U; index < k * 3U; ++index) {
                 accum[index] = 0.0;
             }
-            for (sample_index = 0U; sample_index < sample_count;
+            for (sample_index = 0U; sample_index < work_sample_count;
                     ++sample_index) {
+                sample_weight = 1.0;
+                if (work_weights != NULL) {
+                    sample_weight = work_weights[sample_index];
+                }
+                if (sample_weight <= 0.0) {
+                    distance_cache[sample_index] = 0.0;
+                    membership[sample_index] = 0U;
+                    continue;
+                }
                 best_index = 0U;
                 best_distance = 0.0;
                 for (channel = 0U; channel < 3U; ++channel) {
-                    diff = (double)samples[sample_index * 3U + channel]
+                    diff = (double)work_samples[sample_index * 3U + channel]
                         - centers[channel];
                     best_distance += diff * diff;
                 }
@@ -1608,7 +2685,7 @@ build_palette_kmeans(unsigned char **result,
                         ++center_index) {
                     distance = 0.0;
                     for (channel = 0U; channel < 3U; ++channel) {
-                        diff = (double)samples[sample_index * 3U + channel]
+                        diff = (double)work_samples[sample_index * 3U + channel]
                             - centers[center_index * 3U + channel];
                         distance += diff * diff;
                     }
@@ -1618,21 +2695,22 @@ build_palette_kmeans(unsigned char **result,
                     }
                 }
                 membership[sample_index] = best_index;
-                distance_cache[sample_index] = best_distance;
-                counts[best_index] += 1UL;
+                distance_cache[sample_index] = best_distance * sample_weight;
+                cluster_weights[best_index] += sample_weight;
                 channel_sum = accum + (size_t)best_index * 3U;
                 for (channel = 0U; channel < 3U; ++channel) {
                     channel_sum[channel] +=
-                        samples[sample_index * 3U + channel];
+                        work_samples[sample_index * 3U + channel]
+                        * sample_weight;
                 }
             }
             for (center_index = 0U; center_index < k; ++center_index) {
-                if (counts[center_index] != 0UL) {
+                if (cluster_weights[center_index] > 0.0) {
                     continue;
                 }
                 farthest_distance = -1.0;
                 farthest_index = 0U;
-                for (sample_index = 0U; sample_index < sample_count;
+                for (sample_index = 0U; sample_index < work_sample_count;
                         ++sample_index) {
                     if (distance_cache[sample_index] > farthest_distance) {
                         farthest_distance = distance_cache[sample_index];
@@ -1641,36 +2719,48 @@ build_palette_kmeans(unsigned char **result,
                 }
                 old_cluster = membership[farthest_index];
                 farthest_base = (size_t)farthest_index * 3U;
-                if (counts[old_cluster] > 0UL) {
-                    counts[old_cluster] -= 1UL;
+                farthest_sample_weight = 1.0;
+                if (work_weights != NULL) {
+                    farthest_sample_weight = work_weights[farthest_index];
+                }
+                old_weight = cluster_weights[old_cluster];
+                if (old_weight > 0.0) {
                     channel_sum = accum + (size_t)old_cluster * 3U;
                     for (channel = 0U; channel < 3U; ++channel) {
                         removed_component =
-                            samples[farthest_base + channel];
+                            work_samples[farthest_base + channel]
+                            * farthest_sample_weight;
                         channel_sum[channel] -= removed_component;
                         if (channel_sum[channel] < 0.0) {
                             channel_sum[channel] = 0.0;
                         }
                     }
+                    old_weight -= farthest_sample_weight;
+                    if (old_weight < 0.0) {
+                        old_weight = 0.0;
+                    }
+                    cluster_weights[old_cluster] = old_weight;
                 }
                 membership[farthest_index] = center_index;
-                counts[center_index] = 1UL;
+                cluster_weights[center_index] = farthest_sample_weight;
                 channel_sum = accum + (size_t)center_index * 3U;
                 for (channel = 0U; channel < 3U; ++channel) {
                     channel_sum[channel] =
-                        samples[farthest_base + channel];
+                        work_samples[farthest_base + channel]
+                        * farthest_sample_weight;
                 }
                 distance_cache[farthest_index] = 0.0;
             }
             delta = 0.0;
             for (center_index = 0U; center_index < k; ++center_index) {
-                if (counts[center_index] == 0UL) {
+                cluster_weight = cluster_weights[center_index];
+                if (cluster_weight <= 0.0) {
                     continue;
                 }
                 channel_sum = accum + (size_t)center_index * 3U;
                 for (channel = 0U; channel < 3U; ++channel) {
                     update = channel_sum[channel]
-                        / (double)counts[center_index];
+                        / cluster_weight;
                     diff = centers[center_index * 3U + channel] - update;
                     delta += diff * diff;
                     centers[center_index * 3U + channel] = update;
@@ -1781,8 +2871,8 @@ build_palette_kmeans(unsigned char **result,
         for (index = 0U; index < k; ++index) {
             for (center_index = index + 1U; center_index < k;
                     ++center_index) {
-                if (counts[order[center_index]] >
-                        counts[order[index]]) {
+                if (cluster_weights[order[center_index]]
+                        > cluster_weights[order[index]]) {
                     swap_temp = order[index];
                     order[index] = order[center_index];
                     order[center_index] = swap_temp;
@@ -1917,8 +3007,11 @@ end:
     if (accum != NULL) {
         sixel_allocator_free(allocator, accum);
     }
-    if (counts != NULL) {
-        sixel_allocator_free(allocator, counts);
+    if (merge_weights != NULL) {
+        sixel_allocator_free(allocator, merge_weights);
+    }
+    if (cluster_weights != NULL) {
+        sixel_allocator_free(allocator, cluster_weights);
     }
     if (distance_cache != NULL) {
         sixel_allocator_free(allocator, distance_cache);
@@ -1928,6 +3021,12 @@ end:
     }
     if (samples != NULL) {
         sixel_allocator_free(allocator, samples);
+    }
+    if (compressed_samples != NULL) {
+        sixel_allocator_free(allocator, compressed_samples);
+    }
+    if (compressed_weights != NULL) {
+        sixel_allocator_free(allocator, compressed_weights);
     }
     if (merge_sums != NULL) {
         sixel_allocator_free(allocator, merge_sums);
