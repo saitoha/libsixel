@@ -56,6 +56,47 @@
 #include "logger.h"
 #include "compat_stub.h"
 
+/*
+ * Keep animation metadata keys available even on SDKs that do not expose the
+ * newer typed constants yet. ImageIO dictionaries use these stable key names.
+ */
+#ifndef kCGImagePropertyAPNGLoopCount
+#define kCGImagePropertyAPNGLoopCount CFSTR("LoopCount")
+#endif
+#ifndef kCGImagePropertyAPNGDelayTime
+#define kCGImagePropertyAPNGDelayTime CFSTR("DelayTime")
+#endif
+#ifndef kCGImagePropertyAPNGUnclampedDelayTime
+#define kCGImagePropertyAPNGUnclampedDelayTime CFSTR("UnclampedDelayTime")
+#endif
+#ifndef kCGImagePropertyWebPDictionary
+#define kCGImagePropertyWebPDictionary CFSTR("{WebP}")
+#endif
+#ifndef kCGImagePropertyWebPLoopCount
+#define kCGImagePropertyWebPLoopCount CFSTR("LoopCount")
+#endif
+#ifndef kCGImagePropertyWebPDelayTime
+#define kCGImagePropertyWebPDelayTime CFSTR("DelayTime")
+#endif
+#ifndef kCGImagePropertyWebPUnclampedDelayTime
+#define kCGImagePropertyWebPUnclampedDelayTime CFSTR("UnclampedDelayTime")
+#endif
+#ifndef kCGImagePropertyHEICSDictionary
+#define kCGImagePropertyHEICSDictionary CFSTR("{HEICS}")
+#endif
+#ifndef kCGImagePropertyHEICSLoopCount
+#define kCGImagePropertyHEICSLoopCount CFSTR("LoopCount")
+#endif
+#ifndef kCGImagePropertyHEICSDelayTime
+#define kCGImagePropertyHEICSDelayTime CFSTR("DelayTime")
+#endif
+#ifndef kCGImagePropertyHEICSUnclampedDelayTime
+#define kCGImagePropertyHEICSUnclampedDelayTime CFSTR("UnclampedDelayTime")
+#endif
+
+#define COREGRAPHICS_SRGB_ENCODE_LUT_SIZE 4096u
+#define COREGRAPHICS_PALETTE_MATCH_TOLERANCE 3u
+
 typedef struct sixel_loader_coregraphics_component {
     sixel_loader_component_t base;
     sixel_allocator_t *allocator;
@@ -127,6 +168,71 @@ coregraphics_encode_srgb_unit(double value)
 #else
     return value;
 #endif
+}
+
+static void
+coregraphics_build_srgb_decode_u8_lut(double lut[256])
+{
+    int index;
+    double unit;
+
+    index = 0;
+    unit = 0.0;
+    if (lut == NULL) {
+        return;
+    }
+
+    for (index = 0; index < 256; ++index) {
+        unit = (double)index / 255.0;
+        lut[index] = coregraphics_decode_srgb_unit(unit);
+    }
+}
+
+static void
+coregraphics_build_srgb_encode_u8_lut(unsigned char *lut, size_t lut_size)
+{
+    size_t index;
+    double unit;
+
+    index = 0u;
+    unit = 0.0;
+    if (lut == NULL || lut_size == 0u) {
+        return;
+    }
+
+    for (index = 0u; index < lut_size; ++index) {
+        if (lut_size > 1u) {
+            unit = (double)index / (double)(lut_size - 1u);
+        } else {
+            unit = 0.0;
+        }
+        lut[index] = (unsigned char)(coregraphics_encode_srgb_unit(unit) *
+                                     255.0 + 0.5);
+    }
+}
+
+static unsigned char
+coregraphics_encode_linear_to_srgb_u8(double value,
+                                      unsigned char const *lut,
+                                      size_t lut_size)
+{
+    size_t index;
+
+    index = 0u;
+    if (lut == NULL || lut_size == 0u) {
+        return 0u;
+    }
+
+    value = coregraphics_clamp_unit(value);
+    if (lut_size <= 1u) {
+        return lut[0];
+    }
+
+    index = (size_t)(value * (double)(lut_size - 1u) + 0.5);
+    if (index >= lut_size) {
+        index = lut_size - 1u;
+    }
+    return lut[index];
 }
 
 static int
@@ -211,6 +317,172 @@ coregraphics_dictionary_get_int(CFDictionaryRef dict,
         result = default_value;
     }
     return result;
+}
+
+static int
+coregraphics_dictionary_get_double(CFDictionaryRef dict,
+                                   CFStringRef key,
+                                   double *out_value)
+{
+    CFTypeRef value;
+    Boolean ok;
+    double parsed;
+
+    value = NULL;
+    ok = false;
+    parsed = 0.0;
+    if (dict == NULL || key == NULL || out_value == NULL) {
+        return 0;
+    }
+
+    value = CFDictionaryGetValue(dict, key);
+    if (value == NULL || CFGetTypeID(value) != CFNumberGetTypeID()) {
+        return 0;
+    }
+
+    ok = CFNumberGetValue((CFNumberRef)value, kCFNumberDoubleType, &parsed);
+    if (!ok) {
+        return 0;
+    }
+
+    *out_value = parsed;
+    return 1;
+}
+
+static int
+coregraphics_get_animation_keys(CFDictionaryRef props,
+                                size_t frame_count,
+                                CFDictionaryRef *out_dict,
+                                CFStringRef *out_loop_key,
+                                CFStringRef *out_delay_key,
+                                CFStringRef *out_unclamped_delay_key)
+{
+    CFDictionaryRef dict;
+
+    dict = NULL;
+    if (out_dict == NULL) {
+        return 0;
+    }
+
+    *out_dict = NULL;
+    if (out_loop_key != NULL) {
+        *out_loop_key = NULL;
+    }
+    if (out_delay_key != NULL) {
+        *out_delay_key = NULL;
+    }
+    if (out_unclamped_delay_key != NULL) {
+        *out_unclamped_delay_key = NULL;
+    }
+    if (props == NULL) {
+        return 0;
+    }
+
+    dict = (CFDictionaryRef)CFDictionaryGetValue(props,
+                                                 kCGImagePropertyGIFDictionary);
+    if (dict != NULL && CFGetTypeID(dict) == CFDictionaryGetTypeID()) {
+        *out_dict = dict;
+        if (out_loop_key != NULL) {
+            *out_loop_key = kCGImagePropertyGIFLoopCount;
+        }
+        if (out_delay_key != NULL) {
+            *out_delay_key = kCGImagePropertyGIFDelayTime;
+        }
+        if (out_unclamped_delay_key != NULL) {
+            *out_unclamped_delay_key = kCGImagePropertyGIFUnclampedDelayTime;
+        }
+        return 1;
+    }
+
+    dict = (CFDictionaryRef)CFDictionaryGetValue(props,
+                                                 kCGImagePropertyPNGDictionary);
+    if (dict != NULL &&
+        CFGetTypeID(dict) == CFDictionaryGetTypeID() &&
+        frame_count > 1u) {
+        *out_dict = dict;
+        if (out_loop_key != NULL) {
+            *out_loop_key = kCGImagePropertyAPNGLoopCount;
+        }
+        if (out_delay_key != NULL) {
+            *out_delay_key = kCGImagePropertyAPNGDelayTime;
+        }
+        if (out_unclamped_delay_key != NULL) {
+            *out_unclamped_delay_key = kCGImagePropertyAPNGUnclampedDelayTime;
+        }
+        return 1;
+    }
+
+    dict = (CFDictionaryRef)CFDictionaryGetValue(
+        props,
+        kCGImagePropertyWebPDictionary);
+    if (dict != NULL &&
+        CFGetTypeID(dict) == CFDictionaryGetTypeID() &&
+        frame_count > 1u) {
+        *out_dict = dict;
+        if (out_loop_key != NULL) {
+            *out_loop_key = kCGImagePropertyWebPLoopCount;
+        }
+        if (out_delay_key != NULL) {
+            *out_delay_key = kCGImagePropertyWebPDelayTime;
+        }
+        if (out_unclamped_delay_key != NULL) {
+            *out_unclamped_delay_key = kCGImagePropertyWebPUnclampedDelayTime;
+        }
+        return 1;
+    }
+
+    dict = (CFDictionaryRef)CFDictionaryGetValue(
+        props,
+        kCGImagePropertyHEICSDictionary);
+    if (dict != NULL &&
+        CFGetTypeID(dict) == CFDictionaryGetTypeID() &&
+        frame_count > 1u) {
+        *out_dict = dict;
+        if (out_loop_key != NULL) {
+            *out_loop_key = kCGImagePropertyHEICSLoopCount;
+        }
+        if (out_delay_key != NULL) {
+            *out_delay_key = kCGImagePropertyHEICSDelayTime;
+        }
+        if (out_unclamped_delay_key != NULL) {
+            *out_unclamped_delay_key = kCGImagePropertyHEICSUnclampedDelayTime;
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+coregraphics_resolve_animation_delay_cs(CFDictionaryRef dict,
+                                        CFStringRef unclamped_delay_key,
+                                        CFStringRef delay_key,
+                                        int *delay_cs)
+{
+    double delay_value;
+
+    delay_value = 0.0;
+    if (dict == NULL || delay_cs == NULL) {
+        return 0;
+    }
+
+    if (!coregraphics_dictionary_get_double(dict,
+                                            unclamped_delay_key,
+                                            &delay_value) &&
+        !coregraphics_dictionary_get_double(dict,
+                                            delay_key,
+                                            &delay_value)) {
+        return 0;
+    }
+
+    if (delay_value < 0.0) {
+        delay_value = 0.0;
+    }
+    *delay_cs = (int)(delay_value * 100.0);
+    if (*delay_cs == 0 && delay_value > 0.0) {
+        *delay_cs = 1;
+    }
+    return 1;
 }
 
 static int
@@ -855,6 +1127,63 @@ coregraphics_find_palette_index(unsigned char const *palette,
     return -1;
 }
 
+static int
+coregraphics_find_palette_index_with_tolerance(unsigned char const *palette,
+                                               int ncolors,
+                                               unsigned char r,
+                                               unsigned char g,
+                                               unsigned char b,
+                                               unsigned int tolerance)
+{
+    int exact_index;
+    int best_index;
+    int index;
+    int dr;
+    int dg;
+    int db;
+    unsigned int distance;
+    unsigned int best_distance;
+    unsigned int max_distance;
+
+    exact_index = -1;
+    best_index = -1;
+    index = 0;
+    dr = 0;
+    dg = 0;
+    db = 0;
+    distance = 0u;
+    best_distance = 0u;
+    max_distance = 0u;
+    exact_index = coregraphics_find_palette_index(palette, ncolors, r, g, b);
+    if (exact_index >= 0) {
+        return exact_index;
+    }
+    if (palette == NULL || ncolors <= 0 || tolerance == 0u) {
+        return -1;
+    }
+
+    max_distance = tolerance * tolerance * 3u;
+    best_distance = max_distance + 1u;
+    for (index = 0; index < ncolors; ++index) {
+        dr = (int)palette[(size_t)index * 3u + 0u] - (int)r;
+        dg = (int)palette[(size_t)index * 3u + 1u] - (int)g;
+        db = (int)palette[(size_t)index * 3u + 2u] - (int)b;
+        distance = (unsigned int)(dr * dr + dg * dg + db * db);
+        if (distance < best_distance) {
+            best_distance = distance;
+            best_index = index;
+            if (distance == 0u) {
+                break;
+            }
+        }
+    }
+
+    if (best_index >= 0 && best_distance <= max_distance) {
+        return best_index;
+    }
+    return -1;
+}
+
 static SIXELSTATUS
 coregraphics_try_handle_png_indexed_keycolor(
     sixel_chunk_t const *chunk,
@@ -876,6 +1205,7 @@ coregraphics_try_handle_png_indexed_keycolor(
     unsigned char *indexed_pixels;
     unsigned char *rgba_pixels;
     unsigned char zero_alpha_map[SIXEL_PALETTE_MAX];
+    CGColorSpaceRef image_color_space;
     CGColorSpaceRef color_space;
     CGContextRef context;
     size_t stride;
@@ -892,11 +1222,13 @@ coregraphics_try_handle_png_indexed_keycolor(
     unsigned char r8;
     unsigned char g8;
     unsigned char b8;
+    int owns_color_space;
 
     status = SIXEL_FALSE;
     palette = NULL;
     indexed_pixels = NULL;
     rgba_pixels = NULL;
+    image_color_space = NULL;
     color_space = NULL;
     context = NULL;
     stride = 0u;
@@ -913,6 +1245,7 @@ coregraphics_try_handle_png_indexed_keycolor(
     r8 = 0u;
     g8 = 0u;
     b8 = 0u;
+    owns_color_space = 0;
     if (chunk == NULL ||
         frame == NULL ||
         image == NULL ||
@@ -1000,9 +1333,17 @@ coregraphics_try_handle_png_indexed_keycolor(
         goto cleanup;
     }
 
-    color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-    if (color_space == NULL) {
-        color_space = CGColorSpaceCreateDeviceRGB();
+    image_color_space = CGImageGetColorSpace(image);
+    if (image_color_space != NULL &&
+        CGColorSpaceGetModel(image_color_space) == kCGColorSpaceModelRGB) {
+        color_space = image_color_space;
+        owns_color_space = 0;
+    } else {
+        color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        if (color_space == NULL) {
+            color_space = CGColorSpaceCreateDeviceRGB();
+        }
+        owns_color_space = 1;
     }
     if (color_space == NULL) {
         status = SIXEL_FALSE;
@@ -1043,11 +1384,13 @@ coregraphics_try_handle_png_indexed_keycolor(
             goto cleanup;
         }
 
-        palette_index = coregraphics_find_palette_index(palette,
-                                                        ncolors,
-                                                        r8,
-                                                        g8,
-                                                        b8);
+        palette_index = coregraphics_find_palette_index_with_tolerance(
+            palette,
+            ncolors,
+            r8,
+            g8,
+            b8,
+            COREGRAPHICS_PALETTE_MATCH_TOLERANCE);
         if (palette_index < 0) {
             *force_alpha = 1;
             status = SIXEL_OK;
@@ -1072,7 +1415,7 @@ cleanup:
     if (context != NULL) {
         CGContextRelease(context);
     }
-    if (color_space != NULL) {
+    if (owns_color_space != 0 && color_space != NULL) {
         CGColorSpaceRelease(color_space);
     }
     sixel_allocator_free(frame->allocator, palette);
@@ -1372,6 +1715,8 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
     double out_linear_r;
     double out_linear_g;
     double out_linear_b;
+    double decode_lut[256];
+    unsigned char encode_lut[COREGRAPHICS_SRGB_ENCODE_LUT_SIZE + 1u];
 
     status = SIXEL_FALSE;
     color_space = NULL;
@@ -1398,6 +1743,8 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
     out_linear_r = 0.0;
     out_linear_g = 0.0;
     out_linear_b = 0.0;
+    memset(decode_lut, 0, sizeof(decode_lut));
+    memset(encode_lut, 0, sizeof(encode_lut));
     if (frame == NULL || image == NULL || frame->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1480,6 +1827,11 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
             goto cleanup;
         }
     }
+    if (has_alpha_like != 0) {
+        coregraphics_build_srgb_decode_u8_lut(decode_lut);
+        coregraphics_build_srgb_encode_u8_lut(encode_lut,
+                                              sizeof(encode_lut));
+    }
 
     if (has_alpha_like == 0) {
         for (index = 0u; index < pixel_count; ++index) {
@@ -1529,9 +1881,9 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
             }
         }
 
-        src_linear_r = coregraphics_decode_srgb_unit((double)r8 / 255.0);
-        src_linear_g = coregraphics_decode_srgb_unit((double)g8 / 255.0);
-        src_linear_b = coregraphics_decode_srgb_unit((double)b8 / 255.0);
+        src_linear_r = decode_lut[r8];
+        src_linear_g = decode_lut[g8];
+        src_linear_b = decode_lut[b8];
 
         if (bgcolor != NULL) {
             out_linear_r = src_linear_r * alpha_unit
@@ -1546,12 +1898,15 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
             out_linear_b = src_linear_b * alpha_unit;
         }
 
-        out_r = (unsigned char)(coregraphics_encode_srgb_unit(out_linear_r) *
-                                255.0 + 0.5);
-        out_g = (unsigned char)(coregraphics_encode_srgb_unit(out_linear_g) *
-                                255.0 + 0.5);
-        out_b = (unsigned char)(coregraphics_encode_srgb_unit(out_linear_b) *
-                                255.0 + 0.5);
+        out_r = coregraphics_encode_linear_to_srgb_u8(out_linear_r,
+                                                      encode_lut,
+                                                      sizeof(encode_lut));
+        out_g = coregraphics_encode_linear_to_srgb_u8(out_linear_g,
+                                                      encode_lut,
+                                                      sizeof(encode_lut));
+        out_b = coregraphics_encode_linear_to_srgb_u8(out_linear_b,
+                                                      encode_lut,
+                                                      sizeof(encode_lut));
         pixels[index * 3u + 0u] = out_r;
         pixels[index * 3u + 1u] = out_g;
         pixels[index * 3u + 2u] = out_b;
@@ -1870,10 +2225,12 @@ load_with_coregraphics(
     int anim_loop_count;
     CFDictionaryRef props;
     CFDictionaryRef anim_dict;
-    CFNumberRef loop_num;
     CFDictionaryRef frame_props;
     CFDictionaryRef frame_anim_dict;
-    CFNumberRef delay_num;
+    CFStringRef anim_loop_key;
+    CFStringRef frame_loop_key;
+    CFStringRef frame_delay_key;
+    CFStringRef frame_unclamped_delay_key;
     int start_frame_no;
     int resolved_start_frame_no;
     int total_frames;
@@ -1886,9 +2243,6 @@ load_with_coregraphics(
     int force_alpha_from_indexed;
     int has_alpha_like;
     int promote_float32;
-    int loop_value;
-    Boolean ok;
-    double delay_value;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -1899,10 +2253,12 @@ load_with_coregraphics(
     anim_loop_count = -1;
     props = NULL;
     anim_dict = NULL;
-    loop_num = NULL;
     frame_props = NULL;
     frame_anim_dict = NULL;
-    delay_num = NULL;
+    anim_loop_key = NULL;
+    frame_loop_key = NULL;
+    frame_delay_key = NULL;
+    frame_unclamped_delay_key = NULL;
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
     total_frames = 0;
@@ -1915,9 +2271,6 @@ load_with_coregraphics(
     force_alpha_from_indexed = 0;
     has_alpha_like = 0;
     promote_float32 = 0;
-    loop_value = 0;
-    ok = false;
-    delay_value = 0.0;
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -1978,24 +2331,24 @@ load_with_coregraphics(
 
     props = CGImageSourceCopyProperties(source, NULL);
     if (props) {
-        anim_dict = (CFDictionaryRef)CFDictionaryGetValue(
-            props, kCGImagePropertyGIFDictionary);
-        if (anim_dict) {
-            /*
-             * Treat multi-frame decoding as animation only when the source
-             * exposes GIF animation metadata. A multi-size ICO can contain
-             * multiple static images and must not enter animation mode.
-             */
-            is_animation_container = 1;
-            loop_num = (CFNumberRef)CFDictionaryGetValue(
-                anim_dict, kCGImagePropertyGIFLoopCount);
-            if (loop_num) {
-                loop_value = anim_loop_count;
-                ok = CFNumberGetValue(loop_num, kCFNumberIntType, &loop_value);
-                if (ok) {
-                    anim_loop_count = loop_value;
-                }
+        /*
+         * Treat multi-frame decoding as animation only when the source
+         * exposes known animation dictionaries. This keeps multi-size ICO
+         * decoding static while enabling APNG/WebP/HEICS animation.
+         */
+        if (coregraphics_get_animation_keys(props,
+                                            frame_count,
+                                            &anim_dict,
+                                            &anim_loop_key,
+                                            NULL,
+                                            NULL)) {
+            if (frame_count > 1u) {
+                is_animation_container = 1;
             }
+            anim_loop_count = coregraphics_dictionary_get_int(
+                anim_dict,
+                anim_loop_key,
+                anim_loop_count);
         }
     }
 
@@ -2031,39 +2384,26 @@ load_with_coregraphics(
             frame_props = CGImageSourceCopyPropertiesAtIndex(
                 source, (unsigned int)frame_index, NULL);
             if (frame_props) {
-                frame_anim_dict = (CFDictionaryRef)CFDictionaryGetValue(
-                    frame_props, kCGImagePropertyGIFDictionary);
-                if (frame_anim_dict) {
-                    loop_num = (CFNumberRef)CFDictionaryGetValue(
-                        frame_anim_dict, kCGImagePropertyGIFLoopCount);
-                    if (loop_num) {
-                        loop_value = anim_loop_count;
-                        ok = CFNumberGetValue(loop_num,
-                                              kCFNumberIntType,
-                                              &loop_value);
-                        if (ok) {
-                            anim_loop_count = loop_value;
-                        }
-                    }
-                    delay_num = (CFNumberRef)CFDictionaryGetValue(
+                frame_anim_dict = NULL;
+                frame_loop_key = NULL;
+                frame_delay_key = NULL;
+                frame_unclamped_delay_key = NULL;
+                if (coregraphics_get_animation_keys(
+                        frame_props,
+                        frame_count,
+                        &frame_anim_dict,
+                        &frame_loop_key,
+                        &frame_delay_key,
+                        &frame_unclamped_delay_key)) {
+                    anim_loop_count = coregraphics_dictionary_get_int(
                         frame_anim_dict,
-                        kCGImagePropertyGIFUnclampedDelayTime);
-                    if (! delay_num) {
-                        delay_num = (CFNumberRef)CFDictionaryGetValue(
-                            frame_anim_dict, kCGImagePropertyGIFDelayTime);
-                    }
-                    if (delay_num) {
-                        delay_value = 0.0;
-                        ok = CFNumberGetValue(delay_num,
-                                              kCFNumberDoubleType,
-                                              &delay_value);
-                        if (ok) {
-                            if (delay_value < 0) {
-                                delay_value = 0.0;
-                            }
-                            frame->delay = (int)(delay_value * 100);
-                        }
-                    }
+                        frame_loop_key,
+                        anim_loop_count);
+                    coregraphics_resolve_animation_delay_cs(
+                        frame_anim_dict,
+                        frame_unclamped_delay_key,
+                        frame_delay_key,
+                        &frame->delay);
                 }
             }
 
@@ -2093,7 +2433,7 @@ load_with_coregraphics(
             }
             if (frame->height <= 0) {
                 sixel_helper_set_additional_message(
-                    "load_with_coregraphics: an invalid width parameter"
+                    "load_with_coregraphics: an invalid height parameter"
                     " detected.");
                 status = SIXEL_BAD_INPUT;
                 goto end;
