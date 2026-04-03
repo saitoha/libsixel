@@ -104,6 +104,8 @@ Key points used by this roadmap:
     with malformed traces for `layer info end overrun`,
     `channel section-window overrun`, and
     `RLE payload window overrun`.
+    Additional over-limit fixtures at `high_offset_xxxxxxxlarge_over_limit`
+    keep a deterministic allocation-failure trace contract.
   - Non-pixel payload is tolerated in fallback:
     - layers with decodable pixel channels are composited normally
       (non-pixel payload ignored, info trace), and
@@ -381,7 +383,7 @@ Minimum fixture naming convention:
      + `high_offset_xxxxxlarge` (32 MiB) + `high_offset_xxxxxxlarge` (64 MiB)
      + `high_offset_xxxxxxxlarge` (128 MiB)
      valid/malformed parity, move to larger-than-128MiB section-window layouts
-     and higher-offset cases, and
+     and higher-offset cases (requires allocator ceiling policy decision), and
    - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
 3. Increase cross-mode visual quality regression density for non-pixel payload
