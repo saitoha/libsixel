@@ -47,6 +47,27 @@ typedef struct coregraphics_loop_unbounded_probe {
     int reached_required_loop;
 } coregraphics_loop_unbounded_probe_t;
 
+typedef int (*coregraphics_env_test_fn_t)(void);
+
+typedef struct coregraphics_env_dispatch_entry {
+    char const *env_name;
+    coregraphics_env_test_fn_t fn;
+} coregraphics_env_dispatch_entry_t;
+
+typedef enum coregraphics_pixelformat_case_id {
+    COREGRAPHICS_PIXELFORMAT_RGBA_NO_BG_MASK = 0,
+    COREGRAPHICS_PIXELFORMAT_RGBA_BG_RGB,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_PAL8,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_PAL8,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_REQCOLORS_FALLBACK_RGB,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FALLBACK_MASK,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_BG_COMPOSITE,
+    COREGRAPHICS_PIXELFORMAT_HIGHDEPTH_FLOAT32,
+    COREGRAPHICS_PIXELFORMAT_CASE_COUNT
+} coregraphics_pixelformat_case_id_t;
+
 static int
 coregraphics_runtime_major_version(void)
 {
@@ -758,10 +779,34 @@ run_coregraphics_start_frame_case(char const *label,
 }
 
 static int
-run_coregraphics_loader_test(void)
+run_coregraphics_env_dispatch(
+    coregraphics_env_dispatch_entry_t const *entries,
+    size_t entry_count)
+{
+    size_t index;
+    char const *mode;
+
+    index = 0u;
+    mode = NULL;
+    if (entries == NULL) {
+        return -1;
+    }
+
+    for (index = 0u; index < entry_count; ++index) {
+        mode = getenv(entries[index].env_name);
+        if (mode != NULL && mode[0] == '1' && mode[1] == '\0') {
+            return entries[index].fn();
+        }
+    }
+    return -1;
+}
+
+static int
+run_coregraphics_pixelformat_case_by_id(
+    coregraphics_pixelformat_case_id_t case_id)
 {
     static unsigned char const white_bg[3] = { 255u, 255u, 255u };
-    loader_component_case_spec_t const specs[] = {
+    static loader_component_case_spec_t const specs[] = {
         {
             "coregraphics rgba no background emits rgb+mask",
             RGBA_IMAGE_PATH,
@@ -924,57 +969,241 @@ run_coregraphics_loader_test(void)
         }
     };
     size_t index;
+    if ((size_t)case_id >=
+        sizeof(specs) / sizeof(specs[0]) ||
+        case_id < 0 ||
+        case_id >= COREGRAPHICS_PIXELFORMAT_CASE_COUNT) {
+        return 1;
+    }
+
+    index = (size_t)case_id;
+    return run_loader_component_case_from_spec(&specs[index]);
+}
+
+static int
+run_coregraphics_pixelformat_all_cases(void)
+{
+    size_t index;
     int result;
 
     index = 0u;
     result = 0;
-    for (index = 0u; index < sizeof(specs) / sizeof(specs[0]); ++index) {
-        result = run_loader_component_case_from_spec(&specs[index]);
+    for (index = 0u;
+         index < (size_t)COREGRAPHICS_PIXELFORMAT_CASE_COUNT;
+         ++index) {
+        result = run_coregraphics_pixelformat_case_by_id(
+            (coregraphics_pixelformat_case_id_t)index);
         if (result != 0) {
             return result;
         }
     }
+    return 0;
+}
 
-    result = run_coregraphics_animation_metadata_case(
+static int
+run_coregraphics_rgba_no_background_mask_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_RGBA_NO_BG_MASK);
+}
+
+static int
+run_coregraphics_rgba_with_background_rgb_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_RGBA_BG_RGB);
+}
+
+static int
+run_coregraphics_indexed_pal8_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_INDEXED_PAL8);
+}
+
+static int
+run_coregraphics_indexed_keycolor_pal8_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8);
+}
+
+static int
+run_coregraphics_indexed_keycolor_icc_gama_pal8_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_PAL8);
+}
+
+static int
+run_coregraphics_indexed_keycolor_reqcolors_fallback_mask_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK);
+}
+
+static int
+run_coregraphics_indexed_reqcolors_fallback_rgb_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_INDEXED_REQCOLORS_FALLBACK_RGB);
+}
+
+static int
+run_coregraphics_indexed_alpha_fallback_mask_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FALLBACK_MASK);
+}
+
+static int
+run_coregraphics_indexed_alpha_bg_composite_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_BG_COMPOSITE);
+}
+
+static int
+run_coregraphics_highdepth_float32_test(void)
+{
+    return run_coregraphics_pixelformat_case_by_id(
+        COREGRAPHICS_PIXELFORMAT_HIGHDEPTH_FLOAT32);
+}
+
+static int
+run_coregraphics_apng_animation_metadata_test(void)
+{
+    return run_coregraphics_animation_metadata_case(
         "coregraphics apng animation metadata",
         "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png");
-    if (result != 0) {
-        return result;
-    }
-    result = run_coregraphics_start_frame_case(
+}
+
+static int
+run_coregraphics_apng_start_frame_behavior_test(void)
+{
+    return run_coregraphics_start_frame_case(
         "coregraphics apng start-frame behavior",
         "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png");
-    if (result != 0) {
-        return result;
-    }
-    result = run_coregraphics_loop_control_case(
+}
+
+static int
+run_coregraphics_apng_loop_control_behavior_test(void)
+{
+    return run_coregraphics_loop_control_case(
         "coregraphics apng loop-control behavior",
         "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png");
+}
+
+static int
+run_coregraphics_webp_animation_metadata_test(void)
+{
+    if (!coregraphics_runtime_supports_webp_animation()) {
+        return 0;
+    }
+    return run_coregraphics_animation_metadata_case(
+        "coregraphics webp animation metadata",
+        WEBP_ANIMATED_IMAGE_PATH);
+}
+
+static int
+run_coregraphics_webp_start_frame_behavior_test(void)
+{
+    if (!coregraphics_runtime_supports_webp_animation()) {
+        return 0;
+    }
+    return run_coregraphics_start_frame_case(
+        "coregraphics webp start-frame behavior",
+        WEBP_ANIMATED_IMAGE_PATH);
+}
+
+static int
+run_coregraphics_webp_loop_control_behavior_test(void)
+{
+    if (!coregraphics_runtime_supports_webp_animation()) {
+        return 0;
+    }
+    return run_coregraphics_loop_control_case(
+        "coregraphics webp loop-control behavior",
+        WEBP_LOOP2_IMAGE_PATH);
+}
+
+static int
+run_coregraphics_loader_test(void)
+{
+    static coregraphics_env_dispatch_entry_t const env_dispatch[] = {
+        { "SIXEL_TEST_COREGRAPHICS_RGBA_NO_BG_MASK",
+          run_coregraphics_rgba_no_background_mask_test },
+        { "SIXEL_TEST_COREGRAPHICS_RGBA_BG_RGB",
+          run_coregraphics_rgba_with_background_rgb_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_PAL8",
+          run_coregraphics_indexed_pal8_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_PAL8",
+          run_coregraphics_indexed_keycolor_pal8_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_ICC_GAMA_PAL8",
+          run_coregraphics_indexed_keycolor_icc_gama_pal8_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK",
+          run_coregraphics_indexed_keycolor_reqcolors_fallback_mask_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_REQCOLORS_FALLBACK_RGB",
+          run_coregraphics_indexed_reqcolors_fallback_rgb_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_FALLBACK_MASK",
+          run_coregraphics_indexed_alpha_fallback_mask_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_BG_COMPOSITE",
+          run_coregraphics_indexed_alpha_bg_composite_test },
+        { "SIXEL_TEST_COREGRAPHICS_HIGHDEPTH_FLOAT32",
+          run_coregraphics_highdepth_float32_test },
+        { "SIXEL_TEST_COREGRAPHICS_APNG_METADATA",
+          run_coregraphics_apng_animation_metadata_test },
+        { "SIXEL_TEST_COREGRAPHICS_APNG_START_FRAME",
+          run_coregraphics_apng_start_frame_behavior_test },
+        { "SIXEL_TEST_COREGRAPHICS_APNG_LOOP_CONTROL",
+          run_coregraphics_apng_loop_control_behavior_test },
+        { "SIXEL_TEST_COREGRAPHICS_WEBP_METADATA",
+          run_coregraphics_webp_animation_metadata_test },
+        { "SIXEL_TEST_COREGRAPHICS_WEBP_START_FRAME",
+          run_coregraphics_webp_start_frame_behavior_test },
+        { "SIXEL_TEST_COREGRAPHICS_WEBP_LOOP_CONTROL",
+          run_coregraphics_webp_loop_control_behavior_test }
+    };
+    int dispatch_result;
+    int result;
+
+    dispatch_result = -1;
+    result = 0;
+    dispatch_result = run_coregraphics_env_dispatch(
+        env_dispatch,
+        sizeof(env_dispatch) / sizeof(env_dispatch[0]));
+    if (dispatch_result >= 0) {
+        return dispatch_result;
+    }
+
+    result = run_coregraphics_pixelformat_all_cases();
     if (result != 0) {
         return result;
     }
-
-    if (coregraphics_runtime_supports_webp_animation()) {
-        result = run_coregraphics_animation_metadata_case(
-            "coregraphics webp animation metadata",
-            WEBP_ANIMATED_IMAGE_PATH);
-        if (result != 0) {
-            return result;
-        }
-        result = run_coregraphics_start_frame_case(
-            "coregraphics webp start-frame behavior",
-            WEBP_ANIMATED_IMAGE_PATH);
-        if (result != 0) {
-            return result;
-        }
-        result = run_coregraphics_loop_control_case(
-            "coregraphics webp loop-control behavior",
-            WEBP_LOOP2_IMAGE_PATH);
-        if (result != 0) {
-            return result;
-        }
+    result = run_coregraphics_apng_animation_metadata_test();
+    if (result != 0) {
+        return result;
     }
-
+    result = run_coregraphics_apng_start_frame_behavior_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_apng_loop_control_behavior_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_webp_animation_metadata_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_webp_start_frame_behavior_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_webp_loop_control_behavior_test();
+    if (result != 0) {
+        return result;
+    }
     return 0;
 }
 #endif

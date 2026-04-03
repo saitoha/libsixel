@@ -10,11 +10,11 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_COREGRAPHICS_RGBA_NO_BG_MASK=1" \
+    --env "SIXEL_TEST_COREGRAPHICS_WEBP_METADATA=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (rgba no background mask)"
+    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (webp animation metadata)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (rgba no background mask)"
+echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (webp animation metadata)"
 exit 0
