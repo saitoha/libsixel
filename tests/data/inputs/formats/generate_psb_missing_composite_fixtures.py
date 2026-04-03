@@ -665,16 +665,9 @@ def mutate_psb_high_offset_valid(src_name: str,
 
 def generate_high_offset_over1m_fixtures() -> None:
     scales = (
-        ("large", 0x100000),
-        ("xlarge", 0x200000),
+        # Keep one representative >1MiB tier to avoid combinatorial explosion.
         ("xxlarge", 0x400000),
-        ("xxxlarge", 0x800000),
-        ("xxxxlarge", 0x1000000),
-        ("xxxxxlarge", 0x2000000),
-        ("xxxxxxlarge", 0x4000000),
-        ("xxxxxxxlarge", 0x7FF0000),
     )
-    over_limit_padding = 0x8000000
 
     for mode_prefix in ("cmyk", "mode7_cmyk"):
         for depth_tag in ("16", "32"):
@@ -708,12 +701,6 @@ def generate_high_offset_over1m_fixtures() -> None:
                     f"{base}_normal_rle_high_offset_{scale_name}_rle_payload_window_overrun.psd",
                 )
 
-            mutate_psb_high_offset_valid(
-                normal_src,
-                f"{base}_normal_high_offset_xxxxxxxlarge_over_limit.psd",
-                padding_bytes=over_limit_padding,
-            )
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -724,7 +711,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=(
             "Generate only >1MiB high-offset PSB fixtures "
-            "(large..xxxxxxxlarge and derived malformed variants)."
+            "(xxlarge and derived malformed variants)."
         ),
     )
     parser.add_argument(

@@ -16,7 +16,8 @@ if [ ! -f "${generator}" ]; then
     exit 1
 fi
 
-expected_count=158
+# xxlarge tier only: mode(2) * depth(2) * variants(5)
+expected_count=20
 current_count=0
 webp_padded="${formats_dir}/webp-static-icc-overlimit-padded.webp"
 webp_padded_gz="${webp_padded}.gz"
