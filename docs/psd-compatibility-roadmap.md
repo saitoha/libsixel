@@ -92,8 +92,10 @@ Key points used by this roadmap:
     `layer info end overrun`, `channel section-window overrun`, and
     `RLE payload window overrun`.
     Additional large-window coverage is fixed with `high_offset_large`
-    (1 MiB section shift) decode + `layer info end overrun` traces for
-    `mode=4` and `mode7(4ch->CMYK)` CMYK32.
+    (1 MiB section shift) decode baselines for
+    `mode=4` and `mode7(4ch->CMYK)` CMYK16/CMYK32, plus malformed traces for:
+    `layer info end overrun`, `channel section-window overrun`, and
+    `RLE payload window overrun`.
   - Non-pixel payload is tolerated in fallback:
     - layers with decodable pixel channels are composited normally
       (non-pixel payload ignored, info trace), and
@@ -365,8 +367,9 @@ Minimum fixture naming convention:
    `FillColor`/`Color` value extraction).
 2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
    large-document parity:
-   - after mode4/mode7 CMYK16/CMYK32 high-offset valid/malformed parity,
-     move to larger section-window layouts and higher-offset cases, and
+   - after mode4/mode7 CMYK16/CMYK32 high-offset and `high_offset_large`
+     valid/malformed parity, move to larger-than-1MiB section-window layouts
+     and higher-offset cases, and
    - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
 3. Increase cross-mode visual quality regression density for non-pixel payload
