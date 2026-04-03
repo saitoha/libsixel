@@ -755,9 +755,6 @@ sixel_chunk_from_url_with_winhttp(
     goto end;
 
 err:
-    if (pchunk->buffer) {
-        free(pchunk->buffer);
-    }
     if (status == SIXEL_OK) {
         status = SIXEL_RUNTIME_ERROR;
     }
