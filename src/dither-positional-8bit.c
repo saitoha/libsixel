@@ -83,7 +83,13 @@ static float positional_mask_blue_8bit(int x, int y, int c);
  */
 static float g_sixel_pos_strength_a_8bit = 0.150f;
 static float g_sixel_pos_strength_x_8bit = 0.100f;
+#if !SIXEL_ENABLE_THREADS
+/*
+ * The single-thread fallback uses this flag to emulate one-time init without
+ * pthread_once/InitOnceExecuteOnce.
+ */
 static int g_sixel_pos_inited_8bit = 0;
+#endif
 
 /*
  * Use per-file suffixes for static helpers so unity builds do not see
@@ -98,7 +104,10 @@ typedef struct {
 } sixel_bluenoise_conf_8bit_t;
 
 static sixel_bluenoise_conf_8bit_t g_sixel_bn_conf_8bit;
+#if !SIXEL_ENABLE_THREADS
+/* See g_sixel_pos_inited_8bit above for why this flag is single-thread only. */
 static int g_sixel_bn_inited_8bit = 0;
+#endif
 
 static void sixel_positional_strength_init_8bit(void);
 static void sixel_bluenoise_conf_init_from_env_8bit(void);
@@ -211,7 +220,9 @@ sixel_positional_strength_init_body_8bit(void)
 
     g_sixel_pos_strength_a_8bit = strength_a;
     g_sixel_pos_strength_x_8bit = strength_x;
+#if !SIXEL_ENABLE_THREADS
     g_sixel_pos_inited_8bit = 1;
+#endif
 }
 
 #if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_8BIT_USE_WIN32_ONCE)
@@ -368,7 +379,9 @@ sixel_bluenoise_conf_init_from_env_body_8bit(void)
     g_sixel_bn_conf_8bit.oy = oy;
     g_sixel_bn_conf_8bit.per_channel = per_channel;
     g_sixel_bn_conf_8bit.size = size;
+#if !SIXEL_ENABLE_THREADS
     g_sixel_bn_inited_8bit = 1;
+#endif
 }
 
 #if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_8BIT_USE_WIN32_ONCE)

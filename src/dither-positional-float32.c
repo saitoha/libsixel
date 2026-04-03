@@ -83,7 +83,13 @@ sixel_dither_scanline_params_positional_float32(int serpentine,
  */
 static float g_sixel_pos_strength_a_float32 = 0.150f;
 static float g_sixel_pos_strength_x_float32 = 0.100f;
+#if !SIXEL_ENABLE_THREADS
+/*
+ * The single-thread fallback uses this flag to emulate one-time init without
+ * pthread_once/InitOnceExecuteOnce.
+ */
 static int g_sixel_pos_inited_float32 = 0;
+#endif
 
 static void sixel_positional_strength_init_float32(void);
 static float positional_mask_blue_float32(int x, int y, int c);
@@ -116,7 +122,13 @@ typedef struct {
 } sixel_bluenoise_conf_float32_t;
 
 static sixel_bluenoise_conf_float32_t g_sixel_bn_conf_float32;
+#if !SIXEL_ENABLE_THREADS
+/*
+ * Keep the fallback init flag out of threaded builds so -Wunused-but-set-global
+ * does not fire when pthread_once/InitOnceExecuteOnce is active.
+ */
 static int g_sixel_bn_inited_float32 = 0;
+#endif
 
 static int
 sixel_bn_parse_int_float32(char const *text, int *out_value)
@@ -226,7 +238,9 @@ sixel_positional_strength_init_body_float32(void)
 
     g_sixel_pos_strength_a_float32 = strength_a;
     g_sixel_pos_strength_x_float32 = strength_x;
+#if !SIXEL_ENABLE_THREADS
     g_sixel_pos_inited_float32 = 1;
+#endif
 }
 
 #if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_FLOAT32_USE_WIN32_ONCE)
@@ -383,7 +397,9 @@ sixel_bluenoise_conf_init_from_env_body_float32(void)
     g_sixel_bn_conf_float32.oy = oy;
     g_sixel_bn_conf_float32.per_channel = per_channel;
     g_sixel_bn_conf_float32.size = size;
+#if !SIXEL_ENABLE_THREADS
     g_sixel_bn_inited_float32 = 1;
+#endif
 }
 
 #if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_FLOAT32_USE_WIN32_ONCE)
