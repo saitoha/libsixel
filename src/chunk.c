@@ -184,6 +184,57 @@ sixel_chunk_destroy(
     }
 }
 
+static SIXELSTATUS
+sixel_chunk_reserve_capacity(
+    sixel_chunk_t *pchunk,
+    size_t need_size,
+    char const *limit_message,
+    char const *realloc_message)
+{
+    size_t next_max_size;
+    void *grown;
+
+    if (need_size == 0) {
+        return SIXEL_OK;
+    }
+
+    if (pchunk->size > SIXEL_ALLOCATE_BYTES_MAX ||
+        need_size > SIXEL_ALLOCATE_BYTES_MAX - pchunk->size) {
+        sixel_helper_set_additional_message(limit_message);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    if (pchunk->max_size >= pchunk->size &&
+        pchunk->max_size - pchunk->size >= need_size) {
+        return SIXEL_OK;
+    }
+
+    next_max_size = pchunk->max_size;
+    for (;;) {
+        if (next_max_size >= pchunk->size &&
+            next_max_size - pchunk->size >= need_size) {
+            break;
+        }
+        if (next_max_size > SIZE_MAX / 2u ||
+            next_max_size > SIXEL_ALLOCATE_BYTES_MAX / 2u) {
+            sixel_helper_set_additional_message(limit_message);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        next_max_size *= 2;
+    }
+
+    grown = sixel_allocator_realloc(pchunk->allocator, pchunk->buffer, next_max_size);
+    if (grown == NULL) {
+        sixel_helper_set_additional_message(realloc_message);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    pchunk->buffer = (unsigned char *)grown;
+    pchunk->max_size = next_max_size;
+
+    return SIXEL_OK;
+}
+
 
 # ifdef HAVE_LIBCURL
 static size_t
@@ -209,17 +260,13 @@ memory_write(void   /* in */ *ptr,
         goto end;
     }
 
-    if (chunk->max_size <= chunk->size + nbytes) {
-        do {
-            chunk->max_size *= 2;
-        } while (chunk->max_size <= chunk->size + nbytes);
-        chunk->buffer = (unsigned char*)sixel_allocator_realloc(chunk->allocator,
-                                                                chunk->buffer,
-                                                                chunk->max_size);
-        if (chunk->buffer == NULL) {
-            nbytes = 0;
-            goto end;
-        }
+    if (SIXEL_FAILED(sixel_chunk_reserve_capacity(
+            chunk,
+            nbytes,
+            "sixel_chunk_from_url_with_curl: input exceeds allocation limit.",
+            "sixel_chunk_from_url_with_curl: sixel_allocator_realloc() failed."))) {
+        nbytes = 0;
+        goto end;
     }
 
     memcpy(chunk->buffer + chunk->size, ptr, nbytes);
@@ -462,24 +509,13 @@ sixel_chunk_from_file(
     fd = sixel_fileno(f);
 
     for (;;) {
-        if (pchunk->max_size - pchunk->size < bucket_size) {
-            if (pchunk->max_size > SIZE_MAX / 2u ||
-                pchunk->max_size > SIXEL_ALLOCATE_BYTES_MAX / 2u) {
-                sixel_helper_set_additional_message(
-                    "sixel_chunk_from_file: input exceeds allocation limit.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
-            pchunk->max_size *= 2;
-            pchunk->buffer = (unsigned char *)sixel_allocator_realloc(pchunk->allocator,
-                                                                      pchunk->buffer,
-                                                                      pchunk->max_size);
-            if (pchunk->buffer == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_chunk_from_file: sixel_allocator_realloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
+        status = sixel_chunk_reserve_capacity(
+            pchunk,
+            bucket_size,
+            "sixel_chunk_from_file: input exceeds allocation limit.",
+            "sixel_chunk_from_file: sixel_allocator_realloc() failed.");
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
 
         if (sixel_fd_is_console(fd)) {
@@ -545,7 +581,6 @@ sixel_chunk_from_url_with_winhttp(
     DWORD dwAvail = 0;
     DWORD dwEnable = 1;
     URL_COMPONENTS uc;
-    void *p = NULL;
 
     wua = utf8_to_wide("libsixel/" LIBSIXEL_VERSION);
     if (wua == NULL) {
@@ -692,18 +727,13 @@ sixel_chunk_from_url_with_winhttp(
         if (dwAvail == 0) {
             break;
         }
-        if (pchunk->size + dwAvail > pchunk->max_size) {
-            do {
-                pchunk->max_size *= 2;
-            } while (pchunk->max_size < pchunk->size + dwAvail);
-            p = sixel_allocator_realloc(
-                pchunk->allocator, pchunk->buffer, pchunk->max_size);
-            if (! p) {
-                status = SIXEL_BAD_ALLOCATION;
-                sixel_helper_set_additional_message("realloc failed.");
-                goto err;
-            }
-            pchunk->buffer = p;
+        status = sixel_chunk_reserve_capacity(
+            pchunk,
+            (size_t)dwAvail,
+            "sixel_chunk_from_url_with_winhttp: input exceeds allocation limit.",
+            "sixel_chunk_from_url_with_winhttp: sixel_allocator_realloc() failed.");
+        if (SIXEL_FAILED(status)) {
+            goto err;
         }
 
         dwRead = 0;
@@ -861,13 +891,11 @@ sixel_chunk_from_url_with_fetch(
 #if defined(__EMSCRIPTEN__)
     emscripten_fetch_attr_t attr;
     emscripten_fetch_t *fetch;
-    void *grown;
     size_t fetched_size;
     int http_status;
     char message[256];
 
     fetch = NULL;
-    grown = NULL;
     fetched_size = 0;
     http_status = 0;
     (void)finsecure;
@@ -914,20 +942,13 @@ sixel_chunk_from_url_with_fetch(
         goto end;
     }
 
-    if (pchunk->max_size - pchunk->size < fetched_size) {
-        do {
-            pchunk->max_size *= 2;
-        } while (pchunk->max_size - pchunk->size < fetched_size);
-        grown = sixel_allocator_realloc(pchunk->allocator,
-                                        pchunk->buffer,
-                                        pchunk->max_size);
-        if (grown == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            sixel_helper_set_additional_message(
-                "sixel_allocator_realloc() failed.");
-            goto end;
-        }
-        pchunk->buffer = (unsigned char *)grown;
+    status = sixel_chunk_reserve_capacity(
+        pchunk,
+        fetched_size,
+        "sixel_chunk_from_url_with_libfetch: input exceeds allocation limit.",
+        "sixel_chunk_from_url_with_libfetch: sixel_allocator_realloc() failed.");
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     memcpy(pchunk->buffer + pchunk->size, fetch->data, fetched_size);
@@ -950,7 +971,6 @@ end:
 #if defined(__NetBSD__)
     ssize_t fetched;
 #endif
-    void *grown;
     int use_insecure;
     char const *saved_peer;
     char const *saved_host;
@@ -960,7 +980,6 @@ end:
 
     fetch_stream = NULL;
     nread = 0;
-    grown = NULL;
     use_insecure = 0;
     saved_peer = NULL;
     saved_host = NULL;
@@ -1030,20 +1049,13 @@ end:
         }
 #endif
 
-        if (pchunk->max_size - pchunk->size < nread) {
-            do {
-                pchunk->max_size *= 2;
-            } while (pchunk->max_size - pchunk->size < nread);
-            grown = sixel_allocator_realloc(pchunk->allocator,
-                                            pchunk->buffer,
-                                            pchunk->max_size);
-            if (grown == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
-                sixel_helper_set_additional_message(
-                    "sixel_allocator_realloc() failed.");
-                goto end;
-            }
-            pchunk->buffer = (unsigned char *)grown;
+        status = sixel_chunk_reserve_capacity(
+            pchunk,
+            nread,
+            "sixel_chunk_from_url_with_libfetch: input exceeds allocation limit.",
+            "sixel_chunk_from_url_with_libfetch: sixel_allocator_realloc() failed.");
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
 
         memcpy(pchunk->buffer + pchunk->size, bucket, nread);
