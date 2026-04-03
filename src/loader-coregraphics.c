@@ -1677,11 +1677,20 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
     }
 
     memset(zero_alpha_map, 0, sizeof(zero_alpha_map));
-    coregraphics_parse_png_transparency(frame_props,
-                                        ncolors,
-                                        zero_alpha_map,
-                                        &zero_alpha_count,
-                                        &has_partial_alpha);
+    /*
+     * Prefer chunk-parsed indexed metadata when available. It already contains
+     * PLTE/tRNS information and avoids depending on per-frame properties on
+     * replay loops.
+     */
+    if (png_indexed_cache == NULL ||
+        png_indexed_cache->parse_status != SIXEL_OK ||
+        png_indexed_cache->ncolors <= 0) {
+        coregraphics_parse_png_transparency(frame_props,
+                                            ncolors,
+                                            zero_alpha_map,
+                                            &zero_alpha_count,
+                                            &has_partial_alpha);
+    }
     if (png_indexed_cache != NULL &&
         png_indexed_cache->parse_status != SIXEL_OK &&
         png_indexed_cache->parse_status != SIXEL_FALSE) {
@@ -3065,6 +3074,7 @@ load_with_coregraphics(
                     active_frame_decode_hint_ready[frame_meta_slot] = 1u;
                 }
                 if (active_frame_is_indexed_cache[frame_meta_slot] != 0 &&
+                    png_indexed_cache.parse_status != SIXEL_OK &&
                     frame_props == NULL) {
                     frame_props = CGImageSourceCopyPropertiesAtIndex(
                         source,
