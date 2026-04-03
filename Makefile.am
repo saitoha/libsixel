@@ -146,14 +146,18 @@ FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
 FUZZ_STRUCT_TARGETS = \
 	png-chunk \
 	png-apng \
+	png-icc-gamma \
+	png-plte-trns \
 	jpeg-icc \
 	pnm-ascii \
 	psd-resource \
 	gif-block \
+	gif-lzw-codes \
 	sixel-stream \
 	hdr-header \
 	pic-structure \
 	bmp-dib \
+	bmp-rle-bitfields \
 	mapfile-spec \
 	mapfile-palette
 FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct

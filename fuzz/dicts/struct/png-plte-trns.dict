@@ -1,0 +1,10 @@
+# PNG palette/transparency interaction
+"IHDR"
+"PLTE"
+"tRNS"
+"hIST"
+"bKGD"
+"IDAT"
+"IEND"
+"\x03"
+"\x00\x00"

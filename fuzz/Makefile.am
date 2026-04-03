@@ -15,14 +15,18 @@ FUZZ_LDFLAGS = @FUZZ_LDFLAGS@
 FUZZ_STRUCT_TARGETS = \
     png-chunk \
     png-apng \
+    png-icc-gamma \
+    png-plte-trns \
     jpeg-icc \
     pnm-ascii \
     psd-resource \
     gif-block \
+    gif-lzw-codes \
     sixel-stream \
     hdr-header \
     pic-structure \
     bmp-dib \
+    bmp-rle-bitfields \
     mapfile-spec \
     mapfile-palette
 
@@ -40,14 +44,18 @@ noinst_PROGRAMS = \
     fuzz-loader-builtin-libfuzzer \
     fuzz-loader-builtin-struct-png-chunk-libfuzzer \
     fuzz-loader-builtin-struct-png-apng-libfuzzer \
+    fuzz-loader-builtin-struct-png-icc-gamma-libfuzzer \
+    fuzz-loader-builtin-struct-png-plte-trns-libfuzzer \
     fuzz-loader-builtin-struct-jpeg-icc-libfuzzer \
     fuzz-loader-builtin-struct-pnm-ascii-libfuzzer \
     fuzz-loader-builtin-struct-psd-resource-libfuzzer \
     fuzz-loader-builtin-struct-gif-block-libfuzzer \
+    fuzz-loader-builtin-struct-gif-lzw-codes-libfuzzer \
     fuzz-loader-builtin-struct-sixel-stream-libfuzzer \
     fuzz-loader-builtin-struct-hdr-header-libfuzzer \
     fuzz-loader-builtin-struct-pic-structure-libfuzzer \
     fuzz-loader-builtin-struct-bmp-dib-libfuzzer \
+    fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer \
     fuzz-loader-builtin-struct-mapfile-spec-libfuzzer \
     fuzz-loader-builtin-struct-mapfile-palette-libfuzzer
 if HAVE_COREGRAPHICS
@@ -82,14 +90,18 @@ EXTRA_DIST = \
     fuzz-loader-builtin-struct-runtime.c \
     fuzz-loader-builtin-struct-png-chunk-libfuzzer.c \
     fuzz-loader-builtin-struct-png-apng-libfuzzer.c \
+    fuzz-loader-builtin-struct-png-icc-gamma-libfuzzer.c \
+    fuzz-loader-builtin-struct-png-plte-trns-libfuzzer.c \
     fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.c \
     fuzz-loader-builtin-struct-pnm-ascii-libfuzzer.c \
     fuzz-loader-builtin-struct-psd-resource-libfuzzer.c \
     fuzz-loader-builtin-struct-gif-block-libfuzzer.c \
+    fuzz-loader-builtin-struct-gif-lzw-codes-libfuzzer.c \
     fuzz-loader-builtin-struct-sixel-stream-libfuzzer.c \
     fuzz-loader-builtin-struct-hdr-header-libfuzzer.c \
     fuzz-loader-builtin-struct-pic-structure-libfuzzer.c \
     fuzz-loader-builtin-struct-bmp-dib-libfuzzer.c \
+    fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer.c \
     fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c \
     fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c \
     loader-builtin.dict
@@ -138,6 +150,22 @@ fuzz_loader_builtin_struct_png_apng_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 fuzz_loader_builtin_struct_png_apng_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 fuzz_loader_builtin_struct_png_apng_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
+fuzz_loader_builtin_struct_png_icc_gamma_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-png-icc-gamma-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_png_icc_gamma_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_png_icc_gamma_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_png_icc_gamma_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_png_icc_gamma_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_png_plte_trns_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-png-plte-trns-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_png_plte_trns_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_png_plte_trns_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_png_plte_trns_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_png_plte_trns_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
 fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.c \
     $(srcdir)/fuzz-loader-builtin-struct-runtime.c
@@ -170,6 +198,14 @@ fuzz_loader_builtin_struct_gif_block_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 fuzz_loader_builtin_struct_gif_block_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 fuzz_loader_builtin_struct_gif_block_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
+fuzz_loader_builtin_struct_gif_lzw_codes_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-gif-lzw-codes-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_gif_lzw_codes_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_gif_lzw_codes_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_gif_lzw_codes_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_gif_lzw_codes_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
 fuzz_loader_builtin_struct_sixel_stream_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-loader-builtin-struct-sixel-stream-libfuzzer.c \
     $(srcdir)/fuzz-loader-builtin-struct-runtime.c
@@ -201,6 +237,14 @@ fuzz_loader_builtin_struct_bmp_dib_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
 fuzz_loader_builtin_struct_bmp_dib_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 fuzz_loader_builtin_struct_bmp_dib_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 fuzz_loader_builtin_struct_bmp_dib_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer.c \
+    $(srcdir)/fuzz-loader-builtin-struct-runtime.c
+fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
 fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c

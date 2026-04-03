@@ -1,0 +1,11 @@
+# PNG iCCP/gAMA/cHRM/sRGB interaction
+"IHDR"
+"iCCP"
+"gAMA"
+"cHRM"
+"sRGB"
+"IDAT"
+"IEND"
+"ICC_PROFILE"
+"\x00\x00\xb1\x8f"
+"\x00\x00\x59\x3a"

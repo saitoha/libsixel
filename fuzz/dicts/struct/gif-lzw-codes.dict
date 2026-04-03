@@ -1,0 +1,9 @@
+# GIF LZW code stream and block boundaries
+"GIF89a"
+"GIF87a"
+"\x21\xf9\x04"
+"\x2c"
+"\x00\x00"
+"\x00\x01"
+"\x3b"
+"\x21\xff\x0bNETSCAPE2.0"

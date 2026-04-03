@@ -107,7 +107,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [png-chunk, png-apng, jpeg-icc, pnm-ascii, psd-resource, gif-block, sixel-stream, hdr-header, pic-structure, bmp-dib, mapfile-spec, mapfile-palette]
+        target: [png-chunk, png-apng, png-icc-gamma, png-plte-trns, jpeg-icc, pnm-ascii, psd-resource, gif-block, gif-lzw-codes, sixel-stream, hdr-header, pic-structure, bmp-dib, bmp-rle-bitfields, mapfile-spec, mapfile-palette]
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
@@ -184,7 +184,22 @@ jobs:
           else
             cp "$dict_common" "$dict_merged"
           fi
-          fuzz_args="$FUZZ_STRUCT_ARGS -dict=$dict_merged"
+          struct_max_len=4096
+          case "${{ matrix.target }}" in
+            hdr-header|mapfile-spec|mapfile-palette|pnm-ascii)
+              struct_max_len=2048
+              ;;
+            gif-lzw-codes)
+              struct_max_len=3072
+              ;;
+            png-icc-gamma|png-plte-trns|psd-resource)
+              struct_max_len=8192
+              ;;
+            bmp-rle-bitfields)
+              struct_max_len=16384
+              ;;
+          esac
+          fuzz_args="$FUZZ_STRUCT_ARGS -max_len=$struct_max_len -dict=$dict_merged"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz

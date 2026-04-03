@@ -236,8 +236,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/missing build-aux/py-compile ltmain.sh
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile ltmain.sh
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -605,14 +605,18 @@ FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
 FUZZ_STRUCT_TARGETS = \
 	png-chunk \
 	png-apng \
+	png-icc-gamma \
+	png-plte-trns \
 	jpeg-icc \
 	pnm-ascii \
 	psd-resource \
 	gif-block \
+	gif-lzw-codes \
 	sixel-stream \
 	hdr-header \
 	pic-structure \
 	bmp-dib \
+	bmp-rle-bitfields \
 	mapfile-spec \
 	mapfile-palette
 
