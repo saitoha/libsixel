@@ -105,7 +105,6 @@
 #define COREGRAPHICS_PALETTE_MATCH_TOLERANCE 3u
 #define COREGRAPHICS_FRAME_CACHE_MAX_BYTES_DEFAULT \
     (64u * 1024u * 1024u)
-#define COREGRAPHICS_FRAME_CACHE_ESTIMATE_BPP 8u
 
 typedef struct sixel_loader_coregraphics_component {
     sixel_loader_component_t base;
@@ -2454,30 +2453,61 @@ end:
 }
 
 static int
-coregraphics_accumulate_frame_cache_estimate(size_t width,
-                                             size_t height,
-                                             size_t *total_bytes)
+coregraphics_measure_frame_cache_bytes(sixel_frame_t const *frame,
+                                       size_t *total_bytes)
 {
+    int depth;
     size_t pixel_count;
-    size_t frame_bytes;
+    size_t pixels_bytes;
+    size_t palette_bytes;
+    size_t mask_bytes;
 
+    depth = 0;
     pixel_count = 0u;
-    frame_bytes = 0u;
-    if (total_bytes == NULL || width == 0u || height == 0u) {
+    pixels_bytes = 0u;
+    palette_bytes = 0u;
+    mask_bytes = 0u;
+    if (frame == NULL || total_bytes == NULL) {
         return 0;
     }
-    if (width > SIZE_MAX / height) {
+    if (frame->width <= 0 || frame->height <= 0) {
         return 0;
     }
-    pixel_count = width * height;
-    if (pixel_count > SIZE_MAX / COREGRAPHICS_FRAME_CACHE_ESTIMATE_BPP) {
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
         return 0;
     }
-    frame_bytes = pixel_count * COREGRAPHICS_FRAME_CACHE_ESTIMATE_BPP;
-    if (*total_bytes > SIZE_MAX - frame_bytes) {
+    depth = sixel_helper_compute_depth(frame->pixelformat);
+    if (depth <= 0) {
         return 0;
     }
-    *total_bytes += frame_bytes;
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_count > SIZE_MAX / (size_t)depth) {
+        return 0;
+    }
+    pixels_bytes = pixel_count * (size_t)depth;
+    *total_bytes = pixels_bytes;
+
+    /*
+     * Include palette and transparency mask storage so cache limiting follows
+     * the decoded frame footprint rather than a fixed bytes-per-pixel guess.
+     */
+    if (frame->palette != NULL && frame->ncolors > 0) {
+        if ((size_t)frame->ncolors > SIZE_MAX / 3u) {
+            return 0;
+        }
+        palette_bytes = (size_t)frame->ncolors * 3u;
+        if (*total_bytes > SIZE_MAX - palette_bytes) {
+            return 0;
+        }
+        *total_bytes += palette_bytes;
+    }
+    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
+        mask_bytes = frame->transparent_mask_size;
+        if (*total_bytes > SIZE_MAX - mask_bytes) {
+            return 0;
+        }
+        *total_bytes += mask_bytes;
+    }
     return 1;
 }
 
@@ -2535,12 +2565,14 @@ load_with_coregraphics(
     sixel_frame_t **frame_cache;
     CFIndex cf_data_length;
     size_t prefetch_index;
-    size_t cache_estimate_index;
     size_t frame_cache_max_bytes;
-    size_t frame_cache_estimate_bytes;
+    size_t frame_cache_used_bytes;
+    size_t frame_cache_frame_bytes;
     size_t image_width;
     size_t image_height;
     int frame_cache_enabled;
+    int frame_cache_keep;
+    int release_emit_frame;
     int cache_hit;
 
     status = SIXEL_FALSE;
@@ -2583,12 +2615,14 @@ load_with_coregraphics(
     frame_cache = NULL;
     cf_data_length = 0;
     prefetch_index = 0u;
-    cache_estimate_index = 0u;
     frame_cache_max_bytes = 0u;
-    frame_cache_estimate_bytes = 0u;
+    frame_cache_used_bytes = 0u;
+    frame_cache_frame_bytes = 0u;
     image_width = 0u;
     image_height = 0u;
     frame_cache_enabled = 0;
+    frame_cache_keep = 0;
+    release_emit_frame = 0;
     cache_hit = 0;
 
     if (start_frame_no_set) {
@@ -2744,35 +2778,6 @@ load_with_coregraphics(
         }
     }
     if (frame_cache_enabled != 0) {
-        frame_cache_estimate_bytes = 0u;
-        for (cache_estimate_index = 0u;
-             cache_estimate_index < (size_t)total_frames;
-             ++cache_estimate_index) {
-            image = CGImageSourceCreateImageAtIndex(source,
-                                                    cache_estimate_index,
-                                                    NULL);
-            if (image == NULL) {
-                frame_cache_enabled = 0;
-                break;
-            }
-            image_width = CGImageGetWidth(image);
-            image_height = CGImageGetHeight(image);
-            CGImageRelease(image);
-            image = NULL;
-            if (!coregraphics_accumulate_frame_cache_estimate(
-                    image_width,
-                    image_height,
-                    &frame_cache_estimate_bytes)) {
-                frame_cache_enabled = 0;
-                break;
-            }
-            if (frame_cache_estimate_bytes > frame_cache_max_bytes) {
-                frame_cache_enabled = 0;
-                break;
-            }
-        }
-    }
-    if (frame_cache_enabled != 0) {
         frame_cache = (sixel_frame_t **)sixel_allocator_calloc(
             frame->allocator,
             (size_t)total_frames,
@@ -2802,6 +2807,8 @@ load_with_coregraphics(
         while (frame_index < total_frames) {
             emit_frame = NULL;
             decode_frame = NULL;
+            frame_cache_keep = 0;
+            release_emit_frame = 0;
             cache_hit = 0;
             frame_props = NULL;
             if (frame_cache != NULL &&
@@ -2995,10 +3002,32 @@ load_with_coregraphics(
                 }
 
                 if (frame_cache != NULL) {
-                    decode_frame->handoff_shareable = 1;
-                    frame_cache[(size_t)frame_index] = decode_frame;
-                    emit_frame = decode_frame;
-                    cached_frame_tmp = NULL;
+                    frame_cache_frame_bytes = 0u;
+                    if (!coregraphics_measure_frame_cache_bytes(
+                            decode_frame,
+                            &frame_cache_frame_bytes)) {
+                        sixel_helper_set_additional_message(
+                            "load_with_coregraphics: failed to estimate "
+                            "decoded frame size.");
+                        status = SIXEL_BAD_INTEGER_OVERFLOW;
+                        goto end;
+                    }
+                    if (frame_cache_frame_bytes <= frame_cache_max_bytes &&
+                        frame_cache_used_bytes <=
+                        frame_cache_max_bytes - frame_cache_frame_bytes) {
+                        frame_cache_keep = 1;
+                    }
+                    if (frame_cache_keep != 0) {
+                        decode_frame->handoff_shareable = 1;
+                        frame_cache[(size_t)frame_index] = decode_frame;
+                        frame_cache_used_bytes += frame_cache_frame_bytes;
+                        emit_frame = decode_frame;
+                        cached_frame_tmp = NULL;
+                    } else {
+                        decode_frame->handoff_shareable = 0;
+                        emit_frame = decode_frame;
+                        release_emit_frame = 1;
+                    }
                 } else {
                     emit_frame = decode_frame;
                 }
@@ -3025,6 +3054,12 @@ load_with_coregraphics(
 
             ++frame_index;
             ++frames_in_loop;
+
+            if (release_emit_frame != 0) {
+                sixel_frame_unref(emit_frame);
+                emit_frame = NULL;
+                cached_frame_tmp = NULL;
+            }
 
             if (fstatic || !is_animation_container) {
                 status = SIXEL_OK;

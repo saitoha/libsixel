@@ -56,6 +56,14 @@ typedef struct coregraphics_delay_replay_probe {
     int frame_nos[8];
 } coregraphics_delay_replay_probe_t;
 
+typedef struct coregraphics_cache_shareable_probe {
+    int callback_count;
+    int expected_count;
+    int shareable[8];
+    int loop_nos[8];
+    int frame_nos[8];
+} coregraphics_cache_shareable_probe_t;
+
 typedef struct coregraphics_callback_count_probe {
     int callback_count;
 } coregraphics_callback_count_probe_t;
@@ -727,6 +735,32 @@ capture_coregraphics_delay_replay_probe(sixel_frame_t *frame, void *data)
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+capture_coregraphics_cache_shareable_probe(sixel_frame_t *frame, void *data)
+{
+    coregraphics_cache_shareable_probe_t *probe;
+    int index;
+    int capacity;
+
+    probe = NULL;
+    index = 0;
+    capacity = 0;
+    if (frame == NULL || data == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    probe = (coregraphics_cache_shareable_probe_t *)data;
+    capacity = (int)(sizeof(probe->shareable) / sizeof(probe->shareable[0]));
+    if (probe->callback_count < capacity) {
+        index = probe->callback_count;
+        probe->shareable[index] = frame->handoff_shareable != 0 ? 1 : 0;
+        probe->loop_nos[index] = sixel_frame_get_loop_no(frame);
+        probe->frame_nos[index] = sixel_frame_get_frame_no(frame);
+    }
+    probe->callback_count += 1;
+    return SIXEL_OK;
+}
+
 static int
 run_coregraphics_delay_replay_case(char const *label,
                                    char const *relative_path)
@@ -807,6 +841,75 @@ run_coregraphics_delay_replay_case(char const *label,
                     index,
                     probe.loop_nos[index],
                     probe.frame_nos[index],
+                    expected_loop_nos[index],
+                    expected_frame_nos[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_coregraphics_apng_cache_partial_shareable_test(void)
+{
+    static int const expected_shareable[] = { 1, 0, 1, 0 };
+    static int const expected_loop_nos[] = { 0, 0, 1, 1 };
+    static int const expected_frame_nos[] = { 0, 1, 0, 1 };
+    SIXELSTATUS status;
+    coregraphics_cache_shareable_probe_t probe;
+    int result;
+    int index;
+    int capacity;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.expected_count = 4;
+    result = 1;
+    index = 0;
+    capacity = (int)(sizeof(probe.shareable) / sizeof(probe.shareable[0]));
+    for (index = 0; index < capacity; ++index) {
+        probe.shareable[index] = -1;
+        probe.loop_nos[index] = -1;
+        probe.frame_nos[index] = -1;
+    }
+
+    result = run_coregraphics_animation_case_with_callback(
+        "coregraphics apng cache partial shareable",
+        "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png",
+        SIXEL_LOOP_AUTO,
+        0,
+        INT_MIN,
+        capture_coregraphics_cache_shareable_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (status != SIXEL_OK) {
+        fprintf(stderr,
+                "coregraphics: cache partial shareable failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count < probe.expected_count) {
+        fprintf(stderr,
+                "coregraphics: cache partial shareable callback count %d\n",
+                probe.callback_count);
+        return 1;
+    }
+    for (index = 0; index < probe.expected_count; ++index) {
+        if (probe.shareable[index] != expected_shareable[index] ||
+            probe.loop_nos[index] != expected_loop_nos[index] ||
+            probe.frame_nos[index] != expected_frame_nos[index]) {
+            fprintf(stderr,
+                    "coregraphics: unexpected cache shareable sequence "
+                    "at %d (actual=%d:%d:%d expected=%d:%d:%d)\n",
+                    index,
+                    probe.shareable[index],
+                    probe.loop_nos[index],
+                    probe.frame_nos[index],
+                    expected_shareable[index],
                     expected_loop_nos[index],
                     expected_frame_nos[index]);
             return 1;
@@ -1524,6 +1627,8 @@ run_coregraphics_loader_test(void)
           run_coregraphics_apng_loop_control_behavior_test },
         { "SIXEL_TEST_COREGRAPHICS_APNG_DELAY_REPLAY",
           run_coregraphics_apng_delay_replay_consistency_test },
+        { "SIXEL_TEST_COREGRAPHICS_APNG_CACHE_PARTIAL_SHAREABLE",
+          run_coregraphics_apng_cache_partial_shareable_test },
         { "SIXEL_TEST_COREGRAPHICS_WEBP_METADATA",
           run_coregraphics_webp_animation_metadata_test },
         { "SIXEL_TEST_COREGRAPHICS_WEBP_START_FRAME",
@@ -1568,6 +1673,10 @@ run_coregraphics_loader_test(void)
         return result;
     }
     result = run_coregraphics_apng_delay_replay_consistency_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_apng_cache_partial_shareable_test();
     if (result != 0) {
         return result;
     }
