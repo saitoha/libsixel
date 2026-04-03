@@ -191,6 +191,11 @@ Key points used by this roadmap:
   - TySh EngineData named-space short payloads now keep deterministic malformed
     skip behavior (no synthetic fill render) for both direct `/Color /Values`
     and `StyleRun/StyleSheetData` `FillColor /Values` paths.
+  - TySh EngineData FillColor LSQA density now includes CMYK16/32 representative
+    decode+trace coverage for both `mode=4` and `mode7(4ch->CMYK)` paths.
+  - PSB large-size boundary handling in layer fallback now uses a shared
+    layer-info window validator (`8BPB+version=2` and PSD path share
+    overflow/overrun gate logic).
   - descriptor malformed regression now includes:
     - structurally malformed fill additional-block length contracts
       (`malformed layer extra data`), and
