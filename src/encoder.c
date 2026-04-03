@@ -197,11 +197,20 @@ typedef struct sixel_palette_builder_context {
     int allow_cache;
 } sixel_palette_builder_context_t;
 
+typedef struct sixel_encoder_frame_handoff_meta {
+    int frame_no;
+    int loop_no;
+    int delay;
+    int multiframe;
+} sixel_encoder_frame_handoff_meta_t;
+
 typedef struct sixel_encoder_frame_pipeline {
     sixel_thread_t thread;
     sixel_mutex_t mutex;
     sixel_cond_t cond;
     sixel_frame_t *queue[SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY];
+    sixel_encoder_frame_handoff_meta_t
+        queue_meta[SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY];
     sixel_encoder_t *encoder;
     sixel_output_t *output;
     SIXELSTATUS worker_status;
@@ -280,6 +289,9 @@ static SIXELSTATUS sixel_encoder_frame_pipeline_enqueue(
 static SIXELSTATUS sixel_encoder_frame_pipeline_finish(
     sixel_encoder_frame_pipeline_t *pipeline);
 static int sixel_encoder_frame_pipeline_worker(void *priv);
+static int sixel_encoder_handoff_needs_preplan_clone(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame);
 static void sixel_encoder_filter_plan_init(sixel_filter_plan_t *plan);
 static void sixel_encoder_filter_plan_teardown(sixel_filter_plan_t *plan);
 static SIXELSTATUS sixel_encoder_filter_plan_append(
@@ -301,12 +313,18 @@ static SIXELSTATUS sixel_encoder_output_without_macro(
     sixel_frame_t *frame,
     sixel_dither_t *dither,
     sixel_output_t *output,
-    sixel_encoder_t *encoder);
+    sixel_encoder_t *encoder,
+    int frame_no,
+    int loop_no,
+    int delay);
 static SIXELSTATUS sixel_encoder_output_with_macro(
     sixel_frame_t *frame,
     sixel_dither_t *dither,
     sixel_output_t *output,
-    sixel_encoder_t *encoder);
+    sixel_encoder_t *encoder,
+    int frame_no,
+    int loop_no,
+    int delay);
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -762,6 +780,7 @@ sixel_encoder_clone_frame(sixel_frame_t *frame,
     clone->loop_count = frame->loop_count;
     clone->multiframe = frame->multiframe;
     clone->delay = frame->delay;
+    clone->handoff_shareable = 0;
 
     if (frame->palette != NULL && frame->ncolors > 0) {
         if (frame->ncolors > SIXEL_PALETTE_MAX) {
@@ -848,6 +867,34 @@ error:
     }
     sixel_frame_unref(clone);
     return status;
+}
+
+/*
+ * Shared handoff frames are reused by CoreGraphics loop replay. Protect them
+ * from destructive preplan operations by cloning only when planner analysis
+ * indicates clip/resize/colorspace stages on the current frame.
+ */
+static int
+sixel_encoder_handoff_needs_preplan_clone(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame)
+{
+    sixel_encoding_planner_t planner_snapshot;
+
+    if (encoder == NULL || frame == NULL) {
+        return 1;
+    }
+
+    planner_snapshot = encoder->planner;
+    sixel_encoding_planner_reset_for_frame(&planner_snapshot);
+    sixel_encoding_planner_plan(&planner_snapshot, encoder, frame);
+
+    if (planner_snapshot.clip_active != 0 ||
+        planner_snapshot.scale_active != 0 ||
+        planner_snapshot.colorspace_active != 0) {
+        return 1;
+    }
+    return 0;
 }
 
 static int
@@ -2010,6 +2057,10 @@ typedef struct sixel_encode_dag_context {
     sixel_filter_dither_config_t dither_config;
     int current_pixelformat;
     int current_colorspace;
+    int frame_no;
+    int loop_no;
+    int delay;
+    int multiframe;
 } sixel_encode_dag_context_t;
 
 /*
@@ -2514,13 +2565,12 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         return SIXEL_INTERRUPTED;
     }
 
-    if (sixel_frame_get_multiframe(context->frame)
-        && !context->encoder->fstatic) {
+    if (context->multiframe != 0 && !context->encoder->fstatic) {
         outfd_is_tty = sixel_compat_isatty(context->encoder->outfd);
         hide_cursor_env = sixel_compat_getenv(
             SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR);
         should_hide_cursor = sixel_encoder_should_hide_animation_cursor(
-            sixel_frame_get_multiframe(context->frame),
+            context->multiframe,
             context->encoder->fstatic,
             outfd_is_tty,
             hide_cursor_env);
@@ -2528,8 +2578,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
             (void)sixel_tty_begin_animation_input_guard();
             (void)sixel_tty_hide_cursor(context->encoder->outfd);
         }
-        if (sixel_frame_get_loop_no(context->frame) != 0
-            || sixel_frame_get_frame_no(context->frame) != 0) {
+        if (context->loop_no != 0 || context->frame_no != 0) {
             context->is_animation = 1;
         }
         height = sixel_frame_get_height(context->frame);
@@ -2555,17 +2604,26 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         status = sixel_encoder_output_with_macro(context->frame,
                                                  context->dither,
                                                  context->output,
-                                                 context->encoder);
+                                                 context->encoder,
+                                                 context->frame_no,
+                                                 context->loop_no,
+                                                 context->delay);
     } else if (context->encoder->macro_number >= 0) {
         status = sixel_encoder_output_with_macro(context->frame,
                                                  context->dither,
                                                  context->output,
-                                                 context->encoder);
+                                                 context->encoder,
+                                                 context->frame_no,
+                                                 context->loop_no,
+                                                 context->delay);
     } else {
         status = sixel_encoder_output_without_macro(context->frame,
                                                     context->dither,
                                                     context->output,
-                                                    context->encoder);
+                                                    context->encoder,
+                                                    context->frame_no,
+                                                    context->loop_no,
+                                                    context->delay);
     }
     if (SIXEL_FAILED(status)) {
         return status;
@@ -2580,8 +2638,8 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
                 "sixel_encoder_encode_frame: write_callback() failed.");
             return status;
         }
-        if (sixel_frame_get_multiframe(context->frame)
-            && !context->encoder->fstatic
+        if (context->multiframe != 0 &&
+            !context->encoder->fstatic
             && outfd_is_tty != 0
             && height > 0) {
             (void)sixel_tty_restore_animation_cursor_to_bottom(
@@ -3770,7 +3828,10 @@ sixel_encoder_output_without_macro(
     sixel_frame_t       /* in */ *frame,
     sixel_dither_t      /* in */ *dither,
     sixel_output_t      /* in */ *output,
-    sixel_encoder_t     /* in */ *encoder)
+    sixel_encoder_t     /* in */ *encoder,
+    int                  frame_no,
+    int                  loop_no,
+    int                  delay)
 {
     SIXELSTATUS status = SIXEL_OK;
     static unsigned char *p;
@@ -3779,7 +3840,6 @@ sixel_encoder_output_without_macro(
     char message[message_buffer_size];
     int nwrite;
     int dulation;
-    int delay;
     unsigned int remaining_delay;
     unsigned int target_delay;
     unsigned char *pixbuf;
@@ -3847,17 +3907,18 @@ sixel_encoder_output_without_macro(
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, size);
     if (p == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encoder_output_without_macro: sixel_allocator_malloc() failed.");
+            "sixel_encoder_output_without_macro: "
+            "sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
         sixel_trace_topic_message(
             "lifecycle",
-            "frame delay check: frame_no=%d loop_no=%d delay_cs=%d ignore=%d static=%d",
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame),
+            "frame delay check: frame_no=%d loop_no=%d "
+            "delay_cs=%d ignore=%d static=%d",
+            frame_no,
+            loop_no,
             delay,
             encoder->fignore_delay,
             encoder->fstatic);
@@ -3868,17 +3929,18 @@ sixel_encoder_output_without_macro(
             &target_delay);
         sixel_trace_topic_message(
             "lifecycle",
-            "frame delay timing: frame_no=%d loop_no=%d measured_usec=%d target_usec=%u",
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame),
+            "frame delay timing: frame_no=%d loop_no=%d "
+            "measured_usec=%d target_usec=%u",
+            frame_no,
+            loop_no,
             dulation,
             target_delay);
         if (remaining_delay > 0U) {
             sixel_trace_topic_message(
                 "lifecycle",
                 "frame delay sleep: frame_no=%d loop_no=%d sleep_usec=%u",
-                sixel_frame_get_frame_no(frame),
-                sixel_frame_get_loop_no(frame),
+                frame_no,
+                loop_no,
                 remaining_delay);
             sixel_sleep(remaining_delay);
         }
@@ -3939,14 +4001,16 @@ sixel_encoder_output_with_macro(
     sixel_frame_t   /* in */ *frame,
     sixel_dither_t  /* in */ *dither,
     sixel_output_t  /* in */ *output,
-    sixel_encoder_t /* in */ *encoder)
+    sixel_encoder_t /* in */ *encoder,
+    int              frame_no,
+    int              loop_no,
+    int              delay)
 {
     SIXELSTATUS status = SIXEL_OK;
     enum { message_buffer_size = 256 };
     char buffer[message_buffer_size];
     int nwrite;
     int dulation;
-    int delay;
     unsigned int remaining_delay;
     unsigned int target_delay;
     int width;
@@ -3994,7 +4058,7 @@ sixel_encoder_output_with_macro(
     output->source_colorspace = frame_colorspace;
     output->colorspace = encoder->output_colorspace;
 
-    if (sixel_frame_get_loop_no(frame) == 0) {
+    if (loop_no == 0) {
         if (encoder->macro_number >= 0) {
             nwrite = sixel_compat_snprintf(
                 buffer,
@@ -4006,7 +4070,7 @@ sixel_encoder_output_with_macro(
                 buffer,
                 sizeof(buffer),
                 "\033P%d;0;1!z",
-                sixel_frame_get_frame_no(frame));
+                frame_no);
         }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -4053,7 +4117,7 @@ sixel_encoder_output_with_macro(
             buffer,
             sizeof(buffer),
             "\033[%d*z",
-            sixel_frame_get_frame_no(frame));
+            frame_no);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -4069,13 +4133,13 @@ sixel_encoder_output_with_macro(
                 "sixel_write_callback() failed.");
             goto end;
         }
-        delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay && !encoder->fstatic) {
             sixel_trace_topic_message(
                 "lifecycle",
-                "frame delay check: frame_no=%d loop_no=%d delay_cs=%d ignore=%d static=%d",
-                sixel_frame_get_frame_no(frame),
-                sixel_frame_get_loop_no(frame),
+                "frame delay check: frame_no=%d loop_no=%d "
+                "delay_cs=%d ignore=%d static=%d",
+                frame_no,
+                loop_no,
                 delay,
                 encoder->fignore_delay,
                 encoder->fstatic);
@@ -4086,17 +4150,18 @@ sixel_encoder_output_with_macro(
                 &target_delay);
             sixel_trace_topic_message(
                 "lifecycle",
-                "frame delay timing: frame_no=%d loop_no=%d measured_usec=%d target_usec=%u",
-                sixel_frame_get_frame_no(frame),
-                sixel_frame_get_loop_no(frame),
+                "frame delay timing: frame_no=%d loop_no=%d "
+                "measured_usec=%d target_usec=%u",
+                frame_no,
+                loop_no,
                 dulation,
                 target_delay);
             if (remaining_delay > 0U) {
                 sixel_trace_topic_message(
                     "lifecycle",
                     "frame delay sleep: frame_no=%d loop_no=%d sleep_usec=%u",
-                    sixel_frame_get_frame_no(frame),
-                    sixel_frame_get_loop_no(frame),
+                    frame_no,
+                    loop_no,
                     remaining_delay);
                 sixel_sleep(remaining_delay);
             }
@@ -4116,7 +4181,8 @@ static SIXELSTATUS
 sixel_encoder_encode_frame(
     sixel_encoder_t *encoder,
     sixel_frame_t   *frame,
-    sixel_output_t  *output)
+    sixel_output_t  *output,
+    sixel_encoder_frame_handoff_meta_t const *metadata)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_encode_dag_context_t context;
@@ -4160,6 +4226,17 @@ sixel_encoder_encode_frame(
     memset(&context.dither_config, 0, sizeof(context.dither_config));
     context.current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     context.current_colorspace = SIXEL_COLORSPACE_GAMMA;
+    if (metadata != NULL) {
+        context.frame_no = metadata->frame_no;
+        context.loop_no = metadata->loop_no;
+        context.delay = metadata->delay;
+        context.multiframe = metadata->multiframe;
+    } else {
+        context.frame_no = sixel_frame_get_frame_no(frame);
+        context.loop_no = sixel_frame_get_loop_no(frame);
+        context.delay = sixel_frame_get_delay(frame);
+        context.multiframe = sixel_frame_get_multiframe(frame);
+    }
 
     if (encoder != NULL) {
         /*
@@ -6694,13 +6771,22 @@ sixel_encoder_frame_pipeline_worker(void *priv)
 {
     sixel_encoder_frame_pipeline_t *pipeline;
     sixel_frame_t *frame;
+    sixel_frame_t *work_frame;
+    sixel_encoder_frame_handoff_meta_t metadata;
     SIXELSTATUS status;
     int queue_count_after_pop;
+    int need_clone;
 
     pipeline = (sixel_encoder_frame_pipeline_t *)priv;
     frame = NULL;
+    work_frame = NULL;
+    metadata.frame_no = 0;
+    metadata.loop_no = 0;
+    metadata.delay = 0;
+    metadata.multiframe = 0;
     status = SIXEL_OK;
     queue_count_after_pop = 0;
+    need_clone = 0;
 
     if (pipeline == NULL || pipeline->encoder == NULL) {
         return 0;
@@ -6733,6 +6819,10 @@ sixel_encoder_frame_pipeline_worker(void *priv)
         }
         frame = pipeline->queue[pipeline->queue_head];
         pipeline->queue[pipeline->queue_head] = NULL;
+        metadata = pipeline->queue_meta[pipeline->queue_head];
+        memset(&pipeline->queue_meta[pipeline->queue_head],
+               0,
+               sizeof(pipeline->queue_meta[pipeline->queue_head]));
         pipeline->queue_head = (pipeline->queue_head + 1)
             % SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
         --pipeline->queue_count;
@@ -6743,12 +6833,50 @@ sixel_encoder_frame_pipeline_worker(void *priv)
         sixel_trace_topic_message(
             SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
             "worker pop frame_no=%d loop_no=%d queue_count=%d",
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame),
+            metadata.frame_no,
+            metadata.loop_no,
             queue_count_after_pop);
+        need_clone = 0;
+        work_frame = frame;
+        if (frame->handoff_shareable != 0 &&
+            sixel_encoder_handoff_needs_preplan_clone(pipeline->encoder,
+                                                      frame) != 0) {
+            status = sixel_encoder_clone_frame(
+                frame,
+                pipeline->encoder->allocator,
+                &work_frame);
+            if (SIXEL_FAILED(status)) {
+                sixel_frame_unref(frame);
+                frame = NULL;
+                sixel_trace_topic_message(
+                    SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
+                    "worker clone fallback failed status=%d frame_no=%d "
+                    "loop_no=%d",
+                    status,
+                    metadata.frame_no,
+                    metadata.loop_no);
+                sixel_mutex_lock(&pipeline->mutex);
+                pipeline->worker_status = status;
+                pipeline->loader_done = 1;
+                sixel_cond_broadcast(&pipeline->cond);
+                sixel_mutex_unlock(&pipeline->mutex);
+                break;
+            }
+            need_clone = 1;
+            sixel_trace_topic_message(
+                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
+                "worker clone fallback enabled frame_no=%d loop_no=%d",
+                metadata.frame_no,
+                metadata.loop_no);
+        }
         status = sixel_encoder_encode_frame(pipeline->encoder,
-                                            frame,
-                                            pipeline->output);
+                                            work_frame,
+                                            pipeline->output,
+                                            &metadata);
+        if (need_clone != 0) {
+            sixel_frame_unref(work_frame);
+            work_frame = NULL;
+        }
         sixel_frame_unref(frame);
         frame = NULL;
         sixel_trace_topic_message(
@@ -6796,6 +6924,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
 
     for (i = 0; i < SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY; ++i) {
         pipeline->queue[i] = NULL;
+        memset(&pipeline->queue_meta[i], 0, sizeof(pipeline->queue_meta[i]));
     }
     pipeline->encoder = encoder;
     pipeline->output = output;
@@ -6847,6 +6976,7 @@ sixel_encoder_frame_pipeline_dispose(sixel_encoder_frame_pipeline_t *pipeline)
             sixel_frame_unref(pipeline->queue[i]);
             pipeline->queue[i] = NULL;
         }
+        memset(&pipeline->queue_meta[i], 0, sizeof(pipeline->queue_meta[i]));
     }
 
     sixel_cond_destroy(&pipeline->cond);
@@ -6862,28 +6992,48 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
                                      sixel_frame_t *frame)
 {
     SIXELSTATUS status;
-    sixel_frame_t *cloned_frame;
+    sixel_frame_t *queue_frame;
+    sixel_encoder_frame_handoff_meta_t metadata;
     int queue_count_after_enqueue;
 
     status = SIXEL_OK;
-    cloned_frame = NULL;
+    queue_frame = NULL;
+    metadata.frame_no = 0;
+    metadata.loop_no = 0;
+    metadata.delay = 0;
+    metadata.multiframe = 0;
     queue_count_after_enqueue = 0;
 
     if (pipeline == NULL || frame == NULL || pipeline->initialized == 0) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_encoder_clone_frame(frame,
-                                       pipeline->encoder->allocator,
-                                       &cloned_frame);
-    if (SIXEL_FAILED(status)) {
+    metadata.frame_no = sixel_frame_get_frame_no(frame);
+    metadata.loop_no = sixel_frame_get_loop_no(frame);
+    metadata.delay = sixel_frame_get_delay(frame);
+    metadata.multiframe = sixel_frame_get_multiframe(frame);
+
+    if (frame->handoff_shareable != 0) {
+        queue_frame = frame;
+        sixel_frame_ref(queue_frame);
         sixel_trace_topic_message(
             SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "enqueue clone failed status=%d frame_no=%d loop_no=%d",
-            status,
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame));
-        return status;
+            "enqueue by-ref frame_no=%d loop_no=%d",
+            metadata.frame_no,
+            metadata.loop_no);
+    } else {
+        status = sixel_encoder_clone_frame(frame,
+                                           pipeline->encoder->allocator,
+                                           &queue_frame);
+        if (SIXEL_FAILED(status)) {
+            sixel_trace_topic_message(
+                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
+                "enqueue clone failed status=%d frame_no=%d loop_no=%d",
+                status,
+                metadata.frame_no,
+                metadata.loop_no);
+            return status;
+        }
     }
 
     sixel_mutex_lock(&pipeline->mutex);
@@ -6899,17 +7049,18 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     if (SIXEL_FAILED(pipeline->worker_status)) {
         status = pipeline->worker_status;
         sixel_mutex_unlock(&pipeline->mutex);
-        sixel_frame_unref(cloned_frame);
+        sixel_frame_unref(queue_frame);
         sixel_trace_topic_message(
             SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
             "enqueue abort worker_status=%d frame_no=%d loop_no=%d",
             status,
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame));
+            metadata.frame_no,
+            metadata.loop_no);
         return status;
     }
 
-    pipeline->queue[pipeline->queue_tail] = cloned_frame;
+    pipeline->queue[pipeline->queue_tail] = queue_frame;
+    pipeline->queue_meta[pipeline->queue_tail] = metadata;
     pipeline->queue_tail = (pipeline->queue_tail + 1)
         % SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
     ++pipeline->queue_count;
@@ -6919,8 +7070,8 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     sixel_trace_topic_message(
         SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
         "enqueue ok frame_no=%d loop_no=%d queue_count=%d",
-        sixel_frame_get_frame_no(frame),
-        sixel_frame_get_loop_no(frame),
+        metadata.frame_no,
+        metadata.loop_no,
         queue_count_after_enqueue);
 
     return status;
@@ -7099,7 +7250,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         "callback serial encode start frame_no=%d loop_no=%d",
         sixel_frame_get_frame_no(frame),
         sixel_frame_get_loop_no(frame));
-    status = sixel_encoder_encode_frame(encoder, frame, context->output);
+    status = sixel_encoder_encode_frame(encoder, frame, context->output, NULL);
     sixel_trace_topic_message(
         SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
         "callback serial encode end status=%d frame_no=%d loop_no=%d",
@@ -8598,7 +8749,7 @@ sixel_encoder_encode_bytes(
         frame->palette = owned_palette;
     }
 
-    status = sixel_encoder_encode_frame(encoder, frame, NULL);
+    status = sixel_encoder_encode_frame(encoder, frame, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

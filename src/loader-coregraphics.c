@@ -36,6 +36,9 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -100,6 +103,9 @@
 
 #define COREGRAPHICS_SRGB_ENCODE_LUT_SIZE 4096u
 #define COREGRAPHICS_PALETTE_MATCH_TOLERANCE 3u
+#define COREGRAPHICS_FRAME_CACHE_MAX_BYTES_DEFAULT \
+    (64u * 1024u * 1024u)
+#define COREGRAPHICS_FRAME_CACHE_ESTIMATE_BPP 8u
 
 typedef struct sixel_loader_coregraphics_component {
     sixel_loader_component_t base;
@@ -2396,6 +2402,86 @@ end:
 }
 
 static SIXELSTATUS
+coregraphics_parse_frame_cache_max_bytes(size_t *max_bytes,
+                                         int *cache_enabled)
+{
+    SIXELSTATUS status;
+    char const *env_value;
+    char *endptr;
+    unsigned long long parsed;
+
+    status = SIXEL_OK;
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0ull;
+    if (max_bytes == NULL || cache_enabled == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *max_bytes = COREGRAPHICS_FRAME_CACHE_MAX_BYTES_DEFAULT;
+    *cache_enabled = 1;
+    env_value = sixel_compat_getenv(
+        "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES");
+    if (env_value == NULL || env_value[0] == '\0') {
+        goto end;
+    }
+
+    errno = 0;
+    parsed = strtoull(env_value, &endptr, 10);
+    if (errno == ERANGE || endptr == env_value || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES "
+            "must be a non-negative integer.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (parsed == 0ull) {
+        *max_bytes = 0u;
+        *cache_enabled = 0;
+        goto end;
+    }
+    if (parsed > (unsigned long long)SIZE_MAX) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *max_bytes = (size_t)parsed;
+
+end:
+    return status;
+}
+
+static int
+coregraphics_accumulate_frame_cache_estimate(size_t width,
+                                             size_t height,
+                                             size_t *total_bytes)
+{
+    size_t pixel_count;
+    size_t frame_bytes;
+
+    pixel_count = 0u;
+    frame_bytes = 0u;
+    if (total_bytes == NULL || width == 0u || height == 0u) {
+        return 0;
+    }
+    if (width > SIZE_MAX / height) {
+        return 0;
+    }
+    pixel_count = width * height;
+    if (pixel_count > SIZE_MAX / COREGRAPHICS_FRAME_CACHE_ESTIMATE_BPP) {
+        return 0;
+    }
+    frame_bytes = pixel_count * COREGRAPHICS_FRAME_CACHE_ESTIMATE_BPP;
+    if (*total_bytes > SIZE_MAX - frame_bytes) {
+        return 0;
+    }
+    *total_bytes += frame_bytes;
+    return 1;
+}
+
+static SIXELSTATUS
 load_with_coregraphics(
     sixel_chunk_t const       /* in */     *pchunk,
     int                       /* in */     fstatic,
@@ -2411,6 +2497,9 @@ load_with_coregraphics(
 {
     SIXELSTATUS status;
     sixel_frame_t *frame;
+    sixel_frame_t *emit_frame;
+    sixel_frame_t *decode_frame;
+    sixel_frame_t *cached_frame_tmp;
     CFDataRef data;
     CGImageSourceRef source;
     CGImageRef image;
@@ -2443,12 +2532,22 @@ load_with_coregraphics(
     CFDictionaryRef *frame_props_cache;
     int *frame_delay_cache;
     unsigned char *frame_props_ready;
+    sixel_frame_t **frame_cache;
+    CFIndex cf_data_length;
     size_t prefetch_index;
+    size_t cache_estimate_index;
+    size_t frame_cache_max_bytes;
+    size_t frame_cache_estimate_bytes;
     size_t image_width;
     size_t image_height;
+    int frame_cache_enabled;
+    int cache_hit;
 
     status = SIXEL_FALSE;
     frame = NULL;
+    emit_frame = NULL;
+    decode_frame = NULL;
+    cached_frame_tmp = NULL;
     data = NULL;
     source = NULL;
     image = NULL;
@@ -2481,9 +2580,16 @@ load_with_coregraphics(
     frame_props_cache = NULL;
     frame_delay_cache = NULL;
     frame_props_ready = NULL;
+    frame_cache = NULL;
+    cf_data_length = 0;
     prefetch_index = 0u;
+    cache_estimate_index = 0u;
+    frame_cache_max_bytes = 0u;
+    frame_cache_estimate_bytes = 0u;
     image_width = 0u;
     image_height = 0u;
+    frame_cache_enabled = 0;
+    cache_hit = 0;
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -2493,15 +2599,27 @@ load_with_coregraphics(
             goto end;
         }
     }
+    status = coregraphics_parse_frame_cache_max_bytes(&frame_cache_max_bytes,
+                                                      &frame_cache_enabled);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
+    if (pchunk->size > (size_t)LONG_MAX) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: input chunk size is too large.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    cf_data_length = (CFIndex)pchunk->size;
     data = CFDataCreate(kCFAllocatorDefault,
                         pchunk->buffer,
-                        (CFIndex)pchunk->size);
+                        cf_data_length);
     if (! data) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: CFDataCreate failed.");
@@ -2583,7 +2701,8 @@ load_with_coregraphics(
     }
     if ((size_t)total_frames > SIZE_MAX / sizeof(*frame_props_cache) ||
         (size_t)total_frames > SIZE_MAX / sizeof(*frame_delay_cache) ||
-        (size_t)total_frames > SIZE_MAX / sizeof(*frame_props_ready)) {
+        (size_t)total_frames > SIZE_MAX / sizeof(*frame_props_ready) ||
+        (size_t)total_frames > SIZE_MAX / sizeof(*frame_cache)) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: frame metadata is too large.");
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -2619,6 +2738,52 @@ load_with_coregraphics(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
+    if (frame_cache_enabled != 0) {
+        if (fstatic != 0 || is_animation_container == 0) {
+            frame_cache_enabled = 0;
+        }
+    }
+    if (frame_cache_enabled != 0) {
+        frame_cache_estimate_bytes = 0u;
+        for (cache_estimate_index = 0u;
+             cache_estimate_index < (size_t)total_frames;
+             ++cache_estimate_index) {
+            image = CGImageSourceCreateImageAtIndex(source,
+                                                    cache_estimate_index,
+                                                    NULL);
+            if (image == NULL) {
+                frame_cache_enabled = 0;
+                break;
+            }
+            image_width = CGImageGetWidth(image);
+            image_height = CGImageGetHeight(image);
+            CGImageRelease(image);
+            image = NULL;
+            if (!coregraphics_accumulate_frame_cache_estimate(
+                    image_width,
+                    image_height,
+                    &frame_cache_estimate_bytes)) {
+                frame_cache_enabled = 0;
+                break;
+            }
+            if (frame_cache_estimate_bytes > frame_cache_max_bytes) {
+                frame_cache_enabled = 0;
+                break;
+            }
+        }
+    }
+    if (frame_cache_enabled != 0) {
+        frame_cache = (sixel_frame_t **)sixel_allocator_calloc(
+            frame->allocator,
+            (size_t)total_frames,
+            sizeof(*frame_cache));
+        if (frame_cache == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
 
     frame->multiframe = (!fstatic && frame_count > 1
                         && is_animation_container);
@@ -2635,20 +2800,16 @@ load_with_coregraphics(
         frames_in_loop = 0;
 
         while (frame_index < total_frames) {
-            frame->frame_no = frames_in_loop;
-            frame->loop_count = loop_no;
+            emit_frame = NULL;
+            decode_frame = NULL;
+            cache_hit = 0;
             frame_props = NULL;
-            frame->delay = 0;
-
-            image = CGImageSourceCreateImageAtIndex(
-                source, (size_t)frame_index, NULL);
-            if (! image) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: CGImageSourceCreateImageAtIndex "
-                    "failed.");
-                status = SIXEL_FALSE;
-                goto end;
+            if (frame_cache != NULL &&
+                frame_cache[(size_t)frame_index] != NULL) {
+                emit_frame = frame_cache[(size_t)frame_index];
+                cache_hit = 1;
             }
+
             /*
              * Resolve frame metadata once on first decode of each frame and
              * reuse it on replay loops to avoid repeated property lookups.
@@ -2687,85 +2848,95 @@ load_with_coregraphics(
                 frame_props_ready[(size_t)frame_index] = 1u;
             }
             frame_props = frame_props_cache[(size_t)frame_index];
-            frame->delay = frame_delay_cache[(size_t)frame_index];
             frame_orientation = coregraphics_resolve_exif_orientation(
                 frame_props,
                 source_orientation);
+            if (cache_hit == 0) {
+                image = CGImageSourceCreateImageAtIndex(
+                    source,
+                    (size_t)frame_index,
+                    NULL);
+                if (! image) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: "
+                        "CGImageSourceCreateImageAtIndex failed.");
+                    status = SIXEL_FALSE;
+                    goto end;
+                }
 
-            image_width = CGImageGetWidth(image);
-            image_height = CGImageGetHeight(image);
-            if (image_width > (size_t)INT_MAX) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: given width parameter is too"
-                    " huge.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-            if (image_height > (size_t)INT_MAX) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: given height parameter is too"
-                    " huge.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-            frame->width = (int)image_width;
-            frame->height = (int)image_height;
+                if (frame_cache != NULL) {
+                    status = sixel_frame_new(&cached_frame_tmp,
+                                             pchunk->allocator);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    decode_frame = cached_frame_tmp;
+                } else {
+                    decode_frame = frame;
+                }
 
-            if (image_width > (size_t)SIXEL_WIDTH_LIMIT) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: given width parameter is too"
-                    " huge.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-            if (image_height > (size_t)SIXEL_HEIGHT_LIMIT) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: given height parameter is too"
-                    " huge.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-            if (frame->width <= 0) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: an invalid width parameter"
-                    " detected.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-            if (frame->height <= 0) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: an invalid height parameter"
-                    " detected.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-            if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: too large image.");
-                status = SIXEL_RUNTIME_ERROR;
-                goto end;
-            }
+                image_width = CGImageGetWidth(image);
+                image_height = CGImageGetHeight(image);
+                if (image_width > (size_t)INT_MAX) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: given width parameter is too"
+                        " huge.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                if (image_height > (size_t)INT_MAX) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: given height parameter is too"
+                        " huge.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                decode_frame->width = (int)image_width;
+                decode_frame->height = (int)image_height;
 
-            coregraphics_reset_frame_storage(frame);
-            status = coregraphics_try_handle_indexed_frame(
-                pchunk,
-                frame,
-                image,
-                frame_props,
-                &png_indexed_cache,
-                fuse_palette,
-                reqcolors,
-                bgcolor,
-                &indexed_handled,
-                &force_alpha_from_indexed);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            if (indexed_handled == 0) {
-                status = coregraphics_try_handle_png_indexed_keycolor(
-                    &png_indexed_cache,
-                    frame,
+                if (image_width > (size_t)SIXEL_WIDTH_LIMIT) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: given width parameter is too"
+                        " huge.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                if (image_height > (size_t)SIXEL_HEIGHT_LIMIT) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: given height parameter is too"
+                        " huge.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                if (decode_frame->width <= 0) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: an invalid width parameter"
+                        " detected.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                if (decode_frame->height <= 0) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: an invalid height parameter"
+                        " detected.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                if ((size_t)decode_frame->width >
+                    SIZE_MAX / (size_t)decode_frame->height) {
+                    sixel_helper_set_additional_message(
+                        "load_with_coregraphics: too large image.");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+
+                coregraphics_reset_frame_storage(decode_frame);
+                status = coregraphics_try_handle_indexed_frame(
+                    pchunk,
+                    decode_frame,
                     image,
+                    frame_props,
+                    &png_indexed_cache,
                     fuse_palette,
                     reqcolors,
                     bgcolor,
@@ -2774,45 +2945,75 @@ load_with_coregraphics(
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
-            }
+                if (indexed_handled == 0) {
+                    status = coregraphics_try_handle_png_indexed_keycolor(
+                        &png_indexed_cache,
+                        decode_frame,
+                        image,
+                        fuse_palette,
+                        reqcolors,
+                        bgcolor,
+                        &indexed_handled,
+                        &force_alpha_from_indexed);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                }
 
-            if (indexed_handled == 0) {
-                has_alpha_like = force_alpha_from_indexed != 0 ||
-                    coregraphics_image_has_alpha(image, frame_props);
-                promote_float32 = coregraphics_should_promote_float32(
-                    image,
-                    frame_props);
-                if (promote_float32 != 0) {
-                    status = coregraphics_decode_float32_frame(frame,
-                                                               image,
-                                                               bgcolor,
-                                                               has_alpha_like);
+                if (indexed_handled == 0) {
+                    has_alpha_like = force_alpha_from_indexed != 0 ||
+                        coregraphics_image_has_alpha(image, frame_props);
+                    promote_float32 = coregraphics_should_promote_float32(
+                        image,
+                        frame_props);
+                    if (promote_float32 != 0) {
+                        status = coregraphics_decode_float32_frame(
+                            decode_frame,
+                            image,
+                            bgcolor,
+                            has_alpha_like);
+                    } else {
+                        status = coregraphics_decode_rgba8_frame(
+                            decode_frame,
+                            image,
+                            bgcolor,
+                            has_alpha_like,
+                            &rgba8_lut_cache);
+                    }
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                }
+                if (enable_orientation != 0 &&
+                    frame_orientation >= 2 &&
+                    frame_orientation <= 8) {
+                    status = loader_frame_apply_orientation(decode_frame,
+                                                           frame_orientation);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                }
+
+                if (frame_cache != NULL) {
+                    decode_frame->handoff_shareable = 1;
+                    frame_cache[(size_t)frame_index] = decode_frame;
+                    emit_frame = decode_frame;
+                    cached_frame_tmp = NULL;
                 } else {
-                    status = coregraphics_decode_rgba8_frame(frame,
-                                                             image,
-                                                             bgcolor,
-                                                             has_alpha_like,
-                                                             &rgba8_lut_cache);
+                    emit_frame = decode_frame;
                 }
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
+                CGImageRelease(image);
+                image = NULL;
             }
-            if (enable_orientation != 0 &&
-                frame_orientation >= 2 &&
-                frame_orientation <= 8) {
-                status = loader_frame_apply_orientation(frame,
-                                                       frame_orientation);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
+            if (emit_frame == NULL) {
+                emit_frame = frame_cache[(size_t)frame_index];
             }
-
-            frame->multiframe = (!fstatic && frame_count > 1
-                                && is_animation_container);
-            status = fn_load(frame, context);
-            CGImageRelease(image);
-            image = NULL;
+            emit_frame->frame_no = frames_in_loop;
+            emit_frame->loop_count = loop_no;
+            emit_frame->delay = frame_delay_cache[(size_t)frame_index];
+            emit_frame->multiframe = (!fstatic && frame_count > 1
+                                      && is_animation_container);
+            status = fn_load(emit_frame, context);
             if (status != SIXEL_OK) {
                 goto end;
             }
@@ -2852,6 +3053,9 @@ load_with_coregraphics(
     status = SIXEL_OK;
 
 end:
+    if (cached_frame_tmp != NULL) {
+        sixel_frame_unref(cached_frame_tmp);
+    }
     if (frame_props_cache != NULL) {
         for (prefetch_index = 0u;
              prefetch_index < (size_t)total_frames;
@@ -2874,9 +3078,19 @@ end:
         CFRelease(data);
     }
     if (frame != NULL) {
+        if (frame_cache != NULL) {
+            for (prefetch_index = 0u;
+                 prefetch_index < (size_t)total_frames;
+                 ++prefetch_index) {
+                if (frame_cache[prefetch_index] != NULL) {
+                    sixel_frame_unref(frame_cache[prefetch_index]);
+                }
+            }
+        }
         coregraphics_png_indexed_metadata_cache_reset(
             &png_indexed_cache,
             frame->allocator);
+        sixel_allocator_free(frame->allocator, frame_cache);
         sixel_allocator_free(frame->allocator, frame_props_ready);
         sixel_allocator_free(frame->allocator, frame_delay_cache);
         sixel_allocator_free(frame->allocator, frame_props_cache);

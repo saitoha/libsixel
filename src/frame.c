@@ -191,6 +191,7 @@ sixel_frame_new(
     (*ppframe)->frame_no = 0;
     (*ppframe)->loop_count = 0;
     (*ppframe)->multiframe = 0;
+    (*ppframe)->handoff_shareable = 0;
     (*ppframe)->transparent = (-1);
     (*ppframe)->alpha_zero_is_transparent = 0;
     (*ppframe)->transparent_mask = NULL;
