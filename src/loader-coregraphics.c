@@ -556,6 +556,23 @@ coregraphics_resolve_animation_delay_cs(CFDictionaryRef dict,
 }
 
 static int
+coregraphics_image_is_indexed(CGImageRef image)
+{
+    CGColorSpaceRef color_space;
+
+    color_space = NULL;
+    if (image == NULL) {
+        return 0;
+    }
+
+    color_space = CGImageGetColorSpace(image);
+    if (color_space == NULL) {
+        return 0;
+    }
+    return CGColorSpaceGetModel(color_space) == kCGColorSpaceModelIndexed;
+}
+
+static int
 coregraphics_image_has_alpha(CGImageRef image, CFDictionaryRef frame_props)
 {
     CGImageAlphaInfo alpha_info;
@@ -2561,13 +2578,25 @@ load_with_coregraphics(
     coregraphics_srgb_lut_cache_t rgba8_lut_cache;
     int single_frame_delay_cache;
     int single_frame_orientation_cache;
+    int single_frame_has_alpha_cache;
+    int single_frame_promote_float32_cache;
+    int single_frame_is_indexed_cache;
     unsigned char single_frame_props_ready;
+    unsigned char single_frame_decode_hint_ready;
     int *frame_delay_cache;
     int *frame_orientation_cache;
+    int *frame_has_alpha_cache;
+    int *frame_promote_float32_cache;
+    int *frame_is_indexed_cache;
     unsigned char *frame_props_ready;
+    unsigned char *frame_decode_hint_ready;
     int *active_frame_delay_cache;
     int *active_frame_orientation_cache;
+    int *active_frame_has_alpha_cache;
+    int *active_frame_promote_float32_cache;
+    int *active_frame_is_indexed_cache;
     unsigned char *active_frame_props_ready;
+    unsigned char *active_frame_decode_hint_ready;
     unsigned char *frame_cache_decided;
     sixel_frame_t **frame_cache;
     CFIndex cf_data_length;
@@ -2621,13 +2650,25 @@ load_with_coregraphics(
     rgba8_lut_cache.prepared = 0;
     single_frame_delay_cache = 0;
     single_frame_orientation_cache = 1;
+    single_frame_has_alpha_cache = 0;
+    single_frame_promote_float32_cache = 0;
+    single_frame_is_indexed_cache = 0;
     single_frame_props_ready = 0u;
+    single_frame_decode_hint_ready = 0u;
     frame_delay_cache = NULL;
     frame_orientation_cache = NULL;
+    frame_has_alpha_cache = NULL;
+    frame_promote_float32_cache = NULL;
+    frame_is_indexed_cache = NULL;
     frame_props_ready = NULL;
+    frame_decode_hint_ready = NULL;
     active_frame_delay_cache = NULL;
     active_frame_orientation_cache = NULL;
+    active_frame_has_alpha_cache = NULL;
+    active_frame_promote_float32_cache = NULL;
+    active_frame_is_indexed_cache = NULL;
     active_frame_props_ready = NULL;
+    active_frame_decode_hint_ready = NULL;
     frame_cache_decided = NULL;
     frame_cache = NULL;
     cf_data_length = 0;
@@ -2770,7 +2811,11 @@ load_with_coregraphics(
     if (metadata_slots > 1u &&
         (metadata_slots > SIZE_MAX / sizeof(*frame_delay_cache) ||
          metadata_slots > SIZE_MAX / sizeof(*frame_orientation_cache) ||
-         metadata_slots > SIZE_MAX / sizeof(*frame_props_ready))) {
+         metadata_slots > SIZE_MAX / sizeof(*frame_has_alpha_cache) ||
+         metadata_slots > SIZE_MAX / sizeof(*frame_promote_float32_cache) ||
+         metadata_slots > SIZE_MAX / sizeof(*frame_is_indexed_cache) ||
+         metadata_slots > SIZE_MAX / sizeof(*frame_props_ready) ||
+         metadata_slots > SIZE_MAX / sizeof(*frame_decode_hint_ready))) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: frame metadata is too large.");
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -2805,6 +2850,36 @@ load_with_coregraphics(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        frame_has_alpha_cache = (int *)sixel_allocator_calloc(
+            frame->allocator,
+            metadata_slots,
+            sizeof(*frame_has_alpha_cache));
+        if (frame_has_alpha_cache == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        frame_promote_float32_cache = (int *)sixel_allocator_calloc(
+            frame->allocator,
+            metadata_slots,
+            sizeof(*frame_promote_float32_cache));
+        if (frame_promote_float32_cache == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        frame_is_indexed_cache = (int *)sixel_allocator_calloc(
+            frame->allocator,
+            metadata_slots,
+            sizeof(*frame_is_indexed_cache));
+        if (frame_is_indexed_cache == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         frame_props_ready = (unsigned char *)sixel_allocator_calloc(
             frame->allocator,
             metadata_slots,
@@ -2815,14 +2890,33 @@ load_with_coregraphics(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        frame_decode_hint_ready = (unsigned char *)sixel_allocator_calloc(
+            frame->allocator,
+            metadata_slots,
+            sizeof(*frame_decode_hint_ready));
+        if (frame_decode_hint_ready == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         active_frame_delay_cache = frame_delay_cache;
         active_frame_orientation_cache = frame_orientation_cache;
+        active_frame_has_alpha_cache = frame_has_alpha_cache;
+        active_frame_promote_float32_cache = frame_promote_float32_cache;
+        active_frame_is_indexed_cache = frame_is_indexed_cache;
         active_frame_props_ready = frame_props_ready;
+        active_frame_decode_hint_ready = frame_decode_hint_ready;
     } else {
         active_frame_delay_cache = &single_frame_delay_cache;
         single_frame_orientation_cache = source_orientation;
         active_frame_orientation_cache = &single_frame_orientation_cache;
+        active_frame_has_alpha_cache = &single_frame_has_alpha_cache;
+        active_frame_promote_float32_cache =
+            &single_frame_promote_float32_cache;
+        active_frame_is_indexed_cache = &single_frame_is_indexed_cache;
         active_frame_props_ready = &single_frame_props_ready;
+        active_frame_decode_hint_ready = &single_frame_decode_hint_ready;
     }
     if (frame_cache_enabled != 0) {
         frame_cache_decided = (unsigned char *)sixel_allocator_calloc(
@@ -2924,12 +3018,6 @@ load_with_coregraphics(
             frame_orientation = active_frame_orientation_cache[
                 frame_meta_slot];
             if (cache_hit == 0) {
-                if (frame_props == NULL) {
-                    frame_props = CGImageSourceCopyPropertiesAtIndex(
-                        source,
-                        (size_t)frame_index,
-                        NULL);
-                }
                 image = CGImageSourceCreateImageAtIndex(
                     source,
                     (size_t)frame_index,
@@ -2965,6 +3053,23 @@ load_with_coregraphics(
                     }
                 } else {
                     decode_frame = frame;
+                }
+
+                if (active_frame_decode_hint_ready[frame_meta_slot] == 0u) {
+                    active_frame_is_indexed_cache[frame_meta_slot] =
+                        coregraphics_image_is_indexed(image);
+                    active_frame_has_alpha_cache[frame_meta_slot] =
+                        coregraphics_image_has_alpha(image, frame_props);
+                    active_frame_promote_float32_cache[frame_meta_slot] =
+                        coregraphics_should_promote_float32(image, frame_props);
+                    active_frame_decode_hint_ready[frame_meta_slot] = 1u;
+                }
+                if (active_frame_is_indexed_cache[frame_meta_slot] != 0 &&
+                    frame_props == NULL) {
+                    frame_props = CGImageSourceCopyPropertiesAtIndex(
+                        source,
+                        (size_t)frame_index,
+                        NULL);
                 }
 
                 image_width = CGImageGetWidth(image);
@@ -3054,10 +3159,9 @@ load_with_coregraphics(
 
                 if (indexed_handled == 0) {
                     has_alpha_like = force_alpha_from_indexed != 0 ||
-                        coregraphics_image_has_alpha(image, frame_props);
-                    promote_float32 = coregraphics_should_promote_float32(
-                        image,
-                        frame_props);
+                        active_frame_has_alpha_cache[frame_meta_slot] != 0;
+                    promote_float32 =
+                        active_frame_promote_float32_cache[frame_meta_slot];
                     if (promote_float32 != 0) {
                         status = coregraphics_decode_float32_frame(
                             decode_frame,
@@ -3217,8 +3321,12 @@ end:
         sixel_allocator_free(frame->allocator, frame_cache);
         sixel_allocator_free(frame->allocator, frame_cache_decided);
         sixel_allocator_free(frame->allocator, frame_props_ready);
+        sixel_allocator_free(frame->allocator, frame_decode_hint_ready);
         sixel_allocator_free(frame->allocator, frame_orientation_cache);
         sixel_allocator_free(frame->allocator, frame_delay_cache);
+        sixel_allocator_free(frame->allocator, frame_is_indexed_cache);
+        sixel_allocator_free(frame->allocator, frame_promote_float32_cache);
+        sixel_allocator_free(frame->allocator, frame_has_alpha_cache);
         sixel_frame_unref(frame);
     }
     return status;
