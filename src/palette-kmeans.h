@@ -93,53 +93,53 @@ sixel_palette_kmeans_iter_max(void);
 double
 sixel_palette_kmeans_threshold(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_threshold_override(int enabled,
-                                   double threshold);
+                                    double threshold);
 
 SIXEL_INTERNAL_API sixel_kmeans_init_type
 sixel_get_kmeans_init_type(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_init_type_override(int enabled,
                                     sixel_kmeans_init_type init_type);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_binning_mode_override(int enabled,
                                        sixel_kmeans_binning_mode mode);
 
 SIXEL_INTERNAL_API sixel_kmeans_binning_mode
 sixel_get_kmeans_binning_mode(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_binbits_override(int enabled,
                                   unsigned int bits);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_binbits(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_mapping_mode_override(int enabled,
                                        sixel_kmeans_mapping_mode mode);
 
 SIXEL_INTERNAL_API sixel_kmeans_mapping_mode
 sixel_get_kmeans_mapping_mode(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_softdist_mode_override(int enabled,
                                         sixel_kmeans_softdist_mode mode);
 
 SIXEL_INTERNAL_API sixel_kmeans_softdist_mode
 sixel_get_kmeans_softdist_mode(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_autoratio_override(int enabled,
                                     unsigned int ratio);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_autoratio(void);
 
-void
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_feedback_mode_override(int enabled,
                                         sixel_kmeans_feedback_mode mode);
 
