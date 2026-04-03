@@ -2565,6 +2565,8 @@ load_with_coregraphics(
     unsigned char *frame_cache_decided;
     sixel_frame_t **frame_cache;
     CFIndex cf_data_length;
+    size_t metadata_slots;
+    size_t frame_meta_slot;
     size_t prefetch_index;
     size_t frame_cache_max_bytes;
     size_t frame_cache_used_bytes;
@@ -2617,6 +2619,8 @@ load_with_coregraphics(
     frame_cache_decided = NULL;
     frame_cache = NULL;
     cf_data_length = 0;
+    metadata_slots = 0u;
+    frame_meta_slot = 0u;
     prefetch_index = 0u;
     frame_cache_max_bytes = 0u;
     frame_cache_used_bytes = 0u;
@@ -2737,11 +2741,31 @@ load_with_coregraphics(
                 anim_loop_count);
         }
     }
-    if ((size_t)total_frames > SIZE_MAX / sizeof(*frame_props_cache) ||
-        (size_t)total_frames > SIZE_MAX / sizeof(*frame_delay_cache) ||
-        (size_t)total_frames > SIZE_MAX / sizeof(*frame_props_ready) ||
-        (size_t)total_frames > SIZE_MAX / sizeof(*frame_cache_decided) ||
-        (size_t)total_frames > SIZE_MAX / sizeof(*frame_cache)) {
+    if (frame_cache_enabled != 0) {
+        if (fstatic != 0 || is_animation_container == 0) {
+            frame_cache_enabled = 0;
+        }
+    }
+    if (!fstatic && is_animation_container != 0) {
+        metadata_slots = (size_t)total_frames;
+    } else {
+        /*
+         * Static and non-animation paths emit one selected frame, so keep
+         * metadata caches to a single slot instead of total frame count.
+         */
+        metadata_slots = 1u;
+    }
+    if (metadata_slots > SIZE_MAX / sizeof(*frame_props_cache) ||
+        metadata_slots > SIZE_MAX / sizeof(*frame_delay_cache) ||
+        metadata_slots > SIZE_MAX / sizeof(*frame_props_ready)) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: frame metadata is too large.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    if (frame_cache_enabled != 0 &&
+        ((size_t)total_frames > SIZE_MAX / sizeof(*frame_cache_decided) ||
+         (size_t)total_frames > SIZE_MAX / sizeof(*frame_cache))) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: frame metadata is too large.");
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -2749,7 +2773,7 @@ load_with_coregraphics(
     }
     frame_props_cache = (CFDictionaryRef *)sixel_allocator_calloc(
         frame->allocator,
-        (size_t)total_frames,
+        metadata_slots,
         sizeof(*frame_props_cache));
     if (frame_props_cache == NULL) {
         sixel_helper_set_additional_message(
@@ -2758,7 +2782,7 @@ load_with_coregraphics(
         goto end;
     }
     frame_delay_cache = (int *)sixel_allocator_calloc(frame->allocator,
-                                                      (size_t)total_frames,
+                                                      metadata_slots,
                                                       sizeof(
                                                           *frame_delay_cache));
     if (frame_delay_cache == NULL) {
@@ -2769,18 +2793,13 @@ load_with_coregraphics(
     }
     frame_props_ready = (unsigned char *)sixel_allocator_calloc(
         frame->allocator,
-        (size_t)total_frames,
+        metadata_slots,
         sizeof(*frame_props_ready));
     if (frame_props_ready == NULL) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: sixel_allocator_calloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
-    }
-    if (frame_cache_enabled != 0) {
-        if (fstatic != 0 || is_animation_container == 0) {
-            frame_cache_enabled = 0;
-        }
     }
     if (frame_cache_enabled != 0) {
         frame_cache_decided = (unsigned char *)sixel_allocator_calloc(
@@ -2832,19 +2851,24 @@ load_with_coregraphics(
                 emit_frame = frame_cache[(size_t)frame_index];
                 cache_hit = 1;
             }
+            if (!fstatic && is_animation_container != 0) {
+                frame_meta_slot = (size_t)frame_index;
+            } else {
+                frame_meta_slot = 0u;
+            }
 
             /*
              * Resolve frame metadata once on first decode of each frame and
              * reuse it on replay loops to avoid repeated property lookups.
              */
-            if (frame_props_ready[(size_t)frame_index] == 0u) {
-                frame_props_cache[(size_t)frame_index] =
+            if (frame_props_ready[frame_meta_slot] == 0u) {
+                frame_props_cache[frame_meta_slot] =
                     CGImageSourceCopyPropertiesAtIndex(
                         source,
                         (size_t)frame_index,
                         NULL);
-                frame_delay_cache[(size_t)frame_index] = 0;
-                frame_props = frame_props_cache[(size_t)frame_index];
+                frame_delay_cache[frame_meta_slot] = 0;
+                frame_props = frame_props_cache[frame_meta_slot];
                 if (frame_props != NULL) {
                     frame_anim_dict = NULL;
                     frame_loop_key = NULL;
@@ -2865,12 +2889,12 @@ load_with_coregraphics(
                             frame_anim_dict,
                             frame_unclamped_delay_key,
                             frame_delay_key,
-                            &frame_delay_cache[(size_t)frame_index]);
+                            &frame_delay_cache[frame_meta_slot]);
                     }
                 }
-                frame_props_ready[(size_t)frame_index] = 1u;
+                frame_props_ready[frame_meta_slot] = 1u;
             }
-            frame_props = frame_props_cache[(size_t)frame_index];
+            frame_props = frame_props_cache[frame_meta_slot];
             frame_orientation = coregraphics_resolve_exif_orientation(
                 frame_props,
                 source_orientation);
@@ -3075,7 +3099,7 @@ load_with_coregraphics(
             }
             emit_frame->frame_no = frames_in_loop;
             emit_frame->loop_count = loop_no;
-            emit_frame->delay = frame_delay_cache[(size_t)frame_index];
+            emit_frame->delay = frame_delay_cache[frame_meta_slot];
             emit_frame->multiframe = (!fstatic && frame_count > 1
                                       && is_animation_container);
             status = fn_load(emit_frame, context);
@@ -3129,7 +3153,7 @@ end:
     }
     if (frame_props_cache != NULL) {
         for (prefetch_index = 0u;
-             prefetch_index < (size_t)total_frames;
+             prefetch_index < metadata_slots;
              ++prefetch_index) {
             if (frame_props_cache[prefetch_index] != NULL) {
                 CFRelease(frame_props_cache[prefetch_index]);
