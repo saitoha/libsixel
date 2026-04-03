@@ -1006,6 +1006,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {
+        "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
+        "override orientation handling for coregraphics loader only.\n"
+        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+    },
+    {
         "SIXEL_LOADER_ANIMATION_START_FRAME_NO",
         "set the animation start frame index used by supported loaders.\n"
         "0 or positive values are absolute indexes. Negative values count\n"
