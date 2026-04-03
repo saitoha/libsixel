@@ -727,6 +727,42 @@ coregraphics_parse_png_transparency(CFDictionaryRef frame_props,
     }
 }
 
+static int
+coregraphics_need_indexed_png_props(CFDictionaryRef frame_props)
+{
+    CFDictionaryRef png_dict;
+    CFDataRef transparency_data;
+    CFIndex transparency_length;
+
+    png_dict = NULL;
+    transparency_data = NULL;
+    transparency_length = 0;
+    if (frame_props == NULL) {
+        return 0;
+    }
+
+    png_dict = (CFDictionaryRef)CFDictionaryGetValue(
+        frame_props,
+        kCGImagePropertyPNGDictionary);
+    if (png_dict == NULL || CFGetTypeID(png_dict) != CFDictionaryGetTypeID()) {
+        return 0;
+    }
+
+    transparency_data = (CFDataRef)CFDictionaryGetValue(
+        png_dict,
+        kCGImagePropertyPNGTransparency);
+    if (transparency_data == NULL ||
+        CFGetTypeID(transparency_data) != CFDataGetTypeID()) {
+        return 0;
+    }
+    transparency_length = CFDataGetLength(transparency_data);
+    if (transparency_length <= 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 static unsigned int
 coregraphics_read_u32be(unsigned char const *bytes)
 {
@@ -2590,6 +2626,7 @@ load_with_coregraphics(
     int single_frame_has_alpha_cache;
     int single_frame_promote_float32_cache;
     int single_frame_is_indexed_cache;
+    unsigned char single_frame_indexed_props_needed;
     unsigned char single_frame_props_ready;
     unsigned char single_frame_decode_hint_ready;
     int *frame_delay_cache;
@@ -2597,6 +2634,7 @@ load_with_coregraphics(
     int *frame_has_alpha_cache;
     int *frame_promote_float32_cache;
     int *frame_is_indexed_cache;
+    unsigned char *frame_indexed_props_needed_cache;
     unsigned char *frame_props_ready;
     unsigned char *frame_decode_hint_ready;
     int *active_frame_delay_cache;
@@ -2604,6 +2642,7 @@ load_with_coregraphics(
     int *active_frame_has_alpha_cache;
     int *active_frame_promote_float32_cache;
     int *active_frame_is_indexed_cache;
+    unsigned char *active_frame_indexed_props_needed_cache;
     unsigned char *active_frame_props_ready;
     unsigned char *active_frame_decode_hint_ready;
     unsigned char *frame_cache_decided;
@@ -2622,6 +2661,7 @@ load_with_coregraphics(
     int frame_cache_decision_pending;
     int release_emit_frame;
     int cache_hit;
+    int frame_indexed_props_needed;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -2662,6 +2702,7 @@ load_with_coregraphics(
     single_frame_has_alpha_cache = 0;
     single_frame_promote_float32_cache = 0;
     single_frame_is_indexed_cache = 0;
+    single_frame_indexed_props_needed = 0u;
     single_frame_props_ready = 0u;
     single_frame_decode_hint_ready = 0u;
     frame_delay_cache = NULL;
@@ -2669,6 +2710,7 @@ load_with_coregraphics(
     frame_has_alpha_cache = NULL;
     frame_promote_float32_cache = NULL;
     frame_is_indexed_cache = NULL;
+    frame_indexed_props_needed_cache = NULL;
     frame_props_ready = NULL;
     frame_decode_hint_ready = NULL;
     active_frame_delay_cache = NULL;
@@ -2676,6 +2718,7 @@ load_with_coregraphics(
     active_frame_has_alpha_cache = NULL;
     active_frame_promote_float32_cache = NULL;
     active_frame_is_indexed_cache = NULL;
+    active_frame_indexed_props_needed_cache = NULL;
     active_frame_props_ready = NULL;
     active_frame_decode_hint_ready = NULL;
     frame_cache_decided = NULL;
@@ -2694,6 +2737,7 @@ load_with_coregraphics(
     frame_cache_decision_pending = 0;
     release_emit_frame = 0;
     cache_hit = 0;
+    frame_indexed_props_needed = 0;
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -2823,6 +2867,8 @@ load_with_coregraphics(
          metadata_slots > SIZE_MAX / sizeof(*frame_has_alpha_cache) ||
          metadata_slots > SIZE_MAX / sizeof(*frame_promote_float32_cache) ||
          metadata_slots > SIZE_MAX / sizeof(*frame_is_indexed_cache) ||
+         metadata_slots > SIZE_MAX /
+             sizeof(*frame_indexed_props_needed_cache) ||
          metadata_slots > SIZE_MAX / sizeof(*frame_props_ready) ||
          metadata_slots > SIZE_MAX / sizeof(*frame_decode_hint_ready))) {
         sixel_helper_set_additional_message(
@@ -2889,6 +2935,17 @@ load_with_coregraphics(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        frame_indexed_props_needed_cache = (unsigned char *)
+            sixel_allocator_calloc(
+                frame->allocator,
+                metadata_slots,
+                sizeof(*frame_indexed_props_needed_cache));
+        if (frame_indexed_props_needed_cache == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         frame_props_ready = (unsigned char *)sixel_allocator_calloc(
             frame->allocator,
             metadata_slots,
@@ -2914,6 +2971,8 @@ load_with_coregraphics(
         active_frame_has_alpha_cache = frame_has_alpha_cache;
         active_frame_promote_float32_cache = frame_promote_float32_cache;
         active_frame_is_indexed_cache = frame_is_indexed_cache;
+        active_frame_indexed_props_needed_cache =
+            frame_indexed_props_needed_cache;
         active_frame_props_ready = frame_props_ready;
         active_frame_decode_hint_ready = frame_decode_hint_ready;
     } else {
@@ -2924,6 +2983,8 @@ load_with_coregraphics(
         active_frame_promote_float32_cache =
             &single_frame_promote_float32_cache;
         active_frame_is_indexed_cache = &single_frame_is_indexed_cache;
+        active_frame_indexed_props_needed_cache =
+            &single_frame_indexed_props_needed;
         active_frame_props_ready = &single_frame_props_ready;
         active_frame_decode_hint_ready = &single_frame_decode_hint_ready;
     }
@@ -3071,10 +3132,34 @@ load_with_coregraphics(
                         coregraphics_image_has_alpha(image, frame_props);
                     active_frame_promote_float32_cache[frame_meta_slot] =
                         coregraphics_should_promote_float32(image, frame_props);
+                    active_frame_indexed_props_needed_cache[frame_meta_slot] =
+                        0u;
+                    if (active_frame_is_indexed_cache[frame_meta_slot] != 0 &&
+                        png_indexed_cache.parse_status != SIXEL_OK) {
+                        /*
+                         * Reacquire frame properties on replay only when the
+                         * frame can actually carry PNG transparency metadata.
+                         * If properties are not available on first decode,
+                         * keep the old conservative behavior and retry later.
+                         */
+                        if (frame_props == NULL) {
+                            active_frame_indexed_props_needed_cache[
+                                frame_meta_slot] = 1u;
+                        } else {
+                            frame_indexed_props_needed =
+                                coregraphics_need_indexed_png_props(
+                                    frame_props);
+                            if (frame_indexed_props_needed != 0) {
+                                active_frame_indexed_props_needed_cache[
+                                    frame_meta_slot] = 1u;
+                            }
+                        }
+                    }
                     active_frame_decode_hint_ready[frame_meta_slot] = 1u;
                 }
                 if (active_frame_is_indexed_cache[frame_meta_slot] != 0 &&
-                    png_indexed_cache.parse_status != SIXEL_OK &&
+                    active_frame_indexed_props_needed_cache[
+                        frame_meta_slot] != 0u &&
                     frame_props == NULL) {
                     frame_props = CGImageSourceCopyPropertiesAtIndex(
                         source,
@@ -3332,6 +3417,8 @@ end:
         sixel_allocator_free(frame->allocator, frame_cache_decided);
         sixel_allocator_free(frame->allocator, frame_props_ready);
         sixel_allocator_free(frame->allocator, frame_decode_hint_ready);
+        sixel_allocator_free(frame->allocator,
+                             frame_indexed_props_needed_cache);
         sixel_allocator_free(frame->allocator, frame_orientation_cache);
         sixel_allocator_free(frame->allocator, frame_delay_cache);
         sixel_allocator_free(frame->allocator, frame_is_indexed_cache);
