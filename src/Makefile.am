@@ -151,9 +151,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/icc-parse.h \
                 $(srcdir)/icc-apply.c \
                 $(srcdir)/icc-apply.h \
-                $(srcdir)/icc-convert.c \
-                $(srcdir)/icc-convert.h \
-                $(srcdir)/icc-convert-internal.h \
                 $(srcdir)/loader.c \
                 $(srcdir)/loader-gdk-pixbuf2.c \
                 $(srcdir)/loader-gnome-thumbnailer.c \
