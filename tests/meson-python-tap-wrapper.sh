@@ -16,7 +16,8 @@ prepare_psb_large_fixtures_once() {
   fi
 
   if mkdir "$lock_dir" 2>/dev/null; then
-    if ! sh "$prepare_script" "$TOP_SRCDIR"; then
+    # Keep fixture-preparation chatter out of TAP stdout.
+    if ! sh "$prepare_script" "$TOP_SRCDIR" 1>&2; then
       rmdir "$lock_dir"
       return 1
     fi
