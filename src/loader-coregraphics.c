@@ -111,6 +111,23 @@ typedef struct sixel_loader_coregraphics_component {
     int start_frame_no;
 } sixel_loader_coregraphics_component_t;
 
+typedef struct coregraphics_srgb_lut_cache {
+    int prepared;
+    double decode_lut[256];
+    unsigned char encode_lut[COREGRAPHICS_SRGB_ENCODE_LUT_SIZE + 1u];
+} coregraphics_srgb_lut_cache_t;
+
+typedef struct coregraphics_png_indexed_metadata_cache {
+    int initialized;
+    SIXELSTATUS parse_status;
+    unsigned char *palette;
+    int ncolors;
+    unsigned char zero_alpha_map[SIXEL_PALETTE_MAX];
+    int zero_alpha_count;
+    int has_partial_alpha;
+    int has_keycolor;
+} coregraphics_png_indexed_metadata_cache_t;
+
 static unsigned char
 coregraphics_unpremultiply_channel(unsigned int value, unsigned int alpha)
 {
@@ -460,8 +477,12 @@ coregraphics_resolve_animation_delay_cs(CFDictionaryRef dict,
                                         int *delay_cs)
 {
     double delay_value;
+    double scaled_delay;
+    double max_delay_seconds;
 
     delay_value = 0.0;
+    scaled_delay = 0.0;
+    max_delay_seconds = (double)INT_MAX / 100.0;
     if (dict == NULL || delay_cs == NULL) {
         return 0;
     }
@@ -475,10 +496,21 @@ coregraphics_resolve_animation_delay_cs(CFDictionaryRef dict,
         return 0;
     }
 
-    if (delay_value < 0.0) {
+    if (!(delay_value >= 0.0)) {
         delay_value = 0.0;
     }
-    *delay_cs = (int)(delay_value * 100.0);
+    if (delay_value > max_delay_seconds) {
+        *delay_cs = INT_MAX;
+        return 1;
+    }
+
+    scaled_delay = delay_value * 100.0;
+    if (scaled_delay >= (double)INT_MAX) {
+        *delay_cs = INT_MAX;
+        return 1;
+    }
+
+    *delay_cs = (int)scaled_delay;
     if (*delay_cs == 0 && delay_value > 0.0) {
         *delay_cs = 1;
     }
@@ -1103,6 +1135,72 @@ cleanup:
     return status;
 }
 
+static void
+coregraphics_png_indexed_metadata_cache_init(
+    coregraphics_png_indexed_metadata_cache_t *cache)
+{
+    if (cache == NULL) {
+        return;
+    }
+
+    cache->initialized = 0;
+    cache->parse_status = SIXEL_FALSE;
+    cache->palette = NULL;
+    cache->ncolors = 0;
+    memset(cache->zero_alpha_map, 0, sizeof(cache->zero_alpha_map));
+    cache->zero_alpha_count = 0;
+    cache->has_partial_alpha = 0;
+    cache->has_keycolor = 0;
+}
+
+static void
+coregraphics_png_indexed_metadata_cache_reset(
+    coregraphics_png_indexed_metadata_cache_t *cache,
+    sixel_allocator_t *allocator)
+{
+    if (cache == NULL || allocator == NULL) {
+        return;
+    }
+
+    sixel_allocator_free(allocator, cache->palette);
+    coregraphics_png_indexed_metadata_cache_init(cache);
+}
+
+static SIXELSTATUS
+coregraphics_png_indexed_metadata_cache_prepare(
+    coregraphics_png_indexed_metadata_cache_t *cache,
+    sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (cache == NULL || chunk == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (cache->initialized != 0) {
+        return cache->parse_status;
+    }
+
+    cache->initialized = 1;
+    status = coregraphics_parse_png_indexed_metadata(
+        chunk,
+        allocator,
+        &cache->palette,
+        &cache->ncolors,
+        cache->zero_alpha_map,
+        &cache->zero_alpha_count,
+        &cache->has_partial_alpha,
+        &cache->has_keycolor);
+    cache->parse_status = status;
+    if (status != SIXEL_OK && status != SIXEL_FALSE) {
+        sixel_allocator_free(allocator, cache->palette);
+        cache->palette = NULL;
+        cache->ncolors = 0;
+    }
+    return status;
+}
+
 static int
 coregraphics_find_palette_index(unsigned char const *palette,
                                 int ncolors,
@@ -1186,7 +1284,7 @@ coregraphics_find_palette_index_with_tolerance(unsigned char const *palette,
 
 static SIXELSTATUS
 coregraphics_try_handle_png_indexed_keycolor(
-    sixel_chunk_t const *chunk,
+    coregraphics_png_indexed_metadata_cache_t const *png_indexed_cache,
     sixel_frame_t *frame,
     CGImageRef image,
     int fuse_palette,
@@ -1212,7 +1310,6 @@ coregraphics_try_handle_png_indexed_keycolor(
     size_t pixel_count;
     size_t index;
     int ncolors;
-    int zero_alpha_count;
     int has_partial_alpha;
     int has_keycolor;
     int allow_pal8;
@@ -1235,7 +1332,6 @@ coregraphics_try_handle_png_indexed_keycolor(
     pixel_count = 0u;
     index = 0u;
     ncolors = 0;
-    zero_alpha_count = 0;
     has_partial_alpha = 0;
     has_keycolor = 0;
     allow_pal8 = 0;
@@ -1246,7 +1342,7 @@ coregraphics_try_handle_png_indexed_keycolor(
     g8 = 0u;
     b8 = 0u;
     owns_color_space = 0;
-    if (chunk == NULL ||
+    if (png_indexed_cache == NULL ||
         frame == NULL ||
         image == NULL ||
         handled == NULL ||
@@ -1256,20 +1352,24 @@ coregraphics_try_handle_png_indexed_keycolor(
 
     *handled = 0;
 
-    status = coregraphics_parse_png_indexed_metadata(chunk,
-                                                     frame->allocator,
-                                                     &palette,
-                                                     &ncolors,
-                                                     zero_alpha_map,
-                                                     &zero_alpha_count,
-                                                     &has_partial_alpha,
-                                                     &has_keycolor);
+    status = png_indexed_cache->parse_status;
     if (status == SIXEL_FALSE) {
         return SIXEL_OK;
     }
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    if (png_indexed_cache->palette == NULL ||
+        png_indexed_cache->ncolors <= 0 ||
+        png_indexed_cache->ncolors > SIXEL_PALETTE_MAX) {
+        return SIXEL_OK;
+    }
+    ncolors = png_indexed_cache->ncolors;
+    memcpy(zero_alpha_map,
+           png_indexed_cache->zero_alpha_map,
+           sizeof(zero_alpha_map));
+    has_partial_alpha = png_indexed_cache->has_partial_alpha;
+    has_keycolor = png_indexed_cache->has_keycolor;
     if (has_keycolor == 0) {
         status = SIXEL_OK;
         goto cleanup;
@@ -1303,6 +1403,22 @@ coregraphics_try_handle_png_indexed_keycolor(
         status = SIXEL_OK;
         goto cleanup;
     }
+    if ((size_t)ncolors > SIZE_MAX / 3u) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+    palette = (unsigned char *)sixel_allocator_malloc(
+        frame->allocator,
+        (size_t)ncolors * 3u);
+    if (palette == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+    memcpy(palette,
+           png_indexed_cache->palette,
+           (size_t)ncolors * 3u);
 
     if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -1429,6 +1545,8 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
                                       sixel_frame_t *frame,
                                       CGImageRef image,
                                       CFDictionaryRef frame_props,
+                                      coregraphics_png_indexed_metadata_cache_t
+                                      const *png_indexed_cache,
                                       int fuse_palette,
                                       int reqcolors,
                                       unsigned char const *bgcolor,
@@ -1456,6 +1574,7 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
     int has_partial_alpha;
     int key_index;
     int has_keycolor;
+    int merged_ncolors;
     unsigned char palette_index;
 
     status = SIXEL_FALSE;
@@ -1472,6 +1591,7 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
     has_partial_alpha = 0;
     key_index = -1;
     has_keycolor = 0;
+    merged_ncolors = 0;
     palette_index = 0u;
     if (chunk == NULL ||
         frame == NULL ||
@@ -1507,11 +1627,36 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
                                         zero_alpha_map,
                                         &zero_alpha_count,
                                         &has_partial_alpha);
-    coregraphics_parse_png_transparency_chunk(chunk,
-                                              ncolors,
-                                              zero_alpha_map,
-                                              &zero_alpha_count,
-                                              &has_partial_alpha);
+    if (png_indexed_cache != NULL &&
+        png_indexed_cache->parse_status != SIXEL_OK &&
+        png_indexed_cache->parse_status != SIXEL_FALSE) {
+        status = png_indexed_cache->parse_status;
+        goto cleanup;
+    }
+    if (png_indexed_cache != NULL &&
+        png_indexed_cache->parse_status == SIXEL_OK &&
+        png_indexed_cache->ncolors > 0) {
+        merged_ncolors = ncolors;
+        if (png_indexed_cache->ncolors < merged_ncolors) {
+            merged_ncolors = png_indexed_cache->ncolors;
+        }
+        for (index = 0u; index < (size_t)merged_ncolors; ++index) {
+            if (png_indexed_cache->zero_alpha_map[index] != 0u &&
+                zero_alpha_map[index] == 0u) {
+                zero_alpha_map[index] = 1u;
+                zero_alpha_count += 1;
+            }
+        }
+        if (png_indexed_cache->has_partial_alpha != 0) {
+            has_partial_alpha = 1;
+        }
+    } else {
+        coregraphics_parse_png_transparency_chunk(chunk,
+                                                  ncolors,
+                                                  zero_alpha_map,
+                                                  &zero_alpha_count,
+                                                  &has_partial_alpha);
+    }
     if (has_partial_alpha != 0) {
         *force_alpha = 1;
         status = SIXEL_OK;
@@ -1685,7 +1830,8 @@ static SIXELSTATUS
 coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
                                 CGImageRef image,
                                 unsigned char const *bgcolor,
-                                int has_alpha_like)
+                                int has_alpha_like,
+                                coregraphics_srgb_lut_cache_t *srgb_lut_cache)
 {
     /*
      * Draw into premultiplied RGBA and emit three-component output.
@@ -1715,8 +1861,8 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
     double out_linear_r;
     double out_linear_g;
     double out_linear_b;
-    double decode_lut[256];
-    unsigned char encode_lut[COREGRAPHICS_SRGB_ENCODE_LUT_SIZE + 1u];
+    double const *decode_lut;
+    unsigned char const *encode_lut;
 
     status = SIXEL_FALSE;
     color_space = NULL;
@@ -1743,8 +1889,8 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
     out_linear_r = 0.0;
     out_linear_g = 0.0;
     out_linear_b = 0.0;
-    memset(decode_lut, 0, sizeof(decode_lut));
-    memset(encode_lut, 0, sizeof(encode_lut));
+    decode_lut = NULL;
+    encode_lut = NULL;
     if (frame == NULL || image == NULL || frame->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1828,9 +1974,19 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
         }
     }
     if (has_alpha_like != 0) {
-        coregraphics_build_srgb_decode_u8_lut(decode_lut);
-        coregraphics_build_srgb_encode_u8_lut(encode_lut,
-                                              sizeof(encode_lut));
+        if (srgb_lut_cache == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        if (srgb_lut_cache->prepared == 0) {
+            coregraphics_build_srgb_decode_u8_lut(srgb_lut_cache->decode_lut);
+            coregraphics_build_srgb_encode_u8_lut(
+                srgb_lut_cache->encode_lut,
+                sizeof(srgb_lut_cache->encode_lut));
+            srgb_lut_cache->prepared = 1;
+        }
+        decode_lut = srgb_lut_cache->decode_lut;
+        encode_lut = srgb_lut_cache->encode_lut;
     }
 
     if (has_alpha_like == 0) {
@@ -2243,6 +2399,14 @@ load_with_coregraphics(
     int force_alpha_from_indexed;
     int has_alpha_like;
     int promote_float32;
+    coregraphics_png_indexed_metadata_cache_t png_indexed_cache;
+    coregraphics_srgb_lut_cache_t rgba8_lut_cache;
+    CFDictionaryRef *frame_props_cache;
+    int *frame_delay_cache;
+    unsigned char *frame_props_ready;
+    size_t prefetch_index;
+    size_t image_width;
+    size_t image_height;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -2271,6 +2435,14 @@ load_with_coregraphics(
     force_alpha_from_indexed = 0;
     has_alpha_like = 0;
     promote_float32 = 0;
+    coregraphics_png_indexed_metadata_cache_init(&png_indexed_cache);
+    rgba8_lut_cache.prepared = 0;
+    frame_props_cache = NULL;
+    frame_delay_cache = NULL;
+    frame_props_ready = NULL;
+    prefetch_index = 0u;
+    image_width = 0u;
+    image_height = 0u;
 
     if (start_frame_no_set) {
         start_frame_no = start_frame_no_override;
@@ -2312,6 +2484,12 @@ load_with_coregraphics(
         goto end;
     }
 
+    if (frame_count > (size_t)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: frame count is too large.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
     total_frames = (int)frame_count;
     if (start_frame_no != INT_MIN) {
         status = coregraphics_resolve_animation_start_frame_no(
@@ -2328,6 +2506,14 @@ load_with_coregraphics(
      * In static mode we still need to seek to resolved_start_frame_no first,
      * then emit exactly one frame and return from inside the decode loop.
      */
+
+    status = coregraphics_png_indexed_metadata_cache_prepare(
+        &png_indexed_cache,
+        pchunk,
+        frame->allocator);
+    if (status != SIXEL_OK && status != SIXEL_FALSE) {
+        goto end;
+    }
 
     props = CGImageSourceCopyProperties(source, NULL);
     if (props) {
@@ -2351,6 +2537,44 @@ load_with_coregraphics(
                 anim_loop_count);
         }
     }
+    if ((size_t)total_frames > SIZE_MAX / sizeof(*frame_props_cache) ||
+        (size_t)total_frames > SIZE_MAX / sizeof(*frame_delay_cache) ||
+        (size_t)total_frames > SIZE_MAX / sizeof(*frame_props_ready)) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: frame metadata is too large.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    frame_props_cache = (CFDictionaryRef *)sixel_allocator_calloc(
+        frame->allocator,
+        (size_t)total_frames,
+        sizeof(*frame_props_cache));
+    if (frame_props_cache == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: sixel_allocator_calloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    frame_delay_cache = (int *)sixel_allocator_calloc(frame->allocator,
+                                                      (size_t)total_frames,
+                                                      sizeof(
+                                                          *frame_delay_cache));
+    if (frame_delay_cache == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: sixel_allocator_calloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    frame_props_ready = (unsigned char *)sixel_allocator_calloc(
+        frame->allocator,
+        (size_t)total_frames,
+        sizeof(*frame_props_ready));
+    if (frame_props_ready == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: sixel_allocator_calloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
 
     frame->multiframe = (!fstatic && frame_count > 1
                         && is_animation_container);
@@ -2369,10 +2593,11 @@ load_with_coregraphics(
         while (frame_index < total_frames) {
             frame->frame_no = frames_in_loop;
             frame->loop_count = loop_no;
+            frame_props = NULL;
             frame->delay = 0;
 
             image = CGImageSourceCreateImageAtIndex(
-                source, (unsigned int)frame_index, NULL);
+                source, (size_t)frame_index, NULL);
             if (! image) {
                 sixel_helper_set_additional_message(
                     "load_with_coregraphics: CGImageSourceCreateImageAtIndex "
@@ -2380,44 +2605,73 @@ load_with_coregraphics(
                 status = SIXEL_FALSE;
                 goto end;
             }
-
-            frame_props = CGImageSourceCopyPropertiesAtIndex(
-                source, (unsigned int)frame_index, NULL);
-            if (frame_props) {
-                frame_anim_dict = NULL;
-                frame_loop_key = NULL;
-                frame_delay_key = NULL;
-                frame_unclamped_delay_key = NULL;
-                if (coregraphics_get_animation_keys(
-                        frame_props,
-                        frame_count,
-                        &frame_anim_dict,
-                        &frame_loop_key,
-                        &frame_delay_key,
-                        &frame_unclamped_delay_key)) {
-                    anim_loop_count = coregraphics_dictionary_get_int(
-                        frame_anim_dict,
-                        frame_loop_key,
-                        anim_loop_count);
-                    coregraphics_resolve_animation_delay_cs(
-                        frame_anim_dict,
-                        frame_unclamped_delay_key,
-                        frame_delay_key,
-                        &frame->delay);
+            /*
+             * Resolve frame metadata once on first decode of each frame and
+             * reuse it on replay loops to avoid repeated property lookups.
+             */
+            if (frame_props_ready[(size_t)frame_index] == 0u) {
+                frame_props_cache[(size_t)frame_index] =
+                    CGImageSourceCopyPropertiesAtIndex(
+                        source,
+                        (size_t)frame_index,
+                        NULL);
+                frame_delay_cache[(size_t)frame_index] = 0;
+                frame_props = frame_props_cache[(size_t)frame_index];
+                if (frame_props != NULL) {
+                    frame_anim_dict = NULL;
+                    frame_loop_key = NULL;
+                    frame_delay_key = NULL;
+                    frame_unclamped_delay_key = NULL;
+                    if (coregraphics_get_animation_keys(
+                            frame_props,
+                            frame_count,
+                            &frame_anim_dict,
+                            &frame_loop_key,
+                            &frame_delay_key,
+                            &frame_unclamped_delay_key)) {
+                        anim_loop_count = coregraphics_dictionary_get_int(
+                            frame_anim_dict,
+                            frame_loop_key,
+                            anim_loop_count);
+                        coregraphics_resolve_animation_delay_cs(
+                            frame_anim_dict,
+                            frame_unclamped_delay_key,
+                            frame_delay_key,
+                            &frame_delay_cache[(size_t)frame_index]);
+                    }
                 }
+                frame_props_ready[(size_t)frame_index] = 1u;
             }
+            frame_props = frame_props_cache[(size_t)frame_index];
+            frame->delay = frame_delay_cache[(size_t)frame_index];
 
-            frame->width = (int)CGImageGetWidth(image);
-            frame->height = (int)CGImageGetHeight(image);
-
-            if (frame->width > SIXEL_WIDTH_LIMIT) {
+            image_width = CGImageGetWidth(image);
+            image_height = CGImageGetHeight(image);
+            if (image_width > (size_t)INT_MAX) {
                 sixel_helper_set_additional_message(
                     "load_with_coregraphics: given width parameter is too"
                     " huge.");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
-            if (frame->height > SIXEL_HEIGHT_LIMIT) {
+            if (image_height > (size_t)INT_MAX) {
+                sixel_helper_set_additional_message(
+                    "load_with_coregraphics: given height parameter is too"
+                    " huge.");
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            frame->width = (int)image_width;
+            frame->height = (int)image_height;
+
+            if (image_width > (size_t)SIXEL_WIDTH_LIMIT) {
+                sixel_helper_set_additional_message(
+                    "load_with_coregraphics: given width parameter is too"
+                    " huge.");
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            if (image_height > (size_t)SIXEL_HEIGHT_LIMIT) {
                 sixel_helper_set_additional_message(
                     "load_with_coregraphics: given height parameter is too"
                     " huge.");
@@ -2451,6 +2705,7 @@ load_with_coregraphics(
                 frame,
                 image,
                 frame_props,
+                &png_indexed_cache,
                 fuse_palette,
                 reqcolors,
                 bgcolor,
@@ -2461,7 +2716,7 @@ load_with_coregraphics(
             }
             if (indexed_handled == 0) {
                 status = coregraphics_try_handle_png_indexed_keycolor(
-                    pchunk,
+                    &png_indexed_cache,
                     frame,
                     image,
                     fuse_palette,
@@ -2489,16 +2744,12 @@ load_with_coregraphics(
                     status = coregraphics_decode_rgba8_frame(frame,
                                                              image,
                                                              bgcolor,
-                                                             has_alpha_like);
+                                                             has_alpha_like,
+                                                             &rgba8_lut_cache);
                 }
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
-            }
-
-            if (frame_props != NULL) {
-                CFRelease(frame_props);
-                frame_props = NULL;
             }
 
             frame->multiframe = (!fstatic && frame_count > 1
@@ -2545,8 +2796,14 @@ load_with_coregraphics(
     status = SIXEL_OK;
 
 end:
-    if (frame_props != NULL) {
-        CFRelease(frame_props);
+    if (frame_props_cache != NULL) {
+        for (prefetch_index = 0u;
+             prefetch_index < (size_t)total_frames;
+             ++prefetch_index) {
+            if (frame_props_cache[prefetch_index] != NULL) {
+                CFRelease(frame_props_cache[prefetch_index]);
+            }
+        }
     }
     if (image != NULL) {
         CGImageRelease(image);
@@ -2561,6 +2818,12 @@ end:
         CFRelease(data);
     }
     if (frame != NULL) {
+        coregraphics_png_indexed_metadata_cache_reset(
+            &png_indexed_cache,
+            frame->allocator);
+        sixel_allocator_free(frame->allocator, frame_props_ready);
+        sixel_allocator_free(frame->allocator, frame_delay_cache);
+        sixel_allocator_free(frame->allocator, frame_props_cache);
         sixel_frame_unref(frame);
     }
     return status;

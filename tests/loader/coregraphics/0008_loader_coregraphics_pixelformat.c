@@ -47,6 +47,15 @@ typedef struct coregraphics_loop_unbounded_probe {
     int reached_required_loop;
 } coregraphics_loop_unbounded_probe_t;
 
+typedef struct coregraphics_delay_replay_probe {
+    int callback_count;
+    int expected_count;
+    int saw_multiframe;
+    int delays[8];
+    int loop_nos[8];
+    int frame_nos[8];
+} coregraphics_delay_replay_probe_t;
+
 typedef int (*coregraphics_env_test_fn_t)(void);
 
 typedef struct coregraphics_env_dispatch_entry {
@@ -189,6 +198,14 @@ capture_coregraphics_animation_probe(sixel_frame_t *frame, void *data)
     }
 
     probe->callback_count += 1;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+capture_coregraphics_noop(sixel_frame_t *frame, void *data)
+{
+    (void)frame;
+    (void)data;
     return SIXEL_OK;
 }
 
@@ -661,6 +678,125 @@ run_coregraphics_loop_control_case(char const *label,
     return 0;
 }
 
+static SIXELSTATUS
+capture_coregraphics_delay_replay_probe(sixel_frame_t *frame, void *data)
+{
+    coregraphics_delay_replay_probe_t *probe;
+    int index;
+    int capacity;
+
+    probe = NULL;
+    index = 0;
+    capacity = 0;
+    if (frame == NULL || data == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    probe = (coregraphics_delay_replay_probe_t *)data;
+    capacity = (int)(sizeof(probe->delays) / sizeof(probe->delays[0]));
+    if (probe->callback_count < capacity) {
+        index = probe->callback_count;
+        probe->delays[index] = sixel_frame_get_delay(frame);
+        probe->loop_nos[index] = sixel_frame_get_loop_no(frame);
+        probe->frame_nos[index] = sixel_frame_get_frame_no(frame);
+    }
+    if (probe->callback_count < probe->expected_count &&
+        sixel_frame_get_multiframe(frame) != 0) {
+        probe->saw_multiframe = 1;
+    }
+    probe->callback_count += 1;
+    return SIXEL_OK;
+}
+
+static int
+run_coregraphics_delay_replay_case(char const *label,
+                                   char const *relative_path)
+{
+    static int const expected_loop_nos[] = { 0, 0, 1, 1 };
+    static int const expected_frame_nos[] = { 0, 1, 0, 1 };
+    SIXELSTATUS status;
+    coregraphics_delay_replay_probe_t probe;
+    int result;
+    int index;
+    int capacity;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.expected_count = 4;
+    probe.saw_multiframe = 0;
+    result = 1;
+    index = 0;
+    capacity = (int)(sizeof(probe.delays) / sizeof(probe.delays[0]));
+    for (index = 0; index < capacity; ++index) {
+        probe.delays[index] = -1;
+        probe.loop_nos[index] = -1;
+        probe.frame_nos[index] = -1;
+    }
+    if (label == NULL || relative_path == NULL) {
+        return 1;
+    }
+
+    result = run_coregraphics_animation_case_with_callback(
+        label,
+        relative_path,
+        SIXEL_LOOP_AUTO,
+        0,
+        INT_MIN,
+        capture_coregraphics_delay_replay_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (status != SIXEL_OK) {
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                label,
+                (int)status);
+        return 1;
+    }
+
+    if (probe.callback_count < probe.expected_count) {
+        fprintf(stderr,
+                "%s: callback count underflow (actual=%d expected>=%d)\n",
+                label,
+                probe.callback_count,
+                probe.expected_count);
+        return 1;
+    }
+    if (probe.saw_multiframe == 0) {
+        fprintf(stderr, "%s: frame metadata did not mark multiframe\n", label);
+        return 1;
+    }
+    if (probe.delays[0] <= 0 || probe.delays[1] <= 0 ||
+        probe.delays[2] <= 0 || probe.delays[3] <= 0) {
+        fprintf(stderr, "%s: expected positive frame delay metadata\n", label);
+        return 1;
+    }
+    if (probe.delays[0] != probe.delays[2] ||
+        probe.delays[1] != probe.delays[3]) {
+        fprintf(stderr, "%s: frame delay replay sequence mismatch\n", label);
+        return 1;
+    }
+    for (index = 0; index < probe.expected_count; ++index) {
+        if (probe.loop_nos[index] != expected_loop_nos[index] ||
+            probe.frame_nos[index] != expected_frame_nos[index]) {
+            fprintf(stderr,
+                    "%s: unexpected loop/frame sequence at %d "
+                    "(actual=%d:%d expected=%d:%d)\n",
+                    label,
+                    index,
+                    probe.loop_nos[index],
+                    probe.frame_nos[index],
+                    expected_loop_nos[index],
+                    expected_frame_nos[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static int
 run_coregraphics_animation_metadata_case(char const *label,
                                          char const *relative_path)
@@ -1095,6 +1231,14 @@ run_coregraphics_apng_loop_control_behavior_test(void)
 }
 
 static int
+run_coregraphics_apng_delay_replay_consistency_test(void)
+{
+    return run_coregraphics_delay_replay_case(
+        "coregraphics apng delay replay consistency",
+        "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png");
+}
+
+static int
 run_coregraphics_webp_animation_metadata_test(void)
 {
     if (!coregraphics_runtime_supports_webp_animation()) {
@@ -1128,6 +1272,47 @@ run_coregraphics_webp_loop_control_behavior_test(void)
 }
 
 static int
+run_coregraphics_webp_delay_replay_consistency_test(void)
+{
+    if (!coregraphics_runtime_supports_webp_animation()) {
+        return 0;
+    }
+    return run_coregraphics_delay_replay_case(
+        "coregraphics webp delay replay consistency",
+        WEBP_LOOP2_IMAGE_PATH);
+}
+
+static int
+run_coregraphics_huge_dimension_metadata_reject_test(void)
+{
+    SIXELSTATUS status;
+    int result;
+    int noop_context;
+
+    status = SIXEL_FALSE;
+    result = 1;
+    noop_context = 0;
+    result = run_coregraphics_animation_case_with_callback(
+        "coregraphics huge-dimension metadata reject",
+        "/tests/data/corrupted/too_large_dimension.psd",
+        SIXEL_LOOP_DISABLE,
+        0,
+        INT_MIN,
+        capture_coregraphics_noop,
+        &noop_context,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (status == SIXEL_OK) {
+        fprintf(stderr, "coregraphics accepted huge-dimension metadata\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_coregraphics_loader_test(void)
 {
     static coregraphics_env_dispatch_entry_t const env_dispatch[] = {
@@ -1157,12 +1342,18 @@ run_coregraphics_loader_test(void)
           run_coregraphics_apng_start_frame_behavior_test },
         { "SIXEL_TEST_COREGRAPHICS_APNG_LOOP_CONTROL",
           run_coregraphics_apng_loop_control_behavior_test },
+        { "SIXEL_TEST_COREGRAPHICS_APNG_DELAY_REPLAY",
+          run_coregraphics_apng_delay_replay_consistency_test },
         { "SIXEL_TEST_COREGRAPHICS_WEBP_METADATA",
           run_coregraphics_webp_animation_metadata_test },
         { "SIXEL_TEST_COREGRAPHICS_WEBP_START_FRAME",
           run_coregraphics_webp_start_frame_behavior_test },
         { "SIXEL_TEST_COREGRAPHICS_WEBP_LOOP_CONTROL",
-          run_coregraphics_webp_loop_control_behavior_test }
+          run_coregraphics_webp_loop_control_behavior_test },
+        { "SIXEL_TEST_COREGRAPHICS_WEBP_DELAY_REPLAY",
+          run_coregraphics_webp_delay_replay_consistency_test },
+        { "SIXEL_TEST_COREGRAPHICS_HUGE_DIMENSION_REJECT",
+          run_coregraphics_huge_dimension_metadata_reject_test }
     };
     int dispatch_result;
     int result;
@@ -1192,6 +1383,10 @@ run_coregraphics_loader_test(void)
     if (result != 0) {
         return result;
     }
+    result = run_coregraphics_apng_delay_replay_consistency_test();
+    if (result != 0) {
+        return result;
+    }
     result = run_coregraphics_webp_animation_metadata_test();
     if (result != 0) {
         return result;
@@ -1201,6 +1396,14 @@ run_coregraphics_loader_test(void)
         return result;
     }
     result = run_coregraphics_webp_loop_control_behavior_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_webp_delay_replay_consistency_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_huge_dimension_metadata_reject_test();
     if (result != 0) {
         return result;
     }
