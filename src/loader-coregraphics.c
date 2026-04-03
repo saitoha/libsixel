@@ -51,6 +51,7 @@
 
 #include "chunk.h"
 #include "frame.h"
+#include "loader-common.h"
 #include "loader-coregraphics.h"
 #include "loader.h"
 #include "logger.h"
@@ -93,6 +94,9 @@
 #ifndef kCGImagePropertyHEICSUnclampedDelayTime
 #define kCGImagePropertyHEICSUnclampedDelayTime CFSTR("UnclampedDelayTime")
 #endif
+#ifndef kCGImagePropertyOrientation
+#define kCGImagePropertyOrientation CFSTR("Orientation")
+#endif
 
 #define COREGRAPHICS_SRGB_ENCODE_LUT_SIZE 4096u
 #define COREGRAPHICS_PALETTE_MATCH_TOLERANCE 3u
@@ -109,6 +113,7 @@ typedef struct sixel_loader_coregraphics_component {
     int loop_control;
     int has_start_frame_no;
     int start_frame_no;
+    int enable_orientation;
 } sixel_loader_coregraphics_component_t;
 
 typedef struct coregraphics_srgb_lut_cache {
@@ -364,6 +369,34 @@ coregraphics_dictionary_get_double(CFDictionaryRef dict,
 
     *out_value = parsed;
     return 1;
+}
+
+static int
+coregraphics_sanitize_exif_orientation(int orientation)
+{
+    if (orientation < 1 || orientation > 8) {
+        return 1;
+    }
+    return orientation;
+}
+
+static int
+coregraphics_resolve_exif_orientation(CFDictionaryRef props,
+                                      int fallback_orientation)
+{
+    int resolved_orientation;
+
+    resolved_orientation = coregraphics_sanitize_exif_orientation(
+        fallback_orientation);
+    if (props == NULL) {
+        return resolved_orientation;
+    }
+
+    resolved_orientation = coregraphics_dictionary_get_int(
+        props,
+        kCGImagePropertyOrientation,
+        resolved_orientation);
+    return coregraphics_sanitize_exif_orientation(resolved_orientation);
 }
 
 static int
@@ -2365,6 +2398,7 @@ load_with_coregraphics(
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
+    int                       /* in */     enable_orientation,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
     int                       /* in */     start_frame_no_set,
@@ -2399,6 +2433,8 @@ load_with_coregraphics(
     int force_alpha_from_indexed;
     int has_alpha_like;
     int promote_float32;
+    int source_orientation;
+    int frame_orientation;
     coregraphics_png_indexed_metadata_cache_t png_indexed_cache;
     coregraphics_srgb_lut_cache_t rgba8_lut_cache;
     CFDictionaryRef *frame_props_cache;
@@ -2435,6 +2471,8 @@ load_with_coregraphics(
     force_alpha_from_indexed = 0;
     has_alpha_like = 0;
     promote_float32 = 0;
+    source_orientation = 1;
+    frame_orientation = 1;
     coregraphics_png_indexed_metadata_cache_init(&png_indexed_cache);
     rgba8_lut_cache.prepared = 0;
     frame_props_cache = NULL;
@@ -2517,6 +2555,9 @@ load_with_coregraphics(
 
     props = CGImageSourceCopyProperties(source, NULL);
     if (props) {
+        source_orientation = coregraphics_resolve_exif_orientation(
+            props,
+            source_orientation);
         /*
          * Treat multi-frame decoding as animation only when the source
          * exposes known animation dictionaries. This keeps multi-size ICO
@@ -2644,6 +2685,9 @@ load_with_coregraphics(
             }
             frame_props = frame_props_cache[(size_t)frame_index];
             frame->delay = frame_delay_cache[(size_t)frame_index];
+            frame_orientation = coregraphics_resolve_exif_orientation(
+                frame_props,
+                source_orientation);
 
             image_width = CGImageGetWidth(image);
             image_height = CGImageGetHeight(image);
@@ -2747,6 +2791,15 @@ load_with_coregraphics(
                                                              has_alpha_like,
                                                              &rgba8_lut_cache);
                 }
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+            }
+            if (enable_orientation != 0 &&
+                frame_orientation >= 2 &&
+                frame_orientation <= 8) {
+                status = loader_frame_apply_orientation(frame,
+                                                       frame_orientation);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -2930,6 +2983,10 @@ sixel_loader_coregraphics_setopt(sixel_loader_component_t *component,
         self->start_frame_no = *flag;
         self->has_start_frame_no = 1;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_COREGRAPHICS_ENABLE_ORIENTATION:
+        flag = (int const *)value;
+        self->enable_orientation = (flag == NULL || *flag != 0) ? 1 : 0;
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }
@@ -2959,6 +3016,7 @@ sixel_loader_coregraphics_load(sixel_loader_component_t *component,
                                   self->fstatic,
                                   self->fuse_palette,
                                   self->reqcolors,
+                                  self->enable_orientation,
                                   bgcolor,
                                   self->loop_control,
                                   self->has_start_frame_no,
@@ -3007,6 +3065,7 @@ sixel_loader_coregraphics_new(sixel_allocator_t *allocator,
     self->reqcolors = SIXEL_PALETTE_MAX;
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no = INT_MIN;
+    self->enable_orientation = 1;
     sixel_allocator_ref(allocator);
     *ppcomponent = &self->base;
     return SIXEL_OK;

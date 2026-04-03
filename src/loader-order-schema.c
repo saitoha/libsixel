@@ -42,7 +42,7 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_cms_engine[] = 
     { "colorsync", SIXEL_CMS_ENGINE_COLORSYNC }
 };
 
-#if HAVE_LIBPNG || HAVE_JPEG || HAVE_WEBP
+#if HAVE_LIBPNG || HAVE_JPEG || HAVE_WEBP || HAVE_COREGRAPHICS
 static sixel_suboption_choice_t const
 g_suboption_choices_loader_orientation[] = {
     { "on", 1 },
@@ -111,6 +111,20 @@ static sixel_suboption_key_t const g_subkeys_loader_libwebp[] = {
         "orientation",
         "o",
         "SIXEL_LOADER_LIBWEBP_ORIENTATION",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_orientation,
+        sizeof(g_suboption_choices_loader_orientation)
+            / sizeof(g_suboption_choices_loader_orientation[0])
+    }
+};
+#endif
+
+#if HAVE_COREGRAPHICS
+static sixel_suboption_key_t const g_subkeys_loader_coregraphics[] = {
+    {
+        "orientation",
+        "o",
+        "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_orientation,
         sizeof(g_suboption_choices_loader_orientation)
@@ -218,7 +232,13 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
     },
 #endif
 #if HAVE_COREGRAPHICS
-    { "coregraphics", SIXEL_LOADER_SCHEMA_CHOICE_COREGRAPHICS, NULL, 0u },
+    {
+        "coregraphics",
+        SIXEL_LOADER_SCHEMA_CHOICE_COREGRAPHICS,
+        g_subkeys_loader_coregraphics,
+        sizeof(g_subkeys_loader_coregraphics)
+            / sizeof(g_subkeys_loader_coregraphics[0])
+    },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
     { "gdk-pixbuf2", SIXEL_LOADER_SCHEMA_CHOICE_GDK_PIXBUF2, NULL, 0u },
@@ -322,6 +342,7 @@ sixel_loader_order_validate_resolution(
             strcmp(base_name, "libpng") != 0 &&
             strcmp(base_name, "libjpeg") != 0 &&
             strcmp(base_name, "libwebp") != 0 &&
+            strcmp(base_name, "coregraphics") != 0 &&
             strcmp(base_name, "libtiff") != 0 &&
             strcmp(base_name, "builtin") != 0 &&
             item->assignment_count > 0u) {

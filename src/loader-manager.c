@@ -415,6 +415,10 @@ loader_manager_init_loader_suboptions(
         loader_manager_read_env_orientation(
             "SIXEL_LOADER_LIBWEBP_ORIENTATION",
             default_orientation);
+    suboptions->coregraphics_enable_orientation =
+        loader_manager_read_env_orientation(
+            "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
+            default_orientation);
     suboptions->libtiff_enable_cms = 0;
     suboptions->libtiff_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
@@ -530,6 +534,13 @@ loader_manager_resolve_loader_suboptions(
                                                         &parsed_value,
                                                         0)) {
                 suboptions->libwebp_enable_orientation = parsed_value;
+            } else if (strcmp(item->base_def->name, "coregraphics") == 0 &&
+                       strcmp(key_name, "orientation") == 0 &&
+                       loader_manager_parse_orientation(value_text,
+                                                        value_length,
+                                                        &parsed_value,
+                                                        0)) {
+                suboptions->coregraphics_enable_orientation = parsed_value;
             } else if (strcmp(item->base_def->name, "libtiff") == 0 &&
                        strcmp(key_name, "cms_engine") == 0 &&
                        loader_manager_parse_cms_engine(value_text,

@@ -789,6 +789,18 @@ loader_apply_component_options(sixel_loader_component_t *component,
         return status;
     }
 
+    suboption_value = suboptions->coregraphics_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_COREGRAPHICS_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'coregraphics-enable-orientation'.");
+        return status;
+    }
+
     if (component_name != NULL && strcmp(component_name, "libpng") == 0) {
         suboption_value = suboptions->libpng_cms_engine;
     } else if (component_name != NULL &&
