@@ -91,21 +91,10 @@ Key points used by this roadmap:
     `normal` and `normal_rle` decode baselines, plus malformed traces for:
     `layer info end overrun`, `channel section-window overrun`, and
     `RLE payload window overrun`.
-    Additional large-window coverage is fixed with:
-    - `high_offset_large` (1 MiB section shift), and
-    - `high_offset_xlarge` (2 MiB section shift), and
-    - `high_offset_xxlarge` (4 MiB section shift), and
-    - `high_offset_xxxlarge` (8 MiB section shift), and
-    - `high_offset_xxxxlarge` (16 MiB section shift), and
-    - `high_offset_xxxxxlarge` (32 MiB section shift), and
-    - `high_offset_xxxxxxlarge` (64 MiB section shift), and
-    - `high_offset_xxxxxxxlarge` (128 MiB section shift).
-    Both cover `mode=4` and `mode7(4ch->CMYK)` CMYK16/CMYK32 `normal` decode,
-    with malformed traces for `layer info end overrun`,
-    `channel section-window overrun`, and
-    `RLE payload window overrun`.
-    Additional over-limit fixtures at `high_offset_xxxxxxxlarge_over_limit`
-    keep a deterministic allocation-failure trace contract.
+    Large-window representative coverage is fixed with `high_offset_xxlarge`
+    (4 MiB section shift) on top of the baseline `high_offset` set.
+    `>1MiB` PSB fixtures are generated on demand at test runtime
+    (autotools/meson) instead of being kept as static repository assets.
   - Non-pixel payload is tolerated in fallback:
     - layers with decodable pixel channels are composited normally
       (non-pixel payload ignored, info trace), and
@@ -220,6 +209,8 @@ Key points used by this roadmap:
   - TySh EngineData `StyleRun` payloads that resolve stylesheet payloads via
     `/StyleSheetSet` (instead of inline `RunArray` `StyleSheetData`) now
     follow the same longest-run precedence contract.
+  - TySh EngineData `StyleRun` payloads that use `RunStyle` references now
+    resolve through `/StyleSheetSet` using the same longest-run precedence.
   - PSB malformed boundary parity for CMYK32 now covers both native
     `mode=4` and `mode7(4ch->CMYK)` paths with fixed trace contracts for:
     `layer/mask length`, `layer info length`, `layer channel length`
@@ -377,12 +368,8 @@ Minimum fixture naming convention:
    `FillColor`/`Color` value extraction).
 2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
    large-document parity:
-   - after mode4/mode7 CMYK16/CMYK32 high-offset + `high_offset_large` (1 MiB)
-     + `high_offset_xlarge` (2 MiB) + `high_offset_xxlarge` (4 MiB)
-     + `high_offset_xxxlarge` (8 MiB) + `high_offset_xxxxlarge` (16 MiB)
-     + `high_offset_xxxxxlarge` (32 MiB) + `high_offset_xxxxxxlarge` (64 MiB)
-     + `high_offset_xxxxxxxlarge` (128 MiB)
-     valid/malformed parity, move to larger-than-128MiB section-window layouts
+   - after mode4/mode7 CMYK16/CMYK32 `high_offset` + `high_offset_xxlarge`
+     valid/malformed parity, expand to larger-than-4MiB section-window layouts
      and higher-offset cases (requires allocator ceiling policy decision), and
    - design/implement large-size section boundary handling beyond the current
      parser/fallback surface.
