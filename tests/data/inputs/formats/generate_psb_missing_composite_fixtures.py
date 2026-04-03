@@ -583,6 +583,10 @@ def main() -> None:
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal.psd",
     )
     convert_fixture(
+        "snake16_mode7_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal.psd",
+    )
+    convert_fixture(
         "snake16_rgb16_missing_composite_multilayer_clipping.psd",
         "snake16_psb_rgb16_missing_composite_multilayer_clipping.psd",
     )
@@ -1175,6 +1179,10 @@ def main() -> None:
     mutate_psb_channel_length_u64max(
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_normal.psd",
         "snake16_psb_mode7_cmyk16_missing_composite_multilayer_channel_length_u64max.psd",
+    )
+    mutate_psb_channel_length_u64max(
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_normal.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_channel_length_u64max.psd",
     )
     mutate_psb_channel_length_u64max(
         "snake16_psb_cmyk8_missing_composite_multilayer_normal.psd",
