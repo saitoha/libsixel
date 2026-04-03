@@ -605,7 +605,7 @@ sixel-check-test-logs: $(TEST_LOGS)
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
-check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
+check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
 	@find "$(abs_builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -exec rm -f {} +
 	@find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +
 	@$(am__rm_f) $(TEST_SUITE_LOG)
@@ -843,7 +843,7 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts
 mostlyclean-generic:
 	-@find "$(abs_builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -exec rm -f {} +
 
-.PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts check-python check-ruby check-perl check-php sixel-check-test-logs
+.PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts prepare-psd-large-fixtures check-python check-ruby check-perl check-php sixel-check-test-logs
 check-binding-loader-setopt-sync:
 	@set -eu; \
 	"$(SHELL)" "$(abs_top_srcdir)/tests/bindings/check-loader-setopt-sync.sh" "$(abs_top_srcdir)"
@@ -859,6 +859,11 @@ prepare-binding-artifacts:
 	if test "@ENABLE_PHP@" = "1"; then \
 	    $(MAKE) $(AM_MAKEFLAGS) -C "$(abs_top_builddir)/php" all-local; \
 	fi
+
+prepare-psd-large-fixtures:
+	@set -eu; \
+	"$(SHELL)" "$(abs_top_srcdir)/tests/_static/sh/prepare-psb-large-fixtures.sh" \
+	    "$(abs_top_srcdir)"
 
 check-python: prepare-binding-artifacts
 	@set -eu; \
@@ -1141,6 +1146,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     loader/builtin/0014_loader_builtin_pixelformat_common.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_hdr.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c \
+    _static/sh/prepare-psb-large-fixtures.sh \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \

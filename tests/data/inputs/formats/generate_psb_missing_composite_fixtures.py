@@ -9,6 +9,7 @@ row length tables.
 
 from __future__ import annotations
 
+import argparse
 import pathlib
 import struct
 
@@ -662,7 +663,73 @@ def mutate_psb_high_offset_valid(src_name: str,
     print(dst)
 
 
+def generate_high_offset_large_fixtures() -> None:
+    scales = (
+        ("xxxxxxlarge", 0x4000000),
+        ("xxxxxxxlarge", 0x7FF0000),
+    )
+    over_limit_padding = 0x8000000
+
+    for mode_prefix in ("cmyk", "mode7_cmyk"):
+        for depth_tag in ("16", "32"):
+            base = f"snake16_psb_{mode_prefix}{depth_tag}_missing_composite_multilayer"
+            normal_src = f"{base}_normal.psd"
+            normal_rle_src = f"{base}_normal_rle.psd"
+
+            for scale_name, padding in scales:
+                normal_valid = f"{base}_normal_high_offset_{scale_name}.psd"
+                normal_rle_valid = f"{base}_normal_rle_high_offset_{scale_name}.psd"
+                mutate_psb_high_offset_valid(
+                    normal_src,
+                    normal_valid,
+                    padding_bytes=padding,
+                )
+                mutate_psb_high_offset_valid(
+                    normal_rle_src,
+                    normal_rle_valid,
+                    padding_bytes=padding,
+                )
+                mutate_psb_layer_info_end_overrun(
+                    normal_valid,
+                    f"{base}_normal_high_offset_{scale_name}_layer_info_end_overrun.psd",
+                )
+                mutate_psb_channel_window_overrun(
+                    normal_valid,
+                    f"{base}_normal_high_offset_{scale_name}_channel_window_overrun.psd",
+                )
+                mutate_psb_rle_payload_window_overrun(
+                    normal_rle_valid,
+                    f"{base}_normal_rle_high_offset_{scale_name}_rle_payload_window_overrun.psd",
+                )
+
+            mutate_psb_high_offset_valid(
+                normal_src,
+                f"{base}_normal_high_offset_xxxxxxxlarge_over_limit.psd",
+                padding_bytes=over_limit_padding,
+            )
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Generate PSB fixtures from PSD missing-composite fixtures.",
+    )
+    parser.add_argument(
+        "--high-offset-large-only",
+        action="store_true",
+        help=(
+            "Generate only large high-offset PSB fixtures "
+            "(xxxxxxlarge/xxxxxxxlarge and derived malformed variants)."
+        ),
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = parse_args()
+    if args.high_offset_large_only:
+        generate_high_offset_large_fixtures()
+        return
+
     # Representative PSB(v2) missing-composite fixtures used by loader tests.
     convert_fixture(
         "snake16_rgb8_missing_composite_multilayer_normal.psd",
