@@ -7150,6 +7150,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     SIXELSTATUS status;
     int result;
     int allow_loader_pipeline;
+    int frame_multiframe;
 
     context = (sixel_encoder_load_context_t *)data;
     pipeline = NULL;
@@ -7158,6 +7159,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     status = SIXEL_OK;
     result = 0;
     allow_loader_pipeline = 0;
+    frame_multiframe = 0;
 
     if (context == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -7182,6 +7184,22 @@ load_image_callback(sixel_frame_t *frame, void *data)
 
     if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED
         && planner != NULL) {
+        /*
+         * Prime planner thread budgets before making the first loader handoff
+         * decision. Without this, planner->main_threads stays at the default
+         * value and multiframe sources can be forced into serial mode.
+         */
+        frame_multiframe = sixel_frame_get_multiframe(frame);
+        sixel_encoding_planner_reset_for_frame(planner);
+        sixel_encoding_planner_plan(planner, encoder, frame);
+        sixel_trace_topic_message(
+            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
+            "callback planner summary total=%d main=%d heavy=%d "
+            "multiframe=%d",
+            planner->total_threads,
+            planner->main_threads,
+            planner->heavy_ops,
+            frame_multiframe);
         allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
             planner,
             encoder,
