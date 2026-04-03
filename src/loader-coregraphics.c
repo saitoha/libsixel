@@ -2562,6 +2562,7 @@ load_with_coregraphics(
     CFDictionaryRef *frame_props_cache;
     int *frame_delay_cache;
     unsigned char *frame_props_ready;
+    unsigned char *frame_cache_decided;
     sixel_frame_t **frame_cache;
     CFIndex cf_data_length;
     size_t prefetch_index;
@@ -2572,6 +2573,7 @@ load_with_coregraphics(
     size_t image_height;
     int frame_cache_enabled;
     int frame_cache_keep;
+    int frame_cache_decision_pending;
     int release_emit_frame;
     int cache_hit;
 
@@ -2612,6 +2614,7 @@ load_with_coregraphics(
     frame_props_cache = NULL;
     frame_delay_cache = NULL;
     frame_props_ready = NULL;
+    frame_cache_decided = NULL;
     frame_cache = NULL;
     cf_data_length = 0;
     prefetch_index = 0u;
@@ -2622,6 +2625,7 @@ load_with_coregraphics(
     image_height = 0u;
     frame_cache_enabled = 0;
     frame_cache_keep = 0;
+    frame_cache_decision_pending = 0;
     release_emit_frame = 0;
     cache_hit = 0;
 
@@ -2736,6 +2740,7 @@ load_with_coregraphics(
     if ((size_t)total_frames > SIZE_MAX / sizeof(*frame_props_cache) ||
         (size_t)total_frames > SIZE_MAX / sizeof(*frame_delay_cache) ||
         (size_t)total_frames > SIZE_MAX / sizeof(*frame_props_ready) ||
+        (size_t)total_frames > SIZE_MAX / sizeof(*frame_cache_decided) ||
         (size_t)total_frames > SIZE_MAX / sizeof(*frame_cache)) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: frame metadata is too large.");
@@ -2778,6 +2783,16 @@ load_with_coregraphics(
         }
     }
     if (frame_cache_enabled != 0) {
+        frame_cache_decided = (unsigned char *)sixel_allocator_calloc(
+            frame->allocator,
+            (size_t)total_frames,
+            sizeof(*frame_cache_decided));
+        if (frame_cache_decided == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_coregraphics: sixel_allocator_calloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         frame_cache = (sixel_frame_t **)sixel_allocator_calloc(
             frame->allocator,
             (size_t)total_frames,
@@ -2808,6 +2823,7 @@ load_with_coregraphics(
             emit_frame = NULL;
             decode_frame = NULL;
             frame_cache_keep = 0;
+            frame_cache_decision_pending = 0;
             release_emit_frame = 0;
             cache_hit = 0;
             frame_props = NULL;
@@ -2872,12 +2888,17 @@ load_with_coregraphics(
                 }
 
                 if (frame_cache != NULL) {
-                    status = sixel_frame_new(&cached_frame_tmp,
-                                             pchunk->allocator);
-                    if (SIXEL_FAILED(status)) {
-                        goto end;
+                    if (frame_cache_decided[(size_t)frame_index] == 0u) {
+                        status = sixel_frame_new(&cached_frame_tmp,
+                                                 pchunk->allocator);
+                        if (SIXEL_FAILED(status)) {
+                            goto end;
+                        }
+                        decode_frame = cached_frame_tmp;
+                        frame_cache_decision_pending = 1;
+                    } else {
+                        decode_frame = frame;
                     }
-                    decode_frame = cached_frame_tmp;
                 } else {
                     decode_frame = frame;
                 }
@@ -3002,31 +3023,37 @@ load_with_coregraphics(
                 }
 
                 if (frame_cache != NULL) {
-                    frame_cache_frame_bytes = 0u;
-                    if (!coregraphics_measure_frame_cache_bytes(
-                            decode_frame,
-                            &frame_cache_frame_bytes)) {
-                        sixel_helper_set_additional_message(
-                            "load_with_coregraphics: failed to estimate "
-                            "decoded frame size.");
-                        status = SIXEL_BAD_INTEGER_OVERFLOW;
-                        goto end;
-                    }
-                    if (frame_cache_frame_bytes <= frame_cache_max_bytes &&
-                        frame_cache_used_bytes <=
-                        frame_cache_max_bytes - frame_cache_frame_bytes) {
-                        frame_cache_keep = 1;
-                    }
-                    if (frame_cache_keep != 0) {
-                        decode_frame->handoff_shareable = 1;
-                        frame_cache[(size_t)frame_index] = decode_frame;
-                        frame_cache_used_bytes += frame_cache_frame_bytes;
-                        emit_frame = decode_frame;
-                        cached_frame_tmp = NULL;
+                    if (frame_cache_decision_pending != 0) {
+                        frame_cache_frame_bytes = 0u;
+                        if (!coregraphics_measure_frame_cache_bytes(
+                                decode_frame,
+                                &frame_cache_frame_bytes)) {
+                            sixel_helper_set_additional_message(
+                                "load_with_coregraphics: failed to estimate "
+                                "decoded frame size.");
+                            status = SIXEL_BAD_INTEGER_OVERFLOW;
+                            goto end;
+                        }
+                        if (frame_cache_frame_bytes <= frame_cache_max_bytes &&
+                            frame_cache_used_bytes <=
+                            frame_cache_max_bytes - frame_cache_frame_bytes) {
+                            frame_cache_keep = 1;
+                        }
+                        frame_cache_decided[(size_t)frame_index] = 1u;
+                        if (frame_cache_keep != 0) {
+                            decode_frame->handoff_shareable = 1;
+                            frame_cache[(size_t)frame_index] = decode_frame;
+                            frame_cache_used_bytes += frame_cache_frame_bytes;
+                            emit_frame = decode_frame;
+                            cached_frame_tmp = NULL;
+                        } else {
+                            decode_frame->handoff_shareable = 0;
+                            emit_frame = decode_frame;
+                            release_emit_frame = 1;
+                        }
                     } else {
                         decode_frame->handoff_shareable = 0;
                         emit_frame = decode_frame;
-                        release_emit_frame = 1;
                     }
                 } else {
                     emit_frame = decode_frame;
@@ -3126,6 +3153,7 @@ end:
             &png_indexed_cache,
             frame->allocator);
         sixel_allocator_free(frame->allocator, frame_cache);
+        sixel_allocator_free(frame->allocator, frame_cache_decided);
         sixel_allocator_free(frame->allocator, frame_props_ready);
         sixel_allocator_free(frame->allocator, frame_delay_cache);
         sixel_allocator_free(frame->allocator, frame_props_cache);
