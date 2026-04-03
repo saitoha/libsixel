@@ -24,6 +24,29 @@ typedef struct coregraphics_animation_probe {
     int has_first_rgb;
 } coregraphics_animation_probe_t;
 
+#define WEBP_LOOP2_IMAGE_PATH \
+    "/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
+
+typedef struct coregraphics_loop_sequence_probe {
+    int callback_count;
+    int expected_count;
+    int mismatch_index;
+    int mismatch_loop_no;
+    int mismatch_frame_no;
+    int saw_multiframe;
+    int const *expected_sequence;
+} coregraphics_loop_sequence_probe_t;
+
+typedef struct coregraphics_loop_unbounded_probe {
+    int callback_count;
+    int max_callbacks;
+    int required_loop_no;
+    int highest_loop_no;
+    int highest_frame_no;
+    int saw_multiframe;
+    int reached_required_loop;
+} coregraphics_loop_unbounded_probe_t;
+
 static int
 coregraphics_runtime_major_version(void)
 {
@@ -149,12 +172,15 @@ capture_coregraphics_animation_probe(sixel_frame_t *frame, void *data)
 }
 
 static int
-run_coregraphics_animation_case(char const *label,
-                                char const *relative_path,
-                                int loop_control,
-                                int start_frame_no_set,
-                                int start_frame_no,
-                                coregraphics_animation_probe_t *probe)
+run_coregraphics_animation_case_with_callback(
+    char const *label,
+    char const *relative_path,
+    int loop_control,
+    int start_frame_no_set,
+    int start_frame_no,
+    sixel_load_image_function callback,
+    void *callback_context,
+    SIXELSTATUS *out_status)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -180,8 +206,14 @@ run_coregraphics_animation_case(char const *label,
     callback_state.loader = NULL;
     callback_state.fn = NULL;
     callback_state.context = NULL;
-    if (label == NULL || relative_path == NULL || probe == NULL) {
+    if (label == NULL ||
+        relative_path == NULL ||
+        callback == NULL ||
+        callback_context == NULL) {
         return 1;
+    }
+    if (out_status != NULL) {
+        *out_status = SIXEL_FALSE;
     }
 
     source_root = getenv("MESON_SOURCE_ROOT");
@@ -259,6 +291,44 @@ run_coregraphics_animation_case(char const *label,
         }
     }
 
+    callback_state.loader = NULL;
+    callback_state.fn = callback;
+    callback_state.context = callback_context;
+
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (out_status != NULL) {
+        *out_status = status;
+    }
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+
+    return SIXEL_FAILED(status) ? 1 : 0;
+}
+
+static int
+run_coregraphics_animation_case(char const *label,
+                                char const *relative_path,
+                                int loop_control,
+                                int start_frame_no_set,
+                                int start_frame_no,
+                                coregraphics_animation_probe_t *probe)
+{
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    result = 1;
+    if (probe == NULL) {
+        return 1;
+    }
+
     probe->callback_count = 0;
     probe->first_delay = 0;
     probe->second_delay = 0;
@@ -268,30 +338,306 @@ run_coregraphics_animation_case(char const *label,
     probe->first_rgb[1] = 0;
     probe->first_rgb[2] = 0;
     probe->has_first_rgb = 0;
-    callback_state.loader = NULL;
-    callback_state.fn = capture_coregraphics_animation_probe;
-    callback_state.context = probe;
 
-    status = sixel_loader_component_load(component,
-                                         chunk,
-                                         capture_frame_trampoline,
-                                         &callback_state);
+    result = run_coregraphics_animation_case_with_callback(
+        label,
+        relative_path,
+        loop_control,
+        start_frame_no_set,
+        start_frame_no,
+        capture_coregraphics_animation_probe,
+        probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "%s: loader reported failure (%d)\n",
                 label,
                 (int)status);
-        goto cleanup;
+        return 1;
     }
 
-    status = SIXEL_OK;
+    return 0;
+}
 
-cleanup:
-    sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
-    sixel_allocator_unref(allocator);
+static SIXELSTATUS
+capture_coregraphics_sequence_probe(sixel_frame_t *frame, void *data)
+{
+    coregraphics_loop_sequence_probe_t *probe;
+    int loop_no;
+    int frame_no;
+    int expected_index;
+    int expected_loop_no;
+    int expected_frame_no;
 
-    return SIXEL_FAILED(status) ? 1 : 0;
+    probe = NULL;
+    loop_no = 0;
+    frame_no = 0;
+    expected_index = 0;
+    expected_loop_no = 0;
+    expected_frame_no = 0;
+    if (frame == NULL || data == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    probe = (coregraphics_loop_sequence_probe_t *)data;
+    if (probe->expected_sequence == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    loop_no = sixel_frame_get_loop_no(frame);
+    frame_no = sixel_frame_get_frame_no(frame);
+    if (sixel_frame_get_multiframe(frame) != 0) {
+        probe->saw_multiframe = 1;
+    }
+
+    if (probe->callback_count >= probe->expected_count) {
+        probe->mismatch_index = probe->callback_count;
+        probe->mismatch_loop_no = loop_no;
+        probe->mismatch_frame_no = frame_no;
+        return SIXEL_BAD_INPUT;
+    }
+
+    expected_index = probe->callback_count * 2;
+    expected_loop_no = probe->expected_sequence[expected_index + 0];
+    expected_frame_no = probe->expected_sequence[expected_index + 1];
+    if (loop_no != expected_loop_no || frame_no != expected_frame_no) {
+        probe->mismatch_index = probe->callback_count;
+        probe->mismatch_loop_no = loop_no;
+        probe->mismatch_frame_no = frame_no;
+        return SIXEL_BAD_INPUT;
+    }
+
+    probe->callback_count += 1;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+capture_coregraphics_loop_probe_until_target(sixel_frame_t *frame, void *data)
+{
+    coregraphics_loop_unbounded_probe_t *probe;
+    int loop_no;
+    int frame_no;
+
+    probe = NULL;
+    loop_no = 0;
+    frame_no = 0;
+    if (frame == NULL || data == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    probe = (coregraphics_loop_unbounded_probe_t *)data;
+    loop_no = sixel_frame_get_loop_no(frame);
+    frame_no = sixel_frame_get_frame_no(frame);
+    probe->callback_count += 1;
+    if (loop_no > probe->highest_loop_no) {
+        probe->highest_loop_no = loop_no;
+    }
+    if (frame_no > probe->highest_frame_no) {
+        probe->highest_frame_no = frame_no;
+    }
+    if (sixel_frame_get_multiframe(frame) != 0) {
+        probe->saw_multiframe = 1;
+    }
+
+    /*
+     * Force-loop mode is intentionally unbounded, so interrupt once the
+     * required loop index is observed. The callback limit guards regressions.
+     */
+    if (loop_no >= probe->required_loop_no) {
+        probe->reached_required_loop = 1;
+        return SIXEL_INTERRUPTED;
+    }
+    if (probe->callback_count >= probe->max_callbacks) {
+        return SIXEL_INTERRUPTED;
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+run_coregraphics_loop_sequence_case(char const *label,
+                                    char const *relative_path,
+                                    int loop_control,
+                                    int const *expected_sequence,
+                                    int expected_count)
+{
+    SIXELSTATUS status;
+    coregraphics_loop_sequence_probe_t probe;
+    int mismatch_expected_loop_no;
+    int mismatch_expected_frame_no;
+    int result;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.expected_count = expected_count;
+    probe.mismatch_index = -1;
+    probe.mismatch_loop_no = -1;
+    probe.mismatch_frame_no = -1;
+    probe.saw_multiframe = 0;
+    probe.expected_sequence = expected_sequence;
+    mismatch_expected_loop_no = -1;
+    mismatch_expected_frame_no = -1;
+    result = 1;
+    if (label == NULL ||
+        relative_path == NULL ||
+        expected_sequence == NULL ||
+        expected_count <= 0) {
+        return 1;
+    }
+
+    result = run_coregraphics_animation_case_with_callback(
+        label,
+        relative_path,
+        loop_control,
+        0,
+        INT_MIN,
+        capture_coregraphics_sequence_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+
+    if (status != SIXEL_OK) {
+        if (status == SIXEL_BAD_INPUT &&
+            probe.mismatch_index >= 0 &&
+            probe.mismatch_index < expected_count) {
+            mismatch_expected_loop_no =
+                expected_sequence[probe.mismatch_index * 2 + 0];
+            mismatch_expected_frame_no =
+                expected_sequence[probe.mismatch_index * 2 + 1];
+            fprintf(stderr,
+                    "%s: sequence mismatch at %d "
+                    "(actual=%d:%d expected=%d:%d)\n",
+                    label,
+                    probe.mismatch_index,
+                    probe.mismatch_loop_no,
+                    probe.mismatch_frame_no,
+                    mismatch_expected_loop_no,
+                    mismatch_expected_frame_no);
+        } else {
+            fprintf(stderr,
+                    "%s: loader reported failure (%d)\n",
+                    label,
+                    (int)status);
+        }
+        return 1;
+    }
+    if (probe.callback_count != expected_count) {
+        fprintf(stderr,
+                "%s: callback count mismatch (actual=%d expected=%d)\n",
+                label,
+                probe.callback_count,
+                expected_count);
+        return 1;
+    }
+    if (probe.saw_multiframe == 0) {
+        fprintf(stderr, "%s: frame metadata did not mark multiframe\n", label);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_coregraphics_loop_force_unbounded_case(char const *label,
+                                           char const *relative_path)
+{
+    SIXELSTATUS status;
+    coregraphics_loop_unbounded_probe_t probe;
+    int result;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.max_callbacks = 64;
+    probe.required_loop_no = 2;
+    probe.highest_loop_no = -1;
+    probe.highest_frame_no = -1;
+    probe.saw_multiframe = 0;
+    probe.reached_required_loop = 0;
+    result = 1;
+    if (label == NULL || relative_path == NULL) {
+        return 1;
+    }
+
+    result = run_coregraphics_animation_case_with_callback(
+        label,
+        relative_path,
+        SIXEL_LOOP_FORCE,
+        0,
+        INT_MIN,
+        capture_coregraphics_loop_probe_until_target,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+
+    if (status != SIXEL_INTERRUPTED) {
+        fprintf(stderr,
+                "%s: expected interruption status, got %d\n",
+                label,
+                (int)status);
+        return 1;
+    }
+    if (probe.reached_required_loop == 0) {
+        fprintf(stderr,
+                "%s: loop threshold not reached "
+                "(required=%d highest=%d callbacks=%d)\n",
+                label,
+                probe.required_loop_no,
+                probe.highest_loop_no,
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.saw_multiframe == 0) {
+        fprintf(stderr, "%s: frame metadata did not mark multiframe\n", label);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_coregraphics_loop_control_case(char const *label,
+                                   char const *relative_path)
+{
+    static int const expected_once[] = { 0, 0, 0, 1 };
+    static int const expected_twice[] = { 0, 0, 0, 1, 1, 0, 1, 1 };
+    int result;
+
+    result = 1;
+    if (label == NULL || relative_path == NULL) {
+        return 1;
+    }
+
+    result = run_coregraphics_loop_sequence_case(label,
+                                                 relative_path,
+                                                 SIXEL_LOOP_DISABLE,
+                                                 expected_once,
+                                                 2);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_coregraphics_loop_sequence_case(label,
+                                                 relative_path,
+                                                 SIXEL_LOOP_AUTO,
+                                                 expected_twice,
+                                                 4);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_coregraphics_loop_force_unbounded_case(label, relative_path);
+    if (result != 0) {
+        return result;
+    }
+
+    return 0;
 }
 
 static int
@@ -601,6 +947,12 @@ run_coregraphics_loader_test(void)
     if (result != 0) {
         return result;
     }
+    result = run_coregraphics_loop_control_case(
+        "coregraphics apng loop-control behavior",
+        "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png");
+    if (result != 0) {
+        return result;
+    }
 
     if (coregraphics_runtime_supports_webp_animation()) {
         result = run_coregraphics_animation_metadata_case(
@@ -612,6 +964,12 @@ run_coregraphics_loader_test(void)
         result = run_coregraphics_start_frame_case(
             "coregraphics webp start-frame behavior",
             WEBP_ANIMATED_IMAGE_PATH);
+        if (result != 0) {
+            return result;
+        }
+        result = run_coregraphics_loop_control_case(
+            "coregraphics webp loop-control behavior",
+            WEBP_LOOP2_IMAGE_PATH);
         if (result != 0) {
             return result;
         }
