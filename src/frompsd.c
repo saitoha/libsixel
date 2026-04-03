@@ -435,6 +435,72 @@ sixel_builtin_psd_malformed_layer_channel_length_message(
     return "builtin PSD: malformed layer channel length";
 }
 
+static int
+sixel_builtin_psd_get_layer_info_window(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    size_t *player_info_offset,
+    size_t *player_info_length,
+    size_t *player_info_end,
+    int emit_message)
+{
+    size_t layer_info_length_field_size;
+    size_t section_offset;
+    size_t section_end;
+    size_t layer_info_offset;
+    size_t layer_info_length;
+
+    layer_info_length_field_size = 0u;
+    section_offset = 0u;
+    section_end = 0u;
+    layer_info_offset = 0u;
+    layer_info_length = 0u;
+    if (chunk == NULL || info == NULL || chunk->buffer == NULL ||
+        player_info_offset == NULL || player_info_length == NULL ||
+        player_info_end == NULL) {
+        return 0;
+    }
+
+    layer_info_length_field_size =
+        sixel_builtin_psd_layer_info_length_field_size(info);
+    if (layer_info_length_field_size == 0u ||
+        info->layer_mask_length < layer_info_length_field_size + 2u ||
+        info->layer_mask_offset > chunk->size ||
+        info->layer_mask_length > chunk->size - info->layer_mask_offset) {
+        if (emit_message != 0) {
+            sixel_helper_set_additional_message(
+                sixel_builtin_psd_malformed_layer_mask_length_message(info));
+        }
+        return 0;
+    }
+    section_offset = info->layer_mask_offset;
+    section_end = section_offset + info->layer_mask_length;
+    if (!sixel_builtin_psd_read_length_field_checked(
+            chunk->buffer + section_offset,
+            layer_info_length_field_size,
+            &layer_info_length)) {
+        if (emit_message != 0) {
+            sixel_helper_set_additional_message(
+                sixel_builtin_psd_malformed_layer_info_length_message(info));
+        }
+        return 0;
+    }
+    layer_info_offset = section_offset + layer_info_length_field_size;
+    if (layer_info_length < 2u ||
+        layer_info_length > section_end - layer_info_offset ||
+        layer_info_offset + layer_info_length > chunk->size) {
+        if (emit_message != 0) {
+            sixel_helper_set_additional_message(
+                sixel_builtin_psd_malformed_layer_info_length_message(info));
+        }
+        return 0;
+    }
+    *player_info_offset = layer_info_offset;
+    *player_info_length = layer_info_length;
+    *player_info_end = layer_info_offset + layer_info_length;
+    return 1;
+}
+
 static void
 sixel_builtin_psd_init_transparent_mask_output(
     unsigned char **ptransparent_mask,
@@ -5678,20 +5744,16 @@ sixel_builtin_psd_should_try_multilayer_fallback(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info)
 {
-    size_t section_offset;
-    size_t section_end;
-    size_t layer_info_length_field_size;
-    size_t layer_info_length;
     size_t layer_info_offset;
+    size_t layer_info_length;
+    size_t layer_info_end;
     size_t min_layer_count;
     int16_t layer_count_raw;
     size_t layer_count;
 
-    section_offset = 0u;
-    section_end = 0u;
-    layer_info_length_field_size = 0u;
-    layer_info_length = 0u;
     layer_info_offset = 0u;
+    layer_info_length = 0u;
+    layer_info_end = 0u;
     min_layer_count = 2u;
     layer_count_raw = 0;
     layer_count = 0u;
@@ -5702,26 +5764,13 @@ sixel_builtin_psd_should_try_multilayer_fallback(
     if (info->version == 2u) {
         min_layer_count = 1u;
     }
-    layer_info_length_field_size =
-        sixel_builtin_psd_layer_info_length_field_size(info);
-    if (layer_info_length_field_size == 0u ||
-        info->layer_mask_length < layer_info_length_field_size + 2u ||
-        info->layer_mask_offset > chunk->size ||
-        info->layer_mask_length > chunk->size - info->layer_mask_offset) {
-        return 0;
-    }
-    section_offset = info->layer_mask_offset;
-    section_end = section_offset + info->layer_mask_length;
-    if (!sixel_builtin_psd_read_length_field_checked(
-            chunk->buffer + section_offset,
-            layer_info_length_field_size,
-            &layer_info_length)) {
-        return 0;
-    }
-    layer_info_offset = section_offset + layer_info_length_field_size;
-    if (layer_info_length < 2u ||
-        layer_info_length > section_end - layer_info_offset ||
-        layer_info_offset + layer_info_length > chunk->size) {
+    if (!sixel_builtin_psd_get_layer_info_window(
+            chunk,
+            info,
+            &layer_info_offset,
+            &layer_info_length,
+            &layer_info_end,
+            0)) {
         return 0;
     }
     layer_count_raw = sixel_builtin_read_i16be(chunk->buffer + layer_info_offset);
@@ -5737,7 +5786,7 @@ sixel_builtin_psd_should_try_multilayer_fallback(
         if (layer_count > (SIZE_MAX - 2u) / 18u) {
             return 0;
         }
-        if (layer_info_length <= 2u + layer_count * 18u) {
+        if (layer_info_end <= layer_info_offset + 2u + layer_count * 18u) {
             return 0;
         }
     }
@@ -5751,11 +5800,9 @@ sixel_builtin_psd_parse_layer_model(
     sixel_builtin_psd_layer_model_t *model)
 {
     unsigned char const *buffer;
-    size_t section_offset;
-    size_t section_end;
-    size_t layer_info_length_field_size;
     size_t layer_channel_length_field_size;
     size_t channel_entry_bytes;
+    size_t layer_info_offset;
     size_t layer_info_length;
     size_t cursor;
     size_t layer_info_end;
@@ -5768,11 +5815,9 @@ sixel_builtin_psd_parse_layer_model(
     size_t extra_data_end;
 
     buffer = NULL;
-    section_offset = 0u;
-    section_end = 0u;
-    layer_info_length_field_size = 0u;
     layer_channel_length_field_size = 0u;
     channel_entry_bytes = 0u;
+    layer_info_offset = 0u;
     layer_info_length = 0u;
     cursor = 0u;
     layer_info_end = 0u;
@@ -5788,12 +5833,9 @@ sixel_builtin_psd_parse_layer_model(
         chunk->buffer == NULL || chunk->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    layer_info_length_field_size =
-        sixel_builtin_psd_layer_info_length_field_size(info);
     layer_channel_length_field_size =
         sixel_builtin_psd_layer_channel_length_field_size(info);
-    if (layer_info_length_field_size == 0u ||
-        layer_channel_length_field_size == 0u ||
+    if (layer_channel_length_field_size == 0u ||
         layer_channel_length_field_size > SIZE_MAX - 2u) {
         sixel_helper_set_additional_message(
             sixel_builtin_psd_malformed_layer_mask_length_message(info));
@@ -5801,32 +5843,17 @@ sixel_builtin_psd_parse_layer_model(
     }
     channel_entry_bytes = 2u + layer_channel_length_field_size;
     sixel_builtin_psd_layer_model_init(model);
-    if (info->layer_mask_length < layer_info_length_field_size + 2u ||
-        info->layer_mask_offset > chunk->size ||
-        info->layer_mask_length > chunk->size - info->layer_mask_offset) {
-        sixel_helper_set_additional_message(
-            sixel_builtin_psd_malformed_layer_mask_length_message(info));
-        return SIXEL_STBI_ERROR;
-    }
     buffer = chunk->buffer;
-    section_offset = info->layer_mask_offset;
-    section_end = section_offset + info->layer_mask_length;
-    if (!sixel_builtin_psd_read_length_field_checked(buffer + section_offset,
-                                                     layer_info_length_field_size,
-                                                     &layer_info_length)) {
-        sixel_helper_set_additional_message(
-            sixel_builtin_psd_malformed_layer_info_length_message(info));
+    if (!sixel_builtin_psd_get_layer_info_window(
+            chunk,
+            info,
+            &layer_info_offset,
+            &layer_info_length,
+            &layer_info_end,
+            1)) {
         return SIXEL_STBI_ERROR;
     }
-    cursor = section_offset + layer_info_length_field_size;
-    if (layer_info_length < 2u ||
-        layer_info_length > section_end - cursor ||
-        cursor + layer_info_length > chunk->size) {
-        sixel_helper_set_additional_message(
-            sixel_builtin_psd_malformed_layer_info_length_message(info));
-        return SIXEL_STBI_ERROR;
-    }
-    layer_info_end = cursor + layer_info_length;
+    cursor = layer_info_offset;
 
     if (cursor + 2u > layer_info_end) {
         sixel_helper_set_additional_message(
