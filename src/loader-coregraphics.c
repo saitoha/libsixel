@@ -138,6 +138,13 @@ typedef struct coregraphics_png_indexed_metadata_cache {
     int has_keycolor;
 } coregraphics_png_indexed_metadata_cache_t;
 
+typedef struct coregraphics_png_trns_chunk_cache {
+    int initialized;
+    int available;
+    int alpha_count;
+    unsigned char alpha_entries[SIXEL_PALETTE_MAX];
+} coregraphics_png_trns_chunk_cache_t;
+
 static unsigned char
 coregraphics_unpremultiply_channel(unsigned int value, unsigned int alpha)
 {
@@ -781,11 +788,72 @@ coregraphics_read_u32be(unsigned char const *bytes)
 }
 
 static void
-coregraphics_parse_png_transparency_chunk(sixel_chunk_t const *chunk,
-                                          int ncolors,
-                                          unsigned char *zero_alpha_map,
-                                          int *zero_alpha_count,
-                                          int *has_partial_alpha)
+coregraphics_png_trns_chunk_cache_init(coregraphics_png_trns_chunk_cache_t
+                                       *cache)
+{
+    if (cache == NULL) {
+        return;
+    }
+
+    cache->initialized = 0;
+    cache->available = 0;
+    cache->alpha_count = 0;
+    memset(cache->alpha_entries, 0, sizeof(cache->alpha_entries));
+}
+
+static void
+coregraphics_merge_png_transparency_entries(unsigned char const *alpha_entries,
+                                            int alpha_count,
+                                            int ncolors,
+                                            unsigned char *zero_alpha_map,
+                                            int *zero_alpha_count,
+                                            int *has_partial_alpha)
+{
+    int index;
+    int merge_count;
+    unsigned char alpha;
+
+    index = 0;
+    merge_count = 0;
+    alpha = 0u;
+    if (alpha_entries == NULL ||
+        alpha_count <= 0 ||
+        ncolors <= 0 ||
+        zero_alpha_map == NULL ||
+        zero_alpha_count == NULL ||
+        has_partial_alpha == NULL) {
+        return;
+    }
+
+    merge_count = alpha_count;
+    if (merge_count > ncolors) {
+        merge_count = ncolors;
+    }
+    if (merge_count > SIXEL_PALETTE_MAX) {
+        merge_count = SIXEL_PALETTE_MAX;
+    }
+
+    for (index = 0; index < merge_count; ++index) {
+        alpha = alpha_entries[index];
+        if (alpha == 0u) {
+            if (zero_alpha_map[index] == 0u) {
+                zero_alpha_map[index] = 1u;
+                *zero_alpha_count += 1;
+            }
+        } else if (alpha != 255u) {
+            *has_partial_alpha = 1;
+        }
+    }
+}
+
+static void
+coregraphics_parse_png_transparency_chunk(
+    sixel_chunk_t const *chunk,
+    coregraphics_png_trns_chunk_cache_t *trns_cache,
+    int ncolors,
+    unsigned char *zero_alpha_map,
+    int *zero_alpha_count,
+    int *has_partial_alpha)
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
@@ -795,16 +863,14 @@ coregraphics_parse_png_transparency_chunk(sixel_chunk_t const *chunk,
     size_t chunk_length;
     unsigned char const *bytes;
     int alpha_count;
-    int index;
-    unsigned char alpha;
+    int use_cache;
 
     offset = 0u;
     chunk_size = 0u;
     chunk_length = 0u;
     bytes = NULL;
     alpha_count = 0;
-    index = 0;
-    alpha = 0u;
+    use_cache = 0;
     if (chunk == NULL ||
         chunk->buffer == NULL ||
         chunk->size < sizeof(png_signature) ||
@@ -813,6 +879,27 @@ coregraphics_parse_png_transparency_chunk(sixel_chunk_t const *chunk,
         zero_alpha_count == NULL ||
         has_partial_alpha == NULL) {
         return;
+    }
+
+    if (trns_cache != NULL) {
+        use_cache = 1;
+        if (trns_cache->initialized != 0) {
+            if (trns_cache->available == 0) {
+                return;
+            }
+            coregraphics_merge_png_transparency_entries(
+                trns_cache->alpha_entries,
+                trns_cache->alpha_count,
+                ncolors,
+                zero_alpha_map,
+                zero_alpha_count,
+                has_partial_alpha);
+            return;
+        }
+        trns_cache->initialized = 1;
+        trns_cache->available = 0;
+        trns_cache->alpha_count = 0;
+        memset(trns_cache->alpha_entries, 0, sizeof(trns_cache->alpha_entries));
     }
 
     if (memcmp(chunk->buffer, png_signature, sizeof(png_signature)) != 0) {
@@ -835,20 +922,33 @@ coregraphics_parse_png_transparency_chunk(sixel_chunk_t const *chunk,
         if (memcmp(bytes, "tRNS", 4u) == 0) {
             offset += 4u;
             chunk_size = chunk_length;
-            if ((int)chunk_size > ncolors) {
-                chunk_size = (size_t)ncolors;
+            if (chunk_size > (size_t)SIXEL_PALETTE_MAX) {
+                chunk_size = (size_t)SIXEL_PALETTE_MAX;
             }
             alpha_count = (int)chunk_size;
-            for (index = 0; index < alpha_count; ++index) {
-                alpha = chunk->buffer[offset + (size_t)index];
-                if (alpha == 0u) {
-                    if (zero_alpha_map[index] == 0u) {
-                        zero_alpha_map[index] = 1u;
-                        *zero_alpha_count += 1;
-                    }
-                } else if (alpha != 255u) {
-                    *has_partial_alpha = 1;
+            if (use_cache != 0) {
+                if (alpha_count > 0) {
+                    memcpy(trns_cache->alpha_entries,
+                           chunk->buffer + offset,
+                           (size_t)alpha_count);
+                    trns_cache->alpha_count = alpha_count;
+                    trns_cache->available = 1;
+                    coregraphics_merge_png_transparency_entries(
+                        trns_cache->alpha_entries,
+                        trns_cache->alpha_count,
+                        ncolors,
+                        zero_alpha_map,
+                        zero_alpha_count,
+                        has_partial_alpha);
                 }
+            } else {
+                coregraphics_merge_png_transparency_entries(
+                    chunk->buffer + offset,
+                    alpha_count,
+                    ncolors,
+                    zero_alpha_map,
+                    zero_alpha_count,
+                    has_partial_alpha);
             }
             break;
         }
@@ -1638,6 +1738,8 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
                                       CFDictionaryRef frame_props,
                                       coregraphics_png_indexed_metadata_cache_t
                                       const *png_indexed_cache,
+                                      coregraphics_png_trns_chunk_cache_t
+                                      *png_trns_chunk_cache,
                                       int fuse_palette,
                                       int reqcolors,
                                       unsigned char const *bgcolor,
@@ -1752,6 +1854,7 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
         }
     } else {
         coregraphics_parse_png_transparency_chunk(chunk,
+                                                  png_trns_chunk_cache,
                                                   ncolors,
                                                   zero_alpha_map,
                                                   &zero_alpha_count,
@@ -2620,6 +2723,7 @@ load_with_coregraphics(
     int source_orientation;
     int frame_orientation;
     coregraphics_png_indexed_metadata_cache_t png_indexed_cache;
+    coregraphics_png_trns_chunk_cache_t png_trns_chunk_cache;
     coregraphics_srgb_lut_cache_t rgba8_lut_cache;
     int single_frame_delay_cache;
     int single_frame_orientation_cache;
@@ -2696,6 +2800,7 @@ load_with_coregraphics(
     source_orientation = 1;
     frame_orientation = 1;
     coregraphics_png_indexed_metadata_cache_init(&png_indexed_cache);
+    coregraphics_png_trns_chunk_cache_init(&png_trns_chunk_cache);
     rgba8_lut_cache.prepared = 0;
     single_frame_delay_cache = 0;
     single_frame_orientation_cache = 1;
@@ -3229,6 +3334,7 @@ load_with_coregraphics(
                     image,
                     frame_props,
                     &png_indexed_cache,
+                    &png_trns_chunk_cache,
                     fuse_palette,
                     reqcolors,
                     bgcolor,

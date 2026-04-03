@@ -25041,13 +25041,14 @@ if test x$with_libfetch != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libfetch" >&5
 printf "%s\n" "$as_me: checking for libfetch" >&6;}
     if test x$host_os = xemscripten; then
-        CFLAGS_BACKUP=$CFLAGS
+                        CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         LDFLAGS="$LDFLAGS -sFETCH=1"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether emscripten accepts -sFETCH=1" >&5
 printf %s "checking whether emscripten accepts -sFETCH=1... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
 int
 main (void)
 {
@@ -25073,7 +25074,7 @@ printf "%s\n" "$sixel_emscripten_fetch" >&6; }
             have_fetch=yes
             LIBFETCH_CFLAGS=""
             LIBFETCH_LIBS=""
-            case " $LDFLAGS " in
+                                    case " $LDFLAGS " in
             *" -sFETCH=1 "*) ;;
             *) LDFLAGS="$LDFLAGS -sFETCH=1" ;;
             esac
@@ -25160,8 +25161,8 @@ printf "%s\n" "$ac_cv_lib_fetch_fetchGetURL" >&6; }
 if test "x$ac_cv_lib_fetch_fetchGetURL" = xyes
 then :
   have_fetch=yes
-                       LIBFETCH_CFLAGS=$ADDED_CFLAGS
-                       LIBFETCH_LIBS=$ADDED_LIBS
+                           LIBFETCH_CFLAGS=$ADDED_CFLAGS
+                           LIBFETCH_LIBS=$ADDED_LIBS
 else case e in #(
   e) have_fetch=no ;;
 esac
@@ -32149,3 +32150,4 @@ echo "       fuzz targets            : $sixel_fuzz_summary"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
+
