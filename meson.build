@@ -1045,11 +1045,9 @@ if not fetch_opt.disabled()
                                           args: [emscripten_fetch_flag],
                                           name: 'emscripten fetch api')
     if emscripten_fetch_supported
-      have_fetch_header = cc.has_header('emscripten/fetch.h',
-                                        args: [emscripten_fetch_flag])
+      have_fetch_header = cc.has_header('emscripten/fetch.h')
       if have_fetch_header
         fetch_dep = declare_dependency(
-          compile_args: [emscripten_fetch_flag],
           link_args: [emscripten_fetch_flag])
       endif
     endif

@@ -25043,7 +25043,6 @@ printf "%s\n" "$as_me: checking for libfetch" >&6;}
     if test x$host_os = xemscripten; then
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        CFLAGS="$CFLAGS -sFETCH=1"
         LDFLAGS="$LDFLAGS -sFETCH=1"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether emscripten accepts -sFETCH=1" >&5
 printf %s "checking whether emscripten accepts -sFETCH=1... " >&6; }
@@ -25072,7 +25071,7 @@ printf "%s\n" "$sixel_emscripten_fetch" >&6; }
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$sixel_emscripten_fetch = xyes; then
             have_fetch=yes
-            LIBFETCH_CFLAGS="-sFETCH=1"
+            LIBFETCH_CFLAGS=""
             LIBFETCH_LIBS="-sFETCH=1"
         elif test x$with_libfetch = xyes; then
             as_fn_error $? "-sFETCH=1 is not supported by this emscripten" "$LINENO" 5

@@ -3314,7 +3314,6 @@ if test x$with_libfetch != xno; then
         dnl libfetch headers/libraries.
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        CFLAGS="$CFLAGS -sFETCH=1"
         LDFLAGS="$LDFLAGS -sFETCH=1"
         AC_MSG_CHECKING([whether emscripten accepts -sFETCH=1])
         AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
@@ -3325,7 +3324,7 @@ if test x$with_libfetch != xno; then
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$sixel_emscripten_fetch = xyes; then
             have_fetch=yes
-            LIBFETCH_CFLAGS="-sFETCH=1"
+            LIBFETCH_CFLAGS=""
             LIBFETCH_LIBS="-sFETCH=1"
         elif test x$with_libfetch = xyes; then
             AC_MSG_ERROR([-sFETCH=1 is not supported by this emscripten])
