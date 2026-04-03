@@ -213,11 +213,42 @@ _quantizemodel() {
                      "${prefix}${key}=none" \
                      "${prefix}${key}=pca"
           return 0
+        elif [[ ${key} == b || ${key} == binning ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=none" \
+                     "${prefix}${key}=hard" \
+                     "${prefix}${key}=soft"
+          return 0
+        elif [[ ${key} == m || ${key} == mapping ]]; then
+          compadd -- "${prefix}${key}=uniform" \
+                     "${prefix}${key}=srgb"
+          return 0
+        elif [[ ${key} == d || ${key} == softdist ]]; then
+          compadd -- "${prefix}${key}=trilinear"
+          return 0
+        elif [[ ${key} == n || ${key} == binbits ]]; then
+          compadd -- "${prefix}${key}=4" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=6" \
+                     "${prefix}${key}=7" \
+                     "${prefix}${key}=8"
+          return 0
+        elif [[ ${key} == r || ${key} == autoratio ]]; then
+          compadd -- "${prefix}${key}=8" \
+                     "${prefix}${key}=16" \
+                     "${prefix}${key}=32" \
+                     "${prefix}${key}=64"
+          return 0
         fi
       else
         prefix=${current%${segment}}
         compadd -- "${prefix}i=" "${prefix}inittype=" \
-                   "${prefix}t=" "${prefix}threshold="
+                   "${prefix}t=" "${prefix}threshold=" \
+                   "${prefix}b=" "${prefix}binning=" \
+                   "${prefix}n=" "${prefix}binbits=" \
+                   "${prefix}m=" "${prefix}mapping=" \
+                   "${prefix}d=" "${prefix}softdist=" \
+                   "${prefix}r=" "${prefix}autoratio="
         return 0
       fi
     fi

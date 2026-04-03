@@ -105,6 +105,16 @@ Supported k-means suboptions:
 \fBinittype\fP (or short key \fBi\fP): \fBauto\fP, \fBnone\fP, \fBpca\fP.
 .br
 \fBthreshold\fP (or short key \fBt\fP): floating value in 0.0-0.5.
+.br
+\fBbinning\fP (or short key \fBb\fP): \fBauto\fP, \fBnone\fP, \fBhard\fP, \fBsoft\fP.
+.br
+\fBbinbits\fP (or short key \fBn\fP): integer value in 4-8.
+.br
+\fBmapping\fP (or short key \fBm\fP): \fBuniform\fP or \fBsrgb\fP.
+.br
+\fBsoftdist\fP (or short key \fBd\fP): \fBtrilinear\fP.
+.br
+\fBautoratio\fP (or short key \fBr\fP): integer value in 1-1048576.
 .TP 5
 .B \-F \fIMODE\fP, \-\-final\-merge=\fIMODE\fP
 control the post\-merge stage after palette construction. \fIMODE\fP accepts
@@ -1041,6 +1051,27 @@ delta threshold for k-means refinement (0.0-0.5, default 0.125).
 .B SIXEL_PALETTE_KMEANS_INITTYPE
 .br
 choose k-means seed selection: auto, pca, or none (default auto).
+.TP 5
+.B SIXEL_PALETTE_KMEANS_BINNING
+.br
+k-means histogram pre-binning mode: auto, none, hard, or soft. Default auto
+selects soft when sample density is high.
+.TP 5
+.B SIXEL_PALETTE_KMEANS_BINBITS
+.br
+k-means histogram bits per channel (4-8, default 6).
+.TP 5
+.B SIXEL_PALETTE_KMEANS_MAPPING
+.br
+k-means histogram mapping space: uniform or srgb (default uniform).
+.TP 5
+.B SIXEL_PALETTE_KMEANS_SOFTDIST
+.br
+k-means soft-binning kernel. Currently supports trilinear.
+.TP 5
+.B SIXEL_PALETTE_KMEANS_AUTORATIO
+.br
+k-means auto-binning density ratio threshold (1-1048576, default 32).
 .TP 5
 .B SIXEL_PALETTE_LUMIN_FACTOR_R
 .br

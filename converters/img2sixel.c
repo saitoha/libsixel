@@ -232,6 +232,21 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 :threshold=VALUE (:t=VALUE)\n"
         "                                   stop refinement when delta\n"
         "                                   reaches VALUE (0.0-0.5).\n"
+        "                                 :binning=MODE (:b=MODE)\n"
+        "                                   histogram pre-binning mode:\n"
+        "                                     auto|none|hard|soft\n"
+        "                                 :binbits=BITS (:n=BITS)\n"
+        "                                   histogram bits per channel\n"
+        "                                   (4-8, default 6).\n"
+        "                                 :mapping=SPACE (:m=SPACE)\n"
+        "                                   histogram mapping space:\n"
+        "                                     uniform|srgb\n"
+        "                                 :softdist=KIND (:d=KIND)\n"
+        "                                   soft binning kernel:\n"
+        "                                     trilinear\n"
+        "                                 :autoratio=RATIO (:r=RATIO)\n"
+        "                                   auto mode threshold ratio\n"
+        "                                   (1-1048576, default 32).\n"
     },
     {
         'F',
@@ -1177,6 +1192,29 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_KMEANS_INITTYPE",
         "choose k-means seed selection: auto, pca, or none (default auto)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_BINNING",
+        "k-means histogram pre-binning mode: auto, none, hard, or soft.\n"
+        "Default auto picks soft when sample density is high."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_BINBITS",
+        "k-means histogram bits per channel (4-8, default 6)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_MAPPING",
+        "k-means histogram mapping space: uniform or srgb (default\n"
+        "uniform)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_SOFTDIST",
+        "k-means soft-binning kernel. Currently supports trilinear."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_AUTORATIO",
+        "k-means auto-binning density ratio threshold (1-1048576,\n"
+        "default 32)."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

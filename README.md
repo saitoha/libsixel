@@ -485,6 +485,11 @@ Options:
                            kmeans:key=value[:key=value...].
                              inittype (or i)  -> auto, none, or pca
                              threshold (or t) -> float in 0.0-0.5
+                             binning (or b)   -> auto, none, hard, or soft
+                             binbits (or n)   -> integer in 4-8
+                             mapping (or m)   -> uniform or srgb
+                             softdist (or d)  -> trilinear
+                             autoratio (or r) -> integer in 1-1048576
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colors. Accepts image files and
                            palette files in Adobe Color Table (*.act),

@@ -511,6 +511,16 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #            auto, none, pca
                                       #          threshold (or t):
                                       #            float in 0.0-0.5
+                                      #          binning (or b):
+                                      #            auto, none, hard, soft
+                                      #          binbits (or n):
+                                      #            integer in 4-8
+                                      #          mapping (or m):
+                                      #            uniform, srgb
+                                      #          softdist (or d):
+                                      #            trilinear
+                                      #          autoratio (or r):
+                                      #            integer in 1-1048576
 SIXEL_OPTFLAG_FINAL_MERGE     = 'F'  # -F MODE, --final-merge=MODE: final merge policy
 
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:

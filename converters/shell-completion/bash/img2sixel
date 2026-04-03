@@ -128,12 +128,40 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == b || ${quant_key} == binning ]]; then
+                    for quant_candidate in auto none hard soft; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == m || ${quant_key} == mapping ]]; then
+                    for quant_candidate in uniform srgb; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == d || ${quant_key} == softdist ]]; then
+                    for quant_candidate in trilinear; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == n || ${quant_key} == binbits ]]; then
+                    for quant_candidate in 4 5 6 7 8; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == r || ${quant_key} == autoratio ]]; then
+                    for quant_candidate in 8 16 32 64; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 fi
                 return 0
             fi
 
             quant_prefix="${cur%${quant_item}}"
-            for quant_candidate in i= inittype= t= threshold=; do
+            for quant_candidate in \
+                i= inittype= t= threshold= \
+                b= binning= n= binbits= m= mapping= \
+                d= softdist= r= autoratio=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
