@@ -2240,6 +2240,120 @@ webp_can_cache_animation_frames(size_t frame_count,
     return 1;
 }
 
+static SIXELSTATUS
+webp_clone_frame_for_replay(sixel_frame_t *frame,
+                            sixel_allocator_t *allocator,
+                            sixel_frame_t **clone_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *clone;
+    unsigned char *pixels;
+    unsigned char *palette;
+    unsigned char *mask;
+    int palette_bytes;
+    int depth_result;
+    size_t depth;
+    size_t pixel_total;
+    size_t pixel_bytes;
+    size_t mask_bytes;
+
+    status = SIXEL_BAD_ARGUMENT;
+    clone = NULL;
+    pixels = NULL;
+    palette = NULL;
+    mask = NULL;
+    palette_bytes = 0;
+    depth_result = 0;
+    depth = 0u;
+    pixel_total = 0u;
+    pixel_bytes = 0u;
+    mask_bytes = 0u;
+    if (frame == NULL || allocator == NULL || clone_out == NULL) {
+        return status;
+    }
+
+    *clone_out = NULL;
+    status = sixel_frame_new(&clone, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    clone->width = frame->width;
+    clone->height = frame->height;
+    clone->pixelformat = frame->pixelformat;
+    clone->colorspace = frame->colorspace;
+    clone->ncolors = frame->ncolors;
+    clone->transparent = frame->transparent;
+    clone->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    clone->transparent_mask = NULL;
+    clone->transparent_mask_size = 0u;
+    clone->frame_no = frame->frame_no;
+    clone->loop_count = frame->loop_count;
+    clone->multiframe = frame->multiframe;
+    clone->delay = frame->delay;
+    clone->handoff_shareable = 0;
+
+    if (frame->palette != NULL && frame->ncolors > 0) {
+        if (frame->ncolors > SIXEL_PALETTE_MAX) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        palette_bytes = frame->ncolors * 3;
+        palette = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            (size_t)palette_bytes);
+        if (palette == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+        memcpy(palette, frame->palette, (size_t)palette_bytes);
+        clone->palette = palette;
+    }
+
+    if (frame->width > 0 && frame->height > 0) {
+        depth_result = sixel_helper_compute_depth(frame->pixelformat);
+        if (depth_result <= 0) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        depth = (size_t)depth_result;
+        pixel_total = (size_t)frame->width * (size_t)frame->height;
+        if (pixel_total > SIZE_MAX / depth) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        pixel_bytes = pixel_total * depth;
+        if (pixel_bytes > 0u) {
+            pixels = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                             pixel_bytes);
+            if (pixels == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            memcpy(pixels, sixel_frame_get_pixels(frame), pixel_bytes);
+            clone->pixels.u8ptr = pixels;
+        }
+    }
+    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
+        mask_bytes = frame->transparent_mask_size;
+        mask = (unsigned char *)sixel_allocator_malloc(allocator, mask_bytes);
+        if (mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+        memcpy(mask, frame->transparent_mask, mask_bytes);
+        clone->transparent_mask = mask;
+        clone->transparent_mask_size = mask_bytes;
+    }
+
+    *clone_out = clone;
+    return SIXEL_OK;
+
+error:
+    sixel_frame_unref(clone);
+    return status;
+}
+
 static void
 webp_set_get_features_error_message(VP8StatusCode feature_status)
 {
@@ -3178,6 +3292,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
     SIXELSTATUS status;
     sixel_chunk_t const *chunk;
     sixel_frame_t *frame;
+    sixel_frame_t *cached_frame;
     sixel_frame_t **frame_cache;
     unsigned char *pixels;
     uint8_t *decoded_frame;
@@ -3202,6 +3317,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
     status = SIXEL_FALSE;
     chunk = NULL;
     frame = NULL;
+    cached_frame = NULL;
     frame_cache = NULL;
     pixels = NULL;
     decoded_frame = NULL;
@@ -3303,12 +3419,16 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                     status = SIXEL_BAD_INPUT;
                     goto end;
                 }
-                frame = frame_cache[(size_t)frame_no];
-                frame->multiframe = 1;
-                frame->loop_count = loop_count;
-                frame->frame_no = emitted_frame_no;
+                cached_frame = frame_cache[(size_t)frame_no];
+                if (cached_frame == NULL) {
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                cached_frame->multiframe = 1;
+                cached_frame->loop_count = loop_count;
+                cached_frame->frame_no = emitted_frame_no;
 
-                status = decode->fn_load(frame, decode->context);
+                status = decode->fn_load(cached_frame, decode->context);
                 if (status == SIXEL_INTERRUPTED) {
                     goto end;
                 }
@@ -3403,6 +3523,29 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                         goto end;
                     }
                 }
+                if (frame_cache != NULL && loop_count == 0 &&
+                    (size_t)frame_no < frame_cache_slots) {
+                    status = webp_clone_frame_for_replay(frame,
+                                                         chunk->allocator,
+                                                         &cached_frame);
+                    if (SIXEL_SUCCEEDED(status)) {
+                        cached_frame->handoff_shareable = 0;
+                        frame_cache[(size_t)frame_no] = cached_frame;
+                        cached_frame = NULL;
+                    } else {
+                        status = SIXEL_OK;
+                        for (frame_cache_cleanup_index = 0u;
+                             frame_cache_cleanup_index < frame_cache_slots;
+                             ++frame_cache_cleanup_index) {
+                            sixel_frame_unref(
+                                frame_cache[frame_cache_cleanup_index]);
+                            frame_cache[frame_cache_cleanup_index] = NULL;
+                        }
+                        sixel_allocator_free(chunk->allocator, frame_cache);
+                        frame_cache = NULL;
+                        frame_cache_slots = 0u;
+                    }
+                }
                 if (frame_emit_callback != 0) {
                     status = decode->fn_load(frame, decode->context);
                     if (status == SIXEL_INTERRUPTED) {
@@ -3413,12 +3556,6 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                     }
                     emitted_total_frames++;
                     emitted_frame_no++;
-                }
-                if (frame_cache != NULL && loop_count == 0 &&
-                    (size_t)frame_no < frame_cache_slots) {
-                    frame->handoff_shareable = 1;
-                    frame_cache[(size_t)frame_no] = frame;
-                    frame = NULL;
                 }
 
                 sixel_frame_unref(frame);

@@ -19,6 +19,7 @@ set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 
+SIXEL_THREADS=1 \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -lauto "${image_webp}" >/dev/null || {
     echo "not ok" 1 - "libwebp loop auto failed"
     exit 0
