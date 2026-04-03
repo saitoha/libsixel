@@ -3427,6 +3427,11 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                 cached_frame->multiframe = 1;
                 cached_frame->loop_count = loop_count;
                 cached_frame->frame_no = emitted_frame_no;
+                /*
+                 * Replay-cache frames are immutable after decode. Mark them
+                 * shareable so pipeline handoff can pass by reference.
+                 */
+                cached_frame->handoff_shareable = 1;
 
                 status = decode->fn_load(cached_frame, decode->context);
                 if (status == SIXEL_INTERRUPTED) {
@@ -3529,7 +3534,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                                                          chunk->allocator,
                                                          &cached_frame);
                     if (SIXEL_SUCCEEDED(status)) {
-                        cached_frame->handoff_shareable = 0;
+                        cached_frame->handoff_shareable = 1;
                         frame_cache[(size_t)frame_no] = cached_frame;
                         cached_frame = NULL;
                     } else {
@@ -3547,6 +3552,11 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                     }
                 }
                 if (frame_emit_callback != 0) {
+                    /*
+                     * Decoded frame ownership is transferred per callback.
+                     * The queue keeps its own ref when by-ref handoff is used.
+                     */
+                    frame->handoff_shareable = 1;
                     status = decode->fn_load(frame, decode->context);
                     if (status == SIXEL_INTERRUPTED) {
                         goto end;
