@@ -5634,8 +5634,6 @@ sixel_encoder_parse_quantize_model_argument(
 }
 
 typedef struct sixel_encoder_setopt_context {
-    char *opt_copy;
-    char *mapfile_copy;
     sixel_option_argument_list_resolution_t q_list_resolution;
 } sixel_encoder_setopt_context_t;
 
@@ -5646,29 +5644,18 @@ sixel_encoder_setopt_context_init(sixel_encoder_setopt_context_t *context)
         return;
     }
 
-    context->opt_copy = NULL;
-    context->mapfile_copy = NULL;
     sixel_option_init_argument_list_resolution(&context->q_list_resolution);
 }
 
 static void
 sixel_encoder_setopt_context_dispose(
-    sixel_encoder_setopt_context_t *context,
-    sixel_allocator_t *allocator)
+    sixel_encoder_setopt_context_t *context)
 {
     if (context == NULL) {
         return;
     }
 
     sixel_option_free_argument_list_resolution(&context->q_list_resolution);
-    if (context->opt_copy != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, context->opt_copy);
-        context->opt_copy = NULL;
-    }
-    if (context->mapfile_copy != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, context->mapfile_copy);
-        context->mapfile_copy = NULL;
-    }
 }
 
 static SIXELSTATUS
@@ -6054,6 +6041,561 @@ sixel_encoder_apply_complexion_option(
     return SIXEL_OK;
 }
 
+
+static SIXELSTATUS
+sixel_encoder_apply_mapfile_option(
+    sixel_encoder_t *encoder,
+    char const *value)
+{
+    SIXELSTATUS status;
+    char const *mapfile_view;
+    char *mapfile_copy;
+    char *mapfile_copy_view;
+    char *mapfile_normalized;
+    char *libc_buffer;
+    char const *libc_path;
+    size_t mapfile_offset;
+    size_t mapfile_length;
+    size_t mapfile_full_length;
+    size_t libc_buffer_size;
+    unsigned int path_flags;
+    int path_check;
+
+    status = SIXEL_OK;
+    mapfile_view = NULL;
+    mapfile_copy = NULL;
+    mapfile_copy_view = NULL;
+    mapfile_normalized = NULL;
+    libc_buffer = NULL;
+    libc_path = NULL;
+    mapfile_offset = 0u;
+    mapfile_length = 0u;
+    mapfile_full_length = 0u;
+    libc_buffer_size = 0u;
+    path_flags = 0u;
+    path_check = 0;
+    if (value == NULL || *value == '\0') {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_setopt: no mapfile specified.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    mapfile_view = sixel_palette_strip_prefix(value, NULL);
+    if (mapfile_view == NULL) {
+        mapfile_view = value;
+    }
+    mapfile_length = strlen(value);
+    mapfile_offset = (size_t)(mapfile_view - value);
+    mapfile_copy = arg_strdup(value, encoder->allocator);
+    if (mapfile_copy == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (mapfile_offset < mapfile_length) {
+        mapfile_copy_view = mapfile_copy + mapfile_offset;
+    } else {
+        mapfile_copy_view = mapfile_copy;
+    }
+
+    /*
+     * Normalize only the filesystem payload part. Prefixes such as
+     * "rgb:" remain in place so diagnostics still reflect user input.
+     */
+    libc_buffer_size = sixel_path_to_libc_buffer_size(mapfile_copy_view);
+    if (libc_buffer_size > 0u) {
+        libc_buffer = (char *)sixel_allocator_malloc(encoder->allocator,
+                                                     libc_buffer_size);
+        if (libc_buffer == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: sixel_allocator_malloc() failed "
+                "for mapfile path buffer.");
+            sixel_allocator_free(encoder->allocator, mapfile_copy);
+            return SIXEL_BAD_ALLOCATION;
+        }
+
+        libc_path = sixel_path_to_libc(mapfile_copy_view,
+                                       libc_buffer,
+                                       libc_buffer_size);
+        if (libc_path == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: invalid mapfile path.");
+            sixel_allocator_free(encoder->allocator, libc_buffer);
+            sixel_allocator_free(encoder->allocator, mapfile_copy);
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (libc_buffer_size > SIZE_MAX - mapfile_offset) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: mapfile path is too long.");
+            sixel_allocator_free(encoder->allocator, libc_buffer);
+            sixel_allocator_free(encoder->allocator, mapfile_copy);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        mapfile_full_length = mapfile_offset + libc_buffer_size;
+        mapfile_normalized = (char *)sixel_allocator_malloc(
+            encoder->allocator, mapfile_full_length);
+        if (mapfile_normalized == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: sixel_allocator_malloc() failed "
+                "for mapfile normalization.");
+            sixel_allocator_free(encoder->allocator, libc_buffer);
+            sixel_allocator_free(encoder->allocator, mapfile_copy);
+            return SIXEL_BAD_ALLOCATION;
+        }
+
+        memcpy(mapfile_normalized, mapfile_copy, mapfile_offset);
+        memcpy(mapfile_normalized + mapfile_offset,
+               libc_path,
+               libc_buffer_size);
+        sixel_allocator_free(encoder->allocator, libc_buffer);
+        sixel_allocator_free(encoder->allocator, mapfile_copy);
+        mapfile_copy = mapfile_normalized;
+        mapfile_normalized = NULL;
+        mapfile_copy_view = mapfile_copy + mapfile_offset;
+    }
+
+    path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN
+        | SIXEL_OPTION_PATH_ALLOW_CLIPBOARD
+        | SIXEL_OPTION_PATH_ALLOW_REMOTE
+        | SIXEL_OPTION_PATH_ALLOW_EMPTY;
+    path_check = sixel_option_validate_filesystem_path(value,
+                                                       mapfile_copy_view,
+                                                       path_flags);
+    if (path_check != 0) {
+        sixel_allocator_free(encoder->allocator, mapfile_copy);
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (encoder->mapfile != NULL) {
+        sixel_allocator_free(encoder->allocator, encoder->mapfile);
+    }
+    encoder->mapfile = mapfile_copy;
+    encoder->color_option = SIXEL_COLOR_OPTION_MAPFILE;
+    return status;
+}
+
+
+static SIXELSTATUS
+sixel_encoder_apply_mapfile_output_option(
+    sixel_encoder_t *encoder,
+    char const *value)
+{
+    SIXELSTATUS status;
+    char *opt_copy;
+
+    status = SIXEL_OK;
+    opt_copy = NULL;
+    if (value == NULL || *value == '\0') {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_setopt: mapfile-output path is empty.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    opt_copy = arg_strdup(value, encoder->allocator);
+    if (opt_copy == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    status = sixel_encoder_enable_quantized_capture(encoder, 1);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(encoder->allocator, opt_copy);
+        return status;
+    }
+
+    sixel_allocator_free(encoder->allocator, encoder->palette_output);
+    encoder->palette_output = opt_copy;
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_encoder_apply_outfile_option(
+    sixel_encoder_t *encoder,
+    char const *value)
+{
+    SIXELSTATUS status;
+    sixel_clipboard_spec_t clipboard_spec;
+    SIXELSTATUS clip_status;
+    char *spool_path;
+    int spool_fd;
+    int output_open_flags;
+    int png_argument_has_prefix;
+    size_t png_path_length;
+    size_t libc_buffer_size;
+    char *libc_buffer;
+    char const *png_path_view;
+    char const *outfile_open_path;
+    char const *libc_path;
+
+    status = SIXEL_OK;
+    clip_status = SIXEL_OK;
+    spool_path = NULL;
+    spool_fd = (-1);
+    output_open_flags = 0;
+    png_argument_has_prefix = 0;
+    png_path_length = 0u;
+    libc_buffer_size = 0u;
+    libc_buffer = NULL;
+    png_path_view = NULL;
+    outfile_open_path = value;
+    libc_path = NULL;
+    clipboard_spec.is_clipboard = 0;
+    clipboard_spec.format[0] = '\0';
+    if (value == NULL || *value == '\0') {
+        sixel_helper_set_additional_message(
+            "no file name specified.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (is_png_target(value)) {
+        encoder->output_is_png = 1;
+        png_argument_has_prefix = (strncmp(value, "png:", 4) == 0);
+        png_path_view = png_target_payload_view(value);
+        if (png_argument_has_prefix
+            && (png_path_view == NULL || png_path_view[0] == '\0')) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: missing target after the \"png:\" "
+                "prefix. use png:- or png:<path> with a non-empty payload."
+            );
+            return SIXEL_BAD_ARGUMENT;
+        }
+        encoder->output_png_to_stdout =
+            (png_path_view != NULL) && (strcmp(png_path_view, "-") == 0);
+        sixel_allocator_free(encoder->allocator, encoder->png_output_path);
+        encoder->png_output_path = NULL;
+        sixel_allocator_free(encoder->allocator, encoder->sixel_output_path);
+        encoder->sixel_output_path = NULL;
+        if (!encoder->output_png_to_stdout) {
+            /*
+             * Store only the payload path so downstream writers never have to
+             * parse the "png:" pseudo-scheme.
+             */
+            png_path_view = value;
+            if (strncmp(value, "png:", 4) == 0) {
+                png_path_view = value + 4;
+            }
+            if (png_path_view[0] == '\0') {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: PNG output path is empty.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            png_path_length = strlen(png_path_view);
+            encoder->png_output_path = (char *)sixel_allocator_malloc(
+                encoder->allocator, png_path_length + 1u);
+            if (encoder->png_output_path == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: sixel_allocator_malloc() "
+                    "failed for PNG output path.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+            (void)sixel_compat_strcpy(encoder->png_output_path,
+                                      png_path_length + 1u,
+                                      png_path_view);
+            libc_buffer_size = sixel_path_to_libc_buffer_size(
+                encoder->png_output_path);
+            if (libc_buffer_size > 0u) {
+                libc_buffer = (char *)sixel_allocator_malloc(
+                    encoder->allocator, libc_buffer_size);
+                if (libc_buffer == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_encoder_setopt: sixel_allocator_malloc() "
+                        "failed for PNG path buffer.");
+                    return SIXEL_BAD_ALLOCATION;
+                }
+                libc_path = sixel_path_to_libc(encoder->png_output_path,
+                                               libc_buffer,
+                                               libc_buffer_size);
+                if (libc_path == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_encoder_setopt: invalid PNG output path.");
+                    sixel_allocator_free(encoder->allocator, libc_buffer);
+                    return SIXEL_BAD_ARGUMENT;
+                }
+                if (libc_path == libc_buffer) {
+                    sixel_allocator_free(encoder->allocator,
+                                         encoder->png_output_path);
+                    encoder->png_output_path = libc_buffer;
+                    libc_buffer = NULL;
+                }
+                if (libc_buffer != NULL) {
+                    sixel_allocator_free(encoder->allocator, libc_buffer);
+                    libc_buffer = NULL;
+                }
+            }
+        }
+        outfile_open_path = encoder->output_png_to_stdout
+            ? "-"
+            : encoder->png_output_path;
+    } else {
+        encoder->output_is_png = 0;
+        encoder->output_png_to_stdout = 0;
+        sixel_allocator_free(encoder->allocator, encoder->png_output_path);
+        encoder->png_output_path = NULL;
+        sixel_allocator_free(encoder->allocator, encoder->sixel_output_path);
+        encoder->sixel_output_path = NULL;
+        if (encoder->clipboard_output_path != NULL) {
+            (void)sixel_compat_unlink(encoder->clipboard_output_path);
+            sixel_allocator_free(encoder->allocator,
+                                 encoder->clipboard_output_path);
+            encoder->clipboard_output_path = NULL;
+        }
+        encoder->clipboard_output_active = 0;
+        encoder->clipboard_output_format[0] = '\0';
+
+        if (sixel_clipboard_parse_spec(value, &clipboard_spec)
+            && clipboard_spec.is_clipboard) {
+            clip_status = clipboard_create_spool(encoder->allocator,
+                                                 "clipboard-out",
+                                                 &spool_path,
+                                                 &spool_fd);
+            if (SIXEL_FAILED(clip_status)) {
+                return clip_status;
+            }
+            clipboard_select_format(encoder->clipboard_output_format,
+                                    sizeof(encoder->clipboard_output_format),
+                                    clipboard_spec.format,
+                                    "sixel");
+            if (encoder->outfd
+                && encoder->outfd != STDOUT_FILENO
+                && encoder->outfd != STDERR_FILENO) {
+                (void)sixel_compat_close(encoder->outfd);
+            }
+            encoder->outfd = spool_fd;
+            spool_fd = (-1);
+            encoder->sixel_output_path = spool_path;
+            encoder->clipboard_output_path = spool_path;
+            spool_path = NULL;
+            encoder->clipboard_output_active = 1;
+            return SIXEL_OK;
+        }
+
+        if (spool_fd >= 0) {
+            (void)sixel_compat_close(spool_fd);
+            spool_fd = (-1);
+        }
+        if (spool_path != NULL) {
+            sixel_allocator_free(encoder->allocator, spool_path);
+            spool_path = NULL;
+        }
+
+        if (strcmp(value, "-") != 0) {
+            encoder->sixel_output_path = (char *)sixel_allocator_malloc(
+                encoder->allocator, strlen(value) + 1u);
+            if (encoder->sixel_output_path == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: malloc() failed for output path.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+            (void)sixel_compat_strcpy(encoder->sixel_output_path,
+                                      strlen(value) + 1u,
+                                      value);
+        }
+        outfile_open_path = value;
+    }
+
+    /*
+     * Keep "png:" handling in the option layer so the encode phase can
+     * assume filesystem paths or stdout sentinels only.
+     */
+    if (!encoder->clipboard_output_active
+        && !encoder->output_is_png
+        && outfile_open_path != NULL
+        && strcmp(outfile_open_path, "-") != 0) {
+        if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
+            (void)sixel_compat_close(encoder->outfd);
+        }
+        output_open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_BINARY)
+        output_open_flags |= O_BINARY;
+#endif
+        encoder->outfd = sixel_compat_open(outfile_open_path,
+                                           output_open_flags,
+                                           S_IRUSR | S_IWUSR);
+    }
+
+    return status;
+}
+
+
+static SIXELSTATUS
+sixel_encoder_apply_drcs_option(
+    sixel_encoder_t *encoder,
+    char const *value)
+{
+    SIXELSTATUS status;
+    char const *drcs_arg_delim;
+    char const *drcs_arg_charset;
+    char const *drcs_arg_second_delim;
+    char const *drcs_arg_path;
+    size_t drcs_arg_path_length;
+    size_t drcs_segment_length;
+    char drcs_segment[32];
+    char *endptr;
+    int drcs_mmv_value;
+    int tile_open_flags;
+    long drcs_charset_value;
+    unsigned int drcs_charset_limit;
+
+    status = SIXEL_OK;
+    drcs_arg_delim = NULL;
+    drcs_arg_charset = NULL;
+    drcs_arg_second_delim = NULL;
+    drcs_arg_path = NULL;
+    drcs_arg_path_length = 0u;
+    drcs_segment_length = 0u;
+    endptr = NULL;
+    drcs_mmv_value = 2;
+    tile_open_flags = 0;
+    drcs_charset_value = 1L;
+    drcs_charset_limit = 0u;
+    encoder->fdrcs = 1;
+
+    if (value != NULL && *value != '\0') {
+        drcs_arg_delim = strchr(value, ':');
+        if (drcs_arg_delim == NULL) {
+            drcs_segment_length = strlen(value);
+            if (drcs_segment_length >= sizeof(drcs_segment)) {
+                sixel_helper_set_additional_message(
+                    "DRCS mapping revision is too long.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            memcpy(drcs_segment, value, drcs_segment_length);
+            drcs_segment[drcs_segment_length] = '\0';
+            errno = 0;
+            endptr = NULL;
+            drcs_mmv_value = (int)strtol(drcs_segment, &endptr, 10);
+            if (errno != 0 || endptr == drcs_segment || *endptr != '\0') {
+                sixel_helper_set_additional_message(
+                    "cannot parse DRCS option.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else {
+            if (drcs_arg_delim != value) {
+                drcs_segment_length = (size_t)(drcs_arg_delim - value);
+                if (drcs_segment_length >= sizeof(drcs_segment)) {
+                    sixel_helper_set_additional_message(
+                        "DRCS mapping revision is too long.");
+                    return SIXEL_BAD_ARGUMENT;
+                }
+                memcpy(drcs_segment, value, drcs_segment_length);
+                drcs_segment[drcs_segment_length] = '\0';
+                errno = 0;
+                endptr = NULL;
+                drcs_mmv_value = (int)strtol(drcs_segment, &endptr, 10);
+                if (errno != 0 || endptr == drcs_segment
+                    || *endptr != '\0') {
+                    sixel_helper_set_additional_message(
+                        "cannot parse DRCS option.");
+                    return SIXEL_BAD_ARGUMENT;
+                }
+            }
+            drcs_arg_charset = drcs_arg_delim + 1;
+            drcs_arg_second_delim = strchr(drcs_arg_charset, ':');
+            if (drcs_arg_second_delim != NULL) {
+                if (drcs_arg_second_delim != drcs_arg_charset) {
+                    drcs_segment_length =
+                        (size_t)(drcs_arg_second_delim - drcs_arg_charset);
+                    if (drcs_segment_length >= sizeof(drcs_segment)) {
+                        sixel_helper_set_additional_message(
+                            "DRCS charset number is too long.");
+                        return SIXEL_BAD_ARGUMENT;
+                    }
+                    memcpy(drcs_segment,
+                           drcs_arg_charset,
+                           drcs_segment_length);
+                    drcs_segment[drcs_segment_length] = '\0';
+                    errno = 0;
+                    endptr = NULL;
+                    drcs_charset_value = strtol(drcs_segment, &endptr, 10);
+                    if (errno != 0 || endptr == drcs_segment
+                        || *endptr != '\0') {
+                        sixel_helper_set_additional_message(
+                            "cannot parse DRCS charset number.");
+                        return SIXEL_BAD_ARGUMENT;
+                    }
+                }
+                drcs_arg_path = drcs_arg_second_delim + 1;
+                drcs_arg_path_length = strlen(drcs_arg_path);
+                if (drcs_arg_path_length == 0u) {
+                    drcs_arg_path = NULL;
+                }
+            } else if (*drcs_arg_charset != '\0') {
+                drcs_segment_length = strlen(drcs_arg_charset);
+                if (drcs_segment_length >= sizeof(drcs_segment)) {
+                    sixel_helper_set_additional_message(
+                        "DRCS charset number is too long.");
+                    return SIXEL_BAD_ARGUMENT;
+                }
+                memcpy(drcs_segment, drcs_arg_charset, drcs_segment_length);
+                drcs_segment[drcs_segment_length] = '\0';
+                errno = 0;
+                endptr = NULL;
+                drcs_charset_value = strtol(drcs_segment, &endptr, 10);
+                if (errno != 0 || endptr == drcs_segment
+                    || *endptr != '\0') {
+                    sixel_helper_set_additional_message(
+                        "cannot parse DRCS charset number.");
+                    return SIXEL_BAD_ARGUMENT;
+                }
+            }
+        }
+    }
+
+    if (drcs_mmv_value < 0 || drcs_mmv_value > 3) {
+        sixel_helper_set_additional_message(
+            "unknown DRCS unicode mapping version.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (drcs_mmv_value == 0) {
+        drcs_charset_limit = 126u;
+    } else if (drcs_mmv_value == 1) {
+        drcs_charset_limit = 63u;
+    } else if (drcs_mmv_value == 2) {
+        drcs_charset_limit = 158u;
+    } else {
+        drcs_charset_limit = 697u;
+    }
+    if (drcs_charset_value < 1
+        || (unsigned long)drcs_charset_value > drcs_charset_limit) {
+        sixel_helper_set_additional_message(
+            "DRCS charset number is out of range.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    encoder->drcs_mmv = drcs_mmv_value;
+    encoder->drcs_charset_no = (unsigned short)drcs_charset_value;
+    if (encoder->tile_outfd >= 0
+        && encoder->tile_outfd != encoder->outfd
+        && encoder->tile_outfd != STDOUT_FILENO
+        && encoder->tile_outfd != STDERR_FILENO) {
+        (void)sixel_compat_close(encoder->tile_outfd);
+    }
+    encoder->tile_outfd = (-1);
+    if (drcs_arg_path != NULL) {
+        if (strcmp(drcs_arg_path, "-") == 0) {
+            encoder->tile_outfd = STDOUT_FILENO;
+        } else {
+            tile_open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_BINARY)
+            tile_open_flags |= O_BINARY;
+#endif
+            encoder->tile_outfd = sixel_compat_open(drcs_arg_path,
+                                                    tile_open_flags,
+                                                    S_IRUSR | S_IWUSR);
+            if (encoder->tile_outfd < 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: failed to open tile"
+                    " output path.");
+                return SIXEL_RUNTIME_ERROR;
+            }
+        }
+    }
+
+    return status;
+}
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -6065,18 +6607,7 @@ sixel_encoder_setopt(
     char lowered[16];
     size_t len;
     size_t i;
-    char *endptr;
     sixel_encoder_setopt_context_t setopt_context;
-    char const *drcs_arg_delim;
-    char const *drcs_arg_charset;
-    char const *drcs_arg_second_delim;
-    char const *drcs_arg_path;
-    size_t drcs_arg_path_length;
-    size_t drcs_segment_length;
-    char drcs_segment[32];
-    int drcs_mmv_value;
-    long drcs_charset_value;
-    unsigned int drcs_charset_limit;
     int match_value;
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
@@ -6087,35 +6618,9 @@ sixel_encoder_setopt(
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     char match_detail[128];
-    int png_argument_has_prefix = 0;
-    char const *png_path_view = NULL;
-    char *mapfile_copy_view;
-    char *mapfile_normalized;
-    size_t mapfile_offset;
-    size_t mapfile_length;
-    size_t png_path_length;
-    size_t libc_buffer_size;
-    char *libc_buffer;
-    char const *libc_path;
-    size_t mapfile_full_length;
-    unsigned int path_flags;
-    char const *mapfile_view;
-    char const *outfile_open_path;
-    int path_check;
-    int output_open_flags;
-    int tile_open_flags;
 
     sixel_encoder_ref(encoder);
     sixel_encoder_setopt_context_init(&setopt_context);
-    mapfile_copy_view = NULL;
-    mapfile_offset = 0u;
-    mapfile_length = 0u;
-    path_flags = 0u;
-    mapfile_view = NULL;
-    outfile_open_path = NULL;
-    path_check = 0;
-    output_open_flags = 0;
-    tile_open_flags = 0;
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
@@ -6127,220 +6632,9 @@ sixel_encoder_setopt(
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
-        outfile_open_path = value;
-        if (*value == '\0') {
-            sixel_helper_set_additional_message(
-                "no file name specified.");
-            status = SIXEL_BAD_ARGUMENT;
+        status = sixel_encoder_apply_outfile_option(encoder, value);
+        if (SIXEL_FAILED(status)) {
             goto end;
-        }
-        if (is_png_target(value)) {
-            encoder->output_is_png = 1;
-            png_argument_has_prefix =
-                (value != NULL)
-                && (strncmp(value, "png:", 4) == 0);
-            png_path_view = png_target_payload_view(value);
-            if (png_argument_has_prefix
-                    && (png_path_view == NULL
-                        || png_path_view[0] == '\0')) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_setopt: missing target after the \"png:\" "
-                    "prefix. use png:- or png:<path> with a non-empty payload."
-                );
-                status = SIXEL_BAD_ARGUMENT;
-                goto end;
-            }
-            encoder->output_png_to_stdout =
-                (png_path_view != NULL)
-                && (strcmp(png_path_view, "-") == 0);
-            sixel_allocator_free(encoder->allocator, encoder->png_output_path);
-            encoder->png_output_path = NULL;
-            sixel_allocator_free(encoder->allocator, encoder->sixel_output_path);
-            encoder->sixel_output_path = NULL;
-            if (! encoder->output_png_to_stdout) {
-                /*
-                 * +-----------------------------------------+
-                 * |  PNG target normalization               |
-                 * +-----------------------------------------+
-                 * |  Raw input  |  Stored file path         |
-                 * |-------------+---------------------------|
-                 * |  png:-      |  "-" (stdout sentinel)    |
-                 * |  png:/foo   |  "/foo"                   |
-                 * +-----------------------------------------+
-                 * Strip the "png:" prefix so the decoder can
-                 * pass the true filesystem path to libpng
-                 * while the CLI retains its shorthand.
-                 */
-                png_path_view = value;
-                if (strncmp(value, "png:", 4) == 0) {
-                    png_path_view = value + 4;
-                }
-                if (png_path_view[0] == '\0') {
-                    sixel_helper_set_additional_message(
-                        "sixel_encoder_setopt: PNG output path is empty.");
-                    status = SIXEL_BAD_ARGUMENT;
-                    goto end;
-                }
-                png_path_length = strlen(png_path_view);
-                encoder->png_output_path =
-                    (char *)sixel_allocator_malloc(
-                        encoder->allocator, png_path_length + 1u);
-                if (encoder->png_output_path == NULL) {
-                    sixel_helper_set_additional_message(
-                        "sixel_encoder_setopt: sixel_allocator_malloc() "
-                        "failed for PNG output path.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto end;
-                }
-                if (png_path_view != NULL) {
-                    (void)sixel_compat_strcpy(encoder->png_output_path,
-                                              png_path_length + 1u,
-                                              png_path_view);
-                } else {
-                    encoder->png_output_path[0] = '\0';
-                }
-                libc_buffer_size = sixel_path_to_libc_buffer_size(
-                    encoder->png_output_path);
-                if (libc_buffer_size > 0u) {
-                    libc_buffer = (char *)sixel_allocator_malloc(
-                        encoder->allocator, libc_buffer_size);
-                    if (libc_buffer == NULL) {
-                        sixel_helper_set_additional_message(
-                            "sixel_encoder_setopt: sixel_allocator_malloc() "
-                            "failed for PNG path buffer.");
-                        status = SIXEL_BAD_ALLOCATION;
-                        goto end;
-                    }
-                    libc_path = sixel_path_to_libc(
-                        encoder->png_output_path,
-                        libc_buffer,
-                        libc_buffer_size);
-                    if (libc_path == NULL) {
-                        sixel_helper_set_additional_message(
-                            "sixel_encoder_setopt: invalid PNG output path.");
-                        sixel_allocator_free(encoder->allocator, libc_buffer);
-                        status = SIXEL_BAD_ARGUMENT;
-                        goto end;
-                    }
-                    if (libc_path == libc_buffer) {
-                        sixel_allocator_free(encoder->allocator,
-                                             encoder->png_output_path);
-                        encoder->png_output_path = libc_buffer;
-                        libc_buffer = NULL;
-                    }
-                    if (libc_buffer != NULL) {
-                        sixel_allocator_free(encoder->allocator, libc_buffer);
-                    }
-                }
-            }
-            outfile_open_path = encoder->output_png_to_stdout
-                ? "-"
-                : encoder->png_output_path;
-        } else {
-            encoder->output_is_png = 0;
-            encoder->output_png_to_stdout = 0;
-            png_argument_has_prefix = 0;
-            png_path_view = NULL;
-            sixel_allocator_free(encoder->allocator, encoder->png_output_path);
-            encoder->png_output_path = NULL;
-            sixel_allocator_free(encoder->allocator, encoder->sixel_output_path);
-            encoder->sixel_output_path = NULL;
-            if (encoder->clipboard_output_path != NULL) {
-                (void)sixel_compat_unlink(encoder->clipboard_output_path);
-                sixel_allocator_free(encoder->allocator,
-                                     encoder->clipboard_output_path);
-                encoder->clipboard_output_path = NULL;
-            }
-            encoder->clipboard_output_active = 0;
-            encoder->clipboard_output_format[0] = '\0';
-            {
-                sixel_clipboard_spec_t clipboard_spec;
-                SIXELSTATUS clip_status;
-                char *spool_path;
-                int spool_fd;
-
-                clipboard_spec.is_clipboard = 0;
-                clipboard_spec.format[0] = '\0';
-                clip_status = SIXEL_OK;
-                spool_path = NULL;
-                spool_fd = (-1);
-
-                if (sixel_clipboard_parse_spec(value, &clipboard_spec)
-                        && clipboard_spec.is_clipboard) {
-                    clip_status = clipboard_create_spool(
-                        encoder->allocator,
-                        "clipboard-out",
-                        &spool_path,
-                        &spool_fd);
-                    if (SIXEL_FAILED(clip_status)) {
-                        status = clip_status;
-                        goto end;
-                    }
-                    clipboard_select_format(
-                        encoder->clipboard_output_format,
-                        sizeof(encoder->clipboard_output_format),
-                        clipboard_spec.format,
-                        "sixel");
-                    if (encoder->outfd
-                            && encoder->outfd != STDOUT_FILENO
-                            && encoder->outfd != STDERR_FILENO) {
-                        (void)sixel_compat_close(encoder->outfd);
-                    }
-                    encoder->outfd = spool_fd;
-                    spool_fd = (-1);
-                    encoder->sixel_output_path = spool_path;
-                    encoder->clipboard_output_path = spool_path;
-                    spool_path = NULL;
-                    encoder->clipboard_output_active = 1;
-                    break;
-                }
-
-                if (spool_fd >= 0) {
-                    (void)sixel_compat_close(spool_fd);
-                }
-                if (spool_path != NULL) {
-                    sixel_allocator_free(encoder->allocator, spool_path);
-                }
-            }
-            if (strcmp(value, "-") != 0) {
-                encoder->sixel_output_path = (char *)sixel_allocator_malloc(
-                    encoder->allocator, strlen(value) + 1);
-                if (encoder->sixel_output_path == NULL) {
-                    sixel_helper_set_additional_message(
-                        "sixel_encoder_setopt: malloc() failed for output path.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto end;
-                }
-                (void)sixel_compat_strcpy(encoder->sixel_output_path,
-                                          strlen(value) + 1,
-                                          value);
-            }
-            outfile_open_path = value;
-        }
-
-        /*
-         * Keep "png:" prefix handling in the application layer. Plain SIXEL
-         * outputs open the target here, while PNG targets open a dedicated
-         * staging file later in sixel_encoder_encode().
-         */
-        if (!encoder->clipboard_output_active
-                && !encoder->output_is_png
-                && outfile_open_path != NULL
-                && strcmp(outfile_open_path, "-") != 0) {
-            if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
-                (void)sixel_compat_close(encoder->outfd);
-            }
-            output_open_flags = O_RDWR | O_CREAT | O_TRUNC;
-#if defined(O_BINARY)
-            /*
-             * Keep the output stream in binary mode on Windows so SIXEL and
-             * PNG bytes are not rewritten by text-mode newline conversion.
-             */
-            output_open_flags |= O_BINARY;
-#endif
-            encoder->outfd = sixel_compat_open(outfile_open_path,
-                                               output_open_flags,
-                                               S_IRUSR | S_IWUSR);
         }
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */
@@ -6386,144 +6680,16 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
-        if (value == NULL || *value == '\0') {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: no mapfile specified.");
-            status = SIXEL_BAD_ARGUMENT;
+        status = sixel_encoder_apply_mapfile_option(encoder, value);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
-        mapfile_view = sixel_palette_strip_prefix(value, NULL);
-        if (mapfile_view == NULL) {
-            mapfile_view = value;
-        }
-        mapfile_length = strlen(value);
-        mapfile_offset = (size_t)(mapfile_view - value);
-        setopt_context.mapfile_copy = arg_strdup(value, encoder->allocator);
-        if (setopt_context.mapfile_copy == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        if (mapfile_offset < mapfile_length) {
-            mapfile_copy_view = setopt_context.mapfile_copy + mapfile_offset;
-        } else {
-            mapfile_copy_view = setopt_context.mapfile_copy;
-        }
-        /*
-         * Normalize only the filesystem path portion so the stored value is
-         * usable by the current libc while the original CLI token is kept for
-         * diagnostics. The path prefix (TYPE:) remains untouched.
-         */
-        libc_buffer_size = sixel_path_to_libc_buffer_size(mapfile_copy_view);
-        if (libc_buffer_size > 0u) {
-            libc_buffer = (char *)sixel_allocator_malloc(encoder->allocator,
-                                                         libc_buffer_size);
-            if (libc_buffer == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_setopt: sixel_allocator_malloc() failed "
-                    "for mapfile path buffer.");
-                sixel_allocator_free(encoder->allocator,
-                                     setopt_context.mapfile_copy);
-                setopt_context.mapfile_copy = NULL;
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
-            libc_path = sixel_path_to_libc(mapfile_copy_view,
-                                           libc_buffer,
-                                           libc_buffer_size);
-            if (libc_path == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_setopt: invalid mapfile path.");
-                sixel_allocator_free(encoder->allocator, libc_buffer);
-                sixel_allocator_free(encoder->allocator,
-                                     setopt_context.mapfile_copy);
-                setopt_context.mapfile_copy = NULL;
-                status = SIXEL_BAD_ARGUMENT;
-                goto end;
-            }
-            if (libc_buffer_size > SIZE_MAX - mapfile_offset) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_setopt: mapfile path is too long.");
-                sixel_allocator_free(encoder->allocator, libc_buffer);
-                sixel_allocator_free(encoder->allocator,
-                                     setopt_context.mapfile_copy);
-                setopt_context.mapfile_copy = NULL;
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
-            mapfile_full_length = mapfile_offset + libc_buffer_size;
-            mapfile_normalized = (char *)sixel_allocator_malloc(
-                encoder->allocator, mapfile_full_length);
-            if (mapfile_normalized == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_setopt: sixel_allocator_malloc() failed "
-                    "for mapfile normalization.");
-                sixel_allocator_free(encoder->allocator, libc_buffer);
-                sixel_allocator_free(encoder->allocator,
-                                     setopt_context.mapfile_copy);
-                setopt_context.mapfile_copy = NULL;
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
-            memcpy(mapfile_normalized,
-                   setopt_context.mapfile_copy,
-                   mapfile_offset);
-            memcpy(mapfile_normalized + mapfile_offset,
-                   libc_path,
-                   libc_buffer_size);
-            sixel_allocator_free(encoder->allocator, libc_buffer);
-            sixel_allocator_free(encoder->allocator,
-                                 setopt_context.mapfile_copy);
-            setopt_context.mapfile_copy = mapfile_normalized;
-            mapfile_normalized = NULL;
-            mapfile_copy_view = setopt_context.mapfile_copy + mapfile_offset;
-        }
-        path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
-            SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
-            SIXEL_OPTION_PATH_ALLOW_REMOTE |
-            SIXEL_OPTION_PATH_ALLOW_EMPTY;
-        path_check = sixel_option_validate_filesystem_path(
-            value,
-            mapfile_copy_view,
-            path_flags);
-        if (path_check != 0) {
-            sixel_allocator_free(encoder->allocator,
-                                 setopt_context.mapfile_copy);
-            setopt_context.mapfile_copy = NULL;
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        if (encoder->mapfile) {
-            sixel_allocator_free(encoder->allocator, encoder->mapfile);
-        }
-        encoder->mapfile = setopt_context.mapfile_copy;
-        setopt_context.mapfile_copy = NULL;
-        encoder->color_option = SIXEL_COLOR_OPTION_MAPFILE;
         break;
     case SIXEL_OPTFLAG_MAPFILE_OUTPUT:  /* M */
-        if (value == NULL || *value == '\0') {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: mapfile-output path is empty.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        setopt_context.opt_copy = arg_strdup(value, encoder->allocator);
-        if (setopt_context.opt_copy == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        status = sixel_encoder_enable_quantized_capture(encoder, 1);
+        status = sixel_encoder_apply_mapfile_output_option(encoder, value);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(encoder->allocator, setopt_context.opt_copy);
-            setopt_context.opt_copy = NULL;
             goto end;
         }
-        sixel_allocator_free(encoder->allocator, encoder->palette_output);
-        encoder->palette_output = setopt_context.opt_copy;
-        setopt_context.opt_copy = NULL;
         break;
     case SIXEL_OPTFLAG_MONOCHROME:  /* e */
         encoder->color_option = SIXEL_COLOR_OPTION_MONOCHROME;
@@ -6899,187 +7065,9 @@ sixel_encoder_setopt(
         encoder->fstatic = 1;
         break;
     case SIXEL_OPTFLAG_DRCS:  /* @ */
-        encoder->fdrcs = 1;
-        drcs_arg_delim = NULL;
-        drcs_arg_charset = NULL;
-        drcs_arg_second_delim = NULL;
-        drcs_arg_path = NULL;
-        drcs_arg_path_length = 0u;
-        drcs_segment_length = 0u;
-        drcs_mmv_value = 2;
-        drcs_charset_value = 1L;
-        drcs_charset_limit = 0u;
-        if (value != NULL && *value != '\0') {
-            drcs_arg_delim = strchr(value, ':');
-            if (drcs_arg_delim == NULL) {
-                drcs_segment_length = strlen(value);
-                if (drcs_segment_length >= sizeof(drcs_segment)) {
-                    sixel_helper_set_additional_message(
-                        "DRCS mapping revision is too long.");
-                    status = SIXEL_BAD_ARGUMENT;
-                    goto end;
-                }
-                memcpy(drcs_segment, value, drcs_segment_length);
-                drcs_segment[drcs_segment_length] = '\0';
-                errno = 0;
-                endptr = NULL;
-                drcs_mmv_value = (int)strtol(drcs_segment, &endptr, 10);
-                if (errno != 0 || endptr == drcs_segment || *endptr != '\0') {
-                    sixel_helper_set_additional_message(
-                        "cannot parse DRCS option.");
-                    status = SIXEL_BAD_ARGUMENT;
-                    goto end;
-                }
-            } else {
-                if (drcs_arg_delim != value) {
-                    drcs_segment_length =
-                        (size_t)(drcs_arg_delim - value);
-                    if (drcs_segment_length >= sizeof(drcs_segment)) {
-                        sixel_helper_set_additional_message(
-                            "DRCS mapping revision is too long.");
-                        status = SIXEL_BAD_ARGUMENT;
-                        goto end;
-                    }
-                    memcpy(drcs_segment, value, drcs_segment_length);
-                    drcs_segment[drcs_segment_length] = '\0';
-                    errno = 0;
-                    endptr = NULL;
-                    drcs_mmv_value = (int)strtol(drcs_segment, &endptr, 10);
-                    if (errno != 0 || endptr == drcs_segment || *endptr != '\0') {
-                        sixel_helper_set_additional_message(
-                            "cannot parse DRCS option.");
-                        status = SIXEL_BAD_ARGUMENT;
-                        goto end;
-                    }
-                }
-                drcs_arg_charset = drcs_arg_delim + 1;
-                drcs_arg_second_delim = strchr(drcs_arg_charset, ':');
-                if (drcs_arg_second_delim != NULL) {
-                    if (drcs_arg_second_delim != drcs_arg_charset) {
-                        drcs_segment_length =
-                            (size_t)(drcs_arg_second_delim - drcs_arg_charset);
-                        if (drcs_segment_length >= sizeof(drcs_segment)) {
-                            sixel_helper_set_additional_message(
-                                "DRCS charset number is too long.");
-                            status = SIXEL_BAD_ARGUMENT;
-                            goto end;
-                        }
-                        memcpy(drcs_segment,
-                               drcs_arg_charset,
-                               drcs_segment_length);
-                        drcs_segment[drcs_segment_length] = '\0';
-                        errno = 0;
-                        endptr = NULL;
-                        drcs_charset_value = strtol(drcs_segment,
-                                                    &endptr,
-                                                    10);
-                        if (errno != 0 || endptr == drcs_segment ||
-                                *endptr != '\0') {
-                            sixel_helper_set_additional_message(
-                                "cannot parse DRCS charset number.");
-                            status = SIXEL_BAD_ARGUMENT;
-                            goto end;
-                        }
-                    }
-                    drcs_arg_path = drcs_arg_second_delim + 1;
-                    drcs_arg_path_length = strlen(drcs_arg_path);
-                    if (drcs_arg_path_length == 0u) {
-                        drcs_arg_path = NULL;
-                    }
-                } else if (*drcs_arg_charset != '\0') {
-                    drcs_segment_length = strlen(drcs_arg_charset);
-                    if (drcs_segment_length >= sizeof(drcs_segment)) {
-                        sixel_helper_set_additional_message(
-                            "DRCS charset number is too long.");
-                        status = SIXEL_BAD_ARGUMENT;
-                        goto end;
-                    }
-                    memcpy(drcs_segment,
-                           drcs_arg_charset,
-                           drcs_segment_length);
-                    drcs_segment[drcs_segment_length] = '\0';
-                    errno = 0;
-                    endptr = NULL;
-                    drcs_charset_value = strtol(drcs_segment,
-                                                &endptr,
-                                                10);
-                    if (errno != 0 || endptr == drcs_segment ||
-                            *endptr != '\0') {
-                        sixel_helper_set_additional_message(
-                            "cannot parse DRCS charset number.");
-                        status = SIXEL_BAD_ARGUMENT;
-                        goto end;
-                    }
-                }
-            }
-        }
-        /*
-         * Layout of the DRCS option value:
-         *
-         *    value = <mmv>:<charset_no>:<path>
-         *          ^        ^                ^
-         *          |        |                |
-         *          |        |                +-- optional path that may reuse
-         *          |        |                    STDOUT when set to "-" or drop
-         *          |        |                    tiles when left blank
-         *          |        +-- charset number (defaults to 1 when omitted)
-         *          +-- mapping revision (defaults to 2 when omitted)
-         */
-        if (drcs_mmv_value < 0 || drcs_mmv_value > 3) {
-            sixel_helper_set_additional_message(
-                "unknown DRCS unicode mapping version.");
-            status = SIXEL_BAD_ARGUMENT;
+        status = sixel_encoder_apply_drcs_option(encoder, value);
+        if (SIXEL_FAILED(status)) {
             goto end;
-        }
-        if (drcs_mmv_value == 0) {
-            drcs_charset_limit = 126u;
-        } else if (drcs_mmv_value == 1) {
-            drcs_charset_limit = 63u;
-        } else if (drcs_mmv_value == 2) {
-            drcs_charset_limit = 158u;
-        } else {
-            drcs_charset_limit = 697u;
-        }
-        if (drcs_charset_value < 1 ||
-            (unsigned long)drcs_charset_value > drcs_charset_limit) {
-            sixel_helper_set_additional_message(
-                "DRCS charset number is out of range.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        encoder->drcs_mmv = drcs_mmv_value;
-        encoder->drcs_charset_no = (unsigned short)drcs_charset_value;
-        if (encoder->tile_outfd >= 0
-            && encoder->tile_outfd != encoder->outfd
-            && encoder->tile_outfd != STDOUT_FILENO
-            && encoder->tile_outfd != STDERR_FILENO) {
-            /*
-             * Drop any previously opened tile stream through the
-             * compatibility layer so that platform-specific details stay
-             * centralized in src/compat_stub.c.
-             */
-            (void)sixel_compat_close(encoder->tile_outfd);
-        }
-        encoder->tile_outfd = (-1);
-        if (drcs_arg_path != NULL) {
-            if (strcmp(drcs_arg_path, "-") == 0) {
-                encoder->tile_outfd = STDOUT_FILENO;
-            } else {
-                tile_open_flags = O_RDWR | O_CREAT | O_TRUNC;
-#if defined(O_BINARY)
-                tile_open_flags |= O_BINARY;
-#endif
-                encoder->tile_outfd = sixel_compat_open(drcs_arg_path,
-                                                       tile_open_flags,
-                                                       S_IRUSR | S_IWUSR);
-                if (encoder->tile_outfd < 0) {
-                    sixel_helper_set_additional_message(
-                        "sixel_encoder_setopt: failed to open tile"
-                        " output path.");
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto end;
-                }
-            }
         }
         break;
     case SIXEL_OPTFLAG_PENETRATE:  /* P */
@@ -7284,7 +7272,7 @@ sixel_encoder_setopt(
     status = SIXEL_OK;
 
 end:
-    sixel_encoder_setopt_context_dispose(&setopt_context, encoder->allocator);
+    sixel_encoder_setopt_context_dispose(&setopt_context);
     sixel_encoder_unref(encoder);
 
     return status;
