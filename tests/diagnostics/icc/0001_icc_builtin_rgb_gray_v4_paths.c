@@ -1,4 +1,8 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
+ *
  * Verify builtin ICC parser/apply paths for RGB/GRAY v4 extensions.
  *
  * This test synthesizes compact ICC profiles in memory so it can cover:
