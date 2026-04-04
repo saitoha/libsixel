@@ -9,7 +9,7 @@ PHP_PACKAGE_INPUTS = \
 	$(srcdir)/package_builder.php \
 	$(srcdir)/README \
 	$(srcdir)/README.md \
-	$(top_builddir)/src/.libs/libsixel.1.dylib \
+	$(top_builddir)/src/libsixel.la \
 	$(wildcard $(srcdir)/src/*.php) \
 	$(wildcard $(srcdir)/src/Libsixel/*.php)
 
