@@ -484,7 +484,7 @@ jobs:
       FUZZ_TIMEOUT: 300
       AFL_USE_ASAN: 1
       AFL_USE_UBSAN: 1
-      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:symbolize=0
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
