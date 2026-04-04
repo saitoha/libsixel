@@ -29,35 +29,31 @@ trace_log=$(
 }
 
 actual_sequence=""
-while IFS= read -r line; do
-    parse_line="${line}"
-    while :; do
-        case "${parse_line}" in
-            *"event=callback_enter "*"frame_no="*"loop_no="*)
-                callback_part=${parse_line#*event=callback_enter }
-                frame_part=${callback_part#*frame_no=}
-                frame_no=${frame_part%% *}
-                loop_part=${callback_part#*loop_no=}
-                loop_no=${loop_part%% *}
-                case "${actual_sequence}" in
-                    "")
-                        actual_sequence="${loop_no}:${frame_no}"
-                        ;;
-                    *)
-                        actual_sequence="${actual_sequence}
+parse_log="${trace_log}"
+while :; do
+    case "${parse_log}" in
+        *"event=callback_enter "*"frame_no="*"loop_no="*)
+            callback_part=${parse_log#*event=callback_enter }
+            frame_part=${callback_part#*frame_no=}
+            frame_no=${frame_part%% *}
+            loop_part=${callback_part#*loop_no=}
+            loop_no=${loop_part%% *}
+            case "${actual_sequence}" in
+                "")
+                    actual_sequence="${loop_no}:${frame_no}"
+                    ;;
+                *)
+                    actual_sequence="${actual_sequence}
 ${loop_no}:${frame_no}"
-                        ;;
-                esac
-                parse_line=${callback_part#*reason=}
-                ;;
-            *)
-                break
-                ;;
-        esac
-    done
-done <<__TRACE_EOF__
-${trace_log}
-__TRACE_EOF__
+                    ;;
+            esac
+            parse_log=${callback_part#*reason=}
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 test "${actual_sequence}" = "${expected_sequence}" || {
     echo "not ok" 1 - "builtin APNG frame_no sequence mismatch"
