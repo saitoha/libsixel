@@ -3,11 +3,8 @@
 # Fixture generation commands:
 #   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
 # Reference generation commands:
-#   python3 tests/data/inputs/formats/generate_psd_snake16_fixtures.py
-#   magick tests/data/loader/builtin_expected/psd_snake16_cmyk8_expected.ppm \
-#       \( -size 16x16 xc:none -fill black -draw 'rectangle 4,4 11,11' \) \
-#       -compose over -composite -depth 8 -define ppm:format=raw \
-#       PPM:tests/data/loader/builtin_expected/psd_snake16_multilayer_cmyk8_normal_expected.ppm
+#   static expected asset:
+#   tests/data/loader/builtin_expected/psd_snake16_cmyk8_expected.ppm
 
 set -eux
 
@@ -21,7 +18,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 base_dir="${TOP_SRCDIR}/tests/data/inputs/formats"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_cmyk8_normal_expected.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_cmyk8_expected.ppm"
 input_psd="${base_dir}/snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false.psd"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
@@ -59,6 +56,15 @@ esac
 case "${trace_output}" in
     *"builtin PSD: rendering non-pixel fill payload in layer fallback"*)
         echo "not ok" 1 - "render non-pixel fill payload trace must not appear when FillFlag=false"
+        exit 0
+        ;;
+    *)
+        ;;
+esac
+
+case "${trace_output}" in
+    *"builtin PSD: rendering non-pixel stroke payload in layer fallback"*)
+        echo "not ok" 1 - "render non-pixel stroke payload trace must not appear when FillFlag=false and StrokeFlag is not set"
         exit 0
         ;;
     *)
