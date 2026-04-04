@@ -389,6 +389,44 @@ def build_tysh_enginedata_fillcolor_fillflag_payload(
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_fillstroke_flags_payload(
+    r: int,
+    g: int,
+    b: int,
+    *,
+    fillflag: bool,
+    strokeflag: bool,
+    stroke_components: tuple[float, ...],
+) -> bytes:
+    if not stroke_components:
+        raise ValueError("stroke_components must not be empty")
+    if len(stroke_components) > 4:
+        raise ValueError("stroke_components must be 1..4 values")
+
+    r = float(max(0, min(255, r))) / 255.0
+    g = float(max(0, min(255, g))) / 255.0
+    b = float(max(0, min(255, b))) / 255.0
+    fill_token = "true" if fillflag else "false"
+    stroke_token = "true" if strokeflag else "false"
+    stroke_values = " ".join(f"{float(component):.6f}" for component in stroke_components)
+
+    # Keep descriptor bytes intentionally non-decodable so TySh fallback
+    # reaches EngineData paths and exercises FillFlag/StrokeFlag semantics.
+    engine_data = (
+        f"/EngineData << /FillFlag {fill_token} /StrokeFlag {stroke_token} "
+        f"/FillColor [{r:.6f} {g:.6f} {b:.6f}] "
+        f"/StrokeColor [{stroke_values}] >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_values_payload(
     components: tuple[float, ...],
     *,
@@ -11091,6 +11129,82 @@ def generate(out_dir: pathlib.Path):
                 48,
                 64,
                 fillflag=True,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillstroke_flags_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+                strokeflag=True,
+                stroke_components=(0.5,),
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillstroke_flags_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+                strokeflag=True,
+                stroke_components=(0.5,),
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_false.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillstroke_flags_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+                strokeflag=False,
+                stroke_components=(0.5,),
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_false.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillstroke_flags_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+                strokeflag=False,
+                stroke_components=(0.5,),
             ),
             first_layer_has_pixels=False,
         ),

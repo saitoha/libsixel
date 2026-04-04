@@ -211,6 +211,13 @@ Key points used by this roadmap:
     `FillFlag=false` skips synthetic fill rendering with deterministic info
     trace (`skipping non-pixel fill payload due to FillFlag=false`), while
     `FillFlag=true` preserves existing fill-render behavior.
+  - TySh EngineData `StrokeFlag` / `StrokeColor` semantics are now fixed for
+    no-pixel fallback:
+    when `FillFlag=false` and `StrokeFlag=true` with decodable `StrokeColor`,
+    fallback renders a synthetic solid layer from stroke color and emits
+    deterministic info trace
+    (`rendering non-pixel stroke payload in layer fallback`);
+    otherwise `FillFlag=false` keeps skip behavior.
   - TySh EngineData `StyleRun` payloads that provide
     `/RunLengthArray + /RunArray` now use RunLength-weighted color
     compositing for all decodable runs before falling back to generic
