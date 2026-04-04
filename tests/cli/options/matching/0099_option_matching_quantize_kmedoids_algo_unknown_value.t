@@ -31,7 +31,7 @@ test "${msg#*\"algo\"*}" != "${msg}" || {
     exit 0
 }
 
-test "${msg#*valid values*pam, clara, clarans, banditpam*}" != "${msg}" || {
+test "${msg#*valid values*auto, pam, clara, clarans, banditpam*}" != "${msg}" || {
     echo "not ok" 1 - "missing kmedoids algo candidate list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

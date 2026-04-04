@@ -321,6 +321,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-meson-palette-sources \
+	staticcheck-kmedoids-suboption-env-sync \
 	staticcheck-test-plan-single \
 	staticcheck-test-no-grep-awk \
 	staticcheck-artifact-local-dir-mkdir \
@@ -343,6 +344,7 @@ staticcheck-private-includes \
 staticcheck-test-runner-dllexport \
 staticcheck-makefile-recipes \
 staticcheck-meson-palette-sources \
+staticcheck-kmedoids-suboption-env-sync \
 staticcheck-test-plan-single \
 staticcheck-test-no-grep-awk \
 staticcheck-artifact-local-dir-mkdir \
@@ -452,6 +454,16 @@ staticcheck-meson-palette-sources:
 		--trs-file staticcheck-meson-palette-sources.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-meson-palette-sources.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-kmedoids-suboption-env-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-kmedoids-suboption-env-sync" \
+		--log-file staticcheck-kmedoids-suboption-env-sync.log \
+		--trs-file staticcheck-kmedoids-suboption-env-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-plan-single:
@@ -1164,6 +1176,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-runner-dllexport.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
+    _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \

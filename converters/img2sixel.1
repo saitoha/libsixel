@@ -123,10 +123,28 @@ The \fBkmedoids\fP base value accepts suboptions using
 .br
 Supported k-medoids suboptions:
 .br
-\fBalgo\fP (or short key \fBa\fP): \fBpam\fP, \fBclara\fP,
+\fBalgo\fP (or short key \fBa\fP): \fBauto\fP, \fBpam\fP, \fBclara\fP,
 \fBclarans\fP, or \fBbanditpam\fP.
 .br
 \fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
+.br
+\fBiter\fP: integer value in 1-64.
+.br
+\fBsample\fP: 0 or integer value in 64-1048576.
+.br
+\fBclara_trials\fP: integer value in 1-32.
+.br
+\fBclara_sample\fP: 0 or integer value in 64-1048576.
+.br
+\fBclarans_local\fP: integer value in 1-32.
+.br
+\fBclarans_neighbors\fP: 0 or integer value in 1-5000000.
+.br
+\fBbandit_iter\fP: integer value in 1-64.
+.br
+\fBbandit_candidates\fP: integer value in 8-4096.
+.br
+\fBbandit_batch\fP: integer value in 8-4096.
 .TP 5
 .B \-F \fIMODE\fP, \-\-final\-merge=\fIMODE\fP
 control the post\-merge stage after palette construction. \fIMODE\fP accepts
@@ -1088,6 +1106,51 @@ k-means auto-binning density ratio threshold (1-1048576, default 32).
 .B SIXEL_PALETTE_KMEANS_FEEDBACK
 .br
 k-means residual histogram feedback switch: off or on (default off).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_ALGO
+.br
+default k-medoids solver when \fB-Q kmedoids\fP omits \fB:algo\fP. Accepts
+auto, pam, clara, clarans, or banditpam.
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_SEED
+.br
+default random seed for k-medoids randomized solvers (0-4294967295).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_ITER
+.br
+override PAM iteration cap (1-64).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_SAMPLE
+.br
+override k-medoids sample count (0 or 64-1048576).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS
+.br
+override CLARA trial count (1-32).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_CLARA_SAMPLE
+.br
+override CLARA sample size (0 or 64-1048576).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_CLARANS_LOCAL
+.br
+override CLARANS local search count (1-32).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_CLARANS_NEIGHBORS
+.br
+override CLARANS neighbor budget (0 or 1-5000000).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER
+.br
+override BanditPAM iteration cap (1-64).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_BANDIT_CANDIDATES
+.br
+override BanditPAM candidate budget (8-4096).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH
+.br
+override BanditPAM mini-batch size (8-4096).
 .TP 5
 .B SIXEL_PALETTE_LUMIN_FACTOR_R
 .br

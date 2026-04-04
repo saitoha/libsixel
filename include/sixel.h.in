@@ -419,10 +419,31 @@ typedef int SIXELSTATUS;
                                                     kmedoids:key=value[:key=value...]
                                                   supported suboptions:
                                                     algo:
-                                                      pam, clara, clarans,
+                                                      auto, pam, clara, clarans,
                                                       banditpam
                                                     seed:
                                                       integer in 0-4294967295
+                                                    iter:
+                                                      integer in 1-64
+                                                    sample:
+                                                      0 or integer in
+                                                      64-1048576
+                                                    clara_trials:
+                                                      integer in 1-32
+                                                    clara_sample:
+                                                      0 or integer in
+                                                      64-1048576
+                                                    clarans_local:
+                                                      integer in 1-32
+                                                    clarans_neighbors:
+                                                      0 or integer in
+                                                      1-5000000
+                                                    bandit_iter:
+                                                      integer in 1-64
+                                                    bandit_candidates:
+                                                      integer in 8-4096
+                                                    bandit_batch:
+                                                      integer in 8-4096
                                                 */
 #define SIXEL_OPTFLAG_FINAL_MERGE       ('F')  /* -F MODE, --final-merge=MODE:
                                                   final merge policy.

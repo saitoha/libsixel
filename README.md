@@ -494,9 +494,23 @@ Options:
                              feedback (or f)  -> off or on
                            kmedoids accepts suboptions using
                            kmedoids:key=value[:key=value...].
-                             algo (or a)      -> pam, clara, clarans,
-                                                  or banditpam
+                             algo (or a)      -> auto, pam, clara,
+                                                  clarans, or banditpam
                              seed (or s)      -> integer in 0-4294967295
+                             iter             -> integer in 1-64
+                             sample           -> 0 or integer in
+                                                  64-1048576
+                             clara_trials     -> integer in 1-32
+                             clara_sample     -> 0 or integer in
+                                                  64-1048576
+                             clarans_local    -> integer in 1-32
+                             clarans_neighbors
+                                                -> 0 or integer in
+                                                  1-5000000
+                             bandit_iter      -> integer in 1-64
+                             bandit_candidates
+                                                -> integer in 8-4096
+                             bandit_batch     -> integer in 8-4096
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colors. Accepts image files and
                            palette files in Adobe Color Table (*.act),
@@ -950,6 +964,39 @@ SIXEL_LOADER_LIBTIFF_CMS_ENGINE
 SIXEL_LODER_WIC_ICO_MINSIZE default minimum edge for
                            wic:ico_minsize when no -L suboption
                            is provided. Accepts positive integers.
+SIXEL_PALETTE_KMEDOIDS_ALGO
+                           default k-medoids solver when
+                           -Q kmedoids omits :algo.
+                           Accepts auto, pam, clara, clarans,
+                           or banditpam.
+SIXEL_PALETTE_KMEDOIDS_SEED
+                           default random seed for k-medoids
+                           randomized solvers (0-4294967295).
+SIXEL_PALETTE_KMEDOIDS_ITER
+                           override PAM iteration cap (1-64).
+SIXEL_PALETTE_KMEDOIDS_SAMPLE
+                           override k-medoids sample count
+                           (0 or 64-1048576).
+SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS
+                           override CLARA trial count (1-32).
+SIXEL_PALETTE_KMEDOIDS_CLARA_SAMPLE
+                           override CLARA sample size
+                           (0 or 64-1048576).
+SIXEL_PALETTE_KMEDOIDS_CLARANS_LOCAL
+                           override CLARANS local search count
+                           (1-32).
+SIXEL_PALETTE_KMEDOIDS_CLARANS_NEIGHBORS
+                           override CLARANS neighbor budget
+                           (0 or 1-5000000).
+SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER
+                           override BanditPAM iteration cap
+                           (1-64).
+SIXEL_PALETTE_KMEDOIDS_BANDIT_CANDIDATES
+                           override BanditPAM candidate budget
+                           (8-4096).
+SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH
+                           override BanditPAM mini-batch size
+                           (8-4096).
 SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            quantizer backend.  Set to `0`,
                            `off`, `false`, or `no` to keep the

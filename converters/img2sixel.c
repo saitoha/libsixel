@@ -254,10 +254,32 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             kmedoids sub-option:\n"
         "                                 :algo=NAME (:a=NAME)\n"
         "                                   choose k-medoids solver:\n"
-        "                                     pam|clara|clarans|banditpam\n"
+        "                                     auto|pam|clara|clarans|banditpam\n"
         "                                 :seed=VALUE (:s=VALUE)\n"
         "                                   uint32 random seed\n"
         "                                   (0-4294967295, default 1).\n"
+        "                                 :iter=COUNT\n"
+        "                                   PAM iteration cap (1-64).\n"
+        "                                 :sample=COUNT\n"
+        "                                   sample count (0 or 64-1048576).\n"
+        "                                 :clara_trials=COUNT\n"
+        "                                   CLARA trial count (1-32).\n"
+        "                                 :clara_sample=COUNT\n"
+        "                                   CLARA sample size\n"
+        "                                   (0 or 64-1048576).\n"
+        "                                 :clarans_local=COUNT\n"
+        "                                   CLARANS local searches (1-32).\n"
+        "                                 :clarans_neighbors=COUNT\n"
+        "                                   CLARANS neighbor budget\n"
+        "                                   (0 or 1-5000000).\n"
+        "                                 :bandit_iter=COUNT\n"
+        "                                   BanditPAM iteration cap (1-64).\n"
+        "                                 :bandit_candidates=COUNT\n"
+        "                                   Bandit candidate budget\n"
+        "                                   (8-4096).\n"
+        "                                 :bandit_batch=COUNT\n"
+        "                                   Bandit mini-batch size\n"
+        "                                   (8-4096).\n"
     },
     {
         'F',
@@ -1235,12 +1257,48 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_KMEDOIDS_ALGO",
         "default k-medoids solver when -Q kmedoids omits :algo.\n"
-        "Accepts pam, clara, clarans, or banditpam."
+        "Accepts auto, pam, clara, clarans, or banditpam."
     },
     {
         "SIXEL_PALETTE_KMEDOIDS_SEED",
         "default uint32 random seed for k-medoids stochastic paths.\n"
         "Accepts 0-4294967295."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_ITER",
+        "override k-medoids PAM iteration cap. Accepts 1-64."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_SAMPLE",
+        "override k-medoids sample count. Accepts 0 or 64-1048576."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS",
+        "override CLARA trial count. Accepts 1-32."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_CLARA_SAMPLE",
+        "override CLARA sample size. Accepts 0 or 64-1048576."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_CLARANS_LOCAL",
+        "override CLARANS local-search count. Accepts 1-32."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_CLARANS_NEIGHBORS",
+        "override CLARANS neighbor budget. Accepts 0 or 1-5000000."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_BANDIT_ITER",
+        "override BanditPAM iteration cap. Accepts 1-64."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_BANDIT_CANDIDATES",
+        "override BanditPAM candidate budget. Accepts 8-4096."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH",
+        "override BanditPAM mini-batch size. Accepts 8-4096."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

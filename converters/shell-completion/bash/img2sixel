@@ -180,7 +180,8 @@ _img2sixel()
                 quant_value="${quant_item#*=}"
                 quant_prefix="${cur%${quant_value}}"
                 if [[ ${quant_key} == a || ${quant_key} == algo ]]; then
-                    for quant_candidate in pam clara clarans banditpam; do
+                    for quant_candidate in \
+                        auto pam clara clarans banditpam; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
@@ -189,12 +190,46 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == iter ]]; then
+                    for quant_candidate in 4 8 16 24; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == sample || ${quant_key} == clara_sample ]]; then
+                    for quant_candidate in 0 1024 2048 4096; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == clara_trials || ${quant_key} == clarans_local ]]; then
+                    for quant_candidate in 3 5 7 9; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == clarans_neighbors ]]; then
+                    for quant_candidate in 0 250 512 1024; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == bandit_iter ]]; then
+                    for quant_candidate in 4 8 12 16; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == bandit_candidates || ${quant_key} == bandit_batch ]]; then
+                    for quant_candidate in 32 64 128 256 512; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 fi
                 return 0
             fi
 
             quant_prefix="${cur%${quant_item}}"
-            for quant_candidate in a= algo= s= seed=; do
+            for quant_candidate in \
+                a= algo= s= seed= iter= sample= \
+                clara_trials= clara_sample= \
+                clarans_local= clarans_neighbors= \
+                bandit_iter= bandit_candidates= bandit_batch=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done

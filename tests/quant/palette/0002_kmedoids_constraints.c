@@ -452,6 +452,10 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
         return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM)
             ? 0 : 1;
     }
+    if (strcmp(argv[1], "seed-auto") == 0) {
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO)
+            ? 0 : 1;
+    }
 
     return 1;
 }

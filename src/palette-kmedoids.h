@@ -44,6 +44,7 @@ typedef enum sixel_kmedoids_algo {
     SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA,
     SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS,
     SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM,
+    SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO,
 } sixel_kmedoids_algo_t;
 
 SIXELSTATUS
@@ -81,6 +82,69 @@ sixel_set_kmedoids_seed_override(int enabled,
 
 SIXEL_INTERNAL_API uint32_t
 sixel_get_kmedoids_seed(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_iter_override(int enabled,
+                                 unsigned int iter_count);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_iter(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_sample_override(int enabled,
+                                   unsigned int sample_count);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_sample(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_clara_trials_override(int enabled,
+                                         unsigned int trials);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_clara_trials(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_clara_sample_override(int enabled,
+                                         unsigned int sample_count);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_clara_sample(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_clarans_local_override(int enabled,
+                                          unsigned int local_searches);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_clarans_local(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_clarans_neighbors_override(int enabled,
+                                              unsigned int neighbors);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_clarans_neighbors(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_bandit_iter_override(int enabled,
+                                        unsigned int iter_count);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_bandit_iter(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_bandit_candidates_override(int enabled,
+                                              unsigned int candidates);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_bandit_candidates(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_bandit_batch_override(int enabled,
+                                         unsigned int batch_size);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_bandit_batch(void);
 
 #ifdef __cplusplus
 }
