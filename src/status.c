@@ -135,11 +135,17 @@ sixel_debugf(char const *fmt, ...)
 }
 
 enum {
-    SIXEL_STATUS_MESSAGE_LIMIT = 4096
+    SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY = 4096
 };
 
-static char status_markup_buffer[SIXEL_STATUS_MESSAGE_LIMIT] = { 0x0 };
-static char status_render_buffer[SIXEL_STATUS_MESSAGE_LIMIT] = { 0x0 };
+static char status_markup_storage[SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY] =
+    { 0x0 };
+static char status_render_storage[SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY] =
+    { 0x0 };
+static char *status_markup_buffer = status_markup_storage;
+static char *status_render_buffer = status_render_storage;
+static size_t status_markup_capacity = sizeof(status_markup_storage);
+static size_t status_render_capacity = sizeof(status_render_storage);
 
 enum sixel_status_markup_attr {
     SIXEL_STATUS_ATTR_NONE = 0,
@@ -172,6 +178,13 @@ sixel_status_render_markup(const char *source,
                            size_t destination_size);
 
 static int
+sixel_status_reserve_buffer(char **buffer,
+                            size_t *capacity,
+                            char *static_storage,
+                            size_t static_capacity,
+                            size_t required_size);
+
+static int
 sixel_status_force_colors_enabled(void);
 
 /*
@@ -195,26 +208,48 @@ sixel_helper_set_additional_message(
 )
 {
     size_t length;
-    size_t copy_length;
+    size_t required_size;
+    int reserve_status;
 
+    length = 0u;
+    required_size = 0u;
+    reserve_status = -1;
     if (message == NULL) {
-        status_markup_buffer[0] = '\0';
-        status_render_buffer[0] = '\0';
+        if (status_markup_buffer != NULL && status_markup_capacity > 0u) {
+            status_markup_buffer[0] = '\0';
+        }
+        if (status_render_buffer != NULL && status_render_capacity > 0u) {
+            status_render_buffer[0] = '\0';
+        }
         return;
     }
 
     length = strlen(message);
-    copy_length = length;
-
-    if (copy_length >= SIXEL_STATUS_MESSAGE_LIMIT) {
-        copy_length = SIXEL_STATUS_MESSAGE_LIMIT - 1;
-        copy_length = sixel_status_utf8_trim_length(message,
-                                                    copy_length);
+    required_size = length + 1u;
+    reserve_status = sixel_status_reserve_buffer(
+        &status_markup_buffer,
+        &status_markup_capacity,
+        status_markup_storage,
+        sizeof(status_markup_storage),
+        required_size);
+    if (reserve_status != 0) {
+        if (status_markup_capacity == 0u) {
+            return;
+        }
+        length = status_markup_capacity - 1u;
+        length = sixel_status_utf8_trim_length(message,
+                                               length);
     }
 
-    memcpy(status_markup_buffer, message, copy_length);
-    status_markup_buffer[copy_length] = '\0';
-    status_render_buffer[0] = '\0';
+    if (status_markup_buffer == NULL) {
+        return;
+    }
+
+    memcpy(status_markup_buffer, message, length);
+    status_markup_buffer[length] = '\0';
+    if (status_render_buffer != NULL && status_render_capacity > 0u) {
+        status_render_buffer[0] = '\0';
+    }
 }
 
 
@@ -222,10 +257,90 @@ sixel_helper_set_additional_message(
 SIXELAPI char const *
 sixel_helper_get_additional_message(void)
 {
+    size_t markup_length;
+    size_t required_size;
+
+    markup_length = 0u;
+    required_size = 0u;
+    if (status_markup_buffer == NULL) {
+        return "";
+    }
+
+    markup_length = strlen(status_markup_buffer);
+    required_size = markup_length + 1u;
+    if (markup_length <= (((size_t)-1u) - 64u) / 4u) {
+        required_size = markup_length * 4u + 64u;
+    }
+    (void)sixel_status_reserve_buffer(
+        &status_render_buffer,
+        &status_render_capacity,
+        status_render_storage,
+        sizeof(status_render_storage),
+        required_size);
+    if (status_render_buffer == NULL || status_render_capacity == 0u) {
+        return "";
+    }
+
     (void)sixel_status_render_markup(status_markup_buffer,
                                      status_render_buffer,
-                                     sizeof(status_render_buffer));
+                                     status_render_capacity);
     return status_render_buffer;
+}
+
+static int
+sixel_status_reserve_buffer(char **buffer,
+                            size_t *capacity,
+                            char *static_storage,
+                            size_t static_capacity,
+                            size_t required_size)
+{
+    char *grown;
+    size_t target;
+
+    grown = NULL;
+    target = 0u;
+    if (buffer == NULL || capacity == NULL || required_size == 0u) {
+        return -1;
+    }
+    if (*buffer != NULL && *capacity >= required_size) {
+        return 0;
+    }
+
+    target = *capacity;
+    if (target == 0u) {
+        target = static_capacity;
+        if (target == 0u) {
+            target = 64u;
+        }
+    }
+    while (target < required_size) {
+        if (target > ((size_t)-1u) / 2u) {
+            target = required_size;
+            break;
+        }
+        target *= 2u;
+    }
+
+    if (*buffer == static_storage) {
+        grown = (char *)malloc(target);
+        if (grown == NULL) {
+            return -1;
+        }
+        if (static_capacity > 0u) {
+            memcpy(grown, static_storage, static_capacity);
+        } else {
+            grown[0] = '\0';
+        }
+    } else {
+        grown = (char *)realloc(*buffer, target);
+        if (grown == NULL) {
+            return -1;
+        }
+    }
+
+    *buffer = grown;
+    *capacity = target;
+    return 0;
 }
 
 void

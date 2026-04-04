@@ -1793,6 +1793,85 @@ img2sixel_copy_truncated(char *destination,
     destination[copy_length] = '\0';
 }
 
+static int
+img2sixel_safe_size_add(size_t *total, size_t addend)
+{
+    if (total == NULL) {
+        return -1;
+    }
+    if (addend > (size_t)-1u - *total) {
+        return -1;
+    }
+    *total += addend;
+    return 0;
+}
+
+static void
+img2sixel_format_invalid_argument_message(char *buffer,
+                                          size_t buffer_size,
+                                          int short_opt,
+                                          char const *argument_text,
+                                          char const *long_opt,
+                                          char const *detail,
+                                          char const *help_text)
+{
+    size_t offset;
+    int written;
+
+    offset = 0u;
+    written = 0;
+    if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+    if (argument_text == NULL) {
+        argument_text = "(missing)";
+    }
+    if (long_opt == NULL) {
+        long_opt = "?";
+    }
+    if (help_text == NULL) {
+        help_text = "";
+    }
+
+    buffer[0] = '\0';
+    written = snprintf(buffer,
+                       buffer_size,
+                       "\\fW'%s'\\fP is invalid argument for "
+                       "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
+                       argument_text,
+                       (char)short_opt,
+                       long_opt);
+    if (written < 0) {
+        return;
+    }
+    if ((size_t)written >= buffer_size) {
+        return;
+    }
+    offset = (size_t)written;
+
+    if (detail != NULL && detail[0] != '\0') {
+        written = snprintf(buffer + offset,
+                           buffer_size - offset,
+                           "%s\n\n",
+                           detail);
+        if (written < 0) {
+            return;
+        }
+        if ((size_t)written >= buffer_size - offset) {
+            return;
+        }
+        offset += (size_t)written;
+    }
+
+    if (offset >= buffer_size) {
+        return;
+    }
+    (void)snprintf(buffer + offset,
+                   buffer_size - offset,
+                   "%s",
+                   help_text);
+}
+
 enum {
     IMG2SIXEL_CMS_ENGINE_CHOICE_NONE = 0,
     IMG2SIXEL_CMS_ENGINE_CHOICE_AUTO = 1,
@@ -1947,20 +2026,22 @@ img2sixel_report_invalid_argument(int short_opt,
                                   char const *value,
                                   char const *detail)
 {
-    char buffer[2048];
-    char detail_copy[2048];
+    char *buffer;
+    char fallback_buffer[2048];
     char argument_copy[1024];
     cli_option_help_t const *entry;
     char const *long_opt;
     char const *help_text;
     char const *argument;
+    size_t detail_length;
+    size_t help_length;
+    size_t header_size;
+    size_t required_size;
     size_t argument_length;
     size_t argument_copy_length;
-    size_t offset;
-    int written;
 
-    memset(buffer, 0, sizeof(buffer));
-    memset(detail_copy, 0, sizeof(detail_copy));
+    buffer = NULL;
+    memset(fallback_buffer, 0, sizeof(fallback_buffer));
     memset(argument_copy, 0, sizeof(argument_copy));
     entry = cli_find_option_help(g_option_help_table,
                                  img2sixel_option_help_count(),
@@ -1971,6 +2052,10 @@ img2sixel_report_invalid_argument(int short_opt,
         ? entry->help : g_option_help_fallback;
     argument = (value != NULL && value[0] != '\0')
         ? value : "(missing)";
+    detail_length = 0u;
+    help_length = strlen(help_text);
+    header_size = 0u;
+    required_size = 1u;
     argument_length = strlen(argument);
     argument_copy_length = argument_length;
     if (argument_copy_length >= sizeof(argument_copy)) {
@@ -1980,54 +2065,61 @@ img2sixel_report_invalid_argument(int short_opt,
     }
     memcpy(argument_copy, argument, argument_copy_length);
     argument_copy[argument_copy_length] = '\0';
-    offset = 0u;
 
-    written = snprintf(buffer,
-                       sizeof(buffer),
-                       "\\fW'%s'\\fP is invalid argument for "
-                       "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
-                       argument_copy,
-                       (char)short_opt,
-                       long_opt);
-    if (written < 0) {
-        written = 0;
+    if (detail != NULL) {
+        detail_length = strlen(detail);
     }
-    if ((size_t)written >= sizeof(buffer)) {
-        offset = sizeof(buffer) - 1u;
-    } else {
-        offset = (size_t)written;
-    }
-
-    if (detail != NULL && detail[0] != '\0' && offset < sizeof(buffer) - 1u) {
-        (void) snprintf(detail_copy,
-                        sizeof(detail_copy),
-                        "%s\n",
-                        detail);
-        written = snprintf(buffer + offset,
-                           sizeof(buffer) - offset,
-                           "%s\n",
-                           detail_copy);
-        if (written < 0) {
-            written = 0;
-        }
-        if ((size_t)written >= sizeof(buffer) - offset) {
-            offset = sizeof(buffer) - 1u;
-        } else {
-            offset += (size_t)written;
-        }
+    if (img2sixel_safe_size_add(&header_size,
+                                sizeof("\\fW'") - 1u) != 0
+        || img2sixel_safe_size_add(&header_size,
+                                   argument_copy_length) != 0
+        || img2sixel_safe_size_add(
+               &header_size,
+               sizeof("'\\fP is invalid argument for \\fB-") - 1u) != 0
+        || img2sixel_safe_size_add(&header_size, 1u) != 0
+        || img2sixel_safe_size_add(&header_size,
+                                   sizeof("\\fP,\\fB--") - 1u) != 0
+        || img2sixel_safe_size_add(&header_size,
+                                   strlen(long_opt)) != 0
+        || img2sixel_safe_size_add(&header_size,
+                                   sizeof("\\fP option:\n\n") - 1u) != 0) {
+        required_size = 0u;
+    } else if (img2sixel_safe_size_add(&required_size,
+                                       header_size) != 0
+               || img2sixel_safe_size_add(&required_size,
+                                          help_length) != 0) {
+        required_size = 0u;
+    } else if (detail_length > 0u
+               && (img2sixel_safe_size_add(&required_size,
+                                           detail_length) != 0
+                   || img2sixel_safe_size_add(&required_size, 2u) != 0)) {
+        required_size = 0u;
     }
 
-    if (offset < sizeof(buffer) - 1u) {
-        written = snprintf(buffer + offset,
-                           sizeof(buffer) - offset,
-                           "%s",
-                           help_text);
-        if (written < 0) {
-            written = 0;
-        }
+    if (required_size > 0u) {
+        buffer = (char *)malloc(required_size);
+    }
+    if (buffer != NULL) {
+        img2sixel_format_invalid_argument_message(buffer,
+                                                  required_size,
+                                                  short_opt,
+                                                  argument_copy,
+                                                  long_opt,
+                                                  detail,
+                                                  help_text);
+        sixel_helper_set_additional_message(buffer);
+        free(buffer);
+        return;
     }
 
-    sixel_helper_set_additional_message(buffer);
+    img2sixel_format_invalid_argument_message(fallback_buffer,
+                                              sizeof(fallback_buffer),
+                                              short_opt,
+                                              argument_copy,
+                                              long_opt,
+                                              detail,
+                                              help_text);
+    sixel_helper_set_additional_message(fallback_buffer);
 }
 
 static void

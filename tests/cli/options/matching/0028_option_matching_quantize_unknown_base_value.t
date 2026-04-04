@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying unknown -Q base tokens include token and candidates.
+# TAP test verifying unknown -Q base tokens include diagnostics and full help.
 
 set -eux
 
@@ -18,16 +18,36 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qzzzmodel \
     exit 0
 }
 
-case "${msg}" in
-    *"unknown option base value"*"\"zzzmodel\""*"valid values"*"auto"*)
-        ;;
-    *)
-        echo "not ok" 1 - "missing token/candidate details for unknown -Q base token"
-        printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg}" >&2
-        exit 0
-        ;;
-esac
+test "${msg#*unknown option base value*\"zzzmodel\"*valid values*auto*}" \
+    != "${msg}" || {
+    echo "not ok" 1 - "missing token/candidate details for unknown -Q token"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
+    exit 0
+}
+
+test "${msg#*valid values: auto, heckbert, kmeans, medoids*}" \
+    != "${msg}" || {
+    echo "not ok" 1 - "candidate list does not match documented values"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
+    exit 0
+}
+
+test "${msg#*valid values: auto, heckbert, kmeans, k, medoids*}" \
+    = "${msg}" || {
+    echo "not ok" 1 - "unexpected explicit shorthand leaked into candidate list"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
+    exit 0
+}
+
+test "${msg#*:bandit_batch=COUNT*}" != "${msg}" || {
+    echo "not ok" 1 - "quantize help text was truncated in invalid -Q diagnostics"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
+    exit 0
+}
 
 echo "ok" 1 - "unknown -Q base token reports token and candidates"
 exit 0
