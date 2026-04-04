@@ -114,6 +114,14 @@ struct sixel_encoder {
     unsigned int quantize_model_kmedoids_bandit_candidates;
     int quantize_model_kmedoids_bandit_batch_override;
     unsigned int quantize_model_kmedoids_bandit_batch;
+    int quantize_model_kmedoids_histbits_override;
+    unsigned int quantize_model_kmedoids_histbits;
+    int quantize_model_kmedoids_point_budget_override;
+    unsigned int quantize_model_kmedoids_point_budget;
+    int quantize_model_kmedoids_rare_keep_override;
+    unsigned int quantize_model_kmedoids_rare_keep;
+    int quantize_model_kmedoids_prune_mass_override;
+    double quantize_model_kmedoids_prune_mass;
     int final_merge_mode;
     int lut_policy;
     int sixel_reversible;

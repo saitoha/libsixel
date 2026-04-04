@@ -500,6 +500,12 @@ Options:
                              iter             -> integer in 1-64
                              sample           -> 0 or integer in
                                                   64-1048576
+                             point_budget     -> integer in 64-16384
+                                                  (with sample uses
+                                                  min(sample,point_budget))
+                             histbits         -> integer in 3-6
+                             rare_keep        -> integer in 0-1024
+                             prune_mass       -> float in 0.900-1.000
                              clara_trials     -> integer in 1-32
                              clara_sample     -> 0 or integer in
                                                   64-1048576
@@ -977,6 +983,23 @@ SIXEL_PALETTE_KMEDOIDS_ITER
 SIXEL_PALETTE_KMEDOIDS_SAMPLE
                            override k-medoids sample count
                            (0 or 64-1048576).
+SIXEL_PALETTE_KMEDOIDS_POINT_BUDGET
+                           override candidate point cap
+                           (64-16384). with
+                           SIXEL_PALETTE_KMEDOIDS_SAMPLE,
+                           min(sample, point_budget) is used.
+SIXEL_PALETTE_KMEDOIDS_HISTBITS
+                           histogram bits per channel in
+                           medoids preprocessing (3-6,
+                           default 5).
+SIXEL_PALETTE_KMEDOIDS_RARE_KEEP
+                           reserve low-frequency bins before
+                           mass pruning (0-1024,
+                           default 64).
+SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS
+                           cumulative histogram mass kept
+                           before solving (0.900-1.000,
+                           default 0.995).
 SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS
                            override CLARA trial count (1-32).
 SIXEL_PALETTE_KMEDOIDS_CLARA_SAMPLE

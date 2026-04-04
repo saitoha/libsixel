@@ -195,8 +195,28 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == histbits ]]; then
+                    for quant_candidate in 3 4 5 6; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 elif [[ ${quant_key} == sample || ${quant_key} == clara_sample ]]; then
                     for quant_candidate in 0 1024 2048 4096; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == point_budget ]]; then
+                    for quant_candidate in 64 256 1024 4096 16384; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == rare_keep ]]; then
+                    for quant_candidate in 0 16 64 128 256; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == prune_mass ]]; then
+                    for quant_candidate in 0.900 0.950 0.980 0.995 1.000; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
@@ -227,6 +247,7 @@ _img2sixel()
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
                 a= algo= s= seed= iter= sample= \
+                histbits= point_budget= rare_keep= prune_mass= \
                 clara_trials= clara_sample= \
                 clarans_local= clarans_neighbors= \
                 bandit_iter= bandit_candidates= bandit_batch=; do

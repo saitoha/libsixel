@@ -132,6 +132,14 @@ Supported k-medoids suboptions:
 .br
 \fBsample\fP: 0 or integer value in 64-1048576.
 .br
+\fBpoint_budget\fP: integer value in 64-16384.
+.br
+\fBhistbits\fP: integer value in 3-6.
+.br
+\fBrare_keep\fP: integer value in 0-1024.
+.br
+\fBprune_mass\fP: floating value in 0.900-1.000.
+.br
 \fBclara_trials\fP: integer value in 1-32.
 .br
 \fBclara_sample\fP: 0 or integer value in 64-1048576.
@@ -1123,6 +1131,25 @@ override PAM iteration cap (1-64).
 .B SIXEL_PALETTE_KMEDOIDS_SAMPLE
 .br
 override k-medoids sample count (0 or 64-1048576).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_POINT_BUDGET
+.br
+override medoids candidate point cap (64-16384). When
+\fBSIXEL_PALETTE_KMEDOIDS_SAMPLE\fP is also set, the solver uses
+min(sample, point_budget).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_HISTBITS
+.br
+histogram bits per channel for medoids preprocessing (3-6, default 5).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_RARE_KEEP
+.br
+reserve low-frequency histogram bins before mass pruning (0-1024, default 64).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS
+.br
+retain cumulative histogram mass before medoids solving (0.900-1.000,
+default 0.995).
 .TP 5
 .B SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS
 .br

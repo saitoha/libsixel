@@ -279,11 +279,38 @@ _quantizemodel() {
                      "${prefix}${key}=16" \
                      "${prefix}${key}=24"
           return 0
+        elif [[ ${key} == histbits ]]; then
+          compadd -- "${prefix}${key}=3" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=6"
+          return 0
         elif [[ ${key} == sample || ${key} == clara_sample ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1024" \
                      "${prefix}${key}=2048" \
                      "${prefix}${key}=4096"
+          return 0
+        elif [[ ${key} == point_budget ]]; then
+          compadd -- "${prefix}${key}=64" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=1024" \
+                     "${prefix}${key}=4096" \
+                     "${prefix}${key}=16384"
+          return 0
+        elif [[ ${key} == rare_keep ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=16" \
+                     "${prefix}${key}=64" \
+                     "${prefix}${key}=128" \
+                     "${prefix}${key}=256"
+          return 0
+        elif [[ ${key} == prune_mass ]]; then
+          compadd -- "${prefix}${key}=0.900" \
+                     "${prefix}${key}=0.950" \
+                     "${prefix}${key}=0.980" \
+                     "${prefix}${key}=0.995" \
+                     "${prefix}${key}=1.000"
           return 0
         elif [[ ${key} == clara_trials || ${key} == clarans_local ]]; then
           compadd -- "${prefix}${key}=3" \
@@ -316,6 +343,10 @@ _quantizemodel() {
         compadd -- "${prefix}a=" "${prefix}algo=" \
                    "${prefix}s=" "${prefix}seed=" \
                    "${prefix}iter=" "${prefix}sample=" \
+                   "${prefix}histbits=" \
+                   "${prefix}point_budget=" \
+                   "${prefix}rare_keep=" \
+                   "${prefix}prune_mass=" \
                    "${prefix}clara_trials=" "${prefix}clara_sample=" \
                    "${prefix}clarans_local=" \
                    "${prefix}clarans_neighbors=" \

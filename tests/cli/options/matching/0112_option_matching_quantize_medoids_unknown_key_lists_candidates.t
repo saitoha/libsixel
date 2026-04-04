@@ -25,7 +25,7 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
     exit 0
 }
 
-test "${msg#*"unknown"*valid keys*algo*seed*iter*sample*}" != "${msg}" || {
+test "${msg#*"unknown"*valid keys*algo*seed*iter*sample*histbits*point_budget*rare_keep*prune_mass*}" != "${msg}" || {
     echo "not ok" 1 - "missing medoids key candidate list"
     exit 0
 }

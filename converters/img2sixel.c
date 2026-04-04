@@ -293,8 +293,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               sub-option:\n"
         "                                 :algo=NAME (:a=NAME)\n"
         "                                   choose k-medoids solver:\n"
-        "                                     auto      -> choose by\n"
-        "                                                  sample size\n"
+        "                                     auto      -> adaptive\n"
+        "                                                  default\n"
+        "                                                  (small PAM,\n"
+        "                                                  mid CLARA,\n"
+        "                                                  large\n"
+        "                                                  BanditPAM)\n"
         "                                     pam       -> exhaustive\n"
         "                                                  swap search\n"
         "                                     clara     -> PAM on\n"
@@ -311,7 +315,22 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 :iter=COUNT\n"
         "                                   PAM iteration cap (1-64).\n"
         "                                 :sample=COUNT\n"
-        "                                   sample count (0 or 64-1048576).\n"
+        "                                   candidate cap hint\n"
+        "                                   (0 or 64-1048576).\n"
+        "                                 :point_budget=COUNT\n"
+        "                                   candidate cap\n"
+        "                                   (64-16384).\n"
+        "                                   with :sample uses\n"
+        "                                   min(sample, point_budget).\n"
+        "                                 :histbits=BITS\n"
+        "                                   histogram bits/channel\n"
+        "                                   (3-6).\n"
+        "                                 :rare_keep=COUNT\n"
+        "                                   keep low-frequency bins\n"
+        "                                   (0-1024).\n"
+        "                                 :prune_mass=RATIO\n"
+        "                                   retain cumulative mass\n"
+        "                                   (0.900-1.000).\n"
         "                                 :clara_trials=COUNT\n"
         "                                   CLARA trial count (1-32).\n"
         "                                 :clara_sample=COUNT\n"
@@ -1326,7 +1345,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEDOIDS_SAMPLE",
-        "override k-medoids sample count. Accepts 0 or 64-1048576."
+        "override k-medoids sample candidate hint.\n"
+        "Accepts 0 or 64-1048576."
     },
     {
         "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS",
@@ -1355,6 +1375,27 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH",
         "override BanditPAM mini-batch size. Accepts 8-4096."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_HISTBITS",
+        "histogram bits per channel for medoids preprocessing.\n"
+        "Accepts 3-6, default 5."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_POINT_BUDGET",
+        "override medoids candidate point cap. Accepts 64-16384.\n"
+        "When SIXEL_PALETTE_KMEDOIDS_SAMPLE is also set, the solver uses\n"
+        "min(sample, point_budget)."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP",
+        "reserve low-frequency histogram bins before mass pruning.\n"
+        "Accepts 0-1024, default 64."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS",
+        "retain cumulative histogram mass before medoids solve.\n"
+        "Accepts 0.900-1.000, default 0.995."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

@@ -24,7 +24,7 @@
 
 /*
  * Public entry points for the k-medoids quantizer and its runtime knobs.
- * palette.c selects this solver when -Q kmedoids is active.
+ * palette.c selects this solver when -Q medoids is active.
  */
 
 #ifndef LIBSIXEL_PALETTE_KMEDOIDS_H
@@ -145,6 +145,34 @@ sixel_set_kmedoids_bandit_batch_override(int enabled,
 
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_bandit_batch(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_histbits_override(int enabled,
+                                     unsigned int histbits);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_histbits(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_point_budget_override(int enabled,
+                                         unsigned int point_budget);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_point_budget(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_rare_keep_override(int enabled,
+                                      unsigned int rare_keep);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_rare_keep(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_prune_mass_override(int enabled,
+                                       double prune_mass);
+
+SIXEL_INTERNAL_API double
+sixel_get_kmedoids_prune_mass(void);
 
 #ifdef __cplusplus
 }

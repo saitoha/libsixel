@@ -930,6 +930,38 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "histbits",
+        NULL,
+        "SIXEL_PALETTE_KMEDOIDS_HISTBITS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "point_budget",
+        NULL,
+        "SIXEL_PALETTE_KMEDOIDS_POINT_BUDGET",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "rare_keep",
+        NULL,
+        "SIXEL_PALETTE_KMEDOIDS_RARE_KEEP",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "prune_mass",
+        NULL,
+        "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
     }
 };
 
@@ -4033,6 +4065,18 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_bandit_batch_override(
         encoder->quantize_model_kmedoids_bandit_batch_override,
         encoder->quantize_model_kmedoids_bandit_batch);
+    sixel_set_kmedoids_histbits_override(
+        encoder->quantize_model_kmedoids_histbits_override,
+        encoder->quantize_model_kmedoids_histbits);
+    sixel_set_kmedoids_point_budget_override(
+        encoder->quantize_model_kmedoids_point_budget_override,
+        encoder->quantize_model_kmedoids_point_budget);
+    sixel_set_kmedoids_rare_keep_override(
+        encoder->quantize_model_kmedoids_rare_keep_override,
+        encoder->quantize_model_kmedoids_rare_keep);
+    sixel_set_kmedoids_prune_mass_override(
+        encoder->quantize_model_kmedoids_prune_mass_override,
+        encoder->quantize_model_kmedoids_prune_mass);
     status = sixel_dither_initialize(*dither,
                                      palette_pixels,
                                      sixel_frame_get_width(palette_frame),
@@ -4059,7 +4103,7 @@ sixel_encoder_prepare_palette(
         SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
     sixel_set_kmedoids_algo_override(
         0,
-        SIXEL_PALETTE_KMEDOIDS_ALGO_PAM);
+        SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
     sixel_set_kmedoids_seed_override(0, 1u);
     sixel_set_kmedoids_iter_override(0, 0u);
     sixel_set_kmedoids_sample_override(0, 0u);
@@ -4070,6 +4114,10 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_bandit_iter_override(0, 0u);
     sixel_set_kmedoids_bandit_candidates_override(0, 0u);
     sixel_set_kmedoids_bandit_batch_override(0, 0u);
+    sixel_set_kmedoids_histbits_override(0, 0u);
+    sixel_set_kmedoids_point_budget_override(0, 0u);
+    sixel_set_kmedoids_rare_keep_override(0, 0u);
+    sixel_set_kmedoids_prune_mass_override(0, 0.0);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -4979,7 +5027,7 @@ sixel_encoder_new(
         = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
     (*ppencoder)->quantize_model_kmedoids_algo_override = 0;
     (*ppencoder)->quantize_model_kmedoids_algo
-        = SIXEL_PALETTE_KMEDOIDS_ALGO_PAM;
+        = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
     (*ppencoder)->quantize_model_kmedoids_seed_override = 0;
     (*ppencoder)->quantize_model_kmedoids_seed = 1u;
     (*ppencoder)->quantize_model_kmedoids_iter_override = 0;
@@ -5000,6 +5048,14 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmedoids_bandit_candidates = 0u;
     (*ppencoder)->quantize_model_kmedoids_bandit_batch_override = 0;
     (*ppencoder)->quantize_model_kmedoids_bandit_batch = 0u;
+    (*ppencoder)->quantize_model_kmedoids_histbits_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_histbits = 0u;
+    (*ppencoder)->quantize_model_kmedoids_point_budget_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_point_budget = 0u;
+    (*ppencoder)->quantize_model_kmedoids_rare_keep_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_rare_keep = 0u;
+    (*ppencoder)->quantize_model_kmedoids_prune_mass_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_prune_mass = 0.0;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
@@ -5674,6 +5730,34 @@ invalid:
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_kmedoids_prune_mass_text(
+    char const *text,
+    double *value_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || value_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno != 0 || parsed != parsed
+            || parsed < 0.900 || parsed > 1.000) {
+        sixel_helper_set_additional_message(
+            "-Q prune_mass must be in range 0.900-1.000.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *value_out = parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_quantize_model_resolution(
     sixel_option_argument_resolution_t const *resolution)
 {
@@ -5693,7 +5777,12 @@ sixel_encoder_validate_quantize_model_resolution(
     SIXELSTATUS bandit_iter_status;
     SIXELSTATUS bandit_candidates_status;
     SIXELSTATUS bandit_batch_status;
+    SIXELSTATUS histbits_status;
+    SIXELSTATUS point_budget_status;
+    SIXELSTATUS rare_keep_status;
+    SIXELSTATUS prune_mass_status;
     double threshold;
+    double kmedoids_prune_mass;
     unsigned int binbits;
     unsigned int autoratio;
     uint32_t seed;
@@ -5706,6 +5795,9 @@ sixel_encoder_validate_quantize_model_resolution(
     unsigned int kmedoids_bandit_iter;
     unsigned int kmedoids_bandit_candidates;
     unsigned int kmedoids_bandit_batch;
+    unsigned int kmedoids_histbits;
+    unsigned int kmedoids_point_budget;
+    unsigned int kmedoids_rare_keep;
 
     index = 0u;
     assignment = NULL;
@@ -5723,7 +5815,12 @@ sixel_encoder_validate_quantize_model_resolution(
     bandit_iter_status = SIXEL_OK;
     bandit_candidates_status = SIXEL_OK;
     bandit_batch_status = SIXEL_OK;
+    histbits_status = SIXEL_OK;
+    point_budget_status = SIXEL_OK;
+    rare_keep_status = SIXEL_OK;
+    prune_mass_status = SIXEL_OK;
     threshold = 0.0;
+    kmedoids_prune_mass = 0.0;
     binbits = 0u;
     autoratio = 0u;
     seed = 0u;
@@ -5736,6 +5833,9 @@ sixel_encoder_validate_quantize_model_resolution(
     kmedoids_bandit_iter = 0u;
     kmedoids_bandit_candidates = 0u;
     kmedoids_bandit_batch = 0u;
+    kmedoids_histbits = 0u;
+    kmedoids_point_budget = 0u;
+    kmedoids_rare_keep = 0u;
     if (resolution == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -5875,6 +5975,47 @@ sixel_encoder_validate_quantize_model_resolution(
                 &kmedoids_bandit_batch);
             if (SIXEL_FAILED(bandit_batch_status)) {
                 return bandit_batch_status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "histbits") == 0) {
+            histbits_status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                3u,
+                6u,
+                0,
+                "histbits",
+                &kmedoids_histbits);
+            if (SIXEL_FAILED(histbits_status)) {
+                return histbits_status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "point_budget") == 0) {
+            point_budget_status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                64u,
+                16384u,
+                0,
+                "point_budget",
+                &kmedoids_point_budget);
+            if (SIXEL_FAILED(point_budget_status)) {
+                return point_budget_status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "rare_keep") == 0) {
+            rare_keep_status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                0u,
+                1024u,
+                0,
+                "rare_keep",
+                &kmedoids_rare_keep);
+            if (SIXEL_FAILED(rare_keep_status)) {
+                return rare_keep_status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "prune_mass") == 0) {
+            prune_mass_status = sixel_encoder_parse_kmedoids_prune_mass_text(
+                assignment->resolved_value_text,
+                &kmedoids_prune_mass);
+            if (SIXEL_FAILED(prune_mass_status)) {
+                return prune_mass_status;
             }
         }
         ++index;
@@ -6952,6 +7093,10 @@ sixel_encoder_setopt(
     unsigned int q_bandit_iter;
     unsigned int q_bandit_candidates;
     unsigned int q_bandit_batch;
+    unsigned int q_histbits;
+    unsigned int q_point_budget;
+    unsigned int q_rare_keep;
+    double q_prune_mass;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     char match_detail[128];
@@ -6973,6 +7118,10 @@ sixel_encoder_setopt(
     q_bandit_iter = 0u;
     q_bandit_candidates = 0u;
     q_bandit_batch = 0u;
+    q_histbits = 0u;
+    q_point_budget = 0u;
+    q_rare_keep = 0u;
+    q_prune_mass = 0.0;
     q_assignment = NULL;
     q_key = NULL;
 
@@ -7160,6 +7309,10 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmedoids_bandit_iter_override = 0;
         encoder->quantize_model_kmedoids_bandit_candidates_override = 0;
         encoder->quantize_model_kmedoids_bandit_batch_override = 0;
+        encoder->quantize_model_kmedoids_histbits_override = 0;
+        encoder->quantize_model_kmedoids_point_budget_override = 0;
+        encoder->quantize_model_kmedoids_rare_keep_override = 0;
+        encoder->quantize_model_kmedoids_prune_mass_override = 0;
 
         q_index = 0u;
         while (q_index < q_resolution->assignment_count) {
@@ -7409,6 +7562,59 @@ sixel_encoder_setopt(
                 }
                 encoder->quantize_model_kmedoids_bandit_batch_override = 1;
                 encoder->quantize_model_kmedoids_bandit_batch = q_bandit_batch;
+            } else if (q_key != NULL && strcmp(q_key, "histbits") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    3u,
+                    6u,
+                    0,
+                    "histbits",
+                    &q_histbits);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_histbits_override = 1;
+                encoder->quantize_model_kmedoids_histbits = q_histbits;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "point_budget") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    64u,
+                    16384u,
+                    0,
+                    "point_budget",
+                    &q_point_budget);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_point_budget_override = 1;
+                encoder->quantize_model_kmedoids_point_budget = q_point_budget;
+            } else if (q_key != NULL && strcmp(q_key, "rare_keep") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    0u,
+                    1024u,
+                    0,
+                    "rare_keep",
+                    &q_rare_keep);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_rare_keep_override = 1;
+                encoder->quantize_model_kmedoids_rare_keep = q_rare_keep;
+            } else if (q_key != NULL && strcmp(q_key, "prune_mass") == 0) {
+                status = sixel_encoder_parse_kmedoids_prune_mass_text(
+                    q_assignment->resolved_value_text,
+                    &q_prune_mass);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_prune_mass_override = 1;
+                encoder->quantize_model_kmedoids_prune_mass = q_prune_mass;
             }
             ++q_index;
         }

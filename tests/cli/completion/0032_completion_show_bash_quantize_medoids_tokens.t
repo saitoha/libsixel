@@ -52,6 +52,26 @@ test "${msg#*sample=*}" != "${msg}" || {
     exit 0
 }
 
+test "${msg#*histbits=*}" != "${msg}" || {
+    echo "not ok" 1 - "missing medoids histbits key in bash completion"
+    exit 0
+}
+
+test "${msg#*point_budget=*}" != "${msg}" || {
+    echo "not ok" 1 - "missing medoids point_budget key in bash completion"
+    exit 0
+}
+
+test "${msg#*rare_keep=*}" != "${msg}" || {
+    echo "not ok" 1 - "missing medoids rare_keep key in bash completion"
+    exit 0
+}
+
+test "${msg#*prune_mass=*}" != "${msg}" || {
+    echo "not ok" 1 - "missing medoids prune_mass key in bash completion"
+    exit 0
+}
+
 test "${msg#*clara_trials=*}" != "${msg}" || {
     echo "not ok" 1 - "missing medoids clara_trials key in bash completion"
     exit 0
