@@ -16,7 +16,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
 test "${HAVE_WINDOWS_H-0}" = 1 && {
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --win32-ctrl-break-run \
         1000 2000 "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce "${input_gif}" \
-        >/dev/null 2>/dev/null || {
+        >/dev/null || {
         echo "not ok" 1 - "builtin GIF force-loop did not stop after CTRL_BREAK"
         exit 0
     }
