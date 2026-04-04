@@ -18,6 +18,11 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
     exit 0
 }
 
+test "${HAVE_EMSCRIPTEN_H-0}" = 1 && {
+    printf "1..0 # SKIP emscripten runtime may exit before stop trace\n"
+    exit 0
+}
+
 test "${HAVE_WINDOWS_H-0}" = 1 && {
     printf "1..0 # SKIP signal trace check is unavailable on Windows\n"
     exit 0

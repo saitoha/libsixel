@@ -263,7 +263,18 @@ sixel_cond_wait(sixel_cond_t *cond, sixel_mutex_t *mutex)
     if (cond == NULL || mutex == NULL) {
         return;
     }
+    /*
+     * Some libc/pthread implementations may report EINTR when a signal is
+     * delivered while waiting. Retry so cooperative cancellation paths can
+     * finish via shared state updates instead of aborting the process.
+     */
+#if HAVE_ERRNO_H
+    do {
+        rc = pthread_cond_wait(&cond->native, &mutex->native);
+    } while (rc == EINTR);
+#else
     rc = pthread_cond_wait(&cond->native, &mutex->native);
+#endif
     if (rc != 0) {
         sixel_pthread_abort("pthread_cond_wait", rc);
     }
