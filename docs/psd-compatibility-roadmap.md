@@ -164,6 +164,11 @@ Key points used by this roadmap:
       `FillColor << /Values [/HSB ...] >>`.
     - `/Color << /Values [/DeviceCMYK|DeviceRGB|DeviceGray|CIELab ...] >>`
       parsing on native CMYK8 and mode7-mapped CMYK8 paths.
+    - `/DefaultStyleSheet << /Color << /Values
+      [/DeviceCMYK|DeviceRGB|DeviceGray|CIELab ...] >> >>` parsing with the
+      same precedence contract (`StyleRun` > `StyleSheetData` >
+      `DefaultStyleSheet` > top-level `FillColor` > loose fallback), including
+      representative decode+LSQA coverage on PSD/PSB CMYK16/CMYK32 paths.
   - descriptor fill LSQA coverage now includes:
     - `SoCo` descriptor color-object paths (`RGB/CMYK/Grayscale/HSB/Lab`)
       across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
@@ -214,6 +219,11 @@ Key points used by this roadmap:
   - TySh weighted-run LSQA density now includes CMYK16/32 representative
     decode+trace coverage across PSD and PSB mixed surfaces
     (`mode=4` and `mode7(4ch->CMYK)`).
+  - `/DefaultStyleSheet /Color /Values` named-space ICC contract coverage now
+    includes representative PSD/PSB CMYK surfaces:
+    valid ICC no-false-failure traces (`mode=4`, `mode7(4ch->CMYK)`),
+    bad ICC failure trace (`mode7(4ch->CMYK)`), and
+    malformed-resource skip trace (PSB native CMYK).
   - PSB malformed boundary parity for CMYK32 now covers both native
     `mode=4` and `mode7(4ch->CMYK)` paths with fixed trace contracts for:
     `layer/mask length`, `layer info length`, `layer channel length`

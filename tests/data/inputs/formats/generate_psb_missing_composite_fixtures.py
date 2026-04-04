@@ -1334,6 +1334,24 @@ def main() -> None:
         "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
         "snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
     )
+    # Representative DefaultStyleSheet /Color named-space expansion:
+    # mode4 + mode7 one decode case each, plus minimal ICC-contract surfaces.
+    convert_fixture(
+        "snake16_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_gray.psd",
+        "snake16_psb_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_gray.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_cielab.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_cielab.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_cmyk_valid_icc_profile.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_cmyk_valid_icc_profile.psd",
+    )
+    convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_cmyk_malformed_resource.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_cmyk_malformed_resource.psd",
+    )
     convert_fixture(
         "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",

@@ -5519,9 +5519,13 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_default_stylesheet(
                 found = 1;
                 continue;
             }
+            /* Keep fallback bounded from DefaultStyleSheet payload body
+             * so /Color named-space payloads nested in additional wrappers
+             * are preferred before top-level EngineData scanning.
+             */
             if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
                     data,
-                    cursor,
+                    cursor + 2u,
                     key_length,
                     layer)) {
                 found = 1;
@@ -5546,7 +5550,7 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_default_stylesheet(
             }
             if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
                     data,
-                    cursor,
+                    cursor + 1u,
                     key_length,
                     layer)) {
                 found = 1;
