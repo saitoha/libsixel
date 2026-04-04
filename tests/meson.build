@@ -248,9 +248,7 @@ if tests_text != ''
   tests = tests_text.split()
 endif
 
-xfail_tests = [
-  'loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa_xfail.t',
-]
+xfail_tests = []
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 # Ensure Meson builds the TAP helper binary before running shell-based tests.

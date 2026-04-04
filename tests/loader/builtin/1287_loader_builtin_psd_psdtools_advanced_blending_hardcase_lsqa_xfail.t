@@ -1,6 +1,5 @@
 #!/bin/sh
 # Verify builtin PSD decode reaches hard-case psd-tools baseline for advanced-blending.psd.
-# This test is listed in XFAIL_TESTS (autotools) and should_fail (meson).
 # Fixture/expected regeneration command:
 #   python3 tests/data/inputs/formats/generate_psdtools_hybrid_assets.py --download
 
