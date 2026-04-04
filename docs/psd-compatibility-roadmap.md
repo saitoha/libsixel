@@ -218,6 +218,20 @@ Key points used by this roadmap:
     deterministic info trace
     (`rendering non-pixel stroke payload in layer fallback`);
     otherwise `FillFlag=false` keeps skip behavior.
+  - TySh EngineData opacity semantics are now fixed for no-pixel fallback:
+    - `FillOpacity` scales synthetic fill-layer opacity when fill rendering is
+      selected,
+    - `StrokeOpacity` scales synthetic stroke-layer opacity when
+      `FillFlag=false` and `StrokeFlag=true`,
+    - malformed opacity values are ignored with deterministic info traces
+      (`malformed TySh FillOpacity; ignoring` and
+      `malformed TySh StrokeOpacity; ignoring`).
+  - TySh EngineData `StyleRun` opacity now follows the same
+    `/RunLengthArray` weighted contract as color:
+    valid run opacities are weighted by run length, malformed run opacities are
+    ignored per-run with deterministic malformed-opacity traces, and when no
+    valid run opacity exists the parser falls back to
+    `StyleSheetData > DefaultStyleSheet > top-level` precedence.
   - TySh EngineData `StyleRun` payloads that provide
     `/RunLengthArray + /RunArray` now use RunLength-weighted color
     compositing for all decodable runs before falling back to generic

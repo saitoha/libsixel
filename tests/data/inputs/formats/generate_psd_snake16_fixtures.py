@@ -427,6 +427,89 @@ def build_tysh_enginedata_fillcolor_fillstroke_flags_payload(
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_fillopacity_payload(
+    r: int,
+    g: int,
+    b: int,
+    *,
+    fill_opacity: float,
+    malformed_fill_opacity: bool = False,
+) -> bytes:
+    r = float(max(0, min(255, r))) / 255.0
+    g = float(max(0, min(255, g))) / 255.0
+    b = float(max(0, min(255, b))) / 255.0
+    fill_opacity_token = f"{float(fill_opacity):.6f}"
+    if malformed_fill_opacity:
+        fill_opacity_token = "[0.500000]"
+
+    # Keep descriptor bytes intentionally non-decodable so TySh fallback
+    # reaches EngineData paths and exercises FillOpacity semantics.
+    engine_data = (
+        f"/EngineData << /FillOpacity {fill_opacity_token} "
+        f"/FillColor [{r:.6f} {g:.6f} {b:.6f}] >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
+def build_tysh_enginedata_fillcolor_fillstroke_opacity_payload(
+    r: int,
+    g: int,
+    b: int,
+    *,
+    fillflag: bool,
+    strokeflag: bool,
+    stroke_components: tuple[float, ...],
+    fill_opacity=None,
+    stroke_opacity=None,
+    malformed_fill_opacity: bool = False,
+    malformed_stroke_opacity: bool = False,
+) -> bytes:
+    if not stroke_components:
+        raise ValueError("stroke_components must not be empty")
+    if len(stroke_components) > 4:
+        raise ValueError("stroke_components must be 1..4 values")
+
+    r = float(max(0, min(255, r))) / 255.0
+    g = float(max(0, min(255, g))) / 255.0
+    b = float(max(0, min(255, b))) / 255.0
+    fill_token = "true" if fillflag else "false"
+    stroke_token = "true" if strokeflag else "false"
+    stroke_values = " ".join(f"{float(component):.6f}" for component in stroke_components)
+    engine_data = f"/EngineData << /FillFlag {fill_token} /StrokeFlag {stroke_token} "
+
+    if fill_opacity is not None:
+        fill_opacity_token = f"{float(fill_opacity):.6f}"
+        if malformed_fill_opacity:
+            fill_opacity_token = "[0.500000]"
+        engine_data += f"/FillOpacity {fill_opacity_token} "
+    if stroke_opacity is not None:
+        stroke_opacity_token = f"{float(stroke_opacity):.6f}"
+        if malformed_stroke_opacity:
+            stroke_opacity_token = "[0.500000]"
+        engine_data += f"/StrokeOpacity {stroke_opacity_token} "
+
+    # Keep descriptor bytes intentionally non-decodable so TySh fallback
+    # reaches EngineData paths and exercises opacity semantics.
+    engine_data += (
+        f"/FillColor [{r:.6f} {g:.6f} {b:.6f}] "
+        f"/StrokeColor [{stroke_values}] >>"
+    )
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data.encode("ascii")
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_values_payload(
     components: tuple[float, ...],
     *,
@@ -1153,6 +1236,124 @@ def build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_3run_payload
         ">> >> >> "
         "<< /StyleSheet << /StyleSheetData << "
         f"/StrokeColor [{third_r:.6f} {third_g:.6f} {third_b:.6f}] "
+        ">> >> >> "
+        "] >> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
+def build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_opacity_2run_payload(
+    *,
+    top_level_rgb: tuple[int, int, int],
+    first_stylesheet_rgb: tuple[int, int, int],
+    second_stylesheet_rgb: tuple[int, int, int],
+    first_fill_opacity: float,
+    second_fill_opacity: float,
+    first_run_length: float,
+    second_run_length: float,
+    malformed_first_fill_opacity: bool = False,
+    malformed_second_fill_opacity: bool = False,
+) -> bytes:
+    top_r = float(max(0, min(255, top_level_rgb[0]))) / 255.0
+    top_g = float(max(0, min(255, top_level_rgb[1]))) / 255.0
+    top_b = float(max(0, min(255, top_level_rgb[2]))) / 255.0
+    first_r = float(max(0, min(255, first_stylesheet_rgb[0]))) / 255.0
+    first_g = float(max(0, min(255, first_stylesheet_rgb[1]))) / 255.0
+    first_b = float(max(0, min(255, first_stylesheet_rgb[2]))) / 255.0
+    second_r = float(max(0, min(255, second_stylesheet_rgb[0]))) / 255.0
+    second_g = float(max(0, min(255, second_stylesheet_rgb[1]))) / 255.0
+    second_b = float(max(0, min(255, second_stylesheet_rgb[2]))) / 255.0
+    run0 = float(first_run_length)
+    run1 = float(second_run_length)
+    if malformed_first_fill_opacity:
+        first_fill_opacity_token = "oops"
+    else:
+        first_fill_opacity_token = f"{float(first_fill_opacity):.6f}"
+    if malformed_second_fill_opacity:
+        second_fill_opacity_token = "oops"
+    else:
+        second_fill_opacity_token = f"{float(second_fill_opacity):.6f}"
+
+    engine_data = (
+        "/EngineData << "
+        f"/FillColor [{top_r:.6f} {top_g:.6f} {top_b:.6f}] "
+        "/StyleRun << "
+        f"/RunLengthArray [{run0:.6f} {run1:.6f}] "
+        "/RunArray [ "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/FillColor [{first_r:.6f} {first_g:.6f} {first_b:.6f}] "
+        f"/FillOpacity {first_fill_opacity_token} "
+        ">> >> >> "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/FillColor [{second_r:.6f} {second_g:.6f} {second_b:.6f}] "
+        f"/FillOpacity {second_fill_opacity_token} "
+        ">> >> >> "
+        "] >> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
+def build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_opacity_2run_payload(
+    *,
+    top_level_stroke_rgb: tuple[int, int, int],
+    first_stylesheet_stroke_rgb: tuple[int, int, int],
+    second_stylesheet_stroke_rgb: tuple[int, int, int],
+    first_stroke_opacity: float,
+    second_stroke_opacity: float,
+    first_run_length: float,
+    second_run_length: float,
+    malformed_first_stroke_opacity: bool = False,
+    malformed_second_stroke_opacity: bool = False,
+) -> bytes:
+    top_r = float(max(0, min(255, top_level_stroke_rgb[0]))) / 255.0
+    top_g = float(max(0, min(255, top_level_stroke_rgb[1]))) / 255.0
+    top_b = float(max(0, min(255, top_level_stroke_rgb[2]))) / 255.0
+    first_r = float(max(0, min(255, first_stylesheet_stroke_rgb[0]))) / 255.0
+    first_g = float(max(0, min(255, first_stylesheet_stroke_rgb[1]))) / 255.0
+    first_b = float(max(0, min(255, first_stylesheet_stroke_rgb[2]))) / 255.0
+    second_r = float(max(0, min(255, second_stylesheet_stroke_rgb[0]))) / 255.0
+    second_g = float(max(0, min(255, second_stylesheet_stroke_rgb[1]))) / 255.0
+    second_b = float(max(0, min(255, second_stylesheet_stroke_rgb[2]))) / 255.0
+    run0 = float(first_run_length)
+    run1 = float(second_run_length)
+    if malformed_first_stroke_opacity:
+        first_stroke_opacity_token = "oops"
+    else:
+        first_stroke_opacity_token = f"{float(first_stroke_opacity):.6f}"
+    if malformed_second_stroke_opacity:
+        second_stroke_opacity_token = "oops"
+    else:
+        second_stroke_opacity_token = f"{float(second_stroke_opacity):.6f}"
+
+    engine_data = (
+        "/EngineData << "
+        "/FillFlag false "
+        "/StrokeFlag true "
+        f"/StrokeColor [{top_r:.6f} {top_g:.6f} {top_b:.6f}] "
+        "/StyleRun << "
+        f"/RunLengthArray [{run0:.6f} {run1:.6f}] "
+        "/RunArray [ "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/StrokeColor [{first_r:.6f} {first_g:.6f} {first_b:.6f}] "
+        f"/StrokeOpacity {first_stroke_opacity_token} "
+        ">> >> >> "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/StrokeColor [{second_r:.6f} {second_g:.6f} {second_b:.6f}] "
+        f"/StrokeOpacity {second_stroke_opacity_token} "
         ">> >> >> "
         "] >> >>"
     ).encode("ascii")
@@ -11236,6 +11437,153 @@ def generate(out_dir: pathlib.Path):
     )
     write_file(
         out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_025.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillopacity_payload(
+                255,
+                48,
+                64,
+                fill_opacity=0.25,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_050.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillopacity_payload(
+                255,
+                48,
+                64,
+                fill_opacity=0.50,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_050.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillopacity_payload(
+                255,
+                48,
+                64,
+                fill_opacity=0.50,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_100.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillopacity_payload(
+                255,
+                48,
+                64,
+                fill_opacity=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_malformed.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillopacity_payload(
+                255,
+                48,
+                64,
+                fill_opacity=0.50,
+                malformed_fill_opacity=True,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_2run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_opacity_2run_payload(
+                top_level_rgb=(255, 48, 64),
+                first_stylesheet_rgb=(255, 48, 64),
+                second_stylesheet_rgb=(255, 48, 64),
+                first_fill_opacity=0.25,
+                second_fill_opacity=0.75,
+                first_run_length=1.0,
+                second_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_2run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_opacity_2run_payload(
+                top_level_rgb=(255, 48, 64),
+                first_stylesheet_rgb=(255, 48, 64),
+                second_stylesheet_rgb=(255, 48, 64),
+                first_fill_opacity=0.25,
+                second_fill_opacity=0.75,
+                first_run_length=1.0,
+                second_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_malformed.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_opacity_2run_payload(
+                top_level_rgb=(255, 48, 64),
+                first_stylesheet_rgb=(255, 48, 64),
+                second_stylesheet_rgb=(255, 48, 64),
+                first_fill_opacity=0.50,
+                second_fill_opacity=0.50,
+                first_run_length=1.0,
+                second_run_length=1.0,
+                malformed_second_fill_opacity=True,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
         / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true.psd",
         build_cmyk_multilayer_nonpixel_fixture(
             color_mode=4,
@@ -11268,6 +11616,128 @@ def generate(out_dir: pathlib.Path):
                 fillflag=False,
                 strokeflag=True,
                 stroke_components=(0.5,),
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillstroke_opacity_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+                strokeflag=True,
+                stroke_components=(0.5,),
+                stroke_opacity=0.50,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillstroke_opacity_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+                strokeflag=True,
+                stroke_components=(0.5,),
+                stroke_opacity=0.50,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_malformed.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillstroke_opacity_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+                strokeflag=True,
+                stroke_components=(0.5,),
+                stroke_opacity=0.50,
+                malformed_stroke_opacity=True,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_opacity_2run_payload(
+                top_level_stroke_rgb=(128, 128, 128),
+                first_stylesheet_stroke_rgb=(128, 128, 128),
+                second_stylesheet_stroke_rgb=(128, 128, 128),
+                first_stroke_opacity=0.25,
+                second_stroke_opacity=0.75,
+                first_run_length=1.0,
+                second_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_opacity_2run_payload(
+                top_level_stroke_rgb=(128, 128, 128),
+                first_stylesheet_stroke_rgb=(128, 128, 128),
+                second_stylesheet_stroke_rgb=(128, 128, 128),
+                first_stroke_opacity=0.25,
+                second_stroke_opacity=0.75,
+                first_run_length=1.0,
+                second_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_malformed.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_opacity_2run_payload(
+                top_level_stroke_rgb=(128, 128, 128),
+                first_stylesheet_stroke_rgb=(128, 128, 128),
+                second_stylesheet_stroke_rgb=(128, 128, 128),
+                first_stroke_opacity=0.50,
+                second_stroke_opacity=0.50,
+                first_run_length=1.0,
+                second_run_length=1.0,
+                malformed_second_stroke_opacity=True,
             ),
             first_layer_has_pixels=False,
         ),

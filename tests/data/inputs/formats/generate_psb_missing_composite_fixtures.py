@@ -846,12 +846,64 @@ def main() -> None:
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_true.psd",
     )
     convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_025.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_025.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_050.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_050.psd",
+    )
+    convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_100.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_100.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_malformed.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_malformed.psd",
+    )
+    convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_2run.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_2run.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_2run.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_2run.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_malformed.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_fillopacity_malformed.psd",
+    )
+    convert_fixture(
         "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true.psd",
         "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true.psd",
     )
     convert_fixture(
         "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true.psd",
         "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true.psd",
+    )
+    convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_malformed.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_malformed.psd",
+    )
+    convert_fixture(
+        "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+        "snake16_psb_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_malformed.psd",
+        "snake16_psb_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_malformed.psd",
     )
     convert_fixture(
         "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_false.psd",
@@ -1293,6 +1345,8 @@ def main() -> None:
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_050",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050",
                 ]:
                     convert_fixture(
                         f"{src_base}_{suffix}_valid_icc_profile.psd",
@@ -1321,6 +1375,8 @@ def main() -> None:
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_050",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050",
                 ]:
                     convert_fixture(
                         f"{src_base}_{suffix}_bad_icc_profile.psd",
@@ -1349,6 +1405,8 @@ def main() -> None:
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2run",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue",
                     "nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_negative_continue",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_fillopacity_050",
+                    "nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_strokeopacity_050",
                 ]:
                     convert_fixture(
                         f"{src_base}_{suffix}_malformed_resource.psd",
