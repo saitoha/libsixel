@@ -1320,32 +1320,20 @@ error:
 }
 
 /*
- * Shared handoff frames are reused by CoreGraphics loop replay. Take a single
- * planner snapshot when the frame enters the queue and use that snapshot in
- * the worker to decide whether destructive preplan stages require clone
- * fallback.
+ * Shared handoff frames can be touched by the loader while worker threads are
+ * planning/encoding other frames. Keep this conservative path thread-safe by
+ * forcing worker-side clone fallback for shared frames.
  */
 static int
 sixel_encoder_handoff_needs_preplan_clone(
     sixel_encoder_t *encoder,
     sixel_frame_t *frame)
 {
-    sixel_encoding_planner_t planner_snapshot;
-
     if (encoder == NULL || frame == NULL) {
         return 1;
     }
 
-    planner_snapshot = encoder->planner;
-    sixel_encoding_planner_reset_for_frame(&planner_snapshot);
-    sixel_encoding_planner_plan(&planner_snapshot, encoder, frame);
-
-    if (planner_snapshot.clip_active != 0 ||
-        planner_snapshot.scale_active != 0 ||
-        planner_snapshot.colorspace_active != 0) {
-        return 1;
-    }
-    return 0;
+    return 1;
 }
 
 static int
@@ -8526,12 +8514,12 @@ sixel_encoder_load_callback_resolve_handoff(
     }
 
     if (allow_loader_pipeline != 0) {
+        pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_PIPELINE;
         result = sixel_thread_create(&pipeline->thread,
                                      sixel_encoder_frame_pipeline_worker,
                                      pipeline);
         if (result == 0) {
             pipeline->started = 1;
-            pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_PIPELINE;
             status = SIXEL_OK;
         } else {
             pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
