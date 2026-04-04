@@ -29,10 +29,10 @@
  * palette center remains an actual source color when final merge is disabled.
  * Four solver frontends are provided and selected through -Q
  * medoids:algo=...:
- *   - PAM: full swap search.
- *   - CLARA: repeated PAM runs on subsamples, scored globally.
- *   - CLARANS: randomized neighborhood search.
- *   - BanditPAM: swap pruning with progressive mini-batch scoring.
+ *   - pam: full swap search.
+ *   - sample (CLARA): repeated PAM runs on subsamples, scored globally.
+ *   - random (CLARANS): randomized neighborhood search.
+ *   - bandit (BanditPAM): swap pruning with progressive mini-batch scoring.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -355,11 +355,11 @@ sixel_kmedoids_algo_to_string(sixel_kmedoids_algo_t algo)
     case SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO:
         return "auto";
     case SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA:
-        return "clara";
+        return "sample";
     case SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS:
-        return "clarans";
+        return "random";
     case SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM:
-        return "banditpam";
+        return "bandit";
     case SIXEL_PALETTE_KMEDOIDS_ALGO_PAM:
     default:
         return "pam";
@@ -411,11 +411,11 @@ sixel_get_kmedoids_algo(void)
             cached = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
         } else if (sixel_compat_strcasecmp(env_value, "pam") == 0) {
             cached = SIXEL_PALETTE_KMEDOIDS_ALGO_PAM;
-        } else if (sixel_compat_strcasecmp(env_value, "clara") == 0) {
+        } else if (sixel_compat_strcasecmp(env_value, "sample") == 0) {
             cached = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA;
-        } else if (sixel_compat_strcasecmp(env_value, "clarans") == 0) {
+        } else if (sixel_compat_strcasecmp(env_value, "random") == 0) {
             cached = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS;
-        } else if (sixel_compat_strcasecmp(env_value, "banditpam") == 0) {
+        } else if (sixel_compat_strcasecmp(env_value, "bandit") == 0) {
             cached = SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM;
         }
     }

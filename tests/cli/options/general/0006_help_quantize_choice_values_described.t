@@ -21,7 +21,7 @@ test "${status}" -eq 0 || {
 }
 set +x
 
-test "${msg#*auto\|pam\|clara\|clarans\|banditpam*}" = "${msg}" || {
+test "${msg#*auto\|pam\|sample\|random\|bandit*}" = "${msg}" || {
     echo "not ok" 1 - "medoids algo still uses pipe list format"
     exit 0
 }

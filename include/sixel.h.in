@@ -419,8 +419,8 @@ typedef int SIXELSTATUS;
                                                     medoids:key=value[:key=value...]
                                                   supported suboptions:
                                                     algo:
-                                                      auto, pam, clara, clarans,
-                                                      banditpam
+                                                      auto, pam, sample,
+                                                      random, bandit
                                                     seed:
                                                       integer in 0-4294967295
                                                     iter:

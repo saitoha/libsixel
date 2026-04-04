@@ -263,9 +263,9 @@ _quantizemodel() {
         if [[ ${key} == a || ${key} == algo ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=pam" \
-                     "${prefix}${key}=clara" \
-                     "${prefix}${key}=clarans" \
-                     "${prefix}${key}=banditpam"
+                     "${prefix}${key}=sample" \
+                     "${prefix}${key}=random" \
+                     "${prefix}${key}=bandit"
           return 0
         elif [[ ${key} == s || ${key} == seed ]]; then
           compadd -- "${prefix}${key}=1" \

@@ -764,9 +764,9 @@ static sixel_suboption_choice_t const g_option_choices_kmeans_feedback[] = {
 static sixel_suboption_choice_t const g_option_choices_kmedoids_algo[] = {
     { "auto", SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO },
     { "pam", SIXEL_PALETTE_KMEDOIDS_ALGO_PAM },
-    { "clara", SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA },
-    { "clarans", SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS },
-    { "banditpam", SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM }
+    { "sample", SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA },
+    { "random", SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS },
+    { "bandit", SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM }
 };
 
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {

@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qmedoids:algo=clarans:seed=42 \
+    -Qmedoids:algo=random:seed=42 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null || {
     echo "not ok" 1 - "-Q medoids long suboptions were rejected"

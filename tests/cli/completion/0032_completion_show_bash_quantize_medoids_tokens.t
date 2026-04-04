@@ -27,7 +27,7 @@ test "${msg#*algo=*}" != "${msg}" || {
     exit 0
 }
 
-test "${msg#*banditpam*}" != "${msg}" || {
+test "${msg#*bandit*}" != "${msg}" || {
     echo "not ok" 1 - "missing medoids algo values in bash completion"
     exit 0
 }

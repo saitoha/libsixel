@@ -301,12 +301,15 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                                  BanditPAM)\n"
         "                                     pam       -> exhaustive\n"
         "                                                  swap search\n"
-        "                                     clara     -> PAM on\n"
+        "                                     sample    -> CLARA:\n"
+        "                                                  PAM on\n"
         "                                                  subsamples\n"
-        "                                     clarans   -> randomized\n"
+        "                                     random    -> CLARANS:\n"
+        "                                                  randomized\n"
         "                                                  neighbor\n"
         "                                                  search\n"
-        "                                     banditpam -> bandit\n"
+        "                                     bandit    -> BanditPAM:\n"
+        "                                                  bandit\n"
         "                                                  swap\n"
         "                                                  pruning\n"
         "                                 :seed=VALUE (:s=VALUE)\n"
@@ -1332,7 +1335,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_KMEDOIDS_ALGO",
         "default k-medoids solver when -Q medoids omits :algo.\n"
-        "Accepts auto, pam, clara, clarans, or banditpam."
+        "Accepts auto, pam, sample, random, or bandit."
     },
     {
         "SIXEL_PALETTE_KMEDOIDS_SEED",

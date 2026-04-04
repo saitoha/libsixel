@@ -22,10 +22,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qmedoids:algo=banditpam \
+    -Qmedoids:algo=bandit \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only algo=banditpam was rejected"
+    echo "not ok" 1 - "cli-only algo=bandit was rejected"
     exit 0
 }
 

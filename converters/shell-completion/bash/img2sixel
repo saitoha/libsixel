@@ -181,7 +181,7 @@ _img2sixel()
                 quant_prefix="${cur%${quant_value}}"
                 if [[ ${quant_key} == a || ${quant_key} == algo ]]; then
                     for quant_candidate in \
-                        auto pam clara clarans banditpam; do
+                        auto pam sample random bandit; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done

@@ -494,8 +494,10 @@ Options:
                              feedback (or f)  -> off or on
                            medoids accepts suboptions using
                            medoids:key=value[:key=value...].
-                             algo (or a)      -> auto, pam, clara,
-                                                  clarans, or banditpam
+                             algo (or a)      -> auto, pam,
+                                                  sample (CLARA),
+                                                  random (CLARANS), or
+                                                  bandit (BanditPAM)
                              seed (or s)      -> integer in 0-4294967295
                              iter             -> integer in 1-64
                              sample           -> 0 or integer in
@@ -973,8 +975,8 @@ SIXEL_LODER_WIC_ICO_MINSIZE default minimum edge for
 SIXEL_PALETTE_KMEDOIDS_ALGO
                            default k-medoids solver when
                            -Q medoids omits :algo.
-                           Accepts auto, pam, clara, clarans,
-                           or banditpam.
+                           Accepts auto, pam, sample, random,
+                           or bandit.
 SIXEL_PALETTE_KMEDOIDS_SEED
                            default random seed for k-medoids
                            randomized solvers (0-4294967295).
