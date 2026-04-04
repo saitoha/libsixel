@@ -21,22 +21,45 @@ test "${status}" -eq 0 || {
 }
 set +x
 
-test "${msg#*auto\|pam\|sample\|random\|bandit*}" = "${msg}" || {
+quant="${msg#*-Q MODEL, --quantize-model=MODEL*}"
+test "${quant}" != "${msg}" || {
+    echo "not ok" 1 - "missing quantize section in -H output"
+    exit 0
+}
+
+quant="${quant%%-F MODE, --final-merge=MODE*}"
+
+test "${quant#*auto\|pam\|sample\|random\|bandit*}" = "${quant}" || {
     echo "not ok" 1 - "medoids algo still uses pipe list format"
     exit 0
 }
 
-test "${msg#*auto\|none\|pca*}" = "${msg}" || {
+test "${quant#*auto\|none\|pca*}" = "${quant}" || {
     echo "not ok" 1 - "kmeans inittype still uses pipe list format"
     exit 0
 }
 
-test "${msg#*:algo=NAME \(:a=NAME\)*auto      -> adaptive*}" != "${msg}" || {
+test "${quant#*:algo=NAME \(:a=NAME\)*auto      -> adaptive*}" != "${quant}" || {
     echo "not ok" 1 - "medoids algo description lines are missing"
     exit 0
 }
 
-test "${msg#*:inittype=TYPE \(:i=TYPE\)*auto -> choose seed mode*}" != "${msg}" || {
+test "${quant#*sample    -> CLARA:*}" != "${quant}" || {
+    echo "not ok" 1 - "sample (CLARA) description lines are missing"
+    exit 0
+}
+
+test "${quant#*random    -> CLARANS:*}" != "${quant}" || {
+    echo "not ok" 1 - "random (CLARANS) description lines are missing"
+    exit 0
+}
+
+test "${quant#*bandit    -> BanditPAM:*}" != "${quant}" || {
+    echo "not ok" 1 - "bandit (BanditPAM) description lines are missing"
+    exit 0
+}
+
+test "${quant#*:inittype=TYPE \(:i=TYPE\)*auto -> choose seed mode*}" != "${quant}" || {
     echo "not ok" 1 - "kmeans inittype description lines are missing"
     exit 0
 }
