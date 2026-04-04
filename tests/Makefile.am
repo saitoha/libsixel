@@ -163,6 +163,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_KMEANS_INIT \
     -DBUILD_TEST_0002_KMEDOIDS_CONSTRAINTS \
     -DBUILD_TEST_0001_PROBE_PARSE \
+    -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
     -DBUILD_TEST_0002_FILTER_SAMPLE \
     -DBUILD_TEST_0002_INCREMENTAL_LOAD \
     -DBUILD_TEST_0003_CORRUPT_DATA \
@@ -262,6 +263,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \
     diagnostics/probe/0001_probe_parse.c \
+    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     extension/gdk-pixbuf-loader/0002_incremental_load.c \
     extension/gdk-pixbuf-loader/0003_corrupt_data.c \

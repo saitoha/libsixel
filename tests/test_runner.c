@@ -34,6 +34,7 @@ int test_filter_0009_filter_dither(int argc, char **argv);
 int test_filter_0010_filter_encode(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
+int test_icc_0001_icc_builtin_rgb_gray_v4_paths(int argc, char **argv);
 
 int test_palette_0001_kmeans_init(int argc, char **argv);
 int test_palette_0002_kmedoids_constraints(int argc, char **argv);
@@ -144,6 +145,8 @@ static test_entry_t const test_entries[] = {
     { "filter/0009_filter_dither", test_filter_0009_filter_dither },
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
+    { "icc/0001_icc_builtin_rgb_gray_v4_paths",
+      test_icc_0001_icc_builtin_rgb_gray_v4_paths },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },
     { "palette/0002_kmedoids_constraints",
       test_palette_0002_kmedoids_constraints },

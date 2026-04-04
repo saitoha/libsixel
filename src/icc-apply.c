@@ -81,6 +81,7 @@ sixel_icc_eval_curve(sixel_icc_curve_t const *curve, double value)
         }
         return sixel_icc_clamp_unit(pow(value, curve->gamma));
     case SIXEL_ICC_CURVE_TABLE:
+    case SIXEL_ICC_CURVE_SEGM_TABLE:
         if (curve->table == NULL || curve->table_length == 0u) {
             return value;
         }
@@ -275,19 +276,151 @@ sixel_icc_lab_to_xyz_d50(double const lab[3], double xyz[3])
 }
 
 static int
+sixel_icc_decode_pcs_unit_to_xyz_d50(double xyz_d50[3],
+                                     double const pcs_unit[3],
+                                     sixel_icc_profile_pcs_t pcs)
+{
+    double lab[3];
+
+    if (xyz_d50 == NULL || pcs_unit == NULL) {
+        return 0;
+    }
+
+    if (pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
+        xyz_d50[0] = pcs_unit[0];
+        xyz_d50[1] = pcs_unit[1];
+        xyz_d50[2] = pcs_unit[2];
+        return 1;
+    }
+    if (pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
+        sixel_icc_decode_lab_unit(pcs_unit, lab);
+        sixel_icc_lab_to_xyz_d50(lab, xyz_d50);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_icc_apply_a2b0_lut_to_xyz_d50(double xyz_d50[3],
+                                    double const *inputs,
+                                    size_t input_channel_count,
+                                    sixel_icc_profile_t const *profile)
+{
+    double lut_inputs[4];
+    double pcs_unit[3];
+    size_t channel;
+    uint16_t in_entries;
+    uint16_t out_entries;
+    sixel_icc_lut_t const *lut;
+
+    channel = 0u;
+    in_entries = 0u;
+    out_entries = 0u;
+    lut = NULL;
+
+    if (xyz_d50 == NULL || inputs == NULL || profile == NULL) {
+        return 0;
+    }
+    if (input_channel_count == 0u || input_channel_count > 4u) {
+        return 0;
+    }
+
+    lut = &profile->a2b0_lut;
+    if (lut->kind == SIXEL_ICC_LUT_INVALID ||
+        lut->input_tables == NULL ||
+        lut->clut_values == NULL ||
+        lut->output_tables == NULL ||
+        lut->input_channels != input_channel_count ||
+        lut->output_channels != 3u) {
+        return 0;
+    }
+
+    in_entries = lut->input_entries;
+    out_entries = lut->output_entries;
+    if (in_entries == 0u || out_entries == 0u) {
+        return 0;
+    }
+
+    for (channel = 0u; channel < input_channel_count; ++channel) {
+        uint16_t const *table;
+
+        table = lut->input_tables + channel * (size_t)in_entries;
+        lut_inputs[channel] = sixel_icc_eval_lut_table(table,
+                                                       (size_t)in_entries,
+                                                       inputs[channel]);
+    }
+
+    if (!sixel_icc_eval_clut(lut, lut_inputs, pcs_unit)) {
+        return 0;
+    }
+
+    for (channel = 0u; channel < 3u; ++channel) {
+        uint16_t const *table;
+
+        table = lut->output_tables + channel * (size_t)out_entries;
+        pcs_unit[channel] = sixel_icc_eval_lut_table(table,
+                                                     (size_t)out_entries,
+                                                     pcs_unit[channel]);
+    }
+
+    return sixel_icc_decode_pcs_unit_to_xyz_d50(xyz_d50,
+                                                pcs_unit,
+                                                profile->pcs);
+}
+
+static int
+sixel_icc_apply_rgb_gray_triplet_lut(double rgb[3],
+                                     sixel_icc_profile_t const *profile)
+{
+    double inputs[3];
+    double xyz_d50[3];
+    double xyz_d65[3];
+    double srgb_linear[3];
+    size_t input_channel_count;
+
+    input_channel_count = 0u;
+
+    if (rgb == NULL || profile == NULL) {
+        return 0;
+    }
+
+    if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {
+        inputs[0] = rgb[0];
+        inputs[1] = rgb[1];
+        inputs[2] = rgb[2];
+        input_channel_count = 3u;
+    } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
+        inputs[0] = rgb[0];
+        input_channel_count = 1u;
+    } else {
+        return 0;
+    }
+
+    if (!sixel_icc_apply_a2b0_lut_to_xyz_d50(xyz_d50,
+                                             inputs,
+                                             input_channel_count,
+                                             profile)) {
+        return 0;
+    }
+
+    sixel_icc_apply_matrix(sixel_icc_xyz_d50_to_d65, xyz_d50, xyz_d65);
+    sixel_icc_apply_matrix(sixel_icc_xyz_to_srgb_d65, xyz_d65, srgb_linear);
+
+    rgb[0] = sixel_icc_encode_srgb_unit(srgb_linear[0]);
+    rgb[1] = sixel_icc_encode_srgb_unit(srgb_linear[1]);
+    rgb[2] = sixel_icc_encode_srgb_unit(srgb_linear[2]);
+    return 1;
+}
+
+static int
 sixel_icc_apply_cmyk_triplet_internal(double rgb[3],
                                       double const cmyk[4],
                                       sixel_icc_profile_t const *profile)
 {
-    double lut_inputs[4];
-    double pcs_unit[3];
-    double lab[3];
     double xyz_d50[3];
     double xyz_d65[3];
     double srgb_linear[3];
-    size_t channel;
-    uint16_t in_entries;
-    uint16_t out_entries;
 
     if (rgb == NULL || cmyk == NULL || profile == NULL) {
         return 0;
@@ -295,50 +428,10 @@ sixel_icc_apply_cmyk_triplet_internal(double rgb[3],
     if (profile->kind != SIXEL_ICC_PROFILE_KIND_CMYK) {
         return 0;
     }
-    if (profile->a2b0_lut.kind == SIXEL_ICC_LUT_INVALID ||
-        profile->a2b0_lut.input_tables == NULL ||
-        profile->a2b0_lut.output_tables == NULL ||
-        profile->a2b0_lut.input_channels != 4u ||
-        profile->a2b0_lut.output_channels != 3u) {
-        return 0;
-    }
-
-    in_entries = profile->a2b0_lut.input_entries;
-    out_entries = profile->a2b0_lut.output_entries;
-    if (in_entries == 0u || out_entries == 0u) {
-        return 0;
-    }
-
-    for (channel = 0u; channel < 4u; ++channel) {
-        uint16_t const *table;
-
-        table = profile->a2b0_lut.input_tables + (size_t)channel * (size_t)in_entries;
-        lut_inputs[channel] = sixel_icc_eval_lut_table(table,
-                                                       (size_t)in_entries,
-                                                       cmyk[channel]);
-    }
-
-    if (!sixel_icc_eval_clut(&profile->a2b0_lut, lut_inputs, pcs_unit)) {
-        return 0;
-    }
-
-    for (channel = 0u; channel < 3u; ++channel) {
-        uint16_t const *table;
-
-        table = profile->a2b0_lut.output_tables + (size_t)channel * (size_t)out_entries;
-        pcs_unit[channel] = sixel_icc_eval_lut_table(table,
-                                                     (size_t)out_entries,
-                                                     pcs_unit[channel]);
-    }
-
-    if (profile->pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
-        xyz_d50[0] = pcs_unit[0];
-        xyz_d50[1] = pcs_unit[1];
-        xyz_d50[2] = pcs_unit[2];
-    } else if (profile->pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
-        sixel_icc_decode_lab_unit(pcs_unit, lab);
-        sixel_icc_lab_to_xyz_d50(lab, xyz_d50);
-    } else {
+    if (!sixel_icc_apply_a2b0_lut_to_xyz_d50(xyz_d50,
+                                             cmyk,
+                                             4u,
+                                             profile)) {
         return 0;
     }
 
@@ -375,6 +468,14 @@ sixel_icc_apply_rgb_triplet_internal(double rgb[3],
     }
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_INVALID) {
         return 0;
+    }
+
+    if (profile->a2b0_lut.kind != SIXEL_ICC_LUT_INVALID &&
+        (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB ||
+         profile->kind == SIXEL_ICC_PROFILE_KIND_GRAY)) {
+        if (sixel_icc_apply_rgb_gray_triplet_lut(rgb, profile)) {
+            return 1;
+        }
     }
 
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {

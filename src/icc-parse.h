@@ -6,6 +6,7 @@
 #define LIBSIXEL_ICC_PARSE_H
 
 #include <stddef.h>
+#include <sixel.h>
 
 #if HAVE_STDINT_H
 #include <stdint.h>
@@ -15,7 +16,8 @@ typedef enum sixel_icc_curve_kind {
     SIXEL_ICC_CURVE_INVALID = 0,
     SIXEL_ICC_CURVE_IDENTITY,
     SIXEL_ICC_CURVE_GAMMA,
-    SIXEL_ICC_CURVE_TABLE
+    SIXEL_ICC_CURVE_TABLE,
+    SIXEL_ICC_CURVE_SEGM_TABLE
 } sixel_icc_curve_kind_t;
 
 typedef struct sixel_icc_curve {
@@ -28,7 +30,9 @@ typedef struct sixel_icc_curve {
 typedef enum sixel_icc_lut_kind {
     SIXEL_ICC_LUT_INVALID = 0,
     SIXEL_ICC_LUT_MFT1,
-    SIXEL_ICC_LUT_MFT2
+    SIXEL_ICC_LUT_MFT2,
+    SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0,
+    SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0
 } sixel_icc_lut_kind_t;
 
 typedef struct sixel_icc_lut {
@@ -65,17 +69,17 @@ typedef struct sixel_icc_profile {
     sixel_icc_lut_t a2b0_lut;
 } sixel_icc_profile_t;
 
-int
+SIXEL_INTERNAL_API int
 sixel_icc_parse_profile(void const *data,
                         size_t length,
                         sixel_icc_profile_t *out_profile);
 
-int
+SIXEL_INTERNAL_API int
 sixel_icc_parse_png_iccp(unsigned char const *png_data,
                          size_t png_size,
                          sixel_icc_profile_t *out_profile);
 
-void
+SIXEL_INTERNAL_API void
 sixel_icc_profile_destroy(sixel_icc_profile_t *profile);
 
 #endif
