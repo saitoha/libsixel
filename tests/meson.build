@@ -657,6 +657,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-amalgamation-static-symbols',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-amalgamation-static-symbols.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-kmedoids-suboption-env-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-kmedoids-suboption-env-sync.sh',
       meson.project_source_root()],
