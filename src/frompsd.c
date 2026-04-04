@@ -1342,6 +1342,8 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_non_pixel_payload;
     int has_fill_payload;
     int has_malformed_fill_payload;
+    int tysh_fill_flag_present;
+    int tysh_fill_flag_enabled;
     int has_vector_mask;
     int has_layer_effects;
     int has_knockout;
@@ -4849,6 +4851,434 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_scope(
 }
 
 static int
+sixel_builtin_psd_parse_tysh_fillflag_enginedata_value(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    int *out_enabled)
+{
+    size_t cursor;
+    double parsed;
+
+    cursor = 0u;
+    parsed = 0.0;
+    if (data == NULL || pcursor == NULL || out_enabled == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    while (cursor < data_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+        ++cursor;
+    }
+    if (cursor >= data_length) {
+        return 0;
+    }
+
+    if (cursor + 4u <= data_length &&
+        memcmp(data + cursor, "true", 4u) == 0 &&
+        (cursor + 4u == data_length ||
+         sixel_builtin_psd_ascii_is_token_delimiter(data[cursor + 4u]))) {
+        *pcursor = cursor + 4u;
+        *out_enabled = 1;
+        return 1;
+    }
+    if (cursor + 5u <= data_length &&
+        memcmp(data + cursor, "false", 5u) == 0 &&
+        (cursor + 5u == data_length ||
+         sixel_builtin_psd_ascii_is_token_delimiter(data[cursor + 5u]))) {
+        *pcursor = cursor + 5u;
+        *out_enabled = 0;
+        return 1;
+    }
+    if (!sixel_builtin_psd_parse_ascii_float(data,
+                                             data_length,
+                                             &cursor,
+                                             &parsed)) {
+        return 0;
+    }
+    if (parsed != parsed) {
+        return 0;
+    }
+    *pcursor = cursor;
+    *out_enabled = parsed != 0.0;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillflag_enginedata_at(
+    unsigned char const *data,
+    size_t key_length,
+    size_t token_offset,
+    int *out_enabled)
+{
+    static char const fillflag_token[] = "/FillFlag";
+    size_t cursor;
+
+    cursor = 0u;
+    if (data == NULL || out_enabled == NULL || token_offset >= key_length) {
+        return 0;
+    }
+    if (token_offset + sizeof(fillflag_token) - 1u > key_length ||
+        memcmp(data + token_offset,
+               fillflag_token,
+               sizeof(fillflag_token) - 1u) != 0) {
+        return 0;
+    }
+    cursor = token_offset + sizeof(fillflag_token) - 1u;
+    return sixel_builtin_psd_parse_tysh_fillflag_enginedata_value(
+        data,
+        key_length,
+        &cursor,
+        out_enabled);
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+    unsigned char const *data,
+    size_t begin,
+    size_t end,
+    int *out_enabled)
+{
+    static char const fillflag_token[] = "/FillFlag";
+    size_t i;
+    int found;
+    int enabled;
+
+    i = 0u;
+    found = 0;
+    enabled = 1;
+    if (data == NULL || out_enabled == NULL || begin > end) {
+        return 0;
+    }
+    for (i = begin; i < end; ++i) {
+        if (i + sizeof(fillflag_token) - 1u <= end &&
+            memcmp(data + i, fillflag_token, sizeof(fillflag_token) - 1u) == 0 &&
+            sixel_builtin_psd_parse_tysh_fillflag_enginedata_at(
+                data,
+                end,
+                i,
+                &enabled)) {
+            found = 1;
+            *out_enabled = enabled;
+        }
+    }
+    return found;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillflag_enginedata_stylerun(
+    unsigned char const *data,
+    size_t key_length,
+    int *out_enabled)
+{
+    static char const token[] = "/StyleRun";
+    size_t i;
+    size_t cursor;
+    size_t dict_end;
+    size_t array_end;
+    int enabled;
+
+    i = 0u;
+    cursor = 0u;
+    dict_end = 0u;
+    array_end = 0u;
+    enabled = 1;
+    if (data == NULL || out_enabled == NULL || key_length < sizeof(token)) {
+        return 0;
+    }
+    for (i = 0u; i + sizeof(token) - 1u <= key_length; ++i) {
+        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
+            continue;
+        }
+        cursor = i + sizeof(token) - 1u;
+        while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor + 1u < key_length &&
+            data[cursor] == (unsigned char)'<' &&
+            data[cursor + 1u] == (unsigned char)'<') {
+            if (!sixel_builtin_psd_find_ascii_dict_end(data,
+                                                       key_length,
+                                                       cursor,
+                                                       &dict_end)) {
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 2u,
+                    dict_end,
+                    &enabled)) {
+                *out_enabled = enabled;
+                return 1;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor,
+                    key_length,
+                    &enabled)) {
+                *out_enabled = enabled;
+                return 1;
+            }
+            continue;
+        }
+        if (cursor < key_length && data[cursor] == (unsigned char)'[') {
+            if (!sixel_builtin_psd_find_ascii_array_end(data,
+                                                        key_length,
+                                                        cursor,
+                                                        &array_end)) {
+                continue;
+            }
+            if (array_end > cursor &&
+                sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 1u,
+                    array_end,
+                    &enabled)) {
+                *out_enabled = enabled;
+                return 1;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 1u,
+                    key_length,
+                    &enabled)) {
+                *out_enabled = enabled;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillflag_enginedata_stylesheet(
+    unsigned char const *data,
+    size_t key_length,
+    int *out_enabled)
+{
+    static char const token[] = "/StyleSheetData";
+    size_t i;
+    size_t cursor;
+    size_t dict_end;
+    size_t array_end;
+    int found;
+    int enabled;
+
+    i = 0u;
+    cursor = 0u;
+    dict_end = 0u;
+    array_end = 0u;
+    found = 0;
+    enabled = 1;
+    if (data == NULL || out_enabled == NULL || key_length < sizeof(token)) {
+        return 0;
+    }
+    for (i = 0u; i + sizeof(token) - 1u <= key_length; ++i) {
+        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
+            continue;
+        }
+        cursor = i + sizeof(token) - 1u;
+        while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor + 1u < key_length &&
+            data[cursor] == (unsigned char)'<' &&
+            data[cursor + 1u] == (unsigned char)'<') {
+            if (!sixel_builtin_psd_find_ascii_dict_end(data,
+                                                       key_length,
+                                                       cursor,
+                                                       &dict_end)) {
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 2u,
+                    dict_end,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor,
+                    key_length,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+            }
+            continue;
+        }
+        if (cursor < key_length && data[cursor] == (unsigned char)'[') {
+            if (!sixel_builtin_psd_find_ascii_array_end(data,
+                                                        key_length,
+                                                        cursor,
+                                                        &array_end)) {
+                continue;
+            }
+            if (array_end > cursor &&
+                sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 1u,
+                    array_end,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor,
+                    key_length,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+            }
+        }
+    }
+    return found;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillflag_enginedata_default_stylesheet(
+    unsigned char const *data,
+    size_t key_length,
+    int *out_enabled)
+{
+    static char const token[] = "/DefaultStyleSheet";
+    size_t i;
+    size_t cursor;
+    size_t dict_end;
+    size_t array_end;
+    int found;
+    int enabled;
+
+    i = 0u;
+    cursor = 0u;
+    dict_end = 0u;
+    array_end = 0u;
+    found = 0;
+    enabled = 1;
+    if (data == NULL || out_enabled == NULL || key_length < sizeof(token)) {
+        return 0;
+    }
+    for (i = 0u; i + sizeof(token) - 1u <= key_length; ++i) {
+        if (memcmp(data + i, token, sizeof(token) - 1u) != 0) {
+            continue;
+        }
+        cursor = i + sizeof(token) - 1u;
+        while (cursor < key_length && sixel_builtin_psd_ascii_is_space(data[cursor])) {
+            ++cursor;
+        }
+        if (cursor + 1u < key_length &&
+            data[cursor] == (unsigned char)'<' &&
+            data[cursor + 1u] == (unsigned char)'<') {
+            if (!sixel_builtin_psd_find_ascii_dict_end(data,
+                                                       key_length,
+                                                       cursor,
+                                                       &dict_end)) {
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 2u,
+                    dict_end,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 2u,
+                    key_length,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+            }
+            continue;
+        }
+        if (cursor < key_length && data[cursor] == (unsigned char)'[') {
+            if (!sixel_builtin_psd_find_ascii_array_end(data,
+                                                        key_length,
+                                                        cursor,
+                                                        &array_end)) {
+                continue;
+            }
+            if (array_end > cursor &&
+                sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 1u,
+                    array_end,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+                continue;
+            }
+            if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+                    data,
+                    cursor + 1u,
+                    key_length,
+                    &enabled)) {
+                found = 1;
+                *out_enabled = enabled;
+            }
+        }
+    }
+    return found;
+}
+
+static int
+sixel_builtin_psd_parse_tysh_fillflag_enginedata(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    int enabled;
+
+    enabled = 1;
+    if (data == NULL || layer == NULL || key_length == 0u) {
+        return 0;
+    }
+    /* Keep EngineData precedence deterministic:
+     * StyleRun > StyleSheetData > DefaultStyleSheet > top-level FillFlag.
+     */
+    if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_stylerun(
+            data,
+            key_length,
+            &enabled)) {
+        layer->tysh_fill_flag_present = 1;
+        layer->tysh_fill_flag_enabled = enabled;
+        return 1;
+    }
+    if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_stylesheet(
+            data,
+            key_length,
+            &enabled)) {
+        layer->tysh_fill_flag_present = 1;
+        layer->tysh_fill_flag_enabled = enabled;
+        return 1;
+    }
+    if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_default_stylesheet(
+            data,
+            key_length,
+            &enabled)) {
+        layer->tysh_fill_flag_present = 1;
+        layer->tysh_fill_flag_enabled = enabled;
+        return 1;
+    }
+    if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_scope(
+            data,
+            0u,
+            key_length,
+            &enabled)) {
+        layer->tysh_fill_flag_present = 1;
+        layer->tysh_fill_flag_enabled = enabled;
+        return 1;
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_parse_tysh_stylerun_runlength_array_range(
     unsigned char const *data,
     size_t begin,
@@ -5668,12 +6098,17 @@ sixel_builtin_psd_parse_tysh_payload(
     }
 
     descriptor_start = 4u + 48u + 4u;
-    if (descriptor_start < key_length &&
-        sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
+    if (descriptor_start < key_length) {
+        (void)sixel_builtin_psd_parse_tysh_fillflag_enginedata(
             data + descriptor_start,
             key_length - descriptor_start,
-            layer)) {
-        return 1;
+            layer);
+        if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
+                data + descriptor_start,
+                key_length - descriptor_start,
+                layer)) {
+            return 1;
+        }
     }
     /* Lenient fallback for TySh wrappers that carry additional/unknown items:
      * scan for Clr/Objc signatures and parse only the color object.
@@ -6290,6 +6725,8 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_NONE;
     layer->has_fill_payload = 0;
     layer->has_malformed_fill_payload = 0;
+    layer->tysh_fill_flag_present = 0;
+    layer->tysh_fill_flag_enabled = 1;
     layer->fill_solid_rgb[0] = 0.0f;
     layer->fill_solid_rgb[1] = 0.0f;
     layer->fill_solid_rgb[2] = 0.0f;
@@ -8049,12 +8486,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         sixel_builtin_psd_layer_buffers_t src_layer;
         sixel_builtin_psd_layer_blend_mode_t blend_mode;
         int synthetic_fill;
+        int fillflag_skip;
 
         layer = &model.layers[(size_t)i];
         src_layer.rgb_linear = NULL;
         src_layer.alpha = NULL;
         src_layer.pixel_count = 0u;
         synthetic_fill = 0;
+        fillflag_skip = 0;
 
         if (layer->has_non_pixel_payload != 0) {
             sixel_trace_topic_message(
@@ -8062,7 +8501,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "builtin PSD: ignoring non-pixel payload in layer fallback");
             if (!sixel_builtin_psd_layer_has_decodable_pixel_channels(info,
                                                                        layer)) {
-                if (layer->fill_kind != SIXEL_BUILTIN_PSD_FILL_NONE) {
+                if (layer->tysh_fill_flag_present != 0 &&
+                    layer->tysh_fill_flag_enabled == 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: skipping non-pixel fill payload due to "
+                        "FillFlag=false");
+                    fillflag_skip = 1;
+                } else if (layer->fill_kind != SIXEL_BUILTIN_PSD_FILL_NONE) {
                     sixel_trace_topic_message(
                         "psd_decode",
                         "builtin PSD: rendering non-pixel fill payload "
@@ -8081,7 +8527,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             if (synthetic_fill == 0 &&
                 !sixel_builtin_psd_layer_has_decodable_pixel_channels(info,
                                                                        layer)) {
-                if (layer->has_fill_payload != 0 &&
+                if (fillflag_skip == 0 &&
+                    layer->has_fill_payload != 0 &&
                     layer->has_malformed_fill_payload != 0) {
                     sixel_trace_topic_message(
                         "psd_decode",

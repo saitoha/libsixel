@@ -361,6 +361,34 @@ def build_tysh_enginedata_fillcolor_payload(r: int, g: int, b: int) -> bytes:
     return bytes(payload)
 
 
+def build_tysh_enginedata_fillcolor_fillflag_payload(
+    r: int,
+    g: int,
+    b: int,
+    *,
+    fillflag: bool,
+) -> bytes:
+    r = float(max(0, min(255, r))) / 255.0
+    g = float(max(0, min(255, g))) / 255.0
+    b = float(max(0, min(255, b))) / 255.0
+    flag_token = "true" if fillflag else "false"
+
+    # Keep descriptor bytes intentionally non-decodable so TySh fallback
+    # reaches EngineData paths and exercises FillFlag semantics.
+    engine_data = (
+        f"/EngineData << /FillFlag {flag_token} "
+        f"/FillColor [{r:.6f} {g:.6f} {b:.6f}] >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_values_payload(
     components: tuple[float, ...],
     *,
@@ -10995,6 +11023,74 @@ def generate(out_dir: pathlib.Path):
             additional_block_payload=build_tysh_enginedata_default_stylesheet_color_values_named_payload(
                 (53.389, 0.0, 0.0),
                 color_space="CIELab",
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillflag_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillflag_payload(
+                255,
+                48,
+                64,
+                fillflag=False,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_true.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillflag_payload(
+                255,
+                48,
+                64,
+                fillflag=True,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_true.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_fillflag_payload(
+                255,
+                48,
+                64,
+                fillflag=True,
             ),
             first_layer_has_pixels=False,
         ),

@@ -207,6 +207,10 @@ Key points used by this roadmap:
     and `StyleRun/StyleSheetData` `FillColor /Values` paths.
   - TySh EngineData FillColor LSQA density now includes CMYK16/32 representative
     decode+trace coverage for both `mode=4` and `mode7(4ch->CMYK)` paths.
+  - TySh EngineData `FillFlag` semantics are now fixed for no-pixel fallback:
+    `FillFlag=false` skips synthetic fill rendering with deterministic info
+    trace (`skipping non-pixel fill payload due to FillFlag=false`), while
+    `FillFlag=true` preserves existing fill-render behavior.
   - TySh EngineData `StyleRun` payloads that provide
     `/RunLengthArray + /RunArray` now use RunLength-weighted color
     compositing for all decodable runs before falling back to generic
