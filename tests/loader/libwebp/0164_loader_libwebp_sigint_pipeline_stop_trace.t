@@ -61,13 +61,13 @@ test "${trace_output#*"__TIMEOUT__"}" = "${trace_output}" || {
     exit 0
 }
 
-test "${trace_output#*"callback handoff decided mode=pipeline"}" \
+test "${trace_output#*"event=callback_handoff_decide handoff=pipeline"}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "libwebp pipeline handoff trace missing"
     exit 0
 }
 
-test "${trace_output#*"pipeline stop reason="}" != "${trace_output}" || {
+test "${trace_output#*"event=pipeline_stop"}" != "${trace_output}" || {
     echo "not ok" 1 - "libwebp pipeline stop reason trace missing"
     exit 0
 }

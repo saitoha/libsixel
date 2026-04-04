@@ -164,10 +164,56 @@ static void sixel_encoder_bind_frame_transparent_mask(
     sixel_frame_t const *frame);
 
 #define SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY 4
-#define SIXEL_ENCODER_HANDOFF_UNDECIDED 0
-#define SIXEL_ENCODER_HANDOFF_SERIAL 1
-#define SIXEL_ENCODER_HANDOFF_PIPELINE 2
 #define SIXEL_TRACE_TOPIC_ENCODE_HANDOFF "encode_handoff"
+
+typedef enum sixel_encoder_handoff_mode {
+    SIXEL_ENCODER_HANDOFF_UNDECIDED = 0,
+    SIXEL_ENCODER_HANDOFF_SERIAL = 1,
+    SIXEL_ENCODER_HANDOFF_PIPELINE = 2
+} sixel_encoder_handoff_mode_t;
+
+typedef enum sixel_encoder_handoff_trace_reason {
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE = 0,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_CALLBACK_CANCEL,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_PLANNER_DISALLOW,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_THREAD_CREATE_FAILED,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_BEFORE_LOCK,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_PREWAIT,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_WAIT,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_CLONE_FAILED,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_ERROR,
+    SIXEL_ENCODER_HANDOFF_TRACE_REASON_FINISH_CANCEL
+} sixel_encoder_handoff_trace_reason_t;
+
+typedef enum sixel_encoder_handoff_trace_event {
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENTER = 0,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_PLANNER,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_HANDOFF_DECIDE,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_REQUEST,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_RESULT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_START,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_RESULT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_PIPELINE_STOP,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_BY_REF,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_CLONE_FAILED,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_WAIT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_ABORT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_OK,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_START,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_WAIT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_BREAK,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_POP,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_CLONE_FALLBACK_ENABLED,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_ENCODED,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_EXIT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_BEGIN,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_JOIN_WAIT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_JOIN_DONE,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_END,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_LOADER_RESULT,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_PIPELINE_FINISH_BEGIN,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_PIPELINE_FINISH_END
+} sixel_encoder_handoff_trace_event_t;
 
 typedef struct sixel_palette_async_job {
     sixel_thread_t thread;
@@ -222,7 +268,7 @@ typedef struct sixel_encoder_frame_pipeline {
     int initialized;
     int started;
     int loader_done;
-    int handoff_mode;
+    sixel_encoder_handoff_mode_t handoff_mode;
 } sixel_encoder_frame_pipeline_t;
 
 typedef struct sixel_encoder_load_context {
@@ -234,7 +280,7 @@ typedef struct sixel_encoder_load_context {
 } sixel_encoder_load_context_t;
 
 static char const *
-sixel_encoder_handoff_mode_name(int mode)
+sixel_encoder_handoff_mode_name(sixel_encoder_handoff_mode_t mode)
 {
     switch (mode) {
     case SIXEL_ENCODER_HANDOFF_UNDECIDED:
@@ -246,6 +292,126 @@ sixel_encoder_handoff_mode_name(int mode)
     default:
         return "unknown";
     }
+}
+
+static char const *
+sixel_encoder_handoff_trace_reason_name(
+    sixel_encoder_handoff_trace_reason_t reason)
+{
+    switch (reason) {
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE:
+        return "none";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_CALLBACK_CANCEL:
+        return "callback_cancel";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_PLANNER_DISALLOW:
+        return "planner_disallow";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_THREAD_CREATE_FAILED:
+        return "thread_create_failed";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_BEFORE_LOCK:
+        return "enqueue_cancel_before_lock";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_PREWAIT:
+        return "enqueue_cancel_prewait";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_WAIT:
+        return "enqueue_cancel_wait";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_CLONE_FAILED:
+        return "worker_clone_failed";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_ERROR:
+        return "worker_error";
+    case SIXEL_ENCODER_HANDOFF_TRACE_REASON_FINISH_CANCEL:
+        return "finish_cancel";
+    default:
+        return "unknown";
+    }
+}
+
+static char const *
+sixel_encoder_handoff_trace_event_name(
+    sixel_encoder_handoff_trace_event_t event)
+{
+    switch (event) {
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENTER:
+        return "callback_enter";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_PLANNER:
+        return "callback_planner";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_HANDOFF_DECIDE:
+        return "callback_handoff_decide";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_REQUEST:
+        return "callback_enqueue_request";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_RESULT:
+        return "callback_enqueue_result";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_START:
+        return "callback_serial_start";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_RESULT:
+        return "callback_serial_result";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_PIPELINE_STOP:
+        return "pipeline_stop";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_BY_REF:
+        return "enqueue_by_ref";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_CLONE_FAILED:
+        return "enqueue_clone_failed";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_WAIT:
+        return "enqueue_wait";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_ABORT:
+        return "enqueue_abort";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_OK:
+        return "enqueue_ok";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_START:
+        return "worker_start";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_WAIT:
+        return "worker_wait";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_BREAK:
+        return "worker_break";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_POP:
+        return "worker_pop";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_CLONE_FALLBACK_ENABLED:
+        return "worker_clone_fallback_enabled";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_ENCODED:
+        return "worker_encoded";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_EXIT:
+        return "worker_exit";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_BEGIN:
+        return "finish_begin";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_JOIN_WAIT:
+        return "finish_join_wait";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_JOIN_DONE:
+        return "finish_join_done";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_END:
+        return "finish_end";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_LOADER_RESULT:
+        return "encode_loader_result";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_PIPELINE_FINISH_BEGIN:
+        return "encode_pipeline_finish_begin";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_PIPELINE_FINISH_END:
+        return "encode_pipeline_finish_end";
+    default:
+        return "unknown";
+    }
+}
+
+static void
+sixel_encoder_handoff_trace_emit(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoder_handoff_trace_event_t event,
+    int frame_no,
+    int loop_no,
+    SIXELSTATUS status,
+    sixel_encoder_handoff_trace_reason_t reason)
+{
+    char const *handoff_name;
+
+    handoff_name = "none";
+    if (pipeline != NULL) {
+        handoff_name = sixel_encoder_handoff_mode_name(pipeline->handoff_mode);
+    }
+    sixel_trace_topic_message(
+        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
+        "event=%s handoff=%s frame_no=%d loop_no=%d status=%d reason=%s",
+        sixel_encoder_handoff_trace_event_name(event),
+        handoff_name,
+        frame_no,
+        loop_no,
+        status,
+        sixel_encoder_handoff_trace_reason_name(reason));
 }
 
 #define SIXEL_ENCODER_FILTER_PLAN_MAX 16
@@ -291,14 +457,33 @@ static SIXELSTATUS sixel_encoder_frame_pipeline_enqueue(
 static SIXELSTATUS sixel_encoder_frame_pipeline_finish(
     sixel_encoder_frame_pipeline_t *pipeline);
 static int sixel_encoder_frame_pipeline_worker(void *priv);
+static char const *sixel_encoder_handoff_trace_reason_name(
+    sixel_encoder_handoff_trace_reason_t reason);
+static char const *sixel_encoder_handoff_trace_event_name(
+    sixel_encoder_handoff_trace_event_t event);
+static void sixel_encoder_handoff_trace_emit(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoder_handoff_trace_event_t event,
+    int frame_no,
+    int loop_no,
+    SIXELSTATUS status,
+    sixel_encoder_handoff_trace_reason_t reason);
 static void sixel_encoder_frame_pipeline_request_stop_locked(
     sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status,
-    char const *reason);
+    sixel_encoder_handoff_trace_reason_t reason);
 static void sixel_encoder_frame_pipeline_request_stop(
     sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status,
-    char const *reason);
+    sixel_encoder_handoff_trace_reason_t reason);
+static SIXELSTATUS sixel_encoder_load_callback_resolve_handoff(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoding_planner_t *planner,
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame);
+static SIXELSTATUS sixel_encoder_load_callback_dispatch(
+    sixel_encoder_load_context_t *context,
+    sixel_frame_t *frame);
 static int sixel_encoder_handoff_needs_preplan_clone(
     sixel_encoder_t *encoder,
     sixel_frame_t *frame);
@@ -7237,15 +7422,11 @@ static void
 sixel_encoder_frame_pipeline_request_stop_locked(
     sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status,
-    char const *reason)
+    sixel_encoder_handoff_trace_reason_t reason)
 {
     SIXELSTATUS effective_status;
-    int first_error;
-    int queue_count;
 
     effective_status = status;
-    first_error = 0;
-    queue_count = 0;
 
     if (pipeline == NULL) {
         return;
@@ -7253,22 +7434,20 @@ sixel_encoder_frame_pipeline_request_stop_locked(
 
     if (pipeline->worker_status == SIXEL_OK && status != SIXEL_OK) {
         pipeline->worker_status = status;
-        first_error = 1;
     }
     if (pipeline->worker_status != SIXEL_OK) {
         effective_status = pipeline->worker_status;
     }
     pipeline->loader_done = 1;
-    queue_count = pipeline->queue_count;
     sixel_cond_broadcast(&pipeline->cond);
 
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "pipeline stop reason=%s status=%d first_error=%d queue_count=%d",
-        reason != NULL ? reason : "unknown",
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_PIPELINE_STOP,
+        -1,
+        -1,
         effective_status,
-        first_error,
-        queue_count);
+        reason);
 
     return;
 }
@@ -7278,7 +7457,7 @@ static void
 sixel_encoder_frame_pipeline_request_stop(
     sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status,
-    char const *reason)
+    sixel_encoder_handoff_trace_reason_t reason)
 {
     if (pipeline == NULL || pipeline->initialized == 0) {
         return;
@@ -7300,7 +7479,6 @@ sixel_encoder_frame_pipeline_worker(void *priv)
     sixel_frame_t *work_frame;
     sixel_encoder_frame_handoff_meta_t metadata;
     SIXELSTATUS status;
-    int queue_count_after_pop;
     int need_clone;
 
     pipeline = (sixel_encoder_frame_pipeline_t *)priv;
@@ -7312,44 +7490,53 @@ sixel_encoder_frame_pipeline_worker(void *priv)
     metadata.multiframe = 0;
     metadata.needs_preplan_clone = 0;
     status = SIXEL_OK;
-    queue_count_after_pop = 0;
     need_clone = 0;
 
     if (pipeline == NULL || pipeline->encoder == NULL) {
         return 0;
     }
 
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "worker start handoff=%s",
-        sixel_encoder_handoff_mode_name(pipeline->handoff_mode));
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_START,
+        -1,
+        -1,
+        SIXEL_OK,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
 
     for (;;) {
         sixel_mutex_lock(&pipeline->mutex);
         while (pipeline->queue_count == 0
                && pipeline->loader_done == 0
                && pipeline->worker_status == SIXEL_OK) {
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "worker wait queue=0 loader_done=0 status=%d",
-                pipeline->worker_status);
+            sixel_encoder_handoff_trace_emit(
+                pipeline,
+                SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_WAIT,
+                -1,
+                -1,
+                pipeline->worker_status,
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
             sixel_cond_wait(&pipeline->cond, &pipeline->mutex);
         }
         if (pipeline->worker_status != SIXEL_OK) {
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "worker break stop status=%d queue_count=%d",
+            sixel_encoder_handoff_trace_emit(
+                pipeline,
+                SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_BREAK,
+                -1,
+                -1,
                 pipeline->worker_status,
-                pipeline->queue_count);
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
             sixel_mutex_unlock(&pipeline->mutex);
             break;
         }
         if (pipeline->queue_count == 0) {
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "worker break queue=0 loader_done=%d status=%d",
-                pipeline->loader_done,
-                pipeline->worker_status);
+            sixel_encoder_handoff_trace_emit(
+                pipeline,
+                SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_BREAK,
+                -1,
+                -1,
+                pipeline->worker_status,
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
             sixel_mutex_unlock(&pipeline->mutex);
             break;
         }
@@ -7362,17 +7549,16 @@ sixel_encoder_frame_pipeline_worker(void *priv)
         pipeline->queue_head = (pipeline->queue_head + 1)
             % SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
         --pipeline->queue_count;
-        queue_count_after_pop = pipeline->queue_count;
         sixel_cond_broadcast(&pipeline->cond);
         sixel_mutex_unlock(&pipeline->mutex);
 
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "worker pop frame_no=%d loop_no=%d queue_count=%d clone=%d",
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_POP,
             metadata.frame_no,
             metadata.loop_no,
-            queue_count_after_pop,
-            metadata.needs_preplan_clone);
+            SIXEL_OK,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         need_clone = 0;
         work_frame = frame;
         if (frame->handoff_shareable != 0 &&
@@ -7384,25 +7570,20 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             if (SIXEL_FAILED(status)) {
                 sixel_frame_unref(frame);
                 frame = NULL;
-                sixel_trace_topic_message(
-                    SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                    "worker clone fallback failed status=%d frame_no=%d "
-                    "loop_no=%d",
-                    status,
-                    metadata.frame_no,
-                    metadata.loop_no);
                 sixel_encoder_frame_pipeline_request_stop(
                     pipeline,
                     status,
-                    "worker_clone_failed");
+                    SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_CLONE_FAILED);
                 break;
             }
             need_clone = 1;
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "worker clone fallback enabled frame_no=%d loop_no=%d",
+            sixel_encoder_handoff_trace_emit(
+                pipeline,
+                SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_CLONE_FALLBACK_ENABLED,
                 metadata.frame_no,
-                metadata.loop_no);
+                metadata.loop_no,
+                SIXEL_OK,
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         }
         status = sixel_encoder_encode_frame(pipeline->encoder,
                                             work_frame,
@@ -7414,26 +7595,29 @@ sixel_encoder_frame_pipeline_worker(void *priv)
         }
         sixel_frame_unref(frame);
         frame = NULL;
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "worker encoded status=%d",
-            status);
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_ENCODED,
+            metadata.frame_no,
+            metadata.loop_no,
+            status,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         if (status != SIXEL_OK) {
-            sixel_encoder_frame_pipeline_request_stop(pipeline,
-                                                      status,
-                                                      "worker_error");
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "worker stop status=%d",
-                status);
+            sixel_encoder_frame_pipeline_request_stop(
+                pipeline,
+                status,
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_ERROR);
             break;
         }
     }
 
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "worker exit status=%d",
-        status);
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_WORKER_EXIT,
+        -1,
+        -1,
+        status,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     return 0;
 }
 
@@ -7527,7 +7711,6 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status;
     sixel_frame_t *queue_frame;
     sixel_encoder_frame_handoff_meta_t metadata;
-    int queue_count_after_enqueue;
     int cancel_requested;
 
     status = SIXEL_OK;
@@ -7537,7 +7720,6 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     metadata.delay = 0;
     metadata.multiframe = 0;
     metadata.needs_preplan_clone = 0;
-    queue_count_after_enqueue = 0;
     cancel_requested = 0;
 
     if (pipeline == NULL || frame == NULL || pipeline->initialized == 0) {
@@ -7555,23 +7737,25 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
                                                       frame);
         queue_frame = frame;
         sixel_frame_ref(queue_frame);
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "enqueue by-ref frame_no=%d loop_no=%d clone=%d",
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_BY_REF,
             metadata.frame_no,
             metadata.loop_no,
-            metadata.needs_preplan_clone);
+            SIXEL_OK,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     } else {
         status = sixel_encoder_clone_frame(frame,
                                            pipeline->encoder->allocator,
                                            &queue_frame);
         if (SIXEL_FAILED(status)) {
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "enqueue clone failed status=%d frame_no=%d loop_no=%d",
-                status,
+            sixel_encoder_handoff_trace_emit(
+                pipeline,
+                SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_CLONE_FAILED,
                 metadata.frame_no,
-                metadata.loop_no);
+                metadata.loop_no,
+                status,
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
             return status;
         }
     }
@@ -7580,9 +7764,10 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
         pipeline->encoder->cancel_flag != NULL &&
         *pipeline->encoder->cancel_flag != 0) {
         status = SIXEL_INTERRUPTED;
-        sixel_encoder_frame_pipeline_request_stop(pipeline,
-                                                  status,
-                                                  "enqueue_cancel_before_lock");
+        sixel_encoder_frame_pipeline_request_stop(
+            pipeline,
+            status,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_BEFORE_LOCK);
         sixel_frame_unref(queue_frame);
         return status;
     }
@@ -7597,15 +7782,17 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
         sixel_encoder_frame_pipeline_request_stop_locked(
             pipeline,
             SIXEL_INTERRUPTED,
-            "enqueue_cancel_prewait");
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_PREWAIT);
     }
     while (pipeline->queue_count >= SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY
            && pipeline->worker_status == SIXEL_OK) {
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "enqueue wait queue_full count=%d status=%d",
-            pipeline->queue_count,
-            pipeline->worker_status);
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_WAIT,
+            metadata.frame_no,
+            metadata.loop_no,
+            pipeline->worker_status,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         sixel_cond_wait(&pipeline->cond, &pipeline->mutex);
         if (pipeline->encoder != NULL &&
             pipeline->encoder->cancel_flag != NULL &&
@@ -7613,7 +7800,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
             sixel_encoder_frame_pipeline_request_stop_locked(
                 pipeline,
                 SIXEL_INTERRUPTED,
-                "enqueue_cancel_wait");
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_WAIT);
             break;
         }
     }
@@ -7621,12 +7808,13 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
         status = pipeline->worker_status;
         sixel_mutex_unlock(&pipeline->mutex);
         sixel_frame_unref(queue_frame);
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "enqueue abort worker_status=%d frame_no=%d loop_no=%d",
-            status,
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_ABORT,
             metadata.frame_no,
-            metadata.loop_no);
+            metadata.loop_no,
+            status,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         return status;
     }
 
@@ -7635,15 +7823,15 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->queue_tail = (pipeline->queue_tail + 1)
         % SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
     ++pipeline->queue_count;
-    queue_count_after_enqueue = pipeline->queue_count;
     sixel_cond_signal(&pipeline->cond);
     sixel_mutex_unlock(&pipeline->mutex);
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "enqueue ok frame_no=%d loop_no=%d queue_count=%d",
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENQUEUE_OK,
         metadata.frame_no,
         metadata.loop_no,
-        queue_count_after_enqueue);
+        SIXEL_OK,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
 
     return status;
 }
@@ -7683,7 +7871,7 @@ sixel_encoder_frame_pipeline_finish(sixel_encoder_frame_pipeline_t *pipeline)
         sixel_encoder_frame_pipeline_request_stop_locked(
             pipeline,
             SIXEL_INTERRUPTED,
-            "finish_cancel");
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_FINISH_CANCEL);
     } else {
         pipeline->loader_done = 1;
         sixel_cond_broadcast(&pipeline->cond);
@@ -7691,40 +7879,197 @@ sixel_encoder_frame_pipeline_finish(sixel_encoder_frame_pipeline_t *pipeline)
     loader_done = pipeline->loader_done;
     worker_status = pipeline->worker_status;
     sixel_mutex_unlock(&pipeline->mutex);
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "finish begin handoff=%s started=%d queue_count=%d loader_done=%d "
-        "worker_status=%d cancel=%d",
-        sixel_encoder_handoff_mode_name(pipeline->handoff_mode),
-        started,
-        queue_count,
-        loader_done,
+    (void)started;
+    (void)queue_count;
+    (void)loader_done;
+    (void)cancel_requested;
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_BEGIN,
+        -1,
+        -1,
         worker_status,
-        cancel_requested);
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
 
     if (started != 0) {
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "finish join wait");
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_JOIN_WAIT,
+            -1,
+            -1,
+            SIXEL_OK,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         sixel_thread_join(&pipeline->thread);
         pipeline->started = 0;
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "finish join done");
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_JOIN_DONE,
+            -1,
+            -1,
+            SIXEL_OK,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     }
 
     sixel_mutex_lock(&pipeline->mutex);
     status = pipeline->worker_status;
     sixel_mutex_unlock(&pipeline->mutex);
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "finish end status=%d queue_count=%d",
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_FINISH_END,
+        -1,
+        -1,
         status,
-        pipeline->queue_count);
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
 
     return status;
 }
 
+
+/* called when image loader component load a image frame */
+static SIXELSTATUS
+sixel_encoder_load_callback_resolve_handoff(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoding_planner_t *planner,
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame)
+{
+    SIXELSTATUS status;
+    int allow_loader_pipeline;
+    int result;
+    int frame_no;
+    int loop_no;
+
+    status = SIXEL_OK;
+    allow_loader_pipeline = 0;
+    result = 0;
+    frame_no = 0;
+    loop_no = 0;
+
+    if (pipeline == NULL || encoder == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (pipeline->handoff_mode != SIXEL_ENCODER_HANDOFF_UNDECIDED) {
+        return SIXEL_OK;
+    }
+
+    frame_no = sixel_frame_get_frame_no(frame);
+    loop_no = sixel_frame_get_loop_no(frame);
+    if (planner != NULL) {
+        sixel_encoding_planner_reset_for_frame(planner);
+        sixel_encoding_planner_plan(planner, encoder, frame);
+        allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
+            planner,
+            encoder,
+            frame);
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_PLANNER,
+            frame_no,
+            loop_no,
+            SIXEL_OK,
+            allow_loader_pipeline != 0
+                ? SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE
+                : SIXEL_ENCODER_HANDOFF_TRACE_REASON_PLANNER_DISALLOW);
+    }
+
+    if (allow_loader_pipeline != 0) {
+        result = sixel_thread_create(&pipeline->thread,
+                                     sixel_encoder_frame_pipeline_worker,
+                                     pipeline);
+        if (result == 0) {
+            pipeline->started = 1;
+            pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_PIPELINE;
+            status = SIXEL_OK;
+        } else {
+            pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
+            status = SIXEL_RUNTIME_ERROR;
+        }
+    } else {
+        pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
+        status = SIXEL_OK;
+    }
+
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_HANDOFF_DECIDE,
+        frame_no,
+        loop_no,
+        status,
+        result == 0
+            ? (allow_loader_pipeline != 0
+                ? SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE
+                : SIXEL_ENCODER_HANDOFF_TRACE_REASON_PLANNER_DISALLOW)
+            : SIXEL_ENCODER_HANDOFF_TRACE_REASON_THREAD_CREATE_FAILED);
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_load_callback_dispatch(
+    sixel_encoder_load_context_t *context,
+    sixel_frame_t *frame)
+{
+    sixel_encoder_frame_pipeline_t *pipeline;
+    sixel_encoder_t *encoder;
+    SIXELSTATUS status;
+    int frame_no;
+    int loop_no;
+
+    pipeline = NULL;
+    encoder = NULL;
+    status = SIXEL_OK;
+    frame_no = 0;
+    loop_no = 0;
+
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    pipeline = &context->frame_pipeline;
+    encoder = context->encoder;
+    if (encoder == NULL || pipeline == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_no = sixel_frame_get_frame_no(frame);
+    loop_no = sixel_frame_get_loop_no(frame);
+    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_PIPELINE) {
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_REQUEST,
+            frame_no,
+            loop_no,
+            SIXEL_OK,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+        status = sixel_encoder_frame_pipeline_enqueue(pipeline, frame);
+        sixel_encoder_handoff_trace_emit(
+            pipeline,
+            SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_RESULT,
+            frame_no,
+            loop_no,
+            status,
+            SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+        return status;
+    }
+
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_START,
+        frame_no,
+        loop_no,
+        SIXEL_OK,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+    status = sixel_encoder_encode_frame(encoder, frame, context->output, NULL);
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_RESULT,
+        frame_no,
+        loop_no,
+        status,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+
+    return status;
+}
 
 /* called when image loader component load a image frame */
 static SIXELSTATUS
@@ -7735,18 +8080,16 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encoding_planner_t *planner;
     sixel_encoder_t *encoder;
     SIXELSTATUS status;
-    int result;
-    int allow_loader_pipeline;
-    int frame_multiframe;
+    int frame_no;
+    int loop_no;
 
     context = (sixel_encoder_load_context_t *)data;
     pipeline = NULL;
     planner = NULL;
     encoder = NULL;
     status = SIXEL_OK;
-    result = 0;
-    allow_loader_pipeline = 0;
-    frame_multiframe = 0;
+    frame_no = 0;
+    loop_no = 0;
 
     if (context == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -7758,122 +8101,40 @@ load_image_callback(sixel_frame_t *frame, void *data)
         return SIXEL_BAD_ARGUMENT;
     }
 
+    frame_no = sixel_frame_get_frame_no(frame);
+    loop_no = sixel_frame_get_loop_no(frame);
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENTER,
+        frame_no,
+        loop_no,
+        SIXEL_OK,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+
     if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
         if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_PIPELINE) {
-            sixel_encoder_frame_pipeline_request_stop(pipeline,
-                                                      SIXEL_INTERRUPTED,
-                                                      "callback_cancel");
+            sixel_encoder_frame_pipeline_request_stop(
+                pipeline,
+                SIXEL_INTERRUPTED,
+                SIXEL_ENCODER_HANDOFF_TRACE_REASON_CALLBACK_CANCEL);
         }
         return SIXEL_INTERRUPTED;
     }
-
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "callback frame_no=%d loop_no=%d handoff=%s",
-        sixel_frame_get_frame_no(frame),
-        sixel_frame_get_loop_no(frame),
-        sixel_encoder_handoff_mode_name(pipeline->handoff_mode));
 
     if (encoder->capture_source && encoder->capture_source_frame == NULL) {
         sixel_frame_ref(frame);
         encoder->capture_source_frame = frame;
     }
 
-    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED
-        && planner != NULL) {
-        /*
-         * Prime planner thread budgets before making the first loader handoff
-         * decision. Without this, planner->main_threads stays at the default
-         * value and multiframe sources can be forced into serial mode.
-         */
-        frame_multiframe = sixel_frame_get_multiframe(frame);
-        sixel_encoding_planner_reset_for_frame(planner);
-        sixel_encoding_planner_plan(planner, encoder, frame);
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "callback planner summary total=%d main=%d heavy=%d "
-            "multiframe=%d",
-            planner->total_threads,
-            planner->main_threads,
-            planner->heavy_ops,
-            frame_multiframe);
-        allow_loader_pipeline = sixel_encoding_planner_update_loader_handoff(
-            planner,
-            encoder,
-            frame);
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "callback planner allow_pipeline=%d frame_no=%d loop_no=%d",
-            allow_loader_pipeline,
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame));
-    }
-
-    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED) {
-        if (allow_loader_pipeline != 0) {
-            result = sixel_thread_create(&pipeline->thread,
-                                         sixel_encoder_frame_pipeline_worker,
-                                         pipeline);
-            if (result == 0) {
-                pipeline->started = 1;
-                pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_PIPELINE;
-                sixel_trace_topic_message(
-                    SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                    "callback handoff decided mode=pipeline");
-            } else {
-                pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
-                sixel_trace_topic_message(
-                    SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                    "callback handoff fallback mode=serial reason=thread_create "
-                    "result=%d",
-                    result);
-            }
-        } else {
-            pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "callback handoff decided mode=serial planner_disallow=1");
-        }
-    }
-
-    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_PIPELINE) {
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "callback enqueue request frame_no=%d loop_no=%d",
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame));
-        status = sixel_encoder_frame_pipeline_enqueue(pipeline, frame);
-        if (status == SIXEL_OK) {
-            sixel_trace_topic_message(
-                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "callback enqueue success frame_no=%d loop_no=%d",
-                sixel_frame_get_frame_no(frame),
-                sixel_frame_get_loop_no(frame));
-            return SIXEL_OK;
-        }
-        sixel_trace_topic_message(
-            SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-            "callback enqueue failed status=%d frame_no=%d loop_no=%d",
-            status,
-            sixel_frame_get_frame_no(frame),
-            sixel_frame_get_loop_no(frame));
+    status = sixel_encoder_load_callback_resolve_handoff(pipeline,
+                                                          planner,
+                                                          encoder,
+                                                          frame);
+    if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "callback serial encode start frame_no=%d loop_no=%d",
-        sixel_frame_get_frame_no(frame),
-        sixel_frame_get_loop_no(frame));
-    status = sixel_encoder_encode_frame(encoder, frame, context->output, NULL);
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "callback serial encode end status=%d frame_no=%d loop_no=%d",
-        status,
-        sixel_frame_get_frame_no(frame),
-        sixel_frame_get_loop_no(frame));
-
-    return status;
+    return sixel_encoder_load_callback_dispatch(context, frame);
 }
 
 static int
@@ -8958,11 +9219,13 @@ reload:
     status = sixel_loader_load_file(loader,
                                     effective_filename,
                                     load_image_callback);
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "encode loader returned status=%d source=\"%s\"",
+    sixel_encoder_handoff_trace_emit(
+        &load_context.frame_pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_LOADER_RESULT,
+        -1,
+        -1,
         status,
-        effective_filename != NULL ? effective_filename : "");
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     if (status != SIXEL_OK) {
         sixel_encoder_log_stage(encoder,
                                 NULL,
@@ -8998,16 +9261,22 @@ load_end:
     sixel_loader_unref(loader);
     loader = NULL;
 
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "encode pipeline finish begin status=%d",
-        status);
+    sixel_encoder_handoff_trace_emit(
+        &load_context.frame_pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_PIPELINE_FINISH_BEGIN,
+        -1,
+        -1,
+        status,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     pipeline_wait_status = sixel_encoder_frame_pipeline_finish(
         &load_context.frame_pipeline);
-    sixel_trace_topic_message(
-        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-        "encode pipeline finish end pipeline_status=%d",
-        pipeline_wait_status);
+    sixel_encoder_handoff_trace_emit(
+        &load_context.frame_pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_ENCODE_PIPELINE_FINISH_END,
+        -1,
+        -1,
+        pipeline_wait_status,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     if (status == SIXEL_OK && pipeline_wait_status != SIXEL_OK) {
         status = pipeline_wait_status;
     }
