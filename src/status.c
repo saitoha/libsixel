@@ -30,6 +30,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
 #if HAVE_MEMORY_H
 # include <memory.h>
 #endif  /* HAVE_MEMORY_H */
@@ -67,6 +70,11 @@
 # include "tty.h"
 #endif
 #include "compat_stub.h"
+
+/* Keep SIZE_MAX available even on strict C99 environments. */
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
 
 #define SIXEL_MESSAGE_OK                    ("succeeded")
 #define SIXEL_MESSAGE_FALSE                 ("unexpected error (SIXEL_FALSE)");
@@ -268,7 +276,7 @@ sixel_helper_get_additional_message(void)
 
     markup_length = strlen(status_markup_buffer);
     required_size = markup_length + 1u;
-    if (markup_length <= (((size_t)-1u) - 64u) / 4u) {
+    if (markup_length <= (SIZE_MAX - 64u) / 4u) {
         required_size = markup_length * 4u + 64u;
     }
     (void)sixel_status_reserve_buffer(
@@ -314,7 +322,7 @@ sixel_status_reserve_buffer(char **buffer,
         }
     }
     while (target < required_size) {
-        if (target > ((size_t)-1u) / 2u) {
+        if (target > SIZE_MAX / 2u) {
             target = required_size;
             break;
         }
