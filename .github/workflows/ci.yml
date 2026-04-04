@@ -104,7 +104,7 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   fuzz_push_full:
-    if: github.event_name == 'push' || (github.event_name == 'schedule' && matrix.buildtool == 'meson' && contains(fromJSON('["gif-lzw-codes","psd-resource","option-arglist","loader-order"]'), matrix.target))
+    if: github.event_name == 'push' || github.event_name == 'schedule'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -120,11 +120,31 @@ jobs:
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
+      - name: Select struct fuzz scope
+        id: struct_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target=1
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            run_target=0
+            if [ "${{ matrix.buildtool }}" = "meson" ]; then
+              case "${{ matrix.target }}" in
+                gif-lzw-codes|psd-resource|option-arglist|loader-order)
+                  run_target=1
+                  ;;
+              esac
+            fi
+          fi
+          echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
+        if: ${{ steps.struct_scope.outputs.run_target == '1' }}
         with:
           fetch-depth: 1
 
       - name: Install build dependencies
+        if: ${{ steps.struct_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -133,6 +153,7 @@ jobs:
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore struct fuzz corpus cache
+        if: ${{ steps.struct_scope.outputs.run_target == '1' }}
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_STRUCT_CORPUS }}/${{ matrix.target }}
@@ -143,6 +164,7 @@ jobs:
             fuzz-corpus-struct-${{ matrix.buildtool }}-${{ matrix.target }}-
 
       - name: Seed struct fuzz corpus
+        if: ${{ steps.struct_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -169,6 +191,7 @@ jobs:
           echo "struct-corpus seed files (${{ matrix.target }}): $(find "$target_corpus" -type f | wc -l)"
 
       - name: Build and run struct fuzz target
+        if: ${{ steps.struct_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -259,7 +282,7 @@ jobs:
           fi
 
       - name: Upload struct fuzz artifacts
-        if: always()
+        if: ${{ always() && steps.struct_scope.outputs.run_target == '1' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
@@ -270,7 +293,7 @@ jobs:
             ${{ env.FUZZ_STRUCT_CORPUS }}
 
   fuzz_push_loader_formats:
-    if: github.event_name == 'push' || (github.event_name == 'schedule' && matrix.buildtool == 'meson' && contains(fromJSON('["png","gif","psd","hdr"]'), matrix.target))
+    if: github.event_name == 'push' || github.event_name == 'schedule'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -286,11 +309,31 @@ jobs:
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
+      - name: Select loader-format fuzz scope
+        id: loader_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target=1
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            run_target=0
+            if [ "${{ matrix.buildtool }}" = "meson" ]; then
+              case "${{ matrix.target }}" in
+                png|gif|psd|hdr)
+                  run_target=1
+                  ;;
+              esac
+            fi
+          fi
+          echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
+        if: ${{ steps.loader_scope.outputs.run_target == '1' }}
         with:
           fetch-depth: 1
 
       - name: Install build dependencies
+        if: ${{ steps.loader_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -299,6 +342,7 @@ jobs:
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore loader-format fuzz corpus cache
+        if: ${{ steps.loader_scope.outputs.run_target == '1' }}
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_BUILTIN_CORPUS }}/${{ matrix.target }}
@@ -309,6 +353,7 @@ jobs:
             fuzz-corpus-loader-${{ matrix.buildtool }}-${{ matrix.target }}-
 
       - name: Seed loader-format fuzz corpus
+        if: ${{ steps.loader_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -335,6 +380,7 @@ jobs:
           echo "loader-corpus seed files (${{ matrix.target }}): $(find "$target_corpus" -type f | wc -l)"
 
       - name: Build and run loader-format fuzz target
+        if: ${{ steps.loader_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -412,7 +458,7 @@ jobs:
           fi
 
       - name: Upload loader-format fuzz artifacts
-        if: always()
+        if: ${{ always() && steps.loader_scope.outputs.run_target == '1' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
@@ -518,7 +564,7 @@ jobs:
             ${{ env.FUZZ_OUTPUT_DIR }}.tar.gz
 
   fuzz_push_loader_coregraphics:
-    if: github.event_name == 'push' || (github.event_name == 'schedule' && matrix.buildtool == 'meson')
+    if: github.event_name == 'push' || github.event_name == 'schedule'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
     runs-on: macos-latest
     strategy:
@@ -533,17 +579,32 @@ jobs:
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
+      - name: Select coregraphics fuzz scope
+        id: coregraphics_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target=1
+          if [ "${{ github.event_name }}" = "schedule" ] &&
+             [ "${{ matrix.buildtool }}" != "meson" ]; then
+            run_target=0
+          fi
+          echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
+
       - name: Disable Spotlight (macOS)
+        if: ${{ steps.coregraphics_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           sudo mdutil -i off / || true
           sudo mdutil -i off /System/Volumes/Data || true
 
       - uses: actions/checkout@v6
+        if: ${{ steps.coregraphics_scope.outputs.run_target == '1' }}
         with:
           fetch-depth: 1
 
       - name: Install build dependencies
+        if: ${{ steps.coregraphics_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -551,6 +612,7 @@ jobs:
           brew install llvm meson ninja autoconf automake libtool pkg-config
 
       - name: Restore coregraphics fuzz corpus cache
+        if: ${{ steps.coregraphics_scope.outputs.run_target == '1' }}
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_COMPONENT_CORPUS }}
@@ -561,6 +623,7 @@ jobs:
             fuzz-corpus-loader-coregraphics-${{ matrix.buildtool }}-
 
       - name: Seed coregraphics fuzz corpus
+        if: ${{ steps.coregraphics_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -592,6 +655,7 @@ jobs:
           echo "coregraphics-corpus seed files: $(find "$target_corpus" -type f | wc -l)"
 
       - name: Build and run coregraphics loader fuzz harness
+        if: ${{ steps.coregraphics_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -655,7 +719,7 @@ jobs:
           fi
 
       - name: Upload coregraphics fuzz artifacts
-        if: always()
+        if: ${{ always() && steps.coregraphics_scope.outputs.run_target == '1' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
