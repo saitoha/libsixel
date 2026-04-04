@@ -1207,6 +1207,8 @@ clean-local:
 	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv
 	rm -rf $(abs_top_builddir)/tests/.perl-test-venv
 	rm -rf $(abs_top_builddir)/tests/.php-test-venv
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/webp-static-icc-overlimit-padded.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/snake16_psb_*_high_offset_xxlarge*.psd
 	rm -f $(builddir)/*_metrics.json
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
