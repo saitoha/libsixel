@@ -222,6 +222,9 @@ Key points used by this roadmap:
     `/RunLengthArray + /RunArray` now use RunLength-weighted color
     compositing for all decodable runs before falling back to generic
     `StyleSheetData` precedence when no valid weighted run exists.
+  - TySh EngineData `StrokeColor` in `StyleRun` now follows the same
+    RunLength-weighted contract for no-pixel fallback when
+    `FillFlag=false` and `StrokeFlag=true`.
   - TySh EngineData `StyleRun` payloads that resolve stylesheet payloads via
     `/StyleSheetSet` (instead of inline `RunArray` `StyleSheetData`) follow
     the same RunLength-weighted contract.

@@ -1065,6 +1065,107 @@ def build_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_weighted_2r
     return bytes(payload)
 
 
+def build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_2run_payload(
+    *,
+    top_level_stroke_rgb: tuple[int, int, int],
+    first_stylesheet_stroke_rgb: tuple[int, int, int],
+    second_stylesheet_stroke_rgb: tuple[int, int, int],
+    first_run_length: float,
+    second_run_length: float,
+) -> bytes:
+    top_r = float(max(0, min(255, top_level_stroke_rgb[0]))) / 255.0
+    top_g = float(max(0, min(255, top_level_stroke_rgb[1]))) / 255.0
+    top_b = float(max(0, min(255, top_level_stroke_rgb[2]))) / 255.0
+    first_r = float(max(0, min(255, first_stylesheet_stroke_rgb[0]))) / 255.0
+    first_g = float(max(0, min(255, first_stylesheet_stroke_rgb[1]))) / 255.0
+    first_b = float(max(0, min(255, first_stylesheet_stroke_rgb[2]))) / 255.0
+    second_r = float(max(0, min(255, second_stylesheet_stroke_rgb[0]))) / 255.0
+    second_g = float(max(0, min(255, second_stylesheet_stroke_rgb[1]))) / 255.0
+    second_b = float(max(0, min(255, second_stylesheet_stroke_rgb[2]))) / 255.0
+    run0 = float(first_run_length)
+    run1 = float(second_run_length)
+
+    engine_data = (
+        "/EngineData << "
+        "/FillFlag false "
+        "/StrokeFlag true "
+        f"/StrokeColor [{top_r:.6f} {top_g:.6f} {top_b:.6f}] "
+        "/StyleRun << "
+        f"/RunLengthArray [{run0:.6f} {run1:.6f}] "
+        "/RunArray [ "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/StrokeColor [{first_r:.6f} {first_g:.6f} {first_b:.6f}] "
+        ">> >> >> "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/StrokeColor [{second_r:.6f} {second_g:.6f} {second_b:.6f}] "
+        ">> >> >> "
+        "] >> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
+def build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_3run_payload(
+    *,
+    top_level_stroke_rgb: tuple[int, int, int],
+    first_stylesheet_stroke_rgb: tuple[int, int, int],
+    second_stylesheet_stroke_rgb: tuple[int, int, int],
+    third_stylesheet_stroke_rgb: tuple[int, int, int],
+    first_run_length: float,
+    second_run_length: float,
+    third_run_length: float,
+) -> bytes:
+    top_r = float(max(0, min(255, top_level_stroke_rgb[0]))) / 255.0
+    top_g = float(max(0, min(255, top_level_stroke_rgb[1]))) / 255.0
+    top_b = float(max(0, min(255, top_level_stroke_rgb[2]))) / 255.0
+    first_r = float(max(0, min(255, first_stylesheet_stroke_rgb[0]))) / 255.0
+    first_g = float(max(0, min(255, first_stylesheet_stroke_rgb[1]))) / 255.0
+    first_b = float(max(0, min(255, first_stylesheet_stroke_rgb[2]))) / 255.0
+    second_r = float(max(0, min(255, second_stylesheet_stroke_rgb[0]))) / 255.0
+    second_g = float(max(0, min(255, second_stylesheet_stroke_rgb[1]))) / 255.0
+    second_b = float(max(0, min(255, second_stylesheet_stroke_rgb[2]))) / 255.0
+    third_r = float(max(0, min(255, third_stylesheet_stroke_rgb[0]))) / 255.0
+    third_g = float(max(0, min(255, third_stylesheet_stroke_rgb[1]))) / 255.0
+    third_b = float(max(0, min(255, third_stylesheet_stroke_rgb[2]))) / 255.0
+    run0 = float(first_run_length)
+    run1 = float(second_run_length)
+    run2 = float(third_run_length)
+
+    engine_data = (
+        "/EngineData << "
+        "/FillFlag false "
+        "/StrokeFlag true "
+        f"/StrokeColor [{top_r:.6f} {top_g:.6f} {top_b:.6f}] "
+        "/StyleRun << "
+        f"/RunLengthArray [{run0:.6f} {run1:.6f} {run2:.6f}] "
+        "/RunArray [ "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/StrokeColor [{first_r:.6f} {first_g:.6f} {first_b:.6f}] "
+        ">> >> >> "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/StrokeColor [{second_r:.6f} {second_g:.6f} {second_b:.6f}] "
+        ">> >> >> "
+        "<< /StyleSheet << /StyleSheetData << "
+        f"/StrokeColor [{third_r:.6f} {third_g:.6f} {third_b:.6f}] "
+        ">> >> >> "
+        "] >> >>"
+    ).encode("ascii")
+
+    payload = bytearray()
+    payload += struct.pack(">I", 1)  # TySh version
+    payload += struct.pack(">6d", 1.0, 0.0, 0.0, 1.0, 0.0, 0.0)  # transform
+    payload += struct.pack(">I", 50)  # text descriptor version
+    payload += b"BAD!"
+    payload += engine_data
+    return bytes(payload)
+
+
 def build_tysh_enginedata_fillcolor_stylesheetset_runstyle_runlength_unresolved_continue_payload(
     *,
     top_level_rgb: tuple[int, int, int],
@@ -11205,6 +11306,44 @@ def generate(out_dir: pathlib.Path):
                 fillflag=False,
                 strokeflag=False,
                 stroke_components=(0.5,),
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_2run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_2run_payload(
+                top_level_stroke_rgb=(32, 64, 255),
+                first_stylesheet_stroke_rgb=(255, 48, 64),
+                second_stylesheet_stroke_rgb=(32, 64, 255),
+                first_run_length=1.0,
+                second_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_3run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=8,
+            base_planes=cmyk8_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_strokecolor_stylesheet_runlength_weighted_3run_payload(
+                top_level_stroke_rgb=(32, 64, 255),
+                first_stylesheet_stroke_rgb=(255, 48, 64),
+                second_stylesheet_stroke_rgb=(32, 64, 255),
+                third_stylesheet_stroke_rgb=(64, 192, 64),
+                first_run_length=1.0,
+                second_run_length=2.0,
+                third_run_length=1.0,
             ),
             first_layer_has_pixels=False,
         ),
