@@ -349,6 +349,7 @@ static SIXELSTATUS sixel_encoder_output_with_macro(
 
 #define SIXEL_ENCODER_USEC_PER_SECOND 1000000ULL
 #define SIXEL_ENCODER_USEC_PER_CENTISECOND 10000ULL
+#define SIXEL_ENCODER_DELAY_POLL_SLICE_USEC 10000U
 
 static long long
 sixel_encoder_monotonic_now_usec(void)
@@ -439,6 +440,48 @@ sixel_encoder_compute_remaining_delay_usec(
         remaining_usec64 = (unsigned long long)UINT_MAX;
     }
     return (unsigned int)remaining_usec64;
+}
+
+static SIXELSTATUS
+sixel_encoder_wait_delay_with_cancel(sixel_encoder_t *encoder,
+                                     unsigned int delay_usec)
+{
+    unsigned int remaining_usec;
+    unsigned int sleep_slice_usec;
+
+    remaining_usec = 0U;
+    sleep_slice_usec = 0U;
+
+    if (encoder == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (delay_usec == 0U) {
+        return SIXEL_OK;
+    }
+
+    /*
+     * Process-level signals typically land on the main thread. Poll the
+     * shared cancel flag in short slices so worker-thread delay sleeps can
+     * stop promptly after Ctrl-C.
+     */
+    remaining_usec = delay_usec;
+    while (remaining_usec > 0U) {
+        if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
+            return SIXEL_INTERRUPTED;
+        }
+        sleep_slice_usec = remaining_usec;
+        if (sleep_slice_usec > SIXEL_ENCODER_DELAY_POLL_SLICE_USEC) {
+            sleep_slice_usec = SIXEL_ENCODER_DELAY_POLL_SLICE_USEC;
+        }
+        sixel_sleep(sleep_slice_usec);
+        remaining_usec -= sleep_slice_usec;
+    }
+
+    if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
+        return SIXEL_INTERRUPTED;
+    }
+
+    return SIXEL_OK;
 }
 
 
@@ -4053,7 +4096,11 @@ sixel_encoder_output_without_macro(
                 frame_no,
                 loop_no,
                 remaining_delay);
-            sixel_sleep(remaining_delay);
+            status = sixel_encoder_wait_delay_with_cancel(encoder,
+                                                          remaining_delay);
+            if (status != SIXEL_OK) {
+                goto end;
+            }
         }
     }
 
@@ -4274,7 +4321,11 @@ sixel_encoder_output_with_macro(
                     frame_no,
                     loop_no,
                     remaining_delay);
-                sixel_sleep(remaining_delay);
+                status = sixel_encoder_wait_delay_with_cancel(encoder,
+                                                              remaining_delay);
+                if (status != SIXEL_OK) {
+                    goto end;
+                }
             }
         }
     }
@@ -7087,7 +7138,7 @@ sixel_encoder_frame_pipeline_worker(void *priv)
         sixel_mutex_lock(&pipeline->mutex);
         while (pipeline->queue_count == 0
                && pipeline->loader_done == 0
-               && SIXEL_SUCCEEDED(pipeline->worker_status)) {
+               && pipeline->worker_status == SIXEL_OK) {
             sixel_trace_topic_message(
                 SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
                 "worker wait queue=0 loader_done=0 status=%d",
@@ -7169,7 +7220,7 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
             "worker encoded status=%d",
             status);
-        if (SIXEL_FAILED(status)) {
+        if (status != SIXEL_OK) {
             sixel_mutex_lock(&pipeline->mutex);
             pipeline->worker_status = status;
             pipeline->loader_done = 1;
@@ -7177,7 +7228,7 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             sixel_mutex_unlock(&pipeline->mutex);
             sixel_trace_topic_message(
                 SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
-                "worker set failure status=%d",
+                "worker stop status=%d",
                 status);
             break;
         }
@@ -7329,15 +7380,21 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
 
     sixel_mutex_lock(&pipeline->mutex);
     while (pipeline->queue_count >= SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY
-           && SIXEL_SUCCEEDED(pipeline->worker_status)) {
+           && pipeline->worker_status == SIXEL_OK) {
         sixel_trace_topic_message(
             SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
             "enqueue wait queue_full count=%d status=%d",
             pipeline->queue_count,
             pipeline->worker_status);
         sixel_cond_wait(&pipeline->cond, &pipeline->mutex);
+        if (pipeline->encoder != NULL &&
+            pipeline->encoder->cancel_flag != NULL &&
+            *pipeline->encoder->cancel_flag != 0) {
+            pipeline->worker_status = SIXEL_INTERRUPTED;
+            break;
+        }
     }
-    if (SIXEL_FAILED(pipeline->worker_status)) {
+    if (pipeline->worker_status != SIXEL_OK) {
         status = pipeline->worker_status;
         sixel_mutex_unlock(&pipeline->mutex);
         sixel_frame_unref(queue_frame);
@@ -7461,6 +7518,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
     if (encoder == NULL || pipeline == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+
+    if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
+        return SIXEL_INTERRUPTED;
+    }
+
     sixel_trace_topic_message(
         SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
         "callback frame_no=%d loop_no=%d handoff=%s",
@@ -7537,7 +7599,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
             sixel_frame_get_frame_no(frame),
             sixel_frame_get_loop_no(frame));
         status = sixel_encoder_frame_pipeline_enqueue(pipeline, frame);
-        if (SIXEL_SUCCEEDED(status)) {
+        if (status == SIXEL_OK) {
             sixel_trace_topic_message(
                 SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
                 "callback enqueue success frame_no=%d loop_no=%d",
@@ -8702,7 +8764,7 @@ load_end:
         SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
         "encode pipeline finish end pipeline_status=%d",
         pipeline_wait_status);
-    if (SIXEL_SUCCEEDED(status) && SIXEL_FAILED(pipeline_wait_status)) {
+    if (status == SIXEL_OK && pipeline_wait_status != SIXEL_OK) {
         status = pipeline_wait_status;
     }
 
