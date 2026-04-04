@@ -8,6 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+test "${HAVE_WINDOWS_H-0}" = 1 && {
+    printf "1..0 # SKIP SIGINT child cancellation is unreliable on Windows runtime\n"
+    exit 0
+}
+
 
 echo "1..1"
 set -v
