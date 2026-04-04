@@ -28,7 +28,9 @@ FUZZ_STRUCT_TARGETS = \
     bmp-dib \
     bmp-rle-bitfields \
     mapfile-spec \
-    mapfile-palette
+    mapfile-palette \
+    option-arglist \
+    loader-order
 
 FUZZ_STRUCT_PUSH_SET = \
     png-chunk \
@@ -57,7 +59,9 @@ noinst_PROGRAMS = \
     fuzz-loader-builtin-struct-bmp-dib-libfuzzer \
     fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer \
     fuzz-loader-builtin-struct-mapfile-spec-libfuzzer \
-    fuzz-loader-builtin-struct-mapfile-palette-libfuzzer
+    fuzz-loader-builtin-struct-mapfile-palette-libfuzzer \
+    fuzz-loader-builtin-struct-option-arglist-libfuzzer \
+    fuzz-loader-builtin-struct-loader-order-libfuzzer
 if HAVE_COREGRAPHICS
 noinst_PROGRAMS += \
     fuzz-loader-coregraphics-libfuzzer
@@ -104,6 +108,8 @@ EXTRA_DIST = \
     fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer.c \
     fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c \
     fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c \
+    fuzz-loader-builtin-struct-option-arglist-libfuzzer.c \
+    fuzz-loader-builtin-struct-loader-order-libfuzzer.c \
     loader-builtin.dict
 
 FUZZ_COMMON_CPPFLAGS = \
@@ -259,6 +265,20 @@ fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CP
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-option-arglist-libfuzzer.c
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_loader_order_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-loader-order-libfuzzer.c
+fuzz_loader_builtin_struct_loader_order_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
 if HAVE_COREGRAPHICS
 fuzz_loader_coregraphics_libfuzzer_SOURCES = \

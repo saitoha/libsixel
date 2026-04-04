@@ -83,7 +83,10 @@ fuzz_pick_loader_options(uint8_t const *data,
      * Avoid unbounded animation traversal in fuzz mode.
      */
     *loop_control = SIXEL_LOOP_DISABLE;
-    *start_frame_no = 0;
+    /*
+     * Keep frame selection bounded while still covering negative offsets.
+     */
+    *start_frame_no = ((int)((h >> 16) & UINT64_C(0x07))) - 3;
     *enable_cms = (int)((h >> 32) & UINT64_C(1));
     *use_bgcolor = (int)((h >> 33) & UINT64_C(1));
     bgcolor[0] = (unsigned char)(h >> 40);

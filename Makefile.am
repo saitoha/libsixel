@@ -162,7 +162,9 @@ FUZZ_STRUCT_TARGETS = \
 	bmp-dib \
 	bmp-rle-bitfields \
 	mapfile-spec \
-	mapfile-palette
+	mapfile-palette \
+	option-arglist \
+	loader-order
 FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
 FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 

@@ -112,6 +112,8 @@ host_triplet = @host@
 @COND_FUZZ_TRUE@	fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer$(EXEEXT) \
 @COND_FUZZ_TRUE@	fuzz-loader-builtin-struct-mapfile-spec-libfuzzer$(EXEEXT) \
 @COND_FUZZ_TRUE@	fuzz-loader-builtin-struct-mapfile-palette-libfuzzer$(EXEEXT) \
+@COND_FUZZ_TRUE@	fuzz-loader-builtin-struct-option-arglist-libfuzzer$(EXEEXT) \
+@COND_FUZZ_TRUE@	fuzz-loader-builtin-struct-loader-order-libfuzzer$(EXEEXT) \
 @COND_FUZZ_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
 @COND_FUZZ_TRUE@@HAVE_COREGRAPHICS_TRUE@am__append_1 = \
 @COND_FUZZ_TRUE@@HAVE_COREGRAPHICS_TRUE@    fuzz-loader-coregraphics-libfuzzer
@@ -230,6 +232,17 @@ fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_LINK = $(LIBTOOL) \
 	$(CFLAGS) \
 	$(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am_fuzz_loader_builtin_struct_loader_order_libfuzzer_OBJECTS = fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.$(OBJEXT)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_OBJECTS = $(am_fuzz_loader_builtin_struct_loader_order_libfuzzer_OBJECTS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_2)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_LINK = $(LIBTOOL) \
+	$(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) \
+	$(fuzz_loader_builtin_struct_loader_order_libfuzzer_CFLAGS) \
+	$(CFLAGS) \
+	$(fuzz_loader_builtin_struct_loader_order_libfuzzer_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_OBJECTS = fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.$(OBJEXT)
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_OBJECTS = $(am_fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_OBJECTS)
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_DEPENDENCIES =  \
@@ -251,6 +264,17 @@ fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_LINK = $(LIBTOOL) \
 	$(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_CFLAGS) \
 	$(CFLAGS) \
 	$(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_fuzz_loader_builtin_struct_option_arglist_libfuzzer_OBJECTS = fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.$(OBJEXT)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_OBJECTS = $(am_fuzz_loader_builtin_struct_option_arglist_libfuzzer_OBJECTS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_2)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_LINK = $(LIBTOOL) \
+	$(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) \
+	$(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS) \
+	$(CFLAGS) \
+	$(fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_fuzz_loader_builtin_struct_pic_structure_libfuzzer_OBJECTS = fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.$(OBJEXT) \
 	fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-runtime.$(OBJEXT)
@@ -401,8 +425,10 @@ am__depfiles_remade = ./$(DEPDIR)/fuzz_loader_builtin_libfuzzer-fuzz-loader-buil
 	./$(DEPDIR)/fuzz_loader_builtin_struct_hdr_header_libfuzzer-fuzz-loader-builtin-struct-runtime.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-runtime.Po \
+	./$(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_spec_libfuzzer-fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.Po \
+	./$(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-runtime.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_png_apng_libfuzzer-fuzz-loader-builtin-struct-png-apng-libfuzzer.Po \
@@ -447,8 +473,10 @@ SOURCES = $(fuzz_loader_builtin_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_gif_lzw_codes_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_hdr_header_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_SOURCES) \
+	$(fuzz_loader_builtin_struct_loader_order_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_SOURCES) \
+	$(fuzz_loader_builtin_struct_option_arglist_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_pic_structure_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_png_apng_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_png_chunk_libfuzzer_SOURCES) \
@@ -466,8 +494,10 @@ DIST_SOURCES = $(fuzz_loader_builtin_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_gif_lzw_codes_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_hdr_header_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_SOURCES) \
+	$(fuzz_loader_builtin_struct_loader_order_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_SOURCES) \
+	$(fuzz_loader_builtin_struct_option_arglist_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_pic_structure_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_png_apng_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_png_chunk_libfuzzer_SOURCES) \
@@ -756,7 +786,9 @@ FUZZ_STRUCT_TARGETS = \
     bmp-dib \
     bmp-rle-bitfields \
     mapfile-spec \
-    mapfile-palette
+    mapfile-palette \
+    option-arglist \
+    loader-order
 
 FUZZ_STRUCT_PUSH_SET = \
     png-chunk \
@@ -802,6 +834,8 @@ EXTRA_DIST = \
     fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer.c \
     fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c \
     fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c \
+    fuzz-loader-builtin-struct-option-arglist-libfuzzer.c \
+    fuzz-loader-builtin-struct-loader-order-libfuzzer.c \
     loader-builtin.dict
 
 FUZZ_COMMON_CPPFLAGS = \
@@ -957,6 +991,20 @@ fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CP
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-option-arglist-libfuzzer.c
+
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-loader-order-libfuzzer.c
+
+fuzz_loader_builtin_struct_loader_order_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_loader_order_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 @HAVE_COREGRAPHICS_TRUE@fuzz_loader_coregraphics_libfuzzer_SOURCES = \
 @HAVE_COREGRAPHICS_TRUE@    $(srcdir)/fuzz-loader-component-libfuzzer.c
 
@@ -1044,6 +1092,10 @@ fuzz-loader-builtin-struct-jpeg-icc-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_st
 	@rm -f fuzz-loader-builtin-struct-jpeg-icc-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_LINK) $(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_LDADD) $(LIBS)
 
+fuzz-loader-builtin-struct-loader-order-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_struct_loader_order_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_struct_loader_order_libfuzzer_DEPENDENCIES) 
+	@rm -f fuzz-loader-builtin-struct-loader-order-libfuzzer$(EXEEXT)
+	$(AM_V_CCLD)$(fuzz_loader_builtin_struct_loader_order_libfuzzer_LINK) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_LDADD) $(LIBS)
+
 fuzz-loader-builtin-struct-mapfile-palette-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-loader-builtin-struct-mapfile-palette-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LINK) $(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_LDADD) $(LIBS)
@@ -1051,6 +1103,10 @@ fuzz-loader-builtin-struct-mapfile-palette-libfuzzer$(EXEEXT): $(fuzz_loader_bui
 fuzz-loader-builtin-struct-mapfile-spec-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-loader-builtin-struct-mapfile-spec-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_LINK) $(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_LDADD) $(LIBS)
+
+fuzz-loader-builtin-struct-option-arglist-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_struct_option_arglist_libfuzzer_DEPENDENCIES) 
+	@rm -f fuzz-loader-builtin-struct-option-arglist-libfuzzer$(EXEEXT)
+	$(AM_V_CCLD)$(fuzz_loader_builtin_struct_option_arglist_libfuzzer_LINK) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDADD) $(LIBS)
 
 fuzz-loader-builtin-struct-pic-structure-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_struct_pic_structure_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_pic_structure_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_struct_pic_structure_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-loader-builtin-struct-pic-structure-libfuzzer$(EXEEXT)
@@ -1111,8 +1167,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_hdr_header_libfuzzer-fuzz-loader-builtin-struct-runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-runtime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_spec_libfuzzer-fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_png_apng_libfuzzer-fuzz-loader-builtin-struct-png-apng-libfuzzer.Po@am__quote@ # am--include-marker
@@ -1344,6 +1402,20 @@ fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-runtime
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_jpeg_icc_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-runtime.obj `if test -f 'fuzz-loader-builtin-struct-runtime.c'; then $(CYGPATH_W) 'fuzz-loader-builtin-struct-runtime.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-loader-builtin-struct-runtime.c'; fi`
 
+fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.o: fuzz-loader-builtin-struct-loader-order-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.o -MD -MP -MF $(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Tpo -c -o fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.o `test -f 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c' || echo '$(srcdir)/'`fuzz-loader-builtin-struct-loader-order-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Tpo $(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-loader-builtin-struct-loader-order-libfuzzer.c' object='fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.o `test -f 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c' || echo '$(srcdir)/'`fuzz-loader-builtin-struct-loader-order-libfuzzer.c
+
+fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.obj: fuzz-loader-builtin-struct-loader-order-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.obj -MD -MP -MF $(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Tpo -c -o fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.obj `if test -f 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-loader-builtin-struct-loader-order-libfuzzer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Tpo $(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-loader-builtin-struct-loader-order-libfuzzer.c' object='fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_loader_order_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.obj `if test -f 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-loader-builtin-struct-loader-order-libfuzzer.c'; fi`
+
 fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.o: fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_mapfile_palette_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.o -MD -MP -MF $(DEPDIR)/fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.Tpo -c -o fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.o `test -f 'fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c' || echo '$(srcdir)/'`fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.Tpo $(DEPDIR)/fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.Po
@@ -1371,6 +1443,20 @@ fuzz_loader_builtin_struct_mapfile_spec_libfuzzer-fuzz-loader-builtin-struct-map
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c' object='fuzz_loader_builtin_struct_mapfile_spec_libfuzzer-fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_mapfile_spec_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_loader_builtin_struct_mapfile_spec_libfuzzer-fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.obj `if test -f 'fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c'; fi`
+
+fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.o: fuzz-loader-builtin-struct-option-arglist-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.o -MD -MP -MF $(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Tpo -c -o fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.o `test -f 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c' || echo '$(srcdir)/'`fuzz-loader-builtin-struct-option-arglist-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Tpo $(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-loader-builtin-struct-option-arglist-libfuzzer.c' object='fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.o `test -f 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c' || echo '$(srcdir)/'`fuzz-loader-builtin-struct-option-arglist-libfuzzer.c
+
+fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.obj: fuzz-loader-builtin-struct-option-arglist-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.obj -MD -MP -MF $(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Tpo -c -o fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.obj `if test -f 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-loader-builtin-struct-option-arglist-libfuzzer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Tpo $(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-loader-builtin-struct-option-arglist-libfuzzer.c' object='fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.obj `if test -f 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-loader-builtin-struct-option-arglist-libfuzzer.c'; fi`
 
 fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.o: fuzz-loader-builtin-struct-pic-structure-libfuzzer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_struct_pic_structure_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_struct_pic_structure_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.o -MD -MP -MF $(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.Tpo -c -o fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.o `test -f 'fuzz-loader-builtin-struct-pic-structure-libfuzzer.c' || echo '$(srcdir)/'`fuzz-loader-builtin-struct-pic-structure-libfuzzer.c
@@ -1768,8 +1854,10 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_hdr_header_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
+	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_spec_libfuzzer-fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.Po
+	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_png_apng_libfuzzer-fuzz-loader-builtin-struct-png-apng-libfuzzer.Po
@@ -1846,8 +1934,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_hdr_header_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-jpeg-icc-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_jpeg_icc_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
+	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_loader_order_libfuzzer-fuzz-loader-builtin-struct-loader-order-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_palette_libfuzzer-fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_mapfile_spec_libfuzzer-fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.Po
+	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_option_arglist_libfuzzer-fuzz-loader-builtin-struct-option-arglist-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-pic-structure-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_pic_structure_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_png_apng_libfuzzer-fuzz-loader-builtin-struct-png-apng-libfuzzer.Po

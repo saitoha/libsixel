@@ -277,6 +277,8 @@ fuzz_struct_specs = [
   ['bmp-rle-bitfields', 'fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer.c', true],
   ['mapfile-spec', 'fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c', false],
   ['mapfile-palette', 'fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c', false],
+  ['option-arglist', 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c', false],
+  ['loader-order', 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c', false],
 ]
 
 fuzz_struct_push_set = [
@@ -304,6 +306,8 @@ fuzz_struct_full_set = [
   'bmp-rle-bitfields',
   'mapfile-spec',
   'mapfile-palette',
+  'option-arglist',
+  'loader-order',
 ]
 
 struct_exe_by_name = {}
@@ -427,6 +431,8 @@ target_bmp_dib="${14}"
 target_bmp_rle_bitfields="${15}"
 target_mapfile_spec="${16}"
 target_mapfile_palette="${17}"
+target_option_arglist="${18}"
+target_loader_order="${19}"
 corpus_base="${FUZZ_STRUCT_CORPUS:-${FUZZ_BUILTIN_CORPUS:-$source_root/images}/struct}"
 args="${FUZZ_STRUCT_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
 
@@ -461,6 +467,8 @@ run_one bmp-dib "$target_bmp_dib"
 run_one bmp-rle-bitfields "$target_bmp_rle_bitfields"
 run_one mapfile-spec "$target_mapfile_spec"
 run_one mapfile-palette "$target_mapfile_palette"
+run_one option-arglist "$target_option_arglist"
+run_one loader-order "$target_loader_order"
 ''',
             'sh',
             meson.project_source_root(),
@@ -479,7 +487,9 @@ run_one mapfile-palette "$target_mapfile_palette"
             struct_exe_by_name['bmp-dib'].full_path(),
             struct_exe_by_name['bmp-rle-bitfields'].full_path(),
             struct_exe_by_name['mapfile-spec'].full_path(),
-            struct_exe_by_name['mapfile-palette'].full_path()],
+            struct_exe_by_name['mapfile-palette'].full_path(),
+            struct_exe_by_name['option-arglist'].full_path(),
+            struct_exe_by_name['loader-order'].full_path()],
   depends: [
     struct_exe_by_name['png-chunk'],
     struct_exe_by_name['png-apng'],
@@ -497,6 +507,8 @@ run_one mapfile-palette "$target_mapfile_palette"
     struct_exe_by_name['bmp-rle-bitfields'],
     struct_exe_by_name['mapfile-spec'],
     struct_exe_by_name['mapfile-palette'],
+    struct_exe_by_name['option-arglist'],
+    struct_exe_by_name['loader-order'],
   ])
 
 # vim: set et ts=2:

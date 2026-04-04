@@ -111,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [png-chunk, png-apng, png-icc-gamma, png-plte-trns, jpeg-icc, pnm-ascii, psd-resource, gif-block, gif-lzw-codes, sixel-stream, hdr-header, pic-structure, bmp-dib, bmp-rle-bitfields, mapfile-spec, mapfile-palette]
+        target: [png-chunk, png-apng, png-icc-gamma, png-plte-trns, jpeg-icc, pnm-ascii, psd-resource, gif-block, gif-lzw-codes, sixel-stream, hdr-header, pic-structure, bmp-dib, bmp-rle-bitfields, mapfile-spec, mapfile-palette, option-arglist, loader-order]
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
@@ -149,11 +149,6 @@ jobs:
           target_corpus="$FUZZ_STRUCT_CORPUS/${{ matrix.target }}"
           mkdir -p "$target_corpus" "$FUZZ_STRUCT_ARTIFACT_DIR"
 
-          if test -d fuzz/images; then
-            cp -a fuzz/images/. "$target_corpus/" || true
-          fi
-          cp -a images/. "$target_corpus/" || true
-
           if test -d tests/data/security/fuzzing/data; then
             while IFS= read -r -d '' seed; do
               cp -n "$seed" "$target_corpus/" || true
@@ -190,7 +185,7 @@ jobs:
           fi
           struct_max_len=4096
           case "${{ matrix.target }}" in
-            hdr-header|mapfile-spec|mapfile-palette|pnm-ascii)
+            hdr-header|mapfile-spec|mapfile-palette|pnm-ascii|option-arglist|loader-order)
               struct_max_len=2048
               ;;
             gif-lzw-codes)
@@ -320,11 +315,6 @@ jobs:
           target_corpus="$FUZZ_BUILTIN_CORPUS/${{ matrix.target }}"
           mkdir -p "$target_corpus" "$FUZZ_BUILTIN_ARTIFACT_DIR"
 
-          if test -d fuzz/images; then
-            cp -a fuzz/images/. "$target_corpus/" || true
-          fi
-          cp -a images/. "$target_corpus/" || true
-
           if test -d tests/data/security/fuzzing/data; then
             while IFS= read -r -d '' seed; do
               cp -n "$seed" "$target_corpus/" || true
@@ -446,7 +436,10 @@ jobs:
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
       FUZZ_TIMEOUT: 300
-      AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
+      AFL_USE_ASAN: 1
+      AFL_USE_UBSAN: 1
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
       - uses: actions/checkout@v6
@@ -466,6 +459,8 @@ jobs:
         run: |
           set -euxo pipefail
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          sanitizer_cflags="-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined"
+          sanitizer_ldflags="-fsanitize=address,undefined"
           mkdir -p "$FUZZ_OUTPUT_DIR"
 
           fuzz_target='fuzz-cli-img2sixel'
@@ -480,13 +475,26 @@ jobs:
           fi
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
-            CC=afl-clang-fast CXX=afl-clang-fast++ ./configure
+            CC=afl-clang-fast CXX=afl-clang-fast++ \
+              CFLAGS="$sanitizer_cflags" LDFLAGS="$sanitizer_ldflags" \
+              ./configure
             make -j"$(nproc)"
             make "$fuzz_target"
           else
-            CC=afl-clang-fast CXX=afl-clang-fast++ meson setup builddir
+            CC=afl-clang-fast CXX=afl-clang-fast++ \
+              CFLAGS="$sanitizer_cflags" LDFLAGS="$sanitizer_ldflags" \
+              meson setup builddir
             meson compile -C builddir -v
             meson compile -C builddir "$fuzz_target"
+          fi
+
+          crash_count="$(find "$FUZZ_OUTPUT_DIR" -type f -path '*/crashes/*' \
+            ! -name 'README.txt' | wc -l | tr -d ' ')"
+          if [ "${crash_count}" -gt 0 ]; then
+            echo "::error::AFL detected ${crash_count} crash input(s)."
+            find "$FUZZ_OUTPUT_DIR" -type f -path '*/crashes/*' \
+              ! -name 'README.txt' -print
+            exit 1
           fi
 
       - name: Pack img2sixel CLI fuzz artifacts
@@ -558,11 +566,6 @@ jobs:
           set -euo pipefail
           target_corpus="$FUZZ_COMPONENT_CORPUS/coregraphics"
           mkdir -p "$target_corpus" "$FUZZ_COMPONENT_ARTIFACT_DIR"
-
-          if test -d fuzz/images; then
-            cp -a fuzz/images/. "$target_corpus/" || true
-          fi
-          cp -a images/. "$target_corpus/" || true
 
           if test -d tests/data/security/fuzzing/data; then
             while IFS= read -r -d '' seed; do
@@ -760,8 +763,6 @@ jobs:
             }
           }
 
-          Copy-SeedFiles (Join-Path $workspace 'fuzz/images') @()
-          Copy-SeedFiles (Join-Path $workspace 'images') @()
           Copy-SeedFiles (Join-Path $workspace 'tests/data/security/fuzzing/data') @()
           Copy-SeedFiles (Join-Path $workspace 'tests/data') @(
             '*.png', '*.jpg', '*.jpeg',

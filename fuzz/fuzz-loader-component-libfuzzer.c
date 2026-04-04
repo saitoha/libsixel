@@ -164,12 +164,12 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     fuse_palette = (int)((h >> 1) & UINT64_C(1));
     reqcolors = 2 + ((int)((h >> 8) & UINT64_C(0xff)) % (SIXEL_PALETTE_MAX - 1));
     loop_control = SIXEL_LOOP_DISABLE;
-    start_frame_no = 0;
-    enable_cms = (int)((h >> 16) & UINT64_C(1));
-    use_bgcolor = (int)((h >> 17) & UINT64_C(1));
-    bgcolor[0] = (unsigned char)(h >> 24);
-    bgcolor[1] = (unsigned char)(h >> 32);
-    bgcolor[2] = (unsigned char)(h >> 40);
+    start_frame_no = ((int)((h >> 16) & UINT64_C(0x07))) - 3;
+    enable_cms = (int)((h >> 24) & UINT64_C(1));
+    use_bgcolor = (int)((h >> 25) & UINT64_C(1));
+    bgcolor[0] = (unsigned char)(h >> 32);
+    bgcolor[1] = (unsigned char)(h >> 40);
+    bgcolor[2] = (unsigned char)(h >> 48);
 
     (void)sixel_loader_component_setopt(g_component,
                                         SIXEL_LOADER_OPTION_REQUIRE_STATIC,

@@ -820,8 +820,8 @@ main(void)
         }
 
         payload_size = data_size;
-        if (payload_size > 65536u) {
-            payload_size = 65536u;
+        if (payload_size > 262144u) {
+            payload_size = 262144u;
         }
 
         if (fuzz_overwrite_file(input_fd, data, payload_size) != 0) {
