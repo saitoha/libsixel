@@ -19,7 +19,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 base_dir="${TOP_SRCDIR}/tests/data/inputs/formats"
-red_reference="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_expected.ppm"
+gray_reference="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_multilayer_fill_soco_gray_expected.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 status=0
@@ -61,7 +61,7 @@ case_name=snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_engin
 
     lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
         -b "MS-SSIM:${lsqa_floor}" \
-        "${red_reference}" "${output_sixel}" 2>&1) || {
+        "${gray_reference}" "${output_sixel}" 2>&1) || {
         echo "not ok" 1 - "TySh EngineData StyleSheetData /DeviceGray decode fell below MS-SSIM ${lsqa_floor} for ${case_name}: ${lsqa_msg}"
         status=1
         exit 0
