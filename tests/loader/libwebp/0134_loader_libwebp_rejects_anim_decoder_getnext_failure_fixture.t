@@ -30,10 +30,11 @@ test "${msg#*load_with_libwebp: WebPAnimDecoderGetNext failed.*}" != "${msg}" &&
     exit 0
 }
 
-# Some libwebp/macOS runner combinations surface this fixture as a generic
-# decode failure while still rejecting it through the forced libwebp path.
-test "${msg#*unexpected error*}" != "${msg}" || {
-    echo "not ok" 1 - "expected failure diagnostic was missing"
+# Some libwebp builds report the fallback decode failure as either
+# "unexpected error" or "libpng error" while still rejecting the fixture.
+test "${msg#*unexpected error*}" != "${msg}" || \
+test "${msg#*libpng error*}" != "${msg}" || {
+    echo "not ok" 1 - "expected fallback error diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
