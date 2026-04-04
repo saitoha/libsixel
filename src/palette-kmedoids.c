@@ -674,8 +674,13 @@ sixel_get_kmedoids_bandit_batch(void)
     return cached;
 }
 
+/*
+ * Keep this helper name k-medoids specific so amalgamation builds can include
+ * palette-kmeans.c in the same translation unit without static symbol
+ * collisions.
+ */
 static int
-sixel_palette_float32_alpha_visible(double alpha)
+sixel_kmedoids_float32_alpha_visible(double alpha)
 {
     if (!isfinite(alpha)) {
         return 0;
@@ -1003,7 +1008,7 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
 
             fpixels = (float const *)(void const *)(data + base);
             if (channels == 4u
-                    && !sixel_palette_float32_alpha_visible(
+                    && !sixel_kmedoids_float32_alpha_visible(
                            (double)fpixels[3u])) {
                 continue;
             }

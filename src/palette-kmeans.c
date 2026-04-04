@@ -1068,8 +1068,13 @@ sixel_kmeans_choose_initial_centroids(double *centers,
     return status;
 }
 
+/*
+ * Keep this helper name k-means specific so amalgamation builds can include
+ * palette-kmedoids.c in the same translation unit without static symbol
+ * collisions.
+ */
 static int
-sixel_palette_float32_alpha_visible(double alpha)
+sixel_kmeans_float32_alpha_visible(double alpha)
 {
 #if HAVE_MATH_H
     if (!isfinite(alpha)) {
@@ -2413,7 +2418,7 @@ build_palette_kmeans(unsigned char **result,
 
             fpixels = (float const *)(void const *)(data + base);
             if (channels == 4U
-                && !sixel_palette_float32_alpha_visible(
+                && !sixel_kmeans_float32_alpha_visible(
                        (double)fpixels[3U])) {
                 continue;
             }
@@ -2509,7 +2514,7 @@ build_palette_kmeans(unsigned char **result,
                 base = index * pixel_stride;
                 fpixels = (float const *)(void const *)(data + base);
                 if (channels == 4U
-                    && !sixel_palette_float32_alpha_visible(
+                    && !sixel_kmeans_float32_alpha_visible(
                            (double)fpixels[3U])) {
                     continue;
                 }
