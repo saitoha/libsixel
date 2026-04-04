@@ -5633,6 +5633,44 @@ sixel_encoder_parse_quantize_model_argument(
     return status;
 }
 
+typedef struct sixel_encoder_setopt_context {
+    char *opt_copy;
+    char *mapfile_copy;
+    sixel_option_argument_list_resolution_t q_list_resolution;
+} sixel_encoder_setopt_context_t;
+
+static void
+sixel_encoder_setopt_context_init(sixel_encoder_setopt_context_t *context)
+{
+    if (context == NULL) {
+        return;
+    }
+
+    context->opt_copy = NULL;
+    context->mapfile_copy = NULL;
+    sixel_option_init_argument_list_resolution(&context->q_list_resolution);
+}
+
+static void
+sixel_encoder_setopt_context_dispose(
+    sixel_encoder_setopt_context_t *context,
+    sixel_allocator_t *allocator)
+{
+    if (context == NULL) {
+        return;
+    }
+
+    sixel_option_free_argument_list_resolution(&context->q_list_resolution);
+    if (context->opt_copy != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, context->opt_copy);
+        context->opt_copy = NULL;
+    }
+    if (context->mapfile_copy != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, context->mapfile_copy);
+        context->mapfile_copy = NULL;
+    }
+}
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -5649,7 +5687,7 @@ sixel_encoder_setopt(
     long parsed_value;
     char *endptr;
     int forced_palette;
-    char *opt_copy;
+    sixel_encoder_setopt_context_t setopt_context;
     char const *suffix;
     int geometry_ok;
     char const *drcs_arg_delim;
@@ -5664,7 +5702,6 @@ sixel_encoder_setopt(
     unsigned int drcs_charset_limit;
     sixel_option_choice_result_t match_result;
     int match_value;
-    sixel_option_argument_list_resolution_t q_list_resolution;
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
@@ -5677,7 +5714,6 @@ sixel_encoder_setopt(
     char match_message[256];
     int png_argument_has_prefix = 0;
     char const *png_path_view = NULL;
-    char *mapfile_copy;
     char *mapfile_copy_view;
     char *mapfile_normalized;
     size_t mapfile_offset;
@@ -5699,8 +5735,7 @@ sixel_encoder_setopt(
     int tile_open_flags;
 
     sixel_encoder_ref(encoder);
-    opt_copy = NULL;
-    mapfile_copy = NULL;
+    sixel_encoder_setopt_context_init(&setopt_context);
     mapfile_copy_view = NULL;
     mapfile_offset = 0u;
     mapfile_length = 0u;
@@ -5713,7 +5748,6 @@ sixel_encoder_setopt(
     parsed_value = 0L;
     suffix = NULL;
     geometry_ok = 0;
-    sixel_option_init_argument_list_resolution(&q_list_resolution);
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
@@ -6071,17 +6105,17 @@ sixel_encoder_setopt(
         }
         mapfile_length = strlen(value);
         mapfile_offset = (size_t)(mapfile_view - value);
-        mapfile_copy = arg_strdup(value, encoder->allocator);
-        if (mapfile_copy == NULL) {
+        setopt_context.mapfile_copy = arg_strdup(value, encoder->allocator);
+        if (setopt_context.mapfile_copy == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
         if (mapfile_offset < mapfile_length) {
-            mapfile_copy_view = mapfile_copy + mapfile_offset;
+            mapfile_copy_view = setopt_context.mapfile_copy + mapfile_offset;
         } else {
-            mapfile_copy_view = mapfile_copy;
+            mapfile_copy_view = setopt_context.mapfile_copy;
         }
         /*
          * Normalize only the filesystem path portion so the stored value is
@@ -6096,8 +6130,9 @@ sixel_encoder_setopt(
                 sixel_helper_set_additional_message(
                     "sixel_encoder_setopt: sixel_allocator_malloc() failed "
                     "for mapfile path buffer.");
-                sixel_allocator_free(encoder->allocator, mapfile_copy);
-                mapfile_copy = NULL;
+                sixel_allocator_free(encoder->allocator,
+                                     setopt_context.mapfile_copy);
+                setopt_context.mapfile_copy = NULL;
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -6108,8 +6143,9 @@ sixel_encoder_setopt(
                 sixel_helper_set_additional_message(
                     "sixel_encoder_setopt: invalid mapfile path.");
                 sixel_allocator_free(encoder->allocator, libc_buffer);
-                sixel_allocator_free(encoder->allocator, mapfile_copy);
-                mapfile_copy = NULL;
+                sixel_allocator_free(encoder->allocator,
+                                     setopt_context.mapfile_copy);
+                setopt_context.mapfile_copy = NULL;
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }
@@ -6117,8 +6153,9 @@ sixel_encoder_setopt(
                 sixel_helper_set_additional_message(
                     "sixel_encoder_setopt: mapfile path is too long.");
                 sixel_allocator_free(encoder->allocator, libc_buffer);
-                sixel_allocator_free(encoder->allocator, mapfile_copy);
-                mapfile_copy = NULL;
+                sixel_allocator_free(encoder->allocator,
+                                     setopt_context.mapfile_copy);
+                setopt_context.mapfile_copy = NULL;
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -6130,20 +6167,24 @@ sixel_encoder_setopt(
                     "sixel_encoder_setopt: sixel_allocator_malloc() failed "
                     "for mapfile normalization.");
                 sixel_allocator_free(encoder->allocator, libc_buffer);
-                sixel_allocator_free(encoder->allocator, mapfile_copy);
-                mapfile_copy = NULL;
+                sixel_allocator_free(encoder->allocator,
+                                     setopt_context.mapfile_copy);
+                setopt_context.mapfile_copy = NULL;
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
-            memcpy(mapfile_normalized, mapfile_copy, mapfile_offset);
+            memcpy(mapfile_normalized,
+                   setopt_context.mapfile_copy,
+                   mapfile_offset);
             memcpy(mapfile_normalized + mapfile_offset,
                    libc_path,
                    libc_buffer_size);
             sixel_allocator_free(encoder->allocator, libc_buffer);
-            sixel_allocator_free(encoder->allocator, mapfile_copy);
-            mapfile_copy = mapfile_normalized;
+            sixel_allocator_free(encoder->allocator,
+                                 setopt_context.mapfile_copy);
+            setopt_context.mapfile_copy = mapfile_normalized;
             mapfile_normalized = NULL;
-            mapfile_copy_view = mapfile_copy + mapfile_offset;
+            mapfile_copy_view = setopt_context.mapfile_copy + mapfile_offset;
         }
         path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
             SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
@@ -6154,16 +6195,17 @@ sixel_encoder_setopt(
             mapfile_copy_view,
             path_flags);
         if (path_check != 0) {
-            sixel_allocator_free(encoder->allocator, mapfile_copy);
-            mapfile_copy = NULL;
+            sixel_allocator_free(encoder->allocator,
+                                 setopt_context.mapfile_copy);
+            setopt_context.mapfile_copy = NULL;
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         if (encoder->mapfile) {
             sixel_allocator_free(encoder->allocator, encoder->mapfile);
         }
-        encoder->mapfile = mapfile_copy;
-        mapfile_copy = NULL;
+        encoder->mapfile = setopt_context.mapfile_copy;
+        setopt_context.mapfile_copy = NULL;
         encoder->color_option = SIXEL_COLOR_OPTION_MAPFILE;
         break;
     case SIXEL_OPTFLAG_MAPFILE_OUTPUT:  /* M */
@@ -6173,8 +6215,8 @@ sixel_encoder_setopt(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        opt_copy = arg_strdup(value, encoder->allocator);
-        if (opt_copy == NULL) {
+        setopt_context.opt_copy = arg_strdup(value, encoder->allocator);
+        if (setopt_context.opt_copy == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
@@ -6182,12 +6224,13 @@ sixel_encoder_setopt(
         }
         status = sixel_encoder_enable_quantized_capture(encoder, 1);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(encoder->allocator, opt_copy);
+            sixel_allocator_free(encoder->allocator, setopt_context.opt_copy);
+            setopt_context.opt_copy = NULL;
             goto end;
         }
         sixel_allocator_free(encoder->allocator, encoder->palette_output);
-        encoder->palette_output = opt_copy;
-        opt_copy = NULL;
+        encoder->palette_output = setopt_context.opt_copy;
+        setopt_context.opt_copy = NULL;
         break;
     case SIXEL_OPTFLAG_MONOCHROME:  /* e */
         encoder->color_option = SIXEL_COLOR_OPTION_MONOCHROME;
@@ -6374,14 +6417,14 @@ sixel_encoder_setopt(
          */
         status = sixel_encoder_parse_quantize_model_argument(
             value,
-            &q_list_resolution,
+            &setopt_context.q_list_resolution,
             match_detail,
             sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
 
-        q_resolution = &q_list_resolution.items[0].resolution;
+        q_resolution = &setopt_context.q_list_resolution.items[0].resolution;
         encoder->quantize_model = q_resolution->resolved_base_value;
         encoder->quantize_model_kmeans_init_override = 0;
         encoder->quantize_model_kmeans_threshold_override = 0;
@@ -7405,13 +7448,7 @@ sixel_encoder_setopt(
     status = SIXEL_OK;
 
 end:
-    sixel_option_free_argument_list_resolution(&q_list_resolution);
-    if (opt_copy != NULL) {
-        sixel_allocator_free(encoder->allocator, opt_copy);
-    }
-    if (mapfile_copy != NULL) {
-        sixel_allocator_free(encoder->allocator, mapfile_copy);
-    }
+    sixel_encoder_setopt_context_dispose(&setopt_context, encoder->allocator);
     sixel_encoder_unref(encoder);
 
     return status;
