@@ -7,12 +7,15 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "src/allocator.h"
-#include "src/palette.h"
+#include <sixel.h>
+
+#include "src/dither.h"
 #include "src/palette-kmedoids.h"
 
 #define TEST_PIXEL_COUNT 12u
-#define TEST_REQCOLORS 4u
+#define TEST_WIDTH 12
+#define TEST_HEIGHT 1
+#define TEST_REQCOLORS 4
 
 static unsigned char const g_test_pixels_rgb[TEST_PIXEL_COUNT * 3u] = {
     255u, 0u,   0u,
@@ -120,110 +123,93 @@ test_verify_palette_subset(unsigned char const *palette,
 }
 
 static int
-test_build_palette(sixel_kmedoids_algo_t algo,
-                   uint32_t seed,
-                   int use_float32,
-                   unsigned char **palette_out,
-                   unsigned int *ncolors_out,
-                   sixel_allocator_t *allocator)
+test_build_dither(sixel_kmedoids_algo_t algo,
+                  uint32_t seed,
+                  int use_float32,
+                  sixel_dither_t **dither_out,
+                  sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
-    unsigned char *palette;
-    unsigned int ncolors;
-    unsigned int origcolors;
+    sixel_dither_t *dither;
     float float_pixels[TEST_PIXEL_COUNT * 3u];
     unsigned int index;
+    int pixelformat;
 
     status = SIXEL_FALSE;
-    palette = NULL;
-    ncolors = 0u;
-    origcolors = 0u;
+    dither = NULL;
     index = 0u;
-    if (palette_out == NULL || ncolors_out == NULL || allocator == NULL) {
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    if (dither_out == NULL || allocator == NULL) {
         return 0;
     }
-    *palette_out = NULL;
-    *ncolors_out = 0u;
+    *dither_out = NULL;
+
+    status = sixel_dither_new(&dither, TEST_REQCOLORS, allocator);
+    if (SIXEL_FAILED(status) || dither == NULL) {
+        return 0;
+    }
+
+    dither->quantize_model = SIXEL_QUANTIZE_MODEL_KMEDOIDS;
+    dither->final_merge_mode = SIXEL_FINAL_MERGE_NONE;
+    dither->prefer_float32 = use_float32 ? 1 : 0;
 
     sixel_set_kmedoids_algo_override(1, algo);
     sixel_set_kmedoids_seed_override(1, seed);
 
     if (use_float32) {
+        pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
         for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
             float_pixels[index] = (float)g_test_pixels_rgb[index] / 255.0f;
         }
-        status = sixel_palette_make_palette(&palette,
-                                            float_pixels,
-                                            sizeof(float_pixels),
-                                            SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                            TEST_REQCOLORS,
-                                            &ncolors,
-                                            &origcolors,
-                                            SIXEL_LARGE_AUTO,
-                                            SIXEL_REP_AUTO,
-                                            SIXEL_QUALITY_AUTO,
-                                            0,
-                                            0,
-                                            SIXEL_QUANTIZE_MODEL_KMEDOIDS,
-                                            SIXEL_FINAL_MERGE_NONE,
-                                            1,
-                                            allocator);
+        status = sixel_dither_initialize(dither,
+                                         (unsigned char *)float_pixels,
+                                         TEST_WIDTH,
+                                         TEST_HEIGHT,
+                                         pixelformat,
+                                         SIXEL_LARGE_AUTO,
+                                         SIXEL_REP_AUTO,
+                                         SIXEL_QUALITY_AUTO);
     } else {
-        status = sixel_palette_make_palette(&palette,
-                                            g_test_pixels_rgb,
-                                            sizeof(g_test_pixels_rgb),
-                                            SIXEL_PIXELFORMAT_RGB888,
-                                            TEST_REQCOLORS,
-                                            &ncolors,
-                                            &origcolors,
-                                            SIXEL_LARGE_AUTO,
-                                            SIXEL_REP_AUTO,
-                                            SIXEL_QUALITY_AUTO,
-                                            0,
-                                            0,
-                                            SIXEL_QUANTIZE_MODEL_KMEDOIDS,
-                                            SIXEL_FINAL_MERGE_NONE,
-                                            0,
-                                            allocator);
+        status = sixel_dither_initialize(dither,
+                                         (unsigned char *)g_test_pixels_rgb,
+                                         TEST_WIDTH,
+                                         TEST_HEIGHT,
+                                         pixelformat,
+                                         SIXEL_LARGE_AUTO,
+                                         SIXEL_REP_AUTO,
+                                         SIXEL_QUALITY_AUTO);
     }
 
     sixel_set_kmedoids_algo_override(0, SIXEL_PALETTE_KMEDOIDS_ALGO_PAM);
     sixel_set_kmedoids_seed_override(0, 1u);
 
-    if (SIXEL_FAILED(status) || palette == NULL || ncolors == 0u) {
-        if (palette != NULL) {
-            sixel_palette_free_palette(palette, allocator);
-        }
+    if (SIXEL_FAILED(status)
+            || sixel_dither_get_palette(dither) == NULL
+            || sixel_dither_get_num_of_palette_colors(dither) <= 0) {
+        sixel_dither_unref(dither);
         return 0;
     }
 
-    *palette_out = palette;
-    *ncolors_out = ncolors;
+    *dither_out = dither;
     return 1;
 }
 
 static int
-test_check_medoid_subset(void)
+test_run_subset_case(sixel_kmedoids_algo_t algo,
+                     int use_float32)
 {
     sixel_allocator_t *allocator;
+    sixel_dither_t *dither;
     unsigned char allowed[TEST_PIXEL_COUNT * 3u];
     unsigned int allowed_count;
     unsigned char *palette;
-    unsigned int ncolors;
-    unsigned int algo_index;
-    int float_mode;
-    sixel_kmedoids_algo_t algo_values[4];
+    int ncolors;
 
     allocator = NULL;
+    dither = NULL;
     allowed_count = 0u;
     palette = NULL;
-    ncolors = 0u;
-    algo_index = 0u;
-    float_mode = 0;
-    algo_values[0] = SIXEL_PALETTE_KMEDOIDS_ALGO_PAM;
-    algo_values[1] = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA;
-    algo_values[2] = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS;
-    algo_values[3] = SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM;
+    ncolors = 0;
 
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
         return 0;
@@ -238,104 +224,79 @@ test_check_medoid_subset(void)
         return 0;
     }
 
-    for (float_mode = 0; float_mode <= 1; ++float_mode) {
-        for (algo_index = 0u; algo_index < 4u; ++algo_index) {
-            if (!test_build_palette(algo_values[algo_index],
-                                    7u,
-                                    float_mode,
-                                    &palette,
-                                    &ncolors,
-                                    allocator)) {
-                sixel_allocator_unref(allocator);
-                return 0;
-            }
-            if (!test_verify_palette_subset(palette,
-                                            ncolors,
-                                            allowed,
-                                            allowed_count)) {
-                sixel_palette_free_palette(palette, allocator);
-                sixel_allocator_unref(allocator);
-                return 0;
-            }
-            sixel_palette_free_palette(palette, allocator);
-            palette = NULL;
-            ncolors = 0u;
-        }
+    if (!test_build_dither(algo, 7u, use_float32, &dither, allocator)) {
+        sixel_allocator_unref(allocator);
+        return 0;
     }
 
+    palette = sixel_dither_get_palette(dither);
+    ncolors = sixel_dither_get_num_of_palette_colors(dither);
+    if (!test_verify_palette_subset(palette,
+                                    (unsigned int)ncolors,
+                                    allowed,
+                                    allowed_count)) {
+        sixel_dither_unref(dither);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    sixel_dither_unref(dither);
     sixel_allocator_unref(allocator);
     return 1;
 }
 
 static int
-test_check_seed_reproducibility(void)
+test_run_seed_case(sixel_kmedoids_algo_t algo)
 {
     sixel_allocator_t *allocator;
+    sixel_dither_t *dither_a;
+    sixel_dither_t *dither_b;
     unsigned char *palette_a;
     unsigned char *palette_b;
-    unsigned int colors_a;
-    unsigned int colors_b;
-    unsigned int algo_index;
-    sixel_kmedoids_algo_t algo_values[3];
+    int colors_a;
+    int colors_b;
 
     allocator = NULL;
+    dither_a = NULL;
+    dither_b = NULL;
     palette_a = NULL;
     palette_b = NULL;
-    colors_a = 0u;
-    colors_b = 0u;
-    algo_index = 0u;
-    algo_values[0] = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA;
-    algo_values[1] = SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS;
-    algo_values[2] = SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM;
+    colors_a = 0;
+    colors_b = 0;
 
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
         return 0;
     }
 
-    for (algo_index = 0u; algo_index < 3u; ++algo_index) {
-        if (!test_build_palette(algo_values[algo_index],
-                                1234u,
-                                0,
-                                &palette_a,
-                                &colors_a,
-                                allocator)) {
-            sixel_allocator_unref(allocator);
-            return 0;
-        }
-        if (!test_build_palette(algo_values[algo_index],
-                                1234u,
-                                0,
-                                &palette_b,
-                                &colors_b,
-                                allocator)) {
-            sixel_palette_free_palette(palette_a, allocator);
-            sixel_allocator_unref(allocator);
-            return 0;
-        }
-
-        if (colors_a != colors_b) {
-            sixel_palette_free_palette(palette_a, allocator);
-            sixel_palette_free_palette(palette_b, allocator);
-            sixel_allocator_unref(allocator);
-            return 0;
-        }
-        if (memcmp(palette_a,
-                   palette_b,
-                   (size_t)colors_a * 3u) != 0) {
-            sixel_palette_free_palette(palette_a, allocator);
-            sixel_palette_free_palette(palette_b, allocator);
-            sixel_allocator_unref(allocator);
-            return 0;
-        }
-
-        sixel_palette_free_palette(palette_a, allocator);
-        sixel_palette_free_palette(palette_b, allocator);
-        palette_a = NULL;
-        palette_b = NULL;
-        colors_a = 0u;
-        colors_b = 0u;
+    if (!test_build_dither(algo, 1234u, 0, &dither_a, allocator)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (!test_build_dither(algo, 1234u, 0, &dither_b, allocator)) {
+        sixel_dither_unref(dither_a);
+        sixel_allocator_unref(allocator);
+        return 0;
     }
 
+    palette_a = sixel_dither_get_palette(dither_a);
+    palette_b = sixel_dither_get_palette(dither_b);
+    colors_a = sixel_dither_get_num_of_palette_colors(dither_a);
+    colors_b = sixel_dither_get_num_of_palette_colors(dither_b);
+    if (colors_a != colors_b) {
+        sixel_dither_unref(dither_a);
+        sixel_dither_unref(dither_b);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (memcmp(palette_a, palette_b, (size_t)colors_a * 3u) != 0) {
+        sixel_dither_unref(dither_a);
+        sixel_dither_unref(dither_b);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    sixel_dither_unref(dither_a);
+    sixel_dither_unref(dither_b);
     sixel_allocator_unref(allocator);
     return 1;
 }
@@ -343,16 +304,54 @@ test_check_seed_reproducibility(void)
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
-    int run_seed;
-
-    run_seed = 0;
-    if (argc > 1 && strcmp(argv[1], "--seed") == 0) {
-        run_seed = 1;
+    if (argc < 2) {
+        return 1;
     }
 
-    if (run_seed) {
-        return test_check_seed_reproducibility() ? 0 : 1;
+    if (strcmp(argv[1], "subset-pam-8bit") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_PAM, 0)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "subset-clara-8bit") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA, 0)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "subset-clarans-8bit") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "subset-banditpam-8bit") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 0)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "subset-pam-float32") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_PAM, 1)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "subset-clara-float32") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA, 1)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "subset-clarans-float32") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "subset-banditpam-float32") == 0) {
+        return test_run_subset_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 1)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "seed-clara") == 0) {
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "seed-clarans") == 0) {
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "seed-banditpam") == 0) {
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM)
+            ? 0 : 1;
     }
 
-    return test_check_medoid_subset() ? 0 : 1;
+    return 1;
 }
