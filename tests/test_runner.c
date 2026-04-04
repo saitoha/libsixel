@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #if defined(_WIN32)
 # include <windows.h>
@@ -270,6 +271,10 @@ print_usage(char const *program)
     fprintf(stderr, "usage: %s <test-name> [args...]\n", program);
     fprintf(stderr, "       %s --list\n", program);
     fprintf(stderr, "       %s --is-running-under-wine\n", program);
+    fprintf(stderr,
+            "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms> "
+            "<program> [args...]\n",
+            program);
     fprintf(stderr, "\n");
     fprintf(stderr, "available tests:\n");
     for (index = 0u; test_entries[index].name != NULL; index++) {
@@ -300,6 +305,231 @@ test_runner_is_running_under_wine(void)
     return 1;
 #else
     return 0;
+#endif
+}
+
+static int
+test_runner_run_windows_ctrl_break(int argc, char **argv)
+{
+#if defined(_WIN32)
+    char const *delay_token;
+    char const *timeout_token;
+    unsigned long parsed_delay;
+    unsigned long parsed_timeout;
+    char *delay_end;
+    char *timeout_end;
+    char const *program;
+    STARTUPINFOA startup_info;
+    PROCESS_INFORMATION process_info;
+    char *command_line;
+    size_t command_line_length;
+    size_t index;
+    size_t token_length;
+    char *cursor;
+    char const *token_cursor;
+    size_t backslash_count;
+    DWORD wait_result;
+    BOOL create_ok;
+    BOOL handler_ignore_set;
+    BOOL ctrl_break_sent;
+    BOOL child_terminated;
+    int exit_status;
+
+    delay_token = NULL;
+    timeout_token = NULL;
+    parsed_delay = 0ul;
+    parsed_timeout = 0ul;
+    delay_end = NULL;
+    timeout_end = NULL;
+    program = NULL;
+    memset(&startup_info, 0, sizeof(startup_info));
+    memset(&process_info, 0, sizeof(process_info));
+    command_line = NULL;
+    command_line_length = 1u;
+    index = 0u;
+    token_length = 0u;
+    cursor = NULL;
+    token_cursor = NULL;
+    backslash_count = 0u;
+    wait_result = WAIT_FAILED;
+    create_ok = FALSE;
+    handler_ignore_set = FALSE;
+    ctrl_break_sent = FALSE;
+    child_terminated = FALSE;
+    exit_status = EXIT_FAILURE;
+
+    if (argc < 4) {
+        fprintf(stderr,
+                "usage: %s <delay-ms> <timeout-ms> <program> [args...]\n",
+                argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    delay_token = argv[1];
+    timeout_token = argv[2];
+    errno = 0;
+    parsed_delay = strtoul(delay_token, &delay_end, 10);
+    if (errno != 0 || delay_end == delay_token || *delay_end != '\0') {
+        fprintf(stderr,
+                "test_runner: invalid delay milliseconds: %s\n",
+                delay_token);
+        return EXIT_FAILURE;
+    }
+
+    errno = 0;
+    parsed_timeout = strtoul(timeout_token, &timeout_end, 10);
+    if (errno != 0 || timeout_end == timeout_token || *timeout_end != '\0') {
+        fprintf(stderr,
+                "test_runner: invalid timeout milliseconds: %s\n",
+                timeout_token);
+        return EXIT_FAILURE;
+    }
+
+    if (parsed_delay > (unsigned long)MAXDWORD) {
+        fprintf(stderr,
+                "test_runner: delay milliseconds exceeds DWORD range\n");
+        return EXIT_FAILURE;
+    }
+
+    if (parsed_timeout > (unsigned long)MAXDWORD) {
+        fprintf(stderr,
+                "test_runner: timeout milliseconds exceeds DWORD range\n");
+        return EXIT_FAILURE;
+    }
+
+    program = argv[3];
+    for (index = 3u; index < (size_t)argc; index++) {
+        token_length = strlen(argv[index]);
+        command_line_length += 3u + (token_length * 2u);
+    }
+
+    command_line = (char *)malloc(command_line_length);
+    if (command_line == NULL) {
+        fprintf(stderr, "test_runner: failed to allocate command line\n");
+        return EXIT_FAILURE;
+    }
+
+    cursor = command_line;
+    for (index = 3u; index < (size_t)argc; index++) {
+        if (index != 3u) {
+            *cursor++ = ' ';
+        }
+        *cursor++ = '"';
+        token_cursor = argv[index];
+        backslash_count = 0u;
+        while (*token_cursor != '\0') {
+            if (*token_cursor == '\\') {
+                backslash_count++;
+                token_cursor++;
+                continue;
+            }
+            if (*token_cursor == '"') {
+                while (backslash_count > 0u) {
+                    *cursor++ = '\\';
+                    *cursor++ = '\\';
+                    backslash_count--;
+                }
+                *cursor++ = '\\';
+                *cursor++ = '"';
+                token_cursor++;
+                continue;
+            }
+            while (backslash_count > 0u) {
+                *cursor++ = '\\';
+                backslash_count--;
+            }
+            *cursor++ = *token_cursor;
+            token_cursor++;
+        }
+        while (backslash_count > 0u) {
+            *cursor++ = '\\';
+            *cursor++ = '\\';
+            backslash_count--;
+        }
+        *cursor++ = '"';
+    }
+    *cursor = '\0';
+
+    startup_info.cb = sizeof(startup_info);
+    create_ok = CreateProcessA(program,
+                               command_line,
+                               NULL,
+                               NULL,
+                               FALSE,
+                               CREATE_NEW_PROCESS_GROUP,
+                               NULL,
+                               NULL,
+                               &startup_info,
+                               &process_info);
+    if (!create_ok) {
+        fprintf(stderr,
+                "test_runner: CreateProcessA failed: %lu\n",
+                (unsigned long)GetLastError());
+        goto cleanup;
+    }
+
+    if (parsed_delay > 0ul) {
+        Sleep((DWORD)parsed_delay);
+    }
+
+    handler_ignore_set = SetConsoleCtrlHandler(NULL, TRUE);
+    if (!handler_ignore_set) {
+        fprintf(stderr,
+                "test_runner: SetConsoleCtrlHandler(ignore) failed: %lu\n",
+                (unsigned long)GetLastError());
+        goto cleanup;
+    }
+
+    ctrl_break_sent = GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT,
+                                               process_info.dwProcessId);
+    if (!ctrl_break_sent) {
+        fprintf(stderr,
+                "test_runner: GenerateConsoleCtrlEvent failed: %lu\n",
+                (unsigned long)GetLastError());
+        goto cleanup;
+    }
+
+    wait_result = WaitForSingleObject(process_info.hProcess,
+                                      (DWORD)parsed_timeout);
+    if (wait_result == WAIT_OBJECT_0) {
+        child_terminated = TRUE;
+        exit_status = EXIT_SUCCESS;
+        goto cleanup;
+    }
+
+    if (wait_result == WAIT_TIMEOUT) {
+        fprintf(stderr,
+                "test_runner: timeout waiting child after CTRL_BREAK_EVENT\n");
+        goto cleanup;
+    }
+
+    fprintf(stderr,
+            "test_runner: WaitForSingleObject failed: %lu\n",
+            (unsigned long)GetLastError());
+
+cleanup:
+    if (handler_ignore_set) {
+        SetConsoleCtrlHandler(NULL, FALSE);
+    }
+    if (!child_terminated && process_info.hProcess != NULL) {
+        TerminateProcess(process_info.hProcess, 1u);
+        WaitForSingleObject(process_info.hProcess, 5000u);
+    }
+    if (process_info.hThread != NULL) {
+        CloseHandle(process_info.hThread);
+    }
+    if (process_info.hProcess != NULL) {
+        CloseHandle(process_info.hProcess);
+    }
+    free(command_line);
+    return exit_status;
+#else
+    (void)argc;
+    (void)argv;
+
+    fprintf(stderr,
+            "test_runner: --win32-ctrl-break-run is unavailable\n");
+    return EXIT_FAILURE;
 #endif
 }
 
@@ -490,6 +720,11 @@ main(int argc, char **argv)
     if (strcmp(argv[first_index], "--is-running-under-wine") == 0) {
         return test_runner_is_running_under_wine() ? EXIT_SUCCESS
                                                    : EXIT_FAILURE;
+    }
+
+    if (strcmp(argv[first_index], "--win32-ctrl-break-run") == 0) {
+        return test_runner_run_windows_ctrl_break(argc - first_index,
+                                                  argv + first_index);
     }
 
     requested = argv[first_index];

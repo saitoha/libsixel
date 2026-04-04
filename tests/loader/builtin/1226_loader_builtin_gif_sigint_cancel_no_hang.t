@@ -8,21 +8,32 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-test "${SIXEL_TEST_C_COMPILER_ID-}" = "msvc" && {
-    printf "1..0 # SKIP SIGINT child cancellation is unreliable on msvc runtime\n"
-    exit 0
-}
-
-test "${SIXEL_TEST_C_COMPILER_ID-}" = "clang-cl" && {
-    printf "1..0 # SKIP SIGINT child cancellation is unreliable on clang-cl runtime\n"
-    exit 0
-}
-
-
 echo "1..1"
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
+
+test "${SIXEL_TEST_C_COMPILER_ID-}" = "msvc" && {
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --win32-ctrl-break-run \
+        1000 2000 "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce "${input_gif}" \
+        >/dev/null 2>/dev/null || {
+        echo "not ok" 1 - "builtin GIF force-loop did not stop after CTRL_BREAK"
+        exit 0
+    }
+    echo "ok" 1 - "builtin GIF force-loop stops quickly on CTRL_BREAK"
+    exit 0
+}
+
+test "${SIXEL_TEST_C_COMPILER_ID-}" = "clang-cl" && {
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --win32-ctrl-break-run \
+        1000 2000 "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce "${input_gif}" \
+        >/dev/null 2>/dev/null || {
+        echo "not ok" 1 - "builtin GIF force-loop did not stop after CTRL_BREAK"
+        exit 0
+    }
+    echo "ok" 1 - "builtin GIF force-loop stops quickly on CTRL_BREAK"
+    exit 0
+}
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce "${input_gif}" \
     >/dev/null 2>/dev/null &
