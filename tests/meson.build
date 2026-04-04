@@ -249,7 +249,6 @@ if tests_text != ''
 endif
 
 xfail_tests = [
-  'loader/builtin/1286_loader_builtin_psd_psdtools_artboard_hardcase_lsqa_xfail.t',
   'loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa_xfail.t',
 ]
 

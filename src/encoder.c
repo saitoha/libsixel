@@ -279,6 +279,61 @@ typedef struct sixel_encoder_load_context {
     sixel_encoder_frame_pipeline_t frame_pipeline;
 } sixel_encoder_load_context_t;
 
+static int
+sixel_encoder_path_has_extension(char const *path, char const *extension)
+{
+    char const *basename;
+    char const *dot;
+
+    basename = NULL;
+    dot = NULL;
+    if (path == NULL || extension == NULL || extension[0] == '\0') {
+        return 0;
+    }
+
+    basename = strrchr(path, '/');
+#if defined(_WIN32)
+    {
+        char const *backslash;
+
+        backslash = strrchr(path, '\\');
+        if (backslash != NULL && (basename == NULL || backslash > basename)) {
+            basename = backslash;
+        }
+    }
+#endif
+    if (basename == NULL) {
+        basename = path;
+    } else {
+        ++basename;
+    }
+    if (basename[0] == '\0') {
+        return 0;
+    }
+
+    dot = strrchr(basename, '.');
+    if (dot == NULL) {
+        return 0;
+    }
+
+    return sixel_compat_strcasecmp(dot + 1, extension) == 0;
+}
+
+static int
+sixel_encoder_should_force_none_lut_for_psd(
+    sixel_encoder_t const *encoder,
+    char const *path)
+{
+    if (encoder == NULL || path == NULL) {
+        return 0;
+    }
+    if (encoder->lut_policy != SIXEL_LUT_POLICY_CERTLUT) {
+        return 0;
+    }
+    return sixel_encoder_path_has_extension(path, "psd") ||
+           sixel_encoder_path_has_extension(path, "psb");
+}
+
 static char const *
 sixel_encoder_handoff_mode_name(sixel_encoder_handoff_mode_t mode)
 {
@@ -9387,6 +9442,8 @@ sixel_encoder_encode(
     sixel_encoder_load_context_t load_context;
     SIXELSTATUS pipeline_wait_status;
     int saved_errno;
+    int saved_lut_policy;
+    int force_none_lut_for_psd;
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -9403,6 +9460,8 @@ sixel_encoder_encode(
     png_open_attempt = 0;
     png_open_errno = 0;
     saved_errno = 0;
+    saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
+    force_none_lut_for_psd = 0;
     memset(&load_context, 0, sizeof(load_context));
     sixel_logger_init(&logger);
     sixel_logger_prepare_env(&logger);
@@ -9506,6 +9565,21 @@ sixel_encoder_encode(
             clipboard_blob = NULL;
         }
         effective_filename = clipboard_input_path;
+    }
+
+    if (sixel_encoder_should_force_none_lut_for_psd(encoder, effective_filename)) {
+        saved_lut_policy = encoder->lut_policy;
+        encoder->lut_policy = SIXEL_LUT_POLICY_NONE;
+        force_none_lut_for_psd = 1;
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "lut_policy_override",
+                                "source=%s policy=none reason=psd-default",
+                                effective_filename != NULL
+                                    ? effective_filename
+                                    : "(null)");
     }
 
     if (encoder->output_is_png) {
@@ -9937,6 +10011,9 @@ load_end:
 
 end:
     saved_errno = errno;
+    if (encoder != NULL && force_none_lut_for_psd != 0) {
+        encoder->lut_policy = saved_lut_policy;
+    }
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
     sixel_encoder_frame_pipeline_dispose(&load_context.frame_pipeline);
     (void)sixel_tty_end_animation_input_guard();
