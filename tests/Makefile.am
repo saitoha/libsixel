@@ -353,25 +353,17 @@ staticcheck-docs-envvars-help-table \
 staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
 
-staticcheck: \
-	staticcheck-clean \
-	staticcheck-actionlint \
-	staticcheck-shellcheck \
-	staticcheck-codespell \
-	staticcheck-python-compileall \
-	staticcheck-private-includes \
-	staticcheck-test-runner-dllexport \
-	staticcheck-makefile-recipes \
-	staticcheck-test-plan-single \
-	staticcheck-test-no-grep-awk \
-	staticcheck-artifact-local-dir-mkdir \
-	staticcheck-binding-loader-setopt-sync \
-	staticcheck-build-doc-configure-help \
-	staticcheck-build-doc-meson-options \
-	staticcheck-docs-help-vs-man \
-	staticcheck-docs-man-vs-bash-completion \
-	staticcheck-docs-envvars-help-table \
-	staticcheck-c-header-modeline
+staticcheck: staticcheck-clean
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	"$(SHELL)" "$(top_srcdir)/tests/_static/sh/staticcheck-suite.sh" \
+		"$(abs_top_srcdir)" \
+		"$(abs_top_builddir)" \
+		"$(ACTIONLINT)" \
+		"$(top_srcdir)/tests/_static/sh/shellcheck.sh" \
+		"$(SHELLCHECK)" \
+		"$(CODESPELL)" \
+		"$(PYTHON)"
 
 .PHONY: staticcheck-clean
 
@@ -1150,6 +1142,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c \
     _static/sh/prepare-psb-large-fixtures.sh \
     _static/sh/shellcheck.sh \
+    _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
     _static/sh/staticcheck-shellcheck.sh \
