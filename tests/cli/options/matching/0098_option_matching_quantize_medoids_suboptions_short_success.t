@@ -14,7 +14,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:a=banditpam:s=7 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
     echo "not ok" 1 - "-Q medoids short suboptions were rejected"
     exit 0

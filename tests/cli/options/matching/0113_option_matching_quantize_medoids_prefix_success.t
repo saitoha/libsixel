@@ -13,7 +13,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qm \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
     echo "not ok" 1 - "-Q medoids prefix value was rejected"
     exit 0

@@ -14,7 +14,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:binning=soft:binbits=6:mapping=srgb:softdist=trilinear:autoratio=32:feedback=on \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
     echo "not ok" 1 - "-Q kmeans long histogram suboptions were rejected"
     exit 0

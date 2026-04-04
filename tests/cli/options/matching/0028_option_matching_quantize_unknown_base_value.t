@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qzzzmodel \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" -o/dev/null 2>&1) && {
     echo "not ok" 1 - "unknown -Q base token unexpectedly succeeded"
     exit 0
 }
