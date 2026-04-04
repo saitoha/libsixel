@@ -141,6 +141,18 @@ sixel_option_report_invalid_choice(
  * hunting for "img2sixel -H".  The diagram above acts as a quick cheat
  * sheet for the structure we maintain.
  */
+/*
+ * The quantize-model section is long enough that adjacent literals exceed
+ * the C99 minimum translation limit for string literal length.
+ * Keep this warning suppression local to the help table.
+ */
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Woverlength-strings"
+#elif defined(__GNUC__) && !defined(__PCC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Woverlength-strings"
+#endif
 static cli_option_help_t const g_option_help_table[] = {
     {
         'o',
@@ -837,6 +849,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "-H, --help                 show this help and available loaders\n"
     }
 };
+
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#elif defined(__GNUC__) && !defined(__PCC__)
+# pragma GCC diagnostic pop
+#endif
 
 /*
  * Environment variable help entries mirror the option table so we can
