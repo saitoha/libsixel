@@ -56,6 +56,7 @@
 #include "compat_stub.h"
 #include "frame.h"
 #include "loader-common.h"
+#include "loader.h"
 
 /*
  * gif_context_t struct and start_xxx functions
@@ -1870,6 +1871,16 @@ typedef struct gif_replay_cache {
     sixel_allocator_t *allocator;
 } gif_replay_cache_t;
 
+static int
+gif_decode_request_is_canceled(gif_decode_request_t const *request)
+{
+    if (request == NULL) {
+        return 0;
+    }
+
+    return sixel_loader_callback_is_canceled(request->context);
+}
+
 static SIXELSTATUS
 gif_validate_canvas_requirements(gif_t *g, size_t *pcount_out)
 {
@@ -2331,6 +2342,9 @@ gif_decode_loop_frames(gif_context_t *s,
     }
 
     for (;;) {
+        if (gif_decode_request_is_canceled(request) != 0) {
+            return SIXEL_INTERRUPTED;
+        }
         status = gif_decode_one_frame(s, g, frame, request, progress);
         if (status != SIXEL_OK) {
             return status;
@@ -2611,6 +2625,9 @@ gif_decode_one_frame(gif_context_t *s,
         request->fnp.fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (gif_decode_request_is_canceled(request) != 0) {
+        return SIXEL_INTERRUPTED;
+    }
 
     status = gif_load_next(s, g, request->bgcolor);
     if (status != SIXEL_OK) {
@@ -2741,6 +2758,9 @@ gif_decode_animation_loops(gif_context_t *s,
     replay_cache = request->replay_cache;
 
     for (;;) { /* per loop */
+        if (gif_decode_request_is_canceled(request) != 0) {
+            return SIXEL_INTERRUPTED;
+        }
         status = gif_prepare_loop_iteration(s,
                                             g,
                                             frame,
@@ -2769,6 +2789,9 @@ gif_decode_animation_loops(gif_context_t *s,
             for (replay_index = 0u;
                  replay_index < replay_cache->frame_count;
                  ++replay_index) {
+                if (gif_decode_request_is_canceled(request) != 0) {
+                    return SIXEL_INTERRUPTED;
+                }
                 cached_frame = replay_cache->frames[replay_index];
                 if (cached_frame == NULL) {
                     return SIXEL_RUNTIME_ERROR;
