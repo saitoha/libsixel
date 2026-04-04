@@ -798,6 +798,184 @@ test_run_bandit_delta_consistency_case(void)
     return 1;
 }
 
+static double
+test_swap_cost_full_ordered(double const *points,
+                            double const *weights,
+                            unsigned int point_count,
+                            unsigned int const *nearest_slot,
+                            double const *nearest_dist,
+                            double const *second_dist,
+                            unsigned int replace_slot,
+                            unsigned int candidate_point,
+                            unsigned int const *order)
+{
+    unsigned int ordered_index;
+    unsigned int index;
+    double distance;
+    double chosen;
+    double weight;
+    double cost;
+
+    ordered_index = 0u;
+    index = 0u;
+    distance = 0.0;
+    chosen = 0.0;
+    weight = 1.0;
+    cost = 0.0;
+    if (points == NULL || nearest_slot == NULL
+            || nearest_dist == NULL || second_dist == NULL) {
+        return 0.0;
+    }
+
+    for (ordered_index = 0u; ordered_index < point_count; ++ordered_index) {
+        if (order != NULL) {
+            index = order[ordered_index];
+        } else {
+            index = ordered_index;
+        }
+        distance = points[index * 3u + 0u] - points[candidate_point * 3u + 0u];
+        chosen = distance * distance;
+        distance = points[index * 3u + 1u] - points[candidate_point * 3u + 1u];
+        chosen += distance * distance;
+        distance = points[index * 3u + 2u] - points[candidate_point * 3u + 2u];
+        chosen += distance * distance;
+
+        if (nearest_slot[index] == replace_slot) {
+            if (second_dist[index] < chosen) {
+                chosen = second_dist[index];
+            }
+        } else if (nearest_dist[index] < chosen) {
+            chosen = nearest_dist[index];
+        }
+
+        weight = 1.0;
+        if (weights != NULL) {
+            weight = weights[index];
+        }
+        cost += chosen * weight;
+    }
+
+    return cost;
+}
+
+static int
+test_run_clarans_swap_cost_cutoff_case(void)
+{
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int order[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int nearest_slot[TEST_PIXEL_COUNT];
+    double nearest_dist[TEST_PIXEL_COUNT];
+    double second_dist[TEST_PIXEL_COUNT];
+    unsigned int second_slot[TEST_PIXEL_COUNT];
+    unsigned char medoid_flags[TEST_PIXEL_COUNT];
+    unsigned int index;
+    unsigned int probe;
+    unsigned int replace_slot;
+    unsigned int candidate;
+    double current_cost;
+    double full_cost;
+    double cutoff_cost;
+    int early_stop;
+    int full_accept;
+    int cutoff_accept;
+    unsigned int swap_temp;
+
+    index = 0u;
+    probe = 0u;
+    replace_slot = 0u;
+    candidate = 0u;
+    current_cost = 0.0;
+    full_cost = 0.0;
+    cutoff_cost = 0.0;
+    early_stop = 0;
+    full_accept = 0;
+    cutoff_accept = 0;
+    swap_temp = 0u;
+
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 4u) + 1u);
+        order[index] = index;
+        medoid_flags[index] = 0u;
+    }
+    for (index = 0u; index < TEST_REQCOLORS; ++index) {
+        medoid_flags[medoids[index]] = 1u;
+    }
+
+    for (index = 0u; index + 1u < TEST_PIXEL_COUNT; ++index) {
+        for (probe = index + 1u; probe < TEST_PIXEL_COUNT; ++probe) {
+            if (weights[order[probe]] > weights[order[index]]
+                    || (weights[order[probe]] == weights[order[index]]
+                        && order[probe] < order[index])) {
+                swap_temp = order[index];
+                order[index] = order[probe];
+                order[probe] = swap_temp;
+            }
+        }
+    }
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_slot,
+                                      nearest_dist,
+                                      second_dist,
+                                      second_slot,
+                                      &current_cost);
+
+    for (replace_slot = 0u; replace_slot < TEST_REQCOLORS; ++replace_slot) {
+        for (candidate = 0u; candidate < TEST_PIXEL_COUNT; ++candidate) {
+            if (medoid_flags[candidate] != 0u) {
+                continue;
+            }
+
+            full_cost = test_swap_cost_full_ordered(points,
+                                                    weights,
+                                                    TEST_PIXEL_COUNT,
+                                                    nearest_slot,
+                                                    nearest_dist,
+                                                    second_dist,
+                                                    replace_slot,
+                                                    candidate,
+                                                    order);
+            cutoff_cost = sixel_kmedoids_test_swap_cost_cutoff(
+                points,
+                weights,
+                TEST_PIXEL_COUNT,
+                nearest_slot,
+                nearest_dist,
+                second_dist,
+                replace_slot,
+                candidate,
+                order,
+                current_cost,
+                &early_stop);
+
+            full_accept = (full_cost + 1.0e-12 < current_cost) ? 1 : 0;
+            cutoff_accept = (cutoff_cost + 1.0e-12 < current_cost) ? 1 : 0;
+            if (full_accept != cutoff_accept) {
+                return 0;
+            }
+            if (full_accept && early_stop) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
 static int
 test_run_clarans_delta_consistency_case(void)
 {
@@ -984,6 +1162,9 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "bandit-delta-consistency") == 0) {
         return test_run_bandit_delta_consistency_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-swap-cost-cutoff") == 0) {
+        return test_run_clarans_swap_cost_cutoff_case() ? 0 : 1;
     }
     if (strcmp(argv[1], "clarans-delta-consistency") == 0) {
         return test_run_clarans_delta_consistency_case() ? 0 : 1;

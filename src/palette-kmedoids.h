@@ -174,6 +174,19 @@ sixel_set_kmedoids_prune_mass_override(int enabled,
 SIXEL_INTERNAL_API double
 sixel_get_kmedoids_prune_mass(void);
 
+SIXEL_INTERNAL_API double
+sixel_kmedoids_test_swap_cost_cutoff(double const *points,
+                                     double const *weights,
+                                     unsigned int point_count,
+                                     unsigned int const *nearest_slot,
+                                     double const *nearest_dist,
+                                     double const *second_dist,
+                                     unsigned int replace_slot,
+                                     unsigned int candidate_point,
+                                     unsigned int const *order,
+                                     double cutoff,
+                                     int *early_stop_out);
+
 #ifdef __cplusplus
 }
 #endif
