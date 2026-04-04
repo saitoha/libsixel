@@ -21,22 +21,22 @@ test "${status}" -eq 0 || {
 }
 set +x
 
-test "${msg#*auto|pam|clara|clarans|banditpam*}" = "${msg}" || {
+test "${msg#*auto\|pam\|clara\|clarans\|banditpam*}" = "${msg}" || {
     echo "not ok" 1 - "medoids algo still uses pipe list format"
     exit 0
 }
 
-test "${msg#*auto|none|pca*}" = "${msg}" || {
+test "${msg#*auto\|none\|pca*}" = "${msg}" || {
     echo "not ok" 1 - "kmeans inittype still uses pipe list format"
     exit 0
 }
 
-test "${msg#*:algo=NAME (:a=NAME)*auto      -> adaptive*}" != "${msg}" || {
+test "${msg#*:algo=NAME \(:a=NAME\)*auto      -> adaptive*}" != "${msg}" || {
     echo "not ok" 1 - "medoids algo description lines are missing"
     exit 0
 }
 
-test "${msg#*:inittype=TYPE (:i=TYPE)*auto -> choose seed mode*}" != "${msg}" || {
+test "${msg#*:inittype=TYPE \(:i=TYPE\)*auto -> choose seed mode*}" != "${msg}" || {
     echo "not ok" 1 - "kmeans inittype description lines are missing"
     exit 0
 }
