@@ -715,6 +715,40 @@ static unsigned int compareplanePlane;
 static tupletable2 const *force_palette_source;
 static double compareplanePcaAxis[3];
 static unsigned int compareplanePcaDimensions;
+static unsigned int compareplaneTieDepth;
+
+static int
+compareplane_lexicographic(struct tupleint const *lhs,
+                           struct tupleint const *rhs,
+                           unsigned int depth)
+{
+    unsigned int plane;
+    int lhs_value;
+    int rhs_value;
+
+    if (lhs == NULL || rhs == NULL) {
+        return 0;
+    }
+    for (plane = 0U; plane < depth; ++plane) {
+        lhs_value = (int)lhs->tuple[plane];
+        rhs_value = (int)rhs->tuple[plane];
+        if (lhs_value < rhs_value) {
+            return -1;
+        }
+        if (lhs_value > rhs_value) {
+            return 1;
+        }
+    }
+
+    if (lhs->value < rhs->value) {
+        return -1;
+    }
+    if (lhs->value > rhs->value) {
+        return 1;
+    }
+
+    return 0;
+}
 
 /*
  * qsort callback used to order tuples by the component selected for the
@@ -727,13 +761,26 @@ compareplane(const void *arg1, const void *arg2)
 {
     int lhs;
     int rhs;
+    int diff;
     typedef const struct tupleint *const *const sortarg;
     sortarg comparandPP = (sortarg)arg1;
     sortarg comparatorPP = (sortarg)arg2;
     lhs = (int)(*comparandPP)->tuple[compareplanePlane];
     rhs = (int)(*comparatorPP)->tuple[compareplanePlane];
+    if (lhs < rhs) {
+        return -1;
+    }
+    if (lhs > rhs) {
+        return 1;
+    }
+    diff = compareplane_lexicographic(*comparandPP,
+                                      *comparatorPP,
+                                      compareplaneTieDepth);
+    if (diff != 0) {
+        return diff;
+    }
 
-    return lhs - rhs;
+    return 0;
 }
 
 /*
@@ -747,6 +794,7 @@ compareplanePca(const void *arg1, const void *arg2)
     double lhs;
     double rhs;
     unsigned int plane;
+    int diff;
     typedef const struct tupleint *const *const sortarg;
     sortarg comparandPP = (sortarg)arg1;
     sortarg comparatorPP = (sortarg)arg2;
@@ -767,13 +815,44 @@ compareplanePca(const void *arg1, const void *arg2)
         return 1;
     }
 
+    diff = compareplane_lexicographic(*comparandPP,
+                                      *comparatorPP,
+                                      compareplaneTieDepth);
+    if (diff != 0) {
+        return diff;
+    }
+
     return 0;
 }
 
 static int
 sumcompare(const void *b1, const void *b2)
 {
-    return (int)((boxVector)b2)->sum - (int)((boxVector)b1)->sum;
+    struct box const *lhs;
+    struct box const *rhs;
+
+    lhs = (struct box const *)b1;
+    rhs = (struct box const *)b2;
+    if (lhs->sum < rhs->sum) {
+        return 1;
+    }
+    if (lhs->sum > rhs->sum) {
+        return -1;
+    }
+    if (lhs->ind < rhs->ind) {
+        return -1;
+    }
+    if (lhs->ind > rhs->ind) {
+        return 1;
+    }
+    if (lhs->colors < rhs->colors) {
+        return -1;
+    }
+    if (lhs->colors > rhs->colors) {
+        return 1;
+    }
+
+    return 0;
 }
 
 static tupletable2
@@ -1625,12 +1704,14 @@ splitBox(boxVector bv,
         }
 
         compareplanePlane = largestDimension;
+        compareplaneTieDepth = depth;
         qsort((char *)&colorfreqtable.table[boxStart],
               boxSize,
               sizeof(colorfreqtable.table[boxStart]),
               compareplane);
     } else {
         compareplanePcaDimensions = dimensions;
+        compareplaneTieDepth = depth;
         for (i = 0U; i < 3U; ++i) {
             compareplanePcaAxis[i] = pca_axis[i];
         }
