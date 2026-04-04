@@ -500,6 +500,18 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             afl++ clang meson ninja-build autoconf automake libtool pkg-config make
 
+      - name: Configure AFL core_pattern
+        shell: bash
+        run: |
+          set -euxo pipefail
+          before="$(cat /proc/sys/kernel/core_pattern)"
+          echo "kernel.core_pattern(before)=$before"
+          if [[ "$before" == \|* ]]; then
+            echo core | sudo tee /proc/sys/kernel/core_pattern >/dev/null
+          fi
+          after="$(cat /proc/sys/kernel/core_pattern)"
+          echo "kernel.core_pattern(after)=$after"
+
       - name: Build and run img2sixel CLI fuzz target
         shell: bash
         run: |
