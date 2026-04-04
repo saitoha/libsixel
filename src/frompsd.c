@@ -8559,7 +8559,7 @@ sixel_builtin_psd_parse_vector_mask_bbox(
     while (cursor + 26u <= key_length) {
         uint16_t selector;
 
-        selector = sixel_builtin_read_u16be(data + cursor);
+        selector = sixel_builtin_read_u16be_as_u16(data + cursor);
         if (selector == 0u || selector == 3u) {
             float top;
             float left;
