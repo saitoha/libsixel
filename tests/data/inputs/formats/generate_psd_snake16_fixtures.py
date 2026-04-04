@@ -11683,7 +11683,7 @@ def generate(out_dir: pathlib.Path):
     )
     write_file(
         out_dir
-        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+        / "snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_wso_2run.psd",
         build_cmyk_multilayer_nonpixel_fixture(
             color_mode=4,
             depth=8,
@@ -11703,7 +11703,7 @@ def generate(out_dir: pathlib.Path):
     )
     write_file(
         out_dir
-        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_2run.psd",
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_wso_2run.psd",
         build_cmyk_multilayer_nonpixel_fixture(
             color_mode=7,
             depth=8,
@@ -11723,7 +11723,7 @@ def generate(out_dir: pathlib.Path):
     )
     write_file(
         out_dir
-        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_stylesheet_runlength_weighted_strokeopacity_malformed.psd",
+        / "snake16_mode7_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_fillflag_false_strokeflag_true_wso_malformed.psd",
         build_cmyk_multilayer_nonpixel_fixture(
             color_mode=7,
             depth=8,
