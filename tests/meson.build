@@ -248,6 +248,11 @@ if tests_text != ''
   tests = tests_text.split()
 endif
 
+xfail_tests = [
+  'loader/builtin/1286_loader_builtin_psd_psdtools_artboard_hardcase_lsqa_xfail.t',
+  'loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa_xfail.t',
+]
+
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 # Ensure Meson builds the TAP helper binary before running shell-based tests.
 
@@ -292,11 +297,13 @@ foreach t : tests
   endif
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
   test_cmd = [meson.current_source_dir() / t]
+  test_should_fail = xfail_tests.contains(t)
   test(t, sh,
     args: [python_tap_wrapper_file] + test_cmd,
     depends: test_deps,
     protocol: 'tap',
     env: test_env,
+    should_fail: test_should_fail,
     timeout: 90,
     suite: ['tap'])
 endforeach

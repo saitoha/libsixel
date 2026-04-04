@@ -464,6 +464,7 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
   -v time_begin="$time_begin" \
   -v time_end="$time_end" \
   -v color_tests="$color_tests" \
+  -v expect_failure="$expect_failure" \
   -v hard_errors="$hard_errors" \
   'BEGIN{
      plan=0; saw_plan=0; saw_tap=0;
@@ -520,10 +521,17 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
        skip++
        printf(":test-result: SKIP %s\n", desc) > "'"$trs_file"'"
      } else if (is_todo) {
-       # Minimal TODO mapping: ok+TODO => XFAIL, not ok+TODO => XFAIL
-       # (You can refine if you care about XPASS/XFAIL semantics.)
+       # TODO directives are always expected-failure semantics in TAP.
        xfail++
        printf(":test-result: XFAIL %s\n", desc) > "'"$trs_file"'"
+     } else if (expect_failure == "yes") {
+       if (is_not) {
+         xfail++
+         printf(":test-result: XFAIL %s\n", desc) > "'"$trs_file"'"
+       } else {
+         xpass++
+         printf(":test-result: XPASS %s\n", desc) > "'"$trs_file"'"
+       }
      } else if (is_not) {
        fail++
        printf(":test-result: FAIL %s\n", desc) > "'"$trs_file"'"
@@ -536,33 +544,50 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
 
    # Comment lines: keep in .log already; optionally treat as metadata? no-op.
    END{
-     # Non-zero exit handling mirrors lso-tap-driver: if TAP was emitted,
-     # treat the overall result as FAIL; otherwise surface it as ERROR.
+     # Non-zero exit handling mirrors lso-tap-driver semantics.
      if (ignore_exit != "yes" && rc != 0) {
        if (saw_tap) {
-         if (fail==0) {
-           fail=1
+         if (fail==0 && error==0 && xpass==0) {
            desc=sprintf("non-zero exit status (%d)", rc)
-           printf(":test-result: FAIL %s\n", desc) > "'"$trs_file"'"
+           if (expect_failure == "yes") {
+             xfail++
+             printf(":test-result: XFAIL %s\n", desc) > "'"$trs_file"'"
+           } else {
+             fail=1
+             printf(":test-result: FAIL %s\n", desc) > "'"$trs_file"'"
+           }
          }
        } else {
-         error=1
-         printf(":test-result: ERROR %s\n", test_name) > "'"$trs_file"'"
+         if (expect_failure == "yes") {
+           xfail++
+           printf(":test-result: XFAIL %s\n", test_name) > "'"$trs_file"'"
+         } else {
+           error=1
+           printf(":test-result: ERROR %s\n", test_name) > "'"$trs_file"'"
+         }
        }
      }
 
      global="PASS"
      if (error>0) global="ERROR"
      else if (fail>0) global="FAIL"
-     else if (pass==0 && skip>0) global="SKIP"
+     else if (xpass>0) global="XPASS"
+     else if (pass>0) global="PASS"
+     else if (xfail>0) global="XFAIL"
+     else if (skip>0) global="SKIP"
+
+     recheck = (global=="FAIL"||global=="ERROR"||global=="XPASS") ? "yes" : "no"
+     copy = (global=="FAIL"||global=="ERROR"||global=="SKIP"||global=="XFAIL"||global=="XPASS") ? "yes" : "no"
 
      printf(":global-test-result: %s\n", global) > "'"$trs_file"'"
-     printf(":recheck: %s\n", (global=="FAIL"||global=="ERROR") ? "yes" : "no") > "'"$trs_file"'"
-     printf(":copy-in-global-log: %s\n", (global=="FAIL"||global=="ERROR"||global=="SKIP") ? "yes" : "no") > "'"$trs_file"'"
+     printf(":recheck: %s\n", recheck) > "'"$trs_file"'"
+     printf(":copy-in-global-log: %s\n", copy) > "'"$trs_file"'"
      sgr["FAIL"]  = "\033[0;31m"
      sgr["ERROR"] = "\033[1;31m"
      sgr["SKIP"]  = "\033[0;33m"
      sgr["PASS"]  = "\033[0;32m"
+     sgr["XPASS"] = "\033[0;31m"
+     sgr["XFAIL"] = "\033[1;32m"
      printf("%s%-5s\033[m \033[1m%.03f\033[ms %s\n", color_tests ? sgr[global]: "", global, time_end - time_begin, test_name)
      if (global != "PASS" && desc != "") {
        printf("             > %s\n", desc)
@@ -571,7 +596,7 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
      # When --enable-hard-errors[=yes] is specified, keep the conventional
      # non-zero exit on FAIL/ERROR to preserve the legacy stop-on-first-failure
      # behaviour for callers that explicitly request it.
-     if (hard_errors == "yes" && global ~ /^(FAIL|ERROR)$/) {
+     if (hard_errors == "yes" && global ~ /^(FAIL|ERROR|XPASS)$/) {
        exit 1;
      }
    }'
@@ -591,6 +616,8 @@ else
     skip=0
     error=0
     fail=0
+    xfail=0
+    xpass=0
     is_not=0
     shutdown=0
     while read line; do
@@ -616,15 +643,44 @@ __line__
                     skip=$((skip+1))
                     desc="${line#*SKIP}"
                     echo ":test-result: SKIP $desc" >&2
+                    continue
                 }
-                echo ":test-result: PASS ${line#*-}" >&2
+                case "$line" in
+                    *"# TODO"*)
+                        xfail=$((xfail+1))
+                        echo ":test-result: XFAIL ${line#*-}" >&2
+                        ;;
+                    *)
+                        if test "$expect_failure" = yes; then
+                            xpass=$((xpass+1))
+                            echo ":test-result: XPASS ${line#*-}" >&2
+                        else
+                            pass=$((pass+1))
+                            echo ":test-result: PASS ${line#*-}" >&2
+                        fi
+                        ;;
+                esac
                 ;;
             not)
                 test "$col2" = ok || continue
                 saw_tap=1
                 is_not=1
                 n="${col3}"
-                echo ":test-result: FAIL ${line#*-}" >&2
+                case "$line" in
+                    *"# TODO"*)
+                        xfail=$((xfail+1))
+                        echo ":test-result: XFAIL ${line#*-}" >&2
+                        ;;
+                    *)
+                        if test "$expect_failure" = yes; then
+                            xfail=$((xfail+1))
+                            echo ":test-result: XFAIL ${line#*-}" >&2
+                        else
+                            fail=$((fail+1))
+                            echo ":test-result: FAIL ${line#*-}" >&2
+                        fi
+                        ;;
+                esac
                 ;;
         esac
     done < "$log_file"
@@ -632,15 +688,27 @@ __line__
     test ! "$ignore_exit" = "yes" && test "$rc" -gt 0 && {
         case "${saw_tap}" in
         0)
-            error=1
-            echo ":test-result: ERROR $test_name" >&2
+            if test "$expect_failure" = yes; then
+                xfail=$((xfail+1))
+                echo ":test-result: XFAIL $test_name" >&2
+            else
+                error=1
+                echo ":test-result: ERROR $test_name" >&2
+            fi
             ;;
         *)
-            case "${fail}" in
-            0)
-                fail=1
+            case "$fail:$error:$xpass" in
+            0:0:0)
                 desc="non-zero exit status ($rc)"
-                echo ":test-result: FAIL $desc" >&2
+                if test "$expect_failure" = yes; then
+                    xfail=$((xfail+1))
+                    echo ":test-result: XFAIL $desc" >&2
+                else
+                    fail=1
+                    echo ":test-result: FAIL $desc" >&2
+                fi
+                ;;
+            *)
                 ;;
             esac
         esac 
@@ -665,7 +733,20 @@ __line__
         sgr="$e[0;31m"
         test "$hard_errors" = "yes" && shutdown=1
     }
-    test "$pass" -eq 0 && test "$skip" -gt 0 && {
+    test "$xpass" -gt 0 && {
+        global="XPASS"
+        recheck=yes
+        copy=yes
+        sgr="$e[0;31m"
+        test "$hard_errors" = "yes" && shutdown=1
+    }
+    test "$fail" -eq 0 && test "$error" -eq 0 && test "$xpass" -eq 0 && test "$xfail" -gt 0 && {
+        global="XFAIL"
+        recheck=no
+        copy=yes
+        sgr="$e[1;32m"
+    }
+    test "$fail" -eq 0 && test "$error" -eq 0 && test "$xpass" -eq 0 && test "$xfail" -eq 0 && test "$pass" -eq 0 && test "$skip" -gt 0 && {
         global="SKIP"
         copy=yes
         sgr="$e[0;33m"
@@ -683,7 +764,7 @@ __line__
         echo ":copy-in-global-log: $copy"
     } >&2
     printf "%s%-5s\033[m \033[1m%.03f\033[ms %s\n" "$sgr" "$global" "$duration" "$test_name"
-    test "$global" != "PASS" && "$desc" != "" && {
+    test "$global" != "PASS" && test "${desc-}" != "" && {
       echo "             > $desc"
     }
 } 2> "$trs_file"

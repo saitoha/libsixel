@@ -16,6 +16,9 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
 TESTS = @SIXEL_CHECK_TESTS@
+XFAIL_TESTS = \
+    loader/builtin/1286_loader_builtin_psd_psdtools_artboard_hardcase_lsqa_xfail.t \
+    loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa_xfail.t
 
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
