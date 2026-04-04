@@ -50,31 +50,21 @@ trace_summary=$(
         }
 
         wait "${pid}" 2>/dev/null || true
-    } | {
-        saw_timeout=0
-        saw_handoff=0
-        saw_stop=0
-        while IFS= read -r line; do
-            case "${line}" in
-                *__TIMEOUT__*)
-                    saw_timeout=1
-                    ;;
-                *"event=callback_handoff_decide handoff=pipeline"*)
-                    saw_handoff=1
-                    ;;
-                *"event=pipeline_stop"*)
-                    saw_stop=1
-                    ;;
-            esac
-        done
-        printf "%s:%s:%s\n" "${saw_timeout}" "${saw_handoff}" "${saw_stop}"
     }
 )
 
-timeout_flag=${trace_summary%%:*}
-trace_summary=${trace_summary#*:}
-handoff_flag=${trace_summary%%:*}
-stop_flag=${trace_summary##*:}
+timeout_flag=0
+handoff_flag=0
+stop_flag=0
+
+trace_remainder=${trace_summary#*__TIMEOUT__}
+test "${trace_remainder}" != "${trace_summary}" && timeout_flag=1
+
+trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
+test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
+
+trace_remainder=${trace_summary#*event=pipeline_stop}
+test "${trace_remainder}" != "${trace_summary}" && stop_flag=1
 
 test "${timeout_flag}" = "0" || {
     echo "not ok" 1 - "builtin GIF pipeline did not stop after SIGINT"
