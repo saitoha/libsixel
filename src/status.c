@@ -334,7 +334,11 @@ sixel_status_reserve_buffer(char **buffer,
         if (grown == NULL) {
             return -1;
         }
-        if (static_capacity > 0u) {
+        /*
+         * Guard memcpy source for MSVC /analyze: static_storage can be NULL
+         * when caller does not provide inline storage.
+         */
+        if (static_storage != NULL && static_capacity > 0u) {
             memcpy(grown, static_storage, static_capacity);
         } else {
             grown[0] = '\0';
