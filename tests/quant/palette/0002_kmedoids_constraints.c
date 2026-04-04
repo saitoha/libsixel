@@ -798,6 +798,125 @@ test_run_bandit_delta_consistency_case(void)
     return 1;
 }
 
+static int
+test_run_clarans_delta_consistency_case(void)
+{
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int swap_slots[3u];
+    unsigned int swap_candidates[3u];
+    unsigned int nearest_delta[TEST_PIXEL_COUNT];
+    double nearest_dist_delta[TEST_PIXEL_COUNT];
+    double second_dist_delta[TEST_PIXEL_COUNT];
+    unsigned int second_slot_delta[TEST_PIXEL_COUNT];
+    unsigned int nearest_full[TEST_PIXEL_COUNT];
+    double nearest_dist_full[TEST_PIXEL_COUNT];
+    double second_dist_full[TEST_PIXEL_COUNT];
+    unsigned int second_slot_full[TEST_PIXEL_COUNT];
+    unsigned int step;
+    unsigned int index;
+    double cost_delta;
+    double cost_full;
+    double diff;
+
+    step = 0u;
+    index = 0u;
+    cost_delta = 0.0;
+    cost_full = 0.0;
+    diff = 0.0;
+
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+    swap_slots[0u] = 1u;
+    swap_slots[1u] = 3u;
+    swap_slots[2u] = 0u;
+    swap_candidates[0u] = 7u;
+    swap_candidates[1u] = 4u;
+    swap_candidates[2u] = 10u;
+
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 4u) + 1u);
+    }
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_delta,
+                                      nearest_dist_delta,
+                                      second_dist_delta,
+                                      second_slot_delta,
+                                      &cost_delta);
+
+    for (step = 0u; step < 3u; ++step) {
+        medoids[swap_slots[step]] = swap_candidates[step];
+        sixel_kmedoids_test_update_assignments_after_swap(
+            points,
+            weights,
+            TEST_PIXEL_COUNT,
+            medoids,
+            TEST_REQCOLORS,
+            swap_slots[step],
+            swap_candidates[step],
+            nearest_delta,
+            nearest_dist_delta,
+            second_dist_delta,
+            second_slot_delta,
+            &cost_delta);
+
+        sixel_kmedoids_test_assign_points(points,
+                                          weights,
+                                          TEST_PIXEL_COUNT,
+                                          medoids,
+                                          TEST_REQCOLORS,
+                                          nearest_full,
+                                          nearest_dist_full,
+                                          second_dist_full,
+                                          second_slot_full,
+                                          &cost_full);
+
+        diff = cost_delta - cost_full;
+        if (diff < 0.0) {
+            diff = -diff;
+        }
+        if (diff > 1.0e-9) {
+            return 0;
+        }
+
+        for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+            if (nearest_delta[index] != nearest_full[index]) {
+                return 0;
+            }
+            if (second_slot_delta[index] != second_slot_full[index]) {
+                return 0;
+            }
+            diff = nearest_dist_delta[index] - nearest_dist_full[index];
+            if (diff < 0.0) {
+                diff = -diff;
+            }
+            if (diff > 1.0e-9) {
+                return 0;
+            }
+            diff = second_dist_delta[index] - second_dist_full[index];
+            if (diff < 0.0) {
+                diff = -diff;
+            }
+            if (diff > 1.0e-9) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -865,6 +984,9 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "bandit-delta-consistency") == 0) {
         return test_run_bandit_delta_consistency_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-delta-consistency") == 0) {
+        return test_run_clarans_delta_consistency_case() ? 0 : 1;
     }
 
     return 1;
