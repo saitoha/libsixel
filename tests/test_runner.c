@@ -36,6 +36,7 @@ int test_filter_0010_filter_encode(int argc, char **argv);
 int test_probe_0001_probe_parse(int argc, char **argv);
 
 int test_palette_0001_kmeans_init(int argc, char **argv);
+int test_palette_0002_kmedoids_constraints(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -144,6 +145,8 @@ static test_entry_t const test_entries[] = {
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },
+    { "palette/0002_kmedoids_constraints",
+      test_palette_0002_kmedoids_constraints },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",

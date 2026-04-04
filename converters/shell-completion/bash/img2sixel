@@ -118,7 +118,7 @@ _img2sixel()
         quant_tail="${cur#*:}"
         quant_item="${quant_tail##*:}"
 
-        if [[ ${cur} == *:* && ${quant_base} == k* ]]; then
+        if [[ ${cur} == *:* && ( ${quant_base} == k || ${quant_base} == kmeans* ) ]]; then
             if [[ ${quant_item} == *=* ]]; then
                 quant_key="${quant_item%%=*}"
                 quant_value="${quant_item#*=}"
@@ -174,9 +174,37 @@ _img2sixel()
             return 0
         fi
 
+        if [[ ${cur} == *:* && ${quant_base} == kmedoids* ]]; then
+            if [[ ${quant_item} == *=* ]]; then
+                quant_key="${quant_item%%=*}"
+                quant_value="${quant_item#*=}"
+                quant_prefix="${cur%${quant_value}}"
+                if [[ ${quant_key} == a || ${quant_key} == algo ]]; then
+                    for quant_candidate in pam clara clarans banditpam; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == s || ${quant_key} == seed ]]; then
+                    for quant_candidate in 1 7 42 256; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                fi
+                return 0
+            fi
+
+            quant_prefix="${cur%${quant_item}}"
+            for quant_candidate in a= algo= s= seed=; do
+                [[ ${quant_candidate} == ${quant_item}* ]] || continue
+                COMPREPLY+=("${quant_prefix}${quant_candidate}")
+            done
+            return 0
+        fi
+
         COMPREPLY=( $( compgen -W 'auto \
                                    heckbert \
-                                   kmeans' -- "$cur" ) )
+                                   kmeans \
+                                   kmedoids' -- "$cur" ) )
         return 0
     }
 

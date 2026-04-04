@@ -93,6 +93,7 @@
 #include "options.h"
 #include "dither.h"
 #include "palette-kmeans.h"
+#include "palette-kmedoids.h"
 #include "palette-common-merge.h"
 #include "pixelformat.h"
 #include "clipboard.h"
@@ -290,6 +291,14 @@ static SIXELSTATUS sixel_encoder_frame_pipeline_enqueue(
 static SIXELSTATUS sixel_encoder_frame_pipeline_finish(
     sixel_encoder_frame_pipeline_t *pipeline);
 static int sixel_encoder_frame_pipeline_worker(void *priv);
+static void sixel_encoder_frame_pipeline_request_stop_locked(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    SIXELSTATUS status,
+    char const *reason);
+static void sixel_encoder_frame_pipeline_request_stop(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    SIXELSTATUS status,
+    char const *reason);
 static int sixel_encoder_handoff_needs_preplan_clone(
     sixel_encoder_t *encoder,
     sixel_frame_t *frame);
@@ -567,6 +576,13 @@ static sixel_suboption_choice_t const g_option_choices_kmeans_feedback[] = {
     { "on", SIXEL_PALETTE_KMEANS_FEEDBACK_ON }
 };
 
+static sixel_suboption_choice_t const g_option_choices_kmedoids_algo[] = {
+    { "pam", SIXEL_PALETTE_KMEDOIDS_ALGO_PAM },
+    { "clara", SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA },
+    { "clarans", SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS },
+    { "banditpam", SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM }
+};
+
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     {
         "inittype",
@@ -639,6 +655,26 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     }
 };
 
+static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
+    {
+        "algo",
+        "a",
+        "SIXEL_PALETTE_KMEDOIDS_ALGO",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kmedoids_algo,
+        sizeof(g_option_choices_kmedoids_algo)
+        / sizeof(g_option_choices_kmedoids_algo[0])
+    },
+    {
+        "seed",
+        "s",
+        "SIXEL_PALETTE_KMEDOIDS_SEED",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+
 static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
     {
         "auto",
@@ -658,6 +694,20 @@ static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
         g_subkeys_quantize_model_kmeans,
         sizeof(g_subkeys_quantize_model_kmeans)
         / sizeof(g_subkeys_quantize_model_kmeans[0])
+    },
+    {
+        "k",
+        SIXEL_QUANTIZE_MODEL_KMEANS,
+        g_subkeys_quantize_model_kmeans,
+        sizeof(g_subkeys_quantize_model_kmeans)
+        / sizeof(g_subkeys_quantize_model_kmeans[0])
+    },
+    {
+        "kmedoids",
+        SIXEL_QUANTIZE_MODEL_KMEDOIDS,
+        g_subkeys_quantize_model_kmedoids,
+        sizeof(g_subkeys_quantize_model_kmedoids)
+        / sizeof(g_subkeys_quantize_model_kmedoids[0])
     }
 };
 
@@ -3692,6 +3742,12 @@ sixel_encoder_prepare_palette(
         encoder->quantize_model_kmeans_feedback_override,
         (sixel_kmeans_feedback_mode)
             encoder->quantize_model_kmeans_feedback_mode);
+    sixel_set_kmedoids_algo_override(
+        encoder->quantize_model_kmedoids_algo_override,
+        (sixel_kmedoids_algo_t)encoder->quantize_model_kmedoids_algo);
+    sixel_set_kmedoids_seed_override(
+        encoder->quantize_model_kmedoids_seed_override,
+        (uint32_t)encoder->quantize_model_kmedoids_seed);
     status = sixel_dither_initialize(*dither,
                                      palette_pixels,
                                      sixel_frame_get_width(palette_frame),
@@ -3716,6 +3772,10 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_feedback_mode_override(
         0,
         SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
+    sixel_set_kmedoids_algo_override(
+        0,
+        SIXEL_PALETTE_KMEDOIDS_ALGO_PAM);
+    sixel_set_kmedoids_seed_override(0, 1u);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -4623,6 +4683,11 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmeans_feedback_override = 0;
     (*ppencoder)->quantize_model_kmeans_feedback_mode
         = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
+    (*ppencoder)->quantize_model_kmedoids_algo_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_algo
+        = SIXEL_PALETTE_KMEDOIDS_ALGO_PAM;
+    (*ppencoder)->quantize_model_kmedoids_seed_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_seed = 1u;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
@@ -5207,6 +5272,36 @@ sixel_encoder_parse_kmeans_autoratio_text(
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_kmedoids_seed_text(
+    char const *text,
+    uint32_t *seed_out)
+{
+    char *endptr;
+    unsigned long long parsed;
+
+    endptr = NULL;
+    parsed = 0u;
+    if (text == NULL || seed_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtoull(text, &endptr, 10);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno != 0 ||
+            parsed > 0xffffffffULL) {
+        sixel_helper_set_additional_message(
+            "-Q seed must be in range 0-4294967295.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *seed_out = (uint32_t)parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_quantize_model_resolution(
     sixel_option_argument_resolution_t const *resolution)
 {
@@ -5216,9 +5311,11 @@ sixel_encoder_validate_quantize_model_resolution(
     SIXELSTATUS threshold_status;
     SIXELSTATUS binbits_status;
     SIXELSTATUS autoratio_status;
+    SIXELSTATUS seed_status;
     double threshold;
     unsigned int binbits;
     unsigned int autoratio;
+    uint32_t seed;
 
     index = 0u;
     assignment = NULL;
@@ -5226,9 +5323,11 @@ sixel_encoder_validate_quantize_model_resolution(
     threshold_status = SIXEL_OK;
     binbits_status = SIXEL_OK;
     autoratio_status = SIXEL_OK;
+    seed_status = SIXEL_OK;
     threshold = 0.0;
     binbits = 0u;
     autoratio = 0u;
+    seed = 0u;
     if (resolution == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -5256,6 +5355,13 @@ sixel_encoder_validate_quantize_model_resolution(
                 &autoratio);
             if (SIXEL_FAILED(autoratio_status)) {
                 return autoratio_status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "seed") == 0) {
+            seed_status = sixel_encoder_parse_kmedoids_seed_text(
+                assignment->resolved_value_text,
+                &seed);
+            if (SIXEL_FAILED(seed_status)) {
+                return seed_status;
             }
         }
         ++index;
@@ -5379,6 +5485,7 @@ sixel_encoder_setopt(
     double q_threshold;
     unsigned int q_binbits;
     unsigned int q_autoratio;
+    uint32_t q_seed;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     char match_detail[128];
@@ -5427,6 +5534,7 @@ sixel_encoder_setopt(
     q_threshold = 0.0;
     q_binbits = 0u;
     q_autoratio = 0u;
+    q_seed = 0u;
     q_assignment = NULL;
     q_key = NULL;
 
@@ -6098,6 +6206,8 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmeans_softdist_override = 0;
         encoder->quantize_model_kmeans_autoratio_override = 0;
         encoder->quantize_model_kmeans_feedback_override = 0;
+        encoder->quantize_model_kmedoids_algo_override = 0;
+        encoder->quantize_model_kmedoids_seed_override = 0;
 
         q_index = 0u;
         while (q_index < q_resolution->assignment_count) {
@@ -6189,6 +6299,27 @@ sixel_encoder_setopt(
                 }
                 encoder->quantize_model_kmeans_feedback_override = 1;
                 encoder->quantize_model_kmeans_feedback_mode = match_value;
+            } else if (q_key != NULL && strcmp(q_key, "algo") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q algo resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_algo_override = 1;
+                encoder->quantize_model_kmedoids_algo = match_value;
+            } else if (q_key != NULL && strcmp(q_key, "seed") == 0) {
+                status = sixel_encoder_parse_kmedoids_seed_text(
+                    q_assignment->resolved_value_text,
+                    &q_seed);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_seed_override = 1;
+                encoder->quantize_model_kmedoids_seed = q_seed;
             }
             ++q_index;
         }
@@ -7102,6 +7233,65 @@ end:
 }
 
 
+static void
+sixel_encoder_frame_pipeline_request_stop_locked(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    SIXELSTATUS status,
+    char const *reason)
+{
+    SIXELSTATUS effective_status;
+    int first_error;
+    int queue_count;
+
+    effective_status = status;
+    first_error = 0;
+    queue_count = 0;
+
+    if (pipeline == NULL) {
+        return;
+    }
+
+    if (pipeline->worker_status == SIXEL_OK && status != SIXEL_OK) {
+        pipeline->worker_status = status;
+        first_error = 1;
+    }
+    if (pipeline->worker_status != SIXEL_OK) {
+        effective_status = pipeline->worker_status;
+    }
+    pipeline->loader_done = 1;
+    queue_count = pipeline->queue_count;
+    sixel_cond_broadcast(&pipeline->cond);
+
+    sixel_trace_topic_message(
+        SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
+        "pipeline stop reason=%s status=%d first_error=%d queue_count=%d",
+        reason != NULL ? reason : "unknown",
+        effective_status,
+        first_error,
+        queue_count);
+
+    return;
+}
+
+
+static void
+sixel_encoder_frame_pipeline_request_stop(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    SIXELSTATUS status,
+    char const *reason)
+{
+    if (pipeline == NULL || pipeline->initialized == 0) {
+        return;
+    }
+
+    sixel_mutex_lock(&pipeline->mutex);
+    sixel_encoder_frame_pipeline_request_stop_locked(pipeline,
+                                                     status,
+                                                     reason);
+    sixel_mutex_unlock(&pipeline->mutex);
+}
+
+
 static int
 sixel_encoder_frame_pipeline_worker(void *priv)
 {
@@ -7144,6 +7334,15 @@ sixel_encoder_frame_pipeline_worker(void *priv)
                 "worker wait queue=0 loader_done=0 status=%d",
                 pipeline->worker_status);
             sixel_cond_wait(&pipeline->cond, &pipeline->mutex);
+        }
+        if (pipeline->worker_status != SIXEL_OK) {
+            sixel_trace_topic_message(
+                SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
+                "worker break stop status=%d queue_count=%d",
+                pipeline->worker_status,
+                pipeline->queue_count);
+            sixel_mutex_unlock(&pipeline->mutex);
+            break;
         }
         if (pipeline->queue_count == 0) {
             sixel_trace_topic_message(
@@ -7192,11 +7391,10 @@ sixel_encoder_frame_pipeline_worker(void *priv)
                     status,
                     metadata.frame_no,
                     metadata.loop_no);
-                sixel_mutex_lock(&pipeline->mutex);
-                pipeline->worker_status = status;
-                pipeline->loader_done = 1;
-                sixel_cond_broadcast(&pipeline->cond);
-                sixel_mutex_unlock(&pipeline->mutex);
+                sixel_encoder_frame_pipeline_request_stop(
+                    pipeline,
+                    status,
+                    "worker_clone_failed");
                 break;
             }
             need_clone = 1;
@@ -7221,11 +7419,9 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             "worker encoded status=%d",
             status);
         if (status != SIXEL_OK) {
-            sixel_mutex_lock(&pipeline->mutex);
-            pipeline->worker_status = status;
-            pipeline->loader_done = 1;
-            sixel_cond_broadcast(&pipeline->cond);
-            sixel_mutex_unlock(&pipeline->mutex);
+            sixel_encoder_frame_pipeline_request_stop(pipeline,
+                                                      status,
+                                                      "worker_error");
             sixel_trace_topic_message(
                 SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
                 "worker stop status=%d",
@@ -7332,6 +7528,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     sixel_frame_t *queue_frame;
     sixel_encoder_frame_handoff_meta_t metadata;
     int queue_count_after_enqueue;
+    int cancel_requested;
 
     status = SIXEL_OK;
     queue_frame = NULL;
@@ -7341,6 +7538,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     metadata.multiframe = 0;
     metadata.needs_preplan_clone = 0;
     queue_count_after_enqueue = 0;
+    cancel_requested = 0;
 
     if (pipeline == NULL || frame == NULL || pipeline->initialized == 0) {
         return SIXEL_BAD_ARGUMENT;
@@ -7378,7 +7576,29 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
         }
     }
 
+    if (pipeline->encoder != NULL &&
+        pipeline->encoder->cancel_flag != NULL &&
+        *pipeline->encoder->cancel_flag != 0) {
+        status = SIXEL_INTERRUPTED;
+        sixel_encoder_frame_pipeline_request_stop(pipeline,
+                                                  status,
+                                                  "enqueue_cancel_before_lock");
+        sixel_frame_unref(queue_frame);
+        return status;
+    }
+
     sixel_mutex_lock(&pipeline->mutex);
+    if (pipeline->encoder != NULL &&
+        pipeline->encoder->cancel_flag != NULL &&
+        *pipeline->encoder->cancel_flag != 0) {
+        cancel_requested = 1;
+    }
+    if (cancel_requested != 0) {
+        sixel_encoder_frame_pipeline_request_stop_locked(
+            pipeline,
+            SIXEL_INTERRUPTED,
+            "enqueue_cancel_prewait");
+    }
     while (pipeline->queue_count >= SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY
            && pipeline->worker_status == SIXEL_OK) {
         sixel_trace_topic_message(
@@ -7390,7 +7610,10 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
         if (pipeline->encoder != NULL &&
             pipeline->encoder->cancel_flag != NULL &&
             *pipeline->encoder->cancel_flag != 0) {
-            pipeline->worker_status = SIXEL_INTERRUPTED;
+            sixel_encoder_frame_pipeline_request_stop_locked(
+                pipeline,
+                SIXEL_INTERRUPTED,
+                "enqueue_cancel_wait");
             break;
         }
     }
@@ -7434,12 +7657,14 @@ sixel_encoder_frame_pipeline_finish(sixel_encoder_frame_pipeline_t *pipeline)
     int queue_count;
     int loader_done;
     SIXELSTATUS worker_status;
+    int cancel_requested;
 
     status = SIXEL_OK;
     started = 0;
     queue_count = 0;
     loader_done = 0;
     worker_status = SIXEL_OK;
+    cancel_requested = 0;
 
     if (pipeline == NULL || pipeline->initialized == 0) {
         return SIXEL_OK;
@@ -7450,18 +7675,32 @@ sixel_encoder_frame_pipeline_finish(sixel_encoder_frame_pipeline_t *pipeline)
     queue_count = pipeline->queue_count;
     loader_done = pipeline->loader_done;
     worker_status = pipeline->worker_status;
-    pipeline->loader_done = 1;
-    sixel_cond_broadcast(&pipeline->cond);
+    if (pipeline->encoder != NULL
+        && pipeline->encoder->cancel_flag != NULL
+        && *pipeline->encoder->cancel_flag != 0
+        && pipeline->worker_status == SIXEL_OK) {
+        cancel_requested = 1;
+        sixel_encoder_frame_pipeline_request_stop_locked(
+            pipeline,
+            SIXEL_INTERRUPTED,
+            "finish_cancel");
+    } else {
+        pipeline->loader_done = 1;
+        sixel_cond_broadcast(&pipeline->cond);
+    }
+    loader_done = pipeline->loader_done;
+    worker_status = pipeline->worker_status;
     sixel_mutex_unlock(&pipeline->mutex);
     sixel_trace_topic_message(
         SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,
         "finish begin handoff=%s started=%d queue_count=%d loader_done=%d "
-        "worker_status=%d",
+        "worker_status=%d cancel=%d",
         sixel_encoder_handoff_mode_name(pipeline->handoff_mode),
         started,
         queue_count,
         loader_done,
-        worker_status);
+        worker_status,
+        cancel_requested);
 
     if (started != 0) {
         sixel_trace_topic_message(
@@ -7520,6 +7759,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
+        if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_PIPELINE) {
+            sixel_encoder_frame_pipeline_request_stop(pipeline,
+                                                      SIXEL_INTERRUPTED,
+                                                      "callback_cancel");
+        }
         return SIXEL_INTERRUPTED;
     }
 

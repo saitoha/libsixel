@@ -252,6 +252,7 @@ SIXEL_QUALITY_HIGHCOLOR = 0x4  # high color
 SIXEL_QUANTIZE_MODEL_AUTO      = 0x0  # choose palette solver automatically
 SIXEL_QUANTIZE_MODEL_MEDIANCUT = 0x1  # Heckbert median-cut solver
 SIXEL_QUANTIZE_MODEL_KMEANS    = 0x2  # k-means palette solver
+SIXEL_QUANTIZE_MODEL_KMEDOIDS  = 0x3  # k-medoids palette solver
 SIXEL_FINAL_MERGE_AUTO         = 0x0  # select final merge automatically
                                       # (defaults to none)
 SIXEL_FINAL_MERGE_NONE         = 0x1  # disable final merge stage

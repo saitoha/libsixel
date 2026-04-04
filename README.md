@@ -479,8 +479,9 @@ Options:
                            the image to (default=256)
 -Q MODEL, --quantize-model=MODEL
                            choose the palette solver. MODEL accepts
-                           auto, heckbert, or kmeans. auto preserves the
-                           historical Heckbert median-cut behaviour.
+                           auto, heckbert, kmeans, or kmedoids. auto
+                           preserves the historical Heckbert median-cut
+                           behaviour.
                            kmeans accepts suboptions using
                            kmeans:key=value[:key=value...].
                              inittype (or i)  -> auto, none, or pca
@@ -491,6 +492,11 @@ Options:
                              softdist (or d)  -> trilinear
                              autoratio (or r) -> integer in 1-1048576
                              feedback (or f)  -> off or on
+                           kmedoids accepts suboptions using
+                           kmedoids:key=value[:key=value...].
+                             algo (or a)      -> pam, clara, clarans,
+                                                  or banditpam
+                             seed (or s)      -> integer in 0-4294967295
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colors. Accepts image files and
                            palette files in Adobe Color Table (*.act),

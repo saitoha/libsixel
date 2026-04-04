@@ -67,6 +67,7 @@
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
 #include "palette-kmeans.h"
+#include "palette-kmedoids.h"
 #include "palette.h"
 #include "allocator.h"
 #include "status.h"
@@ -151,6 +152,57 @@ sixel_palette_build_kmeans_float32_dispatch(
 }
 
 static SIXELSTATUS
+sixel_palette_build_kmedoids_dispatch(sixel_palette_t *palette,
+                                      void const *data,
+                                      unsigned int length,
+                                      int pixelformat,
+                                      sixel_allocator_t *allocator,
+                                      sixel_logger_t *logger,
+                                      int *job_seq,
+                                      char const *engine_name,
+                                      sixel_palette_telemetry_t *telemetry)
+{
+    unsigned char const *bytes;
+
+    bytes = (unsigned char const *)data;
+    return sixel_palette_build_kmedoids(palette,
+                                        bytes,
+                                        length,
+                                        pixelformat,
+                                        allocator,
+                                        logger,
+                                        job_seq,
+                                        engine_name,
+                                        telemetry);
+}
+
+static SIXELSTATUS
+sixel_palette_build_kmedoids_float32_dispatch(
+    sixel_palette_t *palette,
+    void const *data,
+    unsigned int length,
+    int pixelformat,
+    sixel_allocator_t *allocator,
+    sixel_logger_t *logger,
+    int *job_seq,
+    char const *engine_name,
+    sixel_palette_telemetry_t *telemetry)
+{
+    float const *samples;
+
+    samples = (float const *)data;
+    return sixel_palette_build_kmedoids_float32(palette,
+                                                samples,
+                                                length,
+                                                pixelformat,
+                                                allocator,
+                                                logger,
+                                                job_seq,
+                                                engine_name,
+                                                telemetry);
+}
+
+static SIXELSTATUS
 sixel_palette_build_heckbert_dispatch(sixel_palette_t *palette,
                                       void const *data,
                                       unsigned int length,
@@ -226,6 +278,18 @@ static sixel_palette_quant_engine_t const sixel_palette_quant_engines[] = {
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         1,
         sixel_palette_build_heckbert_float32_dispatch,
+    },
+    {
+        "kmedoids-float32",
+        SIXEL_QUANTIZE_MODEL_KMEDOIDS,
+        1,
+        sixel_palette_build_kmedoids_float32_dispatch,
+    },
+    {
+        "kmedoids-legacy",
+        SIXEL_QUANTIZE_MODEL_KMEDOIDS,
+        0,
+        sixel_palette_build_kmedoids_dispatch,
     },
     {
         "heckbert-legacy",
@@ -508,6 +572,53 @@ sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
                                           length,
                                           pixelformat,
                                           allocator);
+}
+
+/* Run k-medoids and keep the same float32-first fallback ladder. */
+static SIXELSTATUS
+sixel_palette_apply_kmedoids_engines(sixel_palette_t *palette,
+                                     void const *data,
+                                     unsigned int length,
+                                     int pixelformat,
+                                     sixel_allocator_t *allocator,
+                                     int prefer_float32)
+{
+    sixel_palette_quant_engine_t const *engine;
+    SIXELSTATUS status;
+
+    engine = NULL;
+    status = SIXEL_LOGIC_ERROR;
+
+    if (prefer_float32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        engine = sixel_palette_quant_engine_lookup(
+            SIXEL_QUANTIZE_MODEL_KMEDOIDS,
+            1);
+        if (engine != NULL) {
+            status = sixel_palette_quant_engine_run(engine,
+                                                    palette,
+                                                    data,
+                                                    length,
+                                                    pixelformat,
+                                                    allocator);
+            if (SIXEL_SUCCEEDED(status)) {
+                return status;
+            }
+        }
+    }
+
+    engine = sixel_palette_quant_engine_lookup(
+        SIXEL_QUANTIZE_MODEL_KMEDOIDS,
+        0);
+    if (engine != NULL) {
+        status = sixel_palette_quant_engine_run(engine,
+                                                palette,
+                                                data,
+                                                length,
+                                                pixelformat,
+                                                allocator);
+    }
+
+    return status;
 }
 
 /* Palette orchestration delegates algorithm specifics to dedicated modules. */
@@ -1129,6 +1240,19 @@ sixel_palette_generate(sixel_palette_t *palette,
                                                     pixelformat,
                                                     work_allocator,
                                                     prefer_float32);
+        if (SIXEL_SUCCEEDED(status)) {
+            ncolors = palette->entry_count;
+            origcolors = palette->original_colors;
+            depth = (unsigned int)palette->depth;
+            goto success;
+        }
+    } else if (palette->quantize_model == SIXEL_QUANTIZE_MODEL_KMEDOIDS) {
+        status = sixel_palette_apply_kmedoids_engines(palette,
+                                                      data,
+                                                      length,
+                                                      pixelformat,
+                                                      work_allocator,
+                                                      prefer_float32);
         if (SIXEL_SUCCEEDED(status)) {
             ncolors = palette->entry_count;
             origcolors = palette->original_colors;

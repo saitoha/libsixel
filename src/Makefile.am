@@ -81,6 +81,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-common-snap.h \
                 $(srcdir)/palette-kmeans.c \
                 $(srcdir)/palette-kmeans.h \
+                $(srcdir)/palette-kmedoids.c \
+                $(srcdir)/palette-kmedoids.h \
                 $(srcdir)/palette.c \
                 $(srcdir)/palette.h \
                 $(srcdir)/dither.c \

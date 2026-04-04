@@ -150,6 +150,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0055_loader_animation_hide_cursor_control.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
+	quant/palette/0002_kmedoids_constraints.c \
 	diagnostics/probe/0001_probe_parse.c \
 	extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 	extension/gdk-pixbuf-loader/0002_incremental_load.c \
@@ -202,6 +203,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0054_loader_gif_bgcolor_canvas_fill.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0055_loader_animation_hide_cursor_control.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0002_incremental_load.$(OBJEXT) \
@@ -334,7 +336,8 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po \
 	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
-	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
+	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
+	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -968,6 +971,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_IMG2SIXEL_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_KMEANS_INIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_KMEDOIDS_CONSTRAINTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PROBE_PARSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FILTER_SAMPLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_INCREMENTAL_LOAD \
@@ -1094,6 +1098,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0055_loader_animation_hide_cursor_control.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0002_kmedoids_constraints.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0002_incremental_load.c \
@@ -1545,6 +1550,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -2135,6 +2141,20 @@ quant/palette/test_runner-0001_kmeans_init.obj: quant/palette/0001_kmeans_init.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0001_kmeans_init.c' object='quant/palette/test_runner-0001_kmeans_init.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0001_kmeans_init.obj `if test -f 'quant/palette/0001_kmeans_init.c'; then $(CYGPATH_W) 'quant/palette/0001_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0001_kmeans_init.c'; fi`
+
+quant/palette/test_runner-0002_kmedoids_constraints.o: quant/palette/0002_kmedoids_constraints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0002_kmedoids_constraints.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Tpo -c -o quant/palette/test_runner-0002_kmedoids_constraints.o `test -f 'quant/palette/0002_kmedoids_constraints.c' || echo '$(srcdir)/'`quant/palette/0002_kmedoids_constraints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Tpo quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0002_kmedoids_constraints.c' object='quant/palette/test_runner-0002_kmedoids_constraints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0002_kmedoids_constraints.o `test -f 'quant/palette/0002_kmedoids_constraints.c' || echo '$(srcdir)/'`quant/palette/0002_kmedoids_constraints.c
+
+quant/palette/test_runner-0002_kmedoids_constraints.obj: quant/palette/0002_kmedoids_constraints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0002_kmedoids_constraints.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Tpo -c -o quant/palette/test_runner-0002_kmedoids_constraints.obj `if test -f 'quant/palette/0002_kmedoids_constraints.c'; then $(CYGPATH_W) 'quant/palette/0002_kmedoids_constraints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0002_kmedoids_constraints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Tpo quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0002_kmedoids_constraints.c' object='quant/palette/test_runner-0002_kmedoids_constraints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0002_kmedoids_constraints.obj `if test -f 'quant/palette/0002_kmedoids_constraints.c'; then $(CYGPATH_W) 'quant/palette/0002_kmedoids_constraints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0002_kmedoids_constraints.c'; fi`
 
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
@@ -2737,6 +2757,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -2834,6 +2855,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

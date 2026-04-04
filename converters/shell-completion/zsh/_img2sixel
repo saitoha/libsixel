@@ -204,7 +204,7 @@ _quantizemodel() {
   if [[ ${current} == *:* ]]; then
     base=${current%%:*}
     segment=${current##*:}
-    if [[ ${base} == k* ]]; then
+    if [[ ${base} == k || ${base} == kmeans* ]]; then
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
@@ -256,6 +256,29 @@ _quantizemodel() {
                    "${prefix}f=" "${prefix}feedback="
         return 0
       fi
+    elif [[ ${base} == kmedoids* ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%${segment}}
+        if [[ ${key} == a || ${key} == algo ]]; then
+          compadd -- "${prefix}${key}=pam" \
+                     "${prefix}${key}=clara" \
+                     "${prefix}${key}=clarans" \
+                     "${prefix}${key}=banditpam"
+          return 0
+        elif [[ ${key} == s || ${key} == seed ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=7" \
+                     "${prefix}${key}=42" \
+                     "${prefix}${key}=256"
+          return 0
+        fi
+      else
+        prefix=${current%${segment}}
+        compadd -- "${prefix}a=" "${prefix}algo=" \
+                   "${prefix}s=" "${prefix}seed="
+        return 0
+      fi
     fi
   fi
 
@@ -263,7 +286,8 @@ _quantizemodel() {
     'MODEL' \
     'auto[select solver automatically]' \
     'heckbert[Heckbert median-cut solver]' \
-    'kmeans[k-means palette solver]'
+    'kmeans[k-means palette solver]' \
+    'kmedoids[k-medoids palette solver]'
 }
 
 

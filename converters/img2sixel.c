@@ -225,6 +225,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             heckbert -> traditional Heckbert\n"
         "                                         median-cut implementation.\n"
         "                             kmeans   -> k-means++ clustering.\n"
+        "                             kmedoids -> k-medoids clustering.\n"
         "                               sub-option:\n"
         "                                 :inittype=TYPE (:i=TYPE)\n"
         "                                   choose k-means seed mode:\n"
@@ -250,6 +251,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 :feedback=MODE (:f=MODE)\n"
         "                                   residual histogram feedback:\n"
         "                                     off|on (default off)\n"
+        "                             kmedoids sub-option:\n"
+        "                                 :algo=NAME (:a=NAME)\n"
+        "                                   choose k-medoids solver:\n"
+        "                                     pam|clara|clarans|banditpam\n"
+        "                                 :seed=VALUE (:s=VALUE)\n"
+        "                                   uint32 random seed\n"
+        "                                   (0-4294967295, default 1).\n"
     },
     {
         'F',
@@ -1223,6 +1231,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_KMEANS_FEEDBACK",
         "k-means residual histogram feedback switch: off or on\n"
         "(default off)."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_ALGO",
+        "default k-medoids solver when -Q kmedoids omits :algo.\n"
+        "Accepts pam, clara, clarans, or banditpam."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_SEED",
+        "default uint32 random seed for k-medoids stochastic paths.\n"
+        "Accepts 0-4294967295."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

@@ -183,6 +183,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUANTIZE_MODEL_AUTO        0x0
 #define SIXEL_QUANTIZE_MODEL_MEDIANCUT   0x1
 #define SIXEL_QUANTIZE_MODEL_KMEANS      0x2
+#define SIXEL_QUANTIZE_MODEL_KMEDOIDS    0x3
 
 /* final merge policy */
 #define SIXEL_FINAL_MERGE_AUTO        0x0  /* auto final merge (defaults to */
@@ -393,6 +394,8 @@ typedef int SIXELSTATUS;
                                                                 (default, Heckbert)
                                                     heckbert -> median-cut solver
                                                     kmeans   -> k-means solver
+                                                    kmedoids -> k-medoids
+                                                                solver
                                                   kmeans accepts suboptions in:
                                                     kmeans:key=value[:key=value...]
                                                   supported suboptions:
@@ -412,6 +415,14 @@ typedef int SIXELSTATUS;
                                                       integer in 1-1048576
                                                     feedback (or f):
                                                       off, on
+                                                  kmedoids accepts suboptions in:
+                                                    kmedoids:key=value[:key=value...]
+                                                  supported suboptions:
+                                                    algo:
+                                                      pam, clara, clarans,
+                                                      banditpam
+                                                    seed:
+                                                      integer in 0-4294967295
                                                 */
 #define SIXEL_OPTFLAG_FINAL_MERGE       ('F')  /* -F MODE, --final-merge=MODE:
                                                   final merge policy.
