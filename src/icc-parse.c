@@ -1042,6 +1042,24 @@ sixel_icc_parse_profile(void const *data,
     memset(bxyz, 0, sizeof(bxyz));
     has_a2b0 = 0;
     has_matrix_tags = 0;
+    rxyz_offset = 0u;
+    rxyz_length = 0u;
+    gxyz_offset = 0u;
+    gxyz_length = 0u;
+    bxyz_offset = 0u;
+    bxyz_length = 0u;
+    rtrc_offset = 0u;
+    rtrc_length = 0u;
+    gtrc_offset = 0u;
+    gtrc_length = 0u;
+    btrc_offset = 0u;
+    btrc_length = 0u;
+    wtpt_offset = 0u;
+    wtpt_length = 0u;
+    ktrc_offset = 0u;
+    ktrc_length = 0u;
+    a2b0_offset = 0u;
+    a2b0_length = 0u;
 
     profile_data = (unsigned char const *)data;
     profile_size = (size_t)sixel_icc_read_be32(profile_data + 0u);
