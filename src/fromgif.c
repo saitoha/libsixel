@@ -2342,9 +2342,6 @@ gif_decode_loop_frames(gif_context_t *s,
     }
 
     for (;;) {
-        if (gif_decode_request_is_canceled(request) != 0) {
-            return SIXEL_INTERRUPTED;
-        }
         status = gif_decode_one_frame(s, g, frame, request, progress);
         if (status != SIXEL_OK) {
             return status;
@@ -2758,9 +2755,6 @@ gif_decode_animation_loops(gif_context_t *s,
     replay_cache = request->replay_cache;
 
     for (;;) { /* per loop */
-        if (gif_decode_request_is_canceled(request) != 0) {
-            return SIXEL_INTERRUPTED;
-        }
         status = gif_prepare_loop_iteration(s,
                                             g,
                                             frame,
