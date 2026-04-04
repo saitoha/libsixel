@@ -21,22 +21,36 @@ test "${status}" -eq 0 || {
 }
 set +x
 
-test "${msg#*auto|pam|clara|clarans|banditpam*}" = "${msg}" || {
+printf '%s\n' "${msg}" | awk '
+    index($0, "auto|pam|clara|clarans|banditpam") { exit 1 }
+    END { exit 0 }
+' || {
     echo "not ok" 1 - "kmedoids algo still uses pipe list format"
     exit 0
 }
 
-test "${msg#*auto|none|pca*}" = "${msg}" || {
+printf '%s\n' "${msg}" | awk '
+    index($0, "auto|none|pca") { exit 1 }
+    END { exit 0 }
+' || {
     echo "not ok" 1 - "kmeans inittype still uses pipe list format"
     exit 0
 }
 
-test "${msg#*:algo=NAME (:a=NAME)*auto      -> choose by*}" != "${msg}" || {
+printf '%s\n' "${msg}" | awk '
+    index($0, ":algo=NAME (:a=NAME)") { seen = 1 }
+    seen && index($0, "auto      -> choose by") { found = 1; exit 0 }
+    END { exit found ? 0 : 1 }
+' || {
     echo "not ok" 1 - "kmedoids algo description lines are missing"
     exit 0
 }
 
-test "${msg#*:inittype=TYPE (:i=TYPE)*auto -> choose seed mode*}" != "${msg}" || {
+printf '%s\n' "${msg}" | awk '
+    index($0, ":inittype=TYPE (:i=TYPE)") { seen = 1 }
+    seen && index($0, "auto -> choose seed mode") { found = 1; exit 0 }
+    END { exit found ? 0 : 1 }
+' || {
     echo "not ok" 1 - "kmeans inittype description lines are missing"
     exit 0
 }
