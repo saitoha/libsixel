@@ -966,8 +966,11 @@ sixel_option_parse_argument_list_with_suboptions(
 
     sixel_option_init_argument_list_resolution(resolution);
 
-    if (argument == NULL || argument[0] == '\0') {
+    if (argument == NULL) {
         return SIXEL_OK;
+    }
+    if (argument[0] == '\0') {
+        return sixel_option_build_canonical_argument(resolution);
     }
 
     argument_end = argument + strlen(argument);
@@ -1232,6 +1235,18 @@ sixel_option_build_canonical_argument(
     free(resolution->canonical_argument);
     resolution->canonical_argument = NULL;
     if (resolution->item_count == 0u) {
+        /*
+         * Keep successful parses self-contained: callers that round-trip or
+         * duplicate the canonical text expect a non-NULL pointer on success.
+         * The empty list canonicalizes to the empty string.
+         */
+        resolution->canonical_argument = (char *)malloc(1u);
+        if (resolution->canonical_argument == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_option_build_canonical_argument: malloc failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        resolution->canonical_argument[0] = '\0';
         return SIXEL_OK;
     }
 
