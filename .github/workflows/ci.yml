@@ -104,7 +104,7 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   fuzz_push_full:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || (github.event_name == 'schedule' && matrix.buildtool == 'meson' && contains(fromJSON('["gif-lzw-codes","psd-resource","option-arglist","loader-order"]'), matrix.target))
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -115,7 +115,7 @@ jobs:
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
-      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={0}/.tmp/fuzz-artifacts-struct/{1}/', github.workspace, matrix.target) }}
+      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time={0} -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-struct/{2}/', github.event_name == 'schedule' && '1800' || '300', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -270,7 +270,7 @@ jobs:
             ${{ env.FUZZ_STRUCT_CORPUS }}
 
   fuzz_push_loader_formats:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || (github.event_name == 'schedule' && matrix.buildtool == 'meson' && contains(fromJSON('["png","gif","psd","hdr"]'), matrix.target))
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -281,7 +281,7 @@ jobs:
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
-      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/{1}/', github.workspace, matrix.target) }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time={0} -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader/{2}/', github.event_name == 'schedule' && '1800' || '300', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -518,7 +518,7 @@ jobs:
             ${{ env.FUZZ_OUTPUT_DIR }}.tar.gz
 
   fuzz_push_loader_coregraphics:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || (github.event_name == 'schedule' && matrix.buildtool == 'meson')
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
     runs-on: macos-latest
     strategy:
@@ -528,7 +528,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time=300 -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={0}/.tmp/fuzz-artifacts-loader/coregraphics/', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'schedule' && '1800' || '300', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
