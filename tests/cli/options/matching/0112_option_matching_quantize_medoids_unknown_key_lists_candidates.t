@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying unknown kmedoids suboption keys are rejected with candidates.
+# TAP test verifying unknown medoids suboption keys are rejected with candidates.
 
 set -eux
 
@@ -13,22 +13,22 @@ echo "1..1"
 set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmedoids:unknown=1 \
+    -Qmedoids:unknown=1 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown kmedoids suboption key unexpectedly succeeded"
+    echo "not ok" 1 - "unknown medoids suboption key unexpectedly succeeded"
     exit 0
 }
 
 test "${msg#*unknown suboption key*}" != "${msg}" || {
-    echo "not ok" 1 - "missing unknown kmedoids key diagnostic"
+    echo "not ok" 1 - "missing unknown medoids key diagnostic"
     exit 0
 }
 
 test "${msg#*"unknown"*valid keys*algo*seed*iter*sample*}" != "${msg}" || {
-    echo "not ok" 1 - "missing kmedoids key candidate list"
+    echo "not ok" 1 - "missing medoids key candidate list"
     exit 0
 }
 
-echo "ok" 1 - "unknown kmedoids suboption key is rejected with candidates"
+echo "ok" 1 - "unknown medoids suboption key is rejected with candidates"
 exit 0

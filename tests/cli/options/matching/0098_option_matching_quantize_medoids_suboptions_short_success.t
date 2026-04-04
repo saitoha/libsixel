@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -Q accepts short-form kmedoids suboptions.
+# TAP test verifying -Q accepts short-form medoids suboptions.
 
 set -eux
 
@@ -13,12 +13,12 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmedoids:a=banditpam:s=7 \
+    -Qmedoids:a=banditpam:s=7 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q kmedoids short suboptions were rejected"
+    echo "not ok" 1 - "-Q medoids short suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts short kmedoids suboptions"
+echo "ok" 1 - "-Q accepts short medoids suboptions"
 exit 0

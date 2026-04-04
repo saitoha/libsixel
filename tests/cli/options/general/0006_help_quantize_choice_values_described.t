@@ -25,7 +25,7 @@ printf '%s\n' "${msg}" | awk '
     index($0, "auto|pam|clara|clarans|banditpam") { exit 1 }
     END { exit 0 }
 ' || {
-    echo "not ok" 1 - "kmedoids algo still uses pipe list format"
+    echo "not ok" 1 - "medoids algo still uses pipe list format"
     exit 0
 }
 
@@ -42,7 +42,7 @@ printf '%s\n' "${msg}" | awk '
     seen && index($0, "auto      -> choose by") { found = 1; exit 0 }
     END { exit found ? 0 : 1 }
 ' || {
-    echo "not ok" 1 - "kmedoids algo description lines are missing"
+    echo "not ok" 1 - "medoids algo description lines are missing"
     exit 0
 }
 

@@ -27,13 +27,13 @@ test "${msg#*kmeans   -> k-means++ clustering.*sub-option:*:inittype=TYPE*}" != 
     exit 0
 }
 
-test "${msg#*kmedoids -> k-medoids clustering.*sub-option:*:algo=NAME*}" != "${msg}" || {
-    echo "not ok" 1 - "missing indented kmedoids suboption block in -H"
+test "${msg#*medoids -> k-medoids clustering.*sub-option:*:algo=NAME*}" != "${msg}" || {
+    echo "not ok" 1 - "missing indented medoids suboption block in -H"
     exit 0
 }
 
-test "${msg#*kmeans   -> k-means++ clustering.*kmedoids -> k-medoids clustering.*}" != "${msg}" || {
-    echo "not ok" 1 - "kmeans/kmedoids blocks are out of order"
+test "${msg#*kmeans   -> k-means++ clustering.*medoids -> k-medoids clustering.*}" != "${msg}" || {
+    echo "not ok" 1 - "kmeans/medoids blocks are out of order"
     exit 0
 }
 

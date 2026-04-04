@@ -479,7 +479,7 @@ Options:
                            the image to (default=256)
 -Q MODEL, --quantize-model=MODEL
                            choose the palette solver. MODEL accepts
-                           auto, heckbert, kmeans, or kmedoids. auto
+                           auto, heckbert, kmeans, or medoids. auto
                            preserves the historical Heckbert median-cut
                            behaviour.
                            kmeans accepts suboptions using
@@ -492,8 +492,8 @@ Options:
                              softdist (or d)  -> trilinear
                              autoratio (or r) -> integer in 1-1048576
                              feedback (or f)  -> off or on
-                           kmedoids accepts suboptions using
-                           kmedoids:key=value[:key=value...].
+                           medoids accepts suboptions using
+                           medoids:key=value[:key=value...].
                              algo (or a)      -> auto, pam, clara,
                                                   clarans, or banditpam
                              seed (or s)      -> integer in 0-4294967295
@@ -966,7 +966,7 @@ SIXEL_LODER_WIC_ICO_MINSIZE default minimum edge for
                            is provided. Accepts positive integers.
 SIXEL_PALETTE_KMEDOIDS_ALGO
                            default k-medoids solver when
-                           -Q kmedoids omits :algo.
+                           -Q medoids omits :algo.
                            Accepts auto, pam, clara, clarans,
                            or banditpam.
 SIXEL_PALETTE_KMEDOIDS_SEED

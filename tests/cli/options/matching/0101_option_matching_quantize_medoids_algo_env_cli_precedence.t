@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying kmedoids algo accepts env/CLI values and keeps CLI priority.
+# TAP test verifying medoids algo accepts env/CLI values and keeps CLI priority.
 
 set -eux
 
@@ -14,7 +14,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_ALGO=auto" \
-    -Qkmedoids \
+    -Qmedoids \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "env-only algo=auto was rejected"
@@ -22,7 +22,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmedoids:algo=banditpam \
+    -Qmedoids:algo=banditpam \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "cli-only algo=banditpam was rejected"
@@ -31,7 +31,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_ALGO=auto" \
-    -Qkmedoids:algo=invalid \
+    -Qmedoids:algo=invalid \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "invalid CLI algo unexpectedly ignored in favor of env"
@@ -45,12 +45,12 @@ test "${msg#*unknown suboption value*}" != "${msg}" || {
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_ALGO=invalid" \
-    -Qkmedoids:algo=pam \
+    -Qmedoids:algo=pam \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "valid CLI algo did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids algo follows env/CLI acceptance and CLI priority"
+echo "ok" 1 - "medoids algo follows env/CLI acceptance and CLI priority"
 exit 0

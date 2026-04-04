@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying invalid kmedoids seed values are rejected.
+# TAP test verifying invalid medoids seed values are rejected.
 
 set -eux
 
@@ -12,17 +12,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmedoids:s=4294967296 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid kmedoids seed unexpectedly succeeded"
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qmedoids:s=4294967296 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
+    echo "not ok" 1 - "invalid medoids seed unexpectedly succeeded"
     exit 0
 }
 
 test "${msg#*seed must be in range 0-4294967295.*}" != "${msg}" || {
-    echo "not ok" 1 - "missing kmedoids seed range diagnostic"
+    echo "not ok" 1 - "missing medoids seed range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "invalid kmedoids seed is rejected"
+echo "ok" 1 - "invalid medoids seed is rejected"
 exit 0

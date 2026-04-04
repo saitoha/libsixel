@@ -961,7 +961,7 @@ static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
         / sizeof(g_subkeys_quantize_model_kmeans[0])
     },
     {
-        "kmedoids",
+        "medoids",
         SIXEL_QUANTIZE_MODEL_KMEDOIDS,
         g_subkeys_quantize_model_kmedoids,
         sizeof(g_subkeys_quantize_model_kmedoids)

@@ -256,7 +256,7 @@ _quantizemodel() {
                    "${prefix}f=" "${prefix}feedback="
         return 0
       fi
-    elif [[ ${base} == kmedoids* ]]; then
+    elif [[ ${base} == medoids* ]]; then
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
@@ -332,7 +332,7 @@ _quantizemodel() {
     'auto[select solver automatically]' \
     'heckbert[Heckbert median-cut solver]' \
     'kmeans[k-means palette solver]' \
-    'kmedoids[k-medoids palette solver]'
+    'medoids[k-medoids palette solver]'
 }
 
 

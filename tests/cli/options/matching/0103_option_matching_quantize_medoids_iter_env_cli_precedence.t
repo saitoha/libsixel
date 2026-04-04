@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying kmedoids iter accepts env/CLI values and keeps CLI priority.
+# TAP test verifying medoids iter accepts env/CLI values and keeps CLI priority.
 
 set -eux
 
@@ -14,7 +14,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_ITER=1" \
-    -Qkmedoids \
+    -Qmedoids \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "env-only iter=1 was rejected"
@@ -22,7 +22,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmedoids:iter=64 \
+    -Qmedoids:iter=64 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "cli-only iter upper bound was rejected"
@@ -31,7 +31,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_ITER=1" \
-    -Qkmedoids:iter=0 \
+    -Qmedoids:iter=0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "invalid CLI iter unexpectedly ignored in favor of env"
@@ -45,12 +45,12 @@ test "${msg#*-Q iter must be in range 1-64.*}" != "${msg}" || {
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_ITER=0" \
-    -Qkmedoids:iter=64 \
+    -Qmedoids:iter=64 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
     echo "not ok" 1 - "valid CLI iter did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids iter follows env/CLI acceptance and CLI priority"
+echo "ok" 1 - "medoids iter follows env/CLI acceptance and CLI priority"
 exit 0

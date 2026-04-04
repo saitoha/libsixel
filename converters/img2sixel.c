@@ -289,7 +289,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                            (default)\n"
         "                                     on  -> enable\n"
         "                                            feedback\n"
-        "                             kmedoids -> k-medoids clustering.\n"
+        "                             medoids -> k-medoids clustering.\n"
         "                               sub-option:\n"
         "                                 :algo=NAME (:a=NAME)\n"
         "                                   choose k-medoids solver:\n"
@@ -1312,7 +1312,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEDOIDS_ALGO",
-        "default k-medoids solver when -Q kmedoids omits :algo.\n"
+        "default k-medoids solver when -Q medoids omits :algo.\n"
         "Accepts auto, pam, clara, clarans, or banditpam."
     },
     {

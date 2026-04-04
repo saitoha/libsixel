@@ -394,7 +394,7 @@ typedef int SIXELSTATUS;
                                                                 (default, Heckbert)
                                                     heckbert -> median-cut solver
                                                     kmeans   -> k-means solver
-                                                    kmedoids -> k-medoids
+                                                    medoids -> k-medoids
                                                                 solver
                                                   kmeans accepts suboptions in:
                                                     kmeans:key=value[:key=value...]
@@ -415,8 +415,8 @@ typedef int SIXELSTATUS;
                                                       integer in 1-1048576
                                                     feedback (or f):
                                                       off, on
-                                                  kmedoids accepts suboptions in:
-                                                    kmedoids:key=value[:key=value...]
+                                                  medoids accepts suboptions in:
+                                                    medoids:key=value[:key=value...]
                                                   supported suboptions:
                                                     algo:
                                                       auto, pam, clara, clarans,
