@@ -617,8 +617,14 @@ staticcheck-c-header-modeline:
 
 # Build all test logs through a phony target so recursive make does not need
 # to receive thousands of .log paths as command-line arguments.
-.PHONY: sixel-check-test-logs
-sixel-check-test-logs: $(TEST_LOGS)
+.PHONY: sixel-check-test-tools sixel-check-test-logs
+sixel-check-test-tools:
+	@set -eu; \
+	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
+	$(MAKE) -C "$(top_builddir)/assessment" lsqa; \
+	$(MAKE) -C "$(top_builddir)/converters" img2sixel sixel2png
+
+sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
 
 # Override check-TESTS to avoid nested single quotes in automake helpers.
