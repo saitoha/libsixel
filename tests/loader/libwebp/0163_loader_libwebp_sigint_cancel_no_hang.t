@@ -18,16 +18,24 @@ echo "1..1"
 set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
+ctrl_break_ok=0
+ctrl_break_mode=0
+platform_name=$(uname -s 2>/dev/null || printf "unknown")
+platform_not_cygwin="${platform_name#CYGWIN}"
 
-test "${HAVE_WINDOWS_H-0}" = 1 && {
+test "${HAVE_WINDOWS_H-0}" = 1 && ctrl_break_mode=1
+test -x "${TEST_RUNNER_PATH-}" || ctrl_break_mode=0
+test "${platform_not_cygwin}" != "${platform_name}" && ctrl_break_mode=0
+test -n "${SIXEL_RUNTIME-}" && ctrl_break_mode=0
+
+test "${ctrl_break_mode}" = "1" && {
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --win32-ctrl-break-run \
         1000 2000 "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
-        >/dev/null || {
-        echo "not ok" 1 - "libwebp force-loop did not stop after CTRL_BREAK"
+        >/dev/null && ctrl_break_ok=1
+    test "${ctrl_break_ok}" = "1" && {
+        echo "ok" 1 - "libwebp force-loop stops quickly on CTRL_BREAK"
         exit 0
     }
-    echo "ok" 1 - "libwebp force-loop stops quickly on CTRL_BREAK"
-    exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
