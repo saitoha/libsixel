@@ -1,5 +1,11 @@
 /*
- * Helper exposing k-medoids constraints for TAP shell wrappers.
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
+ *
+ * Verify k-medoids palette constraints from TAP wrappers:
+ * - medoid palette entries must be sampled from input pixels
+ * - seeded randomized variants must keep deterministic output
  */
 
 #include <stdio.h>
@@ -355,3 +361,12 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
 
     return 1;
 }
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
