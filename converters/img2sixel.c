@@ -36,6 +36,11 @@
 #include <string.h>
 #include <limits.h>
 
+/* Keep SIZE_MAX available even on strict C99 environments. */
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
+
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif
@@ -1802,7 +1807,7 @@ img2sixel_safe_size_add(size_t *total, size_t addend)
     if (total == NULL) {
         return -1;
     }
-    if (addend > (size_t)-1u - *total) {
+    if (addend > SIZE_MAX - *total) {
         return -1;
     }
     *total += addend;
