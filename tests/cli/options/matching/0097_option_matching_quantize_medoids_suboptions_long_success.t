@@ -14,7 +14,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:algo=clarans:seed=42 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null || {
     echo "not ok" 1 - "-Q medoids long suboptions were rejected"
     exit 0
