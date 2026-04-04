@@ -24,6 +24,40 @@
 #define TEST_HEIGHT 1
 #define TEST_REQCOLORS 4
 
+SIXELSTATUS
+sixel_kmedoids_test_pick_sample_indices(unsigned int point_count,
+                                        unsigned int sample_size,
+                                        uint32_t seed,
+                                        unsigned int **indices_out,
+                                        sixel_allocator_t *allocator);
+
+void
+sixel_kmedoids_test_assign_points(double const *points,
+                                  double const *weights,
+                                  unsigned int point_count,
+                                  unsigned int const *medoids,
+                                  unsigned int k,
+                                  unsigned int *nearest_slot,
+                                  double *nearest_dist,
+                                  double *second_dist,
+                                  unsigned int *second_slot,
+                                  double *cost_out);
+
+void
+sixel_kmedoids_test_update_assignments_after_swap(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *medoids,
+    unsigned int k,
+    unsigned int swapped_slot,
+    unsigned int new_medoid,
+    unsigned int *nearest_slot,
+    double *nearest_dist,
+    double *second_dist,
+    unsigned int *second_slot,
+    double *cost_out);
+
 static unsigned char const g_test_pixels_rgb[TEST_PIXEL_COUNT * 3u] = {
     255u, 0u,   0u,
     255u, 0u,   0u,
@@ -379,7 +413,8 @@ test_run_subset_case(sixel_kmedoids_algo_t algo,
 }
 
 static int
-test_run_seed_case(sixel_kmedoids_algo_t algo)
+test_run_seed_case(sixel_kmedoids_algo_t algo,
+                   int use_float32)
 {
     sixel_allocator_t *allocator;
     sixel_dither_t *dither_a;
@@ -401,11 +436,21 @@ test_run_seed_case(sixel_kmedoids_algo_t algo)
         return 0;
     }
 
-    if (!test_build_dither(algo, 1234u, 0u, 0, &dither_a, allocator)) {
+    if (!test_build_dither(algo,
+                           1234u,
+                           0u,
+                           use_float32,
+                           &dither_a,
+                           allocator)) {
         sixel_allocator_unref(allocator);
         return 0;
     }
-    if (!test_build_dither(algo, 1234u, 0u, 0, &dither_b, allocator)) {
+    if (!test_build_dither(algo,
+                           1234u,
+                           0u,
+                           use_float32,
+                           &dither_b,
+                           allocator)) {
         sixel_dither_unref(dither_a);
         sixel_allocator_unref(allocator);
         return 0;
@@ -541,6 +586,218 @@ test_run_pam_monotonic_case(void)
     return cost_high <= cost_low + 1.0e-9 ? 1 : 0;
 }
 
+static int
+test_indices_are_unique(unsigned int const *indices,
+                        unsigned int count,
+                        unsigned int upper_bound)
+{
+    unsigned int index;
+    unsigned int probe;
+
+    index = 0u;
+    probe = 0u;
+    if (indices == NULL) {
+        return 0;
+    }
+
+    for (index = 0u; index < count; ++index) {
+        if (indices[index] >= upper_bound) {
+            return 0;
+        }
+        for (probe = index + 1u; probe < count; ++probe) {
+            if (indices[index] == indices[probe]) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+static int
+test_run_clara_sample_indices_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned int *indices_a;
+    unsigned int *indices_b;
+    unsigned int *indices_c;
+    unsigned int index;
+
+    allocator = NULL;
+    indices_a = NULL;
+    indices_b = NULL;
+    indices_c = NULL;
+    index = 0u;
+
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    if (SIXEL_FAILED(sixel_kmedoids_test_pick_sample_indices(97u,
+                                                             31u,
+                                                             314159u,
+                                                             &indices_a,
+                                                             allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (SIXEL_FAILED(sixel_kmedoids_test_pick_sample_indices(97u,
+                                                             31u,
+                                                             314159u,
+                                                             &indices_b,
+                                                             allocator))) {
+        sixel_allocator_free(allocator, indices_a);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (!test_indices_are_unique(indices_a, 31u, 97u)
+            || !test_indices_are_unique(indices_b, 31u, 97u)) {
+        sixel_allocator_free(allocator, indices_a);
+        sixel_allocator_free(allocator, indices_b);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (memcmp(indices_a, indices_b, sizeof(unsigned int) * 31u) != 0) {
+        sixel_allocator_free(allocator, indices_a);
+        sixel_allocator_free(allocator, indices_b);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    if (SIXEL_FAILED(sixel_kmedoids_test_pick_sample_indices(16u,
+                                                             16u,
+                                                             1u,
+                                                             &indices_c,
+                                                             allocator))) {
+        sixel_allocator_free(allocator, indices_a);
+        sixel_allocator_free(allocator, indices_b);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    for (index = 0u; index < 16u; ++index) {
+        if (indices_c[index] != index) {
+            sixel_allocator_free(allocator, indices_a);
+            sixel_allocator_free(allocator, indices_b);
+            sixel_allocator_free(allocator, indices_c);
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+    }
+
+    sixel_allocator_free(allocator, indices_a);
+    sixel_allocator_free(allocator, indices_b);
+    sixel_allocator_free(allocator, indices_c);
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
+static int
+test_run_bandit_delta_consistency_case(void)
+{
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int nearest_delta[TEST_PIXEL_COUNT];
+    double nearest_dist_delta[TEST_PIXEL_COUNT];
+    double second_dist_delta[TEST_PIXEL_COUNT];
+    unsigned int second_slot_delta[TEST_PIXEL_COUNT];
+    unsigned int nearest_full[TEST_PIXEL_COUNT];
+    double nearest_dist_full[TEST_PIXEL_COUNT];
+    double second_dist_full[TEST_PIXEL_COUNT];
+    unsigned int second_slot_full[TEST_PIXEL_COUNT];
+    unsigned int index;
+    double cost_delta;
+    double cost_full;
+    double diff;
+
+    index = 0u;
+    cost_delta = 0.0;
+    cost_full = 0.0;
+    diff = 0.0;
+
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 3u) + 1u);
+    }
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_delta,
+                                      nearest_dist_delta,
+                                      second_dist_delta,
+                                      second_slot_delta,
+                                      &cost_delta);
+
+    medoids[1u] = 7u;
+    sixel_kmedoids_test_update_assignments_after_swap(
+        points,
+        weights,
+        TEST_PIXEL_COUNT,
+        medoids,
+        TEST_REQCOLORS,
+        1u,
+        7u,
+        nearest_delta,
+        nearest_dist_delta,
+        second_dist_delta,
+        second_slot_delta,
+        &cost_delta);
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_full,
+                                      nearest_dist_full,
+                                      second_dist_full,
+                                      second_slot_full,
+                                      &cost_full);
+
+    diff = cost_delta - cost_full;
+    if (diff < 0.0) {
+        diff = -diff;
+    }
+    if (diff > 1.0e-9) {
+        return 0;
+    }
+
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        if (nearest_delta[index] != nearest_full[index]) {
+            return 0;
+        }
+        if (second_slot_delta[index] != second_slot_full[index]) {
+            return 0;
+        }
+        diff = nearest_dist_delta[index] - nearest_dist_full[index];
+        if (diff < 0.0) {
+            diff = -diff;
+        }
+        if (diff > 1.0e-9) {
+            return 0;
+        }
+        diff = second_dist_delta[index] - second_dist_full[index];
+        if (diff < 0.0) {
+            diff = -diff;
+        }
+        if (diff > 1.0e-9) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -581,23 +838,33 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
             ? 0 : 1;
     }
     if (strcmp(argv[1], "seed-clara") == 0) {
-        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA)
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARA, 0)
             ? 0 : 1;
     }
     if (strcmp(argv[1], "seed-clarans") == 0) {
-        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS)
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)
             ? 0 : 1;
     }
     if (strcmp(argv[1], "seed-banditpam") == 0) {
-        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM)
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 0)
             ? 0 : 1;
     }
     if (strcmp(argv[1], "seed-auto") == 0) {
-        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO)
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO, 0)
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "seed-clarans-float32") == 0) {
+        return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)
             ? 0 : 1;
     }
     if (strcmp(argv[1], "pam-monotonic-8bit") == 0) {
         return test_run_pam_monotonic_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clara-sample-indices") == 0) {
+        return test_run_clara_sample_indices_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "bandit-delta-consistency") == 0) {
+        return test_run_bandit_delta_consistency_case() ? 0 : 1;
     }
 
     return 1;

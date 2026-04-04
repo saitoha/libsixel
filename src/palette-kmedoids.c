@@ -133,6 +133,39 @@ typedef struct sixel_kmedoids_candidate_rank {
 static uint32_t
 sixel_kmedoids_rng_next(uint32_t *state);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_pick_sample_indices(unsigned int point_count,
+                                        unsigned int sample_size,
+                                        uint32_t seed,
+                                        unsigned int **indices_out,
+                                        sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API void
+sixel_kmedoids_test_assign_points(double const *points,
+                                  double const *weights,
+                                  unsigned int point_count,
+                                  unsigned int const *medoids,
+                                  unsigned int k,
+                                  unsigned int *nearest_slot,
+                                  double *nearest_dist,
+                                  double *second_dist,
+                                  unsigned int *second_slot,
+                                  double *cost_out);
+
+SIXEL_INTERNAL_API void
+sixel_kmedoids_test_update_assignments_after_swap(double const *points,
+                                                  double const *weights,
+                                                  unsigned int point_count,
+                                                  unsigned int const *medoids,
+                                                  unsigned int k,
+                                                  unsigned int swapped_slot,
+                                                  unsigned int new_medoid,
+                                                  unsigned int *nearest_slot,
+                                                  double *nearest_dist,
+                                                  double *second_dist,
+                                                  unsigned int *second_slot,
+                                                  double *cost_out);
+
 static int
 sixel_palette_kmedoids_log_start(sixel_logger_t *logger,
                                  int *job_seq,
@@ -2011,6 +2044,7 @@ sixel_kmedoids_assign_points(double const *points,
                              unsigned int *nearest_slot,
                              double *nearest_dist,
                              double *second_dist,
+                             unsigned int *second_slot,
                              double *cluster_weights,
                              double *cluster_sums,
                              double *cost_out)
@@ -2018,6 +2052,7 @@ sixel_kmedoids_assign_points(double const *points,
     unsigned int point_index;
     unsigned int slot;
     unsigned int best_slot;
+    unsigned int next_slot;
     double best_distance;
     double next_distance;
     double distance;
@@ -2029,6 +2064,7 @@ sixel_kmedoids_assign_points(double const *points,
     point_index = 0u;
     slot = 0u;
     best_slot = 0u;
+    next_slot = 0u;
     best_distance = 0.0;
     next_distance = 0.0;
     distance = 0.0;
@@ -2057,24 +2093,26 @@ sixel_kmedoids_assign_points(double const *points,
 
     for (point_index = 0u; point_index < point_count; ++point_index) {
         best_slot = 0u;
-        best_distance = sixel_kmedoids_distance_sq(points,
-                                                   point_index,
-                                                   medoids[0u]);
-        next_distance = best_distance;
-        for (slot = 1u; slot < k; ++slot) {
+        next_slot = 0u;
+        best_distance = 1.0e300;
+        next_distance = 1.0e300;
+        for (slot = 0u; slot < k; ++slot) {
             distance = sixel_kmedoids_distance_sq(points,
                                                   point_index,
                                                   medoids[slot]);
             if (distance < best_distance) {
                 next_distance = best_distance;
+                next_slot = best_slot;
                 best_distance = distance;
                 best_slot = slot;
-            } else if (slot == 1u || distance < next_distance) {
+            } else if (distance < next_distance) {
                 next_distance = distance;
+                next_slot = slot;
             }
         }
-        if (k == 1u) {
+        if (k == 1u || next_distance >= 1.0e300) {
             next_distance = best_distance;
+            next_slot = best_slot;
         }
         if (nearest_slot != NULL) {
             nearest_slot[point_index] = best_slot;
@@ -2084,6 +2122,9 @@ sixel_kmedoids_assign_points(double const *points,
         }
         if (second_dist != NULL) {
             second_dist[point_index] = next_distance;
+        }
+        if (second_slot != NULL) {
+            second_slot[point_index] = next_slot;
         }
         weight = 1.0;
         if (weights != NULL) {
@@ -2105,6 +2146,187 @@ sixel_kmedoids_assign_points(double const *points,
     if (cost_out != NULL) {
         *cost_out = cost;
     }
+}
+
+static void
+sixel_kmedoids_update_assignments_after_swap(double const *points,
+                                             double const *weights,
+                                             unsigned int point_count,
+                                             unsigned int const *medoids,
+                                             unsigned int k,
+                                             unsigned int swapped_slot,
+                                             unsigned int new_medoid,
+                                             unsigned int *nearest_slot,
+                                             double *nearest_dist,
+                                             double *second_dist,
+                                             unsigned int *second_slot,
+                                             double *cost_out)
+{
+    unsigned int index;
+    unsigned int slot;
+    unsigned int best_slot;
+    unsigned int next_slot;
+    double best_distance;
+    double next_distance;
+    double distance;
+    double weight;
+    double cost;
+
+    index = 0u;
+    slot = 0u;
+    best_slot = 0u;
+    next_slot = 0u;
+    best_distance = 0.0;
+    next_distance = 0.0;
+    distance = 0.0;
+    weight = 1.0;
+    cost = 0.0;
+
+    if (points == NULL || medoids == NULL || nearest_slot == NULL
+            || nearest_dist == NULL || second_dist == NULL
+            || second_slot == NULL || point_count == 0u || k == 0u) {
+        if (cost_out != NULL) {
+            *cost_out = 0.0;
+        }
+        return;
+    }
+
+    for (index = 0u; index < point_count; ++index) {
+        if (nearest_slot[index] == swapped_slot) {
+            best_slot = 0u;
+            next_slot = 0u;
+            best_distance = 1.0e300;
+            next_distance = 1.0e300;
+            for (slot = 0u; slot < k; ++slot) {
+                distance = sixel_kmedoids_distance_sq(points,
+                                                      index,
+                                                      medoids[slot]);
+                if (distance < best_distance) {
+                    next_distance = best_distance;
+                    next_slot = best_slot;
+                    best_distance = distance;
+                    best_slot = slot;
+                } else if (distance < next_distance) {
+                    next_distance = distance;
+                    next_slot = slot;
+                }
+            }
+            if (k == 1u || next_distance >= 1.0e300) {
+                next_distance = best_distance;
+                next_slot = best_slot;
+            }
+            nearest_slot[index] = best_slot;
+            nearest_dist[index] = best_distance;
+            second_dist[index] = next_distance;
+            second_slot[index] = next_slot;
+        } else {
+            distance = sixel_kmedoids_distance_sq(points,
+                                                  index,
+                                                  new_medoid);
+            if (distance < nearest_dist[index]) {
+                second_dist[index] = nearest_dist[index];
+                second_slot[index] = nearest_slot[index];
+                nearest_dist[index] = distance;
+                nearest_slot[index] = swapped_slot;
+            } else if (second_slot[index] == swapped_slot) {
+                best_distance = 1.0e300;
+                best_slot = nearest_slot[index];
+                for (slot = 0u; slot < k; ++slot) {
+                    if (slot == nearest_slot[index]) {
+                        continue;
+                    }
+                    next_distance = sixel_kmedoids_distance_sq(points,
+                                                               index,
+                                                               medoids[slot]);
+                    if (next_distance < best_distance) {
+                        best_distance = next_distance;
+                        best_slot = slot;
+                    }
+                }
+                if (k == 1u || best_distance >= 1.0e300) {
+                    best_distance = nearest_dist[index];
+                    best_slot = nearest_slot[index];
+                }
+                if (distance < best_distance) {
+                    best_distance = distance;
+                    best_slot = swapped_slot;
+                }
+                second_dist[index] = best_distance;
+                second_slot[index] = best_slot;
+            } else if (distance < second_dist[index]) {
+                second_dist[index] = distance;
+                second_slot[index] = swapped_slot;
+            }
+        }
+        if (k == 1u) {
+            second_dist[index] = nearest_dist[index];
+            second_slot[index] = nearest_slot[index];
+        }
+
+        weight = 1.0;
+        if (weights != NULL) {
+            weight = weights[index];
+        }
+        cost += nearest_dist[index] * weight;
+    }
+
+    if (cost_out != NULL) {
+        *cost_out = cost;
+    }
+}
+
+SIXEL_INTERNAL_API void
+sixel_kmedoids_test_assign_points(double const *points,
+                                  double const *weights,
+                                  unsigned int point_count,
+                                  unsigned int const *medoids,
+                                  unsigned int k,
+                                  unsigned int *nearest_slot,
+                                  double *nearest_dist,
+                                  double *second_dist,
+                                  unsigned int *second_slot,
+                                  double *cost_out)
+{
+    sixel_kmedoids_assign_points(points,
+                                 weights,
+                                 point_count,
+                                 medoids,
+                                 k,
+                                 nearest_slot,
+                                 nearest_dist,
+                                 second_dist,
+                                 second_slot,
+                                 NULL,
+                                 NULL,
+                                 cost_out);
+}
+
+SIXEL_INTERNAL_API void
+sixel_kmedoids_test_update_assignments_after_swap(double const *points,
+                                                  double const *weights,
+                                                  unsigned int point_count,
+                                                  unsigned int const *medoids,
+                                                  unsigned int k,
+                                                  unsigned int swapped_slot,
+                                                  unsigned int new_medoid,
+                                                  unsigned int *nearest_slot,
+                                                  double *nearest_dist,
+                                                  double *second_dist,
+                                                  unsigned int *second_slot,
+                                                  double *cost_out)
+{
+    sixel_kmedoids_update_assignments_after_swap(points,
+                                                 weights,
+                                                 point_count,
+                                                 medoids,
+                                                 k,
+                                                 swapped_slot,
+                                                 new_medoid,
+                                                 nearest_slot,
+                                                 nearest_dist,
+                                                 second_dist,
+                                                 second_slot,
+                                                 cost_out);
 }
 
 static double
@@ -2161,19 +2383,31 @@ sixel_kmedoids_pick_sample_indices(unsigned int point_count,
 {
     SIXELSTATUS status;
     unsigned int *indices;
-    unsigned int *perm;
+    unsigned int *table;
     unsigned int index;
     unsigned int slot;
     unsigned int pick;
-    unsigned int temp;
+    unsigned int value;
+    unsigned int base;
+    unsigned int capacity;
+    unsigned int mask;
+    unsigned int hash_slot;
+    uint64_t hash_state;
+    int exists;
 
     status = SIXEL_BAD_ARGUMENT;
     indices = NULL;
-    perm = NULL;
+    table = NULL;
     index = 0u;
     slot = 0u;
     pick = 0u;
-    temp = 0u;
+    value = 0u;
+    base = 0u;
+    capacity = 0u;
+    mask = 0u;
+    hash_slot = 0u;
+    hash_state = 0u;
+    exists = 0;
 
     if (indices_out != NULL) {
         *indices_out = NULL;
@@ -2198,30 +2432,79 @@ sixel_kmedoids_pick_sample_indices(unsigned int point_count,
         return SIXEL_OK;
     }
 
-    perm = (unsigned int *)sixel_allocator_malloc(
+    capacity = sixel_kmedoids_next_power_of_two(sample_size * 2u);
+    mask = capacity - 1u;
+    table = (unsigned int *)sixel_allocator_malloc(
         allocator,
-        (size_t)point_count * sizeof(unsigned int));
-    if (perm == NULL) {
+        (size_t)capacity * sizeof(unsigned int));
+    if (table == NULL) {
         sixel_allocator_free(allocator, indices);
         return SIXEL_BAD_ALLOCATION;
     }
-
-    for (index = 0u; index < point_count; ++index) {
-        perm[index] = index;
+    for (index = 0u; index < capacity; ++index) {
+        table[index] = UINT_MAX;
     }
+    base = point_count - sample_size;
 
+    /* Floyd's sampling without replacement, preserving generation order. */
     for (slot = 0u; slot < sample_size; ++slot) {
-        pick = slot + sixel_kmedoids_rng_bounded(rng_state,
-                                                 point_count - slot);
-        temp = perm[slot];
-        perm[slot] = perm[pick];
-        perm[pick] = temp;
-        indices[slot] = perm[slot];
+        index = base + slot;
+        pick = sixel_kmedoids_rng_bounded(rng_state, index + 1u);
+        exists = 0;
+        hash_state = (uint64_t)pick * 11400714819323198485ULL;
+        hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
+        for (;;) {
+            if (table[hash_slot] == UINT_MAX) {
+                break;
+            }
+            if (table[hash_slot] == pick) {
+                exists = 1;
+                break;
+            }
+            hash_slot = (hash_slot + 1u) & mask;
+        }
+
+        if (exists) {
+            value = index;
+        } else {
+            value = pick;
+        }
+        indices[slot] = value;
+
+        hash_state = (uint64_t)value * 11400714819323198485ULL;
+        hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
+        for (;;) {
+            if (table[hash_slot] == UINT_MAX || table[hash_slot] == value) {
+                table[hash_slot] = value;
+                break;
+            }
+            hash_slot = (hash_slot + 1u) & mask;
+        }
     }
 
-    sixel_allocator_free(allocator, perm);
+    sixel_allocator_free(allocator, table);
     *indices_out = indices;
     return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_pick_sample_indices(unsigned int point_count,
+                                        unsigned int sample_size,
+                                        uint32_t seed,
+                                        unsigned int **indices_out,
+                                        sixel_allocator_t *allocator)
+{
+    uint32_t rng_state;
+
+    rng_state = seed;
+    if (rng_state == 0u) {
+        rng_state = 1u;
+    }
+    return sixel_kmedoids_pick_sample_indices(point_count,
+                                              sample_size,
+                                              &rng_state,
+                                              indices_out,
+                                              allocator);
 }
 
 static SIXELSTATUS
@@ -2342,6 +2625,7 @@ sixel_kmedoids_run_pam(double const *points,
                                  second_dist,
                                  NULL,
                                  NULL,
+                                 NULL,
                                  &current_cost);
 
     for (iteration = 0u; iteration < max_iterations; ++iteration) {
@@ -2409,6 +2693,7 @@ sixel_kmedoids_run_pam(double const *points,
                                      nearest_slot,
                                      nearest_dist,
                                      second_dist,
+                                     NULL,
                                      NULL,
                                      NULL,
                                      &current_cost);
@@ -2611,6 +2896,7 @@ sixel_kmedoids_run_clara(double const *points,
                                      NULL,
                                      NULL,
                                      NULL,
+                                     NULL,
                                      &candidate_cost);
         if (trial == 0u || candidate_cost < best_cost) {
             best_cost = candidate_cost;
@@ -2691,6 +2977,12 @@ sixel_kmedoids_run_clarans(double const *points,
     unsigned int candidate;
     unsigned int old_medoid;
     unsigned int index;
+    unsigned int stale_limit;
+    unsigned int eval_budget;
+    unsigned int eval_total;
+    unsigned int adaptive_limit;
+    unsigned int budget_floor;
+    uint64_t budget64;
     double current_cost;
     double best_cost;
     double swap_cost;
@@ -2711,6 +3003,12 @@ sixel_kmedoids_run_clarans(double const *points,
     candidate = 0u;
     old_medoid = 0u;
     index = 0u;
+    stale_limit = 0u;
+    eval_budget = 0u;
+    eval_total = 0u;
+    adaptive_limit = 0u;
+    budget_floor = 0u;
+    budget64 = 0u;
     current_cost = 0.0;
     best_cost = 0.0;
     swap_cost = 0.0;
@@ -2758,6 +3056,34 @@ sixel_kmedoids_run_clarans(double const *points,
     if (neighbors == 0u) {
         neighbors = 1u;
     }
+    adaptive_limit = 8u * k;
+    if (adaptive_limit < 64u) {
+        adaptive_limit = 64u;
+    }
+    stale_limit = neighbors;
+    if (stale_limit > adaptive_limit) {
+        stale_limit = adaptive_limit;
+    }
+    if (stale_limit == 0u) {
+        stale_limit = 1u;
+    }
+    budget64 = (uint64_t)32u * (uint64_t)k
+             + (uint64_t)(point_count / 4u);
+    if (budget64 > (uint64_t)UINT_MAX) {
+        budget_floor = UINT_MAX;
+    } else {
+        budget_floor = (unsigned int)budget64;
+    }
+    eval_budget = stale_limit;
+    if (eval_budget < budget_floor) {
+        eval_budget = budget_floor;
+    }
+    if (eval_budget > neighbors) {
+        eval_budget = neighbors;
+    }
+    if (eval_budget == 0u) {
+        eval_budget = 1u;
+    }
 
     for (local_index = 0u; local_index < local_searches; ++local_index) {
         if (local_index == 0u && base_medoids != NULL) {
@@ -2792,6 +3118,7 @@ sixel_kmedoids_run_clarans(double const *points,
                                      second_dist,
                                      NULL,
                                      NULL,
+                                     NULL,
                                      &current_cost);
         /* Keep an explicit non-medoid pool so CLARANS avoids reject loops. */
         non_count = 0u;
@@ -2803,7 +3130,8 @@ sixel_kmedoids_run_clarans(double const *points,
         }
 
         neighbor_count = 0u;
-        while (neighbor_count < neighbors) {
+        eval_total = 0u;
+        while (neighbor_count < stale_limit && eval_total < eval_budget) {
             if (non_count == 0u) {
                 break;
             }
@@ -2820,6 +3148,7 @@ sixel_kmedoids_run_clarans(double const *points,
                                                  slot,
                                                  candidate);
             ++iter_total;
+            ++eval_total;
             if (swap_cost + 1.0e-12 < current_cost) {
                 old_medoid = current_medoids[slot];
                 flags[old_medoid] = 0u;
@@ -2835,6 +3164,7 @@ sixel_kmedoids_run_clarans(double const *points,
                                              nearest_slot,
                                              nearest_dist,
                                              second_dist,
+                                             NULL,
                                              NULL,
                                              NULL,
                                              &current_cost);
@@ -3056,6 +3386,7 @@ sixel_kmedoids_run_banditpam(double const *points,
     unsigned int *nearest_slot;
     double *nearest_dist;
     double *second_dist;
+    unsigned int *second_slot;
     unsigned char *flags;
     unsigned int *non_medoids;
     unsigned int *candidate_slots;
@@ -3084,11 +3415,13 @@ sixel_kmedoids_run_banditpam(double const *points,
     double current_cost;
     double swap_cost;
     double best_cost;
+    int current_assigned;
 
     status = SIXEL_BAD_ARGUMENT;
     nearest_slot = NULL;
     nearest_dist = NULL;
     second_dist = NULL;
+    second_slot = NULL;
     flags = NULL;
     non_medoids = NULL;
     candidate_slots = NULL;
@@ -3117,6 +3450,7 @@ sixel_kmedoids_run_banditpam(double const *points,
     current_cost = 0.0;
     swap_cost = 0.0;
     best_cost = 0.0;
+    current_assigned = 0;
 
     if (iterations_out != NULL) {
         *iterations_out = 0u;
@@ -3136,6 +3470,9 @@ sixel_kmedoids_run_banditpam(double const *points,
     second_dist = (double *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(double));
+    second_slot = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
     flags = (unsigned char *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(unsigned char));
@@ -3170,7 +3507,7 @@ sixel_kmedoids_run_banditpam(double const *points,
         allocator,
         (size_t)pair_capacity * sizeof(uint64_t));
     if (nearest_slot == NULL || nearest_dist == NULL || second_dist == NULL
-            || flags == NULL || non_medoids == NULL
+            || second_slot == NULL || flags == NULL || non_medoids == NULL
             || candidate_slots == NULL || candidate_points == NULL
             || active == NULL || pair_hash == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -3180,17 +3517,21 @@ sixel_kmedoids_run_banditpam(double const *points,
     current_cost = *cost_io;
     for (iteration = 0u; iteration < max_iterations; ++iteration) {
         sixel_kmedoids_mark_medoids(flags, medoids_io, k, point_count);
-        sixel_kmedoids_assign_points(points,
-                                     weights,
-                                     point_count,
-                                     medoids_io,
-                                     k,
-                                     nearest_slot,
-                                     nearest_dist,
-                                     second_dist,
-                                     NULL,
-                                     NULL,
-                                     &current_cost);
+        if (!current_assigned) {
+            sixel_kmedoids_assign_points(points,
+                                         weights,
+                                         point_count,
+                                         medoids_io,
+                                         k,
+                                         nearest_slot,
+                                         nearest_dist,
+                                         second_dist,
+                                         second_slot,
+                                         NULL,
+                                         NULL,
+                                         &current_cost);
+            current_assigned = 1;
+        }
 
         non_count = 0u;
         for (index = 0u; index < point_count; ++index) {
@@ -3290,7 +3631,18 @@ sixel_kmedoids_run_banditpam(double const *points,
         }
 
         medoids_io[best_slot] = best_candidate;
-        current_cost = best_cost;
+        sixel_kmedoids_update_assignments_after_swap(points,
+                                                     weights,
+                                                     point_count,
+                                                     medoids_io,
+                                                     k,
+                                                     best_slot,
+                                                     best_candidate,
+                                                     nearest_slot,
+                                                     nearest_dist,
+                                                     second_dist,
+                                                     second_slot,
+                                                     &current_cost);
     }
 
     *cost_io = current_cost;
@@ -3300,6 +3652,9 @@ sixel_kmedoids_run_banditpam(double const *points,
     status = SIXEL_OK;
 
 end:
+    if (second_slot != NULL) {
+        sixel_allocator_free(allocator, second_slot);
+    }
     if (pair_hash != NULL) {
         sixel_allocator_free(allocator, pair_hash);
     }
@@ -4102,6 +4457,7 @@ build_palette_kmedoids(unsigned char **result,
                                  nearest_slot,
                                  nearest_dist,
                                  second_dist,
+                                 NULL,
                                  cluster_weights,
                                  cluster_sums,
                                  &solution_cost);
