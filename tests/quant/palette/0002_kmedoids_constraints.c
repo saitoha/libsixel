@@ -132,6 +132,7 @@ test_verify_palette_subset(unsigned char const *palette,
 static int
 test_build_dither(sixel_kmedoids_algo_t algo,
                   uint32_t seed,
+                  unsigned int iter_override,
                   int use_float32,
                   sixel_dither_t **dither_out,
                   sixel_allocator_t *allocator)
@@ -164,6 +165,11 @@ test_build_dither(sixel_kmedoids_algo_t algo,
 
     sixel_set_kmedoids_algo_override(1, algo);
     sixel_set_kmedoids_seed_override(1, seed);
+    if (iter_override > 0u) {
+        sixel_set_kmedoids_iter_override(1, iter_override);
+    } else {
+        sixel_set_kmedoids_iter_override(0, 0u);
+    }
 
     if (use_float32) {
         pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
@@ -191,6 +197,7 @@ test_build_dither(sixel_kmedoids_algo_t algo,
 
     sixel_set_kmedoids_algo_override(0, SIXEL_PALETTE_KMEDOIDS_ALGO_PAM);
     sixel_set_kmedoids_seed_override(0, 1u);
+    sixel_set_kmedoids_iter_override(0, 0u);
 
     if (SIXEL_FAILED(status)
             || sixel_dither_get_num_of_palette_colors(dither) <= 0) {
@@ -207,6 +214,54 @@ test_build_dither(sixel_kmedoids_algo_t algo,
 
     *dither_out = dither;
     return 1;
+}
+
+static double
+test_palette_cost_for_pixels(unsigned char const *pixels,
+                             unsigned int pixel_count,
+                             unsigned char const *palette,
+                             unsigned int palette_count)
+{
+    unsigned int pixel_index;
+    unsigned int color_index;
+    double diff0;
+    double diff1;
+    double diff2;
+    double distance;
+    double best_distance;
+    double total;
+
+    pixel_index = 0u;
+    color_index = 0u;
+    diff0 = 0.0;
+    diff1 = 0.0;
+    diff2 = 0.0;
+    distance = 0.0;
+    best_distance = 0.0;
+    total = 0.0;
+    if (pixels == NULL || palette == NULL || pixel_count == 0u
+            || palette_count == 0u) {
+        return 0.0;
+    }
+
+    for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
+        best_distance = -1.0;
+        for (color_index = 0u; color_index < palette_count; ++color_index) {
+            diff0 = (double)pixels[pixel_index * 3u + 0u]
+                  - (double)palette[color_index * 3u + 0u];
+            diff1 = (double)pixels[pixel_index * 3u + 1u]
+                  - (double)palette[color_index * 3u + 1u];
+            diff2 = (double)pixels[pixel_index * 3u + 2u]
+                  - (double)palette[color_index * 3u + 2u];
+            distance = diff0 * diff0 + diff1 * diff1 + diff2 * diff2;
+            if (best_distance < 0.0 || distance < best_distance) {
+                best_distance = distance;
+            }
+        }
+        total += best_distance;
+    }
+
+    return total;
 }
 
 /*
@@ -293,7 +348,7 @@ test_run_subset_case(sixel_kmedoids_algo_t algo,
         return 0;
     }
 
-    if (!test_build_dither(algo, 7u, use_float32, &dither, allocator)) {
+    if (!test_build_dither(algo, 7u, 0u, use_float32, &dither, allocator)) {
         sixel_allocator_unref(allocator);
         return 0;
     }
@@ -346,11 +401,11 @@ test_run_seed_case(sixel_kmedoids_algo_t algo)
         return 0;
     }
 
-    if (!test_build_dither(algo, 1234u, 0, &dither_a, allocator)) {
+    if (!test_build_dither(algo, 1234u, 0u, 0, &dither_a, allocator)) {
         sixel_allocator_unref(allocator);
         return 0;
     }
-    if (!test_build_dither(algo, 1234u, 0, &dither_b, allocator)) {
+    if (!test_build_dither(algo, 1234u, 0u, 0, &dither_b, allocator)) {
         sixel_dither_unref(dither_a);
         sixel_allocator_unref(allocator);
         return 0;
@@ -399,6 +454,91 @@ test_run_seed_case(sixel_kmedoids_algo_t algo)
     sixel_dither_unref(dither_b);
     sixel_allocator_unref(allocator);
     return 1;
+}
+
+static int
+test_run_pam_monotonic_case(void)
+{
+    sixel_allocator_t *allocator;
+    sixel_dither_t *dither_low;
+    sixel_dither_t *dither_high;
+    unsigned char *palette_low;
+    unsigned char *palette_high;
+    unsigned int colors_low;
+    unsigned int colors_high;
+    double cost_low;
+    double cost_high;
+
+    allocator = NULL;
+    dither_low = NULL;
+    dither_high = NULL;
+    palette_low = NULL;
+    palette_high = NULL;
+    colors_low = 0u;
+    colors_high = 0u;
+    cost_low = 0.0;
+    cost_high = 0.0;
+
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    if (!test_build_dither(SIXEL_PALETTE_KMEDOIDS_ALGO_PAM,
+                           42u,
+                           1u,
+                           0,
+                           &dither_low,
+                           allocator)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (!test_build_dither(SIXEL_PALETTE_KMEDOIDS_ALGO_PAM,
+                           42u,
+                           4u,
+                           0,
+                           &dither_high,
+                           allocator)) {
+        sixel_dither_unref(dither_low);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    if (!test_copy_palette_from_dither(dither_low,
+                                       allocator,
+                                       &palette_low,
+                                       &colors_low)) {
+        sixel_dither_unref(dither_low);
+        sixel_dither_unref(dither_high);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (!test_copy_palette_from_dither(dither_high,
+                                       allocator,
+                                       &palette_high,
+                                       &colors_high)) {
+        sixel_allocator_free(allocator, palette_low);
+        sixel_dither_unref(dither_low);
+        sixel_dither_unref(dither_high);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    cost_low = test_palette_cost_for_pixels(g_test_pixels_rgb,
+                                            TEST_PIXEL_COUNT,
+                                            palette_low,
+                                            colors_low);
+    cost_high = test_palette_cost_for_pixels(g_test_pixels_rgb,
+                                             TEST_PIXEL_COUNT,
+                                             palette_high,
+                                             colors_high);
+
+    sixel_allocator_free(allocator, palette_low);
+    sixel_allocator_free(allocator, palette_high);
+    sixel_dither_unref(dither_low);
+    sixel_dither_unref(dither_high);
+    sixel_allocator_unref(allocator);
+
+    return cost_high <= cost_low + 1.0e-9 ? 1 : 0;
 }
 
 int
@@ -455,6 +595,9 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     if (strcmp(argv[1], "seed-auto") == 0) {
         return test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO)
             ? 0 : 1;
+    }
+    if (strcmp(argv[1], "pam-monotonic-8bit") == 0) {
+        return test_run_pam_monotonic_case() ? 0 : 1;
     }
 
     return 1;
