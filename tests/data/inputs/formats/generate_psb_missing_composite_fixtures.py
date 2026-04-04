@@ -1324,6 +1324,16 @@ def main() -> None:
                         f"{src_base}_{suffix}_malformed_resource.psd",
                         f"{dst_base}_{suffix}_malformed_resource.psd",
                     )
+    # Representative depth-matrix expansion for TySh StyleRun weighted-run LSQA:
+    # keep PSB conversion minimal (mode4 + mode7 one case each).
+    convert_fixture(
+        "snake16_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
+        "snake16_psb_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
+    )
+    convert_fixture(
+        "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
+        "snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
+    )
     convert_fixture(
         "snake16_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",
         "snake16_psb_rgb8_missing_composite_multilayer_fill_soco_descriptor_malformed.psd",

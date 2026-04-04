@@ -10786,6 +10786,84 @@ def generate(out_dir: pathlib.Path):
             first_layer_has_pixels=False,
         ),
     )
+    # Minimal depth-matrix expansion for TySh EngineData StyleRun run-length
+    # weighted composition: representative CMYK16/32 cases only.
+    write_file(
+        out_dir
+        / "snake16_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=16,
+            base_planes=cmyk16_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run_payload(
+                top_level_rgb=(32, 64, 255),
+                first_stylesheet_rgb=(255, 48, 64),
+                second_stylesheet_rgb=(32, 64, 255),
+                first_run_length=1.0,
+                second_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=4,
+            depth=32,
+            base_planes=cmyk32_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run_payload(
+                top_level_rgb=(32, 64, 255),
+                first_stylesheet_rgb=(255, 48, 64),
+                second_stylesheet_rgb=(32, 64, 255),
+                third_stylesheet_rgb=(64, 192, 64),
+                first_run_length=1.0,
+                second_run_length=2.0,
+                third_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=16,
+            base_planes=cmyk16_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_3run_payload(
+                top_level_rgb=(32, 64, 255),
+                first_stylesheet_rgb=(255, 48, 64),
+                second_stylesheet_rgb=(32, 64, 255),
+                third_stylesheet_rgb=(64, 192, 64),
+                first_run_length=1.0,
+                second_run_length=2.0,
+                third_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
+    write_file(
+        out_dir
+        / "snake16_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run.psd",
+        build_cmyk_multilayer_nonpixel_fixture(
+            color_mode=7,
+            depth=32,
+            base_planes=cmyk32_planes,
+            additional_block_key=b"TySh",
+            additional_block_payload=build_tysh_enginedata_fillcolor_stylesheet_runlength_weighted_2run_payload(
+                top_level_rgb=(32, 64, 255),
+                first_stylesheet_rgb=(255, 48, 64),
+                second_stylesheet_rgb=(32, 64, 255),
+                first_run_length=1.0,
+                second_run_length=1.0,
+            ),
+            first_layer_has_pixels=False,
+        ),
+    )
 
     # Keep 8bpc fill parity complete by adding the Lab descriptor variant.
     for prefix, color_mode in [

@@ -211,6 +211,9 @@ Key points used by this roadmap:
     the same RunLength-weighted contract.
   - TySh EngineData `StyleRun` payloads that use `RunStyle` references now
     resolve through `/StyleSheetSet` with the same weighted-run contract.
+  - TySh weighted-run LSQA density now includes CMYK16/32 representative
+    decode+trace coverage across PSD and PSB mixed surfaces
+    (`mode=4` and `mode7(4ch->CMYK)`).
   - PSB malformed boundary parity for CMYK32 now covers both native
     `mode=4` and `mode7(4ch->CMYK)` paths with fixed trace contracts for:
     `layer/mask length`, `layer info length`, `layer channel length`
