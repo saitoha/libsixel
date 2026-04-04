@@ -12,54 +12,51 @@ echo "1..1"
 set -v
 
 set +x
-msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -H 2>/dev/null)
-status=$?
+status=0
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q: 2>&1) || status=$?
 set -x
-test "${status}" -eq 0 || {
-    echo "not ok" 1 - "img2sixel -H failed"
+test "${status}" -ne 0 || {
+    echo "not ok" 1 - "img2sixel -Q: unexpectedly succeeded"
     exit 0
 }
 set +x
 
-quant="${msg#*-Q MODEL, --quantize-model=MODEL*}"
-test "${quant}" != "${msg}" || {
-    echo "not ok" 1 - "missing quantize section in -H output"
+test "${msg#*-Q MODEL, --quantize-model=MODEL*}" != "${msg}" || {
+    echo "not ok" 1 - "missing quantize section in -Q diagnostic output"
     exit 0
 }
 
-quant="${quant%%-F MODE, --final-merge=MODE*}"
-
-test "${quant#*auto\|pam\|sample\|random\|bandit*}" = "${quant}" || {
+test "${msg#*auto\|pam\|sample\|random\|bandit*}" = "${msg}" || {
     echo "not ok" 1 - "medoids algo still uses pipe list format"
     exit 0
 }
 
-test "${quant#*auto\|none\|pca*}" = "${quant}" || {
+test "${msg#*auto\|none\|pca*}" = "${msg}" || {
     echo "not ok" 1 - "kmeans inittype still uses pipe list format"
     exit 0
 }
 
-test "${quant#*:algo=NAME \(:a=NAME\)*auto      -> adaptive*}" != "${quant}" || {
+test "${msg#*:algo=NAME \(:a=NAME\)*auto      -> adaptive*}" != "${msg}" || {
     echo "not ok" 1 - "medoids algo description lines are missing"
     exit 0
 }
 
-test "${quant#*sample    -> CLARA:*}" != "${quant}" || {
+test "${msg#*sample    -> CLARA:*}" != "${msg}" || {
     echo "not ok" 1 - "sample (CLARA) description lines are missing"
     exit 0
 }
 
-test "${quant#*random    -> CLARANS:*}" != "${quant}" || {
+test "${msg#*random    -> CLARANS:*}" != "${msg}" || {
     echo "not ok" 1 - "random (CLARANS) description lines are missing"
     exit 0
 }
 
-test "${quant#*bandit    -> BanditPAM:*}" != "${quant}" || {
+test "${msg#*bandit    -> BanditPAM:*}" != "${msg}" || {
     echo "not ok" 1 - "bandit (BanditPAM) description lines are missing"
     exit 0
 }
 
-test "${quant#*:inittype=TYPE \(:i=TYPE\)*auto -> choose seed mode*}" != "${quant}" || {
+test "${msg#*:inittype=TYPE \(:i=TYPE\)*auto -> choose seed mode*}" != "${msg}" || {
     echo "not ok" 1 - "kmeans inittype description lines are missing"
     exit 0
 }
