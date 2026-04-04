@@ -37,6 +37,8 @@ srcs = [
   'palette-common-snap.h',
   'palette-kmeans.c',
   'palette-kmeans.h',
+  'palette-kmedoids.c',
+  'palette-kmedoids.h',
   'palette.c',
   'lookup-common.c',
   'lookup-8bit.c',
