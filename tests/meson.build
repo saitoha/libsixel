@@ -64,6 +64,9 @@ base_env_settings = [
   ['CROSS_COMPILING', cross_compiling],
   ['SIXEL_TSAN_BUILD', sixel_tsan_build],
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
+  # Expose the configured C compiler ID to TAP scripts so platform quirks
+  # can be gated without conflating all Windows toolchains.
+  ['SIXEL_TEST_C_COMPILER_ID', cc.get_id()],
   ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
   ['SIXEL_CONFIGURED_PYTHON', python_for_tests_path],
   ['ENABLE_RUBY', (have_ruby ? '1' : '0')],

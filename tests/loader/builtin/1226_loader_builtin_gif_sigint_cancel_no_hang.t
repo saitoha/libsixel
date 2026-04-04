@@ -8,8 +8,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_WINDOWS_H-0}" = 1 && {
-    printf "1..0 # SKIP SIGINT child cancellation is unreliable on Windows runtime\n"
+test "${SIXEL_TEST_C_COMPILER_ID-}" = "msvc" && {
+    printf "1..0 # SKIP SIGINT child cancellation is unreliable on msvc runtime\n"
+    exit 0
+}
+
+test "${SIXEL_TEST_C_COMPILER_ID-}" = "clang-cl" && {
+    printf "1..0 # SKIP SIGINT child cancellation is unreliable on clang-cl runtime\n"
     exit 0
 }
 
