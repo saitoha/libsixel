@@ -33,9 +33,10 @@ while IFS= read -r line; do
     parse_line="${line}"
     while :; do
         case "${parse_line}" in
-            *"callback frame_no="*"handoff="*)
-                callback_part=${parse_line#*callback frame_no=}
-                frame_no=${callback_part%% *}
+            *"event=callback_enter "*"frame_no="*"loop_no="*)
+                callback_part=${parse_line#*event=callback_enter }
+                frame_part=${callback_part#*frame_no=}
+                frame_no=${frame_part%% *}
                 loop_part=${callback_part#*loop_no=}
                 loop_no=${loop_part%% *}
                 case "${actual_sequence}" in
@@ -47,7 +48,7 @@ while IFS= read -r line; do
 ${loop_no}:${frame_no}"
                         ;;
                 esac
-                parse_line=${callback_part#*handoff=}
+                parse_line=${callback_part#*reason=}
                 ;;
             *)
                 break

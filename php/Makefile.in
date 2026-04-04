@@ -372,6 +372,7 @@ zshcompletiondir = @zshcompletiondir@
 @HAVE_PHP_TRUE@	$(srcdir)/package_builder.php \
 @HAVE_PHP_TRUE@	$(srcdir)/README \
 @HAVE_PHP_TRUE@	$(srcdir)/README.md \
+@HAVE_PHP_TRUE@	$(top_builddir)/src/.libs/libsixel.1.dylib \
 @HAVE_PHP_TRUE@	$(wildcard $(srcdir)/src/*.php) \
 @HAVE_PHP_TRUE@	$(wildcard $(srcdir)/src/Libsixel/*.php)
 

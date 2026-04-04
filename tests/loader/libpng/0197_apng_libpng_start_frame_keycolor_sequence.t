@@ -37,9 +37,10 @@ actual_sequence=""
 parse_log="${trace_log}"
 while :; do
     case "${parse_log}" in
-        *"callback frame_no="*"handoff="*)
-            callback_part=${parse_log#*callback frame_no=}
-            frame_no=${callback_part%% *}
+        *"event=callback_enter "*"frame_no="*"loop_no="*)
+            callback_part=${parse_log#*event=callback_enter }
+            frame_part=${callback_part#*frame_no=}
+            frame_no=${frame_part%% *}
             loop_part=${callback_part#*loop_no=}
             loop_no=${loop_part%% *}
             case "${actual_sequence}" in
@@ -51,7 +52,7 @@ while :; do
 ${loop_no}:${frame_no}"
                     ;;
             esac
-            parse_log=${callback_part#*handoff=}
+            parse_log=${callback_part#*reason=}
             ;;
         *)
             break

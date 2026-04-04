@@ -28,46 +28,70 @@ set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 
-trace_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env "SIXEL_THREADS=4" \
-        --env "SIXEL_TRACE_TOPIC=encode_handoff" \
-        -Llibwebp! -lforce "${input_webp}" 2>&1 >/dev/null &
-    pid=$!
+trace_summary=$(
+    {
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --env "SIXEL_THREADS=4" \
+            --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+            -Llibwebp! -lforce "${input_webp}" 2>&1 >/dev/null &
+        pid=$!
 
-    sleep 1
-    kill -INT "${pid}" 2>/dev/null || true
+        sleep 0.1
+        kill -INT "${pid}" 2>/dev/null || true
 
-    wait_limit=40
-    while test "${wait_limit}" -gt 0; do
-        kill -0 "${pid}" 2>/dev/null || {
-            break
+        wait_limit=20
+        while test "${wait_limit}" -gt 0; do
+            kill -0 "${pid}" 2>/dev/null || {
+                break
+            }
+            sleep 0.01
+            wait_limit=$((wait_limit - 1))
+        done
+
+        kill -0 "${pid}" 2>/dev/null && {
+            kill -KILL "${pid}" 2>/dev/null || true
+            wait "${pid}" 2>/dev/null || true
+            printf "__TIMEOUT__\n"
         }
-        sleep 0.05
-        wait_limit=$((wait_limit - 1))
-    done
 
-    kill -0 "${pid}" 2>/dev/null && {
-        kill -KILL "${pid}" 2>/dev/null || true
         wait "${pid}" 2>/dev/null || true
-        printf "__TIMEOUT__\n"
+    } | {
+        saw_timeout=0
+        saw_handoff=0
+        saw_stop=0
+        while IFS= read -r line; do
+            case "${line}" in
+                *__TIMEOUT__*)
+                    saw_timeout=1
+                    ;;
+                *"event=callback_handoff_decide handoff=pipeline"*)
+                    saw_handoff=1
+                    ;;
+                *"event=pipeline_stop"*)
+                    saw_stop=1
+                    ;;
+            esac
+        done
+        printf "%s:%s:%s\n" "${saw_timeout}" "${saw_handoff}" "${saw_stop}"
     }
-
-    wait "${pid}" 2>/dev/null || true
 )
 
-test "${trace_output#*"__TIMEOUT__"}" = "${trace_output}" || {
+timeout_flag=${trace_summary%%:*}
+trace_summary=${trace_summary#*:}
+handoff_flag=${trace_summary%%:*}
+stop_flag=${trace_summary##*:}
+
+test "${timeout_flag}" = "0" || {
     echo "not ok" 1 - "libwebp pipeline did not stop after SIGINT"
     exit 0
 }
 
-test "${trace_output#*"event=callback_handoff_decide handoff=pipeline"}" \
-    != "${trace_output}" || {
+test "${handoff_flag}" = "1" || {
     echo "not ok" 1 - "libwebp pipeline handoff trace missing"
     exit 0
 }
 
-test "${trace_output#*"event=pipeline_stop"}" != "${trace_output}" || {
+test "${stop_flag}" = "1" || {
     echo "not ok" 1 - "libwebp pipeline stop reason trace missing"
     exit 0
 }
