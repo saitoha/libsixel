@@ -1819,6 +1819,527 @@ run_builtin_loader_pnm_pam_unknown_tupletype_fallback_boundary_test(void)
 }
 
 static int
+run_builtin_loader_pnm_pam_duplicate_required_key_strict_test(void)
+{
+    static unsigned char const pam_duplicate_width_sample[] = {
+        'P', '7', '\n',
+        'W', 'I', 'D', 'T', 'H', ' ', '1', '\n',
+        'W', 'I', 'D', 'T', 'H', ' ', '2', '\n',
+        'H', 'E', 'I', 'G', 'H', 'T', ' ', '1', '\n',
+        'D', 'E', 'P', 'T', 'H', ' ', '3', '\n',
+        'M', 'A', 'X', 'V', 'A', 'L', ' ', '2', '5', '5', '\n',
+        'T', 'U', 'P', 'L', 'T', 'Y', 'P', 'E', ' ', 'R', 'G', 'B', '\n',
+        'E', 'N', 'D', 'H', 'D', 'R', '\n'
+    };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    message = NULL;
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS",
+                           "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key strict: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam duplicate required key strict",
+        pam_duplicate_width_sample,
+        sizeof(pam_duplicate_width_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key strict: "
+                "unexpected success\n");
+        return 1;
+    }
+
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message, "duplicate PAM WIDTH key") == NULL) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key strict: "
+                "unexpected message (%s)\n",
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_duplicate_required_key_compat_test(void)
+{
+    static unsigned char const pam_duplicate_width_sample[] = {
+        'P', '7', '\n',
+        'W', 'I', 'D', 'T', 'H', ' ', '1', '\n',
+        'W', 'I', 'D', 'T', 'H', ' ', '2', '\n',
+        'H', 'E', 'I', 'G', 'H', 'T', ' ', '1', '\n',
+        'D', 'E', 'P', 'T', 'H', ' ', '3', '\n',
+        'M', 'A', 'X', 'V', 'A', 'L', ' ', '2', '5', '5', '\n',
+        'T', 'U', 'P', 'L', 'T', 'Y', 'P', 'E', ' ', 'R', 'G', 'B', '\n',
+        'E', 'N', 'D', 'H', 'D', 'R', '\n',
+        1u, 2u, 3u, 4u, 5u, 6u
+    };
+    static unsigned char const expected_rgb[6] = {
+        1u, 2u, 3u, 4u, 5u, 6u
+    };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS",
+                           "1") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key compat: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam duplicate required key compat",
+        pam_duplicate_width_sample,
+        sizeof(pam_duplicate_width_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS",
+                           "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key compat: "
+                "reset env failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key compat: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key compat: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key compat: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key compat: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (memcmp(probe.pixels_u8, expected_rgb, sizeof(expected_rgb)) != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam duplicate required key compat: "
+                "RGB mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_tuple_dup_compat_regression_test(void)
+{
+    return run_builtin_loader_pnm_pam_tupletype_duplicate_last_wins_test();
+}
+
+static int
+run_builtin_loader_pnm_trailing_data_strict_test(void)
+{
+    static unsigned char const ppm_trailing_sample[] = {
+        'P', '6', '\n',
+        '1', ' ', '1', '\n',
+        '2', '5', '5', '\n',
+        10u, 20u, 30u, 0u
+    };
+    static unsigned char const pam_trailing_sample[] = {
+        'P', '7', '\n',
+        'W', 'I', 'D', 'T', 'H', ' ', '1', '\n',
+        'H', 'E', 'I', 'G', 'H', 'T', ' ', '1', '\n',
+        'D', 'E', 'P', 'T', 'H', ' ', '3', '\n',
+        'M', 'A', 'X', 'V', 'A', 'L', ' ', '2', '5', '5', '\n',
+        'T', 'U', 'P', 'L', 'T', 'Y', 'P', 'E', ' ', 'R', 'G', 'B', '\n',
+        'E', 'N', 'D', 'H', 'D', 'R', '\n',
+        1u, 2u, 3u, 0u
+    };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    message = NULL;
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data strict: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm trailing data strict ppm",
+        ppm_trailing_sample,
+        sizeof(ppm_trailing_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data strict ppm: "
+                "unexpected success\n");
+        return 1;
+    }
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message, "unexpected trailing raster data") == NULL) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data strict ppm: "
+                "unexpected message (%s)\n",
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    memset(&probe, 0, sizeof(probe));
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm trailing data strict pam",
+        pam_trailing_sample,
+        sizeof(pam_trailing_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data strict pam: "
+                "unexpected success\n");
+        return 1;
+    }
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message, "unexpected trailing raster data") == NULL) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data strict pam: "
+                "unexpected message (%s)\n",
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_trailing_data_compat_test(void)
+{
+    static unsigned char const ppm_trailing_sample[] = {
+        'P', '6', '\n',
+        '1', ' ', '1', '\n',
+        '2', '5', '5', '\n',
+        10u, 20u, 30u, 0u
+    };
+    static unsigned char const pam_trailing_sample[] = {
+        'P', '7', '\n',
+        'W', 'I', 'D', 'T', 'H', ' ', '1', '\n',
+        'H', 'E', 'I', 'G', 'H', 'T', ' ', '1', '\n',
+        'D', 'E', 'P', 'T', 'H', ' ', '3', '\n',
+        'M', 'A', 'X', 'V', 'A', 'L', ' ', '2', '5', '5', '\n',
+        'T', 'U', 'P', 'L', 'T', 'Y', 'P', 'E', ' ', 'R', 'G', 'B', '\n',
+        'E', 'N', 'D', 'H', 'D', 'R', '\n',
+        1u, 2u, 3u, 0u
+    };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA",
+                           "1") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm trailing data compat ppm",
+        ppm_trailing_sample,
+        sizeof(ppm_trailing_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat ppm: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat ppm: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat ppm: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.pixels_u8[0] != 10u ||
+        probe.pixels_u8[1] != 20u ||
+        probe.pixels_u8[2] != 30u) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat ppm: "
+                "RGB mismatch (%u,%u,%u)\n",
+                (unsigned int)probe.pixels_u8[0],
+                (unsigned int)probe.pixels_u8[1],
+                (unsigned int)probe.pixels_u8[2]);
+        return 1;
+    }
+
+    memset(&probe, 0, sizeof(probe));
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm trailing data compat pam",
+        pam_trailing_sample,
+        sizeof(pam_trailing_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (loader_test_setenv("SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat: "
+                "reset env failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat pam: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat pam: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat pam: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.pixels_u8[0] != 1u ||
+        probe.pixels_u8[1] != 2u ||
+        probe.pixels_u8[2] != 3u) {
+        fprintf(stderr,
+                "builtin loader pnm trailing data compat pam: "
+                "RGB mismatch (%u,%u,%u)\n",
+                (unsigned int)probe.pixels_u8[0],
+                (unsigned int)probe.pixels_u8[1],
+                (unsigned int)probe.pixels_u8[2]);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_ascii_trailing_comment_strict_test(void)
+{
+    static unsigned char const ascii_trailing_comment_sample[] = {
+        'P', '3', '\n',
+        '1', ' ', '1', '\n',
+        '2', '5', '5', '\n',
+        '1', ' ', '2', ' ', '3', '\n',
+        ' ', ' ', '#', 't', 'a', 'i', 'l', '\n',
+        ' ', '\t', '\r', '\n'
+    };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm ascii trailing comment strict: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm ascii trailing comment strict",
+        ascii_trailing_comment_sample,
+        sizeof(ascii_trailing_comment_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm ascii trailing comment strict: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm ascii trailing comment strict: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm ascii trailing comment strict: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.pixels_u8[0] != 1u ||
+        probe.pixels_u8[1] != 2u ||
+        probe.pixels_u8[2] != 3u) {
+        fprintf(stderr,
+                "builtin loader pnm ascii trailing comment strict: "
+                "RGB mismatch (%u,%u,%u)\n",
+                (unsigned int)probe.pixels_u8[0],
+                (unsigned int)probe.pixels_u8[1],
+                (unsigned int)probe.pixels_u8[2]);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_env_dispatch(
     builtin_loader_env_dispatch_entry_t const *entries,
     size_t entry_count)
@@ -1967,7 +2488,19 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_PNM_NUMERIC_PAM_TUPLTYPE_DUPLICATE_LAST_WINS",
           run_builtin_loader_pnm_pam_tupletype_duplicate_last_wins_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_TUPLTYPE_FALLBACK_BOUNDARY",
-          run_builtin_loader_pnm_pam_unknown_tupletype_fallback_boundary_test }
+          run_builtin_loader_pnm_pam_unknown_tupletype_fallback_boundary_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_DUPLICATE_REQUIRED_KEY_STRICT",
+          run_builtin_loader_pnm_pam_duplicate_required_key_strict_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_DUPLICATE_REQUIRED_KEY_COMPAT",
+          run_builtin_loader_pnm_pam_duplicate_required_key_compat_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_TUPLTYPE_DUPLICATE_COMPAT_REGRESSION",
+          run_builtin_loader_pnm_pam_tuple_dup_compat_regression_test },
+        { "SIXEL_TEST_PNM_NUMERIC_TRAILING_DATA_STRICT",
+          run_builtin_loader_pnm_trailing_data_strict_test },
+        { "SIXEL_TEST_PNM_NUMERIC_TRAILING_DATA_COMPAT",
+          run_builtin_loader_pnm_trailing_data_compat_test },
+        { "SIXEL_TEST_PNM_NUMERIC_ASCII_TRAILING_COMMENT_STRICT",
+          run_builtin_loader_pnm_ascii_trailing_comment_strict_test }
     };
     static builtin_loader_env_dispatch_entry_t const psd_env_dispatch[] = {
         { "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE",

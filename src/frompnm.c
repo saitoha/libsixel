@@ -287,6 +287,48 @@ pnm_allow_truncated_ascii(void)
 }
 
 static int
+pnm_allow_duplicate_required_keys(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv(
+        "SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS");
+    if (value != NULL && strcmp(value, "1") == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+pnm_allow_trailing_data(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA");
+    if (value != NULL && strcmp(value, "1") == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+pnm_set_duplicate_required_key_message(char const *field)
+{
+    char message[128];
+
+    memset(message, 0, sizeof(message));
+    if (field == NULL) {
+        return 0;
+    }
+    sixel_compat_snprintf(message,
+                          sizeof(message),
+                          "load_pnm: duplicate PAM %s key.",
+                          field);
+    sixel_helper_set_additional_message(message);
+    return 1;
+}
+
+static int
 pnm_require_line_tail_empty(unsigned char *p,
                             unsigned char *end,
                             char const *field)
@@ -462,6 +504,7 @@ pnm_parse_header(unsigned char *buffer,
     int endhdr_seen;
     int tuple_type_seen;
     int tuple_type_known;
+    int allow_duplicate_required_keys;
     pnm_tuple_type_t tuple_type;
 
     p = NULL;
@@ -477,6 +520,7 @@ pnm_parse_header(unsigned char *buffer,
     endhdr_seen = 0;
     tuple_type_seen = 0;
     tuple_type_known = 0;
+    allow_duplicate_required_keys = 0;
     tuple_type = PNM_TUPLE_UNSPECIFIED;
 
     if (buffer == NULL || header == NULL || length < 3) {
@@ -495,6 +539,7 @@ pnm_parse_header(unsigned char *buffer,
     header->magic = buffer[1];
     p = buffer + 2;
     end = buffer + length;
+    allow_duplicate_required_keys = pnm_allow_duplicate_required_keys();
 
     switch (header->magic) {
     case '1':
@@ -540,6 +585,10 @@ pnm_parse_header(unsigned char *buffer,
                 break;
             }
             if (strcmp(token, "WIDTH") == 0) {
+                if (width_set && !allow_duplicate_required_keys) {
+                    pnm_set_duplicate_required_key_message("WIDTH");
+                    return 0;
+                }
                 if (!pnm_read_integer(&line_cursor,
                                       line_end,
                                       &header->width,
@@ -555,6 +604,10 @@ pnm_parse_header(unsigned char *buffer,
                 continue;
             }
             if (strcmp(token, "HEIGHT") == 0) {
+                if (height_set && !allow_duplicate_required_keys) {
+                    pnm_set_duplicate_required_key_message("HEIGHT");
+                    return 0;
+                }
                 if (!pnm_read_integer(&line_cursor,
                                       line_end,
                                       &header->height,
@@ -570,6 +623,10 @@ pnm_parse_header(unsigned char *buffer,
                 continue;
             }
             if (strcmp(token, "DEPTH") == 0) {
+                if (depth_set && !allow_duplicate_required_keys) {
+                    pnm_set_duplicate_required_key_message("DEPTH");
+                    return 0;
+                }
                 if (!pnm_read_integer(&line_cursor,
                                       line_end,
                                       &header->depth,
@@ -585,6 +642,10 @@ pnm_parse_header(unsigned char *buffer,
                 continue;
             }
             if (strcmp(token, "MAXVAL") == 0) {
+                if (maxval_set && !allow_duplicate_required_keys) {
+                    pnm_set_duplicate_required_key_message("MAXVAL");
+                    return 0;
+                }
                 if (!pnm_read_integer(&line_cursor,
                                       line_end,
                                       &header->maxval,
@@ -902,6 +963,33 @@ pnm_reader_read_sample(pnm_reader_t *reader, int *sample)
 }
 
 static int
+pnm_validate_raster_tail(pnm_header_t const *header, unsigned char *raster_end)
+{
+    unsigned char *p;
+
+    p = NULL;
+    if (header == NULL || raster_end == NULL || raster_end > header->end) {
+        sixel_helper_set_additional_message(
+            "load_pnm: invalid raster tail position.");
+        return 0;
+    }
+
+    if (header->ascii) {
+        p = raster_end;
+        pnm_skip_spaces_and_comments(&p, header->end);
+        if (p >= header->end) {
+            return 1;
+        }
+    } else if (raster_end == header->end) {
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(
+        "load_pnm: unexpected trailing raster data.");
+    return 0;
+}
+
+static int
 pnm_validate_sample(int sample, int maxval, int bitmap)
 {
     if (bitmap) {
@@ -1022,7 +1110,9 @@ pnm_resolve_background_linear(float bg_linear[3], unsigned char *bgcolor)
 }
 
 static int
-pnm_decode_rgb8_noalpha(pnm_header_t const *header, unsigned char *rgb)
+pnm_decode_rgb8_noalpha(pnm_header_t const *header,
+                        unsigned char *rgb,
+                        unsigned char **raster_end)
 {
     pnm_reader_t reader;
     size_t pixel_total;
@@ -1078,11 +1168,16 @@ pnm_decode_rgb8_noalpha(pnm_header_t const *header, unsigned char *rgb)
         rgb[offset + 2u] = pnm_scale_sample_to_byte(sample2, header->maxval);
     }
 
+    if (raster_end != NULL) {
+        *raster_end = reader.p;
+    }
     return 1;
 }
 
 static int
-pnm_decode_rgbfloat_noalpha(pnm_header_t const *header, float *rgb)
+pnm_decode_rgbfloat_noalpha(pnm_header_t const *header,
+                            float *rgb,
+                            unsigned char **raster_end)
 {
     pnm_reader_t reader;
     size_t pixel_total;
@@ -1138,6 +1233,9 @@ pnm_decode_rgbfloat_noalpha(pnm_header_t const *header, float *rgb)
         rgb[offset + 2u] = pnm_scale_sample_to_unit(sample2, header->maxval);
     }
 
+    if (raster_end != NULL) {
+        *raster_end = reader.p;
+    }
     return 1;
 }
 
@@ -1145,7 +1243,8 @@ static int
 pnm_decode_rgba8(pnm_header_t const *header,
                  unsigned char *rgb,
                  unsigned char *alpha,
-                 int *has_transparency)
+                 int *has_transparency,
+                 unsigned char **raster_end)
 {
     pnm_reader_t reader;
     size_t pixel_total;
@@ -1217,6 +1316,9 @@ pnm_decode_rgba8(pnm_header_t const *header,
         }
     }
 
+    if (raster_end != NULL) {
+        *raster_end = reader.p;
+    }
     return 1;
 }
 
@@ -1224,7 +1326,8 @@ static int
 pnm_decode_rgbafloat(pnm_header_t const *header,
                      float *rgb,
                      float *alpha,
-                     int *has_transparency)
+                     int *has_transparency,
+                     unsigned char **raster_end)
 {
     pnm_reader_t reader;
     size_t pixel_total;
@@ -1296,6 +1399,9 @@ pnm_decode_rgbafloat(pnm_header_t const *header,
         }
     }
 
+    if (raster_end != NULL) {
+        *raster_end = reader.p;
+    }
     return 1;
 }
 
@@ -1380,7 +1486,9 @@ load_pnm(unsigned char      /* in */  *p,
     float *rgbf;
     float *alphaf;
     float *composed;
+    unsigned char *raster_end;
     int has_transparency;
+    int allow_trailing_data;
     float bg_linear[3];
 
     status = SIXEL_FALSE;
@@ -1394,7 +1502,9 @@ load_pnm(unsigned char      /* in */  *p,
     rgbf = NULL;
     alphaf = NULL;
     composed = NULL;
+    raster_end = NULL;
     has_transparency = 0;
+    allow_trailing_data = 0;
     bg_linear[0] = 0.0f;
     bg_linear[1] = 0.0f;
     bg_linear[2] = 0.0f;
@@ -1416,6 +1526,7 @@ load_pnm(unsigned char      /* in */  *p,
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
+    allow_trailing_data = pnm_allow_trailing_data();
 
     if ((size_t)header.width > SIZE_MAX / (size_t)header.height) {
         sixel_helper_set_additional_message(
@@ -1440,7 +1551,12 @@ load_pnm(unsigned char      /* in */  *p,
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
-            if (!pnm_decode_rgb8_noalpha(&header, rgb8)) {
+            if (!pnm_decode_rgb8_noalpha(&header, rgb8, &raster_end)) {
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+            if (!allow_trailing_data &&
+                !pnm_validate_raster_tail(&header, raster_end)) {
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
@@ -1461,7 +1577,12 @@ load_pnm(unsigned char      /* in */  *p,
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
-            if (!pnm_decode_rgbfloat_noalpha(&header, rgbf)) {
+            if (!pnm_decode_rgbfloat_noalpha(&header, rgbf, &raster_end)) {
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+            if (!allow_trailing_data &&
+                !pnm_validate_raster_tail(&header, raster_end)) {
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
@@ -1501,7 +1622,16 @@ load_pnm(unsigned char      /* in */  *p,
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        if (!pnm_decode_rgba8(&header, rgb8, alpha8, &has_transparency)) {
+        if (!pnm_decode_rgba8(&header,
+                              rgb8,
+                              alpha8,
+                              &has_transparency,
+                              &raster_end)) {
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
+        if (!allow_trailing_data &&
+            !pnm_validate_raster_tail(&header, raster_end)) {
             status = SIXEL_RUNTIME_ERROR;
             goto end;
         }
@@ -1561,7 +1691,16 @@ load_pnm(unsigned char      /* in */  *p,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    if (!pnm_decode_rgbafloat(&header, rgbf, alphaf, &has_transparency)) {
+    if (!pnm_decode_rgbafloat(&header,
+                              rgbf,
+                              alphaf,
+                              &has_transparency,
+                              &raster_end)) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
+    if (!allow_trailing_data &&
+        !pnm_validate_raster_tail(&header, raster_end)) {
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
