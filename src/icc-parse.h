@@ -47,6 +47,37 @@ typedef struct sixel_icc_lut {
     uint16_t *output_tables;
 } sixel_icc_lut_t;
 
+typedef enum sixel_icc_mab_type {
+    SIXEL_ICC_MAB_TYPE_INVALID = 0,
+    SIXEL_ICC_MAB_TYPE_MAB,
+    SIXEL_ICC_MAB_TYPE_MBA
+} sixel_icc_mab_type_t;
+
+typedef struct sixel_icc_mab_clut {
+    uint8_t input_channels;
+    uint8_t output_channels;
+    uint8_t grid_points[16];
+    uint16_t *values;
+    size_t value_count;
+} sixel_icc_mab_clut_t;
+
+typedef struct sixel_icc_mab_pipeline {
+    sixel_icc_mab_type_t type;
+    uint8_t input_channels;
+    uint8_t output_channels;
+    int has_a_curves;
+    int has_m_curves;
+    int has_b_curves;
+    int has_clut;
+    int has_matrix;
+    sixel_icc_curve_t a_curves[16];
+    sixel_icc_curve_t m_curves[16];
+    sixel_icc_curve_t b_curves[16];
+    sixel_icc_mab_clut_t clut;
+    double matrix[3][3];
+    double matrix_offset[3];
+} sixel_icc_mab_pipeline_t;
+
 typedef enum sixel_icc_profile_pcs {
     SIXEL_ICC_PROFILE_PCS_INVALID = 0,
     SIXEL_ICC_PROFILE_PCS_XYZ,
@@ -67,6 +98,7 @@ typedef struct sixel_icc_profile {
     double gray_white_xyz_d50[3];
     sixel_icc_curve_t curves[3];
     sixel_icc_lut_t a2b0_lut;
+    sixel_icc_mab_pipeline_t a2b0_mab;
 } sixel_icc_profile_t;
 
 SIXEL_INTERNAL_API int

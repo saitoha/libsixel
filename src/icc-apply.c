@@ -13,6 +13,7 @@
 #endif
 
 #include <stddef.h>
+#include <string.h>
 
 static double const sixel_icc_xyz_d50_to_d65[3][3] = {
     { 0.955576615033105, -0.023039344716079, 0.063163632249801 },
@@ -239,6 +240,289 @@ sixel_icc_eval_clut(sixel_icc_lut_t const *lut,
     return 1;
 }
 
+static void
+sixel_icc_apply_curve_set(double *values,
+                          size_t value_count,
+                          sixel_icc_curve_t const *curves)
+{
+    size_t i;
+
+    i = 0u;
+    if (values == NULL || curves == NULL) {
+        return;
+    }
+
+    for (i = 0u; i < value_count; ++i) {
+        values[i] = sixel_icc_eval_curve(&curves[i], values[i]);
+    }
+}
+
+static int
+sixel_icc_eval_mab_clut(sixel_icc_mab_clut_t const *clut,
+                        double const *inputs,
+                        double *outputs)
+{
+    uint8_t input_channels;
+    uint8_t output_channels;
+    size_t lower[16];
+    double fraction[16];
+    size_t corner_count;
+    size_t channel_index;
+    size_t output_index;
+    size_t corner;
+
+    input_channels = 0u;
+    output_channels = 0u;
+    corner_count = 0u;
+    channel_index = 0u;
+    output_index = 0u;
+    corner = 0u;
+    if (clut == NULL || inputs == NULL || outputs == NULL) {
+        return 0;
+    }
+
+    input_channels = clut->input_channels;
+    output_channels = clut->output_channels;
+    if (input_channels == 0u || output_channels == 0u ||
+        input_channels > 16u || output_channels > 16u ||
+        clut->values == NULL || input_channels >= sizeof(size_t) * 8u) {
+        return 0;
+    }
+
+    for (channel_index = 0u; channel_index < (size_t)input_channels;
+         ++channel_index) {
+        size_t grid_points;
+        double v;
+        double position;
+        size_t low;
+
+        grid_points = (size_t)clut->grid_points[channel_index];
+        v = 0.0;
+        position = 0.0;
+        low = 0u;
+        if (grid_points == 0u) {
+            return 0;
+        }
+
+        v = sixel_icc_clamp_unit(inputs[channel_index]);
+        if (grid_points <= 1u) {
+            lower[channel_index] = 0u;
+            fraction[channel_index] = 0.0;
+            continue;
+        }
+
+        position = v * (double)(grid_points - 1u);
+        low = (size_t)position;
+        if (low >= grid_points - 1u) {
+            low = grid_points - 2u;
+            fraction[channel_index] = 1.0;
+        } else {
+            fraction[channel_index] = position - (double)low;
+        }
+        lower[channel_index] = low;
+    }
+
+    for (output_index = 0u; output_index < (size_t)output_channels;
+         ++output_index) {
+        outputs[output_index] = 0.0;
+    }
+
+    corner_count = (size_t)1u << input_channels;
+    for (corner = 0u; corner < corner_count; ++corner) {
+        double weight;
+        size_t clut_index;
+
+        weight = 1.0;
+        clut_index = 0u;
+
+        for (channel_index = 0u; channel_index < (size_t)input_channels;
+             ++channel_index) {
+            size_t grid_points;
+            size_t coord;
+            double f;
+            int use_high;
+
+            grid_points = (size_t)clut->grid_points[channel_index];
+            coord = 0u;
+            f = fraction[channel_index];
+            use_high = ((corner >> channel_index) & 1u) != 0u;
+            if (use_high) {
+                coord = lower[channel_index] + ((grid_points <= 1u) ? 0u : 1u);
+                weight *= f;
+            } else {
+                coord = lower[channel_index];
+                weight *= (1.0 - f);
+            }
+            clut_index = clut_index * grid_points + coord;
+        }
+        if (weight == 0.0) {
+            continue;
+        }
+
+        clut_index *= (size_t)output_channels;
+        for (output_index = 0u; output_index < (size_t)output_channels;
+             ++output_index) {
+            if (clut_index + output_index >= clut->value_count) {
+                return 0;
+            }
+            outputs[output_index] += weight
+                * ((double)clut->values[clut_index + output_index] / 65535.0);
+        }
+    }
+
+    for (output_index = 0u; output_index < (size_t)output_channels;
+         ++output_index) {
+        outputs[output_index] = sixel_icc_clamp_unit(outputs[output_index]);
+    }
+
+    return 1;
+}
+
+static int
+sixel_icc_eval_mab_pipeline(double pcs_unit[3],
+                            double const *inputs,
+                            size_t input_channel_count,
+                            sixel_icc_mab_pipeline_t const *pipeline)
+{
+    double stage_a[16];
+    double stage_b[16];
+    double matrix_out[3];
+    size_t channel;
+    size_t current_count;
+    size_t expected_count;
+    double *current;
+    double *scratch;
+
+    channel = 0u;
+    current_count = 0u;
+    expected_count = 0u;
+    current = NULL;
+    scratch = NULL;
+
+    if (pcs_unit == NULL || inputs == NULL || pipeline == NULL) {
+        return 0;
+    }
+    if (pipeline->type == SIXEL_ICC_MAB_TYPE_INVALID ||
+        pipeline->output_channels != 3u ||
+        input_channel_count == 0u ||
+        input_channel_count != (size_t)pipeline->input_channels) {
+        return 0;
+    }
+
+    memset(stage_a, 0, sizeof(stage_a));
+    memset(stage_b, 0, sizeof(stage_b));
+    memset(matrix_out, 0, sizeof(matrix_out));
+    for (channel = 0u; channel < input_channel_count; ++channel) {
+        stage_a[channel] = sixel_icc_clamp_unit(inputs[channel]);
+    }
+
+    current = stage_a;
+    scratch = stage_b;
+    current_count = input_channel_count;
+    if (pipeline->type == SIXEL_ICC_MAB_TYPE_MAB) {
+        if (pipeline->has_a_curves) {
+            sixel_icc_apply_curve_set(current,
+                                      current_count,
+                                      pipeline->a_curves);
+        }
+        if (pipeline->has_clut) {
+            if (!sixel_icc_eval_mab_clut(&pipeline->clut, current, scratch)) {
+                return 0;
+            }
+            current = scratch;
+            scratch = (scratch == stage_b) ? stage_a : stage_b;
+            current_count = (size_t)pipeline->output_channels;
+        } else if (pipeline->input_channels != pipeline->output_channels) {
+            return 0;
+        }
+
+        expected_count = (size_t)pipeline->output_channels;
+        if (pipeline->has_m_curves) {
+            if (current_count != expected_count) {
+                return 0;
+            }
+            sixel_icc_apply_curve_set(current,
+                                      current_count,
+                                      pipeline->m_curves);
+        }
+        if (pipeline->has_matrix) {
+            if (current_count != 3u) {
+                return 0;
+            }
+            sixel_icc_apply_matrix(pipeline->matrix, current, matrix_out);
+            for (channel = 0u; channel < 3u; ++channel) {
+                current[channel] = matrix_out[channel]
+                    + pipeline->matrix_offset[channel];
+            }
+        }
+        if (pipeline->has_b_curves) {
+            if (current_count != expected_count) {
+                return 0;
+            }
+            sixel_icc_apply_curve_set(current,
+                                      current_count,
+                                      pipeline->b_curves);
+        }
+        if (current_count != expected_count) {
+            return 0;
+        }
+    } else if (pipeline->type == SIXEL_ICC_MAB_TYPE_MBA) {
+        if (pipeline->has_b_curves) {
+            sixel_icc_apply_curve_set(current,
+                                      current_count,
+                                      pipeline->b_curves);
+        }
+        if (pipeline->has_matrix) {
+            if (current_count != 3u) {
+                return 0;
+            }
+            sixel_icc_apply_matrix(pipeline->matrix, current, matrix_out);
+            for (channel = 0u; channel < 3u; ++channel) {
+                current[channel] = matrix_out[channel]
+                    + pipeline->matrix_offset[channel];
+            }
+        }
+        if (pipeline->has_m_curves) {
+            if (current_count != (size_t)pipeline->input_channels) {
+                return 0;
+            }
+            sixel_icc_apply_curve_set(current,
+                                      current_count,
+                                      pipeline->m_curves);
+        }
+        if (pipeline->has_clut) {
+            if (!sixel_icc_eval_mab_clut(&pipeline->clut, current, scratch)) {
+                return 0;
+            }
+            current = scratch;
+            scratch = (scratch == stage_b) ? stage_a : stage_b;
+            current_count = (size_t)pipeline->output_channels;
+        } else if (pipeline->input_channels != pipeline->output_channels) {
+            return 0;
+        }
+
+        expected_count = (size_t)pipeline->output_channels;
+        if (pipeline->has_a_curves) {
+            if (current_count != expected_count) {
+                return 0;
+            }
+            sixel_icc_apply_curve_set(current,
+                                      current_count,
+                                      pipeline->a_curves);
+        }
+        if (current_count != expected_count) {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+
+    for (channel = 0u; channel < 3u; ++channel) {
+        pcs_unit[channel] = sixel_icc_clamp_unit(current[channel]);
+    }
+    return 1;
+}
+
 static double
 sixel_icc_lab_inverse_f(double t)
 {
@@ -299,6 +583,38 @@ sixel_icc_decode_pcs_unit_to_xyz_d50(double xyz_d50[3],
     }
 
     return 0;
+}
+
+static int
+sixel_icc_apply_a2b0_mab_to_xyz_d50(double xyz_d50[3],
+                                    double const *inputs,
+                                    size_t input_channel_count,
+                                    sixel_icc_profile_t const *profile)
+{
+    double pcs_unit[3];
+    sixel_icc_mab_pipeline_t const *mab;
+
+    mab = NULL;
+    if (xyz_d50 == NULL || inputs == NULL || profile == NULL) {
+        return 0;
+    }
+
+    mab = &profile->a2b0_mab;
+    if (mab->type == SIXEL_ICC_MAB_TYPE_INVALID ||
+        input_channel_count != (size_t)mab->input_channels ||
+        mab->output_channels != 3u) {
+        return 0;
+    }
+    if (!sixel_icc_eval_mab_pipeline(pcs_unit,
+                                     inputs,
+                                     input_channel_count,
+                                     mab)) {
+        return 0;
+    }
+
+    return sixel_icc_decode_pcs_unit_to_xyz_d50(xyz_d50,
+                                                pcs_unit,
+                                                profile->pcs);
 }
 
 static int
@@ -370,6 +686,29 @@ sixel_icc_apply_a2b0_lut_to_xyz_d50(double xyz_d50[3],
 }
 
 static int
+sixel_icc_apply_a2b0_to_xyz_d50(double xyz_d50[3],
+                                double const *inputs,
+                                size_t input_channel_count,
+                                sixel_icc_profile_t const *profile)
+{
+    if (xyz_d50 == NULL || inputs == NULL || profile == NULL) {
+        return 0;
+    }
+
+    if (sixel_icc_apply_a2b0_mab_to_xyz_d50(xyz_d50,
+                                            inputs,
+                                            input_channel_count,
+                                            profile)) {
+        return 1;
+    }
+
+    return sixel_icc_apply_a2b0_lut_to_xyz_d50(xyz_d50,
+                                               inputs,
+                                               input_channel_count,
+                                               profile);
+}
+
+static int
 sixel_icc_apply_rgb_gray_triplet_lut(double rgb[3],
                                      sixel_icc_profile_t const *profile)
 {
@@ -397,10 +736,10 @@ sixel_icc_apply_rgb_gray_triplet_lut(double rgb[3],
         return 0;
     }
 
-    if (!sixel_icc_apply_a2b0_lut_to_xyz_d50(xyz_d50,
-                                             inputs,
-                                             input_channel_count,
-                                             profile)) {
+    if (!sixel_icc_apply_a2b0_to_xyz_d50(xyz_d50,
+                                         inputs,
+                                         input_channel_count,
+                                         profile)) {
         return 0;
     }
 
@@ -428,10 +767,10 @@ sixel_icc_apply_cmyk_triplet_internal(double rgb[3],
     if (profile->kind != SIXEL_ICC_PROFILE_KIND_CMYK) {
         return 0;
     }
-    if (!sixel_icc_apply_a2b0_lut_to_xyz_d50(xyz_d50,
-                                             cmyk,
-                                             4u,
-                                             profile)) {
+    if (!sixel_icc_apply_a2b0_to_xyz_d50(xyz_d50,
+                                         cmyk,
+                                         4u,
+                                         profile)) {
         return 0;
     }
 
@@ -470,7 +809,8 @@ sixel_icc_apply_rgb_triplet_internal(double rgb[3],
         return 0;
     }
 
-    if (profile->a2b0_lut.kind != SIXEL_ICC_LUT_INVALID &&
+    if ((profile->a2b0_mab.type != SIXEL_ICC_MAB_TYPE_INVALID ||
+         profile->a2b0_lut.kind != SIXEL_ICC_LUT_INVALID) &&
         (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB ||
          profile->kind == SIXEL_ICC_PROFILE_KIND_GRAY)) {
         if (sixel_icc_apply_rgb_gray_triplet_lut(rgb, profile)) {

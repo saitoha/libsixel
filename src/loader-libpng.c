@@ -2789,7 +2789,6 @@ alpha_cleanup:
 #endif
 #if !HAVE_LCMS2
     if (enable_cms &&
-        !has_transparency &&
         has_icc_profile_nolcms) {
         switch (*pixelformat) {
         case SIXEL_PIXELFORMAT_PAL1:
@@ -2853,7 +2852,6 @@ alpha_cleanup:
     }
 
     if (enable_cms &&
-        !has_transparency &&
         !cms_converted &&
         !has_iccp_chunk_any &&
         has_gama_chunk_any &&
