@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify builtin PSD decode reaches hard-case psd-tools baseline for advanced-blending.psd.
 # Fixture/expected regeneration command:
-#   python3 tests/data/inputs/formats/generate_psdtools_hybrid_assets.py --download
+#   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
 set -eux
 
@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/psdtools_advanced_blending.psd"
+input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_advanced_blending.psd"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_advanced_blending_expected_psdtools.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}

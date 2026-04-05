@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify builtin PSB decode matches psd-tools reference for 16bit5x5.psb.
 # Fixture/expected regeneration command:
-#   python3 tests/data/inputs/formats/generate_psdtools_hybrid_assets.py --download
+#   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
 set -eux
 
@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psb="${TOP_SRCDIR}/tests/data/inputs/formats/psdtools_16bit5x5.psb"
+input_psb="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_16bit5x5.psb"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_16bit5x5_psb_expected_psdtools.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}

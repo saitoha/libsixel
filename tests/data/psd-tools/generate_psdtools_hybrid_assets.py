@@ -15,7 +15,7 @@ import urllib.request
 
 HERE = pathlib.Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = HERE
-DEFAULT_EXPECTED_DIR = HERE.parent.parent / "loader" / "builtin_expected"
+DEFAULT_EXPECTED_DIR = HERE.parent / "loader" / "builtin_expected"
 DEFAULT_BASE_URL = "https://raw.githubusercontent.com/psd-tools/psd-tools"
 DEFAULT_REF = "c83ae643c24c05ab73e2697c23674a5edb380565"
 
@@ -67,6 +67,42 @@ ASSETS = [
         "upstream": "advanced-blending.psd",
         "local": "psdtools_advanced_blending.psd",
         "expected": "psdtools_advanced_blending_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "blend-modes/group-divider-blend-mode.psd",
+        "local": "psdtools_group_divider_blend_mode.psd",
+        "expected": "psdtools_group_divider_blend_mode_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "2layer_8ele_tblocks.psd",
+        "local": "psdtools_2layer_8ele_tblocks.psd",
+        "expected": "psdtools_2layer_8ele_tblocks_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "layer-name-emoji.psd",
+        "local": "psdtools_layer_name_emoji.psd",
+        "expected": "psdtools_layer_name_emoji_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "transparentbg-gimp.psd",
+        "local": "psdtools_transparentbg_gimp.psd",
+        "expected": "psdtools_transparentbg_gimp_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "layers-minimal/type-layer.psd",
+        "local": "psdtools_layers_minimal_type_layer.psd",
+        "expected": "psdtools_layers_minimal_type_layer_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "colormodes/4x4_8bit_duotone.psd",
+        "local": "psdtools_colormodes_4x4_8bit_duotone.psd",
+        "expected": "psdtools_colormodes_4x4_8bit_duotone_expected_psdtools.ppm",
         "generator": "psdtools",
     },
 ]

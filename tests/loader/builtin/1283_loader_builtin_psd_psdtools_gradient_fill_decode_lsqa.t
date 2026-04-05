@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify builtin PSD decode matches coregraphics reference for gradient-fill.psd.
 # Fixture/expected regeneration command:
-#   python3 tests/data/inputs/formats/generate_psdtools_hybrid_assets.py --download
+#   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
 set -eux
 
@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/psdtools_gradient_fill.psd"
+input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_gradient_fill.psd"
 expected_six="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_gradient_fill_expected_coregraphics.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
