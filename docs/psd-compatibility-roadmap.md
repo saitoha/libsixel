@@ -266,6 +266,9 @@ Key points used by this roadmap:
     - descriptor-invalid payload contracts that keep decode success with
       deterministic skip trace (`malformed non-pixel fill payload; skipping layer`)
       on both PSD and PSB RGB8 fallback paths (`SoCo/GdFl/PtFl`).
+  - `psd-tools` duotone hardcase (`colormodes/4x4_8bit_duotone.psd`) now uses
+    coregraphics hybrid expected (`.six`) instead of `psd-tools composite`
+    baseline to avoid unsupported-duotone parity noise; `1293` is no longer XFAIL.
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),

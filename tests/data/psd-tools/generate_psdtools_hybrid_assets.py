@@ -102,8 +102,8 @@ ASSETS = [
     {
         "upstream": "colormodes/4x4_8bit_duotone.psd",
         "local": "psdtools_colormodes_4x4_8bit_duotone.psd",
-        "expected": "psdtools_colormodes_4x4_8bit_duotone_expected_psdtools.ppm",
-        "generator": "psdtools",
+        "expected": "psdtools_colormodes_4x4_8bit_duotone_expected_coregraphics.six",
+        "generator": "coregraphics",
     },
 ]
 

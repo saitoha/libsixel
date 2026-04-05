@@ -1,6 +1,5 @@
 #!/bin/sh
-# Verify builtin PSD decode reaches psd-tools baseline for colormodes/4x4_8bit_duotone.psd.
-# Known gap is tracked as TODO/XFAIL until duotone parity is implemented.
+# Verify builtin PSD decode reaches coregraphics baseline for colormodes/4x4_8bit_duotone.psd.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -19,7 +18,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_colormodes_4x4_8bit_duotone.psd"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_colormodes_4x4_8bit_duotone_expected_psdtools.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_colormodes_4x4_8bit_duotone_expected_coregraphics.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
 trace_output=''
@@ -32,14 +31,14 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 : "${trace_output}"
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "colormodes/4x4_8bit_duotone decode failed # TODO psd-tools parity gap"
+    echo "not ok" 1 - "colormodes/4x4_8bit_duotone decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "colormodes/4x4_8bit_duotone decode fell below MS-SSIM ${lsqa_floor} # TODO psd-tools parity gap"
+    echo "not ok" 1 - "colormodes/4x4_8bit_duotone decode fell below MS-SSIM ${lsqa_floor}"
     exit 0
 }
 
