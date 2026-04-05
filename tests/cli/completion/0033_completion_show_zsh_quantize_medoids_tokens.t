@@ -12,7 +12,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" -1 zsh) || {
+status=0
+set +x
+msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" -1 zsh) || status=$?
+set -x
+
+test "${status}" = 0 || {
     echo "not ok" 1 - "zsh completion output failed"
     exit 0
 }
