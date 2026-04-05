@@ -1268,6 +1268,24 @@ static cli_env_help_t const g_env_help_table[] = {
         "float32 target colorspaces."
     },
     {
+        "SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII",
+        "compatibility toggle for builtin PNM ASCII raster parsing.\n"
+        "Set to 1 to accept truncated ASCII rasters and fill missing\n"
+        "samples with legacy defaults. Unset keeps strict EOF errors."
+    },
+    {
+        "SIXEL_LOADER_PAM_ALLOW_DUPLICATE_REQUIRED_KEYS",
+        "compatibility toggle for duplicate PAM required keys in P7.\n"
+        "Set to 1 to allow duplicate WIDTH/HEIGHT/DEPTH/MAXVAL and use\n"
+        "the last value. Unset rejects duplicates."
+    },
+    {
+        "SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA",
+        "compatibility toggle for trailing data after decoded PNM raster.\n"
+        "Set to 1 to allow trailing bytes/comments after pixel data.\n"
+        "Unset rejects trailing raster data in strict mode."
+    },
+    {
         "SIXEL_CMS_RENDERING_INTENT",
         "legacy alias for SIXEL_LOADER_CMS_RENDERING_INTENT. Used only when\n"
         "SIXEL_LOADER_CMS_RENDERING_INTENT is unset."
