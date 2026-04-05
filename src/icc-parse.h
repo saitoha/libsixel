@@ -13,6 +13,7 @@
 #endif
 
 #define SIXEL_ICC_A2B_SLOT_COUNT 3u
+#define SIXEL_ICC_B2A_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
 
 typedef enum sixel_icc_curve_kind {
     SIXEL_ICC_CURVE_INVALID = 0,
@@ -101,6 +102,8 @@ typedef struct sixel_icc_profile {
     sixel_icc_curve_t curves[3];
     sixel_icc_lut_t a2b_lut[SIXEL_ICC_A2B_SLOT_COUNT];
     sixel_icc_mab_pipeline_t a2b_mab[SIXEL_ICC_A2B_SLOT_COUNT];
+    sixel_icc_lut_t b2a_lut[SIXEL_ICC_B2A_SLOT_COUNT];
+    sixel_icc_mab_pipeline_t b2a_mab[SIXEL_ICC_B2A_SLOT_COUNT];
 } sixel_icc_profile_t;
 
 SIXEL_INTERNAL_API int

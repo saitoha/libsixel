@@ -169,6 +169,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
     -DBUILD_TEST_0003_ICC_BUILTIN_A2B_INTENT_PATHS \
     -DBUILD_TEST_0002_FILTER_SAMPLE \
+    -DBUILD_TEST_0004_ICC_BUILTIN_B2A_SLOT_PATHS \
+    -DBUILD_TEST_0005_ICC_BUILTIN_DEVICE_TO_DEVICE_INTENT_PATHS \
     -DBUILD_TEST_0002_INCREMENTAL_LOAD \
     -DBUILD_TEST_0003_CORRUPT_DATA \
     -DBUILD_TEST_0003_FILTER_RESIZE \
@@ -273,6 +275,8 @@ test_runner_SOURCES = test_runner.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     extension/gdk-pixbuf-loader/0002_incremental_load.c \
     extension/gdk-pixbuf-loader/0003_corrupt_data.c \
+    diagnostics/icc/0004_icc_builtin_b2a_slot_paths.c \
+    diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c \
     extension/gdk-pixbuf-loader/0004_propagate_error.c \
     extension/gdk-pixbuf-loader/0005_context_free.c \
     extension/gdk-pixbuf-loader/0006_loader_module.c \

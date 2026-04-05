@@ -19,6 +19,23 @@ sixel_icc_apply_rgb_u8(unsigned char *pixels,
                        sixel_icc_profile_t const *profile);
 
 SIXEL_INTERNAL_API int
+sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+    double xyz_d50[3],
+    double const *device_unit,
+    size_t input_channel_count,
+    sixel_icc_profile_t const *profile,
+    unsigned int a2b_slot,
+    int allow_matrix_trc_fallback);
+
+SIXEL_INTERNAL_API int
+sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
+    double *device_unit,
+    size_t output_channel_count,
+    double const xyz_d50[3],
+    sixel_icc_profile_t const *profile,
+    unsigned int b2a_slot);
+
+SIXEL_INTERNAL_API int
 sixel_icc_apply_rgb_u8_with_a2b_slot(
     unsigned char *pixels,
     size_t pixel_count,

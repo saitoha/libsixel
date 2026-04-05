@@ -37,6 +37,9 @@ int test_probe_0001_probe_parse(int argc, char **argv);
 int test_icc_0001_icc_builtin_rgb_gray_v4_paths(int argc, char **argv);
 int test_icc_0002_icc_builtin_mab_mba_a2b0_paths(int argc, char **argv);
 int test_icc_0003_icc_builtin_a2b_intent_paths(int argc, char **argv);
+int test_icc_0004_icc_builtin_b2a_slot_paths(int argc, char **argv);
+int test_icc_0005_icc_builtin_device_to_device_intent_paths(int argc,
+                                                             char **argv);
 
 int test_palette_0001_kmeans_init(int argc, char **argv);
 int test_palette_0002_kmedoids_constraints(int argc, char **argv);
@@ -153,6 +156,10 @@ static test_entry_t const test_entries[] = {
       test_icc_0002_icc_builtin_mab_mba_a2b0_paths },
     { "icc/0003_icc_builtin_a2b_intent_paths",
       test_icc_0003_icc_builtin_a2b_intent_paths },
+    { "icc/0004_icc_builtin_b2a_slot_paths",
+      test_icc_0004_icc_builtin_b2a_slot_paths },
+    { "icc/0005_icc_builtin_device_to_device_intent_paths",
+      test_icc_0005_icc_builtin_device_to_device_intent_paths },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },
     { "palette/0002_kmedoids_constraints",
       test_palette_0002_kmedoids_constraints },

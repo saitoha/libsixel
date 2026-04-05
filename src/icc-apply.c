@@ -379,7 +379,8 @@ sixel_icc_eval_mab_clut(sixel_icc_mab_clut_t const *clut,
 }
 
 static int
-sixel_icc_eval_mab_pipeline(double pcs_unit[3],
+sixel_icc_eval_mab_pipeline(double *outputs,
+                            size_t output_channel_count,
                             double const *inputs,
                             size_t input_channel_count,
                             sixel_icc_mab_pipeline_t const *pipeline)
@@ -399,11 +400,13 @@ sixel_icc_eval_mab_pipeline(double pcs_unit[3],
     current = NULL;
     scratch = NULL;
 
-    if (pcs_unit == NULL || inputs == NULL || pipeline == NULL) {
+    if (outputs == NULL || inputs == NULL || pipeline == NULL) {
         return 0;
     }
     if (pipeline->type == SIXEL_ICC_MAB_TYPE_INVALID ||
-        pipeline->output_channels != 3u ||
+        output_channel_count == 0u ||
+        output_channel_count > 16u ||
+        pipeline->output_channels != (uint8_t)output_channel_count ||
         input_channel_count == 0u ||
         input_channel_count != (size_t)pipeline->input_channels) {
         return 0;
@@ -517,8 +520,8 @@ sixel_icc_eval_mab_pipeline(double pcs_unit[3],
         return 0;
     }
 
-    for (channel = 0u; channel < 3u; ++channel) {
-        pcs_unit[channel] = sixel_icc_clamp_unit(current[channel]);
+    for (channel = 0u; channel < output_channel_count; ++channel) {
+        outputs[channel] = sixel_icc_clamp_unit(current[channel]);
     }
     return 1;
 }
@@ -559,6 +562,68 @@ sixel_icc_lab_to_xyz_d50(double const lab[3], double xyz[3])
     xyz[2] = sixel_icc_d50_white_xyz[2] * sixel_icc_lab_inverse_f(fz);
 }
 
+static double
+sixel_icc_lab_forward_f(double t)
+{
+    double delta;
+    double delta3;
+
+    delta = 6.0 / 29.0;
+    delta3 = delta * delta * delta;
+    if (t < 0.0) {
+        t = 0.0;
+    }
+    if (t > delta3) {
+        return pow(t, 1.0 / 3.0);
+    }
+    return t / (3.0 * delta * delta) + 4.0 / 29.0;
+}
+
+static void
+sixel_icc_xyz_d50_to_lab(double const xyz[3], double lab[3])
+{
+    double xr;
+    double yr;
+    double zr;
+    double fx;
+    double fy;
+    double fz;
+
+    xr = 0.0;
+    yr = 0.0;
+    zr = 0.0;
+    fx = 0.0;
+    fy = 0.0;
+    fz = 0.0;
+    if (xyz == NULL || lab == NULL) {
+        return;
+    }
+
+    xr = xyz[0] / sixel_icc_d50_white_xyz[0];
+    yr = xyz[1] / sixel_icc_d50_white_xyz[1];
+    zr = xyz[2] / sixel_icc_d50_white_xyz[2];
+
+    fx = sixel_icc_lab_forward_f(xr);
+    fy = sixel_icc_lab_forward_f(yr);
+    fz = sixel_icc_lab_forward_f(zr);
+
+    lab[0] = 116.0 * fy - 16.0;
+    lab[1] = 500.0 * (fx - fy);
+    lab[2] = 200.0 * (fy - fz);
+}
+
+static void
+sixel_icc_encode_lab_to_unit(double const lab[3], double out[3])
+{
+    if (lab == NULL || out == NULL) {
+        return;
+    }
+
+    out[0] = sixel_icc_clamp_unit(lab[0] / 100.0);
+    out[1] = sixel_icc_clamp_unit((lab[1] + 128.0) / 255.0);
+    out[2] = sixel_icc_clamp_unit((lab[2] + 128.0) / 255.0);
+}
+
 static int
 sixel_icc_decode_pcs_unit_to_xyz_d50(double xyz_d50[3],
                                      double const pcs_unit[3],
@@ -586,6 +651,32 @@ sixel_icc_decode_pcs_unit_to_xyz_d50(double xyz_d50[3],
 }
 
 static int
+sixel_icc_encode_xyz_d50_to_pcs_unit(double pcs_unit[3],
+                                     double const xyz_d50[3],
+                                     sixel_icc_profile_pcs_t pcs)
+{
+    double lab[3];
+
+    if (pcs_unit == NULL || xyz_d50 == NULL) {
+        return 0;
+    }
+
+    if (pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
+        pcs_unit[0] = sixel_icc_clamp_unit(xyz_d50[0]);
+        pcs_unit[1] = sixel_icc_clamp_unit(xyz_d50[1]);
+        pcs_unit[2] = sixel_icc_clamp_unit(xyz_d50[2]);
+        return 1;
+    }
+    if (pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
+        sixel_icc_xyz_d50_to_lab(xyz_d50, lab);
+        sixel_icc_encode_lab_to_unit(lab, pcs_unit);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 sixel_icc_profile_has_a2b_slot(sixel_icc_profile_t const *profile,
                                unsigned int a2b_slot)
 {
@@ -595,6 +686,18 @@ sixel_icc_profile_has_a2b_slot(sixel_icc_profile_t const *profile,
 
     return profile->a2b_mab[a2b_slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
         profile->a2b_lut[a2b_slot].kind != SIXEL_ICC_LUT_INVALID;
+}
+
+static int
+sixel_icc_profile_has_b2a_slot(sixel_icc_profile_t const *profile,
+                               unsigned int b2a_slot)
+{
+    if (profile == NULL || b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
+        return 0;
+    }
+
+    return profile->b2a_mab[b2a_slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+        profile->b2a_lut[b2a_slot].kind != SIXEL_ICC_LUT_INVALID;
 }
 
 static int
@@ -622,6 +725,7 @@ sixel_icc_apply_a2b_mab_to_xyz_d50(double xyz_d50[3],
         return 0;
     }
     if (!sixel_icc_eval_mab_pipeline(pcs_unit,
+                                     3u,
                                      inputs,
                                      input_channel_count,
                                      mab)) {
@@ -645,11 +749,13 @@ sixel_icc_apply_a2b_lut_to_xyz_d50(double xyz_d50[3],
     size_t channel;
     uint16_t in_entries;
     uint16_t out_entries;
+    uint16_t const *table;
     sixel_icc_lut_t const *lut;
 
     channel = 0u;
     in_entries = 0u;
     out_entries = 0u;
+    table = NULL;
     lut = NULL;
 
     if (xyz_d50 == NULL || inputs == NULL || profile == NULL) {
@@ -679,8 +785,6 @@ sixel_icc_apply_a2b_lut_to_xyz_d50(double xyz_d50[3],
     }
 
     for (channel = 0u; channel < input_channel_count; ++channel) {
-        uint16_t const *table;
-
         table = lut->input_tables + channel * (size_t)in_entries;
         lut_inputs[channel] = sixel_icc_eval_lut_table(table,
                                                        (size_t)in_entries,
@@ -692,8 +796,6 @@ sixel_icc_apply_a2b_lut_to_xyz_d50(double xyz_d50[3],
     }
 
     for (channel = 0u; channel < 3u; ++channel) {
-        uint16_t const *table;
-
         table = lut->output_tables + channel * (size_t)out_entries;
         pcs_unit[channel] = sixel_icc_eval_lut_table(table,
                                                      (size_t)out_entries,
@@ -729,6 +831,142 @@ sixel_icc_apply_a2b_to_xyz_d50(double xyz_d50[3],
                                               input_channel_count,
                                               a2b_slot,
                                               profile);
+}
+
+static int
+sixel_icc_apply_b2a_mab_from_xyz_d50(double *outputs,
+                                     size_t output_channel_count,
+                                     double const xyz_d50[3],
+                                     unsigned int b2a_slot,
+                                     sixel_icc_profile_t const *profile)
+{
+    double pcs_unit[3];
+    sixel_icc_mab_pipeline_t const *mab;
+
+    mab = NULL;
+    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
+        return 0;
+    }
+    if (output_channel_count == 0u || output_channel_count > 16u ||
+        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
+        return 0;
+    }
+    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
+                                              xyz_d50,
+                                              profile->pcs)) {
+        return 0;
+    }
+
+    mab = &profile->b2a_mab[b2a_slot];
+    if (mab->type == SIXEL_ICC_MAB_TYPE_INVALID ||
+        mab->input_channels != 3u ||
+        mab->output_channels != (uint8_t)output_channel_count) {
+        return 0;
+    }
+    if (!sixel_icc_eval_mab_pipeline(outputs,
+                                     output_channel_count,
+                                     pcs_unit,
+                                     3u,
+                                     mab)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
+sixel_icc_apply_b2a_lut_from_xyz_d50(double *outputs,
+                                     size_t output_channel_count,
+                                     double const xyz_d50[3],
+                                     unsigned int b2a_slot,
+                                     sixel_icc_profile_t const *profile)
+{
+    double pcs_unit[3];
+    double lut_inputs[4];
+    double lut_outputs[16];
+    size_t channel;
+    uint16_t in_entries;
+    uint16_t out_entries;
+    uint16_t const *table;
+    sixel_icc_lut_t const *lut;
+
+    channel = 0u;
+    in_entries = 0u;
+    out_entries = 0u;
+    table = NULL;
+    lut = NULL;
+    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
+        return 0;
+    }
+    if (output_channel_count == 0u || output_channel_count > 16u ||
+        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
+        return 0;
+    }
+    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
+                                              xyz_d50,
+                                              profile->pcs)) {
+        return 0;
+    }
+
+    lut = &profile->b2a_lut[b2a_slot];
+    if (lut->kind == SIXEL_ICC_LUT_INVALID ||
+        lut->input_tables == NULL ||
+        lut->clut_values == NULL ||
+        lut->output_tables == NULL ||
+        lut->input_channels != 3u ||
+        lut->output_channels != (uint8_t)output_channel_count) {
+        return 0;
+    }
+
+    in_entries = lut->input_entries;
+    out_entries = lut->output_entries;
+    if (in_entries == 0u || out_entries == 0u) {
+        return 0;
+    }
+
+    for (channel = 0u; channel < 3u; ++channel) {
+        table = lut->input_tables + channel * (size_t)in_entries;
+        lut_inputs[channel] = sixel_icc_eval_lut_table(table,
+                                                       (size_t)in_entries,
+                                                       pcs_unit[channel]);
+    }
+    if (!sixel_icc_eval_clut(lut, lut_inputs, lut_outputs)) {
+        return 0;
+    }
+    for (channel = 0u; channel < output_channel_count; ++channel) {
+        table = lut->output_tables + channel * (size_t)out_entries;
+        outputs[channel] = sixel_icc_eval_lut_table(table,
+                                                    (size_t)out_entries,
+                                                    lut_outputs[channel]);
+    }
+
+    return 1;
+}
+
+static int
+sixel_icc_apply_b2a_from_xyz_d50(double *outputs,
+                                 size_t output_channel_count,
+                                 double const xyz_d50[3],
+                                 unsigned int b2a_slot,
+                                 sixel_icc_profile_t const *profile)
+{
+    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
+        return 0;
+    }
+
+    if (sixel_icc_apply_b2a_mab_from_xyz_d50(outputs,
+                                             output_channel_count,
+                                             xyz_d50,
+                                             b2a_slot,
+                                             profile)) {
+        return 1;
+    }
+
+    return sixel_icc_apply_b2a_lut_from_xyz_d50(outputs,
+                                                output_channel_count,
+                                                xyz_d50,
+                                                b2a_slot,
+                                                profile);
 }
 
 static int
@@ -774,6 +1012,124 @@ sixel_icc_apply_rgb_gray_triplet_lut(double rgb[3],
     rgb[0] = sixel_icc_encode_srgb_unit(srgb_linear[0]);
     rgb[1] = sixel_icc_encode_srgb_unit(srgb_linear[1]);
     rgb[2] = sixel_icc_encode_srgb_unit(srgb_linear[2]);
+    return 1;
+}
+
+int
+sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+    double xyz_d50[3],
+    double const *device_unit,
+    size_t input_channel_count,
+    sixel_icc_profile_t const *profile,
+    unsigned int a2b_slot,
+    int allow_matrix_trc_fallback)
+{
+    double source_linear[3];
+    int has_selected_a2b;
+
+    has_selected_a2b = 0;
+    if (xyz_d50 == NULL || device_unit == NULL || profile == NULL) {
+        return 0;
+    }
+
+    if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {
+        if (input_channel_count != 3u) {
+            return 0;
+        }
+    } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
+        if (input_channel_count != 1u) {
+            return 0;
+        }
+    } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
+        if (input_channel_count != 4u) {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+
+    has_selected_a2b = sixel_icc_profile_has_a2b_slot(profile, a2b_slot);
+    if (has_selected_a2b &&
+        sixel_icc_apply_a2b_to_xyz_d50(xyz_d50,
+                                       device_unit,
+                                       input_channel_count,
+                                       a2b_slot,
+                                       profile)) {
+        return 1;
+    }
+
+    if (profile->kind == SIXEL_ICC_PROFILE_KIND_CMYK ||
+        !allow_matrix_trc_fallback) {
+        return 0;
+    }
+
+    if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {
+        source_linear[0] = sixel_icc_eval_curve(&profile->curves[0],
+                                                device_unit[0]);
+        source_linear[1] = sixel_icc_eval_curve(&profile->curves[1],
+                                                device_unit[1]);
+        source_linear[2] = sixel_icc_eval_curve(&profile->curves[2],
+                                                device_unit[2]);
+
+        sixel_icc_apply_matrix(profile->matrix_to_xyz_d50,
+                               source_linear,
+                               xyz_d50);
+        return 1;
+    }
+
+    xyz_d50[0] = sixel_icc_eval_curve(&profile->curves[0], device_unit[0])
+        * profile->gray_white_xyz_d50[0];
+    xyz_d50[1] = sixel_icc_eval_curve(&profile->curves[0], device_unit[0])
+        * profile->gray_white_xyz_d50[1];
+    xyz_d50[2] = sixel_icc_eval_curve(&profile->curves[0], device_unit[0])
+        * profile->gray_white_xyz_d50[2];
+    return 1;
+}
+
+int
+sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
+    double *device_unit,
+    size_t output_channel_count,
+    double const xyz_d50[3],
+    sixel_icc_profile_t const *profile,
+    unsigned int b2a_slot)
+{
+    size_t expected_channels;
+    size_t i;
+
+    expected_channels = 0u;
+    i = 0u;
+    if (device_unit == NULL || xyz_d50 == NULL || profile == NULL ||
+        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
+        return 0;
+    }
+
+    if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {
+        expected_channels = 3u;
+    } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
+        expected_channels = 1u;
+    } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
+        expected_channels = 4u;
+    } else {
+        return 0;
+    }
+    if (output_channel_count != expected_channels) {
+        return 0;
+    }
+    if (!sixel_icc_profile_has_b2a_slot(profile, b2a_slot)) {
+        return 0;
+    }
+    if (!sixel_icc_apply_b2a_from_xyz_d50(device_unit,
+                                          output_channel_count,
+                                          xyz_d50,
+                                          b2a_slot,
+                                          profile)) {
+        return 0;
+    }
+
+    for (i = 0u; i < output_channel_count; ++i) {
+        device_unit[i] = sixel_icc_clamp_unit(device_unit[i]);
+    }
     return 1;
 }
 

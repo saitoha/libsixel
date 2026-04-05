@@ -202,6 +202,10 @@ sixel_icc_profile_reset(sixel_icc_profile_t *profile)
         sixel_icc_lut_reset(&profile->a2b_lut[i]);
         sixel_icc_mab_pipeline_reset(&profile->a2b_mab[i]);
     }
+    for (i = 0u; i < SIXEL_ICC_B2A_SLOT_COUNT; ++i) {
+        sixel_icc_lut_reset(&profile->b2a_lut[i]);
+        sixel_icc_mab_pipeline_reset(&profile->b2a_mab[i]);
+    }
 }
 
 void
@@ -219,6 +223,10 @@ sixel_icc_profile_destroy(sixel_icc_profile_t *profile)
     for (i = 0u; i < SIXEL_ICC_A2B_SLOT_COUNT; ++i) {
         sixel_icc_lut_destroy(&profile->a2b_lut[i]);
         sixel_icc_mab_pipeline_destroy(&profile->a2b_mab[i]);
+    }
+    for (i = 0u; i < SIXEL_ICC_B2A_SLOT_COUNT; ++i) {
+        sixel_icc_lut_destroy(&profile->b2a_lut[i]);
+        sixel_icc_mab_pipeline_destroy(&profile->b2a_mab[i]);
     }
 
     profile->kind = SIXEL_ICC_PROFILE_KIND_INVALID;
@@ -587,7 +595,7 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
         x = (sample_count <= 1u)
             ? 0.0
             : (double)i / (double)(sample_count - 1u);
-        segment_index = 0u;
+        segment_index = segment_count - 1u;
         if (segment_count > 1u) {
             if (breakpoints == NULL) {
                 free(out_curve->table);
@@ -597,10 +605,9 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
                 free(segments);
                 return 0;
             }
-            for (segment_index = 0u;
-                 segment_index + 1u < segment_count;
-                 ++segment_index) {
-                if (x <= breakpoints[segment_index]) {
+            for (j = 0u; j < breakpoint_count; ++j) {
+                if (x <= breakpoints[j]) {
+                    segment_index = j;
                     break;
                 }
             }
@@ -614,7 +621,7 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
             free(breakpoints);
             return 0;
         }
-        segment = segments + segment_index;
+        segment = &segments[segment_index];
 
         y = sixel_icc_eval_parametric(segment->function_type,
                                       segment->params,
@@ -1570,6 +1577,12 @@ static char const *const sixel_icc_a2b_tag_names[SIXEL_ICC_A2B_SLOT_COUNT] = {
     "A2B2"
 };
 
+static char const *const sixel_icc_b2a_tag_names[SIXEL_ICC_B2A_SLOT_COUNT] = {
+    "B2A0",
+    "B2A1",
+    "B2A2"
+};
+
 static int
 sixel_icc_parse_a2b_slot(unsigned char const *profile_data,
                          size_t profile_size,
@@ -1626,6 +1639,63 @@ sixel_icc_parse_a2b_slot(unsigned char const *profile_data,
         } else if (is_rgb_or_gray && lut->kind == SIXEL_ICC_LUT_MFT2) {
             lut->kind = SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0;
         }
+        return 1;
+    }
+    sixel_icc_lut_destroy(lut);
+
+    return 0;
+}
+
+static int
+sixel_icc_parse_b2a_slot(unsigned char const *profile_data,
+                         size_t profile_size,
+                         unsigned int slot,
+                         uint8_t input_channels,
+                         uint8_t output_channels,
+                         sixel_icc_profile_t *parsed)
+{
+    size_t tag_offset;
+    size_t tag_length;
+    sixel_icc_lut_t *lut;
+    sixel_icc_mab_pipeline_t *mab;
+
+    tag_offset = 0u;
+    tag_length = 0u;
+    lut = NULL;
+    mab = NULL;
+    if (profile_data == NULL || parsed == NULL ||
+        slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
+        return 0;
+    }
+
+    if (!sixel_icc_find_tag(profile_data,
+                            profile_size,
+                            sixel_icc_b2a_tag_names[slot],
+                            &tag_offset,
+                            &tag_length)) {
+        return 0;
+    }
+
+    lut = &parsed->b2a_lut[slot];
+    mab = &parsed->b2a_mab[slot];
+    if (sixel_icc_parse_mab_tag(profile_data,
+                                profile_size,
+                                tag_offset,
+                                tag_length,
+                                mab) &&
+        mab->input_channels == input_channels &&
+        mab->output_channels == output_channels) {
+        return 1;
+    }
+    sixel_icc_mab_pipeline_destroy(mab);
+
+    if (sixel_icc_parse_lut_tag(profile_data,
+                                profile_size,
+                                tag_offset,
+                                tag_length,
+                                lut) &&
+        lut->input_channels == input_channels &&
+        lut->output_channels == output_channels) {
         return 1;
     }
     sixel_icc_lut_destroy(lut);
@@ -1725,6 +1795,14 @@ sixel_icc_parse_profile(void const *data,
                                          &parsed)) {
                 has_a2b0 = 1;
             }
+        }
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+            (void)sixel_icc_parse_b2a_slot(profile_data,
+                                           profile_size,
+                                           slot,
+                                           3u,
+                                           3u,
+                                           &parsed);
         }
 
         if (!has_a2b0) {
@@ -1827,6 +1905,14 @@ sixel_icc_parse_profile(void const *data,
                 has_a2b0 = 1;
             }
         }
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+            (void)sixel_icc_parse_b2a_slot(profile_data,
+                                           profile_size,
+                                           slot,
+                                           3u,
+                                           1u,
+                                           &parsed);
+        }
 
         if (!has_a2b0) {
             has_matrix_tags = sixel_icc_find_tag(profile_data,
@@ -1870,6 +1956,14 @@ sixel_icc_parse_profile(void const *data,
                                          &parsed)) {
                 has_a2b0 = 1;
             }
+        }
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+            (void)sixel_icc_parse_b2a_slot(profile_data,
+                                           profile_size,
+                                           slot,
+                                           3u,
+                                           4u,
+                                           &parsed);
         }
         if (!has_a2b0) {
             goto fail;
