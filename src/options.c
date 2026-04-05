@@ -3183,6 +3183,10 @@ sixel_option_validate_filesystem_path(
     char message_buffer[1024];
     struct stat stat_buffer;
     int stat_check;
+#if defined(__EMSCRIPTEN__)
+    int fallback_stat_result;
+    int fallback_error_value;
+#endif
     clock_t start_ticks;
     clock_t end_ticks;
     double elapsed_seconds;
@@ -3199,6 +3203,10 @@ sixel_option_validate_filesystem_path(
     end_ticks = 0;
     memset(&stat_buffer, 0, sizeof(stat_buffer));
     stat_check = 0;
+#if defined(__EMSCRIPTEN__)
+    fallback_stat_result = 0;
+    fallback_error_value = 0;
+#endif
     elapsed_seconds = -1.0;
 
     /*
@@ -3353,6 +3361,37 @@ sixel_option_validate_filesystem_path(
     }
 
     error_value = errno;
+#if defined(__EMSCRIPTEN__)
+    if ((error_value == ENOENT || error_value == ENOTDIR)) {
+        /*
+         * NODERAWFS environments can report false negatives from access()
+         * on newly created files. Re-check with stat() before surfacing
+         * missing-path diagnostics.
+         */
+        errno = 0;
+        fallback_stat_result = sixel_compat_stat(resolved_path, &stat_buffer);
+        fallback_error_value = errno;
+        if (fallback_stat_result == 0) {
+            if (S_ISDIR(stat_buffer.st_mode)) {
+                sixel_trace_topic_message(
+                    "path",
+                    "reject directory path=\"%s\" (stat fallback)",
+                    resolved_path);
+                sixel_helper_set_additional_message(
+                    "path refers to a directory; expected a file input.");
+                return -1;
+            }
+            sixel_trace_topic_message(
+                "path",
+                "path accepted via stat fallback: path=\"%s\"",
+                resolved_path);
+            return 0;
+        }
+        if (fallback_error_value != 0) {
+            error_value = fallback_error_value;
+        }
+    }
+#endif
     if (error_value != ENOENT && error_value != ENOTDIR) {
         sixel_trace_topic_message(
             "path",

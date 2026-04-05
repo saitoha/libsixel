@@ -9435,7 +9435,7 @@ sixel_encoder_encode(
     size_t png_temp_capacity = 0u;
     char *png_tmpnam_result = NULL;
     int png_open_flags = 0;
-#if defined(O_EXCL) && !defined(_MSC_VER)
+#if defined(O_EXCL) && !defined(_MSC_VER) && !defined(__EMSCRIPTEN__)
     int png_retry_flags = 0;
 #endif
     int png_open_attempt;
@@ -9639,7 +9639,12 @@ sixel_encoder_encode(
          * Keep the staging open sequence aligned with clipboard spool creation
          * and avoid MSVC O_EXCL false negatives on generated temp paths.
          */
-#if defined(O_EXCL) && !defined(_MSC_VER)
+        /*
+         * Emscripten + NODERAWFS can report false EEXIST for O_EXCL on
+         * freshly generated temp names. Keep O_EXCL on native runtimes
+         * and use O_CREAT|O_TRUNC for Emscripten staging files.
+         */
+#if defined(O_EXCL) && !defined(_MSC_VER) && !defined(__EMSCRIPTEN__)
         png_open_flags |= O_EXCL;
         png_retry_flags = png_open_flags;
         png_retry_flags &= ~O_EXCL;
@@ -9649,7 +9654,7 @@ sixel_encoder_encode(
             encoder->outfd = sixel_compat_open(png_temp_path,
                                                png_open_flags,
                                                S_IRUSR | S_IWUSR);
-#if defined(O_EXCL) && !defined(_MSC_VER)
+#if defined(O_EXCL) && !defined(_MSC_VER) && !defined(__EMSCRIPTEN__)
             if (encoder->outfd < 0
                     && (errno == EBADF
                         || errno == EINVAL
@@ -9657,9 +9662,9 @@ sixel_encoder_encode(
                         || errno == EACCES
                         || errno == EPERM)) {
                 /*
-                 * Emscripten virtual filesystems can reject O_EXCL with
-                 * inconsistent errno values even when the generated path is
-                 * valid. Retry without O_EXCL before treating it as fatal.
+                 * Some runtimes can reject O_EXCL with transient errno values
+                 * even when the generated path is valid. Retry without O_EXCL
+                 * before treating the open as fatal.
                  */
                 encoder->outfd = sixel_compat_open(png_temp_path,
                                                    png_retry_flags,
