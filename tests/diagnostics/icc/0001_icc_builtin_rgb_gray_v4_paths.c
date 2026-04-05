@@ -373,6 +373,7 @@ icc_build_rgb_segm_profile(unsigned char *profile,
     size_t trc_length;
 
     trc_length = 0u;
+    memset(tags, 0, sizeof(tags));
     if (profile == NULL || out_length == NULL) {
         return 0;
     }
@@ -432,6 +433,7 @@ icc_build_rgb_a2b0_profile(unsigned char *profile,
 
     a2b0_length = 0u;
     tag_count = 0u;
+    memset(tags, 0, sizeof(tags));
     if (profile == NULL || out_length == NULL) {
         return 0;
     }
@@ -505,6 +507,7 @@ icc_build_gray_a2b0_profile(unsigned char *profile,
     size_t a2b0_length;
 
     a2b0_length = 0u;
+    memset(tags, 0, sizeof(tags));
     if (profile == NULL || out_length == NULL) {
         return 0;
     }
