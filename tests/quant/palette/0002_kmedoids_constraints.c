@@ -3179,6 +3179,18 @@ end:
     return ok;
 }
 
+static int
+test_run_clarans_exhausted_candidate_skip_determinism_case(void)
+{
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)) {
+        return 0;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)) {
+        return 0;
+    }
+    return 1;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -3305,6 +3317,10 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "clarans-guided-seed-reproducibility") == 0) {
         return test_run_clarans_guided_seed_reproducibility_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-exhausted-candidate-skip-determinism") == 0) {
+        return test_run_clarans_exhausted_candidate_skip_determinism_case()
+            ? 0 : 1;
     }
 
     return 1;
