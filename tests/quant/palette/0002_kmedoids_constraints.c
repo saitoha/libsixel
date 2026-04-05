@@ -4765,6 +4765,122 @@ test_run_bandit_prune_unique_sample_seed_reproducibility_case(void)
     return 1;
 }
 
+static int
+test_run_bandit_prune_stratified_unique_sample_reproducibility_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned int const point_count = 101u;
+    unsigned int const sample_size = 28u;
+    unsigned int const guided_count = 16u;
+    unsigned int guided_points[16u];
+    unsigned int indices_a[28u];
+    unsigned int indices_b[28u];
+    unsigned int indices_c[28u];
+    unsigned int index;
+    unsigned int probe;
+    unsigned int guided_hits;
+
+    allocator = NULL;
+    index = 0u;
+    probe = 0u;
+    guided_hits = 0u;
+    guided_points[0u] = 90u;
+    guided_points[1u] = 3u;
+    guided_points[2u] = 55u;
+    guided_points[3u] = 8u;
+    guided_points[4u] = 90u;
+    guided_points[5u] = 13u;
+    guided_points[6u] = 99u;
+    guided_points[7u] = 21u;
+    guided_points[8u] = 34u;
+    guided_points[9u] = 44u;
+    guided_points[10u] = 55u;
+    guided_points[11u] = 1u;
+    guided_points[12u] = 70u;
+    guided_points[13u] = 2u;
+    guided_points[14u] = 19u;
+    guided_points[15u] = 88u;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+    if (SIXEL_FAILED(
+            sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+                point_count,
+                sample_size,
+                guided_points,
+                guided_count,
+                20260405u,
+                indices_a,
+                allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (SIXEL_FAILED(
+            sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+                point_count,
+                sample_size,
+                guided_points,
+                guided_count,
+                20260405u,
+                indices_b,
+                allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (SIXEL_FAILED(
+            sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+                point_count,
+                sample_size,
+                guided_points,
+                guided_count,
+                20260406u,
+                indices_c,
+                allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    sixel_allocator_unref(allocator);
+
+    if (memcmp(indices_a, indices_b, sizeof(indices_a)) != 0) {
+        return 0;
+    }
+    if (memcmp(indices_a, indices_c, sizeof(indices_a)) == 0) {
+        return 0;
+    }
+    if (!test_indices_are_unique(indices_a, sample_size, point_count)) {
+        return 0;
+    }
+    if (!test_indices_are_unique(indices_c, sample_size, point_count)) {
+        return 0;
+    }
+    for (index = 1u; index < sample_size; ++index) {
+        if (indices_a[index - 1u] > indices_a[index]) {
+            return 0;
+        }
+        if (indices_c[index - 1u] > indices_c[index]) {
+            return 0;
+        }
+    }
+    for (index = 0u; index < sample_size; ++index) {
+        for (probe = 0u; probe < guided_count; ++probe) {
+            if (indices_a[index] == guided_points[probe]) {
+                ++guided_hits;
+                break;
+            }
+        }
+    }
+    if (guided_hits == 0u) {
+        return 0;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 0)) {
+        return 0;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 1)) {
+        return 0;
+    }
+    return 1;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -4950,6 +5066,12 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     if (strcmp(argv[1], "bandit-prune-unique-sample-seed-reproducibility")
             == 0) {
         return test_run_bandit_prune_unique_sample_seed_reproducibility_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "bandit-prune-stratified-unique-sample-reproducibility")
+            == 0) {
+        return
+            test_run_bandit_prune_stratified_unique_sample_reproducibility_case()
             ? 0 : 1;
     }
     if (strcmp(argv[1], "clarans-slot-order-lazy-equivalence") == 0) {
