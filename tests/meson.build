@@ -207,9 +207,11 @@ test_runner_inc = [
 test_runner_exe = executable('test_runner', test_runner_sources,
   include_directories: test_runner_inc,
   dependencies: [libsixel_dep, gdk_pixbuf_loader_deps, abort_trace_deps],
-  c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND',
-           '-DSIXEL_PIXBUF_LOADER_TESTING',
-           '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
+  # Keep feature-test macros aligned with converter/library targets so
+  # unity-included aborttrace.c sees sigaction declarations on Cygwin.
+  c_args: libsixel_posix_defs + ['-DGDK_PIXBUF_ENABLE_BACKEND',
+                                 '-DSIXEL_PIXBUF_LOADER_TESTING',
+                                 '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
   install: false)
 
 test_deps = [test_runner_exe, lsqa_bin] + img2sixel_deps + sixel2png_deps
