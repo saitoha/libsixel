@@ -230,6 +230,89 @@ pnm_read_integer(unsigned char **pp,
     return 1;
 }
 
+static int
+pnm_read_line(unsigned char **pp,
+              unsigned char *end,
+              unsigned char **line_begin,
+              unsigned char **line_end)
+{
+    unsigned char *p;
+    unsigned char *begin;
+
+    p = NULL;
+    begin = NULL;
+    if (pp == NULL || *pp == NULL || end == NULL ||
+        line_begin == NULL || line_end == NULL) {
+        return 0;
+    }
+
+    p = *pp;
+    if (p >= end) {
+        return 0;
+    }
+
+    begin = p;
+    while (p < end && *p != '\n' && *p != '\r') {
+        p++;
+    }
+
+    *line_begin = begin;
+    *line_end = p;
+
+    if (p < end) {
+        if (*p == '\r') {
+            p++;
+            if (p < end && *p == '\n') {
+                p++;
+            }
+        } else {
+            p++;
+        }
+    }
+
+    *pp = p;
+    return 1;
+}
+
+static int
+pnm_allow_truncated_ascii(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII");
+    if (value != NULL && strcmp(value, "1") == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+pnm_require_line_tail_empty(unsigned char *p,
+                            unsigned char *end,
+                            char const *field)
+{
+    char message[128];
+
+    memset(message, 0, sizeof(message));
+    if (p == NULL || end == NULL || field == NULL) {
+        return 0;
+    }
+
+    while (p < end && isspace((unsigned char)*p)) {
+        p++;
+    }
+    if (p >= end || *p == '#') {
+        return 1;
+    }
+
+    sixel_compat_snprintf(message,
+                          sizeof(message),
+                          "load_pnm: unexpected token after %s value.",
+                          field);
+    sixel_helper_set_additional_message(message);
+    return 0;
+}
+
 /*
  * Consume the mandatory separator that follows a binary PNM/PAM header.
  *
@@ -368,22 +451,32 @@ pnm_parse_header(unsigned char *buffer,
 {
     unsigned char *p;
     unsigned char *end;
+    unsigned char *line_begin;
+    unsigned char *line_end;
+    unsigned char *line_cursor;
     char token[PNM_TOKEN_MAX];
     int width_set;
     int height_set;
     int depth_set;
     int maxval_set;
     int endhdr_seen;
+    int tuple_type_seen;
+    int tuple_type_known;
     pnm_tuple_type_t tuple_type;
 
     p = NULL;
     end = NULL;
+    line_begin = NULL;
+    line_end = NULL;
+    line_cursor = NULL;
     memset(token, 0, sizeof(token));
     width_set = 0;
     height_set = 0;
     depth_set = 0;
     maxval_set = 0;
     endhdr_seen = 0;
+    tuple_type_seen = 0;
+    tuple_type_known = 0;
     tuple_type = PNM_TUPLE_UNSPECIFIED;
 
     if (buffer == NULL || header == NULL || length < 3) {
@@ -437,56 +530,106 @@ pnm_parse_header(unsigned char *buffer,
         break;
 
     case '7':
-        while (pnm_read_token(&p, end, token, sizeof(token))) {
+        while (pnm_read_line(&p, end, &line_begin, &line_end)) {
+            line_cursor = line_begin;
+            if (!pnm_read_token(&line_cursor, line_end, token, sizeof(token))) {
+                continue;
+            }
             if (strcmp(token, "ENDHDR") == 0) {
                 endhdr_seen = 1;
                 break;
             }
             if (strcmp(token, "WIDTH") == 0) {
-                if (!pnm_read_integer(&p, end, &header->width, "WIDTH")) {
+                if (!pnm_read_integer(&line_cursor,
+                                      line_end,
+                                      &header->width,
+                                      "WIDTH")) {
+                    return 0;
+                }
+                if (!pnm_require_line_tail_empty(line_cursor,
+                                                 line_end,
+                                                 "WIDTH")) {
                     return 0;
                 }
                 width_set = 1;
                 continue;
             }
             if (strcmp(token, "HEIGHT") == 0) {
-                if (!pnm_read_integer(&p, end, &header->height, "HEIGHT")) {
+                if (!pnm_read_integer(&line_cursor,
+                                      line_end,
+                                      &header->height,
+                                      "HEIGHT")) {
+                    return 0;
+                }
+                if (!pnm_require_line_tail_empty(line_cursor,
+                                                 line_end,
+                                                 "HEIGHT")) {
                     return 0;
                 }
                 height_set = 1;
                 continue;
             }
             if (strcmp(token, "DEPTH") == 0) {
-                if (!pnm_read_integer(&p, end, &header->depth, "DEPTH")) {
+                if (!pnm_read_integer(&line_cursor,
+                                      line_end,
+                                      &header->depth,
+                                      "DEPTH")) {
+                    return 0;
+                }
+                if (!pnm_require_line_tail_empty(line_cursor,
+                                                 line_end,
+                                                 "DEPTH")) {
                     return 0;
                 }
                 depth_set = 1;
                 continue;
             }
             if (strcmp(token, "MAXVAL") == 0) {
-                if (!pnm_read_integer(&p, end, &header->maxval, "MAXVAL")) {
+                if (!pnm_read_integer(&line_cursor,
+                                      line_end,
+                                      &header->maxval,
+                                      "MAXVAL")) {
+                    return 0;
+                }
+                if (!pnm_require_line_tail_empty(line_cursor,
+                                                 line_end,
+                                                 "MAXVAL")) {
                     return 0;
                 }
                 maxval_set = 1;
                 continue;
             }
             if (strcmp(token, "TUPLTYPE") == 0) {
-                if (!pnm_read_token(&p, end, token, sizeof(token))) {
+                if (!pnm_read_token(&line_cursor,
+                                    line_end,
+                                    token,
+                                    sizeof(token))) {
                     sixel_helper_set_additional_message(
                         "load_pnm: missing TUPLTYPE value.");
                     return 0;
                 }
-                if (!pnm_parse_tuple_type(token, &tuple_type)) {
-                    sixel_helper_set_additional_message(
-                        "load_pnm: unsupported PAM TUPLTYPE.");
+                if (!pnm_require_line_tail_empty(line_cursor,
+                                                 line_end,
+                                                 "TUPLTYPE")) {
                     return 0;
+                }
+                tuple_type_seen = 1;
+                if (!pnm_parse_tuple_type(token, &tuple_type)) {
+                    /*
+                     * PAM allows custom tuple types. Keep strict validation
+                     * only for known tuple names and otherwise fall back to
+                     * DEPTH-based interpretation.
+                     */
+                    tuple_type = PNM_TUPLE_UNSPECIFIED;
+                    tuple_type_known = 0;
+                } else {
+                    tuple_type_known = 1;
                 }
                 continue;
             }
 
-            sixel_helper_set_additional_message(
-                "load_pnm: unknown PAM header key.");
-            return 0;
+            /* Ignore unknown PAM keys for compatibility. */
+            continue;
         }
 
         if (!endhdr_seen) {
@@ -505,7 +648,7 @@ pnm_parse_header(unsigned char *buffer,
         header->grayscale = 0;
         header->has_alpha = 0;
 
-        if (tuple_type == PNM_TUPLE_UNSPECIFIED) {
+        if (!tuple_type_known || tuple_type == PNM_TUPLE_UNSPECIFIED) {
             switch (header->depth) {
             case 1:
                 header->grayscale = 1;
@@ -524,8 +667,14 @@ pnm_parse_header(unsigned char *buffer,
                 header->has_alpha = 1;
                 break;
             default:
-                sixel_helper_set_additional_message(
-                    "load_pnm: unsupported PAM DEPTH value.");
+                if (tuple_type_seen && !tuple_type_known) {
+                    sixel_helper_set_additional_message(
+                        "load_pnm: unsupported PAM DEPTH value for "
+                        "unknown TUPLTYPE fallback.");
+                } else {
+                    sixel_helper_set_additional_message(
+                        "load_pnm: unsupported PAM DEPTH value.");
+                }
                 return 0;
             }
         } else {
@@ -573,10 +722,6 @@ pnm_parse_header(unsigned char *buffer,
                     "load_pnm: unsupported PAM TUPLTYPE.");
                 return 0;
             }
-        }
-
-        if (!pnm_advance_to_binary_data(&p, end)) {
-            return 0;
         }
         break;
 
@@ -659,12 +804,18 @@ pnm_read_bitmap_ascii_sample(pnm_reader_t *reader, int *sample)
     }
 
     /*
-     * Keep legacy compatibility with the historical parser: when ASCII
+     * Keep legacy compatibility only when explicitly requested: when ASCII
      * bitmap payload ends early, fill the remainder with white pixels.
      */
-    *sample = 0;
-    reader->p = p;
-    return 1;
+    if (pnm_allow_truncated_ascii() != 0) {
+        *sample = 0;
+        reader->p = p;
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(
+        "load_pnm: unexpected end of ASCII raster.");
+    return 0;
 }
 
 static int
@@ -680,13 +831,18 @@ pnm_reader_read_sample(pnm_reader_t *reader, int *sample)
     switch (reader->mode) {
     case PNM_RASTER_ASCII:
         if (!pnm_ascii_has_token(reader->p, reader->end, &next)) {
-            /*
-             * Legacy compatibility: old loader tolerated truncated ASCII
-             * PGM/PPM input and left tail samples as zeros.
-             */
-            *sample = 0;
-            reader->p = next;
-            return 1;
+            if (pnm_allow_truncated_ascii() != 0) {
+                /*
+                 * Legacy compatibility: old loader tolerated truncated ASCII
+                 * PGM/PPM input and left tail samples as zeros.
+                 */
+                *sample = 0;
+                reader->p = next;
+                return 1;
+            }
+            sixel_helper_set_additional_message(
+                "load_pnm: unexpected end of ASCII raster.");
+            return 0;
         }
         if (!pnm_read_integer(&reader->p, reader->end, sample, "sample")) {
             return 0;
@@ -1324,12 +1480,6 @@ load_pnm(unsigned char      /* in */  *p,
         if (pixel_total > SIZE_MAX / 3u) {
             sixel_helper_set_additional_message(
                 "load_pnm: RGBA8 temporary RGB buffer overflow.");
-            status = SIXEL_BAD_INTEGER_OVERFLOW;
-            goto end;
-        }
-        if (pixel_total > SIZE_MAX) {
-            sixel_helper_set_additional_message(
-                "load_pnm: RGBA8 temporary alpha buffer overflow.");
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }

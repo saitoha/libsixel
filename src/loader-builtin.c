@@ -762,12 +762,13 @@ chunk_is_sixel(sixel_chunk_t const *chunk)
 static int
 chunk_is_pnm(sixel_chunk_t const *chunk)
 {
-    if (chunk->size < 2) {
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 3u) {
         return 0;
     }
     if (chunk->buffer[0] == 'P' &&
         chunk->buffer[1] >= '1' &&
-        chunk->buffer[1] <= '7') {
+        chunk->buffer[1] <= '7' &&
+        isspace((unsigned char)chunk->buffer[2])) {
         return 1;
     }
     return 0;
