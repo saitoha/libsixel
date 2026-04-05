@@ -1,9 +1,12 @@
 #!/bin/sh
-# Read config.h and print shell-safe assignment lines for feature macros.
+# Read config.h and print shell-safe assignment lines for enabled feature
+# macros.
 #
 # Default output format:
 #   KEY='value'
 # Optional mode "pairs" prints tab-delimited key/value pairs for parsers.
+# Only enabled macros ("#define NAME 1") are emitted. Undef entries are
+# intentionally skipped so test-time environments stay compact on Windows.
 
 set -eu
 
@@ -38,14 +41,5 @@ awk -v output_mode="$mode" '
             printf "%s=%s ", key, value
         }
         next
-    }
-    /^\/\* #undef [A-Z0-9_]+ \*\/$/ {
-        key = $3
-        value = "0"
-        if (output_mode == "pairs") {
-            printf "%s\t%s\n", key, value
-        } else {
-            printf "%s=%s ", key, value
-        }
     }
 ' "$config_header"
