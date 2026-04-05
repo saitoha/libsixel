@@ -478,12 +478,15 @@ jobs:
         buildtool: [autotools, meson]
         target: [combo, parser, boundary, pathenv, numeric]
     env:
-      FUZZ_INPUT_DIR: ${{ github.workspace }}/fuzz/corpus/img2sixel-cli
+      FUZZ_INPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-corpus-cli-img2sixel/${{ matrix.target }}
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
       FUZZ_TIMEOUT: 300
       AFL_USE_ASAN: 1
       AFL_USE_UBSAN: 1
+      AFL_NO_AFFINITY: 1
+      AFL_SKIP_CPUFREQ: 1
+      AFL_IMPORT_FIRST: 1
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:symbolize=0
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -511,6 +514,47 @@ jobs:
           fi
           after="$(cat /proc/sys/kernel/core_pattern)"
           echo "kernel.core_pattern(after)=$after"
+
+      - name: Restore CLI fuzz corpus cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.FUZZ_INPUT_DIR }}
+          key: fuzz-corpus-cli-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            fuzz-corpus-cli-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
+            fuzz-corpus-cli-push-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-cli-${{ matrix.buildtool }}-${{ matrix.target }}-
+
+      - name: Seed CLI fuzz corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FUZZ_INPUT_DIR" "$FUZZ_OUTPUT_DIR"
+
+          if test -d fuzz/corpus/img2sixel-cli; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_INPUT_DIR/" || true
+            done < <(find fuzz/corpus/img2sixel-cli -type f -print0)
+          fi
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_INPUT_DIR/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_INPUT_DIR/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          echo "cli-corpus seed files (${{ matrix.target }}): $(find "$FUZZ_INPUT_DIR" -type f | wc -l)"
 
       - name: Build and run img2sixel CLI fuzz target
         shell: bash
@@ -555,6 +599,31 @@ jobs:
             exit 1
           fi
 
+          queue_count="$(find "$FUZZ_OUTPUT_DIR" -type f -path '*/queue/*' \
+            ! -name 'README.txt' | wc -l | tr -d ' ')"
+          hang_count="$(find "$FUZZ_OUTPUT_DIR" -type f -path '*/hangs/*' \
+            ! -name 'README.txt' | wc -l | tr -d ' ')"
+          echo "cli-afl findings: queue=${queue_count} hangs=${hang_count}"
+          if [ "${hang_count}" -gt 0 ]; then
+            echo "::warning::AFL detected ${hang_count} hang input(s)."
+            find "$FUZZ_OUTPUT_DIR" -type f -path '*/hangs/*' \
+              ! -name 'README.txt' -print
+          fi
+
+      - name: Harvest CLI AFL queue into corpus
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FUZZ_INPUT_DIR"
+          if [ -d "$FUZZ_OUTPUT_DIR" ]; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_INPUT_DIR/" || true
+            done < <(find "$FUZZ_OUTPUT_DIR" -type f -path '*/queue/*' \
+              ! -name 'README.txt' -print0)
+          fi
+          echo "cli-corpus files after harvest (${{ matrix.target }}): $(find "$FUZZ_INPUT_DIR" -type f | wc -l)"
+
       - name: Pack img2sixel CLI fuzz artifacts
         if: always()
         shell: bash
@@ -574,6 +643,7 @@ jobs:
           retention-days: 7
           path: |
             ${{ env.FUZZ_OUTPUT_DIR }}.tar.gz
+            ${{ env.FUZZ_INPUT_DIR }}
 
   fuzz_push_loader_coregraphics:
     if: github.event_name == 'push' || github.event_name == 'schedule'
