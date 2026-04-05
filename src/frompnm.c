@@ -69,6 +69,7 @@ typedef enum pnm_tuple_type {
 
 typedef enum pnm_raster_mode {
     PNM_RASTER_ASCII = 0,
+    PNM_RASTER_BITMAP_ASCII,
     PNM_RASTER_BINARY,
     PNM_RASTER_BITMAP_BINARY
 } pnm_raster_mode_t;
@@ -601,7 +602,9 @@ pnm_reader_init(pnm_reader_t *reader, pnm_header_t const *header)
     reader->p = header->raster;
     reader->end = header->end;
     reader->mode = PNM_RASTER_BINARY;
-    if (header->ascii) {
+    if (header->ascii && header->bitmap) {
+        reader->mode = PNM_RASTER_BITMAP_ASCII;
+    } else if (header->ascii) {
         reader->mode = PNM_RASTER_ASCII;
     } else if (header->bitmap) {
         reader->mode = PNM_RASTER_BITMAP_BINARY;
@@ -611,18 +614,87 @@ pnm_reader_init(pnm_reader_t *reader, pnm_header_t const *header)
 }
 
 static int
+pnm_ascii_has_token(unsigned char *p, unsigned char *end, unsigned char **next)
+{
+    pnm_skip_spaces_and_comments(&p, end);
+    if (next != NULL) {
+        *next = p;
+    }
+    if (p >= end) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+pnm_read_bitmap_ascii_sample(pnm_reader_t *reader, int *sample)
+{
+    unsigned char *p;
+
+    if (reader == NULL || sample == NULL) {
+        return 0;
+    }
+
+    p = reader->p;
+    while (p < reader->end) {
+        if (isspace((unsigned char)*p)) {
+            p++;
+            continue;
+        }
+        if (*p == '#') {
+            while (p < reader->end && *p != '\n' && *p != '\r') {
+                p++;
+            }
+            continue;
+        }
+        if (*p == '0' || *p == '1') {
+            *sample = (int)(*p - '0');
+            p++;
+            reader->p = p;
+            return 1;
+        }
+        sixel_helper_set_additional_message(
+            "load_pnm: invalid ASCII bitmap sample.");
+        return 0;
+    }
+
+    /*
+     * Keep legacy compatibility with the historical parser: when ASCII
+     * bitmap payload ends early, fill the remainder with white pixels.
+     */
+    *sample = 0;
+    reader->p = p;
+    return 1;
+}
+
+static int
 pnm_reader_read_sample(pnm_reader_t *reader, int *sample)
 {
+    unsigned char *next;
+
+    next = NULL;
     if (reader == NULL || sample == NULL) {
         return 0;
     }
 
     switch (reader->mode) {
     case PNM_RASTER_ASCII:
+        if (!pnm_ascii_has_token(reader->p, reader->end, &next)) {
+            /*
+             * Legacy compatibility: old loader tolerated truncated ASCII
+             * PGM/PPM input and left tail samples as zeros.
+             */
+            *sample = 0;
+            reader->p = next;
+            return 1;
+        }
         if (!pnm_read_integer(&reader->p, reader->end, sample, "sample")) {
             return 0;
         }
         return 1;
+
+    case PNM_RASTER_BITMAP_ASCII:
+        return pnm_read_bitmap_ascii_sample(reader, sample);
 
     case PNM_RASTER_BINARY:
         if (reader->bytes_per_sample == 1) {
