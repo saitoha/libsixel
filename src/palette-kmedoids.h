@@ -367,6 +367,17 @@ sixel_kmedoids_test_pick_unique_sorted_sample_indices(
     unsigned int *indices_out,
     sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API unsigned int
+sixel_kmedoids_test_clarans_slot_probe_target(
+    unsigned int k,
+    unsigned int hot_slot_count,
+    unsigned int active_count,
+    unsigned int non_count,
+    unsigned int neighbor_count,
+    unsigned int stale_limit,
+    unsigned int eval_total,
+    unsigned int eval_budget);
+
 #ifdef __cplusplus
 }
 #endif
