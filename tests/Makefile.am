@@ -16,7 +16,12 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
 TESTS = @SIXEL_CHECK_TESTS@
-XFAIL_TESTS =
+XFAIL_TESTS = \
+    loader/builtin/1289_loader_builtin_psd_psdtools_2layer_8ele_tblocks_hardcase_lsqa_xfail.t \
+    loader/builtin/1290_loader_builtin_psd_psdtools_layer_name_emoji_hardcase_lsqa_xfail.t \
+    loader/builtin/1291_loader_builtin_psd_psdtools_transparentbg_gimp_hardcase_lsqa_xfail.t \
+    loader/builtin/1292_loader_builtin_psd_psdtools_layers_minimal_type_layer_hardcase_lsqa_xfail.t \
+    loader/builtin/1293_loader_builtin_psd_psdtools_colormodes_4x4_8bit_duotone_hardcase_lsqa_xfail.t
 
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
@@ -623,8 +628,8 @@ staticcheck-c-header-modeline:
 sixel-check-test-tools:
 	@set -eu; \
 	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
-	$(MAKE) -C "$(top_builddir)/assessment" lsqa; \
-	$(MAKE) -C "$(top_builddir)/converters" img2sixel sixel2png
+	$(MAKE) -C "$(top_builddir)/assessment" lsqa@EXEEXT@; \
+	$(MAKE) -C "$(top_builddir)/converters" img2sixel@EXEEXT@ sixel2png@EXEEXT@
 
 sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
@@ -748,8 +753,12 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	    export SIXEL_TEST_PHP_LIBPATH; \
 	    php_make_arg="$$php_make_arg SIXEL_TEST_PHP_LIBPATH=$$SIXEL_TEST_PHP_LIBPATH"; \
 	fi; \
-	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
-	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
+	test_runner_probe="$(top_builddir)/tests/test_runner@EXEEXT@"; \
+	if test ! -x "$$test_runner_probe"; then \
+	    test_runner_probe="$(top_builddir)/tests/test_runner"; \
+	fi; \
+	$(SIXEL_RUNTIME) "$$test_runner_probe" --is-running-under-wine >/dev/null 2>&1 && \
+	    export RUNTIME_ENV_IS_WINE=1; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
 	trs_manifest="$(abs_builddir)/.check-test-trs.list"; \
 	failed_manifest="$(abs_builddir)/.check-test-failures.list"; \

@@ -90,6 +90,11 @@ static float
 sixel_builtin_psd_decode_cmyk_f32(float value);
 
 static int
+sixel_builtin_psd_should_try_multilayer_fallback(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info);
+
+static int
 sixel_builtin_psd_has_supported_signature(unsigned char const *buffer,
                                           int *pis_psb_alias)
 {
@@ -680,6 +685,88 @@ sixel_builtin_psd_compute_row_bytes(sixel_builtin_psd_info_t const *info,
     return 1;
 }
 
+static int
+sixel_builtin_psd_layer_fallback_supported_by_header(
+    sixel_builtin_psd_info_t const *info)
+{
+    if (info == NULL) {
+        return 0;
+    }
+    if (info->depth != 8u && info->depth != 16u && info->depth != 32u) {
+        return 0;
+    }
+    if ((info->color_mode == 3u && info->channels >= 3u) ||
+        ((info->color_mode == 1u || info->color_mode == 8u) &&
+         info->channels >= 1u) ||
+        (info->color_mode == 9u && info->channels >= 3u) ||
+        (info->color_mode == 4u && info->channels >= 4u) ||
+        (info->color_mode == 7u &&
+         (info->channels == 3u || info->channels == 4u))) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+sixel_builtin_psd_has_minimum_composite_payload(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info)
+{
+    size_t image_data_length;
+    size_t row_bytes;
+    size_t plane_bytes;
+    size_t total_bytes;
+    size_t table_entries;
+    size_t row_length_field_size;
+    size_t table_bytes;
+
+    image_data_length = 0u;
+    row_bytes = 0u;
+    plane_bytes = 0u;
+    total_bytes = 0u;
+    table_entries = 0u;
+    row_length_field_size = 0u;
+    table_bytes = 0u;
+
+    if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
+        return 0;
+    }
+    if (info->image_data_offset >= chunk->size) {
+        return 0;
+    }
+    image_data_length = chunk->size - info->image_data_offset;
+    if (image_data_length == 0u) {
+        return 0;
+    }
+    if (!sixel_builtin_psd_compute_row_bytes(info, &row_bytes) ||
+        row_bytes > SIZE_MAX / (size_t)info->height) {
+        return 0;
+    }
+    plane_bytes = row_bytes * (size_t)info->height;
+    if (info->compression == 0u) {
+        if (plane_bytes > 0u &&
+            (size_t)info->channels > SIZE_MAX / plane_bytes) {
+            return 0;
+        }
+        total_bytes = plane_bytes * (size_t)info->channels;
+        return total_bytes <= image_data_length;
+    }
+    if (info->compression == 1u) {
+        if ((size_t)info->height > SIZE_MAX / (size_t)info->channels) {
+            return 0;
+        }
+        table_entries = (size_t)info->height * (size_t)info->channels;
+        row_length_field_size = sixel_builtin_psd_rle_row_length_field_size(info);
+        if (row_length_field_size == 0u ||
+            table_entries > SIZE_MAX / row_length_field_size) {
+            return 0;
+        }
+        table_bytes = table_entries * row_length_field_size;
+        return table_bytes <= image_data_length;
+    }
+    return 1;
+}
+
 int
 sixel_builtin_validate_psd_info(
     sixel_chunk_t const *chunk,
@@ -813,24 +900,7 @@ sixel_builtin_validate_psd_info(
             return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
         }
         if (layer_state > 0) {
-            if (((info->depth == 8u ||
-                  info->depth == 16u ||
-                  info->depth == 32u) &&
-                 ((info->color_mode == 3u && info->channels >= 3u) ||
-                  ((info->color_mode == 1u || info->color_mode == 8u) &&
-                   info->channels >= 1u) ||
-                  (info->color_mode == 9u && info->channels >= 3u) ||
-                  (info->color_mode == 4u &&
-                   (info->depth == 8u ||
-                    info->depth == 16u ||
-                    info->depth == 32u) &&
-                   info->channels >= 4u) ||
-                  (info->color_mode == 7u &&
-                   ((info->channels == 3u) ||
-                    ((info->depth == 8u ||
-                      info->depth == 16u ||
-                      info->depth == 32u) &&
-                     info->channels == 4u)))))) {
+            if (sixel_builtin_psd_layer_fallback_supported_by_header(info)) {
                 allow_layer_fallback = 1;
             } else {
                 sixel_builtin_psd_set_message(
@@ -1052,11 +1122,32 @@ sixel_builtin_validate_psd_info(
             }
             total_bytes = plane_bytes * (size_t)info->channels;
             if (total_bytes > image_data_length) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: malformed raw channel stream (too short)");
-                return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
+                layer_state = sixel_builtin_psd_has_layer_records(chunk, info);
+                if (layer_state < 0) {
+                    if (layer_state == -2) {
+                        sixel_builtin_psd_set_message(
+                            message,
+                            message_size,
+                            sixel_builtin_psd_malformed_layer_info_length_message(info));
+                    } else {
+                        sixel_builtin_psd_set_message(
+                            message,
+                            message_size,
+                            sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                    }
+                    return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
+                }
+                if (layer_state > 0 &&
+                    sixel_builtin_psd_layer_fallback_supported_by_header(info) &&
+                    sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
+                    allow_layer_fallback = 1;
+                } else {
+                    sixel_builtin_psd_set_message(
+                        message,
+                        message_size,
+                        "builtin PSD: malformed raw channel stream (too short)");
+                    return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
+                }
             }
         } else if (info->compression == 1u) {
             if ((size_t)info->height > SIZE_MAX / (size_t)info->channels) {
@@ -1079,11 +1170,32 @@ sixel_builtin_validate_psd_info(
             }
             table_bytes = table_entries * row_length_field_size;
             if (table_bytes > image_data_length) {
-                sixel_builtin_psd_set_message(
-                    message,
-                    message_size,
-                    "builtin PSD: malformed RLE row table (too short)");
-                return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
+                layer_state = sixel_builtin_psd_has_layer_records(chunk, info);
+                if (layer_state < 0) {
+                    if (layer_state == -2) {
+                        sixel_builtin_psd_set_message(
+                            message,
+                            message_size,
+                            sixel_builtin_psd_malformed_layer_info_length_message(info));
+                    } else {
+                        sixel_builtin_psd_set_message(
+                            message,
+                            message_size,
+                            sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                    }
+                    return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
+                }
+                if (layer_state > 0 &&
+                    sixel_builtin_psd_layer_fallback_supported_by_header(info) &&
+                    sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
+                    allow_layer_fallback = 1;
+                } else {
+                    sixel_builtin_psd_set_message(
+                        message,
+                        message_size,
+                        "builtin PSD: malformed RLE row table (too short)");
+                    return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
+                }
             }
         }
     }
@@ -13617,7 +13729,8 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
     if (blend_with_bg != 0 && bgcolor == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (info->color_mode != 2u && info->image_data_offset >= chunk->size) {
+    if (info->color_mode != 2u &&
+        !sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -13806,7 +13919,7 @@ sixel_builtin_decode_psd_gray_or_duotone_16bit(
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -14019,7 +14132,7 @@ sixel_builtin_decode_psd_gray_or_duotone_32bit(
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -14527,50 +14640,53 @@ sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_8bit(
         rgbf32 = (float *)sixel_allocator_malloc(chunk->allocator,
                                                  pixel_count * 3u * sizeof(float));
         if (cmyk == NULL || rgbf32 == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            sixel_helper_set_additional_message(
-                "builtin PSD: sixel_allocator_malloc() failed.");
-            goto cleanup_layer_cmyk8;
-        }
-
-        for (i = 0u; i < pixel_count; ++i) {
-            cmyk[i * 4u + 0u] = sixel_builtin_psd_decode_cmyk_u8(plane_c[i]);
-            cmyk[i * 4u + 1u] = sixel_builtin_psd_decode_cmyk_u8(plane_m[i]);
-            cmyk[i * 4u + 2u] = sixel_builtin_psd_decode_cmyk_u8(plane_y[i]);
-            cmyk[i * 4u + 3u] = sixel_builtin_psd_decode_cmyk_u8(plane_k[i]);
-        }
-
-        {
-            sixel_cms_profile_t *src_profile;
-            sixel_cms_profile_t *dst_profile;
-            sixel_cms_transform_t *transform;
-
-            src_profile = NULL;
-            dst_profile = NULL;
-            transform = NULL;
-            src_profile = sixel_cms_open_profile_from_mem(icc_profile,
-                                                          icc_profile_length);
-            if (src_profile != NULL) {
-                dst_profile = sixel_cms_create_srgb_profile();
-                if (dst_profile != NULL) {
-                    transform = sixel_cms_create_transform(
-                        src_profile,
-                        SIXEL_CMS_PIXELFORMAT_CMYK_8,
-                        dst_profile,
-                        SIXEL_CMS_PIXELFORMAT_RGB_F32,
-                        SIXEL_CMS_TRANSFORM_DEFAULT);
-                }
-                if (transform != NULL &&
-                    sixel_cms_do_transform(transform,
-                                           cmyk,
-                                           rgbf32,
-                                           pixel_count)) {
-                    cms_applied = 1;
-                }
+            sixel_allocator_free(chunk->allocator, rgbf32);
+            sixel_allocator_free(chunk->allocator, cmyk);
+            rgbf32 = NULL;
+            cmyk = NULL;
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: skipping embedded CMYK ICC conversion due allocation failure");
+        } else {
+            for (i = 0u; i < pixel_count; ++i) {
+                cmyk[i * 4u + 0u] = sixel_builtin_psd_decode_cmyk_u8(plane_c[i]);
+                cmyk[i * 4u + 1u] = sixel_builtin_psd_decode_cmyk_u8(plane_m[i]);
+                cmyk[i * 4u + 2u] = sixel_builtin_psd_decode_cmyk_u8(plane_y[i]);
+                cmyk[i * 4u + 3u] = sixel_builtin_psd_decode_cmyk_u8(plane_k[i]);
             }
-            sixel_cms_delete_transform(transform);
-            sixel_cms_close_profile(dst_profile);
-            sixel_cms_close_profile(src_profile);
+
+            {
+                sixel_cms_profile_t *src_profile;
+                sixel_cms_profile_t *dst_profile;
+                sixel_cms_transform_t *transform;
+
+                src_profile = NULL;
+                dst_profile = NULL;
+                transform = NULL;
+                src_profile = sixel_cms_open_profile_from_mem(icc_profile,
+                                                              icc_profile_length);
+                if (src_profile != NULL) {
+                    dst_profile = sixel_cms_create_srgb_profile();
+                    if (dst_profile != NULL) {
+                        transform = sixel_cms_create_transform(
+                            src_profile,
+                            SIXEL_CMS_PIXELFORMAT_CMYK_8,
+                            dst_profile,
+                            SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                            SIXEL_CMS_TRANSFORM_DEFAULT);
+                    }
+                    if (transform != NULL &&
+                        sixel_cms_do_transform(transform,
+                                               cmyk,
+                                               rgbf32,
+                                               pixel_count)) {
+                        cms_applied = 1;
+                    }
+                }
+                sixel_cms_delete_transform(transform);
+                sixel_cms_close_profile(dst_profile);
+                sixel_cms_close_profile(src_profile);
+            }
         }
 
         if (cms_applied) {
@@ -14792,7 +14908,7 @@ sixel_builtin_decode_psd_cmyk_8bit(
     }
     if ((info->color_mode == 4u ||
          (info->color_mode == 7u && info->channels == 4u)) &&
-        info->image_data_offset >= chunk->size) {
+        !sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -14914,55 +15030,51 @@ sixel_builtin_decode_psd_cmyk_8bit(
         if (cmyk == NULL || rgbf32 == NULL) {
             sixel_allocator_free(chunk->allocator, rgbf32);
             sixel_allocator_free(chunk->allocator, cmyk);
-            sixel_allocator_free(chunk->allocator, transparent_mask);
-            sixel_allocator_free(chunk->allocator, plane_alpha);
-            sixel_allocator_free(chunk->allocator, plane_k);
-            sixel_allocator_free(chunk->allocator, plane_y);
-            sixel_allocator_free(chunk->allocator, plane_m);
-            sixel_allocator_free(chunk->allocator, plane_c);
-            sixel_helper_set_additional_message(
-                "builtin PSD: sixel_allocator_malloc() failed.");
-            return SIXEL_BAD_ALLOCATION;
-        }
-
-        for (i = 0u; i < pixel_count; ++i) {
-            cmyk[i * 4u + 0u] = sixel_builtin_psd_decode_cmyk_u8(plane_c[i]);
-            cmyk[i * 4u + 1u] = sixel_builtin_psd_decode_cmyk_u8(plane_m[i]);
-            cmyk[i * 4u + 2u] = sixel_builtin_psd_decode_cmyk_u8(plane_y[i]);
-            cmyk[i * 4u + 3u] = sixel_builtin_psd_decode_cmyk_u8(plane_k[i]);
-        }
-
-        {
-            sixel_cms_profile_t *src_profile;
-            sixel_cms_profile_t *dst_profile;
-            sixel_cms_transform_t *transform;
-
-            src_profile = NULL;
-            dst_profile = NULL;
-            transform = NULL;
-            src_profile = sixel_cms_open_profile_from_mem(icc_profile,
-                                                          icc_profile_length);
-            if (src_profile != NULL) {
-                dst_profile = sixel_cms_create_srgb_profile();
-                if (dst_profile != NULL) {
-                    transform = sixel_cms_create_transform(
-                        src_profile,
-                        SIXEL_CMS_PIXELFORMAT_CMYK_8,
-                        dst_profile,
-                        SIXEL_CMS_PIXELFORMAT_RGB_F32,
-                        SIXEL_CMS_TRANSFORM_DEFAULT);
-                }
-                if (transform != NULL &&
-                    sixel_cms_do_transform(transform,
-                                           cmyk,
-                                           rgbf32,
-                                           pixel_count)) {
-                    cms_applied = 1;
-                }
+            rgbf32 = NULL;
+            cmyk = NULL;
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: skipping embedded CMYK ICC conversion due allocation failure");
+        } else {
+            for (i = 0u; i < pixel_count; ++i) {
+                cmyk[i * 4u + 0u] = sixel_builtin_psd_decode_cmyk_u8(plane_c[i]);
+                cmyk[i * 4u + 1u] = sixel_builtin_psd_decode_cmyk_u8(plane_m[i]);
+                cmyk[i * 4u + 2u] = sixel_builtin_psd_decode_cmyk_u8(plane_y[i]);
+                cmyk[i * 4u + 3u] = sixel_builtin_psd_decode_cmyk_u8(plane_k[i]);
             }
-            sixel_cms_delete_transform(transform);
-            sixel_cms_close_profile(dst_profile);
-            sixel_cms_close_profile(src_profile);
+
+            {
+                sixel_cms_profile_t *src_profile;
+                sixel_cms_profile_t *dst_profile;
+                sixel_cms_transform_t *transform;
+
+                src_profile = NULL;
+                dst_profile = NULL;
+                transform = NULL;
+                src_profile = sixel_cms_open_profile_from_mem(icc_profile,
+                                                              icc_profile_length);
+                if (src_profile != NULL) {
+                    dst_profile = sixel_cms_create_srgb_profile();
+                    if (dst_profile != NULL) {
+                        transform = sixel_cms_create_transform(
+                            src_profile,
+                            SIXEL_CMS_PIXELFORMAT_CMYK_8,
+                            dst_profile,
+                            SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                            SIXEL_CMS_TRANSFORM_DEFAULT);
+                    }
+                    if (transform != NULL &&
+                        sixel_cms_do_transform(transform,
+                                               cmyk,
+                                               rgbf32,
+                                               pixel_count)) {
+                        cms_applied = 1;
+                    }
+                }
+                sixel_cms_delete_transform(transform);
+                sixel_cms_close_profile(dst_profile);
+                sixel_cms_close_profile(src_profile);
+            }
         }
         sixel_allocator_free(chunk->allocator, cmyk);
         cmyk = NULL;
@@ -15668,7 +15780,7 @@ sixel_builtin_decode_psd_cmyk_16bit(
          (info->color_mode == 7u &&
           info->channels == 4u)) &&
         info->channels >= 4u &&
-        info->image_data_offset >= chunk->size) {
+        !sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -18437,7 +18549,7 @@ sixel_builtin_decode_psd_rgb_8bit(
     if (pixel_count > SIZE_MAX / 3u) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -18686,7 +18798,7 @@ sixel_builtin_decode_psd_rgb_16bit(
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -18922,7 +19034,7 @@ sixel_builtin_decode_psd_rgb_32bit(
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -19283,7 +19395,7 @@ sixel_builtin_decode_psd_lab_8bit(
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -19514,7 +19626,7 @@ sixel_builtin_decode_psd_lab_16bit(
         pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -20240,7 +20352,7 @@ sixel_builtin_decode_psd_cmyk_32bit(
          (info->color_mode == 7u &&
           info->channels == 4u)) &&
         info->channels >= 4u &&
-        info->image_data_offset >= chunk->size) {
+        !sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
@@ -20524,7 +20636,7 @@ sixel_builtin_decode_psd_lab_32bit(
         pixel_count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    if (info->image_data_offset >= chunk->size) {
+    if (!sixel_builtin_psd_has_minimum_composite_payload(chunk, info)) {
         if (sixel_builtin_psd_should_try_multilayer_fallback(chunk, info)) {
             layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
                 chunk,
