@@ -1489,6 +1489,486 @@ run_builtin_loader_pnm_pam_unknown_long_key_strict_regression_test(void)
 }
 
 static int
+pnm_test_append_text(unsigned char *buffer,
+                     size_t capacity,
+                     size_t *offset,
+                     char const *text)
+{
+    size_t text_size;
+
+    text_size = 0u;
+    if (buffer == NULL || offset == NULL || text == NULL) {
+        return 0;
+    }
+    text_size = strlen(text);
+    if (capacity < *offset || text_size > capacity - *offset) {
+        return 0;
+    }
+    memcpy(buffer + *offset, text, text_size);
+    *offset += text_size;
+    return 1;
+}
+
+static int
+pnm_build_large_header_bytes_sample(unsigned char *buffer,
+                                    size_t capacity,
+                                    size_t *sample_size)
+{
+    static char const prefix[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "MAXVAL 255\n";
+    static char const suffix[] =
+        " 0\n"
+        "TUPLTYPE RGB\n"
+        "ENDHDR\n";
+    size_t offset;
+    size_t key_length;
+    size_t i;
+
+    offset = 0u;
+    key_length = 66000u;
+    i = 0u;
+
+    if (buffer == NULL || sample_size == NULL) {
+        return 0;
+    }
+
+    if (!pnm_test_append_text(buffer, capacity, &offset, prefix)) {
+        return 0;
+    }
+    if (capacity < offset || key_length > capacity - offset) {
+        return 0;
+    }
+    for (i = 0u; i < key_length; ++i) {
+        buffer[offset++] = 'L';
+    }
+    if (!pnm_test_append_text(buffer, capacity, &offset, suffix)) {
+        return 0;
+    }
+    if (capacity < offset || 3u > capacity - offset) {
+        return 0;
+    }
+    buffer[offset + 0u] = 10u;
+    buffer[offset + 1u] = 20u;
+    buffer[offset + 2u] = 30u;
+    offset += 3u;
+
+    *sample_size = offset;
+    return 1;
+}
+
+static int
+pnm_build_large_header_lines_sample(unsigned char *buffer,
+                                    size_t capacity,
+                                    size_t *sample_size)
+{
+    static char const prefix[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "MAXVAL 255\n";
+    static char const unknown_line[] = "U 0\n";
+    static char const suffix[] =
+        "TUPLTYPE RGB\n"
+        "ENDHDR\n";
+    size_t offset;
+    size_t unknown_lines;
+    size_t i;
+
+    offset = 0u;
+    unknown_lines = 1030u;
+    i = 0u;
+
+    if (buffer == NULL || sample_size == NULL) {
+        return 0;
+    }
+
+    if (!pnm_test_append_text(buffer, capacity, &offset, prefix)) {
+        return 0;
+    }
+    for (i = 0u; i < unknown_lines; ++i) {
+        if (!pnm_test_append_text(buffer, capacity, &offset, unknown_line)) {
+            return 0;
+        }
+    }
+    if (!pnm_test_append_text(buffer, capacity, &offset, suffix)) {
+        return 0;
+    }
+    if (capacity < offset || 3u > capacity - offset) {
+        return 0;
+    }
+    buffer[offset + 0u] = 10u;
+    buffer[offset + 1u] = 20u;
+    buffer[offset + 2u] = 30u;
+    offset += 3u;
+
+    *sample_size = offset;
+    return 1;
+}
+
+static int
+run_builtin_loader_pnm_pam_large_header_bytes_strict_test(void)
+{
+    unsigned char sample[70000];
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    char const *message;
+    size_t sample_size;
+    int result;
+
+    memset(sample, 0, sizeof(sample));
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    message = NULL;
+    sample_size = 0u;
+    result = 1;
+
+    if (!pnm_build_large_header_bytes_sample(sample,
+                                             sizeof(sample),
+                                             &sample_size)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes strict: "
+                "failed to build sample\n");
+        return 1;
+    }
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes strict: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam large header bytes strict",
+        sample,
+        sample_size,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes strict: "
+                "unexpected success\n");
+        return 1;
+    }
+    message = sixel_helper_get_additional_message();
+    if (message == NULL || strstr(message, "PAM header is too large") == NULL) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes strict: "
+                "unexpected message (%s)\n",
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_large_header_bytes_compat_test(void)
+{
+    unsigned char sample[70000];
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    size_t sample_size;
+    int result;
+
+    memset(sample, 0, sizeof(sample));
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    sample_size = 0u;
+    result = 1;
+
+    if (!pnm_build_large_header_bytes_sample(sample,
+                                             sizeof(sample),
+                                             &sample_size)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "failed to build sample\n");
+        return 1;
+    }
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER", "1") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam large header bytes compat",
+        sample,
+        sample_size,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "reset env failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.width != 1 || probe.height != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.pixels_u8[0] != 10u ||
+        probe.pixels_u8[1] != 20u ||
+        probe.pixels_u8[2] != 30u) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header bytes compat: "
+                "RGB mismatch (%u,%u,%u)\n",
+                (unsigned int)probe.pixels_u8[0],
+                (unsigned int)probe.pixels_u8[1],
+                (unsigned int)probe.pixels_u8[2]);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_large_header_lines_strict_test(void)
+{
+    unsigned char sample[12000];
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    char const *message;
+    size_t sample_size;
+    int result;
+
+    memset(sample, 0, sizeof(sample));
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    message = NULL;
+    sample_size = 0u;
+    result = 1;
+
+    if (!pnm_build_large_header_lines_sample(sample,
+                                             sizeof(sample),
+                                             &sample_size)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines strict: "
+                "failed to build sample\n");
+        return 1;
+    }
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines strict: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam large header lines strict",
+        sample,
+        sample_size,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines strict: "
+                "unexpected success\n");
+        return 1;
+    }
+    message = sixel_helper_get_additional_message();
+    if (message == NULL || strstr(message, "PAM header is too large") == NULL) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines strict: "
+                "unexpected message (%s)\n",
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_large_header_lines_compat_test(void)
+{
+    unsigned char sample[12000];
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    size_t sample_size;
+    int result;
+
+    memset(sample, 0, sizeof(sample));
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    sample_size = 0u;
+    result = 1;
+
+    if (!pnm_build_large_header_lines_sample(sample,
+                                             sizeof(sample),
+                                             &sample_size)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "failed to build sample\n");
+        return 1;
+    }
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER", "1") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "setenv failed\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam large header lines compat",
+        sample,
+        sample_size,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (loader_test_setenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "reset env failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.width != 1 || probe.height != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.pixels_u8[0] != 10u ||
+        probe.pixels_u8[1] != 20u ||
+        probe.pixels_u8[2] != 30u) {
+        fprintf(stderr,
+                "builtin loader pnm pam large header lines compat: "
+                "RGB mismatch (%u,%u,%u)\n",
+                (unsigned int)probe.pixels_u8[0],
+                (unsigned int)probe.pixels_u8[1],
+                (unsigned int)probe.pixels_u8[2]);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_pnm_ascii_truncated_strict_test(void)
 {
     static unsigned char const truncated_ascii_p3[] = {
@@ -2469,7 +2949,8 @@ run_builtin_loader_pnm_pam_dup_required_keys_remain_strict_test(void)
         return 1;
     }
     message = sixel_helper_get_additional_message();
-    if (message == NULL || strstr(message, "duplicate PAM HEIGHT key") == NULL) {
+    if (message == NULL ||
+        strstr(message, "duplicate PAM HEIGHT key") == NULL) {
         fprintf(stderr,
                 "builtin loader pnm pam duplicate height strict: "
                 "unexpected message (%s)\n",
@@ -3183,6 +3664,14 @@ run_builtin_loader_test(void)
           run_builtin_loader_pnm_pam_unknown_long_key_compat_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_LONG_KEY_STRICT_REGRESSION",
           run_builtin_loader_pnm_pam_unknown_long_key_strict_regression_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_LARGE_HEADER_BYTES_STRICT",
+          run_builtin_loader_pnm_pam_large_header_bytes_strict_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_LARGE_HEADER_BYTES_COMPAT",
+          run_builtin_loader_pnm_pam_large_header_bytes_compat_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_LARGE_HEADER_LINES_STRICT",
+          run_builtin_loader_pnm_pam_large_header_lines_strict_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_LARGE_HEADER_LINES_COMPAT",
+          run_builtin_loader_pnm_pam_large_header_lines_compat_test },
         { "SIXEL_TEST_PNM_NUMERIC_ASCII_TRUNCATED_STRICT",
           run_builtin_loader_pnm_ascii_truncated_strict_test },
         { "SIXEL_TEST_PNM_NUMERIC_ASCII_TRUNCATED_COMPAT",

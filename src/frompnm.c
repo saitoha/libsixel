@@ -56,6 +56,8 @@
 #define PNM_MAX_HEIGHT  (1 << 16)
 #define PNM_MAX_DEPTH   65535
 #define PNM_TOKEN_MAX   64
+#define PNM_PAM_HEADER_MAX_BYTES  (64u * 1024u)
+#define PNM_PAM_HEADER_MAX_LINES  1024u
 
 typedef enum pnm_tuple_type {
     PNM_TUPLE_UNSPECIFIED = 0,
@@ -386,6 +388,18 @@ pnm_allow_endhdr_trailing_tokens(void)
 }
 
 static int
+pnm_allow_large_header(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER");
+    if (value != NULL && strcmp(value, "1") == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
 pnm_set_duplicate_required_key_message(char const *field)
 {
     char message[128];
@@ -580,8 +594,12 @@ pnm_parse_header(unsigned char *buffer,
     int tuple_type_known;
     int allow_duplicate_required_keys;
     int allow_endhdr_trailing_tokens;
+    int allow_large_header;
     unsigned char *key_begin;
+    unsigned char *pam_header_begin;
     size_t key_length;
+    size_t pam_header_bytes;
+    size_t pam_header_lines;
     pnm_tuple_type_t tuple_type;
 
     p = NULL;
@@ -590,8 +608,11 @@ pnm_parse_header(unsigned char *buffer,
     line_end = NULL;
     line_cursor = NULL;
     key_begin = NULL;
+    pam_header_begin = NULL;
     memset(token, 0, sizeof(token));
     key_length = 0u;
+    pam_header_bytes = 0u;
+    pam_header_lines = 0u;
     width_set = 0;
     height_set = 0;
     depth_set = 0;
@@ -601,6 +622,7 @@ pnm_parse_header(unsigned char *buffer,
     tuple_type_known = 0;
     allow_duplicate_required_keys = 0;
     allow_endhdr_trailing_tokens = 0;
+    allow_large_header = 0;
     tuple_type = PNM_TUPLE_UNSPECIFIED;
 
     if (buffer == NULL || header == NULL || length < 3) {
@@ -621,6 +643,7 @@ pnm_parse_header(unsigned char *buffer,
     end = buffer + length;
     allow_duplicate_required_keys = pnm_allow_duplicate_required_keys();
     allow_endhdr_trailing_tokens = pnm_allow_endhdr_trailing_tokens();
+    allow_large_header = pnm_allow_large_header();
 
     switch (header->magic) {
     case '1':
@@ -656,7 +679,17 @@ pnm_parse_header(unsigned char *buffer,
         break;
 
     case '7':
+        pam_header_begin = p;
         while (pnm_read_line(&p, end, &line_begin, &line_end)) {
+            pam_header_lines++;
+            pam_header_bytes = (size_t)(p - pam_header_begin);
+            if (!allow_large_header &&
+                (pam_header_bytes > PNM_PAM_HEADER_MAX_BYTES ||
+                 pam_header_lines > PNM_PAM_HEADER_MAX_LINES)) {
+                sixel_helper_set_additional_message(
+                    "load_pnm: PAM header is too large.");
+                return 0;
+            }
             line_cursor = line_begin;
             key_begin = NULL;
             key_length = 0u;

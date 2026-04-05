@@ -1292,6 +1292,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "Unset rejects unexpected tokens after ENDHDR."
     },
     {
+        "SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER",
+        "compatibility toggle for oversized PAM headers in P7.\n"
+        "Set to 1 to allow headers larger than 64KiB or 1024 lines.\n"
+        "Unset rejects oversized PAM headers in strict mode."
+    },
+    {
         "SIXEL_CMS_RENDERING_INTENT",
         "legacy alias for SIXEL_LOADER_CMS_RENDERING_INTENT. Used only when\n"
         "SIXEL_LOADER_CMS_RENDERING_INTENT is unset."
