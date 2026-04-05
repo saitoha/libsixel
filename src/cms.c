@@ -1615,7 +1615,8 @@ sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
     for (i = transform->builtin_a2b_slot_count;
          i < SIXEL_ICC_A2B_SLOT_COUNT;
          ++i) {
-        transform->builtin_a2b_slots[i] = i;
+        /* i is bounded by SIXEL_ICC_A2B_SLOT_COUNT (0..2). */
+        transform->builtin_a2b_slots[i] = (unsigned int)i;
     }
 
     return transform;
