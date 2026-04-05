@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify builtin PSD decode reaches psd-tools baseline for layers-minimal/pattern-fill.psd.
-# Known gap is tracked as TODO/XFAIL until psd-tools parity is implemented.
+# Verify builtin PSD decode reaches psd-tools baseline for
+# layers-minimal/pattern-fill.psd.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -32,14 +32,14 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 : "${trace_output}"
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "layers-minimal/pattern-fill decode failed # TODO psd-tools parity gap"
+    echo "not ok" 1 - "layers-minimal/pattern-fill decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "layers-minimal/pattern-fill decode fell below MS-SSIM ${lsqa_floor} # TODO psd-tools parity gap"
+    echo "not ok" 1 - "layers-minimal/pattern-fill decode fell below MS-SSIM ${lsqa_floor}"
     exit 0
 }
 

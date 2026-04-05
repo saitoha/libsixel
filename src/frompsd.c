@@ -1491,6 +1491,8 @@ typedef struct sixel_builtin_psd_layer_record {
     float fill_gradient_stop_rgb[SIXEL_BUILTIN_PSD_FILL_STOP_MAX][3];
     float fill_gradient_stop_alpha[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
     unsigned int fill_pattern_tile;
+    int fill_pattern_from_resource;
+    char fill_pattern_id[128];
     float fill_pattern_fg_rgb[3];
     float fill_pattern_bg_rgb[3];
     float vector_mask_left_norm;
@@ -2080,6 +2082,68 @@ sixel_builtin_psd_descriptor_skip_value(
         return 1;
     }
     return 0;
+}
+
+static int
+sixel_builtin_psd_descriptor_read_text_ascii(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    char *out_text,
+    size_t out_text_size)
+{
+    size_t cursor;
+    size_t char_count;
+    size_t total_bytes;
+    size_t i;
+    size_t out_index;
+    unsigned char high;
+    unsigned char low;
+
+    cursor = 0u;
+    char_count = 0u;
+    total_bytes = 0u;
+    i = 0u;
+    out_index = 0u;
+    high = 0u;
+    low = 0u;
+    if (data == NULL || pcursor == NULL) {
+        return 0;
+    }
+    if (out_text != NULL && out_text_size > 0u) {
+        out_text[0] = '\0';
+    }
+    cursor = *pcursor;
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    char_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    if (char_count > (data_length - cursor) / 2u) {
+        return 0;
+    }
+    total_bytes = char_count * 2u;
+    for (i = 0u; i < char_count; ++i) {
+        high = data[cursor + i * 2u];
+        low = data[cursor + i * 2u + 1u];
+        if (high == 0u && low == 0u) {
+            break;
+        }
+        if (out_text != NULL && out_text_size > 0u &&
+            out_index + 1u < out_text_size) {
+            if (high == 0u) {
+                out_text[out_index++] = (char)low;
+            } else {
+                out_text[out_index++] = '?';
+            }
+        }
+    }
+    if (out_text != NULL && out_text_size > 0u) {
+        out_text[out_index] = '\0';
+    }
+    cursor += total_bytes;
+    *pcursor = cursor;
+    return 1;
 }
 
 static int
@@ -3537,6 +3601,93 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload_loose(
 }
 
 static int
+sixel_builtin_psd_parse_ptfl_pattern_ref_object(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    char out_pattern_id[128],
+    int *phas_pattern_id)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key[5];
+    char type[5];
+    char pattern_id[128];
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    type[0] = '\0';
+    type[1] = '\0';
+    type[2] = '\0';
+    type[3] = '\0';
+    type[4] = '\0';
+    pattern_id[0] = '\0';
+    if (data == NULL || pcursor == NULL || phas_pattern_id == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          data_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                data_length,
+                                                &cursor,
+                                                key)) {
+        return 0;
+    }
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "Idnt", 4u) == 0 &&
+            memcmp(type, "TEXT", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_read_text_ascii(
+                    data,
+                    data_length,
+                    &cursor,
+                    pattern_id,
+                    sizeof(pattern_id))) {
+                return 0;
+            }
+            *phas_pattern_id = 1;
+            if (out_pattern_id != NULL) {
+                strncpy(out_pattern_id, pattern_id, 127u);
+                out_pattern_id[127] = '\0';
+            }
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     data_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_ptfl_descriptor_payload(
     unsigned char const *data,
     size_t key_length,
@@ -3549,6 +3700,8 @@ sixel_builtin_psd_parse_ptfl_descriptor_payload(
     char type[5];
     int has_fg;
     int has_bg;
+    int has_pattern_ref;
+    int has_pattern_id;
     unsigned int tile;
 
     cursor = 0u;
@@ -3566,6 +3719,8 @@ sixel_builtin_psd_parse_ptfl_descriptor_payload(
     type[4] = '\0';
     has_fg = 0;
     has_bg = 0;
+    has_pattern_ref = 0;
+    has_pattern_id = 0;
     tile = 4u;
     if (data == NULL || layer == NULL) {
         return 0;
@@ -3637,6 +3792,19 @@ sixel_builtin_psd_parse_ptfl_descriptor_payload(
             has_bg = 1;
             continue;
         }
+        if (memcmp(key, "Ptrn", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_parse_ptfl_pattern_ref_object(
+                    data,
+                    key_length,
+                    &cursor,
+                    layer->fill_pattern_id,
+                    &has_pattern_id)) {
+                return 0;
+            }
+            has_pattern_ref = 1;
+            continue;
+        }
         if (!sixel_builtin_psd_descriptor_skip_value(data,
                                                      key_length,
                                                      &cursor,
@@ -3645,11 +3813,20 @@ sixel_builtin_psd_parse_ptfl_descriptor_payload(
             return 0;
         }
     }
-    if (has_fg == 0 || has_bg == 0) {
-        return 0;
-    }
     if (tile < 1u) {
         tile = 1u;
+    }
+    if (has_pattern_ref != 0) {
+        layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_PTFL;
+        layer->fill_pattern_tile = tile;
+        layer->fill_pattern_from_resource = 1;
+        if (has_pattern_id == 0) {
+            layer->fill_pattern_id[0] = '\0';
+        }
+        return 1;
+    }
+    if (has_fg == 0 || has_bg == 0) {
+        return 0;
     }
     layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_PTFL;
     layer->fill_pattern_tile = tile;
@@ -8872,8 +9049,18 @@ sixel_builtin_psd_parse_fill_payload(
     size_t key_length,
     sixel_builtin_psd_layer_record_t *layer)
 {
+    size_t descriptor_offset;
+
+    descriptor_offset = 0u;
     if (key == NULL || data == NULL || layer == NULL) {
         return 0;
+    }
+    if (key_length > 4u && sixel_builtin_read_u32be(data) == 16u) {
+        descriptor_offset = 4u;
+    } else if (key_length > 8u &&
+               sixel_builtin_read_u32be(data) == 1u &&
+               sixel_builtin_read_u32be(data + 4u) == 16u) {
+        descriptor_offset = 8u;
     }
     if (sixel_builtin_psd_parse_fill_payload_sxfl(key,
                                                   data,
@@ -8887,6 +9074,14 @@ sixel_builtin_psd_parse_fill_payload(
                                                             layer)) {
             return 1;
         }
+        if (descriptor_offset > 0u &&
+            descriptor_offset < key_length &&
+            sixel_builtin_psd_parse_soco_descriptor_payload(
+                data + descriptor_offset,
+                key_length - descriptor_offset,
+                layer)) {
+            return 1;
+        }
         return sixel_builtin_psd_parse_soco_descriptor_payload_loose(data,
                                                                      key_length,
                                                                      layer);
@@ -8896,10 +9091,27 @@ sixel_builtin_psd_parse_fill_payload(
                                                             layer)) {
             return 1;
         }
+        if (descriptor_offset > 0u &&
+            descriptor_offset < key_length &&
+            sixel_builtin_psd_parse_gdfl_descriptor_payload(
+                data + descriptor_offset,
+                key_length - descriptor_offset,
+                layer)) {
+            return 1;
+        }
         return sixel_builtin_psd_parse_gdfl_descriptor_payload_loose(data,
                                                                      key_length,
                                                                      layer);
     } else if (memcmp(key, "PtFl", 4u) == 0) {
+        if (descriptor_offset > 0u &&
+            descriptor_offset < key_length) {
+            if (sixel_builtin_psd_parse_ptfl_descriptor_payload(
+                    data + descriptor_offset,
+                    key_length - descriptor_offset,
+                    layer)) {
+                return 1;
+            }
+        }
         return sixel_builtin_psd_parse_ptfl_descriptor_payload(data,
                                                                key_length,
                                                                layer);
@@ -9858,6 +10070,8 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->fill_gradient_reverse = 0;
     layer->fill_gradient_stop_count = 0u;
     layer->fill_pattern_tile = 4u;
+    layer->fill_pattern_from_resource = 0;
+    layer->fill_pattern_id[0] = '\0';
     layer->fill_pattern_fg_rgb[0] = 1.0f;
     layer->fill_pattern_fg_rgb[1] = 1.0f;
     layer->fill_pattern_fg_rgb[2] = 1.0f;
@@ -10408,6 +10622,7 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
     size_t i;
     int should_prefer;
     int force_merged;
+    int force_layer_fallback;
 
     status = SIXEL_FALSE;
     layer_info_offset = 0u;
@@ -10417,6 +10632,7 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
     i = 0u;
     should_prefer = 0;
     force_merged = 0;
+    force_layer_fallback = 0;
     sixel_builtin_psd_layer_model_init(&model);
 
     if (chunk == NULL || info == NULL || chunk->allocator == NULL ||
@@ -10452,6 +10668,22 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
             sixel_builtin_psd_layer_record_t const *layer;
 
             layer = &model.layers[i];
+            if (layer->visible != 0 &&
+                layer->has_fill_payload != 0 &&
+                layer->has_tysh_payload == 0 &&
+                !sixel_builtin_psd_layer_has_decodable_pixel_channels(
+                    info,
+                    layer) &&
+                (layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_PTFL ||
+                 layer->has_malformed_fill_payload != 0)) {
+                /*
+                 * Pattern-fill-oriented no-pixel layers are only represented in
+                 * layer fallback today. Preferring merged here can collapse the
+                 * output into near-solid composites.
+                 */
+                force_layer_fallback = 1;
+                break;
+            }
             if (layer->has_layer_effects != 0 &&
                 layer->has_fill_payload == 0 &&
                 layer->has_tysh_payload == 0 &&
@@ -10464,6 +10696,10 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                 break;
             }
         }
+        if (force_layer_fallback != 0) {
+            should_prefer = 1;
+            goto done;
+        }
         if (force_merged != 0) {
             should_prefer = 0;
             goto done;
@@ -10475,15 +10711,15 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
         } else if (model.layer_count == 1u) {
             sixel_builtin_psd_layer_record_t const *layer;
 
-                layer = &model.layers[0];
-                if (memcmp(layer->blend_key, "norm", 4u) != 0 ||
-                    layer->opacity != 255u ||
-                    layer->clipping != 0u ||
-                    (layer->has_fill_payload != 0 &&
-                     layer->has_malformed_fill_payload == 0) ||
-                    layer->has_tysh_payload != 0 ||
-                    layer->has_vector_mask != 0 ||
-                    layer->has_layer_effects != 0) {
+            layer = &model.layers[0];
+            if (memcmp(layer->blend_key, "norm", 4u) != 0 ||
+                layer->opacity != 255u ||
+                layer->clipping != 0u ||
+                (layer->has_fill_payload != 0 &&
+                 layer->has_malformed_fill_payload == 0) ||
+                layer->has_tysh_payload != 0 ||
+                layer->has_vector_mask != 0 ||
+                layer->has_layer_effects != 0) {
                 should_prefer = 1;
             }
         }
@@ -11217,6 +11453,514 @@ sixel_builtin_psd_fill_gradient_t(
     return sixel_builtin_psd_clamp01(t);
 }
 
+static int
+sixel_builtin_psd_decode_layer_channel_8bit(
+    unsigned char const *data,
+    size_t length,
+    unsigned int width,
+    unsigned int height,
+    size_t row_length_field_size,
+    unsigned char *dst);
+
+static int
+sixel_builtin_psd_read_pascal_string_padded1(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    char *out_text,
+    size_t out_text_size)
+{
+    size_t cursor;
+    size_t byte_count;
+    size_t copy_count;
+
+    cursor = 0u;
+    byte_count = 0u;
+    copy_count = 0u;
+    if (data == NULL || pcursor == NULL) {
+        return 0;
+    }
+    if (out_text != NULL && out_text_size > 0u) {
+        out_text[0] = '\0';
+    }
+    cursor = *pcursor;
+    if (cursor + 1u > data_length) {
+        return 0;
+    }
+    byte_count = (size_t)data[cursor];
+    ++cursor;
+    if (byte_count > data_length - cursor) {
+        return 0;
+    }
+    if (out_text != NULL && out_text_size > 0u) {
+        copy_count = byte_count;
+        if (copy_count >= out_text_size) {
+            copy_count = out_text_size - 1u;
+        }
+        if (copy_count > 0u) {
+            memcpy(out_text, data + cursor, copy_count);
+        }
+        out_text[copy_count] = '\0';
+    }
+    cursor += byte_count;
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_decode_pattern_channel_8bit(
+    sixel_chunk_t const *chunk,
+    unsigned int compression,
+    unsigned char const *payload,
+    size_t payload_length,
+    unsigned int width,
+    unsigned int height,
+    unsigned char *dst)
+{
+    unsigned char *buffer;
+    size_t buffer_length;
+    int decode_status;
+
+    buffer = NULL;
+    buffer_length = 0u;
+    decode_status = 0;
+    if (chunk == NULL || chunk->allocator == NULL || payload == NULL ||
+        dst == NULL || width == 0u || height == 0u) {
+        return 0;
+    }
+    if (compression == 0u) {
+        size_t pixel_count;
+        pixel_count = (size_t)width * (size_t)height;
+        if (payload_length < pixel_count) {
+            return 0;
+        }
+        memcpy(dst, payload, pixel_count);
+        return 1;
+    }
+    if (compression != 1u) {
+        return 0;
+    }
+    if (payload_length > SIZE_MAX - 2u) {
+        return 0;
+    }
+    buffer_length = payload_length + 2u;
+    buffer = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                     buffer_length);
+    if (buffer == NULL) {
+        return 0;
+    }
+    sixel_builtin_write_u16be(buffer, compression);
+    memcpy(buffer + 2u, payload, payload_length);
+    decode_status = sixel_builtin_psd_decode_layer_channel_8bit(buffer,
+                                                                buffer_length,
+                                                                width,
+                                                                height,
+                                                                2u,
+                                                                dst);
+    sixel_allocator_free(chunk->allocator, buffer);
+    return decode_status == 1 ? 1 : 0;
+}
+
+static int
+sixel_builtin_psd_parse_pattern_entry_rgb8(
+    unsigned char const *entry,
+    size_t entry_length,
+    char const *pattern_id_filter,
+    sixel_chunk_t const *chunk,
+    unsigned char **ppattern_rgb,
+    unsigned int *pwidth,
+    unsigned int *pheight)
+{
+    size_t cursor;
+    unsigned int version;
+    unsigned int image_mode;
+    size_t vm_list_length;
+    size_t vm_list_end;
+    unsigned int rect_top;
+    unsigned int rect_left;
+    unsigned int rect_bottom;
+    unsigned int rect_right;
+    unsigned int width;
+    unsigned int height;
+    unsigned int channel_count;
+    unsigned int total_channels;
+    unsigned int channel_index;
+    unsigned int is_written;
+    unsigned int channel_record_length;
+    unsigned int channel_depth;
+    unsigned int channel_rect_top;
+    unsigned int channel_rect_left;
+    unsigned int channel_rect_bottom;
+    unsigned int channel_rect_right;
+    unsigned int channel_pixel_depth;
+    unsigned int channel_compression;
+    size_t channel_payload_length;
+    size_t pixel_count;
+    unsigned char pattern_id[128];
+    unsigned char *plane_r;
+    unsigned char *plane_g;
+    unsigned char *plane_b;
+    unsigned char *pattern_rgb;
+    size_t i;
+
+    cursor = 0u;
+    version = 0u;
+    image_mode = 0u;
+    vm_list_length = 0u;
+    vm_list_end = 0u;
+    rect_top = 0u;
+    rect_left = 0u;
+    rect_bottom = 0u;
+    rect_right = 0u;
+    width = 0u;
+    height = 0u;
+    channel_count = 0u;
+    total_channels = 0u;
+    channel_index = 0u;
+    is_written = 0u;
+    channel_record_length = 0u;
+    channel_depth = 0u;
+    channel_rect_top = 0u;
+    channel_rect_left = 0u;
+    channel_rect_bottom = 0u;
+    channel_rect_right = 0u;
+    channel_pixel_depth = 0u;
+    channel_compression = 0u;
+    channel_payload_length = 0u;
+    pixel_count = 0u;
+    memset(pattern_id, 0, sizeof(pattern_id));
+    plane_r = NULL;
+    plane_g = NULL;
+    plane_b = NULL;
+    pattern_rgb = NULL;
+    i = 0u;
+    if (entry == NULL || chunk == NULL || chunk->allocator == NULL ||
+        ppattern_rgb == NULL || pwidth == NULL || pheight == NULL) {
+        return 0;
+    }
+    if (entry_length < 4u) {
+        return 0;
+    }
+    version = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    if (version != 1u || cursor + 4u > entry_length) {
+        return 0;
+    }
+    image_mode = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    if (image_mode != 3u || cursor + 4u > entry_length) {
+        return 0;
+    }
+    cursor += 4u;  /* point */
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(entry,
+                                                          entry_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_read_pascal_string_padded1(entry,
+                                                      entry_length,
+                                                      &cursor,
+                                                      (char *)pattern_id,
+                                                      sizeof(pattern_id))) {
+        return 0;
+    }
+    if (pattern_id_filter != NULL && pattern_id_filter[0] != '\0' &&
+        strcmp((char const *)pattern_id, pattern_id_filter) != 0) {
+        return 0;
+    }
+    if (cursor + 8u > entry_length) {
+        return 0;
+    }
+    version = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    if (version != 3u) {
+        return 0;
+    }
+    vm_list_length = sixel_builtin_read_u32be_size(entry + cursor);
+    cursor += 4u;
+    if (vm_list_length > entry_length - cursor) {
+        return 0;
+    }
+    vm_list_end = cursor + vm_list_length;
+    if (cursor + 20u > vm_list_end) {
+        return 0;
+    }
+    rect_top = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    rect_left = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    rect_bottom = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    rect_right = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    channel_count = sixel_builtin_read_u32be(entry + cursor);
+    cursor += 4u;
+    (void)rect_top;
+    (void)rect_left;
+    if (rect_right == 0u || rect_bottom == 0u) {
+        return 0;
+    }
+    width = rect_right;
+    height = rect_bottom;
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return 0;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count == 0u || channel_count > UINT_MAX - 2u) {
+        return 0;
+    }
+    total_channels = channel_count + 2u;
+    plane_r = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                      pixel_count);
+    plane_g = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                      pixel_count);
+    plane_b = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                      pixel_count);
+    if (plane_r == NULL || plane_g == NULL || plane_b == NULL) {
+        sixel_allocator_free(chunk->allocator, plane_r);
+        sixel_allocator_free(chunk->allocator, plane_g);
+        sixel_allocator_free(chunk->allocator, plane_b);
+        return 0;
+    }
+    memset(plane_r, 0, pixel_count);
+    memset(plane_g, 0, pixel_count);
+    memset(plane_b, 0, pixel_count);
+
+    for (channel_index = 0u;
+         channel_index < total_channels && cursor + 4u <= vm_list_end;
+         ++channel_index) {
+        is_written = sixel_builtin_read_u32be(entry + cursor);
+        cursor += 4u;
+        if (is_written == 0u) {
+            continue;
+        }
+        if (cursor + 4u > vm_list_end) {
+            goto pattern_fail;
+        }
+        channel_record_length = sixel_builtin_read_u32be(entry + cursor);
+        cursor += 4u;
+        if (channel_record_length == 0u) {
+            continue;
+        }
+        if (channel_record_length < 23u || cursor + 23u > vm_list_end) {
+            goto pattern_fail;
+        }
+        channel_depth = sixel_builtin_read_u32be(entry + cursor);
+        cursor += 4u;
+        channel_rect_top = sixel_builtin_read_u32be(entry + cursor);
+        cursor += 4u;
+        channel_rect_left = sixel_builtin_read_u32be(entry + cursor);
+        cursor += 4u;
+        channel_rect_bottom = sixel_builtin_read_u32be(entry + cursor);
+        cursor += 4u;
+        channel_rect_right = sixel_builtin_read_u32be(entry + cursor);
+        cursor += 4u;
+        channel_pixel_depth = sixel_builtin_read_u16be(entry + cursor);
+        cursor += 2u;
+        channel_compression = entry[cursor];
+        ++cursor;
+        (void)channel_rect_top;
+        (void)channel_rect_left;
+        (void)channel_rect_bottom;
+        (void)channel_rect_right;
+        channel_payload_length = (size_t)channel_record_length - 23u;
+        if (channel_payload_length > vm_list_end - cursor) {
+            goto pattern_fail;
+        }
+        if (channel_index < 3u &&
+            channel_depth == 8u &&
+            channel_pixel_depth == 8u) {
+            unsigned char *plane;
+            plane = NULL;
+            if (channel_index == 0u) {
+                plane = plane_r;
+            } else if (channel_index == 1u) {
+                plane = plane_g;
+            } else {
+                plane = plane_b;
+            }
+            if (!sixel_builtin_psd_decode_pattern_channel_8bit(
+                    chunk,
+                    channel_compression,
+                    entry + cursor,
+                    channel_payload_length,
+                    width,
+                    height,
+                    plane)) {
+                goto pattern_fail;
+            }
+        }
+        cursor += channel_payload_length;
+    }
+    if (cursor > vm_list_end) {
+        goto pattern_fail;
+    }
+    if (pixel_count > SIZE_MAX / 3u) {
+        goto pattern_fail;
+    }
+    pattern_rgb = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                          pixel_count * 3u);
+    if (pattern_rgb == NULL) {
+        goto pattern_fail;
+    }
+    for (i = 0u; i < pixel_count; ++i) {
+        pattern_rgb[i * 3u + 0u] = plane_r[i];
+        pattern_rgb[i * 3u + 1u] = plane_g[i];
+        pattern_rgb[i * 3u + 2u] = plane_b[i];
+    }
+    sixel_allocator_free(chunk->allocator, plane_r);
+    sixel_allocator_free(chunk->allocator, plane_g);
+    sixel_allocator_free(chunk->allocator, plane_b);
+    *ppattern_rgb = pattern_rgb;
+    *pwidth = width;
+    *pheight = height;
+    return 1;
+
+pattern_fail:
+    sixel_allocator_free(chunk->allocator, pattern_rgb);
+    sixel_allocator_free(chunk->allocator, plane_r);
+    sixel_allocator_free(chunk->allocator, plane_g);
+    sixel_allocator_free(chunk->allocator, plane_b);
+    return 0;
+}
+
+static int
+sixel_builtin_psd_parse_patterns_block_rgb8(
+    unsigned char const *data,
+    size_t data_length,
+    char const *pattern_id_filter,
+    sixel_chunk_t const *chunk,
+    unsigned char **ppattern_rgb,
+    unsigned int *pwidth,
+    unsigned int *pheight)
+{
+    size_t cursor;
+    size_t pattern_length;
+
+    cursor = 0u;
+    pattern_length = 0u;
+    if (data == NULL || chunk == NULL || ppattern_rgb == NULL ||
+        pwidth == NULL || pheight == NULL) {
+        return 0;
+    }
+    while (cursor + 4u <= data_length) {
+        pattern_length = sixel_builtin_read_u32be_size(data + cursor);
+        cursor += 4u;
+        if (pattern_length > data_length - cursor) {
+            return 0;
+        }
+        if (sixel_builtin_psd_parse_pattern_entry_rgb8(
+                data + cursor,
+                pattern_length,
+                pattern_id_filter,
+                chunk,
+                ppattern_rgb,
+                pwidth,
+                pheight)) {
+            return 1;
+        }
+        cursor += pattern_length;
+        while ((cursor & 3u) != 0u && cursor < data_length) {
+            ++cursor;
+        }
+    }
+    return 0;
+}
+
+static int
+sixel_builtin_psd_extract_ptfl_pattern_rgb8(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    char const *pattern_id_filter,
+    unsigned char **ppattern_rgb,
+    unsigned int *pwidth,
+    unsigned int *pheight)
+{
+    size_t layer_info_offset;
+    size_t layer_info_length;
+    size_t layer_info_end;
+    size_t section_end;
+    size_t cursor;
+    size_t global_mask_length;
+    size_t block_header_size;
+    size_t block_length;
+    unsigned char const *buffer;
+
+    layer_info_offset = 0u;
+    layer_info_length = 0u;
+    layer_info_end = 0u;
+    section_end = 0u;
+    cursor = 0u;
+    global_mask_length = 0u;
+    block_header_size = 0u;
+    block_length = 0u;
+    buffer = NULL;
+    if (chunk == NULL || info == NULL || chunk->buffer == NULL ||
+        ppattern_rgb == NULL || pwidth == NULL || pheight == NULL) {
+        return 0;
+    }
+    if (!sixel_builtin_psd_get_layer_info_window(chunk,
+                                                  info,
+                                                  &layer_info_offset,
+                                                  &layer_info_length,
+                                                  &layer_info_end,
+                                                  0)) {
+        return 0;
+    }
+    (void)layer_info_offset;
+    (void)layer_info_length;
+    section_end = info->layer_mask_offset + info->layer_mask_length;
+    if (layer_info_end + 4u > section_end) {
+        return 0;
+    }
+    buffer = chunk->buffer;
+    cursor = layer_info_end;
+    global_mask_length = sixel_builtin_read_u32be_size(buffer + cursor);
+    cursor += 4u;
+    if (global_mask_length > section_end - cursor) {
+        return 0;
+    }
+    cursor += global_mask_length;
+    while (cursor + 12u <= section_end) {
+        if (memcmp(buffer + cursor, "8BIM", 4u) != 0 &&
+            memcmp(buffer + cursor, "8B64", 4u) != 0) {
+            return 0;
+        }
+        if (memcmp(buffer + cursor, "8B64", 4u) == 0) {
+            if (cursor + 16u > section_end ||
+                !sixel_builtin_read_u64be_size_checked(buffer + cursor + 8u,
+                                                       &block_length)) {
+                return 0;
+            }
+            block_header_size = 16u;
+        } else {
+            block_length = sixel_builtin_read_u32be_size(buffer + cursor + 8u);
+            block_header_size = 12u;
+        }
+        if (block_length > section_end - cursor - block_header_size) {
+            return 0;
+        }
+        cursor += block_header_size;
+        if (memcmp(buffer + cursor - block_header_size + 4u, "Patt", 4u) == 0 ||
+            memcmp(buffer + cursor - block_header_size + 4u, "Pat2", 4u) == 0 ||
+            memcmp(buffer + cursor - block_header_size + 4u, "Pat3", 4u) == 0) {
+            if (sixel_builtin_psd_parse_patterns_block_rgb8(
+                    buffer + cursor,
+                    block_length,
+                    pattern_id_filter,
+                    chunk,
+                    ppattern_rgb,
+                    pwidth,
+                    pheight)) {
+                return 1;
+            }
+        }
+        cursor += block_length;
+        if ((block_length & 1u) != 0u && cursor < section_end) {
+            ++cursor;
+        }
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_builtin_psd_generate_non_pixel_fill_layer(
     sixel_chunk_t const *chunk,
@@ -11236,6 +11980,10 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
     unsigned int tile;
     int apply_layer_alpha_channel;
     int apply_layer_mask_channels;
+    unsigned char *pattern_rgb;
+    unsigned int pattern_width;
+    unsigned int pattern_height;
+    int has_pattern_resource;
 
     pixel_count = 0u;
     i = 0u;
@@ -11249,6 +11997,10 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
     tile = 1u;
     apply_layer_alpha_channel = 1;
     apply_layer_mask_channels = 1;
+    pattern_rgb = NULL;
+    pattern_width = 0u;
+    pattern_height = 0u;
+    has_pattern_resource = 0;
     if (chunk == NULL || info == NULL || layer == NULL || out_layer == NULL ||
         chunk->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -11403,6 +12155,43 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
         }
         break;
     case SIXEL_BUILTIN_PSD_FILL_PTFL:
+        if (layer->fill_pattern_from_resource != 0) {
+            has_pattern_resource = sixel_builtin_psd_extract_ptfl_pattern_rgb8(
+                chunk,
+                info,
+                layer->fill_pattern_id,
+                &pattern_rgb,
+                &pattern_width,
+                &pattern_height);
+        }
+        if (has_pattern_resource != 0 &&
+            pattern_rgb != NULL &&
+            pattern_width > 0u &&
+            pattern_height > 0u) {
+            for (y = 0u; y < layer->height; ++y) {
+                for (x = 0u; x < layer->width; ++x) {
+                    size_t dst_idx;
+                    size_t src_idx;
+
+                    dst_idx = (size_t)y * (size_t)layer->width + (size_t)x;
+                    src_idx = ((size_t)(y % pattern_height) *
+                               (size_t)pattern_width +
+                               (size_t)(x % pattern_width)) * 3u;
+                    rgb[dst_idx * 3u + 0u] =
+                        sixel_builtin_psd_gamma_to_linear(
+                            (float)pattern_rgb[src_idx + 0u] / 255.0f);
+                    rgb[dst_idx * 3u + 1u] =
+                        sixel_builtin_psd_gamma_to_linear(
+                            (float)pattern_rgb[src_idx + 1u] / 255.0f);
+                    rgb[dst_idx * 3u + 2u] =
+                        sixel_builtin_psd_gamma_to_linear(
+                            (float)pattern_rgb[src_idx + 2u] / 255.0f);
+                }
+            }
+            sixel_allocator_free(chunk->allocator, pattern_rgb);
+            pattern_rgb = NULL;
+            break;
+        }
         tile = layer->fill_pattern_tile;
         if (tile < 1u) {
             tile = 1u;
@@ -11423,10 +12212,12 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
         }
         break;
     default:
+        sixel_allocator_free(chunk->allocator, pattern_rgb);
         sixel_allocator_free(chunk->allocator, rgb);
         sixel_allocator_free(chunk->allocator, alpha);
         return SIXEL_BAD_INPUT;
     }
+    sixel_allocator_free(chunk->allocator, pattern_rgb);
 
     for (i = 0u; i < pixel_count; ++i) {
         alpha[i] = sixel_builtin_psd_clamp_alpha_float32(alpha[i]);
@@ -12089,7 +12880,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int has_pixel_channels;
         int prefer_non_pixel_fill;
         int apply_clipping;
-
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         composite_layer = layer;
@@ -12111,29 +12901,30 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "builtin PSD: ignoring non-pixel payload in layer fallback");
             if (layer->has_fill_payload == 0 &&
                 layer->has_tysh_payload == 0) {
-                sixel_trace_topic_message(
-                    "psd_decode",
-                    "builtin PSD: skipping non-pixel metadata layer in layer fallback");
-                if (layer->clipping == 0u) {
-                    clip_alpha_valid = 0;
-                }
-                continue;
-            }
-            if (layer->width == 0u || layer->height == 0u) {
-                if (layer->has_fill_payload == 0) {
-                    if (layer->clipping == 0u) {
-                        clip_alpha_valid = 0;
-                    }
+                if (!has_pixel_channels) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: skipping non-pixel metadata layer in layer fallback");
                     continue;
                 }
+            }
+            if (layer->width == 0u || layer->height == 0u) {
+                    if (layer->has_fill_payload == 0) {
+                        continue;
+                    }
                 synthetic_layer = *layer;
                 if (!sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
                         info,
                         &synthetic_layer)) {
-                    if (layer->clipping == 0u) {
-                        clip_alpha_valid = 0;
+                    if (info->width == 0u || info->height == 0u) {
+                        continue;
                     }
-                    continue;
+                    synthetic_layer.left = 0;
+                    synthetic_layer.top = 0;
+                    synthetic_layer.right = (int32_t)info->width;
+                    synthetic_layer.bottom = (int32_t)info->height;
+                    synthetic_layer.width = info->width;
+                    synthetic_layer.height = info->height;
                 }
             }
             if (!has_pixel_channels || prefer_non_pixel_fill != 0) {
@@ -12165,9 +12956,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                             !sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
                                 info,
                                 &synthetic_layer)) {
-                            if (layer->clipping == 0u) {
-                                clip_alpha_valid = 0;
-                            }
                             continue;
                         }
                         if (layer->tysh_stroke_opacity_present != 0) {
@@ -12215,9 +13003,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         !sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
                             info,
                             &synthetic_layer)) {
-                        if (layer->clipping == 0u) {
-                            clip_alpha_valid = 0;
-                        }
                         continue;
                     }
                     if (layer->tysh_fill_opacity_present != 0) {
@@ -12278,9 +13063,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         "builtin PSD: malformed non-pixel fill payload; "
                         "skipping layer");
                 }
-                if (layer->clipping == 0u) {
-                    clip_alpha_valid = 0;
-                }
                 continue;
             }
         }
@@ -12328,15 +13110,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             sixel_trace_topic_message(
                 "psd_decode",
                 "builtin PSD: skipping hidden layer in layer fallback");
-            if (layer->clipping == 0u) {
-                clip_alpha_valid = 0;
-            }
             continue;
         }
         if (composite_layer->width == 0u || composite_layer->height == 0u) {
-            if (layer->clipping == 0u) {
-                clip_alpha_valid = 0;
-            }
             continue;
         }
         if (apply_clipping != 0 && clip_alpha_valid == 0) {
@@ -12351,9 +13127,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "psd_decode",
                 "builtin PSD: skipping layer without decodable pixel channels "
                 "in layer fallback");
-            if (layer->clipping == 0u) {
-                clip_alpha_valid = 0;
-            }
             continue;
         }
         if (synthetic_fill == 0) {
