@@ -3672,8 +3672,11 @@ sixel_builtin_psd_parse_ptfl_pattern_ref_object(
             }
             *phas_pattern_id = 1;
             if (out_pattern_id != NULL) {
-                pattern_id_length =
-                    strnlen(pattern_id, sizeof(pattern_id) - 1u);
+                pattern_id_length = 0u;
+                while (pattern_id_length + 1u < sizeof(pattern_id) &&
+                       pattern_id[pattern_id_length] != '\0') {
+                    ++pattern_id_length;
+                }
                 memcpy(out_pattern_id, pattern_id, pattern_id_length);
                 out_pattern_id[pattern_id_length] = '\0';
             }

@@ -624,7 +624,11 @@ sixel_option_report_unknown_suboption_key(
     char *buffer,
     size_t buffer_size)
 {
-    char candidates[512];
+    /*
+     * Keep this list small enough to fit the 512-byte diagnostic buffer
+     * together with the fixed message text on strict GCC builds.
+     */
+    char candidates[384];
     int written;
 
     candidates[0] = '\0';
