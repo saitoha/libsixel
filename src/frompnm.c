@@ -679,16 +679,25 @@ pnm_parse_header(unsigned char *buffer,
         break;
 
     case '7':
+        /*
+         * Count consumed PAM header area from the first byte immediately
+         * after "P7" through the ENDHDR line terminator.
+         */
         pam_header_begin = p;
         while (pnm_read_line(&p, end, &line_begin, &line_end)) {
             pam_header_lines++;
             pam_header_bytes = (size_t)(p - pam_header_begin);
-            if (!allow_large_header &&
-                (pam_header_bytes > PNM_PAM_HEADER_MAX_BYTES ||
-                 pam_header_lines > PNM_PAM_HEADER_MAX_LINES)) {
-                sixel_helper_set_additional_message(
-                    "load_pnm: PAM header is too large.");
-                return 0;
+            if (!allow_large_header) {
+                if (pam_header_bytes > PNM_PAM_HEADER_MAX_BYTES) {
+                    sixel_helper_set_additional_message(
+                        "load_pnm: PAM header bytes exceed limit.");
+                    return 0;
+                }
+                if (pam_header_lines > PNM_PAM_HEADER_MAX_LINES) {
+                    sixel_helper_set_additional_message(
+                        "load_pnm: PAM header lines exceed limit.");
+                    return 0;
+                }
             }
             line_cursor = line_begin;
             key_begin = NULL;
