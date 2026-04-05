@@ -85,6 +85,35 @@ sixel_kmedoids_test_pam_polish_cost(double const *points,
                                     unsigned int *iterations_out,
                                     sixel_allocator_t *allocator);
 
+SIXELSTATUS
+sixel_kmedoids_test_apply_clarans_guided_delta(
+    double const *weights,
+    unsigned int point_count,
+    unsigned int k,
+    unsigned int const *nearest_slot_before,
+    double const *nearest_dist_before,
+    unsigned char const *flags_before,
+    unsigned int const *nearest_slot_after,
+    double const *nearest_dist_after,
+    unsigned char const *flags_after,
+    unsigned int hot_point_limit,
+    unsigned int hot_slot_limit,
+    unsigned int const *changed_points,
+    unsigned int changed_count,
+    unsigned int old_medoid,
+    unsigned int new_medoid,
+    unsigned int *hot_points_out,
+    unsigned int *hot_point_count_out,
+    unsigned int *hot_slots_out,
+    unsigned int *hot_slot_count_out,
+    sixel_allocator_t *allocator);
+
+void
+sixel_kmedoids_test_reset_clarans_guided_full_build_count(void);
+
+unsigned int
+sixel_kmedoids_test_get_clarans_guided_full_build_count(void);
+
 static unsigned char const g_test_pixels_rgb[TEST_PIXEL_COUNT * 3u] = {
     255u, 0u,   0u,
     255u, 0u,   0u,
@@ -417,6 +446,7 @@ test_run_subset_case(sixel_kmedoids_algo_t algo,
     ncolors = 0u;
 
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        fprintf(stderr, "delta-eq: allocator_new failed\n");
         return 0;
     }
 
@@ -1259,6 +1289,7 @@ test_run_clarans_guided_tiebreak_case(void)
         &hot_slot_count_a,
         allocator);
     if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "delta-eq: build_guided failed status=%d\n", status);
         sixel_allocator_unref(allocator);
         return 0;
     }
@@ -1802,6 +1833,282 @@ test_run_clarans_delta_consistency_case(void)
     return 1;
 }
 
+static int
+test_run_clarans_guided_delta_equivalence_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned int const point_count = 10u;
+    unsigned int const k = 3u;
+    unsigned int const hot_point_limit = 5u;
+    unsigned int const hot_slot_limit = 2u;
+    double weights[10u];
+    unsigned char flags_before[10u];
+    unsigned char flags_after[10u];
+    unsigned int nearest_slot_before[10u];
+    unsigned int nearest_slot_after[10u];
+    double nearest_dist_before[10u];
+    double nearest_dist_after[10u];
+    unsigned int changed_points[10u];
+    unsigned int hot_points_full[10u];
+    unsigned int hot_points_delta[10u];
+    unsigned int hot_slots_full[3u];
+    unsigned int hot_slots_delta[3u];
+    unsigned int hot_point_count_full;
+    unsigned int hot_point_count_delta;
+    unsigned int hot_slot_count_full;
+    unsigned int hot_slot_count_delta;
+    unsigned int changed_count;
+    unsigned int index;
+    SIXELSTATUS status;
+
+    allocator = NULL;
+    hot_point_count_full = 0u;
+    hot_point_count_delta = 0u;
+    hot_slot_count_full = 0u;
+    hot_slot_count_delta = 0u;
+    changed_count = 5u;
+    index = 0u;
+    status = SIXEL_FALSE;
+
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    for (index = 0u; index < point_count; ++index) {
+        weights[index] = (double)(index + 1u);
+    }
+
+    nearest_slot_before[0u] = 0u;
+    nearest_slot_before[1u] = 0u;
+    nearest_slot_before[2u] = 1u;
+    nearest_slot_before[3u] = 1u;
+    nearest_slot_before[4u] = 1u;
+    nearest_slot_before[5u] = 2u;
+    nearest_slot_before[6u] = 2u;
+    nearest_slot_before[7u] = 2u;
+    nearest_slot_before[8u] = 0u;
+    nearest_slot_before[9u] = 2u;
+
+    nearest_dist_before[0u] = 0.0;
+    nearest_dist_before[1u] = 1.0;
+    nearest_dist_before[2u] = 2.0;
+    nearest_dist_before[3u] = 0.0;
+    nearest_dist_before[4u] = 5.0;
+    nearest_dist_before[5u] = 1.0;
+    nearest_dist_before[6u] = 0.0;
+    nearest_dist_before[7u] = 0.1;
+    nearest_dist_before[8u] = 3.0;
+    nearest_dist_before[9u] = 2.0;
+
+    nearest_slot_after[0u] = 0u;
+    nearest_slot_after[1u] = 0u;
+    nearest_slot_after[2u] = 1u;
+    nearest_slot_after[3u] = 0u;
+    nearest_slot_after[4u] = 1u;
+    nearest_slot_after[5u] = 2u;
+    nearest_slot_after[6u] = 2u;
+    nearest_slot_after[7u] = 1u;
+    nearest_slot_after[8u] = 0u;
+    nearest_slot_after[9u] = 1u;
+
+    nearest_dist_after[0u] = 0.0;
+    nearest_dist_after[1u] = 1.0;
+    nearest_dist_after[2u] = 1.5;
+    nearest_dist_after[3u] = 4.0;
+    nearest_dist_after[4u] = 2.0;
+    nearest_dist_after[5u] = 1.0;
+    nearest_dist_after[6u] = 0.0;
+    nearest_dist_after[7u] = 0.0;
+    nearest_dist_after[8u] = 3.0;
+    nearest_dist_after[9u] = 2.5;
+
+    flags_before[0u] = 1u;
+    flags_before[1u] = 0u;
+    flags_before[2u] = 0u;
+    flags_before[3u] = 1u;
+    flags_before[4u] = 0u;
+    flags_before[5u] = 0u;
+    flags_before[6u] = 1u;
+    flags_before[7u] = 0u;
+    flags_before[8u] = 0u;
+    flags_before[9u] = 0u;
+
+    flags_after[0u] = 1u;
+    flags_after[1u] = 0u;
+    flags_after[2u] = 0u;
+    flags_after[3u] = 0u;
+    flags_after[4u] = 0u;
+    flags_after[5u] = 0u;
+    flags_after[6u] = 1u;
+    flags_after[7u] = 1u;
+    flags_after[8u] = 0u;
+    flags_after[9u] = 0u;
+
+    changed_points[0u] = 2u;
+    changed_points[1u] = 3u;
+    changed_points[2u] = 4u;
+    changed_points[3u] = 7u;
+    changed_points[4u] = 9u;
+
+    status = sixel_kmedoids_test_build_clarans_guided_sets(
+        weights,
+        point_count,
+        k,
+        nearest_slot_after,
+        nearest_dist_after,
+        flags_after,
+        hot_point_limit,
+        hot_slot_limit,
+        hot_points_full,
+        &hot_point_count_full,
+        hot_slots_full,
+        &hot_slot_count_full,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    status = sixel_kmedoids_test_apply_clarans_guided_delta(
+        weights,
+        point_count,
+        k,
+        nearest_slot_before,
+        nearest_dist_before,
+        flags_before,
+        nearest_slot_after,
+        nearest_dist_after,
+        flags_after,
+        hot_point_limit,
+        hot_slot_limit,
+        changed_points,
+        changed_count,
+        3u,
+        7u,
+        hot_points_delta,
+        &hot_point_count_delta,
+        hot_slots_delta,
+        &hot_slot_count_delta,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    if (hot_point_count_full != hot_point_count_delta
+            || hot_slot_count_full != hot_slot_count_delta) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    for (index = 0u; index < hot_point_count_full; ++index) {
+        if (hot_points_full[index] != hot_points_delta[index]) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+    }
+    for (index = 0u; index < hot_slot_count_full; ++index) {
+        if (hot_slots_full[index] != hot_slots_delta[index]) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+    }
+
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
+static int
+test_run_clarans_guided_reject_no_rebuild_case(void)
+{
+    sixel_allocator_t *allocator;
+    sixel_dither_t *dither;
+    unsigned char pixels[8u * 3u];
+    unsigned int index;
+    unsigned int local_count;
+    unsigned int rebuild_count;
+    SIXELSTATUS status;
+    int ok;
+
+    allocator = NULL;
+    dither = NULL;
+    index = 0u;
+    local_count = 3u;
+    rebuild_count = 0u;
+    status = SIXEL_FALSE;
+    ok = 0;
+
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    for (index = 0u; index < 8u; ++index) {
+        pixels[index * 3u + 0u] = 64u;
+        pixels[index * 3u + 1u] = 96u;
+        pixels[index * 3u + 2u] = 128u;
+    }
+
+    status = sixel_dither_new(&dither, 2, allocator);
+    if (SIXEL_FAILED(status) || dither == NULL) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    dither->quantize_model = SIXEL_QUANTIZE_MODEL_KMEDOIDS;
+    dither->final_merge_mode = SIXEL_FINAL_MERGE_NONE;
+    dither->prefer_float32 = 0;
+
+    sixel_set_kmedoids_algo_override(1, SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS);
+    sixel_set_kmedoids_seed_override(1, 123u);
+    sixel_set_kmedoids_clarans_local_override(1, local_count);
+    sixel_set_kmedoids_clarans_neighbors_override(1, 96u);
+    sixel_kmedoids_test_reset_clarans_guided_full_build_count();
+
+    status = sixel_dither_initialize(dither,
+                                     pixels,
+                                     8,
+                                     1,
+                                     SIXEL_PIXELFORMAT_RGB888,
+                                     SIXEL_LARGE_AUTO,
+                                     SIXEL_REP_AUTO,
+                                     SIXEL_QUALITY_AUTO);
+    rebuild_count = sixel_kmedoids_test_get_clarans_guided_full_build_count();
+    if (SIXEL_SUCCEEDED(status) && rebuild_count == local_count) {
+        ok = 1;
+    }
+
+    sixel_set_kmedoids_clarans_neighbors_override(0, 0u);
+    sixel_set_kmedoids_clarans_local_override(0, 0u);
+    sixel_set_kmedoids_seed_override(0, 1u);
+    sixel_set_kmedoids_algo_override(0, SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
+
+    sixel_dither_unref(dither);
+    sixel_allocator_unref(allocator);
+    return ok;
+}
+
+static int
+test_run_clarans_guided_seed_reproducibility_case(void)
+{
+    int ok;
+
+    ok = 0;
+    sixel_set_kmedoids_clarans_local_override(1, 4u);
+    sixel_set_kmedoids_clarans_neighbors_override(1, 120u);
+
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)) {
+        goto end;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)) {
+        goto end;
+    }
+    ok = 1;
+
+end:
+    sixel_set_kmedoids_clarans_neighbors_override(0, 0u);
+    sixel_set_kmedoids_clarans_local_override(0, 0u);
+    return ok;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -1890,6 +2197,15 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "pam-polish-monotonic") == 0) {
         return test_run_pam_polish_monotonic_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-guided-delta-equivalence") == 0) {
+        return test_run_clarans_guided_delta_equivalence_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-guided-reject-no-rebuild") == 0) {
+        return test_run_clarans_guided_reject_no_rebuild_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-guided-seed-reproducibility") == 0) {
+        return test_run_clarans_guided_seed_reproducibility_case() ? 0 : 1;
     }
 
     return 1;
