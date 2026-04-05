@@ -9899,6 +9899,70 @@ sixel_builtin_psd_scale_layer_opacity(
 }
 
 static int
+sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
+    sixel_builtin_psd_info_t const *info,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    float left_norm;
+    float top_norm;
+    float right_norm;
+    float bottom_norm;
+    int left;
+    int top;
+    int right;
+    int bottom;
+
+    left_norm = 0.0f;
+    top_norm = 0.0f;
+    right_norm = 0.0f;
+    bottom_norm = 0.0f;
+    left = 0;
+    top = 0;
+    right = 0;
+    bottom = 0;
+    if (info == NULL || layer == NULL ||
+        layer->has_vector_mask_bbox == 0 ||
+        info->width == 0u || info->height == 0u) {
+        return 0;
+    }
+
+    left_norm = sixel_builtin_psd_clamp01(layer->vector_mask_left_norm);
+    top_norm = sixel_builtin_psd_clamp01(layer->vector_mask_top_norm);
+    right_norm = sixel_builtin_psd_clamp01(layer->vector_mask_right_norm);
+    bottom_norm = sixel_builtin_psd_clamp01(layer->vector_mask_bottom_norm);
+    if (right_norm <= left_norm || bottom_norm <= top_norm) {
+        return 0;
+    }
+    left = (int)floorf(left_norm * (float)info->width);
+    top = (int)floorf(top_norm * (float)info->height);
+    right = (int)ceilf(right_norm * (float)info->width);
+    bottom = (int)ceilf(bottom_norm * (float)info->height);
+    if (left < 0) {
+        left = 0;
+    }
+    if (top < 0) {
+        top = 0;
+    }
+    if (right > (int)info->width) {
+        right = (int)info->width;
+    }
+    if (bottom > (int)info->height) {
+        bottom = (int)info->height;
+    }
+    if (right <= left || bottom <= top) {
+        return 0;
+    }
+
+    layer->left = left;
+    layer->top = top;
+    layer->right = right;
+    layer->bottom = bottom;
+    layer->width = (unsigned int)(right - left);
+    layer->height = (unsigned int)(bottom - top);
+    return 1;
+}
+
+static int
 sixel_builtin_psd_is_layer_hidden(unsigned char flags)
 {
     /* Layer record flag bit1: 1 means hidden. */
@@ -10343,6 +10407,7 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
     int16_t layer_count_raw;
     size_t i;
     int should_prefer;
+    int force_merged;
 
     status = SIXEL_FALSE;
     layer_info_offset = 0u;
@@ -10351,6 +10416,7 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
     layer_count_raw = 0;
     i = 0u;
     should_prefer = 0;
+    force_merged = 0;
     sixel_builtin_psd_layer_model_init(&model);
 
     if (chunk == NULL || info == NULL || chunk->allocator == NULL ||
@@ -10382,6 +10448,26 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
 
     status = sixel_builtin_psd_parse_layer_model(chunk, info, &model);
     if (SIXEL_SUCCEEDED(status) && model.layer_count > 0u) {
+        for (i = 0u; i < model.layer_count; ++i) {
+            sixel_builtin_psd_layer_record_t const *layer;
+
+            layer = &model.layers[i];
+            if (layer->has_layer_effects != 0 &&
+                layer->has_fill_payload == 0 &&
+                layer->has_tysh_payload == 0 &&
+                !sixel_builtin_psd_layer_has_decodable_pixel_channels(
+                    info,
+                    layer)) {
+                /* Group/effect-only layers are not reconstructed faithfully in
+                 * fallback yet; merged composite is usually closer here. */
+                force_merged = 1;
+                break;
+            }
+        }
+        if (force_merged != 0) {
+            should_prefer = 0;
+            goto done;
+        }
         if (model.layer_count > 1u &&
             info->width == 1u &&
             info->height == 1u) {
@@ -10389,16 +10475,15 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
         } else if (model.layer_count == 1u) {
             sixel_builtin_psd_layer_record_t const *layer;
 
-            layer = &model.layers[0];
-            if (memcmp(layer->blend_key, "norm", 4u) != 0 ||
-                layer->opacity != 255u ||
-                layer->clipping != 0u ||
-                layer->has_non_pixel_payload != 0 ||
-                layer->has_fill_payload != 0 ||
-                layer->has_tysh_payload != 0 ||
-                layer->has_vector_mask != 0 ||
-                layer->has_layer_effects != 0 ||
-                layer->has_knockout != 0) {
+                layer = &model.layers[0];
+                if (memcmp(layer->blend_key, "norm", 4u) != 0 ||
+                    layer->opacity != 255u ||
+                    layer->clipping != 0u ||
+                    (layer->has_fill_payload != 0 &&
+                     layer->has_malformed_fill_payload == 0) ||
+                    layer->has_tysh_payload != 0 ||
+                    layer->has_vector_mask != 0 ||
+                    layer->has_layer_effects != 0) {
                 should_prefer = 1;
             }
         }
@@ -10420,6 +10505,7 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
             }
         }
     }
+done:
     sixel_builtin_psd_layer_model_destroy(chunk->allocator, &model);
     return should_prefer;
 }
@@ -11928,6 +12014,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int preserve_alpha;
     int cms_applied;
     int has_transparency;
+    int step;
+    int limit;
     int i;
     SIXELSTATUS status;
 
@@ -11940,6 +12028,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     preserve_alpha = 0;
     cms_applied = 0;
     has_transparency = 0;
+    step = -1;
+    limit = -1;
     i = 0;
     status = SIXEL_FALSE;
 
@@ -11965,6 +12055,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         status = SIXEL_BAD_INPUT;
         goto cleanup;
     }
+    step = -1;
+    i = (int)model.layer_count - 1;
+    limit = -1;
 
     canvas_rgb_premul = (float *)sixel_allocator_malloc(
         chunk->allocator,
@@ -11985,9 +12078,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     memset(canvas_alpha, 0, pixel_count * sizeof(float));
     memset(clip_alpha_map, 0, pixel_count * sizeof(float));
 
-    for (i = (int)model.layer_count - 1; i >= 0; --i) {
+    for (; i != limit; i += step) {
         sixel_builtin_psd_layer_record_t const *layer;
         sixel_builtin_psd_layer_record_t synthetic_layer;
+        sixel_builtin_psd_layer_record_t const *composite_layer;
         sixel_builtin_psd_layer_buffers_t src_layer;
         sixel_builtin_psd_layer_blend_mode_t blend_mode;
         int synthetic_fill;
@@ -11998,6 +12092,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
 
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
+        composite_layer = layer;
         src_layer.rgb_linear = NULL;
         src_layer.alpha = NULL;
         src_layer.pixel_count = 0u;
@@ -12010,7 +12105,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             (layer->has_fill_payload != 0 && layer->has_tysh_payload == 0)
             ? 1 : 0;
         apply_clipping = layer->clipping != 0u ? 1 : 0;
-
         if (layer->has_non_pixel_payload != 0) {
             sixel_trace_topic_message(
                 "psd_decode",
@@ -12024,6 +12118,23 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     clip_alpha_valid = 0;
                 }
                 continue;
+            }
+            if (layer->width == 0u || layer->height == 0u) {
+                if (layer->has_fill_payload == 0) {
+                    if (layer->clipping == 0u) {
+                        clip_alpha_valid = 0;
+                    }
+                    continue;
+                }
+                synthetic_layer = *layer;
+                if (!sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
+                        info,
+                        &synthetic_layer)) {
+                    if (layer->clipping == 0u) {
+                        clip_alpha_valid = 0;
+                    }
+                    continue;
+                }
             }
             if (!has_pixel_channels || prefer_non_pixel_fill != 0) {
                 if (layer->tysh_fill_opacity_malformed != 0) {
@@ -12041,11 +12152,24 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     if (layer->tysh_stroke_flag_present != 0 &&
                         layer->tysh_stroke_flag_enabled != 0 &&
                         layer->tysh_stroke_color_present != 0) {
-                        synthetic_layer = *layer;
+                        if (synthetic_layer.width == 0u ||
+                            synthetic_layer.height == 0u) {
+                            synthetic_layer = *layer;
+                        }
                         synthetic_layer.fill_kind = SIXEL_BUILTIN_PSD_FILL_SOCO;
                         synthetic_layer.fill_solid_rgb[0] = layer->tysh_stroke_rgb[0];
                         synthetic_layer.fill_solid_rgb[1] = layer->tysh_stroke_rgb[1];
                         synthetic_layer.fill_solid_rgb[2] = layer->tysh_stroke_rgb[2];
+                        if ((synthetic_layer.width == 0u ||
+                             synthetic_layer.height == 0u) &&
+                            !sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
+                                info,
+                                &synthetic_layer)) {
+                            if (layer->clipping == 0u) {
+                                clip_alpha_valid = 0;
+                            }
+                            continue;
+                        }
                         if (layer->tysh_stroke_opacity_present != 0) {
                             sixel_builtin_psd_scale_layer_opacity(
                                 &synthetic_layer,
@@ -12061,9 +12185,19 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                             &synthetic_layer,
                             &src_layer);
                         if (SIXEL_FAILED(status)) {
+                            char const *reason;
+                            reason = sixel_helper_get_additional_message();
+                            sixel_trace_topic_message(
+                                "psd_decode",
+                                "builtin PSD: layer fallback failed in "
+                                "stroke synthetic fill generation");
+                            if (reason != NULL && reason[0] != '\0') {
+                                sixel_trace_topic_message("psd_decode", reason);
+                            }
                             goto cleanup;
                         }
                         synthetic_fill = 1;
+                        composite_layer = &synthetic_layer;
                     } else {
                         sixel_trace_topic_message(
                             "psd_decode",
@@ -12072,7 +12206,20 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         fillflag_skip = 1;
                     }
                     } else if (layer->fill_kind != SIXEL_BUILTIN_PSD_FILL_NONE) {
-                    synthetic_layer = *layer;
+                    if (synthetic_layer.width == 0u ||
+                        synthetic_layer.height == 0u) {
+                        synthetic_layer = *layer;
+                    }
+                    if ((synthetic_layer.width == 0u ||
+                         synthetic_layer.height == 0u) &&
+                        !sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
+                            info,
+                            &synthetic_layer)) {
+                        if (layer->clipping == 0u) {
+                            clip_alpha_valid = 0;
+                        }
+                        continue;
+                    }
                     if (layer->tysh_fill_opacity_present != 0) {
                         sixel_builtin_psd_scale_layer_opacity(
                             &synthetic_layer,
@@ -12107,9 +12254,19 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         &synthetic_layer,
                         &src_layer);
                     if (SIXEL_FAILED(status)) {
+                        char const *reason;
+                        reason = sixel_helper_get_additional_message();
+                        sixel_trace_topic_message(
+                            "psd_decode",
+                            "builtin PSD: layer fallback failed in "
+                            "fill synthetic generation");
+                        if (reason != NULL && reason[0] != '\0') {
+                            sixel_trace_topic_message("psd_decode", reason);
+                        }
                         goto cleanup;
                     }
                     synthetic_fill = 1;
+                    composite_layer = &synthetic_layer;
                 }
             }
             if (synthetic_fill == 0 && !has_pixel_channels) {
@@ -12158,7 +12315,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "psd_decode",
                 "builtin PSD: ignoring knockout in layer fallback");
         }
-        if (!sixel_builtin_psd_layer_blend_mode_from_key(layer->blend_key,
+        if (!sixel_builtin_psd_layer_blend_mode_from_key(composite_layer->blend_key,
                                                          &blend_mode)) {
             sixel_trace_topic_message(
                 "psd_decode",
@@ -12176,7 +12333,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             }
             continue;
         }
-        if (layer->width == 0u || layer->height == 0u) {
+        if (composite_layer->width == 0u || composite_layer->height == 0u) {
             if (layer->clipping == 0u) {
                 clip_alpha_valid = 0;
             }
@@ -12208,24 +12365,33 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                                                               &cms_applied,
                                                               &src_layer);
             if (SIXEL_FAILED(status)) {
+                char const *reason;
+                reason = sixel_helper_get_additional_message();
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: layer fallback failed in pixel layer decode");
+                if (reason != NULL && reason[0] != '\0') {
+                    sixel_trace_topic_message("psd_decode", reason);
+                }
                 sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
                 goto cleanup;
             }
         }
-        if (layer->width == info->width && layer->height == info->height &&
-            layer->left == 0 && layer->top == 0) {
+        if (composite_layer->width == info->width &&
+            composite_layer->height == info->height &&
+            composite_layer->left == 0 && composite_layer->top == 0) {
             sixel_trace_topic_message(
                 "psd_decode",
                 "builtin PSD: compositing full-canvas layer in layer fallback");
         }
-        if (layer->has_effect_solid_overlay != 0) {
-            sixel_builtin_psd_apply_layer_effects_subset(layer, &src_layer);
+        if (composite_layer->has_effect_solid_overlay != 0) {
+            sixel_builtin_psd_apply_layer_effects_subset(composite_layer, &src_layer);
         }
         sixel_builtin_psd_composite_layer_over(canvas_rgb_premul,
                                                canvas_alpha,
                                                info->width,
                                                info->height,
-                                               layer,
+                                               composite_layer,
                                                &src_layer,
                                                apply_clipping != 0
                                                    ? clip_alpha_map
@@ -12235,7 +12401,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             sixel_builtin_psd_build_clip_alpha_map(clip_alpha_map,
                                                    info->width,
                                                    info->height,
-                                                   layer,
+                                                   composite_layer,
                                                    &src_layer);
             clip_alpha_valid = 1;
         }
@@ -14190,8 +14356,16 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
             ptransparent_mask_size,
             pwidth,
             pheight,
-            ppixelformat);
+                ppixelformat);
         if (SIXEL_FAILED(layer_status)) {
+            char const *fallback_reason;
+            fallback_reason = sixel_helper_get_additional_message();
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: layer fallback failed; using merged composite");
+            if (fallback_reason != NULL && fallback_reason[0] != '\0') {
+                sixel_trace_topic_message("psd_decode", fallback_reason);
+            }
             layer_status = sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
                 chunk,
                 info,
@@ -19036,8 +19210,16 @@ sixel_builtin_decode_psd_rgb_8bit(
             ptransparent_mask_size,
             pwidth,
             pheight,
-            ppixelformat);
+                ppixelformat);
         if (SIXEL_FAILED(layer_status)) {
+            char const *fallback_reason;
+            fallback_reason = sixel_helper_get_additional_message();
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: layer fallback failed; using merged composite");
+            if (fallback_reason != NULL && fallback_reason[0] != '\0') {
+                sixel_trace_topic_message("psd_decode", fallback_reason);
+            }
             layer_status = sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
                 chunk,
                 info,
