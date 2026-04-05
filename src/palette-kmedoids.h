@@ -224,6 +224,37 @@ sixel_kmedoids_test_apply_eval_order_delta(
     sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_build_clarans_slot_order(
+    double const *weights,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int point_count,
+    unsigned int k,
+    unsigned int slot,
+    unsigned int *order_out,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_clarans_candidate_batch_best(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int k,
+    unsigned int candidate,
+    unsigned int const *slots,
+    unsigned int slot_count,
+    unsigned int const *slot_orders,
+    double cutoff,
+    unsigned int *best_slot_out,
+    double *best_cost_out,
+    unsigned int *evaluated_pairs_out,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmedoids_test_build_clarans_guided_sets(
     double const *weights,
     unsigned int point_count,
