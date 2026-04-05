@@ -278,6 +278,14 @@ sixel_kmedoids_test_clarans_cache_size(unsigned int point_count,
 unsigned int
 sixel_kmedoids_test_clarans_cheap_prefix_count(unsigned int point_count);
 
+SIXELSTATUS
+sixel_kmedoids_test_pick_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    uint32_t seed,
+    unsigned int *indices_out,
+    sixel_allocator_t *allocator);
+
 static unsigned char const g_test_pixels_rgb[TEST_PIXEL_COUNT * 3u] = {
     255u, 0u,   0u,
     255u, 0u,   0u,
@@ -3991,21 +3999,22 @@ test_run_clarans_cheap_bound_accept_reject_equivalence_case(void)
             full_accept = (full_cost + 1.0e-12 < current_cost) ? 1 : 0;
 
             cheap_stop = 0;
-            cheap_cost = sixel_kmedoids_test_swap_cost_cutoff_with_row_generation(
-                points,
-                weights,
-                prefix_count,
-                nearest_slot,
-                nearest_dist,
-                second_dist,
-                replace_slot,
-                candidate,
-                candidate_row,
-                candidate_generation,
-                row_epoch,
-                order,
-                current_cost,
-                &cheap_stop);
+            cheap_cost =
+                sixel_kmedoids_test_swap_cost_cutoff_with_row_generation(
+                    points,
+                    weights,
+                    prefix_count,
+                    nearest_slot,
+                    nearest_dist,
+                    second_dist,
+                    replace_slot,
+                    candidate,
+                    candidate_row,
+                    candidate_generation,
+                    row_epoch,
+                    order,
+                    current_cost,
+                    &cheap_stop);
             (void)cheap_cost;
             if (cheap_stop && full_accept) {
                 sixel_allocator_unref(allocator);
@@ -4198,6 +4207,347 @@ test_run_bandit_prune_row_cache_equivalence_case(void)
     return 1;
 }
 
+static int
+test_run_clarans_candidate_epoch_reset_equivalence_case(void)
+{
+    unsigned int const point_count = 32u;
+    unsigned int const k = 4u;
+    unsigned int const event_count = 12u;
+    unsigned int candidates[12u];
+    unsigned int evaluated[12u];
+    unsigned char accepted[12u];
+    unsigned int seen_ref[32u];
+    unsigned char exhausted_ref[32u];
+    unsigned int seen_epoch_count[32u];
+    uint32_t seen_epoch[32u];
+    uint32_t exhausted_epoch[32u];
+    uint32_t epoch;
+    unsigned int remaining_ref;
+    unsigned int remaining_epoch;
+    unsigned int event_index;
+    unsigned int index;
+    unsigned int candidate;
+    unsigned int eval_pairs;
+    unsigned int value;
+    int exhausted_a;
+    int exhausted_b;
+
+    epoch = UINT32_MAX - 2u;
+    remaining_ref = point_count;
+    remaining_epoch = point_count;
+    event_index = 0u;
+    index = 0u;
+    candidate = 0u;
+    eval_pairs = 0u;
+    value = 0u;
+    exhausted_a = 0;
+    exhausted_b = 0;
+    candidates[0u] = 3u;
+    candidates[1u] = 7u;
+    candidates[2u] = 3u;
+    candidates[3u] = 12u;
+    candidates[4u] = 7u;
+    candidates[5u] = 3u;
+    candidates[6u] = 11u;
+    candidates[7u] = 12u;
+    candidates[8u] = 11u;
+    candidates[9u] = 5u;
+    candidates[10u] = 5u;
+    candidates[11u] = 7u;
+    evaluated[0u] = 1u;
+    evaluated[1u] = 2u;
+    evaluated[2u] = 1u;
+    evaluated[3u] = 3u;
+    evaluated[4u] = 2u;
+    evaluated[5u] = 2u;
+    evaluated[6u] = 4u;
+    evaluated[7u] = 1u;
+    evaluated[8u] = 1u;
+    evaluated[9u] = 4u;
+    evaluated[10u] = 1u;
+    evaluated[11u] = 2u;
+    accepted[0u] = 0u;
+    accepted[1u] = 0u;
+    accepted[2u] = 1u;
+    accepted[3u] = 0u;
+    accepted[4u] = 0u;
+    accepted[5u] = 1u;
+    accepted[6u] = 0u;
+    accepted[7u] = 0u;
+    accepted[8u] = 1u;
+    accepted[9u] = 0u;
+    accepted[10u] = 0u;
+    accepted[11u] = 1u;
+    for (index = 0u; index < point_count; ++index) {
+        seen_ref[index] = 0u;
+        exhausted_ref[index] = 0u;
+        seen_epoch_count[index] = 0u;
+        seen_epoch[index] = 0u;
+        exhausted_epoch[index] = 0u;
+    }
+
+    for (event_index = 0u; event_index < event_count; ++event_index) {
+        candidate = candidates[event_index];
+        eval_pairs = evaluated[event_index];
+        if (candidate >= point_count) {
+            return 0;
+        }
+        if (seen_ref[candidate] < k) {
+            value = k - seen_ref[candidate];
+            if (eval_pairs >= value) {
+                seen_ref[candidate] = k;
+            } else {
+                seen_ref[candidate] += eval_pairs;
+            }
+        }
+        if (seen_ref[candidate] >= k && exhausted_ref[candidate] == 0u) {
+            exhausted_ref[candidate] = 1u;
+            if (remaining_ref > 0u) {
+                --remaining_ref;
+            }
+        }
+
+        if (seen_epoch[candidate] != epoch) {
+            seen_epoch[candidate] = epoch;
+            seen_epoch_count[candidate] = 0u;
+        }
+        if (seen_epoch_count[candidate] < k) {
+            value = k - seen_epoch_count[candidate];
+            if (eval_pairs >= value) {
+                seen_epoch_count[candidate] = k;
+            } else {
+                seen_epoch_count[candidate] += eval_pairs;
+            }
+        }
+        if (seen_epoch_count[candidate] >= k
+                && exhausted_epoch[candidate] != epoch) {
+            exhausted_epoch[candidate] = epoch;
+            if (remaining_epoch > 0u) {
+                --remaining_epoch;
+            }
+        }
+
+        if (remaining_ref != remaining_epoch) {
+            return 0;
+        }
+        for (index = 0u; index < point_count; ++index) {
+            value = seen_epoch[index] == epoch ? seen_epoch_count[index] : 0u;
+            if (seen_ref[index] != value) {
+                return 0;
+            }
+            exhausted_a = exhausted_ref[index] != 0u ? 1 : 0;
+            exhausted_b = exhausted_epoch[index] == epoch ? 1 : 0;
+            if (exhausted_a != exhausted_b) {
+                return 0;
+            }
+        }
+
+        if (accepted[event_index] != 0u) {
+            for (index = 0u; index < point_count; ++index) {
+                seen_ref[index] = 0u;
+                exhausted_ref[index] = 0u;
+            }
+            remaining_ref = point_count;
+            epoch += 1u;
+            if (epoch == 0u) {
+                for (index = 0u; index < point_count; ++index) {
+                    seen_epoch_count[index] = 0u;
+                    seen_epoch[index] = 0u;
+                    exhausted_epoch[index] = 0u;
+                }
+                epoch = 1u;
+            }
+            remaining_epoch = point_count;
+        }
+    }
+
+    return 1;
+}
+
+static int
+test_run_clarans_nonmedoid_pool_indexmap_consistency_case(void)
+{
+    unsigned int const point_count = 48u;
+    unsigned int const k = 4u;
+    unsigned int medoids[4u];
+    unsigned int candidates[8u];
+    unsigned int slots[8u];
+    unsigned int non_medoids[48u];
+    unsigned int pool_pos[48u];
+    unsigned char flags[48u];
+    unsigned int non_count;
+    unsigned int step;
+    unsigned int slot;
+    unsigned int candidate;
+    unsigned int old_medoid;
+    unsigned int pos;
+    unsigned int index;
+    unsigned int probe;
+
+    medoids[0u] = 1u;
+    medoids[1u] = 9u;
+    medoids[2u] = 17u;
+    medoids[3u] = 25u;
+    candidates[0u] = 3u;
+    candidates[1u] = 11u;
+    candidates[2u] = 19u;
+    candidates[3u] = 27u;
+    candidates[4u] = 5u;
+    candidates[5u] = 13u;
+    candidates[6u] = 21u;
+    candidates[7u] = 29u;
+    slots[0u] = 0u;
+    slots[1u] = 1u;
+    slots[2u] = 2u;
+    slots[3u] = 3u;
+    slots[4u] = 0u;
+    slots[5u] = 1u;
+    slots[6u] = 2u;
+    slots[7u] = 3u;
+    non_count = 0u;
+    step = 0u;
+    slot = 0u;
+    candidate = 0u;
+    old_medoid = 0u;
+    pos = 0u;
+    index = 0u;
+    probe = 0u;
+
+    for (index = 0u; index < point_count; ++index) {
+        flags[index] = 0u;
+        pool_pos[index] = UINT_MAX;
+    }
+    for (index = 0u; index < k; ++index) {
+        flags[medoids[index]] = 1u;
+    }
+    for (index = 0u; index < point_count; ++index) {
+        if (flags[index] == 0u) {
+            non_medoids[non_count] = index;
+            pool_pos[index] = non_count;
+            ++non_count;
+        }
+    }
+
+    for (step = 0u; step < 8u; ++step) {
+        slot = slots[step];
+        candidate = candidates[step];
+        if (slot >= k || candidate >= point_count || flags[candidate] != 0u) {
+            return 0;
+        }
+        pos = pool_pos[candidate];
+        if (pos >= non_count || non_medoids[pos] != candidate) {
+            return 0;
+        }
+
+        old_medoid = medoids[slot];
+        flags[old_medoid] = 0u;
+        medoids[slot] = candidate;
+        flags[candidate] = 1u;
+        non_medoids[pos] = old_medoid;
+        pool_pos[old_medoid] = pos;
+        pool_pos[candidate] = UINT_MAX;
+
+        for (index = 0u; index < non_count; ++index) {
+            if (non_medoids[index] >= point_count) {
+                return 0;
+            }
+            if (flags[non_medoids[index]] != 0u) {
+                return 0;
+            }
+            if (pool_pos[non_medoids[index]] != index) {
+                return 0;
+            }
+            for (probe = index + 1u; probe < non_count; ++probe) {
+                if (non_medoids[index] == non_medoids[probe]) {
+                    return 0;
+                }
+            }
+        }
+        for (index = 0u; index < point_count; ++index) {
+            if (flags[index] != 0u) {
+                if (pool_pos[index] != UINT_MAX) {
+                    return 0;
+                }
+            } else if (pool_pos[index] >= non_count
+                    || non_medoids[pool_pos[index]] != index) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+static int
+test_run_bandit_prune_unique_sample_seed_reproducibility_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned int const point_count = 97u;
+    unsigned int const sample_size = 24u;
+    unsigned int indices_a[24u];
+    unsigned int indices_b[24u];
+    unsigned int indices_c[24u];
+    unsigned int index;
+
+    allocator = NULL;
+    index = 0u;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+    if (SIXEL_FAILED(sixel_kmedoids_test_pick_unique_sorted_sample_indices(
+            point_count,
+            sample_size,
+            20260405u,
+            indices_a,
+            allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (SIXEL_FAILED(sixel_kmedoids_test_pick_unique_sorted_sample_indices(
+            point_count,
+            sample_size,
+            20260405u,
+            indices_b,
+            allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (SIXEL_FAILED(sixel_kmedoids_test_pick_unique_sorted_sample_indices(
+            point_count,
+            sample_size,
+            20260406u,
+            indices_c,
+            allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    sixel_allocator_unref(allocator);
+
+    if (memcmp(indices_a, indices_b, sizeof(indices_a)) != 0) {
+        return 0;
+    }
+    if (!test_indices_are_unique(indices_a, sample_size, point_count)) {
+        return 0;
+    }
+    if (!test_indices_are_unique(indices_c, sample_size, point_count)) {
+        return 0;
+    }
+    for (index = 1u; index < sample_size; ++index) {
+        if (indices_a[index - 1u] > indices_a[index]) {
+            return 0;
+        }
+        if (indices_c[index - 1u] > indices_c[index]) {
+            return 0;
+        }
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 0)) {
+        return 0;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 1)) {
+        return 0;
+    }
+    return 1;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -4358,6 +4708,20 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "bandit-prune-row-cache-equivalence") == 0) {
         return test_run_bandit_prune_row_cache_equivalence_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-candidate-epoch-reset-equivalence") == 0) {
+        return test_run_clarans_candidate_epoch_reset_equivalence_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-nonmedoid-pool-indexmap-consistency")
+            == 0) {
+        return test_run_clarans_nonmedoid_pool_indexmap_consistency_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "bandit-prune-unique-sample-seed-reproducibility")
+            == 0) {
+        return test_run_bandit_prune_unique_sample_seed_reproducibility_case()
             ? 0 : 1;
     }
     if (strcmp(argv[1], "clarans-slot-order-lazy-equivalence") == 0) {
