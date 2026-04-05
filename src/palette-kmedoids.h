@@ -204,6 +204,35 @@ sixel_kmedoids_test_build_clarans_guided_sets(
     sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_apply_clarans_guided_delta(
+    double const *weights,
+    unsigned int point_count,
+    unsigned int k,
+    unsigned int const *nearest_slot_before,
+    double const *nearest_dist_before,
+    unsigned char const *flags_before,
+    unsigned int const *nearest_slot_after,
+    double const *nearest_dist_after,
+    unsigned char const *flags_after,
+    unsigned int hot_point_limit,
+    unsigned int hot_slot_limit,
+    unsigned int const *changed_points,
+    unsigned int changed_count,
+    unsigned int old_medoid,
+    unsigned int new_medoid,
+    unsigned int *hot_points_out,
+    unsigned int *hot_point_count_out,
+    unsigned int *hot_slots_out,
+    unsigned int *hot_slot_count_out,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API void
+sixel_kmedoids_test_reset_clarans_guided_full_build_count(void);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_kmedoids_test_get_clarans_guided_full_build_count(void);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmedoids_test_pam_polish_cost(double const *points,
                                     double const *weights,
                                     unsigned int point_count,
