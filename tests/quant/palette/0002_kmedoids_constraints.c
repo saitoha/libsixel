@@ -141,6 +141,38 @@ sixel_kmedoids_test_build_clarans_slot_order(
     sixel_allocator_t *allocator);
 
 SIXELSTATUS
+sixel_kmedoids_test_build_clarans_slot_order_lazy(
+    double const *weights,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int point_count,
+    unsigned int k,
+    unsigned int slot,
+    unsigned int const *probe_slots,
+    unsigned int probe_count,
+    unsigned int *order_out,
+    sixel_allocator_t *allocator);
+
+SIXELSTATUS
+sixel_kmedoids_test_clarans_slot_order_dirty_rebuild(
+    double const *weights,
+    unsigned int point_count,
+    unsigned int k,
+    unsigned int const *nearest_slot_before,
+    double const *nearest_dist_before,
+    double const *second_dist_before,
+    unsigned int const *nearest_slot_after,
+    double const *nearest_dist_after,
+    double const *second_dist_after,
+    unsigned int swapped_slot,
+    unsigned int const *changed_old_slots,
+    unsigned int const *changed_new_slots,
+    unsigned int changed_count,
+    unsigned int *slot_orders_out,
+    sixel_allocator_t *allocator);
+
+SIXELSTATUS
 sixel_kmedoids_test_clarans_candidate_batch_best(
     double const *points,
     double const *weights,
@@ -1944,6 +1976,272 @@ end:
 }
 
 static int
+test_run_clarans_slot_order_lazy_equivalence_case(void)
+{
+    sixel_allocator_t *allocator;
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int nearest_slot[TEST_PIXEL_COUNT];
+    double nearest_dist[TEST_PIXEL_COUNT];
+    double second_dist[TEST_PIXEL_COUNT];
+    unsigned int second_slot[TEST_PIXEL_COUNT];
+    unsigned int full_orders[TEST_REQCOLORS * TEST_PIXEL_COUNT];
+    unsigned int lazy_order[TEST_PIXEL_COUNT];
+    unsigned int probe_slots[TEST_REQCOLORS];
+    unsigned int slot;
+    unsigned int index;
+
+    allocator = NULL;
+    slot = 0u;
+    index = 0u;
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+    probe_slots[0u] = 3u;
+    probe_slots[1u] = 1u;
+    probe_slots[2u] = 0u;
+    probe_slots[3u] = 2u;
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 5u) + 1u);
+    }
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_slot,
+                                      nearest_dist,
+                                      second_dist,
+                                      second_slot,
+                                      NULL);
+    if (!test_build_clarans_slot_orders(weights,
+                                        nearest_slot,
+                                        nearest_dist,
+                                        second_dist,
+                                        TEST_PIXEL_COUNT,
+                                        TEST_REQCOLORS,
+                                        full_orders,
+                                        allocator)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    for (slot = 0u; slot < TEST_REQCOLORS; ++slot) {
+        if (SIXEL_FAILED(sixel_kmedoids_test_build_clarans_slot_order_lazy(
+                weights,
+                nearest_slot,
+                nearest_dist,
+                second_dist,
+                TEST_PIXEL_COUNT,
+                TEST_REQCOLORS,
+                slot,
+                probe_slots,
+                TEST_REQCOLORS,
+                lazy_order,
+                allocator))) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+        for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+            if (lazy_order[index]
+                    != full_orders[slot * TEST_PIXEL_COUNT + index]) {
+                sixel_allocator_unref(allocator);
+                return 0;
+            }
+        }
+    }
+
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
+static int
+test_run_clarans_slot_order_dirty_rebuild_consistency_case(void)
+{
+    sixel_allocator_t *allocator;
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int medoids_after[TEST_REQCOLORS];
+    unsigned int nearest_slot_before[TEST_PIXEL_COUNT];
+    double nearest_dist_before[TEST_PIXEL_COUNT];
+    double second_dist_before[TEST_PIXEL_COUNT];
+    unsigned int second_slot_before[TEST_PIXEL_COUNT];
+    unsigned int nearest_slot_after[TEST_PIXEL_COUNT];
+    double nearest_dist_after[TEST_PIXEL_COUNT];
+    double second_dist_after[TEST_PIXEL_COUNT];
+    unsigned int second_slot_after[TEST_PIXEL_COUNT];
+    unsigned int changed_old_slots[TEST_PIXEL_COUNT];
+    unsigned int changed_new_slots[TEST_PIXEL_COUNT];
+    unsigned int lazy_orders[TEST_REQCOLORS * TEST_PIXEL_COUNT];
+    unsigned int full_orders[TEST_REQCOLORS * TEST_PIXEL_COUNT];
+    unsigned char dirty_slots[TEST_REQCOLORS];
+    unsigned int changed_count;
+    unsigned int swapped_slot;
+    unsigned int candidate;
+    unsigned int slot;
+    unsigned int index;
+
+    allocator = NULL;
+    changed_count = 0u;
+    swapped_slot = 1u;
+    candidate = 7u;
+    slot = 0u;
+    index = 0u;
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+    for (slot = 0u; slot < TEST_REQCOLORS; ++slot) {
+        dirty_slots[slot] = 0u;
+    }
+    for (index = 0u; index < TEST_REQCOLORS; ++index) {
+        medoids_after[index] = medoids[index];
+    }
+    medoids_after[swapped_slot] = candidate;
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 4u) + 1u);
+    }
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_slot_before,
+                                      nearest_dist_before,
+                                      second_dist_before,
+                                      second_slot_before,
+                                      NULL);
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        nearest_slot_after[index] = nearest_slot_before[index];
+        nearest_dist_after[index] = nearest_dist_before[index];
+        second_dist_after[index] = second_dist_before[index];
+        second_slot_after[index] = second_slot_before[index];
+    }
+    sixel_kmedoids_test_update_assignments_after_swap(points,
+                                                      weights,
+                                                      TEST_PIXEL_COUNT,
+                                                      medoids_after,
+                                                      TEST_REQCOLORS,
+                                                      swapped_slot,
+                                                      candidate,
+                                                      nearest_slot_after,
+                                                      nearest_dist_after,
+                                                      second_dist_after,
+                                                      second_slot_after,
+                                                      NULL);
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        if (nearest_slot_before[index] == nearest_slot_after[index]
+                && second_slot_before[index] == second_slot_after[index]
+                && nearest_dist_before[index] == nearest_dist_after[index]
+                && second_dist_before[index] == second_dist_after[index]) {
+            continue;
+        }
+        changed_old_slots[changed_count] = nearest_slot_before[index];
+        changed_new_slots[changed_count] = nearest_slot_after[index];
+        ++changed_count;
+    }
+    if (changed_count == 0u) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (swapped_slot < TEST_REQCOLORS) {
+        dirty_slots[swapped_slot] = 1u;
+    }
+    for (index = 0u; index < changed_count; ++index) {
+        if (changed_old_slots[index] < TEST_REQCOLORS) {
+            dirty_slots[changed_old_slots[index]] = 1u;
+        }
+        if (changed_new_slots[index] < TEST_REQCOLORS) {
+            dirty_slots[changed_new_slots[index]] = 1u;
+        }
+    }
+
+    if (SIXEL_FAILED(sixel_kmedoids_test_clarans_slot_order_dirty_rebuild(
+            weights,
+            TEST_PIXEL_COUNT,
+            TEST_REQCOLORS,
+            nearest_slot_before,
+            nearest_dist_before,
+            second_dist_before,
+            nearest_slot_after,
+            nearest_dist_after,
+            second_dist_after,
+            swapped_slot,
+            changed_old_slots,
+            changed_new_slots,
+            changed_count,
+            lazy_orders,
+            allocator))) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (!test_build_clarans_slot_orders(weights,
+                                        nearest_slot_after,
+                                        nearest_dist_after,
+                                        second_dist_after,
+                                        TEST_PIXEL_COUNT,
+                                        TEST_REQCOLORS,
+                                        full_orders,
+                                        allocator)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    for (slot = 0u; slot < TEST_REQCOLORS; ++slot) {
+        if (dirty_slots[slot] == 0u) {
+            continue;
+        }
+        for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+            if (lazy_orders[slot * TEST_PIXEL_COUNT + index]
+                    != full_orders[slot * TEST_PIXEL_COUNT + index]) {
+                sixel_allocator_unref(allocator);
+                return 0;
+            }
+        }
+    }
+
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
+static int
+test_run_clarans_slot_order_lazy_seed_reproducibility_case(void)
+{
+    int ok;
+
+    ok = 0;
+    sixel_set_kmedoids_clarans_local_override(1, 5u);
+    sixel_set_kmedoids_clarans_neighbors_override(1, 160u);
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)) {
+        goto end;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)) {
+        goto end;
+    }
+    ok = 1;
+
+end:
+    sixel_set_kmedoids_clarans_neighbors_override(0, 0u);
+    sixel_set_kmedoids_clarans_local_override(0, 0u);
+    return ok;
+}
+
+static int
 test_run_bandit_swap_cost_cutoff_case(void)
 {
     double points[TEST_PIXEL_COUNT * 3u];
@@ -3653,6 +3951,19 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "clarans-row-cache-seed-reproducibility") == 0) {
         return test_run_clarans_row_cache_seed_reproducibility_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-slot-order-lazy-equivalence") == 0) {
+        return test_run_clarans_slot_order_lazy_equivalence_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-slot-order-dirty-rebuild-consistency")
+            == 0) {
+        return test_run_clarans_slot_order_dirty_rebuild_consistency_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-slot-order-lazy-seed-reproducibility")
+            == 0) {
+        return test_run_clarans_slot_order_lazy_seed_reproducibility_case()
             ? 0 : 1;
     }
 
