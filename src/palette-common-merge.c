@@ -60,6 +60,12 @@
 
 static SIXEL_TLS int sixel_kmeans_threshold_override_enabled = 0;
 static SIXEL_TLS double sixel_kmeans_threshold_override_value = 0.125;
+static SIXEL_TLS int sixel_kmeans_iter_max_override_enabled = 0;
+static SIXEL_TLS unsigned int sixel_kmeans_iter_max_override_value = 20u;
+static SIXEL_TLS int sixel_final_merge_target_factor_override_enabled = 0;
+static SIXEL_TLS double sixel_final_merge_target_factor_override_value = 1.81;
+static SIXEL_TLS int sixel_final_merge_lloyd_override_enabled = 0;
+static SIXEL_TLS unsigned int sixel_final_merge_lloyd_override_value = 3u;
 
 #undef SIXEL_TLS
 
@@ -314,9 +320,27 @@ sixel_final_merge_load_env(void)
 unsigned int
 sixel_palette_kmeans_iter_max(void)
 {
+    if (sixel_kmeans_iter_max_override_enabled) {
+        if (sixel_kmeans_iter_max_override_value < 1u) {
+            return 1u;
+        }
+        if (sixel_kmeans_iter_max_override_value > 100u) {
+            return 100u;
+        }
+        return sixel_kmeans_iter_max_override_value;
+    }
+
     sixel_final_merge_load_env();
 
     return env_kmeans_iter_max;
+}
+
+void
+sixel_set_kmeans_iter_max_override(int enabled,
+                                   unsigned int iter_max)
+{
+    sixel_kmeans_iter_max_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_iter_max_override_value = iter_max;
 }
 
 void
@@ -339,10 +363,33 @@ sixel_palette_kmeans_threshold(void)
     return env_kmeans_threshold;
 }
 
+void
+sixel_set_final_merge_target_factor_override(int enabled,
+                                             double factor)
+{
+    sixel_final_merge_target_factor_override_enabled = enabled ? 1 : 0;
+    sixel_final_merge_target_factor_override_value = factor;
+}
+
+void
+sixel_set_final_merge_lloyd_iterations_override(int enabled,
+                                                unsigned int iterations)
+{
+    sixel_final_merge_lloyd_override_enabled = enabled ? 1 : 0;
+    sixel_final_merge_lloyd_override_value = iterations;
+}
+
 unsigned int
 sixel_final_merge_lloyd_iterations(int merge_mode)
 {
     (void)merge_mode;
+
+    if (sixel_final_merge_lloyd_override_enabled) {
+        if (sixel_final_merge_lloyd_override_value > 30u) {
+            return 30u;
+        }
+        return sixel_final_merge_lloyd_override_value;
+    }
 
     sixel_final_merge_load_env();
     if (env_final_merge_additional_lloyd_overridden) {
@@ -566,6 +613,15 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
         return reqcolors;
     }
     factor = env_final_merge_target_factor;
+    if (sixel_final_merge_target_factor_override_enabled) {
+        factor = sixel_final_merge_target_factor_override_value;
+        if (factor < 1.0) {
+            factor = 1.0;
+        }
+        if (factor > 3.0) {
+            factor = 3.0;
+        }
+    }
     scaled = (unsigned int)((double)reqcolors * factor);
     if (scaled <= reqcolors) {
         scaled = reqcolors;

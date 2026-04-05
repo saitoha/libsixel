@@ -17,8 +17,7 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 endif
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \
-    loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa.t \
-    loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa.t
+    loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa.t
 
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
@@ -168,9 +167,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
     -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
     -DBUILD_TEST_0003_ICC_BUILTIN_A2B_INTENT_PATHS \
-    -DBUILD_TEST_0002_FILTER_SAMPLE \
     -DBUILD_TEST_0004_ICC_BUILTIN_B2A_SLOT_PATHS \
     -DBUILD_TEST_0005_ICC_BUILTIN_DEVICE_TO_DEVICE_INTENT_PATHS \
+    -DBUILD_TEST_0002_FILTER_SAMPLE \
     -DBUILD_TEST_0002_INCREMENTAL_LOAD \
     -DBUILD_TEST_0003_CORRUPT_DATA \
     -DBUILD_TEST_0003_FILTER_RESIZE \
@@ -272,11 +271,11 @@ test_runner_SOURCES = test_runner.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
     diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
     diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c \
+    diagnostics/icc/0004_icc_builtin_b2a_slot_paths.c \
+    diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     extension/gdk-pixbuf-loader/0002_incremental_load.c \
     extension/gdk-pixbuf-loader/0003_corrupt_data.c \
-    diagnostics/icc/0004_icc_builtin_b2a_slot_paths.c \
-    diagnostics/icc/0005_icc_builtin_device_to_device_intent_paths.c \
     extension/gdk-pixbuf-loader/0004_propagate_error.c \
     extension/gdk-pixbuf-loader/0005_context_free.c \
     extension/gdk-pixbuf-loader/0006_loader_module.c \
@@ -335,6 +334,8 @@ AM_LOG_FLAGS =
 	staticcheck-makefile-recipes \
 	staticcheck-meson-palette-sources \
 	staticcheck-kmedoids-suboption-env-sync \
+	staticcheck-kmeans-suboption-env-sync \
+	staticcheck-quantize-merge-suboption-sync \
 	staticcheck-test-plan-single \
 	staticcheck-test-no-grep-awk \
 	staticcheck-artifact-local-dir-mkdir \
@@ -358,6 +359,8 @@ staticcheck-test-runner-dllexport \
 staticcheck-makefile-recipes \
 staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
+staticcheck-kmeans-suboption-env-sync \
+staticcheck-quantize-merge-suboption-sync \
 staticcheck-test-plan-single \
 staticcheck-test-no-grep-awk \
 staticcheck-artifact-local-dir-mkdir \
@@ -477,6 +480,26 @@ staticcheck-kmedoids-suboption-env-sync:
 		--trs-file staticcheck-kmedoids-suboption-env-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-kmeans-suboption-env-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-kmeans-suboption-env-sync" \
+		--log-file staticcheck-kmeans-suboption-env-sync.log \
+		--trs-file staticcheck-kmeans-suboption-env-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-kmeans-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-quantize-merge-suboption-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-quantize-merge-suboption-sync" \
+		--log-file staticcheck-quantize-merge-suboption-sync.log \
+		--trs-file staticcheck-quantize-merge-suboption-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-quantize-merge-suboption-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-plan-single:
@@ -1208,6 +1231,8 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
+    _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
+    _static/sh/staticcheck-quantize-merge-suboption-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \

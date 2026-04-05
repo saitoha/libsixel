@@ -25,8 +25,17 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
     exit 0
 }
 
-test "${msg#*"unknown"*valid keys*algo*seed*iter*sample*histbits*point_budget*rare_keep*prune_mass*}" != "${msg}" || {
+valid_keys_line=${msg#*valid keys: }
+valid_keys_line=${valid_keys_line%%.*}
+
+test "${valid_keys_line#*algo*seed*iter*sample*histbits*point_budget*rare_keep*prune_mass*}" != "${valid_keys_line}" || {
     echo "not ok" 1 - "missing medoids key candidate list"
+    exit 0
+}
+
+test "${valid_keys_line#*merge*merge_oversplit*merge_lloyd*}" \
+    != "${valid_keys_line}" || {
+    echo "not ok" 1 - "missing medoids merge key candidate list"
     exit 0
 }
 

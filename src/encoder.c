@@ -489,6 +489,9 @@ static SIXELSTATUS sixel_encoder_apply_palette_filter(
     sixel_frame_t **frame_slot,
     int allow_cache,
     sixel_dither_t **dither_out);
+static int sixel_encoder_resolve_suboption_choice_value(
+    sixel_suboption_assignment_t const *assignment,
+    int *value_out);
 static int sixel_encoder_parse_sample_target(char const *text,
                                              size_t *value_out);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
@@ -824,6 +827,40 @@ static sixel_suboption_choice_t const g_option_choices_kmedoids_algo[] = {
     { "bandit", SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM }
 };
 
+static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
+    { "auto", SIXEL_FINAL_MERGE_AUTO },
+    { "none", SIXEL_FINAL_MERGE_NONE },
+    { "ward", SIXEL_FINAL_MERGE_WARD }
+};
+
+static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
+    {
+        "merge",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_quantize_merge,
+        sizeof(g_option_choices_quantize_merge)
+        / sizeof(g_option_choices_quantize_merge[0])
+    },
+    {
+        "merge_oversplit",
+        NULL,
+        "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge_lloyd",
+        NULL,
+        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     {
         "inittype",
@@ -893,6 +930,95 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
         g_option_choices_kmeans_feedback,
         sizeof(g_option_choices_kmeans_feedback)
         / sizeof(g_option_choices_kmeans_feedback[0])
+    },
+    {
+        "seed",
+        "s",
+        "SIXEL_PALETTE_KMEANS_SEED",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "restarts",
+        NULL,
+        "SIXEL_PALETTE_KMEANS_RESTARTS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "iter",
+        NULL,
+        "SIXEL_PALETTE_KMEANS_ITER",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "iter_max",
+        NULL,
+        "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "miniter",
+        NULL,
+        "SIXEL_PALETTE_KMEANS_MINITER",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "polish_iter",
+        NULL,
+        "SIXEL_PALETTE_KMEANS_POLISH_ITER",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "feedback_slots",
+        NULL,
+        "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "feedback_interval",
+        NULL,
+        "SIXEL_PALETTE_KMEANS_FEEDBACK_INTERVAL",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_quantize_merge,
+        sizeof(g_option_choices_quantize_merge)
+        / sizeof(g_option_choices_quantize_merge[0])
+    },
+    {
+        "merge_oversplit",
+        NULL,
+        "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge_lloyd",
+        NULL,
+        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
     }
 };
 
@@ -1017,6 +1143,31 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "merge",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_quantize_merge,
+        sizeof(g_option_choices_quantize_merge)
+        / sizeof(g_option_choices_quantize_merge[0])
+    },
+    {
+        "merge_oversplit",
+        NULL,
+        "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge_lloyd",
+        NULL,
+        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
     }
 };
 
@@ -1024,14 +1175,16 @@ static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
     {
         "auto",
         SIXEL_QUANTIZE_MODEL_AUTO,
-        NULL,
-        0u
+        g_subkeys_quantize_model_merge_only,
+        sizeof(g_subkeys_quantize_model_merge_only)
+        / sizeof(g_subkeys_quantize_model_merge_only[0])
     },
     {
         "heckbert",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
-        NULL,
-        0u
+        g_subkeys_quantize_model_merge_only,
+        sizeof(g_subkeys_quantize_model_merge_only)
+        / sizeof(g_subkeys_quantize_model_merge_only[0])
     },
     {
         "kmeans",
@@ -4080,6 +4233,36 @@ sixel_encoder_prepare_palette(
         encoder->quantize_model_kmeans_feedback_override,
         (sixel_kmeans_feedback_mode)
             encoder->quantize_model_kmeans_feedback_mode);
+    sixel_set_kmeans_seed_override(
+        encoder->quantize_model_kmeans_seed_override,
+        (uint32_t)encoder->quantize_model_kmeans_seed);
+    sixel_set_kmeans_restarts_override(
+        encoder->quantize_model_kmeans_restarts_override,
+        encoder->quantize_model_kmeans_restarts);
+    sixel_set_kmeans_iter_override(
+        encoder->quantize_model_kmeans_iter_override,
+        encoder->quantize_model_kmeans_iter);
+    sixel_set_kmeans_iter_max_override(
+        encoder->quantize_model_kmeans_iter_max_override,
+        encoder->quantize_model_kmeans_iter_max);
+    sixel_set_kmeans_miniter_override(
+        encoder->quantize_model_kmeans_miniter_override,
+        encoder->quantize_model_kmeans_miniter);
+    sixel_set_kmeans_polish_iter_override(
+        encoder->quantize_model_kmeans_polish_iter_override,
+        encoder->quantize_model_kmeans_polish_iter);
+    sixel_set_kmeans_feedback_slots_override(
+        encoder->quantize_model_kmeans_feedback_slots_override,
+        encoder->quantize_model_kmeans_feedback_slots);
+    sixel_set_kmeans_feedback_interval_override(
+        encoder->quantize_model_kmeans_feedback_interval_override,
+        encoder->quantize_model_kmeans_feedback_interval);
+    sixel_set_final_merge_target_factor_override(
+        encoder->quantize_model_merge_oversplit_override,
+        encoder->quantize_model_merge_oversplit);
+    sixel_set_final_merge_lloyd_iterations_override(
+        encoder->quantize_model_merge_lloyd_override,
+        encoder->quantize_model_merge_lloyd);
     sixel_set_kmedoids_algo_override(
         encoder->quantize_model_kmedoids_algo_override,
         (sixel_kmedoids_algo_t)encoder->quantize_model_kmedoids_algo);
@@ -4146,9 +4329,19 @@ sixel_encoder_prepare_palette(
         0,
         SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
     sixel_set_kmeans_autoratio_override(0, 32u);
+    sixel_set_kmeans_seed_override(0, 0u);
+    sixel_set_kmeans_restarts_override(0, 1u);
+    sixel_set_kmeans_iter_override(0, 0u);
+    sixel_set_kmeans_iter_max_override(0, 20u);
+    sixel_set_kmeans_miniter_override(0, 0u);
+    sixel_set_kmeans_polish_iter_override(0, 0u);
     sixel_set_kmeans_feedback_mode_override(
         0,
         SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
+    sixel_set_kmeans_feedback_slots_override(0, 1u);
+    sixel_set_kmeans_feedback_interval_override(0, 1u);
+    sixel_set_final_merge_target_factor_override(0, 1.81);
+    sixel_set_final_merge_lloyd_iterations_override(0, 3u);
     sixel_set_kmedoids_algo_override(
         0,
         SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
@@ -5073,6 +5266,22 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmeans_feedback_override = 0;
     (*ppencoder)->quantize_model_kmeans_feedback_mode
         = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
+    (*ppencoder)->quantize_model_kmeans_seed_override = 0;
+    (*ppencoder)->quantize_model_kmeans_seed = 0u;
+    (*ppencoder)->quantize_model_kmeans_restarts_override = 0;
+    (*ppencoder)->quantize_model_kmeans_restarts = 1u;
+    (*ppencoder)->quantize_model_kmeans_iter_override = 0;
+    (*ppencoder)->quantize_model_kmeans_iter = 0u;
+    (*ppencoder)->quantize_model_kmeans_iter_max_override = 0;
+    (*ppencoder)->quantize_model_kmeans_iter_max = 20u;
+    (*ppencoder)->quantize_model_kmeans_miniter_override = 0;
+    (*ppencoder)->quantize_model_kmeans_miniter = 0u;
+    (*ppencoder)->quantize_model_kmeans_polish_iter_override = 0;
+    (*ppencoder)->quantize_model_kmeans_polish_iter = 0u;
+    (*ppencoder)->quantize_model_kmeans_feedback_slots_override = 0;
+    (*ppencoder)->quantize_model_kmeans_feedback_slots = 1u;
+    (*ppencoder)->quantize_model_kmeans_feedback_interval_override = 0;
+    (*ppencoder)->quantize_model_kmeans_feedback_interval = 1u;
     (*ppencoder)->quantize_model_kmedoids_algo_override = 0;
     (*ppencoder)->quantize_model_kmedoids_algo
         = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
@@ -5104,6 +5313,12 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmedoids_rare_keep = 0u;
     (*ppencoder)->quantize_model_kmedoids_prune_mass_override = 0;
     (*ppencoder)->quantize_model_kmedoids_prune_mass = 0.0;
+    (*ppencoder)->quantize_model_merge_override = 0;
+    (*ppencoder)->quantize_model_merge_mode = SIXEL_FINAL_MERGE_AUTO;
+    (*ppencoder)->quantize_model_merge_oversplit_override = 0;
+    (*ppencoder)->quantize_model_merge_oversplit = 1.81;
+    (*ppencoder)->quantize_model_merge_lloyd_override = 0;
+    (*ppencoder)->quantize_model_merge_lloyd = 3u;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
@@ -5806,264 +6021,347 @@ sixel_encoder_parse_kmedoids_prune_mass_text(
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_quantize_merge_oversplit_text(
+    char const *text,
+    double *value_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || value_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno != 0 || parsed != parsed
+            || parsed < 1.0 || parsed > 3.0) {
+        sixel_helper_set_additional_message(
+            "-Q merge_oversplit must be in range 1.0-3.0.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *value_out = parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_validate_quantize_model_resolution(
     sixel_option_argument_resolution_t const *resolution)
 {
     size_t index;
     sixel_suboption_assignment_t const *assignment;
     char const *key_name;
-    SIXELSTATUS threshold_status;
-    SIXELSTATUS binbits_status;
-    SIXELSTATUS autoratio_status;
-    SIXELSTATUS seed_status;
-    SIXELSTATUS iter_status;
-    SIXELSTATUS sample_status;
-    SIXELSTATUS clara_trials_status;
-    SIXELSTATUS clara_sample_status;
-    SIXELSTATUS clarans_local_status;
-    SIXELSTATUS clarans_neighbors_status;
-    SIXELSTATUS bandit_iter_status;
-    SIXELSTATUS bandit_candidates_status;
-    SIXELSTATUS bandit_batch_status;
-    SIXELSTATUS histbits_status;
-    SIXELSTATUS point_budget_status;
-    SIXELSTATUS rare_keep_status;
-    SIXELSTATUS prune_mass_status;
-    double threshold;
-    double kmedoids_prune_mass;
-    unsigned int binbits;
-    unsigned int autoratio;
+    SIXELSTATUS status;
+    int base_value;
+    int resolved_choice;
+    double parsed_double;
+    unsigned int parsed_uint;
     uint32_t seed;
-    unsigned int kmedoids_iter;
-    unsigned int kmedoids_sample;
-    unsigned int kmedoids_clara_trials;
-    unsigned int kmedoids_clara_sample;
-    unsigned int kmedoids_clarans_local;
-    unsigned int kmedoids_clarans_neighbors;
-    unsigned int kmedoids_bandit_iter;
-    unsigned int kmedoids_bandit_candidates;
-    unsigned int kmedoids_bandit_batch;
-    unsigned int kmedoids_histbits;
-    unsigned int kmedoids_point_budget;
-    unsigned int kmedoids_rare_keep;
 
     index = 0u;
     assignment = NULL;
     key_name = NULL;
-    threshold_status = SIXEL_OK;
-    binbits_status = SIXEL_OK;
-    autoratio_status = SIXEL_OK;
-    seed_status = SIXEL_OK;
-    iter_status = SIXEL_OK;
-    sample_status = SIXEL_OK;
-    clara_trials_status = SIXEL_OK;
-    clara_sample_status = SIXEL_OK;
-    clarans_local_status = SIXEL_OK;
-    clarans_neighbors_status = SIXEL_OK;
-    bandit_iter_status = SIXEL_OK;
-    bandit_candidates_status = SIXEL_OK;
-    bandit_batch_status = SIXEL_OK;
-    histbits_status = SIXEL_OK;
-    point_budget_status = SIXEL_OK;
-    rare_keep_status = SIXEL_OK;
-    prune_mass_status = SIXEL_OK;
-    threshold = 0.0;
-    kmedoids_prune_mass = 0.0;
-    binbits = 0u;
-    autoratio = 0u;
+    status = SIXEL_OK;
+    base_value = 0;
+    resolved_choice = 0;
+    parsed_double = 0.0;
+    parsed_uint = 0u;
     seed = 0u;
-    kmedoids_iter = 0u;
-    kmedoids_sample = 0u;
-    kmedoids_clara_trials = 0u;
-    kmedoids_clara_sample = 0u;
-    kmedoids_clarans_local = 0u;
-    kmedoids_clarans_neighbors = 0u;
-    kmedoids_bandit_iter = 0u;
-    kmedoids_bandit_candidates = 0u;
-    kmedoids_bandit_batch = 0u;
-    kmedoids_histbits = 0u;
-    kmedoids_point_budget = 0u;
-    kmedoids_rare_keep = 0u;
     if (resolution == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    base_value = resolution->resolved_base_value;
 
     while (index < resolution->assignment_count) {
         assignment = resolution->assignments + index;
         key_name = assignment->resolved_key_name;
+        if (key_name == NULL) {
+            ++index;
+            continue;
+        }
         if (key_name != NULL && strcmp(key_name, "threshold") == 0) {
-            threshold_status = sixel_encoder_parse_quantize_threshold_text(
+            status = sixel_encoder_parse_quantize_threshold_text(
                 assignment->resolved_value_text,
-                &threshold);
-            if (SIXEL_FAILED(threshold_status)) {
-                return threshold_status;
+                &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "binbits") == 0) {
-            binbits_status = sixel_encoder_parse_kmeans_binbits_text(
+            status = sixel_encoder_parse_kmeans_binbits_text(
                 assignment->resolved_value_text,
-                &binbits);
-            if (SIXEL_FAILED(binbits_status)) {
-                return binbits_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "autoratio") == 0) {
-            autoratio_status = sixel_encoder_parse_kmeans_autoratio_text(
+            status = sixel_encoder_parse_kmeans_autoratio_text(
                 assignment->resolved_value_text,
-                &autoratio);
-            if (SIXEL_FAILED(autoratio_status)) {
-                return autoratio_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "seed") == 0) {
-            seed_status = sixel_encoder_parse_kmedoids_seed_text(
+            status = sixel_encoder_parse_kmedoids_seed_text(
                 assignment->resolved_value_text,
                 &seed);
-            if (SIXEL_FAILED(seed_status)) {
-                return seed_status;
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "iter") == 0) {
-            iter_status = sixel_encoder_parse_kmedoids_uint_text(
+            if (base_value == SIXEL_QUANTIZE_MODEL_KMEANS) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    assignment->resolved_value_text,
+                    1u,
+                    100u,
+                    0,
+                    "iter",
+                    &parsed_uint);
+            } else {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    assignment->resolved_value_text,
+                    1u,
+                    64u,
+                    0,
+                    "iter",
+                    &parsed_uint);
+            }
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "iter_max") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                100u,
+                0,
+                "iter_max",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "miniter") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                100u,
+                1,
+                "miniter",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "polish_iter") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                16u,
+                1,
+                "polish_iter",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "restarts") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                32u,
+                0,
+                "restarts",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "feedback_slots") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                16u,
+                0,
+                "feedback_slots",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "feedback_interval") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 1u,
                 64u,
                 0,
-                "iter",
-                &kmedoids_iter);
-            if (SIXEL_FAILED(iter_status)) {
-                return iter_status;
+                "feedback_interval",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "sample") == 0) {
-            sample_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 64u,
                 1048576u,
                 1,
                 "sample",
-                &kmedoids_sample);
-            if (SIXEL_FAILED(sample_status)) {
-                return sample_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL
                 && strcmp(key_name, "clara_trials") == 0) {
-            clara_trials_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 1u,
                 32u,
                 0,
                 "clara_trials",
-                &kmedoids_clara_trials);
-            if (SIXEL_FAILED(clara_trials_status)) {
-                return clara_trials_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL
                 && strcmp(key_name, "clara_sample") == 0) {
-            clara_sample_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 64u,
                 1048576u,
                 1,
                 "clara_sample",
-                &kmedoids_clara_sample);
-            if (SIXEL_FAILED(clara_sample_status)) {
-                return clara_sample_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL
                 && strcmp(key_name, "clarans_local") == 0) {
-            clarans_local_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 1u,
                 32u,
                 0,
                 "clarans_local",
-                &kmedoids_clarans_local);
-            if (SIXEL_FAILED(clarans_local_status)) {
-                return clarans_local_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL
                 && strcmp(key_name, "clarans_neighbors") == 0) {
-            clarans_neighbors_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 1u,
                 5000000u,
                 1,
                 "clarans_neighbors",
-                &kmedoids_clarans_neighbors);
-            if (SIXEL_FAILED(clarans_neighbors_status)) {
-                return clarans_neighbors_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "bandit_iter") == 0) {
-            bandit_iter_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 1u,
                 64u,
                 0,
                 "bandit_iter",
-                &kmedoids_bandit_iter);
-            if (SIXEL_FAILED(bandit_iter_status)) {
-                return bandit_iter_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL
                 && strcmp(key_name, "bandit_candidates") == 0) {
-            bandit_candidates_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 8u,
                 4096u,
                 0,
                 "bandit_candidates",
-                &kmedoids_bandit_candidates);
-            if (SIXEL_FAILED(bandit_candidates_status)) {
-                return bandit_candidates_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL
                 && strcmp(key_name, "bandit_batch") == 0) {
-            bandit_batch_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 8u,
                 4096u,
                 0,
                 "bandit_batch",
-                &kmedoids_bandit_batch);
-            if (SIXEL_FAILED(bandit_batch_status)) {
-                return bandit_batch_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "histbits") == 0) {
-            histbits_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 3u,
                 6u,
                 0,
                 "histbits",
-                &kmedoids_histbits);
-            if (SIXEL_FAILED(histbits_status)) {
-                return histbits_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL
                 && strcmp(key_name, "point_budget") == 0) {
-            point_budget_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 64u,
                 16384u,
                 0,
                 "point_budget",
-                &kmedoids_point_budget);
-            if (SIXEL_FAILED(point_budget_status)) {
-                return point_budget_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "rare_keep") == 0) {
-            rare_keep_status = sixel_encoder_parse_kmedoids_uint_text(
+            status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
                 0u,
                 1024u,
                 0,
                 "rare_keep",
-                &kmedoids_rare_keep);
-            if (SIXEL_FAILED(rare_keep_status)) {
-                return rare_keep_status;
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "prune_mass") == 0) {
-            prune_mass_status = sixel_encoder_parse_kmedoids_prune_mass_text(
+            status = sixel_encoder_parse_kmedoids_prune_mass_text(
                 assignment->resolved_value_text,
-                &kmedoids_prune_mass);
-            if (SIXEL_FAILED(prune_mass_status)) {
-                return prune_mass_status;
+                &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "merge_oversplit") == 0) {
+            status = sixel_encoder_parse_quantize_merge_oversplit_text(
+                assignment->resolved_value_text,
+                &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "merge_lloyd") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                30u,
+                1,
+                "merge_lloyd",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "merge") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q merge resolution.");
+                return SIXEL_BAD_ARGUMENT;
             }
         }
         ++index;
@@ -7113,6 +7411,20 @@ sixel_encoder_apply_drcs_option(
     return status;
 }
 
+static int sixel_encoder_warned_final_merge_deprecated = 0;
+
+static void
+sixel_encoder_warn_final_merge_deprecated(void)
+{
+    if (sixel_encoder_warned_final_merge_deprecated) {
+        return;
+    }
+    sixel_encoder_warned_final_merge_deprecated = 1;
+    (void)fprintf(stderr,
+                  "warning: -F/--final-merge is deprecated; "
+                  "use -QMODEL:merge=MODE instead.\n");
+}
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -7129,10 +7441,18 @@ sixel_encoder_setopt(
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
+    double q_merge_oversplit;
     unsigned int q_binbits;
     unsigned int q_autoratio;
+    unsigned int q_restarts;
     uint32_t q_seed;
     unsigned int q_iter;
+    unsigned int q_iter_max;
+    unsigned int q_miniter;
+    unsigned int q_polish_iter;
+    unsigned int q_feedback_slots;
+    unsigned int q_feedback_interval;
+    unsigned int q_merge_lloyd;
     unsigned int q_sample;
     unsigned int q_clara_trials;
     unsigned int q_clara_sample;
@@ -7147,6 +7467,7 @@ sixel_encoder_setopt(
     double q_prune_mass;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
+    int q_model;
     char match_detail[128];
 
     sixel_encoder_ref(encoder);
@@ -7154,10 +7475,18 @@ sixel_encoder_setopt(
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
+    q_merge_oversplit = 0.0;
     q_binbits = 0u;
     q_autoratio = 0u;
+    q_restarts = 0u;
     q_seed = 0u;
     q_iter = 0u;
+    q_iter_max = 0u;
+    q_miniter = 0u;
+    q_polish_iter = 0u;
+    q_feedback_slots = 0u;
+    q_feedback_interval = 0u;
+    q_merge_lloyd = 0u;
     q_sample = 0u;
     q_clara_trials = 0u;
     q_clara_sample = 0u;
@@ -7172,6 +7501,7 @@ sixel_encoder_setopt(
     q_prune_mass = 0.0;
     q_assignment = NULL;
     q_key = NULL;
+    q_model = SIXEL_QUANTIZE_MODEL_AUTO;
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
@@ -7337,7 +7667,8 @@ sixel_encoder_setopt(
         }
 
         q_resolution = &setopt_context.q_list_resolution.items[0].resolution;
-        encoder->quantize_model = q_resolution->resolved_base_value;
+        q_model = q_resolution->resolved_base_value;
+        encoder->quantize_model = q_model;
         encoder->quantize_model_kmeans_init_override = 0;
         encoder->quantize_model_kmeans_threshold_override = 0;
         encoder->quantize_model_kmeans_binning_override = 0;
@@ -7346,6 +7677,14 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmeans_softdist_override = 0;
         encoder->quantize_model_kmeans_autoratio_override = 0;
         encoder->quantize_model_kmeans_feedback_override = 0;
+        encoder->quantize_model_kmeans_seed_override = 0;
+        encoder->quantize_model_kmeans_restarts_override = 0;
+        encoder->quantize_model_kmeans_iter_override = 0;
+        encoder->quantize_model_kmeans_iter_max_override = 0;
+        encoder->quantize_model_kmeans_miniter_override = 0;
+        encoder->quantize_model_kmeans_polish_iter_override = 0;
+        encoder->quantize_model_kmeans_feedback_slots_override = 0;
+        encoder->quantize_model_kmeans_feedback_interval_override = 0;
         encoder->quantize_model_kmedoids_algo_override = 0;
         encoder->quantize_model_kmedoids_seed_override = 0;
         encoder->quantize_model_kmedoids_iter_override = 0;
@@ -7361,11 +7700,18 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmedoids_point_budget_override = 0;
         encoder->quantize_model_kmedoids_rare_keep_override = 0;
         encoder->quantize_model_kmedoids_prune_mass_override = 0;
+        encoder->quantize_model_merge_override = 0;
+        encoder->quantize_model_merge_oversplit_override = 0;
+        encoder->quantize_model_merge_lloyd_override = 0;
 
         q_index = 0u;
         while (q_index < q_resolution->assignment_count) {
             q_assignment = q_resolution->assignments + q_index;
             q_key = q_assignment->resolved_key_name;
+            if (q_key == NULL) {
+                ++q_index;
+                continue;
+            }
             if (q_key != NULL && strcmp(q_key, "inittype") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,
@@ -7466,27 +7812,135 @@ sixel_encoder_setopt(
             } else if (q_key != NULL && strcmp(q_key, "seed") == 0) {
                 status = sixel_encoder_parse_kmedoids_seed_text(
                     q_assignment->resolved_value_text,
-                    &q_seed);
+                        &q_seed);
                 if (SIXEL_FAILED(status)) {
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmedoids_seed_override = 1;
-                encoder->quantize_model_kmedoids_seed = q_seed;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+                    encoder->quantize_model_kmeans_seed_override = 1;
+                    encoder->quantize_model_kmeans_seed = q_seed;
+                } else {
+                    encoder->quantize_model_kmedoids_seed_override = 1;
+                    encoder->quantize_model_kmedoids_seed = q_seed;
+                }
             } else if (q_key != NULL && strcmp(q_key, "iter") == 0) {
+                if (q_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+                    status = sixel_encoder_parse_kmedoids_uint_text(
+                        q_assignment->resolved_value_text,
+                        1u,
+                        100u,
+                        0,
+                        "iter",
+                        &q_iter);
+                } else {
+                    status = sixel_encoder_parse_kmedoids_uint_text(
+                        q_assignment->resolved_value_text,
+                        1u,
+                        64u,
+                        0,
+                        "iter",
+                        &q_iter);
+                }
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                if (q_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+                    encoder->quantize_model_kmeans_iter_override = 1;
+                    encoder->quantize_model_kmeans_iter = q_iter;
+                } else {
+                    encoder->quantize_model_kmedoids_iter_override = 1;
+                    encoder->quantize_model_kmedoids_iter = q_iter;
+                }
+            } else if (q_key != NULL && strcmp(q_key, "iter_max") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    100u,
+                    0,
+                    "iter_max",
+                    &q_iter_max);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_iter_max_override = 1;
+                encoder->quantize_model_kmeans_iter_max = q_iter_max;
+            } else if (q_key != NULL && strcmp(q_key, "miniter") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    100u,
+                    1,
+                    "miniter",
+                    &q_miniter);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_miniter_override = 1;
+                encoder->quantize_model_kmeans_miniter = q_miniter;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "polish_iter") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    16u,
+                    1,
+                    "polish_iter",
+                    &q_polish_iter);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_polish_iter_override = 1;
+                encoder->quantize_model_kmeans_polish_iter = q_polish_iter;
+            } else if (q_key != NULL && strcmp(q_key, "restarts") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    32u,
+                    0,
+                    "restarts",
+                    &q_restarts);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_restarts_override = 1;
+                encoder->quantize_model_kmeans_restarts = q_restarts;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "feedback_slots") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    16u,
+                    0,
+                    "feedback_slots",
+                    &q_feedback_slots);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_feedback_slots_override = 1;
+                encoder->quantize_model_kmeans_feedback_slots = q_feedback_slots;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "feedback_interval") == 0) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
                     q_assignment->resolved_value_text,
                     1u,
                     64u,
                     0,
-                    "iter",
-                    &q_iter);
+                    "feedback_interval",
+                    &q_feedback_interval);
                 if (SIXEL_FAILED(status)) {
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmedoids_iter_override = 1;
-                encoder->quantize_model_kmedoids_iter = q_iter;
+                encoder->quantize_model_kmeans_feedback_interval_override = 1;
+                encoder->quantize_model_kmeans_feedback_interval
+                    = q_feedback_interval;
             } else if (q_key != NULL && strcmp(q_key, "sample") == 0) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
                     q_assignment->resolved_value_text,
@@ -7663,11 +8117,50 @@ sixel_encoder_setopt(
                 }
                 encoder->quantize_model_kmedoids_prune_mass_override = 1;
                 encoder->quantize_model_kmedoids_prune_mass = q_prune_mass;
+            } else if (q_key != NULL && strcmp(q_key, "merge") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q merge resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_merge_override = 1;
+                encoder->quantize_model_merge_mode = match_value;
+                encoder->final_merge_mode = match_value;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "merge_oversplit") == 0) {
+                status = sixel_encoder_parse_quantize_merge_oversplit_text(
+                    q_assignment->resolved_value_text,
+                    &q_merge_oversplit);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_merge_oversplit_override = 1;
+                encoder->quantize_model_merge_oversplit = q_merge_oversplit;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "merge_lloyd") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    30u,
+                    1,
+                    "merge_lloyd",
+                    &q_merge_lloyd);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_merge_lloyd_override = 1;
+                encoder->quantize_model_merge_lloyd = q_merge_lloyd;
             }
             ++q_index;
         }
         break;
     case SIXEL_OPTFLAG_FINAL_MERGE:  /* F */
+        sixel_encoder_warn_final_merge_deprecated();
         status = sixel_encoder_parse_choice_argument(
             value,
             g_option_choices_final_merge,

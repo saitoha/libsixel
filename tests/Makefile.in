@@ -860,8 +860,7 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \
-    loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa.t \
-    loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa.t
+    loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa.t
 
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
@@ -1173,6 +1172,8 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
+    _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
+    _static/sh/staticcheck-quantize-merge-suboption-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
@@ -3055,6 +3056,8 @@ uninstall-am:
 	staticcheck-makefile-recipes \
 	staticcheck-meson-palette-sources \
 	staticcheck-kmedoids-suboption-env-sync \
+	staticcheck-kmeans-suboption-env-sync \
+	staticcheck-quantize-merge-suboption-sync \
 	staticcheck-test-plan-single \
 	staticcheck-test-no-grep-awk \
 	staticcheck-artifact-local-dir-mkdir \
@@ -3078,6 +3081,8 @@ staticcheck-test-runner-dllexport \
 staticcheck-makefile-recipes \
 staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
+staticcheck-kmeans-suboption-env-sync \
+staticcheck-quantize-merge-suboption-sync \
 staticcheck-test-plan-single \
 staticcheck-test-no-grep-awk \
 staticcheck-artifact-local-dir-mkdir \
@@ -3197,6 +3202,26 @@ staticcheck-kmedoids-suboption-env-sync:
 		--trs-file staticcheck-kmedoids-suboption-env-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-kmeans-suboption-env-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-kmeans-suboption-env-sync" \
+		--log-file staticcheck-kmeans-suboption-env-sync.log \
+		--trs-file staticcheck-kmeans-suboption-env-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-kmeans-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-quantize-merge-suboption-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-quantize-merge-suboption-sync" \
+		--log-file staticcheck-quantize-merge-suboption-sync.log \
+		--trs-file staticcheck-quantize-merge-suboption-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-quantize-merge-suboption-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-plan-single:

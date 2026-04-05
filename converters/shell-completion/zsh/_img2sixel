@@ -204,7 +204,38 @@ _quantizemodel() {
   if [[ ${current} == *:* ]]; then
     base=${current%%:*}
     segment=${current##*:}
-    if [[ ${base} == k || ${base} == kmeans* ]]; then
+    if [[ ${base} == auto || ${base} == auto* || \
+          ${base} == heckbert || ${base} == heckbert* ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%${segment}}
+        if [[ ${key} == merge ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=none" \
+                     "${prefix}${key}=ward"
+          return 0
+        elif [[ ${key} == merge_oversplit ]]; then
+          compadd -- "${prefix}${key}=1.2" \
+                     "${prefix}${key}=1.5" \
+                     "${prefix}${key}=1.8" \
+                     "${prefix}${key}=2.0"
+          return 0
+        elif [[ ${key} == merge_lloyd ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=3" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=8"
+          return 0
+        fi
+      else
+        prefix=${current%${segment}}
+        compadd -- "${prefix}merge=" \
+                   "${prefix}merge_oversplit=" \
+                   "${prefix}merge_lloyd="
+        return 0
+      fi
+    elif [[ ${base} == k || ${base} == kmeans* ]]; then
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
@@ -243,6 +274,80 @@ _quantizemodel() {
           compadd -- "${prefix}${key}=off" \
                      "${prefix}${key}=on"
           return 0
+        elif [[ ${key} == s || ${key} == seed ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=7" \
+                     "${prefix}${key}=42" \
+                     "${prefix}${key}=256"
+          return 0
+        elif [[ ${key} == restarts ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16"
+          return 0
+        elif [[ ${key} == iter || ${key} == iter_max ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16" \
+                     "${prefix}${key}=32" \
+                     "${prefix}${key}=64" \
+                     "${prefix}${key}=100"
+          return 0
+        elif [[ ${key} == miniter ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16" \
+                     "${prefix}${key}=32" \
+                     "${prefix}${key}=64" \
+                     "${prefix}${key}=100"
+          return 0
+        elif [[ ${key} == polish_iter ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16"
+          return 0
+        elif [[ ${key} == feedback_slots ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16"
+          return 0
+        elif [[ ${key} == feedback_interval ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16" \
+                     "${prefix}${key}=32" \
+                     "${prefix}${key}=64"
+          return 0
+        elif [[ ${key} == merge ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=none" \
+                     "${prefix}${key}=ward"
+          return 0
+        elif [[ ${key} == merge_oversplit ]]; then
+          compadd -- "${prefix}${key}=1.2" \
+                     "${prefix}${key}=1.5" \
+                     "${prefix}${key}=1.8" \
+                     "${prefix}${key}=2.0"
+          return 0
+        elif [[ ${key} == merge_lloyd ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=3" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=8"
+          return 0
         fi
       else
         prefix=${current%${segment}}
@@ -253,7 +358,16 @@ _quantizemodel() {
                    "${prefix}m=" "${prefix}mapping=" \
                    "${prefix}d=" "${prefix}softdist=" \
                    "${prefix}r=" "${prefix}autoratio=" \
-                   "${prefix}f=" "${prefix}feedback="
+                   "${prefix}f=" "${prefix}feedback=" \
+                   "${prefix}s=" "${prefix}seed=" \
+                   "${prefix}restarts=" \
+                   "${prefix}iter=" "${prefix}iter_max=" \
+                   "${prefix}miniter=" "${prefix}polish_iter=" \
+                   "${prefix}feedback_slots=" \
+                   "${prefix}feedback_interval=" \
+                   "${prefix}merge=" \
+                   "${prefix}merge_oversplit=" \
+                   "${prefix}merge_lloyd="
         return 0
       fi
     elif [[ ${base} == medoids* ]]; then
@@ -337,6 +451,24 @@ _quantizemodel() {
                      "${prefix}${key}=256" \
                      "${prefix}${key}=512"
           return 0
+        elif [[ ${key} == merge ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=none" \
+                     "${prefix}${key}=ward"
+          return 0
+        elif [[ ${key} == merge_oversplit ]]; then
+          compadd -- "${prefix}${key}=1.2" \
+                     "${prefix}${key}=1.5" \
+                     "${prefix}${key}=1.8" \
+                     "${prefix}${key}=2.0"
+          return 0
+        elif [[ ${key} == merge_lloyd ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=3" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=8"
+          return 0
         fi
       else
         prefix=${current%${segment}}
@@ -352,7 +484,10 @@ _quantizemodel() {
                    "${prefix}clarans_neighbors=" \
                    "${prefix}bandit_iter=" \
                    "${prefix}bandit_candidates=" \
-                   "${prefix}bandit_batch="
+                   "${prefix}bandit_batch=" \
+                   "${prefix}merge=" \
+                   "${prefix}merge_oversplit=" \
+                   "${prefix}merge_lloyd="
         return 0
       fi
     fi
@@ -408,7 +543,7 @@ _arguments -S -s -A "-*" -S \
   {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
-  {-F,--final-merge=}'[control final merge policy]':finalmerge:_finalmerge \
+  {-F,--final-merge=}'[deprecated alias of -QMODEL:merge=MODE]':finalmerge:_finalmerge \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
   {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \

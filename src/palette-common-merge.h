@@ -42,6 +42,18 @@ extern "C" {
 void
 sixel_final_merge_load_env(void);
 
+void
+sixel_set_final_merge_target_factor_override(int enabled,
+                                             double factor);
+
+void
+sixel_set_final_merge_lloyd_iterations_override(int enabled,
+                                                unsigned int iterations);
+
+void
+sixel_set_kmeans_iter_max_override(int enabled,
+                                   unsigned int iter_max);
+
 unsigned int
 sixel_final_merge_lloyd_iterations(int merge_mode);
 

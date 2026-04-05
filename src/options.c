@@ -624,7 +624,7 @@ sixel_option_report_unknown_suboption_key(
     char *buffer,
     size_t buffer_size)
 {
-    char candidates[192];
+    char candidates[512];
     int written;
 
     candidates[0] = '\0';

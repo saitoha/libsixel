@@ -31,6 +31,8 @@
 #ifndef LIBSIXEL_PALETTE_KMEANS_H
 #define LIBSIXEL_PALETTE_KMEANS_H
 
+#include <stdint.h>
+
 #include "palette.h"
 #include "logger.h"
 
@@ -140,11 +142,66 @@ SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_autoratio(void);
 
 SIXEL_INTERNAL_API void
+sixel_set_kmeans_seed_override(int enabled,
+                               uint32_t seed);
+
+SIXEL_INTERNAL_API uint32_t
+sixel_get_kmeans_seed(void);
+
+SIXEL_INTERNAL_API int
+sixel_get_kmeans_seed_enabled(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_restarts_override(int enabled,
+                                   unsigned int restarts);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_restarts(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_iter_override(int enabled,
+                               unsigned int iter_count);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_iter(void);
+
+SIXEL_INTERNAL_API int
+sixel_get_kmeans_iter_enabled(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_miniter_override(int enabled,
+                                  unsigned int miniter);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_miniter(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_polish_iter_override(int enabled,
+                                      unsigned int polish_iter);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_polish_iter(void);
+
+SIXEL_INTERNAL_API void
 sixel_set_kmeans_feedback_mode_override(int enabled,
                                         sixel_kmeans_feedback_mode mode);
 
 SIXEL_INTERNAL_API sixel_kmeans_feedback_mode
 sixel_get_kmeans_feedback_mode(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_feedback_slots_override(int enabled,
+                                         unsigned int slots);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_feedback_slots(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_feedback_interval_override(int enabled,
+                                            unsigned int interval);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmeans_feedback_interval(void);
 
 SIXELSTATUS
 sixel_kmeans_choose_initial_centroids(double *centers,
@@ -156,7 +213,8 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       int pixelformat,
                                       double *distance_cache,
                                       sixel_allocator_t *allocator,
-                                      sixel_kmeans_init_type init_type);
+                                      sixel_kmeans_init_type init_type,
+                                      uint32_t *rng_state);
 
 #ifdef __cplusplus
 }

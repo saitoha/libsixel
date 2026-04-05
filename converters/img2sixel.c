@@ -241,6 +241,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                         auto maps to the heckbert\n"
         "                             heckbert -> traditional Heckbert\n"
         "                                         median-cut implementation.\n"
+        "                             auto/heckbert support merge keys:\n"
+        "                               :merge=MODE\n"
+        "                                 auto, none, ward\n"
+        "                               :merge_oversplit=FACTOR\n"
+        "                                 1.0-3.0\n"
+        "                               :merge_lloyd=COUNT\n"
+        "                                 0-30\n"
         "                             kmeans   -> k-means++ clustering.\n"
         "                               sub-option:\n"
         "                                 :inittype=TYPE (:i=TYPE)\n"
@@ -294,6 +301,43 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                            (default)\n"
         "                                     on  -> enable\n"
         "                                            feedback\n"
+        "                                 :seed=VALUE (:s=VALUE)\n"
+        "                                   uint32 random seed\n"
+        "                                   (0-4294967295).\n"
+        "                                 :restarts=COUNT\n"
+        "                                   restart count\n"
+        "                                   (1-32, default 1).\n"
+        "                                 :iter=COUNT\n"
+        "                                   Lloyd iteration cap\n"
+        "                                   (1-100).\n"
+        "                                   takes precedence over\n"
+        "                                   :iter_max when both are\n"
+        "                                   specified.\n"
+        "                                 :iter_max=COUNT\n"
+        "                                   Lloyd iteration cap\n"
+        "                                   (1-100, default 20).\n"
+        "                                 :miniter=COUNT\n"
+        "                                   minimum iteration floor\n"
+        "                                   (0 or 1-100).\n"
+        "                                 :polish_iter=COUNT\n"
+        "                                   extra post-iteration\n"
+        "                                   refinement count\n"
+        "                                   (0 or 1-16).\n"
+        "                                 :feedback_slots=COUNT\n"
+        "                                   relocate this many weak\n"
+        "                                   clusters per feedback step\n"
+        "                                   (1-16, default 1).\n"
+        "                                 :feedback_interval=COUNT\n"
+        "                                   run feedback every N\n"
+        "                                   iterations (1-64,\n"
+        "                                   default 1).\n"
+        "                                 merge keys:\n"
+        "                                   :merge=MODE\n"
+        "                                     auto, none, ward\n"
+        "                                   :merge_oversplit=FACTOR\n"
+        "                                     1.0-3.0\n"
+        "                                   :merge_lloyd=COUNT\n"
+        "                                     0-30\n"
         "                             medoids -> k-medoids clustering.\n"
         "                               sub-option:\n"
         "                                 :algo=NAME (:a=NAME)\n"
@@ -357,11 +401,20 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 :bandit_batch=COUNT\n"
         "                                   Bandit mini-batch size\n"
         "                                   (8-4096).\n"
+        "                                 merge keys:\n"
+        "                                   :merge=MODE\n"
+        "                                     auto, none, ward\n"
+        "                                   :merge_oversplit=FACTOR\n"
+        "                                     1.0-3.0\n"
+        "                                   :merge_lloyd=COUNT\n"
+        "                                     0-30\n"
     },
     {
         'F',
         "final-merge",
         "-F MODE, --final-merge=MODE\n"
+        "                           [[deprecated]] compatibility alias\n"
+        "                           for -QMODEL:merge=MODE.\n"
         "                           control the post-merge stage.\n"
         "                             auto -> choose post-merge strategy\n"
         "                                     automatically (default)\n"
@@ -1328,7 +1381,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX",
-        "Cap Lloyd passes in the primary k-means solver. Accepts 1-30,\n"
+        "Cap Lloyd passes in the primary k-means solver. Accepts 1-100,\n"
         "default 20."
     },
     {
@@ -1366,6 +1419,39 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_KMEANS_FEEDBACK",
         "k-means residual histogram feedback switch: off or on\n"
         "(default off)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_SEED",
+        "default uint32 random seed for k-means (0-4294967295).\n"
+        "when set, runs become reproducible."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_RESTARTS",
+        "k-means restart count (1-32, default 1)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_ITER",
+        "force k-means Lloyd iteration cap (1-100).\n"
+        "takes precedence over SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_MINITER",
+        "set k-means minimum Lloyd iterations (0 or 1-100,\n"
+        "default 0)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_POLISH_ITER",
+        "add post-pass k-means Lloyd refinements (0 or 1-16,\n"
+        "default 0)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS",
+        "number of weak clusters moved per feedback step (1-16,\n"
+        "default 1)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_FEEDBACK_INTERVAL",
+        "feedback cadence in Lloyd iterations (1-64, default 1)."
     },
     {
         "SIXEL_PALETTE_KMEDOIDS_ALGO",
