@@ -3191,6 +3191,29 @@ test_run_clarans_exhausted_candidate_skip_determinism_case(void)
     return 1;
 }
 
+static int
+test_run_clarans_adaptive_slot_probe_budget_consistency_case(void)
+{
+    int ok;
+
+    ok = 0;
+    sixel_set_kmedoids_clarans_local_override(1, 5u);
+    sixel_set_kmedoids_clarans_neighbors_override(1, 160u);
+
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)) {
+        goto end;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)) {
+        goto end;
+    }
+    ok = 1;
+
+end:
+    sixel_set_kmedoids_clarans_neighbors_override(0, 0u);
+    sixel_set_kmedoids_clarans_local_override(0, 0u);
+    return ok;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -3320,6 +3343,11 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "clarans-exhausted-candidate-skip-determinism") == 0) {
         return test_run_clarans_exhausted_candidate_skip_determinism_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-adaptive-slot-probe-budget-consistency")
+            == 0) {
+        return test_run_clarans_adaptive_slot_probe_budget_consistency_case()
             ? 0 : 1;
     }
 
