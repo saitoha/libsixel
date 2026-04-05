@@ -213,6 +213,15 @@ sixel_kmedoids_test_two_step_pam_polish_cost(
     unsigned int *second_iterations_out,
     sixel_allocator_t *allocator);
 
+SIXELSTATUS
+sixel_kmedoids_test_bandit_select_topk(
+    unsigned int const *active_in,
+    double const *costs_in,
+    unsigned int count,
+    unsigned int keep,
+    unsigned int *selected_out,
+    sixel_allocator_t *allocator);
+
 static unsigned char const g_test_pixels_rgb[TEST_PIXEL_COUNT * 3u] = {
     255u, 0u,   0u,
     255u, 0u,   0u,
@@ -243,6 +252,21 @@ test_guided_rank_is_better(double lhs_score,
         return 1;
     }
     if (lhs_score < rhs_score) {
+        return 0;
+    }
+    return lhs_index < rhs_index ? 1 : 0;
+}
+
+static int
+test_bandit_rank_is_better(double lhs_cost,
+                           unsigned int lhs_index,
+                           double rhs_cost,
+                           unsigned int rhs_index)
+{
+    if (lhs_cost < rhs_cost) {
+        return 1;
+    }
+    if (lhs_cost > rhs_cost) {
         return 0;
     }
     return lhs_index < rhs_index ? 1 : 0;
@@ -3214,6 +3238,101 @@ end:
     return ok;
 }
 
+static int
+test_run_bandit_prune_partial_select_equivalence_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned int const count = 12u;
+    unsigned int const keep = 6u;
+    unsigned int active[12u];
+    unsigned int ref_active[12u];
+    unsigned int selected[6u];
+    double costs[12u];
+    double ref_costs[12u];
+    unsigned int index;
+    unsigned int probe;
+    unsigned int swap_tmp;
+    double swap_cost;
+    SIXELSTATUS status;
+
+    allocator = NULL;
+    index = 0u;
+    probe = 0u;
+    swap_tmp = 0u;
+    swap_cost = 0.0;
+    status = SIXEL_FALSE;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    active[0u] = 11u;
+    active[1u] = 3u;
+    active[2u] = 7u;
+    active[3u] = 1u;
+    active[4u] = 10u;
+    active[5u] = 5u;
+    active[6u] = 9u;
+    active[7u] = 2u;
+    active[8u] = 8u;
+    active[9u] = 6u;
+    active[10u] = 4u;
+    active[11u] = 0u;
+
+    costs[0u] = 9.0;
+    costs[1u] = 4.0;
+    costs[2u] = 1.0;
+    costs[3u] = 7.0;
+    costs[4u] = 4.0;
+    costs[5u] = 2.5;
+    costs[6u] = 3.0;
+    costs[7u] = 1.0;
+    costs[8u] = 8.0;
+    costs[9u] = 3.0;
+    costs[10u] = 2.5;
+    costs[11u] = 4.0;
+
+    for (index = 0u; index < count; ++index) {
+        ref_active[index] = active[index];
+        ref_costs[index] = costs[index];
+    }
+    for (index = 0u; index + 1u < count; ++index) {
+        for (probe = index + 1u; probe < count; ++probe) {
+            if (test_bandit_rank_is_better(ref_costs[probe],
+                                           ref_active[probe],
+                                           ref_costs[index],
+                                           ref_active[index])) {
+                swap_tmp = ref_active[index];
+                ref_active[index] = ref_active[probe];
+                ref_active[probe] = swap_tmp;
+                swap_cost = ref_costs[index];
+                ref_costs[index] = ref_costs[probe];
+                ref_costs[probe] = swap_cost;
+            }
+        }
+    }
+
+    status = sixel_kmedoids_test_bandit_select_topk(active,
+                                                     costs,
+                                                     count,
+                                                     keep,
+                                                     selected,
+                                                     allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    for (index = 0u; index < keep; ++index) {
+        if (selected[index] != ref_active[index]) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+    }
+
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -3348,6 +3467,10 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     if (strcmp(argv[1], "clarans-adaptive-slot-probe-budget-consistency")
             == 0) {
         return test_run_clarans_adaptive_slot_probe_budget_consistency_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "bandit-prune-partial-select-equivalence") == 0) {
+        return test_run_bandit_prune_partial_select_equivalence_case()
             ? 0 : 1;
     }
 
