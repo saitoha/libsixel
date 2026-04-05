@@ -3570,6 +3570,57 @@ end:
 }
 
 static int
+test_run_clarans_adaptive_slot_probe_budget_consistency_v12_case(void)
+{
+    unsigned int dense_target;
+    unsigned int sparse_target;
+    unsigned int late_target;
+    unsigned int late_target_again;
+    unsigned int tiny_target;
+    unsigned int single_target;
+
+    dense_target = sixel_kmedoids_test_clarans_slot_probe_target(
+        16u, 3u, 96u, 96u, 0u, 128u, 0u, 384u);
+    sparse_target = sixel_kmedoids_test_clarans_slot_probe_target(
+        16u, 3u, 8u, 96u, 0u, 128u, 0u, 384u);
+    late_target = sixel_kmedoids_test_clarans_slot_probe_target(
+        16u, 3u, 96u, 96u, 112u, 128u, 360u, 384u);
+    late_target_again = sixel_kmedoids_test_clarans_slot_probe_target(
+        16u, 3u, 96u, 96u, 112u, 128u, 360u, 384u);
+    tiny_target = sixel_kmedoids_test_clarans_slot_probe_target(
+        2u, 1u, 8u, 16u, 4u, 16u, 8u, 32u);
+    single_target = sixel_kmedoids_test_clarans_slot_probe_target(
+        1u, 1u, 8u, 16u, 4u, 16u, 8u, 32u);
+
+    if (dense_target < 2u || dense_target > 16u) {
+        return 0;
+    }
+    if (sparse_target < 2u || sparse_target > 16u) {
+        return 0;
+    }
+    if (late_target < 2u || late_target > 16u) {
+        return 0;
+    }
+    if (sparse_target >= dense_target) {
+        return 0;
+    }
+    if (late_target > dense_target) {
+        return 0;
+    }
+    if (late_target_again != late_target) {
+        return 0;
+    }
+    if (tiny_target != 2u) {
+        return 0;
+    }
+    if (single_target != 1u) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
 test_run_bandit_prune_partial_select_equivalence_case(void)
 {
     sixel_allocator_t *allocator;
@@ -4848,6 +4899,12 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     if (strcmp(argv[1], "clarans-adaptive-slot-probe-budget-consistency")
             == 0) {
         return test_run_clarans_adaptive_slot_probe_budget_consistency_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-adaptive-slot-probe-budget-consistency-v12")
+            == 0) {
+        return
+            test_run_clarans_adaptive_slot_probe_budget_consistency_v12_case()
             ? 0 : 1;
     }
     if (strcmp(argv[1], "bandit-prune-partial-select-equivalence") == 0) {
