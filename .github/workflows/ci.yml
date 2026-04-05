@@ -733,9 +733,13 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          archive="${FUZZ_OUTPUT_DIR}.tar.gz"
+          archive_output="${FUZZ_OUTPUT_DIR}.tar.gz"
+          archive_corpus="${FUZZ_INPUT_DIR}.tar.gz"
           if [ -d "$FUZZ_OUTPUT_DIR" ]; then
-            tar -C "$FUZZ_OUTPUT_DIR" -czf "$archive" .
+            tar -C "$FUZZ_OUTPUT_DIR" -czf "$archive_output" .
+          fi
+          if [ -d "$FUZZ_INPUT_DIR" ]; then
+            tar -C "$FUZZ_INPUT_DIR" -czf "$archive_corpus" .
           fi
 
       - name: Upload img2sixel CLI fuzz artifacts
@@ -747,7 +751,7 @@ jobs:
           retention-days: 7
           path: |
             ${{ env.FUZZ_OUTPUT_DIR }}.tar.gz
-            ${{ env.FUZZ_INPUT_DIR }}
+            ${{ env.FUZZ_INPUT_DIR }}.tar.gz
 
   fuzz_push_loader_coregraphics:
     if: github.event_name == 'push' || github.event_name == 'schedule'
