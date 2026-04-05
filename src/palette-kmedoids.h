@@ -187,6 +187,42 @@ sixel_kmedoids_test_swap_cost_cutoff(double const *points,
                                      double cutoff,
                                      int *early_stop_out);
 
+SIXEL_INTERNAL_API double
+sixel_kmedoids_test_swap_cost_cutoff_with_row(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int replace_slot,
+    unsigned int candidate_point,
+    double *candidate_dist_row,
+    unsigned int const *order,
+    double cutoff,
+    int *early_stop_out);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_build_eval_order_residual(
+    double const *weights,
+    double const *nearest_dist,
+    unsigned int point_count,
+    unsigned int *order_out,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_apply_eval_order_delta(
+    double const *weights,
+    double const *nearest_dist_before,
+    double const *nearest_dist_after,
+    unsigned int point_count,
+    unsigned int const *changed_points,
+    unsigned int changed_count,
+    unsigned int delta_threshold,
+    unsigned int *order_io,
+    int *full_refresh_out,
+    sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmedoids_test_build_clarans_guided_sets(
     double const *weights,
