@@ -64,6 +64,7 @@
 #include "getopt_stub.h"
 #include "cli.h"
 #include "options.h"
+#include "tty.h"
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -213,6 +214,7 @@ capture_first_frame(sixel_frame_t *frame, void *context)
 static int
 load_frame(char const *path, sixel_allocator_t *allocator,
            char const *loader_order,
+           unsigned char *bgcolor,
            sixel_frame_t **out_frame)
 {
     LoaderCapture capture;
@@ -270,6 +272,16 @@ load_frame(char const *path, sixel_allocator_t *allocator,
                                  &finsecure);
     if (SIXEL_FAILED(status)) {
         goto error;
+    }
+
+    /* Mirror img2sixel -B semantics in loader-side alpha composition. */
+    if (bgcolor != NULL) {
+        status = sixel_loader_setopt(loader,
+                                     SIXEL_LOADER_OPTION_BGCOLOR,
+                                     bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
     }
 
     if (loader_order != NULL && loader_order[0] != '\0') {
@@ -1248,6 +1260,7 @@ static SIXELSTATUS
 lsqa_prepare_frame_for_comparison(sixel_frame_t *frame,
                                   int target_colorspace,
                                   int target_precision,
+                                  unsigned char *bgcolor,
                                   int grayscale_enabled)
 {
     SIXELSTATUS status;
@@ -1257,7 +1270,8 @@ lsqa_prepare_frame_for_comparison(sixel_frame_t *frame,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_frame_strip_alpha(frame, NULL);
+    /* Flatten RGBA using the requested background before metric analysis. */
+    status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -1343,6 +1357,57 @@ lsqa_parse_boolean(char const *argument,
 }
 
 static int
+lsqa_parse_bgcolor(char const *argument,
+                   unsigned char *bgcolor,
+                   char *detail,
+                   size_t detail_size)
+{
+    SIXELSTATUS status;
+    char const *detail_source;
+    int written;
+
+    status = SIXEL_FALSE;
+    detail_source = NULL;
+    written = 0;
+
+    if (detail != NULL && detail_size > 0u) {
+        detail[0] = '\0';
+    }
+    if (argument == NULL || argument[0] == '\0' || bgcolor == NULL) {
+        if (detail != NULL && detail_size > 0u) {
+            (void)snprintf(detail,
+                           detail_size,
+                           "%s",
+                           "cannot parse bgcolor option.");
+        }
+        return -1;
+    }
+
+    /*
+     * Reuse the OSC11/img2sixel colorspec parser to keep -B grammar aligned.
+     */
+    status = sixel_tty_parse_colorspec(bgcolor, argument);
+    if (SIXEL_FAILED(status)) {
+        detail_source = sixel_helper_get_additional_message();
+        if (detail_source == NULL || detail_source[0] == '\0') {
+            detail_source = "cannot parse bgcolor option.";
+        }
+        if (detail != NULL && detail_size > 0u) {
+            written = snprintf(detail,
+                               detail_size,
+                               "%s",
+                               detail_source);
+            if (written < 0) {
+                detail[0] = '\0';
+            }
+        }
+        return -1;
+    }
+
+    return 0;
+}
+
+static int
 lsqa_copy_option_text(char *buffer,
                       size_t buffer_size,
                       char const *value)
@@ -1383,6 +1448,8 @@ typedef struct Options {
     int compare_precision_specified;
     int loader_order_specified;
     char baseline_name[64];
+    unsigned char bgcolor[3];
+    int has_bgcolor;
 } Options;
 
 static void
@@ -1595,6 +1662,21 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           as img2sixel -L).\n"
     },
     {
+        'B',
+        "bgcolor",
+        "-B BGCOLOR, --bgcolor=BGCOLOR\n"
+        "                           specify background color.\n"
+        "                           BGCOLOR syntax follows img2sixel:\n"
+        "                             #rgb\n"
+        "                             #rrggbb\n"
+        "                             #rrrgggbbb\n"
+        "                             #rrrrggggbbbb\n"
+        "                             rgb:r/g/b\n"
+        "                             rgb:rr/gg/bb\n"
+        "                             rgb:rrr/ggg/bbb\n"
+        "                             rgb:rrrr/gggg/bbbb\n"
+    },
+    {
         'H',
         "help",
         "-H, --help                 show this help.\n"
@@ -1611,7 +1693,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:Hh";
+static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:B:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -1784,16 +1866,19 @@ print_usage(const char *prog)
     fprintf(stderr,
             "Usage: %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-B BGCOLOR]\n"
             "             <reference> [output]\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-B BGCOLOR]\n"
             "             <reference> < output\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "             [-B BGCOLOR]\n"
             "             <reference> - < output\n",
             prog);
     fprintf(stderr,
@@ -1817,6 +1902,10 @@ print_usage(const char *prog)
             "                        reference/8bit/float32\n");
     fprintf(stderr,
             "  -L, --loaders LIST  loader order (img2sixel -L syntax)\n");
+    fprintf(stderr,
+            "  -B, --bgcolor BGCOLOR\n");
+    fprintf(stderr,
+            "                        background color for alpha composition\n");
 }
 
 static void
@@ -1828,12 +1917,15 @@ show_help(void)
     fprintf(stdout,
             "Usage: lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-B BGCOLOR]\n"
             "            <reference> [output]\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-B BGCOLOR]\n"
             "            <reference> < output\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
+            "            [-B BGCOLOR]\n"
             "            <reference> - < output\n"
             "\n"
             "Options:\n");
@@ -2177,6 +2269,10 @@ parse_args(int argc, char **argv, Options *opts)
     opts->prefix_buffer[0] = '\0';
     opts->loader_order_buffer[0] = '\0';
     opts->baseline_name[0] = '\0';
+    opts->bgcolor[0] = 0u;
+    opts->bgcolor[1] = 0u;
+    opts->bgcolor[2] = 0u;
+    opts->has_bgcolor = 0;
 
     argi = 1;
     parse_status = 0;
@@ -2213,6 +2309,7 @@ parse_args(int argc, char **argv, Options *opts)
             {"compare-colorspace", required_argument, &long_opt, 'W'},
             {"compare-precision", required_argument, &long_opt, 'P'},
             {"loaders", required_argument, &long_opt, 'L'},
+            {"bgcolor", required_argument, &long_opt, 'B'},
             {"help", no_argument, &long_opt, 'H'},
             {0, 0, 0, 0}
         };
@@ -2299,6 +2396,22 @@ parse_args(int argc, char **argv, Options *opts)
             }
             opts->loader_order = optarg;
             opts->loader_order_specified = 1;
+            break;
+        case 'B':
+            if (lsqa_parse_bgcolor(optarg,
+                                   opts->bgcolor,
+                                   detail_buffer,
+                                   sizeof(detail_buffer)) != 0) {
+                lsqa_report_invalid_argument(
+                    'B',
+                    optarg,
+                    detail_buffer[0] != '\0'
+                        ? detail_buffer
+                        : "cannot parse bgcolor option.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            opts->has_bgcolor = 1;
             break;
         case 'b':
             if (opts->baseline_enabled) {
@@ -2539,6 +2652,7 @@ main(int argc, char **argv)
     if (load_frame(opts.ref_path,
                    allocator,
                    opts.loader_order,
+                   opts.has_bgcolor ? opts.bgcolor : NULL,
                    &ref_frame) != 0) {
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
@@ -2546,6 +2660,7 @@ main(int argc, char **argv)
     if (load_frame(opts.out_path,
                    allocator,
                    opts.loader_order,
+                   opts.has_bgcolor ? opts.bgcolor : NULL,
                    &out_frame) != 0) {
         sixel_frame_unref(ref_frame);
         sixel_allocator_unref(allocator);
@@ -2569,6 +2684,9 @@ main(int argc, char **argv)
     status = lsqa_prepare_frame_for_comparison(ref_frame,
                                                target_colorspace,
                                                target_precision,
+                                               opts.has_bgcolor
+                                                   ? opts.bgcolor
+                                                   : NULL,
                                                opts.grayscale_compare);
     if (SIXEL_FAILED(status)) {
         char const *detail;
@@ -2592,6 +2710,9 @@ main(int argc, char **argv)
     status = lsqa_prepare_frame_for_comparison(out_frame,
                                                target_colorspace,
                                                target_precision,
+                                               opts.has_bgcolor
+                                                   ? opts.bgcolor
+                                                   : NULL,
                                                opts.grayscale_compare);
     if (SIXEL_FAILED(status)) {
         char const *detail;
