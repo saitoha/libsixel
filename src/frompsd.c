@@ -10382,9 +10382,11 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
 
     status = sixel_builtin_psd_parse_layer_model(chunk, info, &model);
     if (SIXEL_SUCCEEDED(status) && model.layer_count > 0u) {
-        if (model.layer_count > 1u) {
+        if (model.layer_count > 1u &&
+            info->width == 1u &&
+            info->height == 1u) {
             should_prefer = 1;
-        } else {
+        } else if (model.layer_count == 1u) {
             sixel_builtin_psd_layer_record_t const *layer;
 
             layer = &model.layers[0];
