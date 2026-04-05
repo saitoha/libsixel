@@ -204,6 +204,24 @@ sixel_kmedoids_test_build_clarans_guided_sets(
     sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_collect_samples(
+    unsigned char const *data,
+    unsigned int length,
+    unsigned int channels,
+    unsigned int pixel_stride,
+    int input_is_float32,
+    unsigned int histbits,
+    unsigned int point_budget,
+    unsigned int rare_keep,
+    double prune_mass,
+    uint32_t seed,
+    double **samples_out,
+    double **sample_weights_out,
+    unsigned int *sample_count_out,
+    unsigned int *visible_count_out,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmedoids_test_apply_clarans_guided_delta(
     double const *weights,
     unsigned int point_count,
@@ -242,6 +260,20 @@ sixel_kmedoids_test_pam_polish_cost(double const *points,
                                     double *after_cost_out,
                                     unsigned int *iterations_out,
                                     sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_two_step_pam_polish_cost(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *initial_medoids,
+    unsigned int k,
+    double *before_cost_out,
+    double *after_first_cost_out,
+    double *after_second_cost_out,
+    unsigned int *first_iterations_out,
+    unsigned int *second_iterations_out,
+    sixel_allocator_t *allocator);
 
 #ifdef __cplusplus
 }
