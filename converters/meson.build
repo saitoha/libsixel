@@ -150,8 +150,8 @@ if img2sixel_opt.enabled()
       img2sixel_cli_numeric_harness,
     ]
 
-    run_target('fuzz-cli-img2sixel',
-      command: [sh, '-c', '''
+run_target('fuzz-cli-img2sixel',
+  command: [sh, '-c', '''
 set -eu
 
 harness="$1"
@@ -169,18 +169,12 @@ input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
 output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel}"
 base_args="${FUZZ_IMG2SIXEL_BASE_ARGS:-}"
 wrapper="$source_root/tools/fuzz-img2sixel-cli.sh"
+runner_script="$source_root/tools/fuzz-afl-runner.sh"
 
-if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
-  echo "error: $fuzz_afl is not installed" >&2
+if test ! -x "$runner_script"; then
+  echo "error: AFL runner wrapper is missing: $runner_script" >&2
   exit 1
 fi
-
-if test ! -d "$input_dir"; then
-  echo "error: fuzz input directory was not found: $input_dir" >&2
-  exit 1
-fi
-
-mkdir -p "$output_dir"
 
 if test "$mode" = "legacy"; then
   if test ! -x "$img2sixel"; then
@@ -194,49 +188,27 @@ if test "$mode" = "legacy"; then
   fi
 
   echo "fuzz-cli-img2sixel: mode=legacy base args='$base_args'"
-  set -- "$fuzz_afl"
-  set -- "$@" -i "$input_dir"
-  set -- "$@" -o "$output_dir"
-  set -- "$@" --
-  set -- "$@" env
-  set -- "$@" FUZZ_IMG2SIXEL="$img2sixel"
-  set -- "$@" FUZZ_IMG2SIXEL_BASE_ARGS="$base_args"
-  set -- "$@" "$wrapper" @@
-else
-  if test ! -x "$harness"; then
-    echo "error: persistent harness was not found: $harness" >&2
-    exit 1
-  fi
-  if test -n "$base_args"; then
-    echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"
-  fi
-  echo "fuzz-cli-img2sixel: mode=persistent harness='$harness'"
-  set -- "$fuzz_afl"
-  set -- "$@" -i "$input_dir"
-  set -- "$@" -o "$output_dir"
-  set -- "$@" --
-  set -- "$@" "$harness"
+  "$runner_script" \
+    "fuzz-cli-img2sixel" "$fuzz_afl" "$input_dir" "$output_dir" \
+    "$fuzz_timeout" -- \
+    env FUZZ_IMG2SIXEL="$img2sixel" FUZZ_IMG2SIXEL_BASE_ARGS="$base_args" \
+    "$wrapper" @@
+  exit 0
 fi
 
-if test "$fuzz_timeout" -gt 0; then
-  if ! command -v timeout >/dev/null 2>&1; then
-    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
-    exit 1
-  fi
-  echo "Running img2sixel fuzzing for ${fuzz_timeout}s"
-  set +e
-  timeout "$fuzz_timeout" "$@"
-  rc=$?
-  set -e
-  if test "$rc" -eq 124; then
-    echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
-    exit 0
-  fi
-  exit "$rc"
+if test ! -x "$harness"; then
+  echo "error: persistent harness was not found: $harness" >&2
+  exit 1
 fi
 
-echo "Running img2sixel fuzzing without timeout"
-exec "$@"
+if test -n "$base_args"; then
+  echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"
+fi
+echo "fuzz-cli-img2sixel: mode=persistent harness='$harness'"
+"$runner_script" \
+  "fuzz-cli-img2sixel" "$fuzz_afl" "$input_dir" "$output_dir" \
+  "$fuzz_timeout" -- \
+  "$harness"
 ''',
                 'sh',
                 img2sixel_fuzz_harness.full_path(),
@@ -245,8 +217,8 @@ exec "$@"
                 meson.project_build_root()],
       depends: [img2sixel_fuzz_harness, img2sixel_exe])
 
-    run_target('fuzz-cli-img2sixel-parser',
-      command: [sh, '-c', '''
+run_target('fuzz-cli-img2sixel-parser',
+  command: [sh, '-c', '''
 set -eu
 
 harness="$1"
@@ -260,42 +232,21 @@ if test ! -d "$default_input_dir"; then
 fi
 input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
 output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-parser}"
+runner_script="$source_root/tools/fuzz-afl-runner.sh"
 
-if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
-  echo "error: $fuzz_afl is not installed" >&2
-  exit 1
-fi
-if test ! -d "$input_dir"; then
-  echo "error: fuzz input directory was not found: $input_dir" >&2
-  exit 1
-fi
 if test ! -x "$harness"; then
   echo "error: parser harness was not found: $harness" >&2
   exit 1
 fi
-
-mkdir -p "$output_dir"
-set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
-
-if test "$fuzz_timeout" -gt 0; then
-  if ! command -v timeout >/dev/null 2>&1; then
-    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
-    exit 1
-  fi
-  echo "Running img2sixel parser fuzzing for ${fuzz_timeout}s"
-  set +e
-  timeout "$fuzz_timeout" "$@"
-  rc=$?
-  set -e
-  if test "$rc" -eq 124; then
-    echo "fuzz-cli-img2sixel-parser: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
-    exit 0
-  fi
-  exit "$rc"
+if test ! -x "$runner_script"; then
+  echo "error: AFL runner wrapper is missing: $runner_script" >&2
+  exit 1
 fi
 
-echo "Running img2sixel parser fuzzing without timeout"
-exec "$@"
+"$runner_script" \
+  "fuzz-cli-img2sixel-parser" "$fuzz_afl" "$input_dir" "$output_dir" \
+  "$fuzz_timeout" -- \
+  "$harness"
 ''',
                 'sh',
                 img2sixel_cli_parser_harness.full_path(),
@@ -303,8 +254,8 @@ exec "$@"
                 meson.project_build_root()],
       depends: [img2sixel_cli_parser_harness])
 
-    run_target('fuzz-cli-img2sixel-boundary',
-      command: [sh, '-c', '''
+run_target('fuzz-cli-img2sixel-boundary',
+  command: [sh, '-c', '''
 set -eu
 
 harness="$1"
@@ -318,42 +269,21 @@ if test ! -d "$default_input_dir"; then
 fi
 input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
 output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-boundary}"
+runner_script="$source_root/tools/fuzz-afl-runner.sh"
 
-if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
-  echo "error: $fuzz_afl is not installed" >&2
-  exit 1
-fi
-if test ! -d "$input_dir"; then
-  echo "error: fuzz input directory was not found: $input_dir" >&2
-  exit 1
-fi
 if test ! -x "$harness"; then
   echo "error: boundary harness was not found: $harness" >&2
   exit 1
 fi
-
-mkdir -p "$output_dir"
-set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
-
-if test "$fuzz_timeout" -gt 0; then
-  if ! command -v timeout >/dev/null 2>&1; then
-    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
-    exit 1
-  fi
-  echo "Running img2sixel boundary/env fuzzing for ${fuzz_timeout}s"
-  set +e
-  timeout "$fuzz_timeout" "$@"
-  rc=$?
-  set -e
-  if test "$rc" -eq 124; then
-    echo "fuzz-cli-img2sixel-boundary: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
-    exit 0
-  fi
-  exit "$rc"
+if test ! -x "$runner_script"; then
+  echo "error: AFL runner wrapper is missing: $runner_script" >&2
+  exit 1
 fi
 
-echo "Running img2sixel boundary/env fuzzing without timeout"
-exec "$@"
+"$runner_script" \
+  "fuzz-cli-img2sixel-boundary" "$fuzz_afl" "$input_dir" "$output_dir" \
+  "$fuzz_timeout" -- \
+  "$harness"
 ''',
                 'sh',
                 img2sixel_cli_boundary_harness.full_path(),
@@ -361,8 +291,8 @@ exec "$@"
                 meson.project_build_root()],
       depends: [img2sixel_cli_boundary_harness])
 
-    run_target('fuzz-cli-img2sixel-pathenv',
-      command: [sh, '-c', '''
+run_target('fuzz-cli-img2sixel-pathenv',
+  command: [sh, '-c', '''
 set -eu
 
 harness="$1"
@@ -376,42 +306,21 @@ if test ! -d "$default_input_dir"; then
 fi
 input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
 output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-pathenv}"
+runner_script="$source_root/tools/fuzz-afl-runner.sh"
 
-if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
-  echo "error: $fuzz_afl is not installed" >&2
-  exit 1
-fi
-if test ! -d "$input_dir"; then
-  echo "error: fuzz input directory was not found: $input_dir" >&2
-  exit 1
-fi
 if test ! -x "$harness"; then
   echo "error: path/env harness was not found: $harness" >&2
   exit 1
 fi
-
-mkdir -p "$output_dir"
-set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
-
-if test "$fuzz_timeout" -gt 0; then
-  if ! command -v timeout >/dev/null 2>&1; then
-    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
-    exit 1
-  fi
-  echo "Running img2sixel path/env fuzzing for ${fuzz_timeout}s"
-  set +e
-  timeout "$fuzz_timeout" "$@"
-  rc=$?
-  set -e
-  if test "$rc" -eq 124; then
-    echo "fuzz-cli-img2sixel-pathenv: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
-    exit 0
-  fi
-  exit "$rc"
+if test ! -x "$runner_script"; then
+  echo "error: AFL runner wrapper is missing: $runner_script" >&2
+  exit 1
 fi
 
-echo "Running img2sixel path/env fuzzing without timeout"
-exec "$@"
+"$runner_script" \
+  "fuzz-cli-img2sixel-pathenv" "$fuzz_afl" "$input_dir" "$output_dir" \
+  "$fuzz_timeout" -- \
+  "$harness"
 ''',
                 'sh',
                 img2sixel_cli_pathenv_harness.full_path(),
@@ -419,8 +328,8 @@ exec "$@"
                 meson.project_build_root()],
       depends: [img2sixel_cli_pathenv_harness])
 
-    run_target('fuzz-cli-img2sixel-numeric',
-      command: [sh, '-c', '''
+run_target('fuzz-cli-img2sixel-numeric',
+  command: [sh, '-c', '''
 set -eu
 
 harness="$1"
@@ -434,42 +343,21 @@ if test ! -d "$default_input_dir"; then
 fi
 input_dir="${FUZZ_INPUT_DIR:-$default_input_dir}"
 output_dir="${FUZZ_OUTPUT_DIR:-$build_root/afl-out/img2sixel-numeric}"
+runner_script="$source_root/tools/fuzz-afl-runner.sh"
 
-if ! command -v "$fuzz_afl" >/dev/null 2>&1; then
-  echo "error: $fuzz_afl is not installed" >&2
-  exit 1
-fi
-if test ! -d "$input_dir"; then
-  echo "error: fuzz input directory was not found: $input_dir" >&2
-  exit 1
-fi
 if test ! -x "$harness"; then
   echo "error: numeric harness was not found: $harness" >&2
   exit 1
 fi
-
-mkdir -p "$output_dir"
-set -- "$fuzz_afl" -i "$input_dir" -o "$output_dir" -- "$harness"
-
-if test "$fuzz_timeout" -gt 0; then
-  if ! command -v timeout >/dev/null 2>&1; then
-    echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2
-    exit 1
-  fi
-  echo "Running img2sixel numeric fuzzing for ${fuzz_timeout}s"
-  set +e
-  timeout "$fuzz_timeout" "$@"
-  rc=$?
-  set -e
-  if test "$rc" -eq 124; then
-    echo "fuzz-cli-img2sixel-numeric: reached FUZZ_TIMEOUT=${fuzz_timeout}s"
-    exit 0
-  fi
-  exit "$rc"
+if test ! -x "$runner_script"; then
+  echo "error: AFL runner wrapper is missing: $runner_script" >&2
+  exit 1
 fi
 
-echo "Running img2sixel numeric fuzzing without timeout"
-exec "$@"
+"$runner_script" \
+  "fuzz-cli-img2sixel-numeric" "$fuzz_afl" "$input_dir" "$output_dir" \
+  "$fuzz_timeout" -- \
+  "$harness"
 ''',
                 'sh',
                 img2sixel_cli_numeric_harness.full_path(),

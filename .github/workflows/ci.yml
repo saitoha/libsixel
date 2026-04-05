@@ -115,7 +115,7 @@ jobs:
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
-      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time={0} -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-struct/{2}/', github.event_name == 'schedule' && '1800' || '300', github.workspace, matrix.target) }}
+      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-struct/{3}/', github.event_name == 'schedule' && '7200' || '300', github.event_name == 'schedule' && '8' || '2', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -304,7 +304,7 @@ jobs:
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
-      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time={0} -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader/{2}/', github.event_name == 'schedule' && '1800' || '300', github.workspace, matrix.target) }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/{3}/', github.event_name == 'schedule' && '7200' || '300', github.event_name == 'schedule' && '8' || '2', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -319,7 +319,7 @@ jobs:
             run_target=0
             if [ "${{ matrix.buildtool }}" = "meson" ]; then
               case "${{ matrix.target }}" in
-                png|gif|psd|hdr)
+                png|gif|psd|hdr|bmp)
                   run_target=1
                   ;;
               esac
@@ -469,7 +469,7 @@ jobs:
             ${{ env.FUZZ_BUILTIN_CORPUS }}
 
   fuzz_push_cli_img2sixel:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'schedule'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -481,7 +481,11 @@ jobs:
       FUZZ_INPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-corpus-cli-img2sixel/${{ matrix.target }}
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
-      FUZZ_TIMEOUT: 300
+      FUZZ_TIMEOUT: ${{ github.event_name == 'schedule' && '1800' || '300' }}
+      FUZZ_AFL_WORKERS: ${{ github.event_name == 'schedule' && '4' || '2' }}
+      FUZZ_AFL_MODE: ${{ github.event_name == 'schedule' && 'cmplog' || 'normal' }}
+      FUZZ_AFL_CMPLOG_RUNNER: ""
+      FUZZ_AFL_EXTRA_OPTS: ""
       AFL_USE_ASAN: 1
       AFL_USE_UBSAN: 1
       AFL_NO_AFFINITY: 1
@@ -491,11 +495,31 @@ jobs:
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
+      - name: Select CLI fuzz scope
+        id: cli_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target=1
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            run_target=0
+            if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+              case "${{ matrix.target }}" in
+                combo|parser|boundary|pathenv|numeric)
+                  run_target=1
+                  ;;
+              esac
+            fi
+          fi
+          echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
+        if: ${{ steps.cli_scope.outputs.run_target == '1' }}
         with:
           fetch-depth: 1
 
       - name: Install build dependencies
+        if: ${{ steps.cli_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -504,6 +528,7 @@ jobs:
             afl++ clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Configure AFL core_pattern
+        if: ${{ steps.cli_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -516,16 +541,18 @@ jobs:
           echo "kernel.core_pattern(after)=$after"
 
       - name: Restore CLI fuzz corpus cache
+        if: ${{ steps.cli_scope.outputs.run_target == '1' }}
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_INPUT_DIR }}
-          key: fuzz-corpus-cli-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: fuzz-corpus-cli-${{ github.event_name }}-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            fuzz-corpus-cli-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
-            fuzz-corpus-cli-push-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-cli-${{ github.event_name }}-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
+            fuzz-corpus-cli-${{ github.event_name }}-${{ matrix.buildtool }}-${{ matrix.target }}-
             fuzz-corpus-cli-${{ matrix.buildtool }}-${{ matrix.target }}-
 
       - name: Seed CLI fuzz corpus
+        if: ${{ steps.cli_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -557,6 +584,7 @@ jobs:
           echo "cli-corpus seed files (${{ matrix.target }}): $(find "$FUZZ_INPUT_DIR" -type f | wc -l)"
 
       - name: Build and run img2sixel CLI fuzz target
+        if: ${{ steps.cli_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -566,52 +594,128 @@ jobs:
           mkdir -p "$FUZZ_OUTPUT_DIR"
 
           fuzz_target='fuzz-cli-img2sixel'
+          asan_runner="$PWD/.tmp/fuzz-img2sixel-afl-persistent"
           if [ "${{ matrix.target }}" = "parser" ]; then
             fuzz_target='fuzz-cli-img2sixel-parser'
+            asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-parser-afl-persistent"
           elif [ "${{ matrix.target }}" = "boundary" ]; then
             fuzz_target='fuzz-cli-img2sixel-boundary'
+            asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-boundary-afl-persistent"
           elif [ "${{ matrix.target }}" = "pathenv" ]; then
             fuzz_target='fuzz-cli-img2sixel-pathenv'
+            asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-pathenv-afl-persistent"
           elif [ "${{ matrix.target }}" = "numeric" ]; then
             fuzz_target='fuzz-cli-img2sixel-numeric'
+            asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-numeric-afl-persistent"
           fi
+
+          resolve_runner_path() {
+            local runner="$1"
+            local candidate
+            if [ -f "$runner" ] && head -n 1 "$runner" | grep -q '^#!'; then
+              candidate="$(dirname "$runner")/.libs/$(basename "$runner")"
+              if [ -x "$candidate" ]; then
+                runner="$candidate"
+              fi
+            fi
+            printf '%s\n' "$runner"
+          }
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=afl-clang-fast CXX=afl-clang-fast++ \
               CFLAGS="$sanitizer_cflags" LDFLAGS="$sanitizer_ldflags" \
               ./configure
             make -j"$(nproc)"
+
+            if [ "$FUZZ_AFL_MODE" = "cmplog" ]; then
+              cmplog_runner="$PWD/.tmp/fuzz-img2sixel-${{ matrix.target }}-afl-cmplog-persistent"
+              case "${{ matrix.target }}" in
+                combo)
+                  AFL_LLVM_CMPLOG=1 make "$cmplog_runner" \
+                    FUZZ_IMG2SIXEL_PERSISTENT="$cmplog_runner"
+                  ;;
+                parser)
+                  AFL_LLVM_CMPLOG=1 make "$cmplog_runner" \
+                    FUZZ_IMG2SIXEL_CLI_PARSER_PERSISTENT="$cmplog_runner"
+                  ;;
+                boundary)
+                  AFL_LLVM_CMPLOG=1 make "$cmplog_runner" \
+                    FUZZ_IMG2SIXEL_CLI_BOUNDARY_PERSISTENT="$cmplog_runner"
+                  ;;
+                pathenv)
+                  AFL_LLVM_CMPLOG=1 make "$cmplog_runner" \
+                    FUZZ_IMG2SIXEL_CLI_PATHENV_PERSISTENT="$cmplog_runner"
+                  ;;
+                numeric)
+                  AFL_LLVM_CMPLOG=1 make "$cmplog_runner" \
+                    FUZZ_IMG2SIXEL_CLI_NUMERIC_PERSISTENT="$cmplog_runner"
+                  ;;
+              esac
+              export FUZZ_AFL_CMPLOG_RUNNER="$cmplog_runner"
+            fi
+
             make "$fuzz_target"
           else
             CC=afl-clang-fast CXX=afl-clang-fast++ \
               CFLAGS="$sanitizer_cflags" LDFLAGS="$sanitizer_ldflags" \
               meson setup builddir
             meson compile -C builddir -v
+            if [ "${{ matrix.target }}" = "combo" ]; then
+              asan_runner="$PWD/builddir/converters/fuzz-img2sixel-afl-persistent"
+            elif [ "${{ matrix.target }}" = "parser" ]; then
+              asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-parser-afl-persistent"
+            elif [ "${{ matrix.target }}" = "boundary" ]; then
+              asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-boundary-afl-persistent"
+            elif [ "${{ matrix.target }}" = "pathenv" ]; then
+              asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-pathenv-afl-persistent"
+            else
+              asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-numeric-afl-persistent"
+            fi
             meson compile -C builddir "$fuzz_target"
           fi
 
-          crash_count="$(find "$FUZZ_OUTPUT_DIR" -type f -path '*/crashes/*' \
-            ! -name 'README.txt' | wc -l | tr -d ' ')"
-          if [ "${crash_count}" -gt 0 ]; then
-            echo "::error::AFL detected ${crash_count} crash input(s)."
-            find "$FUZZ_OUTPUT_DIR" -type f -path '*/crashes/*' \
-              ! -name 'README.txt' -print
+          asan_runner="$(resolve_runner_path "$asan_runner")"
+          if [ ! -x "$asan_runner" ]; then
+            echo "::error::missing CLI ASAN runner: $asan_runner"
             exit 1
           fi
+
+          mapfile -d '' -t crash_inputs < <(find "$FUZZ_OUTPUT_DIR" -type f -path '*/crashes/*' \
+            ! -name 'README.txt' -print0)
+          crash_count="${#crash_inputs[@]}"
 
           queue_count="$(find "$FUZZ_OUTPUT_DIR" -type f -path '*/queue/*' \
             ! -name 'README.txt' | wc -l | tr -d ' ')"
           hang_count="$(find "$FUZZ_OUTPUT_DIR" -type f -path '*/hangs/*' \
             ! -name 'README.txt' | wc -l | tr -d ' ')"
-          echo "cli-afl findings: queue=${queue_count} hangs=${hang_count}"
+          echo "cli-afl findings: queue=${queue_count} hangs=${hang_count} crashes=${crash_count}"
+
           if [ "${hang_count}" -gt 0 ]; then
             echo "::warning::AFL detected ${hang_count} hang input(s)."
             find "$FUZZ_OUTPUT_DIR" -type f -path '*/hangs/*' \
               ! -name 'README.txt' -print
           fi
 
+          if [ "${crash_count}" -gt 0 ]; then
+            triage_dir="$FUZZ_OUTPUT_DIR/triage"
+            mkdir -p "$triage_dir"
+            for crash_input in "${crash_inputs[@]}"; do
+              .github/scripts/fuzz/triage_afl_crash.sh \
+                --crash-file "$crash_input" \
+                --triage-dir "$triage_dir" \
+                --asan-runner "$asan_runner" \
+                --timeout 20 \
+                --label "${{ matrix.buildtool }}-${{ matrix.target }}"
+            done
+            asan_repro_count="$(grep -R --include '*.json' -h '"asan_reproduced": true' "$triage_dir" | wc -l | tr -d ' ' || true)"
+            echo "::error::AFL detected ${crash_count} crash input(s); ASAN-reproducible=${asan_repro_count}."
+            find "$FUZZ_OUTPUT_DIR" -type f -path '*/crashes/*' \
+              ! -name 'README.txt' -print
+            exit 1
+          fi
+
       - name: Harvest CLI AFL queue into corpus
-        if: always()
+        if: ${{ always() && steps.cli_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -625,7 +729,7 @@ jobs:
           echo "cli-corpus files after harvest (${{ matrix.target }}): $(find "$FUZZ_INPUT_DIR" -type f | wc -l)"
 
       - name: Pack img2sixel CLI fuzz artifacts
-        if: always()
+        if: ${{ always() && steps.cli_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -635,7 +739,7 @@ jobs:
           fi
 
       - name: Upload img2sixel CLI fuzz artifacts
-        if: always()
+        if: ${{ always() && steps.cli_scope.outputs.run_target == '1' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}
@@ -656,7 +760,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'schedule' && '1800' || '300', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'schedule' && '7200' || '300', github.event_name == 'schedule' && '8' || '2', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
