@@ -3611,6 +3611,7 @@ sixel_builtin_psd_parse_ptfl_pattern_ref_object(
     size_t cursor;
     size_t item_count;
     size_t i;
+    size_t pattern_id_length;
     char key[5];
     char type[5];
     char pattern_id[128];
@@ -3618,6 +3619,7 @@ sixel_builtin_psd_parse_ptfl_pattern_ref_object(
     cursor = 0u;
     item_count = 0u;
     i = 0u;
+    pattern_id_length = 0u;
     key[0] = '\0';
     key[1] = '\0';
     key[2] = '\0';
@@ -3670,8 +3672,10 @@ sixel_builtin_psd_parse_ptfl_pattern_ref_object(
             }
             *phas_pattern_id = 1;
             if (out_pattern_id != NULL) {
-                strncpy(out_pattern_id, pattern_id, 127u);
-                out_pattern_id[127] = '\0';
+                pattern_id_length =
+                    strnlen(pattern_id, sizeof(pattern_id) - 1u);
+                memcpy(out_pattern_id, pattern_id, pattern_id_length);
+                out_pattern_id[pattern_id_length] = '\0';
             }
             continue;
         }
