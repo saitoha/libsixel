@@ -11,13 +11,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 # Skip temporarily on Windows environments while addressing
 # intermittent failures specific to that platform.
-os_name=$(uname -s || echo "unknown")
-case "${os_name}" in
-    *[Mm][Ii][Nn][Gg][Ww]*|*[Mm][Ss][Yy][Ss]*|*[Cc][Yy][Gg][Ww][Ii][Nn]*)
-        printf "1..0 # SKIP temporarily disabled on Windows due to instability\n"
-        exit 0
-        ;;
-esac
+os_name="${RUNTIME_ENV_BUILD_OS-unknown}"
+is_windows_env=0
+test "${os_name}" != "${os_name#*mingw*}" && is_windows_env=1
+test "${os_name}" != "${os_name#*msys*}" && is_windows_env=1
+test "${os_name}" != "${os_name#*cygwin*}" && is_windows_env=1
+test "${is_windows_env}" = 0 || {
+    printf "1..0 # SKIP temporarily disabled on Windows due to instability\n"
+    exit 0
+}
 
 
 echo "1..1"

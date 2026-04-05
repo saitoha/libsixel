@@ -765,6 +765,7 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	fi; \
 	$(SIXEL_RUNTIME) "$$test_runner_probe" --is-running-under-wine >/dev/null 2>&1 && \
 	    export RUNTIME_ENV_IS_WINE=1; \
+	export RUNTIME_ENV_BUILD_OS='@build_os@'; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
 	trs_manifest="$(abs_builddir)/.check-test-trs.list"; \
 	failed_manifest="$(abs_builddir)/.check-test-failures.list"; \

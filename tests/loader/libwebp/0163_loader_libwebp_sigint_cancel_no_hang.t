@@ -20,12 +20,25 @@ set -v
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 ctrl_break_ok=0
 ctrl_break_mode=0
-platform_name=$(uname -s 2>/dev/null || printf "unknown")
-platform_not_cygwin="${platform_name#CYGWIN}"
+build_os="${RUNTIME_ENV_BUILD_OS-unknown}"
+build_os_is_cygwin=0
+build_os_is_darwin=0
+test "${build_os}" != "${build_os#cygwin}" && build_os_is_cygwin=1
+test "${build_os}" != "${build_os#darwin}" && build_os_is_darwin=1
+
+# Wine on macOS does not reliably forward host SIGINT to wrapped
+# Windows processes. Skip this SIGINT-specific assertion to avoid
+# reporting platform signal-delivery behavior as a loader regression.
+test "${HAVE_WINDOWS_H-0}" = 1 && \
+    test "${RUNTIME_ENV_IS_WINE-0}" = 1 && \
+    test "${build_os_is_darwin}" = 1 && {
+    echo "ok 1 - libwebp SIGINT cancellation # SKIP wine/macOS signal forwarding is unreliable"
+    exit 0
+}
 
 test "${HAVE_WINDOWS_H-0}" = 1 && ctrl_break_mode=1
 test -x "${TEST_RUNNER_PATH-}" || ctrl_break_mode=0
-test "${platform_not_cygwin}" != "${platform_name}" && ctrl_break_mode=0
+test "${build_os_is_cygwin}" = 1 && ctrl_break_mode=0
 test -n "${SIXEL_RUNTIME-}" && ctrl_break_mode=0
 
 test "${ctrl_break_mode}" = "1" && {
