@@ -251,8 +251,8 @@ if tests_text != ''
 endif
 
 xfail_tests = [
-  'loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa_xfail.t',
-  'loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa_xfail.t',
+  'loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa.t',
+  'loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa.t',
 ]
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).

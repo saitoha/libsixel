@@ -17,8 +17,8 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 endif
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \
-    loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa_xfail.t \
-    loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa_xfail.t
+    loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa.t \
+    loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa.t
 
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
