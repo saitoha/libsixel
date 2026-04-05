@@ -250,7 +250,11 @@ if tests_text != ''
   tests = tests_text.split()
 endif
 
-xfail_tests = []
+xfail_tests = [
+  'loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa_xfail.t',
+  'loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa_xfail.t',
+  'loader/builtin/1312_loader_builtin_psd_psdtools_effects_shape_fx_hardcase_lsqa_xfail.t',
+]
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 # Ensure Meson builds the TAP helper binary before running shell-based tests.

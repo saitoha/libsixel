@@ -89,6 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+XFAIL_TESTS =
 check_PROGRAMS = test_runner$(EXEEXT)
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_1 = -x objective-c
 subdir = tests
@@ -847,8 +848,10 @@ zshcompletiondir = @zshcompletiondir@
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 TESTS = @SIXEL_CHECK_TESTS@
-XFAIL_TESTS =
-
+XFAIL_TESTS = \
+    loader/builtin/1310_loader_builtin_psd_psdtools_blend_and_clipping_hardcase_lsqa_xfail.t \
+    loader/builtin/1311_loader_builtin_psd_psdtools_layers_minimal_pattern_fill_hardcase_lsqa_xfail.t \
+    loader/builtin/1312_loader_builtin_psd_psdtools_effects_shape_fx_hardcase_lsqa_xfail.t
 SERIAL_TESTS = \
     cli/aborttrace/0001_img2sixel_aborttrace.t
 

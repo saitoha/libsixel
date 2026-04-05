@@ -105,6 +105,24 @@ ASSETS = [
         "expected": "psdtools_colormodes_4x4_8bit_duotone_expected_coregraphics.six",
         "generator": "coregraphics",
     },
+    {
+        "upstream": "blend-and-clipping.psd",
+        "local": "psdtools_blend_and_clipping.psd",
+        "expected": "psdtools_blend_and_clipping_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "layers-minimal/pattern-fill.psd",
+        "local": "psdtools_layers_minimal_pattern_fill.psd",
+        "expected": "psdtools_layers_minimal_pattern_fill_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "effects/shape-fx.psd",
+        "local": "psdtools_effects_shape_fx.psd",
+        "expected": "psdtools_effects_shape_fx_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
 ]
 
 
