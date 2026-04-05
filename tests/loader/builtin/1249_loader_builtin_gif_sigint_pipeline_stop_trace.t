@@ -27,6 +27,10 @@ echo "1..1"
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
+wait_limit=20
+wait_sleep=0.01
+
+test "${SIXEL_TSAN_BUILD-no}" = "yes" && wait_limit=500
 
 trace_summary=$(
     {
@@ -39,13 +43,13 @@ trace_summary=$(
         sleep 0.1
         kill -INT "${pid}" 2>/dev/null || true
 
-        wait_limit=20
-        while test "${wait_limit}" -gt 0; do
+        wait_count="${wait_limit}"
+        while test "${wait_count}" -gt 0; do
             kill -0 "${pid}" 2>/dev/null || {
                 break
             }
-            sleep 0.01
-            wait_limit=$((wait_limit - 1))
+            sleep "${wait_sleep}"
+            wait_count=$((wait_count - 1))
         done
 
         kill -0 "${pid}" 2>/dev/null && {
