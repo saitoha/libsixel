@@ -75,6 +75,24 @@ sixel_kmedoids_test_build_clarans_guided_sets(
     sixel_allocator_t *allocator);
 
 SIXELSTATUS
+sixel_kmedoids_test_collect_samples(
+    unsigned char const *data,
+    unsigned int length,
+    unsigned int channels,
+    unsigned int pixel_stride,
+    int input_is_float32,
+    unsigned int histbits,
+    unsigned int point_budget,
+    unsigned int rare_keep,
+    double prune_mass,
+    uint32_t seed,
+    double **samples_out,
+    double **sample_weights_out,
+    unsigned int *sample_count_out,
+    unsigned int *visible_count_out,
+    sixel_allocator_t *allocator);
+
+SIXELSTATUS
 sixel_kmedoids_test_pam_polish_cost(double const *points,
                                     double const *weights,
                                     unsigned int point_count,
@@ -113,6 +131,20 @@ sixel_kmedoids_test_reset_clarans_guided_full_build_count(void);
 
 unsigned int
 sixel_kmedoids_test_get_clarans_guided_full_build_count(void);
+
+SIXELSTATUS
+sixel_kmedoids_test_two_step_pam_polish_cost(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *initial_medoids,
+    unsigned int k,
+    double *before_cost_out,
+    double *after_first_cost_out,
+    double *after_second_cost_out,
+    unsigned int *first_iterations_out,
+    unsigned int *second_iterations_out,
+    sixel_allocator_t *allocator);
 
 static unsigned char const g_test_pixels_rgb[TEST_PIXEL_COUNT * 3u] = {
     255u, 0u,   0u,
@@ -374,6 +406,127 @@ test_palette_cost_for_pixels(unsigned char const *pixels,
     return total;
 }
 
+static int
+test_verify_collected_sample(unsigned char const *pixels_8bit,
+                             float const *pixels_float32,
+                             unsigned int pixel_count,
+                             int input_is_float32,
+                             double const expected[3u])
+{
+    sixel_allocator_t *allocator;
+    SIXELSTATUS status;
+    unsigned int channels;
+    unsigned int pixel_stride;
+    unsigned int length;
+    double *samples;
+    double *sample_weights;
+    unsigned int sample_count;
+    unsigned int visible_count;
+    double diff;
+
+    allocator = NULL;
+    status = SIXEL_FALSE;
+    channels = 3u;
+    pixel_stride = 0u;
+    length = 0u;
+    samples = NULL;
+    sample_weights = NULL;
+    sample_count = 0u;
+    visible_count = 0u;
+    diff = 0.0;
+    if (expected == NULL) {
+        return 0;
+    }
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    if (input_is_float32) {
+        pixel_stride = (unsigned int)sizeof(float) * channels;
+        length = pixel_count * pixel_stride;
+        status = sixel_kmedoids_test_collect_samples(
+            (unsigned char const *)pixels_float32,
+            length,
+            channels,
+            pixel_stride,
+            1,
+            3u,
+            1u,
+            0u,
+            1.000,
+            1u,
+            &samples,
+            &sample_weights,
+            &sample_count,
+            &visible_count,
+            allocator);
+    } else {
+        pixel_stride = channels;
+        length = pixel_count * pixel_stride;
+        status = sixel_kmedoids_test_collect_samples(
+            pixels_8bit,
+            length,
+            channels,
+            pixel_stride,
+            0,
+            3u,
+            1u,
+            0u,
+            1.000,
+            1u,
+            &samples,
+            &sample_weights,
+            &sample_count,
+            &visible_count,
+            allocator);
+    }
+    if (SIXEL_FAILED(status) || samples == NULL || sample_weights == NULL) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    if (sample_count != 1u || visible_count != pixel_count) {
+        sixel_allocator_free(allocator, sample_weights);
+        sixel_allocator_free(allocator, samples);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    diff = samples[0u] - expected[0u];
+    if (diff < 0.0) {
+        diff = -diff;
+    }
+    if (diff > 1.0e-9) {
+        sixel_allocator_free(allocator, sample_weights);
+        sixel_allocator_free(allocator, samples);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    diff = samples[1u] - expected[1u];
+    if (diff < 0.0) {
+        diff = -diff;
+    }
+    if (diff > 1.0e-9) {
+        sixel_allocator_free(allocator, sample_weights);
+        sixel_allocator_free(allocator, samples);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    diff = samples[2u] - expected[2u];
+    if (diff < 0.0) {
+        diff = -diff;
+    }
+    if (diff > 1.0e-9) {
+        sixel_allocator_free(allocator, sample_weights);
+        sixel_allocator_free(allocator, samples);
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    sixel_allocator_free(allocator, sample_weights);
+    sixel_allocator_free(allocator, samples);
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
 /*
  * Copy palette entries through the non-deprecated palette object API.
  * The caller must release `*palette_out` with sixel_allocator_free().
@@ -446,7 +599,6 @@ test_run_subset_case(sixel_kmedoids_algo_t algo,
     ncolors = 0u;
 
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
-        fprintf(stderr, "delta-eq: allocator_new failed\n");
         return 0;
     }
 
@@ -575,6 +727,169 @@ test_run_seed_case(sixel_kmedoids_algo_t algo,
     sixel_dither_unref(dither_a);
     sixel_dither_unref(dither_b);
     sixel_allocator_unref(allocator);
+    return 1;
+}
+
+static int
+test_run_sample_representative_nearest_mean_case(void)
+{
+    unsigned char nearest_8bit[9u];
+    unsigned char tie_8bit[6u];
+    float nearest_float32[9u];
+    float tie_float32[6u];
+    double nearest_expected[3u];
+    double tie_expected[3u];
+    unsigned int index;
+
+    nearest_8bit[0u] = 0u;
+    nearest_8bit[1u] = 0u;
+    nearest_8bit[2u] = 0u;
+    nearest_8bit[3u] = 31u;
+    nearest_8bit[4u] = 0u;
+    nearest_8bit[5u] = 0u;
+    nearest_8bit[6u] = 31u;
+    nearest_8bit[7u] = 0u;
+    nearest_8bit[8u] = 0u;
+
+    tie_8bit[0u] = 10u;
+    tie_8bit[1u] = 0u;
+    tie_8bit[2u] = 0u;
+    tie_8bit[3u] = 22u;
+    tie_8bit[4u] = 0u;
+    tie_8bit[5u] = 0u;
+
+    for (index = 0u; index < 9u; ++index) {
+        nearest_float32[index] = (float)nearest_8bit[index];
+    }
+    for (index = 0u; index < 6u; ++index) {
+        tie_float32[index] = (float)tie_8bit[index];
+    }
+
+    nearest_expected[0u] = 31.0;
+    nearest_expected[1u] = 0.0;
+    nearest_expected[2u] = 0.0;
+    tie_expected[0u] = 10.0;
+    tie_expected[1u] = 0.0;
+    tie_expected[2u] = 0.0;
+
+    if (!test_verify_collected_sample(nearest_8bit,
+                                      NULL,
+                                      3u,
+                                      0,
+                                      nearest_expected)) {
+        return 0;
+    }
+    if (!test_verify_collected_sample(tie_8bit,
+                                      NULL,
+                                      2u,
+                                      0,
+                                      tie_expected)) {
+        return 0;
+    }
+    if (!test_verify_collected_sample(NULL,
+                                      nearest_float32,
+                                      3u,
+                                      1,
+                                      nearest_expected)) {
+        return 0;
+    }
+    if (!test_verify_collected_sample(NULL,
+                                      tie_float32,
+                                      2u,
+                                      1,
+                                      tie_expected)) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+test_run_bandit_guided_seed_reproducibility_case(void)
+{
+    int ok;
+
+    ok = 0;
+    sixel_set_kmedoids_bandit_iter_override(1, 12u);
+    sixel_set_kmedoids_bandit_candidates_override(1, 256u);
+    sixel_set_kmedoids_bandit_batch_override(1, 96u);
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 0)) {
+        goto end;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM, 1)) {
+        goto end;
+    }
+    ok = 1;
+
+end:
+    sixel_set_kmedoids_bandit_batch_override(0, 0u);
+    sixel_set_kmedoids_bandit_candidates_override(0, 0u);
+    sixel_set_kmedoids_bandit_iter_override(0, 0u);
+    return ok;
+}
+
+static int
+test_run_polish_two_step_monotonic_case(void)
+{
+    sixel_allocator_t *allocator;
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int index;
+    unsigned int first_iterations;
+    unsigned int second_iterations;
+    double before_cost;
+    double after_first_cost;
+    double after_second_cost;
+    SIXELSTATUS status;
+
+    allocator = NULL;
+    index = 0u;
+    first_iterations = 0u;
+    second_iterations = 0u;
+    before_cost = 0.0;
+    after_first_cost = 0.0;
+    after_second_cost = 0.0;
+    status = SIXEL_FALSE;
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 4u) + 1u);
+    }
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    status = sixel_kmedoids_test_two_step_pam_polish_cost(
+        points,
+        weights,
+        TEST_PIXEL_COUNT,
+        medoids,
+        TEST_REQCOLORS,
+        &before_cost,
+        &after_first_cost,
+        &after_second_cost,
+        &first_iterations,
+        &second_iterations,
+        allocator);
+    sixel_allocator_unref(allocator);
+    if (SIXEL_FAILED(status)) {
+        return 0;
+    }
+    if (first_iterations > 1u || second_iterations > 1u) {
+        return 0;
+    }
+    if (after_first_cost > before_cost + 1.0e-9) {
+        return 0;
+    }
+    if (after_second_cost > after_first_cost + 1.0e-9) {
+        return 0;
+    }
     return 1;
 }
 
@@ -1289,7 +1604,6 @@ test_run_clarans_guided_tiebreak_case(void)
         &hot_slot_count_a,
         allocator);
     if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "delta-eq: build_guided failed status=%d\n", status);
         sixel_allocator_unref(allocator);
         return 0;
     }
@@ -2197,6 +2511,15 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "pam-polish-monotonic") == 0) {
         return test_run_pam_polish_monotonic_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "sample-representative-nearest-mean") == 0) {
+        return test_run_sample_representative_nearest_mean_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "bandit-guided-seed-reproducibility") == 0) {
+        return test_run_bandit_guided_seed_reproducibility_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "polish-two-step-monotonic") == 0) {
+        return test_run_polish_two_step_monotonic_case() ? 0 : 1;
     }
     if (strcmp(argv[1], "clarans-guided-delta-equivalence") == 0) {
         return test_run_clarans_guided_delta_equivalence_case() ? 0 : 1;
