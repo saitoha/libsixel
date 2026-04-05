@@ -378,6 +378,11 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
     size_t j;
     size_t sample_count;
     size_t segment_index;
+    size_t param_count;
+    uint16_t function_type;
+    double x;
+    double y;
+    int ok;
 
     segment_count_u32 = 0u;
     segment_count = 0u;
@@ -389,6 +394,11 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
     j = 0u;
     sample_count = 0u;
     segment_index = 0u;
+    param_count = 0u;
+    function_type = 0u;
+    x = 0.0;
+    y = 0.0;
+    ok = 0;
 
     if (tag_data == NULL || out_curve == NULL || tag_length < 12u) {
         return 0;
@@ -403,21 +413,17 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
         return 0;
     }
 
-#if SIZE_MAX <= UINT32_MAX
-    if (segment_count > (SIZE_MAX - 1u) / sizeof(*segments)) {
+    if (segment_count > SIZE_MAX / sizeof(*segments)) {
         return 0;
     }
-#endif
     breakpoint_count = segment_count - 1u;
     if (breakpoint_count > 0u) {
         if (breakpoint_count > (tag_length - 12u) / 4u) {
             return 0;
         }
-#if SIZE_MAX <= UINT32_MAX
         if (breakpoint_count > SIZE_MAX / sizeof(*breakpoints)) {
             return 0;
         }
-#endif
         breakpoints = (double *)malloc(breakpoint_count * sizeof(*breakpoints));
         if (breakpoints == NULL) {
             return 0;
@@ -444,27 +450,26 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
     }
 
     for (i = 0u; i < segment_count; ++i) {
-        size_t param_count;
-
         param_count = 0u;
         if (tag_length - offset < 4u) {
             free(segments);
             free(breakpoints);
             return 0;
         }
-        segments[i].function_type = sixel_icc_read_be16(tag_data + offset);
-        if (!sixel_icc_parse_segm_param_count(segments[i].function_type,
+        function_type = sixel_icc_read_be16(tag_data + offset);
+        if (!sixel_icc_parse_segm_param_count(function_type,
                                               &param_count)) {
             free(segments);
             free(breakpoints);
             return 0;
         }
-        if (param_count > 7u || tag_length - offset < 4u + param_count * 4u) {
+        if (param_count > 7u || param_count > (tag_length - offset - 4u) / 4u) {
             free(segments);
             free(breakpoints);
             return 0;
         }
 
+        segments[i].function_type = function_type;
         segments[i].param_count = param_count;
         for (j = 0u; j < param_count; ++j) {
             segments[i].params[j] = sixel_icc_read_s15fixed16(
@@ -484,17 +489,24 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
     out_curve->kind = SIXEL_ICC_CURVE_SEGM_TABLE;
 
     for (i = 0u; i < sample_count; ++i) {
-        double x;
-        double y;
-        int ok;
-
         x = (sample_count <= 1u)
             ? 0.0
             : (double)i / (double)(sample_count - 1u);
         segment_index = 0u;
-        while (segment_index < breakpoint_count &&
-               x > breakpoints[segment_index]) {
-            ++segment_index;
+        if (breakpoint_count > 0u) {
+            while (segment_index < breakpoint_count &&
+                   x > breakpoints[segment_index]) {
+                ++segment_index;
+            }
+        }
+        if (segment_index >= segment_count) {
+            free(out_curve->table);
+            out_curve->table = NULL;
+            out_curve->table_length = 0u;
+            out_curve->kind = SIXEL_ICC_CURVE_INVALID;
+            free(segments);
+            free(breakpoints);
+            return 0;
         }
 
         y = sixel_icc_eval_parametric(segments[segment_index].function_type,
