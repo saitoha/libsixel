@@ -137,7 +137,6 @@ config_macro_pairs = run_command(
   meson.project_source_root() / 'build-aux/resolve-config-h-exports.sh',
   meson.project_build_root() / 'config.h',
   'pairs',
-  meson.current_source_dir() / 'check-config-exports.list',
   check: true,
 ).stdout().strip()
 if config_macro_pairs != ''
