@@ -623,8 +623,15 @@ staticcheck-c-header-modeline:
 sixel-check-test-tools:
 	@set -eu; \
 	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
-	$(MAKE) -C "$(top_builddir)/assessment" lsqa@EXEEXT@; \
-	$(MAKE) -C "$(top_builddir)/converters" img2sixel@EXEEXT@ sixel2png@EXEEXT@
+	$(MAKE) -C "$(top_builddir)/assessment" lsqa@EXEEXT@
+if WANT_IMG2SIXEL
+	@set -eu; \
+	$(MAKE) -C "$(top_builddir)/converters" img2sixel@EXEEXT@
+endif
+if WANT_SIXEL2PNG
+	@set -eu; \
+	$(MAKE) -C "$(top_builddir)/converters" sixel2png@EXEEXT@
+endif
 
 sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
