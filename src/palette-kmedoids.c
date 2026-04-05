@@ -6604,9 +6604,7 @@ sixel_kmedoids_run_clarans(double const *points,
             allocator,
             (size_t)slot_cells64 * sizeof(unsigned int));
     }
-    if (point_count > 0u
-            && (uint64_t)point_count
-                <= ((uint64_t)SIZE_MAX / (uint64_t)sizeof(double))) {
+    if (point_count > 0u) {
         slot_damage_scores = (double *)sixel_allocator_malloc(
             allocator,
             (size_t)point_count * sizeof(double));
