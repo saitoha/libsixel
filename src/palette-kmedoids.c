@@ -372,6 +372,15 @@ sixel_kmedoids_test_two_step_pam_polish_cost(
     unsigned int *second_iterations_out,
     sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_bandit_select_topk(
+    unsigned int const *active_in,
+    double const *costs_in,
+    unsigned int count,
+    unsigned int keep,
+    unsigned int *selected_out,
+    sixel_allocator_t *allocator);
+
 static int
 sixel_palette_kmedoids_log_start(sixel_logger_t *logger,
                                  int *job_seq,
@@ -621,6 +630,157 @@ sixel_kmedoids_compare_candidate_rank(void const *lhs,
         return 1;
     }
     return 0;
+}
+
+static int
+sixel_kmedoids_candidate_rank_is_better(
+    sixel_kmedoids_candidate_rank_t const *lhs,
+    sixel_kmedoids_candidate_rank_t const *rhs)
+{
+    if (lhs->cost < rhs->cost) {
+        return 1;
+    }
+    if (lhs->cost > rhs->cost) {
+        return 0;
+    }
+    return lhs->active_index < rhs->active_index ? 1 : 0;
+}
+
+static int
+sixel_kmedoids_candidate_rank_is_worse(
+    sixel_kmedoids_candidate_rank_t const *lhs,
+    sixel_kmedoids_candidate_rank_t const *rhs)
+{
+    if (lhs->cost > rhs->cost) {
+        return 1;
+    }
+    if (lhs->cost < rhs->cost) {
+        return 0;
+    }
+    return lhs->active_index > rhs->active_index ? 1 : 0;
+}
+
+static void
+sixel_kmedoids_candidate_rank_swap(sixel_kmedoids_candidate_rank_t *ranks,
+                                   unsigned int lhs,
+                                   unsigned int rhs)
+{
+    sixel_kmedoids_candidate_rank_t temp;
+
+    temp = ranks[lhs];
+    ranks[lhs] = ranks[rhs];
+    ranks[rhs] = temp;
+}
+
+static void
+sixel_kmedoids_candidate_rank_heap_sift_up(
+    sixel_kmedoids_candidate_rank_t *heap,
+    unsigned int index)
+{
+    unsigned int parent;
+
+    parent = 0u;
+    if (heap == NULL) {
+        return;
+    }
+    while (index > 0u) {
+        parent = (index - 1u) / 2u;
+        if (!sixel_kmedoids_candidate_rank_is_worse(&heap[index],
+                                                    &heap[parent])) {
+            break;
+        }
+        sixel_kmedoids_candidate_rank_swap(heap, index, parent);
+        index = parent;
+    }
+}
+
+static void
+sixel_kmedoids_candidate_rank_heap_sift_down(
+    sixel_kmedoids_candidate_rank_t *heap,
+    unsigned int heap_size,
+    unsigned int index)
+{
+    unsigned int left;
+    unsigned int right;
+    unsigned int worst;
+
+    left = 0u;
+    right = 0u;
+    worst = 0u;
+    if (heap == NULL) {
+        return;
+    }
+    for (;;) {
+        left = index * 2u + 1u;
+        right = left + 1u;
+        worst = index;
+        if (left < heap_size
+                && sixel_kmedoids_candidate_rank_is_worse(&heap[left],
+                                                          &heap[worst])) {
+            worst = left;
+        }
+        if (right < heap_size
+                && sixel_kmedoids_candidate_rank_is_worse(&heap[right],
+                                                          &heap[worst])) {
+            worst = right;
+        }
+        if (worst == index) {
+            break;
+        }
+        sixel_kmedoids_candidate_rank_swap(heap, index, worst);
+        index = worst;
+    }
+}
+
+static void
+sixel_kmedoids_candidate_rank_select_topk(
+    sixel_kmedoids_candidate_rank_t *ranks,
+    unsigned int rank_count,
+    unsigned int keep_count,
+    sixel_kmedoids_candidate_rank_t *heap)
+{
+    sixel_kmedoids_candidate_rank_t current;
+    unsigned int index;
+    unsigned int heap_size;
+
+    current.active_index = 0u;
+    current.cost = 0.0;
+    index = 0u;
+    heap_size = 0u;
+    if (ranks == NULL || heap == NULL || keep_count == 0u || rank_count == 0u) {
+        return;
+    }
+    if (keep_count >= rank_count) {
+        qsort(ranks,
+              (size_t)rank_count,
+              sizeof(sixel_kmedoids_candidate_rank_t),
+              sixel_kmedoids_compare_candidate_rank);
+        return;
+    }
+
+    for (index = 0u; index < rank_count; ++index) {
+        current = ranks[index];
+        if (heap_size < keep_count) {
+            heap[heap_size] = current;
+            sixel_kmedoids_candidate_rank_heap_sift_up(heap, heap_size);
+            ++heap_size;
+            continue;
+        }
+        if (sixel_kmedoids_candidate_rank_is_better(&current, &heap[0u])) {
+            heap[0u] = current;
+            sixel_kmedoids_candidate_rank_heap_sift_down(heap,
+                                                         heap_size,
+                                                         0u);
+        }
+    }
+
+    for (index = 0u; index < keep_count; ++index) {
+        ranks[index] = heap[index];
+    }
+    qsort(ranks,
+          (size_t)keep_count,
+          sizeof(sixel_kmedoids_candidate_rank_t),
+          sixel_kmedoids_compare_candidate_rank);
 }
 
 static int
@@ -5793,6 +5953,61 @@ sixel_kmedoids_test_two_step_pam_polish_cost(
     return SIXEL_OK;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_bandit_select_topk(
+    unsigned int const *active_in,
+    double const *costs_in,
+    unsigned int count,
+    unsigned int keep,
+    unsigned int *selected_out,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_kmedoids_candidate_rank_t *ranks;
+    sixel_kmedoids_candidate_rank_t *heap;
+    unsigned int index;
+
+    status = SIXEL_BAD_ARGUMENT;
+    ranks = NULL;
+    heap = NULL;
+    index = 0u;
+    if (active_in == NULL || costs_in == NULL || selected_out == NULL
+            || allocator == NULL || count == 0u || keep == 0u
+            || keep > count) {
+        return status;
+    }
+
+    ranks = (sixel_kmedoids_candidate_rank_t *)sixel_allocator_malloc(
+        allocator,
+        (size_t)count * sizeof(sixel_kmedoids_candidate_rank_t));
+    heap = (sixel_kmedoids_candidate_rank_t *)sixel_allocator_malloc(
+        allocator,
+        (size_t)keep * sizeof(sixel_kmedoids_candidate_rank_t));
+    if (ranks == NULL || heap == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    for (index = 0u; index < count; ++index) {
+        ranks[index].active_index = active_in[index];
+        ranks[index].cost = costs_in[index];
+    }
+    sixel_kmedoids_candidate_rank_select_topk(ranks, count, keep, heap);
+    for (index = 0u; index < keep; ++index) {
+        selected_out[index] = ranks[index].active_index;
+    }
+    status = SIXEL_OK;
+
+end:
+    if (heap != NULL) {
+        sixel_allocator_free(allocator, heap);
+    }
+    if (ranks != NULL) {
+        sixel_allocator_free(allocator, ranks);
+    }
+    return status;
+}
+
 static SIXELSTATUS
 sixel_kmedoids_pick_sample_indices(unsigned int point_count,
                                    unsigned int sample_size,
@@ -7405,6 +7620,7 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     SIXELSTATUS status;
     unsigned int *sample_points;
     sixel_kmedoids_candidate_rank_t *ranks;
+    sixel_kmedoids_candidate_rank_t *heap;
     unsigned int batch_size;
     unsigned int batch_ceiling;
     unsigned int index;
@@ -7421,6 +7637,7 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     status = SIXEL_BAD_ARGUMENT;
     sample_points = NULL;
     ranks = NULL;
+    heap = NULL;
     batch_size = 0u;
     batch_ceiling = 0u;
     index = 0u;
@@ -7465,7 +7682,10 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     ranks = (sixel_kmedoids_candidate_rank_t *)sixel_allocator_malloc(
         allocator,
         (size_t)(*active_count) * sizeof(sixel_kmedoids_candidate_rank_t));
-    if (sample_points == NULL || ranks == NULL) {
+    heap = (sixel_kmedoids_candidate_rank_t *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(*active_count) * sizeof(sixel_kmedoids_candidate_rank_t));
+    if (sample_points == NULL || ranks == NULL || heap == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -7476,6 +7696,11 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     }
 
     while (*active_count > 4u) {
+        keep = *active_count / 2u;
+        if (keep < 4u) {
+            keep = 4u;
+        }
+
         for (index = 0u; index < batch_size; ++index) {
             sample_points[index] = sixel_kmedoids_rng_bounded(rng_state,
                                                               point_count);
@@ -7507,17 +7732,12 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
             ranks[index].active_index = active[index];
             ranks[index].cost = cost;
         }
-        qsort(ranks,
-              (size_t)(*active_count),
-              sizeof(sixel_kmedoids_candidate_rank_t),
-              sixel_kmedoids_compare_candidate_rank);
-        for (index = 0u; index < *active_count; ++index) {
+        sixel_kmedoids_candidate_rank_select_topk(ranks,
+                                                  *active_count,
+                                                  keep,
+                                                  heap);
+        for (index = 0u; index < keep; ++index) {
             active[index] = ranks[index].active_index;
-        }
-
-        keep = *active_count / 2u;
-        if (keep < 4u) {
-            keep = 4u;
         }
         *active_count = keep;
 
@@ -7534,6 +7754,9 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     status = SIXEL_OK;
 
 end:
+    if (heap != NULL) {
+        sixel_allocator_free(allocator, heap);
+    }
     if (ranks != NULL) {
         sixel_allocator_free(allocator, ranks);
     }
