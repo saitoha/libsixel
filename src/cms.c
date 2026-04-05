@@ -1110,11 +1110,47 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
                                void const *data,
                                size_t length)
 {
+    size_t illuminant_offset;
+    int has_dynamic_lut_path;
+    size_t slot;
+
+    illuminant_offset = 0u;
+    has_dynamic_lut_path = 0;
+    slot = 0u;
     if (profile == NULL || data == NULL || length == 0u) {
         return 0;
     }
 
     if (!sixel_icc_parse_profile(data, length, &profile->builtin_profile)) {
+        return 0;
+    }
+
+    /*
+     * Some synthetic ICC fixtures carry a zero PCS illuminant in the profile
+     * header. ColorSync treats those profiles as effectively non-convertible
+     * for A2B/B2A LUT paths, so builtin follows the same safety policy and
+     * skips ICC conversion instead of applying a potentially wrong transform.
+     */
+    illuminant_offset = 68u;
+    for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+        if (profile->builtin_profile.a2b_mab[slot].type
+                != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->builtin_profile.a2b_lut[slot].kind
+                != SIXEL_ICC_LUT_INVALID ||
+            profile->builtin_profile.b2a_mab[slot].type
+                != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->builtin_profile.b2a_lut[slot].kind
+                != SIXEL_ICC_LUT_INVALID) {
+            has_dynamic_lut_path = 1;
+            break;
+        }
+    }
+    if (has_dynamic_lut_path &&
+        length >= illuminant_offset + 12u &&
+        memcmp((unsigned char const *)data + illuminant_offset,
+               "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+               12u) == 0) {
+        sixel_icc_profile_destroy(&profile->builtin_profile);
         return 0;
     }
 
