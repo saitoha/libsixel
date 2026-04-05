@@ -237,12 +237,13 @@ capture_coregraphics_callback_count(sixel_frame_t *frame, void *data)
 }
 
 static int
-run_coregraphics_animation_case_with_callback(
+run_coregraphics_animation_case_with_callback_ex(
     char const *label,
     char const *relative_path,
     int loop_control,
     int start_frame_no_set,
     int start_frame_no,
+    int require_static,
     sixel_load_image_function callback,
     void *callback_context,
     SIXELSTATUS *out_status)
@@ -254,7 +255,7 @@ run_coregraphics_animation_case_with_callback(
     char const *source_root;
     char image_path[PATH_MAX];
     int cancel_flag;
-    int require_static;
+    int require_static_option;
     int use_palette;
     int reqcolors;
     loader_probe_callback_state_t callback_state;
@@ -265,7 +266,7 @@ run_coregraphics_animation_case_with_callback(
     component = NULL;
     source_root = NULL;
     cancel_flag = 0;
-    require_static = 0;
+    require_static_option = 0;
     use_palette = 0;
     reqcolors = 256;
     callback_state.loader = NULL;
@@ -279,6 +280,9 @@ run_coregraphics_animation_case_with_callback(
     }
     if (out_status != NULL) {
         *out_status = SIXEL_FALSE;
+    }
+    if (require_static != 0) {
+        require_static_option = 1;
     }
 
     source_root = getenv("MESON_SOURCE_ROOT");
@@ -324,7 +328,7 @@ run_coregraphics_animation_case_with_callback(
 
     status = sixel_loader_component_setopt(component,
                                            SIXEL_LOADER_OPTION_REQUIRE_STATIC,
-                                           &require_static);
+                                           &require_static_option);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -375,6 +379,29 @@ cleanup:
     sixel_allocator_unref(allocator);
 
     return SIXEL_FAILED(status) ? 1 : 0;
+}
+
+static int
+run_coregraphics_animation_case_with_callback(
+    char const *label,
+    char const *relative_path,
+    int loop_control,
+    int start_frame_no_set,
+    int start_frame_no,
+    sixel_load_image_function callback,
+    void *callback_context,
+    SIXELSTATUS *out_status)
+{
+    return run_coregraphics_animation_case_with_callback_ex(
+        label,
+        relative_path,
+        loop_control,
+        start_frame_no_set,
+        start_frame_no,
+        0,
+        callback,
+        callback_context,
+        out_status);
 }
 
 static int
@@ -914,6 +941,261 @@ run_coregraphics_apng_cache_partial_shareable_test(void)
                     expected_frame_nos[index]);
             return 1;
         }
+    }
+
+    return 0;
+}
+
+static int
+run_coregraphics_apng_cache_disabled_nonshareable_test(void)
+{
+    static int const expected_shareable[] = { 0, 0, 0, 0 };
+    static int const expected_loop_nos[] = { 0, 0, 1, 1 };
+    static int const expected_frame_nos[] = { 0, 1, 0, 1 };
+    SIXELSTATUS status;
+    coregraphics_cache_shareable_probe_t probe;
+    int result;
+    int index;
+    int capacity;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.expected_count = 4;
+    result = 1;
+    index = 0;
+    capacity = (int)(sizeof(probe.shareable) / sizeof(probe.shareable[0]));
+    for (index = 0; index < capacity; ++index) {
+        probe.shareable[index] = -1;
+        probe.loop_nos[index] = -1;
+        probe.frame_nos[index] = -1;
+    }
+
+    result = run_coregraphics_animation_case_with_callback(
+        "coregraphics apng cache disabled nonshareable",
+        "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png",
+        SIXEL_LOOP_AUTO,
+        0,
+        INT_MIN,
+        capture_coregraphics_cache_shareable_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (status != SIXEL_OK) {
+        fprintf(stderr,
+                "coregraphics: cache disabled nonshareable failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count < probe.expected_count) {
+        fprintf(stderr,
+                "coregraphics: cache disabled callback count %d\n",
+                probe.callback_count);
+        return 1;
+    }
+    for (index = 0; index < probe.expected_count; ++index) {
+        if (probe.shareable[index] != expected_shareable[index] ||
+            probe.loop_nos[index] != expected_loop_nos[index] ||
+            probe.frame_nos[index] != expected_frame_nos[index]) {
+            fprintf(stderr,
+                    "coregraphics: unexpected cache-disabled sequence "
+                    "at %d (actual=%d:%d:%d expected=%d:%d:%d)\n",
+                    index,
+                    probe.shareable[index],
+                    probe.loop_nos[index],
+                    probe.frame_nos[index],
+                    expected_shareable[index],
+                    expected_loop_nos[index],
+                    expected_frame_nos[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_coregraphics_apng_cache_full_shareable_test(void)
+{
+    static int const expected_shareable[] = { 1, 1, 1, 1 };
+    static int const expected_loop_nos[] = { 0, 0, 1, 1 };
+    static int const expected_frame_nos[] = { 0, 1, 0, 1 };
+    SIXELSTATUS status;
+    coregraphics_cache_shareable_probe_t probe;
+    int result;
+    int index;
+    int capacity;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.expected_count = 4;
+    result = 1;
+    index = 0;
+    capacity = (int)(sizeof(probe.shareable) / sizeof(probe.shareable[0]));
+    for (index = 0; index < capacity; ++index) {
+        probe.shareable[index] = -1;
+        probe.loop_nos[index] = -1;
+        probe.frame_nos[index] = -1;
+    }
+
+    result = run_coregraphics_animation_case_with_callback(
+        "coregraphics apng cache full shareable",
+        "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png",
+        SIXEL_LOOP_AUTO,
+        0,
+        INT_MIN,
+        capture_coregraphics_cache_shareable_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (status != SIXEL_OK) {
+        fprintf(stderr,
+                "coregraphics: cache full shareable failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count < probe.expected_count) {
+        fprintf(stderr,
+                "coregraphics: cache full callback count %d\n",
+                probe.callback_count);
+        return 1;
+    }
+    for (index = 0; index < probe.expected_count; ++index) {
+        if (probe.shareable[index] != expected_shareable[index] ||
+            probe.loop_nos[index] != expected_loop_nos[index] ||
+            probe.frame_nos[index] != expected_frame_nos[index]) {
+            fprintf(stderr,
+                    "coregraphics: unexpected cache-full sequence "
+                    "at %d (actual=%d:%d:%d expected=%d:%d:%d)\n",
+                    index,
+                    probe.shareable[index],
+                    probe.loop_nos[index],
+                    probe.frame_nos[index],
+                    expected_shareable[index],
+                    expected_loop_nos[index],
+                    expected_frame_nos[index]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_coregraphics_static_start_frame_cache_inert_test(void)
+{
+    SIXELSTATUS status;
+    coregraphics_cache_shareable_probe_t probe;
+    int result;
+    int index;
+    int capacity;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.expected_count = 1;
+    result = 1;
+    index = 0;
+    capacity = (int)(sizeof(probe.shareable) / sizeof(probe.shareable[0]));
+    for (index = 0; index < capacity; ++index) {
+        probe.shareable[index] = -1;
+        probe.loop_nos[index] = -1;
+        probe.frame_nos[index] = -1;
+    }
+
+    result = run_coregraphics_animation_case_with_callback_ex(
+        "coregraphics static start-frame cache inert",
+        "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png",
+        SIXEL_LOOP_DISABLE,
+        1,
+        1,
+        1,
+        capture_coregraphics_cache_shareable_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (status != SIXEL_OK) {
+        fprintf(stderr,
+                "coregraphics: static start-frame cache inert failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "coregraphics: static start-frame callback count %d\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.shareable[0] != 0 ||
+        probe.loop_nos[0] != 0 ||
+        probe.frame_nos[0] != 0) {
+        fprintf(stderr,
+                "coregraphics: static start-frame expected non-shareable "
+                "(actual=%d:%d:%d)\n",
+                probe.shareable[0],
+                probe.loop_nos[0],
+                probe.frame_nos[0]);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_coregraphics_callback_interrupted_stops_immediately_test(void)
+{
+    SIXELSTATUS status;
+    coregraphics_loop_unbounded_probe_t probe;
+    int result;
+
+    status = SIXEL_FALSE;
+    probe.callback_count = 0;
+    probe.max_callbacks = 8;
+    probe.required_loop_no = 0;
+    probe.highest_loop_no = -1;
+    probe.highest_frame_no = -1;
+    probe.saw_multiframe = 0;
+    probe.reached_required_loop = 0;
+    result = 1;
+
+    result = run_coregraphics_animation_case_with_callback(
+        "coregraphics callback interrupted stops immediately",
+        "/tests/data/inputs/formats/apng_8x8_rgb_loop2.png",
+        SIXEL_LOOP_AUTO,
+        0,
+        INT_MIN,
+        capture_coregraphics_loop_probe_until_target,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (status != SIXEL_INTERRUPTED) {
+        fprintf(stderr,
+                "coregraphics: expected interruption status, got %d\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "coregraphics: callback interruption count %d\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.saw_multiframe == 0) {
+        fprintf(stderr,
+                "coregraphics: callback interruption did not mark "
+                "multiframe\n");
+        return 1;
+    }
+    if (probe.reached_required_loop == 0) {
+        fprintf(stderr,
+                "coregraphics: callback interruption did not trigger target\n");
+        return 1;
     }
 
     return 0;
@@ -1629,6 +1911,14 @@ run_coregraphics_loader_test(void)
           run_coregraphics_apng_delay_replay_consistency_test },
         { "SIXEL_TEST_COREGRAPHICS_APNG_CACHE_PARTIAL_SHAREABLE",
           run_coregraphics_apng_cache_partial_shareable_test },
+        { "SIXEL_TEST_COREGRAPHICS_APNG_CACHE_DISABLED_NONSHAREABLE",
+          run_coregraphics_apng_cache_disabled_nonshareable_test },
+        { "SIXEL_TEST_COREGRAPHICS_APNG_CACHE_FULL_SHAREABLE",
+          run_coregraphics_apng_cache_full_shareable_test },
+        { "SIXEL_TEST_COREGRAPHICS_STATIC_START_FRAME_CACHE_INERT",
+          run_coregraphics_static_start_frame_cache_inert_test },
+        { "SIXEL_TEST_COREGRAPHICS_CALLBACK_INTERRUPTED_STOPS_IMMEDIATELY",
+          run_coregraphics_callback_interrupted_stops_immediately_test },
         { "SIXEL_TEST_COREGRAPHICS_WEBP_METADATA",
           run_coregraphics_webp_animation_metadata_test },
         { "SIXEL_TEST_COREGRAPHICS_WEBP_START_FRAME",
