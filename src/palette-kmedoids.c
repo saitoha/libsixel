@@ -250,6 +250,17 @@ sixel_kmedoids_pick_unique_sorted_sample_indices(
     unsigned int *hash_table,
     unsigned int hash_capacity);
 
+static SIXELSTATUS
+sixel_kmedoids_pick_stratified_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    unsigned int const *guided_points,
+    unsigned int guided_count,
+    uint32_t *rng_state,
+    unsigned int *indices_out,
+    unsigned int *hash_table,
+    unsigned int hash_capacity);
+
 static double
 sixel_kmedoids_swap_cost_with_cutoff_row(
     double const *points,
@@ -573,6 +584,16 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmedoids_test_pick_unique_sorted_sample_indices(
     unsigned int point_count,
     unsigned int sample_size,
+    uint32_t seed,
+    unsigned int *indices_out,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    unsigned int const *guided_points,
+    unsigned int guided_count,
     uint32_t seed,
     unsigned int *indices_out,
     sixel_allocator_t *allocator);
@@ -1817,6 +1838,41 @@ sixel_kmedoids_sort_unsigned_indices(unsigned int *values,
     }
 }
 
+static int
+sixel_kmedoids_insert_unique_hash_value(unsigned int value,
+                                        unsigned int *hash_table,
+                                        unsigned int hash_capacity,
+                                        unsigned int mask)
+{
+    unsigned int hash_slot;
+    unsigned int probe_count;
+    uint64_t hash_state;
+
+    hash_slot = 0u;
+    probe_count = 0u;
+    hash_state = 0u;
+    if (hash_table == NULL || hash_capacity == 0u) {
+        return -1;
+    }
+
+    hash_state = (uint64_t)value * 11400714819323198485ULL;
+    hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
+    for (;;) {
+        if (hash_table[hash_slot] == UINT_MAX) {
+            hash_table[hash_slot] = value;
+            return 1;
+        }
+        if (hash_table[hash_slot] == value) {
+            return 0;
+        }
+        ++probe_count;
+        if (probe_count >= hash_capacity) {
+            return -1;
+        }
+        hash_slot = (hash_slot + 1u) & mask;
+    }
+}
+
 static SIXELSTATUS
 sixel_kmedoids_pick_unique_sorted_sample_indices(
     unsigned int point_count,
@@ -1832,10 +1888,8 @@ sixel_kmedoids_pick_unique_sorted_sample_indices(
     unsigned int slot;
     unsigned int pick;
     unsigned int value;
-    unsigned int hash_slot;
     unsigned int mask;
-    uint64_t hash_state;
-    int exists;
+    int insert_result;
 
     status = SIXEL_BAD_ARGUMENT;
     base = 0u;
@@ -1843,10 +1897,8 @@ sixel_kmedoids_pick_unique_sorted_sample_indices(
     slot = 0u;
     pick = 0u;
     value = 0u;
-    hash_slot = 0u;
     mask = 0u;
-    hash_state = 0u;
-    exists = 0;
+    insert_result = 0;
     if (point_count == 0u || sample_size == 0u || sample_size > point_count
             || rng_state == NULL || indices_out == NULL || hash_table == NULL
             || hash_capacity == 0u) {
@@ -1867,36 +1919,173 @@ sixel_kmedoids_pick_unique_sorted_sample_indices(
     for (slot = 0u; slot < sample_size; ++slot) {
         index = base + slot;
         pick = sixel_kmedoids_rng_bounded(rng_state, index + 1u);
-        exists = 0;
-        hash_state = (uint64_t)pick * 11400714819323198485ULL;
-        hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
-        for (;;) {
-            if (hash_table[hash_slot] == UINT_MAX) {
-                break;
-            }
-            if (hash_table[hash_slot] == pick) {
-                exists = 1;
-                break;
-            }
-            hash_slot = (hash_slot + 1u) & mask;
+        insert_result = sixel_kmedoids_insert_unique_hash_value(
+            pick,
+            hash_table,
+            hash_capacity,
+            mask);
+        if (insert_result < 0) {
+            return SIXEL_BAD_ALLOCATION;
         }
-        if (exists) {
+        if (insert_result == 0) {
             value = index;
         } else {
             value = pick;
         }
         indices_out[slot] = value;
-
-        hash_state = (uint64_t)value * 11400714819323198485ULL;
-        hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
-        for (;;) {
-            if (hash_table[hash_slot] == UINT_MAX
-                    || hash_table[hash_slot] == value) {
-                hash_table[hash_slot] = value;
-                break;
-            }
-            hash_slot = (hash_slot + 1u) & mask;
+        insert_result = sixel_kmedoids_insert_unique_hash_value(
+            value,
+            hash_table,
+            hash_capacity,
+            mask);
+        if (insert_result < 0) {
+            return SIXEL_BAD_ALLOCATION;
         }
+    }
+    sixel_kmedoids_sort_unsigned_indices(indices_out, sample_size);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kmedoids_pick_stratified_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    unsigned int const *guided_points,
+    unsigned int guided_count,
+    uint32_t *rng_state,
+    unsigned int *indices_out,
+    unsigned int *hash_table,
+    unsigned int hash_capacity)
+{
+    SIXELSTATUS status;
+    unsigned int index;
+    unsigned int mask;
+    unsigned int sample_count;
+    unsigned int guided_quota;
+    unsigned int guided_start;
+    unsigned int guided_step;
+    unsigned int guided_pick;
+    unsigned int random_attempts;
+    unsigned int random_attempt_cap;
+    unsigned int pick;
+    int insert_result;
+    uint64_t cap64;
+
+    status = SIXEL_BAD_ARGUMENT;
+    index = 0u;
+    mask = 0u;
+    sample_count = 0u;
+    guided_quota = 0u;
+    guided_start = 0u;
+    guided_step = 0u;
+    guided_pick = 0u;
+    random_attempts = 0u;
+    random_attempt_cap = 0u;
+    pick = 0u;
+    insert_result = 0;
+    cap64 = 0u;
+    if (point_count == 0u || sample_size == 0u || sample_size > point_count
+            || rng_state == NULL || indices_out == NULL || hash_table == NULL
+            || hash_capacity == 0u) {
+        return status;
+    }
+    if ((hash_capacity & (hash_capacity - 1u)) != 0u) {
+        return status;
+    }
+    if (hash_capacity < sample_size) {
+        return status;
+    }
+    if (guided_points == NULL) {
+        guided_count = 0u;
+    }
+
+    for (index = 0u; index < hash_capacity; ++index) {
+        hash_table[index] = UINT_MAX;
+    }
+    mask = hash_capacity - 1u;
+
+    /*
+     * Reserve 75% of the sample budget for high-residual guided points,
+     * and fill the rest with uniform picks to keep exploration coverage.
+     */
+    guided_quota = (sample_size * 3u + 3u) / 4u;
+    if (guided_quota > sample_size) {
+        guided_quota = sample_size;
+    }
+    if (guided_quota > guided_count) {
+        guided_quota = guided_count;
+    }
+
+    if (guided_count > 0u && guided_quota > 0u) {
+        guided_start = sixel_kmedoids_rng_bounded(rng_state, guided_count);
+        for (guided_step = 0u;
+                guided_step < guided_count && sample_count < guided_quota;
+                ++guided_step) {
+            guided_pick = guided_points[
+                (guided_start + guided_step) % guided_count];
+            if (guided_pick >= point_count) {
+                continue;
+            }
+            insert_result = sixel_kmedoids_insert_unique_hash_value(
+                guided_pick,
+                hash_table,
+                hash_capacity,
+                mask);
+            if (insert_result < 0) {
+                return SIXEL_BAD_ALLOCATION;
+            }
+            if (insert_result > 0) {
+                indices_out[sample_count] = guided_pick;
+                ++sample_count;
+            }
+        }
+    }
+
+    cap64 = (uint64_t)point_count * 16u;
+    if (cap64 < (uint64_t)sample_size * 8u) {
+        cap64 = (uint64_t)sample_size * 8u;
+    }
+    if (cap64 > (uint64_t)UINT_MAX) {
+        random_attempt_cap = UINT_MAX;
+    } else {
+        random_attempt_cap = (unsigned int)cap64;
+    }
+
+    random_attempts = 0u;
+    while (sample_count < sample_size && random_attempts < random_attempt_cap) {
+        pick = sixel_kmedoids_rng_bounded(rng_state, point_count);
+        insert_result = sixel_kmedoids_insert_unique_hash_value(
+            pick,
+            hash_table,
+            hash_capacity,
+            mask);
+        if (insert_result < 0) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        if (insert_result > 0) {
+            indices_out[sample_count] = pick;
+            ++sample_count;
+        }
+        ++random_attempts;
+    }
+
+    for (index = 0u; index < point_count && sample_count < sample_size;
+            ++index) {
+        insert_result = sixel_kmedoids_insert_unique_hash_value(
+            index,
+            hash_table,
+            hash_capacity,
+            mask);
+        if (insert_result < 0) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        if (insert_result > 0) {
+            indices_out[sample_count] = index;
+            ++sample_count;
+        }
+    }
+    if (sample_count != sample_size) {
+        return SIXEL_BAD_ARGUMENT;
     }
     sixel_kmedoids_sort_unsigned_indices(indices_out, sample_size);
     return SIXEL_OK;
@@ -7259,6 +7448,58 @@ sixel_kmedoids_test_pick_unique_sorted_sample_indices(
     return status;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    unsigned int const *guided_points,
+    unsigned int guided_count,
+    uint32_t seed,
+    unsigned int *indices_out,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    uint32_t rng_state;
+    unsigned int hash_capacity;
+    unsigned int *hash_table;
+
+    status = SIXEL_BAD_ARGUMENT;
+    rng_state = seed;
+    hash_capacity = 0u;
+    hash_table = NULL;
+    if (rng_state == 0u) {
+        rng_state = 1u;
+    }
+    if (point_count == 0u || sample_size == 0u || sample_size > point_count
+            || indices_out == NULL || allocator == NULL) {
+        return status;
+    }
+    if (guided_count > 0u && guided_points == NULL) {
+        return status;
+    }
+    hash_capacity = sixel_kmedoids_next_power_of_two(sample_size * 2u);
+    if (hash_capacity < sample_size) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    hash_table = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)hash_capacity * sizeof(unsigned int));
+    if (hash_table == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    status = sixel_kmedoids_pick_stratified_unique_sorted_sample_indices(
+        point_count,
+        sample_size,
+        guided_points,
+        guided_count,
+        &rng_state,
+        indices_out,
+        hash_table,
+        hash_capacity);
+    sixel_allocator_free(allocator, hash_table);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_kmedoids_run_pam(double const *points,
                        double const *weights,
@@ -9043,6 +9284,8 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
                                        unsigned int const *nearest_slot,
                                        double const *nearest_dist,
                                        double const *second_dist,
+                                       unsigned int const *hot_points,
+                                       unsigned int hot_point_count,
                                        unsigned int *candidate_slots,
                                        unsigned int *candidate_points,
                                        unsigned int *active,
@@ -9105,6 +9348,9 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
             || rng_state == NULL || allocator == NULL) {
         return status;
     }
+    if (hot_point_count > 0u && hot_points == NULL) {
+        return status;
+    }
 
     if (*active_count <= 4u || point_count == 0u) {
         return SIXEL_OK;
@@ -9161,9 +9407,11 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        status = sixel_kmedoids_pick_unique_sorted_sample_indices(
+        status = sixel_kmedoids_pick_stratified_unique_sorted_sample_indices(
             point_count,
             batch_size,
+            hot_points,
+            hot_point_count,
             rng_state,
             sample_points,
             sample_hash,
@@ -9718,6 +9966,8 @@ sixel_kmedoids_run_banditpam(double const *points,
             nearest_slot,
             nearest_dist,
             second_dist,
+            hot_points,
+            hot_point_count,
             candidate_slots,
             candidate_points,
             active,
