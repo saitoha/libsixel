@@ -1281,6 +1281,214 @@ run_builtin_loader_pnm_pam_unknown_key_compat_numeric_test(void)
 }
 
 static int
+run_builtin_loader_pnm_pam_unknown_long_key_compat_test(void)
+{
+    static char const pam_header[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "MAXVAL 255\n"
+        "THIS_IS_A_VERY_LONG_UNKNOWN_PAM_HEADER_KEY_NAME_"
+        "THAT_EXCEEDS_TOKEN_LIMIT SOMEVALUE\n"
+        "TUPLTYPE RGB\n"
+        "ENDHDR\n";
+    unsigned char pam_unknown_long_key_sample[sizeof(pam_header) - 1u + 3u];
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    size_t header_size;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    memset(pam_unknown_long_key_sample, 0, sizeof(pam_unknown_long_key_sample));
+    header_size = 0u;
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    header_size = sizeof(pam_header) - 1u;
+    memcpy(pam_unknown_long_key_sample, pam_header, header_size);
+    pam_unknown_long_key_sample[header_size + 0u] = 10u;
+    pam_unknown_long_key_sample[header_size + 1u] = 20u;
+    pam_unknown_long_key_sample[header_size + 2u] = 30u;
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam unknown long key compatibility",
+        pam_unknown_long_key_sample,
+        sizeof(pam_unknown_long_key_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key compatibility: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key compatibility: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key compatibility: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key compatibility: "
+                "colorspace mismatch (%d)\n",
+                probe.colorspace);
+        return 1;
+    }
+    if (probe.width != 1 || probe.height != 1) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key compatibility: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.pixels_u8[0] != 10u ||
+        probe.pixels_u8[1] != 20u ||
+        probe.pixels_u8[2] != 30u) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key compatibility: "
+                "RGB mismatch (%u,%u,%u)\n",
+                (unsigned int)probe.pixels_u8[0],
+                (unsigned int)probe.pixels_u8[1],
+                (unsigned int)probe.pixels_u8[2]);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_unknown_long_key_strict_regression_test(void)
+{
+    static char const pam_missing_required_sample[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "THIS_IS_A_VERY_LONG_UNKNOWN_PAM_HEADER_KEY_NAME_"
+        "THAT_EXCEEDS_TOKEN_LIMIT SOMEVALUE\n"
+        "TUPLTYPE RGB\n"
+        "ENDHDR\n";
+    static char const pam_known_key_reject_sample[] =
+        "P7\n"
+        "WIDTH 1 EXTRA\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "MAXVAL 255\n"
+        "THIS_IS_A_VERY_LONG_UNKNOWN_PAM_HEADER_KEY_NAME_"
+        "THAT_EXCEEDS_TOKEN_LIMIT SOMEVALUE\n"
+        "TUPLTYPE RGB\n"
+        "ENDHDR\n";
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    char const *message;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    message = NULL;
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam unknown long key missing required",
+        (unsigned char const *)pam_missing_required_sample,
+        sizeof(pam_missing_required_sample) - 1u,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key missing required: "
+                "unexpected success\n");
+        return 1;
+    }
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message, "PAM header is missing required fields") == NULL) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key missing required: "
+                "unexpected message (%s)\n",
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam unknown long key known-field reject",
+        (unsigned char const *)pam_known_key_reject_sample,
+        sizeof(pam_known_key_reject_sample) - 1u,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key known-field reject: "
+                "unexpected success\n");
+        return 1;
+    }
+    message = sixel_helper_get_additional_message();
+    if (message == NULL ||
+        strstr(message, "unexpected token after WIDTH value") == NULL) {
+        fprintf(stderr,
+                "builtin loader pnm pam unknown long key known-field reject: "
+                "unexpected message (%s)\n",
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_pnm_ascii_truncated_strict_test(void)
 {
     static unsigned char const truncated_ascii_p3[] = {
@@ -2971,6 +3179,10 @@ run_builtin_loader_test(void)
           run_builtin_loader_pnm_ppm8_fastpath_numeric_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_KEY_COMPAT",
           run_builtin_loader_pnm_pam_unknown_key_compat_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_LONG_KEY_COMPAT",
+          run_builtin_loader_pnm_pam_unknown_long_key_compat_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_LONG_KEY_STRICT_REGRESSION",
+          run_builtin_loader_pnm_pam_unknown_long_key_strict_regression_test },
         { "SIXEL_TEST_PNM_NUMERIC_ASCII_TRUNCATED_STRICT",
           run_builtin_loader_pnm_ascii_truncated_strict_test },
         { "SIXEL_TEST_PNM_NUMERIC_ASCII_TRUNCATED_COMPAT",

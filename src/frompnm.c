@@ -274,6 +274,67 @@ pnm_read_line(unsigned char **pp,
     return 1;
 }
 
+/*
+ * Read the first token on a PAM header line without token-size limits.
+ *
+ * Unknown PAM keys are intentionally ignored for compatibility, so key
+ * detection must not fail just because the key name is longer than
+ * PNM_TOKEN_MAX.
+ */
+static int
+pnm_read_line_key(unsigned char **pp,
+                  unsigned char *end,
+                  unsigned char **key_begin,
+                  size_t *key_length)
+{
+    unsigned char *p;
+    unsigned char *begin;
+
+    p = NULL;
+    begin = NULL;
+    if (pp == NULL || *pp == NULL || end == NULL ||
+        key_begin == NULL || key_length == NULL) {
+        return 0;
+    }
+
+    p = *pp;
+    while (p < end && isspace((unsigned char)*p)) {
+        p++;
+    }
+    if (p >= end || *p == '#') {
+        *pp = p;
+        return 0;
+    }
+
+    begin = p;
+    while (p < end && !isspace((unsigned char)*p) && *p != '#') {
+        p++;
+    }
+
+    *key_begin = begin;
+    *key_length = (size_t)(p - begin);
+    *pp = p;
+    return *key_length > 0u;
+}
+
+static int
+pnm_line_key_equals(unsigned char const *key_begin,
+                    size_t key_length,
+                    char const *field)
+{
+    size_t field_length;
+
+    field_length = 0u;
+    if (key_begin == NULL || field == NULL) {
+        return 0;
+    }
+    field_length = strlen(field);
+    if (field_length == 0u || key_length != field_length) {
+        return 0;
+    }
+    return memcmp(key_begin, field, field_length) == 0;
+}
+
 static int
 pnm_allow_truncated_ascii(void)
 {
@@ -519,6 +580,8 @@ pnm_parse_header(unsigned char *buffer,
     int tuple_type_known;
     int allow_duplicate_required_keys;
     int allow_endhdr_trailing_tokens;
+    unsigned char *key_begin;
+    size_t key_length;
     pnm_tuple_type_t tuple_type;
 
     p = NULL;
@@ -526,7 +589,9 @@ pnm_parse_header(unsigned char *buffer,
     line_begin = NULL;
     line_end = NULL;
     line_cursor = NULL;
+    key_begin = NULL;
     memset(token, 0, sizeof(token));
+    key_length = 0u;
     width_set = 0;
     height_set = 0;
     depth_set = 0;
@@ -593,10 +658,15 @@ pnm_parse_header(unsigned char *buffer,
     case '7':
         while (pnm_read_line(&p, end, &line_begin, &line_end)) {
             line_cursor = line_begin;
-            if (!pnm_read_token(&line_cursor, line_end, token, sizeof(token))) {
+            key_begin = NULL;
+            key_length = 0u;
+            if (!pnm_read_line_key(&line_cursor,
+                                   line_end,
+                                   &key_begin,
+                                   &key_length)) {
                 continue;
             }
-            if (strcmp(token, "ENDHDR") == 0) {
+            if (pnm_line_key_equals(key_begin, key_length, "ENDHDR")) {
                 if (!allow_endhdr_trailing_tokens &&
                     !pnm_require_line_tail_empty(line_cursor,
                                                  line_end,
@@ -608,7 +678,7 @@ pnm_parse_header(unsigned char *buffer,
                 endhdr_seen = 1;
                 break;
             }
-            if (strcmp(token, "WIDTH") == 0) {
+            if (pnm_line_key_equals(key_begin, key_length, "WIDTH")) {
                 if (width_set && !allow_duplicate_required_keys) {
                     pnm_set_duplicate_required_key_message("WIDTH");
                     return 0;
@@ -627,7 +697,7 @@ pnm_parse_header(unsigned char *buffer,
                 width_set = 1;
                 continue;
             }
-            if (strcmp(token, "HEIGHT") == 0) {
+            if (pnm_line_key_equals(key_begin, key_length, "HEIGHT")) {
                 if (height_set && !allow_duplicate_required_keys) {
                     pnm_set_duplicate_required_key_message("HEIGHT");
                     return 0;
@@ -646,7 +716,7 @@ pnm_parse_header(unsigned char *buffer,
                 height_set = 1;
                 continue;
             }
-            if (strcmp(token, "DEPTH") == 0) {
+            if (pnm_line_key_equals(key_begin, key_length, "DEPTH")) {
                 if (depth_set && !allow_duplicate_required_keys) {
                     pnm_set_duplicate_required_key_message("DEPTH");
                     return 0;
@@ -665,7 +735,7 @@ pnm_parse_header(unsigned char *buffer,
                 depth_set = 1;
                 continue;
             }
-            if (strcmp(token, "MAXVAL") == 0) {
+            if (pnm_line_key_equals(key_begin, key_length, "MAXVAL")) {
                 if (maxval_set && !allow_duplicate_required_keys) {
                     pnm_set_duplicate_required_key_message("MAXVAL");
                     return 0;
@@ -684,7 +754,7 @@ pnm_parse_header(unsigned char *buffer,
                 maxval_set = 1;
                 continue;
             }
-            if (strcmp(token, "TUPLTYPE") == 0) {
+            if (pnm_line_key_equals(key_begin, key_length, "TUPLTYPE")) {
                 if (!pnm_read_token(&line_cursor,
                                     line_end,
                                     token,
