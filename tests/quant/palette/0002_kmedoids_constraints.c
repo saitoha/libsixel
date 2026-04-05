@@ -4478,6 +4478,172 @@ test_run_clarans_nonmedoid_pool_indexmap_consistency_case(void)
 }
 
 static int
+test_active_candidate_state_is_consistent(unsigned int const *active_candidates,
+                                          unsigned int const *active_pos,
+                                          unsigned char const *flags,
+                                          unsigned int point_count,
+                                          unsigned int active_count)
+{
+    unsigned int index;
+    unsigned int probe;
+    unsigned int candidate;
+
+    index = 0u;
+    probe = 0u;
+    candidate = 0u;
+    if (active_candidates == NULL || active_pos == NULL || flags == NULL) {
+        return 0;
+    }
+    for (index = 0u; index < point_count; ++index) {
+        if (active_pos[index] == UINT_MAX) {
+            continue;
+        }
+        if (active_pos[index] >= active_count
+                || active_candidates[active_pos[index]] != index
+                || flags[index] != 0u) {
+            return 0;
+        }
+    }
+    for (index = 0u; index < active_count; ++index) {
+        candidate = active_candidates[index];
+        if (candidate >= point_count || flags[candidate] != 0u) {
+            return 0;
+        }
+        if (active_pos[candidate] != index) {
+            return 0;
+        }
+        for (probe = index + 1u; probe < active_count; ++probe) {
+            if (candidate == active_candidates[probe]) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+static int
+test_run_clarans_active_candidate_compaction_consistency_case(void)
+{
+    unsigned int const point_count = 32u;
+    unsigned int const k = 4u;
+    unsigned int medoids[4u];
+    unsigned int candidates[6u];
+    unsigned int non_medoids[32u];
+    unsigned int active_candidates[32u];
+    unsigned int active_pos[32u];
+    unsigned char flags[32u];
+    unsigned int non_count;
+    unsigned int active_count;
+    unsigned int step;
+    unsigned int candidate;
+    unsigned int position;
+    unsigned int moved_candidate;
+    unsigned int index;
+    unsigned int last_index;
+
+    non_count = 0u;
+    active_count = 0u;
+    step = 0u;
+    candidate = 0u;
+    position = 0u;
+    moved_candidate = 0u;
+    index = 0u;
+    last_index = 0u;
+    medoids[0u] = 0u;
+    medoids[1u] = 8u;
+    medoids[2u] = 16u;
+    medoids[3u] = 24u;
+    candidates[0u] = 3u;
+    candidates[1u] = 5u;
+    candidates[2u] = 7u;
+    candidates[3u] = 9u;
+    candidates[4u] = 5u;
+    candidates[5u] = 13u;
+
+    for (index = 0u; index < point_count; ++index) {
+        flags[index] = 0u;
+        active_pos[index] = UINT_MAX;
+    }
+    for (index = 0u; index < k; ++index) {
+        flags[medoids[index]] = 1u;
+    }
+    for (index = 0u; index < point_count; ++index) {
+        if (flags[index] == 0u) {
+            non_medoids[non_count] = index;
+            ++non_count;
+        }
+    }
+    for (index = 0u; index < non_count; ++index) {
+        candidate = non_medoids[index];
+        active_candidates[index] = candidate;
+        active_pos[candidate] = index;
+    }
+    active_count = non_count;
+    if (!test_active_candidate_state_is_consistent(active_candidates,
+                                                   active_pos,
+                                                   flags,
+                                                   point_count,
+                                                   active_count)) {
+        return 0;
+    }
+
+    for (step = 0u; step < 6u; ++step) {
+        candidate = candidates[step];
+        if (candidate >= point_count || flags[candidate] != 0u) {
+            return 0;
+        }
+        if (active_pos[candidate] == UINT_MAX) {
+            if (step != 4u) {
+                return 0;
+            }
+            for (index = 0u; index < point_count; ++index) {
+                active_pos[index] = UINT_MAX;
+            }
+            for (index = 0u; index < non_count; ++index) {
+                active_candidates[index] = non_medoids[index];
+                active_pos[active_candidates[index]] = index;
+            }
+            active_count = non_count;
+            if (!test_active_candidate_state_is_consistent(active_candidates,
+                                                           active_pos,
+                                                           flags,
+                                                           point_count,
+                                                           active_count)) {
+                return 0;
+            }
+            continue;
+        }
+        position = active_pos[candidate];
+        if (position >= active_count
+                || active_candidates[position] != candidate) {
+            return 0;
+        }
+        last_index = active_count - 1u;
+        if (position != last_index) {
+            moved_candidate = active_candidates[last_index];
+            active_candidates[position] = moved_candidate;
+            active_pos[moved_candidate] = position;
+        }
+        active_pos[candidate] = UINT_MAX;
+        active_count = last_index;
+        if (!test_active_candidate_state_is_consistent(active_candidates,
+                                                       active_pos,
+                                                       flags,
+                                                       point_count,
+                                                       active_count)) {
+            return 0;
+        }
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)) {
+        return 0;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
 test_run_bandit_prune_unique_sample_seed_reproducibility_case(void)
 {
     sixel_allocator_t *allocator;
@@ -4708,6 +4874,11 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "bandit-prune-row-cache-equivalence") == 0) {
         return test_run_bandit_prune_row_cache_equivalence_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-active-candidate-compaction-consistency")
+            == 0) {
+        return test_run_clarans_active_candidate_compaction_consistency_case()
             ? 0 : 1;
     }
     if (strcmp(argv[1], "clarans-candidate-epoch-reset-equivalence") == 0) {
