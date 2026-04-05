@@ -624,8 +624,15 @@ staticcheck-c-header-modeline:
 sixel-check-test-tools:
 	@set -eu; \
 	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
-	$(MAKE) -C "$(top_builddir)/assessment" lsqa@EXEEXT@; \
-	$(MAKE) -C "$(top_builddir)/converters" img2sixel@EXEEXT@ sixel2png@EXEEXT@
+	$(MAKE) -C "$(top_builddir)/assessment" lsqa@EXEEXT@
+if WANT_IMG2SIXEL
+	@set -eu; \
+	$(MAKE) -C "$(top_builddir)/converters" img2sixel@EXEEXT@
+endif
+if WANT_SIXEL2PNG
+	@set -eu; \
+	$(MAKE) -C "$(top_builddir)/converters" sixel2png@EXEEXT@
+endif
 
 sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
@@ -644,7 +651,6 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	    echo "error: failed to resolve test tool paths" >&2; \
 	    exit 1; \
 	}; \
-	set -a; \
 	eval "$$resolved_test_paths"; \
 	for required_export in `$(SHELL) -xv "$(top_srcdir)/build-aux/read-check-test-list.sh" \
 	    tests "$(srcdir)/check-test-exports.list" 2>$(top_builddir)/read-check-test-list.log`; do \
@@ -653,10 +659,14 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	        echo "error: unresolved test export: $$required_export" >&2; \
 	        exit 1; \
 	    fi; \
+	    export "$$required_export"; \
 	done; \
-	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
+	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports "$(srcdir)/check-config-exports.list"`; \
 	eval "$$config_exports"; \
-	set +a; \
+	for config_export in $$config_exports; do \
+	    config_key=$${config_export%%=*}; \
+	    export "$$config_key"; \
+	done; \
 	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv" "$(abs_top_srcdir)/python" \
@@ -1201,6 +1211,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
     _static/sh/staticcheck-c-header-modeline.sh \
     check-test-exports.list \
+    check-config-exports.list \
     $(TEST_DATA_DIRS)
 
 # Keep distdir recipe lines below per-argument shell limits by copying
