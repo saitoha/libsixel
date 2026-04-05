@@ -46,6 +46,9 @@ sleep 1
 kill -INT "${pid}" 2>/dev/null || true
 
 wait_limit=40
+# Runtime wrappers such as wine can delay SIGINT delivery to the target.
+# Keep native runs strict while allowing extra grace time for wrapped runs.
+test -n "${SIXEL_RUNTIME-}" && wait_limit=200
 while test "${wait_limit}" -gt 0; do
     kill -0 "${pid}" 2>/dev/null || {
         break

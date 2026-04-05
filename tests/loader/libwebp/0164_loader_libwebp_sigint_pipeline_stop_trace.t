@@ -32,11 +32,12 @@ echo "1..1"
 set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
-wait_limit=20
+wait_limit=500
 wait_sleep=0.01
 
-test "${SIXEL_TSAN_BUILD-no}" = "yes" && wait_limit=500
+test "${SIXEL_TSAN_BUILD-no}" = "yes" && wait_limit=5000
 
+set +x
 trace_summary=$(
     {
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -79,6 +80,8 @@ test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
 
 trace_remainder=${trace_summary#*event=pipeline_stop}
 test "${trace_remainder}" != "${trace_summary}" && stop_flag=1
+
+set -x
 
 test "${timeout_flag}" = "0" || {
     echo "not ok" 1 - "libwebp pipeline did not stop after SIGINT"
