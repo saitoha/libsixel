@@ -85,6 +85,16 @@ typedef struct tga_pal_rgba_probe_context {
     unsigned char palette[12];
 } tga_pal_rgba_probe_context_t;
 
+typedef struct pnm_numeric_probe_context {
+    int callback_count;
+    int pixelformat;
+    int colorspace;
+    int width;
+    int height;
+    float pixels_f32[12];
+    unsigned char pixels_u8[12];
+} pnm_numeric_probe_context_t;
+
 static SIXELSTATUS
 capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
 {
@@ -576,6 +586,603 @@ run_builtin_loader_tga_pal_rgba_transparent_index_numeric_test(void)
     return 0;
 }
 
+static SIXELSTATUS
+capture_pnm_numeric_probe(sixel_frame_t *frame, void *data)
+{
+    pnm_numeric_probe_context_t *context;
+    size_t sample_count;
+    size_t sample_limit;
+
+    context = (pnm_numeric_probe_context_t *)data;
+    sample_count = 0u;
+    sample_limit = 0u;
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->callback_count += 1;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->colorspace = sixel_frame_get_colorspace(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
+    memset(context->pixels_f32, 0, sizeof(context->pixels_f32));
+    memset(context->pixels_u8, 0, sizeof(context->pixels_u8));
+
+    if (context->width <= 0 || context->height <= 0) {
+        return SIXEL_OK;
+    }
+    sample_count = (size_t)context->width * (size_t)context->height * 3u;
+
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(context->pixelformat)) {
+        if (frame->pixels.f32ptr == NULL) {
+            return SIXEL_OK;
+        }
+        sample_limit = sizeof(context->pixels_f32) /
+            sizeof(context->pixels_f32[0]);
+        if (sample_count > sample_limit) {
+            sample_count = sample_limit;
+        }
+        memcpy(context->pixels_f32,
+               frame->pixels.f32ptr,
+               sample_count * sizeof(context->pixels_f32[0]));
+        return SIXEL_OK;
+    }
+
+    if (frame->pixels.u8ptr == NULL) {
+        return SIXEL_OK;
+    }
+    sample_limit = sizeof(context->pixels_u8) /
+        sizeof(context->pixels_u8[0]);
+    if (sample_count > sample_limit) {
+        sample_count = sample_limit;
+    }
+    memcpy(context->pixels_u8, frame->pixels.u8ptr, sample_count);
+
+    return SIXEL_OK;
+}
+
+static int
+run_builtin_loader_probe_buffer_case(char const *label,
+                                     unsigned char const *buffer,
+                                     size_t buffer_size,
+                                     builtin_loader_probe_options_t const
+                                         *options,
+                                     sixel_load_image_function callback,
+                                     void *callback_context,
+                                     SIXELSTATUS *load_status_out)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_loader_component_t *component;
+    loader_probe_callback_state_t callback_state;
+    sixel_chunk_t chunk;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    int set_bgcolor;
+    unsigned char const *bgcolor;
+    int loop_control;
+    int cms_engine;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    component = NULL;
+    memset(&chunk, 0, sizeof(chunk));
+    require_static = 0;
+    use_palette = 0;
+    reqcolors = 256;
+    set_bgcolor = 0;
+    bgcolor = NULL;
+    loop_control = SIXEL_LOOP_AUTO;
+    cms_engine = SIXEL_CMS_ENGINE_NONE;
+    result = 1;
+    if (load_status_out != NULL) {
+        *load_status_out = SIXEL_FALSE;
+    }
+
+    if (label == NULL ||
+        buffer == NULL ||
+        buffer_size == 0u ||
+        options == NULL ||
+        callback == NULL) {
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = new_builtin_component_for_pixelformat_test(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+
+    chunk.buffer = (unsigned char *)buffer;
+    chunk.size = buffer_size;
+    chunk.max_size = buffer_size;
+    chunk.allocator = allocator;
+
+    require_static = options->require_static;
+    use_palette = options->use_palette;
+    reqcolors = options->reqcolors;
+    set_bgcolor = options->set_bgcolor;
+    bgcolor = options->bgcolor;
+    loop_control = options->loop_control;
+    cms_engine = options->cms_engine;
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    if (set_bgcolor != 0) {
+        status = sixel_loader_component_setopt(component,
+                                               SIXEL_LOADER_OPTION_BGCOLOR,
+                                               bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+    if (options->set_loop_control != 0) {
+        status = sixel_loader_component_setopt(component,
+                                               SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                               &loop_control);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+    if (options->set_cms_engine != 0) {
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
+            &cms_engine);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+
+    callback_state.loader = NULL;
+    callback_state.fn = callback;
+    callback_state.context = callback_context;
+    status = sixel_loader_component_load(component,
+                                         &chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (load_status_out != NULL) {
+        *load_status_out = status;
+    }
+    result = 0;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static float
+pnm_numeric_decode_srgb_unit(float gamma_value)
+{
+    if (!(gamma_value > 0.0f)) {
+        return 0.0f;
+    }
+    if (gamma_value >= 1.0f) {
+        return 1.0f;
+    }
+    if (gamma_value <= 0.04045f) {
+        return gamma_value / 12.92f;
+    }
+    return powf((gamma_value + 0.055f) / 1.055f, 2.4f);
+}
+
+static void
+pnm_numeric_compose_expected_linear(float out_rgb[3],
+                                    unsigned char const src_rgb[3],
+                                    unsigned char src_alpha,
+                                    float const bg_linear[3])
+{
+    int channel;
+    float alpha_unit;
+    float inv_alpha;
+    float src_gamma;
+    float src_linear;
+
+    channel = 0;
+    alpha_unit = 0.0f;
+    inv_alpha = 0.0f;
+    src_gamma = 0.0f;
+    src_linear = 0.0f;
+    if (out_rgb == NULL || src_rgb == NULL || bg_linear == NULL) {
+        return;
+    }
+
+    alpha_unit = (float)src_alpha / 255.0f;
+    inv_alpha = 1.0f - alpha_unit;
+    for (channel = 0; channel < 3; ++channel) {
+        src_gamma = (float)src_rgb[channel] / 255.0f;
+        src_linear = pnm_numeric_decode_srgb_unit(src_gamma);
+        out_rgb[channel] = src_linear * alpha_unit
+            + bg_linear[channel] * inv_alpha;
+    }
+}
+
+static int
+verify_pnm_float_probe(char const *label,
+                       pnm_numeric_probe_context_t const *probe,
+                       int expected_pixelformat,
+                       int expected_colorspace,
+                       int expected_width,
+                       int expected_height,
+                       float const expected_rgb[3],
+                       float tolerance)
+{
+    int channel;
+
+    channel = 0;
+    if (label == NULL || probe == NULL || expected_rgb == NULL) {
+        return 1;
+    }
+    if (probe->callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch (%d)\n",
+                label,
+                probe->callback_count);
+        return 1;
+    }
+    if (probe->pixelformat != expected_pixelformat) {
+        fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
+                label,
+                probe->pixelformat);
+        return 1;
+    }
+    if (probe->colorspace != expected_colorspace) {
+        fprintf(stderr, "%s: colorspace mismatch (%d)\n",
+                label,
+                probe->colorspace);
+        return 1;
+    }
+    if (probe->width != expected_width || probe->height != expected_height) {
+        fprintf(stderr, "%s: geometry mismatch (%dx%d)\n",
+                label,
+                probe->width,
+                probe->height);
+        return 1;
+    }
+
+    for (channel = 0; channel < 3; ++channel) {
+        if (!float_approx_equal(probe->pixels_f32[channel],
+                                expected_rgb[channel],
+                                tolerance)) {
+            fprintf(stderr,
+                    "%s: channel %d mismatch (actual=%0.8f expected=%0.8f)\n",
+                    label,
+                    channel,
+                    probe->pixels_f32[channel],
+                    expected_rgb[channel]);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_rgba_linear_bg_numeric_test(void)
+{
+    static unsigned char const pam_rgba_sample[] = {
+        'P', '7', '\n',
+        'W', 'I', 'D', 'T', 'H', ' ', '1', '\n',
+        'H', 'E', 'I', 'G', 'H', 'T', ' ', '1', '\n',
+        'D', 'E', 'P', 'T', 'H', ' ', '4', '\n',
+        'M', 'A', 'X', 'V', 'A', 'L', ' ', '2', '5', '5', '\n',
+        'T', 'U', 'P', 'L', 'T', 'Y', 'P', 'E', ' ',
+        'R', 'G', 'B', '_', 'A', 'L', 'P', 'H', 'A', '\n',
+        'E', 'N', 'D', 'H', 'D', 'R', '\n',
+        128u, 64u, 32u, 128u
+    };
+    static unsigned char const src_rgb[3] = { 128u, 64u, 32u };
+    static unsigned char const src_alpha = 128u;
+    static unsigned char const bgcolor_linear_u8[3] = { 64u, 128u, 192u };
+    static float const bg_black[3] = { 0.0f, 0.0f, 0.0f };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe_black;
+    pnm_numeric_probe_context_t probe_bg;
+    SIXELSTATUS status;
+    float expected_black[3];
+    float expected_bg[3];
+    float bg_linear[3];
+    int result;
+    int channel;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe_black, 0, sizeof(probe_black));
+    memset(&probe_bg, 0, sizeof(probe_bg));
+    memset(expected_black, 0, sizeof(expected_black));
+    memset(expected_bg, 0, sizeof(expected_bg));
+    memset(bg_linear, 0, sizeof(bg_linear));
+    result = 1;
+    channel = 0;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam rgba linear bg numeric (default black)",
+        pam_rgba_sample,
+        sizeof(pam_rgba_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe_black,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam rgba linear bg numeric: "
+                "loader failed for default black (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+
+    pnm_numeric_compose_expected_linear(expected_black,
+                                        src_rgb,
+                                        src_alpha,
+                                        bg_black);
+    result = verify_pnm_float_probe(
+        "builtin loader pnm pam rgba linear bg numeric (default black)",
+        &probe_black,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        1,
+        1,
+        expected_black,
+        0.00001f);
+    if (result != 0) {
+        goto end;
+    }
+
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_linear_u8;
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam rgba linear bg numeric (linear bgcolor)",
+        pam_rgba_sample,
+        sizeof(pam_rgba_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe_bg,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam rgba linear bg numeric: "
+                "loader failed for linear bgcolor (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+
+    bg_linear[0] = (float)bgcolor_linear_u8[0] / 255.0f;
+    bg_linear[1] = (float)bgcolor_linear_u8[1] / 255.0f;
+    bg_linear[2] = (float)bgcolor_linear_u8[2] / 255.0f;
+    pnm_numeric_compose_expected_linear(expected_bg,
+                                        src_rgb,
+                                        src_alpha,
+                                        bg_linear);
+    result = verify_pnm_float_probe(
+        "builtin loader pnm pam rgba linear bg numeric (linear bgcolor)",
+        &probe_bg,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        1,
+        1,
+        expected_bg,
+        0.00001f);
+    if (result != 0) {
+        goto end;
+    }
+
+    for (channel = 0; channel < 3; ++channel) {
+        if (!float_approx_equal(probe_black.pixels_f32[channel],
+                                probe_bg.pixels_f32[channel],
+                                0.000001f)) {
+            result = 0;
+            goto end;
+        }
+    }
+    fprintf(stderr,
+            "builtin loader pnm pam rgba linear bg numeric: "
+            "bgcolor did not affect composed output\n");
+    result = 1;
+
+end:
+    sixel_helper_set_loader_background_colorspace(-1);
+    return result;
+}
+
+static int
+run_builtin_loader_pnm_ppm16_float32_numeric_test(void)
+{
+    static unsigned char const ppm16_sample[] = {
+        'P', '6', '\n',
+        '1', ' ', '1', '\n',
+        '6', '5', '5', '3', '5', '\n',
+        0xffu, 0xffu,
+        0x80u, 0x00u,
+        0x00u, 0x01u
+    };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    float expected_rgb[3];
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    memset(expected_rgb, 0, sizeof(expected_rgb));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm ppm16 float32 numeric",
+        ppm16_sample,
+        sizeof(ppm16_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm ppm16 float32 numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+
+    expected_rgb[0] = 1.0f;
+    expected_rgb[1] = 32768.0f / 65535.0f;
+    expected_rgb[2] = 1.0f / 65535.0f;
+    result = verify_pnm_float_probe(
+        "builtin loader pnm ppm16 float32 numeric",
+        &probe,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        SIXEL_COLORSPACE_GAMMA,
+        1,
+        1,
+        expected_rgb,
+        0.000001f);
+
+    return result;
+}
+
+static int
+run_builtin_loader_pnm_ppm8_fastpath_numeric_test(void)
+{
+    static unsigned char const ppm8_sample[] = {
+        'P', '6', '\n',
+        '2', ' ', '1', '\n',
+        '2', '5', '5', '\n',
+        1u, 2u, 3u, 4u, 5u, 6u
+    };
+    static unsigned char const expected_rgb[6] = { 1u, 2u, 3u, 4u, 5u, 6u };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm ppm8 fastpath numeric",
+        ppm8_sample,
+        sizeof(ppm8_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm ppm8 fastpath numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader pnm ppm8 fastpath numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader pnm ppm8 fastpath numeric: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr,
+                "builtin loader pnm ppm8 fastpath numeric: "
+                "colorspace mismatch (%d)\n",
+                probe.colorspace);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 1) {
+        fprintf(stderr,
+                "builtin loader pnm ppm8 fastpath numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (memcmp(probe.pixels_u8, expected_rgb, sizeof(expected_rgb)) != 0) {
+        fprintf(stderr,
+                "builtin loader pnm ppm8 fastpath numeric: "
+                "RGB samples mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
 static int
 run_builtin_loader_env_dispatch(
     builtin_loader_env_dispatch_entry_t const *entries,
@@ -705,6 +1312,14 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_TGA_NUMERIC_PAL_RGBA_TRANSPARENT_INDEX",
           run_builtin_loader_tga_pal_rgba_transparent_index_numeric_test }
     };
+    static builtin_loader_env_dispatch_entry_t const pnm_env_dispatch[] = {
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_RGBA_LINEAR_BG",
+          run_builtin_loader_pnm_pam_rgba_linear_bg_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PPM16_FLOAT32",
+          run_builtin_loader_pnm_ppm16_float32_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PPM8_FASTPATH",
+          run_builtin_loader_pnm_ppm8_fastpath_numeric_test }
+    };
     static builtin_loader_env_dispatch_entry_t const psd_env_dispatch[] = {
         { "SIXEL_TEST_PSD_VALIDATE_DEFENSIVE",
           run_builtin_loader_psd_validate_defensive_test },
@@ -723,6 +1338,10 @@ run_builtin_loader_test(void)
         {
             tga_env_dispatch,
             sizeof(tga_env_dispatch) / sizeof(tga_env_dispatch[0])
+        },
+        {
+            pnm_env_dispatch,
+            sizeof(pnm_env_dispatch) / sizeof(pnm_env_dispatch[0])
         },
         {
             psd_env_dispatch,

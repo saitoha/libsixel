@@ -36,6 +36,7 @@ SIXELSTATUS
 load_pnm(unsigned char      /* in */  *p,
          int                /* in */  len,
          sixel_allocator_t  /* in */  *allocator,
+         unsigned char      /* in */  *bgcolor,
          unsigned char      /* out */ **result,
          int                /* out */ *psx,
          int                /* out */ *psy,

@@ -767,7 +767,7 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
     }
     if (chunk->buffer[0] == 'P' &&
         chunk->buffer[1] >= '1' &&
-        chunk->buffer[1] <= '6') {
+        chunk->buffer[1] <= '7') {
         return 1;
     }
     return 0;
@@ -4540,6 +4540,7 @@ load_with_builtin(
     sixel_builtin_load_context_t load_context;
     sixel_builtin_decode_path_t decode_path;
     int animation_handled;
+    int pnm_pixelformat;
 #if HAVE_LCMS2
     int is_tiff;
 #endif
@@ -4572,6 +4573,7 @@ load_with_builtin(
     memset(&load_context, 0, sizeof(load_context));
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
     animation_handled = 0;
+    pnm_pixelformat = SIXEL_PIXELFORMAT_RGB888;
 #if HAVE_LCMS2
     is_tiff = 0;
 #endif
@@ -4626,16 +4628,32 @@ load_with_builtin(
         status = load_pnm(pchunk->buffer,
                           chunk_size,
                           frame->allocator,
+                          load_request.bgcolor,
                           &pixels,
                           &frame->width,
                           &frame->height,
                           fuse_palette ? &frame->palette: NULL,
                           &frame->ncolors,
-                          &frame->pixelformat);
+                          &pnm_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        sixel_frame_set_pixels(frame, pixels);
+        status = sixel_frame_set_pixelformat(frame, pnm_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(frame->allocator, pixels);
+            pixels = NULL;
+            goto end;
+        }
+        /*
+         * Apply pixelformat metadata before attaching decoded storage.
+         * sixel_frame_set_pixelformat() may normalize existing pixels, so
+         * setting the pointer first can reinterpret float data as bytes.
+         */
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pnm_pixelformat)) {
+            sixel_frame_set_pixels_float32(frame, (float *)pixels);
+        } else {
+            sixel_frame_set_pixels(frame, pixels);
+        }
         break;
 
     case SIXEL_BUILTIN_DECODE_PATH_GIF:
