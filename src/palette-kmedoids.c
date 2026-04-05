@@ -218,6 +218,29 @@ sixel_kmedoids_clarans_candidate_epoch_next(
     uint32_t *seen_epoch,
     uint32_t *exhausted_epoch);
 
+static unsigned int
+sixel_kmedoids_clarans_rebuild_non_medoids(
+    unsigned char const *flags,
+    unsigned int point_count,
+    unsigned int *non_medoids,
+    unsigned int *non_medoids_pos);
+
+static int
+sixel_kmedoids_clarans_build_active_candidates(
+    unsigned int const *non_medoids,
+    unsigned int non_count,
+    unsigned int point_count,
+    unsigned int *active_candidates,
+    unsigned int *active_pos,
+    unsigned int *active_count_out);
+
+static int
+sixel_kmedoids_clarans_remove_active_candidate(
+    unsigned int candidate,
+    unsigned int *active_candidates,
+    unsigned int *active_pos,
+    unsigned int *active_count_io);
+
 static SIXELSTATUS
 sixel_kmedoids_pick_unique_sorted_sample_indices(
     unsigned int point_count,
@@ -1637,6 +1660,105 @@ sixel_kmedoids_clarans_candidate_epoch_next(
         next_epoch = 1u;
     }
     *epoch_io = next_epoch;
+}
+
+static unsigned int
+sixel_kmedoids_clarans_rebuild_non_medoids(
+    unsigned char const *flags,
+    unsigned int point_count,
+    unsigned int *non_medoids,
+    unsigned int *non_medoids_pos)
+{
+    unsigned int non_count;
+    unsigned int index;
+
+    non_count = 0u;
+    index = 0u;
+    if (flags == NULL || non_medoids == NULL || non_medoids_pos == NULL) {
+        return 0u;
+    }
+    for (index = 0u; index < point_count; ++index) {
+        if (flags[index] == 0u) {
+            non_medoids[non_count] = index;
+            non_medoids_pos[index] = non_count;
+            ++non_count;
+        } else {
+            non_medoids_pos[index] = UINT_MAX;
+        }
+    }
+    return non_count;
+}
+
+static int
+sixel_kmedoids_clarans_build_active_candidates(
+    unsigned int const *non_medoids,
+    unsigned int non_count,
+    unsigned int point_count,
+    unsigned int *active_candidates,
+    unsigned int *active_pos,
+    unsigned int *active_count_out)
+{
+    unsigned int index;
+    unsigned int candidate;
+
+    index = 0u;
+    candidate = 0u;
+    if (non_medoids == NULL || active_candidates == NULL
+            || active_pos == NULL || active_count_out == NULL) {
+        return 0;
+    }
+    for (index = 0u; index < point_count; ++index) {
+        active_pos[index] = UINT_MAX;
+    }
+    for (index = 0u; index < non_count; ++index) {
+        candidate = non_medoids[index];
+        if (candidate >= point_count || active_pos[candidate] != UINT_MAX) {
+            return 0;
+        }
+        active_candidates[index] = candidate;
+        active_pos[candidate] = index;
+    }
+    *active_count_out = non_count;
+    return 1;
+}
+
+static int
+sixel_kmedoids_clarans_remove_active_candidate(
+    unsigned int candidate,
+    unsigned int *active_candidates,
+    unsigned int *active_pos,
+    unsigned int *active_count_io)
+{
+    unsigned int active_count;
+    unsigned int position;
+    unsigned int last_index;
+    unsigned int moved_candidate;
+
+    active_count = 0u;
+    position = 0u;
+    last_index = 0u;
+    moved_candidate = 0u;
+    if (active_candidates == NULL || active_pos == NULL
+            || active_count_io == NULL) {
+        return 0;
+    }
+    active_count = *active_count_io;
+    if (active_count == 0u || candidate >= UINT_MAX) {
+        return 0;
+    }
+    position = active_pos[candidate];
+    if (position >= active_count || active_candidates[position] != candidate) {
+        return 0;
+    }
+    last_index = active_count - 1u;
+    if (position != last_index) {
+        moved_candidate = active_candidates[last_index];
+        active_candidates[position] = moved_candidate;
+        active_pos[moved_candidate] = position;
+    }
+    active_pos[candidate] = UINT_MAX;
+    *active_count_io = last_index;
+    return 1;
 }
 
 static void
@@ -7642,6 +7764,8 @@ sixel_kmedoids_run_clarans(double const *points,
     SIXELSTATUS status;
     unsigned int *current_medoids;
     unsigned int *non_medoids;
+    unsigned int *active_candidates;
+    unsigned int *active_pos;
     unsigned int *eval_order;
     unsigned int *eval_positions;
     double *eval_scores;
@@ -7683,6 +7807,7 @@ sixel_kmedoids_run_clarans(double const *points,
     unsigned int local_index;
     unsigned int neighbor_count;
     unsigned int non_count;
+    unsigned int active_count;
     unsigned int slot;
     unsigned int changed_slot_old;
     unsigned int changed_slot_new;
@@ -7721,6 +7846,7 @@ sixel_kmedoids_run_clarans(double const *points,
     unsigned int candidate_pool_index;
     unsigned int pool_index;
     unsigned int remaining_candidates;
+    unsigned int rebuild_fallback_done;
     unsigned int clarans_cache_size;
     unsigned int cheap_prefix_count;
     unsigned int cache_slot_next;
@@ -7731,6 +7857,7 @@ sixel_kmedoids_run_clarans(double const *points,
     int candidate_improved;
     int candidate_found;
     int candidate_selected;
+    int rebuild_active_state;
     int cheap_bound_enabled;
     int need_full_refresh;
     int eval_full_refresh;
@@ -7748,6 +7875,8 @@ sixel_kmedoids_run_clarans(double const *points,
     status = SIXEL_BAD_ARGUMENT;
     current_medoids = NULL;
     non_medoids = NULL;
+    active_candidates = NULL;
+    active_pos = NULL;
     eval_order = NULL;
     eval_positions = NULL;
     eval_scores = NULL;
@@ -7789,6 +7918,7 @@ sixel_kmedoids_run_clarans(double const *points,
     local_index = 0u;
     neighbor_count = 0u;
     non_count = 0u;
+    active_count = 0u;
     slot = 0u;
     changed_slot_old = 0u;
     changed_slot_new = 0u;
@@ -7827,6 +7957,7 @@ sixel_kmedoids_run_clarans(double const *points,
     candidate_pool_index = 0u;
     pool_index = 0u;
     remaining_candidates = 0u;
+    rebuild_fallback_done = 0u;
     clarans_cache_size = 0u;
     cheap_prefix_count = 0u;
     cache_slot_next = 0u;
@@ -7837,6 +7968,7 @@ sixel_kmedoids_run_clarans(double const *points,
     candidate_improved = 0;
     candidate_found = 0;
     candidate_selected = 0;
+    rebuild_active_state = 0;
     cheap_bound_enabled = 1;
     need_full_refresh = 0;
     eval_full_refresh = 0;
@@ -7866,6 +7998,12 @@ sixel_kmedoids_run_clarans(double const *points,
         allocator,
         (size_t)k * sizeof(unsigned int));
     non_medoids = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    active_candidates = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    active_pos = (unsigned int *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(unsigned int));
     eval_order = (unsigned int *)sixel_allocator_malloc(
@@ -8019,6 +8157,7 @@ sixel_kmedoids_run_clarans(double const *points,
         allocator,
         (size_t)point_count * sizeof(unsigned int));
     if (current_medoids == NULL || non_medoids == NULL
+            || active_candidates == NULL || active_pos == NULL
             || eval_order == NULL || eval_positions == NULL
             || eval_scores == NULL || eval_rank == NULL
             || nearest_slot == NULL || nearest_dist == NULL
@@ -8066,6 +8205,7 @@ sixel_kmedoids_run_clarans(double const *points,
         candidate_seen_epoch[index] = 0u;
         candidate_exhausted_epoch[index] = 0u;
         non_medoids_pos[index] = UINT_MAX;
+        active_pos[index] = UINT_MAX;
     }
     candidate_epoch = 1u;
     cache_slot_next = 0u;
@@ -8225,17 +8365,20 @@ sixel_kmedoids_run_clarans(double const *points,
                                      NULL,
                                      &current_cost);
         /* Keep an explicit non-medoid pool so CLARANS avoids reject loops. */
-        non_count = 0u;
-        for (index = 0u; index < point_count; ++index) {
-            if (flags[index] == 0u) {
-                non_medoids[non_count] = index;
-                non_medoids_pos[index] = non_count;
-                ++non_count;
-            } else {
-                non_medoids_pos[index] = UINT_MAX;
-            }
+        non_count = sixel_kmedoids_clarans_rebuild_non_medoids(flags,
+                                                               point_count,
+                                                               non_medoids,
+                                                               non_medoids_pos);
+        if (!sixel_kmedoids_clarans_build_active_candidates(non_medoids,
+                                                            non_count,
+                                                            point_count,
+                                                            active_candidates,
+                                                            active_pos,
+                                                            &active_count)) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
         }
-        remaining_candidates = non_count;
+        remaining_candidates = active_count;
         sixel_kmedoids_clarans_guided_full_refresh(
             weights,
             point_count,
@@ -8282,7 +8425,7 @@ sixel_kmedoids_run_clarans(double const *points,
                 && eval_total < eval_budget
                 && attempts < attempt_cap
                 && no_op_attempts < no_op_limit) {
-            if (non_count == 0u) {
+            if (active_count == 0u) {
                 break;
             }
             if (remaining_candidates == 0u) {
@@ -8290,17 +8433,20 @@ sixel_kmedoids_run_clarans(double const *points,
             }
 
             mode_pick = sixel_kmedoids_rng_bounded(rng_state, 100u);
-            pick = sixel_kmedoids_rng_bounded(rng_state, non_count);
+            pick = sixel_kmedoids_rng_bounded(rng_state, active_count);
             guided_point_pick = sixel_kmedoids_rng_bounded(
                 rng_state,
                 hot_point_count > 0u ? hot_point_count : 1u);
+            candidate_probe_start = sixel_kmedoids_rng_bounded(
+                rng_state,
+                active_count);
             candidate_selected = 0;
-            candidate = non_medoids[pick];
+            candidate = active_candidates[pick];
             if (mode_pick < 75u
                     && hot_point_count > 0u) {
                 candidate = hot_points[guided_point_pick % hot_point_count];
                 if (candidate >= point_count || flags[candidate] != 0u) {
-                    candidate = non_medoids[pick];
+                    candidate = active_candidates[pick];
                 }
             }
             if (candidate < point_count
@@ -8310,16 +8456,15 @@ sixel_kmedoids_run_clarans(double const *points,
                 candidate_selected = 1;
             }
             if (!candidate_selected) {
-                candidate_probe_start = sixel_kmedoids_rng_bounded(rng_state,
-                                                                    non_count);
+                rebuild_fallback_done = 0u;
                 for (candidate_probe_count = 0u;
-                        candidate_probe_count < non_count;
+                        candidate_probe_count < active_count;
                         ++candidate_probe_count) {
                     pool_index = candidate_probe_start + candidate_probe_count;
-                    if (pool_index >= non_count) {
-                        pool_index -= non_count;
+                    if (pool_index >= active_count) {
+                        pool_index -= active_count;
                     }
-                    candidate = non_medoids[pool_index];
+                    candidate = active_candidates[pool_index];
                     if (candidate >= point_count || flags[candidate] != 0u
                             || candidate_exhausted_epoch[candidate]
                                 == candidate_epoch) {
@@ -8327,6 +8472,31 @@ sixel_kmedoids_run_clarans(double const *points,
                     }
                     candidate_selected = 1;
                     break;
+                }
+                if (!candidate_selected && rebuild_fallback_done == 0u) {
+                    non_count = sixel_kmedoids_clarans_rebuild_non_medoids(
+                        flags,
+                        point_count,
+                        non_medoids,
+                        non_medoids_pos);
+                    if (sixel_kmedoids_clarans_build_active_candidates(
+                                non_medoids,
+                                non_count,
+                                point_count,
+                                active_candidates,
+                                active_pos,
+                                &active_count)) {
+                        remaining_candidates = active_count;
+                        rebuild_fallback_done = 1u;
+                        if (active_count > 0u) {
+                            pick %= active_count;
+                            candidate = active_candidates[pick];
+                            candidate_selected = 1;
+                        }
+                    } else {
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
+                    }
                 }
             }
             if (!candidate_selected) {
@@ -8432,9 +8602,30 @@ sixel_kmedoids_run_clarans(double const *points,
                         && candidate_exhausted_epoch[candidate]
                             != candidate_epoch) {
                     candidate_exhausted_epoch[candidate] = candidate_epoch;
-                    if (remaining_candidates > 0u) {
-                        --remaining_candidates;
+                    if (!sixel_kmedoids_clarans_remove_active_candidate(
+                                candidate,
+                                active_candidates,
+                                active_pos,
+                                &active_count)) {
+                        non_count = sixel_kmedoids_clarans_rebuild_non_medoids(
+                            flags,
+                            point_count,
+                            non_medoids,
+                            non_medoids_pos);
+                        rebuild_active_state =
+                            sixel_kmedoids_clarans_build_active_candidates(
+                                non_medoids,
+                                non_count,
+                                point_count,
+                                active_candidates,
+                                active_pos,
+                                &active_count);
+                        if (!rebuild_active_state) {
+                            status = SIXEL_BAD_ARGUMENT;
+                            goto end;
+                        }
                     }
+                    remaining_candidates = active_count;
                 }
             }
             if (candidate_improved
@@ -8460,25 +8651,46 @@ sixel_kmedoids_run_clarans(double const *points,
                     non_medoids_pos[old_medoid] = candidate_pool_index;
                     non_medoids_pos[candidate] = UINT_MAX;
                 } else {
-                    non_count = 0u;
-                    for (pool_index = 0u; pool_index < point_count;
-                            ++pool_index) {
-                        if (flags[pool_index] == 0u) {
-                            non_medoids[non_count] = pool_index;
-                            non_medoids_pos[pool_index] = non_count;
-                            ++non_count;
-                        } else {
-                            non_medoids_pos[pool_index] = UINT_MAX;
-                        }
-                    }
+                    non_count = sixel_kmedoids_clarans_rebuild_non_medoids(
+                        flags,
+                        point_count,
+                        non_medoids,
+                        non_medoids_pos);
                 }
-                remaining_candidates = non_count;
                 sixel_kmedoids_clarans_candidate_epoch_next(
                     &candidate_epoch,
                     point_count,
                     candidate_seen_count,
                     candidate_seen_epoch,
                     candidate_exhausted_epoch);
+                rebuild_active_state =
+                    sixel_kmedoids_clarans_build_active_candidates(
+                        non_medoids,
+                        non_count,
+                        point_count,
+                        active_candidates,
+                        active_pos,
+                        &active_count);
+                if (!rebuild_active_state) {
+                    non_count = sixel_kmedoids_clarans_rebuild_non_medoids(
+                        flags,
+                        point_count,
+                        non_medoids,
+                        non_medoids_pos);
+                    rebuild_active_state =
+                        sixel_kmedoids_clarans_build_active_candidates(
+                            non_medoids,
+                            non_count,
+                            point_count,
+                            active_candidates,
+                            active_pos,
+                            &active_count);
+                    if (!rebuild_active_state) {
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
+                    }
+                }
+                remaining_candidates = active_count;
 
                 sixel_kmedoids_update_assignments_after_swap_ex(
                     points,
@@ -8535,17 +8747,24 @@ sixel_kmedoids_run_clarans(double const *points,
                             &hot_slot_count);
                 }
                 if (need_full_refresh) {
-                    non_count = 0u;
-                    for (pool_index = 0u; pool_index < point_count;
-                            ++pool_index) {
-                        if (flags[pool_index] == 0u) {
-                            non_medoids[non_count] = pool_index;
-                            non_medoids_pos[pool_index] = non_count;
-                            ++non_count;
-                        } else {
-                            non_medoids_pos[pool_index] = UINT_MAX;
-                        }
+                    non_count = sixel_kmedoids_clarans_rebuild_non_medoids(
+                        flags,
+                        point_count,
+                        non_medoids,
+                        non_medoids_pos);
+                    rebuild_active_state =
+                        sixel_kmedoids_clarans_build_active_candidates(
+                            non_medoids,
+                            non_count,
+                            point_count,
+                            active_candidates,
+                            active_pos,
+                            &active_count);
+                    if (!rebuild_active_state) {
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
                     }
+                    remaining_candidates = active_count;
                     sixel_kmedoids_clarans_guided_full_refresh(
                         weights,
                         point_count,
@@ -8723,6 +8942,12 @@ end:
     }
     if (non_medoids != NULL) {
         sixel_allocator_free(allocator, non_medoids);
+    }
+    if (active_pos != NULL) {
+        sixel_allocator_free(allocator, active_pos);
+    }
+    if (active_candidates != NULL) {
+        sixel_allocator_free(allocator, active_candidates);
     }
     if (flags != NULL) {
         sixel_allocator_free(allocator, flags);
