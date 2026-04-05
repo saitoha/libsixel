@@ -396,6 +396,14 @@ typedef int SIXELSTATUS;
                                                     kmeans   -> k-means solver
                                                     medoids -> k-medoids
                                                                 solver
+                                                  auto/heckbert/kmeans/medoids
+                                                  share final-merge suboptions:
+                                                    merge:
+                                                      auto, none, ward
+                                                    merge_oversplit:
+                                                      float in 1.0-3.0
+                                                    merge_lloyd:
+                                                      0 or integer in 1-30
                                                   kmeans accepts suboptions in:
                                                     kmeans:key=value[:key=value...]
                                                   supported suboptions:
@@ -415,6 +423,24 @@ typedef int SIXELSTATUS;
                                                       integer in 1-1048576
                                                     feedback (or f):
                                                       off, on
+                                                    seed (or s):
+                                                      integer in 0-4294967295
+                                                    restarts:
+                                                      integer in 1-32
+                                                    iter:
+                                                      integer in 1-100
+                                                    iter_max:
+                                                      integer in 1-100
+                                                    miniter:
+                                                      0 or integer in
+                                                      1-100
+                                                    polish_iter:
+                                                      0 or integer in
+                                                      1-16
+                                                    feedback_slots:
+                                                      integer in 1-16
+                                                    feedback_interval:
+                                                      integer in 1-64
                                                   medoids accepts suboptions in:
                                                     medoids:key=value[:key=value...]
                                                   supported suboptions:
@@ -446,7 +472,8 @@ typedef int SIXELSTATUS;
                                                       integer in 8-4096
                                                 */
 #define SIXEL_OPTFLAG_FINAL_MERGE       ('F')  /* -F MODE, --final-merge=MODE:
-                                                  final merge policy.
+                                                  deprecated compatibility alias.
+                                                  Use -QMODEL:merge=MODE.
                                                   MODE is one of them:
                                                     auto -> enable automatic
                                                             final merging
