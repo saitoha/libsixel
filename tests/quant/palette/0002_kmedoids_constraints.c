@@ -3333,6 +3333,180 @@ test_run_bandit_prune_partial_select_equivalence_case(void)
     return 1;
 }
 
+static int
+test_run_clarans_row_cache_generation_equivalence_case(void)
+{
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int nearest_slot[TEST_PIXEL_COUNT];
+    double nearest_dist[TEST_PIXEL_COUNT];
+    double second_dist[TEST_PIXEL_COUNT];
+    unsigned int second_slot[TEST_PIXEL_COUNT];
+    unsigned int order[TEST_PIXEL_COUNT];
+    double cache_row[TEST_PIXEL_COUNT];
+    uint32_t cache_generation[TEST_PIXEL_COUNT];
+    uint32_t row_epoch;
+    unsigned int replace_slot;
+    unsigned int candidate;
+    unsigned int index;
+    double reference_cost;
+    double cached_cost;
+    double reject_cutoff;
+    double reject_reference_cost;
+    double reject_cached_cost;
+    double diff;
+    int reject_reference_early;
+    int reject_cached_early;
+    int reject_reference_accept;
+    int reject_cached_accept;
+
+    row_epoch = 33u;
+    replace_slot = 1u;
+    candidate = 7u;
+    index = 0u;
+    reference_cost = 0.0;
+    cached_cost = 0.0;
+    reject_cutoff = 0.0;
+    reject_reference_cost = 0.0;
+    reject_cached_cost = 0.0;
+    diff = 0.0;
+    reject_reference_early = 0;
+    reject_cached_early = 0;
+    reject_reference_accept = 0;
+    reject_cached_accept = 0;
+
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 5u) + 1u);
+        order[index] = index;
+        cache_row[index] = 999999.0 + (double)index;
+        cache_generation[index] = row_epoch - 1u;
+    }
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_slot,
+                                      nearest_dist,
+                                      second_dist,
+                                      second_slot,
+                                      NULL);
+
+    reference_cost = sixel_kmedoids_test_swap_cost_cutoff(
+        points,
+        weights,
+        TEST_PIXEL_COUNT,
+        nearest_slot,
+        nearest_dist,
+        second_dist,
+        replace_slot,
+        candidate,
+        order,
+        1.0e300,
+        NULL);
+    cached_cost = sixel_kmedoids_test_swap_cost_cutoff_with_row_generation(
+        points,
+        weights,
+        TEST_PIXEL_COUNT,
+        nearest_slot,
+        nearest_dist,
+        second_dist,
+        replace_slot,
+        candidate,
+        cache_row,
+        cache_generation,
+        row_epoch,
+        order,
+        1.0e300,
+        NULL);
+    diff = reference_cost - cached_cost;
+    if (diff < 0.0) {
+        diff = -diff;
+    }
+    if (diff > 1.0e-9) {
+        return 0;
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        if (cache_generation[index] != row_epoch) {
+            return 0;
+        }
+    }
+
+    reject_cutoff = reference_cost * 0.95;
+    reject_reference_cost = sixel_kmedoids_test_swap_cost_cutoff(
+        points,
+        weights,
+        TEST_PIXEL_COUNT,
+        nearest_slot,
+        nearest_dist,
+        second_dist,
+        replace_slot,
+        candidate,
+        order,
+        reject_cutoff,
+        &reject_reference_early);
+    reject_cached_cost =
+        sixel_kmedoids_test_swap_cost_cutoff_with_row_generation(
+            points,
+            weights,
+            TEST_PIXEL_COUNT,
+            nearest_slot,
+            nearest_dist,
+            second_dist,
+            replace_slot,
+            candidate,
+            cache_row,
+            cache_generation,
+            row_epoch,
+            order,
+            reject_cutoff,
+            &reject_cached_early);
+    reject_reference_accept =
+        (reject_reference_cost + 1.0e-12 < reject_cutoff) ? 1 : 0;
+    reject_cached_accept =
+        (reject_cached_cost + 1.0e-12 < reject_cutoff) ? 1 : 0;
+    if (reject_reference_early != reject_cached_early) {
+        return 0;
+    }
+    if (reject_reference_accept != reject_cached_accept) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
+test_run_clarans_row_cache_seed_reproducibility_case(void)
+{
+    int ok;
+
+    ok = 0;
+    sixel_set_kmedoids_clarans_local_override(1, 6u);
+    sixel_set_kmedoids_clarans_neighbors_override(1, 192u);
+
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 0)) {
+        goto end;
+    }
+    if (!test_run_seed_case(SIXEL_PALETTE_KMEDOIDS_ALGO_CLARANS, 1)) {
+        goto end;
+    }
+    ok = 1;
+
+end:
+    sixel_set_kmedoids_clarans_neighbors_override(0, 0u);
+    sixel_set_kmedoids_clarans_local_override(0, 0u);
+    return ok;
+}
+
 int
 test_palette_0002_kmedoids_constraints(int argc, char **argv)
 {
@@ -3471,6 +3645,14 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "bandit-prune-partial-select-equivalence") == 0) {
         return test_run_bandit_prune_partial_select_equivalence_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-row-cache-generation-equivalence") == 0) {
+        return test_run_clarans_row_cache_generation_equivalence_case()
+            ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-row-cache-seed-reproducibility") == 0) {
+        return test_run_clarans_row_cache_seed_reproducibility_case()
             ? 0 : 1;
     }
 
