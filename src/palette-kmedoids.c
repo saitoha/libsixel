@@ -9154,6 +9154,12 @@ sixel_kmedoids_run_clarans(double const *points,
     status = SIXEL_OK;
 
 end:
+    if (slot_generation != NULL) {
+        sixel_allocator_free(allocator, slot_generation);
+    }
+    if (slot_dirty != NULL) {
+        sixel_allocator_free(allocator, slot_dirty);
+    }
     if (probe_flags != NULL) {
         sixel_allocator_free(allocator, probe_flags);
     }

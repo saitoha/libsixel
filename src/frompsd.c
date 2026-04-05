@@ -13117,15 +13117,18 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             sixel_trace_topic_message(
                 "psd_decode",
                 "builtin PSD: skipping hidden layer in layer fallback");
+            sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
             continue;
         }
         if (composite_layer->width == 0u || composite_layer->height == 0u) {
+            sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
             continue;
         }
         if (apply_clipping != 0 && clip_alpha_valid == 0) {
             sixel_trace_topic_message(
                 "psd_decode",
                 "builtin PSD: clipping layer without base; skipping layer");
+            sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
             continue;
         }
 
