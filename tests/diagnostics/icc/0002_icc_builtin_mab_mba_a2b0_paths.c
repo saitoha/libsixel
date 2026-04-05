@@ -249,6 +249,9 @@ icc_build_mab_identity_tag(unsigned char *tag,
     size_t b_count;
     size_t m_count;
     size_t a_count;
+    size_t matrix_channel_count;
+    int include_matrix;
+    size_t matrix_size;
     size_t point_count;
     size_t clut_values;
     size_t b_offset;
@@ -261,6 +264,9 @@ icc_build_mab_identity_tag(unsigned char *tag,
     b_count = 0u;
     m_count = 0u;
     a_count = 0u;
+    matrix_channel_count = 0u;
+    include_matrix = 0;
+    matrix_size = 0u;
     point_count = 0u;
     clut_values = 0u;
     b_offset = 0u;
@@ -279,20 +285,28 @@ icc_build_mab_identity_tag(unsigned char *tag,
         b_count = (size_t)output_channels;
         m_count = (size_t)output_channels;
         a_count = (size_t)input_channels;
+        matrix_channel_count = (size_t)output_channels;
     } else if (memcmp(signature, "mBA ", 4u) == 0) {
         b_count = (size_t)input_channels;
         m_count = (size_t)input_channels;
         a_count = (size_t)output_channels;
+        matrix_channel_count = (size_t)input_channels;
     } else {
         return 0u;
     }
+    include_matrix = matrix_channel_count == 3u;
+    matrix_size = include_matrix ? 48u : 0u;
 
     point_count = (size_t)1u << input_channels;
     clut_values = point_count * (size_t)output_channels;
 
     b_offset = 32u;
-    matrix_offset = icc_align4(b_offset + b_count * 12u);
-    m_offset = icc_align4(matrix_offset + 48u);
+    matrix_offset = include_matrix
+        ? icc_align4(b_offset + b_count * 12u)
+        : 0u;
+    m_offset = include_matrix
+        ? icc_align4(matrix_offset + matrix_size)
+        : icc_align4(b_offset + b_count * 12u);
     clut_offset = icc_align4(m_offset + m_count * 12u);
     a_offset = icc_align4(clut_offset + 20u + clut_values * 2u);
     total_length = a_offset + a_count * 12u;
@@ -313,7 +327,9 @@ icc_build_mab_identity_tag(unsigned char *tag,
     icc_write_be32(tag + 28u, (uint32_t)a_offset);
 
     icc_build_curve_block(tag, b_offset, b_count);
-    icc_build_matrix_block(tag, matrix_offset);
+    if (include_matrix) {
+        icc_build_matrix_block(tag, matrix_offset);
+    }
     icc_build_curve_block(tag, m_offset, m_count);
     icc_build_clut_block(tag, clut_offset, input_channels, output_channels);
     icc_build_curve_block(tag, a_offset, a_count);
@@ -507,9 +523,9 @@ run_rgb_mab_cases(void)
         return 0;
     }
     if (parsed.kind != SIXEL_ICC_PROFILE_KIND_RGB ||
-        parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_MAB ||
-        parsed.a2b0_mab.input_channels != 3u ||
-        parsed.a2b0_mab.output_channels != 3u) {
+        parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_MAB ||
+        parsed.a2b_mab[0].input_channels != 3u ||
+        parsed.a2b_mab[0].output_channels != 3u) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
@@ -538,7 +554,7 @@ run_rgb_mab_cases(void)
         return 0;
     }
     if (!sixel_icc_parse_profile(profile, profile_length, &parsed) ||
-        parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_MBA) {
+        parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_MBA) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
@@ -570,7 +586,7 @@ run_rgb_mab_cases(void)
     if (!sixel_icc_parse_profile(profile, profile_length, &parsed)) {
         return 0;
     }
-    if (parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_INVALID ||
+    if (parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_INVALID ||
         parsed.curves[0].kind == SIXEL_ICC_CURVE_INVALID) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
@@ -589,7 +605,7 @@ run_rgb_mab_cases(void)
     if (!sixel_icc_parse_profile(profile, profile_length, &parsed)) {
         return 0;
     }
-    if (parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_INVALID ||
+    if (parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_INVALID ||
         parsed.curves[0].kind == SIXEL_ICC_CURVE_INVALID) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
@@ -621,9 +637,9 @@ run_gray_mab_cases(void)
         return 0;
     }
     if (parsed.kind != SIXEL_ICC_PROFILE_KIND_GRAY ||
-        parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_MAB ||
-        parsed.a2b0_mab.input_channels != 1u ||
-        parsed.a2b0_mab.output_channels != 3u) {
+        parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_MAB ||
+        parsed.a2b_mab[0].input_channels != 1u ||
+        parsed.a2b_mab[0].output_channels != 3u) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
@@ -649,7 +665,7 @@ run_gray_mab_cases(void)
         return 0;
     }
     if (!sixel_icc_parse_profile(profile, profile_length, &parsed) ||
-        parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_MBA) {
+        parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_MBA) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
@@ -695,9 +711,9 @@ run_cmyk_mab_cases(void)
         return 0;
     }
     if (parsed.kind != SIXEL_ICC_PROFILE_KIND_CMYK ||
-        parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_MAB ||
-        parsed.a2b0_mab.input_channels != 4u ||
-        parsed.a2b0_mab.output_channels != 3u) {
+        parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_MAB ||
+        parsed.a2b_mab[0].input_channels != 4u ||
+        parsed.a2b_mab[0].output_channels != 3u) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
@@ -728,7 +744,7 @@ run_cmyk_mab_cases(void)
         return 0;
     }
     if (!sixel_icc_parse_profile(profile, profile_length, &parsed) ||
-        parsed.a2b0_mab.type != SIXEL_ICC_MAB_TYPE_MBA) {
+        parsed.a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_MBA) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }

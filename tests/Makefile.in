@@ -154,6 +154,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
 	diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
+	diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c \
 	extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 	extension/gdk-pixbuf-loader/0002_incremental_load.c \
 	extension/gdk-pixbuf-loader/0003_corrupt_data.c \
@@ -209,6 +210,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0002_incremental_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0003_corrupt_data.$(OBJEXT) \
@@ -300,6 +302,7 @@ am__depfiles_remade =  \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
+	diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po \
 	diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po \
@@ -985,6 +988,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PROBE_PARSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_BUILTIN_A2B_INTENT_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FILTER_SAMPLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_INCREMENTAL_LOAD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_CORRUPT_DATA \
@@ -1114,6 +1118,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0002_incremental_load.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0003_corrupt_data.c \
@@ -1441,6 +1446,9 @@ diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT):  \
 diagnostics/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.$(OBJEXT):  \
 	diagnostics/icc/$(am__dirstamp) \
 	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
+diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.$(OBJEXT):  \
+	diagnostics/icc/$(am__dirstamp) \
+	diagnostics/icc/$(DEPDIR)/$(am__dirstamp)
 extension/gdk-pixbuf-loader/$(am__dirstamp):
 	@$(MKDIR_P) extension/gdk-pixbuf-loader
 	@: >>extension/gdk-pixbuf-loader/$(am__dirstamp)
@@ -1542,6 +1550,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po@am__quote@ # am--include-marker
@@ -2233,6 +2242,20 @@ diagnostics/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.obj: diagnostics
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.obj `if test -f 'diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c'; then $(CYGPATH_W) 'diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c'; fi`
 
+diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.o: diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.o -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Tpo -c -o diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.o `test -f 'diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c' || echo '$(srcdir)/'`diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c' object='diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.o `test -f 'diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c' || echo '$(srcdir)/'`diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c
+
+diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.obj: diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.obj -MD -MP -MF diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Tpo -c -o diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.obj `if test -f 'diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c'; then $(CYGPATH_W) 'diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Tpo diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c' object='diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/icc/test_runner-0003_icc_builtin_a2b_intent_paths.obj `if test -f 'diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c'; then $(CYGPATH_W) 'diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c'; fi`
+
 extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o: extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o -MD -MP -MF extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Tpo -c -o extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o `test -f 'extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c' || echo '$(srcdir)/'`extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Tpo extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
@@ -2781,6 +2804,7 @@ distclean: distclean-am
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po
@@ -2881,6 +2905,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
+	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po
 	-rm -f diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po
 	-rm -f extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po

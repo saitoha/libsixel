@@ -51,17 +51,17 @@ enum {
     SIXEL_CMS_TRANSFORM_COPY_ALPHA = 1
 };
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_engine_from_string(char const *text,
                              sixel_cms_engine_t *out_engine);
 
-char const *
+SIXEL_INTERNAL_API char const *
 sixel_cms_engine_to_string(sixel_cms_engine_t engine);
 
-void
+SIXEL_INTERNAL_API void
 sixel_cms_set_engine(sixel_cms_engine_t engine);
 
-sixel_cms_engine_t
+SIXEL_INTERNAL_API sixel_cms_engine_t
 sixel_cms_get_engine(void);
 
 SIXEL_INTERNAL_API int
@@ -71,7 +71,7 @@ sixel_cms_convert_profile_to_srgb(unsigned char *pixels,
                                   int pixelformat,
                                   sixel_cms_profile_t *src_profile);
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_convert_to_srgb_with_profile_bytes(
     unsigned char *pixels,
     int width,
@@ -93,7 +93,7 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
                                        int pixelformat,
                                        sixel_cms_profile_t *src_profile);
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_convert_to_linearrgb_with_profile_bytes(
     unsigned char *pixels,
     int width,
@@ -109,7 +109,7 @@ sixel_cms_convert_profile_to_cielab(unsigned char *pixels,
                                     int pixelformat,
                                     sixel_cms_profile_t *src_profile);
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_convert_to_cielab_with_profile_bytes(
     unsigned char *pixels,
     int width,
@@ -118,10 +118,10 @@ sixel_cms_convert_to_cielab_with_profile_bytes(
     unsigned char const *profile,
     size_t profile_length);
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count);
 
-sixel_cms_profile_t *
+SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_open_profile_from_mem(void const *data, size_t length);
 
 SIXEL_INTERNAL_API sixel_cms_profile_t *
@@ -138,26 +138,26 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
                                              double blue_x,
                                              double blue_y);
 
-sixel_cms_color_space_t
+SIXEL_INTERNAL_API sixel_cms_color_space_t
 sixel_cms_get_color_space(sixel_cms_profile_t const *profile);
 
 SIXEL_INTERNAL_API void
 sixel_cms_close_profile(sixel_cms_profile_t *profile);
 
-sixel_cms_transform_t *
+SIXEL_INTERNAL_API sixel_cms_transform_t *
 sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
                            sixel_cms_pixel_format_t src_format,
                            sixel_cms_profile_t const *dst_profile,
                            sixel_cms_pixel_format_t dst_format,
                            int flags);
 
-int
+SIXEL_INTERNAL_API int
 sixel_cms_do_transform(sixel_cms_transform_t const *transform,
                        void const *src,
                        void *dst,
                        size_t pixel_count);
 
-void
+SIXEL_INTERNAL_API void
 sixel_cms_delete_transform(sixel_cms_transform_t *transform);
 
 #ifdef __cplusplus

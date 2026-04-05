@@ -167,6 +167,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_PROBE_PARSE \
     -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
     -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
+    -DBUILD_TEST_0003_ICC_BUILTIN_A2B_INTENT_PATHS \
     -DBUILD_TEST_0002_FILTER_SAMPLE \
     -DBUILD_TEST_0002_INCREMENTAL_LOAD \
     -DBUILD_TEST_0003_CORRUPT_DATA \
@@ -268,6 +269,7 @@ test_runner_SOURCES = test_runner.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
     diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
+    diagnostics/icc/0003_icc_builtin_a2b_intent_paths.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     extension/gdk-pixbuf-loader/0002_incremental_load.c \
     extension/gdk-pixbuf-loader/0003_corrupt_data.c \

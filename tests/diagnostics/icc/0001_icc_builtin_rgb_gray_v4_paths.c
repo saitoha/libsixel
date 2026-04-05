@@ -612,9 +612,9 @@ run_rgb_a2b0_cases(void)
         return 0;
     }
     if (parsed.kind != SIXEL_ICC_PROFILE_KIND_RGB ||
-        parsed.a2b0_lut.kind != SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0 ||
-        parsed.a2b0_lut.input_channels != 3u ||
-        parsed.a2b0_lut.output_channels != 3u) {
+        parsed.a2b_lut[0].kind != SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0 ||
+        parsed.a2b_lut[0].input_channels != 3u ||
+        parsed.a2b_lut[0].output_channels != 3u) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
@@ -645,7 +645,7 @@ run_rgb_a2b0_cases(void)
     if (!sixel_icc_parse_profile(profile, profile_length, &parsed)) {
         return 0;
     }
-    if (parsed.a2b0_lut.kind != SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0) {
+    if (parsed.a2b_lut[0].kind != SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
@@ -677,7 +677,7 @@ run_rgb_a2b0_cases(void)
     if (!sixel_icc_parse_profile(profile, profile_length, &parsed)) {
         return 0;
     }
-    if (parsed.a2b0_lut.kind != SIXEL_ICC_LUT_INVALID ||
+    if (parsed.a2b_lut[0].kind != SIXEL_ICC_LUT_INVALID ||
         parsed.curves[0].kind == SIXEL_ICC_CURVE_INVALID) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
@@ -708,9 +708,9 @@ run_gray_a2b0_cases(void)
         return 0;
     }
     if (parsed.kind != SIXEL_ICC_PROFILE_KIND_GRAY ||
-        parsed.a2b0_lut.kind != SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0 ||
-        parsed.a2b0_lut.input_channels != 1u ||
-        parsed.a2b0_lut.output_channels != 3u) {
+        parsed.a2b_lut[0].kind != SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0 ||
+        parsed.a2b_lut[0].input_channels != 1u ||
+        parsed.a2b_lut[0].output_channels != 3u) {
         sixel_icc_profile_destroy(&parsed);
         return 0;
     }
