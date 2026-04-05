@@ -1394,6 +1394,75 @@ sixel_kmedoids_pair_seen_or_insert(uint64_t pair_key,
     }
 }
 
+static unsigned int
+sixel_kmedoids_clarans_slot_probe_target(unsigned int k,
+                                         unsigned int hot_slot_count,
+                                         unsigned int neighbor_count,
+                                         unsigned int stale_limit,
+                                         unsigned int eval_total,
+                                         unsigned int eval_budget)
+{
+    uint64_t lhs;
+    uint64_t rhs;
+    unsigned int target;
+
+    lhs = 0u;
+    rhs = 0u;
+    target = 0u;
+    if (k == 0u) {
+        return 0u;
+    }
+    target = hot_slot_count + 1u;
+    if (target < 2u) {
+        target = 2u;
+    }
+    if (target > k) {
+        target = k;
+    }
+    if (k <= 2u) {
+        return k;
+    }
+
+    if (stale_limit > 0u) {
+        lhs = (uint64_t)neighbor_count * 4u;
+        rhs = (uint64_t)stale_limit * 3u;
+        if (lhs >= rhs) {
+            target = (target + 1u) / 2u;
+        } else {
+            lhs = (uint64_t)neighbor_count * 2u;
+            rhs = (uint64_t)stale_limit;
+            if (lhs >= rhs) {
+                target = (target * 3u + 3u) / 4u;
+            }
+        }
+    }
+    if (eval_budget > 0u) {
+        lhs = (uint64_t)eval_total * 4u;
+        rhs = (uint64_t)eval_budget * 3u;
+        if (lhs >= rhs) {
+            target = (target + 1u) / 2u;
+        } else {
+            lhs = (uint64_t)eval_total * 2u;
+            rhs = (uint64_t)eval_budget;
+            if (lhs >= rhs) {
+                target = (target * 3u + 3u) / 4u;
+            }
+        }
+    }
+    if (neighbor_count == 0u
+            && (eval_budget == 0u || eval_total < eval_budget / 2u)
+            && target < k) {
+        ++target;
+    }
+    if (target < 2u) {
+        target = 2u;
+    }
+    if (target > k) {
+        target = k;
+    }
+    return target;
+}
+
 static int
 sixel_kmedoids_clarans_evaluate_candidate_slots(
     double const *points,
@@ -6956,13 +7025,13 @@ sixel_kmedoids_run_clarans(double const *points,
              * Probe multiple replacement slots per candidate so the same
              * candidate distance row can be reused within one attempt.
              */
-            slot_probe_target = hot_slot_count + 1u;
-            if (slot_probe_target < 2u) {
-                slot_probe_target = 2u;
-            }
-            if (slot_probe_target > k) {
-                slot_probe_target = k;
-            }
+            slot_probe_target = sixel_kmedoids_clarans_slot_probe_target(
+                k,
+                hot_slot_count,
+                neighbor_count,
+                stale_limit,
+                eval_total,
+                eval_budget);
             for (index = 0u; index < k; ++index) {
                 probe_flags[index] = 0u;
             }
