@@ -265,6 +265,12 @@ python_tap_wrapper_file = configure_file(
   copy: true,
 )
 
+tap_exitcode_wrapper_file = configure_file(
+  input: 'meson-tap-exitcode-wrapper.sh',
+  output: 'meson-tap-exitcode-wrapper.sh',
+  copy: true,
+)
+
 foreach t : tests
   parts = t.split('/')
   test_base = parts[parts.length() - 1]
@@ -301,10 +307,19 @@ foreach t : tests
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
   test_cmd = [meson.current_source_dir() / t]
   test_should_fail = xfail_tests.contains(t)
+  test_args = [python_tap_wrapper_file] + test_cmd
+  test_protocol = 'tap'
+  if test_should_fail
+    # TAP tests report failures via "not ok" while keeping exit status 0.
+    # Convert TAP result lines to exit status so should_fail behaves like
+    # Automake XFAIL/XPASS for these expected-failure cases.
+    test_args = [tap_exitcode_wrapper_file] + test_args
+    test_protocol = 'exitcode'
+  endif
   test(t, sh,
-    args: [python_tap_wrapper_file] + test_cmd,
+    args: test_args,
     depends: test_deps,
-    protocol: 'tap',
+    protocol: test_protocol,
     env: test_env,
     should_fail: test_should_fail,
     timeout: 90,
