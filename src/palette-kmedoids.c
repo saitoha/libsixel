@@ -145,6 +145,10 @@ typedef struct sixel_kmedoids_point_weight_rank {
 static uint32_t
 sixel_kmedoids_rng_next(uint32_t *state);
 
+static unsigned int
+sixel_kmedoids_rng_bounded(uint32_t *state,
+                           unsigned int upper);
+
 static SIXELSTATUS
 sixel_kmedoids_run_pam(double const *points,
                        double const *weights,
@@ -205,6 +209,23 @@ sixel_kmedoids_swap_cost_prefix_with_cutoff_row_generation(
     unsigned int const *order,
     double cutoff,
     int *early_stop_out);
+
+static void
+sixel_kmedoids_clarans_candidate_epoch_next(
+    uint32_t *epoch_io,
+    unsigned int point_count,
+    unsigned int *seen_count,
+    uint32_t *seen_epoch,
+    uint32_t *exhausted_epoch);
+
+static SIXELSTATUS
+sixel_kmedoids_pick_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    uint32_t *rng_state,
+    unsigned int *indices_out,
+    unsigned int *hash_table,
+    unsigned int hash_capacity);
 
 static double
 sixel_kmedoids_swap_cost_with_cutoff_row(
@@ -513,6 +534,14 @@ sixel_kmedoids_test_clarans_cache_size(unsigned int point_count,
 
 SIXEL_INTERNAL_API unsigned int
 sixel_kmedoids_test_clarans_cheap_prefix_count(unsigned int point_count);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_pick_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    uint32_t seed,
+    unsigned int *indices_out,
+    sixel_allocator_t *allocator);
 
 static int
 sixel_palette_kmedoids_log_start(sixel_logger_t *logger,
@@ -1583,6 +1612,141 @@ sixel_kmedoids_clarans_slot_probe_target(unsigned int k,
         target = k;
     }
     return target;
+}
+
+static void
+sixel_kmedoids_clarans_candidate_epoch_next(
+    uint32_t *epoch_io,
+    unsigned int point_count,
+    unsigned int *seen_count,
+    uint32_t *seen_epoch,
+    uint32_t *exhausted_epoch)
+{
+    uint32_t next_epoch;
+
+    next_epoch = 0u;
+    if (epoch_io == NULL || seen_count == NULL || seen_epoch == NULL
+            || exhausted_epoch == NULL) {
+        return;
+    }
+    next_epoch = *epoch_io + 1u;
+    if (next_epoch == 0u) {
+        memset(seen_count, 0, (size_t)point_count * sizeof(unsigned int));
+        memset(seen_epoch, 0, (size_t)point_count * sizeof(uint32_t));
+        memset(exhausted_epoch, 0, (size_t)point_count * sizeof(uint32_t));
+        next_epoch = 1u;
+    }
+    *epoch_io = next_epoch;
+}
+
+static void
+sixel_kmedoids_sort_unsigned_indices(unsigned int *values,
+                                     unsigned int count)
+{
+    unsigned int outer_index;
+    unsigned int inner_index;
+    unsigned int value;
+
+    outer_index = 0u;
+    inner_index = 0u;
+    value = 0u;
+    if (values == NULL || count <= 1u) {
+        return;
+    }
+    for (outer_index = 1u; outer_index < count; ++outer_index) {
+        value = values[outer_index];
+        inner_index = outer_index;
+        while (inner_index > 0u && values[inner_index - 1u] > value) {
+            values[inner_index] = values[inner_index - 1u];
+            --inner_index;
+        }
+        values[inner_index] = value;
+    }
+}
+
+static SIXELSTATUS
+sixel_kmedoids_pick_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    uint32_t *rng_state,
+    unsigned int *indices_out,
+    unsigned int *hash_table,
+    unsigned int hash_capacity)
+{
+    SIXELSTATUS status;
+    unsigned int base;
+    unsigned int index;
+    unsigned int slot;
+    unsigned int pick;
+    unsigned int value;
+    unsigned int hash_slot;
+    unsigned int mask;
+    uint64_t hash_state;
+    int exists;
+
+    status = SIXEL_BAD_ARGUMENT;
+    base = 0u;
+    index = 0u;
+    slot = 0u;
+    pick = 0u;
+    value = 0u;
+    hash_slot = 0u;
+    mask = 0u;
+    hash_state = 0u;
+    exists = 0;
+    if (point_count == 0u || sample_size == 0u || sample_size > point_count
+            || rng_state == NULL || indices_out == NULL || hash_table == NULL
+            || hash_capacity == 0u) {
+        return status;
+    }
+    if ((hash_capacity & (hash_capacity - 1u)) != 0u) {
+        return status;
+    }
+    if (hash_capacity < sample_size) {
+        return status;
+    }
+
+    for (index = 0u; index < hash_capacity; ++index) {
+        hash_table[index] = UINT_MAX;
+    }
+    mask = hash_capacity - 1u;
+    base = point_count - sample_size;
+    for (slot = 0u; slot < sample_size; ++slot) {
+        index = base + slot;
+        pick = sixel_kmedoids_rng_bounded(rng_state, index + 1u);
+        exists = 0;
+        hash_state = (uint64_t)pick * 11400714819323198485ULL;
+        hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
+        for (;;) {
+            if (hash_table[hash_slot] == UINT_MAX) {
+                break;
+            }
+            if (hash_table[hash_slot] == pick) {
+                exists = 1;
+                break;
+            }
+            hash_slot = (hash_slot + 1u) & mask;
+        }
+        if (exists) {
+            value = index;
+        } else {
+            value = pick;
+        }
+        indices_out[slot] = value;
+
+        hash_state = (uint64_t)value * 11400714819323198485ULL;
+        hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
+        for (;;) {
+            if (hash_table[hash_slot] == UINT_MAX
+                    || hash_table[hash_slot] == value) {
+                hash_table[hash_slot] = value;
+                break;
+            }
+            hash_slot = (hash_slot + 1u) & mask;
+        }
+    }
+    sixel_kmedoids_sort_unsigned_indices(indices_out, sample_size);
+    return SIXEL_OK;
 }
 
 static unsigned int
@@ -6876,6 +7040,51 @@ sixel_kmedoids_test_pick_sample_indices(unsigned int point_count,
                                               allocator);
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_pick_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    uint32_t seed,
+    unsigned int *indices_out,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    uint32_t rng_state;
+    unsigned int hash_capacity;
+    unsigned int *hash_table;
+
+    status = SIXEL_BAD_ARGUMENT;
+    rng_state = seed;
+    hash_capacity = 0u;
+    hash_table = NULL;
+    if (rng_state == 0u) {
+        rng_state = 1u;
+    }
+    if (point_count == 0u || sample_size == 0u || sample_size > point_count
+            || indices_out == NULL || allocator == NULL) {
+        return status;
+    }
+    hash_capacity = sixel_kmedoids_next_power_of_two(sample_size * 2u);
+    if (hash_capacity < sample_size) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    hash_table = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)hash_capacity * sizeof(unsigned int));
+    if (hash_table == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    status = sixel_kmedoids_pick_unique_sorted_sample_indices(
+        point_count,
+        sample_size,
+        &rng_state,
+        indices_out,
+        hash_table,
+        hash_capacity);
+    sixel_allocator_free(allocator, hash_table);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_kmedoids_run_pam(double const *points,
                        double const *weights,
@@ -7460,8 +7669,10 @@ sixel_kmedoids_run_clarans(double const *points,
     double *guided_slot_delta;
     unsigned int *hot_points;
     unsigned int *hot_slots;
-    unsigned int *candidate_seen_slots;
-    unsigned char *candidate_exhausted;
+    unsigned int *candidate_seen_count;
+    uint32_t *candidate_seen_epoch;
+    uint32_t *candidate_exhausted_epoch;
+    unsigned int *non_medoids_pos;
     unsigned int *nearest_slot;
     double *nearest_dist;
     double *second_dist;
@@ -7513,6 +7724,7 @@ sixel_kmedoids_run_clarans(double const *points,
     unsigned int clarans_cache_size;
     unsigned int cheap_prefix_count;
     unsigned int cache_slot_next;
+    uint32_t candidate_epoch;
     uint32_t cache_epoch_next;
     uint32_t slot_generation_id;
     uint32_t seen_generation_id;
@@ -7563,8 +7775,10 @@ sixel_kmedoids_run_clarans(double const *points,
     guided_slot_delta = NULL;
     hot_points = NULL;
     hot_slots = NULL;
-    candidate_seen_slots = NULL;
-    candidate_exhausted = NULL;
+    candidate_seen_count = NULL;
+    candidate_seen_epoch = NULL;
+    candidate_exhausted_epoch = NULL;
+    non_medoids_pos = NULL;
     nearest_slot = NULL;
     nearest_dist = NULL;
     second_dist = NULL;
@@ -7616,6 +7830,7 @@ sixel_kmedoids_run_clarans(double const *points,
     clarans_cache_size = 0u;
     cheap_prefix_count = 0u;
     cache_slot_next = 0u;
+    candidate_epoch = 0u;
     cache_epoch_next = 0u;
     slot_generation_id = 0u;
     seen_generation_id = 0u;
@@ -7791,12 +8006,18 @@ sixel_kmedoids_run_clarans(double const *points,
     hot_slots = (unsigned int *)sixel_allocator_malloc(
         allocator,
         (size_t)hot_slot_limit * sizeof(unsigned int));
-    candidate_seen_slots = (unsigned int *)sixel_allocator_malloc(
+    candidate_seen_count = (unsigned int *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(unsigned int));
-    candidate_exhausted = (unsigned char *)sixel_allocator_malloc(
+    candidate_seen_epoch = (uint32_t *)sixel_allocator_malloc(
         allocator,
-        (size_t)point_count * sizeof(unsigned char));
+        (size_t)point_count * sizeof(uint32_t));
+    candidate_exhausted_epoch = (uint32_t *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(uint32_t));
+    non_medoids_pos = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
     if (current_medoids == NULL || non_medoids == NULL
             || eval_order == NULL || eval_positions == NULL
             || eval_scores == NULL || eval_rank == NULL
@@ -7819,8 +8040,10 @@ sixel_kmedoids_run_clarans(double const *points,
             || guided_changed_new_slots == NULL
             || guided_slot_delta == NULL
             || hot_points == NULL || hot_slots == NULL
-            || candidate_seen_slots == NULL
-            || candidate_exhausted == NULL) {
+            || candidate_seen_count == NULL
+            || candidate_seen_epoch == NULL
+            || candidate_exhausted_epoch == NULL
+            || non_medoids_pos == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -7838,6 +8061,13 @@ sixel_kmedoids_run_clarans(double const *points,
             ++cache_cell_index) {
         candidate_cache_generation[cache_cell_index] = 0u;
     }
+    for (index = 0u; index < point_count; ++index) {
+        candidate_seen_count[index] = 0u;
+        candidate_seen_epoch[index] = 0u;
+        candidate_exhausted_epoch[index] = 0u;
+        non_medoids_pos[index] = UINT_MAX;
+    }
+    candidate_epoch = 1u;
     cache_slot_next = 0u;
     cache_epoch_next = 0u;
 
@@ -7952,6 +8182,14 @@ sixel_kmedoids_run_clarans(double const *points,
         sixel_kmedoids_seen_pairs_next_generation(&seen_generation_id,
                                                   seen_generation,
                                                   pair_capacity);
+        if (local_index > 0u) {
+            sixel_kmedoids_clarans_candidate_epoch_next(
+                &candidate_epoch,
+                point_count,
+                candidate_seen_count,
+                candidate_seen_epoch,
+                candidate_exhausted_epoch);
+        }
         if (local_index == 0u && base_medoids != NULL) {
             for (slot = 0u; slot < k; ++slot) {
                 current_medoids[slot] = base_medoids[slot];
@@ -7991,10 +8229,11 @@ sixel_kmedoids_run_clarans(double const *points,
         for (index = 0u; index < point_count; ++index) {
             if (flags[index] == 0u) {
                 non_medoids[non_count] = index;
+                non_medoids_pos[index] = non_count;
                 ++non_count;
+            } else {
+                non_medoids_pos[index] = UINT_MAX;
             }
-            candidate_seen_slots[index] = 0u;
-            candidate_exhausted[index] = 0u;
         }
         remaining_candidates = non_count;
         sixel_kmedoids_clarans_guided_full_refresh(
@@ -8066,7 +8305,8 @@ sixel_kmedoids_run_clarans(double const *points,
             }
             if (candidate < point_count
                     && flags[candidate] == 0u
-                    && candidate_exhausted[candidate] == 0u) {
+                    && candidate_exhausted_epoch[candidate]
+                        != candidate_epoch) {
                 candidate_selected = 1;
             }
             if (!candidate_selected) {
@@ -8081,7 +8321,8 @@ sixel_kmedoids_run_clarans(double const *points,
                     }
                     candidate = non_medoids[pool_index];
                     if (candidate >= point_count || flags[candidate] != 0u
-                            || candidate_exhausted[candidate] != 0u) {
+                            || candidate_exhausted_epoch[candidate]
+                                == candidate_epoch) {
                         continue;
                     }
                     candidate_selected = 1;
@@ -8174,15 +8415,25 @@ sixel_kmedoids_run_clarans(double const *points,
             }
             no_op_attempts = 0u;
             ++attempts;
-            if (candidate_seen_slots[candidate] < k) {
-                candidate_seen_slots[candidate] += evaluated_pairs;
-                if (candidate_seen_slots[candidate] >= k) {
-                    candidate_seen_slots[candidate] = k;
-                    if (candidate_exhausted[candidate] == 0u) {
-                        candidate_exhausted[candidate] = 1u;
-                        if (remaining_candidates > 0u) {
-                            --remaining_candidates;
-                        }
+            if (candidate < point_count) {
+                if (candidate_seen_epoch[candidate] != candidate_epoch) {
+                    candidate_seen_epoch[candidate] = candidate_epoch;
+                    candidate_seen_count[candidate] = 0u;
+                }
+                if (candidate_seen_count[candidate] < k) {
+                    if (evaluated_pairs
+                            >= k - candidate_seen_count[candidate]) {
+                        candidate_seen_count[candidate] = k;
+                    } else {
+                        candidate_seen_count[candidate] += evaluated_pairs;
+                    }
+                }
+                if (candidate_seen_count[candidate] >= k
+                        && candidate_exhausted_epoch[candidate]
+                            != candidate_epoch) {
+                    candidate_exhausted_epoch[candidate] = candidate_epoch;
+                    if (remaining_candidates > 0u) {
+                        --remaining_candidates;
                     }
                 }
             }
@@ -8193,39 +8444,41 @@ sixel_kmedoids_run_clarans(double const *points,
                 flags[old_medoid] = 0u;
                 current_medoids[slot] = candidate;
                 flags[candidate] = 1u;
-                candidate_pool_index = pick;
+                candidate_pool_index = UINT_MAX;
                 candidate_found = 0;
+                if (candidate < point_count) {
+                    candidate_pool_index = non_medoids_pos[candidate];
+                }
                 if (candidate_pool_index < non_count
-                        && non_medoids[candidate_pool_index] == candidate) {
+                        && non_medoids[candidate_pool_index] == candidate
+                        && flags[candidate] != 0u
+                        && flags[old_medoid] == 0u) {
                     candidate_found = 1;
-                } else {
-                    for (pool_index = 0u; pool_index < non_count;
-                            ++pool_index) {
-                        if (non_medoids[pool_index] == candidate) {
-                            candidate_pool_index = pool_index;
-                            candidate_found = 1;
-                            break;
-                        }
-                    }
                 }
                 if (candidate_found) {
                     non_medoids[candidate_pool_index] = old_medoid;
+                    non_medoids_pos[old_medoid] = candidate_pool_index;
+                    non_medoids_pos[candidate] = UINT_MAX;
                 } else {
                     non_count = 0u;
                     for (pool_index = 0u; pool_index < point_count;
                             ++pool_index) {
                         if (flags[pool_index] == 0u) {
                             non_medoids[non_count] = pool_index;
+                            non_medoids_pos[pool_index] = non_count;
                             ++non_count;
+                        } else {
+                            non_medoids_pos[pool_index] = UINT_MAX;
                         }
                     }
                 }
-                for (pool_index = 0u; pool_index < point_count;
-                        ++pool_index) {
-                    candidate_seen_slots[pool_index] = 0u;
-                    candidate_exhausted[pool_index] = 0u;
-                }
                 remaining_candidates = non_count;
+                sixel_kmedoids_clarans_candidate_epoch_next(
+                    &candidate_epoch,
+                    point_count,
+                    candidate_seen_count,
+                    candidate_seen_epoch,
+                    candidate_exhausted_epoch);
 
                 sixel_kmedoids_update_assignments_after_swap_ex(
                     points,
@@ -8287,7 +8540,10 @@ sixel_kmedoids_run_clarans(double const *points,
                             ++pool_index) {
                         if (flags[pool_index] == 0u) {
                             non_medoids[non_count] = pool_index;
+                            non_medoids_pos[pool_index] = non_count;
                             ++non_count;
+                        } else {
+                            non_medoids_pos[pool_index] = UINT_MAX;
                         }
                     }
                     sixel_kmedoids_clarans_guided_full_refresh(
@@ -8399,11 +8655,17 @@ end:
     if (slot_orders != NULL) {
         sixel_allocator_free(allocator, slot_orders);
     }
-    if (candidate_exhausted != NULL) {
-        sixel_allocator_free(allocator, candidate_exhausted);
+    if (candidate_exhausted_epoch != NULL) {
+        sixel_allocator_free(allocator, candidate_exhausted_epoch);
     }
-    if (candidate_seen_slots != NULL) {
-        sixel_allocator_free(allocator, candidate_seen_slots);
+    if (candidate_seen_epoch != NULL) {
+        sixel_allocator_free(allocator, candidate_seen_epoch);
+    }
+    if (candidate_seen_count != NULL) {
+        sixel_allocator_free(allocator, candidate_seen_count);
+    }
+    if (non_medoids_pos != NULL) {
+        sixel_allocator_free(allocator, non_medoids_pos);
     }
     if (hot_slots != NULL) {
         sixel_allocator_free(allocator, hot_slots);
@@ -8519,12 +8781,15 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
 {
     SIXELSTATUS status;
     unsigned int *sample_points;
+    unsigned int *sample_hash;
     sixel_kmedoids_candidate_rank_t *ranks;
     sixel_kmedoids_candidate_rank_t *heap;
     unsigned int batch_size;
     unsigned int batch_ceiling;
+    unsigned int hash_capacity;
     unsigned int index;
     unsigned int keep;
+    unsigned int base;
     unsigned int slot;
     unsigned int candidate;
     double *candidate_dist_row;
@@ -8534,12 +8799,15 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
 
     status = SIXEL_BAD_ARGUMENT;
     sample_points = NULL;
+    sample_hash = NULL;
     ranks = NULL;
     heap = NULL;
     batch_size = 0u;
     batch_ceiling = 0u;
+    hash_capacity = 0u;
     index = 0u;
     keep = 0u;
+    base = 0u;
     slot = 0u;
     candidate = 0u;
     candidate_dist_row = NULL;
@@ -8575,17 +8843,25 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     if (batch_ceiling == 0u) {
         return SIXEL_OK;
     }
+    hash_capacity = sixel_kmedoids_next_power_of_two(batch_ceiling * 2u);
+    if (hash_capacity < batch_ceiling) {
+        return SIXEL_BAD_ALLOCATION;
+    }
 
     sample_points = (unsigned int *)sixel_allocator_malloc(
         allocator,
         (size_t)batch_ceiling * sizeof(unsigned int));
+    sample_hash = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)hash_capacity * sizeof(unsigned int));
     ranks = (sixel_kmedoids_candidate_rank_t *)sixel_allocator_malloc(
         allocator,
         (size_t)(*active_count) * sizeof(sixel_kmedoids_candidate_rank_t));
     heap = (sixel_kmedoids_candidate_rank_t *)sixel_allocator_malloc(
         allocator,
         (size_t)(*active_count) * sizeof(sixel_kmedoids_candidate_rank_t));
-    if (sample_points == NULL || ranks == NULL || heap == NULL) {
+    if (sample_points == NULL || sample_hash == NULL
+            || ranks == NULL || heap == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -8601,9 +8877,20 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
             keep = 4u;
         }
 
-        for (index = 0u; index < batch_size; ++index) {
-            sample_points[index] = sixel_kmedoids_rng_bounded(rng_state,
-                                                              point_count);
+        base = point_count - batch_size;
+        if (point_count == 0u || base + batch_size != point_count) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = sixel_kmedoids_pick_unique_sorted_sample_indices(
+            point_count,
+            batch_size,
+            rng_state,
+            sample_points,
+            sample_hash,
+            hash_capacity);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
 
         for (index = 0u; index < *active_count; ++index) {
@@ -8672,6 +8959,9 @@ end:
     }
     if (ranks != NULL) {
         sixel_allocator_free(allocator, ranks);
+    }
+    if (sample_hash != NULL) {
+        sixel_allocator_free(allocator, sample_hash);
     }
     if (sample_points != NULL) {
         sixel_allocator_free(allocator, sample_points);
@@ -9142,26 +9432,27 @@ sixel_kmedoids_run_banditpam(double const *points,
             active[index] = index;
         }
 
-        status = sixel_kmedoids_bandit_prune_candidates(points,
-                                                        weights,
-                                                        point_count,
-                                                        nearest_slot,
-                                                        nearest_dist,
-                                                        second_dist,
-                                                        candidate_slots,
-                                                        candidate_points,
-                                                        active,
-                                                        &active_count,
-                                                        batch_limit,
-                                                        bandit_cache_size,
-                                                        candidate_cache_keys,
-                                                        candidate_cache_rows,
-                                                        candidate_cache_generation,
-                                                        candidate_cache_row_epoch,
-                                                        &cache_epoch_next,
-                                                        &cache_slot_next,
-                                                        rng_state,
-                                                        allocator);
+        status = sixel_kmedoids_bandit_prune_candidates(
+            points,
+            weights,
+            point_count,
+            nearest_slot,
+            nearest_dist,
+            second_dist,
+            candidate_slots,
+            candidate_points,
+            active,
+            &active_count,
+            batch_limit,
+            bandit_cache_size,
+            candidate_cache_keys,
+            candidate_cache_rows,
+            candidate_cache_generation,
+            candidate_cache_row_epoch,
+            &cache_epoch_next,
+            &cache_slot_next,
+            rng_state,
+            allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

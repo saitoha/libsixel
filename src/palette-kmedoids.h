@@ -359,6 +359,14 @@ sixel_kmedoids_test_two_step_pam_polish_cost(
     unsigned int *second_iterations_out,
     sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmedoids_test_pick_unique_sorted_sample_indices(
+    unsigned int point_count,
+    unsigned int sample_size,
+    uint32_t seed,
+    unsigned int *indices_out,
+    sixel_allocator_t *allocator);
+
 #ifdef __cplusplus
 }
 #endif
