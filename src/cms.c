@@ -1112,10 +1112,14 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
 {
     size_t illuminant_offset;
     int has_dynamic_lut_path;
+    int has_secondary_a2b_slot;
+    int has_any_b2a_slot;
     size_t slot;
 
     illuminant_offset = 0u;
     has_dynamic_lut_path = 0;
+    has_secondary_a2b_slot = 0;
+    has_any_b2a_slot = 0;
     slot = 0u;
     if (profile == NULL || data == NULL || length == 0u) {
         return 0;
@@ -1126,10 +1130,10 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
     }
 
     /*
-     * Some synthetic ICC fixtures carry a zero PCS illuminant in the profile
-     * header. ColorSync treats those profiles as effectively non-convertible
-     * for A2B/B2A LUT paths, so builtin follows the same safety policy and
-     * skips ICC conversion instead of applying a potentially wrong transform.
+     * Some RGB/GRAY fixtures ship a single A2B0 LUT with a zero PCS
+     * illuminant. ColorSync treats that shape as non-convertible and
+     * effectively falls back to no ICC conversion. Builtin mirrors only that
+     * narrow case so intent-slot and CMYK LUT coverage remain active.
      */
     illuminant_offset = 68u;
     for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
@@ -1142,10 +1146,26 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
             profile->builtin_profile.b2a_lut[slot].kind
                 != SIXEL_ICC_LUT_INVALID) {
             has_dynamic_lut_path = 1;
-            break;
+        }
+        if (slot > 0u &&
+            (profile->builtin_profile.a2b_mab[slot].type
+                 != SIXEL_ICC_MAB_TYPE_INVALID ||
+             profile->builtin_profile.a2b_lut[slot].kind
+                 != SIXEL_ICC_LUT_INVALID)) {
+            has_secondary_a2b_slot = 1;
+        }
+        if (profile->builtin_profile.b2a_mab[slot].type
+                != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->builtin_profile.b2a_lut[slot].kind
+                != SIXEL_ICC_LUT_INVALID) {
+            has_any_b2a_slot = 1;
         }
     }
     if (has_dynamic_lut_path &&
+        (profile->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_RGB ||
+         profile->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_GRAY) &&
+        !has_secondary_a2b_slot &&
+        !has_any_b2a_slot &&
         length >= illuminant_offset + 12u &&
         memcmp((unsigned char const *)data + illuminant_offset,
                "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
