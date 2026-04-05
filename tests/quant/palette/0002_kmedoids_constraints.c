@@ -92,6 +92,42 @@ sixel_kmedoids_test_collect_samples(
     unsigned int *visible_count_out,
     sixel_allocator_t *allocator);
 
+double
+sixel_kmedoids_test_swap_cost_cutoff_with_row(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int replace_slot,
+    unsigned int candidate_point,
+    double *candidate_dist_row,
+    unsigned int const *order,
+    double cutoff,
+    int *early_stop_out);
+
+SIXELSTATUS
+sixel_kmedoids_test_build_eval_order_residual(
+    double const *weights,
+    double const *nearest_dist,
+    unsigned int point_count,
+    unsigned int *order_out,
+    sixel_allocator_t *allocator);
+
+SIXELSTATUS
+sixel_kmedoids_test_apply_eval_order_delta(
+    double const *weights,
+    double const *nearest_dist_before,
+    double const *nearest_dist_after,
+    unsigned int point_count,
+    unsigned int const *changed_points,
+    unsigned int changed_count,
+    unsigned int delta_threshold,
+    unsigned int *order_io,
+    int *full_refresh_out,
+    sixel_allocator_t *allocator);
+
 SIXELSTATUS
 sixel_kmedoids_test_pam_polish_cost(double const *points,
                                     double const *weights,
@@ -1369,6 +1405,154 @@ test_run_clarans_swap_cost_cutoff_case(void)
 }
 
 static int
+test_run_clarans_candidate_cache_equivalence_case(void)
+{
+    double points[TEST_PIXEL_COUNT * 3u];
+    double weights[TEST_PIXEL_COUNT];
+    unsigned int order[TEST_PIXEL_COUNT];
+    unsigned int medoids[TEST_REQCOLORS];
+    unsigned int nearest_slot[TEST_PIXEL_COUNT];
+    double nearest_dist[TEST_PIXEL_COUNT];
+    double second_dist[TEST_PIXEL_COUNT];
+    unsigned int second_slot[TEST_PIXEL_COUNT];
+    unsigned char medoid_flags[TEST_PIXEL_COUNT];
+    double candidate_row[TEST_PIXEL_COUNT];
+    unsigned int index;
+    unsigned int replace_slot;
+    unsigned int candidate;
+    double uncached_cost;
+    double cached_cost;
+    double current_cost;
+    double diff;
+    double delta;
+    int uncached_stop;
+    int cached_stop;
+    int uncached_accept;
+    int cached_accept;
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+
+    index = 0u;
+    replace_slot = 0u;
+    candidate = 0u;
+    uncached_cost = 0.0;
+    cached_cost = 0.0;
+    current_cost = 0.0;
+    diff = 0.0;
+    delta = 0.0;
+    uncached_stop = 0;
+    cached_stop = 0;
+    uncached_accept = 0;
+    cached_accept = 0;
+    status = SIXEL_FALSE;
+    allocator = NULL;
+
+    medoids[0u] = 0u;
+    medoids[1u] = 2u;
+    medoids[2u] = 5u;
+    medoids[3u] = 9u;
+
+    for (index = 0u; index < TEST_PIXEL_COUNT * 3u; ++index) {
+        points[index] = (double)g_test_pixels_rgb[index];
+    }
+    for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+        weights[index] = (double)((index % 4u) + 1u);
+        medoid_flags[index] = 0u;
+        order[index] = index;
+    }
+    for (index = 0u; index < TEST_REQCOLORS; ++index) {
+        medoid_flags[medoids[index]] = 1u;
+    }
+
+    sixel_kmedoids_test_assign_points(points,
+                                      weights,
+                                      TEST_PIXEL_COUNT,
+                                      medoids,
+                                      TEST_REQCOLORS,
+                                      nearest_slot,
+                                      nearest_dist,
+                                      second_dist,
+                                      second_slot,
+                                      &current_cost);
+
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+    status = sixel_kmedoids_test_build_eval_order_residual(weights,
+                                                            nearest_dist,
+                                                            TEST_PIXEL_COUNT,
+                                                            order,
+                                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    sixel_allocator_unref(allocator);
+
+    for (replace_slot = 0u; replace_slot < TEST_REQCOLORS; ++replace_slot) {
+        for (candidate = 0u; candidate < TEST_PIXEL_COUNT; ++candidate) {
+            if (medoid_flags[candidate] != 0u) {
+                continue;
+            }
+            for (index = 0u; index < TEST_PIXEL_COUNT; ++index) {
+                delta = points[index * 3u + 0u]
+                      - points[candidate * 3u + 0u];
+                candidate_row[index] = delta * delta;
+                delta = points[index * 3u + 1u]
+                      - points[candidate * 3u + 1u];
+                candidate_row[index] += delta * delta;
+                delta = points[index * 3u + 2u]
+                      - points[candidate * 3u + 2u];
+                candidate_row[index] += delta * delta;
+            }
+
+            uncached_cost = sixel_kmedoids_test_swap_cost_cutoff(
+                points,
+                weights,
+                TEST_PIXEL_COUNT,
+                nearest_slot,
+                nearest_dist,
+                second_dist,
+                replace_slot,
+                candidate,
+                order,
+                current_cost,
+                &uncached_stop);
+            cached_cost = sixel_kmedoids_test_swap_cost_cutoff_with_row(
+                points,
+                weights,
+                TEST_PIXEL_COUNT,
+                nearest_slot,
+                nearest_dist,
+                second_dist,
+                replace_slot,
+                candidate,
+                candidate_row,
+                order,
+                current_cost,
+                &cached_stop);
+
+            uncached_accept = (uncached_cost + 1.0e-12 < current_cost) ? 1 : 0;
+            cached_accept = (cached_cost + 1.0e-12 < current_cost) ? 1 : 0;
+            if (uncached_accept != cached_accept) {
+                return 0;
+            }
+            if (uncached_stop != cached_stop) {
+                return 0;
+            }
+            diff = uncached_cost - cached_cost;
+            if (diff < 0.0) {
+                diff = -diff;
+            }
+            if (diff > 1.0e-9) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+static int
 test_run_bandit_swap_cost_cutoff_case(void)
 {
     double points[TEST_PIXEL_COUNT * 3u];
@@ -1973,6 +2157,95 @@ end:
 }
 
 static int
+test_run_clarans_residual_eval_order_determinism_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned int const point_count = 13u;
+    double weights[13u];
+    double nearest_dist[13u];
+    double scores[13u];
+    unsigned int order_a[13u];
+    unsigned int order_b[13u];
+    unsigned int expected[13u];
+    unsigned int index;
+    unsigned int probe;
+    unsigned int swap_tmp;
+    SIXELSTATUS status;
+
+    allocator = NULL;
+    index = 0u;
+    probe = 0u;
+    swap_tmp = 0u;
+    status = SIXEL_FALSE;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    for (index = 0u; index < point_count; ++index) {
+        weights[index] = (double)((index % 4u) + 1u);
+        nearest_dist[index] = (double)((index * 5u + 3u) % 7u);
+        nearest_dist[index] += (double)(index % 3u) * 0.25;
+        expected[index] = index;
+        scores[index] = weights[index] * nearest_dist[index];
+    }
+    /* Force deterministic tie-break checks. */
+    scores[2u] = 4.0;
+    scores[5u] = 4.0;
+    scores[9u] = 4.0;
+    nearest_dist[2u] = 2.0;
+    nearest_dist[5u] = 1.0;
+    nearest_dist[9u] = 4.0;
+    weights[2u] = 2.0;
+    weights[5u] = 4.0;
+    weights[9u] = 1.0;
+
+    for (index = 0u; index + 1u < point_count; ++index) {
+        for (probe = index + 1u; probe < point_count; ++probe) {
+            if (test_guided_rank_is_better(scores[expected[probe]],
+                                           expected[probe],
+                                           scores[expected[index]],
+                                           expected[index])) {
+                swap_tmp = expected[index];
+                expected[index] = expected[probe];
+                expected[probe] = swap_tmp;
+            }
+        }
+    }
+
+    status = sixel_kmedoids_test_build_eval_order_residual(weights,
+                                                            nearest_dist,
+                                                            point_count,
+                                                            order_a,
+                                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    status = sixel_kmedoids_test_build_eval_order_residual(weights,
+                                                            nearest_dist,
+                                                            point_count,
+                                                            order_b,
+                                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    for (index = 0u; index < point_count; ++index) {
+        if (order_a[index] != order_b[index]) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+        if (order_a[index] != expected[index]) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+    }
+
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
+static int
 test_run_pam_polish_monotonic_case(void)
 {
     sixel_allocator_t *allocator;
@@ -2332,6 +2605,122 @@ test_run_clarans_guided_delta_equivalence_case(void)
 }
 
 static int
+test_run_clarans_delta_refresh_fallback_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned int const point_count = 10u;
+    double weights[10u];
+    double nearest_before[10u];
+    double nearest_after[10u];
+    unsigned int order_delta[10u];
+    unsigned int order_fallback[10u];
+    unsigned int order_full[10u];
+    unsigned int changed_points[5u];
+    unsigned int index;
+    int used_full_refresh;
+    SIXELSTATUS status;
+
+    allocator = NULL;
+    index = 0u;
+    used_full_refresh = 0;
+    status = SIXEL_FALSE;
+    changed_points[0u] = 2u;
+    changed_points[1u] = 3u;
+    changed_points[2u] = 4u;
+    changed_points[3u] = 7u;
+    changed_points[4u] = 9u;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    for (index = 0u; index < point_count; ++index) {
+        weights[index] = (double)((index % 5u) + 1u);
+        nearest_before[index] = (double)((index * 3u + 1u) % 7u);
+        nearest_before[index] += (double)(index % 2u) * 0.2;
+        nearest_after[index] = nearest_before[index];
+    }
+    nearest_after[2u] = nearest_before[2u] * 0.60;
+    nearest_after[3u] = nearest_before[3u] + 2.40;
+    nearest_after[4u] = nearest_before[4u] * 0.45;
+    nearest_after[7u] = nearest_before[7u] * 0.25;
+    nearest_after[9u] = nearest_before[9u] + 1.80;
+
+    status = sixel_kmedoids_test_build_eval_order_residual(weights,
+                                                            nearest_before,
+                                                            point_count,
+                                                            order_delta,
+                                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    status = sixel_kmedoids_test_build_eval_order_residual(weights,
+                                                            nearest_before,
+                                                            point_count,
+                                                            order_fallback,
+                                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    status = sixel_kmedoids_test_apply_eval_order_delta(weights,
+                                                         nearest_before,
+                                                         nearest_after,
+                                                         point_count,
+                                                         changed_points,
+                                                         5u,
+                                                         point_count,
+                                                         order_delta,
+                                                         &used_full_refresh,
+                                                         allocator);
+    if (SIXEL_FAILED(status) || used_full_refresh != 0) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    status = sixel_kmedoids_test_apply_eval_order_delta(weights,
+                                                         nearest_before,
+                                                         nearest_after,
+                                                         point_count,
+                                                         changed_points,
+                                                         5u,
+                                                         2u,
+                                                         order_fallback,
+                                                         &used_full_refresh,
+                                                         allocator);
+    if (SIXEL_FAILED(status) || used_full_refresh == 0) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    status = sixel_kmedoids_test_build_eval_order_residual(weights,
+                                                            nearest_after,
+                                                            point_count,
+                                                            order_full,
+                                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+    for (index = 0u; index < point_count; ++index) {
+        if (order_delta[index] != order_full[index]) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+        if (order_fallback[index] != order_full[index]) {
+            sixel_allocator_unref(allocator);
+            return 0;
+        }
+    }
+    if (!test_run_clarans_guided_delta_equivalence_case()) {
+        sixel_allocator_unref(allocator);
+        return 0;
+    }
+
+    sixel_allocator_unref(allocator);
+    return 1;
+}
+
+static int
 test_run_clarans_guided_reject_no_rebuild_case(void)
 {
     sixel_allocator_t *allocator;
@@ -2494,6 +2883,9 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     if (strcmp(argv[1], "clarans-swap-cost-cutoff") == 0) {
         return test_run_clarans_swap_cost_cutoff_case() ? 0 : 1;
     }
+    if (strcmp(argv[1], "clarans-candidate-cache-equivalence") == 0) {
+        return test_run_clarans_candidate_cache_equivalence_case() ? 0 : 1;
+    }
     if (strcmp(argv[1], "bandit-swap-cost-cutoff") == 0) {
         return test_run_bandit_swap_cost_cutoff_case() ? 0 : 1;
     }
@@ -2505,6 +2897,10 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "clarans-guided-topk-equivalence") == 0) {
         return test_run_clarans_guided_topk_equivalence_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-residual-eval-order-determinism") == 0) {
+        return test_run_clarans_residual_eval_order_determinism_case()
+            ? 0 : 1;
     }
     if (strcmp(argv[1], "bandit-generation-seed") == 0) {
         return test_run_bandit_generation_seed_case() ? 0 : 1;
@@ -2523,6 +2919,9 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "clarans-guided-delta-equivalence") == 0) {
         return test_run_clarans_guided_delta_equivalence_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "clarans-delta-refresh-fallback") == 0) {
+        return test_run_clarans_delta_refresh_fallback_case() ? 0 : 1;
     }
     if (strcmp(argv[1], "clarans-guided-reject-no-rebuild") == 0) {
         return test_run_clarans_guided_reject_no_rebuild_case() ? 0 : 1;
