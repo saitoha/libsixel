@@ -1286,6 +1286,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "Unset rejects trailing raster data in strict mode."
     },
     {
+        "SIXEL_LOADER_PAM_ALLOW_ENDHDR_TRAILING_TOKENS",
+        "compatibility toggle for trailing tokens on PAM ENDHDR line.\n"
+        "Set to 1 to allow extra tokens after ENDHDR in P7 headers.\n"
+        "Unset rejects unexpected tokens after ENDHDR."
+    },
+    {
         "SIXEL_CMS_RENDERING_INTENT",
         "legacy alias for SIXEL_LOADER_CMS_RENDERING_INTENT. Used only when\n"
         "SIXEL_LOADER_CMS_RENDERING_INTENT is unset."

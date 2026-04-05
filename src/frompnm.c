@@ -312,6 +312,19 @@ pnm_allow_trailing_data(void)
 }
 
 static int
+pnm_allow_endhdr_trailing_tokens(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv(
+        "SIXEL_LOADER_PAM_ALLOW_ENDHDR_TRAILING_TOKENS");
+    if (value != NULL && strcmp(value, "1") == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
 pnm_set_duplicate_required_key_message(char const *field)
 {
     char message[128];
@@ -505,6 +518,7 @@ pnm_parse_header(unsigned char *buffer,
     int tuple_type_seen;
     int tuple_type_known;
     int allow_duplicate_required_keys;
+    int allow_endhdr_trailing_tokens;
     pnm_tuple_type_t tuple_type;
 
     p = NULL;
@@ -521,6 +535,7 @@ pnm_parse_header(unsigned char *buffer,
     tuple_type_seen = 0;
     tuple_type_known = 0;
     allow_duplicate_required_keys = 0;
+    allow_endhdr_trailing_tokens = 0;
     tuple_type = PNM_TUPLE_UNSPECIFIED;
 
     if (buffer == NULL || header == NULL || length < 3) {
@@ -540,6 +555,7 @@ pnm_parse_header(unsigned char *buffer,
     p = buffer + 2;
     end = buffer + length;
     allow_duplicate_required_keys = pnm_allow_duplicate_required_keys();
+    allow_endhdr_trailing_tokens = pnm_allow_endhdr_trailing_tokens();
 
     switch (header->magic) {
     case '1':
@@ -581,6 +597,14 @@ pnm_parse_header(unsigned char *buffer,
                 continue;
             }
             if (strcmp(token, "ENDHDR") == 0) {
+                if (!allow_endhdr_trailing_tokens &&
+                    !pnm_require_line_tail_empty(line_cursor,
+                                                 line_end,
+                                                 "ENDHDR")) {
+                    sixel_helper_set_additional_message(
+                        "load_pnm: unexpected token after ENDHDR.");
+                    return 0;
+                }
                 endhdr_seen = 1;
                 break;
             }
