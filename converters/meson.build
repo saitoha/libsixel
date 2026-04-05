@@ -188,11 +188,7 @@ if test "$mode" = "legacy"; then
   fi
 
   echo "fuzz-cli-img2sixel: mode=legacy base args='$base_args'"
-  "$runner_script" \
-    "fuzz-cli-img2sixel" "$fuzz_afl" "$input_dir" "$output_dir" \
-    "$fuzz_timeout" -- \
-    env FUZZ_IMG2SIXEL="$img2sixel" FUZZ_IMG2SIXEL_BASE_ARGS="$base_args" \
-    "$wrapper" @@
+  "$runner_script" "fuzz-cli-img2sixel" "$fuzz_afl" "$input_dir" "$output_dir" "$fuzz_timeout" -- env FUZZ_IMG2SIXEL="$img2sixel" FUZZ_IMG2SIXEL_BASE_ARGS="$base_args" "$wrapper" @@
   exit 0
 fi
 
@@ -205,10 +201,7 @@ if test -n "$base_args"; then
   echo "fuzz-cli-img2sixel: note: FUZZ_IMG2SIXEL_BASE_ARGS is ignored in persistent mode"
 fi
 echo "fuzz-cli-img2sixel: mode=persistent harness='$harness'"
-"$runner_script" \
-  "fuzz-cli-img2sixel" "$fuzz_afl" "$input_dir" "$output_dir" \
-  "$fuzz_timeout" -- \
-  "$harness"
+"$runner_script" "fuzz-cli-img2sixel" "$fuzz_afl" "$input_dir" "$output_dir" "$fuzz_timeout" -- "$harness"
 ''',
                 'sh',
                 img2sixel_fuzz_harness.full_path(),
@@ -243,10 +236,7 @@ if test ! -x "$runner_script"; then
   exit 1
 fi
 
-"$runner_script" \
-  "fuzz-cli-img2sixel-parser" "$fuzz_afl" "$input_dir" "$output_dir" \
-  "$fuzz_timeout" -- \
-  "$harness"
+"$runner_script" "fuzz-cli-img2sixel-parser" "$fuzz_afl" "$input_dir" "$output_dir" "$fuzz_timeout" -- "$harness"
 ''',
                 'sh',
                 img2sixel_cli_parser_harness.full_path(),
@@ -280,10 +270,7 @@ if test ! -x "$runner_script"; then
   exit 1
 fi
 
-"$runner_script" \
-  "fuzz-cli-img2sixel-boundary" "$fuzz_afl" "$input_dir" "$output_dir" \
-  "$fuzz_timeout" -- \
-  "$harness"
+"$runner_script" "fuzz-cli-img2sixel-boundary" "$fuzz_afl" "$input_dir" "$output_dir" "$fuzz_timeout" -- "$harness"
 ''',
                 'sh',
                 img2sixel_cli_boundary_harness.full_path(),
@@ -317,10 +304,7 @@ if test ! -x "$runner_script"; then
   exit 1
 fi
 
-"$runner_script" \
-  "fuzz-cli-img2sixel-pathenv" "$fuzz_afl" "$input_dir" "$output_dir" \
-  "$fuzz_timeout" -- \
-  "$harness"
+"$runner_script" "fuzz-cli-img2sixel-pathenv" "$fuzz_afl" "$input_dir" "$output_dir" "$fuzz_timeout" -- "$harness"
 ''',
                 'sh',
                 img2sixel_cli_pathenv_harness.full_path(),
@@ -354,10 +338,7 @@ if test ! -x "$runner_script"; then
   exit 1
 fi
 
-"$runner_script" \
-  "fuzz-cli-img2sixel-numeric" "$fuzz_afl" "$input_dir" "$output_dir" \
-  "$fuzz_timeout" -- \
-  "$harness"
+"$runner_script" "fuzz-cli-img2sixel-numeric" "$fuzz_afl" "$input_dir" "$output_dir" "$fuzz_timeout" -- "$harness"
 ''',
                 'sh',
                 img2sixel_cli_numeric_harness.full_path(),
