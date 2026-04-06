@@ -145,11 +145,15 @@ int fchmod(int, mode_t);
 #endif
 
 #if defined(BUILD_IMG2SIXEL) && defined(HAVE_COMPLETION_EMBED_H)
-#include "completion_embed.h"
+/*
+ * Use angle brackets so the generated header in the build tree is preferred.
+ * Quoted includes may pick a stale source-tree copy first.
+ */
+#include <completion_embed.h>
 #define IMG2SIXEL_HAVE_COMPLETION_EMBED 1
 #elif defined(BUILD_IMG2SIXEL) && defined(__has_include)
-#if __has_include("completion_embed.h")
-#include "completion_embed.h"
+#if __has_include(<completion_embed.h>)
+#include <completion_embed.h>
 #define IMG2SIXEL_HAVE_COMPLETION_EMBED 1
 #endif
 #endif
