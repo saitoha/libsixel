@@ -12,17 +12,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+# Keep kmeans deterministic across platforms so this test only checks
+# argument-order precedence between -F and -Q merge.
 last_q=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Fauto -Qkmeans:merge=ward \
+    -Fauto -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
 last_f=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans:merge=ward -Fauto \
+    -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward -Fauto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
 q_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans:merge=ward \
+    -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
 f_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans -Fauto \
+    -Qkmeans:seed=1:restarts=1:feedback=off -Fauto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
 
 test "${last_q}" != "${last_f}" || {
