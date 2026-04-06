@@ -397,7 +397,7 @@ typedef int SIXELSTATUS;
                                                     medoids -> k-medoids
                                                                 solver
                                                   auto/heckbert/kmeans/medoids
-                                                  share final-merge suboptions:
+                                                  share merge suboptions:
                                                     merge:
                                                       auto, none, ward
                                                     merge_oversplit:
@@ -470,17 +470,6 @@ typedef int SIXELSTATUS;
                                                       integer in 8-4096
                                                     bandit_batch:
                                                       integer in 8-4096
-                                                */
-#define SIXEL_OPTFLAG_FINAL_MERGE       ('F')  /* -F MODE, --final-merge=MODE:
-                                                  deprecated compatibility alias.
-                                                  Use -QMODEL:merge=MODE.
-                                                  MODE is one of them:
-                                                    auto -> enable automatic
-                                                            final merging
-                                                    none -> disable final
-                                                            merging
-                                                    ward -> Ward hierarchical
-                                                            merging
                                                 */
 #define SIXEL_OPTFLAG_CROP              ('c')  /* -c REGION, --crop=REGION:
                                                   crop source image to fit the

@@ -24,7 +24,7 @@ SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
         SIXEL_PALETTE_LUMIN_FACTOR_R=0.3 \
         SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
         SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q heckbert -F ward -W oklab \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qheckbert:merge=ward -W oklab \
     -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "img2sixel merge heckbert float32 failed"
     exit 0

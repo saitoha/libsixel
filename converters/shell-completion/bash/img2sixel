@@ -397,12 +397,6 @@ _img2sixel()
         _img2sixel_complete_quantize_model
         return 0
         ;;
-    -F|--final-merge)
-        COMPREPLY=( $( compgen -W 'auto \
-                                   none \
-                                   ward' -- "$cur" ) )
-        return 0
-        ;;
     -m|--mapfile|-M|--mapfile-output)
         _img2sixel_filedir
         return 0
@@ -604,7 +598,6 @@ _img2sixel()
                                    -6 --6reversible \
                                    -p --colors \
                                    -Q --quantize-model \
-                                   -F --final-merge \
                                    -m --mapfile \
                                    -M --mapfile-output \
                                    -e --monochrome \

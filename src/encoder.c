@@ -1210,12 +1210,6 @@ static sixel_option_argument_schema_t const g_schema_quantize_model = {
     / sizeof(g_schema_quantize_model_values[0])
 };
 
-static sixel_option_choice_t const g_option_choices_final_merge[] = {
-    { "auto", SIXEL_FINAL_MERGE_AUTO },
-    { "none", SIXEL_FINAL_MERGE_NONE },
-    { "ward", SIXEL_FINAL_MERGE_WARD }
-};
-
 static sixel_option_choice_t const g_option_choices_resampling[] = {
     { "nearest", SIXEL_RES_NEAREST },
     { "gaussian", SIXEL_RES_GAUSSIAN },
@@ -7411,20 +7405,6 @@ sixel_encoder_apply_drcs_option(
     return status;
 }
 
-static int sixel_encoder_warned_final_merge_deprecated = 0;
-
-static void
-sixel_encoder_warn_final_merge_deprecated(void)
-{
-    if (sixel_encoder_warned_final_merge_deprecated) {
-        return;
-    }
-    sixel_encoder_warned_final_merge_deprecated = 1;
-    (void)fprintf(stderr,
-                  "warning: -F/--final-merge is deprecated; "
-                  "use -QMODEL:merge=MODE instead.\n");
-}
-
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -8158,20 +8138,6 @@ sixel_encoder_setopt(
             }
             ++q_index;
         }
-        break;
-    case SIXEL_OPTFLAG_FINAL_MERGE:  /* F */
-        sixel_encoder_warn_final_merge_deprecated();
-        status = sixel_encoder_parse_choice_argument(
-            value,
-            g_option_choices_final_merge,
-            sizeof(g_option_choices_final_merge) /
-            sizeof(g_option_choices_final_merge[0]),
-            "specified final merge policy is not supported.",
-            &match_value);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        encoder->final_merge_mode = match_value;
         break;
     case SIXEL_OPTFLAG_CROP:  /* c */
         status = sixel_encoder_apply_crop_option(encoder, value);

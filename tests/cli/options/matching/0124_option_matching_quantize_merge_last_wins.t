@@ -1,5 +1,6 @@
 #!/bin/sh
-# TAP test verifying -F and -Q*:merge follow argument-order last-wins.
+# TAP test verifying repeated -Q merge suboptions follow argument-order
+# last-wins.
 
 set -eux
 
@@ -12,35 +13,35 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# Keep kmeans deterministic across platforms so this test only checks
-# argument-order precedence between -F and -Q merge.
-last_q=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Fauto -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
-last_f=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward -Fauto \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
-q_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+last_ward=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
-f_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qkmeans:seed=1:restarts=1:feedback=off -Fauto \
+last_auto=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
+    -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
+    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+ward_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
+    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+auto_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
 
-test "${last_q}" != "${last_f}" || {
+test "${last_ward}" != "${last_auto}" || {
     echo "not ok" 1 - "argument order did not affect merge selection"
     exit 0
 }
 
-test "${last_q}" = "${q_only}" || {
-    echo "not ok" 1 - "late -Q merge did not override early -F"
+test "${last_ward}" = "${ward_only}" || {
+    echo "not ok" 1 - "late ward merge did not override early auto merge"
     exit 0
 }
 
-test "${last_f}" = "${f_only}" || {
-    echo "not ok" 1 - "late -F did not override early -Q merge"
+test "${last_auto}" = "${auto_only}" || {
+    echo "not ok" 1 - "late auto merge did not override early ward merge"
     exit 0
 }
 
-echo "ok" 1 - "-F and -Q merge use argument-order last-wins"
+echo "ok" 1 - "-Q merge suboptions use argument-order last-wins"
 exit 0

@@ -69,7 +69,6 @@ static fuzz_cli_option_t const g_cli_options[] = {
     { "-t", "--palette-type", 1 },
     { "-r", "--resampling", 1 },
     { "-Q", "--quantize-model", 1 },
-    { "-F", "--final-merge", 1 },
     { "-l", "--loop-control", 1 },
     { "-~", "--lookup-policy", 1 },
     { "-X", "--clustering-colorspace", 1 },

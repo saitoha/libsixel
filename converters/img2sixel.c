@@ -410,23 +410,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                     0-30\n"
     },
     {
-        'F',
-        "final-merge",
-        "-F MODE, --final-merge=MODE\n"
-        "                           [[deprecated]] compatibility alias\n"
-        "                           for -QMODEL:merge=MODE.\n"
-        "                           control the post-merge stage.\n"
-        "                             auto -> choose post-merge strategy\n"
-        "                                     automatically (default)\n"
-        "                                     auto skips post-merge\n"
-        "                                     reduction unless future\n"
-        "                                     heuristics enable it.\n"
-        "                             none -> skip post-merge reduction.\n"
-        "                             ward -> merge clusters using\n"
-        "                                     Ward's minimum variance\n"
-        "                                     criterion.\n"
-    },
-    {
         'm',
         "mapfile",
         "-m FILE, --mapfile=FILE    transform image colors to match\n"
@@ -1678,7 +1661,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
     "OVX:W:HY:y:%:1:2:3:";
 
 static int
@@ -2515,7 +2498,6 @@ img2sixel_main(int argc, char *argv[])
         {"6reversible",           no_argument,        &long_opt, '6'},
         {"colors",                required_argument,  &long_opt, 'p'},
         {"quantize-model",        required_argument,  &long_opt, 'Q'},
-        {"final-merge",           required_argument,  &long_opt, 'F'},
         {"mapfile",               required_argument,  &long_opt, 'm'},
         {"mapfile-output",        required_argument,  &long_opt, 'M'},
         {"monochrome",            no_argument,        &long_opt, 'e'},
@@ -2864,7 +2846,7 @@ unknown_option_error:
     fprintf(stderr,
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"
-            "                 [-d diffusiontype] [-Q model] [-F mode]\n"
+            "                 [-d diffusiontype] [-Q model]\n"
             "                 [-y scantype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality]\n"

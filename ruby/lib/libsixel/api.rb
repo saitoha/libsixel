@@ -140,7 +140,6 @@ module Libsixel
     SIXEL_OPTFLAG_MAPFILE_OUTPUT = 'M' unless const_defined?(:SIXEL_OPTFLAG_MAPFILE_OUTPUT)
     SIXEL_OPTFLAG_QUANTIZE_MODEL = 'Q' unless const_defined?(:SIXEL_OPTFLAG_QUANTIZE_MODEL)
     SIXEL_OPTFLAG_MAPFILE = 'm' unless const_defined?(:SIXEL_OPTFLAG_MAPFILE)
-    SIXEL_OPTFLAG_FINAL_MERGE = 'F' unless const_defined?(:SIXEL_OPTFLAG_FINAL_MERGE)
     SIXEL_OPTFLAG_CROP = 'c' unless const_defined?(:SIXEL_OPTFLAG_CROP)
     SIXEL_OPTFLAG_WIDTH = 'w' unless const_defined?(:SIXEL_OPTFLAG_WIDTH)
     SIXEL_OPTFLAG_HEIGHT = 'h' unless const_defined?(:SIXEL_OPTFLAG_HEIGHT)
