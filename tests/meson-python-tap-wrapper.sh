@@ -4,9 +4,11 @@ mkdir -p "$ARTIFACT_LOCAL_DIR"
 
 prepare_psb_large_fixtures_once() {
   state_dir="$MESON_BUILD_ROOT/tests"
-  run_id="${MESON_TEST_RUN_ID:-$PPID}"
-  done_file="$state_dir/.psb-large-fixtures.$run_id.done"
-  lock_dir="$state_dir/.psb-large-fixtures.$run_id.lock"
+  # Keep a single shared marker per build dir. Using PPID as a fallback
+  # run id can defeat memoization when Meson changes worker parent
+  # processes between tests on some platforms.
+  done_file="$state_dir/.psb-large-fixtures.done"
+  lock_dir="$state_dir/.psb-large-fixtures.lock"
   prepare_script="$TOP_SRCDIR/tests/_static/sh/prepare-psb-large-fixtures.sh"
 
   mkdir -p "$state_dir"
