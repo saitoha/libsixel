@@ -7,6 +7,14 @@ test "${SIXEL_TSAN_BUILD:-no}" = "yes" && {
     printf "1..0 # SKIP TSan builds can suppress abort trace output\n";
     exit 0
 }
+test "${SIXEL_RUNTIME-}" = "wine" && {
+    printf "1..0 # SKIP wine can hang on intentional abort handling\n";
+    exit 0
+}
+test "${SIXEL_RUNTIME-}" = "wine64" && {
+    printf "1..0 # SKIP wine can hang on intentional abort handling\n";
+    exit 0
+}
 
 
 echo "1..1"
