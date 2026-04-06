@@ -1397,6 +1397,7 @@ load_png(unsigned char      /* out */ **result,
 #if !HAVE_LCMS2
     int has_srgb_chunk_raw_nolcms;
     int has_chrm_chunk_raw_nolcms;
+    int skip_iccp_conversion_nolcms;
     int has_embedded_icc_nolcms;
     int has_icc_profile_bytes_nolcms;
     png_charp icc_name_nolcms;
@@ -1487,6 +1488,7 @@ load_png(unsigned char      /* out */ **result,
 #if !HAVE_LCMS2
     has_srgb_chunk_raw_nolcms = 0;
     has_chrm_chunk_raw_nolcms = 0;
+    skip_iccp_conversion_nolcms = 0;
     has_embedded_icc_nolcms = 0;
     has_icc_profile_bytes_nolcms = 0;
     icc_name_nolcms = NULL;
@@ -1678,6 +1680,18 @@ load_png(unsigned char      /* out */ **result,
         }
         if (has_embedded_icc_nolcms) {
             has_iccp_chunk_any = 1;
+        }
+        /*
+         * Keep parity with the lcms2 priority chain when iCCP conflicts
+         * with explicit sRGB+cHRM chunks. In that case, prefer the PNG
+         * chunk interpretation and skip ICC conversion in no-lcms mode.
+         */
+        skip_iccp_conversion_nolcms = has_srgb_chunk_raw_nolcms &&
+                                      has_chrm_chunk_raw_nolcms;
+        if (skip_iccp_conversion_nolcms) {
+            has_icc_profile_bytes_nolcms = 0;
+            icc_profile_nolcms_bytes = NULL;
+            icc_profile_nolcms_bytes_length = 0u;
         }
         (void)icc_name_nolcms;
         (void)icc_compression_type_nolcms;
