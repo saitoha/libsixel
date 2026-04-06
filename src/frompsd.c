@@ -4007,6 +4007,117 @@ sixel_builtin_psd_ascii_is_numeric_char(unsigned char value)
 }
 
 static int
+sixel_builtin_psd_parse_ascii_float_token(
+    unsigned char const *token,
+    size_t token_length,
+    double *out_value)
+{
+    size_t cursor;
+    int sign;
+    int exponent_sign;
+    int seen_digit;
+    int seen_exponent;
+    int seen_exponent_digit;
+    unsigned int exponent_value;
+    double value;
+    double scale;
+    double exponent_scale;
+    unsigned char ch;
+
+    cursor = 0u;
+    sign = 1;
+    exponent_sign = 1;
+    seen_digit = 0;
+    seen_exponent = 0;
+    seen_exponent_digit = 0;
+    exponent_value = 0u;
+    value = 0.0;
+    scale = 1.0;
+    exponent_scale = 1.0;
+    ch = 0u;
+    if (token == NULL || out_value == NULL || token_length == 0u) {
+        return 0;
+    }
+
+    if (token[cursor] == (unsigned char)'+') {
+        ++cursor;
+    } else if (token[cursor] == (unsigned char)'-') {
+        sign = -1;
+        ++cursor;
+    }
+    if (cursor >= token_length) {
+        return 0;
+    }
+
+    while (cursor < token_length &&
+           token[cursor] >= (unsigned char)'0' &&
+           token[cursor] <= (unsigned char)'9') {
+        value = value * 10.0 + (double)(token[cursor] - (unsigned char)'0');
+        ++cursor;
+        seen_digit = 1;
+    }
+    if (cursor < token_length && token[cursor] == (unsigned char)'.') {
+        ++cursor;
+        while (cursor < token_length &&
+               token[cursor] >= (unsigned char)'0' &&
+               token[cursor] <= (unsigned char)'9') {
+            value = value * 10.0 +
+                    (double)(token[cursor] - (unsigned char)'0');
+            scale *= 10.0;
+            ++cursor;
+            seen_digit = 1;
+        }
+    }
+    if (!seen_digit) {
+        return 0;
+    }
+
+    if (cursor < token_length &&
+        (token[cursor] == (unsigned char)'e' ||
+         token[cursor] == (unsigned char)'E')) {
+        seen_exponent = 1;
+        ++cursor;
+        if (cursor < token_length &&
+            (token[cursor] == (unsigned char)'+' ||
+             token[cursor] == (unsigned char)'-')) {
+            if (token[cursor] == (unsigned char)'-') {
+                exponent_sign = -1;
+            }
+            ++cursor;
+        }
+        while (cursor < token_length &&
+               token[cursor] >= (unsigned char)'0' &&
+               token[cursor] <= (unsigned char)'9') {
+            ch = token[cursor];
+            if (exponent_value < 1000u) {
+                exponent_value = exponent_value * 10u +
+                                 (unsigned int)(ch - (unsigned char)'0');
+            }
+            ++cursor;
+            seen_exponent_digit = 1;
+        }
+        if (!seen_exponent_digit) {
+            return 0;
+        }
+    }
+    if (cursor != token_length) {
+        return 0;
+    }
+
+    value = (double)sign * (value / scale);
+    if (seen_exponent) {
+        if (exponent_value > 308u) {
+            exponent_value = 308u;
+        }
+        exponent_scale = pow(10.0,
+                             (double)exponent_sign * (double)exponent_value);
+        value *= exponent_scale;
+    }
+    *out_value = value;
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_ascii_float(
     unsigned char const *data,
     size_t data_length,
@@ -4016,14 +4127,11 @@ sixel_builtin_psd_parse_ascii_float(
     size_t cursor;
     size_t start;
     size_t token_length;
-    char token[64];
-    char *endp;
     double parsed;
 
     cursor = 0u;
     start = 0u;
     token_length = 0u;
-    endp = NULL;
     parsed = 0.0;
     if (data == NULL || pcursor == NULL || out_value == NULL) {
         return 0;
@@ -4041,13 +4149,12 @@ sixel_builtin_psd_parse_ascii_float(
         return 0;
     }
     token_length = cursor - start;
-    if (token_length == 0u || token_length >= sizeof(token)) {
+    if (token_length == 0u || token_length >= 64u) {
         return 0;
     }
-    memcpy(token, data + start, token_length);
-    token[token_length] = '\0';
-    parsed = strtod(token, &endp);
-    if (endp == NULL || *endp != '\0') {
+    if (!sixel_builtin_psd_parse_ascii_float_token(data + start,
+                                                    token_length,
+                                                    &parsed)) {
         return 0;
     }
     *out_value = parsed;
@@ -4706,6 +4813,7 @@ sixel_builtin_psd_parse_tysh_fillcolor_engine_values_dict(
     size_t dict_end;
     size_t token_begin;
     size_t token_end;
+    size_t token_cursor;
     size_t parse_cursor;
     size_t i;
     size_t ordered_count;
@@ -4726,6 +4834,7 @@ sixel_builtin_psd_parse_tysh_fillcolor_engine_values_dict(
     dict_end = 0u;
     token_begin = 0u;
     token_end = 0u;
+    token_cursor = 0u;
     parse_cursor = 0u;
     i = 0u;
     ordered_count = 0u;
@@ -4837,6 +4946,21 @@ sixel_builtin_psd_parse_tysh_fillcolor_engine_values_dict(
                     *pcursor = dict_end + 2u;
                     return 1;
                 }
+            }
+            token_cursor = parse_cursor;
+            if (token_cursor < dict_end &&
+                data[token_cursor] == (unsigned char)'/') {
+                ++token_cursor;
+            }
+            while (token_cursor < dict_end &&
+                   !sixel_builtin_psd_ascii_is_token_delimiter(
+                       data[token_cursor])) {
+                ++token_cursor;
+            }
+            if (token_cursor == cursor) {
+                ++cursor;
+            } else {
+                cursor = token_cursor;
             }
             continue;
         }
