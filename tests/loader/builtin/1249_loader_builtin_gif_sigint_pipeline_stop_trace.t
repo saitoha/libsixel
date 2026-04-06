@@ -23,6 +23,11 @@ test "${HAVE_WINDOWS_H-0}" = 1 && {
     exit 0
 }
 
+test "${SIXEL_TSAN_BUILD-no}" = "yes" && test "${HAVE_APPKIT-0}" = 1 && {
+    printf "1..0 # SKIP macOS TSan can stall SIGINT pipeline trace timing\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 
