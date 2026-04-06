@@ -21,6 +21,27 @@
 #include "src/icc-apply.h"
 #include "src/icc-parse.h"
 
+/*
+ * Prefix file-local ICC helper symbols so unity/amalgamation builds that
+ * include multiple ICC test sources in one translation unit do not collide.
+ */
+#define icc_tag_ref icc0004_tag_ref
+#define icc_tag_ref_t icc0004_tag_ref_t
+#define icc_write_be16 icc0004_write_be16
+#define icc_write_be32 icc0004_write_be32
+#define icc_align4 icc0004_align4
+#define icc_build_curv_identity_tag icc0004_build_curv_identity_tag
+#define icc_build_curve_block icc0004_build_curve_block
+#define icc_build_matrix_block icc0004_build_matrix_block
+#define icc_build_clut_block_mode icc0004_build_clut_block_mode
+#define icc_build_mab_mode_tag icc0004_build_mab_mode_tag
+#define icc_pack_profile icc0004_pack_profile
+#define icc_build_rgb_profile_with_b2a icc0004_build_rgb_profile_with_b2a
+#define icc_build_gray_profile_with_b2a icc0004_build_gray_profile_with_b2a
+#define icc_build_cmyk_profile_with_b2a icc0004_build_cmyk_profile_with_b2a
+#define expect_slot_channel icc0004_expect_slot_channel
+#define expect_cmyk_slot icc0004_expect_cmyk_slot
+
 #define ICC_TAG_TABLE_OFFSET 128u
 #define ICC_TAG_ENTRY_SIZE 12u
 
@@ -889,6 +910,23 @@ test_icc_0004_icc_builtin_b2a_slot_paths(int argc, char **argv)
 
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#undef expect_cmyk_slot
+#undef expect_slot_channel
+#undef icc_build_cmyk_profile_with_b2a
+#undef icc_build_gray_profile_with_b2a
+#undef icc_build_rgb_profile_with_b2a
+#undef icc_pack_profile
+#undef icc_build_mab_mode_tag
+#undef icc_build_clut_block_mode
+#undef icc_build_matrix_block
+#undef icc_build_curve_block
+#undef icc_build_curv_identity_tag
+#undef icc_align4
+#undef icc_write_be32
+#undef icc_write_be16
+#undef icc_tag_ref_t
+#undef icc_tag_ref
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

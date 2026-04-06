@@ -20,6 +20,28 @@
 
 #include "src/cms.h"
 
+/*
+ * Prefix file-local ICC helper symbols so unity/amalgamation builds that
+ * include multiple ICC test sources in one translation unit do not collide.
+ */
+#define icc_tag_ref icc0005_tag_ref
+#define icc_tag_ref_t icc0005_tag_ref_t
+#define icc_write_be16 icc0005_write_be16
+#define icc_write_be32 icc0005_write_be32
+#define icc_align4 icc0005_align4
+#define icc_build_curv_identity_tag icc0005_build_curv_identity_tag
+#define icc_build_curve_block icc0005_build_curve_block
+#define icc_build_matrix_block icc0005_build_matrix_block
+#define icc_build_clut_block_mode icc0005_build_clut_block_mode
+#define icc_build_mab_mode_tag icc0005_build_mab_mode_tag
+#define icc_pack_profile icc0005_pack_profile
+#define icc_build_src_profile icc0005_build_src_profile
+#define icc_build_dst_profile icc0005_build_dst_profile
+#define expect_slot_channel icc0005_expect_slot_channel
+#define check_transform_rgb8 icc0005_check_transform_rgb8
+#define check_transform_rgb8_fails icc0005_check_transform_rgb8_fails
+#define test_setenv icc0005_test_setenv
+
 #define ICC_TAG_TABLE_OFFSET 128u
 #define ICC_TAG_ENTRY_SIZE 12u
 
@@ -713,6 +735,24 @@ test_icc_0005_icc_builtin_device_to_device_intent_paths(int argc, char **argv)
 
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#undef test_setenv
+#undef check_transform_rgb8_fails
+#undef check_transform_rgb8
+#undef expect_slot_channel
+#undef icc_build_dst_profile
+#undef icc_build_src_profile
+#undef icc_pack_profile
+#undef icc_build_mab_mode_tag
+#undef icc_build_clut_block_mode
+#undef icc_build_matrix_block
+#undef icc_build_curve_block
+#undef icc_build_curv_identity_tag
+#undef icc_align4
+#undef icc_write_be32
+#undef icc_write_be16
+#undef icc_tag_ref_t
+#undef icc_tag_ref
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

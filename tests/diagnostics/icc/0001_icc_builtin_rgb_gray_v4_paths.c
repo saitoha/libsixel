@@ -26,6 +26,24 @@
 #include "src/icc-apply.h"
 #include "src/icc-parse.h"
 
+/*
+ * Prefix file-local ICC helper symbols so unity/amalgamation builds that
+ * include multiple ICC test sources in one translation unit do not collide.
+ */
+#define icc_tag_ref icc0001_tag_ref
+#define icc_tag_ref_t icc0001_tag_ref_t
+#define icc_write_be16 icc0001_write_be16
+#define icc_write_be32 icc0001_write_be32
+#define icc_build_xyz_tag icc0001_build_xyz_tag
+#define icc_build_curv_identity_tag icc0001_build_curv_identity_tag
+#define icc_build_segm_tag icc0001_build_segm_tag
+#define icc_pack_profile icc0001_pack_profile
+#define icc_build_mft2_identity icc0001_build_mft2_identity
+#define icc_build_mft1_identity icc0001_build_mft1_identity
+#define icc_build_rgb_segm_profile icc0001_build_rgb_segm_profile
+#define icc_build_rgb_a2b0_profile icc0001_build_rgb_a2b0_profile
+#define icc_build_gray_a2b0_profile icc0001_build_gray_a2b0_profile
+
 #define ICC_TAG_TABLE_OFFSET 128u
 #define ICC_TAG_ENTRY_SIZE 12u
 
@@ -766,6 +784,20 @@ test_icc_0001_icc_builtin_rgb_gray_v4_paths(int argc, char **argv)
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#undef icc_build_gray_a2b0_profile
+#undef icc_build_rgb_a2b0_profile
+#undef icc_build_rgb_segm_profile
+#undef icc_build_mft1_identity
+#undef icc_build_mft2_identity
+#undef icc_pack_profile
+#undef icc_build_segm_tag
+#undef icc_build_curv_identity_tag
+#undef icc_build_xyz_tag
+#undef icc_write_be32
+#undef icc_write_be16
+#undef icc_tag_ref_t
+#undef icc_tag_ref
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

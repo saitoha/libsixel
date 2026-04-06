@@ -21,6 +21,26 @@
 #include "src/icc-apply.h"
 #include "src/icc-parse.h"
 
+/*
+ * Prefix file-local ICC helper symbols so unity/amalgamation builds that
+ * include multiple ICC test sources in one translation unit do not collide.
+ */
+#define icc_tag_ref icc0002_tag_ref
+#define icc_tag_ref_t icc0002_tag_ref_t
+#define icc_write_be16 icc0002_write_be16
+#define icc_write_be32 icc0002_write_be32
+#define icc_align4 icc0002_align4
+#define icc_build_xyz_tag icc0002_build_xyz_tag
+#define icc_build_curv_identity_tag icc0002_build_curv_identity_tag
+#define icc_pack_profile icc0002_pack_profile
+#define icc_build_matrix_block icc0002_build_matrix_block
+#define icc_build_curve_block icc0002_build_curve_block
+#define icc_build_clut_block icc0002_build_clut_block
+#define icc_build_mab_identity_tag icc0002_build_mab_identity_tag
+#define icc_build_rgb_mab_profile icc0002_build_rgb_mab_profile
+#define icc_build_gray_mab_profile icc0002_build_gray_mab_profile
+#define icc_build_cmyk_mab_profile icc0002_build_cmyk_mab_profile
+
 #define ICC_TAG_TABLE_OFFSET 128u
 #define ICC_TAG_ENTRY_SIZE 12u
 
@@ -789,6 +809,22 @@ test_icc_0002_icc_builtin_mab_mba_a2b0_paths(int argc, char **argv)
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#undef icc_build_cmyk_mab_profile
+#undef icc_build_gray_mab_profile
+#undef icc_build_rgb_mab_profile
+#undef icc_build_mab_identity_tag
+#undef icc_build_clut_block
+#undef icc_build_curve_block
+#undef icc_build_matrix_block
+#undef icc_pack_profile
+#undef icc_build_curv_identity_tag
+#undef icc_build_xyz_tag
+#undef icc_align4
+#undef icc_write_be32
+#undef icc_write_be16
+#undef icc_tag_ref_t
+#undef icc_tag_ref
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
