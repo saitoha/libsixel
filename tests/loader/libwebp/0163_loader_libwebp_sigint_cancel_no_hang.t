@@ -22,8 +22,10 @@ ctrl_break_ok=0
 ctrl_break_mode=0
 build_os="${RUNTIME_ENV_BUILD_OS-unknown}"
 build_os_is_cygwin=0
+runtime_is_msys=0
 build_os_is_darwin=0
 test "${build_os}" != "${build_os#cygwin}" && build_os_is_cygwin=1
+test -n "${MSYSTEM-}" && runtime_is_msys=1
 test "${build_os}" != "${build_os#darwin}" && build_os_is_darwin=1
 
 # Wine on macOS does not reliably forward host SIGINT to wrapped
@@ -38,7 +40,11 @@ test "${HAVE_WINDOWS_H-0}" = 1 && \
 
 test "${HAVE_WINDOWS_H-0}" = 1 && ctrl_break_mode=1
 test -x "${TEST_RUNNER_PATH-}" || ctrl_break_mode=0
-test "${build_os_is_cygwin}" = 1 && ctrl_break_mode=0
+# MSYS2 may report a cygwin build triplet in configure output while still
+# running with Windows signal semantics. Keep the cygwin-specific fallback
+# only when the runtime shell is not MSYS.
+test "${build_os_is_cygwin}" = 1 && test "${runtime_is_msys}" = 0 && \
+    ctrl_break_mode=0
 test -n "${SIXEL_RUNTIME-}" && ctrl_break_mode=0
 
 test "${ctrl_break_mode}" = "1" && {
