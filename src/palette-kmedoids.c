@@ -6007,6 +6007,9 @@ end:
     if (slot_rank_work != NULL) {
         sixel_allocator_free(allocator, slot_rank_work);
     }
+    if (slot_positions != NULL) {
+        sixel_allocator_free(allocator, slot_positions);
+    }
     if (slot_orders != NULL) {
         sixel_allocator_free(allocator, slot_orders);
     }

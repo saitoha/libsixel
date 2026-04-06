@@ -3918,6 +3918,7 @@ test_run_clarans_cheap_bound_accept_reject_equivalence_case(void)
     int full_accept;
     int strict_accept;
     int cheap_stop;
+    int ok;
 
     allocator = NULL;
     points = NULL;
@@ -3944,13 +3945,14 @@ test_run_clarans_cheap_bound_accept_reject_equivalence_case(void)
     full_accept = 0;
     strict_accept = 0;
     cheap_stop = 0;
+    ok = 0;
     medoids[0u] = 0u;
     medoids[1u] = 13u;
     medoids[2u] = 37u;
     medoids[3u] = 71u;
 
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
-        return 0;
+        goto end;
     }
     points = (double *)sixel_allocator_malloc(
         allocator,
@@ -3987,8 +3989,7 @@ test_run_clarans_cheap_bound_accept_reject_equivalence_case(void)
             || second_dist == NULL || second_slot == NULL
             || medoid_flags == NULL || candidate_row == NULL
             || candidate_generation == NULL) {
-        sixel_allocator_unref(allocator);
-        return 0;
+        goto end;
     }
 
     for (index = 0u; index < point_count; ++index) {
@@ -4018,13 +4019,11 @@ test_run_clarans_cheap_bound_accept_reject_equivalence_case(void)
             point_count,
             order,
             allocator))) {
-        sixel_allocator_unref(allocator);
-        return 0;
+        goto end;
     }
     prefix_count = sixel_kmedoids_test_clarans_cheap_prefix_count(point_count);
     if (prefix_count == 0u || prefix_count >= point_count) {
-        sixel_allocator_unref(allocator);
-        return 0;
+        goto end;
     }
 
     for (replace_slot = 0u; replace_slot < k; ++replace_slot) {
@@ -4068,8 +4067,7 @@ test_run_clarans_cheap_bound_accept_reject_equivalence_case(void)
                     &cheap_stop);
             (void)cheap_cost;
             if (cheap_stop && full_accept) {
-                sixel_allocator_unref(allocator);
-                return 0;
+                goto end;
             }
             if (!cheap_stop) {
                 strict_cost =
@@ -4088,18 +4086,52 @@ test_run_clarans_cheap_bound_accept_reject_equivalence_case(void)
                         order,
                         current_cost,
                         NULL);
-                strict_accept = (strict_cost + 1.0e-12 < current_cost) ? 1 : 0;
+                strict_accept = (strict_cost + 1.0e-12 < current_cost)
+                    ? 1 : 0;
                 if (strict_accept != full_accept) {
-                    sixel_allocator_unref(allocator);
-                    return 0;
+                    goto end;
                 }
             }
             ++row_epoch;
         }
     }
+    ok = 1;
 
-    sixel_allocator_unref(allocator);
-    return 1;
+end:
+    if (allocator != NULL) {
+        if (candidate_generation != NULL) {
+            sixel_allocator_free(allocator, candidate_generation);
+        }
+        if (candidate_row != NULL) {
+            sixel_allocator_free(allocator, candidate_row);
+        }
+        if (medoid_flags != NULL) {
+            sixel_allocator_free(allocator, medoid_flags);
+        }
+        if (second_slot != NULL) {
+            sixel_allocator_free(allocator, second_slot);
+        }
+        if (second_dist != NULL) {
+            sixel_allocator_free(allocator, second_dist);
+        }
+        if (nearest_dist != NULL) {
+            sixel_allocator_free(allocator, nearest_dist);
+        }
+        if (nearest_slot != NULL) {
+            sixel_allocator_free(allocator, nearest_slot);
+        }
+        if (order != NULL) {
+            sixel_allocator_free(allocator, order);
+        }
+        if (weights != NULL) {
+            sixel_allocator_free(allocator, weights);
+        }
+        if (points != NULL) {
+            sixel_allocator_free(allocator, points);
+        }
+        sixel_allocator_unref(allocator);
+    }
+    return ok;
 }
 
 static int
