@@ -691,6 +691,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-completion-medoids-tokens',
+    [meson.current_source_dir() / '_static/sh/staticcheck-completion-medoids-tokens.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-kmeans-suboption-env-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-kmeans-suboption-env-sync.sh',
       meson.project_source_root()],

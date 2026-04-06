@@ -334,6 +334,7 @@ AM_LOG_FLAGS =
 	staticcheck-makefile-recipes \
 	staticcheck-meson-palette-sources \
 	staticcheck-kmedoids-suboption-env-sync \
+	staticcheck-completion-medoids-tokens \
 	staticcheck-kmeans-suboption-env-sync \
 	staticcheck-quantize-merge-suboption-sync \
 	staticcheck-test-plan-single \
@@ -359,6 +360,7 @@ staticcheck-test-runner-dllexport \
 staticcheck-makefile-recipes \
 staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
+staticcheck-completion-medoids-tokens \
 staticcheck-kmeans-suboption-env-sync \
 staticcheck-quantize-merge-suboption-sync \
 staticcheck-test-plan-single \
@@ -480,6 +482,16 @@ staticcheck-kmedoids-suboption-env-sync:
 		--trs-file staticcheck-kmedoids-suboption-env-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-completion-medoids-tokens:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-completion-medoids-tokens" \
+		--log-file staticcheck-completion-medoids-tokens.log \
+		--trs-file staticcheck-completion-medoids-tokens.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-completion-medoids-tokens.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-kmeans-suboption-env-sync:
@@ -1231,6 +1243,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
+    _static/sh/staticcheck-completion-medoids-tokens.sh \
     _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
     _static/sh/staticcheck-quantize-merge-suboption-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \

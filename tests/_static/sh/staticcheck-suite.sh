@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=22
+total=23
 index=0
 pass_count=0
 skip_count=0
@@ -178,6 +178,10 @@ run_case_tap "staticcheck-amalgamation-static-symbols" \
 
 run_case_tap "staticcheck-kmedoids-suboption-env-sync" \
     "$src_root/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-completion-medoids-tokens" \
+    "$src_root/tests/_static/sh/staticcheck-completion-medoids-tokens.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-kmeans-suboption-env-sync" \
