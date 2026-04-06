@@ -46,8 +46,10 @@ case "${msg}" in
 esac
 
 msg=${msg%__LIBSIXEL_BASH_COMPLETION_END__}
-actual_cksum=$(printf '%s' "${msg}" | cksum)
-expected_cksum=$(cksum < "${completion_file}")
+# Normalize line endings so Windows text-mode stdout does not cause a
+# false mismatch against repository files stored with LF endings.
+actual_cksum=$(printf '%s' "${msg}" | tr -d '\r' | cksum)
+expected_cksum=$(tr -d '\r' < "${completion_file}" | cksum)
 
 test "${actual_cksum}" = "${expected_cksum}" || {
     echo "not ok" 1 - "bash completion output diverges from source script"
