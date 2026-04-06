@@ -13,10 +13,8 @@ echo "1..1"
 set -v
 set +x
 
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
-
 status=0
-output_file="${ARTIFACT_LOCAL_DIR}/completion-medoids-bash.txt"
+msg=''
 medoids_found=0
 algo_found=0
 bandit_found=0
@@ -36,71 +34,72 @@ bandit_iter_found=0
 bandit_candidates_found=0
 bandit_batch_found=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
-    -1 bash > "${output_file}" || status=$?
+msg=$(
+    set +xv
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
+        -1 bash
+) || status=$?
 
 test "${status}" = 0 || {
     echo "not ok" 1 - "bash completion output failed"
     exit 0
 }
 
-while IFS= read -r line; do
-    case "${line}" in
-        *medoids*) medoids_found=1 ;;
-    esac
-    case "${line}" in
-        *algo=*) algo_found=1 ;;
-    esac
-    case "${line}" in
-        *bandit*) bandit_found=1 ;;
-    esac
-    case "${line}" in
-        *auto*) auto_found=1 ;;
-    esac
-    case "${line}" in
-        *seed=*) seed_found=1 ;;
-    esac
-    case "${line}" in
-        *iter=*) iter_found=1 ;;
-    esac
-    case "${line}" in
-        *sample=*) sample_found=1 ;;
-    esac
-    case "${line}" in
-        *histbits=*) histbits_found=1 ;;
-    esac
-    case "${line}" in
-        *point_budget=*) point_budget_found=1 ;;
-    esac
-    case "${line}" in
-        *rare_keep=*) rare_keep_found=1 ;;
-    esac
-    case "${line}" in
-        *prune_mass=*) prune_mass_found=1 ;;
-    esac
-    case "${line}" in
-        *clara_trials=*) clara_trials_found=1 ;;
-    esac
-    case "${line}" in
-        *clara_sample=*) clara_sample_found=1 ;;
-    esac
-    case "${line}" in
-        *clarans_local=*) clarans_local_found=1 ;;
-    esac
-    case "${line}" in
-        *clarans_neighbors=*) clarans_neighbors_found=1 ;;
-    esac
-    case "${line}" in
-        *bandit_iter=*) bandit_iter_found=1 ;;
-    esac
-    case "${line}" in
-        *bandit_candidates=*) bandit_candidates_found=1 ;;
-    esac
-    case "${line}" in
-        *bandit_batch=*) bandit_batch_found=1 ;;
-    esac
-done < "${output_file}"
+case "${msg}" in
+    *medoids*) medoids_found=1 ;;
+esac
+case "${msg}" in
+    *algo=*) algo_found=1 ;;
+esac
+case "${msg}" in
+    *bandit*) bandit_found=1 ;;
+esac
+case "${msg}" in
+    *auto*) auto_found=1 ;;
+esac
+case "${msg}" in
+    *seed=*) seed_found=1 ;;
+esac
+case "${msg}" in
+    *iter=*) iter_found=1 ;;
+esac
+case "${msg}" in
+    *sample=*) sample_found=1 ;;
+esac
+case "${msg}" in
+    *histbits=*) histbits_found=1 ;;
+esac
+case "${msg}" in
+    *point_budget=*) point_budget_found=1 ;;
+esac
+case "${msg}" in
+    *rare_keep=*) rare_keep_found=1 ;;
+esac
+case "${msg}" in
+    *prune_mass=*) prune_mass_found=1 ;;
+esac
+case "${msg}" in
+    *clara_trials=*) clara_trials_found=1 ;;
+esac
+case "${msg}" in
+    *clara_sample=*) clara_sample_found=1 ;;
+esac
+case "${msg}" in
+    *clarans_local=*) clarans_local_found=1 ;;
+esac
+case "${msg}" in
+    *clarans_neighbors=*) clarans_neighbors_found=1 ;;
+esac
+case "${msg}" in
+    *bandit_iter=*) bandit_iter_found=1 ;;
+esac
+case "${msg}" in
+    *bandit_candidates=*) bandit_candidates_found=1 ;;
+esac
+case "${msg}" in
+    *bandit_batch=*) bandit_batch_found=1 ;;
+esac
 
 test "${medoids_found}" = 1 || {
     echo "not ok" 1 - "missing medoids base candidate in bash completion"
