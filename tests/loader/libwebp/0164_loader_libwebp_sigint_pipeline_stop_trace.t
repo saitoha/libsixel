@@ -32,10 +32,10 @@ echo "1..1"
 set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
-wait_limit=500
-wait_sleep=0.01
-
-test "${SIXEL_TSAN_BUILD-no}" = "yes" && wait_limit=5000
+# Keep the watchdog budget below the outer 90s TAP timeout even when
+# some shells quantize short sleeps to one-second intervals.
+wait_limit=80
+wait_sleep=0.1
 
 set +x
 trace_summary=$(
