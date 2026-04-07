@@ -2687,6 +2687,13 @@ sixel_dither_apply_palette(
     }
 
     parallel_active = dither->pipeline_parallel_active;
+#if defined(__PCC__)
+    /*
+     * pcc builds avoid compiler TLS codegen.  The resulting shared LUT
+     * context is not thread-safe, so keep palette application serial.
+     */
+    parallel_active = 0;
+#endif
 #if SIXEL_ENABLE_THREADS
     parallel_band_height = dither->pipeline_band_height;
     parallel_overlap = dither->pipeline_band_overlap;

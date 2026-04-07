@@ -72,6 +72,7 @@
 #include "loader-common.h"
 #include "loader.h"
 #include "sixel_atomic.h"
+#include "threading.h"
 
 #if defined(_MSC_VER)
 # define SIXEL_STBI_TLS __declspec(thread)
@@ -88,6 +89,64 @@
 static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
 
 #undef SIXEL_STBI_TLS
+
+#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+/*
+ * pcc builds currently avoid TLS qualifiers.  stb_image integration keeps
+ * allocator and error-state pointers in process globals in that mode, so we
+ * serialize builtin loader decode sections to preserve allocator integrity.
+ */
+static pthread_mutex_t sixel_loader_builtin_decode_lock;
+static pthread_once_t sixel_loader_builtin_decode_lock_once
+    = PTHREAD_ONCE_INIT;
+static int sixel_loader_builtin_decode_lock_ready = 0;
+
+#if !defined(PTHREAD_MUTEX_RECURSIVE) && defined(PTHREAD_MUTEX_RECURSIVE_NP)
+# define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
+#endif
+
+static void
+sixel_loader_builtin_decode_lock_init_once(void)
+{
+    pthread_mutexattr_t attr;
+    int rc;
+
+    rc = pthread_mutexattr_init(&attr);
+    if (rc != 0) {
+        return;
+    }
+    rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    if (rc == 0) {
+        rc = pthread_mutex_init(&sixel_loader_builtin_decode_lock, &attr);
+    }
+    pthread_mutexattr_destroy(&attr);
+    if (rc == 0) {
+        sixel_loader_builtin_decode_lock_ready = 1;
+    }
+}
+
+static int
+sixel_loader_builtin_lock_acquire(void)
+{
+    pthread_once(&sixel_loader_builtin_decode_lock_once,
+                 sixel_loader_builtin_decode_lock_init_once);
+    if (!sixel_loader_builtin_decode_lock_ready) {
+        return 0;
+    }
+    if (pthread_mutex_lock(&sixel_loader_builtin_decode_lock) != 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static void
+sixel_loader_builtin_lock_release(int acquired)
+{
+    if (acquired != 0 && sixel_loader_builtin_decode_lock_ready) {
+        pthread_mutex_unlock(&sixel_loader_builtin_decode_lock);
+    }
+}
+#endif  /* SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32) */
 
 #define SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY 0
 #define SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB 2
@@ -106,6 +165,7 @@ typedef struct sixel_loader_builtin_component {
     int start_frame_no_set;
     int start_frame_no;
     int enable_cms;
+    int cms_engine;
 } sixel_loader_builtin_component_t;
 
 void *
@@ -143,7 +203,7 @@ stbi_free(void *p)
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
 #define STBI_FAILURE_USERMSG 1
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__PCC__)
 # define STBI_NO_THREAD_LOCALS 1  /* no tls */
 #endif
 #define STBI_NO_GIF
@@ -2610,8 +2670,13 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         if (int_value != NULL && *int_value >= 0) {
             self->enable_cms =
                 (*int_value == SIXEL_CMS_ENGINE_NONE) ? 0 : 1;
+            self->cms_engine = *int_value;
+        } else {
+            self->cms_engine = -1;
         }
+#if !defined(__PCC__)
         sixel_helper_set_loader_cms_engine(int_value != NULL ? *int_value : -1);
+#endif
         return SIXEL_OK;
     default:
         return SIXEL_OK;
@@ -2626,9 +2691,17 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
 {
     sixel_loader_builtin_component_t *self;
     unsigned char *bgcolor;
+    SIXELSTATUS status;
+#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+    int lock_acquired;
+#endif
 
     self = NULL;
     bgcolor = NULL;
+    status = SIXEL_FALSE;
+#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+    lock_acquired = 0;
+#endif
     if (component == NULL || chunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2638,17 +2711,25 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
         bgcolor = self->bgcolor;
     }
 
-    return load_with_builtin(chunk,
-                             self->fstatic,
-                             self->fuse_palette,
-                             self->reqcolors,
-                             bgcolor,
-                             self->loop_control,
-                             self->start_frame_no_set,
-                             self->start_frame_no,
-                             self->enable_cms,
-                             fn_load,
-                             context);
+#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+    lock_acquired = sixel_loader_builtin_lock_acquire();
+#endif
+    sixel_helper_set_loader_cms_engine(self->cms_engine);
+    status = load_with_builtin(chunk,
+                               self->fstatic,
+                               self->fuse_palette,
+                               self->reqcolors,
+                               bgcolor,
+                               self->loop_control,
+                               self->start_frame_no_set,
+                               self->start_frame_no,
+                               self->enable_cms,
+                               fn_load,
+                               context);
+#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+    sixel_loader_builtin_lock_release(lock_acquired);
+#endif
+    return status;
 }
 
 static char const *
@@ -2699,6 +2780,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     self->start_frame_no_set = 0;
     self->start_frame_no = INT_MIN;
     self->enable_cms = 0;
+    self->cms_engine = -1;
 
     *ppcomponent = &self->base;
     return SIXEL_OK;
