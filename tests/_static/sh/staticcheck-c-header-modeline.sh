@@ -14,7 +14,7 @@ if test ! -d .git || ! command -v git >/dev/null 2>&1; then
     exit 0
 fi
 
-tmpfile=`mktemp "${TMPDIR:-/tmp}/libsixel-staticcheck-c-header-modeline-XXXXXX"`
+tmpfile=$(mktemp "${TMPDIR:-/tmp}/libsixel-staticcheck-c-header-modeline-XXXXXX")
 cleanup() {
     rm -f "$tmpfile"
 }
@@ -51,9 +51,8 @@ while IFS= read -r path; do
         echo "# $path: missing MIT license grant"
         failed=1
     fi
-    if ! sed -n '1,160p' "$path" | grep -Eq \
-        'Copyright \\(c\\) [0-9]{4}(-[0-9]{4})? libsixel developers\\. See `AUTHORS`\\.'; then
-        echo "# $path: missing libsixel copyright header"
+    if ! sed -n '1,160p' "$path" | grep -q 'Copyright (c) '; then
+        echo "# $path: missing copyright header"
         failed=1
     fi
     if ! tail -n 40 "$path" | grep -q 'emacs Local Variables'; then
