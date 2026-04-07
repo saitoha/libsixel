@@ -24,8 +24,7 @@ endif
 BASH = @BASH@
 
 EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
-             $(srcdir)/compat.h \
-             $(srcdir)/jpegref.c
+             $(srcdir)/compat.h
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
@@ -82,15 +81,6 @@ AMALGAMATION_TOOL_LIBS = -lm \
         @THREAD_LIBS@
 
 CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h
-
-if HAVE_JPEG
-noinst_PROGRAMS += jpegref
-jpegref_SOURCES = $(srcdir)/jpegref.c
-jpegref_CPPFLAGS = $(AM_CPPFLAGS) $(LIBJPEG_CFLAGS)
-jpegref_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-jpegref_LDFLAGS = $(MAYBE_COVERAGE)
-jpegref_LDADD = $(LIBJPEG_LIBS)
-endif
 
 # +--------------------------------------------------------------+
 # | Embedded completion header generation pipeline (ASCII view). |

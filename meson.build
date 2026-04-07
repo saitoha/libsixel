@@ -2141,6 +2141,7 @@ if have_ruby
   )
 endif
 subdir('converters')
+subdir('tools')
 
 if gdk_pixbuf_loader_deps.length() > 0
   subdir('gdk-pixbuf-loader')

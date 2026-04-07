@@ -12,6 +12,7 @@ bin_SCRIPTS += sixel-thumbnailer
 endif
 
 noinst_PROGRAMS = lso-timer
+EXTRA_PROGRAMS =
 if BUILD_LSO_TIMEOUT
 noinst_PROGRAMS += lso-timeout
 endif
@@ -26,7 +27,17 @@ EXTRA_DIST = libsixel-config.in \
              gen_completion_embed.awk \
              gen-amalgamation.sh \
              timer.c \
-             lso-timeout.c
+             lso-timeout.c \
+             jpegref.c
+
+if HAVE_JPEG
+EXTRA_PROGRAMS += jpegref
+jpegref_SOURCES = $(srcdir)/jpegref.c
+jpegref_CPPFLAGS = $(AM_CPPFLAGS) $(LIBJPEG_CFLAGS)
+jpegref_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+jpegref_LDFLAGS = $(MAYBE_COVERAGE)
+jpegref_LDADD = $(LIBJPEG_LIBS)
+endif
 
 lso_timer_SOURCES = timer.c
 lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)

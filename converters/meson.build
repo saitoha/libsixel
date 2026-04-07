@@ -402,14 +402,4 @@ if sixel2png_opt.enabled()
   sixel2png_deps = [sixel2png_exe]
 endif
 
-jpegref_deps = []
-if jpeg_dep.found()
-  jpegref_exe = executable('jpegref', ['jpegref.c'],
-    dependencies: [jpeg_dep],
-    include_directories: [project_inc, local_inc],
-    build_rpath: src_build_dir,
-    install: false)
-  jpegref_deps = [jpegref_exe]
-endif
-
 # vim: set et ts=2:

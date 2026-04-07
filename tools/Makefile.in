@@ -92,8 +92,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
-noinst_PROGRAMS = lso-timer$(EXEEXT) $(am__EXEEXT_1)
+noinst_PROGRAMS = lso-timer$(EXEEXT) $(am__EXEEXT_2)
+EXTRA_PROGRAMS = $(am__EXEEXT_1)
 @BUILD_LSO_TIMEOUT_TRUE@am__append_2 = lso-timeout
+@HAVE_JPEG_TRUE@am__append_3 = jpegref
 subdir = tools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -111,19 +113,27 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = libsixel-config
 CONFIG_CLEAN_VPATH_FILES =
-@BUILD_LSO_TIMEOUT_TRUE@am__EXEEXT_1 = lso-timeout$(EXEEXT)
+@HAVE_JPEG_TRUE@am__EXEEXT_1 = jpegref$(EXEEXT)
+@BUILD_LSO_TIMEOUT_TRUE@am__EXEEXT_2 = lso-timeout$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
-am__lso_timeout_SOURCES_DIST = lso-timeout.c
-@BUILD_LSO_TIMEOUT_TRUE@am_lso_timeout_OBJECTS =  \
-@BUILD_LSO_TIMEOUT_TRUE@	lso_timeout-lso-timeout.$(OBJEXT)
-lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
+am__jpegref_SOURCES_DIST = $(srcdir)/jpegref.c
+@HAVE_JPEG_TRUE@am_jpegref_OBJECTS = jpegref-jpegref.$(OBJEXT)
+jpegref_OBJECTS = $(am_jpegref_OBJECTS)
 am__DEPENDENCIES_1 =
-@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_DEPENDENCIES =  \
-@BUILD_LSO_TIMEOUT_TRUE@	$(am__DEPENDENCIES_1)
+@HAVE_JPEG_TRUE@jpegref_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+jpegref_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(jpegref_CFLAGS) \
+	$(CFLAGS) $(jpegref_LDFLAGS) $(LDFLAGS) -o $@
+am__lso_timeout_SOURCES_DIST = lso-timeout.c
+@BUILD_LSO_TIMEOUT_TRUE@am_lso_timeout_OBJECTS =  \
+@BUILD_LSO_TIMEOUT_TRUE@	lso_timeout-lso-timeout.$(OBJEXT)
+lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
+@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_DEPENDENCIES =  \
+@BUILD_LSO_TIMEOUT_TRUE@	$(am__DEPENDENCIES_1)
 lso_timeout_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timeout_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -176,7 +186,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/lso_timeout-lso-timeout.Po \
+am__depfiles_remade = ./$(DEPDIR)/jpegref-jpegref.Po \
+	./$(DEPDIR)/lso_timeout-lso-timeout.Po \
 	./$(DEPDIR)/lso_timer-timer.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -197,8 +208,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(lso_timeout_SOURCES) $(lso_timer_SOURCES)
-DIST_SOURCES = $(am__lso_timeout_SOURCES_DIST) $(lso_timer_SOURCES)
+SOURCES = $(jpegref_SOURCES) $(lso_timeout_SOURCES) \
+	$(lso_timer_SOURCES)
+DIST_SOURCES = $(am__jpegref_SOURCES_DIST) \
+	$(am__lso_timeout_SOURCES_DIST) $(lso_timer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -473,8 +486,14 @@ EXTRA_DIST = libsixel-config.in \
              gen_completion_embed.awk \
              gen-amalgamation.sh \
              timer.c \
-             lso-timeout.c
+             lso-timeout.c \
+             jpegref.c
 
+@HAVE_JPEG_TRUE@jpegref_SOURCES = $(srcdir)/jpegref.c
+@HAVE_JPEG_TRUE@jpegref_CPPFLAGS = $(AM_CPPFLAGS) $(LIBJPEG_CFLAGS)
+@HAVE_JPEG_TRUE@jpegref_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@HAVE_JPEG_TRUE@jpegref_LDFLAGS = $(MAYBE_COVERAGE)
+@HAVE_JPEG_TRUE@jpegref_LDADD = $(LIBJPEG_LIBS)
 lso_timer_SOURCES = timer.c
 lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timer_CFLAGS = $(AM_CFLAGS)
@@ -520,6 +539,10 @@ libsixel-config: $(top_builddir)/config.status $(srcdir)/libsixel-config.in
 clean-noinstPROGRAMS:
 	$(am__rm_f) $(noinst_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
+
+jpegref$(EXEEXT): $(jpegref_OBJECTS) $(jpegref_DEPENDENCIES) $(EXTRA_jpegref_DEPENDENCIES) 
+	@rm -f jpegref$(EXEEXT)
+	$(AM_V_CCLD)$(jpegref_LINK) $(jpegref_OBJECTS) $(jpegref_LDADD) $(LIBS)
 
 lso-timeout$(EXEEXT): $(lso_timeout_OBJECTS) $(lso_timeout_DEPENDENCIES) $(EXTRA_lso_timeout_DEPENDENCIES) 
 	@rm -f lso-timeout$(EXEEXT)
@@ -570,6 +593,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jpegref-jpegref.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso_timeout-lso-timeout.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso_timer-timer.Po@am__quote@ # am--include-marker
 
@@ -602,6 +626,20 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+jpegref-jpegref.o: jpegref.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jpegref_CPPFLAGS) $(CPPFLAGS) $(jpegref_CFLAGS) $(CFLAGS) -MT jpegref-jpegref.o -MD -MP -MF $(DEPDIR)/jpegref-jpegref.Tpo -c -o jpegref-jpegref.o `test -f 'jpegref.c' || echo '$(srcdir)/'`jpegref.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/jpegref-jpegref.Tpo $(DEPDIR)/jpegref-jpegref.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='jpegref.c' object='jpegref-jpegref.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jpegref_CPPFLAGS) $(CPPFLAGS) $(jpegref_CFLAGS) $(CFLAGS) -c -o jpegref-jpegref.o `test -f 'jpegref.c' || echo '$(srcdir)/'`jpegref.c
+
+jpegref-jpegref.obj: jpegref.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jpegref_CPPFLAGS) $(CPPFLAGS) $(jpegref_CFLAGS) $(CFLAGS) -MT jpegref-jpegref.obj -MD -MP -MF $(DEPDIR)/jpegref-jpegref.Tpo -c -o jpegref-jpegref.obj `if test -f 'jpegref.c'; then $(CYGPATH_W) 'jpegref.c'; else $(CYGPATH_W) '$(srcdir)/jpegref.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/jpegref-jpegref.Tpo $(DEPDIR)/jpegref-jpegref.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='jpegref.c' object='jpegref-jpegref.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jpegref_CPPFLAGS) $(CPPFLAGS) $(jpegref_CFLAGS) $(CFLAGS) -c -o jpegref-jpegref.obj `if test -f 'jpegref.c'; then $(CYGPATH_W) 'jpegref.c'; else $(CYGPATH_W) '$(srcdir)/jpegref.c'; fi`
 
 lso_timeout-lso-timeout.o: lso-timeout.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timeout_CFLAGS) $(CFLAGS) -MT lso_timeout-lso-timeout.o -MD -MP -MF $(DEPDIR)/lso_timeout-lso-timeout.Tpo -c -o lso_timeout-lso-timeout.o `test -f 'lso-timeout.c' || echo '$(srcdir)/'`lso-timeout.c
@@ -765,6 +803,7 @@ clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f ./$(DEPDIR)/jpegref-jpegref.Po
 	-rm -f ./$(DEPDIR)/lso_timeout-lso-timeout.Po
 	-rm -f ./$(DEPDIR)/lso_timer-timer.Po
 	-rm -f Makefile
@@ -813,6 +852,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f ./$(DEPDIR)/jpegref-jpegref.Po
 	-rm -f ./$(DEPDIR)/lso_timeout-lso-timeout.Po
 	-rm -f ./$(DEPDIR)/lso_timer-timer.Po
 	-rm -f Makefile
