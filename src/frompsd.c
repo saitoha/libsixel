@@ -12908,20 +12908,30 @@ sixel_builtin_psd_soften_layer_alpha_edges(
     size_t pixel_count;
     size_t x;
     size_t y;
-    size_t idx;
     size_t width;
     size_t height;
+    size_t row_offset;
     float *alpha_src;
     float *alpha_tmp;
+    float const *row;
+    float const *row_above;
+    float const *row_below;
+    float sum;
+    float weight;
 
     pixel_count = 0u;
     x = 0u;
     y = 0u;
-    idx = 0u;
     width = 0u;
     height = 0u;
+    row_offset = 0u;
     alpha_src = NULL;
     alpha_tmp = NULL;
+    row = NULL;
+    row_above = NULL;
+    row_below = NULL;
+    sum = 0.0f;
+    weight = 0.0f;
     if (layer == NULL || src == NULL || src->alpha == NULL ||
         layer->width == 0u || layer->height == 0u) {
         return;
@@ -12945,46 +12955,53 @@ sixel_builtin_psd_soften_layer_alpha_edges(
     }
     memcpy(alpha_tmp, alpha_src, pixel_count * sizeof(float));
     for (y = 0u; y < height; ++y) {
+        row_offset = y * width;
+        row = alpha_tmp + row_offset;
+        row_above = NULL;
+        row_below = NULL;
+        if (y > 0u) {
+            row_above = row - width;
+        }
+        if (y + 1u < height) {
+            row_below = row + width;
+        }
         for (x = 0u; x < width; ++x) {
-            float sum;
-            float weight;
-
-            idx = y * width + x;
-            sum = alpha_tmp[idx];
+            sum = row[x];
             weight = 1.0f;
             if (x > 0u) {
-                sum += alpha_tmp[idx - 1u];
+                sum += row[x - 1u];
                 weight += 1.0f;
             }
             if (x + 1u < width) {
-                sum += alpha_tmp[idx + 1u];
+                sum += row[x + 1u];
                 weight += 1.0f;
             }
-            if (y > 0u) {
-                sum += alpha_tmp[idx - width];
+            if (row_above != NULL) {
+                sum += row_above[x];
                 weight += 1.0f;
+                if (x > 0u) {
+                    sum += row_above[x - 1u];
+                    weight += 1.0f;
+                }
+                if (x + 1u < width) {
+                    sum += row_above[x + 1u];
+                    weight += 1.0f;
+                }
             }
-            if (y + 1u < height) {
-                sum += alpha_tmp[idx + width];
+            if (row_below != NULL) {
+                sum += row_below[x];
                 weight += 1.0f;
+                if (x > 0u) {
+                    sum += row_below[x - 1u];
+                    weight += 1.0f;
+                }
+                if (x + 1u < width) {
+                    sum += row_below[x + 1u];
+                    weight += 1.0f;
+                }
             }
-            if (x > 0u && y > 0u) {
-                sum += alpha_tmp[idx - width - 1u];
-                weight += 1.0f;
-            }
-            if (x + 1u < width && y > 0u) {
-                sum += alpha_tmp[idx - width + 1u];
-                weight += 1.0f;
-            }
-            if (x > 0u && y + 1u < height) {
-                sum += alpha_tmp[idx + width - 1u];
-                weight += 1.0f;
-            }
-            if (x + 1u < width && y + 1u < height) {
-                sum += alpha_tmp[idx + width + 1u];
-                weight += 1.0f;
-            }
-            alpha_src[idx] = sixel_builtin_psd_clamp_alpha_float32(sum / weight);
+            alpha_src[row_offset + x] =
+                sixel_builtin_psd_clamp_alpha_float32(sum / weight);
         }
     }
     free(alpha_tmp);
