@@ -162,752 +162,523 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'o',
         "outfile",
-        "-o, --outfile              specify output file name.\n"
-        "                           (default:stdout)\n"
-        "                           Use a name ending in \".png\"\n"
-        "                           or the literal \"png:-\" or prefix a path\n"
-        "                           with \"png:\" to emit PNG data recreated\n"
-        "                           from the SIXEL pipeline. The PNG keeps\n"
-        "                           the palette indices so every color\n"
-        "                           matches the quantized SIXEL output\n"
-        "                           exactly. \"png:-\" writes to stdout\n"
-        "                           while \"png:<path>\" saves the PNG next\n"
-        "                           to the SIXEL output.\n"
-        "                           Supplying \"-o output.png\" writes the\n"
-        "                           PNG directly to that path.\n"
+        "-o, --outfile\n"
+        "    specify output file name. (default:stdout) Use a name ending in \".png\" or the literal\n"
+        "    \"png:-\" or prefix a path with \"png:\" to emit PNG data recreated from the SIXEL\n"
+        "    pipeline. The PNG keeps the palette indices so every color matches the quantized\n"
+        "    SIXEL output exactly. \"png:-\" writes to stdout while \"png:<path>\" saves the PNG next\n"
+        "    to the SIXEL output. Supplying \"-o output.png\" writes the PNG directly to that path.\n"
     },
     {
         '=',
         "threads",
         "-= COUNT, --threads=COUNT|auto\n"
-        "                           choose the encoder thread count.\n"
-        "                           COUNT>=1 keeps deterministic order\n"
-        "                           while values above one enable band\n"
-        "                           parallelism. Use 'auto' to match\n"
-        "                           the hardware thread count.\n"
+        "    choose the encoder thread count. COUNT>=1 keeps deterministic order while values\n"
+        "    above one enable band parallelism. Use 'auto' to match the hardware thread count.\n"
     },
     {
         '.',
         "precision",
         "-., --precision=MODE\n"
-        "                           control quantization precision.\n"
-        "                             auto    -> honor the\n"
-        "                                         SIXEL_FLOAT32_DITHER\n"
-        "                                         environment (default).\n"
-        "                             8bit    -> force the historical\n"
-        "                                         integer pipeline.\n"
-        "                             float32 -> request the\n"
-        "                                         experimental\n"
-        "                                         high-precision path.\n"
+        "    control quantization precision.\n"
+        "      auto    -> honor the SIXEL_FLOAT32_DITHER environment (default).\n"
+        "      8bit    -> force the historical integer pipeline.\n"
+        "      float32 -> request the experimental high-precision path.\n"
     },
     {
         '7',
         "7bit-mode",
-        "-7, --7bit-mode            generate a sixel image for 7bit\n"
-        "                           terminals or printers (default)\n"
+        "-7, --7bit-mode\n"
+        "    generate a sixel image for 7bit terminals or printers (default)\n"
     },
     {
         '8',
         "8bit-mode",
-        "-8, --8bit-mode            generate a sixel image for 8bit\n"
-        "                           terminals or printers\n"
+        "-8, --8bit-mode\n"
+        "    generate a sixel image for 8bit terminals or printers\n"
     },
     {
         'R',
         "gri-limit",
-        "-R, --gri-limit            limit arguments of DECGRI('!') to 255\n"
+        "-R, --gri-limit\n"
+        "    limit arguments of DECGRI('!') to 255\n"
     },
     {
         '6',
         "6reversible",
-        "-6, --6reversible          quantize via the SIXEL reversible tone set\n"
-        "                           so decoding and re-encoding keeps the\n"
-        "                           palette stable; diffusion carries the\n"
-        "                           small residuals.\n"
+        "-6, --6reversible\n"
+        "    quantize via the SIXEL reversible tone set so decoding and re-encoding keeps the\n"
+        "    palette stable; diffusion carries the small residuals.\n"
     },
     {
         'p',
         "colors",
-        "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
-        "                           the image to (default=256)\n"
+        "-p COLORS, --colors=COLORS\n"
+        "    specify number of colors to reduce the image to (default=256)\n"
     },
     {
         'Q',
         "quantize-model",
         "-Q MODEL, --quantize-model=MODEL\n"
-        "                           choose the palette solver.\n"
-        "                             auto     -> choose quantize model\n"
-        "                                         automatically (default)\n"
-        "                                         auto maps to the heckbert\n"
-        "                             heckbert -> traditional Heckbert\n"
-        "                                         median-cut implementation.\n"
-        "                             auto/heckbert sub-option:\n"
-        "                               :merge=MODE (:g=MODE)\n"
-        "                                 auto, none, ward\n"
-        "                               :merge_oversplit=FACTOR (:o=FACTOR)\n"
-        "                                 1.0-3.0\n"
-        "                               :merge_lloyd=COUNT (:l=COUNT)\n"
-        "                                 0-30\n"
-        "                             kmeans   -> k-means++ clustering.\n"
-        "                               sub-option:\n"
-        "                                 :inittype=TYPE (:i=TYPE)\n"
-        "                                   choose k-means seed mode:\n"
-        "                                     auto -> choose seed mode\n"
-        "                                             automatically\n"
-        "                                             (default)\n"
-        "                                     none -> disable\n"
-        "                                             specialized\n"
-        "                                             seeding\n"
-        "                                     pca  -> choose seeds\n"
-        "                                             from PCA axis\n"
-        "                                 :threshold=VALUE (:t=VALUE)\n"
-        "                                   stop refinement when delta\n"
-        "                                   reaches VALUE (0.0-0.5).\n"
-        "                                 :binning=MODE (:b=MODE)\n"
-        "                                   histogram pre-binning mode:\n"
-        "                                     auto -> choose binning\n"
-        "                                             mode\n"
-        "                                             automatically\n"
-        "                                             (default)\n"
-        "                                     none -> disable\n"
-        "                                             histogram\n"
-        "                                             pre-binning\n"
-        "                                     hard -> hard-assignment\n"
-        "                                             histogram bins\n"
-        "                                     soft -> trilinear soft\n"
-        "                                             histogram bins\n"
-        "                                 :binbits=BITS (:n=BITS)\n"
-        "                                   histogram bits per channel\n"
-        "                                   (4-8, default 6).\n"
-        "                                 :mapping=SPACE (:m=SPACE)\n"
-        "                                   histogram mapping space:\n"
-        "                                     uniform -> use linear\n"
-        "                                                RGB cube\n"
-        "                                                mapping\n"
-        "                                     srgb    -> use sRGB\n"
-        "                                                gamma-aware\n"
-        "                                                mapping\n"
-        "                                 :softdist=KIND (:d=KIND)\n"
-        "                                   soft binning kernel:\n"
-        "                                     trilinear -> trilinear\n"
-        "                                                  kernel\n"
-        "                                 :autoratio=RATIO (:r=RATIO)\n"
-        "                                   auto mode threshold ratio\n"
-        "                                   (1-1048576, default 32).\n"
-        "                                 :feedback=MODE (:f=MODE)\n"
-        "                                   residual histogram feedback:\n"
-        "                                     off -> disable\n"
-        "                                            feedback\n"
-        "                                            (default)\n"
-        "                                     on  -> enable\n"
-        "                                            feedback\n"
-        "                                 :seed=VALUE (:s=VALUE)\n"
-        "                                   uint32 random seed\n"
-        "                                   (0-4294967295).\n"
-        "                                 :restarts=COUNT\n"
-        "                                   restart count\n"
-        "                                   (1-32, default 1).\n"
-        "                                 :iter=COUNT\n"
-        "                                   Lloyd iteration cap\n"
-        "                                   (1-100).\n"
-        "                                   takes precedence over\n"
-        "                                   :iter_max when both are\n"
-        "                                   specified.\n"
-        "                                 :iter_max=COUNT\n"
-        "                                   Lloyd iteration cap\n"
-        "                                   (1-100, default 20).\n"
-        "                                 :miniter=COUNT\n"
-        "                                   minimum iteration floor\n"
-        "                                   (0 or 1-100).\n"
-        "                                 :polish_iter=COUNT\n"
-        "                                   extra post-iteration\n"
-        "                                   refinement count\n"
-        "                                   (0 or 1-16).\n"
-        "                                 :feedback_slots=COUNT\n"
-        "                                   relocate this many weak\n"
-        "                                   clusters per feedback step\n"
-        "                                   (1-16, default 1).\n"
-        "                                 :feedback_interval=COUNT\n"
-        "                                   run feedback every N\n"
-        "                                   iterations (1-64,\n"
-        "                                   default 1).\n"
-        "                                 :merge=MODE (:g=MODE)\n"
-        "                                   auto, none, ward\n"
-        "                                 :merge_oversplit=FACTOR (:o=FACTOR)\n"
-        "                                   1.0-3.0\n"
-        "                                 :merge_lloyd=COUNT (:l=COUNT)\n"
-        "                                   0-30\n"
-        "                             medoids -> k-medoids clustering.\n"
-        "                               sub-option:\n"
-        "                                 :algo=NAME (:a=NAME)\n"
-        "                                   choose k-medoids solver:\n"
-        "                                     auto      -> adaptive\n"
-        "                                                  default\n"
-        "                                                  (small PAM,\n"
-        "                                                  mid CLARA,\n"
-        "                                                  large\n"
-        "                                                  BanditPAM)\n"
-        "                                     pam       -> exhaustive\n"
-        "                                                  swap search\n"
-        "                                     sample    -> CLARA:\n"
-        "                                                  PAM on\n"
-        "                                                  subsamples\n"
-        "                                     random    -> CLARANS:\n"
-        "                                                  randomized\n"
-        "                                                  neighbor\n"
-        "                                                  search\n"
-        "                                     bandit    -> BanditPAM:\n"
-        "                                                  bandit\n"
-        "                                                  swap\n"
-        "                                                  pruning\n"
-        "                                 :seed=VALUE (:s=VALUE)\n"
-        "                                   uint32 random seed\n"
-        "                                   (0-4294967295, default 1).\n"
-        "                                 :iter=COUNT\n"
-        "                                   PAM iteration cap (1-64).\n"
-        "                                 :sample=COUNT\n"
-        "                                   candidate cap hint\n"
-        "                                   (0 or 64-1048576).\n"
-        "                                 :point_budget=COUNT\n"
-        "                                   candidate cap\n"
-        "                                   (64-16384).\n"
-        "                                   with :sample uses\n"
-        "                                   min(sample, point_budget).\n"
-        "                                 :histbits=BITS\n"
-        "                                   histogram bits/channel\n"
-        "                                   (3-6).\n"
-        "                                 :rare_keep=COUNT\n"
-        "                                   keep low-frequency bins\n"
-        "                                   (0-1024).\n"
-        "                                 :prune_mass=RATIO\n"
-        "                                   retain cumulative mass\n"
-        "                                   (0.900-1.000).\n"
-        "                                 :clara_trials=COUNT\n"
-        "                                   CLARA trial count (1-32).\n"
-        "                                 :clara_sample=COUNT\n"
-        "                                   CLARA sample size\n"
-        "                                   (0 or 64-1048576).\n"
-        "                                 :clarans_local=COUNT\n"
-        "                                   CLARANS local searches (1-32).\n"
-        "                                 :clarans_neighbors=COUNT\n"
-        "                                   CLARANS neighbor budget\n"
-        "                                   (0 or 1-5000000).\n"
-        "                                 :bandit_iter=COUNT\n"
-        "                                   BanditPAM iteration cap (1-64).\n"
-        "                                 :bandit_candidates=COUNT\n"
-        "                                   Bandit candidate budget\n"
-        "                                   (8-4096).\n"
-        "                                 :bandit_batch=COUNT\n"
-        "                                   Bandit mini-batch size\n"
-        "                                   (8-4096).\n"
-        "                                 :merge=MODE (:g=MODE)\n"
-        "                                   auto, none, ward\n"
-        "                                 :merge_oversplit=FACTOR (:o=FACTOR)\n"
-        "                                   1.0-3.0\n"
-        "                                 :merge_lloyd=COUNT (:l=COUNT)\n"
-        "                                   0-30\n"
+        "    choose the palette solver.\n"
+        "      auto     -> choose quantize model automatically (default) auto maps to the heckbert\n"
+        "      heckbert -> traditional Heckbert median-cut implementation. auto/heckbert\n"
+        "      sub-option:\n"
+        "        :merge=MODE (:g=MODE) auto, none, ward\n"
+        "        :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
+        "        :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
+        "      kmeans   -> k-means++ clustering. sub-option:\n"
+        "          :inittype=TYPE (:i=TYPE) choose k-means seed mode:\n"
+        "              auto -> choose seed mode automatically (default)\n"
+        "              none -> disable specialized seeding\n"
+        "              pca  -> choose seeds from PCA axis\n"
+        "          :threshold=VALUE (:t=VALUE) stop refinement when delta reaches VALUE (0.0-0.5).\n"
+        "          :binning=MODE (:b=MODE) histogram pre-binning mode:\n"
+        "              auto -> choose binning mode automatically (default)\n"
+        "              none -> disable histogram pre-binning\n"
+        "              hard -> hard-assignment histogram bins\n"
+        "              soft -> trilinear soft histogram bins\n"
+        "          :binbits=BITS (:n=BITS) histogram bits per channel (4-8, default 6).\n"
+        "          :mapping=SPACE (:m=SPACE) histogram mapping space:\n"
+        "              uniform -> use linear RGB cube mapping\n"
+        "              srgb    -> use sRGB gamma-aware mapping\n"
+        "          :softdist=KIND (:d=KIND) soft binning kernel:\n"
+        "              trilinear -> trilinear kernel\n"
+        "          :autoratio=RATIO (:r=RATIO) auto mode threshold ratio (1-1048576, default 32).\n"
+        "          :feedback=MODE (:f=MODE) residual histogram feedback:\n"
+        "              off -> disable feedback (default)\n"
+        "              on  -> enable feedback\n"
+        "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295).\n"
+        "          :restarts=COUNT restart count (1-32, default 1).\n"
+        "          :iter=COUNT Lloyd iteration cap (1-100). takes precedence over\n"
+        "            :iter_max when both are specified.\n"
+        "          :iter_max=COUNT Lloyd iteration cap (1-100, default 20).\n"
+        "          :miniter=COUNT minimum iteration floor (0 or 1-100).\n"
+        "          :polish_iter=COUNT extra post-iteration refinement count (0 or 1-16).\n"
+        "          :feedback_slots=COUNT relocate this many weak clusters per feedback step (1-16,\n"
+        "          default 1).\n"
+        "          :feedback_interval=COUNT run feedback every N iterations (1-64, default 1).\n"
+        "          :merge=MODE (:g=MODE) auto, none, ward\n"
+        "          :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
+        "          :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
+        "      medoids -> k-medoids clustering. sub-option:\n"
+        "          :algo=NAME (:a=NAME) choose k-medoids solver:\n"
+        "              auto      -> adaptive default (small PAM, mid CLARA, large BanditPAM)\n"
+        "              pam       -> exhaustive swap search\n"
+        "              sample    -> CLARA:\n"
+        "                           PAM on subsamples\n"
+        "              random    -> CLARANS:\n"
+        "                           randomized neighbor search\n"
+        "              bandit    -> BanditPAM:\n"
+        "                           bandit swap pruning\n"
+        "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295, default 1).\n"
+        "          :iter=COUNT PAM iteration cap (1-64).\n"
+        "          :sample=COUNT candidate cap hint (0 or 64-1048576).\n"
+        "          :point_budget=COUNT candidate cap (64-16384). with :sample uses min(sample,\n"
+        "          point_budget).\n"
+        "          :histbits=BITS histogram bits/channel (3-6).\n"
+        "          :rare_keep=COUNT keep low-frequency bins (0-1024).\n"
+        "          :prune_mass=RATIO retain cumulative mass (0.900-1.000).\n"
+        "          :clara_trials=COUNT CLARA trial count (1-32).\n"
+        "          :clara_sample=COUNT CLARA sample size (0 or 64-1048576).\n"
+        "          :clarans_local=COUNT CLARANS local searches (1-32).\n"
+        "          :clarans_neighbors=COUNT CLARANS neighbor budget (0 or 1-5000000).\n"
+        "          :bandit_iter=COUNT BanditPAM iteration cap (1-64).\n"
+        "          :bandit_candidates=COUNT Bandit candidate budget (8-4096).\n"
+        "          :bandit_batch=COUNT Bandit mini-batch size (8-4096).\n"
+        "          :merge=MODE (:g=MODE) auto, none, ward\n"
+        "          :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
+        "          :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
     },
     {
         'm',
         "mapfile",
-        "-m FILE, --mapfile=FILE    transform image colors to match\n"
-        "                           this set of colors. Accepts\n"
-        "                           image files and palette files\n"
-        "                           in ACT, PAL, and GPL formats.\n"
-        "                           Use TYPE:PATH (act:, pal:,\n"
-        "                           pal-jasc:, pal-riff:, gpl:)\n"
-        "                           to force a format. Without\n"
-        "                           TYPE the extension or file\n"
-        "                           contents decide. TYPE:- reads\n"
-        "                           palette bytes from stdin (for\n"
-        "                           example, gpl:-).\n"
+        "-m FILE, --mapfile=FILE\n"
+        "    transform image colors to match this set of colors. Accepts image files and palette\n"
+        "    files in ACT, PAL, and GPL formats. Use TYPE:PATH (act:, pal:, pal-jasc:, pal-riff:,\n"
+        "    gpl:) to force a format. Without TYPE the extension or file contents decide. TYPE:-\n"
+        "    reads palette bytes from stdin (for example, gpl:-).\n"
     },
     {
         'M',
         "mapfile-output",
         "-M FILE, --mapfile-output=FILE\n"
-        "                           export the computed palette.\n"
-        "                           TYPE:PATH prefixes or file\n"
-        "                           extensions (.act, .pal, .gpl)\n"
-        "                           choose the format. .pal\n"
-        "                           defaults to JASC text; use\n"
-        "                           pal-riff: for RIFF output.\n"
-        "                           Writing to '-' needs TYPE:PATH;\n"
-        "                           TYPE:- sends the palette to\n"
-        "                           stdout.\n"
+        "    export the computed palette. TYPE:PATH prefixes or file extensions (.act, .pal, .gpl)\n"
+        "    choose the format. .pal defaults to JASC text; use pal-riff: for RIFF output. Writing\n"
+        "    to '-' needs TYPE:PATH; TYPE:- sends the palette to stdout.\n"
     },
     {
         'e',
         "monochrome",
-        "-e, --monochrome           output monochrome sixel image\n"
-        "                           this option assumes the terminal\n"
-        "                           background color is black\n"
+        "-e, --monochrome\n"
+        "    output monochrome sixel image this option assumes the terminal background color is\n"
+        "    black\n"
     },
     {
         'k',
         "insecure",
-        "-k, --insecure             allow to connect to SSL sites without\n"
-        "                           certs(enabled only when configured\n"
-        "                           with a supported network backend)\n"
+        "-k, --insecure\n"
+        "    allow to connect to SSL sites without certs(enabled only when configured with a\n"
+        "    supported network backend)\n"
     },
     {
         'i',
         "invert",
-        "-i, --invert               assume the terminal background color\n"
-        "                           is white, make sense only when -e\n"
-        "                           option is given\n"
+        "-i, --invert\n"
+        "    assume the terminal background color is white, make sense only when -e option is\n"
+        "    given\n"
     },
     {
         'I',
         "high-color",
-        "-I, --high-color           output 15bpp sixel image\n"
+        "-I, --high-color\n"
+        "    output 15bpp sixel image\n"
     },
     {
         'u',
         "use-macro",
-        "-u, --use-macro            use DECDMAC and DECINVM sequences to\n"
-        "                           optimize GIF animation rendering\n"
+        "-u, --use-macro\n"
+        "    use DECDMAC and DECINVM sequences to optimize GIF animation rendering\n"
     },
     {
         'n',
         "macro-number",
         "-n MACRONO, --macro-number=MACRONO\n"
-        "                           specify an number argument for\n"
-        "                           DECDMAC and make terminal memorize\n"
-        "                           SIXEL image. No image is shown if\n"
-        "                           this option is specified\n"
+        "    specify an number argument for DECDMAC and make terminal memorize SIXEL image. No\n"
+        "    image is shown if this option is specified\n"
     },
     {
         'C',
         "complexion-score",
         "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
-        "                           [[deprecated]] specify an number\n"
-        "                           argument for the score of\n"
-        "                           complexion correction.\n"
-        "                           COMPLEXIONSCORE must be 1 or more.\n"
+        "    [[deprecated]] specify an number argument for the score of complexion correction.\n"
+        "    COMPLEXIONSCORE must be 1 or more.\n"
     },
     {
         'g',
         "ignore-delay",
-        "-g, --ignore-delay         render GIF animation without delay\n"
+        "-g, --ignore-delay\n"
+        "    render GIF animation without delay\n"
     },
     {
         'S',
         "static",
-        "-S, --static               render animated GIF as a static image\n"
+        "-S, --static\n"
+        "    render animated GIF as a static image\n"
     },
     {
         'd',
         "diffusion",
         "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
-        "                           choose diffusion method which used\n"
-        "                           with -p option (color reduction)\n"
-        "                           DIFFUSIONTYPE is one of them:\n"
-        "                             auto     -> choose diffusion type\n"
-        "                                         automatically (default)\n"
-        "                             none     -> do not diffuse\n"
-        "                             fs       -> Floyd-Steinberg method\n"
-        "                             atkinson -> Bill Atkinson's method\n"
-        "                             jajuni   -> Jarvis, Judice & Ninke\n"
-        "                             stucki   -> Stucki's method\n"
-        "                             burkes   -> Burkes' method\n"
-        "                             sierra1  -> Sierra Lite method\n"
-        "                             sierra2  -> Sierra Two-row method\n"
-        "                             sierra3  -> Sierra-3 method\n"
-        "                             a_dither -> positionally stable\n"
-        "                                         arithmetic dither\n"
-        "                             x_dither -> positionally stable\n"
-        "                                         arithmetic xor based dither\n"
-        "                             bluenoise -> tileable blue-noise\n"
-        "                                         ordered dither\n"
-        "                             lso2     -> libsixel method based on\n"
-        "                                         variable error diffusion\n"
-        "                                         tables, optimized for size\n"
+        "    choose diffusion method which used with -p option (color reduction) DIFFUSIONTYPE is\n"
+        "    one of them:\n"
+        "      auto     -> choose diffusion type automatically (default)\n"
+        "      none     -> do not diffuse\n"
+        "      fs       -> Floyd-Steinberg method\n"
+        "      atkinson -> Bill Atkinson's method\n"
+        "      jajuni   -> Jarvis, Judice & Ninke\n"
+        "      stucki   -> Stucki's method\n"
+        "      burkes   -> Burkes' method\n"
+        "      sierra1  -> Sierra Lite method\n"
+        "      sierra2  -> Sierra Two-row method\n"
+        "      sierra3  -> Sierra-3 method\n"
+        "      a_dither -> positionally stable arithmetic dither\n"
+        "      x_dither -> positionally stable arithmetic xor based dither\n"
+        "      bluenoise -> tileable blue-noise ordered dither\n"
+        "      lso2     -> libsixel method based on variable error diffusion tables, optimized for\n"
+        "      size\n"
     },
     {
         'y',
         "diffusion-scan",
         "-y SCANTYPE, --diffusion-scan=SCANTYPE\n"
-        "                           choose scan order for diffusion\n"
-        "                           SCANTYPE is one of them:\n"
-        "                             auto       -> choose scan order\n"
-        "                                           automatically (default)\n"
-        "                             raster     -> left-to-right scan\n"
-        "                             serpentine -> alternate direction\n"
-        "                                           on each line\n"
+        "    choose scan order for diffusion SCANTYPE is one of them:\n"
+        "      auto       -> choose scan order automatically (default)\n"
+        "      raster     -> left-to-right scan\n"
+        "      serpentine -> alternate direction on each line\n"
     },
     {
         'Y',
         "diffusion-carry",
         "-Y CARRYTYPE, --diffusion-carry=CARRYTYPE\n"
-        "                           control carry buffers for diffusion\n"
-        "                           CARRYTYPE is one of them:\n"
-        "                             auto   -> choose carry mode\n"
-        "                                        automatically\n"
-        "                             direct -> write error back\n"
-        "                                        to pixel data\n"
-        "                                        immediately\n"
-        "                             carry  -> accumulate error in\n"
-        "                                        workspace buffers\n"
+        "    control carry buffers for diffusion CARRYTYPE is one of them:\n"
+        "      auto   -> choose carry mode automatically\n"
+        "      direct -> write error back to pixel data immediately\n"
+        "      carry  -> accumulate error in workspace buffers\n"
     },
     {
         'f',
         "find-largest",
         "-f FINDTYPE, --find-largest=FINDTYPE\n"
-        "                           choose method for finding the largest\n"
-        "                           dimension of median cut boxes for\n"
-        "                           splitting, make sense only when -p\n"
-        "                           option (color reduction) is\n"
-        "                           specified\n"
-        "                           FINDTYPE is one of them:\n"
-        "                             auto -> choose finding method\n"
-        "                                     automatically (default)\n"
-        "                             norm -> simply comparing the\n"
-        "                                     range in RGB space\n"
-        "                             lum  -> transforming into\n"
-        "                                     luminosities before the\n"
-        "                                     comparison\n"
-        "                             pca  -> split along the first\n"
-        "                                     principal component and\n"
-        "                                     cut at weighted median\n"
+        "    choose method for finding the largest dimension of median cut boxes for splitting,\n"
+        "    make sense only when -p option (color reduction) is specified FINDTYPE is one of\n"
+        "    them:\n"
+        "      auto -> choose finding method automatically (default)\n"
+        "      norm -> simply comparing the range in RGB space\n"
+        "      lum  -> transforming into luminosities before the comparison\n"
+        "      pca  -> split along the first principal component and cut at weighted median\n"
     },
     {
         's',
         "select-color",
         "-s SELECTTYPE, --select-color=SELECTTYPE\n"
-        "                           choose the method for selecting\n"
-        "                           representative color from each\n"
-        "                           median-cut box, make sense only\n"
-        "                           when -p option (color reduction) is\n"
-        "                           specified\n"
-        "                           SELECTTYPE is one of them:\n"
-        "                             auto      -> choose selecting\n"
-        "                                          method automatically\n"
-        "                                          (default)\n"
-        "                             center    -> choose the center of\n"
-        "                                          the box\n"
-        "                             average    -> calculate the color\n"
-        "                                          average into the box\n"
-        "                             histogram -> similar with average\n"
-        "                                          but considers color\n"
-        "                                          histogram\n"
+        "    choose the method for selecting representative color from each median-cut box, make\n"
+        "    sense only when -p option (color reduction) is specified SELECTTYPE is one of them:\n"
+        "      auto      -> choose selecting method automatically (default)\n"
+        "      center    -> choose the center of the box\n"
+        "      average    -> calculate the color average into the box\n"
+        "      histogram -> similar with average but considers color histogram\n"
     },
     {
         'c',
         "crop",
-        "-c REGION, --crop=REGION   crop source image to fit the\n"
-        "                           specified geometry. REGION should\n"
-        "                           be formatted as '%dx%d+%d+%d'\n"
+        "-c REGION, --crop=REGION\n"
+        "    crop source image to fit the specified geometry. REGION should be formatted as\n"
+        "    '%dx%d+%d+%d'\n"
     },
     {
         'w',
         "width",
-        "-w WIDTH, --width=WIDTH    resize image to specified width\n"
-        "                           WIDTH is represented by the\n"
-        "                           following syntax\n"
-        "                             auto       -> preserving aspect\n"
-        "                                           ratio (default)\n"
-        "                             <number>%  -> scale width with\n"
-        "                                           given percentage\n"
-        "                             <number>   -> scale width with\n"
-        "                                           pixel counts\n"
-        "                             <number>c  -> scale width with\n"
-        "                                           terminal cell count\n"
-        "                             <number>px -> scale width with\n"
-        "                                           pixel counts\n"
+        "-w WIDTH, --width=WIDTH\n"
+        "    resize image to specified width WIDTH is represented by the following syntax\n"
+        "                                 auto       -> preserving aspect ratio (default)\n"
+        "                                 <number>%  -> scale width with given percentage\n"
+        "                                 <number>   -> scale width with pixel counts\n"
+        "                                 <number>c  -> scale width with terminal cell count\n"
+        "                                 <number>px -> scale width with pixel counts\n"
     },
     {
         'h',
         "height",
-        "-h HEIGHT, --height=HEIGHT resize image to specified height\n"
-        "                           HEIGHT is represented by the\n"
-        "                           following syntax\n"
-        "                             auto       -> preserving aspect\n"
-        "                                           ratio (default)\n"
-        "                             <number>%  -> scale height with\n"
-        "                                           given percentage\n"
-        "                             <number>   -> scale height with\n"
-        "                                           pixel counts\n"
-        "                             <number>c  -> scale height with\n"
-        "                                           terminal cell count\n"
-        "                             <number>px -> scale height with\n"
-        "                                           pixel counts\n"
+        "-h HEIGHT, --height=HEIGHT\n"
+        "    resize image to specified height HEIGHT is represented by the following syntax\n"
+        "                                 auto       -> preserving aspect ratio (default)\n"
+        "                                 <number>%  -> scale height with given percentage\n"
+        "                                 <number>   -> scale height with pixel counts\n"
+        "                                 <number>c  -> scale height with terminal cell count\n"
+        "                                 <number>px -> scale height with pixel counts\n"
     },
     {
         'r',
         "resampling",
         "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
-        "                           choose resampling filter used\n"
-        "                           with -w or -h option (scaling)\n"
-        "                           RESAMPLINGTYPE is one of them:\n"
-        "                             nearest  -> Nearest-Neighbor\n"
-        "                                         method\n"
-        "                             gaussian -> Gaussian filter\n"
-        "                             hanning  -> Hanning filter\n"
-        "                             hamming  -> Hamming filter\n"
-        "                             bilinear -> Bilinear filter\n"
-        "                                         (default)\n"
-        "                             welsh    -> Welsh filter\n"
-        "                             bicubic  -> Bicubic filter\n"
-        "                             lanczos2 -> Lanczos-2 filter\n"
-        "                             lanczos3 -> Lanczos-3 filter\n"
-        "                             lanczos4 -> Lanczos-4 filter\n"
+        "    choose resampling filter used with -w or -h option (scaling) RESAMPLINGTYPE is one of\n"
+        "    them:\n"
+        "      nearest  -> Nearest-Neighbor method\n"
+        "      gaussian -> Gaussian filter\n"
+        "      hanning  -> Hanning filter\n"
+        "      hamming  -> Hamming filter\n"
+        "      bilinear -> Bilinear filter (default)\n"
+        "      welsh    -> Welsh filter\n"
+        "      bicubic  -> Bicubic filter\n"
+        "      lanczos2 -> Lanczos-2 filter\n"
+        "      lanczos3 -> Lanczos-3 filter\n"
+        "      lanczos4 -> Lanczos-4 filter\n"
     },
     {
         'q',
         "quality",
         "-q QUALITYMODE, --quality=QUALITYMODE\n"
-        "                           select quality of color\n"
-        "                           quanlization.\n"
-        "                             auto -> decide quality mode\n"
-        "                                     automatically (default)\n"
-        "                             low  -> low quality and high\n"
-        "                                     speed mode\n"
-        "                             high -> high quality and low\n"
-        "                                     speed mode\n"
-        "                             full -> full quality and careful\n"
-        "                                     speed mode\n"
+        "    select quality of color quanlization.\n"
+        "      auto -> decide quality mode automatically (default)\n"
+        "      low  -> low quality and high speed mode\n"
+        "      high -> high quality and low speed mode\n"
+        "      full -> full quality and careful speed mode\n"
     },
     {
         '~',
         "lookup-policy",
         "-~ LOOKUPPOLICY, --lookup-policy=LOOKUPPOLICY\n"
-        "                           choose histogram lookup width\n"
-        "                           LOOKUPPOLICY is one of them:\n"
-        "                             auto      -> follow pixel depth\n"
-        "                             5bit      -> force classic 5-bit\n"
-        "                                          buckets\n"
-        "                             6bit      -> favor 6-bit RGB\n"
-        "                                          buckets\n"
-        "                             none      -> disable LUT caching\n"
-        "                                          and scan directly\n"
-        "                             certlut   -> certified hierarchical\n"
-        "                                          lookup tree with\n"
-        "                                          zero error\n"
-        "                             eytzinger -> implicit binary tree\n"
-        "                                             lookup with local\n"
-        "                                             neighbour scan\n"
-        "                                             (default)\n"
-        "                             fhedt      -> Voronoi grid built via\n"
-        "                                          3D EDT with optional\n"
-        "                                          boundary refinement\n"
-        "                             vptree    -> VP-tree lookup built\n"
-        "                                          from palette entries\n"
-        "                             rbc       -> Random Ball Cover\n"
-        "                                          cluster pruning\n"
-        "                             mahalanobis -> RBC clusters with\n"
-        "                                            Mahalanobis lower\n"
-        "                                            bounds\n"
+        "    choose histogram lookup width LOOKUPPOLICY is one of them:\n"
+        "      auto      -> follow pixel depth\n"
+        "      5bit      -> force classic 5-bit buckets\n"
+        "      6bit      -> favor 6-bit RGB buckets\n"
+        "      none      -> disable LUT caching and scan directly\n"
+        "      certlut   -> certified hierarchical lookup tree with zero error\n"
+        "      eytzinger -> implicit binary tree lookup with local neighbour scan (default)\n"
+        "      fhedt      -> Voronoi grid built via 3D EDT with optional boundary refinement\n"
+        "      vptree    -> VP-tree lookup built from palette entries\n"
+        "      rbc       -> Random Ball Cover cluster pruning\n"
+        "      mahalanobis -> RBC clusters with Mahalanobis lower bounds\n"
     },
     {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
-        "                           select loop control mode for GIF\n"
-        "                           animation.\n"
-        "                             auto    -> honor the setting of\n"
-        "                                        GIF header (default)\n"
-        "                             force   -> always enable loop\n"
-        "                             disable -> always disable loop\n"
+        "    select loop control mode for GIF animation.\n"
+        "      auto    -> honor the setting of GIF header (default)\n"
+        "      force   -> always enable loop\n"
+        "      disable -> always disable loop\n"
     },
     {
         'T',
         "start-frame",
         "-T FRAME_NO, --start-frame=FRAME_NO\n"
-        "                           set the animation start frame index\n"
-        "                           for supported loaders.\n"
-        "                           Positive values and zero select from\n"
-        "                           the beginning, negative values count\n"
-        "                           from the end (-1 is the last frame).\n"
+        "    set the animation start frame index for supported loaders. Positive values and zero\n"
+        "    select from the beginning, negative values count from the end (-1 is the last frame).\n"
     },
     {
         't',
         "palette-type",
         "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
-        "                           select palette color space type\n"
-        "                             auto -> choose palette type\n"
-        "                                     automatically (default)\n"
-        "                             hls  -> use HLS color space\n"
-        "                             rgb  -> use RGB color space\n"
+        "    select palette color space type\n"
+        "      auto -> choose palette type automatically (default)\n"
+        "      hls  -> use HLS color space\n"
+        "      rgb  -> use RGB color space\n"
     },
     {
         'b',
         "builtin-palette",
         "-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE\n"
-        "                           select built-in palette type\n"
-        "                             xterm16    -> X default 16 color map\n"
-        "                             xterm256   -> X default 256 color map\n"
-        "                             vt340mono  -> VT340 monochrome map\n"
-        "                             vt340color -> VT340 color map\n"
-        "                             gray1      -> 1bit grayscale map\n"
-        "                             gray2      -> 2bit grayscale map\n"
-        "                             gray4      -> 4bit grayscale map\n"
-        "                             gray8      -> 8bit grayscale map\n"
+        "    select built-in palette type\n"
+        "      xterm16    -> X default 16 color map\n"
+        "      xterm256   -> X default 256 color map\n"
+        "      vt340mono  -> VT340 monochrome map\n"
+        "      vt340color -> VT340 color map\n"
+        "      gray1      -> 1bit grayscale map\n"
+        "      gray2      -> 2bit grayscale map\n"
+        "      gray4      -> 4bit grayscale map\n"
+        "      gray8      -> 8bit grayscale map\n"
     },
     {
         'E',
         "encode-policy",
         "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
-        "                           select encoding policy\n"
-        "                             auto -> choose encoding policy\n"
-        "                                     automatically (default)\n"
-        "                             fast -> encode as fast as possible\n"
-        "                             size -> encode to as small sixel\n"
-        "                                     sequence as possible\n"
+        "    select encoding policy\n"
+        "      auto -> choose encoding policy automatically (default)\n"
+        "      fast -> encode as fast as possible\n"
+        "      size -> encode to as small sixel sequence as possible\n"
     },
     {
         'B',
         "bgcolor",
         "-B BGCOLOR, --bgcolor=BGCOLOR\n"
-        "                           specify background color\n"
-        "                           BGCOLOR is represented by the\n"
-        "                           following syntax\n"
-        "                             #rgb\n"
-        "                             #rrggbb\n"
-        "                             #rrrgggbbb\n"
-        "                             #rrrrggggbbbb\n"
-        "                             rgb:r/g/b\n"
-        "                             rgb:rr/gg/bb\n"
-        "                             rgb:rrr/ggg/bbb\n"
-        "                             rgb:rrrr/gggg/bbbb\n"
+        "    specify background color BGCOLOR is represented by the following syntax #rgb #rrggbb\n"
+        "    #rrrgggbbb #rrrrggggbbbb rgb:r/g/b rgb:rr/gg/bb rgb:rrr/ggg/bbb rgb:rrrr/gggg/bbbb\n"
     },
     {
         'P',
         "penetrate",
-        "-P, --penetrate            [[deprecated]] penetrate GNU Screen\n"
-        "                           using DCS pass-through sequence\n"
+        "-P, --penetrate\n"
+        "    [[deprecated]] penetrate GNU Screen using DCS pass-through sequence\n"
     },
     {
         'D',
         "pipe-mode",
-        "-D, --pipe-mode            [[deprecated]] read source images from\n"
-        "                           stdin continuously\n"
+        "-D, --pipe-mode\n"
+        "    [[deprecated]] read source images from stdin continuously\n"
     },
     {
         'v',
         "verbose",
-        "-v, --verbose              show debugging info and the planner DAG\n"
-        "                           (DAG = Directed Acyclic Graph).\n"
+        "-v, --verbose\n"
+        "    show debugging info and the planner DAG (DAG = Directed Acyclic Graph).\n"
     },
     {
         'L',
         "loaders",
-        "-L LIST, --loaders=LIST    choose loader priority order\n"
-        "                           LIST is a comma separated list of\n"
-        "                           loader names (prefixes accepted).\n"
-        "                           libpng/libjpeg/libwebp/coregraphics\n"
-        "                           support\n"
-        "                           :orientation=on|off\n"
-        "                           (or :o=..., default on).\n"
-        "                           libpng/libjpeg/libwebp/libtiff/builtin\n"
-        "                           support\n"
-        "                           :cms_engine=none|auto|builtin|lcms2|colorsync\n"
-        "                           (or :e=..., default none).\n"
-        "                           WIC supports :ico_minsize=SIZE to\n"
-        "                           choose the smallest ICO frame\n"
-        "                           with edge >= SIZE.\n"
-        "                           Append \"!\" to disable fallbacks.\n"
-        "                           Use -H to list available loaders.\n"
+        "-L LIST, --loaders=LIST\n"
+        "    choose loader priority order LIST is a comma separated list of loader names (prefixes\n"
+        "    accepted). libpng/libjpeg/libwebp/coregraphics support\n"
+        "                               :orientation=on|off (or :o=..., default on).\n"
+        "                               libpng/libjpeg/libwebp/libtiff/builtin support\n"
+        "                               :cms_engine=none|auto|builtin|lcms2|colorsync (or :e=...,\n"
+        "                               default none). WIC supports :ico_minsize=SIZE to choose\n"
+        "                               the smallest ICO frame with edge >= SIZE. Append \"!\" to\n"
+        "                               disable fallbacks. Use -H to list available loaders.\n"
     },
     {
         '#',
         "cms-engine",
         "-# ENGINE, --cms-engine=ENGINE\n"
-        "                           set default loader CMS backend for\n"
-        "                           this process (SIXEL_LOADER_CMS_ENGINE).\n"
-        "                             none      -> disable loader CMS.\n"
-        "                             auto      -> prefer lcms2, then\n"
-        "                                          ColorSync (macOS), then\n"
-        "                                          builtin.\n"
-        "                             builtin   -> force builtin backend.\n"
-        "                             lcms2     -> force lcms2 backend.\n"
-        "                             colorsync -> force ColorSync backend.\n"
+        "    set default loader CMS backend for this process (SIXEL_LOADER_CMS_ENGINE).\n"
+        "      none      -> disable loader CMS.\n"
+        "      auto      -> prefer lcms2, then ColorSync (macOS), then builtin.\n"
+        "      builtin   -> force builtin backend.\n"
+        "      lcms2     -> force lcms2 backend.\n"
+        "      colorsync -> force ColorSync backend.\n"
     },
     {
         '@',
         "drcs",
         "-@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH\n"
-        "                           emit DRCS tiles instead of SIXEL output.\n"
-        "                           MMV selects the mapping revision (0..2,\n"
-        "                           default 2). CHARSET chooses the slot\n"
-        "                           (1-126 when MMV=0, 1-63 when MMV=1,\n"
-        "                           1-158 when MMV=2; default 1). PATH routes\n"
-        "                           tile data (\"-\" keeps stdout; blank disables\n"
-        "                           the external sink).\n"
+        "    emit DRCS tiles instead of SIXEL output. MMV selects the mapping revision (0..2,\n"
+        "    default 2). CHARSET chooses the slot (1-126 when MMV=0, 1-63 when MMV=1, 1-158 when\n"
+        "    MMV=2; default 1). PATH routes tile data (\"-\" keeps stdout; blank disables the\n"
+        "    external sink).\n"
     },
     {
         'O',
         "ormode",
-        "-O, --ormode               enables sixel output in \"ormode\"\n"
+        "-O, --ormode\n"
+        "    enables sixel output in \"ormode\"\n"
     },
     {
         'X',
         "clustering-colorspace",
         "-X COLORSPACE, --clustering-colorspace=COLORSPACE\n"
-        "                           choose palette clustering color space\n"
-        "                             gamma  -> sRGB gamma(default)\n"
-        "                             linear -> linear RGB color space\n"
-        "                             oklab  -> OKLab color space\n"
-        "                             cielab -> CIELAB color space\n"
-        "                             din99d -> DIN99d color space\n"
+        "    choose palette clustering color space\n"
+        "      gamma  -> sRGB gamma(default)\n"
+        "      linear -> linear RGB color space\n"
+        "      oklab  -> OKLab color space\n"
+        "      cielab -> CIELAB color space\n"
+        "      din99d -> DIN99d color space\n"
     },
     {
         'W',
         "working-colorspace",
         "-W COLORSPACE, --working-colorspace=COLORSPACE\n"
-        "                           choose internal working color space\n"
-        "                             gamma  -> sRGB gamma(default)\n"
-        "                             linear -> linear RGB color space\n"
-        "                             oklab  -> OKLab color space\n"
-        "                             cielab -> CIELAB color space\n"
-        "                             din99d -> DIN99d color space\n"
+        "    choose internal working color space\n"
+        "      gamma  -> sRGB gamma(default)\n"
+        "      linear -> linear RGB color space\n"
+        "      oklab  -> OKLab color space\n"
+        "      cielab -> CIELAB color space\n"
+        "      din99d -> DIN99d color space\n"
     },
     {
         'U',
         "output-colorspace",
         "-U COLORSPACE, --output-colorspace=COLORSPACE\n"
-        "                           choose output color space\n"
-        "                             gamma   -> sRGB gamma(default)\n"
-        "                             linear  -> linear RGB color space\n"
-        "                             smpte-c -> SMPTE-C gamma color space\n"
+        "    choose output color space\n"
+        "      gamma   -> sRGB gamma(default)\n"
+        "      linear  -> linear RGB color space\n"
+        "      smpte-c -> SMPTE-C gamma color space\n"
     },
     {
         '1',
         "show-completion",
         "-1 TARGET, --show-completion=TARGET\n"
-        "                           print shell completion script\n"
-        "                           TARGET is one of [bash, zsh, all]\n"
+        "    print shell completion script TARGET is one of [bash, zsh, all]\n"
     },
     {
         '2',
         "install-completion",
         "-2 TARGET, --install-completion=TARGET\n"
-        "                           install shell completion script\n"
-        "                           TARGET is one of [bash, zsh, all]\n"
+        "    install shell completion script TARGET is one of [bash, zsh, all]\n"
     },
     {
         '3',
         "uninstall-completion",
         "-3 TARGET, --uninstall-completion=TARGET\n"
-        "                           uninstall shell completion script\n"
-        "                           TARGET is one of [bash, zsh, all]\n"
+        "    uninstall shell completion script TARGET is one of [bash, zsh, all]\n"
     },
     {
         '%',
         "env",
         "-% KEY=VALUE, --env=KEY=VALUE\n"
-        "                           set process environment variable\n"
-        "                           before conversion. Repeatable.\n"
+        "    set process environment variable before conversion. Repeatable.\n"
     },
     {
         'V',
         "version",
-        "-V, --version              show version and license info\n"
+        "-V, --version\n"
+        "    show version and license info\n"
     },
     {
         'H',
         "help",
-        "-H, --help                 show this help and available loaders\n"
+        "-H, --help\n"
+        "    show this help and available loaders\n"
     }
 };
 

@@ -3034,10 +3034,10 @@ sixel_cms_convert_to_linearrgb_with_profile_bytes(
     }
 
     converted = sixel_cms_convert_profile_to_linearrgb(pixels,
-                                                        width,
-                                                        height,
-                                                        pixelformat,
-                                                        src_profile);
+                                                       width,
+                                                       height,
+                                                       pixelformat,
+                                                       src_profile);
     sixel_cms_close_profile(src_profile);
 
     return converted;
@@ -3117,10 +3117,10 @@ sixel_cms_convert_to_cielab_with_profile_bytes(
     }
 
     converted = sixel_cms_convert_profile_to_cielab(pixels,
-                                                     width,
-                                                     height,
-                                                     pixelformat,
-                                                     src_profile);
+                                                    width,
+                                                    height,
+                                                    pixelformat,
+                                                    src_profile);
     sixel_cms_close_profile(src_profile);
 
     return converted;
