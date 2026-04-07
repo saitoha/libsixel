@@ -973,8 +973,6 @@ next:
         }
     }
 
-    goto next;
-
 end:
     if (output_count == 0) {
         status = sixel_encode_header(width, height, dither->keycolor, output);

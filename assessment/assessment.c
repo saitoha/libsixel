@@ -411,8 +411,14 @@ assessment_escape_json(char const *input,
             if (written + 6 >= output_size) {
                 return -1;
             }
+            /*
+             * pcc misparses "\\u...." literals in this context.  Emit the
+             * backslash + 'u' prefix explicitly, then append four hex digits.
+             */
+            output[written++] = '\\';
+            output[written++] = 'u';
             n = snprintf(output + written, output_size - written,
-                         "\\u%04x", ch);
+                         "%04x", ch);
             if (n < 0 || (size_t)n >= output_size - written) {
                 return -1;
             }

@@ -66,9 +66,10 @@
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__PCC__)
 # define SIXEL_TLS _Thread_local
-#elif defined(__GNUC__) || defined(__clang__)
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_TLS __thread
 #else
 # define SIXEL_TLS
@@ -588,7 +589,7 @@ sixel_kmedoids_test_pick_unique_sorted_sample_indices(
     unsigned int *indices_out,
     sixel_allocator_t *allocator);
 
-SIXEL_INTERNAL_API SIXELSTATUS
+static SIXELSTATUS
 sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
     unsigned int point_count,
     unsigned int sample_size,
@@ -7451,7 +7452,7 @@ sixel_kmedoids_test_pick_unique_sorted_sample_indices(
     return status;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
+static SIXELSTATUS
 sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
     unsigned int point_count,
     unsigned int sample_size,
@@ -7501,6 +7502,26 @@ sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
         hash_capacity);
     sixel_allocator_free(allocator, hash_table);
     return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmd_test_pick_strat_idx(
+    unsigned int point_count,
+    unsigned int sample_size,
+    unsigned int const *guided_points,
+    unsigned int guided_count,
+    uint32_t seed,
+    unsigned int *indices_out,
+    sixel_allocator_t *allocator)
+{
+    return sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+        point_count,
+        sample_size,
+        guided_points,
+        guided_count,
+        seed,
+        indices_out,
+        allocator);
 }
 
 static SIXELSTATUS

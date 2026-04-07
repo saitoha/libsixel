@@ -368,7 +368,7 @@ sixel_kmedoids_test_pick_unique_sorted_sample_indices(
     sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+sixel_kmd_test_pick_strat_idx(
     unsigned int point_count,
     unsigned int sample_size,
     unsigned int const *guided_points,

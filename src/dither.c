@@ -345,9 +345,10 @@ static const unsigned char pal_xterm256[] = {
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
-    && !defined(__STDC_NO_THREADS__)
+    && !defined(__STDC_NO_THREADS__) \
+    && !defined(__PCC__)
 # define SIXEL_TLS _Thread_local
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__PCC__)
 # define SIXEL_TLS __thread
 #else
 # define SIXEL_TLS
@@ -1216,6 +1217,29 @@ sixel_palette_is_builtin_mono(sixel_palette_t const *palette)
     return 0;
 }
 
+/* Bundle serial index-resolution inputs to avoid pcc ICE on long signatures. */
+typedef struct sixel_dither_resolve_indexes_request {
+    sixel_index_t *result;
+    unsigned char *data;
+    int width;
+    int height;
+    int depth;
+    sixel_palette_t *palette;
+    int reqcolor;
+    int method_for_diffuse;
+    int method_for_scan;
+    int method_for_carry;
+    int foptimize;
+    int foptimize_palette;
+    int complexion;
+    int lut_policy;
+    int method_for_largest;
+    int *ncolors;
+    sixel_allocator_t *allocator;
+    sixel_dither_t *dither;
+    int pixelformat;
+} sixel_dither_resolve_indexes_request_t;
+
 /*
  * Route palette application through the local dithering helper.  The
  * function keeps all state in the palette object so we can share cache
@@ -1228,31 +1252,54 @@ sixel_palette_is_builtin_mono(sixel_palette_t const *palette)
  *      reported at a single site.
  */
 static SIXELSTATUS
-sixel_dither_resolve_indexes(sixel_index_t *result,
-                             unsigned char *data,
-                             int width,
-                             int height,
-                             int depth,
-                             sixel_palette_t *palette,
-                             int reqcolor,
-                             int method_for_diffuse,
-                             int method_for_scan,
-                             int method_for_carry,
-                             int foptimize,
-                             int foptimize_palette,
-                             int complexion,
-                              int lut_policy,
-                              int method_for_largest,
-                              int *ncolors,
-                              sixel_allocator_t *allocator,
-                              sixel_dither_t *dither,
-                              int pixelformat)
+sixel_dither_resolve_indexes(
+    sixel_dither_resolve_indexes_request_t const *request)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
+    sixel_index_t *result;
+    unsigned char *data;
+    int width;
+    int height;
+    int depth;
+    sixel_palette_t *palette;
+    int reqcolor;
+    int method_for_diffuse;
+    int method_for_scan;
+    int method_for_carry;
+    int foptimize;
+    int foptimize_palette;
+    int complexion;
+    int lut_policy;
+    int method_for_largest;
+    int *ncolors;
+    sixel_allocator_t *allocator;
+    sixel_dither_t *dither;
+    int pixelformat;
 
-    if (palette == NULL || palette->entries == NULL) {
+    status = SIXEL_FALSE;
+    if (request == NULL || request->palette == NULL
+            || request->palette->entries == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    result = request->result;
+    data = request->data;
+    width = request->width;
+    height = request->height;
+    depth = request->depth;
+    palette = request->palette;
+    reqcolor = request->reqcolor;
+    method_for_diffuse = request->method_for_diffuse;
+    method_for_scan = request->method_for_scan;
+    method_for_carry = request->method_for_carry;
+    foptimize = request->foptimize;
+    foptimize_palette = request->foptimize_palette;
+    complexion = request->complexion;
+    lut_policy = request->lut_policy;
+    method_for_largest = request->method_for_largest;
+    ncolors = request->ncolors;
+    allocator = request->allocator;
+    dither = request->dither;
+    pixelformat = request->pixelformat;
 
     sixel_palette_set_lut_policy(lut_policy);
     sixel_palette_set_method_for_largest(method_for_largest);
@@ -2596,6 +2643,7 @@ sixel_dither_apply_palette(
     size_t source_depth;
     size_t index;
     int parallel_active = 0;
+    sixel_dither_resolve_indexes_request_t resolve_request;
 #if SIXEL_ENABLE_THREADS
     int parallel_band_height = 0;
     int parallel_overlap = 0;
@@ -3020,25 +3068,26 @@ sixel_dither_apply_palette(
     } else
 #endif
     {
-        status = sixel_dither_resolve_indexes(dest,
-                                              input_pixels,
-                                              width,
-                                              height,
-                                              3,
-                                              palette,
-                                              dither->ncolors,
-                                              dither->method_for_diffuse,
-                                              method_for_scan,
-                                              method_for_carry,
-                                              dither->optimized,
-                                              dither->optimize_palette,
-                                              dither->complexion,
-                                              dither->lut_policy,
-                                              dither->method_for_largest,
-                                              &ncolors,
-                                              dither->allocator,
-                                              dither,
-                                              pipeline_pixelformat);
+        resolve_request.result = dest;
+        resolve_request.data = input_pixels;
+        resolve_request.width = width;
+        resolve_request.height = height;
+        resolve_request.depth = 3;
+        resolve_request.palette = palette;
+        resolve_request.reqcolor = dither->ncolors;
+        resolve_request.method_for_diffuse = dither->method_for_diffuse;
+        resolve_request.method_for_scan = method_for_scan;
+        resolve_request.method_for_carry = method_for_carry;
+        resolve_request.foptimize = dither->optimized;
+        resolve_request.foptimize_palette = dither->optimize_palette;
+        resolve_request.complexion = dither->complexion;
+        resolve_request.lut_policy = dither->lut_policy;
+        resolve_request.method_for_largest = dither->method_for_largest;
+        resolve_request.ncolors = &ncolors;
+        resolve_request.allocator = dither->allocator;
+        resolve_request.dither = dither;
+        resolve_request.pixelformat = pipeline_pixelformat;
+        status = sixel_dither_resolve_indexes(&resolve_request);
     }
     if (SIXEL_FAILED(status)) {
         if (dest != NULL && dest_owned) {

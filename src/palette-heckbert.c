@@ -2065,27 +2065,51 @@ end:
     return status;
 }
 
+/* pcc may ICE on very long parameter lists; bundle into one request object. */
+typedef struct sixel_palette_heckbert_colormap_request {
+    sixel_palette_t *palette;
+    unsigned char const *data;
+    unsigned int length;
+    unsigned int depth;
+    int use_reversible;
+    tupletable2 *colormap;
+    unsigned int *origcolors;
+    unsigned int pixel_stride;
+    int pixelformat;
+    sixel_allocator_t *allocator;
+    sixel_logger_t *logger;
+    int *job_seq;
+    char const *engine_name;
+    double *iterate_ms;
+    unsigned int *iterate_count;
+    double *merge_ms;
+    unsigned int *merge_iterate_count;
+    int *merge_mode;
+} sixel_palette_heckbert_colormap_request_t;
+
 static SIXELSTATUS
-sixel_palette_heckbert_colormap(sixel_palette_t *palette,
-                                unsigned char const *data,
-                                unsigned int length,
-                                unsigned int depth,
-                                int use_reversible,
-                                tupletable2 *colormapP,
-                                unsigned int *origcolors,
-                                unsigned int pixel_stride,
-                                int pixelformat,
-                                sixel_allocator_t *allocator,
-                                sixel_logger_t *logger,
-                                int *job_seq,
-                                char const *engine_name,
-                                double *iterate_ms,
-                                unsigned int *iterate_count,
-                                double *merge_ms,
-                                unsigned int *merge_iterate_count,
-                                int *merge_mode)
+sixel_palette_heckbert_colormap(
+    sixel_palette_heckbert_colormap_request_t const *request)
 {
     SIXELSTATUS status;
+    sixel_palette_t *palette;
+    unsigned char const *data;
+    unsigned int length;
+    unsigned int depth;
+    int use_reversible;
+    tupletable2 *colormapP;
+    unsigned int *origcolors;
+    unsigned int pixel_stride;
+    int pixelformat;
+    sixel_allocator_t *allocator;
+    sixel_logger_t *logger;
+    int *job_seq;
+    char const *engine_name;
+    double *iterate_ms;
+    unsigned int *iterate_count;
+    double *merge_ms;
+    unsigned int *merge_iterate_count;
+    int *merge_mode;
     tupletable2 colorfreqtable;
     unsigned int i;
     unsigned int n;
@@ -2093,9 +2117,28 @@ sixel_palette_heckbert_colormap(sixel_palette_t *palette,
     status = SIXEL_FALSE;
     colorfreqtable.size = 0U;
     colorfreqtable.table = NULL;
-    if (colormapP == NULL || allocator == NULL) {
+    if (request == NULL || request->colormap == NULL
+            || request->allocator == NULL || request->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    palette = request->palette;
+    data = request->data;
+    length = request->length;
+    depth = request->depth;
+    use_reversible = request->use_reversible;
+    colormapP = request->colormap;
+    origcolors = request->origcolors;
+    pixel_stride = request->pixel_stride;
+    pixelformat = request->pixelformat;
+    allocator = request->allocator;
+    logger = request->logger;
+    job_seq = request->job_seq;
+    engine_name = request->engine_name;
+    iterate_ms = request->iterate_ms;
+    iterate_count = request->iterate_count;
+    merge_ms = request->merge_ms;
+    merge_iterate_count = request->merge_iterate_count;
+    merge_mode = request->merge_mode;
 
     colormapP->size = 0U;
     colormapP->table = NULL;
@@ -2214,6 +2257,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float *float_entries;
     int float_stride;
     int reversible_for_quantizer;
+    sixel_palette_heckbert_colormap_request_t colormap_request;
     double wall_start;
     double init_stop;
     double export_start;
@@ -2290,24 +2334,25 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = palette->use_reversible;
-    status = sixel_palette_heckbert_colormap(palette,
-                                             data,
-                                             length,
-                                             depth,
-                                             reversible_for_quantizer,
-                                             &colormap,
-                                             &origcolors,
-                                             pixel_stride,
-                                             pixelformat,
-                                             work_allocator,
-                                             logger,
-                                             job_seq,
-                                             engine_name,
-                                             &iterate_ms,
-                                             &iterate_count,
-                                             &merge_ms,
-                                             &merge_iterate_count,
-                                             &merge_mode);
+    colormap_request.palette = palette;
+    colormap_request.data = data;
+    colormap_request.length = length;
+    colormap_request.depth = depth;
+    colormap_request.use_reversible = reversible_for_quantizer;
+    colormap_request.colormap = &colormap;
+    colormap_request.origcolors = &origcolors;
+    colormap_request.pixel_stride = pixel_stride;
+    colormap_request.pixelformat = pixelformat;
+    colormap_request.allocator = work_allocator;
+    colormap_request.logger = logger;
+    colormap_request.job_seq = job_seq;
+    colormap_request.engine_name = engine_name;
+    colormap_request.iterate_ms = &iterate_ms;
+    colormap_request.iterate_count = &iterate_count;
+    colormap_request.merge_ms = &merge_ms;
+    colormap_request.merge_iterate_count = &merge_iterate_count;
+    colormap_request.merge_mode = &merge_mode;
+    status = sixel_palette_heckbert_colormap(&colormap_request);
     init_stop = sixel_timer_now();
     export_start = init_stop;
     if (SIXEL_FAILED(status)) {

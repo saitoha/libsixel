@@ -69,10 +69,10 @@
 #  if defined(_MSC_VER)
 #   define SIXEL_FHEDT_TLS __declspec(thread)
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
-#  elif !defined(__STDC_NO_THREADS__)
+#  elif !defined(__STDC_NO_THREADS__) && !defined(__PCC__)
 #   define SIXEL_FHEDT_TLS _Thread_local
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
-#  elif defined(__GNUC__)
+#  elif defined(__GNUC__) && !defined(__PCC__)
 #   define SIXEL_FHEDT_TLS __thread
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
 #  else

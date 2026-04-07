@@ -58,7 +58,7 @@
  */
 static int simd_cached = -1;
 
-#if defined(__GNUC__) || defined(__clang__)
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_CPU_CACHE_LOAD() \
     __atomic_load_n(&simd_cached, __ATOMIC_ACQUIRE)
 # define SIXEL_CPU_CACHE_CAS(expected_ptr, desired) \

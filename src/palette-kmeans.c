@@ -68,9 +68,10 @@
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__PCC__)
 # define SIXEL_TLS _Thread_local
-#elif defined(__GNUC__) || defined(__clang__)
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_TLS __thread
 #else
 # define SIXEL_TLS
@@ -2663,28 +2664,51 @@ sixel_kmeans_assign_samples(double const *centers,
  *     trim excess clusters.
  *   - Palette export: copy the finished centroids into a compact RGB buffer.
  */
+typedef struct sixel_palette_kmeans_build_request {
+    unsigned char **result;
+    float **result_float32;
+    unsigned char const *data;
+    unsigned int length;
+    unsigned int depth;
+    unsigned int reqcolors;
+    unsigned int *ncolors;
+    unsigned int *origcolors;
+    int quality_mode;
+    int force_palette;
+    int use_reversible;
+    int final_merge_mode;
+    sixel_allocator_t *allocator;
+    int pixelformat;
+    int treat_input_as_float32;
+    sixel_logger_t *logger;
+    int *job_seq;
+    char const *engine_name;
+    sixel_palette_telemetry_t *telemetry;
+} sixel_palette_kmeans_build_request_t;
+
 static SIXELSTATUS
-build_palette_kmeans(unsigned char **result,
-                     float **result_float32,
-                     unsigned char const *data,
-                     unsigned int length,
-                     unsigned int depth,
-                     unsigned int reqcolors,
-                     unsigned int *ncolors,
-                     unsigned int *origcolors,
-                     int quality_mode,
-                     int force_palette,
-                     int use_reversible,
-                     int final_merge_mode,
-                     sixel_allocator_t *allocator,
-                     int pixelformat,
-                     int treat_input_as_float32,
-                     sixel_logger_t *logger,
-                     int *job_seq,
-                     char const *engine_name,
-                     sixel_palette_telemetry_t *telemetry)
+build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
 {
     SIXELSTATUS status;
+    unsigned char **result;
+    float **result_float32;
+    unsigned char const *data;
+    unsigned int length;
+    unsigned int depth;
+    unsigned int reqcolors;
+    unsigned int *ncolors;
+    unsigned int *origcolors;
+    int quality_mode;
+    int force_palette;
+    int use_reversible;
+    int final_merge_mode;
+    sixel_allocator_t *allocator;
+    int pixelformat;
+    int treat_input_as_float32;
+    sixel_logger_t *logger;
+    int *job_seq;
+    char const *engine_name;
+    sixel_palette_telemetry_t *telemetry;
     unsigned int channels;
     unsigned int pixel_stride;
     unsigned int pixel_count;
@@ -2800,6 +2824,28 @@ build_palette_kmeans(unsigned char **result,
     uint32_t *rng_state_ptr;
 
     status = SIXEL_BAD_ARGUMENT;
+    if (request == NULL) {
+        return status;
+    }
+    result = request->result;
+    result_float32 = request->result_float32;
+    data = request->data;
+    length = request->length;
+    depth = request->depth;
+    reqcolors = request->reqcolors;
+    ncolors = request->ncolors;
+    origcolors = request->origcolors;
+    quality_mode = request->quality_mode;
+    force_palette = request->force_palette;
+    use_reversible = request->use_reversible;
+    final_merge_mode = request->final_merge_mode;
+    allocator = request->allocator;
+    pixelformat = request->pixelformat;
+    treat_input_as_float32 = request->treat_input_as_float32;
+    logger = request->logger;
+    job_seq = request->job_seq;
+    engine_name = request->engine_name;
+    telemetry = request->telemetry;
     channels = depth;
     pixel_stride = depth;
     pixel_count = 0U;
@@ -4069,20 +4115,35 @@ end:
  * median-cut builder and keeps the orchestrator agnostic of
  * algorithm-specific memory juggling.
  */
+typedef struct sixel_palette_kmeans_internal_request {
+    sixel_palette_t *palette;
+    unsigned char const *data;
+    unsigned int length;
+    int pixelformat;
+    sixel_allocator_t *allocator;
+    sixel_logger_t *logger;
+    int *job_seq;
+    char const *engine_name;
+    int treat_input_as_float32;
+    sixel_palette_telemetry_t *telemetry;
+} sixel_palette_kmeans_internal_request_t;
+
 static SIXELSTATUS
-sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
-                                    unsigned char const *data,
-                                    unsigned int length,
-                                    int pixelformat,
-                                    sixel_allocator_t *allocator,
-                                    sixel_logger_t *logger,
-                                    int *job_seq,
-                                    char const *engine_name,
-                                    int treat_input_as_float32,
-                                    sixel_palette_telemetry_t *telemetry)
+sixel_palette_build_kmeans_internal(
+    sixel_palette_kmeans_internal_request_t const *request)
 {
     SIXELSTATUS status;
     SIXELSTATUS build_status;
+    sixel_palette_t *palette;
+    unsigned char const *data;
+    unsigned int length;
+    int pixelformat;
+    sixel_allocator_t *allocator;
+    sixel_logger_t *logger;
+    int *job_seq;
+    char const *engine_name;
+    int treat_input_as_float32;
+    sixel_palette_telemetry_t *telemetry;
     sixel_allocator_t *work_allocator;
     unsigned char *entries;
     float *entries_float32;
@@ -4093,9 +4154,23 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     int depth_result;
     size_t payload_size;
     int reversible_for_quantizer;
+    sixel_palette_kmeans_build_request_t build_request;
 
     status = SIXEL_BAD_ARGUMENT;
     build_status = SIXEL_FALSE;
+    if (request == NULL) {
+        return status;
+    }
+    palette = request->palette;
+    data = request->data;
+    length = request->length;
+    pixelformat = request->pixelformat;
+    allocator = request->allocator;
+    logger = request->logger;
+    job_seq = request->job_seq;
+    engine_name = request->engine_name;
+    treat_input_as_float32 = request->treat_input_as_float32;
+    telemetry = request->telemetry;
     work_allocator = allocator;
     entries = NULL;
     entries_float32 = NULL;
@@ -4105,6 +4180,7 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     entry_depth = 0U;
     depth_result = 0;
     payload_size = 0U;
+    memset(&build_request, 0, sizeof(build_request));
 
     if (palette == NULL) {
         return status;
@@ -4140,25 +4216,26 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     entry_depth = (unsigned int)depth_result;
 
     reversible_for_quantizer = palette->use_reversible;
-    build_status = build_palette_kmeans(&entries,
-                                        &entries_float32,
-                                        data,
-                                        length,
-                                        input_depth,
-                                        palette->requested_colors,
-                                        &ncolors,
-                                        &origcolors,
-                                        palette->quality_mode,
-                                        palette->force_palette,
-                                        reversible_for_quantizer,
-                                        palette->final_merge_mode,
-                                        work_allocator,
-                                        pixelformat,
-                                        treat_input_as_float32,
-                                        logger,
-                                        job_seq,
-                                        engine_name,
-                                        telemetry);
+    build_request.result = &entries;
+    build_request.result_float32 = &entries_float32;
+    build_request.data = data;
+    build_request.length = length;
+    build_request.depth = input_depth;
+    build_request.reqcolors = palette->requested_colors;
+    build_request.ncolors = &ncolors;
+    build_request.origcolors = &origcolors;
+    build_request.quality_mode = palette->quality_mode;
+    build_request.force_palette = palette->force_palette;
+    build_request.use_reversible = reversible_for_quantizer;
+    build_request.final_merge_mode = palette->final_merge_mode;
+    build_request.allocator = work_allocator;
+    build_request.pixelformat = pixelformat;
+    build_request.treat_input_as_float32 = treat_input_as_float32;
+    build_request.logger = logger;
+    build_request.job_seq = job_seq;
+    build_request.engine_name = engine_name;
+    build_request.telemetry = telemetry;
+    build_status = build_palette_kmeans(&build_request);
     if (SIXEL_FAILED(build_status)) {
         status = build_status;
         goto end;
@@ -4229,16 +4306,19 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            char const *engine_name,
                            sixel_palette_telemetry_t *telemetry)
 {
-    return sixel_palette_build_kmeans_internal(palette,
-                                               (unsigned char const *)data,
-                                               length,
-                                               pixelformat,
-                                               allocator,
-                                               logger,
-                                               job_seq,
-                                               engine_name,
-                                               0,
-                                               telemetry);
+    sixel_palette_kmeans_internal_request_t request;
+
+    request.palette = palette;
+    request.data = (unsigned char const *)data;
+    request.length = length;
+    request.pixelformat = pixelformat;
+    request.allocator = allocator;
+    request.logger = logger;
+    request.job_seq = job_seq;
+    request.engine_name = engine_name;
+    request.treat_input_as_float32 = 0;
+    request.telemetry = telemetry;
+    return sixel_palette_build_kmeans_internal(&request);
 }
 
 SIXELSTATUS
@@ -4252,16 +4332,19 @@ sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
                                    char const *engine_name,
                                    sixel_palette_telemetry_t *telemetry)
 {
-    return sixel_palette_build_kmeans_internal(palette,
-                                               (unsigned char const *)data,
-                                               length,
-                                               pixelformat,
-                                               allocator,
-                                               logger,
-                                               job_seq,
-                                               engine_name,
-                                               1,
-                                               telemetry);
+    sixel_palette_kmeans_internal_request_t request;
+
+    request.palette = palette;
+    request.data = (unsigned char const *)data;
+    request.length = length;
+    request.pixelformat = pixelformat;
+    request.allocator = allocator;
+    request.logger = logger;
+    request.job_seq = job_seq;
+    request.engine_name = engine_name;
+    request.treat_input_as_float32 = 1;
+    request.telemetry = telemetry;
+    return sixel_palette_build_kmeans_internal(&request);
 }
 
 

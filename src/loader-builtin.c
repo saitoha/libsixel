@@ -76,9 +76,10 @@
 #if defined(_MSC_VER)
 # define SIXEL_STBI_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
-    && !defined(__STDC_NO_THREADS__)
+    && !defined(__STDC_NO_THREADS__) \
+    && !defined(__PCC__)
 # define SIXEL_STBI_TLS _Thread_local
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__PCC__)
 # define SIXEL_STBI_TLS __thread
 #else
 # define SIXEL_STBI_TLS

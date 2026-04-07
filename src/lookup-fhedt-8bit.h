@@ -41,14 +41,14 @@
 #   define SIXEL_FHEDT_TLS __declspec(thread)
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
 #  elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-#   if !defined(__STDC_NO_THREADS__)
+#   if !defined(__STDC_NO_THREADS__) && !defined(__PCC__)
 #    define SIXEL_FHEDT_TLS _Thread_local
 #    define SIXEL_FHEDT_TLS_AVAILABLE 1
 #   else
 #    define SIXEL_FHEDT_TLS
 #    define SIXEL_FHEDT_TLS_AVAILABLE 0
 #   endif
-#  elif defined(__GNUC__)
+#  elif defined(__GNUC__) && !defined(__PCC__)
 #   define SIXEL_FHEDT_TLS __thread
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
 #  else

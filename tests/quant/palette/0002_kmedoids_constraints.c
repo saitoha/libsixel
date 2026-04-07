@@ -4836,7 +4836,7 @@ test_run_bandit_prune_stratified_unique_sample_reproducibility_case(void)
         return 0;
     }
     if (SIXEL_FAILED(
-            sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+            sixel_kmd_test_pick_strat_idx(
                 point_count,
                 sample_size,
                 guided_points,
@@ -4848,7 +4848,7 @@ test_run_bandit_prune_stratified_unique_sample_reproducibility_case(void)
         return 0;
     }
     if (SIXEL_FAILED(
-            sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+            sixel_kmd_test_pick_strat_idx(
                 point_count,
                 sample_size,
                 guided_points,
@@ -4860,7 +4860,7 @@ test_run_bandit_prune_stratified_unique_sample_reproducibility_case(void)
         return 0;
     }
     if (SIXEL_FAILED(
-            sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+            sixel_kmd_test_pick_strat_idx(
                 point_count,
                 sample_size,
                 guided_points,

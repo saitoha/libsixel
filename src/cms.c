@@ -119,9 +119,10 @@ struct sixel_cms_transform {
 # else
 #  define SIXEL_CMS_TLS
 # endif
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) \
+    && !defined(__PCC__)
 # define SIXEL_CMS_TLS _Thread_local
-#elif defined(__GNUC__) || defined(__clang__)
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_CMS_TLS __thread
 #else
 # define SIXEL_CMS_TLS
