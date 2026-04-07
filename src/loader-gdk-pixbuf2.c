@@ -1351,3 +1351,13 @@ sixel_loader_gdkpixbuf2_new(sixel_allocator_t *allocator,
  */
 typedef int loader_gdkpixbuf2_disabled;
 #endif
+
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

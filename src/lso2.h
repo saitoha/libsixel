@@ -257,3 +257,13 @@ static const int var_coefs[][7] = {
    {       690,       172,       172,       862,       172,       864,       3313 },     /*  254 */
    {       690,       172,       172,       862,       172,       864,       3313 },     /*  255 */
 };
+
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

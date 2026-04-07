@@ -375,3 +375,13 @@ sixel_bn_mask(int x, int y)
 }
 
 #endif /* SIXEL_BLUENOISE_64X64_H */
+
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

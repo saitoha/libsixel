@@ -250,3 +250,13 @@ SIXEL_COMPAT_API ssize_t sixel_compat_write(int fd,
 SIXEL_COMPAT_API char *sixel_compat_realpath(const char *path);
 
 #endif /* SIXEL_COMPAT_STUB_H */
+
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
