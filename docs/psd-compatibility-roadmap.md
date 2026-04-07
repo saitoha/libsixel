@@ -269,8 +269,8 @@ Key points used by this roadmap:
   - `psd-tools` duotone hardcase (`colormodes/4x4_8bit_duotone.psd`) now uses
     coregraphics hybrid expected (`.six`) instead of `psd-tools composite`
     baseline to avoid unsupported-duotone parity noise; `1293` is no longer XFAIL.
-  - Additional MIT-licensed `psd-tools` hardcases are now imported with static
-    fixture/expected assets and tracked as XFAIL parity gaps:
+  - Additional MIT-licensed `psd-tools` hardcases are imported with static
+    fixture/expected assets and covered by PASS LSQA parity tests:
     `blend-and-clipping.psd`, `layers-minimal/pattern-fill.psd`,
     and `effects/shape-fx.psd`.
 - Validation trace coverage includes:
