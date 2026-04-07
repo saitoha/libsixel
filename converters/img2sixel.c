@@ -227,7 +227,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "        :merge=MODE (:g=MODE) auto, none, ward\n"
         "        :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
         "        :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
-        "      kmeans   -> k-means++ clustering. sub-option:\n"
+        "      kmeans   -> k-means clustering. sub-option:\n"
         "          :inittype=TYPE (:i=TYPE) choose k-means seed mode:\n"
         "              auto -> choose seed mode automatically (default)\n"
         "              none -> disable specialized seeding\n"
