@@ -836,7 +836,7 @@ static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
 static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     {
         "merge",
-        NULL,
+        "g",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -845,7 +845,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     },
     {
         "merge_oversplit",
-        NULL,
+        "o",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -853,7 +853,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     },
     {
         "merge_lloyd",
-        NULL,
+        "l",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -997,7 +997,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "merge",
-        NULL,
+        "g",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -1006,7 +1006,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "merge_oversplit",
-        NULL,
+        "o",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -1014,7 +1014,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "merge_lloyd",
-        NULL,
+        "l",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -1146,7 +1146,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     },
     {
         "merge",
-        NULL,
+        "g",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -1155,7 +1155,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     },
     {
         "merge_oversplit",
-        NULL,
+        "o",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -1163,7 +1163,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     },
     {
         "merge_lloyd",
-        NULL,
+        "l",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,

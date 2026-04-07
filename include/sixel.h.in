@@ -398,11 +398,11 @@ typedef int SIXELSTATUS;
                                                                 solver
                                                   auto/heckbert/kmeans/medoids
                                                   share merge suboptions:
-                                                    merge:
+                                                    merge (or g):
                                                       auto, none, ward
-                                                    merge_oversplit:
+                                                    merge_oversplit (or o):
                                                       float in 1.0-3.0
-                                                    merge_lloyd:
+                                                    merge_lloyd (or l):
                                                       0 or integer in 1-30
                                                   kmeans accepts suboptions in:
                                                     kmeans:key=value[:key=value...]

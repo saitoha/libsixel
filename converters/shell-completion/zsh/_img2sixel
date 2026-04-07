@@ -209,18 +209,18 @@ _quantizemodel() {
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
-        if [[ ${key} == merge ]]; then
+        if [[ ${key} == merge || ${key} == g ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
           return 0
-        elif [[ ${key} == merge_oversplit ]]; then
+        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
                      "${prefix}${key}=1.8" \
                      "${prefix}${key}=2.0"
           return 0
-        elif [[ ${key} == merge_lloyd ]]; then
+        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1" \
                      "${prefix}${key}=3" \
@@ -230,8 +230,11 @@ _quantizemodel() {
         fi
       else
         prefix=${current%${segment}}
-        compadd -- "${prefix}merge=" \
+        compadd -- "${prefix}g=" \
+                   "${prefix}merge=" \
+                   "${prefix}o=" \
                    "${prefix}merge_oversplit=" \
+                   "${prefix}l=" \
                    "${prefix}merge_lloyd="
         return 0
       fi
@@ -330,18 +333,18 @@ _quantizemodel() {
                      "${prefix}${key}=32" \
                      "${prefix}${key}=64"
           return 0
-        elif [[ ${key} == merge ]]; then
+        elif [[ ${key} == merge || ${key} == g ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
           return 0
-        elif [[ ${key} == merge_oversplit ]]; then
+        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
                      "${prefix}${key}=1.8" \
                      "${prefix}${key}=2.0"
           return 0
-        elif [[ ${key} == merge_lloyd ]]; then
+        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1" \
                      "${prefix}${key}=3" \
@@ -365,8 +368,11 @@ _quantizemodel() {
                    "${prefix}miniter=" "${prefix}polish_iter=" \
                    "${prefix}feedback_slots=" \
                    "${prefix}feedback_interval=" \
+                   "${prefix}g=" \
                    "${prefix}merge=" \
+                   "${prefix}o=" \
                    "${prefix}merge_oversplit=" \
+                   "${prefix}l=" \
                    "${prefix}merge_lloyd="
         return 0
       fi
@@ -451,18 +457,18 @@ _quantizemodel() {
                      "${prefix}${key}=256" \
                      "${prefix}${key}=512"
           return 0
-        elif [[ ${key} == merge ]]; then
+        elif [[ ${key} == merge || ${key} == g ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
           return 0
-        elif [[ ${key} == merge_oversplit ]]; then
+        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
                      "${prefix}${key}=1.8" \
                      "${prefix}${key}=2.0"
           return 0
-        elif [[ ${key} == merge_lloyd ]]; then
+        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1" \
                      "${prefix}${key}=3" \
@@ -485,8 +491,11 @@ _quantizemodel() {
                    "${prefix}bandit_iter=" \
                    "${prefix}bandit_candidates=" \
                    "${prefix}bandit_batch=" \
+                   "${prefix}g=" \
                    "${prefix}merge=" \
+                   "${prefix}o=" \
                    "${prefix}merge_oversplit=" \
+                   "${prefix}l=" \
                    "${prefix}merge_lloyd="
         return 0
       fi
