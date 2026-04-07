@@ -1575,6 +1575,45 @@ sixel_builtin_psd_layer_has_decodable_pixel_channels(
     return 0;
 }
 
+static int
+sixel_builtin_psd_layer_has_synthetic_fill_candidate(
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    if (layer == NULL) {
+        return 0;
+    }
+    if (layer->has_fill_payload == 0 && layer->has_tysh_payload == 0) {
+        return 0;
+    }
+    if (layer->has_malformed_fill_payload != 0) {
+        return 0;
+    }
+    if (layer->tysh_fill_flag_present != 0 &&
+        layer->tysh_fill_flag_enabled == 0) {
+        if (layer->tysh_stroke_flag_present != 0 &&
+            layer->tysh_stroke_flag_enabled != 0 &&
+            layer->tysh_stroke_color_present != 0) {
+            return 1;
+        }
+        return 0;
+    }
+    return layer->fill_kind != SIXEL_BUILTIN_PSD_FILL_NONE ? 1 : 0;
+}
+
+static int
+sixel_builtin_psd_layer_is_fallback_drawable(
+    sixel_builtin_psd_info_t const *info,
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    if (info == NULL || layer == NULL || layer->visible == 0) {
+        return 0;
+    }
+    if (sixel_builtin_psd_layer_has_decodable_pixel_channels(info, layer)) {
+        return 1;
+    }
+    return sixel_builtin_psd_layer_has_synthetic_fill_candidate(layer);
+}
+
 static void
 sixel_builtin_psd_layer_model_init(sixel_builtin_psd_layer_model_t *model)
 {
@@ -10314,6 +10353,117 @@ sixel_builtin_psd_is_layer_hidden(unsigned char flags)
     return (flags & 0x02u) != 0u;
 }
 
+static int
+sixel_builtin_psd_build_clip_alpha_map_from_layer_record(
+    float *clip_alpha_map,
+    sixel_builtin_psd_info_t const *info,
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    sixel_builtin_psd_layer_record_t base_layer;
+    int left;
+    int top;
+    int right;
+    int bottom;
+    int x;
+    int y;
+    float alpha_value;
+    size_t row_offset;
+
+    memset(&base_layer, 0, sizeof(base_layer));
+    left = 0;
+    top = 0;
+    right = 0;
+    bottom = 0;
+    x = 0;
+    y = 0;
+    alpha_value = 0.0f;
+    row_offset = 0u;
+    if (clip_alpha_map == NULL || info == NULL || layer == NULL ||
+        info->width == 0u || info->height == 0u) {
+        return 0;
+    }
+
+    memset(clip_alpha_map,
+           0,
+           (size_t)info->width * (size_t)info->height * sizeof(float));
+
+    base_layer = *layer;
+    if ((base_layer.width == 0u || base_layer.height == 0u) &&
+        !sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
+            info,
+            &base_layer)) {
+        return 0;
+    }
+
+    left = base_layer.left;
+    top = base_layer.top;
+    right = base_layer.left + (int)base_layer.width;
+    bottom = base_layer.top + (int)base_layer.height;
+    if (left < 0) {
+        left = 0;
+    }
+    if (top < 0) {
+        top = 0;
+    }
+    if (right > (int)info->width) {
+        right = (int)info->width;
+    }
+    if (bottom > (int)info->height) {
+        bottom = (int)info->height;
+    }
+    if (right <= left || bottom <= top) {
+        return 0;
+    }
+
+    alpha_value = sixel_builtin_psd_clamp_alpha_float32(
+        (float)base_layer.opacity / 255.0f);
+    if (alpha_value <= 0.0f) {
+        return 0;
+    }
+
+    for (y = top; y < bottom; ++y) {
+        row_offset = (size_t)y * (size_t)info->width;
+        for (x = left; x < right; ++x) {
+            clip_alpha_map[row_offset + (size_t)x] = alpha_value;
+        }
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_psd_prepare_clipping_base_indices(
+    sixel_builtin_psd_info_t const *info,
+    sixel_builtin_psd_layer_model_t const *model,
+    int *clip_base_indices)
+{
+    int current_base;
+    size_t idx;
+
+    current_base = -1;
+    idx = 0u;
+    if (info == NULL || model == NULL || clip_base_indices == NULL ||
+        model->layers == NULL || model->layer_count == 0u) {
+        return 0;
+    }
+    for (idx = 0u; idx < model->layer_count; ++idx) {
+        sixel_builtin_psd_layer_record_t const *layer;
+
+        layer = &model->layers[idx];
+        clip_base_indices[idx] = -1;
+        if (layer->visible == 0) {
+            continue;
+        }
+        if (layer->clipping != 0u) {
+            clip_base_indices[idx] = current_base;
+            continue;
+        }
+        if (sixel_builtin_psd_layer_is_fallback_drawable(info, layer)) {
+            current_base = (int)idx;
+        }
+    }
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_builtin_psd_parse_layer_extra_data(
     unsigned char const *buffer,
@@ -12932,7 +13082,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     float *canvas_rgb_premul;
     float *canvas_alpha;
     float *clip_alpha_map;
+    int *clip_base_indices;
     int clip_alpha_valid;
+    int clipping_base_index;
     int preserve_alpha;
     int cms_applied;
     int has_transparency;
@@ -12946,7 +13098,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     canvas_rgb_premul = NULL;
     canvas_alpha = NULL;
     clip_alpha_map = NULL;
+    clip_base_indices = NULL;
     clip_alpha_valid = 0;
+    clipping_base_index = -1;
     preserve_alpha = 0;
     cms_applied = 0;
     has_transparency = 0;
@@ -12990,7 +13144,11 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     clip_alpha_map = (float *)sixel_allocator_malloc(
         chunk->allocator,
         pixel_count * sizeof(float));
-    if (canvas_rgb_premul == NULL || canvas_alpha == NULL || clip_alpha_map == NULL) {
+    clip_base_indices = (int *)sixel_allocator_malloc(
+        chunk->allocator,
+        model.layer_count * sizeof(int));
+    if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
+        clip_alpha_map == NULL || clip_base_indices == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         sixel_helper_set_additional_message(
             "builtin PSD: sixel_allocator_malloc() failed.");
@@ -12999,6 +13157,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     memset(canvas_rgb_premul, 0, pixel_count * 3u * sizeof(float));
     memset(canvas_alpha, 0, pixel_count * sizeof(float));
     memset(clip_alpha_map, 0, pixel_count * sizeof(float));
+    if (!sixel_builtin_psd_prepare_clipping_base_indices(info,
+                                                         &model,
+                                                         clip_base_indices)) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
 
     for (; i != limit; i += step) {
         sixel_builtin_psd_layer_record_t const *layer;
@@ -13019,6 +13183,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         src_layer.pixel_count = 0u;
         synthetic_fill = 0;
         fillflag_skip = 0;
+        clipping_base_index = -1;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
             info,
             layer);
@@ -13249,6 +13414,26 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             continue;
         }
         if (apply_clipping != 0 && clip_alpha_valid == 0) {
+            if (layer->has_fill_payload != 0 ||
+                layer->has_tysh_payload != 0) {
+                clipping_base_index = clip_base_indices[(size_t)i];
+                if (clipping_base_index >= 0 &&
+                    !sixel_builtin_psd_layer_has_decodable_pixel_channels(
+                        info,
+                        &model.layers[(size_t)clipping_base_index]) &&
+                    sixel_builtin_psd_build_clip_alpha_map_from_layer_record(
+                        clip_alpha_map,
+                        info,
+                        &model.layers[(size_t)clipping_base_index])) {
+                    clip_alpha_valid = 1;
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: resolved clipping base for "
+                        "non-pixel clipping layer");
+                }
+            }
+        }
+        if (apply_clipping != 0 && clip_alpha_valid == 0) {
             sixel_trace_topic_message(
                 "psd_decode",
                 "builtin PSD: clipping layer without base; skipping layer");
@@ -13344,6 +13529,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         ppixelformat);
 
 cleanup:
+    if (clip_base_indices != NULL) {
+        sixel_allocator_free(chunk->allocator, clip_base_indices);
+    }
     if (clip_alpha_map != NULL) {
         sixel_allocator_free(chunk->allocator, clip_alpha_map);
     }
