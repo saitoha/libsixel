@@ -702,6 +702,30 @@ def generate(out_dir: pathlib.Path) -> None:
             malformed_resources=mode4_malformed_resources,
         )
 
+    # Representative ICC contract for TySh /DefaultStyleSheet /Color
+    # [/DeviceCMYK ...] on mode7(4ch->CMYK16).
+    write_valid_icc_variants(
+        out_dir,
+        source_names=[
+            "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_cmyk.psd",
+        ],
+        valid_resource=mode7_valid_icc_resource,
+    )
+    write_bad_icc_variants(
+        out_dir,
+        source_names=[
+            "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_cmyk.psd",
+        ],
+        bad_resource=mode7_bad_icc_resource,
+    )
+    write_malformed_icc_variants(
+        out_dir,
+        source_names=[
+            "snake16_mode7_cmyk16_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_default_stylesheet_color_values_named_device_cmyk.psd",
+        ],
+        malformed_resources=mode7_malformed_resources,
+    )
+
 
 def main() -> int:
     out_dir = pathlib.Path(__file__).resolve().parent

@@ -169,6 +169,9 @@ Key points used by this roadmap:
       same precedence contract (`StyleRun` > `StyleSheetData` >
       `DefaultStyleSheet` > top-level `FillColor` > loose fallback), including
       representative decode+LSQA coverage on PSD/PSB CMYK16/CMYK32 paths.
+    - mode7 CMYK16 `DefaultStyleSheet /Color /Values [/DeviceCMYK ...]`
+      ICC representative contract now includes `valid/bad/malformed`
+      trace/decode coverage on PSD/PSB paths.
   - descriptor fill LSQA coverage now includes:
     - `SoCo` descriptor color-object paths (`RGB/CMYK/Grayscale/HSB/Lab`)
       across `RGB8`, `CMYK8`, and `mode7(4ch->CMYK8)` fallback surfaces,
