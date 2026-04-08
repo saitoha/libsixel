@@ -1809,6 +1809,45 @@ sixel_builtin_psd_linear_to_byte(float value)
 }
 
 static int
+sixel_builtin_psd_has_partial_alpha_8bit(unsigned char const *alpha_plane,
+                                         size_t pixel_count)
+{
+    size_t i;
+    unsigned char alpha;
+
+    i = 0u;
+    alpha = 0u;
+    if (alpha_plane == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < pixel_count; ++i) {
+        alpha = alpha_plane[i];
+        if (alpha != 0u && alpha != 255u) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int
+sixel_builtin_psd_has_opaque_alpha_8bit(unsigned char const *alpha_plane,
+                                        size_t pixel_count)
+{
+    size_t i;
+
+    i = 0u;
+    if (alpha_plane == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < pixel_count; ++i) {
+        if (alpha_plane[i] == 255u) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_layer_is_non_pixel_key(char const key[5])
 {
     /* Common Photoshop adjustment/text/smart-object payload keys. */
@@ -20993,6 +21032,9 @@ sixel_builtin_decode_psd_rgb_8bit(
     int g;
     int b;
     int keep_straight_alpha_colors;
+    int has_partial_alpha;
+    int has_opaque_alpha;
+    int has_negative_layer_count;
     SIXELSTATUS layer_status;
 
     plane_r = NULL;
@@ -21010,6 +21052,9 @@ sixel_builtin_decode_psd_rgb_8bit(
     g = 0;
     b = 0;
     keep_straight_alpha_colors = 0;
+    has_partial_alpha = 0;
+    has_opaque_alpha = 0;
+    has_negative_layer_count = 0;
     layer_status = SIXEL_FALSE;
 
     if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
@@ -21123,14 +21168,8 @@ sixel_builtin_decode_psd_rgb_8bit(
 
     preserve_alpha = (bgcolor == NULL && info->channels >= 4u) ? 1 : 0;
     want_alpha = info->channels >= 4u ? 1 : 0;
-    if (preserve_alpha != 0 &&
-        sixel_builtin_psd_has_minimum_composite_payload(chunk, info) &&
-        sixel_builtin_psd_has_negative_layer_count(chunk, info)) {
-        /* Merged alpha can be non-portable for fully transparent pixels.
-         * Prefer straight merged RGB in this case. */
-        preserve_alpha = 0;
-        want_alpha = 0;
-    }
+    has_negative_layer_count =
+        sixel_builtin_psd_has_negative_layer_count(chunk, info);
     keep_straight_alpha_colors =
         (preserve_alpha != 0 &&
          sixel_builtin_psd_has_minimum_composite_payload(chunk, info))
@@ -21175,6 +21214,37 @@ sixel_builtin_decode_psd_rgb_8bit(
         sixel_helper_set_additional_message(
             "builtin PSD: malformed compressed channel stream");
         return SIXEL_STBI_ERROR;
+    }
+    if (plane_alpha != NULL) {
+        has_partial_alpha = sixel_builtin_psd_has_partial_alpha_8bit(
+            plane_alpha,
+            pixel_count);
+        has_opaque_alpha = sixel_builtin_psd_has_opaque_alpha_8bit(
+            plane_alpha,
+            pixel_count);
+        if (has_negative_layer_count != 0 &&
+            has_opaque_alpha != 0) {
+            /*
+             * Negative layer counts come from merged composites whose alpha
+             * can vary between producers. Prefer merged RGB and discard alpha
+             * when an opaque anchor exists.
+             */
+            sixel_allocator_free(chunk->allocator, plane_alpha);
+            plane_alpha = NULL;
+            want_alpha = 0;
+            preserve_alpha = 0;
+            keep_straight_alpha_colors = 0;
+            sixel_allocator_free(chunk->allocator, transparent_mask);
+            transparent_mask = NULL;
+        } else if (keep_straight_alpha_colors != 0 &&
+                   has_partial_alpha != 0 &&
+                   has_opaque_alpha == 0) {
+            /*
+             * Transparent-mask side channel can express only binary alpha.
+             * Premultiply partial-only composites without opaque anchors.
+             */
+            keep_straight_alpha_colors = 0;
+        }
     }
 
     rgb = (unsigned char *)sixel_allocator_malloc(chunk->allocator, pixel_count * 3u);
