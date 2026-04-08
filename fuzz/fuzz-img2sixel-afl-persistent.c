@@ -64,9 +64,9 @@ fuzz_read_byte(unsigned char const *data,
 static void
 fuzz_setopt(sixel_encoder_t *encoder,
             int opt,
-            char const *optarg)
+            char const *arg)
 {
-    (void)sixel_encoder_setopt(encoder, opt, optarg);
+    (void)sixel_encoder_setopt(encoder, opt, arg);
 }
 
 static void

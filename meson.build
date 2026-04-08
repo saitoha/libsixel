@@ -35,6 +35,17 @@ cc = meson.get_compiler('c')
 fs = import('fs')
 conf = configuration_data()
 have_objc = add_languages('objc', required: false, native: false)
+
+# Meson does not recognize pcc natively, so pcc builds use a wrapper that
+# reports a GCC-like identity. Probe the predefined macro to keep pcc-specific
+# workarounds explicit inside this build file.
+is_pcc_backend = cc.compiles('''
+  #ifndef __PCC__
+  #error not pcc
+  #endif
+  int main(void) { return 0; }
+''')
+
 if have_objc
   objc = meson.get_compiler('objc')
   message('Objective-C compiler found: ' + objc.get_id())
@@ -82,6 +93,20 @@ conf.set_quoted('VERSION', meson.project_version())
 if get_option('gcov')
   add_project_arguments('--coverage', language: 'c')
   add_project_link_arguments('--coverage', language: 'c')
+endif
+
+if is_pcc_backend
+  # pcc-provided crt objects can miss .note.GNU-stack. Ask the linker to mark
+  # the output stack as non-executable when the flag is supported.
+  if cc.has_link_argument('-Wl,-z,noexecstack')
+    add_project_link_arguments('-Wl,-z,noexecstack', language: 'c')
+  endif
+
+  # Meson's generated config.h uses #pragma once. pcc accepts it but warns on
+  # every translation unit, so suppress unknown-pragma diagnostics here.
+  if cc.has_argument('-Wno-unknown-pragmas')
+    add_project_arguments('-Wno-unknown-pragmas', language: 'c')
+  endif
 endif
 
 analyzer_summary = 'disabled'
@@ -1551,7 +1576,9 @@ elif host_system == 'linux'
 endif
 
 # Limit x86-specific headers to x86 targets so ARM builds skip them cleanly.
-if cpu == 'x86' or cpu == 'x86_64'
+# pcc does not ship GNU x86 intrinsic headers (cpuid.h/immintrin.h), so keep
+# these probes disabled there even when wrapped as a GCC frontend.
+if (cpu == 'x86' or cpu == 'x86_64') and not is_pcc_backend
   if cc.has_header('immintrin.h')
     conf.set('HAVE_IMMINTRIN_H', 1)
   endif
@@ -1565,7 +1592,7 @@ endif
 if cc.has_header('strings.h')
   conf.set('HAVE_STRINGS_H', 1)
 endif
-if cpu == 'x86' or cpu == 'x86_64'
+if (cpu == 'x86' or cpu == 'x86_64') and not is_pcc_backend
   if cc.links('''#include <immintrin.h>
 int main(void) {
   if (__builtin_cpu_supports("sse2")) {
@@ -1590,7 +1617,9 @@ xsave_probe_opt = get_option('xsave_probe')
 xsave_probe_message = 'no'
 have_xgetbv_intrin = false
 
-if cpu == 'x86' or cpu == 'x86_64'
+if is_pcc_backend
+  xsave_probe_message = 'no (pcc)'
+elif cpu == 'x86' or cpu == 'x86_64'
   if not xsave_probe_opt.disabled()
     if cc.has_header('immintrin.h') and cc.has_function('_xgetbv',
         prefix: '#include <immintrin.h>')
@@ -1615,6 +1644,8 @@ endif
 simd_opt = get_option('simd')
 if simd_opt.disabled()
   simd_message = 'no'
+elif is_pcc_backend
+  simd_message = 'no (pcc)'
 elif host_system == 'emscripten'
   if cc.has_header('emmintrin.h')
     conf.set('HAVE_EMMINTRIN_H', 1)
@@ -1697,6 +1728,36 @@ elif cpu.startswith('arm') or cpu == 'aarch32'
   endif
 else
   simd_message = 'no'
+endif
+
+# Meson can report false positives for a few GNU/MSVC probes when the compiler
+# identity is wrapped for pcc detection.  Force these probes off so Linux+pcc
+# links use the same code paths as autotools+pcc.
+if is_pcc_backend and host_system != 'windows'
+  foreach macro_name : [
+    'HAVE_FOPEN_S',
+    'HAVE_SSCANF_S',
+    'HAVE_STRCPY_S',
+    'HAVE__CHMOD',
+    'HAVE__CLOSE',
+    'HAVE__COMMIT',
+    'HAVE__DUPENV_S',
+    'HAVE__FILENO',
+    'HAVE__FULLPATH',
+    'HAVE__ISATTY',
+    'HAVE__MKDIR',
+    'HAVE__MKTEMP',
+    'HAVE__OPEN',
+    'HAVE__PUTENV_S',
+    'HAVE__REALPATH',
+    'HAVE__STRCMPI',
+    'HAVE__STRERROR_R',
+    'HAVE__STRICMP',
+    'HAVE__WRITE',
+    'HAVE___BUILTIN_UNREACHABLE',
+  ]
+    conf.set(macro_name, false)
+  endforeach
 endif
 
 config_h = configure_file(output: 'config.h', configuration: conf)

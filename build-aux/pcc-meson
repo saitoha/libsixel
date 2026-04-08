@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+#
+# SPDX-License-Identifier: MIT
+#
+# pcc wrapper for Meson native builds.
+#
+# Meson does not currently recognize pcc as a first-class compiler.  This
+# wrapper reports a GCC-like compiler identity for Meson detection while still
+# using pcc for real compile/link steps.
+
+import os
+import subprocess
+import sys
+
+
+REAL_PCC = os.environ.get("SIXEL_REAL_PCC", "pcc")
+GCC = os.environ.get("SIXEL_PCC_MESON_GCC", "gcc")
+LD = os.environ.get("SIXEL_PCC_MESON_LD", "ld")
+
+
+def run_or_none(command):
+    try:
+        return subprocess.call(command)
+    except OSError:
+        return None
+
+
+def run_with_fallback(command, fallback_lines):
+    result = run_or_none(command)
+    if result is not None:
+        return result
+    for line in fallback_lines:
+        sys.stdout.write(line + "\n")
+    return 0
+
+
+def main():
+    args = sys.argv[1:]
+
+    if len(args) == 1:
+        arg = args[0]
+        if arg == "--version":
+            return run_with_fallback(
+                [GCC, "--version"],
+                [
+                    "gcc (compatible wrapper over pcc)",
+                    "Copyright (C) 2022 Free Software Foundation, Inc.",
+                ],
+            )
+        if arg == "-dumpmachine":
+            return run_with_fallback(
+                [GCC, "-dumpmachine"],
+                ["x86_64-linux-gnu"],
+            )
+        if arg == "-dumpversion":
+            return run_with_fallback(
+                [GCC, "-dumpversion"],
+                ["12.2.0"],
+            )
+        if arg == "-print-search-dirs":
+            result = run_or_none([GCC, "-print-search-dirs"])
+            if result is not None:
+                return result
+            return 0
+        if arg == "-Wl,--version":
+            result = run_or_none([LD, "--version"])
+            if result is not None:
+                return result
+            return 0
+
+    # Meson header probes use preprocess-only commands (`-E -P ...`) that can
+    # trigger pcc-cpp parser failures.  For those probe-only invocations, use
+    # gcc's preprocessor while keeping pcc for normal compilation and linking.
+    if "-E" in args and "-c" not in args and "-S" not in args:
+        result = run_or_none([GCC] + args)
+        if result is not None:
+            return result
+
+    os.execvp(REAL_PCC, [REAL_PCC] + args)
+    return 127
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
