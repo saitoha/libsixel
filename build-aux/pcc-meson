@@ -76,11 +76,10 @@ def main():
         if result is not None:
             return result
 
-    # Older distro pcc packages reject several GNU attributes used by modern
-    # glibc headers (for example `__cold__` in stdio.h).  Drop all GNU-style
-    # attributes unless the caller explicitly opts out.
+    # Older distro pcc packages can reject GNU attributes used by modern glibc
+    # headers.  Ubuntu 24.04 currently fails on `__cold__` in stdio.h.
     if os.environ.get("SIXEL_PCC_KEEP_ATTRIBUTES", "") != "1":
-        args = ["-D__attribute__(x)="] + args
+        args = ["-D__cold__="] + args
 
     os.execvp(REAL_PCC, [REAL_PCC] + args)
     return 127
