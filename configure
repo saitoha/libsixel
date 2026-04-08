@@ -16851,6 +16851,10 @@ then :
   # Pin this cache variable so configure does not abort before checks run.
   ac_cv_c_undeclared_builtin_options='none needed'
 
+  # Newer glibc headers use __cold__, which pcc does not understand.
+  # Define it away for all pcc Autotools builds.
+  CPPFLAGS="$CPPFLAGS -D__cold__="
+
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,-z,noexecstack" >&5
 printf %s "checking whether the linker accepts -Wl,-z,noexecstack... " >&6; }
 if test ${ac_cv_sixel_ld_noexecstack+y}

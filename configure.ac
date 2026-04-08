@@ -641,6 +641,10 @@ AS_IF([test "x$ac_cv_sixel_cc_is_pcc" = "xyes"], [
   # Pin this cache variable so configure does not abort before checks run.
   ac_cv_c_undeclared_builtin_options='none needed'
 
+  # Newer glibc headers use __cold__, which pcc does not understand.
+  # Define it away for all pcc Autotools builds.
+  CPPFLAGS="$CPPFLAGS -D__cold__="
+
   AC_CACHE_CHECK(
     [whether the linker accepts -Wl,-z,noexecstack],
     [ac_cv_sixel_ld_noexecstack],
