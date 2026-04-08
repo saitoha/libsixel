@@ -154,6 +154,167 @@ gdkpixbuf_clear_error(GError **pgerror)
     *pgerror = NULL;
 }
 
+static GdkPixbufAnimation *
+gdkpixbuf_loader_get_animation_safe(GdkPixbufLoader *loader)
+{
+    GdkPixbufAnimation *animation;
+
+    animation = NULL;
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    animation = gdk_pixbuf_loader_get_animation(loader);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
+    return animation;
+}
+
+static gboolean
+gdkpixbuf_animation_is_static_image_safe(GdkPixbufAnimation *animation)
+{
+    gboolean is_static;
+
+    is_static = FALSE;
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    is_static = gdk_pixbuf_animation_is_static_image(animation);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
+    return is_static;
+}
+
+static GdkPixbuf *
+gdkpixbuf_loader_get_static_pixbuf(GdkPixbufLoader *loader,
+                                   GdkPixbufAnimation *animation)
+{
+    GdkPixbuf *pixbuf;
+
+    pixbuf = NULL;
+#if HAVE_GDK_PIXBUF_244
+    (void)animation;
+    pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+#else
+    (void)loader;
+    pixbuf = gdk_pixbuf_animation_get_static_image(animation);
+#endif
+    return pixbuf;
+}
+
+static SIXELSTATUS
+gdkpixbuf_decode_chunk_with_fallback(sixel_chunk_t const *pchunk,
+                                     int is_sixel,
+                                     GdkPixbufLoader **ploader)
+{
+    SIXELSTATUS status;
+    GdkPixbufLoader *loader;
+    GError *loader_error;
+    int use_sixel_loader;
+
+    status = SIXEL_FALSE;
+    loader = NULL;
+    loader_error = NULL;
+    use_sixel_loader = 0;
+    if (pchunk == NULL || ploader == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *ploader = NULL;
+
+retry:
+    if (use_sixel_loader != 0) {
+        loader = gdk_pixbuf_loader_new_with_type("sixel", &loader_error);
+        if (loader == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: sixel fallback loader creation failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+    } else {
+        loader = gdk_pixbuf_loader_new();
+        if (loader == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: gdk_pixbuf_loader_new failed.",
+                loader_error);
+            gdkpixbuf_clear_error(&loader_error);
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+    }
+
+    if (!gdk_pixbuf_loader_write(loader,
+                                 pchunk->buffer,
+                                 pchunk->size,
+                                 &loader_error)) {
+        if (use_sixel_loader != 0 || !is_sixel) {
+            if (use_sixel_loader != 0) {
+                gdkpixbuf_set_error_message(
+                    "load_with_gdkpixbuf: sixel fallback loader write failed.",
+                    loader_error);
+            } else {
+                gdkpixbuf_set_error_message(
+                    "load_with_gdkpixbuf: generic loader write failed.",
+                    loader_error);
+            }
+            gdkpixbuf_clear_error(&loader_error);
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        gdkpixbuf_set_error_message(
+            "load_with_gdkpixbuf: generic loader write failed "
+            "before sixel fallback.",
+            loader_error);
+        gdkpixbuf_clear_error(&loader_error);
+        g_object_unref(loader);
+        loader = NULL;
+        use_sixel_loader = 1;
+        goto retry;
+    }
+
+    if (!gdk_pixbuf_loader_close(loader, &loader_error)) {
+        if (use_sixel_loader != 0 || !is_sixel) {
+            if (use_sixel_loader != 0) {
+                gdkpixbuf_set_error_message(
+                    "load_with_gdkpixbuf: sixel fallback loader close failed.",
+                    loader_error);
+            } else {
+                gdkpixbuf_set_error_message(
+                    "load_with_gdkpixbuf: generic loader close failed.",
+                    loader_error);
+            }
+            gdkpixbuf_clear_error(&loader_error);
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        gdkpixbuf_set_error_message(
+            "load_with_gdkpixbuf: generic loader close failed "
+            "before sixel fallback.",
+            loader_error);
+        gdkpixbuf_clear_error(&loader_error);
+        g_object_unref(loader);
+        loader = NULL;
+        use_sixel_loader = 1;
+        goto retry;
+    }
+
+    *ploader = loader;
+    loader = NULL;
+    status = SIXEL_OK;
+
+end:
+    if (loader != NULL) {
+        gdk_pixbuf_loader_close(loader, NULL);
+        g_object_unref(loader);
+    }
+    gdkpixbuf_clear_error(&loader_error);
+    return status;
+}
+
 static SIXELSTATUS
 gdkpixbuf_parse_animation_start_frame_no(int *start_frame_no)
 {
@@ -492,14 +653,12 @@ gdkpixbuf_parse_png_decode_hint(sixel_chunk_t const *pchunk,
     size_t chunk_length;
     unsigned char const *type_ptr;
     unsigned char const *data_ptr;
-    int iend_reached;
 
     status = SIXEL_FALSE;
     offset = 0u;
     chunk_length = 0u;
     type_ptr = NULL;
     data_ptr = NULL;
-    iend_reached = 0;
     if (pchunk == NULL || hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -534,21 +693,15 @@ gdkpixbuf_parse_png_decode_hint(sixel_chunk_t const *pchunk,
                 return status;
             }
             hint->bit_depth = (int)data_ptr[8];
+            status = SIXEL_OK;
+            hint->parse_status = status;
+            return status;
         }
 
         offset += chunk_length + 4u;
-        if (memcmp(type_ptr, "IEND", 4u) == 0) {
-            iend_reached = 1;
-            break;
-        }
-    }
-    if (!iend_reached) {
-        status = SIXEL_FALSE;
-        hint->parse_status = status;
-        return status;
     }
 
-    status = SIXEL_OK;
+    status = SIXEL_FALSE;
     hint->parse_status = status;
     return status;
 }
@@ -604,14 +757,12 @@ gdkpixbuf_copy_pixbuf_to_frame(
     int alpha_all_opaque;
     int has_bg_for_alpha;
     int promote_float32;
-    int has_nonopaque_alpha;
     double const *decode_lut;
     unsigned int alpha_u8;
     double alpha_unit;
     double src_linear[3];
     double out_linear[3];
     double bg_linear[3];
-    int keep_mask;
 
     status = SIXEL_OK;
     source_pixels = NULL;
@@ -634,7 +785,6 @@ gdkpixbuf_copy_pixbuf_to_frame(
     alpha_all_opaque = 0;
     has_bg_for_alpha = 0;
     promote_float32 = 0;
-    has_nonopaque_alpha = 0;
     decode_lut = NULL;
     alpha_u8 = 0u;
     alpha_unit = 0.0;
@@ -647,7 +797,6 @@ gdkpixbuf_copy_pixbuf_to_frame(
     bg_linear[0] = 0.0;
     bg_linear[1] = 0.0;
     bg_linear[2] = 0.0;
-    keep_mask = 0;
     if (frame == NULL || pchunk == NULL || pixbuf == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -855,8 +1004,6 @@ gdkpixbuf_copy_pixbuf_to_frame(
             status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
         }
-        keep_mask = 0;
-        has_nonopaque_alpha = 0;
         for (y = 0u; y < (size_t)height; ++y) {
             for (x = 0u; x < (size_t)width; ++x) {
                 source_offset = (size_t)rowstride * y +
@@ -864,9 +1011,6 @@ gdkpixbuf_copy_pixbuf_to_frame(
                 dest_offset = (y * (size_t)width + x) * 3u;
                 index = y * (size_t)width + x;
                 alpha_u8 = source_pixels[source_offset + 3u];
-                if (alpha_u8 != 255u) {
-                    has_nonopaque_alpha = 1;
-                }
 
                 pixels_u8[dest_offset + 0u] = (unsigned char)(
                     ((unsigned int)source_pixels[source_offset + 0u] *
@@ -886,33 +1030,13 @@ gdkpixbuf_copy_pixbuf_to_frame(
             }
         }
 
-        if (!has_nonopaque_alpha) {
-            sixel_allocator_free(pchunk->allocator, mask);
-            mask = NULL;
-            for (y = 0u; y < (size_t)height; ++y) {
-                for (x = 0u; x < (size_t)width; ++x) {
-                    source_offset = (size_t)rowstride * y + x * 4u;
-                    dest_offset = (y * (size_t)width + x) * 3u;
-                    pixels_u8[dest_offset + 0u] =
-                        source_pixels[source_offset + 0u];
-                    pixels_u8[dest_offset + 1u] =
-                        source_pixels[source_offset + 1u];
-                    pixels_u8[dest_offset + 2u] =
-                        source_pixels[source_offset + 2u];
-                }
-            }
-            keep_mask = 0;
-        } else {
-            keep_mask = 1;
-        }
-
         frame->pixels.u8ptr = pixels_u8;
         pixels_u8 = NULL;
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         frame->colorspace = SIXEL_COLORSPACE_GAMMA;
         frame->transparent = -1;
         frame->alpha_zero_is_transparent = 0;
-        if (keep_mask && mask != NULL) {
+        if (mask != NULL) {
             frame->transparent_mask = mask;
             frame->transparent_mask_size = pixel_total;
             frame->alpha_zero_is_transparent = 1;
@@ -961,6 +1085,175 @@ cleanup:
     return status;
 }
 
+static SIXELSTATUS
+gdkpixbuf_emit_animation_frames(
+    sixel_frame_t *frame,
+    sixel_chunk_t const *pchunk,
+    GdkPixbufAnimation *animation,
+    gint64 start_time_usec,
+    int fstatic,
+    unsigned char const *bgcolor,
+    gdkpixbuf_png_decode_hint_t const *png_hint,
+    int resolved_start_frame_no,
+    int validate_positive_start_frame,
+    int loop_control,
+    sixel_load_image_function fn_load,
+    void *context,
+    int *lut_ready,
+    double lut[256])
+{
+    SIXELSTATUS status;
+    GdkPixbufAnimationIter *it;
+    GdkPixbuf *pixbuf;
+    gboolean finished;
+    gint64 current_time_usec;
+    int delay_ms;
+    int emit_callback;
+    int source_frame_no;
+    int start_frame_emitted;
+
+    status = SIXEL_FALSE;
+    it = NULL;
+    pixbuf = NULL;
+    finished = FALSE;
+    current_time_usec = start_time_usec;
+    delay_ms = 0;
+    emit_callback = 1;
+    source_frame_no = 0;
+    start_frame_emitted = 0;
+    if (frame == NULL ||
+        pchunk == NULL ||
+        animation == NULL ||
+        fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame->frame_no = 0;
+    frame->loop_count = 0;
+    it = gdkpixbuf_animation_get_iter_with_usec(animation, current_time_usec);
+    if (it == NULL) {
+        gdkpixbuf_set_error_message(
+            "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+            NULL);
+        status = SIXEL_GDK_ERROR;
+        goto end;
+    }
+
+    for (;;) {
+        finished = FALSE;
+        while (!gdkpixbuf_animation_iter_on_loading_frame(it)) {
+            pixbuf = gdkpixbuf_animation_iter_get_current_pixbuf(it);
+            if (pixbuf == NULL) {
+                finished = TRUE;
+                break;
+            }
+            status = gdkpixbuf_copy_pixbuf_to_frame(frame,
+                                                    pchunk,
+                                                    pixbuf,
+                                                    bgcolor,
+                                                    png_hint,
+                                                    lut_ready,
+                                                    lut);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+
+            delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
+            if (delay_ms < 0) {
+                delay_ms = 0;
+            }
+            current_time_usec += (gint64)delay_ms * 1000;
+            frame->delay = delay_ms / 10;
+            frame->multiframe = fstatic ? 0 : 1;
+            if (!gdkpixbuf_animation_iter_advance_with_usec(
+                    it,
+                    current_time_usec)) {
+                finished = TRUE;
+            }
+
+            emit_callback = 1;
+            if (frame->loop_count == 0 &&
+                resolved_start_frame_no != INT_MIN &&
+                source_frame_no < resolved_start_frame_no) {
+                emit_callback = 0;
+            }
+            if (emit_callback != 0) {
+                if (frame->loop_count == 0 &&
+                    resolved_start_frame_no != INT_MIN) {
+                    start_frame_emitted = 1;
+                }
+                /*
+                 * frame_no is consumed by the encoder to determine whether
+                 * DECSC (first emitted frame) or DECRC (subsequent frames)
+                 * should be written in tty scroll.
+                 */
+                if (frame->loop_count == 0 &&
+                    resolved_start_frame_no != INT_MIN) {
+                    frame->frame_no = source_frame_no -
+                        resolved_start_frame_no;
+                } else {
+                    frame->frame_no = source_frame_no;
+                }
+                status = fn_load(frame, context);
+                if (status != SIXEL_OK) {
+                    goto end;
+                }
+                if (fstatic) {
+                    finished = TRUE;
+                }
+            }
+
+            gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
+            source_frame_no++;
+
+            if (finished) {
+                break;
+            }
+        }
+
+        if (source_frame_no == 0) {
+            break;
+        }
+        if (validate_positive_start_frame != 0 &&
+            frame->loop_count == 0 &&
+            start_frame_emitted == 0) {
+            sixel_helper_set_additional_message(
+                "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+                " the animation frame range.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+
+        ++frame->loop_count;
+        if (loop_control == SIXEL_LOOP_DISABLE || source_frame_no == 1) {
+            break;
+        }
+
+        g_object_unref(it);
+        it = NULL;
+        current_time_usec = start_time_usec;
+        it = gdkpixbuf_animation_get_iter_with_usec(animation,
+                                                    current_time_usec);
+        if (it == NULL) {
+            gdkpixbuf_set_error_message(
+                "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+                NULL);
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        frame->frame_no = 0;
+        source_frame_no = 0;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (it != NULL) {
+        g_object_unref(it);
+    }
+    return status;
+}
+
 /*
  * Loader backed by gdk-pixbuf2. The entire animation is consumed via
  * GdkPixbufLoader, each frame is copied into a temporary buffer and forwarded
@@ -983,47 +1276,41 @@ load_with_gdkpixbuf(
     double lut[256]
 )
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
     GdkPixbuf *pixbuf;
-    GdkPixbufLoader *loader = NULL;
-    gboolean loader_closed = FALSE;  /* remember if loader was already closed */
-    GError *loader_error;
+    GdkPixbufLoader *loader;
     GdkPixbufAnimation *animation;
-    GdkPixbufAnimationIter *it = NULL;
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    GTimeVal time_val;
-    GTimeVal start_time;
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    sixel_frame_t *frame = NULL;
+    sixel_frame_t *frame;
     gdkpixbuf_png_decode_hint_t png_hint;
     SIXELSTATUS png_hint_status;
-    int delay_ms;
-    gboolean use_animation = FALSE;
-    gboolean is_sixel = FALSE;
+    gboolean use_animation;
+    gboolean is_sixel;
     SIXELSTATUS probe_status;
     int start_frame_no;
     int resolved_start_frame_no;
     int animation_frame_count;
     int validate_positive_start_frame;
-    int start_frame_emitted;
-    int emit_callback;
-    int source_frame_no;
+    gint64 start_time_usec;
 
-    loader_error = NULL;
+    status = SIXEL_FALSE;
+    pixbuf = NULL;
+    loader = NULL;
+    animation = NULL;
+    frame = NULL;
     gdkpixbuf_png_decode_hint_init(&png_hint);
     png_hint_status = SIXEL_FALSE;
+    use_animation = FALSE;
+    is_sixel = FALSE;
+    probe_status = SIXEL_FALSE;
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
     animation_frame_count = 0;
     validate_positive_start_frame = 0;
-    start_frame_emitted = 0;
-    emit_callback = 1;
-    source_frame_no = 0;
+    start_time_usec = 0;
+    /*
+     * gdk-pixbuf2 currently never emits PAL8. Keep legacy options accepted
+     * for API compatibility, but they are intentional no-ops here.
+     */
     (void)fuse_palette;
     (void)reqcolors;
 
@@ -1050,15 +1337,7 @@ load_with_gdkpixbuf(
 #if (! GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
 #endif
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    g_get_current_time(&time_val);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    start_time = time_val;
+    start_time_usec = g_get_real_time();
     /*
      * Try the generic loader first. Fall back to the SIXEL-specific loader
      * only when the data looks like SIXEL and the generic path fails.
@@ -1067,112 +1346,11 @@ load_with_gdkpixbuf(
     if (probe_status == SIXEL_OK) {
         is_sixel = TRUE;
     }
-    loader = gdk_pixbuf_loader_new();
-    if (loader == NULL) {
-        gdkpixbuf_set_error_message(
-            "load_with_gdkpixbuf: gdk_pixbuf_loader_new failed.",
-            loader_error);
-        gdkpixbuf_clear_error(&loader_error);
-        status = SIXEL_GDK_ERROR;
+    status = gdkpixbuf_decode_chunk_with_fallback(pchunk, is_sixel, &loader);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
-    /*
-     * feed the entire chunk; gdk-pixbuf will buffer as needed.  Always close
-     * the loader to let gdk finalize the parse state before consuming.
-     */
-    if (! gdk_pixbuf_loader_write(
-            loader, pchunk->buffer, pchunk->size, &loader_error)) {
-        if (!is_sixel) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: generic loader write failed.",
-                loader_error);
-            gdkpixbuf_clear_error(&loader_error);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-        gdkpixbuf_set_error_message(
-            "load_with_gdkpixbuf: generic loader write failed "
-            "before sixel fallback.",
-            loader_error);
-        gdkpixbuf_clear_error(&loader_error);
-        g_object_unref(loader);
-        loader = NULL;
-        loader = gdk_pixbuf_loader_new_with_type("sixel", &loader_error);
-        if (loader == NULL) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: sixel fallback loader creation failed.",
-                loader_error);
-            gdkpixbuf_clear_error(&loader_error);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-        if (! gdk_pixbuf_loader_write(
-                loader, pchunk->buffer, pchunk->size, &loader_error)) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: sixel fallback loader write failed.",
-                loader_error);
-            gdkpixbuf_clear_error(&loader_error);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-    }
-    if (! gdk_pixbuf_loader_close(loader, &loader_error)) {
-        if (!is_sixel) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: generic loader close failed.",
-                loader_error);
-            gdkpixbuf_clear_error(&loader_error);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-        gdkpixbuf_set_error_message(
-            "load_with_gdkpixbuf: generic loader close failed "
-            "before sixel fallback.",
-            loader_error);
-        gdkpixbuf_clear_error(&loader_error);
-        g_object_unref(loader);
-        loader = NULL;
-        loader = gdk_pixbuf_loader_new_with_type("sixel", &loader_error);
-        if (loader == NULL) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: sixel fallback loader creation failed.",
-                loader_error);
-            gdkpixbuf_clear_error(&loader_error);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-        if (! gdk_pixbuf_loader_write(
-                loader, pchunk->buffer, pchunk->size, &loader_error)) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: sixel fallback loader write failed.",
-                loader_error);
-            gdkpixbuf_clear_error(&loader_error);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-        if (! gdk_pixbuf_loader_close(loader, &loader_error)) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: sixel fallback loader close failed.",
-                loader_error);
-            gdkpixbuf_clear_error(&loader_error);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-    }
-    loader_closed = TRUE;
-
-#if HAVE_GDK_PIXBUF_244
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    animation = gdk_pixbuf_loader_get_animation(loader);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-#else
-    animation = gdk_pixbuf_loader_get_animation(loader);
-#endif
+    animation = gdkpixbuf_loader_get_animation_safe(loader);
     if (animation == NULL) {
         gdkpixbuf_set_error_message(
             "load_with_gdkpixbuf: gdk_pixbuf_loader_get_animation failed.",
@@ -1181,31 +1359,22 @@ load_with_gdkpixbuf(
         goto end;
     }
 
-#if HAVE_GDK_PIXBUF_244
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     /*
-     * animation_iter_advance() returns whether a frame changed at a timestamp,
-     * not whether the source is animated. Use the explicit static-image probe
-     * so short-delay GIFs are not misclassified as still images.
+     * animation_iter_advance() reports timeline transitions, not whether an
+     * image is animated. Keep explicit static-image probing to avoid false
+     * still-image classification for short-delay GIFs.
      */
-    use_animation = gdk_pixbuf_animation_is_static_image(animation) ? FALSE :
-                    TRUE;
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+    use_animation = gdkpixbuf_animation_is_static_image_safe(animation) ?
+                    FALSE : TRUE;
     /*
-     * Keep animated sources on the iterator path even for -S so the loader
-     * can honor SIXEL_LOADER_ANIMATION_START_FRAME_NO before selecting the
-     * single still frame to emit.
+     * Keep animated sources on the iterator path even for -S so start-frame
+     * selection is applied before picking the one frame to emit.
      */
-    if (!use_animation) {
-        pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+    if (use_animation != TRUE) {
+        pixbuf = gdkpixbuf_loader_get_static_pixbuf(loader, animation);
         if (pixbuf == NULL) {
             gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: gdk_pixbuf_loader_get_pixbuf failed.",
+                "load_with_gdkpixbuf: static image retrieval failed.",
                 NULL);
             status = SIXEL_GDK_ERROR;
             goto end;
@@ -1227,412 +1396,53 @@ load_with_gdkpixbuf(
         if (status != SIXEL_OK) {
             goto end;
         }
-    } else {
-        gboolean finished;
+        status = SIXEL_OK;
+        goto end;
+    }
 
-        if (start_frame_no != INT_MIN) {
-            /*
-             * Negative offsets require the frame count to resolve from the
-             * tail. Positive offsets can be validated while iterating.
-             */
-            if (start_frame_no < 0) {
-                status = gdkpixbuf_count_animation_frames(
-                    animation,
-                    g_get_real_time(),
-                    &animation_frame_count);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                status = gdkpixbuf_resolve_animation_start_frame_no(
-                    start_frame_no,
-                    animation_frame_count,
-                    &resolved_start_frame_no);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-            } else {
-                resolved_start_frame_no = start_frame_no;
-                validate_positive_start_frame = 1;
-            }
-        }
-
-        time_val = start_time;
-        frame->frame_no = 0;
-        source_frame_no = 0;
-        frame->loop_count = 0;
-        start_frame_emitted = 0;
-
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-        it = gdk_pixbuf_animation_get_iter(animation, &time_val);
-        if (it == NULL) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
-                NULL);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-
+    if (start_frame_no != INT_MIN) {
         /*
-         * gdk-pixbuf 2.44 still exposes the iterator API under deprecation
-         * guards. Keep warnings silenced while walking frames so we can reuse
-         * the same code path for animation playback.
+         * Negative offsets need one pre-count pass to resolve from the tail.
+         * Positive offsets are validated during frame iteration.
          */
-        for (;;) {
-            /* handle one logical loop of the animation */
-            finished = FALSE;
-            while (!gdkpixbuf_animation_iter_on_loading_frame(it)) {
-                /* {{{ */
-                pixbuf = gdkpixbuf_animation_iter_get_current_pixbuf(it);
-                if (pixbuf == NULL) {
-                    finished = TRUE;
-                    break;
-                }
-                status = gdkpixbuf_copy_pixbuf_to_frame(frame,
-                                                        pchunk,
-                                                        pixbuf,
-                                                        bgcolor,
-                                                        &png_hint,
-                                                        lut_ready,
-                                                        lut);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
-                if (delay_ms < 0) {
-                    delay_ms = 0;
-                }
-                /*
-                 * advance the synthetic clock before asking gdk to move
-                 * forward
-                 */
-                g_time_val_add(&time_val, delay_ms * 1000);
-                frame->delay = delay_ms / 10;
-                frame->multiframe = fstatic ? 0 : 1;
-
-                if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
-                    finished = TRUE;
-                }
-
-                emit_callback = 1;
-                if (frame->loop_count == 0 &&
-                    resolved_start_frame_no != INT_MIN &&
-                    source_frame_no < resolved_start_frame_no) {
-                    emit_callback = 0;
-                }
-                if (emit_callback) {
-                    if (frame->loop_count == 0 &&
-                        resolved_start_frame_no != INT_MIN) {
-                        start_frame_emitted = 1;
-                    }
-                    /*
-                     * frame_no is consumed by the encoder to determine
-                     * whether DECSC (first emitted frame) or DECRC
-                     * (subsequent frame) should be written in tty scroll.
-                     * Keep it as an emitted-frame index instead of the
-                     * original animation index so start-frame skipping does
-                     * not suppress DECSC on the first visible frame.
-                     */
-                    if (frame->loop_count == 0 &&
-                        resolved_start_frame_no != INT_MIN) {
-                        frame->frame_no = source_frame_no -
-                            resolved_start_frame_no;
-                    } else {
-                        frame->frame_no = source_frame_no;
-                    }
-                    status = fn_load(frame, context);
-                    if (status != SIXEL_OK) {
-                        goto end;
-                    }
-                    if (fstatic) {
-                        finished = TRUE;
-                    }
-                }
-                /*
-                 * Release reusable frame storage after each callback.
-                 * Downstream processing may replace pixels/palette/mask,
-                 * so reset from the current frame pointers.
-                 */
-                gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
-                source_frame_no++;
-
-                if (finished) {
-                    break;
-                }
-                /* }}} */
-            }
-
-            if (source_frame_no == 0) {
-                break;
-            }
-            /*
-             * Positive start-frame indexes are considered out of range when
-             * the first loop completes without emitting a frame.
-             */
-            if (validate_positive_start_frame != 0 &&
-                frame->loop_count == 0 &&
-                start_frame_emitted == 0) {
-                sixel_helper_set_additional_message(
-                    "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
-                    " the animation frame range.");
-                status = SIXEL_BAD_INPUT;
+        if (start_frame_no < 0) {
+            status = gdkpixbuf_count_animation_frames(animation,
+                                                      start_time_usec,
+                                                      &animation_frame_count);
+            if (SIXEL_FAILED(status)) {
                 goto end;
             }
-
-            /* finished processing one full loop */
-            ++frame->loop_count;
-
-            if (loop_control == SIXEL_LOOP_DISABLE || source_frame_no == 1) {
-                break;
-            }
-            /*
-             * GdkPixbufAnimation does not expose a finite loop counter.
-             * Loop handling therefore depends on loop_control only:
-             *   - DISABLE: stop after one logical loop.
-             *   - AUTO/FORCE: keep replaying until outer processing stops.
-             */
-
-            /* restart iteration from the beginning for the next pass */
-            g_object_unref(it);
-            time_val = start_time;
-            it = gdk_pixbuf_animation_get_iter(animation, &time_val);
-            if (it == NULL) {
-                gdkpixbuf_set_error_message(
-                    "load_with_gdkpixbuf: "
-                    "gdk_pixbuf_animation_get_iter failed.",
-                    NULL);
-                status = SIXEL_GDK_ERROR;
+            status = gdkpixbuf_resolve_animation_start_frame_no(
+                start_frame_no,
+                animation_frame_count,
+                &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            /* next pass starts counting frames from zero again */
-            frame->frame_no = 0;
-            source_frame_no = 0;
-        }
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    }
-#else
-    use_animation = gdk_pixbuf_animation_is_static_image(animation) ? FALSE :
-                    TRUE;
-    /*
-     * Keep animated sources on the iterator path even for -S so the loader
-     * can honor SIXEL_LOADER_ANIMATION_START_FRAME_NO before selecting the
-     * single still frame to emit.
-     */
-    if (!use_animation) {
-        pixbuf = gdk_pixbuf_animation_get_static_image(animation);
-        if (pixbuf == NULL) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: "
-                "gdk_pixbuf_animation_get_static_image failed.",
-                NULL);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-        status = gdkpixbuf_copy_pixbuf_to_frame(frame,
-                                                pchunk,
-                                                pixbuf,
-                                                bgcolor,
-                                                &png_hint,
-                                                lut_ready,
-                                                lut);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        frame->delay = 0;
-        frame->multiframe = 0;
-        frame->loop_count = 0;
-        status = fn_load(frame, context);
-        if (status != SIXEL_OK) {
-            goto end;
-        }
-    } else {
-        gboolean finished;
-
-        /* reset iterator to the beginning of the timeline */
-        if (start_frame_no != INT_MIN) {
-            /*
-             * Negative offsets require the frame count to resolve from the
-             * tail. Positive offsets can be validated while iterating.
-             */
-            if (start_frame_no < 0) {
-                status = gdkpixbuf_count_animation_frames(
-                    animation,
-                    g_get_real_time(),
-                    &animation_frame_count);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                status = gdkpixbuf_resolve_animation_start_frame_no(
-                    start_frame_no,
-                    animation_frame_count,
-                    &resolved_start_frame_no);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-            } else {
-                resolved_start_frame_no = start_frame_no;
-                validate_positive_start_frame = 1;
-            }
-        }
-
-        time_val = start_time;
-        frame->frame_no = 0;
-        source_frame_no = 0;
-        frame->loop_count = 0;
-        start_frame_emitted = 0;
-
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-        it = gdk_pixbuf_animation_get_iter(animation, &time_val);
-        if (it == NULL) {
-            gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
-                NULL);
-            status = SIXEL_GDK_ERROR;
-            goto end;
-        }
-
-        for (;;) {
-            /* handle one logical loop of the animation */
-            finished = FALSE;
-            while (!gdkpixbuf_animation_iter_on_loading_frame(it)) {
-                /* {{{ */
-                pixbuf = gdkpixbuf_animation_iter_get_current_pixbuf(it);
-                if (pixbuf == NULL) {
-                    finished = TRUE;
-                    break;
-                }
-                status = gdkpixbuf_copy_pixbuf_to_frame(frame,
-                                                        pchunk,
-                                                        pixbuf,
-                                                        bgcolor,
-                                                        &png_hint,
-                                                        lut_ready,
-                                                        lut);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
-                if (delay_ms < 0) {
-                    delay_ms = 0;
-                }
-                /*
-                 * advance the synthetic clock before asking gdk to move
-                 * forward
-                 */
-                g_time_val_add(&time_val, delay_ms * 1000);
-                frame->delay = delay_ms / 10;
-                frame->multiframe = fstatic ? 0 : 1;
-
-                if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
-                    finished = TRUE;
-                }
-
-                emit_callback = 1;
-                if (frame->loop_count == 0 &&
-                    resolved_start_frame_no != INT_MIN &&
-                    source_frame_no < resolved_start_frame_no) {
-                    emit_callback = 0;
-                }
-                if (emit_callback) {
-                    if (frame->loop_count == 0 &&
-                        resolved_start_frame_no != INT_MIN) {
-                        start_frame_emitted = 1;
-                    }
-                    /*
-                     * frame_no is consumed by the encoder to determine
-                     * whether DECSC (first emitted frame) or DECRC
-                     * (subsequent frame) should be written in tty scroll.
-                     * Keep it as an emitted-frame index instead of the
-                     * original animation index so start-frame skipping does
-                     * not suppress DECSC on the first visible frame.
-                     */
-                    if (frame->loop_count == 0 &&
-                        resolved_start_frame_no != INT_MIN) {
-                        frame->frame_no = source_frame_no -
-                            resolved_start_frame_no;
-                    } else {
-                        frame->frame_no = source_frame_no;
-                    }
-                    status = fn_load(frame, context);
-                    if (status != SIXEL_OK) {
-                        goto end;
-                    }
-                    if (fstatic) {
-                        finished = TRUE;
-                    }
-                }
-                /*
-                 * Release reusable frame storage after each callback.
-                 * Downstream processing may replace pixels/palette/mask,
-                 * so reset from the current frame pointers.
-                 */
-                gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
-                source_frame_no++;
-
-                if (finished) {
-                    break;
-                }
-                /* }}} */
-            }
-
-            if (source_frame_no == 0) {
-                break;
-            }
-            /*
-             * Positive start-frame indexes are considered out of range when
-             * the first loop completes without emitting a frame.
-             */
-            if (validate_positive_start_frame != 0 &&
-                frame->loop_count == 0 &&
-                start_frame_emitted == 0) {
-                sixel_helper_set_additional_message(
-                    "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
-                    " the animation frame range.");
-                status = SIXEL_BAD_INPUT;
-                goto end;
-            }
-
-            /* finished processing one full loop */
-            ++frame->loop_count;
-
-            if (loop_control == SIXEL_LOOP_DISABLE || source_frame_no == 1) {
-                break;
-            }
-            /*
-             * GdkPixbufAnimation does not expose a finite loop counter.
-             * Loop handling therefore depends on loop_control only:
-             *   - DISABLE: stop after one logical loop.
-             *   - AUTO/FORCE: keep replaying until outer processing stops.
-             */
-
-            /* restart iteration from the beginning for the next pass */
-            g_object_unref(it);
-            time_val = start_time;
-            it = gdk_pixbuf_animation_get_iter(animation, &time_val);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-            if (it == NULL) {
-                gdkpixbuf_set_error_message(
-                    "load_with_gdkpixbuf: "
-                    "gdk_pixbuf_animation_get_iter failed.",
-                    NULL);
-                status = SIXEL_GDK_ERROR;
-                goto end;
-            }
-            /* next pass starts counting frames from zero again */
-            frame->frame_no = 0;
-            source_frame_no = 0;
+        } else {
+            resolved_start_frame_no = start_frame_no;
+            validate_positive_start_frame = 1;
         }
     }
-#endif
+
+    status = gdkpixbuf_emit_animation_frames(
+        frame,
+        pchunk,
+        animation,
+        start_time_usec,
+        fstatic,
+        bgcolor,
+        &png_hint,
+        resolved_start_frame_no,
+        validate_positive_start_frame,
+        loop_control,
+        fn_load,
+        context,
+        lut_ready,
+        lut);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     status = SIXEL_OK;
 
@@ -1641,18 +1451,10 @@ end:
         /* drop the reference we obtained from sixel_frame_new() */
         sixel_frame_unref(frame);
     }
-    if (it) {
-        g_object_unref(it);
-    }
     if (loader) {
-        if (!loader_closed) {
-            /* ensure the incremental loader is finalized even on error paths */
-            gdk_pixbuf_loader_close(loader, NULL);
-        }
         g_object_unref(loader);
     }
     gdkpixbuf_png_decode_hint_reset(&png_hint, pchunk->allocator);
-    gdkpixbuf_clear_error(&loader_error);
 
     return status;
 
@@ -1722,10 +1524,18 @@ sixel_loader_gdkpixbuf2_setopt(sixel_loader_component_t *component,
         self->fstatic = flag != NULL ? *flag : 0;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_USE_PALETTE:
+        /*
+         * Accepted for API compatibility. gdk-pixbuf2 output policy does not
+         * emit PAL8, so this flag is intentionally a no-op.
+         */
         flag = (int const *)value;
         self->fuse_palette = flag != NULL ? *flag : 0;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQCOLORS:
+        /*
+         * Retained for option compatibility only. gdk-pixbuf2 does not use
+         * reqcolors to choose output pixel format.
+         */
         flag = (int const *)value;
         if (flag != NULL) {
             self->reqcolors = *flag;
