@@ -51,6 +51,9 @@
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -102,6 +105,22 @@ typedef struct sixel_loader_gdkpixbuf_component {
     int start_frame_no;
 } sixel_loader_gdkpixbuf_component_t;
 
+#define GDKPIXBUF_PALETTE_MATCH_TOLERANCE 3u
+
+typedef struct gdkpixbuf_png_decode_hint {
+    SIXELSTATUS parse_status;
+    int is_png;
+    int bit_depth;
+    int color_type;
+    int is_indexed;
+    unsigned char *palette;
+    int ncolors;
+    unsigned char zero_alpha_map[SIXEL_PALETTE_MAX];
+    int zero_alpha_count;
+    int has_partial_alpha;
+    int has_keycolor;
+} gdkpixbuf_png_decode_hint_t;
+
 static void
 gdkpixbuf_set_error_message(char const *context, GError const *gerror)
 {
@@ -113,7 +132,9 @@ gdkpixbuf_set_error_message(char const *context, GError const *gerror)
     if (context == NULL) {
         return;
     }
-    if (gerror == NULL || gerror->message == NULL || gerror->message[0] == '\0') {
+    if (gerror == NULL ||
+        gerror->message == NULL ||
+        gerror->message[0] == '\0') {
         sixel_helper_set_additional_message(context);
         return;
     }
@@ -382,28 +403,361 @@ end:
     return status;
 }
 
-static unsigned char
-gdkpixbuf_blend_channel(unsigned int source,
-                        unsigned int alpha,
-                        unsigned int background)
+static double
+gdkpixbuf_clamp_unit(double value)
 {
-    return (unsigned char)(
-        (source * alpha + background * (255u - alpha) + 127u) / 255u);
+    if (value < 0.0) {
+        return 0.0;
+    }
+    if (value > 1.0) {
+        return 1.0;
+    }
+    return value;
+}
+
+static double
+gdkpixbuf_decode_srgb_unit(double value)
+{
+    value = gdkpixbuf_clamp_unit(value);
+    if (value <= 0.04045) {
+        return value / 12.92;
+    }
+#if HAVE_MATH_H
+    return pow((value + 0.055) / 1.055, 2.4);
+#else
+    return value;
+#endif
+}
+
+static void
+gdkpixbuf_png_decode_hint_init(gdkpixbuf_png_decode_hint_t *hint)
+{
+    if (hint == NULL) {
+        return;
+    }
+
+    hint->parse_status = SIXEL_FALSE;
+    hint->is_png = 0;
+    hint->bit_depth = 0;
+    hint->color_type = -1;
+    hint->is_indexed = 0;
+    hint->palette = NULL;
+    hint->ncolors = 0;
+    memset(hint->zero_alpha_map, 0, sizeof(hint->zero_alpha_map));
+    hint->zero_alpha_count = 0;
+    hint->has_partial_alpha = 0;
+    hint->has_keycolor = 0;
+}
+
+static void
+gdkpixbuf_png_decode_hint_reset(gdkpixbuf_png_decode_hint_t *hint,
+                                sixel_allocator_t *allocator)
+{
+    if (hint == NULL || allocator == NULL) {
+        return;
+    }
+
+    sixel_allocator_free(allocator, hint->palette);
+    hint->palette = NULL;
+    gdkpixbuf_png_decode_hint_init(hint);
+}
+
+static unsigned int
+gdkpixbuf_read_u32be(unsigned char const *bytes)
+{
+    unsigned int value;
+
+    value = 0u;
+    if (bytes == NULL) {
+        return 0u;
+    }
+
+    value = (unsigned int)bytes[0] << 24;
+    value |= (unsigned int)bytes[1] << 16;
+    value |= (unsigned int)bytes[2] << 8;
+    value |= (unsigned int)bytes[3];
+    return value;
 }
 
 static SIXELSTATUS
-gdkpixbuf_copy_pixbuf_to_frame(sixel_frame_t *frame,
-                               sixel_chunk_t const *pchunk,
-                               GdkPixbuf *pixbuf,
-                               unsigned char const *bgcolor)
+gdkpixbuf_parse_png_decode_hint(sixel_chunk_t const *pchunk,
+                                gdkpixbuf_png_decode_hint_t *hint)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    SIXELSTATUS status;
+    size_t offset;
+    size_t chunk_length;
+    size_t color_count;
+    unsigned char const *type_ptr;
+    unsigned char const *data_ptr;
+    unsigned char *palette;
+    int alpha_count;
+    int index;
+    unsigned char alpha;
+    int iend_reached;
+
+    status = SIXEL_FALSE;
+    offset = 0u;
+    chunk_length = 0u;
+    color_count = 0u;
+    type_ptr = NULL;
+    data_ptr = NULL;
+    palette = NULL;
+    alpha_count = 0;
+    index = 0;
+    alpha = 0u;
+    iend_reached = 0;
+    if (pchunk == NULL || hint == NULL || pchunk->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    gdkpixbuf_png_decode_hint_init(hint);
+    if (pchunk->buffer == NULL || pchunk->size < sizeof(png_signature)) {
+        return SIXEL_FALSE;
+    }
+    if (memcmp(pchunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+        return SIXEL_FALSE;
+    }
+
+    hint->is_png = 1;
+    offset = sizeof(png_signature);
+    while (offset + 8u <= pchunk->size) {
+        chunk_length = (size_t)gdkpixbuf_read_u32be(pchunk->buffer + offset);
+        offset += 4u;
+        if (offset + 4u + chunk_length + 4u > pchunk->size) {
+            status = SIXEL_FALSE;
+            goto cleanup;
+        }
+
+        type_ptr = pchunk->buffer + offset;
+        offset += 4u;
+        data_ptr = pchunk->buffer + offset;
+
+        if (memcmp(type_ptr, "IHDR", 4u) == 0) {
+            if (chunk_length < 13u) {
+                status = SIXEL_FALSE;
+                goto cleanup;
+            }
+            hint->bit_depth = (int)data_ptr[8];
+            hint->color_type = (int)data_ptr[9];
+        } else if (memcmp(type_ptr, "PLTE", 4u) == 0) {
+            if (chunk_length == 0u ||
+                chunk_length % 3u != 0u ||
+                chunk_length > (size_t)SIXEL_PALETTE_MAX * 3u) {
+                status = SIXEL_FALSE;
+                goto cleanup;
+            }
+            /*
+             * Keep only the latest palette payload. Well-formed PNG has one
+             * PLTE chunk, but this avoids leaks on malformed inputs.
+             */
+            sixel_allocator_free(pchunk->allocator, palette);
+            palette = NULL;
+            color_count = chunk_length / 3u;
+            palette = (unsigned char *)sixel_allocator_malloc(
+                pchunk->allocator,
+                color_count * 3u);
+            if (palette == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto cleanup;
+            }
+            memcpy(palette, data_ptr, color_count * 3u);
+        } else if (memcmp(type_ptr, "tRNS", 4u) == 0 &&
+                   palette != NULL &&
+                   color_count > 0u) {
+            alpha_count = (int)chunk_length;
+            if (alpha_count > (int)color_count) {
+                alpha_count = (int)color_count;
+            }
+            for (index = 0; index < alpha_count; ++index) {
+                alpha = data_ptr[index];
+                if (alpha == 0u) {
+                    if (hint->zero_alpha_map[index] == 0u) {
+                        hint->zero_alpha_map[index] = 1u;
+                        hint->zero_alpha_count += 1;
+                    }
+                } else if (alpha != 255u) {
+                    hint->has_partial_alpha = 1;
+                }
+            }
+        }
+
+        offset += chunk_length + 4u;
+        if (memcmp(type_ptr, "IEND", 4u) == 0) {
+            iend_reached = 1;
+            break;
+        }
+    }
+    if (!iend_reached) {
+        status = SIXEL_FALSE;
+        goto cleanup;
+    }
+
+    if (hint->color_type == 3 &&
+        palette != NULL &&
+        color_count > 0u) {
+        hint->is_indexed = 1;
+        hint->palette = palette;
+        palette = NULL;
+        hint->ncolors = (int)color_count;
+        hint->has_keycolor = hint->zero_alpha_count > 0 ? 1 : 0;
+    }
+
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_allocator_free(pchunk->allocator, palette);
+    hint->parse_status = status;
+    return status;
+}
+
+static int
+gdkpixbuf_find_palette_index(unsigned char const *palette,
+                             int ncolors,
+                             unsigned char r,
+                             unsigned char g,
+                             unsigned char b)
+{
+    int index;
+
+    index = 0;
+    if (palette == NULL || ncolors <= 0) {
+        return -1;
+    }
+
+    for (index = 0; index < ncolors; ++index) {
+        if (palette[(size_t)index * 3u + 0u] == r &&
+            palette[(size_t)index * 3u + 1u] == g &&
+            palette[(size_t)index * 3u + 2u] == b) {
+            return index;
+        }
+    }
+    return -1;
+}
+
+static int
+gdkpixbuf_find_palette_index_with_tolerance(unsigned char const *palette,
+                                            int ncolors,
+                                            unsigned char r,
+                                            unsigned char g,
+                                            unsigned char b,
+                                            unsigned int tolerance)
+{
+    int exact_index;
+    int best_index;
+    int index;
+    int dr;
+    int dg;
+    int db;
+    unsigned int distance;
+    unsigned int best_distance;
+    unsigned int max_distance;
+
+    exact_index = -1;
+    best_index = -1;
+    index = 0;
+    dr = 0;
+    dg = 0;
+    db = 0;
+    distance = 0u;
+    best_distance = 0u;
+    max_distance = 0u;
+    exact_index = gdkpixbuf_find_palette_index(palette, ncolors, r, g, b);
+    if (exact_index >= 0) {
+        return exact_index;
+    }
+    if (palette == NULL || ncolors <= 0 || tolerance == 0u) {
+        return -1;
+    }
+
+    max_distance = tolerance * tolerance * 3u;
+    best_distance = max_distance + 1u;
+    for (index = 0; index < ncolors; ++index) {
+        dr = (int)palette[(size_t)index * 3u + 0u] - (int)r;
+        dg = (int)palette[(size_t)index * 3u + 1u] - (int)g;
+        db = (int)palette[(size_t)index * 3u + 2u] - (int)b;
+        distance = (unsigned int)(dr * dr + dg * dg + db * db);
+        if (distance < best_distance) {
+            best_distance = distance;
+            best_index = index;
+            if (distance == 0u) {
+                break;
+            }
+        }
+    }
+
+    if (best_index >= 0 && best_distance <= max_distance) {
+        return best_index;
+    }
+    return -1;
+}
+
+static int
+gdkpixbuf_find_first_key_index(unsigned char const *zero_alpha_map,
+                               int ncolors)
+{
+    int index;
+
+    index = 0;
+    if (zero_alpha_map == NULL || ncolors <= 0) {
+        return -1;
+    }
+
+    for (index = 0; index < ncolors; ++index) {
+        if (zero_alpha_map[index] != 0u) {
+            return index;
+        }
+    }
+    return -1;
+}
+
+static void
+gdkpixbuf_reset_frame_storage(sixel_frame_t *frame,
+                              sixel_allocator_t *allocator)
+{
+    if (frame == NULL || allocator == NULL) {
+        return;
+    }
+
+    sixel_allocator_free(allocator, frame->pixels.u8ptr);
+    frame->pixels.u8ptr = NULL;
+    sixel_allocator_free(allocator, frame->palette);
+    frame->palette = NULL;
+    sixel_allocator_free(allocator, frame->transparent_mask);
+    frame->transparent_mask = NULL;
+    frame->transparent_mask_size = 0u;
+    frame->ncolors = -1;
+    frame->transparent = -1;
+    frame->alpha_zero_is_transparent = 0;
+}
+
+static SIXELSTATUS
+gdkpixbuf_copy_pixbuf_to_frame(
+    sixel_frame_t *frame,
+    sixel_chunk_t const *pchunk,
+    GdkPixbuf *pixbuf,
+    int fuse_palette,
+    int reqcolors,
+    unsigned char const *bgcolor,
+    gdkpixbuf_png_decode_hint_t const *png_hint)
 {
     SIXELSTATUS status;
-    unsigned char *pixels;
     unsigned char *source_pixels;
+    unsigned char *pixels_u8;
+    float *pixels_f32;
+    unsigned char *palette_copy;
+    unsigned char *indexed_pixels;
+    unsigned char *mask;
     size_t pixel_total;
     size_t buffer_size;
+    size_t palette_size;
     size_t x;
     size_t y;
+    size_t index;
     size_t source_offset;
     size_t dest_offset;
     int width;
@@ -411,17 +765,38 @@ gdkpixbuf_copy_pixbuf_to_frame(sixel_frame_t *frame,
     int rowstride;
     int source_depth;
     int has_alpha;
-    int inspect_alpha;
-    int preserve_alpha;
-    unsigned int alpha;
+    int is_indexed_png;
+    int has_indexed_keycolor;
+    int allow_pal8;
+    int has_bg_for_alpha;
+    int promote_float32;
+    int key_index;
+    int reqcolors_clamped;
+    int palette_index;
+    int has_nonopaque_alpha;
+    unsigned int alpha_u8;
+    double alpha_unit;
+    double src_linear[3];
+    double out_linear[3];
+    double bg_linear[3];
+    unsigned char r8;
+    unsigned char g8;
+    unsigned char b8;
+    int keep_mask;
 
     status = SIXEL_OK;
-    pixels = NULL;
     source_pixels = NULL;
+    pixels_u8 = NULL;
+    pixels_f32 = NULL;
+    palette_copy = NULL;
+    indexed_pixels = NULL;
+    mask = NULL;
     pixel_total = 0u;
     buffer_size = 0u;
+    palette_size = 0u;
     x = 0u;
     y = 0u;
+    index = 0u;
     source_offset = 0u;
     dest_offset = 0u;
     width = 0;
@@ -429,9 +804,30 @@ gdkpixbuf_copy_pixbuf_to_frame(sixel_frame_t *frame,
     rowstride = 0;
     source_depth = 0;
     has_alpha = 0;
-    inspect_alpha = 0;
-    preserve_alpha = 0;
-    alpha = 0u;
+    is_indexed_png = 0;
+    has_indexed_keycolor = 0;
+    allow_pal8 = 0;
+    has_bg_for_alpha = 0;
+    promote_float32 = 0;
+    key_index = -1;
+    reqcolors_clamped = 0;
+    palette_index = -1;
+    has_nonopaque_alpha = 0;
+    alpha_u8 = 0u;
+    alpha_unit = 0.0;
+    src_linear[0] = 0.0;
+    src_linear[1] = 0.0;
+    src_linear[2] = 0.0;
+    out_linear[0] = 0.0;
+    out_linear[1] = 0.0;
+    out_linear[2] = 0.0;
+    bg_linear[0] = 0.0;
+    bg_linear[1] = 0.0;
+    bg_linear[2] = 0.0;
+    r8 = 0u;
+    g8 = 0u;
+    b8 = 0u;
+    keep_mask = 0;
     if (frame == NULL || pchunk == NULL || pixbuf == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -444,30 +840,16 @@ gdkpixbuf_copy_pixbuf_to_frame(sixel_frame_t *frame,
         return SIXEL_BAD_INPUT;
     }
 
+    gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
+    frame->width = width;
+    frame->height = height;
+    frame->transparent = -1;
+    frame->alpha_zero_is_transparent = 0;
+    frame->ncolors = -1;
+
     has_alpha = gdk_pixbuf_get_has_alpha(pixbuf) ? 1 : 0;
-    inspect_alpha = has_alpha && bgcolor == NULL;
     source_depth = has_alpha ? 4 : 3;
     rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-
-    if ((size_t)width > SIZE_MAX / (size_t)height) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    pixel_total = (size_t)width * (size_t)height;
-    if (pixel_total > SIZE_MAX / (inspect_alpha ? 4u : 3u)) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    buffer_size = pixel_total * (inspect_alpha ? 4u : 3u);
-
-    sixel_frame_set_pixels(frame,
-                           sixel_allocator_malloc(pchunk->allocator,
-                                                  buffer_size));
-    pixels = sixel_frame_get_pixels(frame);
-    if (pixels == NULL) {
-        sixel_helper_set_additional_message(
-            "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
     source_pixels = gdk_pixbuf_get_pixels(pixbuf);
     if (source_pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -475,70 +857,524 @@ gdkpixbuf_copy_pixbuf_to_frame(sixel_frame_t *frame,
         return SIXEL_GDK_ERROR;
     }
 
-    for (y = 0u; y < (size_t)height; ++y) {
-        for (x = 0u; x < (size_t)width; ++x) {
-            source_offset = (size_t)rowstride * y + x * (size_t)source_depth;
-            if (inspect_alpha) {
-                alpha = source_pixels[source_offset + 3u];
-                if (alpha != 255u) {
-                    preserve_alpha = 1;
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_total = (size_t)width * (size_t)height;
+
+    /*
+     * Parse-time PNG hints let us recover indexed semantics even though
+     * gdk-pixbuf has already expanded source pixels to RGB(A).
+     */
+    is_indexed_png = png_hint != NULL &&
+        png_hint->parse_status == SIXEL_OK &&
+        png_hint->is_png != 0 &&
+        png_hint->is_indexed != 0 &&
+        png_hint->palette != NULL &&
+        png_hint->ncolors > 0;
+    has_indexed_keycolor = is_indexed_png &&
+        png_hint->has_keycolor != 0;
+    if (has_indexed_keycolor) {
+        key_index = gdkpixbuf_find_first_key_index(
+            png_hint->zero_alpha_map,
+            png_hint->ncolors);
+    }
+
+    reqcolors_clamped = reqcolors;
+    if (reqcolors_clamped <= 0 || reqcolors_clamped > SIXEL_PALETTE_MAX) {
+        reqcolors_clamped = SIXEL_PALETTE_MAX;
+    }
+    /*
+     * Preserve PAL8 only when palette mode is enabled and the source palette
+     * fits reqcolors without partial alpha entries.
+     */
+    allow_pal8 = fuse_palette != 0 &&
+        is_indexed_png &&
+        reqcolors_clamped > 0 &&
+        png_hint->ncolors <= reqcolors_clamped &&
+        png_hint->has_partial_alpha == 0;
+    if (allow_pal8 && has_indexed_keycolor && bgcolor != NULL) {
+        allow_pal8 = 0;
+    }
+
+    if (is_indexed_png && (allow_pal8 || has_indexed_keycolor)) {
+        indexed_pixels = (unsigned char *)sixel_allocator_malloc(
+            pchunk->allocator,
+            pixel_total);
+        if (indexed_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+
+        for (y = 0u; y < (size_t)height; ++y) {
+            for (x = 0u; x < (size_t)width; ++x) {
+                source_offset = (size_t)rowstride * y +
+                    x * (size_t)source_depth;
+                index = y * (size_t)width + x;
+
+                if (has_indexed_keycolor &&
+                    has_alpha &&
+                    source_pixels[source_offset + 3u] == 0u &&
+                    key_index >= 0) {
+                    indexed_pixels[index] = (unsigned char)key_index;
+                    continue;
                 }
-                dest_offset = (y * (size_t)width + x) * 4u;
-                pixels[dest_offset + 0u] = source_pixels[source_offset + 0u];
-                pixels[dest_offset + 1u] = source_pixels[source_offset + 1u];
-                pixels[dest_offset + 2u] = source_pixels[source_offset + 2u];
-                pixels[dest_offset + 3u] = (unsigned char)alpha;
-            } else {
-                dest_offset = (y * (size_t)width + x) * 3u;
-                if (has_alpha) {
-                    alpha = source_pixels[source_offset + 3u];
-                    if (bgcolor != NULL) {
-                        pixels[dest_offset + 0u] = gdkpixbuf_blend_channel(
-                            source_pixels[source_offset + 0u],
-                            alpha,
-                            bgcolor[0]);
-                        pixels[dest_offset + 1u] = gdkpixbuf_blend_channel(
-                            source_pixels[source_offset + 1u],
-                            alpha,
-                            bgcolor[1]);
-                        pixels[dest_offset + 2u] = gdkpixbuf_blend_channel(
-                            source_pixels[source_offset + 2u],
-                            alpha,
-                            bgcolor[2]);
-                    } else {
-                        pixels[dest_offset + 0u] =
-                            source_pixels[source_offset + 0u];
-                        pixels[dest_offset + 1u] =
-                            source_pixels[source_offset + 1u];
-                        pixels[dest_offset + 2u] =
-                            source_pixels[source_offset + 2u];
-                    }
-                } else {
-                    pixels[dest_offset + 0u] = source_pixels[source_offset + 0u];
-                    pixels[dest_offset + 1u] = source_pixels[source_offset + 1u];
-                    pixels[dest_offset + 2u] = source_pixels[source_offset + 2u];
+
+                r8 = source_pixels[source_offset + 0u];
+                g8 = source_pixels[source_offset + 1u];
+                b8 = source_pixels[source_offset + 2u];
+                palette_index = gdkpixbuf_find_palette_index_with_tolerance(
+                    png_hint->palette,
+                    png_hint->ncolors,
+                    r8,
+                    g8,
+                    b8,
+                    GDKPIXBUF_PALETTE_MATCH_TOLERANCE);
+                if (palette_index < 0) {
+                    sixel_allocator_free(pchunk->allocator, indexed_pixels);
+                    indexed_pixels = NULL;
+                    break;
                 }
+                indexed_pixels[index] = (unsigned char)palette_index;
+            }
+            if (indexed_pixels == NULL) {
+                break;
             }
         }
     }
 
-    if (inspect_alpha && !preserve_alpha) {
-        for (x = 0u; x < pixel_total; ++x) {
-            pixels[x * 3u + 0u] = pixels[x * 4u + 0u];
-            pixels[x * 3u + 1u] = pixels[x * 4u + 1u];
-            pixels[x * 3u + 2u] = pixels[x * 4u + 2u];
+    if (allow_pal8 && indexed_pixels != NULL) {
+        if (png_hint->has_keycolor &&
+            png_hint->zero_alpha_count > 1 &&
+            key_index >= 0) {
+            for (index = 0u; index < pixel_total; ++index) {
+                palette_index = indexed_pixels[index];
+                if (palette_index < png_hint->ncolors &&
+                    png_hint->zero_alpha_map[palette_index] != 0u &&
+                    palette_index != key_index) {
+                    indexed_pixels[index] = (unsigned char)key_index;
+                }
+            }
+        }
+
+        palette_size = (size_t)png_hint->ncolors * 3u;
+        palette_copy = (unsigned char *)sixel_allocator_malloc(
+            pchunk->allocator,
+            palette_size);
+        if (palette_copy == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        memcpy(palette_copy, png_hint->palette, palette_size);
+
+        frame->pixels.u8ptr = indexed_pixels;
+        indexed_pixels = NULL;
+        frame->palette = palette_copy;
+        palette_copy = NULL;
+        frame->ncolors = png_hint->ncolors;
+        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        frame->transparent = has_indexed_keycolor ? key_index : -1;
+        frame->alpha_zero_is_transparent = 0;
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+
+    has_bg_for_alpha = bgcolor != NULL &&
+        (has_alpha || has_indexed_keycolor);
+    promote_float32 = png_hint != NULL &&
+        png_hint->parse_status == SIXEL_OK &&
+        png_hint->is_png != 0 &&
+        png_hint->bit_depth > 8;
+    if (has_bg_for_alpha) {
+        promote_float32 = 1;
+    }
+
+    /*
+     * Indexed + keycolor path: either compose in linear float32 when needed,
+     * or emit RGB + transparent mask when palette output is not available.
+     */
+    if (has_indexed_keycolor &&
+        indexed_pixels != NULL &&
+        png_hint->has_partial_alpha == 0) {
+        if (bgcolor != NULL) {
+            bg_linear[0] = gdkpixbuf_decode_srgb_unit(
+                (double)bgcolor[0] / 255.0);
+            bg_linear[1] = gdkpixbuf_decode_srgb_unit(
+                (double)bgcolor[1] / 255.0);
+            bg_linear[2] = gdkpixbuf_decode_srgb_unit(
+                (double)bgcolor[2] / 255.0);
+        }
+        if (promote_float32 != 0) {
+            if (pixel_total > SIZE_MAX / (3u * sizeof(float))) {
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto cleanup;
+            }
+            pixels_f32 = (float *)sixel_allocator_malloc(
+                pchunk->allocator,
+                pixel_total * 3u * sizeof(float));
+            if (pixels_f32 == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto cleanup;
+            }
+            if (bgcolor == NULL) {
+                mask = (unsigned char *)sixel_allocator_malloc(
+                    pchunk->allocator,
+                    pixel_total);
+                if (mask == NULL) {
+                    sixel_helper_set_additional_message(
+                        "load_with_gdkpixbuf: sixel_allocator_malloc() "
+                        "failed.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto cleanup;
+                }
+            }
+
+            for (index = 0u; index < pixel_total; ++index) {
+                palette_index = indexed_pixels[index];
+                if (palette_index < 0 || palette_index >= png_hint->ncolors) {
+                    palette_index = 0;
+                }
+                if (png_hint->zero_alpha_map[palette_index] != 0u) {
+                    if (bgcolor != NULL) {
+                        out_linear[0] = bg_linear[0];
+                        out_linear[1] = bg_linear[1];
+                        out_linear[2] = bg_linear[2];
+                    } else {
+                        out_linear[0] = 0.0;
+                        out_linear[1] = 0.0;
+                        out_linear[2] = 0.0;
+                        mask[index] = 1u;
+                    }
+                } else {
+                    src_linear[0] = gdkpixbuf_decode_srgb_unit(
+                        (double)png_hint->palette[
+                            (size_t)palette_index * 3u + 0u] / 255.0);
+                    src_linear[1] = gdkpixbuf_decode_srgb_unit(
+                        (double)png_hint->palette[
+                            (size_t)palette_index * 3u + 1u] / 255.0);
+                    src_linear[2] = gdkpixbuf_decode_srgb_unit(
+                        (double)png_hint->palette[
+                            (size_t)palette_index * 3u + 2u] / 255.0);
+                    out_linear[0] = src_linear[0];
+                    out_linear[1] = src_linear[1];
+                    out_linear[2] = src_linear[2];
+                    if (mask != NULL) {
+                        mask[index] = 0u;
+                    }
+                }
+
+                pixels_f32[index * 3u + 0u] = (float)out_linear[0];
+                pixels_f32[index * 3u + 1u] = (float)out_linear[1];
+                pixels_f32[index * 3u + 2u] = (float)out_linear[2];
+            }
+
+            frame->pixels.f32ptr = pixels_f32;
+            pixels_f32 = NULL;
+            frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+            frame->transparent = -1;
+            frame->alpha_zero_is_transparent = 0;
+            if (mask != NULL) {
+                frame->transparent_mask = mask;
+                frame->transparent_mask_size = pixel_total;
+                frame->alpha_zero_is_transparent = 1;
+                mask = NULL;
+            }
+            status = SIXEL_OK;
+            goto cleanup;
+        }
+
+        if (pixel_total > SIZE_MAX / 3u) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto cleanup;
+        }
+        pixels_u8 = (unsigned char *)sixel_allocator_malloc(
+            pchunk->allocator,
+            pixel_total * 3u);
+        if (pixels_u8 == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        mask = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+                                                       pixel_total);
+        if (mask == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        keep_mask = 0;
+        for (index = 0u; index < pixel_total; ++index) {
+            palette_index = indexed_pixels[index];
+            if (palette_index < 0 || palette_index >= png_hint->ncolors) {
+                palette_index = 0;
+            }
+            if (png_hint->zero_alpha_map[palette_index] != 0u) {
+                pixels_u8[index * 3u + 0u] = 0u;
+                pixels_u8[index * 3u + 1u] = 0u;
+                pixels_u8[index * 3u + 2u] = 0u;
+                mask[index] = 1u;
+                keep_mask = 1;
+            } else {
+                pixels_u8[index * 3u + 0u] =
+                    png_hint->palette[(size_t)palette_index * 3u + 0u];
+                pixels_u8[index * 3u + 1u] =
+                    png_hint->palette[(size_t)palette_index * 3u + 1u];
+                pixels_u8[index * 3u + 2u] =
+                    png_hint->palette[(size_t)palette_index * 3u + 2u];
+                mask[index] = 0u;
+            }
+        }
+
+        frame->pixels.u8ptr = pixels_u8;
+        pixels_u8 = NULL;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        frame->transparent = -1;
+        frame->alpha_zero_is_transparent = 0;
+        if (keep_mask) {
+            frame->transparent_mask = mask;
+            frame->transparent_mask_size = pixel_total;
+            frame->alpha_zero_is_transparent = 1;
+            mask = NULL;
+        }
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+
+    /*
+     * Use linear float output for high-depth PNGs and for background composited
+     * alpha cases to avoid precision loss.
+     */
+    if (promote_float32 != 0) {
+        if (pixel_total > SIZE_MAX / (3u * sizeof(float))) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto cleanup;
+        }
+        pixels_f32 = (float *)sixel_allocator_malloc(
+            pchunk->allocator,
+            pixel_total * 3u * sizeof(float));
+        if (pixels_f32 == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+
+        if (has_alpha && bgcolor == NULL) {
+            mask = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+                                                           pixel_total);
+            if (mask == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto cleanup;
+            }
+        } else if (has_bg_for_alpha) {
+            bg_linear[0] = gdkpixbuf_decode_srgb_unit(
+                (double)bgcolor[0] / 255.0);
+            bg_linear[1] = gdkpixbuf_decode_srgb_unit(
+                (double)bgcolor[1] / 255.0);
+            bg_linear[2] = gdkpixbuf_decode_srgb_unit(
+                (double)bgcolor[2] / 255.0);
+        }
+
+        for (y = 0u; y < (size_t)height; ++y) {
+            for (x = 0u; x < (size_t)width; ++x) {
+                source_offset = (size_t)rowstride * y +
+                    x * (size_t)source_depth;
+                index = y * (size_t)width + x;
+                alpha_u8 = has_alpha ? source_pixels[source_offset + 3u]
+                                     : 255u;
+                alpha_unit = (double)alpha_u8 / 255.0;
+
+                src_linear[0] = gdkpixbuf_decode_srgb_unit(
+                    (double)source_pixels[source_offset + 0u] / 255.0);
+                src_linear[1] = gdkpixbuf_decode_srgb_unit(
+                    (double)source_pixels[source_offset + 1u] / 255.0);
+                src_linear[2] = gdkpixbuf_decode_srgb_unit(
+                    (double)source_pixels[source_offset + 2u] / 255.0);
+
+                if (has_bg_for_alpha) {
+                    out_linear[0] = src_linear[0] * alpha_unit +
+                        bg_linear[0] * (1.0 - alpha_unit);
+                    out_linear[1] = src_linear[1] * alpha_unit +
+                        bg_linear[1] * (1.0 - alpha_unit);
+                    out_linear[2] = src_linear[2] * alpha_unit +
+                        bg_linear[2] * (1.0 - alpha_unit);
+                } else if (has_alpha) {
+                    out_linear[0] = src_linear[0] * alpha_unit;
+                    out_linear[1] = src_linear[1] * alpha_unit;
+                    out_linear[2] = src_linear[2] * alpha_unit;
+                    if (mask != NULL) {
+                        mask[index] = alpha_u8 == 0u ? 1u : 0u;
+                    }
+                } else {
+                    out_linear[0] = src_linear[0];
+                    out_linear[1] = src_linear[1];
+                    out_linear[2] = src_linear[2];
+                }
+
+                pixels_f32[index * 3u + 0u] = (float)out_linear[0];
+                pixels_f32[index * 3u + 1u] = (float)out_linear[1];
+                pixels_f32[index * 3u + 2u] = (float)out_linear[2];
+            }
+        }
+
+        frame->pixels.f32ptr = pixels_f32;
+        pixels_f32 = NULL;
+        frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+        frame->transparent = -1;
+        frame->alpha_zero_is_transparent = 0;
+        if (mask != NULL) {
+            frame->transparent_mask = mask;
+            frame->transparent_mask_size = pixel_total;
+            frame->alpha_zero_is_transparent = 1;
+            mask = NULL;
+        }
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+
+    /*
+     * Default alpha handling emits RGB plus a binary transparent mask.
+     * This mirrors other loaders and keeps the 8-bit fast path.
+     */
+    if (has_alpha) {
+        if (pixel_total > SIZE_MAX / 3u) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto cleanup;
+        }
+        pixels_u8 = (unsigned char *)sixel_allocator_malloc(
+            pchunk->allocator,
+            pixel_total * 3u);
+        if (pixels_u8 == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        mask = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+                                                       pixel_total);
+        if (mask == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        keep_mask = 0;
+        has_nonopaque_alpha = 0;
+        for (y = 0u; y < (size_t)height; ++y) {
+            for (x = 0u; x < (size_t)width; ++x) {
+                source_offset = (size_t)rowstride * y +
+                    x * (size_t)source_depth;
+                dest_offset = (y * (size_t)width + x) * 3u;
+                index = y * (size_t)width + x;
+                alpha_u8 = source_pixels[source_offset + 3u];
+                if (alpha_u8 != 255u) {
+                    has_nonopaque_alpha = 1;
+                }
+
+                pixels_u8[dest_offset + 0u] = (unsigned char)(
+                    ((unsigned int)source_pixels[source_offset + 0u] *
+                     alpha_u8 + 127u) / 255u);
+                pixels_u8[dest_offset + 1u] = (unsigned char)(
+                    ((unsigned int)source_pixels[source_offset + 1u] *
+                     alpha_u8 + 127u) / 255u);
+                pixels_u8[dest_offset + 2u] = (unsigned char)(
+                    ((unsigned int)source_pixels[source_offset + 2u] *
+                     alpha_u8 + 127u) / 255u);
+
+                if (alpha_u8 == 0u) {
+                    mask[index] = 1u;
+                } else {
+                    mask[index] = 0u;
+                }
+            }
+        }
+
+        if (!has_nonopaque_alpha) {
+            sixel_allocator_free(pchunk->allocator, mask);
+            mask = NULL;
+            for (y = 0u; y < (size_t)height; ++y) {
+                for (x = 0u; x < (size_t)width; ++x) {
+                    source_offset = (size_t)rowstride * y + x * 4u;
+                    dest_offset = (y * (size_t)width + x) * 3u;
+                    pixels_u8[dest_offset + 0u] =
+                        source_pixels[source_offset + 0u];
+                    pixels_u8[dest_offset + 1u] =
+                        source_pixels[source_offset + 1u];
+                    pixels_u8[dest_offset + 2u] =
+                        source_pixels[source_offset + 2u];
+                }
+            }
+            keep_mask = 0;
+        } else {
+            keep_mask = 1;
+        }
+
+        frame->pixels.u8ptr = pixels_u8;
+        pixels_u8 = NULL;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        frame->transparent = -1;
+        frame->alpha_zero_is_transparent = 0;
+        if (keep_mask && mask != NULL) {
+            frame->transparent_mask = mask;
+            frame->transparent_mask_size = pixel_total;
+            frame->alpha_zero_is_transparent = 1;
+            mask = NULL;
+        }
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+
+    if (pixel_total > SIZE_MAX / 3u) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+    buffer_size = pixel_total * 3u;
+    pixels_u8 = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+                                                         buffer_size);
+    if (pixels_u8 == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+    for (y = 0u; y < (size_t)height; ++y) {
+        for (x = 0u; x < (size_t)width; ++x) {
+            source_offset = (size_t)rowstride * y + x * 3u;
+            dest_offset = (y * (size_t)width + x) * 3u;
+            pixels_u8[dest_offset + 0u] = source_pixels[source_offset + 0u];
+            pixels_u8[dest_offset + 1u] = source_pixels[source_offset + 1u];
+            pixels_u8[dest_offset + 2u] = source_pixels[source_offset + 2u];
         }
     }
 
-    frame->width = width;
-    frame->height = height;
-    frame->pixelformat = preserve_alpha
-        ? SIXEL_PIXELFORMAT_RGBA8888
-        : SIXEL_PIXELFORMAT_RGB888;
+    frame->pixels.u8ptr = pixels_u8;
+    pixels_u8 = NULL;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     frame->transparent = -1;
-    frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
+    frame->alpha_zero_is_transparent = 0;
+    status = SIXEL_OK;
 
+cleanup:
+    sixel_allocator_free(pchunk->allocator, pixels_u8);
+    sixel_allocator_free(pchunk->allocator, pixels_f32);
+    sixel_allocator_free(pchunk->allocator, palette_copy);
+    sixel_allocator_free(pchunk->allocator, indexed_pixels);
+    sixel_allocator_free(pchunk->allocator, mask);
     return status;
 }
 
@@ -579,7 +1415,8 @@ load_with_gdkpixbuf(
 # pragma GCC diagnostic pop
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     sixel_frame_t *frame = NULL;
-    unsigned char *frame_pixels;
+    gdkpixbuf_png_decode_hint_t png_hint;
+    SIXELSTATUS png_hint_status;
     int delay_ms;
     gboolean use_animation = FALSE;
     gboolean is_sixel = FALSE;
@@ -590,11 +1427,9 @@ load_with_gdkpixbuf(
     int emit_callback;
     int source_frame_no;
 
-    (void) fuse_palette;
-    (void) reqcolors;
-    (void) bgcolor;
-
     loader_error = NULL;
+    gdkpixbuf_png_decode_hint_init(&png_hint);
+    png_hint_status = SIXEL_FALSE;
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
     animation_frame_count = 0;
@@ -612,6 +1447,12 @@ load_with_gdkpixbuf(
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    png_hint_status = gdkpixbuf_parse_png_decode_hint(pchunk, &png_hint);
+    if (SIXEL_FAILED(png_hint_status) && png_hint_status != SIXEL_FALSE) {
+        status = png_hint_status;
         goto end;
     }
 
@@ -659,7 +1500,8 @@ load_with_gdkpixbuf(
             goto end;
         }
         gdkpixbuf_set_error_message(
-            "load_with_gdkpixbuf: generic loader write failed before sixel fallback.",
+            "load_with_gdkpixbuf: generic loader write failed "
+            "before sixel fallback.",
             loader_error);
         gdkpixbuf_clear_error(&loader_error);
         g_object_unref(loader);
@@ -693,7 +1535,8 @@ load_with_gdkpixbuf(
             goto end;
         }
         gdkpixbuf_set_error_message(
-            "load_with_gdkpixbuf: generic loader close failed before sixel fallback.",
+            "load_with_gdkpixbuf: generic loader close failed "
+            "before sixel fallback.",
             loader_error);
         gdkpixbuf_clear_error(&loader_error);
         g_object_unref(loader);
@@ -779,7 +1622,10 @@ load_with_gdkpixbuf(
         status = gdkpixbuf_copy_pixbuf_to_frame(frame,
                                                 pchunk,
                                                 pixbuf,
-                                                bgcolor);
+                                                fuse_palette,
+                                                reqcolors,
+                                                bgcolor,
+                                                &png_hint);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -845,7 +1691,10 @@ load_with_gdkpixbuf(
                 status = gdkpixbuf_copy_pixbuf_to_frame(frame,
                                                         pchunk,
                                                         pixbuf,
-                                                        bgcolor);
+                                                        fuse_palette,
+                                                        reqcolors,
+                                                        bgcolor,
+                                                        &png_hint);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -896,15 +1745,11 @@ load_with_gdkpixbuf(
                     }
                 }
                 /*
-                 * Release the frame buffer only if it is still the one we
-                 * attached. Downstream filters may replace frame->pixels,
-                 * so always query the current pointer to avoid double free.
+                 * Release reusable frame storage after each callback.
+                 * Downstream processing may replace pixels/palette/mask,
+                 * so reset from the current frame pointers.
                  */
-                frame_pixels = sixel_frame_get_pixels(frame);
-                if (frame_pixels != NULL) {
-                    sixel_allocator_free(pchunk->allocator, frame_pixels);
-                    sixel_frame_set_pixels(frame, NULL);
-                }
+                gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
                 source_frame_no++;
 
                 if (finished) {
@@ -936,7 +1781,8 @@ load_with_gdkpixbuf(
             it = gdk_pixbuf_animation_get_iter(animation, &time_val);
             if (it == NULL) {
                 gdkpixbuf_set_error_message(
-                    "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+                    "load_with_gdkpixbuf: "
+                    "gdk_pixbuf_animation_get_iter failed.",
                     NULL);
                 status = SIXEL_GDK_ERROR;
                 goto end;
@@ -961,7 +1807,8 @@ load_with_gdkpixbuf(
         pixbuf = gdk_pixbuf_animation_get_static_image(animation);
         if (pixbuf == NULL) {
             gdkpixbuf_set_error_message(
-                "load_with_gdkpixbuf: gdk_pixbuf_animation_get_static_image failed.",
+                "load_with_gdkpixbuf: "
+                "gdk_pixbuf_animation_get_static_image failed.",
                 NULL);
             status = SIXEL_GDK_ERROR;
             goto end;
@@ -969,7 +1816,10 @@ load_with_gdkpixbuf(
         status = gdkpixbuf_copy_pixbuf_to_frame(frame,
                                                 pchunk,
                                                 pixbuf,
-                                                bgcolor);
+                                                fuse_palette,
+                                                reqcolors,
+                                                bgcolor,
+                                                &png_hint);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1031,7 +1881,10 @@ load_with_gdkpixbuf(
                 status = gdkpixbuf_copy_pixbuf_to_frame(frame,
                                                         pchunk,
                                                         pixbuf,
-                                                        bgcolor);
+                                                        fuse_palette,
+                                                        reqcolors,
+                                                        bgcolor,
+                                                        &png_hint);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -1082,15 +1935,11 @@ load_with_gdkpixbuf(
                     }
                 }
                 /*
-                 * Release the frame buffer only if it is still the one we
-                 * attached. Downstream filters may replace frame->pixels,
-                 * so always query the current pointer to avoid double free.
+                 * Release reusable frame storage after each callback.
+                 * Downstream processing may replace pixels/palette/mask,
+                 * so reset from the current frame pointers.
                  */
-                frame_pixels = sixel_frame_get_pixels(frame);
-                if (frame_pixels != NULL) {
-                    sixel_allocator_free(pchunk->allocator, frame_pixels);
-                    sixel_frame_set_pixels(frame, NULL);
-                }
+                gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
                 source_frame_no++;
 
                 if (finished) {
@@ -1125,7 +1974,8 @@ load_with_gdkpixbuf(
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
             if (it == NULL) {
                 gdkpixbuf_set_error_message(
-                    "load_with_gdkpixbuf: gdk_pixbuf_animation_get_iter failed.",
+                    "load_with_gdkpixbuf: "
+                    "gdk_pixbuf_animation_get_iter failed.",
                     NULL);
                 status = SIXEL_GDK_ERROR;
                 goto end;
@@ -1154,6 +2004,7 @@ end:
         }
         g_object_unref(loader);
     }
+    gdkpixbuf_png_decode_hint_reset(&png_hint, pchunk->allocator);
     gdkpixbuf_clear_error(&loader_error);
 
     return status;

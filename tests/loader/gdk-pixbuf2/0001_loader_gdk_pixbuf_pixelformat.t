@@ -12,10 +12,11 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0010_loader_gdk_pixbuf_pixelformat" || {
-    echo "not ok 1 - loader/0010_loader_gdk_pixbuf_pixelformat"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    "loader/0010_loader_gdk_pixbuf_pixelformat" "rgba_no_bg_mask" || {
+    echo "not ok 1 - gdk-pixbuf2 rgba_no_bg_mask"
     exit 0
 }
 
-echo "ok 1 - loader/0010_loader_gdk_pixbuf_pixelformat"
+echo "ok 1 - gdk-pixbuf2 rgba_no_bg_mask"
 exit 0

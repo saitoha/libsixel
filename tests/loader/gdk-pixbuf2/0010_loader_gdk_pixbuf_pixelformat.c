@@ -1,6 +1,8 @@
 /*
- * Verify GDK-Pixbuf loader reports RGBA output for RGBA sources.
+ * Verify gdk-pixbuf2 output policy for alpha, indexed, and high-depth input.
  */
+
+#include <string.h>
 
 #include "tests/loader/pixelformat_test_common.h"
 
@@ -14,27 +16,234 @@ new_gdk_pixbuf_component(sixel_allocator_t *allocator,
                                            ppcomponent);
 }
 
+typedef enum gdk_pixbuf_pixelformat_case_id {
+    GDK_PIXBUF_PIXELFORMAT_RGBA_NO_BG_MASK = 0,
+    GDK_PIXBUF_PIXELFORMAT_RGBA_BG_FLOAT32,
+    GDK_PIXBUF_PIXELFORMAT_INDEXED_PAL8,
+    GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8,
+    GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_MASK,
+    GDK_PIXBUF_PIXELFORMAT_INDEXED_ALPHA_MASK,
+    GDK_PIXBUF_PIXELFORMAT_INDEXED_ALPHA_BG_FLOAT32,
+    GDK_PIXBUF_PIXELFORMAT_HIGHDEPTH_FLOAT32,
+    GDK_PIXBUF_PIXELFORMAT_CASE_COUNT
+} gdk_pixbuf_pixelformat_case_id_t;
+
 static int
-run_gdk_pixbuf_loader_test(void)
+run_gdk_pixbuf_pixelformat_case_by_id(
+    gdk_pixbuf_pixelformat_case_id_t case_id)
 {
-    return run_loader_component_case("GDK-Pixbuf loader",
-                                     RGBA_IMAGE_PATH,
-                                     SIXEL_PIXELFORMAT_RGBA8888,
-                                     2,
-                                     1,
-                                     new_gdk_pixbuf_component);
+    static unsigned char const white_bg[3] = { 255u, 255u, 255u };
+    static loader_component_case_spec_t const specs[] = {
+        {
+            "gdkpixbuf rgba no background emits rgb+mask",
+            RGBA_IMAGE_PATH,
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                2,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                1,
+                1
+            },
+            { 1, 0, 256, NULL },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf rgba with background emits linear float32",
+            RGBA_IMAGE_PATH,
+            {
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                2,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 0, 256, white_bg },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf indexed png keeps pal8",
+            "/tests/data/inputs/formats/snake-png-pal8.png",
+            {
+                SIXEL_PIXELFORMAT_PAL8,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 1, 256, NULL },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf indexed keycolor keeps pal8+transparent",
+            "/tests/data/inputs/formats/pal8-trns-key0.png",
+            {
+                SIXEL_PIXELFORMAT_PAL8,
+                4,
+                1,
+                1,
+                FRAME_TRANSPARENT_NONNEG,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 1, 256, NULL },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf indexed keycolor reqcolors fallback rgb+mask",
+            "/tests/data/inputs/formats/pal8-trns-key0.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                4,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                1,
+                1
+            },
+            { 1, 1, 3, NULL },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf indexed alpha fallback emits rgb+mask",
+            "/tests/data/inputs/formats/libpng-pal8-trns-single0-semi-icc.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                6,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                1,
+                1
+            },
+            { 1, 1, 256, NULL },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf indexed alpha with background emits linear float32",
+            "/tests/data/inputs/formats/libpng-pal8-trns-single0-semi-icc.png",
+            {
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                6,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 1, 256, white_bg },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf high-depth png promotes to float32",
+            "/tests/data/inputs/formats/snake-png-gray16.png",
+            {
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 0, 256, NULL },
+            new_gdk_pixbuf_component
+        }
+    };
+    size_t index;
+
+    if (case_id < 0 ||
+        case_id >= GDK_PIXBUF_PIXELFORMAT_CASE_COUNT ||
+        (size_t)case_id >= sizeof(specs) / sizeof(specs[0])) {
+        return 1;
+    }
+
+    index = (size_t)case_id;
+    return run_loader_component_case_from_spec(&specs[index]);
+}
+
+static int
+run_gdk_pixbuf_loader_test_mode(char const *mode)
+{
+    if (mode == NULL || strcmp(mode, "rgba_no_bg_mask") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_RGBA_NO_BG_MASK);
+    }
+    if (strcmp(mode, "rgba_bg_float32") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_RGBA_BG_FLOAT32);
+    }
+    if (strcmp(mode, "indexed_pal8") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_INDEXED_PAL8);
+    }
+    if (strcmp(mode, "indexed_keycolor_pal8") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8);
+    }
+    if (strcmp(mode, "indexed_keycolor_reqcolors_mask") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_MASK);
+    }
+    if (strcmp(mode, "indexed_alpha_mask") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_INDEXED_ALPHA_MASK);
+    }
+    if (strcmp(mode, "indexed_alpha_bg_float32") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_INDEXED_ALPHA_BG_FLOAT32);
+    }
+    if (strcmp(mode, "highdepth_float32") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_HIGHDEPTH_FLOAT32);
+    }
+    if (strcmp(mode, "all") == 0) {
+        size_t index;
+        int result;
+
+        index = 0u;
+        result = 0;
+        for (index = 0u;
+             index < (size_t)GDK_PIXBUF_PIXELFORMAT_CASE_COUNT;
+             ++index) {
+            result = run_gdk_pixbuf_pixelformat_case_by_id(
+                (gdk_pixbuf_pixelformat_case_id_t)index);
+            if (result != 0) {
+                return result;
+            }
+        }
+        return 0;
+    }
+
+    fprintf(stderr, "unknown gdk-pixbuf2 pixelformat test mode: %s\n", mode);
+    return 1;
 }
 #endif
 
 int
 test_loader_0010_loader_gdk_pixbuf_pixelformat(int argc, char **argv)
 {
+#if defined(HAVE_GDK_PIXBUF2)
+    if (argc > 1 && argv != NULL) {
+        return run_gdk_pixbuf_loader_test_mode(argv[1]);
+    }
+    return run_gdk_pixbuf_loader_test_mode(NULL);
+#else
     (void) argc;
     (void) argv;
-
-#if defined(HAVE_GDK_PIXBUF2)
-    return run_gdk_pixbuf_loader_test();
-#else
     fprintf(stderr, "GDK-Pixbuf loader unavailable\n");
     return SIXEL_TEST_SKIP;
 #endif
