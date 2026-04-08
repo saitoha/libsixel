@@ -11192,11 +11192,23 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
 
             layer = &model.layers[i];
             if (layer->visible != 0 &&
+                layer->has_layer_effects != 0 &&
+                layer->has_effect_solid_overlay == 0 &&
+                layer->has_effect_stroke == 0) {
+                /*
+                 * Effects outside the current subset are usually closer in the
+                 * merged composite than in fallback approximations.
+                 */
+                force_merged = 1;
+            }
+            if (layer->visible != 0 &&
                 layer->has_fill_payload != 0 &&
                 layer->has_tysh_payload == 0 &&
                 !sixel_builtin_psd_layer_has_decodable_pixel_channels(
                     info,
                     layer) &&
+                layer->has_layer_effects == 0 &&
+                layer->has_knockout == 0 &&
                 (layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_PTFL ||
                  layer->has_malformed_fill_payload != 0)) {
                 /*
@@ -11205,7 +11217,6 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                  * output into near-solid composites.
                  */
                 force_layer_fallback = 1;
-                break;
             }
             if (layer->has_layer_effects != 0 &&
                 layer->has_fill_payload == 0 &&
@@ -11216,15 +11227,14 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                 /* Group/effect-only layers are not reconstructed faithfully in
                  * fallback yet; merged composite is usually closer here. */
                 force_merged = 1;
-                break;
             }
-        }
-        if (force_layer_fallback != 0) {
-            should_prefer = 1;
-            goto done;
         }
         if (force_merged != 0) {
             should_prefer = 0;
+            goto done;
+        }
+        if (force_layer_fallback != 0) {
+            should_prefer = 1;
             goto done;
         }
         if (model.layer_count > 1u &&
@@ -11256,6 +11266,9 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                     layer->has_vector_mask != 0 &&
                     layer->has_layer_effects != 0 &&
                     layer->has_knockout != 0 &&
+                    sixel_builtin_psd_layer_has_decodable_pixel_channels(
+                        info,
+                        layer) &&
                     (layer->has_effect_solid_overlay != 0 ||
                      layer->has_effect_stroke != 0)) {
                     should_prefer = 1;
@@ -13590,6 +13603,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int i;
     size_t next_index;
     int defer_clip_group_overlay;
+    int allow_pixel_layer_decode_skip;
+    size_t composed_layer_count;
+    size_t skipped_pixel_layer_decode_count;
     sixel_builtin_psd_layer_record_t pending_overlay_layer;
     SIXELSTATUS status;
 
@@ -13612,6 +13628,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     i = 0;
     next_index = 0u;
     defer_clip_group_overlay = 0;
+    allow_pixel_layer_decode_skip = 0;
+    composed_layer_count = 0u;
+    skipped_pixel_layer_decode_count = 0u;
     memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     status = SIXEL_FALSE;
 
@@ -13628,6 +13647,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     preserve_alpha = 0;
+    allow_pixel_layer_decode_skip =
+        sixel_builtin_psd_has_minimum_composite_payload(chunk, info) ? 1 : 0;
 
     status = sixel_builtin_psd_parse_layer_model(chunk, info, &model);
     if (SIXEL_FAILED(status)) {
@@ -14027,6 +14048,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     sixel_trace_topic_message("psd_decode", reason);
                 }
                 sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
+                if (allow_pixel_layer_decode_skip != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: skipping undecodable pixel layer in "
+                        "layer fallback");
+                    skipped_pixel_layer_decode_count++;
+                    continue;
+                }
                 goto cleanup;
             }
         }
@@ -14074,6 +14103,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                                                    ? clip_alpha_map
                                                    : NULL,
                                                blend_mode);
+        composed_layer_count++;
         if (apply_clipping == 0) {
             sixel_builtin_psd_build_clip_alpha_map(clip_alpha_map,
                                                    info->width,
@@ -14093,6 +14123,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             info->height,
             &pending_overlay_layer);
         pending_clip_group_overlay = 0;
+    }
+    if (allow_pixel_layer_decode_skip != 0 &&
+        skipped_pixel_layer_decode_count > 0u &&
+        composed_layer_count == 0u) {
+        sixel_helper_set_additional_message(
+            "builtin PSD: layer fallback produced no composited layers");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
     }
     if (bgcolor == NULL) {
         size_t alpha_index;
@@ -14232,7 +14270,11 @@ sixel_builtin_psd_decode_layer_channel_8bit(
         }
         row_data_offset += row_length;
     }
-    if (row_data_offset != length) {
+    /*
+     * Some producers append trailing pad bytes after the row payload.
+     * Treat these bytes as ignorable so layer fallback can continue.
+     */
+    if (row_data_offset > length) {
         return 0;
     }
 
@@ -14346,7 +14388,11 @@ sixel_builtin_psd_decode_layer_channel_16bit(
         }
         row_data_offset += row_length;
     }
-    if (row_data_offset != length) {
+    /*
+     * Some producers append trailing pad bytes after the row payload.
+     * Treat these bytes as ignorable so layer fallback can continue.
+     */
+    if (row_data_offset > length) {
         return 0;
     }
 
@@ -14466,7 +14512,11 @@ sixel_builtin_psd_decode_layer_channel_32bit(
         }
         row_data_offset += row_length;
     }
-    if (row_data_offset != length) {
+    /*
+     * Some producers append trailing pad bytes after the row payload.
+     * Treat these bytes as ignorable so layer fallback can continue.
+     */
+    if (row_data_offset > length) {
         return 0;
     }
 

@@ -8,6 +8,7 @@ It is not invoked by TAP tests.
 from __future__ import annotations
 
 import argparse
+import csv
 import pathlib
 import subprocess
 import urllib.request
@@ -18,6 +19,12 @@ DEFAULT_INPUT_DIR = HERE
 DEFAULT_EXPECTED_DIR = HERE.parent / "loader" / "builtin_expected"
 DEFAULT_BASE_URL = "https://raw.githubusercontent.com/psd-tools/psd-tools"
 DEFAULT_REF = "c83ae643c24c05ab73e2697c23674a5edb380565"
+OFFICIAL_PSDTOOLS_REPO = "https://github.com/psd-tools/psd-tools"
+SOURCES_TSV = HERE / "psdtools-fixtures-sources.tsv"
+MIT_REQUIRED_SNIPPETS = (
+    "Permission is hereby granted, free of charge",
+    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND",
+)
 
 
 ASSETS = [
@@ -123,7 +130,105 @@ ASSETS = [
         "expected": "psdtools_effects_shape_fx_expected_psdtools.ppm",
         "generator": "psdtools",
     },
+    {
+        "upstream": "transparency/fill-opacity.psd",
+        "local": "psdtools_transparency_fill_opacity.psd",
+        "expected": "psdtools_transparency_fill_opacity_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "transparency/clip-opacity.psd",
+        "local": "psdtools_transparency_clip_opacity.psd",
+        "expected": "psdtools_transparency_clip_opacity_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "vector-mask.psd",
+        "local": "psdtools_vector_mask.psd",
+        "expected": "psdtools_vector_mask_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "vector-mask-disabled.psd",
+        "local": "psdtools_vector_mask_disabled.psd",
+        "expected": "psdtools_vector_mask_disabled_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "effects/shape-fx2.psd",
+        "local": "psdtools_effects_shape_fx2.psd",
+        "expected": "psdtools_effects_shape_fx2_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
+    {
+        "upstream": "effects/stroke-composite.psd",
+        "local": "psdtools_effects_stroke_composite.psd",
+        "expected": "psdtools_effects_stroke_composite_expected_psdtools.ppm",
+        "generator": "psdtools",
+    },
 ]
+
+
+def load_sources_metadata(path: pathlib.Path) -> dict[str, dict[str, str]]:
+    metadata = {}
+    with path.open("r", encoding="utf-8") as f:
+        reader = csv.reader(f, delimiter="\t")
+        next(reader)
+        for row in reader:
+            if len(row) < 7:
+                raise RuntimeError(f"invalid metadata row in {path}: {row!r}")
+            local_name = pathlib.Path(row[3]).name
+            metadata[local_name] = {
+                "upstream_repo_url": row[0],
+                "upstream_ref": row[1],
+                "upstream_path": row[2],
+                "local_fixture_path": row[3],
+                "expected_path": row[4],
+                "expected_generator": row[5],
+                "license": row[6],
+            }
+    return metadata
+
+
+def assert_upstream_mit_license(upstream_ref: str) -> None:
+    url = f"{DEFAULT_BASE_URL}/{upstream_ref}/LICENSE"
+    with urllib.request.urlopen(url, timeout=30) as response:
+        text = response.read().decode("utf-8", "replace")
+    for snippet in MIT_REQUIRED_SNIPPETS:
+        if snippet not in text:
+            raise RuntimeError(
+                f"upstream license does not look like MIT for ref {upstream_ref}"
+            )
+
+
+def verify_asset_sources_metadata(assets: list[dict[str, str]]) -> None:
+    metadata = load_sources_metadata(SOURCES_TSV)
+    refs = set()
+    for asset in assets:
+        local_name = asset["local"]
+        row = metadata.get(local_name)
+        if row is None:
+            raise RuntimeError(
+                f"missing metadata row in {SOURCES_TSV} for {local_name}"
+            )
+        if row["upstream_repo_url"] != OFFICIAL_PSDTOOLS_REPO:
+            raise RuntimeError(
+                f"{local_name}: unsupported upstream repo "
+                f"{row['upstream_repo_url']}"
+            )
+        if row["license"] != "MIT":
+            raise RuntimeError(
+                f"{local_name}: unsupported license {row['license']}"
+            )
+        expected_upstream_path = f"tests/psd_files/{asset['upstream']}"
+        if row["upstream_path"] != expected_upstream_path:
+            raise RuntimeError(
+                f"{local_name}: upstream path mismatch "
+                f"{row['upstream_path']} != {expected_upstream_path}"
+            )
+        refs.add(row["upstream_ref"])
+    for upstream_ref in sorted(refs):
+        assert_upstream_mit_license(upstream_ref)
 
 
 def download_file(url: str, dest: pathlib.Path) -> None:

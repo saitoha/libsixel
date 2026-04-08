@@ -278,6 +278,17 @@ Key points used by this roadmap:
     fixture/expected assets and covered by PASS LSQA parity tests:
     `blend-and-clipping.psd`, `layers-minimal/pattern-fill.psd`,
     and `effects/shape-fx.psd`.
+  - `psd-tools` hybrid asset generation now enforces MIT metadata guards:
+    official upstream repository match, per-fixture `license=MIT`, and
+    upstream LICENSE text checks against MIT-required clauses.
+  - Additional MIT-licensed `psd-tools` fixtures are imported for
+    transparency/vector-mask/effects hardcases:
+    `transparency/fill-opacity.psd`, `transparency/clip-opacity.psd`,
+    `vector-mask.psd`, `vector-mask-disabled.psd`,
+    `effects/shape-fx2.psd`, and `effects/stroke-composite.psd`.
+  - New hardcase LSQA TAPs `1313..1318` are added.
+    `1314..1316` are PASS and `1313/1317/1318` are currently fixed as XFAIL
+    until remaining opacity/effects parity work is completed.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
@@ -424,6 +435,8 @@ Minimum fixture naming convention:
    preserving deterministic degrade traces for unsupported semantics
    (for example richer `TySh` text-style payload interpretation beyond
    `FillColor`/`Color` value extraction).
+   - Priority hardcase targets: `1313` (fill-opacity parity) and
+     `1317/1318` (effects parity for shape-fx2/stroke-composite).
 2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
    large-document parity:
    - after mode4/mode7 CMYK16/CMYK32 `high_offset` + `high_offset_xxlarge`
