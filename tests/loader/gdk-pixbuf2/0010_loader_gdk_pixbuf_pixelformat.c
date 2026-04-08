@@ -19,6 +19,7 @@ new_gdk_pixbuf_component(sixel_allocator_t *allocator,
 typedef enum gdk_pixbuf_pixelformat_case_id {
     GDK_PIXBUF_PIXELFORMAT_RGBA_NO_BG_MASK = 0,
     GDK_PIXBUF_PIXELFORMAT_RGBA_BG_FLOAT32,
+    GDK_PIXBUF_PIXELFORMAT_RGBA_OPAQUE_BG_RGB888,
     GDK_PIXBUF_PIXELFORMAT_INDEXED_RGB888,
     GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_MASK,
     GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_MASK,
@@ -57,6 +58,22 @@ run_gdk_pixbuf_pixelformat_case_by_id(
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                 2,
                 1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 0, 256, white_bg },
+            new_gdk_pixbuf_component
+        },
+        {
+            "gdkpixbuf opaque rgba with background emits rgb888 fast path",
+            "/tests/data/inputs/formats/snake-64-reference-rgba.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                64,
+                64,
                 1,
                 -1,
                 FRAME_METADATA_ANY,
@@ -185,6 +202,10 @@ run_gdk_pixbuf_loader_test_mode(char const *mode)
     if (strcmp(mode, "rgba_bg_float32") == 0) {
         return run_gdk_pixbuf_pixelformat_case_by_id(
             GDK_PIXBUF_PIXELFORMAT_RGBA_BG_FLOAT32);
+    }
+    if (strcmp(mode, "rgba_opaque_bg_rgb888") == 0) {
+        return run_gdk_pixbuf_pixelformat_case_by_id(
+            GDK_PIXBUF_PIXELFORMAT_RGBA_OPAQUE_BG_RGB888);
     }
     if (strcmp(mode, "indexed_rgb888") == 0) {
         return run_gdk_pixbuf_pixelformat_case_by_id(

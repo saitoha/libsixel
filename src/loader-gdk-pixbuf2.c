@@ -103,6 +103,8 @@ typedef struct sixel_loader_gdkpixbuf_component {
     int loop_control;
     int has_start_frame_no;
     int start_frame_no;
+    int srgb_decode_lut_prepared;
+    double srgb_decode_lut[256];
 } sixel_loader_gdkpixbuf_component_t;
 
 typedef struct gdkpixbuf_png_decode_hint {
@@ -420,6 +422,24 @@ gdkpixbuf_decode_srgb_unit(double value)
 }
 
 static void
+gdkpixbuf_build_srgb_decode_u8_lut(double lut[256])
+{
+    int index;
+    double unit;
+
+    index = 0;
+    unit = 0.0;
+    if (lut == NULL) {
+        return;
+    }
+
+    for (index = 0; index < 256; ++index) {
+        unit = (double)index / 255.0;
+        lut[index] = gdkpixbuf_decode_srgb_unit(unit);
+    }
+}
+
+static void
 gdkpixbuf_png_decode_hint_init(gdkpixbuf_png_decode_hint_t *hint)
 {
     if (hint == NULL) {
@@ -559,7 +579,9 @@ gdkpixbuf_copy_pixbuf_to_frame(
     sixel_chunk_t const *pchunk,
     GdkPixbuf *pixbuf,
     unsigned char const *bgcolor,
-    gdkpixbuf_png_decode_hint_t const *png_hint)
+    gdkpixbuf_png_decode_hint_t const *png_hint,
+    int *lut_ready,
+    double lut[256])
 {
     SIXELSTATUS status;
     unsigned char *source_pixels;
@@ -578,9 +600,12 @@ gdkpixbuf_copy_pixbuf_to_frame(
     int rowstride;
     int source_depth;
     int has_alpha;
+    int has_effective_alpha;
+    int alpha_all_opaque;
     int has_bg_for_alpha;
     int promote_float32;
     int has_nonopaque_alpha;
+    double const *decode_lut;
     unsigned int alpha_u8;
     double alpha_unit;
     double src_linear[3];
@@ -605,9 +630,12 @@ gdkpixbuf_copy_pixbuf_to_frame(
     rowstride = 0;
     source_depth = 0;
     has_alpha = 0;
+    has_effective_alpha = 0;
+    alpha_all_opaque = 0;
     has_bg_for_alpha = 0;
     promote_float32 = 0;
     has_nonopaque_alpha = 0;
+    decode_lut = NULL;
     alpha_u8 = 0u;
     alpha_unit = 0.0;
     src_linear[0] = 0.0;
@@ -654,13 +682,40 @@ gdkpixbuf_copy_pixbuf_to_frame(
     }
     pixel_total = (size_t)width * (size_t)height;
 
-    has_bg_for_alpha = bgcolor != NULL && has_alpha;
+    has_effective_alpha = has_alpha;
+    if (has_alpha != 0) {
+        alpha_all_opaque = 1;
+        for (y = 0u; y < (size_t)height && alpha_all_opaque != 0; ++y) {
+            for (x = 0u; x < (size_t)width; ++x) {
+                source_offset = (size_t)rowstride * y +
+                    x * (size_t)source_depth;
+                if (source_pixels[source_offset + 3u] != 255u) {
+                    alpha_all_opaque = 0;
+                    break;
+                }
+            }
+        }
+        if (alpha_all_opaque != 0) {
+            has_effective_alpha = 0;
+        }
+    }
+
+    has_bg_for_alpha = bgcolor != NULL && has_effective_alpha;
     promote_float32 = png_hint != NULL &&
         png_hint->parse_status == SIXEL_OK &&
         png_hint->is_png != 0 &&
         png_hint->bit_depth > 8;
     if (has_bg_for_alpha) {
         promote_float32 = 1;
+    }
+    if (promote_float32 != 0 &&
+        lut_ready != NULL &&
+        lut != NULL) {
+        if (*lut_ready == 0) {
+            gdkpixbuf_build_srgb_decode_u8_lut(lut);
+            *lut_ready = 1;
+        }
+        decode_lut = lut;
     }
 
     /*
@@ -682,7 +737,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
             goto cleanup;
         }
 
-        if (has_alpha && bgcolor == NULL) {
+        if (has_effective_alpha && bgcolor == NULL) {
             mask = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
                                                            pixel_total);
             if (mask == NULL) {
@@ -692,12 +747,18 @@ gdkpixbuf_copy_pixbuf_to_frame(
                 goto cleanup;
             }
         } else if (has_bg_for_alpha) {
-            bg_linear[0] = gdkpixbuf_decode_srgb_unit(
-                (double)bgcolor[0] / 255.0);
-            bg_linear[1] = gdkpixbuf_decode_srgb_unit(
-                (double)bgcolor[1] / 255.0);
-            bg_linear[2] = gdkpixbuf_decode_srgb_unit(
-                (double)bgcolor[2] / 255.0);
+            if (decode_lut != NULL) {
+                bg_linear[0] = decode_lut[bgcolor[0]];
+                bg_linear[1] = decode_lut[bgcolor[1]];
+                bg_linear[2] = decode_lut[bgcolor[2]];
+            } else {
+                bg_linear[0] = gdkpixbuf_decode_srgb_unit(
+                    (double)bgcolor[0] / 255.0);
+                bg_linear[1] = gdkpixbuf_decode_srgb_unit(
+                    (double)bgcolor[1] / 255.0);
+                bg_linear[2] = gdkpixbuf_decode_srgb_unit(
+                    (double)bgcolor[2] / 255.0);
+            }
         }
 
         for (y = 0u; y < (size_t)height; ++y) {
@@ -705,16 +766,26 @@ gdkpixbuf_copy_pixbuf_to_frame(
                 source_offset = (size_t)rowstride * y +
                     x * (size_t)source_depth;
                 index = y * (size_t)width + x;
-                alpha_u8 = has_alpha ? source_pixels[source_offset + 3u]
-                                     : 255u;
+                alpha_u8 = has_effective_alpha
+                    ? source_pixels[source_offset + 3u]
+                    : 255u;
                 alpha_unit = (double)alpha_u8 / 255.0;
 
-                src_linear[0] = gdkpixbuf_decode_srgb_unit(
-                    (double)source_pixels[source_offset + 0u] / 255.0);
-                src_linear[1] = gdkpixbuf_decode_srgb_unit(
-                    (double)source_pixels[source_offset + 1u] / 255.0);
-                src_linear[2] = gdkpixbuf_decode_srgb_unit(
-                    (double)source_pixels[source_offset + 2u] / 255.0);
+                if (decode_lut != NULL) {
+                    src_linear[0] = decode_lut[
+                        source_pixels[source_offset + 0u]];
+                    src_linear[1] = decode_lut[
+                        source_pixels[source_offset + 1u]];
+                    src_linear[2] = decode_lut[
+                        source_pixels[source_offset + 2u]];
+                } else {
+                    src_linear[0] = gdkpixbuf_decode_srgb_unit(
+                        (double)source_pixels[source_offset + 0u] / 255.0);
+                    src_linear[1] = gdkpixbuf_decode_srgb_unit(
+                        (double)source_pixels[source_offset + 1u] / 255.0);
+                    src_linear[2] = gdkpixbuf_decode_srgb_unit(
+                        (double)source_pixels[source_offset + 2u] / 255.0);
+                }
 
                 if (has_bg_for_alpha) {
                     out_linear[0] = src_linear[0] * alpha_unit +
@@ -723,7 +794,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
                         bg_linear[1] * (1.0 - alpha_unit);
                     out_linear[2] = src_linear[2] * alpha_unit +
                         bg_linear[2] * (1.0 - alpha_unit);
-                } else if (has_alpha) {
+                } else if (has_effective_alpha) {
                     out_linear[0] = src_linear[0] * alpha_unit;
                     out_linear[1] = src_linear[1] * alpha_unit;
                     out_linear[2] = src_linear[2] * alpha_unit;
@@ -762,7 +833,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
      * Default alpha handling emits RGB plus a binary transparent mask.
      * This mirrors other loaders and keeps the 8-bit fast path.
      */
-    if (has_alpha) {
+    if (has_effective_alpha) {
         if (pixel_total > SIZE_MAX / 3u) {
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto cleanup;
@@ -866,7 +937,8 @@ gdkpixbuf_copy_pixbuf_to_frame(
     }
     for (y = 0u; y < (size_t)height; ++y) {
         for (x = 0u; x < (size_t)width; ++x) {
-            source_offset = (size_t)rowstride * y + x * 3u;
+            source_offset = (size_t)rowstride * y +
+                x * (size_t)source_depth;
             dest_offset = (y * (size_t)width + x) * 3u;
             pixels_u8[dest_offset + 0u] = source_pixels[source_offset + 0u];
             pixels_u8[dest_offset + 1u] = source_pixels[source_offset + 1u];
@@ -906,7 +978,9 @@ load_with_gdkpixbuf(
     int start_frame_no_set,
     int start_frame_no_override,
     sixel_load_image_function fn_load, /* callback */
-    void *context                      /* private data for callback */
+    void *context,                     /* private data for callback */
+    int *lut_ready,
+    double lut[256]
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -935,6 +1009,8 @@ load_with_gdkpixbuf(
     int start_frame_no;
     int resolved_start_frame_no;
     int animation_frame_count;
+    int validate_positive_start_frame;
+    int start_frame_emitted;
     int emit_callback;
     int source_frame_no;
 
@@ -944,6 +1020,8 @@ load_with_gdkpixbuf(
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
     animation_frame_count = 0;
+    validate_positive_start_frame = 0;
+    start_frame_emitted = 0;
     emit_callback = 1;
     source_frame_no = 0;
     (void)fuse_palette;
@@ -1136,7 +1214,9 @@ load_with_gdkpixbuf(
                                                 pchunk,
                                                 pixbuf,
                                                 bgcolor,
-                                                &png_hint);
+                                                &png_hint,
+                                                lut_ready,
+                                                lut);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1151,18 +1231,28 @@ load_with_gdkpixbuf(
         gboolean finished;
 
         if (start_frame_no != INT_MIN) {
-            status = gdkpixbuf_count_animation_frames(animation,
-                                                      g_get_real_time(),
-                                                      &animation_frame_count);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            status = gdkpixbuf_resolve_animation_start_frame_no(
-                start_frame_no,
-                animation_frame_count,
-                &resolved_start_frame_no);
-            if (SIXEL_FAILED(status)) {
-                goto end;
+            /*
+             * Negative offsets require the frame count to resolve from the
+             * tail. Positive offsets can be validated while iterating.
+             */
+            if (start_frame_no < 0) {
+                status = gdkpixbuf_count_animation_frames(
+                    animation,
+                    g_get_real_time(),
+                    &animation_frame_count);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                status = gdkpixbuf_resolve_animation_start_frame_no(
+                    start_frame_no,
+                    animation_frame_count,
+                    &resolved_start_frame_no);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+            } else {
+                resolved_start_frame_no = start_frame_no;
+                validate_positive_start_frame = 1;
             }
         }
 
@@ -1170,6 +1260,7 @@ load_with_gdkpixbuf(
         frame->frame_no = 0;
         source_frame_no = 0;
         frame->loop_count = 0;
+        start_frame_emitted = 0;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic push
@@ -1203,7 +1294,9 @@ load_with_gdkpixbuf(
                                                         pchunk,
                                                         pixbuf,
                                                         bgcolor,
-                                                        &png_hint);
+                                                        &png_hint,
+                                                        lut_ready,
+                                                        lut);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -1230,6 +1323,10 @@ load_with_gdkpixbuf(
                     emit_callback = 0;
                 }
                 if (emit_callback) {
+                    if (frame->loop_count == 0 &&
+                        resolved_start_frame_no != INT_MIN) {
+                        start_frame_emitted = 1;
+                    }
                     /*
                      * frame_no is consumed by the encoder to determine
                      * whether DECSC (first emitted frame) or DECRC
@@ -1269,6 +1366,19 @@ load_with_gdkpixbuf(
 
             if (source_frame_no == 0) {
                 break;
+            }
+            /*
+             * Positive start-frame indexes are considered out of range when
+             * the first loop completes without emitting a frame.
+             */
+            if (validate_positive_start_frame != 0 &&
+                frame->loop_count == 0 &&
+                start_frame_emitted == 0) {
+                sixel_helper_set_additional_message(
+                    "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+                    " the animation frame range.");
+                status = SIXEL_BAD_INPUT;
+                goto end;
             }
 
             /* finished processing one full loop */
@@ -1326,7 +1436,9 @@ load_with_gdkpixbuf(
                                                 pchunk,
                                                 pixbuf,
                                                 bgcolor,
-                                                &png_hint);
+                                                &png_hint,
+                                                lut_ready,
+                                                lut);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1342,18 +1454,28 @@ load_with_gdkpixbuf(
 
         /* reset iterator to the beginning of the timeline */
         if (start_frame_no != INT_MIN) {
-            status = gdkpixbuf_count_animation_frames(animation,
-                                                      g_get_real_time(),
-                                                      &animation_frame_count);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            status = gdkpixbuf_resolve_animation_start_frame_no(
-                start_frame_no,
-                animation_frame_count,
-                &resolved_start_frame_no);
-            if (SIXEL_FAILED(status)) {
-                goto end;
+            /*
+             * Negative offsets require the frame count to resolve from the
+             * tail. Positive offsets can be validated while iterating.
+             */
+            if (start_frame_no < 0) {
+                status = gdkpixbuf_count_animation_frames(
+                    animation,
+                    g_get_real_time(),
+                    &animation_frame_count);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                status = gdkpixbuf_resolve_animation_start_frame_no(
+                    start_frame_no,
+                    animation_frame_count,
+                    &resolved_start_frame_no);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+            } else {
+                resolved_start_frame_no = start_frame_no;
+                validate_positive_start_frame = 1;
             }
         }
 
@@ -1361,6 +1483,7 @@ load_with_gdkpixbuf(
         frame->frame_no = 0;
         source_frame_no = 0;
         frame->loop_count = 0;
+        start_frame_emitted = 0;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic push
@@ -1389,7 +1512,9 @@ load_with_gdkpixbuf(
                                                         pchunk,
                                                         pixbuf,
                                                         bgcolor,
-                                                        &png_hint);
+                                                        &png_hint,
+                                                        lut_ready,
+                                                        lut);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -1416,6 +1541,10 @@ load_with_gdkpixbuf(
                     emit_callback = 0;
                 }
                 if (emit_callback) {
+                    if (frame->loop_count == 0 &&
+                        resolved_start_frame_no != INT_MIN) {
+                        start_frame_emitted = 1;
+                    }
                     /*
                      * frame_no is consumed by the encoder to determine
                      * whether DECSC (first emitted frame) or DECRC
@@ -1455,6 +1584,19 @@ load_with_gdkpixbuf(
 
             if (source_frame_no == 0) {
                 break;
+            }
+            /*
+             * Positive start-frame indexes are considered out of range when
+             * the first loop completes without emitting a frame.
+             */
+            if (validate_positive_start_frame != 0 &&
+                frame->loop_count == 0 &&
+                start_frame_emitted == 0) {
+                sixel_helper_set_additional_message(
+                    "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+                    " the animation frame range.");
+                status = SIXEL_BAD_INPUT;
+                goto end;
             }
 
             /* finished processing one full loop */
@@ -1650,7 +1792,9 @@ sixel_loader_gdkpixbuf2_load(sixel_loader_component_t *component,
                                self->has_start_frame_no,
                                self->start_frame_no,
                                fn_load,
-                               context);
+                               context,
+                               &self->srgb_decode_lut_prepared,
+                               self->srgb_decode_lut);
 }
 
 static char const *
@@ -1691,6 +1835,7 @@ sixel_loader_gdkpixbuf2_new(sixel_allocator_t *allocator,
     self->allocator = allocator;
     self->ref = 1u;
     self->reqcolors = SIXEL_PALETTE_MAX;
+    self->srgb_decode_lut_prepared = 0;
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no = INT_MIN;
     sixel_allocator_ref(allocator);
