@@ -6,11 +6,8 @@ set -eux
 echo "1..1"
 set -v
 
-icc_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "icc/0001_icc_builtin_rgb_gray_v4_paths" 2>&1) || rc=$?
-printf '%s' "${icc_output}" >&2
-
-test "${rc:-0}" -eq 0 || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    "icc/0001_icc_builtin_rgb_gray_v4_paths" 1>&2 || {
     echo "not ok" 1 - "icc builtin rgb/gray v4 coverage"
     exit 0
 }

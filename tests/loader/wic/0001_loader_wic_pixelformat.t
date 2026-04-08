@@ -16,10 +16,7 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
 echo "1..1"
 set -v
 
-loader_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0009_loader_wic_pixelformat" 2>&1) || rc=$?
-printf '%s' "${loader_output}" >&2
-
-test "${rc-0}" -eq 0 || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0009_loader_wic_pixelformat" 1>&2 || {
     echo "not ok" 1 - "loader/0009_loader_wic_pixelformat"
     exit 0
 }
