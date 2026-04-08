@@ -11190,6 +11190,9 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
     int should_prefer;
     int force_merged;
     int force_layer_fallback;
+    int has_visible_clipping;
+    size_t orphan_forward;
+    size_t orphan_reverse;
 
     status = SIXEL_FALSE;
     layer_info_offset = 0u;
@@ -11200,6 +11203,9 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
     should_prefer = 0;
     force_merged = 0;
     force_layer_fallback = 0;
+    has_visible_clipping = 0;
+    orphan_forward = 0u;
+    orphan_reverse = 0u;
     sixel_builtin_psd_layer_model_init(&model);
 
     if (chunk == NULL || info == NULL || chunk->allocator == NULL ||
@@ -11253,14 +11259,27 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                     layer) &&
                 layer->has_layer_effects == 0 &&
                 layer->has_knockout == 0 &&
-                (layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_PTFL ||
-                 layer->has_malformed_fill_payload != 0)) {
+                layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_PTFL) {
                 /*
                  * Pattern-fill-oriented no-pixel layers are only represented in
                  * layer fallback today. Preferring merged here can collapse the
                  * output into near-solid composites.
                  */
                 force_layer_fallback = 1;
+            }
+            if (layer->visible != 0 &&
+                layer->has_fill_payload != 0 &&
+                layer->has_vector_mask_curve_bbox != 0 &&
+                layer->has_layer_effects != 0 &&
+                layer->has_knockout != 0) {
+                /*
+                 * Rounded vector-mask fills with effects/knockout collapse in
+                 * merged composites from some generators. Keep fallback here.
+                 */
+                force_layer_fallback = 1;
+            }
+            if (layer->visible != 0 && layer->clipping != 0u) {
+                has_visible_clipping = 1;
             }
             if (layer->has_layer_effects != 0 &&
                 layer->has_fill_payload == 0 &&
@@ -11281,6 +11300,24 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
             should_prefer = 1;
             goto done;
         }
+        if (has_visible_clipping != 0) {
+            orphan_forward = sixel_builtin_psd_count_orphan_clipping_layers(
+                info,
+                &model,
+                1);
+            orphan_reverse = sixel_builtin_psd_count_orphan_clipping_layers(
+                info,
+                &model,
+                -1);
+            /*
+             * Merged composites can diverge on clipping-heavy files produced
+             * by external tools. Only force fallback when reverse traversal
+             * would produce significantly more orphan clipping layers.
+             */
+            if (orphan_reverse > orphan_forward + 1u) {
+                should_prefer = 1;
+            }
+        }
         if (model.layer_count > 1u &&
             info->width == 1u &&
             info->height == 1u) {
@@ -11298,26 +11335,6 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                 layer->has_vector_mask != 0 ||
                 layer->has_layer_effects != 0) {
                 should_prefer = 1;
-            }
-        }
-        if (should_prefer == 0) {
-            for (i = 0u; i < model.layer_count; ++i) {
-                sixel_builtin_psd_layer_record_t const *layer;
-
-                layer = &model.layers[i];
-                if (layer->has_fill_payload != 0 &&
-                    layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_SOCO &&
-                    layer->has_vector_mask != 0 &&
-                    layer->has_layer_effects != 0 &&
-                    layer->has_knockout != 0 &&
-                    sixel_builtin_psd_layer_has_decodable_pixel_channels(
-                        info,
-                        layer) &&
-                    (layer->has_effect_solid_overlay != 0 ||
-                     layer->has_effect_stroke != 0)) {
-                    should_prefer = 1;
-                    break;
-                }
             }
         }
     }
@@ -13185,6 +13202,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     size_t width;
     size_t height;
     int stroke_radius;
+    int suppress_stroke;
     float stroke_opacity;
 
     i = 0u;
@@ -13193,6 +13211,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     width = 0u;
     height = 0u;
     stroke_radius = 0;
+    suppress_stroke = 0;
     stroke_opacity = 0.0f;
     if (layer == NULL || src == NULL || src->rgb_linear == NULL || src->alpha == NULL) {
         return;
@@ -13230,6 +13249,20 @@ sixel_builtin_psd_apply_layer_effects_subset(
 
 apply_stroke:
     if (layer->has_effect_stroke == 0) {
+        return;
+    }
+    if (layer->has_fill_payload != 0 &&
+        layer->has_vector_mask_curve_bbox != 0 &&
+        layer->red_channel_index < 0 &&
+        layer->gray_channel_index < 0 &&
+        layer->c_channel_index < 0) {
+        suppress_stroke = 1;
+    }
+    if (suppress_stroke != 0) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: suppressing stroke approximation on vector-mask "
+            "non-pixel fill layer");
         return;
     }
     if (layer->width == 0u || layer->height == 0u ||
@@ -14158,8 +14191,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         defer_clip_group_overlay = 0;
         if (step == 1 &&
             apply_clipping == 0 &&
-            effective_composite_layer->blend_clipped_elements_enabled != 0 &&
-            effective_composite_layer->blend_interior_effects_enabled != 0 &&
             effective_composite_layer->has_effect_solid_overlay != 0) {
             next_index = (size_t)(i + 1);
             if (next_index < model.layer_count &&
