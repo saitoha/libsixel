@@ -1219,15 +1219,18 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
                                       CFDictionaryRef frame_props,
                                       coregraphics_png_trns_chunk_cache_t
                                       *png_trns_chunk_cache,
+                                      int fuse_palette,
+                                      int reqcolors,
                                       unsigned char const *bgcolor,
                                       int *handled,
                                       int *force_alpha)
 {
     /*
      * Indexed-path policy:
-     *   - do not emit PAL8,
-     *   - preserve binary keycolor transparency as RGB+mask (or background
-     *     composite),
+     *   - emit PAL8 only for opaque indexed frames when palette output is
+     *     enabled,
+     *   - keep binary keycolor transparency in PAL8 when reqcolors allows it,
+     *     otherwise preserve it as RGB+mask (or background composite),
      *   - defer non-binary alpha to the generic RGBA decode path.
      */
     SIXELSTATUS status;
@@ -1240,9 +1243,12 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
     size_t pixel_count;
     size_t index;
     int ncolors;
+    int allow_pal8;
+    int reqcolors_clamped;
     int zero_alpha_count;
     int has_partial_alpha;
     int has_keycolor_alpha;
+    int key_index;
     unsigned char palette_index;
 
     status = SIXEL_FALSE;
@@ -1254,9 +1260,12 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
     pixel_count = 0u;
     index = 0u;
     ncolors = 0;
+    allow_pal8 = 0;
+    reqcolors_clamped = 0;
     zero_alpha_count = 0;
     has_partial_alpha = 0;
     has_keycolor_alpha = 0;
+    key_index = -1;
     palette_index = 0u;
     if (chunk == NULL ||
         frame == NULL ||
@@ -1304,8 +1313,33 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
         goto cleanup;
     }
 
+    reqcolors_clamped = reqcolors;
+    if (reqcolors_clamped <= 0 || reqcolors_clamped > SIXEL_PALETTE_MAX) {
+        reqcolors_clamped = SIXEL_PALETTE_MAX;
+    }
     has_keycolor_alpha = zero_alpha_count > 0 ? 1 : 0;
+    allow_pal8 = fuse_palette != 0 &&
+        ncolors > 0 &&
+        ncolors <= reqcolors_clamped;
+    if (has_keycolor_alpha != 0 && bgcolor != NULL) {
+        allow_pal8 = 0;
+    }
+    if (has_keycolor_alpha != 0) {
+        for (index = 0u; index < (size_t)ncolors; ++index) {
+            if (zero_alpha_map[index] != 0u) {
+                key_index = (int)index;
+                break;
+            }
+        }
+    }
+
+    if (allow_pal8 == 0 && has_keycolor_alpha == 0) {
+        status = SIXEL_OK;
+        goto cleanup;
+    }
     if (has_keycolor_alpha == 0) {
+        key_index = -1;
+    } else if (key_index < 0) {
         status = SIXEL_OK;
         goto cleanup;
     }
@@ -1325,6 +1359,38 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
         goto cleanup;
     }
     if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    if (allow_pal8 != 0) {
+        if (has_keycolor_alpha != 0 &&
+            zero_alpha_count > 1 &&
+            key_index >= 0) {
+            for (index = 0u; index < pixel_count; ++index) {
+                palette_index = indexed_pixels[index];
+                if ((int)palette_index < ncolors &&
+                    zero_alpha_map[palette_index] != 0u &&
+                    (int)palette_index != key_index) {
+                    indexed_pixels[index] = (unsigned char)key_index;
+                }
+            }
+        }
+        frame->pixels.u8ptr = indexed_pixels;
+        indexed_pixels = NULL;
+        frame->palette = palette;
+        palette = NULL;
+        frame->ncolors = ncolors;
+        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        frame->transparent = has_keycolor_alpha ? key_index : -1;
+        frame->alpha_zero_is_transparent = 0;
+        *handled = 1;
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+
+    if (has_keycolor_alpha == 0) {
+        status = SIXEL_OK;
         goto cleanup;
     }
 
@@ -2538,6 +2604,8 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
             state->image,
             state->frame_props,
             &state->png_trns_chunk_cache,
+            state->fuse_palette,
+            state->reqcolors,
             state->bgcolor,
             &state->indexed_handled,
             &state->force_alpha_from_indexed);

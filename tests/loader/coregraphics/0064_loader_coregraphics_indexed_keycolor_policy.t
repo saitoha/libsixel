@@ -10,11 +10,11 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    --env "SIXEL_TEST_COREGRAPHICS_INDEXED_RGB=1" \
+    --env "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_POLICY=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed png rgb)"
+    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed keycolor policy)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed png rgb)"
+echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed keycolor policy)"
 exit 0

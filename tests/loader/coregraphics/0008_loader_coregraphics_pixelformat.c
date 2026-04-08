@@ -3,6 +3,7 @@
  */
 
 #include "tests/loader/pixelformat_test_common.h"
+#include <string.h>
 
 #if HAVE_COREGRAPHICS
 static SIXELSTATUS
@@ -68,6 +69,19 @@ typedef struct coregraphics_callback_count_probe {
     int callback_count;
 } coregraphics_callback_count_probe_t;
 
+typedef struct coregraphics_indexed_keycolor_policy_probe {
+    int callback_count;
+    int pixelformat;
+    int width;
+    int height;
+    int transparent;
+    int has_transparent_mask;
+    size_t transparent_mask_size;
+    int alpha_zero_is_transparent;
+    unsigned char indexed_pixels[4];
+    unsigned char transparent_mask[4];
+} coregraphics_indexed_keycolor_policy_probe_t;
+
 typedef int (*coregraphics_env_test_fn_t)(void);
 
 typedef struct coregraphics_env_dispatch_entry {
@@ -78,9 +92,9 @@ typedef struct coregraphics_env_dispatch_entry {
 typedef enum coregraphics_pixelformat_case_id {
     COREGRAPHICS_PIXELFORMAT_RGBA_NO_BG_MASK = 0,
     COREGRAPHICS_PIXELFORMAT_RGBA_BG_RGB,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_RGB,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_MASK,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_MASK,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_PAL8,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_POLICY,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_POLICY,
     COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK,
     COREGRAPHICS_PIXELFORMAT_INDEXED_REQCOLORS_FALLBACK_RGB,
     COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FALLBACK_MASK,
@@ -233,6 +247,52 @@ capture_coregraphics_callback_count(sixel_frame_t *frame, void *data)
 
     probe = (coregraphics_callback_count_probe_t *)data;
     probe->callback_count += 1;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+capture_coregraphics_indexed_keycolor_policy_probe(sixel_frame_t *frame,
+                                                   void *data)
+{
+    coregraphics_indexed_keycolor_policy_probe_t *probe;
+    unsigned char const *pixels;
+    size_t pixel_count;
+
+    probe = NULL;
+    pixels = NULL;
+    pixel_count = 0u;
+    if (frame == NULL || data == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    probe = (coregraphics_indexed_keycolor_policy_probe_t *)data;
+    probe->callback_count += 1;
+    probe->pixelformat = sixel_frame_get_pixelformat(frame);
+    probe->width = sixel_frame_get_width(frame);
+    probe->height = sixel_frame_get_height(frame);
+    probe->transparent = sixel_frame_get_transparent(frame);
+    probe->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    probe->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
+    probe->transparent_mask_size = frame->transparent_mask_size;
+    if (probe->width > 0 &&
+        probe->height > 0 &&
+        (size_t)probe->width <= SIZE_MAX / (size_t)probe->height) {
+        pixel_count = (size_t)probe->width * (size_t)probe->height;
+    }
+
+    if (probe->pixelformat == SIXEL_PIXELFORMAT_PAL8 &&
+        pixel_count >= 4u) {
+        pixels = sixel_frame_get_pixels(frame);
+        if (pixels != NULL) {
+            memcpy(probe->indexed_pixels, pixels, 4u);
+        }
+    }
+
+    if (frame->transparent_mask != NULL &&
+        frame->transparent_mask_size >= 4u) {
+        memcpy(probe->transparent_mask, frame->transparent_mask, 4u);
+    }
+
     return SIXEL_OK;
 }
 
@@ -1342,6 +1402,207 @@ run_coregraphics_env_dispatch(
 }
 
 static int
+run_coregraphics_indexed_keycolor_policy_case(char const *label,
+                                               char const *relative_path)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
+    coregraphics_indexed_keycolor_policy_probe_t probe;
+    loader_probe_callback_state_t callback_state;
+    char const *source_root;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    int expected_width;
+    int expected_height;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    component = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    require_static = 1;
+    use_palette = 1;
+    reqcolors = 256;
+    expected_width = 4;
+    expected_height = 1;
+    result = 1;
+    memset(&probe, 0, sizeof(probe));
+    probe.transparent = FRAME_METADATA_ANY;
+    probe.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    probe.has_transparent_mask = FRAME_MASK_ANY;
+    probe.transparent_mask_size = 0u;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_coregraphics_indexed_keycolor_policy_probe;
+    callback_state.context = &probe;
+    if (label == NULL || relative_path == NULL) {
+        return 1;
+    }
+
+    source_root = getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    status = new_coregraphics_component(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    if (probe.callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch\n", label);
+        goto cleanup;
+    }
+    if (probe.width != expected_width || probe.height != expected_height) {
+        fprintf(stderr,
+                "%s: unexpected geometry %dx%d\n",
+                label,
+                probe.width,
+                probe.height);
+        goto cleanup;
+    }
+
+    /*
+     * Runtime behavior differs across ImageIO versions:
+     * - indexed+tRNS may stay indexed and return PAL8+transparent.
+     * - indexed+tRNS may be expanded to RGBA and then normalized to RGB+mask.
+     * Both are valid as long as transparency semantics are preserved.
+     */
+    if (probe.pixelformat == SIXEL_PIXELFORMAT_PAL8) {
+        if (probe.transparent < 0 || probe.transparent >= 256) {
+            fprintf(stderr, "%s: expected keycolor transparent index\n", label);
+            goto cleanup;
+        }
+        if (probe.has_transparent_mask != 0) {
+            fprintf(stderr, "%s: pal8 path must not expose mask\n", label);
+            goto cleanup;
+        }
+        if (probe.alpha_zero_is_transparent != 0) {
+            fprintf(stderr,
+                    "%s: pal8 path must not set alpha_zero_is_transparent\n",
+                    label);
+            goto cleanup;
+        }
+        /*
+         * The source sample has exactly one transparent pixel at x=0.
+         * Indexed output must preserve that layout via transparent index.
+         */
+        if (probe.indexed_pixels[0] != (unsigned char)probe.transparent ||
+            probe.indexed_pixels[1] == (unsigned char)probe.transparent ||
+            probe.indexed_pixels[2] == (unsigned char)probe.transparent ||
+            probe.indexed_pixels[3] == (unsigned char)probe.transparent) {
+            fprintf(stderr,
+                    "%s: pal8 path transparent index pattern mismatch\n",
+                    label);
+            goto cleanup;
+        }
+    } else if (probe.pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        if (probe.transparent != -1) {
+            fprintf(stderr, "%s: rgb path transparent index mismatch\n", label);
+            goto cleanup;
+        }
+        if (probe.has_transparent_mask != 1 ||
+            probe.transparent_mask_size < 4u) {
+            fprintf(stderr,
+                    "%s: rgb path must expose transparent mask\n",
+                    label);
+            goto cleanup;
+        }
+        if (probe.alpha_zero_is_transparent != 1) {
+            fprintf(stderr,
+                    "%s: rgb path must set alpha_zero_is_transparent\n",
+                    label);
+            goto cleanup;
+        }
+        if (probe.transparent_mask[0] != 1u ||
+            probe.transparent_mask[1] != 0u ||
+            probe.transparent_mask[2] != 0u ||
+            probe.transparent_mask[3] != 0u) {
+            fprintf(stderr,
+                    "%s: rgb path transparent mask pattern mismatch\n",
+                    label);
+            goto cleanup;
+        }
+    } else {
+        fprintf(stderr, "%s: unexpected pixelformat %d\n", label,
+                probe.pixelformat);
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
 run_coregraphics_pixelformat_case_by_id(
     coregraphics_pixelformat_case_id_t case_id)
 {
@@ -1380,10 +1641,10 @@ run_coregraphics_pixelformat_case_by_id(
             new_coregraphics_component
         },
         {
-            "coregraphics indexed png emits rgb",
+            "coregraphics indexed png keeps pal8",
             "/tests/data/inputs/formats/snake-png-pal8.png",
             {
-                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_PIXELFORMAT_PAL8,
                 64,
                 64,
                 1,
@@ -1509,6 +1770,19 @@ run_coregraphics_pixelformat_case_by_id(
         }
     };
     size_t index;
+
+    if (case_id == COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_POLICY) {
+        return run_coregraphics_indexed_keycolor_policy_case(
+            "coregraphics indexed keycolor policy",
+            "/tests/data/inputs/formats/pal8-trns-key0.png");
+    }
+    if (case_id ==
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_POLICY) {
+        return run_coregraphics_indexed_keycolor_policy_case(
+            "coregraphics indexed keycolor icc/gama policy",
+            "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png");
+    }
+
     if ((size_t)case_id >=
         sizeof(specs) / sizeof(specs[0]) ||
         case_id < 0 ||
@@ -1555,24 +1829,24 @@ run_coregraphics_rgba_with_background_rgb_test(void)
 }
 
 static int
-run_coregraphics_indexed_rgb_test(void)
+run_coregraphics_indexed_pal8_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_RGB);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_PAL8);
 }
 
 static int
-run_coregraphics_indexed_keycolor_mask_test(void)
+run_coregraphics_indexed_keycolor_policy_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_MASK);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_POLICY);
 }
 
 static int
-run_coregraphics_indexed_keycolor_icc_gama_mask_test(void)
+run_coregraphics_indexed_keycolor_icc_gama_policy_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_MASK);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_POLICY);
 }
 
 static int
@@ -1885,12 +2159,12 @@ run_coregraphics_loader_test(void)
           run_coregraphics_rgba_no_background_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_RGBA_BG_RGB",
           run_coregraphics_rgba_with_background_rgb_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_RGB",
-          run_coregraphics_indexed_rgb_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_MASK",
-          run_coregraphics_indexed_keycolor_mask_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_ICC_GAMA_MASK",
-          run_coregraphics_indexed_keycolor_icc_gama_mask_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_PAL8",
+          run_coregraphics_indexed_pal8_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_POLICY",
+          run_coregraphics_indexed_keycolor_policy_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_ICC_GAMA_POLICY",
+          run_coregraphics_indexed_keycolor_icc_gama_policy_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK",
           run_coregraphics_indexed_keycolor_reqcolors_fallback_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_REQCOLORS_FALLBACK_RGB",
