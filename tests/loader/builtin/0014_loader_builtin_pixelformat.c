@@ -29,6 +29,33 @@
 #include "src/frompsd.h"
 #include "src/loader-common.h"
 
+/*
+ * pcc warns on long internal test helper identifiers.
+ * Keep descriptive names by composing identifiers from prefix/suffix pairs.
+ */
+#define SIXEL_T0014_CAT2_I(a, b) a##b
+#define SIXEL_T0014_CAT2(a, b) SIXEL_T0014_CAT2_I(a, b)
+#define SIXEL_T0014_FN(prefix, suffix) SIXEL_T0014_CAT2(prefix, suffix)
+
+#if defined(__PCC__)
+# define SIXEL_T0014_PREF_HDR_GINV_PVALID_NUM pcc_t0014_hdr_ginv_pvalid_num
+# define SIXEL_T0014_PREF_HDR_PINV_GVALID_NUM pcc_t0014_hdr_pinv_gvalid_num
+# define SIXEL_T0014_PREF_HDR_MIX_HDR_EXP_INV_NUM pcc_t0014_hdr_mix_hexp_inv
+# define SIXEL_T0014_PREF_PNM_PAM_ULK_STRICT_REG pcc_t0014_pnm_pam_ulk_reg
+# define SIXEL_T0014_PREF_PNM_PAM_UT_FALLBACK_BND pcc_t0014_pnm_pam_ut_bnd
+#else
+# define SIXEL_T0014_PREF_HDR_GINV_PVALID_NUM \
+    run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric
+# define SIXEL_T0014_PREF_HDR_PINV_GVALID_NUM \
+    run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric
+# define SIXEL_T0014_PREF_HDR_MIX_HDR_EXP_INV_NUM \
+    run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric
+# define SIXEL_T0014_PREF_PNM_PAM_ULK_STRICT_REG \
+    run_builtin_loader_pnm_pam_unknown_long_key_strict_regression
+# define SIXEL_T0014_PREF_PNM_PAM_UT_FALLBACK_BND \
+    run_builtin_loader_pnm_pam_unknown_tupletype_fallback_boundary
+#endif
+
 
 #include "tests/loader/builtin/0014_loader_builtin_pixelformat_common.inc.c"
 #include "tests/loader/builtin/0014_loader_builtin_pixelformat_hdr.inc.c"
@@ -1386,7 +1413,7 @@ run_builtin_loader_pnm_pam_unknown_long_key_compat_test(void)
 }
 
 static int
-run_builtin_loader_pnm_pam_unknown_long_key_strict_regression_test(void)
+SIXEL_T0014_FN(SIXEL_T0014_PREF_PNM_PAM_ULK_STRICT_REG, _test)(void)
 {
     static char const pam_missing_required_sample[] =
         "P7\n"
@@ -2869,7 +2896,7 @@ run_builtin_loader_pnm_pam_tupletype_duplicate_last_wins_test(void)
 }
 
 static int
-run_builtin_loader_pnm_pam_unknown_tupletype_fallback_boundary_test(void)
+SIXEL_T0014_FN(SIXEL_T0014_PREF_PNM_PAM_UT_FALLBACK_BND, _test)(void)
 {
     static unsigned char const pam_unknown_tuple_depth4[] = {
         'P', '7', '\n',
@@ -4095,13 +4122,13 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_HDR_NUMERIC_ORIENTATION_ALL",
           run_builtin_loader_hdr_orientation_numeric_test },
         { "SIXEL_TEST_HDR_NUMERIC_GAMMA_INVALID_PRIMARIES_VALID",
-          run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test },
+          SIXEL_T0014_FN(SIXEL_T0014_PREF_HDR_GINV_PVALID_NUM, _test) },
         { "SIXEL_TEST_HDR_NUMERIC_PRIMARIES_INVALID_GAMMA_VALID",
-          run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test },
+          SIXEL_T0014_FN(SIXEL_T0014_PREF_HDR_PINV_GVALID_NUM, _test) },
         { "SIXEL_TEST_HDR_NUMERIC_INVALID_HEADER_EXPOSURE",
           run_builtin_loader_hdr_invalid_header_exposure_numeric_test },
         { "SIXEL_TEST_HDR_NUMERIC_MIXED_HEADER_EXPOSURE_INVALID",
-          run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric_test },
+          SIXEL_T0014_FN(SIXEL_T0014_PREF_HDR_MIX_HDR_EXP_INV_NUM, _test) },
         { "SIXEL_TEST_HDR_NUMERIC_INVALID_USE_HEADER_EXPOSURE_ENV",
           run_builtin_loader_hdr_invalid_use_hdr_exposure_env_test },
         { "SIXEL_TEST_HDR_NUMERIC_DUPLICATE_HEADER_METADATA_LAST_WINS",
@@ -4147,7 +4174,7 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_LONG_KEY_COMPAT",
           run_builtin_loader_pnm_pam_unknown_long_key_compat_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_LONG_KEY_STRICT_REGRESSION",
-          run_builtin_loader_pnm_pam_unknown_long_key_strict_regression_test },
+          SIXEL_T0014_FN(SIXEL_T0014_PREF_PNM_PAM_ULK_STRICT_REG, _test) },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_LARGE_HEADER_BYTES_STRICT",
           run_builtin_loader_pnm_pam_large_header_bytes_strict_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_LARGE_HEADER_BYTES_COMPAT",
@@ -4175,7 +4202,7 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_PNM_NUMERIC_PAM_TUPLTYPE_DUPLICATE_LAST_WINS",
           run_builtin_loader_pnm_pam_tupletype_duplicate_last_wins_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_TUPLTYPE_FALLBACK_BOUNDARY",
-          run_builtin_loader_pnm_pam_unknown_tupletype_fallback_boundary_test },
+          SIXEL_T0014_FN(SIXEL_T0014_PREF_PNM_PAM_UT_FALLBACK_BND, _test) },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_DUPLICATE_REQUIRED_KEY_STRICT",
           run_builtin_loader_pnm_pam_duplicate_required_key_strict_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_DUPLICATE_REQUIRED_KEY_COMPAT",

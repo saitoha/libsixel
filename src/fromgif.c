@@ -1143,8 +1143,6 @@ gif_init_frame(
 
 finalize:
     sixel_frame_set_multiframe(frame, pg->stream_is_multiframe != 0);
-    status = SIXEL_OK;
-
 end:
     return status;
 }
@@ -1409,8 +1407,6 @@ gif_process_raster(
             }
         }
     }
-
-    status = SIXEL_OK;
 
 end:
     return status;
@@ -1827,8 +1823,6 @@ gif_load_next(
             goto end;
         }
     }
-
-    status = SIXEL_OK;
 
 end:
     return status;

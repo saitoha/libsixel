@@ -19,6 +19,25 @@
 #include "src/dither.h"
 #include "src/palette-kmedoids.h"
 
+/*
+ * pcc warns on long static test identifiers.
+ * Preserve descriptive names by composing identifiers from prefix/suffix
+ * pairs so pcc only sees short prefixes.
+ */
+#define SIXEL_T0002_CAT2_I(a, b) a##b
+#define SIXEL_T0002_CAT2(a, b) SIXEL_T0002_CAT2_I(a, b)
+#define SIXEL_T0002_FN(prefix, suffix) SIXEL_T0002_CAT2(prefix, suffix)
+
+#if defined(__PCC__)
+# define SIXEL_T0002_PREF_CLARANS_SLOT_V12 pcc_t0002_clarans_slot_v12
+# define SIXEL_T0002_PREF_BANDIT_STRAT_REPRO pcc_t0002_bandit_strat_repro
+#else
+# define SIXEL_T0002_PREF_CLARANS_SLOT_V12 \
+    test_run_clarans_adaptive_slot_probe_budget_consistency_v12
+# define SIXEL_T0002_PREF_BANDIT_STRAT_REPRO \
+    test_run_bandit_prune_stratified_unique_sample_reproducibility
+#endif
+
 #define TEST_PIXEL_COUNT 12u
 #define TEST_WIDTH 12
 #define TEST_HEIGHT 1
@@ -3570,7 +3589,7 @@ end:
 }
 
 static int
-test_run_clarans_adaptive_slot_probe_budget_consistency_v12_case(void)
+SIXEL_T0002_FN(SIXEL_T0002_PREF_CLARANS_SLOT_V12, _case)(void)
 {
     unsigned int dense_target;
     unsigned int sparse_target;
@@ -4798,7 +4817,7 @@ test_run_bandit_prune_unique_sample_seed_reproducibility_case(void)
 }
 
 static int
-test_run_bandit_prune_stratified_unique_sample_reproducibility_case(void)
+SIXEL_T0002_FN(SIXEL_T0002_PREF_BANDIT_STRAT_REPRO, _case)(void)
 {
     sixel_allocator_t *allocator;
     unsigned int const point_count = 101u;
@@ -5052,7 +5071,7 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     if (strcmp(argv[1], "clarans-adaptive-slot-probe-budget-consistency-v12")
             == 0) {
         return
-            test_run_clarans_adaptive_slot_probe_budget_consistency_v12_case()
+            SIXEL_T0002_FN(SIXEL_T0002_PREF_CLARANS_SLOT_V12, _case)()
             ? 0 : 1;
     }
     if (strcmp(argv[1], "bandit-prune-partial-select-equivalence") == 0) {
@@ -5103,7 +5122,7 @@ test_palette_0002_kmedoids_constraints(int argc, char **argv)
     if (strcmp(argv[1], "bandit-prune-stratified-unique-sample-reproducibility")
             == 0) {
         return
-            test_run_bandit_prune_stratified_unique_sample_reproducibility_case()
+            SIXEL_T0002_FN(SIXEL_T0002_PREF_BANDIT_STRAT_REPRO, _case)()
             ? 0 : 1;
     }
     if (strcmp(argv[1], "clarans-slot-order-lazy-equivalence") == 0) {

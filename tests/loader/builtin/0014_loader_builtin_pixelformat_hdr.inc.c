@@ -1008,7 +1008,7 @@ run_builtin_loader_hdr_partial_header_numeric_test(
 }
 
 static int
-run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test(void)
+SIXEL_T0014_FN(SIXEL_T0014_PREF_HDR_GINV_PVALID_NUM, _test)(void)
 {
     return run_builtin_loader_hdr_partial_header_numeric_test(
         "builtin loader hdr gamma invalid + primaries valid numeric",
@@ -1019,7 +1019,7 @@ run_builtin_loader_hdr_gamma_invalid_primaries_valid_numeric_test(void)
 }
 
 static int
-run_builtin_loader_hdr_primaries_invalid_gamma_valid_numeric_test(void)
+SIXEL_T0014_FN(SIXEL_T0014_PREF_HDR_PINV_GVALID_NUM, _test)(void)
 {
     return run_builtin_loader_hdr_partial_header_numeric_test(
         "builtin loader hdr primaries invalid + gamma valid numeric",
@@ -1260,7 +1260,7 @@ run_builtin_loader_hdr_invalid_header_exposure_numeric_test(void)
 }
 
 static int
-run_builtin_loader_hdr_mixed_header_exposure_invalid_numeric_test(void)
+SIXEL_T0014_FN(SIXEL_T0014_PREF_HDR_MIX_HDR_EXP_INV_NUM, _test)(void)
 {
     return run_builtin_loader_hdr_compare_case(
         &hdr_numeric_compare_cases[

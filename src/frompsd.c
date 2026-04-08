@@ -43,6 +43,43 @@
 #include "loader-common.h"
 #include "pixelformat.h"
 
+/*
+ * pcc warns when internal identifiers exceed the historical external-name
+ * limit. Keep descriptive source names by composing identifiers from a
+ * prefix and a short suffix; pcc gets a short prefix only.
+ */
+#define SIXEL_FROMPSD_CAT2_I(a, b) a##b
+#define SIXEL_FROMPSD_CAT2(a, b) SIXEL_FROMPSD_CAT2_I(a, b)
+#define SIXEL_PSD_FN(prefix, suffix) SIXEL_FROMPSD_CAT2(prefix, suffix)
+
+#if defined(__PCC__)
+# define SIXEL_PSD_PREF_TYSH_FILLFLAG_ENGINEDATA pcc_psd_tysh_ff_eng
+# define SIXEL_PSD_PREF_TYSH_FILLCOLOR_ENGINEDATA pcc_psd_tysh_fc_eng
+# define SIXEL_PSD_PREF_TYSH_OPACITY_ENGINEDATA pcc_psd_tysh_op_eng
+# define SIXEL_PSD_PREF_TYSH_STROKEFLAG_ENGINEDATA pcc_psd_tysh_sf_eng
+# define SIXEL_PSD_PREF_TYSH_STROKECOLOR_ENGINEDATA pcc_psd_tysh_sc_eng
+# define SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET pcc_psd_tysh_style_set
+# define SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK pcc_psd_dec_miss_comp_c
+# define SIXEL_PSD_PREF_DEC_MISS_COMP_LAB pcc_psd_dec_miss_comp_l
+#else
+# define SIXEL_PSD_PREF_TYSH_FILLFLAG_ENGINEDATA \
+    sixel_builtin_psd_parse_tysh_fillflag_enginedata
+# define SIXEL_PSD_PREF_TYSH_FILLCOLOR_ENGINEDATA \
+    sixel_builtin_psd_parse_tysh_fillcolor_enginedata
+# define SIXEL_PSD_PREF_TYSH_OPACITY_ENGINEDATA \
+    sixel_builtin_psd_parse_tysh_opacity_enginedata
+# define SIXEL_PSD_PREF_TYSH_STROKEFLAG_ENGINEDATA \
+    sixel_builtin_psd_parse_tysh_strokeflag_enginedata
+# define SIXEL_PSD_PREF_TYSH_STROKECOLOR_ENGINEDATA \
+    sixel_builtin_psd_parse_tysh_strokecolor_enginedata
+# define SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET \
+    sixel_builtin_psd_parse_tysh_stylerun_stylesheetset
+# define SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK \
+    sixel_builtin_decode_psd_single_layer_missing_composite_cmyk
+# define SIXEL_PSD_PREF_DEC_MISS_COMP_LAB \
+    sixel_builtin_decode_psd_single_layer_missing_composite_lab
+#endif
+
 #define SIXEL_FROMPSD_MAX_CHANNELS 56u
 #define SIXEL_FROMPSD_MAX_DIMENSION 300000u
 
@@ -5896,7 +5933,7 @@ sixel_builtin_psd_parse_tysh_fillflag_enginedata_stylesheet(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_fillflag_enginedata_default_stylesheet(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_TYSH_FILLFLAG_ENGINEDATA, _default_stylesheet)(
     unsigned char const *data,
     size_t key_length,
     int *out_enabled)
@@ -6015,7 +6052,9 @@ sixel_builtin_psd_parse_tysh_fillflag_enginedata(
         layer->tysh_fill_flag_enabled = enabled;
         return 1;
     }
-    if (sixel_builtin_psd_parse_tysh_fillflag_enginedata_default_stylesheet(
+    if (SIXEL_PSD_FN(
+            SIXEL_PSD_PREF_TYSH_FILLFLAG_ENGINEDATA,
+            _default_stylesheet)(
             data,
             key_length,
             &enabled)) {
@@ -6283,7 +6322,7 @@ sixel_builtin_psd_parse_tysh_stylerun_runarray_opacity_index(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_opacity_index(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET, _opacity_index)(
     unsigned char const *data,
     size_t begin,
     size_t end,
@@ -6435,7 +6474,9 @@ sixel_builtin_psd_parse_tysh_stylerun_index_opacity(
             stylerun_end,
             target_index,
             &style_index) &&
-        sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_opacity_index(
+        SIXEL_PSD_FN(
+            SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET,
+            _opacity_index)(
             data,
             0u,
             key_length,
@@ -6446,7 +6487,9 @@ sixel_builtin_psd_parse_tysh_stylerun_index_opacity(
             pmalformed)) {
         return 1;
     }
-    return sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_opacity_index(
+    return SIXEL_PSD_FN(
+        SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET,
+        _opacity_index)(
         data,
         0u,
         key_length,
@@ -6800,7 +6843,7 @@ sixel_builtin_psd_parse_tysh_opacity_enginedata_stylesheet(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_opacity_enginedata_default_stylesheet(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_TYSH_OPACITY_ENGINEDATA, _default_stylesheet)(
     unsigned char const *data,
     size_t key_length,
     char const *token,
@@ -6947,7 +6990,9 @@ sixel_builtin_psd_parse_tysh_fillopacity_enginedata(
                    &malformed)) {
         layer->tysh_fill_opacity_present = 1;
         layer->tysh_fill_opacity = opacity;
-    } else if (sixel_builtin_psd_parse_tysh_opacity_enginedata_default_stylesheet(
+    } else if (SIXEL_PSD_FN(
+                   SIXEL_PSD_PREF_TYSH_OPACITY_ENGINEDATA,
+                   _default_stylesheet)(
                    data,
                    key_length,
                    fillopacity_token,
@@ -7021,7 +7066,9 @@ sixel_builtin_psd_parse_tysh_strokeopacity_enginedata(
                    &malformed)) {
         layer->tysh_stroke_opacity_present = 1;
         layer->tysh_stroke_opacity = opacity;
-    } else if (sixel_builtin_psd_parse_tysh_opacity_enginedata_default_stylesheet(
+    } else if (SIXEL_PSD_FN(
+                   SIXEL_PSD_PREF_TYSH_OPACITY_ENGINEDATA,
+                   _default_stylesheet)(
                    data,
                    key_length,
                    strokeopacity_token,
@@ -7294,7 +7341,7 @@ sixel_builtin_psd_parse_tysh_strokeflag_enginedata_stylesheet(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_strokeflag_enginedata_default_stylesheet(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_TYSH_STROKEFLAG_ENGINEDATA, _default_stylesheet)(
     unsigned char const *data,
     size_t key_length,
     int *out_enabled)
@@ -7413,7 +7460,9 @@ sixel_builtin_psd_parse_tysh_strokeflag_enginedata(
         layer->tysh_stroke_flag_enabled = enabled;
         return 1;
     }
-    if (sixel_builtin_psd_parse_tysh_strokeflag_enginedata_default_stylesheet(
+    if (SIXEL_PSD_FN(
+            SIXEL_PSD_PREF_TYSH_STROKEFLAG_ENGINEDATA,
+            _default_stylesheet)(
             data,
             key_length,
             &enabled)) {
@@ -7937,7 +7986,7 @@ sixel_builtin_psd_parse_tysh_stylerun_runarray_stroke_index(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_stroke_index(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET, _stroke_index)(
     unsigned char const *data,
     size_t begin,
     size_t end,
@@ -8064,13 +8113,17 @@ sixel_builtin_psd_parse_tysh_stylerun_index_stroke_color(
                stylerun_end,
                target_index,
                &style_index) &&
-           sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_stroke_index(
+           SIXEL_PSD_FN(
+               SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET,
+               _stroke_index)(
                data,
                0u,
                key_length,
                style_index,
                &layer_tmp)) ||
-          sixel_builtin_psd_parse_tysh_stylerun_stylesheetset_stroke_index(
+          SIXEL_PSD_FN(
+              SIXEL_PSD_PREF_TYSH_STYLERUN_STYLESHEETSET,
+              _stroke_index)(
               data,
               0u,
               key_length,
@@ -8316,7 +8369,7 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata_stylesheet(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_fillcolor_enginedata_default_stylesheet(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_TYSH_FILLCOLOR_ENGINEDATA, _default_stylesheet)(
     unsigned char const *data,
     size_t key_length,
     sixel_builtin_psd_layer_record_t *layer)
@@ -8426,7 +8479,9 @@ sixel_builtin_psd_parse_tysh_fillcolor_enginedata(
             layer)) {
         return 1;
     }
-    if (sixel_builtin_psd_parse_tysh_fillcolor_enginedata_default_stylesheet(
+    if (SIXEL_PSD_FN(
+            SIXEL_PSD_PREF_TYSH_FILLCOLOR_ENGINEDATA,
+            _default_stylesheet)(
             data,
             key_length,
             layer)) {
@@ -8848,7 +8903,7 @@ sixel_builtin_psd_parse_tysh_strokecolor_enginedata_stylesheet(
 }
 
 static int
-sixel_builtin_psd_parse_tysh_strokecolor_enginedata_default_stylesheet(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_TYSH_STROKECOLOR_ENGINEDATA, _default_stylesheet)(
     unsigned char const *data,
     size_t key_length,
     sixel_builtin_psd_layer_record_t *layer)
@@ -8954,7 +9009,9 @@ sixel_builtin_psd_parse_tysh_strokecolor_enginedata(
             layer)) {
         return 1;
     }
-    if (sixel_builtin_psd_parse_tysh_strokecolor_enginedata_default_stylesheet(
+    if (SIXEL_PSD_FN(
+            SIXEL_PSD_PREF_TYSH_STROKECOLOR_ENGINEDATA,
+            _default_stylesheet)(
             data,
             key_length,
             layer)) {
@@ -15841,7 +15898,7 @@ sixel_builtin_decode_psd_single_layer_missing_composite_32bit(
     int *ppixelformat);
 
 static SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_lab_32bit(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_LAB, _32bit)(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -16534,7 +16591,7 @@ sixel_builtin_decode_psd_gray_or_duotone_32bit(
 
 /* Recover 8-bit CMYK pixels from single-layer PSD without merged data. */
 static SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_8bit(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK, _8bit)(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -17181,7 +17238,7 @@ sixel_builtin_decode_psd_cmyk_8bit(
                 return layer_status;
             }
         }
-        return sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_8bit(
+        return SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK, _8bit)(
             chunk,
             info,
             bgcolor,
@@ -17462,7 +17519,7 @@ sixel_builtin_decode_psd_cmyk_8bit(
 }
 
 SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_16bit(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK, _16bit)(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -18050,7 +18107,7 @@ sixel_builtin_decode_psd_cmyk_16bit(
                 return status;
             }
         }
-        return sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_16bit(
+        return SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK, _16bit)(
             chunk,
             info,
             bgcolor,
@@ -18249,7 +18306,7 @@ cleanup_cmyk16:
 
 /* Recover 16-bit Lab pixels from single-layer PSD without merged data. */
 static SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_lab_16bit(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_LAB, _16bit)(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -18746,7 +18803,7 @@ sixel_builtin_decode_psd_single_layer_missing_composite_16bit(
         return SIXEL_BAD_ARGUMENT;
     }
     if (info->color_mode == 9u) {
-        return sixel_builtin_decode_psd_single_layer_missing_composite_lab_16bit(
+        return SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_LAB, _16bit)(
             chunk,
             info,
             bgcolor,
@@ -19085,7 +19142,7 @@ cleanup_layer16:
 
 /* Recover 32-bit Lab pixels from single-layer PSD without merged data. */
 static SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_lab_32bit(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_LAB, _32bit)(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -19582,7 +19639,7 @@ sixel_builtin_decode_psd_single_layer_missing_composite_32bit(
         return SIXEL_BAD_ARGUMENT;
     }
     if (info->color_mode == 9u) {
-        return sixel_builtin_decode_psd_single_layer_missing_composite_lab_32bit(
+        return SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_LAB, _32bit)(
             chunk,
             info,
             bgcolor,
@@ -19917,7 +19974,7 @@ cleanup_layer32:
 
 /* Recover 8-bit Lab pixels from single-layer PSD without merged data. */
 static SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_lab_8bit(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_LAB, _8bit)(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -20403,7 +20460,7 @@ sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
         return SIXEL_BAD_ARGUMENT;
     }
     if (info->color_mode == 9u) {
-        return sixel_builtin_decode_psd_single_layer_missing_composite_lab_8bit(
+        return SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_LAB, _8bit)(
             chunk,
             info,
             bgcolor,
@@ -22057,7 +22114,7 @@ cleanup_lab16:
 }
 
 SIXELSTATUS
-sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_32bit(
+SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK, _32bit)(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     unsigned char *bgcolor,
@@ -22649,7 +22706,7 @@ sixel_builtin_decode_psd_cmyk_32bit(
                 return status;
             }
         }
-        return sixel_builtin_decode_psd_single_layer_missing_composite_cmyk_32bit(
+        return SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK, _32bit)(
             chunk,
             info,
             bgcolor,

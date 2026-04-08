@@ -63,6 +63,21 @@
 #include "status.h"
 #include "timer.h"
 
+/*
+ * pcc warns when long internal identifiers exceed its external-name limit.
+ * Preserve descriptive source names by composing identifiers from a prefix
+ * and a short suffix; pcc gets a short prefix only.
+ */
+#define SIXEL_KMD_CAT2_I(a, b) a##b
+#define SIXEL_KMD_CAT2(a, b) SIXEL_KMD_CAT2_I(a, b)
+#define SIXEL_KMD_FN(prefix, suffix) SIXEL_KMD_CAT2(prefix, suffix)
+
+#if defined(__PCC__)
+# define SIXEL_KMD_PREF_TEST_PICK pcc_kmd_test_pick
+#else
+# define SIXEL_KMD_PREF_TEST_PICK sixel_kmedoids_test_pick
+#endif
+
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
@@ -590,7 +605,9 @@ sixel_kmedoids_test_pick_unique_sorted_sample_indices(
     sixel_allocator_t *allocator);
 
 static SIXELSTATUS
-sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+SIXEL_KMD_FN(
+    SIXEL_KMD_PREF_TEST_PICK,
+    _stratified_unique_sorted_sample_indices)(
     unsigned int point_count,
     unsigned int sample_size,
     unsigned int const *guided_points,
@@ -7453,7 +7470,9 @@ sixel_kmedoids_test_pick_unique_sorted_sample_indices(
 }
 
 static SIXELSTATUS
-sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+SIXEL_KMD_FN(
+    SIXEL_KMD_PREF_TEST_PICK,
+    _stratified_unique_sorted_sample_indices)(
     unsigned int point_count,
     unsigned int sample_size,
     unsigned int const *guided_points,
@@ -7514,7 +7533,9 @@ sixel_kmd_test_pick_strat_idx(
     unsigned int *indices_out,
     sixel_allocator_t *allocator)
 {
-    return sixel_kmedoids_test_pick_stratified_unique_sorted_sample_indices(
+    return SIXEL_KMD_FN(
+        SIXEL_KMD_PREF_TEST_PICK,
+        _stratified_unique_sorted_sample_indices)(
         point_count,
         sample_size,
         guided_points,

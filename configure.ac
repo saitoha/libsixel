@@ -621,6 +621,39 @@ case "$CC" in
 esac
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
+AC_CACHE_CHECK(
+  [whether the selected compiler is pcc],
+  [ac_cv_sixel_cc_is_pcc],
+  [
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #ifndef __PCC__
+       #error not pcc
+       #endif
+       int main(void) { return 0; }
+     ]])],
+     [ac_cv_sixel_cc_is_pcc=yes],
+     [ac_cv_sixel_cc_is_pcc=no])
+  ])
+
+AS_IF([test "x$ac_cv_sixel_cc_is_pcc" = "xyes"], [
+  AC_CACHE_CHECK(
+    [whether the linker accepts -Wl,-z,noexecstack],
+    [ac_cv_sixel_ld_noexecstack],
+    [
+     ac_sixel_save_LDFLAGS="$LDFLAGS"
+     LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+     AC_LINK_IFELSE(
+       [AC_LANG_PROGRAM([[]], [[]])],
+       [ac_cv_sixel_ld_noexecstack=yes],
+       [ac_cv_sixel_ld_noexecstack=no])
+     LDFLAGS="$ac_sixel_save_LDFLAGS"
+    ])
+  AS_IF([test "x$ac_cv_sixel_ld_noexecstack" = "xyes"], [
+    LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+  ])
+])
+
 # Enable warnings-as-errors only in CI so local builds stay flexible.
 AS_IF([test "x$CI" != "x"], [
   if test "x$using_cl" = "xyes"; then

@@ -16814,6 +16814,83 @@ else
 fi
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the selected compiler is pcc" >&5
+printf %s "checking whether the selected compiler is pcc... " >&6; }
+if test ${ac_cv_sixel_cc_is_pcc+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+       #ifndef __PCC__
+       #error not pcc
+       #endif
+       int main(void) { return 0; }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_sixel_cc_is_pcc=yes
+else case e in #(
+  e) ac_cv_sixel_cc_is_pcc=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_cc_is_pcc" >&5
+printf "%s\n" "$ac_cv_sixel_cc_is_pcc" >&6; }
+
+if test "x$ac_cv_sixel_cc_is_pcc" = "xyes"
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,-z,noexecstack" >&5
+printf %s "checking whether the linker accepts -Wl,-z,noexecstack... " >&6; }
+if test ${ac_cv_sixel_ld_noexecstack+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+     ac_sixel_save_LDFLAGS="$LDFLAGS"
+     LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_sixel_ld_noexecstack=yes
+else case e in #(
+  e) ac_cv_sixel_ld_noexecstack=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+     LDFLAGS="$ac_sixel_save_LDFLAGS"
+     ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_ld_noexecstack" >&5
+printf "%s\n" "$ac_cv_sixel_ld_noexecstack" >&6; }
+  if test "x$ac_cv_sixel_ld_noexecstack" = "xyes"
+then :
+
+    LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+
+fi
+
+fi
+
 # Enable warnings-as-errors only in CI so local builds stay flexible.
 if test "x$CI" != "x"
 then :
