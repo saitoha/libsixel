@@ -1515,6 +1515,12 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_effect_stroke;
     int effect_stroke_position;
     int has_knockout;
+    int has_fill_opacity;
+    unsigned char fill_opacity;
+    int has_blend_clipped_elements;
+    int blend_clipped_elements_enabled;
+    int has_blend_interior_effects;
+    int blend_interior_effects_enabled;
     sixel_builtin_psd_fill_kind_t fill_kind;
     float fill_solid_rgb[3];
     float tysh_fill_opacity;
@@ -1572,6 +1578,21 @@ sixel_builtin_psd_layer_channel_has_payload(
     }
     /* Channel payload stores compression(2 bytes) + encoded row data. */
     return layer->channels[(size_t)channel_index].length > 2u;
+}
+
+static int
+sixel_builtin_psd_is_optional_mask_channel(
+    sixel_builtin_psd_layer_record_t const *layer,
+    int channel_index)
+{
+    if (layer == NULL) {
+        return 0;
+    }
+    if (channel_index == layer->user_mask_channel_index ||
+        channel_index == layer->real_mask_channel_index) {
+        return 1;
+    }
+    return 0;
 }
 
 static int
@@ -10380,6 +10401,12 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->has_effect_solid_overlay = 0;
     layer->has_effect_stroke = 0;
     layer->effect_stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
+    layer->has_fill_opacity = 0;
+    layer->fill_opacity = 255u;
+    layer->has_blend_clipped_elements = 0;
+    layer->blend_clipped_elements_enabled = 1;
+    layer->has_blend_interior_effects = 0;
+    layer->blend_interior_effects_enabled = 1;
     layer->effect_solid_overlay_rgb[0] = 0.0f;
     layer->effect_solid_overlay_rgb[1] = 0.0f;
     layer->effect_solid_overlay_rgb[2] = 0.0f;
@@ -10829,6 +10856,23 @@ sixel_builtin_psd_parse_layer_extra_data(
                 buffer + cursor,
                 key_length,
                 layer);
+        } else if (memcmp(key, "iOpa", 4u) == 0) {
+            if (key_length >= 1u) {
+                layer->has_fill_opacity = 1;
+                layer->fill_opacity = buffer[cursor];
+            }
+        } else if (memcmp(key, "clbl", 4u) == 0) {
+            if (key_length >= 1u) {
+                layer->has_blend_clipped_elements = 1;
+                layer->blend_clipped_elements_enabled =
+                    buffer[cursor] != 0 ? 1 : 0;
+            }
+        } else if (memcmp(key, "infx", 4u) == 0) {
+            if (key_length >= 1u) {
+                layer->has_blend_interior_effects = 1;
+                layer->blend_interior_effects_enabled =
+                    buffer[cursor] != 0 ? 1 : 0;
+            }
         } else if (memcmp(key, "knko", 4u) == 0) {
             layer->has_knockout = 1;
         }
@@ -11534,10 +11578,19 @@ sixel_builtin_psd_decode_layer_to_linear(
             row_length_field_size,
             c0);
         if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-        for (i = 0u; i < pixel_count; ++i) {
-            alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(c0[i]);
+            if (!sixel_builtin_psd_is_optional_mask_channel(
+                    layer,
+                    layer->user_mask_channel_index)) {
+                goto cleanup;
+            }
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: malformed optional layer mask channel; "
+                "ignoring");
+        } else {
+            for (i = 0u; i < pixel_count; ++i) {
+                alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(c0[i]);
+            }
         }
     }
     if (layer->real_mask_channel_index >= 0) {
@@ -11549,10 +11602,19 @@ sixel_builtin_psd_decode_layer_to_linear(
             row_length_field_size,
             c0);
         if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-        for (i = 0u; i < pixel_count; ++i) {
-            alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(c0[i]);
+            if (!sixel_builtin_psd_is_optional_mask_channel(
+                    layer,
+                    layer->real_mask_channel_index)) {
+                goto cleanup;
+            }
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: malformed optional layer mask channel; "
+                "ignoring");
+        } else {
+            for (i = 0u; i < pixel_count; ++i) {
+                alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(c0[i]);
+            }
         }
     }
 
@@ -12631,13 +12693,22 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
                     info->depth,
                     row_length_field_size,
                     tmp))) {
-                sixel_allocator_free(chunk->allocator, tmp);
-                sixel_allocator_free(chunk->allocator, rgb);
-                sixel_allocator_free(chunk->allocator, alpha);
-                return SIXEL_STBI_ERROR;
-            }
-            for (i = 0u; i < pixel_count; ++i) {
-                alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(tmp[i]);
+                if (!sixel_builtin_psd_is_optional_mask_channel(
+                        layer,
+                        layer->user_mask_channel_index)) {
+                    sixel_allocator_free(chunk->allocator, tmp);
+                    sixel_allocator_free(chunk->allocator, rgb);
+                    sixel_allocator_free(chunk->allocator, alpha);
+                    return SIXEL_STBI_ERROR;
+                }
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: malformed optional layer mask channel; "
+                    "ignoring");
+            } else {
+                for (i = 0u; i < pixel_count; ++i) {
+                    alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(tmp[i]);
+                }
             }
         }
         if (apply_layer_mask_channels != 0 &&
@@ -12649,13 +12720,22 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
                     info->depth,
                     row_length_field_size,
                     tmp))) {
-                sixel_allocator_free(chunk->allocator, tmp);
-                sixel_allocator_free(chunk->allocator, rgb);
-                sixel_allocator_free(chunk->allocator, alpha);
-                return SIXEL_STBI_ERROR;
-            }
-            for (i = 0u; i < pixel_count; ++i) {
-                alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(tmp[i]);
+                if (!sixel_builtin_psd_is_optional_mask_channel(
+                        layer,
+                        layer->real_mask_channel_index)) {
+                    sixel_allocator_free(chunk->allocator, tmp);
+                    sixel_allocator_free(chunk->allocator, rgb);
+                    sixel_allocator_free(chunk->allocator, alpha);
+                    return SIXEL_STBI_ERROR;
+                }
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: malformed optional layer mask channel; "
+                    "ignoring");
+            } else {
+                for (i = 0u; i < pixel_count; ++i) {
+                    alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(tmp[i]);
+                }
             }
         }
         sixel_allocator_free(chunk->allocator, tmp);
@@ -13724,6 +13804,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int prefer_non_pixel_fill;
         int apply_clipping;
         int ignore_placeholder_vector_bbox;
+        int synthetic_stroke;
+        int apply_fill_opacity;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
@@ -13735,6 +13817,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         synthetic_fill = 0;
         fillflag_skip = 0;
         clipping_base_index = -1;
+        synthetic_stroke = 0;
+        apply_fill_opacity = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
             info,
             layer);
@@ -13847,6 +13931,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                             goto cleanup;
                         }
                         synthetic_fill = 1;
+                        synthetic_stroke = 1;
                         composite_layer = &synthetic_layer;
                     } else {
                         sixel_trace_topic_message(
@@ -13930,6 +14015,17 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
         layer_for_composite = *composite_layer;
         effective_composite_layer = composite_layer;
+        if (layer_for_composite.has_fill_opacity != 0 &&
+            synthetic_stroke == 0 &&
+            layer_for_composite.fill_opacity < 255u) {
+            apply_fill_opacity = 1;
+        }
+        if (apply_fill_opacity != 0) {
+            sixel_builtin_psd_scale_layer_opacity(
+                &layer_for_composite,
+                (float)layer_for_composite.fill_opacity / 255.0f);
+            effective_composite_layer = &layer_for_composite;
+        }
         if (model.layer_count >= 8u &&
             layer_for_composite.has_vector_mask_bbox != 0 &&
             layer_for_composite.vector_mask_left_norm <= 0.01f &&
@@ -14062,6 +14158,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         defer_clip_group_overlay = 0;
         if (step == 1 &&
             apply_clipping == 0 &&
+            effective_composite_layer->blend_clipped_elements_enabled != 0 &&
+            effective_composite_layer->blend_interior_effects_enabled != 0 &&
             effective_composite_layer->has_effect_solid_overlay != 0) {
             next_index = (size_t)(i + 1);
             if (next_index < model.layer_count &&
