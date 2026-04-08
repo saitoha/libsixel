@@ -336,15 +336,23 @@ gdkpixbuf_parse_animation_start_frame_no(int *start_frame_no)
 
     errno = 0;
     parsed = strtol(env_value, &endptr, 10);
-    if (errno != 0 || endptr == env_value || *endptr != '\0') {
+    if (endptr == env_value || *endptr != '\0') {
         sixel_helper_set_additional_message(
             "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    if (parsed < (long)INT_MIN || parsed > (long)INT_MAX) {
+    if (errno == ERANGE ||
+        parsed < (long)INT_MIN ||
+        parsed > (long)INT_MAX) {
         sixel_helper_set_additional_message(
             "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (errno != 0) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
