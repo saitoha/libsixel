@@ -5691,7 +5691,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04
             setup_prefix: >-
-              CC=pcc-autotools
+              CC=pcc
             setup_options: >-
               --disable-shared
             extra_packages: >-
