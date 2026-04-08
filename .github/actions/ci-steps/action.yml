@@ -854,7 +854,17 @@ runs:
           set -xv
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           meson compile -C builddir -v
-          meson ${{ fromJSON(inputs.matrix_json).check_target || (fromJSON(inputs.matrix_json).cp_os == 'haiku' && 'test --num-processes 1') || 'test' }} -C builddir
+          if test "${{ fromJSON(inputs.matrix_json).cp_os || '' }}" = "haiku"; then
+            # Haiku occasionally raises EINVAL from Python asyncio subprocess
+            # creation in long meson test runs. Running slices keeps each mtest
+            # process shorter-lived while preserving full test coverage.
+            meson test -C builddir --num-processes 1 --slice 1/4 --print-errorlogs
+            meson test -C builddir --num-processes 1 --slice 2/4 --print-errorlogs
+            meson test -C builddir --num-processes 1 --slice 3/4 --print-errorlogs
+            meson test -C builddir --num-processes 1 --slice 4/4 --print-errorlogs
+          else
+            meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+          fi
 
     - name: Build and test (Autotools, DragonFlyBSD)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm' }}
