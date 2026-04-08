@@ -78,9 +78,9 @@ typedef struct coregraphics_env_dispatch_entry {
 typedef enum coregraphics_pixelformat_case_id {
     COREGRAPHICS_PIXELFORMAT_RGBA_NO_BG_MASK = 0,
     COREGRAPHICS_PIXELFORMAT_RGBA_BG_RGB,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_PAL8,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_PAL8,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_RGB,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_MASK,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_MASK,
     COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK,
     COREGRAPHICS_PIXELFORMAT_INDEXED_REQCOLORS_FALLBACK_RGB,
     COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FALLBACK_MASK,
@@ -1380,10 +1380,10 @@ run_coregraphics_pixelformat_case_by_id(
             new_coregraphics_component
         },
         {
-            "coregraphics indexed png keeps pal8",
+            "coregraphics indexed png emits rgb",
             "/tests/data/inputs/formats/snake-png-pal8.png",
             {
-                SIXEL_PIXELFORMAT_PAL8,
+                SIXEL_PIXELFORMAT_RGB888,
                 64,
                 64,
                 1,
@@ -1396,33 +1396,33 @@ run_coregraphics_pixelformat_case_by_id(
             new_coregraphics_component
         },
         {
-            "coregraphics indexed keycolor keeps pal8+transparent",
+            "coregraphics indexed keycolor emits rgb+mask",
             "/tests/data/inputs/formats/pal8-trns-key0.png",
             {
-                SIXEL_PIXELFORMAT_PAL8,
+                SIXEL_PIXELFORMAT_RGB888,
                 4,
                 1,
                 1,
-                FRAME_TRANSPARENT_NONNEG,
+                -1,
                 FRAME_METADATA_ANY,
-                0,
-                0
+                1,
+                1
             },
             { 1, 1, 256, NULL },
             new_coregraphics_component
         },
         {
-            "coregraphics indexed keycolor icc/gama keeps pal8+transparent",
+            "coregraphics indexed keycolor icc/gama emits rgb+mask",
             "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png",
             {
-                SIXEL_PIXELFORMAT_PAL8,
+                SIXEL_PIXELFORMAT_RGB888,
                 4,
                 1,
                 1,
-                FRAME_TRANSPARENT_NONNEG,
+                -1,
                 FRAME_METADATA_ANY,
-                0,
-                0
+                1,
+                1
             },
             { 1, 1, 256, NULL },
             new_coregraphics_component
@@ -1555,24 +1555,24 @@ run_coregraphics_rgba_with_background_rgb_test(void)
 }
 
 static int
-run_coregraphics_indexed_pal8_test(void)
+run_coregraphics_indexed_rgb_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_PAL8);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_RGB);
 }
 
 static int
-run_coregraphics_indexed_keycolor_pal8_test(void)
+run_coregraphics_indexed_keycolor_mask_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_MASK);
 }
 
 static int
-run_coregraphics_indexed_keycolor_icc_gama_pal8_test(void)
+run_coregraphics_indexed_keycolor_icc_gama_mask_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_PAL8);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_MASK);
 }
 
 static int
@@ -1885,12 +1885,12 @@ run_coregraphics_loader_test(void)
           run_coregraphics_rgba_no_background_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_RGBA_BG_RGB",
           run_coregraphics_rgba_with_background_rgb_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_PAL8",
-          run_coregraphics_indexed_pal8_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_PAL8",
-          run_coregraphics_indexed_keycolor_pal8_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_ICC_GAMA_PAL8",
-          run_coregraphics_indexed_keycolor_icc_gama_pal8_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_RGB",
+          run_coregraphics_indexed_rgb_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_MASK",
+          run_coregraphics_indexed_keycolor_mask_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_ICC_GAMA_MASK",
+          run_coregraphics_indexed_keycolor_icc_gama_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK",
           run_coregraphics_indexed_keycolor_reqcolors_fallback_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_REQCOLORS_FALLBACK_RGB",

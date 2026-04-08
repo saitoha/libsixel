@@ -19,8 +19,8 @@ new_gdk_pixbuf_component(sixel_allocator_t *allocator,
 typedef enum gdk_pixbuf_pixelformat_case_id {
     GDK_PIXBUF_PIXELFORMAT_RGBA_NO_BG_MASK = 0,
     GDK_PIXBUF_PIXELFORMAT_RGBA_BG_FLOAT32,
-    GDK_PIXBUF_PIXELFORMAT_INDEXED_PAL8,
-    GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8,
+    GDK_PIXBUF_PIXELFORMAT_INDEXED_RGB888,
+    GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_MASK,
     GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_MASK,
     GDK_PIXBUF_PIXELFORMAT_INDEXED_ALPHA_MASK,
     GDK_PIXBUF_PIXELFORMAT_INDEXED_ALPHA_BG_FLOAT32,
@@ -67,10 +67,10 @@ run_gdk_pixbuf_pixelformat_case_by_id(
             new_gdk_pixbuf_component
         },
         {
-            "gdkpixbuf indexed png keeps pal8",
+            "gdkpixbuf indexed png emits rgb",
             "/tests/data/inputs/formats/snake-png-pal8.png",
             {
-                SIXEL_PIXELFORMAT_PAL8,
+                SIXEL_PIXELFORMAT_RGB888,
                 64,
                 64,
                 1,
@@ -83,17 +83,17 @@ run_gdk_pixbuf_pixelformat_case_by_id(
             new_gdk_pixbuf_component
         },
         {
-            "gdkpixbuf indexed keycolor keeps pal8+transparent",
+            "gdkpixbuf indexed keycolor emits rgb+mask",
             "/tests/data/inputs/formats/pal8-trns-key0.png",
             {
-                SIXEL_PIXELFORMAT_PAL8,
+                SIXEL_PIXELFORMAT_RGB888,
                 4,
                 1,
                 1,
-                FRAME_TRANSPARENT_NONNEG,
+                -1,
                 FRAME_METADATA_ANY,
-                0,
-                0
+                1,
+                1
             },
             { 1, 1, 256, NULL },
             new_gdk_pixbuf_component
@@ -186,13 +186,13 @@ run_gdk_pixbuf_loader_test_mode(char const *mode)
         return run_gdk_pixbuf_pixelformat_case_by_id(
             GDK_PIXBUF_PIXELFORMAT_RGBA_BG_FLOAT32);
     }
-    if (strcmp(mode, "indexed_pal8") == 0) {
+    if (strcmp(mode, "indexed_rgb888") == 0) {
         return run_gdk_pixbuf_pixelformat_case_by_id(
-            GDK_PIXBUF_PIXELFORMAT_INDEXED_PAL8);
+            GDK_PIXBUF_PIXELFORMAT_INDEXED_RGB888);
     }
-    if (strcmp(mode, "indexed_keycolor_pal8") == 0) {
+    if (strcmp(mode, "indexed_keycolor_mask") == 0) {
         return run_gdk_pixbuf_pixelformat_case_by_id(
-            GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8);
+            GDK_PIXBUF_PIXELFORMAT_INDEXED_KEYCOLOR_MASK);
     }
     if (strcmp(mode, "indexed_keycolor_reqcolors_mask") == 0) {
         return run_gdk_pixbuf_pixelformat_case_by_id(
