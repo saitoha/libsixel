@@ -5698,6 +5698,15 @@ jobs:
               pcc
             exec_type: bash
 
+          - label: Autotools-ubuntu-x86_64-pcc-shared
+            buildtool: autotools
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=pcc
+            extra_packages: >-
+              pcc
+            exec_type: bash
+
           - label: Meson-ubuntu-x86_64-pcc-static
             buildtool: meson
             runner: ubuntu-24.04
@@ -5705,6 +5714,16 @@ jobs:
               CC=pcc-meson
             setup_options: >-
               -Ddefault_library=static
+            extra_packages: >-
+              pcc
+              meson
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-pcc-shared
+            buildtool: meson
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=pcc-meson
             extra_packages: >-
               pcc
               meson
