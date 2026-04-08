@@ -637,6 +637,10 @@ AC_CACHE_CHECK(
   ])
 
 AS_IF([test "x$ac_cv_sixel_cc_is_pcc" = "xyes"], [
+  # Some pcc builds cannot satisfy Autoconf's undeclared-builtin probe.
+  # Pin this cache variable so configure does not abort before checks run.
+  ac_cv_c_undeclared_builtin_options='none needed'
+
   AC_CACHE_CHECK(
     [whether the linker accepts -Wl,-z,noexecstack],
     [ac_cv_sixel_ld_noexecstack],

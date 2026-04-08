@@ -16847,6 +16847,10 @@ printf "%s\n" "$ac_cv_sixel_cc_is_pcc" >&6; }
 if test "x$ac_cv_sixel_cc_is_pcc" = "xyes"
 then :
 
+  # Some pcc builds cannot satisfy Autoconf's undeclared-builtin probe.
+  # Pin this cache variable so configure does not abort before checks run.
+  ac_cv_c_undeclared_builtin_options='none needed'
+
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts -Wl,-z,noexecstack" >&5
 printf %s "checking whether the linker accepts -Wl,-z,noexecstack... " >&6; }
 if test ${ac_cv_sixel_ld_noexecstack+y}
