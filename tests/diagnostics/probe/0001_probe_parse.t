@@ -6,12 +6,6 @@ set -eux
 echo "1..1"
 set -v
 
-binary="${TEST_RUNNER_PATH}"
-test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || {
-    printf "1..0 # SKIP harness not built\n";
-    exit 0
-}
-
 probe_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "probe/0001_probe_parse" 2>&1) || rc=$?
 printf '%s' "${probe_output}" >&2
 

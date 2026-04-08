@@ -6,12 +6,6 @@ set -eux
 echo "1..1"
 set -v
 
-binary="${TEST_RUNNER_PATH}"
-test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || {
-    printf "1..0 # SKIP harness not built\n"
-    exit 0
-}
-
 icc_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "icc/0003_icc_builtin_a2b_intent_paths" 2>&1) || rc=$?
 printf '%s' "${icc_output}" >&2
