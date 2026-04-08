@@ -74,6 +74,8 @@ typedef struct sixel_loader_gd_component {
     int loop_control;
     int start_frame_no_set;
     int start_frame_no;
+    int srgb_decode_lut_ready;
+    double srgb_decode_lut[256];
 } sixel_loader_gd_component_t;
 
 static SIXELSTATUS
@@ -329,6 +331,26 @@ gd_build_srgb_decode_u8_lut(double lut[256])
     }
 }
 
+static double const *
+gd_get_srgb_decode_u8_lut(int *cache_ready,
+                          double cache_lut[256],
+                          double fallback_lut[256])
+{
+    if (cache_ready != NULL && cache_lut != NULL) {
+        if (*cache_ready == 0) {
+            gd_build_srgb_decode_u8_lut(cache_lut);
+            *cache_ready = 1;
+        }
+        return cache_lut;
+    }
+
+    if (fallback_lut == NULL) {
+        return NULL;
+    }
+    gd_build_srgb_decode_u8_lut(fallback_lut);
+    return fallback_lut;
+}
+
 static unsigned int
 gd_read_u32be(unsigned char const *bytes)
 {
@@ -546,9 +568,13 @@ sixel_loader_gd_load(sixel_loader_component_t *component,
 {
     sixel_loader_gd_component_t *self;
     unsigned char *bgcolor;
+    int *srgb_decode_lut_ready;
+    double *srgb_decode_lut;
 
     self = NULL;
     bgcolor = NULL;
+    srgb_decode_lut_ready = NULL;
+    srgb_decode_lut = NULL;
     if (component == NULL || chunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -557,6 +583,8 @@ sixel_loader_gd_load(sixel_loader_component_t *component,
     if (self->has_bgcolor) {
         bgcolor = self->bgcolor;
     }
+    srgb_decode_lut_ready = &self->srgb_decode_lut_ready;
+    srgb_decode_lut = self->srgb_decode_lut;
 
     return load_with_gd(chunk,
                         self->fstatic,
@@ -566,6 +594,8 @@ sixel_loader_gd_load(sixel_loader_component_t *component,
                         self->loop_control,
                         self->start_frame_no_set,
                         self->start_frame_no,
+                        srgb_decode_lut_ready,
+                        srgb_decode_lut,
                         fn_load,
                         context);
 }
@@ -617,6 +647,8 @@ sixel_loader_gd_new(sixel_allocator_t *allocator,
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no_set = 0;
     self->start_frame_no = INT_MIN;
+    self->srgb_decode_lut_ready = 0;
+    memset(self->srgb_decode_lut, 0, sizeof(self->srgb_decode_lut));
 
     *ppcomponent = &self->base;
     return SIXEL_OK;
@@ -633,6 +665,8 @@ load_with_gd(
     int                       /* in */     loop_control,
     int                       /* in */     start_frame_no_set,
     int                       /* in */     start_frame_no_override,
+    int                       /* in/out */ *srgb_decode_lut_ready,
+    double                    /* in/out */ srgb_decode_lut[256],
     sixel_load_image_function /* in */     fn_load,     /* callback */
     void                      /* in/out */ *context     /* private */
                                                  /* data for callback */
@@ -684,7 +718,8 @@ load_with_gd(
     int palette_index;
     unsigned char palette_sample;
     float alpha_unit;
-    double decode_lut[256];
+    double const *decode_lut;
+    double decode_lut_local[256];
     double src_linear[3];
     double bg_linear[3];
     double out_linear[3];
@@ -743,6 +778,7 @@ load_with_gd(
     palette_index = 0;
     palette_sample = 0u;
     alpha_unit = 0.0f;
+    decode_lut = NULL;
     src_linear[0] = 0.0;
     src_linear[1] = 0.0;
     src_linear[2] = 0.0;
@@ -1111,7 +1147,14 @@ load_with_gd(
                 }
             }
 
-            gd_build_srgb_decode_u8_lut(decode_lut);
+            decode_lut = gd_get_srgb_decode_u8_lut(
+                srgb_decode_lut_ready,
+                srgb_decode_lut,
+                decode_lut_local);
+            if (decode_lut == NULL) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             if (has_bg_for_alpha != 0) {
                 bg_linear[0] = decode_lut[bgcolor[0]];
                 bg_linear[1] = decode_lut[bgcolor[1]];
@@ -1328,7 +1371,14 @@ load_with_gd(
             }
         }
 
-        gd_build_srgb_decode_u8_lut(decode_lut);
+        decode_lut = gd_get_srgb_decode_u8_lut(
+            srgb_decode_lut_ready,
+            srgb_decode_lut,
+            decode_lut_local);
+        if (decode_lut == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
         if (has_bg_for_alpha != 0) {
             bg_linear[0] = decode_lut[bgcolor[0]];
             bg_linear[1] = decode_lut[bgcolor[1]];

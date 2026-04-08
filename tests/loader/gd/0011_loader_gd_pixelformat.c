@@ -22,6 +22,9 @@ typedef enum gd_pixelformat_case_id {
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_MASK,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_BG_FLOAT32,
     GD_PIXELFORMAT_HIGHDEPTH_FLOAT32,
+    GD_PIXELFORMAT_INTERLACED_PNG_RGB,
+    GD_PIXELFORMAT_INDEXED_MULTI_TRNS_MASK,
+    GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_BOUNDARY_PAL8,
     GD_PIXELFORMAT_GIF_OPAQUE_PAL8,
     GD_PIXELFORMAT_GIF_TRANSPARENT_PAL8,
     GD_PIXELFORMAT_GIF_OPAQUE_RGB,
@@ -150,6 +153,54 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0
             },
             { 1, 0, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd interlaced png rgb keeps byte fast path",
+            "/tests/data/inputs/formats/snake-png-adam7-rgb.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 0, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd indexed multi-trns emits rgb+mask fallback",
+            "/tests/data/inputs/formats/libpng-pal8-trns-multi0-semi-icc.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                6,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                1,
+                1
+            },
+            { 1, 1, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd indexed reqcolors boundary keeps pal8+transparent index",
+            "/tests/data/inputs/formats/pal8-trns-key0.png",
+            {
+                SIXEL_PIXELFORMAT_PAL8,
+                4,
+                1,
+                1,
+                FRAME_TRANSPARENT_NONNEG,
+                FRAME_METADATA_ANY,
+                0,
+                0
+            },
+            { 1, 1, 4, NULL },
             new_gd_component
         },
         {
@@ -367,6 +418,18 @@ run_gd_loader_test_mode(char const *mode)
     if (strcmp(mode, "highdepth_float32") == 0) {
         return run_gd_pixelformat_case_by_id(
             GD_PIXELFORMAT_HIGHDEPTH_FLOAT32);
+    }
+    if (strcmp(mode, "interlaced_png_rgb") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_INTERLACED_PNG_RGB);
+    }
+    if (strcmp(mode, "indexed_multi_trns_mask") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_INDEXED_MULTI_TRNS_MASK);
+    }
+    if (strcmp(mode, "indexed_keycolor_reqcolors_boundary_pal8") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_BOUNDARY_PAL8);
     }
 
     fprintf(stderr, "unknown gd pixelformat test mode: %s\n", mode);

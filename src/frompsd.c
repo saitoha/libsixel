@@ -1512,6 +1512,7 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_vector_mask_curve_bbox;
     int has_layer_effects;
     int has_effect_solid_overlay;
+    int has_effect_gradient_overlay;
     int has_effect_stroke;
     int effect_stroke_position;
     int has_knockout;
@@ -1549,6 +1550,15 @@ typedef struct sixel_builtin_psd_layer_record {
     float vector_mask_curve_bottom_norm;
     float effect_solid_overlay_rgb[3];
     float effect_solid_overlay_opacity;
+    unsigned char effect_gradient_type;
+    float effect_gradient_angle_deg;
+    float effect_gradient_scale;
+    int effect_gradient_reverse;
+    size_t effect_gradient_stop_count;
+    float effect_gradient_stop_pos[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float effect_gradient_stop_rgb[SIXEL_BUILTIN_PSD_FILL_STOP_MAX][3];
+    float effect_gradient_stop_alpha[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float effect_gradient_overlay_opacity;
     float effect_stroke_rgb[3];
     float effect_stroke_opacity;
     float effect_stroke_size;
@@ -9772,6 +9782,185 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
 }
 
 static int
+sixel_builtin_psd_parse_effect_gradient_overlay_object(
+    unsigned char const *data,
+    size_t key_length,
+    size_t *pcursor,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    size_t stop_count;
+    int enabled;
+    int has_gradient;
+    int reverse_flag;
+    unsigned char gradient_type;
+    float opacity;
+    float gradient_angle_deg;
+    float gradient_scale;
+    char key[5];
+    char type[5];
+    char class_key[5];
+    sixel_builtin_psd_layer_record_t gradient_tmp;
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    stop_count = 0u;
+    enabled = 1;
+    has_gradient = 0;
+    reverse_flag = 0;
+    gradient_type = 0u;
+    opacity = 1.0f;
+    gradient_angle_deg = 0.0f;
+    gradient_scale = 100.0f;
+    memset(key, 0, sizeof(key));
+    memset(type, 0, sizeof(type));
+    memset(class_key, 0, sizeof(class_key));
+    memset(&gradient_tmp, 0, sizeof(gradient_tmp));
+
+    if (data == NULL || pcursor == NULL || layer == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          key_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                key_length,
+                                                &cursor,
+                                                class_key)) {
+        return 0;
+    }
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        double numeric;
+        int bool_value;
+
+        numeric = 0.0;
+        bool_value = 0;
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "enab", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            enabled = bool_value != 0 ? 1 : 0;
+            continue;
+        }
+        if (memcmp(key, "Opct", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
+            continue;
+        }
+        if (memcmp(key, "Angl", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            gradient_angle_deg = (float)numeric;
+            continue;
+        }
+        if (memcmp(key, "Scl ", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= 0.0) {
+                gradient_scale = 1.0f;
+            } else if (numeric >= 10000.0) {
+                gradient_scale = 10000.0f;
+            } else {
+                gradient_scale = (float)numeric;
+            }
+            continue;
+        }
+        if (memcmp(key, "Rvrs", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            reverse_flag = bool_value != 0 ? 1 : 0;
+            continue;
+        }
+        if (memcmp(key, "Grad", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            stop_count = 0u;
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_grad_object(
+                    data,
+                    key_length,
+                    &cursor,
+                    &gradient_type,
+                    &stop_count,
+                    &gradient_tmp)) {
+                return 0;
+            }
+            if (stop_count > 0u) {
+                sixel_builtin_psd_sort_gradient_stops(&gradient_tmp,
+                                                      stop_count);
+                has_gradient = 1;
+            }
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    *pcursor = cursor;
+    if (enabled == 0 || has_gradient == 0 || stop_count == 0u ||
+        opacity <= 0.0f) {
+        return 1;
+    }
+    layer->has_effect_gradient_overlay = 1;
+    layer->effect_gradient_type = gradient_type;
+    layer->effect_gradient_reverse = reverse_flag != 0 ? 1 : 0;
+    layer->effect_gradient_angle_deg = gradient_angle_deg;
+    layer->effect_gradient_scale = gradient_scale > 0.0f ?
+        gradient_scale : 100.0f;
+    layer->effect_gradient_overlay_opacity = opacity;
+    layer->effect_gradient_stop_count = stop_count;
+    for (i = 0u; i < stop_count; ++i) {
+        layer->effect_gradient_stop_pos[i] =
+            gradient_tmp.fill_gradient_stop_pos[i];
+        layer->effect_gradient_stop_rgb[i][0] =
+            gradient_tmp.fill_gradient_stop_rgb[i][0];
+        layer->effect_gradient_stop_rgb[i][1] =
+            gradient_tmp.fill_gradient_stop_rgb[i][1];
+        layer->effect_gradient_stop_rgb[i][2] =
+            gradient_tmp.fill_gradient_stop_rgb[i][2];
+        layer->effect_gradient_stop_alpha[i] =
+            gradient_tmp.fill_gradient_stop_alpha[i];
+    }
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_effect_stroke_object(
     unsigned char const *data,
     size_t key_length,
@@ -9970,6 +10159,17 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
                                                              key_length,
                                                              &obj_cursor,
                                                              layer)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (memcmp(data + cursor, "GrFlObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_gradient_overlay_object(
+                    data,
+                    key_length,
+                    &obj_cursor,
+                    layer)) {
                 parsed = 1;
             }
             continue;
@@ -10438,6 +10638,7 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->vector_mask_curve_right_norm = 0.0f;
     layer->vector_mask_curve_bottom_norm = 0.0f;
     layer->has_effect_solid_overlay = 0;
+    layer->has_effect_gradient_overlay = 0;
     layer->has_effect_stroke = 0;
     layer->effect_stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     layer->has_fill_opacity = 0;
@@ -10450,6 +10651,12 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_solid_overlay_rgb[1] = 0.0f;
     layer->effect_solid_overlay_rgb[2] = 0.0f;
     layer->effect_solid_overlay_opacity = 1.0f;
+    layer->effect_gradient_type = 0u;
+    layer->effect_gradient_angle_deg = 0.0f;
+    layer->effect_gradient_scale = 100.0f;
+    layer->effect_gradient_reverse = 0;
+    layer->effect_gradient_stop_count = 0u;
+    layer->effect_gradient_overlay_opacity = 1.0f;
     layer->effect_stroke_rgb[0] = 0.0f;
     layer->effect_stroke_rgb[1] = 0.0f;
     layer->effect_stroke_rgb[2] = 0.0f;
@@ -10652,6 +10859,65 @@ sixel_builtin_psd_build_clip_alpha_map_from_layer_record(
         }
     }
     return 1;
+}
+
+static void
+sixel_builtin_psd_apply_vector_mask_bbox_to_layer_buffers(
+    sixel_builtin_psd_info_t const *info,
+    sixel_builtin_psd_layer_record_t const *layer,
+    sixel_builtin_psd_layer_buffers_t *src)
+{
+    sixel_builtin_psd_layer_record_t bbox_layer;
+    int clip_left;
+    int clip_top;
+    int clip_right;
+    int clip_bottom;
+    size_t x;
+    size_t y;
+    size_t idx;
+    int gx;
+    int gy;
+
+    memset(&bbox_layer, 0, sizeof(bbox_layer));
+    clip_left = 0;
+    clip_top = 0;
+    clip_right = 0;
+    clip_bottom = 0;
+    x = 0u;
+    y = 0u;
+    idx = 0u;
+    gx = 0;
+    gy = 0;
+    if (info == NULL || layer == NULL || src == NULL || src->alpha == NULL ||
+        layer->width == 0u || layer->height == 0u ||
+        src->pixel_count != (size_t)layer->width * (size_t)layer->height ||
+        layer->has_vector_mask_bbox == 0) {
+        return;
+    }
+
+    bbox_layer = *layer;
+    if (!sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
+            info,
+            &bbox_layer)) {
+        return;
+    }
+    clip_left = bbox_layer.left;
+    clip_top = bbox_layer.top;
+    clip_right = bbox_layer.left + (int)bbox_layer.width;
+    clip_bottom = bbox_layer.top + (int)bbox_layer.height;
+
+    for (y = 0u; y < (size_t)layer->height; ++y) {
+        gy = layer->top + (int)y;
+        for (x = 0u; x < (size_t)layer->width; ++x) {
+            gx = layer->left + (int)x;
+            if (gx >= clip_left && gx < clip_right &&
+                gy >= clip_top && gy < clip_bottom) {
+                continue;
+            }
+            idx = y * (size_t)layer->width + x;
+            src->alpha[idx] = 0.0f;
+        }
+    }
 }
 
 static int
@@ -13236,22 +13502,40 @@ sixel_builtin_psd_apply_layer_effects_subset(
     sixel_builtin_psd_layer_buffers_t *src)
 {
     size_t i;
+    size_t x;
+    size_t y;
+    float alpha;
+    float gradient_t;
     float overlay_opacity;
+    float gradient_opacity;
+    float gradient_alpha;
+    float gradient_rgb[3];
     float *original_alpha;
     size_t width;
     size_t height;
     int stroke_radius;
     int suppress_stroke;
     float stroke_opacity;
+    sixel_builtin_psd_layer_record_t gradient_layer;
 
     i = 0u;
+    x = 0u;
+    y = 0u;
+    alpha = 0.0f;
+    gradient_t = 0.0f;
     overlay_opacity = 0.0f;
+    gradient_opacity = 0.0f;
+    gradient_alpha = 0.0f;
+    gradient_rgb[0] = 0.0f;
+    gradient_rgb[1] = 0.0f;
+    gradient_rgb[2] = 0.0f;
     original_alpha = NULL;
     width = 0u;
     height = 0u;
     stroke_radius = 0;
     suppress_stroke = 0;
     stroke_opacity = 0.0f;
+    memset(&gradient_layer, 0, sizeof(gradient_layer));
     if (layer == NULL || src == NULL || src->rgb_linear == NULL || src->alpha == NULL) {
         return;
     }
@@ -13284,6 +13568,74 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 src->rgb_linear[i * 3u + 2u],
                 layer->effect_solid_overlay_rgb[2],
                 overlay_opacity);
+    }
+
+    if (layer->has_effect_gradient_overlay != 0 &&
+        layer->effect_gradient_stop_count > 0u &&
+        layer->width > 0u &&
+        layer->height > 0u &&
+        src->pixel_count == (size_t)layer->width * (size_t)layer->height) {
+        width = (size_t)layer->width;
+        height = (size_t)layer->height;
+        gradient_layer = *layer;
+        gradient_layer.fill_gradient_type = layer->effect_gradient_type;
+        gradient_layer.fill_gradient_reverse = layer->effect_gradient_reverse;
+        gradient_layer.fill_gradient_angle_deg =
+            layer->effect_gradient_angle_deg;
+        gradient_layer.fill_gradient_scale = layer->effect_gradient_scale;
+        gradient_layer.fill_gradient_stop_count =
+            layer->effect_gradient_stop_count;
+        for (i = 0u; i < layer->effect_gradient_stop_count; ++i) {
+            gradient_layer.fill_gradient_stop_pos[i] =
+                layer->effect_gradient_stop_pos[i];
+            gradient_layer.fill_gradient_stop_rgb[i][0] =
+                layer->effect_gradient_stop_rgb[i][0];
+            gradient_layer.fill_gradient_stop_rgb[i][1] =
+                layer->effect_gradient_stop_rgb[i][1];
+            gradient_layer.fill_gradient_stop_rgb[i][2] =
+                layer->effect_gradient_stop_rgb[i][2];
+            gradient_layer.fill_gradient_stop_alpha[i] =
+                layer->effect_gradient_stop_alpha[i];
+        }
+        gradient_opacity = sixel_builtin_psd_clamp01(
+            layer->effect_gradient_overlay_opacity);
+        if (gradient_opacity > 0.0f) {
+            for (i = 0u; i < src->pixel_count; ++i) {
+                alpha = sixel_builtin_psd_clamp_alpha_float32(src->alpha[i]);
+                if (alpha <= 0.0f) {
+                    continue;
+                }
+                x = i % width;
+                y = i / width;
+                gradient_t =
+                    sixel_builtin_psd_fill_gradient_t(&gradient_layer, x, y);
+                sixel_builtin_psd_fill_sample_gradient(
+                    &gradient_layer,
+                    gradient_t,
+                    gradient_rgb,
+                    &gradient_alpha);
+                gradient_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                    gradient_alpha * gradient_opacity);
+                if (gradient_alpha <= 0.0f) {
+                    continue;
+                }
+                src->rgb_linear[i * 3u + 0u] =
+                    sixel_builtin_psd_blend_channel_gamma(
+                        src->rgb_linear[i * 3u + 0u],
+                        gradient_rgb[0],
+                        gradient_alpha);
+                src->rgb_linear[i * 3u + 1u] =
+                    sixel_builtin_psd_blend_channel_gamma(
+                        src->rgb_linear[i * 3u + 1u],
+                        gradient_rgb[1],
+                        gradient_alpha);
+                src->rgb_linear[i * 3u + 2u] =
+                    sixel_builtin_psd_blend_channel_gamma(
+                        src->rgb_linear[i * 3u + 2u],
+                        gradient_rgb[2],
+                        gradient_alpha);
+            }
+        }
     }
 
 apply_stroke:
@@ -14109,26 +14461,40 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer = &layer_for_composite;
         }
         if (layer->has_vector_mask != 0) {
-            sixel_trace_topic_message(
-                "psd_decode",
-                "builtin PSD: ignoring vector mask in layer fallback");
-            if (ignore_placeholder_vector_bbox != 0) {
+            if (allow_pixel_layer_decode_skip != 0 &&
+                ignore_placeholder_vector_bbox == 0 &&
+                effective_composite_layer->has_vector_mask_bbox != 0) {
                 sixel_trace_topic_message(
                     "psd_decode",
-                    "builtin PSD: ignoring placeholder vector mask bbox in "
+                    "builtin PSD: applying vector mask bbox in "
                     "layer fallback");
-            } else if (layer->has_vector_mask_bbox != 0) {
-                sixel_trace_topic_message(
-                    "psd_decode",
-                    "builtin PSD: vector mask bbox parsed");
+                sixel_builtin_psd_apply_vector_mask_bbox_to_layer_buffers(
+                    info,
+                    effective_composite_layer,
+                    &src_layer);
             } else {
                 sixel_trace_topic_message(
                     "psd_decode",
-                    "builtin PSD: vector mask bbox unavailable");
+                    "builtin PSD: ignoring vector mask in layer fallback");
+                if (ignore_placeholder_vector_bbox != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: ignoring placeholder vector mask bbox in "
+                        "layer fallback");
+                } else if (layer->has_vector_mask_bbox != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: vector mask bbox parsed");
+                } else {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: vector mask bbox unavailable");
+                }
             }
         }
         if (layer->has_layer_effects != 0) {
             if (layer->has_effect_solid_overlay != 0 ||
+                layer->has_effect_gradient_overlay != 0 ||
                 layer->has_effect_stroke != 0) {
                 sixel_trace_topic_message(
                     "psd_decode",
@@ -14248,7 +14614,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "builtin PSD: compositing full-canvas layer in layer fallback");
         }
         if (defer_clip_group_overlay == 0 &&
-            effective_composite_layer->has_effect_solid_overlay != 0) {
+            (effective_composite_layer->has_effect_solid_overlay != 0 ||
+             effective_composite_layer->has_effect_gradient_overlay != 0 ||
+             effective_composite_layer->has_effect_stroke != 0)) {
             sixel_builtin_psd_apply_layer_effects_subset(
                 effective_composite_layer,
                 &src_layer);
