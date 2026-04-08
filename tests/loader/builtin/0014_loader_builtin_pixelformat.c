@@ -4580,6 +4580,26 @@ run_builtin_loader_test(void)
         return result;
     }
 
+    result = run_builtin_loader_psdtools_2layer_parity_test();
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_builtin_loader_psdtools_emoji_parity_test();
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_builtin_loader_psdtools_transparentbg_parity_test();
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_builtin_loader_psdtools_group_divider_parity_test();
+    if (result != 0) {
+        return result;
+    }
+
     return 0;
 }
 

@@ -278,6 +278,11 @@ Key points used by this roadmap:
     fixture/expected assets and covered by PASS LSQA parity tests:
     `blend-and-clipping.psd`, `layers-minimal/pattern-fill.psd`,
     and `effects/shape-fx.psd`.
+  - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
+    (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
+    builtin loader frame-match checks in `0014` for:
+    `2layer_8ele_tblocks`, `layer-name-emoji`,
+    `transparentbg-gimp`, and `group-divider-blend-mode`.
 - Validation trace coverage includes:
   - unsupported bit-depth traces for Bitmap and Grayscale/Duotone `%s` path,
   - mode-specific malformed channel-count traces (`RGB/CMYK/Lab` minimums),

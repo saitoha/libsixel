@@ -544,3 +544,346 @@ run_builtin_loader_psd_validate_defensive_test(void)
     return 0;
 #endif
 }
+
+typedef struct psd_decode_parity_probe_context {
+    int callback_count;
+    int pixelformat;
+    int width;
+    int height;
+    int has_transparent_mask;
+    size_t transparent_mask_size;
+    size_t pixel_bytes;
+    unsigned char *pixels;
+    unsigned char *transparent_mask;
+} psd_decode_parity_probe_context_t;
+
+static void
+cleanup_psd_decode_parity_probe(psd_decode_parity_probe_context_t *context)
+{
+    if (context == NULL) {
+        return;
+    }
+    free(context->pixels);
+    free(context->transparent_mask);
+    context->pixels = NULL;
+    context->transparent_mask = NULL;
+    context->pixel_bytes = 0u;
+    context->transparent_mask_size = 0u;
+    context->has_transparent_mask = 0;
+}
+
+static SIXELSTATUS
+capture_psd_decode_parity_probe(sixel_frame_t *frame, void *data)
+{
+    psd_decode_parity_probe_context_t *context;
+    size_t pixel_count;
+    size_t pixel_bytes;
+
+    context = (psd_decode_parity_probe_context_t *)data;
+    pixel_count = 0u;
+    pixel_bytes = 0u;
+    if (context == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (context->callback_count != 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    context->callback_count = 1;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
+    context->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
+    context->transparent_mask_size = frame->transparent_mask_size;
+    if (context->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        context->width <= 0 ||
+        context->height <= 0 ||
+        frame->pixels.u8ptr == NULL) {
+        return SIXEL_OK;
+    }
+    pixel_count = (size_t)context->width;
+    if (pixel_count > SIZE_MAX / (size_t)context->height) {
+        return SIXEL_BAD_INPUT;
+    }
+    pixel_count *= (size_t)context->height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return SIXEL_BAD_INPUT;
+    }
+    pixel_bytes = pixel_count * 3u;
+    context->pixels = (unsigned char *)malloc(pixel_bytes);
+    if (context->pixels == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(context->pixels, frame->pixels.u8ptr, pixel_bytes);
+    context->pixel_bytes = pixel_bytes;
+    if (context->has_transparent_mask != 0 &&
+        context->transparent_mask_size > 0u &&
+        frame->transparent_mask != NULL) {
+        context->transparent_mask =
+            (unsigned char *)malloc(context->transparent_mask_size);
+        if (context->transparent_mask == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(context->transparent_mask,
+               frame->transparent_mask,
+               context->transparent_mask_size);
+    }
+    return SIXEL_OK;
+}
+
+static int
+run_builtin_loader_psd_decode_parity_case(
+    char const *label,
+    char const *psd_relative_path,
+    char const *expected_relative_path,
+    unsigned char const *bgcolor)
+{
+    builtin_loader_probe_options_t psd_options;
+    builtin_loader_probe_options_t expected_options;
+    psd_decode_parity_probe_context_t psd_probe;
+    psd_decode_parity_probe_context_t expected_probe;
+    SIXELSTATUS psd_status;
+    SIXELSTATUS expected_status;
+    size_t diff_index;
+    size_t i;
+    unsigned int max_delta;
+    unsigned int delta;
+    unsigned int psd_value;
+    unsigned int expected_value;
+    int result;
+
+    memset(&psd_options, 0, sizeof(psd_options));
+    memset(&expected_options, 0, sizeof(expected_options));
+    memset(&psd_probe, 0, sizeof(psd_probe));
+    memset(&expected_probe, 0, sizeof(expected_probe));
+    psd_status = SIXEL_FALSE;
+    expected_status = SIXEL_FALSE;
+    diff_index = 0u;
+    i = 0u;
+    max_delta = 0u;
+    delta = 0u;
+    psd_value = 0u;
+    expected_value = 0u;
+    result = 1;
+
+    if (label == NULL ||
+        psd_relative_path == NULL ||
+        expected_relative_path == NULL) {
+        return 1;
+    }
+
+    psd_options.require_static = 1;
+    psd_options.use_palette = 0;
+    psd_options.reqcolors = 256;
+    psd_options.set_bgcolor = bgcolor != NULL ? 1 : 0;
+    psd_options.bgcolor = bgcolor;
+    psd_options.set_loop_control = 0;
+    psd_options.loop_control = SIXEL_LOOP_AUTO;
+    psd_options.set_cms_engine = 1;
+    psd_options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    expected_options.require_static = 1;
+    expected_options.use_palette = 0;
+    expected_options.reqcolors = 256;
+    expected_options.set_bgcolor = 0;
+    expected_options.bgcolor = NULL;
+    expected_options.set_loop_control = 0;
+    expected_options.loop_control = SIXEL_LOOP_AUTO;
+    expected_options.set_cms_engine = 1;
+    expected_options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(label,
+                                           psd_relative_path,
+                                           &psd_options,
+                                           capture_psd_decode_parity_probe,
+                                           &psd_probe,
+                                           &psd_status);
+    if (result != 0) {
+        goto cleanup;
+    }
+    if (SIXEL_FAILED(psd_status)) {
+        fprintf(stderr,
+                "%s: psd decode failed (%d)\n",
+                label,
+                (int)psd_status);
+        goto cleanup;
+    }
+
+    result = run_builtin_loader_probe_case(label,
+                                           expected_relative_path,
+                                           &expected_options,
+                                           capture_psd_decode_parity_probe,
+                                           &expected_probe,
+                                           &expected_status);
+    if (result != 0) {
+        goto cleanup;
+    }
+    if (SIXEL_FAILED(expected_status)) {
+        fprintf(stderr,
+                "%s: expected decode failed (%d)\n",
+                label,
+                (int)expected_status);
+        goto cleanup;
+    }
+    result = 1;
+    if (psd_probe.callback_count != 1 || expected_probe.callback_count != 1) {
+        fprintf(stderr,
+                "%s: callback count mismatch "
+                "(psd=%d expected=%d)\n",
+                label,
+                psd_probe.callback_count,
+                expected_probe.callback_count);
+        goto cleanup;
+    }
+    if (psd_probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        expected_probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "%s: pixelformat mismatch "
+                "(psd=%d expected=%d)\n",
+                label,
+                psd_probe.pixelformat,
+                expected_probe.pixelformat);
+        goto cleanup;
+    }
+    if (psd_probe.width != expected_probe.width ||
+        psd_probe.height != expected_probe.height) {
+        fprintf(stderr,
+                "%s: geometry mismatch "
+                "(psd=%dx%d expected=%dx%d)\n",
+                label,
+                psd_probe.width,
+                psd_probe.height,
+                expected_probe.width,
+                expected_probe.height);
+        goto cleanup;
+    }
+    if (psd_probe.pixel_bytes == 0u ||
+        expected_probe.pixel_bytes == 0u ||
+        psd_probe.pixel_bytes != expected_probe.pixel_bytes) {
+        fprintf(stderr,
+                "%s: pixel byte-size mismatch "
+                "(psd=%zu expected=%zu)\n",
+                label,
+                psd_probe.pixel_bytes,
+                expected_probe.pixel_bytes);
+        goto cleanup;
+    }
+    if (memcmp(psd_probe.pixels,
+               expected_probe.pixels,
+               psd_probe.pixel_bytes) != 0) {
+        diff_index = psd_probe.pixel_bytes;
+        for (i = 0u; i < psd_probe.pixel_bytes; ++i) {
+            psd_value = (unsigned int)psd_probe.pixels[i];
+            expected_value = (unsigned int)expected_probe.pixels[i];
+            delta = psd_value > expected_value
+                ? psd_value - expected_value
+                : expected_value - psd_value;
+            if (delta > max_delta) {
+                max_delta = delta;
+            }
+            if (diff_index == psd_probe.pixel_bytes && delta != 0u) {
+                diff_index = i;
+            }
+        }
+        fprintf(stderr,
+                "%s: RGB payload mismatch "
+                "(first=%zu psd=%u expected=%u max_delta=%u "
+                "mask_psd=%d mask_expected=%d)\n",
+                label,
+                diff_index,
+                diff_index < psd_probe.pixel_bytes
+                    ? (unsigned int)psd_probe.pixels[diff_index]
+                    : 0u,
+                diff_index < expected_probe.pixel_bytes
+                    ? (unsigned int)expected_probe.pixels[diff_index]
+                    : 0u,
+                max_delta,
+                psd_probe.has_transparent_mask,
+                expected_probe.has_transparent_mask);
+        goto cleanup;
+    }
+    if (psd_probe.has_transparent_mask != expected_probe.has_transparent_mask) {
+        fprintf(stderr,
+                "%s: transparent mask presence mismatch "
+                "(psd=%d expected=%d)\n",
+                label,
+                psd_probe.has_transparent_mask,
+                expected_probe.has_transparent_mask);
+        goto cleanup;
+    }
+    if (psd_probe.transparent_mask_size !=
+        expected_probe.transparent_mask_size) {
+        fprintf(stderr,
+                "%s: transparent mask size mismatch "
+                "(psd=%zu expected=%zu)\n",
+                label,
+                psd_probe.transparent_mask_size,
+                expected_probe.transparent_mask_size);
+        goto cleanup;
+    }
+    if (psd_probe.transparent_mask_size > 0u &&
+        memcmp(psd_probe.transparent_mask,
+               expected_probe.transparent_mask,
+               psd_probe.transparent_mask_size) != 0) {
+        fprintf(stderr, "%s: transparent mask mismatch\n", label);
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    cleanup_psd_decode_parity_probe(&psd_probe);
+    cleanup_psd_decode_parity_probe(&expected_probe);
+    return result;
+}
+
+static int
+run_builtin_loader_psdtools_2layer_parity_test(void)
+{
+    return run_builtin_loader_psd_decode_parity_case(
+        "builtin loader psd psd-tools 2layer_8ele_tblocks decode parity",
+        "/tests/data/psd-tools/psdtools_2layer_8ele_tblocks.psd",
+        "/tests/data/loader/builtin_expected/"
+        "psdtools_2layer_8ele_tblocks_expected_psdtools.ppm",
+        NULL);
+}
+
+static int
+run_builtin_loader_psdtools_emoji_parity_test(void)
+{
+    static unsigned char const bgcolor_black[3] = {
+        0x00u, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_psd_decode_parity_case(
+        "builtin loader psd psd-tools layer-name-emoji decode parity",
+        "/tests/data/psd-tools/psdtools_layer_name_emoji.psd",
+        "/tests/data/loader/builtin_expected/"
+        "psdtools_layer_name_emoji_expected_psdtools.ppm",
+        bgcolor_black);
+}
+
+static int
+run_builtin_loader_psdtools_transparentbg_parity_test(void)
+{
+    return run_builtin_loader_psd_decode_parity_case(
+        "builtin loader psd psd-tools transparentbg-gimp decode parity",
+        "/tests/data/psd-tools/psdtools_transparentbg_gimp.psd",
+        "/tests/data/loader/builtin_expected/"
+        "psdtools_transparentbg_gimp_expected_psdtools.ppm",
+        NULL);
+}
+
+static int
+run_builtin_loader_psdtools_group_divider_parity_test(void)
+{
+    static unsigned char const bgcolor_white[3] = {
+        0xffu, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_psd_decode_parity_case(
+        "builtin loader psd psd-tools group-divider decode parity",
+        "/tests/data/psd-tools/psdtools_group_divider_blend_mode.psd",
+        "/tests/data/loader/builtin_expected/"
+        "psdtools_group_divider_blend_mode_expected_psdtools.ppm",
+        bgcolor_white);
+}
