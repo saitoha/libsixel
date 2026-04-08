@@ -1322,15 +1322,6 @@ load_with_gdkpixbuf(
     (void)fuse_palette;
     (void)reqcolors;
 
-    if (start_frame_no_set) {
-        start_frame_no = start_frame_no_override;
-    } else {
-        status = gdkpixbuf_parse_animation_start_frame_no(&start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1406,6 +1397,19 @@ load_with_gdkpixbuf(
         }
         status = SIXEL_OK;
         goto end;
+    }
+
+    /*
+     * Keep start-frame controls animation-only. Static images should decode
+     * successfully even when env start-frame values are malformed.
+     */
+    if (start_frame_no_set) {
+        start_frame_no = start_frame_no_override;
+    } else {
+        status = gdkpixbuf_parse_animation_start_frame_no(&start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     if (start_frame_no != INT_MIN) {

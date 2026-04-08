@@ -2844,10 +2844,54 @@ sixel_builtin_decode_path_name(sixel_builtin_decode_path_t path)
     }
 }
 
+static int
+sixel_builtin_chunk_has_apng_control(sixel_chunk_t const *chunk)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    unsigned char const *p;
+    size_t remain;
+    uint32_t chunk_length;
+
+    p = NULL;
+    remain = 0u;
+    chunk_length = 0u;
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 8u) {
+        return 0;
+    }
+    /*
+     * Start-frame parsing must only run for animated input. A lightweight
+     * acTL probe keeps static PNG decode tolerant to invalid env values.
+     */
+    if (memcmp(chunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+
+    p = chunk->buffer + 8;
+    remain = chunk->size - 8u;
+    while (remain >= 12u) {
+        chunk_length = sixel_builtin_read_be32(p);
+        if ((size_t)chunk_length > remain - 12u) {
+            return 0;
+        }
+        if (memcmp(p + 4, "acTL", 4) == 0) {
+            return 1;
+        }
+        if (memcmp(p + 4, "IEND", 4) == 0) {
+            break;
+        }
+        p += (size_t)chunk_length + 12u;
+        remain -= (size_t)chunk_length + 12u;
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_builtin_prepare_load_context(
     sixel_builtin_load_request_t const *request,
-    sixel_builtin_load_context_t *load_context)
+    sixel_builtin_load_context_t *load_context,
+    int apply_start_frame)
 {
     SIXELSTATUS status;
 
@@ -2863,6 +2907,9 @@ sixel_builtin_prepare_load_context(
     load_context->resolved_start_frame_no = -1;
     load_context->gif_frame_count = 0;
 
+    if (apply_start_frame == 0) {
+        return SIXEL_OK;
+    }
     if (request->start_frame_no_set != 0) {
         load_context->start_frame_no = request->start_frame_no_override;
     } else {
@@ -4624,6 +4671,7 @@ load_with_builtin(
     sixel_builtin_load_context_t load_context;
     sixel_builtin_decode_path_t decode_path;
     int animation_handled;
+    int apply_start_frame;
     int pnm_pixelformat;
 #if HAVE_LCMS2
     int is_tiff;
@@ -4657,15 +4705,11 @@ load_with_builtin(
     memset(&load_context, 0, sizeof(load_context));
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
     animation_handled = 0;
+    apply_start_frame = 0;
     pnm_pixelformat = SIXEL_PIXELFORMAT_RGB888;
 #if HAVE_LCMS2
     is_tiff = 0;
 #endif
-
-    status = sixel_builtin_prepare_load_context(&load_request, &load_context);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
 
     decode_path = sixel_builtin_detect_decode_path(load_request.chunk);
     is_png = chunk_is_png(pchunk);
@@ -4677,6 +4721,22 @@ load_with_builtin(
 #endif
     loader_trace_message("builtin loader: decode path=%s",
                          sixel_builtin_decode_path_name(decode_path));
+
+    if (decode_path == SIXEL_BUILTIN_DECODE_PATH_GIF) {
+        apply_start_frame = 1;
+    } else if (decode_path == SIXEL_BUILTIN_DECODE_PATH_STBI &&
+               is_png &&
+               sixel_builtin_chunk_has_apng_control(pchunk)) {
+        /* Only APNG should validate animation start-frame controls. */
+        apply_start_frame = 1;
+    }
+
+    status = sixel_builtin_prepare_load_context(&load_request,
+                                                &load_context,
+                                                apply_start_frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     switch (decode_path) {
     case SIXEL_BUILTIN_DECODE_PATH_SIXEL:

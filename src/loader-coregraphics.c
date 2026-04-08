@@ -2243,15 +2243,6 @@ coregraphics_prepare_source_and_root_metadata(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (state->start_frame_no_set != 0) {
-        state->start_frame_no = state->start_frame_no_override;
-    } else {
-        status = coregraphics_parse_animation_start_frame_no(
-            &state->start_frame_no);
-        if (status != SIXEL_OK) {
-            return status;
-        }
-    }
     status = coregraphics_parse_frame_cache_max_bytes(
         &state->frame_cache_max_bytes,
         &state->frame_cache_enabled);
@@ -2298,15 +2289,6 @@ coregraphics_prepare_source_and_root_metadata(
         return SIXEL_BAD_INPUT;
     }
     state->total_frames = (int)state->frame_count;
-    if (state->start_frame_no != INT_MIN) {
-        status = coregraphics_resolve_animation_start_frame_no(
-            state->start_frame_no,
-            state->total_frames,
-            &state->resolved_start_frame_no);
-        if (status != SIXEL_OK) {
-            return status;
-        }
-    }
 
     state->props = CGImageSourceCopyProperties(state->source, NULL);
     if (state->props != NULL) {
@@ -2331,6 +2313,31 @@ coregraphics_prepare_source_and_root_metadata(
                 anim_dict,
                 anim_loop_key,
                 state->anim_loop_count);
+        }
+    }
+
+    if (state->is_animation_container != 0) {
+        /*
+         * Keep start-frame controls animation-only so static decode paths do
+         * not reject malformed env values.
+         */
+        if (state->start_frame_no_set != 0) {
+            state->start_frame_no = state->start_frame_no_override;
+        } else {
+            status = coregraphics_parse_animation_start_frame_no(
+                &state->start_frame_no);
+            if (status != SIXEL_OK) {
+                return status;
+            }
+        }
+        if (state->start_frame_no != INT_MIN) {
+            status = coregraphics_resolve_animation_start_frame_no(
+                state->start_frame_no,
+                state->total_frames,
+                &state->resolved_start_frame_no);
+            if (status != SIXEL_OK) {
+                return status;
+            }
         }
     }
 

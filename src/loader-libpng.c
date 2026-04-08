@@ -4092,7 +4092,8 @@ load_apng_frames(
     int                        exif_orientation,
     int                        enable_cms,
     int                        loop_control,
-    int                        start_frame_no,
+    int                        start_frame_no_set,
+    int                        start_frame_no_override,
     sixel_load_image_function  fn_load,
     void                      *context)
 {
@@ -4130,6 +4131,9 @@ load_apng_frames(
     sixel_frame_t *replay_frame;
     size_t replay_index;
     int replay_from_cache;
+    int start_frame_no;
+    int start_frame_no_ready;
+    int trace_start_frame_no;
 
     status = SIXEL_FALSE;
     memset(&state, 0, sizeof(state));
@@ -4162,6 +4166,12 @@ load_apng_frames(
     replay_frame = NULL;
     replay_index = 0u;
     replay_from_cache = 0;
+    start_frame_no = INT_MIN;
+    start_frame_no_ready = 0;
+    trace_start_frame_no = INT_MIN;
+    if (start_frame_no_set) {
+        trace_start_frame_no = start_frame_no_override;
+    }
 
     /*
      * APNG parsing starts after the PNG signature. Guard against short
@@ -4183,7 +4193,7 @@ load_apng_frames(
         (unsigned long)pchunk->size,
         fstatic,
         loop_control,
-        start_frame_no);
+        trace_start_frame_no);
 
     for (;;) {
         if (sixel_loader_callback_is_canceled(context)) {
@@ -4364,6 +4374,22 @@ load_apng_frames(
                 (void)apng_replay_cache_prepare(&replay_cache,
                                                 pchunk->allocator,
                                                 num_frames);
+            }
+            if (loop_no == 0 && !start_frame_no_ready) {
+                /*
+                 * Parse start-frame lazily after acTL confirmation so static
+                 * PNG input ignores invalid animation start-frame settings.
+                 */
+                if (start_frame_no_set) {
+                    start_frame_no = start_frame_no_override;
+                } else {
+                    status = libpng_parse_animation_start_frame_no(
+                        &start_frame_no);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                }
+                start_frame_no_ready = 1;
             }
             if (loop_no == 0 && start_frame_no != INT_MIN) {
                 status = libpng_resolve_animation_start_frame_no(
@@ -4685,7 +4711,6 @@ load_with_libpng(
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char *pixels;
-    int start_frame_no;
     int enable_cms;
     int cms_applied;
     int alpha_zero_is_transparent;
@@ -4696,7 +4721,6 @@ load_with_libpng(
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
-    start_frame_no = INT_MIN;
     enable_cms = enable_cms_override != 0 ? 1 : 0;
     cms_applied = 0;
     alpha_zero_is_transparent = 0;
@@ -4707,14 +4731,6 @@ load_with_libpng(
     (void)fstatic;
     (void)loop_control;
 
-    if (start_frame_no_set) {
-        start_frame_no = start_frame_no_override;
-    } else {
-        status = libpng_parse_animation_start_frame_no(&start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
     if (enable_orientation) {
         (void)libpng_parse_exif_orientation(pchunk->buffer,
                                             pchunk->size,
@@ -4729,7 +4745,8 @@ load_with_libpng(
                               exif_orientation,
                               enable_cms,
                               loop_control,
-                              start_frame_no,
+                              start_frame_no_set,
+                              start_frame_no_override,
                               fn_load,
                               context);
     /*

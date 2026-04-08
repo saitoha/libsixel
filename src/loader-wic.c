@@ -278,15 +278,6 @@ load_with_wic(
     PropVariantInit(&prop);
     PropVariantInit(&lp);
 
-    if (start_frame_no_set) {
-        start_frame_no = start_frame_no_override;
-    } else {
-        status = wic_parse_animation_start_frame_no(&start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
     hr = CoInitializeEx(NULL,
                         COINIT_APARTMENTTHREADED |
                         COINIT_SPEED_OVER_MEMORY);
@@ -351,21 +342,36 @@ load_with_wic(
     }
 
     frame_count_int = (int)frame_count;
-    if (start_frame_no != INT_MIN) {
-        status = wic_resolve_animation_start_frame_no(
-            start_frame_no,
-            frame_count_int,
-            &resolved_start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            hr = E_FAIL;
-            goto end;
-        }
-    }
 
     hr = decoder->lpVtbl->GetContainerFormat(decoder, &container_format);
     if (SUCCEEDED(hr)) {
         if (IsEqualGUID(&container_format, &GUID_ContainerFormatIco)) {
             is_ico_container = 1;
+        }
+    }
+
+    if (!is_ico_container && frame_count > 1u) {
+        /*
+         * Apply start-frame controls only when multiple decodable frames are
+         * present. Single-frame static inputs must ignore start-frame values.
+         */
+        if (start_frame_no_set) {
+            start_frame_no = start_frame_no_override;
+        } else {
+            status = wic_parse_animation_start_frame_no(&start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+        if (start_frame_no != INT_MIN) {
+            status = wic_resolve_animation_start_frame_no(
+                start_frame_no,
+                frame_count_int,
+                &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                hr = E_FAIL;
+                goto end;
+            }
         }
     }
 

@@ -527,16 +527,20 @@ load_with_gd(
     frame_count = 0;
     fnp.fn = fn_load;
 
-    if (start_frame_no_set) {
-        start_frame_no = start_frame_no_override;
-    } else {
-        status = gd_parse_animation_start_frame_no(&start_frame_no);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
     if (gif && chunk_is_gif(pchunk)) {
+        /*
+         * GIF is the only animated path in this loader. Keep start-frame
+         * validation scoped here so static decode ignores invalid env values.
+         */
+        if (start_frame_no_set) {
+            start_frame_no = start_frame_no_override;
+        } else {
+            status = gd_parse_animation_start_frame_no(&start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+
         if (start_frame_no != INT_MIN) {
             status = gd_count_gif_frames(pchunk, &frame_count);
             if (SIXEL_FAILED(status)) {
