@@ -16,7 +16,7 @@ test "${HAVE_DECL_GDIMAGECREATEFROMPNGPTR-}" = 1 || {
 echo "1..1"
 set -v
 
-input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 error_text=''
 
 error_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
