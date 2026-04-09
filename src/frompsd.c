@@ -1510,6 +1510,9 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_vector_mask;
     int has_vector_mask_bbox;
     int has_vector_mask_curve_bbox;
+    int has_vector_mask_data;
+    size_t vector_mask_data_offset;
+    size_t vector_mask_data_length;
     int has_layer_effects;
     int has_effect_solid_overlay;
     int has_effect_gradient_overlay;
@@ -10979,6 +10982,9 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->tysh_stroke_opacity = 1.0f;
     layer->has_vector_mask_bbox = 0;
     layer->has_vector_mask_curve_bbox = 0;
+    layer->has_vector_mask_data = 0;
+    layer->vector_mask_data_offset = 0u;
+    layer->vector_mask_data_length = 0u;
     layer->vector_mask_left_norm = 0.0f;
     layer->vector_mask_top_norm = 0.0f;
     layer->vector_mask_right_norm = 0.0f;
@@ -11288,6 +11294,237 @@ sixel_builtin_psd_apply_vector_mask_bbox_to_layer_buffers(
 }
 
 static int
+sixel_builtin_psd_point_in_polygon_even_odd(float px,
+                                            float py,
+                                            float const *vertices_x,
+                                            float const *vertices_y,
+                                            size_t vertex_count)
+{
+    size_t i;
+    size_t j;
+    int inside;
+    float xi;
+    float yi;
+    float xj;
+    float yj;
+    int intersects;
+    float denom;
+    float x_cross;
+
+    i = 0u;
+    j = 0u;
+    inside = 0;
+    xi = 0.0f;
+    yi = 0.0f;
+    xj = 0.0f;
+    yj = 0.0f;
+    intersects = 0;
+    denom = 0.0f;
+    x_cross = 0.0f;
+    if (vertices_x == NULL || vertices_y == NULL || vertex_count < 3u) {
+        return 0;
+    }
+    j = vertex_count - 1u;
+    for (i = 0u; i < vertex_count; ++i) {
+        xi = vertices_x[i];
+        yi = vertices_y[i];
+        xj = vertices_x[j];
+        yj = vertices_y[j];
+        intersects = ((yi > py) != (yj > py));
+        if (intersects != 0) {
+            denom = yj - yi;
+            if (fabsf(denom) > 1.0e-8f) {
+                x_cross = (xj - xi) * (py - yi) / denom + xi;
+                if (px < x_cross) {
+                    inside = !inside;
+                }
+            }
+        }
+        j = i;
+    }
+    return inside;
+}
+
+static int
+sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info,
+    sixel_builtin_psd_layer_record_t const *layer,
+    sixel_builtin_psd_layer_buffers_t *src)
+{
+    unsigned char const *data;
+    size_t key_length;
+    size_t max_records;
+    float *points_x;
+    float *points_y;
+    size_t *subpath_start;
+    size_t *subpath_count;
+    unsigned char *subpath_closed;
+    size_t cursor;
+    size_t point_count;
+    size_t path_count;
+    int have_subpath;
+    size_t current_start;
+    size_t current_count;
+    int current_closed;
+    unsigned int expected_knots;
+    int applied;
+    size_t y;
+    size_t x;
+    size_t idx;
+    uint16_t selector;
+    float py;
+    float px;
+    float ny;
+    float nx;
+    size_t p;
+    int inside;
+
+    data = NULL;
+    key_length = 0u;
+    max_records = 0u;
+    points_x = NULL;
+    points_y = NULL;
+    subpath_start = NULL;
+    subpath_count = NULL;
+    subpath_closed = NULL;
+    cursor = 0u;
+    point_count = 0u;
+    path_count = 0u;
+    have_subpath = 0;
+    current_start = 0u;
+    current_count = 0u;
+    current_closed = 0;
+    expected_knots = 0u;
+    applied = 0;
+    y = 0u;
+    x = 0u;
+    idx = 0u;
+    selector = 0u;
+    py = 0.0f;
+    px = 0.0f;
+    ny = 0.0f;
+    nx = 0.0f;
+    p = 0u;
+    inside = 0;
+
+    if (chunk == NULL || info == NULL || layer == NULL || src == NULL ||
+        chunk->buffer == NULL || src->alpha == NULL || info->width == 0u ||
+        info->height == 0u || layer->width == 0u || layer->height == 0u ||
+        src->pixel_count != (size_t)layer->width * (size_t)layer->height ||
+        layer->has_vector_mask_data == 0 ||
+        layer->vector_mask_data_offset >= chunk->size ||
+        layer->vector_mask_data_length == 0u ||
+        layer->vector_mask_data_length > chunk->size -
+            layer->vector_mask_data_offset ||
+        layer->vector_mask_data_length < 8u) {
+        return 0;
+    }
+
+    data = chunk->buffer + layer->vector_mask_data_offset;
+    key_length = layer->vector_mask_data_length;
+    max_records = key_length / 26u + 1u;
+    if (max_records < 4u) {
+        return 0;
+    }
+    if (max_records > SIZE_MAX / sizeof(float)) {
+        return 0;
+    }
+
+    points_x = (float *)malloc(max_records * sizeof(float));
+    points_y = (float *)malloc(max_records * sizeof(float));
+    subpath_start = (size_t *)malloc(max_records * sizeof(size_t));
+    subpath_count = (size_t *)malloc(max_records * sizeof(size_t));
+    subpath_closed = (unsigned char *)malloc(max_records);
+    if (points_x == NULL || points_y == NULL || subpath_start == NULL ||
+        subpath_count == NULL || subpath_closed == NULL) {
+        free(points_x);
+        free(points_y);
+        free(subpath_start);
+        free(subpath_count);
+        free(subpath_closed);
+        return 0;
+    }
+
+    cursor = 8u;
+    while (cursor + 26u <= key_length) {
+        selector = sixel_builtin_read_u16be_as_u16(data + cursor);
+        if (selector == 0u || selector == 3u) {
+            if (have_subpath != 0 && current_count >= 2u &&
+                path_count < max_records) {
+                subpath_start[path_count] = current_start;
+                subpath_count[path_count] = current_count;
+                subpath_closed[path_count] =
+                    (unsigned char)(current_closed != 0);
+                ++path_count;
+            }
+            expected_knots =
+                (unsigned int)sixel_builtin_read_u16be_as_u16(data + cursor + 2u);
+            current_start = point_count;
+            current_count = 0u;
+            current_closed = selector == 0u ? 1 : 0;
+            have_subpath = 1;
+        } else if (selector == 1u || selector == 2u ||
+                   selector == 4u || selector == 5u) {
+            if (have_subpath != 0 && point_count < max_records &&
+                (expected_knots == 0u || current_count < (size_t)expected_knots)) {
+                py = sixel_builtin_psd_fixed8_24_to_float(
+                    sixel_builtin_read_i32be(data + cursor + 10u));
+                px = sixel_builtin_psd_fixed8_24_to_float(
+                    sixel_builtin_read_i32be(data + cursor + 14u));
+                points_x[point_count] = sixel_builtin_psd_clamp01(px);
+                points_y[point_count] = sixel_builtin_psd_clamp01(py);
+                ++point_count;
+                ++current_count;
+            }
+        }
+        cursor += 26u;
+    }
+    if (have_subpath != 0 && current_count >= 2u && path_count < max_records) {
+        subpath_start[path_count] = current_start;
+        subpath_count[path_count] = current_count;
+        subpath_closed[path_count] = (unsigned char)(current_closed != 0);
+        ++path_count;
+    }
+
+    if (path_count > 0u) {
+        for (y = 0u; y < (size_t)layer->height; ++y) {
+            ny = ((float)layer->top + (float)y + 0.5f) / (float)info->height;
+            for (x = 0u; x < (size_t)layer->width; ++x) {
+                nx = ((float)layer->left + (float)x + 0.5f) /
+                    (float)info->width;
+                inside = 0;
+                for (p = 0u; p < path_count; ++p) {
+                    if (subpath_closed[p] == 0u || subpath_count[p] < 3u) {
+                        continue;
+                    }
+                    if (sixel_builtin_psd_point_in_polygon_even_odd(
+                            nx,
+                            ny,
+                            points_x + subpath_start[p],
+                            points_y + subpath_start[p],
+                            subpath_count[p])) {
+                        inside = !inside;
+                    }
+                }
+                if (inside == 0) {
+                    idx = y * (size_t)layer->width + x;
+                    src->alpha[idx] = 0.0f;
+                }
+            }
+        }
+        applied = 1;
+    }
+
+    free(points_x);
+    free(points_y);
+    free(subpath_start);
+    free(subpath_count);
+    free(subpath_closed);
+    return applied;
+}
+
+static int
 sixel_builtin_psd_prepare_clipping_base_indices(
     sixel_builtin_psd_info_t const *info,
     sixel_builtin_psd_layer_model_t const *model,
@@ -11518,6 +11755,13 @@ sixel_builtin_psd_parse_layer_extra_data(
         if (memcmp(key, "vmsk", 4u) == 0 ||
             memcmp(key, "vsms", 4u) == 0) {
             layer->has_vector_mask = 1;
+            if (key_length >= 8u &&
+                (memcmp(key, "vmsk", 4u) == 0 ||
+                 layer->has_vector_mask_data == 0)) {
+                layer->has_vector_mask_data = 1;
+                layer->vector_mask_data_offset = cursor;
+                layer->vector_mask_data_length = key_length;
+            }
             (void)sixel_builtin_psd_parse_vector_mask_bbox(buffer + cursor,
                                                            key_length,
                                                            layer);
@@ -15109,6 +15353,18 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
         if (layer->has_vector_mask != 0) {
             if (allow_pixel_layer_decode_skip != 0 &&
+                synthetic_fill != 0 &&
+                effective_composite_layer->has_vector_mask_data != 0 &&
+                sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
+                    chunk,
+                    info,
+                    effective_composite_layer,
+                    &src_layer)) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying vector mask bbox in "
+                    "layer fallback");
+            } else if (allow_pixel_layer_decode_skip != 0 &&
                 ignore_placeholder_vector_bbox == 0 &&
                 effective_composite_layer->has_vector_mask_bbox != 0) {
                 sixel_trace_topic_message(
