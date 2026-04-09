@@ -202,7 +202,9 @@ loader_wic_initialize_ico_minsize(void)
     char *endptr;
     long parsed;
 
+    loader_background_lock();
     if (wic_ico_minsize_initialized) {
+        loader_background_unlock();
         return;
     }
 
@@ -215,18 +217,22 @@ loader_wic_initialize_ico_minsize(void)
         env_value = sixel_compat_getenv(SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY);
     }
     if (env_value == NULL || env_value[0] == '\0') {
+        loader_background_unlock();
         return;
     }
 
     errno = 0;
     parsed = strtol(env_value, &endptr, 10);
     if (errno != 0) {
+        loader_background_unlock();
         return;
     }
     if (endptr == env_value || *endptr != '\0') {
+        loader_background_unlock();
         return;
     }
     if (parsed <= 0) {
+        loader_background_unlock();
         return;
     }
     if (parsed > (long)INT_MAX) {
@@ -235,14 +241,20 @@ loader_wic_initialize_ico_minsize(void)
 
     wic_ico_minsize_default = (int)parsed;
     wic_ico_minsize = wic_ico_minsize_default;
+    loader_background_unlock();
 }
 
 int
 loader_wic_get_ico_minsize(void)
 {
-    loader_wic_initialize_ico_minsize();
+    int value;
 
-    return wic_ico_minsize;
+    loader_wic_initialize_ico_minsize();
+    loader_background_lock();
+    value = wic_ico_minsize;
+    loader_background_unlock();
+
+    return value;
 }
 
 void
@@ -250,43 +262,61 @@ sixel_helper_set_wic_ico_minsize(int size)
 {
     loader_wic_initialize_ico_minsize();
 
+    loader_background_lock();
     if (size > 0) {
         wic_ico_minsize = size;
     } else {
         wic_ico_minsize = wic_ico_minsize_default;
     }
+    loader_background_unlock();
 }
 
 int
 loader_libpng_get_enable_cms(void)
 {
-    return libpng_enable_cms;
+    int value;
+
+    loader_background_lock();
+    value = libpng_enable_cms;
+    loader_background_unlock();
+
+    return value;
 }
 
 void
 sixel_helper_set_libpng_enable_cms(int enable)
 {
+    loader_background_lock();
     if (enable >= 0) {
         libpng_enable_cms = enable != 0 ? 1 : 0;
     } else {
         libpng_enable_cms = libpng_enable_cms_default;
     }
+    loader_background_unlock();
 }
 
 int
 loader_builtin_get_enable_cms(void)
 {
-    return builtin_enable_cms;
+    int value;
+
+    loader_background_lock();
+    value = builtin_enable_cms;
+    loader_background_unlock();
+
+    return value;
 }
 
 void
 sixel_helper_set_builtin_enable_cms(int enable)
 {
+    loader_background_lock();
     if (enable >= 0) {
         builtin_enable_cms = enable != 0 ? 1 : 0;
     } else {
         builtin_enable_cms = builtin_enable_cms_default;
     }
+    loader_background_unlock();
 }
 
 SIXEL_INTERNAL_API void
@@ -359,7 +389,9 @@ loader_cms_initialize_target(void)
     char const *prefer8_env;
     char const *target_env;
 
+    loader_background_lock();
     if (loader_cms_target_initialized) {
+        loader_background_unlock();
         return;
     }
     loader_cms_target_initialized = 1;
@@ -373,6 +405,7 @@ loader_cms_initialize_target(void)
 
     target_env = sixel_compat_getenv("SIXEL_LOADER_CMS_TARGET_COLORSPACE");
     if (target_env == NULL || target_env[0] == '\0') {
+        loader_background_unlock();
         return;
     }
     if (strcmp(target_env, "gamma") == 0) {
@@ -386,33 +419,52 @@ loader_cms_initialize_target(void)
     } else if (strcmp(target_env, "din99d") == 0) {
         loader_cms_target_colorspace_value = SIXEL_COLORSPACE_DIN99D;
     }
+    loader_background_unlock();
 }
 
 int
 loader_cms_prefer_8bit(void)
 {
-    loader_cms_initialize_target();
+    int prefer_8bit;
 
-    return loader_cms_prefer_8bit_flag;
+    loader_cms_initialize_target();
+    loader_background_lock();
+    prefer_8bit = loader_cms_prefer_8bit_flag;
+    loader_background_unlock();
+
+    return prefer_8bit;
 }
 
 int
 loader_cms_target_colorspace(void)
 {
-    loader_cms_initialize_target();
+    int target_colorspace;
 
-    return loader_cms_target_colorspace_value;
+    loader_cms_initialize_target();
+    loader_background_lock();
+    target_colorspace = loader_cms_target_colorspace_value;
+    loader_background_unlock();
+
+    return target_colorspace;
 }
 
 SIXELAPI int
 loader_cms_target_pixelformat(void)
 {
+    int prefer_8bit;
+    int target_colorspace;
+
     loader_cms_initialize_target();
 
-    if (loader_cms_prefer_8bit_flag) {
+    loader_background_lock();
+    prefer_8bit = loader_cms_prefer_8bit_flag;
+    target_colorspace = loader_cms_target_colorspace_value;
+    loader_background_unlock();
+
+    if (prefer_8bit) {
         return SIXEL_PIXELFORMAT_RGB888;
     }
-    switch (loader_cms_target_colorspace_value) {
+    switch (target_colorspace) {
     case SIXEL_COLORSPACE_GAMMA:
         return SIXEL_PIXELFORMAT_RGBFLOAT32;
     case SIXEL_COLORSPACE_CIELAB:
@@ -862,7 +914,9 @@ loader_thumbnailer_initialize_size_hint(void)
     char *endptr;
     long parsed;
 
+    loader_background_lock();
     if (thumbnailer_size_hint_initialized) {
+        loader_background_unlock();
         return;
     }
 
@@ -872,18 +926,22 @@ loader_thumbnailer_initialize_size_hint(void)
 
     env_value = sixel_compat_getenv("SIXEL_THUMBNAILER_HINT_SIZE");
     if (env_value == NULL || env_value[0] == '\0') {
+        loader_background_unlock();
         return;
     }
 
     errno = 0;
     parsed = strtol(env_value, &endptr, 10);
     if (errno != 0) {
+        loader_background_unlock();
         return;
     }
     if (endptr == env_value || *endptr != '\0') {
+        loader_background_unlock();
         return;
     }
     if (parsed <= 0) {
+        loader_background_unlock();
         return;
     }
     if (parsed > (long)INT_MAX) {
@@ -892,28 +950,41 @@ loader_thumbnailer_initialize_size_hint(void)
 
     thumbnailer_default_size_hint = (int)parsed;
     thumbnailer_size_hint = thumbnailer_default_size_hint;
+    loader_background_unlock();
 }
 
 int
 loader_thumbnailer_get_size_hint(void)
 {
-    loader_thumbnailer_initialize_size_hint();
+    int size_hint;
 
-    return thumbnailer_size_hint;
+    loader_thumbnailer_initialize_size_hint();
+    loader_background_lock();
+    size_hint = thumbnailer_size_hint;
+    loader_background_unlock();
+
+    return size_hint;
 }
 
 int
 loader_thumbnailer_get_default_size_hint(void)
 {
-    loader_thumbnailer_initialize_size_hint();
+    int default_size_hint;
 
-    return thumbnailer_default_size_hint;
+    loader_thumbnailer_initialize_size_hint();
+    loader_background_lock();
+    default_size_hint = thumbnailer_default_size_hint;
+    loader_background_unlock();
+
+    return default_size_hint;
 }
 
 void
 sixel_helper_set_loader_trace(int enable)
 {
+    loader_background_lock();
     loader_trace_enabled = enable ? 1 : 0;
+    loader_background_unlock();
 }
 
 void
@@ -921,19 +992,26 @@ sixel_helper_set_thumbnail_size_hint(int size)
 {
     loader_thumbnailer_initialize_size_hint();
 
+    loader_background_lock();
     if (size > 0) {
         thumbnailer_size_hint = size;
     } else {
         thumbnailer_size_hint = thumbnailer_default_size_hint;
     }
+    loader_background_unlock();
 }
 
 void
 loader_trace_message(char const *format, ...)
 {
     va_list args;
+    int trace_enabled;
 
-    if (!loader_trace_enabled) {
+    loader_background_lock();
+    trace_enabled = loader_trace_enabled;
+    loader_background_unlock();
+
+    if (!trace_enabled) {
         return;
     }
 
@@ -1038,7 +1116,13 @@ sixel_trace_topic_message(
 void
 loader_trace_try(char const *name)
 {
-    if (loader_trace_enabled) {
+    int trace_enabled;
+
+    loader_background_lock();
+    trace_enabled = loader_trace_enabled;
+    loader_background_unlock();
+
+    if (trace_enabled) {
         fprintf(stderr, "libsixel: trying %s loader\n", name);
     }
 }
@@ -1046,7 +1130,13 @@ loader_trace_try(char const *name)
 void
 loader_trace_result(char const *name, SIXELSTATUS status)
 {
-    if (!loader_trace_enabled) {
+    int trace_enabled;
+
+    loader_background_lock();
+    trace_enabled = loader_trace_enabled;
+    loader_background_unlock();
+
+    if (!trace_enabled) {
         return;
     }
     if (SIXEL_SUCCEEDED(status)) {
@@ -1060,7 +1150,13 @@ loader_trace_result(char const *name, SIXELSTATUS status)
 int
 loader_trace_is_enabled(void)
 {
-    return loader_trace_enabled;
+    int trace_enabled;
+
+    loader_background_lock();
+    trace_enabled = loader_trace_enabled;
+    loader_background_unlock();
+
+    return trace_enabled;
 }
 
 int
