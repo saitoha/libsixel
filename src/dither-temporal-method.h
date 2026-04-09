@@ -79,7 +79,7 @@ typedef struct sixel_temporal_method_ops {
  * Shared temporal frame ownership helpers used by temporal strategies.
  * The owner method id protects the frame from cross-strategy reuse.
  */
-static void
+static inline void
 sixel_temporal_release_shared_frame(sixel_dither_t *dither)
 {
     sixel_allocator_t *allocator;
@@ -92,6 +92,9 @@ sixel_temporal_release_shared_frame(sixel_dither_t *dither)
     if (dither->temporal_state.error_frame != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, dither->temporal_state.error_frame);
     }
+    if (dither->temporal_state.method_private != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, dither->temporal_state.method_private);
+    }
 
     dither->temporal_state.error_frame = NULL;
     dither->temporal_state.error_frame_size = 0U;
@@ -99,9 +102,11 @@ sixel_temporal_release_shared_frame(sixel_dither_t *dither)
     dither->temporal_state.height = 0;
     dither->temporal_state.depth = 0;
     dither->temporal_state.method_id = SIXEL_TEMPORAL_METHOD_NONE;
+    dither->temporal_state.method_private = NULL;
+    dither->temporal_state.method_private_size = 0U;
 }
 
-static SIXELSTATUS
+static inline SIXELSTATUS
 sixel_temporal_prepare_shared_frame(sixel_dither_t *dither,
                                     int width,
                                     int height,

@@ -46,6 +46,7 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "dither.h"
+#include "dither-temporal-method.h"
 #include "palette.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
@@ -2383,7 +2384,9 @@ sixel_dither_temporal_state_init(sixel_dither_t *dither)
     dither->temporal_state.width = 0;
     dither->temporal_state.height = 0;
     dither->temporal_state.depth = 0;
-    dither->temporal_state.method_id = 0;
+    dither->temporal_state.method_id = SIXEL_TEMPORAL_METHOD_NONE;
+    dither->temporal_state.method_private = NULL;
+    dither->temporal_state.method_private_size = 0U;
     dither->temporal_state.apply_count = 0UL;
     dither->temporal_state.consume_count = 0UL;
     dither->temporal_state.last_apply_status = SIXEL_FALSE;
@@ -2393,23 +2396,11 @@ sixel_dither_temporal_state_init(sixel_dither_t *dither)
 static void
 sixel_dither_temporal_state_reset(sixel_dither_t *dither)
 {
-    sixel_allocator_t *allocator;
-
     if (dither == NULL) {
         return;
     }
 
-    allocator = dither->allocator;
-    if (dither->temporal_state.error_frame != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, dither->temporal_state.error_frame);
-    }
-
-    dither->temporal_state.error_frame = NULL;
-    dither->temporal_state.error_frame_size = 0U;
-    dither->temporal_state.width = 0;
-    dither->temporal_state.height = 0;
-    dither->temporal_state.depth = 0;
-    dither->temporal_state.method_id = 0;
+    sixel_temporal_release_shared_frame(dither);
     dither->temporal_state.last_apply_status = SIXEL_FALSE;
     dither->temporal_state.last_apply_consumed = 0;
 }

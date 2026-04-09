@@ -57,6 +57,8 @@ typedef struct sixel_dither_temporal_state {
     int height;
     int depth;
     int method_id;
+    void *method_private;
+    size_t method_private_size;
     unsigned long apply_count;
     unsigned long consume_count;
     int last_apply_status;
