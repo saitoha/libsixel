@@ -195,6 +195,12 @@ sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
 static uint8_t
 sixel_temporal_stbn_select_sample_source(void);
 
+static uint8_t
+sixel_temporal_stbn_source_from_strategy(char const *value);
+
+static int
+sixel_temporal_strategy_is_stbn(char const *value);
+
 static sixel_temporal_stbn_source_ops_t const *
 sixel_temporal_stbn_source_ops_for_id(uint8_t source_id);
 
@@ -599,7 +605,40 @@ sixel_temporal_stbn_source_mask_ops = {
 static uint8_t
 sixel_temporal_stbn_select_sample_source(void)
 {
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
+    return sixel_temporal_stbn_source_from_strategy(value);
+}
+
+static uint8_t
+sixel_temporal_stbn_source_from_strategy(char const *value)
+{
+    if (value != NULL && strcmp(value, "stbn-mask") == 0) {
+        return SIXEL_TEMPORAL_STBN_SOURCE_MASK;
+    }
+
     return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+}
+
+static int
+sixel_temporal_strategy_is_stbn(char const *value)
+{
+    if (value == NULL) {
+        return 0;
+    }
+
+    if (strcmp(value, "stbn") == 0) {
+        return 1;
+    }
+    if (strcmp(value, "stbn-hash") == 0) {
+        return 1;
+    }
+    if (strcmp(value, "stbn-mask") == 0) {
+        return 1;
+    }
+
+    return 0;
 }
 
 static sixel_temporal_stbn_source_ops_t const *
@@ -814,7 +853,7 @@ sixel_temporal_strategy_override(void)
     /*
      * Keep the public CLI unchanged while enabling internal strategy probing.
      */
-    if (strcmp(value, "stbn") == 0) {
+    if (sixel_temporal_strategy_is_stbn(value)) {
         return SIXEL_TEMPORAL_METHOD_STBN;
     }
     if (strcmp(value, "diffusion") == 0) {
