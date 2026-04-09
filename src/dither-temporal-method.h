@@ -196,6 +196,67 @@ sixel_temporal_prepare_shared_frame(sixel_dither_t *dither,
     return status;
 }
 
+/*
+ * Reserve method-private temporal state for strategy-specific data such as
+ * STBN sequence cursors. The state buffer is reused while method and size are
+ * unchanged.
+ */
+static inline SIXELSTATUS
+sixel_temporal_prepare_method_private(sixel_dither_t *dither,
+                                      int owner_method,
+                                      int can_update,
+                                      size_t state_size,
+                                      void **state)
+{
+    void *new_state;
+    sixel_allocator_t *allocator;
+
+    new_state = NULL;
+    allocator = NULL;
+
+    if (dither == NULL || state == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *state = NULL;
+    if (state_size == 0U) {
+        return SIXEL_OK;
+    }
+
+    allocator = dither->allocator;
+    if (allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (dither->temporal_state.method_private != NULL
+            && (dither->temporal_state.method_id != owner_method
+                || dither->temporal_state.method_private_size != state_size)) {
+        if (can_update == 0) {
+            return SIXEL_OK;
+        }
+        sixel_allocator_free(allocator, dither->temporal_state.method_private);
+        dither->temporal_state.method_private = NULL;
+        dither->temporal_state.method_private_size = 0U;
+    }
+
+    if (dither->temporal_state.method_private == NULL) {
+        if (can_update == 0) {
+            return SIXEL_OK;
+        }
+        new_state = sixel_allocator_malloc(allocator, state_size);
+        if (new_state == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memset(new_state, 0x00, state_size);
+        dither->temporal_state.method_private = new_state;
+        dither->temporal_state.method_private_size = state_size;
+    }
+
+    dither->temporal_state.method_id = owner_method;
+    *state = dither->temporal_state.method_private;
+    return SIXEL_OK;
+}
+
 #endif /* LIBSIXEL_DITHER_TEMPORAL_METHOD_H */
 
 /* emacs Local Variables:      */

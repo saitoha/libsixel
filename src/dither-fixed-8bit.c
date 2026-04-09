@@ -70,6 +70,10 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 #define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
 #define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
 
+typedef struct sixel_temporal_stbn_state {
+    uint32_t sequence_index;
+} sixel_temporal_stbn_state_t;
+
 static SIXELSTATUS
 sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
@@ -363,19 +367,44 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
                                   int *enabled,
                                   int32_t **frame)
 {
+    SIXELSTATUS status;
+    sixel_temporal_stbn_state_t *stbn_state;
+
+    status = SIXEL_OK;
+    stbn_state = NULL;
+
     /*
      * Placeholder STBN strategy keeps the same state shape as temporal
      * diffusion. A dedicated STBN mask sequence can be integrated later
      * without changing the call site contract.
      */
-    return sixel_temporal_prepare_shared_frame(dither,
-                                               width,
-                                               height,
-                                               depth,
-                                               can_update,
-                                               SIXEL_TEMPORAL_METHOD_STBN,
-                                               enabled,
-                                               frame);
+    status = sixel_temporal_prepare_shared_frame(dither,
+                                                 width,
+                                                 height,
+                                                 depth,
+                                                 can_update,
+                                                 SIXEL_TEMPORAL_METHOD_STBN,
+                                                 enabled,
+                                                 frame);
+    if (status != SIXEL_OK || *enabled == 0) {
+        return status;
+    }
+
+    status = sixel_temporal_prepare_method_private(
+        dither,
+        SIXEL_TEMPORAL_METHOD_STBN,
+        can_update,
+        sizeof(sixel_temporal_stbn_state_t),
+        (void **)&stbn_state);
+    if (status != SIXEL_OK || stbn_state == NULL || can_update == 0) {
+        return status;
+    }
+
+    if (dither->frame_context.valid) {
+        stbn_state->sequence_index = (uint32_t)dither->frame_context.frame_no;
+    }
+
+    return status;
 }
 
 static void
