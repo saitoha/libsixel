@@ -75,6 +75,8 @@ typedef struct sixel_temporal_stbn_state {
     uint32_t sequence_index;
 } sixel_temporal_stbn_state_t;
 
+#define SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED 0
+
 static SIXELSTATUS
 sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
@@ -149,6 +151,27 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int y,
                                 int channel,
                                 int depth);
+
+static uint32_t
+sixel_temporal_stbn_sequence_index(
+    sixel_temporal_stbn_state_t const *stbn_state);
+
+static uint32_t
+sixel_temporal_stbn_hash_u32(uint32_t value);
+
+static uint16_t
+sixel_temporal_stbn_sample_u16(uint32_t sequence_index,
+                               int x,
+                               int y,
+                               int channel,
+                               int depth);
+
+static int32_t
+sixel_temporal_stbn_sample_centered(uint32_t sequence_index,
+                                    int x,
+                                    int y,
+                                    int channel,
+                                    int depth);
 
 static sixel_temporal_method_ops_t const
 sixel_temporal_diffusion_ops = {
@@ -441,6 +464,71 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
     return status;
 }
 
+static uint32_t
+sixel_temporal_stbn_sequence_index(
+    sixel_temporal_stbn_state_t const *stbn_state)
+{
+    if (stbn_state == NULL) {
+        return 0U;
+    }
+
+    return stbn_state->sequence_index;
+}
+
+static uint32_t
+sixel_temporal_stbn_hash_u32(uint32_t value)
+{
+    value ^= value >> 16;
+    value *= 0x7feb352dU;
+    value ^= value >> 15;
+    value *= 0x846ca68bU;
+    value ^= value >> 16;
+    return value;
+}
+
+static uint16_t
+sixel_temporal_stbn_sample_u16(uint32_t sequence_index,
+                               int x,
+                               int y,
+                               int channel,
+                               int depth)
+{
+    uint32_t key;
+    uint32_t ch;
+
+    key = 0U;
+    ch = 0U;
+
+    if (depth > 0) {
+        ch = (uint32_t)(channel % depth);
+    }
+
+    key = sequence_index * 0x9e3779b9U;
+    key ^= (uint32_t)x * 0x6a09e667U;
+    key ^= (uint32_t)y * 0xbb67ae85U;
+    key ^= ch * 0x3c6ef372U;
+    key = sixel_temporal_stbn_hash_u32(key);
+
+    return (uint16_t)(key >> 16);
+}
+
+static int32_t
+sixel_temporal_stbn_sample_centered(uint32_t sequence_index,
+                                    int x,
+                                    int y,
+                                    int channel,
+                                    int depth)
+{
+    uint16_t sample;
+
+    sample = sixel_temporal_stbn_sample_u16(sequence_index,
+                                            x,
+                                            y,
+                                            channel,
+                                            depth);
+    return (int32_t)sample - 32768;
+}
+
 static int32_t
 sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int x,
@@ -448,15 +536,27 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int channel,
                                 int depth)
 {
-    (void)stbn_state;
-    (void)x;
-    (void)y;
-    (void)channel;
-    (void)depth;
+    uint32_t sequence_index;
+    int32_t sample_centered;
+    int64_t bias_scaled;
+
+    sequence_index = 0U;
+    sample_centered = 0;
+    bias_scaled = 0;
+
+    sequence_index = sixel_temporal_stbn_sequence_index(stbn_state);
+    sample_centered = sixel_temporal_stbn_sample_centered(sequence_index,
+                                                          x,
+                                                          y,
+                                                          channel,
+                                                          depth);
+    bias_scaled = (int64_t)sample_centered
+        * (int64_t)SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED;
+    (void)bias_scaled;
 
     /*
-     * Placeholder bias keeps STBN wired through method-private state without
-     * changing current output. A real STBN sequence can replace this later.
+     * Placeholder keeps STBN sample plumbing active while output stays
+     * identical to temporal diffusion until real STBN strength is defined.
      */
     return 0;
 }
