@@ -65,13 +65,17 @@
 
 #if defined(_MSC_VER)
 # define SIXEL_LOADER_TLS __declspec(thread)
+# define SIXEL_LOADER_TLS_AVAILABLE 1
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
     && !defined(__PCC__)
 # define SIXEL_LOADER_TLS _Thread_local
+# define SIXEL_LOADER_TLS_AVAILABLE 1
 #elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_LOADER_TLS __thread
+# define SIXEL_LOADER_TLS_AVAILABLE 1
 #else
 # define SIXEL_LOADER_TLS
+# define SIXEL_LOADER_TLS_AVAILABLE 0
 #endif
 
 static int loader_trace_enabled;
@@ -96,7 +100,97 @@ static int loader_cms_target_initialized;
 static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
 
+#if SIXEL_ENABLE_THREADS && !SIXEL_LOADER_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+static CRITICAL_SECTION loader_background_mutex;
+static INIT_ONCE loader_background_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+loader_background_lock_init_once(PINIT_ONCE once,
+                                 PVOID parameter,
+                                 PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    InitializeCriticalSection(&loader_background_mutex);
+    return TRUE;
+}
+# else
+#  include <pthread.h>
+static pthread_mutex_t loader_background_mutex = PTHREAD_MUTEX_INITIALIZER;
+# endif
+
+/*
+ * Without TLS the override flag and default colorspace state become process
+ * globals. Serialize access so concurrent loads do not race on these values.
+ */
+static void
+loader_background_lock(void)
+{
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&loader_background_once,
+                                      loader_background_lock_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized) {
+        abort();
+    }
+    EnterCriticalSection(&loader_background_mutex);
+# else
+    int rc;
+
+    rc = pthread_mutex_lock(&loader_background_mutex);
+    if (rc != 0) {
+        abort();
+    }
+# endif
+}
+
+static void
+loader_background_unlock(void)
+{
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    LeaveCriticalSection(&loader_background_mutex);
+# else
+    int rc;
+
+    rc = pthread_mutex_unlock(&loader_background_mutex);
+    if (rc != 0) {
+        abort();
+    }
+# endif
+}
+#else
+static void
+loader_background_lock(void)
+{
+}
+
+static void
+loader_background_unlock(void)
+{
+}
+#endif
+
 #undef SIXEL_LOADER_TLS
+#undef SIXEL_LOADER_TLS_AVAILABLE
 
 #define SIXEL_ENV_WIC_ICO_MINSIZE "SIXEL_LOADER_WIC_ICO_MINSIZE"
 #define SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY "SIXEL_LODER_WIC_ICO_MINSIZE"
@@ -198,12 +292,14 @@ sixel_helper_set_builtin_enable_cms(int enable)
 SIXEL_INTERNAL_API void
 sixel_helper_set_loader_background_colorspace(int colorspace)
 {
+    loader_background_lock();
     if (colorspace == SIXEL_COLORSPACE_GAMMA ||
             colorspace == SIXEL_COLORSPACE_LINEAR) {
         loader_background_colorspace_override = colorspace;
     } else {
         loader_background_colorspace_override = -1;
     }
+    loader_background_unlock();
 }
 
 static void
@@ -211,7 +307,9 @@ loader_background_initialize_colorspace(void)
 {
     char const *env_value;
 
+    loader_background_lock();
     if (loader_background_colorspace_initialized) {
+        loader_background_unlock();
         return;
     }
 
@@ -220,6 +318,7 @@ loader_background_initialize_colorspace(void)
 
     env_value = sixel_compat_getenv("SIXEL_LOADER_BACKGROUND_COLORSPACE");
     if (env_value == NULL || env_value[0] == '\0') {
+        loader_background_unlock();
         return;
     }
 
@@ -228,6 +327,7 @@ loader_background_initialize_colorspace(void)
     } else if (strcmp(env_value, "gamma") == 0) {
         loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
     }
+    loader_background_unlock();
 }
 
 SIXEL_INTERNAL_API int
@@ -235,15 +335,22 @@ loader_background_colorspace(void)
 {
     int override_value;
 
+    loader_background_lock();
     override_value = loader_background_colorspace_override;
     if (override_value == SIXEL_COLORSPACE_GAMMA ||
             override_value == SIXEL_COLORSPACE_LINEAR) {
+        loader_background_unlock();
         return override_value;
     }
+    loader_background_unlock();
 
     loader_background_initialize_colorspace();
 
-    return loader_background_colorspace_value;
+    loader_background_lock();
+    override_value = loader_background_colorspace_value;
+    loader_background_unlock();
+
+    return override_value;
 }
 
 static void

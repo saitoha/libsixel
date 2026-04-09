@@ -116,22 +116,117 @@ struct sixel_cms_transform {
 #if defined(_MSC_VER)
 # if defined(_MT)
 #  define SIXEL_CMS_TLS __declspec(thread)
+#  define SIXEL_CMS_TLS_AVAILABLE 1
 # else
 #  define SIXEL_CMS_TLS
+#  define SIXEL_CMS_TLS_AVAILABLE 0
 # endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) \
     && !defined(__PCC__)
 # define SIXEL_CMS_TLS _Thread_local
+# define SIXEL_CMS_TLS_AVAILABLE 1
 #elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_CMS_TLS __thread
+# define SIXEL_CMS_TLS_AVAILABLE 1
 #else
 # define SIXEL_CMS_TLS
+# define SIXEL_CMS_TLS_AVAILABLE 0
 #endif
 
 static SIXEL_CMS_TLS sixel_cms_engine_t g_sixel_cms_engine
     = SIXEL_CMS_ENGINE_AUTO;
 
+#if SIXEL_ENABLE_THREADS && !SIXEL_CMS_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+static CRITICAL_SECTION g_sixel_cms_engine_mutex;
+static INIT_ONCE g_sixel_cms_engine_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_cms_engine_lock_init_once(PINIT_ONCE once,
+                                PVOID parameter,
+                                PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    InitializeCriticalSection(&g_sixel_cms_engine_mutex);
+    return TRUE;
+}
+# else
+#  include <pthread.h>
+static pthread_mutex_t g_sixel_cms_engine_mutex = PTHREAD_MUTEX_INITIALIZER;
+# endif
+
+/*
+ * pcc builds without language-level TLS fall back to a process-global engine
+ * flag. Guard reads and writes so concurrent loader threads do not race.
+ */
+static void
+sixel_cms_engine_lock(void)
+{
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&g_sixel_cms_engine_once,
+                                      sixel_cms_engine_lock_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized) {
+        abort();
+    }
+    EnterCriticalSection(&g_sixel_cms_engine_mutex);
+# else
+    int rc;
+
+    rc = pthread_mutex_lock(&g_sixel_cms_engine_mutex);
+    if (rc != 0) {
+        abort();
+    }
+# endif
+}
+
+static void
+sixel_cms_engine_unlock(void)
+{
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    LeaveCriticalSection(&g_sixel_cms_engine_mutex);
+# else
+    int rc;
+
+    rc = pthread_mutex_unlock(&g_sixel_cms_engine_mutex);
+    if (rc != 0) {
+        abort();
+    }
+# endif
+}
+#else
+static void
+sixel_cms_engine_lock(void)
+{
+}
+
+static void
+sixel_cms_engine_unlock(void)
+{
+}
+#endif
+
 #undef SIXEL_CMS_TLS
+#undef SIXEL_CMS_TLS_AVAILABLE
 
 typedef enum sixel_cms_rendering_intent {
     SIXEL_CMS_INTENT_PERCEPTUAL = 0,
@@ -261,24 +356,37 @@ sixel_cms_resolve_engine(sixel_cms_engine_t requested)
 void
 sixel_cms_set_engine(sixel_cms_engine_t engine)
 {
+    sixel_cms_engine_t selected;
+
+    selected = SIXEL_CMS_ENGINE_AUTO;
     switch (engine) {
     case SIXEL_CMS_ENGINE_NONE:
     case SIXEL_CMS_ENGINE_AUTO:
     case SIXEL_CMS_ENGINE_BUILTIN:
     case SIXEL_CMS_ENGINE_LCMS2:
     case SIXEL_CMS_ENGINE_COLORSYNC:
-        g_sixel_cms_engine = engine;
+        selected = engine;
         break;
     default:
-        g_sixel_cms_engine = SIXEL_CMS_ENGINE_AUTO;
+        selected = SIXEL_CMS_ENGINE_AUTO;
         break;
     }
+
+    sixel_cms_engine_lock();
+    g_sixel_cms_engine = selected;
+    sixel_cms_engine_unlock();
 }
 
 sixel_cms_engine_t
 sixel_cms_get_engine(void)
 {
-    return sixel_cms_resolve_engine(g_sixel_cms_engine);
+    sixel_cms_engine_t selected;
+
+    sixel_cms_engine_lock();
+    selected = g_sixel_cms_engine;
+    sixel_cms_engine_unlock();
+
+    return sixel_cms_resolve_engine(selected);
 }
 
 #if HAVE_LCMS2

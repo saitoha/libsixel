@@ -370,14 +370,18 @@ static const unsigned char pal_xterm256[] = {
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
+# define SIXEL_TLS_AVAILABLE 1
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
     && !defined(__STDC_NO_THREADS__) \
     && !defined(__PCC__)
 # define SIXEL_TLS _Thread_local
+# define SIXEL_TLS_AVAILABLE 1
 #elif defined(__GNUC__) && !defined(__PCC__)
 # define SIXEL_TLS __thread
+# define SIXEL_TLS_AVAILABLE 1
 #else
 # define SIXEL_TLS
+# define SIXEL_TLS_AVAILABLE 0
 #endif
 
 /*
@@ -717,6 +721,17 @@ sixel_dither_map_pixels(
     if (foptimize && depth == 3 && f_lookup == lookup_normal) {
         f_lookup = lookup_fast_lut;
     }
+#if SIXEL_ENABLE_THREADS && !SIXEL_TLS_AVAILABLE
+    if (f_lookup == lookup_fast_lut) {
+        /*
+         * Fast lookup stores the active LUT in a TLS pointer for the hot path.
+         * Compilers without TLS support collapse that pointer into a process
+         * global, which is unsafe when multiple worker threads map pixels at
+         * the same time.
+         */
+        f_lookup = lookup_normal;
+    }
+#endif
     if (lut_policy == SIXEL_LUT_POLICY_NONE) {
         f_lookup = lookup_normal;
     }
