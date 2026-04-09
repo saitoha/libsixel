@@ -34,6 +34,38 @@ typedef void (*sixel_dither_pipeline_row_fn)(void *priv, int row_index);
 
 struct sixel_logger;
 
+/*
+ * Frame metadata supplied by the encoder. Temporal dithering stages use this
+ * context to decide when to keep or reset frame-to-frame state.
+ */
+typedef struct sixel_dither_frame_context {
+    int frame_no;
+    int loop_no;
+    int multiframe;
+    int valid;
+} sixel_dither_frame_context_t;
+
+/*
+ * Reserved container for temporal diffusion state. The current refactor only
+ * wires ownership and lifecycle; future temporal diffusion patches will
+ * populate the buffer and dimensions.
+ */
+typedef struct sixel_dither_temporal_state {
+    void *error_frame;
+    size_t error_frame_size;
+    int width;
+    int height;
+    int depth;
+    unsigned long apply_count;
+    unsigned long consume_count;
+    int last_apply_status;
+    int last_apply_consumed;
+} sixel_dither_temporal_state_t;
+
+/* apply mode for sixel_dither_apply_palette_with_mode() */
+#define SIXEL_DITHER_APPLY_PRESERVE_TEMPORAL_STATE 0
+#define SIXEL_DITHER_APPLY_CONSUME_TEMPORAL_STATE  1
+
 /* dither context object */
 struct sixel_dither {
     sixel_atomic_u32_t ref;         /* reference counter */
@@ -80,6 +112,8 @@ struct sixel_dither {
     size_t pipeline_transparent_mask_size; /* transparent mask length */
     int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
     struct sixel_logger *pipeline_logger; /* parallel log sink */
+    sixel_dither_frame_context_t frame_context; /* encoder frame metadata */
+    sixel_dither_temporal_state_t temporal_state; /* reserved temporal */
 };
 
 #ifdef __cplusplus
@@ -92,6 +126,30 @@ sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
                            unsigned char       /* in */ *pixels,
                            int                 /* in */ width,
                            int                 /* in */ height);
+
+/*
+ * Apply palette with explicit temporal-state handling mode. The default API
+ * consumes temporal state; capture paths can request preserve mode.
+ */
+SIXEL_INTERNAL_API sixel_index_t *
+sixel_dither_apply_palette_with_mode(struct sixel_dither /* in */ *dither,
+                                     unsigned char       /* in */ *pixels,
+                                     int                 /* in */ width,
+                                     int                 /* in */ height,
+                                     int                 /* in */ apply_mode);
+
+/*
+ * Attach frame metadata from the encoder to the dither object. Temporal
+ * diffusion workers read this metadata to detect loop and timeline boundaries.
+ */
+SIXEL_INTERNAL_API void
+sixel_dither_set_frame_context(sixel_dither_t *dither,
+                               int frame_no,
+                               int loop_no,
+                               int multiframe);
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_frame_context(sixel_dither_t *dither);
 
 /*
  * Set or clear a caller-provided transparent mask hint used by the

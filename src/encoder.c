@@ -2233,6 +2233,22 @@ end:
     return status;
 }
 
+static void
+sixel_encoder_update_dither_frame_context(sixel_dither_t *dither,
+                                          int frame_no,
+                                          int loop_no,
+                                          int multiframe)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    sixel_dither_set_frame_context(dither,
+                                   frame_no,
+                                   loop_no,
+                                   multiframe);
+}
+
 
 static SIXELSTATUS
 sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
@@ -2308,8 +2324,12 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
             status = SIXEL_RUNTIME_ERROR;
             goto cleanup;
         }
-        paletted_pixels = sixel_dither_apply_palette(
-            dither, (unsigned char *)pixels, width, height);
+        paletted_pixels = sixel_dither_apply_palette_with_mode(
+            dither,
+            (unsigned char *)pixels,
+            width,
+            height,
+            SIXEL_DITHER_APPLY_PRESERVE_TEMPORAL_STATE);
         if (paletted_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_capture_quantized: palette conversion failed.");
@@ -4637,6 +4657,7 @@ sixel_encoder_output_without_macro(
     int width = 0;
     int height = 0;
     int pixelformat = 0;
+    int multiframe;
     size_t size;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     sixel_encoding_planner_t *planner;
@@ -4682,6 +4703,7 @@ sixel_encoder_output_without_macro(
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
+    multiframe = sixel_frame_get_multiframe(frame);
     size = (size_t)(width * height * depth);
 
     sixel_encoder_log_stage(encoder,
@@ -4749,6 +4771,10 @@ sixel_encoder_output_without_macro(
     }
 
     if (encoder->capture_quantized) {
+        sixel_encoder_update_dither_frame_context(dither,
+                                                  frame_no,
+                                                  loop_no,
+                                                  multiframe);
         status = sixel_encoder_capture_quantized(encoder,
                                                  dither,
                                                  p,
@@ -4766,6 +4792,10 @@ sixel_encoder_output_without_macro(
     if (planner != NULL && dither != NULL) {
         dither->pipeline_pin_threads = planner->pipeline_pin_threads;
     }
+    sixel_encoder_update_dither_frame_context(dither,
+                                              frame_no,
+                                              loop_no,
+                                              multiframe);
     sixel_encoder_bind_frame_transparent_mask(dither, frame);
     status = sixel_encode(p, width, height, depth, dither, output);
     if (status != SIXEL_OK) {
@@ -4811,6 +4841,7 @@ sixel_encoder_output_with_macro(
     int width;
     int height;
     int pixelformat;
+    int multiframe;
     int depth;
     size_t size = 0;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -4826,6 +4857,7 @@ sixel_encoder_output_with_macro(
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
+    multiframe = sixel_frame_get_multiframe(frame);
     pixelformat = sixel_frame_get_pixelformat(frame);
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth < 0) {
@@ -4887,6 +4919,10 @@ sixel_encoder_output_with_macro(
             dither->pipeline_pin_threads =
                 planner->pipeline_pin_threads;
         }
+        sixel_encoder_update_dither_frame_context(dither,
+                                                  frame_no,
+                                                  loop_no,
+                                                  multiframe);
         sixel_encoder_bind_frame_transparent_mask(dither, frame);
         status = sixel_encode(converted,
                               width,
