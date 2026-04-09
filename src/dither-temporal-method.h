@@ -258,6 +258,39 @@ sixel_temporal_prepare_method_private(sixel_dither_t *dither,
     return SIXEL_OK;
 }
 
+/*
+ * Fetch strategy-specific temporal private state with ownership and size
+ * validation. This avoids open-coded access checks at call sites.
+ */
+static inline void const *
+sixel_temporal_get_method_private_const(sixel_dither_t const *dither,
+                                        int owner_method,
+                                        size_t state_size)
+{
+    if (dither == NULL || dither->temporal_state.method_private == NULL) {
+        return NULL;
+    }
+    if (dither->temporal_state.method_id != owner_method) {
+        return NULL;
+    }
+    if (dither->temporal_state.method_private_size < state_size) {
+        return NULL;
+    }
+
+    return dither->temporal_state.method_private;
+}
+
+static inline void *
+sixel_temporal_get_method_private(sixel_dither_t *dither,
+                                  int owner_method,
+                                  size_t state_size)
+{
+    return (void *)sixel_temporal_get_method_private_const(
+        (sixel_dither_t const *)dither,
+        owner_method,
+        state_size);
+}
+
 #endif /* LIBSIXEL_DITHER_TEMPORAL_METHOD_H */
 
 /* emacs Local Variables:      */

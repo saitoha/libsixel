@@ -414,8 +414,18 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
         return status;
     }
 
+    stbn_state = (sixel_temporal_stbn_state_t *)
+        sixel_temporal_get_method_private(
+            dither,
+            SIXEL_TEMPORAL_METHOD_STBN,
+            sizeof(sixel_temporal_stbn_state_t));
+    if (stbn_state == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     if (dither->frame_context.valid) {
-        stbn_state->sequence_index = (uint32_t)dither->frame_context.frame_no;
+        stbn_state->sequence_index =
+            (uint32_t)dither->frame_context.frame_no;
     }
 
     return status;
@@ -457,15 +467,11 @@ sixel_temporal_stbn_load_pixel(
     n = 0;
     bias_scaled = 0;
     adjusted_scaled = 0;
-    stbn_state = NULL;
-
-    if (dither != NULL
-            && dither->temporal_state.method_private != NULL
-            && dither->temporal_state.method_private_size
-               >= sizeof(sixel_temporal_stbn_state_t)) {
-        stbn_state = (sixel_temporal_stbn_state_t const *)
-            dither->temporal_state.method_private;
-    }
+    stbn_state = (sixel_temporal_stbn_state_t const *)
+        sixel_temporal_get_method_private_const(
+            dither,
+            SIXEL_TEMPORAL_METHOD_STBN,
+            sizeof(sixel_temporal_stbn_state_t));
 
     sixel_temporal_diffusion_load_pixel(dither,
                                         data,
