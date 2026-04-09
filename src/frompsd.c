@@ -14120,8 +14120,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
         }
     }
 
-    if (has_overlay_base != 0 &&
-        layer->has_effect_gradient_overlay != 0 &&
+    if (layer->has_effect_gradient_overlay != 0 &&
         layer->effect_gradient_stop_count > 0u &&
         layer->width > 0u &&
         layer->height > 0u &&
