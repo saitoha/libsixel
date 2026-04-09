@@ -51,6 +51,18 @@
 # include <string.h>
 #endif
 
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
+        !defined(WITH_WINPTHREAD)
+#  define SIXEL_GD_SUPPORT_USE_WIN32_ONCE 1
+#  include <windows.h>
+static INIT_ONCE g_sixel_loader_gd_support_once = INIT_ONCE_STATIC_INIT;
+# else
+#  include <pthread.h>
+static pthread_once_t g_sixel_loader_gd_support_once = PTHREAD_ONCE_INIT;
+# endif
+#endif
+
 /* Keep SIZE_MAX available even on strict C99 environments. */
 #ifndef SIZE_MAX
 # define SIZE_MAX ((size_t)-1)
@@ -106,12 +118,8 @@ typedef struct sixel_loader_gd_support_cache {
 static sixel_loader_gd_support_cache_t g_sixel_loader_gd_support_cache;
 
 static void
-gd_initialize_support_cache(void)
+gd_build_support_cache(void)
 {
-    if (g_sixel_loader_gd_support_cache.initialized != 0) {
-        return;
-    }
-
     g_sixel_loader_gd_support_cache.bmp = gdSupportsFileType(".bmp", 0);
     g_sixel_loader_gd_support_cache.wbmp = gdSupportsFileType(".wbmp", 0);
     g_sixel_loader_gd_support_cache.tga = gdSupportsFileType(".tga", 0);
@@ -120,6 +128,60 @@ gd_initialize_support_cache(void)
     g_sixel_loader_gd_support_cache.gd2 = gdSupportsFileType(".gd2", 0);
     g_sixel_loader_gd_support_cache.webp = gdSupportsFileType(".webp", 0);
     g_sixel_loader_gd_support_cache.initialized = 1;
+}
+
+#if SIXEL_ENABLE_THREADS && defined(SIXEL_GD_SUPPORT_USE_WIN32_ONCE)
+static BOOL CALLBACK
+gd_build_support_cache_once_cb(PINIT_ONCE init_once,
+                               PVOID parameter,
+                               PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+
+    gd_build_support_cache();
+    return TRUE;
+}
+#endif
+
+static void
+gd_initialize_support_cache(void)
+{
+    if (g_sixel_loader_gd_support_cache.initialized != 0) {
+        return;
+    }
+
+#if SIXEL_ENABLE_THREADS
+# if defined(SIXEL_GD_SUPPORT_USE_WIN32_ONCE)
+    {
+        BOOL executed;
+
+        executed = InitOnceExecuteOnce(
+            &g_sixel_loader_gd_support_once,
+            gd_build_support_cache_once_cb,
+            NULL,
+            NULL);
+        if (executed == FALSE &&
+            g_sixel_loader_gd_support_cache.initialized == 0) {
+            gd_build_support_cache();
+        }
+    }
+# else
+    {
+        int once_status;
+
+        once_status = pthread_once(&g_sixel_loader_gd_support_once,
+                                   gd_build_support_cache);
+        if (once_status != 0 &&
+            g_sixel_loader_gd_support_cache.initialized == 0) {
+            gd_build_support_cache();
+        }
+    }
+# endif
+#else
+    gd_build_support_cache();
+#endif
 }
 
 static int
