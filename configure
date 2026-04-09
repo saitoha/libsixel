@@ -798,6 +798,8 @@ WANT_THUMBNAILER_TRUE
 THREAD_LIBS
 THREAD_CFLAGS
 THREAD_CPPFLAGS
+SIXEL_ENABLE_THREADS_FALSE
+SIXEL_ENABLE_THREADS_TRUE
 WITH_SHEBANG_FILE_FALSE
 WITH_SHEBANG_FILE_TRUE
 SIXEL_SHEBANG_HELPER
@@ -810,8 +812,6 @@ WANT_AMALGAMATED_TOOLS_FALSE
 WANT_AMALGAMATED_TOOLS_TRUE
 WANT_AMALGAMATED_LIB_FALSE
 WANT_AMALGAMATED_LIB_TRUE
-SIXEL_ENABLE_THREADS_FALSE
-SIXEL_ENABLE_THREADS_TRUE
 HAVE_ABORT_TRACE_FALSE
 HAVE_ABORT_TRACE_TRUE
 WANT_SIXEL2PNG_FALSE
@@ -18394,14 +18394,6 @@ else case e in #(
 esac
 fi
 
- if test "x$enable_threads" != "xno"; then
-  SIXEL_ENABLE_THREADS_TRUE=
-  SIXEL_ENABLE_THREADS_FALSE='#'
-else
-  SIXEL_ENABLE_THREADS_TRUE='#'
-  SIXEL_ENABLE_THREADS_FALSE=
-fi
-
 
 # Check whether --enable-amalgamated-lib was given.
 if test ${enable_amalgamated_lib+y}
@@ -18616,10 +18608,6 @@ fi
 esac
 
 if test "x$enable_threads" != "xno"; then
-
-printf "%s\n" "#define SIXEL_ENABLE_THREADS 1" >>confdefs.h
-
-  THREAD_CPPFLAGS="-DSIXEL_ENABLE_THREADS=1"
   if test "x$build_windows" = "xyes"; then
     have_threads="yes"
   else
@@ -18731,9 +18719,25 @@ See 'config.log' for more details" "$LINENO" 5; }
       fi
     fi
   fi
+  if test "x$have_threads" = "xyes"; then
+
+printf "%s\n" "#define SIXEL_ENABLE_THREADS 1" >>confdefs.h
+
+    THREAD_CPPFLAGS="-DSIXEL_ENABLE_THREADS=1"
+  else
+    enable_threads=no
+  fi
 else
   enable_threads=no
 fi
+ if test "x$have_threads" = "xyes"; then
+  SIXEL_ENABLE_THREADS_TRUE=
+  SIXEL_ENABLE_THREADS_FALSE='#'
+else
+  SIXEL_ENABLE_THREADS_TRUE='#'
+  SIXEL_ENABLE_THREADS_FALSE=
+fi
+
 
 
 
@@ -29787,10 +29791,6 @@ if test -z "${HAVE_ABORT_TRACE_TRUE}" && test -z "${HAVE_ABORT_TRACE_FALSE}"; th
   as_fn_error $? "conditional \"HAVE_ABORT_TRACE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${SIXEL_ENABLE_THREADS_TRUE}" && test -z "${SIXEL_ENABLE_THREADS_FALSE}"; then
-  as_fn_error $? "conditional \"SIXEL_ENABLE_THREADS\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${WANT_AMALGAMATED_LIB_TRUE}" && test -z "${WANT_AMALGAMATED_LIB_FALSE}"; then
   as_fn_error $? "conditional \"WANT_AMALGAMATED_LIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -29809,6 +29809,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WITH_SHEBANG_FILE_TRUE}" && test -z "${WITH_SHEBANG_FILE_FALSE}"; then
   as_fn_error $? "conditional \"WITH_SHEBANG_FILE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${SIXEL_ENABLE_THREADS_TRUE}" && test -z "${SIXEL_ENABLE_THREADS_FALSE}"; then
+  as_fn_error $? "conditional \"SIXEL_ENABLE_THREADS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_THUMBNAILER_TRUE}" && test -z "${WANT_THUMBNAILER_FALSE}"; then

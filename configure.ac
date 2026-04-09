@@ -1480,8 +1480,6 @@ AC_ARG_ENABLE([threads],
                               [disable internal threadpool support (default: auto)])],
               [],
               [enable_threads=auto])
-AM_CONDITIONAL([SIXEL_ENABLE_THREADS],
-               [test "x$enable_threads" != "xno"])
 
 AC_ARG_ENABLE([amalgamated-lib],
               [AS_HELP_STRING([--enable-amalgamated-lib],
@@ -1578,10 +1576,6 @@ case "$host_os" in
 esac
 
 if test "x$enable_threads" != "xno"; then
-  AC_DEFINE([SIXEL_ENABLE_THREADS],
-            [1],
-            [Define to 1 if internal threadpool support is enabled])
-  THREAD_CPPFLAGS="-DSIXEL_ENABLE_THREADS=1"
   if test "x$build_windows" = "xyes"; then
     have_threads="yes"
   else
@@ -1626,9 +1620,19 @@ return rc;]])],
       fi
     fi
   fi
+  if test "x$have_threads" = "xyes"; then
+    AC_DEFINE([SIXEL_ENABLE_THREADS],
+              [1],
+              [Define to 1 if internal threadpool support is enabled])
+    THREAD_CPPFLAGS="-DSIXEL_ENABLE_THREADS=1"
+  else
+    enable_threads=no
+  fi
 else
   enable_threads=no
 fi
+AM_CONDITIONAL([SIXEL_ENABLE_THREADS],
+               [test "x$have_threads" = "xyes"])
 
 AC_SUBST([THREAD_CPPFLAGS])
 AC_SUBST([THREAD_CFLAGS])
