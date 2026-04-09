@@ -89,6 +89,7 @@ typedef struct
 #define GIF_RGBA_STRIDE 4
 #define GIF_HASH_EMPTY_KEY 0xffffffffU
 #define GIF_HISTORY_BITS_PER_BYTE 8u
+#define GIF_TRACE_TOPIC "gif_decode"
 #define GIF_FRAME_CACHE_MAX_BYTES_DEFAULT \
     ((size_t)(64u * 1024u * 1024u))
 
@@ -2475,6 +2476,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
     size_t history_bytes;
     int preserve_transparency;
     int need_multiframe_buffers;
+    int scan_failed;
     char message[256];
 
     status = SIXEL_FALSE;
@@ -2485,6 +2487,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
     history_bytes = 0u;
     preserve_transparency = 0;
     need_multiframe_buffers = 0;
+    scan_failed = 0;
     if (stream_scan_failed != NULL) {
         *stream_scan_failed = 0;
     }
@@ -2544,7 +2547,18 @@ gif_prepare_decoder_state(unsigned char *buffer,
                                (stream_scan_failed != NULL &&
                                 *stream_scan_failed != 0))
         ? 1 : 0;
+    scan_failed = stream_scan_failed != NULL ? *stream_scan_failed : 0;
     g->preserve_transparency = preserve_transparency;
+    sixel_trace_topic_message(
+        GIF_TRACE_TOPIC,
+        "gif_prepare_decoder_state: size=%d frames_hint=%d "
+        "stream_is_multiframe=%d scan_failed=%d "
+        "preserve_transparency=%d",
+        size,
+        g->stream_frame_count_hint,
+        g->stream_is_multiframe,
+        scan_failed,
+        g->preserve_transparency);
     g->delay = SIXEL_DEFALUT_GIF_DELAY;
     status = gif_reload_header_and_validate_canvas(s, g, &pcount);
     if (SIXEL_FAILED(status)) {
@@ -2552,6 +2566,15 @@ gif_prepare_decoder_state(unsigned char *buffer,
     }
     bcount = pcount * (size_t)GIF_RGB_STRIDE;
     history_bytes = gif_history_required_bytes(pcount);
+    sixel_trace_topic_message(
+        GIF_TRACE_TOPIC,
+        "gif_prepare_decoder_state: canvas=%dx%d rgb_bytes=%zu "
+        "history_bytes=%zu multiframe_buffers=%d",
+        g->w,
+        g->h,
+        bcount,
+        history_bytes,
+        need_multiframe_buffers);
 
     gif_init_decoder_buffers(g);
     g->out = (unsigned char *)sixel_allocator_malloc(allocator, bcount);
@@ -2565,6 +2588,10 @@ gif_prepare_decoder_state(unsigned char *buffer,
                                pcount,
                                need_multiframe_buffers);
     if (!gif_has_required_decoder_buffers(g, need_multiframe_buffers)) {
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "gif_prepare_decoder_state: allocation failed pcount=%zu",
+            pcount);
         sixel_compat_snprintf(
             message,
             sizeof(message),
@@ -2583,6 +2610,10 @@ gif_prepare_decoder_state(unsigned char *buffer,
 
 end:
     if (SIXEL_FAILED(status)) {
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "gif_prepare_decoder_state: failed status=%d",
+            status);
         gif_destroy_decoder_state(allocator, g, frame);
     }
     return status;
@@ -2598,10 +2629,12 @@ gif_decode_one_frame(gif_context_t *s,
     SIXELSTATUS status;
     int emit_frame;
     int loop_no;
+    int decoded_frame_no;
 
     status = SIXEL_FALSE;
     emit_frame = 0;
     loop_no = 0;
+    decoded_frame_no = 0;
     if (progress != NULL) {
         progress->stream_terminated = 0;
     }
@@ -2620,17 +2653,37 @@ gif_decode_one_frame(gif_context_t *s,
         return SIXEL_INTERRUPTED;
     }
 
+    loop_no = sixel_frame_get_loop_no(frame);
+    decoded_frame_no = progress->decoded_frame_no;
     status = gif_load_next(s, g, request->bgcolor);
     if (status != SIXEL_OK) {
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "gif_decode_one_frame: gif_load_next failed status=%d loop=%d "
+            "decoded=%d",
+            status,
+            loop_no,
+            decoded_frame_no);
         return status;
     }
     if (g->is_terminated != 0) {
         progress->stream_terminated = 1;
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "gif_decode_one_frame: stream terminated loop=%d decoded=%d",
+            loop_no,
+            decoded_frame_no);
         return SIXEL_OK;
     }
 
-    if (request->stream_scan_failed != 0 && progress->decoded_frame_no >= 1) {
+    if (request->stream_scan_failed != 0 &&
+        progress->decoded_frame_no >= 1 &&
+        g->stream_is_multiframe == 0) {
         g->stream_is_multiframe = 1;
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "gif_decode_one_frame: enabling multiframe buffers decoded=%d",
+            progress->decoded_frame_no);
     }
 
     /*
@@ -2647,6 +2700,13 @@ gif_decode_one_frame(gif_context_t *s,
                             request->reqcolors,
                             request->fuse_palette);
     if (status != SIXEL_OK) {
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "gif_decode_one_frame: gif_init_frame failed status=%d loop=%d "
+            "decoded=%d",
+            status,
+            loop_no,
+            decoded_frame_no);
         return status;
     }
 
@@ -2659,6 +2719,13 @@ gif_decode_one_frame(gif_context_t *s,
     emit_frame = gif_should_emit_decoded_frame(request->start_frame_no,
                                                loop_no,
                                                progress->decoded_frame_no);
+    sixel_trace_topic_message(
+        GIF_TRACE_TOPIC,
+        "gif_decode_one_frame: loop=%d decoded=%d emit=%d emitted=%d",
+        loop_no,
+        progress->decoded_frame_no,
+        emit_frame,
+        progress->emitted_frame_no);
     if (emit_frame != 0) {
         /*
          * Frame numbers are reported relative to emitted frames so start-frame
@@ -2667,10 +2734,21 @@ gif_decode_one_frame(gif_context_t *s,
         sixel_frame_set_frame_no(frame, progress->emitted_frame_no);
         status = request->fnp.fn(frame, request->context);
         if (status != SIXEL_OK) {
+            sixel_trace_topic_message(
+                GIF_TRACE_TOPIC,
+                "gif_decode_one_frame: callback failed status=%d loop=%d "
+                "decoded=%d emitted=%d",
+                status,
+                loop_no,
+                progress->decoded_frame_no,
+                progress->emitted_frame_no);
             return status;
         }
         if (request->fstatic != 0) {
             progress->stop_decode = 1;
+            sixel_trace_topic_message(
+                GIF_TRACE_TOPIC,
+                "gif_decode_one_frame: static decode requested stop");
         }
     }
 
@@ -2678,6 +2756,12 @@ gif_decode_one_frame(gif_context_t *s,
                               emit_frame,
                               &progress->decoded_frame_no,
                               &progress->emitted_frame_no);
+    sixel_trace_topic_message(
+        GIF_TRACE_TOPIC,
+        "gif_decode_one_frame: progress decoded=%d emitted=%d stop=%d",
+        progress->decoded_frame_no,
+        progress->emitted_frame_no,
+        progress->stop_decode);
     return SIXEL_OK;
 }
 
@@ -2732,7 +2816,9 @@ gif_decode_animation_loops(gif_context_t *s,
     int current_loop_no;
     int stream_loop_count;
     int replay_active;
+    int should_stop;
     size_t pcount;
+    size_t replay_frame_count;
 
     status = SIXEL_FALSE;
     memset(&progress, 0, sizeof(progress));
@@ -2742,7 +2828,9 @@ gif_decode_animation_loops(gif_context_t *s,
     current_loop_no = 0;
     stream_loop_count = -1;
     replay_active = 0;
+    should_stop = 0;
     pcount = 0u;
+    replay_frame_count = 0u;
     if (s == NULL || g == NULL || frame == NULL || request == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2767,6 +2855,14 @@ gif_decode_animation_loops(gif_context_t *s,
             current_loop_no > 0) {
             replay_active = 1;
         }
+        replay_frame_count =
+            replay_cache != NULL ? replay_cache->frame_count : 0u;
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "gif_decode_animation_loops: loop=%d replay=%d cache_frames=%zu",
+            current_loop_no,
+            replay_active,
+            replay_frame_count);
 
         if (replay_active != 0) {
             g->loop_count = stream_loop_count;
@@ -2789,6 +2885,13 @@ gif_decode_animation_loops(gif_context_t *s,
                                          progress.emitted_frame_no);
                 status = request->fnp.fn(cached_frame, request->context);
                 if (status != SIXEL_OK) {
+                    sixel_trace_topic_message(
+                        GIF_TRACE_TOPIC,
+                        "gif_decode_animation_loops: replay callback failed "
+                        "status=%d loop=%d replay_index=%zu",
+                        status,
+                        current_loop_no,
+                        replay_index);
                     return status;
                 }
                 progress.emitted_frame_no += 1;
@@ -2796,17 +2899,39 @@ gif_decode_animation_loops(gif_context_t *s,
         } else {
             status = gif_decode_loop_frames(s, g, frame, request, &progress);
             if (status != SIXEL_OK) {
+                sixel_trace_topic_message(
+                    GIF_TRACE_TOPIC,
+                    "gif_decode_animation_loops: decode loop failed status=%d "
+                    "loop=%d",
+                    status,
+                    current_loop_no);
                 return status;
             }
             stream_loop_count = g->loop_count;
         }
         if (progress.stop_decode != 0) {
+            sixel_trace_topic_message(
+                GIF_TRACE_TOPIC,
+                "gif_decode_animation_loops: stop requested loop=%d "
+                "decoded=%d emitted=%d",
+                current_loop_no,
+                progress.decoded_frame_no,
+                progress.emitted_frame_no);
             return SIXEL_OK;
         }
-        if (gif_advance_loop_and_should_stop(frame,
-                                             g,
-                                             &progress,
-                                             loop_control) != 0) {
+        should_stop = gif_advance_loop_and_should_stop(frame,
+                                                       g,
+                                                       &progress,
+                                                       loop_control);
+        if (should_stop != 0) {
+            sixel_trace_topic_message(
+                GIF_TRACE_TOPIC,
+                "gif_decode_animation_loops: finished loop=%d stream_loop=%d "
+                "decoded=%d emitted=%d",
+                current_loop_no,
+                stream_loop_count,
+                progress.decoded_frame_no,
+                progress.emitted_frame_no);
             break;
         }
     }
@@ -2844,6 +2969,13 @@ load_gif(
     memset(&decode_request, 0, sizeof(decode_request));
 
     if (buffer == NULL || size <= 0 || fn_load == NULL || allocator == NULL) {
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "load_gif: bad argument buffer=%p size=%d fn_load=%p allocator=%p",
+            (void *)buffer,
+            size,
+            fn_load,
+            (void *)allocator);
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -2856,6 +2988,16 @@ load_gif(
     decode_request.stream_scan_failed = 0;
     decode_request.fstatic = fstatic;
     decode_request.replay_cache = NULL;
+    sixel_trace_topic_message(
+        GIF_TRACE_TOPIC,
+        "load_gif: size=%d reqcolors=%d fuse_palette=%d fstatic=%d "
+        "loop_control=%d start_frame_no=%d",
+        size,
+        reqcolors,
+        fuse_palette,
+        fstatic,
+        loop_control,
+        start_frame_no);
 
     status = gif_prepare_decoder_state(buffer,
                                        size,
@@ -2866,6 +3008,10 @@ load_gif(
                                        &frame,
                                        &decode_request.stream_scan_failed);
     if (status != SIXEL_OK) {
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "load_gif: prepare failed status=%d",
+            status);
         goto end;
     }
     /*
@@ -2882,6 +3028,12 @@ load_gif(
         if (replay_cache.enabled != 0) {
             decode_request.replay_cache = &replay_cache;
         }
+        sixel_trace_topic_message(
+            GIF_TRACE_TOPIC,
+            "load_gif: replay_cache enabled=%d capacity=%d frame_hint=%d",
+            replay_cache.enabled,
+            replay_cache_capacity,
+            g->stream_frame_count_hint);
     }
 
     status = gif_decode_animation_loops(&s,
@@ -2889,6 +3041,11 @@ load_gif(
                                         frame,
                                         &decode_request,
                                         loop_control);
+    sixel_trace_topic_message(
+        GIF_TRACE_TOPIC,
+        "load_gif: decode status=%d stream_scan_failed=%d",
+        status,
+        decode_request.stream_scan_failed);
 
 end:
     gif_replay_cache_reset(&replay_cache);
