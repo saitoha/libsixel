@@ -114,6 +114,7 @@ loader_manager_build_chain_from_plan(
     sixel_loader_entry_t const **plan,
     size_t plan_length,
     sixel_chunk_t const *chunk,
+    int skip_predicate_gate,
     sixel_allocator_t *allocator,
     sixel_loader_chain_t **ppchain);
 

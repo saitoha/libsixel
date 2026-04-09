@@ -1701,6 +1701,7 @@ sixel_loader_load_file(
     char const *osc11_timeout_env;
     int osc11_timeout_ms;
     int osc11_bgcolor_applied;
+    int skip_predicate_gate;
     int thread_status;
     int wait_result;
 
@@ -1720,6 +1721,7 @@ sixel_loader_load_file(
     osc11_timeout_env = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
     osc11_bgcolor_applied = 0;
+    skip_predicate_gate = 0;
     thread_status = SIXEL_FALSE;
     wait_result = 0;
     sixel_option_init_argument_list_resolution(&order_resolution);
@@ -1846,6 +1848,16 @@ sixel_loader_load_file(
     }
     loader_manager_resolve_loader_suboptions(active_order_resolution,
                                              &active_suboptions);
+    if (active_order_resolution != NULL &&
+        active_order_resolution->has_trailing_bang &&
+        active_order_resolution->item_count == 1u) {
+        /*
+         * A forced single-loader order ("-L name!") should reach the loader
+         * implementation whenever the coarse magic check matches, so loader-
+         * specific diagnostics are preserved for invalid inputs.
+         */
+        skip_predicate_gate = 1;
+    }
 
     plan = sixel_allocator_malloc(loader->allocator,
                                   entry_count * sizeof(*plan));
@@ -1885,6 +1897,7 @@ sixel_loader_load_file(
                                                   plan,
                                                   plan_length,
                                                   pchunk,
+                                                  skip_predicate_gate,
                                                   loader->allocator,
                                                   &chain);
     if (SIXEL_FAILED(status)) {

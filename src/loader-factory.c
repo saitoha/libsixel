@@ -202,6 +202,19 @@ loader_factory_entry_matches_chunk(
     sixel_loader_entry_t const *entry,
     sixel_chunk_t const *chunk)
 {
+    return loader_factory_entry_matches_chunk_with_predicate(factory,
+                                                             entry,
+                                                             chunk,
+                                                             1);
+}
+
+int
+loader_factory_entry_matches_chunk_with_predicate(
+    sixel_loader_factory_t const *factory,
+    sixel_loader_entry_t const *entry,
+    sixel_chunk_t const *chunk,
+    int enforce_predicate)
+{
     int magic_matches;
 
     magic_matches = 0;
@@ -212,6 +225,9 @@ loader_factory_entry_matches_chunk(
     magic_matches = loader_factory_magic_matches_chunk(entry, chunk);
     if (magic_matches == 0) {
         return 0;
+    }
+    if (!enforce_predicate) {
+        return 1;
     }
     if (entry->predicate == NULL) {
         return 1;

@@ -66,6 +66,13 @@ loader_factory_entry_matches_chunk(
     sixel_loader_entry_t const *entry,
     sixel_chunk_t const *chunk);
 
+SIXEL_INTERNAL_API int
+loader_factory_entry_matches_chunk_with_predicate(
+    sixel_loader_factory_t const *factory,
+    sixel_loader_entry_t const *entry,
+    sixel_chunk_t const *chunk,
+    int enforce_predicate);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 loader_factory_create_component(
     sixel_loader_factory_t const *factory,
