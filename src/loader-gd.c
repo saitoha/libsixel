@@ -399,6 +399,58 @@ gd_decode_with_format(sixel_loader_gd_format_t format,
     return im;
 }
 
+static SIXELSTATUS
+gd_prepare_decode_request(sixel_chunk_t const *chunk,
+                          sixel_loader_gd_format_t *format,
+                          int *source_high_depth)
+{
+    SIXELSTATUS png_ihdr_status;
+    sixel_loader_gd_format_t sniffed_format;
+    int png_bit_depth;
+    int png_interlace_method;
+
+    png_ihdr_status = SIXEL_FALSE;
+    sniffed_format = SIXEL_LOADER_GD_FORMAT_NONE;
+    png_bit_depth = 0;
+    png_interlace_method = 0;
+    if (chunk == NULL || format == NULL || source_high_depth == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *format = SIXEL_LOADER_GD_FORMAT_NONE;
+    *source_high_depth = 0;
+
+    sniffed_format = gd_sniff_format(chunk);
+    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_NONE ||
+            sniffed_format == SIXEL_LOADER_GD_FORMAT_GIF) {
+        return SIXEL_FALSE;
+    }
+
+    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG) {
+        png_ihdr_status = gd_parse_png_ihdr(chunk,
+                                            &png_bit_depth,
+                                            &png_interlace_method);
+        if (png_ihdr_status == SIXEL_OK) {
+            if (png_interlace_method != 0) {
+                return SIXEL_FALSE;
+            }
+            if (png_bit_depth > 8) {
+                *source_high_depth = 1;
+            }
+        } else if (png_ihdr_status != SIXEL_FALSE &&
+                   SIXEL_FAILED(png_ihdr_status)) {
+            return png_ihdr_status;
+        }
+    }
+
+    if (!gd_is_format_supported(sniffed_format)) {
+        return SIXEL_FALSE;
+    }
+
+    *format = sniffed_format;
+    return SIXEL_OK;
+}
+
 static int
 gd_alpha7_to_alpha8(int alpha7)
 {
@@ -620,40 +672,22 @@ sixel_loader_gd_new(sixel_allocator_t *allocator,
 int
 loader_can_try_gd(sixel_chunk_t const *chunk)
 {
+    SIXELSTATUS status;
     sixel_loader_gd_format_t sniffed_format;
-    SIXELSTATUS png_ihdr_status;
-    int png_bit_depth;
-    int png_interlace_method;
+    int source_high_depth;
 
+    status = SIXEL_FALSE;
     sniffed_format = SIXEL_LOADER_GD_FORMAT_NONE;
-    png_ihdr_status = SIXEL_FALSE;
-    png_bit_depth = 0;
-    png_interlace_method = 0;
+    source_high_depth = 0;
     if (chunk == NULL) {
         return 0;
     }
 
-    sniffed_format = gd_sniff_format(chunk);
-    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_NONE ||
-            sniffed_format == SIXEL_LOADER_GD_FORMAT_GIF) {
-        return 0;
-    }
-
-    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG) {
-        png_ihdr_status = gd_parse_png_ihdr(chunk,
-                                            &png_bit_depth,
-                                            &png_interlace_method);
-        if (png_ihdr_status == SIXEL_OK && png_interlace_method != 0) {
-            return 0;
-        }
-        if (png_ihdr_status != SIXEL_OK &&
-                png_ihdr_status != SIXEL_FALSE &&
-                SIXEL_FAILED(png_ihdr_status)) {
-            return 0;
-        }
-    }
-
-    return gd_is_format_supported(sniffed_format);
+    status = gd_prepare_decode_request(chunk,
+                                       &sniffed_format,
+                                       &source_high_depth);
+    (void)source_high_depth;
+    return status == SIXEL_OK ? 1 : 0;
 }
 
 SIXELSTATUS
@@ -682,15 +716,11 @@ load_with_gd(
     int y;
     int x;
     int c;
-    int png_interlace_method;
-    int format_supported;
     int *truecolor_row;
     unsigned char *palette_row;
     sixel_loader_gd_format_t sniffed_format;
     int width;
     int height;
-    SIXELSTATUS png_ihdr_status;
-    int png_bit_depth;
     int source_high_depth;
     int has_alpha_like;
     int has_partial_alpha;
@@ -734,13 +764,9 @@ load_with_gd(
     y = 0;
     x = 0;
     c = 0;
-    png_interlace_method = 0;
-    format_supported = 0;
     sniffed_format = SIXEL_LOADER_GD_FORMAT_NONE;
     width = 0;
     height = 0;
-    png_ihdr_status = SIXEL_FALSE;
-    png_bit_depth = 0;
     source_high_depth = 0;
     has_alpha_like = 0;
     has_partial_alpha = 0;
@@ -778,33 +804,10 @@ load_with_gd(
      *   - SIXEL_FALSE: let lower-priority loaders continue.
      *   - SIXEL_GD_ERROR: GD targeted this format but decode failed.
      */
-    sniffed_format = gd_sniff_format(pchunk);
-    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_NONE ||
-            sniffed_format == SIXEL_LOADER_GD_FORMAT_GIF) {
-        status = SIXEL_FALSE;
-        goto end;
-    }
-
-    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG) {
-        png_ihdr_status = gd_parse_png_ihdr(
-            pchunk,
-            &png_bit_depth,
-            &png_interlace_method);
-        if (png_ihdr_status == SIXEL_OK && png_interlace_method != 0) {
-            status = SIXEL_FALSE;
-            goto end;
-        }
-        if (png_ihdr_status != SIXEL_OK &&
-                png_ihdr_status != SIXEL_FALSE &&
-                SIXEL_FAILED(png_ihdr_status)) {
-            status = png_ihdr_status;
-            goto end;
-        }
-    }
-
-    format_supported = gd_is_format_supported(sniffed_format);
-    if (format_supported == 0) {
-        status = SIXEL_FALSE;
+    status = gd_prepare_decode_request(pchunk,
+                                       &sniffed_format,
+                                       &source_high_depth);
+    if (status != SIXEL_OK) {
         goto end;
     }
 
@@ -872,12 +875,6 @@ load_with_gd(
                 goto end;
             }
         }
-    }
-
-    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG &&
-            png_ihdr_status == SIXEL_OK &&
-            png_bit_depth > 8) {
-        source_high_depth = 1;
     }
 
     width = gdImageSX(im);
