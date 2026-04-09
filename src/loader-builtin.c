@@ -1414,6 +1414,59 @@ sixel_builtin_crc32_update(unsigned char const *data, size_t length,
     return ~crc;
 }
 
+/*
+ * Emit one compact APNG parser snapshot per chunk so CI crashes can be
+ * correlated with parser state right before frame reconstruction starts.
+ */
+static void
+sixel_builtin_apng_trace_chunk_state(
+    unsigned char const *chunk,
+    uint32_t length,
+    sixel_builtin_apng_state_t const *state,
+    sixel_builtin_apng_runtime_t const *runtime)
+{
+    char type[5];
+    char const *chunk_type;
+    size_t remain;
+    uint32_t expected_sequence;
+    int has_frame;
+    size_t chunk_size;
+    size_t shared_size;
+
+    chunk_type = "????";
+    remain = 0u;
+    expected_sequence = 0u;
+    has_frame = 0;
+    chunk_size = 0u;
+    shared_size = 0u;
+    if (chunk != NULL) {
+        memcpy(type, chunk + 4, 4);
+        type[4] = '\0';
+        chunk_type = type;
+    }
+    if (runtime != NULL) {
+        remain = runtime->remain;
+        has_frame = runtime->has_frame;
+    }
+    if (state != NULL) {
+        expected_sequence = state->expected_sequence;
+        chunk_size = state->chunk_size;
+        shared_size = state->shared_chunks_size;
+    }
+
+    sixel_trace_topic_message(
+        "apng",
+        "chunk=%s len=%u remain=%zu expected_seq=%u has_frame=%d "
+        "chunk_size=%zu shared_size=%zu",
+        chunk_type,
+        (unsigned int)length,
+        remain,
+        expected_sequence,
+        has_frame,
+        chunk_size,
+        shared_size);
+}
+
 static int
 sixel_builtin_apng_ensure_buffer_capacity(
     unsigned char **buffer,
@@ -1712,6 +1765,7 @@ sixel_builtin_apng_emit_frame(
     int width;
     int height;
     int depth;
+    char const *stbi_reason;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -1722,6 +1776,7 @@ sixel_builtin_apng_emit_frame(
     width = 0;
     height = 0;
     depth = 0;
+    stbi_reason = NULL;
 
     if (state->ihdr == NULL || state->ihdr_size != 13) {
         return SIXEL_BAD_INPUT;
@@ -1766,6 +1821,27 @@ sixel_builtin_apng_emit_frame(
         goto end;
     }
 
+    sixel_trace_topic_message(
+        "apng",
+        "emit begin frame=%d loop=%d control=%ux%u+%u+%u "
+        "dispose=%u blend=%u delay_cs=%u chunk=%zu shared=%zu "
+        "canvas=%dx%d alpha0=%d callback=%d",
+        frame_no,
+        loop_no,
+        (unsigned int)control->width,
+        (unsigned int)control->height,
+        (unsigned int)control->x_offset,
+        (unsigned int)control->y_offset,
+        control->dispose_op,
+        control->blend_op,
+        control->delay_cs,
+        state->chunk_size,
+        state->shared_chunks_size,
+        canvas->width,
+        canvas->height,
+        alpha_zero_is_transparent,
+        emit_callback);
+
     stbi__start_mem(&stb_context, png_data, (int)png_size);
     subframe = stbi__load_and_postprocess_8bit(&stb_context,
                                                &width,
@@ -1773,10 +1849,26 @@ sixel_builtin_apng_emit_frame(
                                                &depth,
                                                4);
     if (subframe == NULL) {
-        sixel_helper_set_additional_message(stbi_failure_reason());
+        stbi_reason = stbi_failure_reason();
+        sixel_trace_topic_message(
+            "apng",
+            "emit decode failed frame=%d loop=%d png_size=%zu reason=%s",
+            frame_no,
+            loop_no,
+            png_size,
+            stbi_reason != NULL ? stbi_reason : "(null)");
+        sixel_helper_set_additional_message(stbi_reason);
         status = SIXEL_STBI_ERROR;
         goto end;
     }
+    sixel_trace_topic_message(
+        "apng",
+        "emit decode done frame=%d loop=%d decoded=%dx%d depth=%d",
+        frame_no,
+        loop_no,
+        width,
+        height,
+        depth);
     if (width != (int)control->width || height != (int)control->height) {
         status = SIXEL_BAD_INPUT;
         goto end;
@@ -1828,6 +1920,12 @@ sixel_builtin_apng_emit_frame(
     }
 
     status = fn_load(frame, callback_context);
+    sixel_trace_topic_message(
+        "apng",
+        "emit callback frame=%d loop=%d status=%s",
+        frame_no,
+        loop_no,
+        sixel_helper_format_error(status));
 
 dispose:
 
@@ -2042,6 +2140,12 @@ sixel_builtin_apng_begin_loop_iteration(
         memset(canvas->pixels, 0, runtime->canvas_bytes);
         memset(canvas->backup, 0, runtime->canvas_bytes);
     }
+    sixel_trace_topic_message(
+        "apng",
+        "loop begin loop=%d remain=%zu trns_mode=%d",
+        runtime->loop_no,
+        runtime->remain,
+        runtime->trns_keycolor_mode);
 }
 
 static SIXELSTATUS
@@ -2141,6 +2245,12 @@ sixel_builtin_apng_flush_pending_frame(
     ++runtime->source_frame_no;
     ++runtime->frames_in_loop;
     state->chunk_size = 0u;
+    sixel_trace_topic_message(
+        "apng",
+        "flush done loop=%d source_frame=%d emitted_frames=%d",
+        runtime->loop_no,
+        runtime->source_frame_no,
+        runtime->frames_in_loop);
     if (fstatic && runtime->emit_callback != 0 && stop_after_emit != NULL) {
         *stop_after_emit = 1;
     }
@@ -2187,6 +2297,10 @@ sixel_builtin_apng_process_chunk(
     if ((size_t)runtime->length > runtime->remain - 12u) {
         return SIXEL_BAD_INPUT;
     }
+    sixel_builtin_apng_trace_chunk_state(runtime->p,
+                                         runtime->length,
+                                         state,
+                                         runtime);
 
     if (memcmp(runtime->p + 4, "IHDR", 4) == 0) {
         if (runtime->length != 13u) {
@@ -2439,6 +2553,12 @@ sixel_builtin_apng_complete_loop_iteration(
 
     ++runtime->loop_no;
     sixel_builtin_apng_release_loop_buffers(state, allocator);
+    sixel_trace_topic_message(
+        "apng",
+        "loop complete loop=%d frames_in_loop=%d num_plays=%d",
+        runtime->loop_no,
+        runtime->frames_in_loop,
+        runtime->num_plays);
     if (stop_loop != NULL &&
         sixel_builtin_apng_should_stop_loop(loop_control,
                                             runtime->frames_in_loop,
@@ -2480,6 +2600,16 @@ sixel_builtin_load_apng_frames(
     stop_loop = 0;
     trns_keycolor_mode = sixel_builtin_trns_keycolor_mode();
     sixel_builtin_apng_init_runtime(&runtime, trns_keycolor_mode);
+    sixel_trace_topic_message(
+        "apng",
+        "decode start size=%zu static=%d cms=%d loop_control=%d "
+        "start_frame=%d trns_mode=%d",
+        pchunk != NULL ? pchunk->size : 0u,
+        fstatic,
+        enable_cms,
+        loop_control,
+        start_frame_no,
+        trns_keycolor_mode);
 
     if (pchunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -2557,6 +2687,12 @@ sixel_builtin_load_apng_frames(
     }
 
 end:
+    sixel_trace_topic_message(
+        "apng",
+        "decode end status=%s loops=%d saw_animation=%d",
+        sixel_helper_format_error(status),
+        runtime.loop_no,
+        runtime.saw_animation);
     sixel_allocator_free(pchunk->allocator, canvas.pixels);
     sixel_allocator_free(pchunk->allocator, canvas.backup);
     sixel_builtin_apng_release_loop_buffers(&state, pchunk->allocator);
