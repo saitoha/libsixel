@@ -1514,6 +1514,8 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_effect_solid_overlay;
     int has_effect_gradient_overlay;
     int has_effect_stroke;
+    int has_effect_outer_glow;
+    int has_effect_inner_glow;
     int effect_stroke_position;
     int has_knockout;
     int has_fill_opacity;
@@ -1550,6 +1552,7 @@ typedef struct sixel_builtin_psd_layer_record {
     float vector_mask_curve_bottom_norm;
     float effect_solid_overlay_rgb[3];
     float effect_solid_overlay_opacity;
+    sixel_builtin_psd_layer_blend_mode_t effect_solid_overlay_mode;
     unsigned char effect_gradient_type;
     float effect_gradient_angle_deg;
     float effect_gradient_scale;
@@ -1559,9 +1562,19 @@ typedef struct sixel_builtin_psd_layer_record {
     float effect_gradient_stop_rgb[SIXEL_BUILTIN_PSD_FILL_STOP_MAX][3];
     float effect_gradient_stop_alpha[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
     float effect_gradient_overlay_opacity;
+    sixel_builtin_psd_layer_blend_mode_t effect_gradient_overlay_mode;
     float effect_stroke_rgb[3];
     float effect_stroke_opacity;
     float effect_stroke_size;
+    sixel_builtin_psd_layer_blend_mode_t effect_stroke_mode;
+    float effect_outer_glow_rgb[3];
+    float effect_outer_glow_opacity;
+    float effect_outer_glow_size;
+    sixel_builtin_psd_layer_blend_mode_t effect_outer_glow_mode;
+    float effect_inner_glow_rgb[3];
+    float effect_inner_glow_opacity;
+    float effect_inner_glow_size;
+    sixel_builtin_psd_layer_blend_mode_t effect_inner_glow_mode;
 } sixel_builtin_psd_layer_record_t;
 
 typedef struct sixel_builtin_psd_layer_model {
@@ -9657,6 +9670,111 @@ sixel_builtin_psd_normalize_descriptor_opacity(double value)
 }
 
 static int
+sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+    char const enum_value[5],
+    sixel_builtin_psd_layer_blend_mode_t *mode)
+{
+    char key[5];
+    size_t i;
+
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    if (enum_value == NULL || mode == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < 4u; ++i) {
+        unsigned char ch;
+
+        ch = (unsigned char)enum_value[i];
+        if (ch >= 'A' && ch <= 'Z') {
+            ch = (unsigned char)(ch - 'A' + 'a');
+        }
+        key[i] = (char)ch;
+    }
+    if (memcmp(key, "nrml", 4u) == 0 || memcmp(key, "norm", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    } else if (memcmp(key, "dslv", 4u) == 0 ||
+               memcmp(key, "diss", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_DISSOLVE;
+    } else if (memcmp(key, "drkn", 4u) == 0 ||
+               memcmp(key, "dark", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_DARKEN;
+    } else if (memcmp(key, "mltp", 4u) == 0 ||
+               memcmp(key, "mul ", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_MULTIPLY;
+    } else if (memcmp(key, "cbrn", 4u) == 0 ||
+               memcmp(key, "idiv", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_COLOR_BURN;
+    } else if (memcmp(key, "lbrn", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_LINEAR_BURN;
+    } else if (memcmp(key, "dkcl", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_DARKER_COLOR;
+    } else if (memcmp(key, "lghn", 4u) == 0 ||
+               memcmp(key, "lite", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_LIGHTEN;
+    } else if (memcmp(key, "scrn", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_SCREEN;
+    } else if (memcmp(key, "cddg", 4u) == 0 ||
+               memcmp(key, "div ", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_COLOR_DODGE;
+    } else if (memcmp(key, "lddg", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_LINEAR_DODGE;
+    } else if (memcmp(key, "lgcl", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_LIGHTER_COLOR;
+    } else if (memcmp(key, "ovrl", 4u) == 0 ||
+               memcmp(key, "over", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_OVERLAY;
+    } else if (memcmp(key, "sftl", 4u) == 0 ||
+               memcmp(key, "slit", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_SOFT_LIGHT;
+    } else if (memcmp(key, "hrdl", 4u) == 0 ||
+               memcmp(key, "hlit", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_HARD_LIGHT;
+    } else if (memcmp(key, "vvlt", 4u) == 0 ||
+               memcmp(key, "vlit", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_VIVID_LIGHT;
+    } else if (memcmp(key, "lnlt", 4u) == 0 ||
+               memcmp(key, "llit", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_LINEAR_LIGHT;
+    } else if (memcmp(key, "pnlt", 4u) == 0 ||
+               memcmp(key, "plit", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_PIN_LIGHT;
+    } else if (memcmp(key, "hrdm", 4u) == 0 ||
+               memcmp(key, "hmix", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_HARD_MIX;
+    } else if (memcmp(key, "dfrn", 4u) == 0 ||
+               memcmp(key, "diff", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_DIFFERENCE;
+    } else if (memcmp(key, "xclu", 4u) == 0 ||
+               memcmp(key, "smud", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_EXCLUSION;
+    } else if (memcmp(key, "fsub", 4u) == 0 ||
+               memcmp(key, "subt", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_SUBTRACT;
+    } else if (memcmp(key, "fdiv", 4u) == 0 ||
+               memcmp(key, "divi", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_DIVIDE;
+    } else if (memcmp(key, "hue ", 4u) == 0 ||
+               memcmp(key, "hue\0", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_HUE;
+    } else if (memcmp(key, "sat ", 4u) == 0 ||
+               memcmp(key, "satr", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_SATURATION;
+    } else if (memcmp(key, "colr", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_COLOR;
+    } else if (memcmp(key, "lumn", 4u) == 0 ||
+               memcmp(key, "lum ", 4u) == 0) {
+        *mode = SIXEL_BUILTIN_PSD_BLEND_LUMINOSITY;
+    } else {
+        return 0;
+    }
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_effect_solid_overlay_object(
     unsigned char const *data,
     size_t key_length,
@@ -9668,10 +9786,12 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
     size_t i;
     int enabled;
     int has_color;
+    sixel_builtin_psd_layer_blend_mode_t blend_mode;
     float overlay_rgb[3];
     float opacity;
     char key[5];
     char type[5];
+    char enum_value[5];
     char class_key[5];
 
     cursor = 0u;
@@ -9679,6 +9799,7 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
     i = 0u;
     enabled = 1;
     has_color = 0;
+    blend_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     overlay_rgb[0] = 0.0f;
     overlay_rgb[1] = 0.0f;
     overlay_rgb[2] = 0.0f;
@@ -9693,6 +9814,11 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
     type[2] = '\0';
     type[3] = '\0';
     type[4] = '\0';
+    enum_value[0] = '\0';
+    enum_value[1] = '\0';
+    enum_value[2] = '\0';
+    enum_value[3] = '\0';
+    enum_value[4] = '\0';
     class_key[0] = '\0';
     class_key[1] = '\0';
     class_key[2] = '\0';
@@ -9751,6 +9877,17 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
             opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
             continue;
         }
+        if (memcmp(key, "Md  ", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+                enum_value,
+                &blend_mode);
+            continue;
+        }
         if (memcmp(key, "Clr ", 4u) == 0 &&
             memcmp(type, "Objc", 4u) == 0) {
             if (!sixel_builtin_psd_descriptor_parse_color_object(data,
@@ -9777,6 +9914,7 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
         layer->effect_solid_overlay_rgb[1] = overlay_rgb[1];
         layer->effect_solid_overlay_rgb[2] = overlay_rgb[2];
         layer->effect_solid_overlay_opacity = opacity;
+        layer->effect_solid_overlay_mode = blend_mode;
     }
     return 1;
 }
@@ -9796,11 +9934,13 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     int has_gradient;
     int reverse_flag;
     unsigned char gradient_type;
+    sixel_builtin_psd_layer_blend_mode_t blend_mode;
     float opacity;
     float gradient_angle_deg;
     float gradient_scale;
     char key[5];
     char type[5];
+    char enum_value[5];
     char class_key[5];
     sixel_builtin_psd_layer_record_t gradient_tmp;
 
@@ -9812,11 +9952,13 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     has_gradient = 0;
     reverse_flag = 0;
     gradient_type = 0u;
+    blend_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     opacity = 1.0f;
     gradient_angle_deg = 0.0f;
     gradient_scale = 100.0f;
     memset(key, 0, sizeof(key));
     memset(type, 0, sizeof(type));
+    memset(enum_value, 0, sizeof(enum_value));
     memset(class_key, 0, sizeof(class_key));
     memset(&gradient_tmp, 0, sizeof(gradient_tmp));
 
@@ -9870,6 +10012,17 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
                                                             type,
                                                             &numeric)) {
             opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
+            continue;
+        }
+        if (memcmp(key, "Md  ", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+                enum_value,
+                &blend_mode);
             continue;
         }
         if (memcmp(key, "Angl", 4u) == 0 &&
@@ -9944,6 +10097,7 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     layer->effect_gradient_scale = gradient_scale > 0.0f ?
         gradient_scale : 100.0f;
     layer->effect_gradient_overlay_opacity = opacity;
+    layer->effect_gradient_overlay_mode = blend_mode;
     layer->effect_gradient_stop_count = stop_count;
     for (i = 0u; i < stop_count; ++i) {
         layer->effect_gradient_stop_pos[i] =
@@ -9973,6 +10127,7 @@ sixel_builtin_psd_parse_effect_stroke_object(
     int enabled;
     int has_color;
     int stroke_position;
+    sixel_builtin_psd_layer_blend_mode_t blend_mode;
     float stroke_rgb[3];
     float opacity;
     float size_px;
@@ -9987,6 +10142,7 @@ sixel_builtin_psd_parse_effect_stroke_object(
     enabled = 1;
     has_color = 0;
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
+    blend_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     stroke_rgb[0] = 0.0f;
     stroke_rgb[1] = 0.0f;
     stroke_rgb[2] = 0.0f;
@@ -10065,6 +10221,17 @@ sixel_builtin_psd_parse_effect_stroke_object(
             opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
             continue;
         }
+        if (memcmp(key, "Md  ", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+                enum_value,
+                &blend_mode);
+            continue;
+        }
         if (memcmp(key, "Sz  ", 4u) == 0 &&
             sixel_builtin_psd_descriptor_read_numeric_value(data,
                                                             key_length,
@@ -10123,6 +10290,167 @@ sixel_builtin_psd_parse_effect_stroke_object(
         layer->effect_stroke_rgb[2] = stroke_rgb[2];
         layer->effect_stroke_opacity = opacity;
         layer->effect_stroke_size = size_px;
+        layer->effect_stroke_mode = blend_mode;
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_effect_glow_object(
+    unsigned char const *data,
+    size_t key_length,
+    size_t *pcursor,
+    sixel_builtin_psd_layer_record_t *layer,
+    int is_inner)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    int enabled;
+    int has_color;
+    sixel_builtin_psd_layer_blend_mode_t blend_mode;
+    float glow_rgb[3];
+    float opacity;
+    float size_px;
+    char key[5];
+    char type[5];
+    char enum_value[5];
+    char class_key[5];
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    enabled = 1;
+    has_color = 0;
+    blend_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    glow_rgb[0] = 0.0f;
+    glow_rgb[1] = 0.0f;
+    glow_rgb[2] = 0.0f;
+    opacity = 1.0f;
+    size_px = 0.0f;
+    memset(key, 0, sizeof(key));
+    memset(type, 0, sizeof(type));
+    memset(enum_value, 0, sizeof(enum_value));
+    memset(class_key, 0, sizeof(class_key));
+
+    if (data == NULL || pcursor == NULL || layer == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          key_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                key_length,
+                                                &cursor,
+                                                class_key)) {
+        return 0;
+    }
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        double numeric;
+        int bool_value;
+
+        numeric = 0.0;
+        bool_value = 0;
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "enab", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            enabled = bool_value != 0 ? 1 : 0;
+            continue;
+        }
+        if (memcmp(key, "Opct", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
+            continue;
+        }
+        if (memcmp(key, "Md  ", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+                enum_value,
+                &blend_mode);
+            continue;
+        }
+        if ((memcmp(key, "blur", 4u) == 0 ||
+             memcmp(key, "Sz  ", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= 0.0) {
+                size_px = 0.0f;
+            } else if (numeric >= 128.0) {
+                size_px = 128.0f;
+            } else {
+                size_px = (float)numeric;
+            }
+            continue;
+        }
+        if (memcmp(key, "Clr ", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                                 key_length,
+                                                                 &cursor,
+                                                                 glow_rgb)) {
+                return 0;
+            }
+            has_color = 1;
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    *pcursor = cursor;
+    if (enabled == 0 || has_color == 0 || opacity <= 0.0f || size_px <= 0.0f) {
+        return 1;
+    }
+    if (is_inner != 0) {
+        layer->has_effect_inner_glow = 1;
+        layer->effect_inner_glow_rgb[0] = glow_rgb[0];
+        layer->effect_inner_glow_rgb[1] = glow_rgb[1];
+        layer->effect_inner_glow_rgb[2] = glow_rgb[2];
+        layer->effect_inner_glow_opacity = opacity;
+        layer->effect_inner_glow_size = size_px;
+        layer->effect_inner_glow_mode = blend_mode;
+    } else {
+        layer->has_effect_outer_glow = 1;
+        layer->effect_outer_glow_rgb[0] = glow_rgb[0];
+        layer->effect_outer_glow_rgb[1] = glow_rgb[1];
+        layer->effect_outer_glow_rgb[2] = glow_rgb[2];
+        layer->effect_outer_glow_opacity = opacity;
+        layer->effect_outer_glow_size = size_px;
+        layer->effect_outer_glow_mode = blend_mode;
     }
     return 1;
 }
@@ -10170,6 +10498,28 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
                     key_length,
                     &obj_cursor,
                     layer)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (memcmp(data + cursor, "OrGlObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_glow_object(data,
+                                                           key_length,
+                                                           &obj_cursor,
+                                                           layer,
+                                                           0)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (memcmp(data + cursor, "ChFXObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_glow_object(data,
+                                                           key_length,
+                                                           &obj_cursor,
+                                                           layer,
+                                                           1)) {
                 parsed = 1;
             }
             continue;
@@ -10640,6 +10990,8 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->has_effect_solid_overlay = 0;
     layer->has_effect_gradient_overlay = 0;
     layer->has_effect_stroke = 0;
+    layer->has_effect_outer_glow = 0;
+    layer->has_effect_inner_glow = 0;
     layer->effect_stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     layer->has_fill_opacity = 0;
     layer->fill_opacity = 255u;
@@ -10651,17 +11003,32 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_solid_overlay_rgb[1] = 0.0f;
     layer->effect_solid_overlay_rgb[2] = 0.0f;
     layer->effect_solid_overlay_opacity = 1.0f;
+    layer->effect_solid_overlay_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     layer->effect_gradient_type = 0u;
     layer->effect_gradient_angle_deg = 0.0f;
     layer->effect_gradient_scale = 100.0f;
     layer->effect_gradient_reverse = 0;
     layer->effect_gradient_stop_count = 0u;
     layer->effect_gradient_overlay_opacity = 1.0f;
+    layer->effect_gradient_overlay_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     layer->effect_stroke_rgb[0] = 0.0f;
     layer->effect_stroke_rgb[1] = 0.0f;
     layer->effect_stroke_rgb[2] = 0.0f;
     layer->effect_stroke_opacity = 1.0f;
     layer->effect_stroke_size = 1.0f;
+    layer->effect_stroke_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_outer_glow_rgb[0] = 0.0f;
+    layer->effect_outer_glow_rgb[1] = 0.0f;
+    layer->effect_outer_glow_rgb[2] = 0.0f;
+    layer->effect_outer_glow_opacity = 1.0f;
+    layer->effect_outer_glow_size = 0.0f;
+    layer->effect_outer_glow_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_inner_glow_rgb[0] = 0.0f;
+    layer->effect_inner_glow_rgb[1] = 0.0f;
+    layer->effect_inner_glow_rgb[2] = 0.0f;
+    layer->effect_inner_glow_opacity = 1.0f;
+    layer->effect_inner_glow_size = 0.0f;
+    layer->effect_inner_glow_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     layer->fill_solid_rgb[0] = 0.0f;
     layer->fill_solid_rgb[1] = 0.0f;
     layer->fill_solid_rgb[2] = 0.0f;
@@ -11576,10 +11943,11 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                 layer->has_fill_payload != 0 &&
                 layer->has_vector_mask_curve_bbox != 0 &&
                 layer->has_layer_effects != 0 &&
-                layer->has_knockout != 0) {
+                layer->has_knockout != 0 &&
+                layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_SOCO) {
                 /*
-                 * Rounded vector-mask fills with effects/knockout collapse in
-                 * merged composites from some generators. Keep fallback here.
+                 * Rounded vector-mask SoCo fills with knockout are frequently
+                 * stale in merged composites from external generators.
                  */
                 force_layer_fallback = 1;
             }
@@ -12317,8 +12685,8 @@ sixel_builtin_psd_fill_sample_gradient(
 static float
 sixel_builtin_psd_fill_gradient_t(
     sixel_builtin_psd_layer_record_t const *layer,
-    unsigned int x,
-    unsigned int y)
+    size_t x,
+    size_t y)
 {
     static float const pi = 3.14159265358979323846f;
     float nx;
@@ -13497,6 +13865,151 @@ sixel_builtin_psd_soften_layer_alpha_edges(
 }
 
 static void
+sixel_builtin_psd_apply_glow_effect(
+    sixel_builtin_psd_layer_buffers_t *src,
+    unsigned int width,
+    unsigned int height,
+    float const glow_rgb[3],
+    float glow_opacity,
+    float glow_size,
+    sixel_builtin_psd_layer_blend_mode_t glow_mode,
+    int is_inner)
+{
+    size_t i;
+    int radius;
+    float *original_alpha;
+
+    i = 0u;
+    radius = 0;
+    original_alpha = NULL;
+    if (src == NULL || src->rgb_linear == NULL || src->alpha == NULL ||
+        glow_rgb == NULL || width == 0u || height == 0u ||
+        src->pixel_count != (size_t)width * (size_t)height) {
+        return;
+    }
+    glow_opacity = sixel_builtin_psd_clamp01(glow_opacity);
+    if (glow_opacity <= 0.0f || glow_size <= 0.0f) {
+        return;
+    }
+    radius = (int)ceilf(glow_size);
+    if (radius < 1) {
+        radius = 1;
+    } else if (radius > 48) {
+        radius = 48;
+    }
+    original_alpha = (float *)malloc(src->pixel_count * sizeof(float));
+    if (original_alpha == NULL) {
+        return;
+    }
+    memcpy(original_alpha, src->alpha, src->pixel_count * sizeof(float));
+    for (i = 0u; i < src->pixel_count; ++i) {
+        size_t x;
+        size_t y;
+        int dx;
+        int dy;
+        float source_alpha;
+        float max_alpha;
+        float min_alpha;
+        float coverage;
+        float glow_alpha;
+        float blended_rgb[3];
+
+        x = i % (size_t)width;
+        y = i / (size_t)width;
+        source_alpha = sixel_builtin_psd_clamp_alpha_float32(original_alpha[i]);
+        if (is_inner != 0 && source_alpha <= 0.0f) {
+            continue;
+        }
+        max_alpha = 0.0f;
+        min_alpha = 1.0f;
+        for (dy = -radius; dy <= radius; ++dy) {
+            int ny;
+
+            ny = (int)y + dy;
+            if (ny < 0 || ny >= (int)height) {
+                continue;
+            }
+            for (dx = -radius; dx <= radius; ++dx) {
+                int nx;
+                float neighbor_alpha;
+
+                if ((dx * dx + dy * dy) > radius * radius) {
+                    continue;
+                }
+                nx = (int)x + dx;
+                if (nx < 0 || nx >= (int)width) {
+                    continue;
+                }
+                neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                    original_alpha[(size_t)ny * (size_t)width + (size_t)nx]);
+                if (neighbor_alpha > max_alpha) {
+                    max_alpha = neighbor_alpha;
+                }
+                if (neighbor_alpha < min_alpha) {
+                    min_alpha = neighbor_alpha;
+                }
+            }
+        }
+        if (is_inner != 0) {
+            coverage = source_alpha - min_alpha;
+        } else {
+            coverage = max_alpha - source_alpha;
+        }
+        if (coverage <= 0.0f) {
+            continue;
+        }
+        glow_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            coverage * glow_opacity);
+        if (glow_alpha <= 0.0f) {
+            continue;
+        }
+        if (glow_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
+            src->rgb_linear[i * 3u + 0u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 0u] * (1.0f - glow_alpha) +
+                    glow_rgb[0] * glow_alpha);
+            src->rgb_linear[i * 3u + 1u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 1u] * (1.0f - glow_alpha) +
+                    glow_rgb[1] * glow_alpha);
+            src->rgb_linear[i * 3u + 2u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 2u] * (1.0f - glow_alpha) +
+                    glow_rgb[2] * glow_alpha);
+        } else {
+            sixel_builtin_psd_blend_rgb(
+                src->rgb_linear[i * 3u + 0u],
+                src->rgb_linear[i * 3u + 1u],
+                src->rgb_linear[i * 3u + 2u],
+                glow_rgb[0],
+                glow_rgb[1],
+                glow_rgb[2],
+                glow_mode,
+                &blended_rgb[0],
+                &blended_rgb[1],
+                &blended_rgb[2]);
+            src->rgb_linear[i * 3u + 0u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 0u] * (1.0f - glow_alpha) +
+                    blended_rgb[0] * glow_alpha);
+            src->rgb_linear[i * 3u + 1u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 1u] * (1.0f - glow_alpha) +
+                    blended_rgb[1] * glow_alpha);
+            src->rgb_linear[i * 3u + 2u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 2u] * (1.0f - glow_alpha) +
+                    blended_rgb[2] * glow_alpha);
+        }
+        if (is_inner == 0) {
+            src->alpha[i] = sixel_builtin_psd_clamp_alpha_float32(
+                source_alpha + glow_alpha * (1.0f - source_alpha));
+        }
+    }
+    free(original_alpha);
+}
+
+static void
 sixel_builtin_psd_apply_layer_effects_subset(
     sixel_builtin_psd_layer_record_t const *layer,
     sixel_builtin_psd_layer_buffers_t *src)
@@ -13510,12 +14023,15 @@ sixel_builtin_psd_apply_layer_effects_subset(
     float gradient_opacity;
     float gradient_alpha;
     float gradient_rgb[3];
+    float blended_rgb[3];
     float *original_alpha;
     size_t width;
     size_t height;
     int stroke_radius;
     int suppress_stroke;
+    int has_overlay_base;
     float stroke_opacity;
+    sixel_builtin_psd_layer_blend_mode_t effect_mode;
     sixel_builtin_psd_layer_record_t gradient_layer;
 
     i = 0u;
@@ -13529,48 +14045,83 @@ sixel_builtin_psd_apply_layer_effects_subset(
     gradient_rgb[0] = 0.0f;
     gradient_rgb[1] = 0.0f;
     gradient_rgb[2] = 0.0f;
+    blended_rgb[0] = 0.0f;
+    blended_rgb[1] = 0.0f;
+    blended_rgb[2] = 0.0f;
     original_alpha = NULL;
     width = 0u;
     height = 0u;
     stroke_radius = 0;
     suppress_stroke = 0;
+    has_overlay_base = 0;
     stroke_opacity = 0.0f;
+    effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     memset(&gradient_layer, 0, sizeof(gradient_layer));
-    if (layer == NULL || src == NULL || src->rgb_linear == NULL || src->alpha == NULL) {
+    if (layer == NULL || src == NULL || src->rgb_linear == NULL ||
+        src->alpha == NULL) {
         return;
     }
-    if (layer->has_effect_solid_overlay == 0) {
-        goto apply_stroke;
-    }
-    overlay_opacity = sixel_builtin_psd_clamp01(layer->effect_solid_overlay_opacity);
-    if (overlay_opacity <= 0.0f) {
-        goto apply_stroke;
-    }
-    for (i = 0u; i < src->pixel_count; ++i) {
-        float alpha;
-
-        alpha = sixel_builtin_psd_clamp_alpha_float32(src->alpha[i]);
-        if (alpha <= 0.0f) {
-            continue;
+    if (layer->has_effect_solid_overlay != 0) {
+        overlay_opacity = sixel_builtin_psd_clamp01(
+            layer->effect_solid_overlay_opacity);
+        effect_mode = layer->effect_solid_overlay_mode;
+        if (overlay_opacity > 0.0f) {
+            has_overlay_base = 1;
+            for (i = 0u; i < src->pixel_count; ++i) {
+                alpha = sixel_builtin_psd_clamp_alpha_float32(src->alpha[i]);
+                if (alpha <= 0.0f) {
+                    continue;
+                }
+                if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
+                    src->rgb_linear[i * 3u + 0u] =
+                        sixel_builtin_psd_blend_channel_gamma(
+                            src->rgb_linear[i * 3u + 0u],
+                            layer->effect_solid_overlay_rgb[0],
+                            overlay_opacity);
+                    src->rgb_linear[i * 3u + 1u] =
+                        sixel_builtin_psd_blend_channel_gamma(
+                            src->rgb_linear[i * 3u + 1u],
+                            layer->effect_solid_overlay_rgb[1],
+                            overlay_opacity);
+                    src->rgb_linear[i * 3u + 2u] =
+                        sixel_builtin_psd_blend_channel_gamma(
+                            src->rgb_linear[i * 3u + 2u],
+                            layer->effect_solid_overlay_rgb[2],
+                            overlay_opacity);
+                } else {
+                    sixel_builtin_psd_blend_rgb(
+                        src->rgb_linear[i * 3u + 0u],
+                        src->rgb_linear[i * 3u + 1u],
+                        src->rgb_linear[i * 3u + 2u],
+                        layer->effect_solid_overlay_rgb[0],
+                        layer->effect_solid_overlay_rgb[1],
+                        layer->effect_solid_overlay_rgb[2],
+                        effect_mode,
+                        &blended_rgb[0],
+                        &blended_rgb[1],
+                        &blended_rgb[2]);
+                    src->rgb_linear[i * 3u + 0u] =
+                        sixel_builtin_psd_clamp01(
+                            src->rgb_linear[i * 3u + 0u] *
+                            (1.0f - overlay_opacity) +
+                            blended_rgb[0] * overlay_opacity);
+                    src->rgb_linear[i * 3u + 1u] =
+                        sixel_builtin_psd_clamp01(
+                            src->rgb_linear[i * 3u + 1u] *
+                            (1.0f - overlay_opacity) +
+                            blended_rgb[1] * overlay_opacity);
+                    src->rgb_linear[i * 3u + 2u] =
+                        sixel_builtin_psd_clamp01(
+                            src->rgb_linear[i * 3u + 2u] *
+                            (1.0f - overlay_opacity) +
+                            blended_rgb[2] * overlay_opacity);
+                }
+            }
         }
-        src->rgb_linear[i * 3u + 0u] =
-            sixel_builtin_psd_blend_channel_gamma(
-                src->rgb_linear[i * 3u + 0u],
-                layer->effect_solid_overlay_rgb[0],
-                overlay_opacity);
-        src->rgb_linear[i * 3u + 1u] =
-            sixel_builtin_psd_blend_channel_gamma(
-                src->rgb_linear[i * 3u + 1u],
-                layer->effect_solid_overlay_rgb[1],
-                overlay_opacity);
-        src->rgb_linear[i * 3u + 2u] =
-            sixel_builtin_psd_blend_channel_gamma(
-                src->rgb_linear[i * 3u + 2u],
-                layer->effect_solid_overlay_rgb[2],
-                overlay_opacity);
     }
 
-    if (layer->has_effect_gradient_overlay != 0 &&
+    if (has_overlay_base != 0 &&
+        layer->has_effect_gradient_overlay != 0 &&
         layer->effect_gradient_stop_count > 0u &&
         layer->width > 0u &&
         layer->height > 0u &&
@@ -13599,6 +14150,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
         }
         gradient_opacity = sixel_builtin_psd_clamp01(
             layer->effect_gradient_overlay_opacity);
+        effect_mode = layer->effect_gradient_overlay_mode;
         if (gradient_opacity > 0.0f) {
             for (i = 0u; i < src->pixel_count; ++i) {
                 alpha = sixel_builtin_psd_clamp_alpha_float32(src->alpha[i]);
@@ -13619,26 +14171,83 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 if (gradient_alpha <= 0.0f) {
                     continue;
                 }
-                src->rgb_linear[i * 3u + 0u] =
-                    sixel_builtin_psd_blend_channel_gamma(
+                if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
+                    src->rgb_linear[i * 3u + 0u] =
+                        sixel_builtin_psd_blend_channel_gamma(
+                            src->rgb_linear[i * 3u + 0u],
+                            gradient_rgb[0],
+                            gradient_alpha);
+                    src->rgb_linear[i * 3u + 1u] =
+                        sixel_builtin_psd_blend_channel_gamma(
+                            src->rgb_linear[i * 3u + 1u],
+                            gradient_rgb[1],
+                            gradient_alpha);
+                    src->rgb_linear[i * 3u + 2u] =
+                        sixel_builtin_psd_blend_channel_gamma(
+                            src->rgb_linear[i * 3u + 2u],
+                            gradient_rgb[2],
+                            gradient_alpha);
+                } else {
+                    sixel_builtin_psd_blend_rgb(
                         src->rgb_linear[i * 3u + 0u],
-                        gradient_rgb[0],
-                        gradient_alpha);
-                src->rgb_linear[i * 3u + 1u] =
-                    sixel_builtin_psd_blend_channel_gamma(
                         src->rgb_linear[i * 3u + 1u],
-                        gradient_rgb[1],
-                        gradient_alpha);
-                src->rgb_linear[i * 3u + 2u] =
-                    sixel_builtin_psd_blend_channel_gamma(
                         src->rgb_linear[i * 3u + 2u],
+                        gradient_rgb[0],
+                        gradient_rgb[1],
                         gradient_rgb[2],
-                        gradient_alpha);
+                        effect_mode,
+                        &blended_rgb[0],
+                        &blended_rgb[1],
+                        &blended_rgb[2]);
+                    src->rgb_linear[i * 3u + 0u] =
+                        sixel_builtin_psd_clamp01(
+                            src->rgb_linear[i * 3u + 0u] *
+                            (1.0f - gradient_alpha) +
+                            blended_rgb[0] * gradient_alpha);
+                    src->rgb_linear[i * 3u + 1u] =
+                        sixel_builtin_psd_clamp01(
+                            src->rgb_linear[i * 3u + 1u] *
+                            (1.0f - gradient_alpha) +
+                            blended_rgb[1] * gradient_alpha);
+                    src->rgb_linear[i * 3u + 2u] =
+                        sixel_builtin_psd_clamp01(
+                            src->rgb_linear[i * 3u + 2u] *
+                            (1.0f - gradient_alpha) +
+                            blended_rgb[2] * gradient_alpha);
+                }
             }
         }
     }
 
-apply_stroke:
+    if (has_overlay_base != 0 &&
+        layer->has_effect_outer_glow != 0 &&
+        layer->has_vector_mask == 0 &&
+        layer->has_knockout == 0) {
+        sixel_builtin_psd_apply_glow_effect(
+            src,
+            layer->width,
+            layer->height,
+            layer->effect_outer_glow_rgb,
+            layer->effect_outer_glow_opacity,
+            layer->effect_outer_glow_size,
+            layer->effect_outer_glow_mode,
+            0);
+    }
+    if (has_overlay_base != 0 &&
+        layer->has_effect_inner_glow != 0 &&
+        layer->has_vector_mask == 0 &&
+        layer->has_knockout == 0) {
+        sixel_builtin_psd_apply_glow_effect(
+            src,
+            layer->width,
+            layer->height,
+            layer->effect_inner_glow_rgb,
+            layer->effect_inner_glow_opacity,
+            layer->effect_inner_glow_size,
+            layer->effect_inner_glow_mode,
+            1);
+    }
+
     if (layer->has_effect_stroke == 0) {
         return;
     }
@@ -13663,6 +14272,7 @@ apply_stroke:
     width = (size_t)layer->width;
     height = (size_t)layer->height;
     stroke_opacity = sixel_builtin_psd_clamp01(layer->effect_stroke_opacity);
+    effect_mode = layer->effect_stroke_mode;
     if (stroke_opacity <= 0.0f || layer->effect_stroke_size <= 0.0f) {
         return;
     }
@@ -13672,30 +14282,28 @@ apply_stroke:
     } else if (stroke_radius > 32) {
         stroke_radius = 32;
     }
-    if (layer->effect_stroke_position != SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
-        sixel_trace_topic_message(
-            "psd_decode",
-            "builtin PSD: unsupported stroke style in layer effects; approximating as outside");
-    }
     original_alpha = (float *)malloc(src->pixel_count * sizeof(float));
     if (original_alpha == NULL) {
         return;
     }
     memcpy(original_alpha, src->alpha, src->pixel_count * sizeof(float));
     for (i = 0u; i < src->pixel_count; ++i) {
-        size_t x;
-        size_t y;
         int dx;
         int dy;
         float source_alpha;
         float max_alpha;
+        float min_alpha;
         float stroke_coverage;
+        float stroke_outside_coverage;
+        float stroke_inside_coverage;
         float stroke_alpha;
 
         x = i % width;
         y = i / width;
-        source_alpha = sixel_builtin_psd_clamp_alpha_float32(original_alpha[i]);
+        source_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            original_alpha[i]);
         max_alpha = 0.0f;
+        min_alpha = 1.0f;
         for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
             int ny;
 
@@ -13719,9 +14327,23 @@ apply_stroke:
                 if (neighbor_alpha > max_alpha) {
                     max_alpha = neighbor_alpha;
                 }
+                if (neighbor_alpha < min_alpha) {
+                    min_alpha = neighbor_alpha;
+                }
             }
         }
-        stroke_coverage = max_alpha - source_alpha;
+        stroke_outside_coverage = max_alpha - source_alpha;
+        stroke_inside_coverage = source_alpha - min_alpha;
+        if (layer->effect_stroke_position ==
+            SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+            stroke_coverage = stroke_inside_coverage;
+        } else if (layer->effect_stroke_position ==
+                   SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
+            stroke_coverage =
+                0.5f * (stroke_outside_coverage + stroke_inside_coverage);
+        } else {
+            stroke_coverage = stroke_outside_coverage;
+        }
         if (stroke_coverage <= 0.0f) {
             continue;
         }
@@ -13730,18 +14352,44 @@ apply_stroke:
         if (stroke_alpha <= 0.0f) {
             continue;
         }
-        src->rgb_linear[i * 3u + 0u] =
-            sixel_builtin_psd_clamp01(
-                src->rgb_linear[i * 3u + 0u] * (1.0f - stroke_alpha) +
-                layer->effect_stroke_rgb[0] * stroke_alpha);
-        src->rgb_linear[i * 3u + 1u] =
-            sixel_builtin_psd_clamp01(
-                src->rgb_linear[i * 3u + 1u] * (1.0f - stroke_alpha) +
-                layer->effect_stroke_rgb[1] * stroke_alpha);
-        src->rgb_linear[i * 3u + 2u] =
-            sixel_builtin_psd_clamp01(
-                src->rgb_linear[i * 3u + 2u] * (1.0f - stroke_alpha) +
-                layer->effect_stroke_rgb[2] * stroke_alpha);
+        if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
+            src->rgb_linear[i * 3u + 0u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 0u] * (1.0f - stroke_alpha) +
+                    layer->effect_stroke_rgb[0] * stroke_alpha);
+            src->rgb_linear[i * 3u + 1u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 1u] * (1.0f - stroke_alpha) +
+                    layer->effect_stroke_rgb[1] * stroke_alpha);
+            src->rgb_linear[i * 3u + 2u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 2u] * (1.0f - stroke_alpha) +
+                    layer->effect_stroke_rgb[2] * stroke_alpha);
+        } else {
+            sixel_builtin_psd_blend_rgb(
+                src->rgb_linear[i * 3u + 0u],
+                src->rgb_linear[i * 3u + 1u],
+                src->rgb_linear[i * 3u + 2u],
+                layer->effect_stroke_rgb[0],
+                layer->effect_stroke_rgb[1],
+                layer->effect_stroke_rgb[2],
+                effect_mode,
+                &blended_rgb[0],
+                &blended_rgb[1],
+                &blended_rgb[2]);
+            src->rgb_linear[i * 3u + 0u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 0u] * (1.0f - stroke_alpha) +
+                    blended_rgb[0] * stroke_alpha);
+            src->rgb_linear[i * 3u + 1u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 1u] * (1.0f - stroke_alpha) +
+                    blended_rgb[1] * stroke_alpha);
+            src->rgb_linear[i * 3u + 2u] =
+                sixel_builtin_psd_clamp01(
+                    src->rgb_linear[i * 3u + 2u] * (1.0f - stroke_alpha) +
+                    blended_rgb[2] * stroke_alpha);
+        }
         src->alpha[i] = sixel_builtin_psd_clamp_alpha_float32(
             source_alpha + stroke_alpha * (1.0f - source_alpha));
     }
@@ -14495,7 +15143,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         if (layer->has_layer_effects != 0) {
             if (layer->has_effect_solid_overlay != 0 ||
                 layer->has_effect_gradient_overlay != 0 ||
-                layer->has_effect_stroke != 0) {
+                layer->has_effect_stroke != 0 ||
+                layer->has_effect_outer_glow != 0 ||
+                layer->has_effect_inner_glow != 0) {
                 sixel_trace_topic_message(
                     "psd_decode",
                     "builtin PSD: applying layer effects subset in layer fallback");
@@ -14616,7 +15266,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         if (defer_clip_group_overlay == 0 &&
             (effective_composite_layer->has_effect_solid_overlay != 0 ||
              effective_composite_layer->has_effect_gradient_overlay != 0 ||
-             effective_composite_layer->has_effect_stroke != 0)) {
+             effective_composite_layer->has_effect_stroke != 0 ||
+             effective_composite_layer->has_effect_outer_glow != 0 ||
+             effective_composite_layer->has_effect_inner_glow != 0)) {
             sixel_builtin_psd_apply_layer_effects_subset(
                 effective_composite_layer,
                 &src_layer);
