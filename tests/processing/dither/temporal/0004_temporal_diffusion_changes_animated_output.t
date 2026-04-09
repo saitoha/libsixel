@@ -8,14 +8,21 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+test "${HAVE_WEBP-}" = 1 || {
+    printf "1..0 # SKIP libwebp loader is unavailable\n"
+    exit 0
+}
+
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
+    -L libwebp \
     -ldisable \
+    -S -T 1 \
     -d fs -Y direct -p 16 \
     "${input_webp}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated webp loader is unavailable\n"
+    printf "1..0 # SKIP animated libwebp frame path is unavailable\n"
     exit 0
 }
 
@@ -25,6 +32,7 @@ set -v
 temporal_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
+        -L libwebp \
         -ldisable \
         -d temporal-diffusion -p 16 \
         "${input_webp}"
@@ -36,6 +44,7 @@ temporal_output=$(
 fs_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
+        -L libwebp \
         -ldisable \
         -d fs -Y direct -p 16 \
         "${input_webp}"
