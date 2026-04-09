@@ -88,6 +88,8 @@ sixel_temporal_diffusion_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
+    int x,
+    int y,
     int depth,
     int32_t const *frame,
     unsigned char corrected[SIXEL_MAX_CHANNELS],
@@ -120,6 +122,8 @@ sixel_temporal_stbn_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
+    int x,
+    int y,
     int depth,
     int32_t const *frame,
     unsigned char corrected[SIXEL_MAX_CHANNELS],
@@ -140,7 +144,8 @@ sixel_temporal_stbn_store_error(int32_t *frame,
 
 static int32_t
 sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
-                                size_t base,
+                                int x,
+                                int y,
                                 int channel,
                                 int depth);
 
@@ -292,6 +297,8 @@ sixel_temporal_diffusion_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
+    int x,
+    int y,
     int depth,
     int32_t const *frame,
     unsigned char corrected[SIXEL_MAX_CHANNELS],
@@ -303,6 +310,8 @@ sixel_temporal_diffusion_load_pixel(
     int64_t temporal_clamped;
 
     (void)dither;
+    (void)x;
+    (void)y;
 
     n = 0;
     channel_base = 0U;
@@ -433,12 +442,14 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
 
 static int32_t
 sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
-                                size_t base,
+                                int x,
+                                int y,
                                 int channel,
                                 int depth)
 {
     (void)stbn_state;
-    (void)base;
+    (void)x;
+    (void)y;
     (void)channel;
     (void)depth;
 
@@ -454,6 +465,8 @@ sixel_temporal_stbn_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
+    int x,
+    int y,
     int depth,
     int32_t const *frame,
     unsigned char corrected[SIXEL_MAX_CHANNELS],
@@ -476,6 +489,8 @@ sixel_temporal_stbn_load_pixel(
     sixel_temporal_diffusion_load_pixel(dither,
                                         data,
                                         base,
+                                        x,
+                                        y,
                                         depth,
                                         frame,
                                         corrected,
@@ -483,7 +498,8 @@ sixel_temporal_stbn_load_pixel(
 
     for (n = 0; n < depth; ++n) {
         bias_scaled = sixel_temporal_stbn_bias_scaled(stbn_state,
-                                                      base,
+                                                      x,
+                                                      y,
                                                       n,
                                                       depth);
         if (bias_scaled == 0) {
@@ -1045,6 +1061,8 @@ sixel_dither_apply_fixed_impl(
                 temporal_ops->load_pixel(dither,
                                          data,
                                          base,
+                                         x,
+                                         absolute_y,
                                          depth,
                                          temporal_error,
                                          corrected,

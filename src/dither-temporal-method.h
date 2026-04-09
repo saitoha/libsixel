@@ -50,6 +50,8 @@ typedef void (*sixel_temporal_load_pixel_fn)(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
+    int x,
+    int y,
     int depth,
     int32_t const *frame,
     unsigned char *corrected,
