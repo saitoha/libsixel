@@ -41,13 +41,9 @@ sixel_loader_gd_new(
 
 SIXELSTATUS load_with_gd(
     sixel_chunk_t const       *pchunk,
-    int                        fstatic,
     int                        fuse_palette,
     int                        reqcolors,
     unsigned char             *bgcolor,
-    int                        loop_control,
-    int                        start_frame_no_set,
-    int                        start_frame_no,
     int                       *srgb_decode_lut_ready,
     double                     srgb_decode_lut[256],
     sixel_load_image_function  fn_load,

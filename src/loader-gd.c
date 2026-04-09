@@ -33,7 +33,6 @@
 #if HAVE_GD
 
 #include <stdio.h>
-#include <limits.h>
 #include <stdlib.h>
 
 #if HAVE_MATH_H
@@ -64,14 +63,10 @@ typedef struct sixel_loader_gd_component {
     sixel_loader_component_t base;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
-    int fstatic;
     int fuse_palette;
     int reqcolors;
     int has_bgcolor;
     unsigned char bgcolor[3];
-    int loop_control;
-    int start_frame_no_set;
-    int start_frame_no;
     int srgb_decode_lut_ready;
     double srgb_decode_lut[256];
 } sixel_loader_gd_component_t;
@@ -306,8 +301,11 @@ sixel_loader_gd_setopt(sixel_loader_component_t *component,
 
     switch (option) {
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
-        int_value = (int const *)value;
-        self->fstatic = int_value != NULL ? *int_value : 0;
+        (void)value;
+        /*
+         * GIF is delegated to lower-priority loaders, so GD ignores
+         * animation/static controls.
+         */
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_USE_PALETTE:
         int_value = (int const *)value;
@@ -331,19 +329,10 @@ sixel_loader_gd_setopt(sixel_loader_component_t *component,
         self->has_bgcolor = 1;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_LOOP_CONTROL:
-        int_value = (int const *)value;
-        if (int_value != NULL) {
-            self->loop_control = *int_value;
-        }
+        (void)value;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_START_FRAME_NO:
-        int_value = (int const *)value;
-        if (int_value != NULL) {
-            self->start_frame_no = *int_value;
-            self->start_frame_no_set = 1;
-        } else {
-            self->start_frame_no_set = 0;
-        }
+        (void)value;
         return SIXEL_OK;
     default:
         return SIXEL_OK;
@@ -377,13 +366,9 @@ sixel_loader_gd_load(sixel_loader_component_t *component,
     srgb_decode_lut = self->srgb_decode_lut;
 
     return load_with_gd(chunk,
-                        self->fstatic,
                         self->fuse_palette,
                         self->reqcolors,
                         bgcolor,
-                        self->loop_control,
-                        self->start_frame_no_set,
-                        self->start_frame_no,
                         srgb_decode_lut_ready,
                         srgb_decode_lut,
                         fn_load,
@@ -427,16 +412,12 @@ sixel_loader_gd_new(sixel_allocator_t *allocator,
     self->ref = 1u;
     self->allocator = allocator;
     sixel_allocator_ref(allocator);
-    self->fstatic = 0;
     self->fuse_palette = 0;
     self->reqcolors = SIXEL_PALETTE_MAX;
     self->has_bgcolor = 0;
     self->bgcolor[0] = 0;
     self->bgcolor[1] = 0;
     self->bgcolor[2] = 0;
-    self->loop_control = SIXEL_LOOP_AUTO;
-    self->start_frame_no_set = 0;
-    self->start_frame_no = INT_MIN;
     self->srgb_decode_lut_ready = 0;
     memset(self->srgb_decode_lut, 0, sizeof(self->srgb_decode_lut));
 
@@ -447,14 +428,10 @@ sixel_loader_gd_new(sixel_allocator_t *allocator,
 SIXELSTATUS
 load_with_gd(
     sixel_chunk_t const       /* in */     *pchunk,     /* image data */
-    int                       /* in */     fstatic,     /* static */
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,    /* background */
                                                  /* color */
-    int                       /* in */     loop_control,
-    int                       /* in */     start_frame_no_set,
-    int                       /* in */     start_frame_no,
     int                       /* in/out */ *srgb_decode_lut_ready,
     double                    /* in/out */ srgb_decode_lut[256],
     sixel_load_image_function /* in */     fn_load,     /* callback */
@@ -517,14 +494,6 @@ load_with_gd(
     if (pchunk == NULL || pchunk->allocator == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    /*
-     * Keep the load_with_* signature consistent across backends even though
-     * GD delegates GIF to lower-priority loaders and does not consume these.
-     */
-    (void)fstatic;
-    (void)loop_control;
-    (void)start_frame_no_set;
-    (void)start_frame_no;
 
     status = SIXEL_FALSE;
     frame = NULL;
