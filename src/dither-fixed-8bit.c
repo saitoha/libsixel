@@ -777,8 +777,11 @@ sixel_dither_apply_fixed_impl(
                     offset = (int)source_pixel[n] - palette_value;
                     if (use_temporal && temporal_error != NULL
                             && temporal_can_update) {
-                        temporal_scaled = (int32_t)offset
-                                        << VARERR_SCALE_SHIFT;
+                        /*
+                         * Multiplication avoids undefined behavior from
+                         * shifting negative signed values.
+                         */
+                        temporal_scaled = (int32_t)(offset * VARERR_SCALE);
                         temporal_error[base + (size_t)n] = temporal_scaled;
                     }
                     f_diffuse(data + n, width, height, x, y,

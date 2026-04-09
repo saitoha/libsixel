@@ -12,11 +12,12 @@ echo "1..1"
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
+# Start frame numbers are zero-based, so "-T 0" selects the first frame.
 
 temporal_static=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        -S -T 1 \
+        -S -T 0 \
         -d temporal-diffusion -p 16 \
         "${input_gif}"
 ) || {
@@ -27,7 +28,7 @@ temporal_static=$(
 fs_static=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        -S -T 1 \
+        -S -T 0 \
         -d fs -Y direct -p 16 \
         "${input_gif}"
 ) || {

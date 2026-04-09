@@ -788,8 +788,14 @@ sixel_encode_highcolor(
     sixel_palette_t *palette_obj = NULL;
     size_t palette_count = 0U;
 
-    if (dither != NULL
-            && dither->method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
+    if (pixels == NULL || dither == NULL || output == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_highcolor: invalid argument "
+            "(pixels == NULL || dither == NULL || output == NULL)");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (dither->method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
         sixel_helper_set_additional_message(
             "sixel_encode_highcolor: temporal-diffusion is not supported "
             "with high-color mode.");

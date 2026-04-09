@@ -8,9 +8,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-echo "1..1"
-set -v
-
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -21,6 +18,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     printf "1..0 # SKIP animated webp loader is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
 
 temporal_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
