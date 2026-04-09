@@ -985,8 +985,8 @@ end:
 
     use_insecure = finsecure && strncmp(url, "https://", 8) == 0;
     if (use_insecure) {
-        saved_peer = getenv("SSL_NO_VERIFY_PEER");
-        saved_host = getenv("SSL_NO_VERIFY_HOSTNAME");
+        saved_peer = sixel_compat_getenv("SSL_NO_VERIFY_PEER");
+        saved_host = sixel_compat_getenv("SSL_NO_VERIFY_HOSTNAME");
         if (saved_peer != NULL) {
             saved_peer_copy = strdup(saved_peer);
             if (saved_peer_copy == NULL) {

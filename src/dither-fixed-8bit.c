@@ -34,6 +34,7 @@
 # include <math.h>
 #endif  /* HAVE_MATH_H */
 
+#include "compat_stub.h"
 #include "dither-fixed-8bit.h"
 #include "dither-temporal-method.h"
 #include "dither-common-pipeline.h"
@@ -567,7 +568,7 @@ sixel_temporal_strategy_override(void)
 {
     char const *value;
 
-    value = getenv("SIXEL_TEMPORAL_STRATEGY");
+    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
     if (value == NULL) {
         return SIXEL_TEMPORAL_METHOD_NONE;
     }

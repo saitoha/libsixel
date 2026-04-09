@@ -335,6 +335,7 @@ AM_LOG_FLAGS =
 	staticcheck-codespell \
 	staticcheck-python-compileall \
 	staticcheck-private-includes \
+	staticcheck-src-no-direct-getenv \
 	staticcheck-test-runner-dllexport \
 	staticcheck-makefile-recipes \
 	staticcheck-meson-palette-sources \
@@ -361,6 +362,7 @@ staticcheck-shellcheck \
 staticcheck-codespell \
 staticcheck-python-compileall \
 staticcheck-private-includes \
+staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
 staticcheck-makefile-recipes \
 staticcheck-meson-palette-sources \
@@ -448,6 +450,16 @@ staticcheck-private-includes:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-private-includes.sh" \
 		"$(abs_top_srcdir)" "$(PYTHON)"
+
+staticcheck-src-no-direct-getenv:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-src-no-direct-getenv" \
+		--log-file staticcheck-src-no-direct-getenv.log \
+		--trs-file staticcheck-src-no-direct-getenv.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-src-no-direct-getenv.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-test-runner-dllexport:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -1244,6 +1256,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-private-includes.sh \
+    _static/sh/staticcheck-src-no-direct-getenv.sh \
     _static/sh/staticcheck-test-runner-dllexport.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
