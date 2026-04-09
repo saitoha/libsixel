@@ -6,15 +6,6 @@ set -eu
 src_root=$1
 am_file=$src_root/src/Makefile.am
 in_file=$src_root/src/Makefile.in
-tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-src-makefile-sync-XXXXXX")
-am_list=$tmpdir/am.list
-in_list=$tmpdir/in.list
-missing=$tmpdir/missing.list
-
-cleanup() {
-    rm -rf "$tmpdir"
-}
-trap cleanup EXIT HUP INT TERM
 
 echo "1..1"
 
@@ -30,31 +21,41 @@ if test ! -f "$in_file"; then
     exit 1
 fi
 
-awk '
-{
-    line = $0
+if missing_entries=$(awk '
+function collect_tokens(line, arr, missing_only, tok) {
     while (match(line, /\$\(srcdir\)\/[A-Za-z0-9_.-]+/)) {
-        print substr(line, RSTART, RLENGTH)
+        tok = substr(line, RSTART, RLENGTH)
+        if (missing_only == 0) {
+            arr[tok] = 1
+        } else if (!(tok in arr) && !(tok in reported)) {
+            print tok
+            reported[tok] = 1
+            missing = 1
+        }
         line = substr(line, RSTART + RLENGTH)
     }
 }
-' "$am_file" | LC_ALL=C sort -u > "$am_list"
-
-awk '
+FNR == 1 {
+    file_index++
+}
 {
-    line = $0
-    while (match(line, /\$\(srcdir\)\/[A-Za-z0-9_.-]+/)) {
-        print substr(line, RSTART, RLENGTH)
-        line = substr(line, RSTART + RLENGTH)
+    if (file_index == 1) {
+        collect_tokens($0, in_tokens, 0)
+    } else if (file_index == 2) {
+        collect_tokens($0, in_tokens, 1)
     }
 }
-' "$in_file" | LC_ALL=C sort -u > "$in_list"
-
-comm -23 "$am_list" "$in_list" > "$missing"
-
-if test -s "$missing"; then
+END {
+    if (missing == 1) {
+        exit 1
+    }
+}
+' "$in_file" "$am_file"); then
+    :
+else
     echo "not ok 1 - src Makefile source lists stay synchronized"
-    sed 's/^/# missing in src\/Makefile.in: /' "$missing"
+    printf '%s\n' "$missing_entries" |
+        sed 's/^/# missing in src\/Makefile.in: /'
     exit 1
 fi
 
