@@ -168,6 +168,9 @@ sixel_temporal_method_from_diffuse(int method_for_diffuse);
 static sixel_temporal_method_ops_t const *
 sixel_temporal_method_for_strategy(int temporal_method);
 
+static int
+sixel_temporal_strategy_override(void);
+
 static void
 error_diffuse_normal(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
@@ -523,7 +526,37 @@ sixel_temporal_stbn_store_error(int32_t *frame,
 static int
 sixel_temporal_method_from_diffuse(int method_for_diffuse)
 {
+    int override_method;
+
+    override_method = SIXEL_TEMPORAL_METHOD_NONE;
     if (method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
+        override_method = sixel_temporal_strategy_override();
+        if (override_method == SIXEL_TEMPORAL_METHOD_STBN) {
+            return SIXEL_TEMPORAL_METHOD_STBN;
+        }
+        return SIXEL_TEMPORAL_METHOD_DIFFUSION;
+    }
+
+    return SIXEL_TEMPORAL_METHOD_NONE;
+}
+
+static int
+sixel_temporal_strategy_override(void)
+{
+    char const *value;
+
+    value = getenv("SIXEL_TEMPORAL_STRATEGY");
+    if (value == NULL) {
+        return SIXEL_TEMPORAL_METHOD_NONE;
+    }
+
+    /*
+     * Keep the public CLI unchanged while enabling internal strategy probing.
+     */
+    if (strcmp(value, "stbn") == 0) {
+        return SIXEL_TEMPORAL_METHOD_STBN;
+    }
+    if (strcmp(value, "diffusion") == 0) {
         return SIXEL_TEMPORAL_METHOD_DIFFUSION;
     }
 
