@@ -815,6 +815,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "enables it while 0, off, false, or no keep the 8-bit pipeline."
     },
     {
+        "SIXEL_TEMPORAL_STRATEGY",
+        "internal temporal strategy override for -d temporal-diffusion.\n"
+        "Accepts diffusion (default) or stbn (placeholder for future work)."
+    },
+    {
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE",
         "force the resize precision planner. Accepts 1 (preserve integer\n"
         "buffers), 2 (linear float workspace), or 3 (float32 working\n"
