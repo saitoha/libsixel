@@ -686,6 +686,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-src-makefile-dist-sources-sync',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-src-makefile-dist-sources-sync.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-meson-palette-sources',
     [meson.current_source_dir() / '_static/sh/staticcheck-meson-palette-sources.sh',
       meson.project_source_root()],

@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=25
+total=26
 index=0
 pass_count=0
 skip_count=0
@@ -174,6 +174,10 @@ run_case_tap "staticcheck-c-size-max-header" \
 
 run_case_tap "staticcheck-makefile-recipes" \
     "$src_root/tests/_static/sh/staticcheck-makefile-recipes.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-src-makefile-dist-sources-sync" \
+    "$src_root/tests/_static/sh/staticcheck-src-makefile-dist-sources-sync.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-meson-palette-sources" \
