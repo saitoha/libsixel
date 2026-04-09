@@ -253,10 +253,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
 	$(srcdir)/probe.c $(srcdir)/probe.h \
 	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
-	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
-	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
-	$(srcdir)/clipboard_carbon.c
+	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
+	$(srcdir)/rgblookup.h $(srcdir)/lso2.h $(srcdir)/threadpool.c \
+	$(srcdir)/threadpool.h $(srcdir)/quicklook_thumbnailing.m \
+	$(srcdir)/clipboard_macos.m $(srcdir)/clipboard_carbon.c
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
@@ -358,6 +358,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-threading.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-probe.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_decode_rgba.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_atomic_fallback.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_1) $(am__objects_2) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_3) $(am__objects_4)
 @WANT_AMALGAMATED_LIB_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
@@ -482,6 +483,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-probe.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
+	./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo \
 	./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo \
 	./$(DEPDIR)/libsixel_la-sleep.Plo \
 	./$(DEPDIR)/libsixel_la-status.Plo \
@@ -1000,6 +1002,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/probe.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic_fallback.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
@@ -1232,6 +1235,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-probe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sleep.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@ # am--include-marker
@@ -1946,6 +1950,13 @@ libsixel_la-sixel_decode_rgba.lo: sixel_decode_rgba.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_decode_rgba.lo `test -f 'sixel_decode_rgba.c' || echo '$(srcdir)/'`sixel_decode_rgba.c
 
+libsixel_la-sixel_atomic_fallback.lo: sixel_atomic_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_atomic_fallback.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_atomic_fallback.Tpo -c -o libsixel_la-sixel_atomic_fallback.lo `test -f 'sixel_atomic_fallback.c' || echo '$(srcdir)/'`sixel_atomic_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sixel_atomic_fallback.Tpo $(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel_atomic_fallback.c' object='libsixel_la-sixel_atomic_fallback.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_atomic_fallback.lo `test -f 'sixel_atomic_fallback.c' || echo '$(srcdir)/'`sixel_atomic_fallback.c
+
 libsixel_la-threadpool.lo: threadpool.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-threadpool.lo -MD -MP -MF $(DEPDIR)/libsixel_la-threadpool.Tpo -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-threadpool.Tpo $(DEPDIR)/libsixel_la-threadpool.Plo
@@ -2282,6 +2293,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
@@ -2428,6 +2440,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo

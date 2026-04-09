@@ -245,6 +245,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/probe.h \
                 $(srcdir)/sixel_decode_rgba.c \
                 $(srcdir)/sixel_decode_rgba.h \
+                $(srcdir)/sixel_atomic_fallback.c \
                 $(srcdir)/sixel_atomic.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h

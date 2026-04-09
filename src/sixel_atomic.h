@@ -75,8 +75,38 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
         (volatile LONG *)ptr, -(LONG)value);
 }
 # else
-#  define sixel_fence_release() do { } while (0)
-#  define sixel_fence_acquire() do { } while (0)
+#  if defined(SIXEL_ENABLE_THREADS) && SIXEL_ENABLE_THREADS
+/*
+ * When native atomics are unavailable but thread support is enabled, route
+ * fetch_add/fetch_sub through a process-wide mutex implementation provided by
+ * sixel_atomic_fallback.c.
+ */
+unsigned int
+sixel_atomic_fallback_fetch_add_u32(sixel_atomic_u32_t *ptr,
+                                    unsigned int value);
+
+unsigned int
+sixel_atomic_fallback_fetch_sub_u32(sixel_atomic_u32_t *ptr,
+                                    unsigned int value);
+
+#   define sixel_fence_release() do { } while (0)
+#   define sixel_fence_acquire() do { } while (0)
+static inline unsigned int
+sixel_atomic_fetch_add_u32(sixel_atomic_u32_t *ptr,
+                           unsigned int value)
+{
+    return sixel_atomic_fallback_fetch_add_u32(ptr, value);
+}
+
+static inline unsigned int
+sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
+                           unsigned int value)
+{
+    return sixel_atomic_fallback_fetch_sub_u32(ptr, value);
+}
+#  else
+#   define sixel_fence_release() do { } while (0)
+#   define sixel_fence_acquire() do { } while (0)
 static inline unsigned int
 sixel_atomic_fetch_add_u32(sixel_atomic_u32_t *ptr,
                            unsigned int value)
@@ -100,6 +130,7 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
 
     return previous;
 }
+#  endif
 # endif
 #else
 # include <stdatomic.h>

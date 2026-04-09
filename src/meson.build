@@ -161,6 +161,7 @@ srcs = [
   'probe.h',
   'sixel_decode_rgba.c',
   'sixel_decode_rgba.h',
+  'sixel_atomic_fallback.c',
   'lookup-common.h',
   'lookup-8bit.h',
   'lookup-float32.h',
