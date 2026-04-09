@@ -35,6 +35,7 @@
 #endif  /* HAVE_MATH_H */
 
 #include "dither-fixed-8bit.h"
+#include "dither-temporal-method.h"
 #include "dither-common-pipeline.h"
 #include "lookup-common.h"
 
@@ -68,48 +69,6 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 #define VARERR_SCALE       (1 << VARERR_SCALE_SHIFT)
 #define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
 #define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
-
-#define SIXEL_TEMPORAL_METHOD_NONE      0
-#define SIXEL_TEMPORAL_METHOD_DIFFUSION 1
-#define SIXEL_TEMPORAL_METHOD_STBN      2
-
-typedef SIXELSTATUS (*sixel_temporal_prepare_frame_fn)(
-    sixel_dither_t *dither,
-    int width,
-    int height,
-    int depth,
-    int can_update,
-    int *enabled,
-    int32_t **frame);
-
-typedef void (*sixel_temporal_load_pixel_fn)(
-    unsigned char const *data,
-    size_t base,
-    int depth,
-    int32_t const *frame,
-    unsigned char corrected[SIXEL_MAX_CHANNELS],
-    int32_t accum_scaled[SIXEL_MAX_CHANNELS]);
-
-typedef void (*sixel_temporal_clear_pixel_fn)(
-    int32_t *frame,
-    size_t base,
-    int depth,
-    int can_update);
-
-typedef void (*sixel_temporal_store_error_fn)(
-    int32_t *frame,
-    size_t base,
-    int channel,
-    int offset,
-    int can_update);
-
-typedef struct sixel_temporal_method_ops {
-    int method_id;
-    sixel_temporal_prepare_frame_fn prepare_frame;
-    sixel_temporal_load_pixel_fn load_pixel;
-    sixel_temporal_clear_pixel_fn clear_pixel;
-    sixel_temporal_store_error_fn store_error;
-} sixel_temporal_method_ops_t;
 
 static void
 sixel_temporal_release_frame(sixel_dither_t *dither);
