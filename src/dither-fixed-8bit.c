@@ -71,6 +71,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 
 #define SIXEL_TEMPORAL_METHOD_NONE      0
 #define SIXEL_TEMPORAL_METHOD_DIFFUSION 1
+#define SIXEL_TEMPORAL_METHOD_STBN      2
 
 typedef SIXELSTATUS (*sixel_temporal_prepare_frame_fn)(
     sixel_dither_t *dither,
@@ -114,6 +115,16 @@ static void
 sixel_temporal_release_frame(sixel_dither_t *dither);
 
 static SIXELSTATUS
+sixel_temporal_prepare_shared_frame(sixel_dither_t *dither,
+                                    int width,
+                                    int height,
+                                    int depth,
+                                    int can_update,
+                                    int owner_method,
+                                    int *enabled,
+                                    int32_t **frame);
+
+static SIXELSTATUS
 sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
                                        int height,
@@ -144,6 +155,37 @@ sixel_temporal_diffusion_store_error(int32_t *frame,
                                      int offset,
                                      int can_update);
 
+static SIXELSTATUS
+sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
+                                  int width,
+                                  int height,
+                                  int depth,
+                                  int can_update,
+                                  int *enabled,
+                                  int32_t **frame);
+
+static void
+sixel_temporal_stbn_load_pixel(
+    unsigned char const *data,
+    size_t base,
+    int depth,
+    int32_t const *frame,
+    unsigned char corrected[SIXEL_MAX_CHANNELS],
+    int32_t accum_scaled[SIXEL_MAX_CHANNELS]);
+
+static void
+sixel_temporal_stbn_clear_pixel(int32_t *frame,
+                                size_t base,
+                                int depth,
+                                int can_update);
+
+static void
+sixel_temporal_stbn_store_error(int32_t *frame,
+                                size_t base,
+                                int channel,
+                                int offset,
+                                int can_update);
+
 static sixel_temporal_method_ops_t const
 sixel_temporal_diffusion_ops = {
     SIXEL_TEMPORAL_METHOD_DIFFUSION,
@@ -153,8 +195,20 @@ sixel_temporal_diffusion_ops = {
     sixel_temporal_diffusion_store_error
 };
 
+static sixel_temporal_method_ops_t const
+sixel_temporal_stbn_ops = {
+    SIXEL_TEMPORAL_METHOD_STBN,
+    sixel_temporal_stbn_prepare_frame,
+    sixel_temporal_stbn_load_pixel,
+    sixel_temporal_stbn_clear_pixel,
+    sixel_temporal_stbn_store_error
+};
+
+static int
+sixel_temporal_method_from_diffuse(int method_for_diffuse);
+
 static sixel_temporal_method_ops_t const *
-sixel_temporal_method_for_diffuse(int method_for_diffuse);
+sixel_temporal_method_for_strategy(int temporal_method);
 
 static void
 error_diffuse_normal(
@@ -276,13 +330,14 @@ sixel_temporal_release_frame(sixel_dither_t *dither)
 }
 
 static SIXELSTATUS
-sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
-                                       int width,
-                                       int height,
-                                       int depth,
-                                       int can_update,
-                                       int *enabled,
-                                       int32_t **frame)
+sixel_temporal_prepare_shared_frame(sixel_dither_t *dither,
+                                    int width,
+                                    int height,
+                                    int depth,
+                                    int can_update,
+                                    int owner_method,
+                                    int *enabled,
+                                    int32_t **frame)
 {
     SIXELSTATUS status;
     size_t temporal_len;
@@ -300,6 +355,10 @@ sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
             || enabled == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (owner_method != SIXEL_TEMPORAL_METHOD_DIFFUSION
+            && owner_method != SIXEL_TEMPORAL_METHOD_STBN) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     *frame = NULL;
     if (*enabled == 0) {
@@ -313,8 +372,7 @@ sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
     }
 
     if (dither->temporal_state.error_frame != NULL) {
-        if (dither->temporal_state.method_id
-                != SIXEL_TEMPORAL_METHOD_DIFFUSION) {
+        if (dither->temporal_state.method_id != owner_method) {
             needs_reset = 1;
         } else if (dither->temporal_state.width != width
                 || dither->temporal_state.height != height
@@ -356,9 +414,28 @@ sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
         dither->temporal_state.depth = depth;
     }
 
-    dither->temporal_state.method_id = SIXEL_TEMPORAL_METHOD_DIFFUSION;
+    dither->temporal_state.method_id = owner_method;
     *frame = (int32_t *)dither->temporal_state.error_frame;
     return status;
+}
+
+static SIXELSTATUS
+sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
+                                       int width,
+                                       int height,
+                                       int depth,
+                                       int can_update,
+                                       int *enabled,
+                                       int32_t **frame)
+{
+    return sixel_temporal_prepare_shared_frame(dither,
+                                               width,
+                                               height,
+                                               depth,
+                                               can_update,
+                                               SIXEL_TEMPORAL_METHOD_DIFFUSION,
+                                               enabled,
+                                               frame);
 }
 
 static void
@@ -443,12 +520,91 @@ sixel_temporal_diffusion_store_error(int32_t *frame,
     frame[base + (size_t)channel] = scaled;
 }
 
-static sixel_temporal_method_ops_t const *
-sixel_temporal_method_for_diffuse(int method_for_diffuse)
+static SIXELSTATUS
+sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
+                                  int width,
+                                  int height,
+                                  int depth,
+                                  int can_update,
+                                  int *enabled,
+                                  int32_t **frame)
 {
-    switch (method_for_diffuse) {
-    case SIXEL_DIFFUSE_TEMPORAL:
+    /*
+     * Placeholder STBN strategy keeps the same state shape as temporal
+     * diffusion. A dedicated STBN mask sequence can be integrated later
+     * without changing the call site contract.
+     */
+    return sixel_temporal_prepare_shared_frame(dither,
+                                               width,
+                                               height,
+                                               depth,
+                                               can_update,
+                                               SIXEL_TEMPORAL_METHOD_STBN,
+                                               enabled,
+                                               frame);
+}
+
+static void
+sixel_temporal_stbn_load_pixel(
+    unsigned char const *data,
+    size_t base,
+    int depth,
+    int32_t const *frame,
+    unsigned char corrected[SIXEL_MAX_CHANNELS],
+    int32_t accum_scaled[SIXEL_MAX_CHANNELS])
+{
+    sixel_temporal_diffusion_load_pixel(data,
+                                        base,
+                                        depth,
+                                        frame,
+                                        corrected,
+                                        accum_scaled);
+}
+
+static void
+sixel_temporal_stbn_clear_pixel(int32_t *frame,
+                                size_t base,
+                                int depth,
+                                int can_update)
+{
+    sixel_temporal_diffusion_clear_pixel(frame,
+                                         base,
+                                         depth,
+                                         can_update);
+}
+
+static void
+sixel_temporal_stbn_store_error(int32_t *frame,
+                                size_t base,
+                                int channel,
+                                int offset,
+                                int can_update)
+{
+    sixel_temporal_diffusion_store_error(frame,
+                                         base,
+                                         channel,
+                                         offset,
+                                         can_update);
+}
+
+static int
+sixel_temporal_method_from_diffuse(int method_for_diffuse)
+{
+    if (method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
+        return SIXEL_TEMPORAL_METHOD_DIFFUSION;
+    }
+
+    return SIXEL_TEMPORAL_METHOD_NONE;
+}
+
+static sixel_temporal_method_ops_t const *
+sixel_temporal_method_for_strategy(int temporal_method)
+{
+    switch (temporal_method) {
+    case SIXEL_TEMPORAL_METHOD_DIFFUSION:
         return &sixel_temporal_diffusion_ops;
+    case SIXEL_TEMPORAL_METHOD_STBN:
+        return &sixel_temporal_stbn_ops;
     default:
         break;
     }
@@ -693,6 +849,7 @@ sixel_dither_apply_fixed_impl(
     int use_carry;
     int use_temporal;
     int temporal_can_update;
+    int temporal_method;
     sixel_temporal_method_ops_t const *temporal_ops;
     size_t carry_len;
     int32_t *carry_curr = NULL;
@@ -751,6 +908,7 @@ sixel_dither_apply_fixed_impl(
     use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
     use_temporal = 0;
     temporal_can_update = 0;
+    temporal_method = SIXEL_TEMPORAL_METHOD_NONE;
     temporal_ops = NULL;
     carry_len = 0;
     temporal_error = NULL;
@@ -776,8 +934,10 @@ sixel_dither_apply_fixed_impl(
         case SIXEL_DIFFUSE_TEMPORAL:
             f_diffuse = diffuse_fs;
             f_diffuse_carry = diffuse_fs_carry;
-            temporal_ops = sixel_temporal_method_for_diffuse(
+            temporal_method = sixel_temporal_method_from_diffuse(
                 method_for_diffuse);
+            temporal_ops = sixel_temporal_method_for_strategy(
+                temporal_method);
             if (temporal_ops != NULL) {
                 use_temporal = 1;
             }
