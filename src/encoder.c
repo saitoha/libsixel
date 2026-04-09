@@ -763,6 +763,7 @@ static sixel_option_choice_t const g_option_choices_diffusion[] = {
     { "x_dither", SIXEL_DIFFUSE_X_DITHER },
     { "bluenoise", SIXEL_DIFFUSE_BLUENOISE_DITHER },
     { "lso2", SIXEL_DIFFUSE_LSO2 },
+    { "temporal-diffusion", SIXEL_DIFFUSE_TEMPORAL },
 };
 
 static sixel_option_choice_t const g_option_choices_diffusion_scan[] = {

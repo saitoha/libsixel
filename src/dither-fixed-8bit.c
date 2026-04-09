@@ -401,10 +401,14 @@ sixel_dither_apply_fixed_impl(
                       int direction);
     diffuse_fixed_carry_mode f_diffuse_carry;
     int use_carry;
+    int use_temporal;
+    int temporal_can_update;
     size_t carry_len;
+    size_t temporal_len;
     int32_t *carry_curr = NULL;
     int32_t *carry_next = NULL;
     int32_t *carry_far = NULL;
+    int32_t *temporal_error;
     unsigned char corrected[SIXEL_MAX_CHANNELS];
     int32_t accum_scaled[SIXEL_MAX_CHANNELS];
     int start;
@@ -434,6 +438,12 @@ sixel_dither_apply_fixed_impl(
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+    int64_t temporal_sum;
+    int64_t temporal_clamped;
+    int32_t temporal_scaled;
+    size_t temporal_base;
+    size_t temporal_bytes;
+    sixel_allocator_t *allocator;
 
     if (depth > SIXEL_MAX_CHANNELS) {
         status = SIXEL_BAD_ARGUMENT;
@@ -455,7 +465,14 @@ sixel_dither_apply_fixed_impl(
     }
 
     use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
+    use_temporal = 0;
+    temporal_can_update = 0;
     carry_len = 0;
+    temporal_len = 0U;
+    temporal_error = NULL;
+    temporal_base = 0U;
+    temporal_bytes = 0U;
+    allocator = NULL;
 
     if (depth != 3) {
         f_diffuse = diffuse_none;
@@ -474,6 +491,11 @@ sixel_dither_apply_fixed_impl(
         case SIXEL_DIFFUSE_FS:
             f_diffuse = diffuse_fs;
             f_diffuse_carry = diffuse_fs_carry;
+            break;
+        case SIXEL_DIFFUSE_TEMPORAL:
+            f_diffuse = diffuse_fs;
+            f_diffuse_carry = diffuse_fs_carry;
+            use_temporal = 1;
             break;
         case SIXEL_DIFFUSE_JAJUNI:
             f_diffuse = diffuse_jajuni;
@@ -503,6 +525,62 @@ sixel_dither_apply_fixed_impl(
             f_diffuse = diffuse_none;
             f_diffuse_carry = diffuse_none_carry;
             break;
+        }
+    }
+    if (use_temporal) {
+        use_carry = 0;
+    }
+
+    if (use_temporal) {
+        if (dither == NULL || dither->allocator == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        allocator = dither->allocator;
+        temporal_can_update = dither->temporal_state.last_apply_consumed;
+        temporal_len = (size_t)width * (size_t)height * (size_t)depth;
+        if (temporal_len == 0U) {
+            use_temporal = 0;
+            temporal_can_update = 0;
+        } else if (dither->temporal_state.error_frame != NULL
+                && (dither->temporal_state.width != width
+                    || dither->temporal_state.height != height
+                    || dither->temporal_state.depth != depth)) {
+            if (temporal_can_update) {
+                sixel_allocator_free(allocator,
+                                     dither->temporal_state.error_frame);
+                dither->temporal_state.error_frame = NULL;
+                dither->temporal_state.error_frame_size = 0U;
+                dither->temporal_state.width = 0;
+                dither->temporal_state.height = 0;
+                dither->temporal_state.depth = 0;
+            } else {
+                use_temporal = 0;
+                temporal_can_update = 0;
+            }
+        }
+        if (use_temporal && dither->temporal_state.error_frame == NULL
+                && temporal_can_update) {
+            if (temporal_len > SIZE_MAX / sizeof(int32_t)) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            temporal_bytes = temporal_len * sizeof(int32_t);
+            temporal_error = (int32_t *)sixel_allocator_malloc(allocator,
+                                                               temporal_bytes);
+            if (temporal_error == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            memset(temporal_error, 0x00, temporal_bytes);
+            dither->temporal_state.error_frame = temporal_error;
+            dither->temporal_state.error_frame_size = temporal_bytes;
+            dither->temporal_state.width = width;
+            dither->temporal_state.height = height;
+            dither->temporal_state.depth = depth;
+        }
+        if (use_temporal) {
+            temporal_error = (int32_t *)dither->temporal_state.error_frame;
         }
     }
 
@@ -572,9 +650,40 @@ sixel_dither_apply_fixed_impl(
                         carry_curr[carry_base + (size_t)n] = 0;
                     }
                 }
+                if (use_temporal && temporal_error != NULL
+                        && temporal_can_update) {
+                    for (n = 0; n < depth; ++n) {
+                        temporal_error[base + (size_t)n] = 0;
+                    }
+                }
                 continue;
             }
-            if (use_carry) {
+            if (use_temporal) {
+                for (n = 0; n < depth; ++n) {
+                    temporal_base = base + (size_t)n;
+                    temporal_sum =
+                        ((int64_t)data[temporal_base] << VARERR_SCALE_SHIFT);
+                    if (temporal_error != NULL) {
+                        temporal_sum += temporal_error[temporal_base];
+                    }
+                    if (temporal_sum < INT32_MIN) {
+                        temporal_sum = INT32_MIN;
+                    } else if (temporal_sum > INT32_MAX) {
+                        temporal_sum = INT32_MAX;
+                    }
+                    temporal_clamped = temporal_sum;
+                    if (temporal_clamped < 0) {
+                        temporal_clamped = 0;
+                    } else if (temporal_clamped > VARERR_MAX_VALUE) {
+                        temporal_clamped = VARERR_MAX_VALUE;
+                    }
+                    accum_scaled[n] = (int32_t)temporal_clamped;
+                    corrected[n]
+                        = (unsigned char)((temporal_clamped + VARERR_ROUND)
+                                          >> VARERR_SCALE_SHIFT);
+                }
+                source_pixel = corrected;
+            } else if (use_carry) {
                 for (n = 0; n < depth; ++n) {
                     accum = ((int64_t)data[base + n]
                              << VARERR_SCALE_SHIFT)
@@ -666,6 +775,12 @@ sixel_dither_apply_fixed_impl(
                                     x, y, error_scaled, direction, n);
                 } else {
                     offset = (int)source_pixel[n] - palette_value;
+                    if (use_temporal && temporal_error != NULL
+                            && temporal_can_update) {
+                        temporal_scaled = (int32_t)offset
+                                        << VARERR_SCALE_SHIFT;
+                        temporal_error[base + (size_t)n] = temporal_scaled;
+                    }
                     f_diffuse(data + n, width, height, x, y,
                               depth, offset, direction);
                 }

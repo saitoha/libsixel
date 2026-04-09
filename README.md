@@ -579,9 +579,13 @@ Options:
                                          arithmetic dither
                              x_dither -> positionally stable
                                          arithmetic xor based dither
+                             bluenoise -> tileable blue-noise ordered
+                                          dither
                              lso2     -> libsixel method based on
                                          variable error diffusion
                                          tables, optimized for size
+                             temporal-diffusion -> temporal error
+                                          diffusion (palette path)
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:

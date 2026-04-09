@@ -197,6 +197,8 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
     case SIXEL_DIFFUSE_LSO2:
         return 1;
+    case SIXEL_DIFFUSE_TEMPORAL:
+        return 0;
     default:
         return 0;
     }
@@ -586,6 +588,7 @@ sixel_dither_map_pixels(
                     int const complexion) = lookup_normal;
     int use_varerr;
     int use_positional;
+    int use_temporal;
     int carry_mode;
     sixel_lut_t *active_lut;
     int manage_lut;
@@ -680,9 +683,18 @@ sixel_dither_map_pixels(
     use_positional = (methodForDiffuse == SIXEL_DIFFUSE_A_DITHER
                       || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER
                       || methodForDiffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER);
+    use_temporal = (depth == 3
+                    && methodForDiffuse == SIXEL_DIFFUSE_TEMPORAL);
     carry_mode = (methodForCarry == SIXEL_CARRY_ENABLE)
                ? SIXEL_CARRY_ENABLE
                : SIXEL_CARRY_DISABLE;
+    if (use_temporal) {
+        /*
+         * Temporal diffusion controls inter-frame feedback internally and
+         * intentionally ignores the legacy carry-mode selector.
+         */
+        carry_mode = SIXEL_CARRY_DISABLE;
+    }
     context.method_for_diffuse = methodForDiffuse;
     context.method_for_scan = methodForScan;
     context.method_for_carry = carry_mode;
@@ -828,6 +840,7 @@ sixel_dither_map_pixels(
     } else {
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
             && context.pixels_float != NULL
+            && !use_temporal
             && methodForCarry != SIXEL_CARRY_ENABLE
             && depth == 3
             && dither != NULL
@@ -2924,6 +2937,14 @@ sixel_dither_apply_palette_with_mode(
          * Palette minimization rewrites the palette entries in place.
          * Parallel bands would race on the shared table, so fall back to
          * the serial path when the feature is active.
+         */
+        parallel_active = 0;
+    }
+    if (parallel_active
+            && dither->method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
+        /*
+         * Temporal diffusion keeps frame-wide state. Disable band-parallel
+         * dithering until temporal state synchronization is introduced.
          */
         parallel_active = 0;
     }

@@ -119,6 +119,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_BLUENOISE_DITHER 0x9  /* positionally stable bluenoise dither */
 #define SIXEL_DIFFUSE_LSO2        0xa  /* libsixel method based on
                                           variable error diffusion */
+#define SIXEL_DIFFUSE_TEMPORAL    0xb  /* temporal error diffusion */
 #define SIXEL_DIFFUSE_SIERRA1     0xc  /* diffuse with Sierra Lite method */
 #define SIXEL_DIFFUSE_SIERRA2     0xd  /* diffuse with Sierra Two-row method */
 #define SIXEL_DIFFUSE_SIERRA3     0xe  /* diffuse with Sierra-3 method */
@@ -315,9 +316,18 @@ typedef int SIXELSTATUS;
                                                                     arithmetic dither
                                                     x_dither     -> positionally stable
                                                                     arithmetic xor based dither
+                                                    bluenoise    -> tileable
+                                                                    blue-noise
+                                                                    ordered
+                                                                    dither
                                                     lso2         -> libsixel method based on
                                                                     variable error diffusion
                                                                     tables, optimized for size
+                                                    temporal-diffusion
+                                                                 -> temporal
+                                                                 error
+                                                                 diffusion
+                                                                 (palette path)
                                                 */
 #define SIXEL_OPTFLAG_DIFFUSION_SCAN    ('y')  /* -y SCANTYPE, --diffusion-scan=SCANTYPE:
                                                   choose scan order for error diffusion.
@@ -701,6 +711,7 @@ enum methodForDiffuse {
     DIFFUSE_BLUENOISE_DITHER = 9,  /* positionally stable bluenoise */
     DIFFUSE_LSO2     = 10, /* libsixel method based on variable
                               error diffusion */
+    DIFFUSE_TEMPORAL = 11, /* temporal error diffusion */
     DIFFUSE_SIERRA1  = 12, /* diffuse with Sierra Lite method */
     DIFFUSE_SIERRA2  = 13, /* diffuse with Sierra Two-row method */
     DIFFUSE_SIERRA3  = 14  /* diffuse with Sierra-3 method */

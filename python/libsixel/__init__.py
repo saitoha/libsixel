@@ -158,6 +158,7 @@ SIXEL_DIFFUSE_X_DITHER     = 0x8  # positionally stable arithmetic xor based dit
 SIXEL_DIFFUSE_BLUENOISE_DITHER = 0x9  # positionally stable bluenoise dither
 SIXEL_DIFFUSE_LSO2         = 0xa  # libsixel method based on variable error
                                   # diffusion
+SIXEL_DIFFUSE_TEMPORAL     = 0xb  # temporal error diffusion
 SIXEL_DIFFUSE_SIERRA1      = 0xc  # diffuse with Sierra Lite method
 SIXEL_DIFFUSE_SIERRA2      = 0xd  # diffuse with Sierra Two-row method
 SIXEL_DIFFUSE_SIERRA3      = 0xe  # diffuse with Sierra-3 method
