@@ -130,7 +130,24 @@ loader_background_lock_init_once(PINIT_ONCE once,
 }
 # else
 #  include <pthread.h>
-static pthread_mutex_t loader_background_mutex = PTHREAD_MUTEX_INITIALIZER;
+/*
+ * Use runtime initialization so Cosmopolitan/pcc builds avoid warnings from
+ * partial pthread struct initializers.
+ */
+static pthread_mutex_t loader_background_mutex;
+static pthread_once_t loader_background_mutex_once = PTHREAD_ONCE_INIT;
+static int loader_background_mutex_ready = 0;
+
+static void
+loader_background_lock_init_once(void)
+{
+    int rc;
+
+    rc = pthread_mutex_init(&loader_background_mutex, NULL);
+    if (rc == 0) {
+        loader_background_mutex_ready = 1;
+    }
+}
 # endif
 
 /*
@@ -154,6 +171,13 @@ loader_background_lock(void)
     EnterCriticalSection(&loader_background_mutex);
 # else
     int rc;
+    int once_status;
+
+    once_status = pthread_once(&loader_background_mutex_once,
+                               loader_background_lock_init_once);
+    if (once_status != 0 || !loader_background_mutex_ready) {
+        abort();
+    }
 
     rc = pthread_mutex_lock(&loader_background_mutex);
     if (rc != 0) {
@@ -171,6 +195,9 @@ loader_background_unlock(void)
 # else
     int rc;
 
+    if (!loader_background_mutex_ready) {
+        abort();
+    }
     rc = pthread_mutex_unlock(&loader_background_mutex);
     if (rc != 0) {
         abort();

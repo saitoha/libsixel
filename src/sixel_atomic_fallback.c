@@ -89,13 +89,36 @@ sixel_atomic_fallback_unlock(void)
 # else
 #  include <pthread.h>
 
-static pthread_mutex_t sixel_atomic_fallback_mutex
-    = PTHREAD_MUTEX_INITIALIZER;
+/*
+ * Use runtime initialization so Cosmopolitan/pcc builds avoid warnings from
+ * partial pthread struct initializers.
+ */
+static pthread_mutex_t sixel_atomic_fallback_mutex;
+static pthread_once_t sixel_atomic_fallback_mutex_once = PTHREAD_ONCE_INIT;
+static int sixel_atomic_fallback_mutex_ready = 0;
+
+static void
+sixel_atomic_fallback_init_once(void)
+{
+    int rc;
+
+    rc = pthread_mutex_init(&sixel_atomic_fallback_mutex, NULL);
+    if (rc == 0) {
+        sixel_atomic_fallback_mutex_ready = 1;
+    }
+}
 
 static void
 sixel_atomic_fallback_lock(void)
 {
     int rc;
+    int once_status;
+
+    once_status = pthread_once(&sixel_atomic_fallback_mutex_once,
+                               sixel_atomic_fallback_init_once);
+    if (once_status != 0 || !sixel_atomic_fallback_mutex_ready) {
+        abort();
+    }
 
     rc = pthread_mutex_lock(&sixel_atomic_fallback_mutex);
     if (rc != 0) {
@@ -108,6 +131,9 @@ sixel_atomic_fallback_unlock(void)
 {
     int rc;
 
+    if (!sixel_atomic_fallback_mutex_ready) {
+        abort();
+    }
     rc = pthread_mutex_unlock(&sixel_atomic_fallback_mutex);
     if (rc != 0) {
         abort();

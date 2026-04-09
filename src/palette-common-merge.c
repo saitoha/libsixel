@@ -115,7 +115,24 @@ sixel_final_merge_env_lock_init_once(PINIT_ONCE once,
 }
 # else
 #  include <pthread.h>
-static pthread_mutex_t sixel_final_merge_env_mutex = PTHREAD_MUTEX_INITIALIZER;
+/*
+ * Avoid static struct initializers so Cosmopolitan/pcc builds do not trigger
+ * -Wmissing-field-initializers on pthread internals.
+ */
+static pthread_mutex_t sixel_final_merge_env_mutex;
+static pthread_once_t sixel_final_merge_env_mutex_once = PTHREAD_ONCE_INIT;
+static int sixel_final_merge_env_mutex_ready = 0;
+
+static void
+sixel_final_merge_env_lock_init_once(void)
+{
+    int rc;
+
+    rc = pthread_mutex_init(&sixel_final_merge_env_mutex, NULL);
+    if (rc == 0) {
+        sixel_final_merge_env_mutex_ready = 1;
+    }
+}
 # endif
 #endif
 
@@ -138,6 +155,13 @@ sixel_final_merge_env_lock_acquire(void)
     return 1;
 # else
     int rc;
+    int once_status;
+
+    once_status = pthread_once(&sixel_final_merge_env_mutex_once,
+                               sixel_final_merge_env_lock_init_once);
+    if (once_status != 0 || !sixel_final_merge_env_mutex_ready) {
+        return 0;
+    }
 
     rc = pthread_mutex_lock(&sixel_final_merge_env_mutex);
     if (rc != 0) {
@@ -161,6 +185,9 @@ sixel_final_merge_env_lock_release(int acquired)
     && !defined(WITH_WINPTHREAD)
     LeaveCriticalSection(&sixel_final_merge_env_mutex);
 # else
+    if (!sixel_final_merge_env_mutex_ready) {
+        return;
+    }
     (void)pthread_mutex_unlock(&sixel_final_merge_env_mutex);
 # endif
 #endif

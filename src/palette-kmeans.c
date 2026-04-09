@@ -152,7 +152,24 @@ sixel_kmeans_override_lock_init_once(PINIT_ONCE once,
 }
 # else
 #  include <pthread.h>
-static pthread_mutex_t sixel_kmeans_override_mutex = PTHREAD_MUTEX_INITIALIZER;
+/*
+ * Use runtime initialization so Cosmopolitan/pcc builds avoid warnings from
+ * partial pthread struct initializers.
+ */
+static pthread_mutex_t sixel_kmeans_override_mutex;
+static pthread_once_t sixel_kmeans_override_mutex_once = PTHREAD_ONCE_INIT;
+static int sixel_kmeans_override_mutex_ready = 0;
+
+static void
+sixel_kmeans_override_lock_init_once(void)
+{
+    int rc;
+
+    rc = pthread_mutex_init(&sixel_kmeans_override_mutex, NULL);
+    if (rc == 0) {
+        sixel_kmeans_override_mutex_ready = 1;
+    }
+}
 # endif
 #endif
 
@@ -179,6 +196,13 @@ sixel_kmeans_override_lock_acquire(void)
     return 1;
 # else
     int rc;
+    int once_status;
+
+    once_status = pthread_once(&sixel_kmeans_override_mutex_once,
+                               sixel_kmeans_override_lock_init_once);
+    if (once_status != 0 || !sixel_kmeans_override_mutex_ready) {
+        return 0;
+    }
 
     rc = pthread_mutex_lock(&sixel_kmeans_override_mutex);
     if (rc != 0) {
@@ -202,6 +226,9 @@ sixel_kmeans_override_lock_release(int acquired)
     && !defined(WITH_WINPTHREAD)
     LeaveCriticalSection(&sixel_kmeans_override_mutex);
 # else
+    if (!sixel_kmeans_override_mutex_ready) {
+        return;
+    }
     (void)pthread_mutex_unlock(&sixel_kmeans_override_mutex);
 # endif
 #endif
