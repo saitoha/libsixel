@@ -86,6 +86,8 @@ typedef struct loader_component_case_expect {
     int multiframe;
     int mask_present;
     int alpha_zero_is_transparent;
+    int colorspace;
+    int check_colorspace;
 } loader_component_case_expect_t;
 
 typedef struct loader_component_case_options {
@@ -385,6 +387,8 @@ run_loader_component_case_with_options_full(
     char const *label,
     char const *relative_path,
     int expected_pixelformat,
+    int expected_colorspace,
+    int check_colorspace,
     int expected_width,
     int expected_height,
     int expected_callback_count,
@@ -548,6 +552,14 @@ run_loader_component_case_with_options_full(
                 context.pixelformat);
         goto cleanup;
     }
+    if (check_colorspace != 0 && context.colorspace != expected_colorspace) {
+        fprintf(stderr,
+                "%s: colorspace mismatch (%d expected=%d)\n",
+                label,
+                context.colorspace,
+                expected_colorspace);
+        goto cleanup;
+    }
 
     if (context.width <= 0 || context.height <= 0) {
         fprintf(stderr,
@@ -670,6 +682,8 @@ run_loader_component_case_with_options_ex(
         label,
         relative_path,
         expected_pixelformat,
+        FRAME_METADATA_ANY,
+        0,
         expected_width,
         expected_height,
         expected_callback_count,
@@ -706,6 +720,8 @@ run_loader_component_case_with_options_mask_ex(
         label,
         relative_path,
         expected_pixelformat,
+        FRAME_METADATA_ANY,
+        0,
         expected_width,
         expected_height,
         expected_callback_count,
@@ -733,6 +749,8 @@ run_loader_component_case_from_spec(
         spec->label,
         spec->relative_path,
         spec->expect.pixelformat,
+        spec->expect.colorspace,
+        spec->expect.check_colorspace,
         spec->expect.width,
         spec->expect.height,
         spec->expect.callback_count,

@@ -61,6 +61,9 @@ test_loader_0057_loader_gd_can_try_policy(int argc, char **argv)
         0x08u, 0x02u, 0x00u, 0x00u, 0x00u,
         0x00u, 0x00u, 0x00u, 0x00u
     };
+    static unsigned char const png_signature_only_data[] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
     static unsigned char const png_highdepth_data[] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au,
         0x00u, 0x00u, 0x00u, 0x0du, 'I', 'H', 'D', 'R',
@@ -109,6 +112,12 @@ test_loader_0057_loader_gd_can_try_policy(int argc, char **argv)
                        sizeof(png_plain_data),
                        1,
                        "png-plain") != 0) {
+        result = 1;
+    }
+    if (expect_can_try(png_signature_only_data,
+                       sizeof(png_signature_only_data),
+                       1,
+                       "png-signature-only") != 0) {
         result = 1;
     }
     if (expect_can_try(png_highdepth_data,

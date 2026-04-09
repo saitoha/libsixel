@@ -1,5 +1,5 @@
 /*
- * Verify GD loader output policy for alpha and indexed image paths.
+ * Verify GD loader output policy for alpha/indexed paths and colorspace.
  */
 
 #include <string.h>
@@ -24,6 +24,10 @@ typedef enum gd_pixelformat_case_id {
     GD_PIXELFORMAT_HIGHDEPTH_FLOAT32,
     GD_PIXELFORMAT_INDEXED_MULTI_TRNS_MASK,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_BOUNDARY_PAL8,
+    GD_PIXELFORMAT_OPAQUE_RGB_GAMMA_FASTPATH,
+    GD_PIXELFORMAT_INDEXED_NO_PALETTE_RGB_GAMMA,
+    GD_PIXELFORMAT_INDEXED_KEYCOLOR_GAMA_ICCP_BG_FLOAT32_LINEAR,
+    GD_PIXELFORMAT_HIGHDEPTH_SRGB_ONLY_FLOAT32_LINEAR,
     GD_PIXELFORMAT_CASE_COUNT
 } gd_pixelformat_case_id_t;
 
@@ -43,6 +47,8 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                1,
+                SIXEL_COLORSPACE_GAMMA,
                 1
             },
             { 1, 0, 256, NULL },
@@ -59,7 +65,9 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
-                0
+                0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 0, 256, white_bg },
             new_gd_component
@@ -75,7 +83,9 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
-                0
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
             },
             { 0, 1, 256, NULL },
             new_gd_component
@@ -91,7 +101,9 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 FRAME_TRANSPARENT_NONNEG,
                 FRAME_METADATA_ANY,
                 0,
-                0
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
             },
             { 0, 1, 256, NULL },
             new_gd_component
@@ -107,6 +119,8 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                1,
+                SIXEL_COLORSPACE_GAMMA,
                 1
             },
             { 1, 1, 3, NULL },
@@ -123,7 +137,9 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
-                0
+                0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 1, 3, white_bg },
             new_gd_component
@@ -139,7 +155,9 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 0,
-                0
+                0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
             },
             { 1, 0, 256, NULL },
             new_gd_component
@@ -155,6 +173,8 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 -1,
                 FRAME_METADATA_ANY,
                 1,
+                1,
+                SIXEL_COLORSPACE_GAMMA,
                 1
             },
             { 1, 1, 256, NULL },
@@ -171,9 +191,83 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 FRAME_TRANSPARENT_NONNEG,
                 FRAME_METADATA_ANY,
                 0,
-                0
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
             },
             { 1, 1, 4, NULL },
+            new_gd_component
+        },
+        {
+            "gd opaque truecolor keeps rgb888 gamma fast path",
+            "/tests/data/inputs/formats/snake-jpeg-444.jpg",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
+            },
+            { 0, 0, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd indexed input without palette request emits rgb888 gamma",
+            "/tests/data/inputs/formats/snake-png-pal8.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
+            },
+            { 0, 0, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd indexed keycolor gama+iccp with background emits float32",
+            "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png",
+            {
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                4,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
+            },
+            { 1, 1, 256, white_bg },
+            new_gd_component
+        },
+        {
+            "gd rgb16 sRGB-only png promotes to float32 linear",
+            "/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png",
+            {
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
+            },
+            { 1, 0, 256, NULL },
             new_gd_component
         }
     };
@@ -239,6 +333,22 @@ run_gd_loader_test_mode(char const *mode)
     if (strcmp(mode, "indexed_keycolor_reqcolors_boundary_pal8") == 0) {
         return run_gd_pixelformat_case_by_id(
             GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_BOUNDARY_PAL8);
+    }
+    if (strcmp(mode, "opaque_rgb_gamma_fastpath") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_OPAQUE_RGB_GAMMA_FASTPATH);
+    }
+    if (strcmp(mode, "indexed_no_palette_rgb_gamma") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_INDEXED_NO_PALETTE_RGB_GAMMA);
+    }
+    if (strcmp(mode, "indexed_keycolor_gama_iccp_bg_float32_linear") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_INDEXED_KEYCOLOR_GAMA_ICCP_BG_FLOAT32_LINEAR);
+    }
+    if (strcmp(mode, "highdepth_srgb_only_float32_linear") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_HIGHDEPTH_SRGB_ONLY_FLOAT32_LINEAR);
     }
 
     fprintf(stderr, "unknown gd pixelformat test mode: %s\n", mode);
