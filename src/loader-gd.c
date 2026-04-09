@@ -92,6 +92,21 @@ typedef enum sixel_loader_gd_format {
     SIXEL_LOADER_GD_FORMAT_WEBP
 } sixel_loader_gd_format_t;
 
+typedef enum sixel_loader_gd_transfer_mode {
+    SIXEL_LOADER_GD_TRANSFER_SRGB = 0,
+    SIXEL_LOADER_GD_TRANSFER_GAMA = 1
+} sixel_loader_gd_transfer_mode_t;
+
+typedef struct sixel_loader_gd_png_probe {
+    int bit_depth;
+    int interlace_method;
+    int has_actl;
+    int has_srgb;
+    int has_iccp;
+    int has_gama;
+    double file_gamma;
+} sixel_loader_gd_png_probe_t;
+
 typedef struct sixel_loader_gd_component {
     sixel_loader_component_t base;
     sixel_atomic_u32_t ref;
@@ -312,6 +327,45 @@ gd_build_srgb_decode_u8_lut(double lut[256])
     }
 }
 
+static double
+gd_decode_source_unit(double value,
+                      int transfer_mode,
+                      double file_gamma)
+{
+    value = gd_clamp_unit(value);
+    if (transfer_mode == SIXEL_LOADER_GD_TRANSFER_GAMA &&
+            file_gamma > 0.0) {
+#if HAVE_MATH_H
+        return pow(value, 1.0 / file_gamma);
+#else
+        return value;
+#endif
+    }
+    return gd_decode_srgb_unit(value);
+}
+
+static void
+gd_build_decode_u8_lut(double lut[256],
+                       int transfer_mode,
+                       double file_gamma)
+{
+    int index;
+    double unit;
+
+    index = 0;
+    unit = 0.0;
+    if (lut == NULL) {
+        return;
+    }
+
+    for (index = 0; index < 256; ++index) {
+        unit = (double)index / 255.0;
+        lut[index] = gd_decode_source_unit(unit,
+                                           transfer_mode,
+                                           file_gamma);
+    }
+}
+
 static double const *
 gd_get_srgb_decode_u8_lut(int *cache_ready,
                           double cache_lut[256],
@@ -330,6 +384,29 @@ gd_get_srgb_decode_u8_lut(int *cache_ready,
     }
     gd_build_srgb_decode_u8_lut(fallback_lut);
     return fallback_lut;
+}
+
+static double const *
+gd_get_decode_u8_lut(int transfer_mode,
+                     double file_gamma,
+                     int *srgb_cache_ready,
+                     double srgb_cache_lut[256],
+                     double fallback_lut[256])
+{
+    if (transfer_mode == SIXEL_LOADER_GD_TRANSFER_GAMA &&
+            file_gamma > 0.0) {
+        if (fallback_lut == NULL) {
+            return NULL;
+        }
+        gd_build_decode_u8_lut(fallback_lut,
+                               transfer_mode,
+                               file_gamma);
+        return fallback_lut;
+    }
+
+    return gd_get_srgb_decode_u8_lut(srgb_cache_ready,
+                                     srgb_cache_lut,
+                                     fallback_lut);
 }
 
 static unsigned int
@@ -351,9 +428,8 @@ gd_read_u32be(unsigned char const *bytes)
 }
 
 static SIXELSTATUS
-gd_parse_png_ihdr(sixel_chunk_t const *pchunk,
-                  int *bit_depth,
-                  int *interlace_method)
+gd_parse_png_probe_info(sixel_chunk_t const *pchunk,
+                        sixel_loader_gd_png_probe_t *probe)
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
@@ -362,17 +438,24 @@ gd_parse_png_ihdr(sixel_chunk_t const *pchunk,
     size_t chunk_length;
     unsigned char const *type_ptr;
     unsigned char const *data_ptr;
+    int seen_ihdr;
 
     offset = 0u;
     chunk_length = 0u;
     type_ptr = NULL;
     data_ptr = NULL;
-    if (pchunk == NULL || bit_depth == NULL || interlace_method == NULL) {
+    seen_ihdr = 0;
+    if (pchunk == NULL || probe == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *bit_depth = 0;
-    *interlace_method = 0;
+    probe->bit_depth = 0;
+    probe->interlace_method = 0;
+    probe->has_actl = 0;
+    probe->has_srgb = 0;
+    probe->has_iccp = 0;
+    probe->has_gama = 0;
+    probe->file_gamma = 0.0;
     if (pchunk->buffer == NULL || pchunk->size < sizeof(png_signature)) {
         return SIXEL_FALSE;
     }
@@ -396,15 +479,27 @@ gd_parse_png_ihdr(sixel_chunk_t const *pchunk,
             if (chunk_length < 13u) {
                 return SIXEL_FALSE;
             }
-            *bit_depth = (int)data_ptr[8];
-            *interlace_method = (int)data_ptr[12];
-            return SIXEL_OK;
+            probe->bit_depth = (int)data_ptr[8];
+            probe->interlace_method = (int)data_ptr[12];
+            seen_ihdr = 1;
+        } else if (memcmp(type_ptr, "acTL", 4u) == 0) {
+            probe->has_actl = 1;
+        } else if (memcmp(type_ptr, "iCCP", 4u) == 0) {
+            probe->has_iccp = 1;
+        } else if (memcmp(type_ptr, "sRGB", 4u) == 0) {
+            probe->has_srgb = 1;
+        } else if (memcmp(type_ptr, "gAMA", 4u) == 0 &&
+                   chunk_length >= 4u) {
+            probe->has_gama = 1;
+            probe->file_gamma = (double)gd_read_u32be(data_ptr) / 100000.0;
+        } else if (memcmp(type_ptr, "IEND", 4u) == 0) {
+            break;
         }
 
         offset += chunk_length + 4u;
     }
 
-    return SIXEL_FALSE;
+    return seen_ihdr != 0 ? SIXEL_OK : SIXEL_FALSE;
 }
 
 static gdImagePtr
@@ -464,23 +559,35 @@ gd_decode_with_format(sixel_loader_gd_format_t format,
 static SIXELSTATUS
 gd_prepare_decode_request(sixel_chunk_t const *chunk,
                           sixel_loader_gd_format_t *format,
-                          int *source_high_depth)
+                          int *source_high_depth,
+                          int *source_transfer_mode,
+                          double *source_file_gamma)
 {
-    SIXELSTATUS png_ihdr_status;
+    SIXELSTATUS png_probe_status;
     sixel_loader_gd_format_t sniffed_format;
-    int png_bit_depth;
-    int png_interlace_method;
+    sixel_loader_gd_png_probe_t png_probe;
 
-    png_ihdr_status = SIXEL_FALSE;
+    png_probe_status = SIXEL_FALSE;
     sniffed_format = SIXEL_LOADER_GD_FORMAT_NONE;
-    png_bit_depth = 0;
-    png_interlace_method = 0;
+    png_probe.bit_depth = 0;
+    png_probe.interlace_method = 0;
+    png_probe.has_actl = 0;
+    png_probe.has_srgb = 0;
+    png_probe.has_iccp = 0;
+    png_probe.has_gama = 0;
+    png_probe.file_gamma = 0.0;
     if (chunk == NULL || format == NULL || source_high_depth == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     *format = SIXEL_LOADER_GD_FORMAT_NONE;
     *source_high_depth = 0;
+    if (source_transfer_mode != NULL) {
+        *source_transfer_mode = SIXEL_LOADER_GD_TRANSFER_SRGB;
+    }
+    if (source_file_gamma != NULL) {
+        *source_file_gamma = 0.0;
+    }
 
     sniffed_format = gd_sniff_format(chunk);
     if (sniffed_format == SIXEL_LOADER_GD_FORMAT_NONE ||
@@ -489,19 +596,37 @@ gd_prepare_decode_request(sixel_chunk_t const *chunk,
     }
 
     if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG) {
-        png_ihdr_status = gd_parse_png_ihdr(chunk,
-                                            &png_bit_depth,
-                                            &png_interlace_method);
-        if (png_ihdr_status == SIXEL_OK) {
-            if (png_interlace_method != 0) {
+        png_probe_status = gd_parse_png_probe_info(chunk, &png_probe);
+        if (png_probe_status == SIXEL_OK) {
+            if (png_probe.has_actl != 0) {
                 return SIXEL_FALSE;
             }
-            if (png_bit_depth > 8) {
+            if (png_probe.interlace_method != 0) {
+                return SIXEL_FALSE;
+            }
+            if (png_probe.bit_depth > 8) {
                 *source_high_depth = 1;
             }
-        } else if (png_ihdr_status != SIXEL_FALSE &&
-                   SIXEL_FAILED(png_ihdr_status)) {
-            return png_ihdr_status;
+            if (source_transfer_mode != NULL) {
+                /*
+                 * GD lacks ICC transforms in this path, so iCCP currently
+                 * keeps the legacy sRGB decode approximation.
+                 */
+                *source_transfer_mode = SIXEL_LOADER_GD_TRANSFER_SRGB;
+                if (png_probe.has_iccp == 0 &&
+                        png_probe.has_srgb == 0 &&
+                        png_probe.has_gama != 0 &&
+                        png_probe.file_gamma > 0.0) {
+                    *source_transfer_mode = SIXEL_LOADER_GD_TRANSFER_GAMA;
+                }
+            }
+            if (source_file_gamma != NULL && png_probe.has_gama != 0 &&
+                    png_probe.file_gamma > 0.0) {
+                *source_file_gamma = png_probe.file_gamma;
+            }
+        } else if (png_probe_status != SIXEL_FALSE &&
+                   SIXEL_FAILED(png_probe_status)) {
+            return png_probe_status;
         }
     }
 
@@ -737,18 +862,26 @@ loader_can_try_gd(sixel_chunk_t const *chunk)
     SIXELSTATUS status;
     sixel_loader_gd_format_t sniffed_format;
     int source_high_depth;
+    int source_transfer_mode;
+    double source_file_gamma;
 
     status = SIXEL_FALSE;
     sniffed_format = SIXEL_LOADER_GD_FORMAT_NONE;
     source_high_depth = 0;
+    source_transfer_mode = SIXEL_LOADER_GD_TRANSFER_SRGB;
+    source_file_gamma = 0.0;
     if (chunk == NULL) {
         return 0;
     }
 
     status = gd_prepare_decode_request(chunk,
                                        &sniffed_format,
-                                       &source_high_depth);
+                                       &source_high_depth,
+                                       &source_transfer_mode,
+                                       &source_file_gamma);
     (void)source_high_depth;
+    (void)source_transfer_mode;
+    (void)source_file_gamma;
     return status == SIXEL_OK ? 1 : 0;
 }
 
@@ -784,6 +917,8 @@ load_with_gd(
     int width;
     int height;
     int source_high_depth;
+    int source_transfer_mode;
+    double source_file_gamma;
     int has_alpha_like;
     int has_partial_alpha;
     int has_keycolor_alpha;
@@ -830,6 +965,8 @@ load_with_gd(
     width = 0;
     height = 0;
     source_high_depth = 0;
+    source_transfer_mode = SIXEL_LOADER_GD_TRANSFER_SRGB;
+    source_file_gamma = 0.0;
     has_alpha_like = 0;
     has_partial_alpha = 0;
     has_keycolor_alpha = 0;
@@ -868,7 +1005,9 @@ load_with_gd(
      */
     status = gd_prepare_decode_request(pchunk,
                                        &sniffed_format,
-                                       &source_high_depth);
+                                       &source_high_depth,
+                                       &source_transfer_mode,
+                                       &source_file_gamma);
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -1132,7 +1271,9 @@ load_with_gd(
                 }
             }
 
-            decode_lut = gd_get_srgb_decode_u8_lut(
+            decode_lut = gd_get_decode_u8_lut(
+                source_transfer_mode,
+                source_file_gamma,
                 srgb_decode_lut_ready,
                 srgb_decode_lut,
                 decode_lut_local);
@@ -1356,7 +1497,9 @@ load_with_gd(
             }
         }
 
-        decode_lut = gd_get_srgb_decode_u8_lut(
+        decode_lut = gd_get_decode_u8_lut(
+            source_transfer_mode,
+            source_file_gamma,
             srgb_decode_lut_ready,
             srgb_decode_lut,
             decode_lut_local);

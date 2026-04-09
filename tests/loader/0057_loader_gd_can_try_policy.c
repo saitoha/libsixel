@@ -68,6 +68,16 @@ test_loader_0057_loader_gd_can_try_policy(int argc, char **argv)
         0x10u, 0x00u, 0x00u, 0x00u, 0x00u,
         0x00u, 0x00u, 0x00u, 0x00u
     };
+    static unsigned char const png_apng_data[] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au,
+        0x00u, 0x00u, 0x00u, 0x0du, 'I', 'H', 'D', 'R',
+        0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x08u, 0x02u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x08u, 'a', 'c', 'T', 'L',
+        0x00u, 0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u
+    };
     static unsigned char const jpeg_data[] = {
         0xffu, 0xd8u, 0xffu, 0xe0u, 0x00u, 0x10u, 'J', 'F', 'I', 'F'
     };
@@ -105,6 +115,12 @@ test_loader_0057_loader_gd_can_try_policy(int argc, char **argv)
                        sizeof(png_highdepth_data),
                        1,
                        "png-highdepth") != 0) {
+        result = 1;
+    }
+    if (expect_can_try(png_apng_data,
+                       sizeof(png_apng_data),
+                       0,
+                       "png-apng") != 0) {
         result = 1;
     }
     if (expect_can_try(jpeg_data, sizeof(jpeg_data), 1, "jpeg") != 0) {
