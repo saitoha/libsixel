@@ -617,6 +617,45 @@ sixel_loader_gd_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
+int
+loader_can_try_gd(sixel_chunk_t const *chunk)
+{
+    sixel_loader_gd_format_t sniffed_format;
+    SIXELSTATUS png_ihdr_status;
+    int png_bit_depth;
+    int png_interlace_method;
+
+    sniffed_format = SIXEL_LOADER_GD_FORMAT_NONE;
+    png_ihdr_status = SIXEL_FALSE;
+    png_bit_depth = 0;
+    png_interlace_method = 0;
+    if (chunk == NULL) {
+        return 0;
+    }
+
+    sniffed_format = gd_sniff_format(chunk);
+    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_NONE ||
+            sniffed_format == SIXEL_LOADER_GD_FORMAT_GIF) {
+        return 0;
+    }
+
+    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG) {
+        png_ihdr_status = gd_parse_png_ihdr(chunk,
+                                            &png_bit_depth,
+                                            &png_interlace_method);
+        if (png_ihdr_status == SIXEL_OK && png_interlace_method != 0) {
+            return 0;
+        }
+        if (png_ihdr_status != SIXEL_OK &&
+                png_ihdr_status != SIXEL_FALSE &&
+                SIXEL_FAILED(png_ihdr_status)) {
+            return 0;
+        }
+    }
+
+    return gd_is_format_supported(sniffed_format);
+}
+
 SIXELSTATUS
 load_with_gd(
     sixel_chunk_t const       /* in */     *pchunk,     /* image data */

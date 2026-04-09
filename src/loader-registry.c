@@ -143,7 +143,7 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
     {
         "gd",
         NULL,
-        NULL,
+        loader_can_try_gd,
         sixel_loader_gd_new,
         NULL,
         0u,
