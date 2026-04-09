@@ -80,6 +80,18 @@ typedef struct sixel_temporal_stbn_state {
 #define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
 #define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
 
+typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
+    uint32_t sequence_index,
+    int x,
+    int y,
+    int channel,
+    int depth);
+
+typedef struct sixel_temporal_stbn_source_ops {
+    uint8_t source_id;
+    sixel_temporal_stbn_sample_u16_fn sample_u16;
+} sixel_temporal_stbn_source_ops_t;
+
 static SIXELSTATUS
 sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
@@ -182,6 +194,9 @@ sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
 
 static uint8_t
 sixel_temporal_stbn_select_sample_source(void);
+
+static sixel_temporal_stbn_source_ops_t const *
+sixel_temporal_stbn_source_ops_for_id(uint8_t source_id);
 
 static uint16_t
 sixel_temporal_stbn_sample_u16(
@@ -569,10 +584,36 @@ sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
                                                depth);
 }
 
+static sixel_temporal_stbn_source_ops_t const
+sixel_temporal_stbn_source_hash_ops = {
+    SIXEL_TEMPORAL_STBN_SOURCE_HASH,
+    sixel_temporal_stbn_sample_hash_u16
+};
+
+static sixel_temporal_stbn_source_ops_t const
+sixel_temporal_stbn_source_mask_ops = {
+    SIXEL_TEMPORAL_STBN_SOURCE_MASK,
+    sixel_temporal_stbn_sample_mask_u16
+};
+
 static uint8_t
 sixel_temporal_stbn_select_sample_source(void)
 {
     return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+}
+
+static sixel_temporal_stbn_source_ops_t const *
+sixel_temporal_stbn_source_ops_for_id(uint8_t source_id)
+{
+    switch (source_id) {
+    case SIXEL_TEMPORAL_STBN_SOURCE_MASK:
+        return &sixel_temporal_stbn_source_mask_ops;
+    case SIXEL_TEMPORAL_STBN_SOURCE_HASH:
+    default:
+        break;
+    }
+
+    return &sixel_temporal_stbn_source_hash_ops;
 }
 
 static uint16_t
@@ -585,23 +626,22 @@ sixel_temporal_stbn_sample_u16(
 {
     uint32_t sequence_index;
     uint8_t source_id;
+    sixel_temporal_stbn_source_ops_t const *source_ops;
 
     sequence_index = 0U;
     source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+    source_ops = NULL;
 
     sequence_index = sixel_temporal_stbn_sequence_index(stbn_state);
     source_id = sixel_temporal_stbn_sample_source_id(stbn_state);
+    source_ops = sixel_temporal_stbn_source_ops_for_id(source_id);
 
-    switch (source_id) {
-    case SIXEL_TEMPORAL_STBN_SOURCE_MASK:
-        return sixel_temporal_stbn_sample_mask_u16(sequence_index,
-                                                   x,
-                                                   y,
-                                                   channel,
-                                                   depth);
-    case SIXEL_TEMPORAL_STBN_SOURCE_HASH:
-    default:
-        break;
+    if (source_ops != NULL && source_ops->sample_u16 != NULL) {
+        return source_ops->sample_u16(sequence_index,
+                                      x,
+                                      y,
+                                      channel,
+                                      depth);
     }
 
     return sixel_temporal_stbn_sample_hash_u16(sequence_index,
