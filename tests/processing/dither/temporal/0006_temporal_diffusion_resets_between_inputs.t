@@ -15,37 +15,31 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_anim="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
-output_sixel="${ARTIFACT_LOCAL_DIR}/temporal-reset-between-inputs.six"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 -ldisable \
-    -d temporal-diffusion -p 16 \
-    "${input_anim}" "${input_anim}" >"${output_sixel}" || {
+combined_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 -ldisable \
+        -d temporal-diffusion -p 16 \
+        "${input_anim}" "${input_anim}"
+) || {
     echo "not ok" 1 - "temporal-diffusion two-input encode failed"
     exit 0
 }
 
-frame_count=$(awk 'BEGIN{RS="\033\\\\"} END{print NR}' "${output_sixel}")
-test "${frame_count}" -ge 4 || {
-    echo "not ok" 1 - "two-input encode did not emit four frames"
+single_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 -ldisable \
+        -d temporal-diffusion -p 16 \
+        "${input_anim}"
+) || {
+    echo "not ok" 1 - "temporal-diffusion single-input encode failed"
     exit 0
 }
 
-frame_1=$(awk 'BEGIN{RS="\033\\\\"} NR==1{printf "%s",$0}' "${output_sixel}")
-frame_2=$(awk 'BEGIN{RS="\033\\\\"} NR==2{printf "%s",$0}' "${output_sixel}")
-frame_3=$(awk 'BEGIN{RS="\033\\\\"} NR==3{printf "%s",$0}' "${output_sixel}")
-frame_4=$(awk 'BEGIN{RS="\033\\\\"} NR==4{printf "%s",$0}' "${output_sixel}")
-
-test "${frame_1}" = "${frame_3}" || {
-    echo "not ok" 1 - "temporal state leaked into second input frame 0"
-    exit 0
-}
-
-test "${frame_2}" = "${frame_4}" || {
-    echo "not ok" 1 - "temporal state leaked into second input frame 1"
+expected_output="${single_output}${single_output}"
+test "${combined_output}" = "${expected_output}" || {
+    echo "not ok" 1 - "temporal state leaked across input boundary"
     exit 0
 }
 
