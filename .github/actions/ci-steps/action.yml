@@ -1322,6 +1322,128 @@ runs:
         scp "${user}"@cross_platform_actions_host:/tmp/artifacts.tar.gz . || true
         tar xvzf artifacts.tar.gz || true
 
+    - name: Normalize and filter coverage paths
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        repo_name="${GITHUB_REPOSITORY##*/}"
+        COVERAGE_AWK="awk"
+        if command -v /usr/xpg4/bin/awk >/dev/null 2>&1; then
+          COVERAGE_AWK="/usr/xpg4/bin/awk"
+        elif command -v nawk >/dev/null 2>&1; then
+          COVERAGE_AWK="nawk"
+        fi
+
+        if test -f coverage.info; then
+          # Normalize LCOV paths to repository-relative form and drop
+          # directories that are intentionally excluded from C coverage.
+          "$COVERAGE_AWK" -v repo_name="$repo_name" '
+            BEGIN {
+              record = ""
+              keep_record = 1
+            }
+            function normalize_path(path, normalized) {
+              normalized = path
+              gsub(/\\/, "/", normalized)
+              sub("^\\./", "", normalized)
+              sub("^[A-Za-z]:/*", "", normalized)
+              sub("^/*", "", normalized)
+              if (repo_name != "") {
+                sub("^.*\\/" repo_name "\\/", "", normalized)
+              }
+              sub("^builddir\\/", "", normalized)
+              sub("^\\./", "", normalized)
+              return normalized
+            }
+            function flush_record() {
+              if (record == "") {
+                return
+              }
+              if (keep_record) {
+                printf "%s", record
+              }
+              record = ""
+              keep_record = 1
+            }
+            {
+              line = $0
+              if (line ~ /^SF:/) {
+                path = normalize_path(substr(line, 4))
+                if (path ~ /^(fuzz|include|tools)\//) {
+                  keep_record = 0
+                } else {
+                  line = "SF:" path
+                }
+              }
+              record = record line "\n"
+              if (line == "end_of_record") {
+                flush_record()
+              }
+            }
+            END {
+              flush_record()
+            }
+          ' coverage.info > coverage.info.tmp
+          mv coverage.info.tmp coverage.info
+          head -n40 coverage.info
+        fi
+
+        if test -f coverage.cobertura.xml; then
+          # Normalize Cobertura class filenames and drop excluded directories.
+          "$COVERAGE_AWK" -v repo_name="$repo_name" '
+            BEGIN {
+              skip_class = 0
+            }
+            function normalize_path(path, normalized) {
+              normalized = path
+              gsub(/\\/, "/", normalized)
+              sub("^\\./", "", normalized)
+              sub("^[A-Za-z]:/*", "", normalized)
+              sub("^/*", "", normalized)
+              if (repo_name != "") {
+                sub("^.*\\/" repo_name "\\/", "", normalized)
+              }
+              sub("^builddir\\/", "", normalized)
+              sub("^\\./", "", normalized)
+              return normalized
+            }
+            {
+              line = $0
+              if (skip_class) {
+                if (line ~ /<\/class>/) {
+                  skip_class = 0
+                }
+                next
+              }
+              if (line ~ /<source>[^<]*<\/source>/) {
+                gsub(/<source>[^<]*<\/source>/, "<source>.</source>", line)
+                print line
+                next
+              }
+              if (line ~ /<class[ \t][^>]*filename=\"/) {
+                if (match(line, /filename=\"[^\"]*\"/)) {
+                  raw = substr(line, RSTART + 10, RLENGTH - 11)
+                  path = normalize_path(raw)
+                  if (path ~ /^(fuzz|include|tools)\//) {
+                    if (line ~ /\/>[ \t]*$/) {
+                      next
+                    }
+                    skip_class = 1
+                    next
+                  }
+                  line = substr(line, 1, RSTART - 1) \
+                    "filename=\"" path "\"" \
+                    substr(line, RSTART + RLENGTH)
+                }
+              }
+              print line
+            }
+          ' coverage.cobertura.xml > coverage.cobertura.xml.tmp
+          mv coverage.cobertura.xml.tmp coverage.cobertura.xml
+          head -n20 coverage.cobertura.xml
+        fi
+
     - name: Upload artifacts
       if: ${{ always() }}
       uses: actions/upload-artifact@v7
