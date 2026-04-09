@@ -2368,6 +2368,7 @@ sixel_dither_temporal_state_init(sixel_dither_t *dither)
     dither->temporal_state.width = 0;
     dither->temporal_state.height = 0;
     dither->temporal_state.depth = 0;
+    dither->temporal_state.method_id = 0;
     dither->temporal_state.apply_count = 0UL;
     dither->temporal_state.consume_count = 0UL;
     dither->temporal_state.last_apply_status = SIXEL_FALSE;
@@ -2393,6 +2394,7 @@ sixel_dither_temporal_state_reset(sixel_dither_t *dither)
     dither->temporal_state.width = 0;
     dither->temporal_state.height = 0;
     dither->temporal_state.depth = 0;
+    dither->temporal_state.method_id = 0;
     dither->temporal_state.last_apply_status = SIXEL_FALSE;
     dither->temporal_state.last_apply_consumed = 0;
 }

@@ -46,9 +46,9 @@ typedef struct sixel_dither_frame_context {
 } sixel_dither_frame_context_t;
 
 /*
- * Reserved container for temporal diffusion state. The current refactor only
- * wires ownership and lifecycle; future temporal diffusion patches will
- * populate the buffer and dimensions.
+ * Temporal dithering state container. The method_id identifies which temporal
+ * strategy owns error_frame so future strategies (for example STBN) can keep
+ * state isolated behind a shared lifecycle.
  */
 typedef struct sixel_dither_temporal_state {
     void *error_frame;
@@ -56,6 +56,7 @@ typedef struct sixel_dither_temporal_state {
     int width;
     int height;
     int depth;
+    int method_id;
     unsigned long apply_count;
     unsigned long consume_count;
     int last_apply_status;
