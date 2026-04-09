@@ -73,9 +73,12 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 
 typedef struct sixel_temporal_stbn_state {
     uint32_t sequence_index;
+    uint8_t sample_source_id;
 } sixel_temporal_stbn_state_t;
 
 #define SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED 0
+#define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
+#define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
 
 static SIXELSTATUS
 sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
@@ -156,18 +159,42 @@ static uint32_t
 sixel_temporal_stbn_sequence_index(
     sixel_temporal_stbn_state_t const *stbn_state);
 
+static uint8_t
+sixel_temporal_stbn_sample_source_id(
+    sixel_temporal_stbn_state_t const *stbn_state);
+
 static uint32_t
 sixel_temporal_stbn_hash_u32(uint32_t value);
 
 static uint16_t
-sixel_temporal_stbn_sample_u16(uint32_t sequence_index,
-                               int x,
-                               int y,
-                               int channel,
-                               int depth);
+sixel_temporal_stbn_sample_hash_u16(uint32_t sequence_index,
+                                    int x,
+                                    int y,
+                                    int channel,
+                                    int depth);
+
+static uint16_t
+sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
+                                    int x,
+                                    int y,
+                                    int channel,
+                                    int depth);
+
+static uint8_t
+sixel_temporal_stbn_select_sample_source(void);
+
+static uint16_t
+sixel_temporal_stbn_sample_u16(
+    sixel_temporal_stbn_state_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth);
 
 static int32_t
-sixel_temporal_stbn_sample_centered(uint32_t sequence_index,
+sixel_temporal_stbn_sample_centered(
+                                    sixel_temporal_stbn_state_t const
+                                        *stbn_state,
                                     int x,
                                     int y,
                                     int channel,
@@ -456,6 +483,7 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    stbn_state->sample_source_id = sixel_temporal_stbn_select_sample_source();
     if (dither->frame_context.valid) {
         stbn_state->sequence_index =
             (uint32_t)dither->frame_context.frame_no;
@@ -475,6 +503,17 @@ sixel_temporal_stbn_sequence_index(
     return stbn_state->sequence_index;
 }
 
+static uint8_t
+sixel_temporal_stbn_sample_source_id(
+    sixel_temporal_stbn_state_t const *stbn_state)
+{
+    if (stbn_state == NULL) {
+        return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+    }
+
+    return stbn_state->sample_source_id;
+}
+
 static uint32_t
 sixel_temporal_stbn_hash_u32(uint32_t value)
 {
@@ -487,11 +526,11 @@ sixel_temporal_stbn_hash_u32(uint32_t value)
 }
 
 static uint16_t
-sixel_temporal_stbn_sample_u16(uint32_t sequence_index,
-                               int x,
-                               int y,
-                               int channel,
-                               int depth)
+sixel_temporal_stbn_sample_hash_u16(uint32_t sequence_index,
+                                    int x,
+                                    int y,
+                                    int channel,
+                                    int depth)
 {
     uint32_t key;
     uint32_t ch;
@@ -512,8 +551,70 @@ sixel_temporal_stbn_sample_u16(uint32_t sequence_index,
     return (uint16_t)(key >> 16);
 }
 
+static uint16_t
+sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
+                                    int x,
+                                    int y,
+                                    int channel,
+                                    int depth)
+{
+    /*
+     * Placeholder mask source keeps output stable until dedicated STBN mask
+     * tables are connected.
+     */
+    return sixel_temporal_stbn_sample_hash_u16(sequence_index,
+                                               x,
+                                               y,
+                                               channel,
+                                               depth);
+}
+
+static uint8_t
+sixel_temporal_stbn_select_sample_source(void)
+{
+    return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+}
+
+static uint16_t
+sixel_temporal_stbn_sample_u16(
+    sixel_temporal_stbn_state_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint32_t sequence_index;
+    uint8_t source_id;
+
+    sequence_index = 0U;
+    source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+
+    sequence_index = sixel_temporal_stbn_sequence_index(stbn_state);
+    source_id = sixel_temporal_stbn_sample_source_id(stbn_state);
+
+    switch (source_id) {
+    case SIXEL_TEMPORAL_STBN_SOURCE_MASK:
+        return sixel_temporal_stbn_sample_mask_u16(sequence_index,
+                                                   x,
+                                                   y,
+                                                   channel,
+                                                   depth);
+    case SIXEL_TEMPORAL_STBN_SOURCE_HASH:
+    default:
+        break;
+    }
+
+    return sixel_temporal_stbn_sample_hash_u16(sequence_index,
+                                               x,
+                                               y,
+                                               channel,
+                                               depth);
+}
+
 static int32_t
-sixel_temporal_stbn_sample_centered(uint32_t sequence_index,
+sixel_temporal_stbn_sample_centered(
+                                    sixel_temporal_stbn_state_t const
+                                        *stbn_state,
                                     int x,
                                     int y,
                                     int channel,
@@ -521,7 +622,7 @@ sixel_temporal_stbn_sample_centered(uint32_t sequence_index,
 {
     uint16_t sample;
 
-    sample = sixel_temporal_stbn_sample_u16(sequence_index,
+    sample = sixel_temporal_stbn_sample_u16(stbn_state,
                                             x,
                                             y,
                                             channel,
@@ -536,16 +637,13 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int channel,
                                 int depth)
 {
-    uint32_t sequence_index;
     int32_t sample_centered;
     int64_t bias_scaled;
 
-    sequence_index = 0U;
     sample_centered = 0;
     bias_scaled = 0;
 
-    sequence_index = sixel_temporal_stbn_sequence_index(stbn_state);
-    sample_centered = sixel_temporal_stbn_sample_centered(sequence_index,
+    sample_centered = sixel_temporal_stbn_sample_centered(stbn_state,
                                                           x,
                                                           y,
                                                           channel,
