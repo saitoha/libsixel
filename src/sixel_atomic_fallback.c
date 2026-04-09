@@ -115,6 +115,28 @@ sixel_atomic_fallback_unlock(void)
 }
 # endif
 
+void
+sixel_atomic_fallback_fence_release(void)
+{
+    /*
+     * Reuse the fallback mutex to publish preceding writes when the compiler
+     * lacks native atomic fences.
+     */
+    sixel_atomic_fallback_lock();
+    sixel_atomic_fallback_unlock();
+}
+
+void
+sixel_atomic_fallback_fence_acquire(void)
+{
+    /*
+     * Pair with the release helper above so readers can observe data guarded
+     * by fallback atomic flags on weak memory-order architectures.
+     */
+    sixel_atomic_fallback_lock();
+    sixel_atomic_fallback_unlock();
+}
+
 unsigned int
 sixel_atomic_fallback_fetch_add_u32(sixel_atomic_u32_t *ptr,
                                     unsigned int value)

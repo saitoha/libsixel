@@ -89,8 +89,14 @@ unsigned int
 sixel_atomic_fallback_fetch_sub_u32(sixel_atomic_u32_t *ptr,
                                     unsigned int value);
 
-#   define sixel_fence_release() do { } while (0)
-#   define sixel_fence_acquire() do { } while (0)
+void
+sixel_atomic_fallback_fence_release(void);
+
+void
+sixel_atomic_fallback_fence_acquire(void);
+
+#   define sixel_fence_release() sixel_atomic_fallback_fence_release()
+#   define sixel_fence_acquire() sixel_atomic_fallback_fence_acquire()
 static inline unsigned int
 sixel_atomic_fetch_add_u32(sixel_atomic_u32_t *ptr,
                            unsigned int value)
