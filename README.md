@@ -585,7 +585,9 @@ Options:
                                          variable error diffusion
                                          tables, optimized for size
                              temporal-diffusion -> temporal error
-                                          diffusion (palette path)
+                                          diffusion (palette path;
+                                          ignores -Y; not available
+                                          with -I)
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:
@@ -601,6 +603,8 @@ Options:
                                        immediately
                              carry  -> accumulate error in workspace
                                        buffers before applying
+                           note: ignored when -d temporal-diffusion
+                                 is selected
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for

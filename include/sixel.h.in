@@ -327,7 +327,12 @@ typedef int SIXELSTATUS;
                                                                  -> temporal
                                                                  error
                                                                  diffusion
-                                                                 (palette path)
+                                                                 (palette
+                                                                 path;
+                                                                 ignores -Y;
+                                                                 not
+                                                                 available
+                                                                 with -I)
                                                 */
 #define SIXEL_OPTFLAG_DIFFUSION_SCAN    ('y')  /* -y SCANTYPE, --diffusion-scan=SCANTYPE:
                                                   choose scan order for error diffusion.
@@ -359,6 +364,8 @@ typedef int SIXELSTATUS;
                                                     carry   -> accumulate error in a
                                                                 workspace buffer before
                                                                 applying
+                                                  note: this option is ignored
+                                                        for temporal-diffusion
                                                 */
 #define SIXEL_OPTFLAG_FIND_LARGEST      ('f')  /* -f FINDTYPE, --find-largest=FINDTYPE:
                                                   choose method for finding the largest
