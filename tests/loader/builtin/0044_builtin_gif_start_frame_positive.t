@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_default.six" || {
     echo "not ok" 1 - "baseline builtin GIF decode failed"
@@ -23,7 +23,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_TRACE_TOPIC=gif_decode" \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
-    -L builtin! -ldisable \
+    --threads=1 -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_positive.six" || {
     echo "not ok" 1 - "builtin GIF decode with positive start frame failed"
