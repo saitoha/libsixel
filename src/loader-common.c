@@ -1041,6 +1041,159 @@ chunk_is_bmp(sixel_chunk_t const *chunk)
     return 0;
 }
 
+static int
+loader_chunk_read_wbmp_uint(sixel_chunk_t const *chunk,
+                            size_t *offset,
+                            unsigned int *value)
+{
+    size_t current;
+    unsigned int parsed;
+    unsigned char byte;
+    int count;
+
+    current = 0u;
+    parsed = 0u;
+    byte = 0u;
+    count = 0;
+    if (chunk == NULL || chunk->buffer == NULL ||
+            offset == NULL || value == NULL) {
+        return 0;
+    }
+
+    current = *offset;
+    while (count < 5) {
+        if (current >= chunk->size) {
+            return 0;
+        }
+        byte = chunk->buffer[current++];
+        if (parsed > 0x0fffffffu) {
+            return 0;
+        }
+        parsed = (parsed << 7u) | (unsigned int)(byte & 0x7fu);
+        ++count;
+        if ((byte & 0x80u) == 0u) {
+            *offset = current;
+            *value = parsed;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int
+chunk_is_wbmp(sixel_chunk_t const *chunk)
+{
+    size_t offset;
+    unsigned int type_field;
+    unsigned int fixed_header_field;
+    unsigned int width;
+    unsigned int height;
+
+    offset = 0u;
+    type_field = 0u;
+    fixed_header_field = 0u;
+    width = 0u;
+    height = 0u;
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 4u) {
+        return 0;
+    }
+
+    /*
+     * Level-0 WBMP starts with multi-byte integers:
+     *   - TypeField (0),
+     *   - FixHeaderField (0),
+     *   - width,
+     *   - height.
+     */
+    if (!loader_chunk_read_wbmp_uint(chunk, &offset, &type_field)) {
+        return 0;
+    }
+    if (!loader_chunk_read_wbmp_uint(chunk, &offset, &fixed_header_field)) {
+        return 0;
+    }
+    if (type_field != 0u || fixed_header_field != 0u) {
+        return 0;
+    }
+    if (!loader_chunk_read_wbmp_uint(chunk, &offset, &width)) {
+        return 0;
+    }
+    if (!loader_chunk_read_wbmp_uint(chunk, &offset, &height)) {
+        return 0;
+    }
+    if (width == 0u || height == 0u) {
+        return 0;
+    }
+    if (offset >= chunk->size) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static unsigned short
+loader_chunk_read_u16le(unsigned char const *bytes)
+{
+    if (bytes == NULL) {
+        return 0u;
+    }
+
+    return (unsigned short)((unsigned short)bytes[0] |
+                            (unsigned short)bytes[1] << 8u);
+}
+
+int
+chunk_is_tga(sixel_chunk_t const *chunk)
+{
+    unsigned char color_map_type;
+    unsigned char image_type;
+    unsigned short width;
+    unsigned short height;
+    unsigned char bits_per_pixel;
+    int image_type_supported;
+
+    color_map_type = 0u;
+    image_type = 0u;
+    width = 0u;
+    height = 0u;
+    bits_per_pixel = 0u;
+    image_type_supported = 0;
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 18u) {
+        return 0;
+    }
+
+    color_map_type = chunk->buffer[1];
+    image_type = chunk->buffer[2];
+    width = loader_chunk_read_u16le(chunk->buffer + 12u);
+    height = loader_chunk_read_u16le(chunk->buffer + 14u);
+    bits_per_pixel = chunk->buffer[16];
+    if (color_map_type > 1u) {
+        return 0;
+    }
+
+    image_type_supported = image_type == 1u ||
+        image_type == 2u ||
+        image_type == 3u ||
+        image_type == 9u ||
+        image_type == 10u ||
+        image_type == 11u;
+    if (!image_type_supported) {
+        return 0;
+    }
+    if (width == 0u || height == 0u) {
+        return 0;
+    }
+    if (bits_per_pixel != 8u &&
+            bits_per_pixel != 15u &&
+            bits_per_pixel != 16u &&
+            bits_per_pixel != 24u &&
+            bits_per_pixel != 32u) {
+        return 0;
+    }
+
+    return 1;
+}
+
 int
 chunk_is_tiff(sixel_chunk_t const *chunk)
 {
@@ -1072,9 +1225,63 @@ chunk_is_tiff(sixel_chunk_t const *chunk)
 }
 
 int
+chunk_is_gd2(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 4u) {
+        return 0;
+    }
+
+    /* GD2 streams start with the literal signature "gd2". */
+    if (chunk->buffer[0] == 'g' &&
+        chunk->buffer[1] == 'd' &&
+        chunk->buffer[2] == '2') {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+chunk_is_gd(sixel_chunk_t const *chunk)
+{
+    unsigned short width;
+    unsigned short height;
+    unsigned short ncolors;
+
+    width = 0u;
+    height = 0u;
+    ncolors = 0u;
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 6u) {
+        return 0;
+    }
+    if (chunk_is_gd2(chunk)) {
+        return 0;
+    }
+
+    /*
+     * Legacy GD files have no fixed magic. Use conservative header sanity
+     * checks to avoid probing unrelated formats.
+     */
+    width = (unsigned short)((unsigned short)chunk->buffer[0] << 8u |
+                             (unsigned short)chunk->buffer[1]);
+    height = (unsigned short)((unsigned short)chunk->buffer[2] << 8u |
+                              (unsigned short)chunk->buffer[3]);
+    ncolors = (unsigned short)((unsigned short)chunk->buffer[4] << 8u |
+                               (unsigned short)chunk->buffer[5]);
+    if (width == 0u || height == 0u) {
+        return 0;
+    }
+    if (ncolors == 0u || ncolors > 256u) {
+        return 0;
+    }
+
+    return 1;
+}
+
+int
 chunk_is_gif(sixel_chunk_t const *chunk)
 {
-    if (chunk->size < 6) {
+    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 6u) {
         return 0;
     }
     if (chunk->buffer[0] == 'G' &&

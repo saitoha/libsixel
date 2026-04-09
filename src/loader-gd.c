@@ -66,11 +66,19 @@
 #include "loader-gd.h"
 #include "sixel_atomic.h"
 
-
-typedef union sixel_loader_gd_fn_pointer {
-    sixel_load_image_function fn;
-    void *                    p;
-} sixel_loader_gd_fn_pointer_t;
+typedef enum sixel_loader_gd_format {
+    SIXEL_LOADER_GD_FORMAT_NONE = 0,
+    SIXEL_LOADER_GD_FORMAT_GIF,
+    SIXEL_LOADER_GD_FORMAT_PNG,
+    SIXEL_LOADER_GD_FORMAT_JPEG,
+    SIXEL_LOADER_GD_FORMAT_BMP,
+    SIXEL_LOADER_GD_FORMAT_TIFF,
+    SIXEL_LOADER_GD_FORMAT_WBMP,
+    SIXEL_LOADER_GD_FORMAT_TGA,
+    SIXEL_LOADER_GD_FORMAT_GD,
+    SIXEL_LOADER_GD_FORMAT_GD2,
+    SIXEL_LOADER_GD_FORMAT_WEBP
+} sixel_loader_gd_format_t;
 
 typedef struct sixel_loader_gd_component {
     sixel_loader_component_t base;
@@ -83,6 +91,119 @@ typedef struct sixel_loader_gd_component {
     int srgb_decode_lut_ready;
     double srgb_decode_lut[256];
 } sixel_loader_gd_component_t;
+
+typedef struct sixel_loader_gd_support_cache {
+    int initialized;
+    int bmp;
+    int wbmp;
+    int tga;
+    int tiff;
+    int gd;
+    int gd2;
+    int webp;
+} sixel_loader_gd_support_cache_t;
+
+static sixel_loader_gd_support_cache_t g_sixel_loader_gd_support_cache;
+
+static void
+gd_initialize_support_cache(void)
+{
+    if (g_sixel_loader_gd_support_cache.initialized != 0) {
+        return;
+    }
+
+    g_sixel_loader_gd_support_cache.bmp = gdSupportsFileType(".bmp", 0);
+    g_sixel_loader_gd_support_cache.wbmp = gdSupportsFileType(".wbmp", 0);
+    g_sixel_loader_gd_support_cache.tga = gdSupportsFileType(".tga", 0);
+    g_sixel_loader_gd_support_cache.tiff = gdSupportsFileType(".tiff", 0);
+    g_sixel_loader_gd_support_cache.gd = gdSupportsFileType(".gd", 0);
+    g_sixel_loader_gd_support_cache.gd2 = gdSupportsFileType(".gd2", 0);
+    g_sixel_loader_gd_support_cache.webp = gdSupportsFileType(".webp", 0);
+    g_sixel_loader_gd_support_cache.initialized = 1;
+}
+
+static int
+gd_is_format_supported(sixel_loader_gd_format_t format)
+{
+    gd_initialize_support_cache();
+
+    switch (format) {
+    case SIXEL_LOADER_GD_FORMAT_NONE:
+    case SIXEL_LOADER_GD_FORMAT_GIF:
+        return 0;
+    case SIXEL_LOADER_GD_FORMAT_PNG:
+    case SIXEL_LOADER_GD_FORMAT_JPEG:
+        return 1;
+    case SIXEL_LOADER_GD_FORMAT_BMP:
+        return g_sixel_loader_gd_support_cache.bmp;
+    case SIXEL_LOADER_GD_FORMAT_TIFF:
+        return g_sixel_loader_gd_support_cache.tiff;
+    case SIXEL_LOADER_GD_FORMAT_WBMP:
+        return g_sixel_loader_gd_support_cache.wbmp;
+    case SIXEL_LOADER_GD_FORMAT_TGA:
+        return g_sixel_loader_gd_support_cache.tga;
+    case SIXEL_LOADER_GD_FORMAT_GD:
+#if HAVE_DECL_GDIMAGECREATEFROMGDPTR
+        return g_sixel_loader_gd_support_cache.gd;
+#else
+        return 0;
+#endif
+    case SIXEL_LOADER_GD_FORMAT_GD2:
+#if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
+        return g_sixel_loader_gd_support_cache.gd2;
+#else
+        return 0;
+#endif
+    case SIXEL_LOADER_GD_FORMAT_WEBP:
+#if HAVE_DECL_GDIMAGECREATEFROMWEBPPTR
+        return g_sixel_loader_gd_support_cache.webp;
+#else
+        return 0;
+#endif
+    default:
+        return 0;
+    }
+}
+
+static sixel_loader_gd_format_t
+gd_sniff_format(sixel_chunk_t const *pchunk)
+{
+    if (pchunk == NULL) {
+        return SIXEL_LOADER_GD_FORMAT_NONE;
+    }
+    if (chunk_is_gif(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_GIF;
+    }
+    if (chunk_is_png(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_PNG;
+    }
+    if (chunk_is_jpeg(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_JPEG;
+    }
+    if (chunk_is_bmp(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_BMP;
+    }
+    if (chunk_is_tiff(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_TIFF;
+    }
+    if (chunk_is_wbmp(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_WBMP;
+    }
+    if (chunk_is_tga(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_TGA;
+    }
+    if (chunk_is_gd2(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_GD2;
+    }
+    if (chunk_is_gd(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_GD;
+    }
+    if (chunk_is_webp(pchunk)) {
+        return SIXEL_LOADER_GD_FORMAT_WEBP;
+    }
+
+    return SIXEL_LOADER_GD_FORMAT_NONE;
+}
 
 static double
 gd_clamp_unit(double value)
@@ -168,7 +289,9 @@ gd_read_u32be(unsigned char const *bytes)
 }
 
 static SIXELSTATUS
-gd_parse_png_bit_depth(sixel_chunk_t const *pchunk, int *bit_depth)
+gd_parse_png_ihdr(sixel_chunk_t const *pchunk,
+                  int *bit_depth,
+                  int *interlace_method)
 {
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
@@ -182,11 +305,12 @@ gd_parse_png_bit_depth(sixel_chunk_t const *pchunk, int *bit_depth)
     chunk_length = 0u;
     type_ptr = NULL;
     data_ptr = NULL;
-    if (pchunk == NULL || bit_depth == NULL) {
+    if (pchunk == NULL || bit_depth == NULL || interlace_method == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     *bit_depth = 0;
+    *interlace_method = 0;
     if (pchunk->buffer == NULL || pchunk->size < sizeof(png_signature)) {
         return SIXEL_FALSE;
     }
@@ -211,6 +335,7 @@ gd_parse_png_bit_depth(sixel_chunk_t const *pchunk, int *bit_depth)
                 return SIXEL_FALSE;
             }
             *bit_depth = (int)data_ptr[8];
+            *interlace_method = (int)data_ptr[12];
             return SIXEL_OK;
         }
 
@@ -218,6 +343,60 @@ gd_parse_png_bit_depth(sixel_chunk_t const *pchunk, int *bit_depth)
     }
 
     return SIXEL_FALSE;
+}
+
+static gdImagePtr
+gd_decode_with_format(sixel_loader_gd_format_t format,
+                      sixel_chunk_t const *pchunk)
+{
+    gdImagePtr im;
+
+    im = NULL;
+    if (pchunk == NULL) {
+        return NULL;
+    }
+
+    switch (format) {
+    case SIXEL_LOADER_GD_FORMAT_PNG:
+        im = gdImageCreateFromPngPtr((int)pchunk->size, pchunk->buffer);
+        break;
+    case SIXEL_LOADER_GD_FORMAT_JPEG:
+        im = gdImageCreateFromJpegPtr((int)pchunk->size, pchunk->buffer);
+        break;
+    case SIXEL_LOADER_GD_FORMAT_BMP:
+        im = gdImageCreateFromBmpPtr((int)pchunk->size, pchunk->buffer);
+        break;
+    case SIXEL_LOADER_GD_FORMAT_TIFF:
+        im = gdImageCreateFromTiffPtr((int)pchunk->size, pchunk->buffer);
+        break;
+    case SIXEL_LOADER_GD_FORMAT_WBMP:
+        im = gdImageCreateFromWBMPPtr((int)pchunk->size, pchunk->buffer);
+        break;
+    case SIXEL_LOADER_GD_FORMAT_TGA:
+        im = gdImageCreateFromTgaPtr((int)pchunk->size, pchunk->buffer);
+        break;
+    case SIXEL_LOADER_GD_FORMAT_GD:
+#if HAVE_DECL_GDIMAGECREATEFROMGDPTR
+        im = gdImageCreateFromGdPtr((int)pchunk->size, pchunk->buffer);
+#endif
+        break;
+    case SIXEL_LOADER_GD_FORMAT_GD2:
+#if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
+        im = gdImageCreateFromGd2Ptr((int)pchunk->size, pchunk->buffer);
+#endif
+        break;
+    case SIXEL_LOADER_GD_FORMAT_WEBP:
+#if HAVE_DECL_GDIMAGECREATEFROMWEBPPTR
+        im = gdImageCreateFromWebpPtr((int)pchunk->size, pchunk->buffer);
+#endif
+        break;
+    case SIXEL_LOADER_GD_FORMAT_NONE:
+    case SIXEL_LOADER_GD_FORMAT_GIF:
+    default:
+        break;
+    }
+
+    return im;
 }
 
 static int
@@ -464,18 +643,14 @@ load_with_gd(
     int y;
     int x;
     int c;
-    int bmp;
-    int wbmp;
-    int tga;
-    int tiff;
-    int gd;
-    int gd2;
-    int webp;
+    int png_interlace_method;
+    int format_supported;
     int *truecolor_row;
     unsigned char *palette_row;
-    sixel_loader_gd_fn_pointer_t fnp;
+    sixel_loader_gd_format_t sniffed_format;
     int width;
     int height;
+    SIXELSTATUS png_ihdr_status;
     int png_bit_depth;
     int source_high_depth;
     int has_alpha_like;
@@ -520,18 +695,12 @@ load_with_gd(
     y = 0;
     x = 0;
     c = 0;
-    bmp = gdSupportsFileType(".bmp", 0);
-    wbmp = gdSupportsFileType(".wbmp", 0);
-    tga = gdSupportsFileType(".tga", 0);
-    tiff = gdSupportsFileType(".tiff", 0);
-    gd = gdSupportsFileType(".gd", 0);
-    gd2 = gdSupportsFileType(".gd2", 0);
-    webp = gdSupportsFileType(".webp", 0);
-    (void) gd;
-    (void) gd2;
-    (void) webp;
+    png_interlace_method = 0;
+    format_supported = 0;
+    sniffed_format = SIXEL_LOADER_GD_FORMAT_NONE;
     width = 0;
     height = 0;
+    png_ihdr_status = SIXEL_FALSE;
     png_bit_depth = 0;
     source_high_depth = 0;
     has_alpha_like = 0;
@@ -564,69 +733,48 @@ load_with_gd(
     g8 = 0u;
     b8 = 0u;
     memset(zero_alpha_map, 0, sizeof(zero_alpha_map));
-    fnp.fn = fn_load;
 
-    if (chunk_is_gif(pchunk)) {
-        /*
-         * GD does not decode GIF in this backend. Return an unspecified
-         * failure so the loader chain can continue with lower-priority
-         * decoders such as builtin/fromgif.
-         */
+    /*
+     * Return code policy:
+     *   - SIXEL_FALSE: let lower-priority loaders continue.
+     *   - SIXEL_GD_ERROR: GD targeted this format but decode failed.
+     */
+    sniffed_format = gd_sniff_format(pchunk);
+    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_NONE ||
+            sniffed_format == SIXEL_LOADER_GD_FORMAT_GIF) {
         status = SIXEL_FALSE;
         goto end;
     }
 
-    if (im == NULL && chunk_is_png(pchunk)) {
-        im = gdImageCreateFromPngPtr((int)pchunk->size, pchunk->buffer);
+    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG) {
+        png_ihdr_status = gd_parse_png_ihdr(
+            pchunk,
+            &png_bit_depth,
+            &png_interlace_method);
+        if (png_ihdr_status == SIXEL_OK && png_interlace_method != 0) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
+        if (png_ihdr_status != SIXEL_OK &&
+                png_ihdr_status != SIXEL_FALSE &&
+                SIXEL_FAILED(png_ihdr_status)) {
+            status = png_ihdr_status;
+            goto end;
+        }
     }
 
-    if (im == NULL && chunk_is_jpeg(pchunk)) {
-        im = gdImageCreateFromJpegPtr((int)pchunk->size, pchunk->buffer);
+    format_supported = gd_is_format_supported(sniffed_format);
+    if (format_supported == 0) {
+        status = SIXEL_FALSE;
+        goto end;
     }
 
-    if (im == NULL && bmp) {
-        im = gdImageCreateFromBmpPtr((int)pchunk->size, pchunk->buffer);
+    if (pchunk->size > (size_t)INT_MAX) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
     }
-
-    if (im == NULL && chunk_is_bmp(pchunk)) {
-        im = gdImageCreateFromBmpPtr((int)pchunk->size, pchunk->buffer);
-    }
-
-    if (im == NULL && tiff) {
-        im = gdImageCreateFromTiffPtr((int)pchunk->size, pchunk->buffer);
-    }
-
-    if (im == NULL && wbmp) {
-        im = gdImageCreateFromWBMPPtr((int)pchunk->size, pchunk->buffer);
-    }
-
-    if (im == NULL && tga) {
-        im = gdImageCreateFromTgaPtr((int)pchunk->size, pchunk->buffer);
-    }
-
-#if HAVE_DECL_GDIMAGECREATEFROMGDPTR
-    if (im == NULL && gd) {
-        im = gdImageCreateFromGdPtr((int)pchunk->size, pchunk->buffer);
-    }
-#endif
-
-#if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
-    if (im == NULL && gd2) {
-        im = gdImageCreateFromGd2Ptr((int)pchunk->size, pchunk->buffer);
-    }
-#endif
-
-#if HAVE_DECL_GDIMAGECREATEFROMWEBPPTR
-    if (im == NULL && webp && chunk_is_webp(pchunk)) {
-        im = gdImageCreateFromWebpPtr((int)pchunk->size, pchunk->buffer);
-    }
-#endif
-
+    im = gd_decode_with_format(sniffed_format, pchunk);
     if (im == NULL) {
-        /*
-         * GD could not decode the input. Signal a backend-specific error so
-         * the caller can report that GD rejected the buffer after sniffing.
-         */
         status = SIXEL_GD_ERROR;
         goto end;
     }
@@ -687,11 +835,10 @@ load_with_gd(
         }
     }
 
-    status = gd_parse_png_bit_depth(pchunk, &png_bit_depth);
-    if (status == SIXEL_OK && png_bit_depth > 8) {
+    if (sniffed_format == SIXEL_LOADER_GD_FORMAT_PNG &&
+            png_ihdr_status == SIXEL_OK &&
+            png_bit_depth > 8) {
         source_high_depth = 1;
-    } else if (status != SIXEL_FALSE && SIXEL_FAILED(status)) {
-        goto end;
     }
 
     width = gdImageSX(im);

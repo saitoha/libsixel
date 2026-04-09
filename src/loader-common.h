@@ -91,6 +91,10 @@ int chunk_is_webp(sixel_chunk_t const *chunk);
 int chunk_is_bmp(sixel_chunk_t const *chunk);
 int chunk_is_gif(sixel_chunk_t const *chunk);
 int chunk_is_tiff(sixel_chunk_t const *chunk);
+int chunk_is_wbmp(sixel_chunk_t const *chunk);
+int chunk_is_tga(sixel_chunk_t const *chunk);
+int chunk_is_gd(sixel_chunk_t const *chunk);
+int chunk_is_gd2(sixel_chunk_t const *chunk);
 
 int loader_exif_parse_orientation(unsigned char const *data,
                                   size_t size,
