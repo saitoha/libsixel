@@ -23,10 +23,22 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable \
+trace_log=$(set +xv; SIXEL_LOADER_TRACE=1 ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -v \
+    -L gd,builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" \
-    >/dev/null || {
+    2>&1 >/dev/null) || {
     echo "not ok" 1 - "fallback failed to decode interlaced GIF"
+    exit 0
+}
+
+test "${trace_log#*libsixel: trying builtin loader*}" != "${trace_log}" || {
+    echo "not ok" 1 - "builtin loader was not attempted for interlaced GIF"
+    exit 0
+}
+
+test "${trace_log#*libsixel: trying gd loader*}" = "${trace_log}" || {
+    echo "not ok" 1 - "gd loader should be skipped for interlaced GIF"
     exit 0
 }
 

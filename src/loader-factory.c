@@ -202,11 +202,22 @@ loader_factory_entry_matches_chunk(
     sixel_loader_entry_t const *entry,
     sixel_chunk_t const *chunk)
 {
+    int magic_matches;
+
+    magic_matches = 0;
     if (factory == NULL || factory->registry == NULL || entry == NULL) {
         return 0;
     }
 
-    return loader_factory_magic_matches_chunk(entry, chunk);
+    magic_matches = loader_factory_magic_matches_chunk(entry, chunk);
+    if (magic_matches == 0) {
+        return 0;
+    }
+    if (entry->predicate == NULL) {
+        return 1;
+    }
+
+    return entry->predicate(chunk) != 0 ? 1 : 0;
 }
 
 SIXELSTATUS
