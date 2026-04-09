@@ -47,6 +47,7 @@ typedef SIXELSTATUS (*sixel_temporal_prepare_frame_fn)(
     int32_t **frame);
 
 typedef void (*sixel_temporal_load_pixel_fn)(
+    sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
     int depth,

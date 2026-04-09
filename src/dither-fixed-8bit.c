@@ -85,6 +85,7 @@ sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
 
 static void
 sixel_temporal_diffusion_load_pixel(
+    sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
     int depth,
@@ -116,6 +117,7 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
 
 static void
 sixel_temporal_stbn_load_pixel(
+    sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
     int depth,
@@ -135,6 +137,12 @@ sixel_temporal_stbn_store_error(int32_t *frame,
                                 int channel,
                                 int offset,
                                 int can_update);
+
+static int32_t
+sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
+                                size_t base,
+                                int channel,
+                                int depth);
 
 static sixel_temporal_method_ops_t const
 sixel_temporal_diffusion_ops = {
@@ -278,6 +286,7 @@ sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
 
 static void
 sixel_temporal_diffusion_load_pixel(
+    sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
     int depth,
@@ -289,6 +298,8 @@ sixel_temporal_diffusion_load_pixel(
     size_t channel_base;
     int64_t temporal_sum;
     int64_t temporal_clamped;
+
+    (void)dither;
 
     n = 0;
     channel_base = 0U;
@@ -407,8 +418,27 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
     return status;
 }
 
+static int32_t
+sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
+                                size_t base,
+                                int channel,
+                                int depth)
+{
+    (void)stbn_state;
+    (void)base;
+    (void)channel;
+    (void)depth;
+
+    /*
+     * Placeholder bias keeps STBN wired through method-private state without
+     * changing current output. A real STBN sequence can replace this later.
+     */
+    return 0;
+}
+
 static void
 sixel_temporal_stbn_load_pixel(
+    sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
     int depth,
@@ -416,12 +446,52 @@ sixel_temporal_stbn_load_pixel(
     unsigned char corrected[SIXEL_MAX_CHANNELS],
     int32_t accum_scaled[SIXEL_MAX_CHANNELS])
 {
-    sixel_temporal_diffusion_load_pixel(data,
+    int n;
+    int32_t bias_scaled;
+    int64_t adjusted_scaled;
+    sixel_temporal_stbn_state_t const *stbn_state;
+
+    n = 0;
+    bias_scaled = 0;
+    adjusted_scaled = 0;
+    stbn_state = NULL;
+
+    if (dither != NULL
+            && dither->temporal_state.method_private != NULL
+            && dither->temporal_state.method_private_size
+               >= sizeof(sixel_temporal_stbn_state_t)) {
+        stbn_state = (sixel_temporal_stbn_state_t const *)
+            dither->temporal_state.method_private;
+    }
+
+    sixel_temporal_diffusion_load_pixel(dither,
+                                        data,
                                         base,
                                         depth,
                                         frame,
                                         corrected,
                                         accum_scaled);
+
+    for (n = 0; n < depth; ++n) {
+        bias_scaled = sixel_temporal_stbn_bias_scaled(stbn_state,
+                                                      base,
+                                                      n,
+                                                      depth);
+        if (bias_scaled == 0) {
+            continue;
+        }
+
+        adjusted_scaled = (int64_t)accum_scaled[n] + (int64_t)bias_scaled;
+        if (adjusted_scaled < 0) {
+            adjusted_scaled = 0;
+        } else if (adjusted_scaled > VARERR_MAX_VALUE) {
+            adjusted_scaled = VARERR_MAX_VALUE;
+        }
+
+        accum_scaled[n] = (int32_t)adjusted_scaled;
+        corrected[n] = (unsigned char)((adjusted_scaled + VARERR_ROUND)
+                                       >> VARERR_SCALE_SHIFT);
+    }
 }
 
 static void
@@ -933,7 +1003,8 @@ sixel_dither_apply_fixed_impl(
                 continue;
             }
             if (use_temporal) {
-                temporal_ops->load_pixel(data,
+                temporal_ops->load_pixel(dither,
+                                         data,
                                          base,
                                          depth,
                                          temporal_error,
