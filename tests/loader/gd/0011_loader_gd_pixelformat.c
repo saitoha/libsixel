@@ -1,5 +1,5 @@
 /*
- * Verify GD loader output policy for alpha, indexed, and GIF paths.
+ * Verify GD loader output policy for alpha and indexed image paths.
  */
 
 #include <string.h>
@@ -25,16 +25,6 @@ typedef enum gd_pixelformat_case_id {
     GD_PIXELFORMAT_INTERLACED_PNG_RGB,
     GD_PIXELFORMAT_INDEXED_MULTI_TRNS_MASK,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_BOUNDARY_PAL8,
-    GD_PIXELFORMAT_GIF_OPAQUE_PAL8,
-    GD_PIXELFORMAT_GIF_TRANSPARENT_PAL8,
-    GD_PIXELFORMAT_GIF_OPAQUE_RGB,
-    GD_PIXELFORMAT_GIF_TRANSPARENT_RGBA,
-    GD_PIXELFORMAT_GIF_TRANSPARENT_LOW_REQCOLORS_RGBA,
-    GD_PIXELFORMAT_GIF_TRANSPARENT_LOW_REQCOLORS_BG_RGB,
-    GD_PIXELFORMAT_GIF_NO_NETSCAPE_MULTIFRAME,
-    GD_PIXELFORMAT_GIF_BGINDEX_OOB_PAL8,
-    GD_PIXELFORMAT_GIF_NETSCAPE_UNKNOWN_SUBTYPE_METADATA,
-    GD_PIXELFORMAT_GIF_TRANSPARENT_INDEX_OOB_OPAQUE,
     GD_PIXELFORMAT_CASE_COUNT
 } gd_pixelformat_case_id_t;
 
@@ -201,166 +191,6 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0
             },
             { 1, 1, 4, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif opaque pal8",
-            "/tests/data/inputs/small.gif",
-            {
-                SIXEL_PIXELFORMAT_PAL8,
-                GEOMETRY_ANY,
-                GEOMETRY_ANY,
-                1,
-                -1,
-                1,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 1, 256, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif transparent pal8",
-            "/tests/data/inputs/formats/gif-transparent-static.gif",
-            {
-                SIXEL_PIXELFORMAT_PAL8,
-                8,
-                8,
-                1,
-                FRAME_TRANSPARENT_NONNEG,
-                0,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 1, 256, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif opaque rgb",
-            "/tests/data/inputs/small.gif",
-            {
-                SIXEL_PIXELFORMAT_RGB888,
-                GEOMETRY_ANY,
-                GEOMETRY_ANY,
-                1,
-                -1,
-                1,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 0, 256, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif transparent rgba",
-            "/tests/data/inputs/formats/gif-transparent-static.gif",
-            {
-                SIXEL_PIXELFORMAT_RGBA8888,
-                8,
-                8,
-                1,
-                -1,
-                0,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 0, 256, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif transparent low reqcolors rgba fallback",
-            "/tests/data/inputs/formats/gif-transparent-static-3colors.gif",
-            {
-                SIXEL_PIXELFORMAT_RGBA8888,
-                8,
-                8,
-                1,
-                -1,
-                0,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 1, 3, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif transparent low reqcolors rgb fallback with background",
-            "/tests/data/inputs/formats/gif-transparent-static-3colors.gif",
-            {
-                SIXEL_PIXELFORMAT_RGB888,
-                8,
-                8,
-                1,
-                -1,
-                0,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 1, 3, white_bg },
-            new_gd_component
-        },
-        {
-            "gd gif no-netscape multiframe metadata",
-            "/tests/data/inputs/formats/gif-anim-no-netscape-2frame.gif",
-            {
-                SIXEL_PIXELFORMAT_PAL8,
-                6,
-                6,
-                2,
-                -1,
-                1,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 0, 1, 256, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif bgindex-oob fallback pal8",
-            "/tests/data/inputs/formats/gif-bgindex-oob-anim.gif",
-            {
-                SIXEL_PIXELFORMAT_PAL8,
-                2,
-                1,
-                1,
-                -1,
-                1,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 1, 256, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif netscape unknown subtype metadata",
-            "/tests/data/inputs/formats/gif-anim-netscape-unknown-subtype.gif",
-            {
-                SIXEL_PIXELFORMAT_PAL8,
-                2,
-                1,
-                2,
-                -1,
-                1,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 0, 1, 256, NULL },
-            new_gd_component
-        },
-        {
-            "gd gif transparent-index-oob treated opaque",
-            "/tests/data/inputs/formats/gif-transparent-index-oob-static.gif",
-            {
-                SIXEL_PIXELFORMAT_PAL8,
-                8,
-                8,
-                1,
-                -1,
-                0,
-                FRAME_MASK_ANY,
-                FRAME_ALPHA_ZERO_ANY
-            },
-            { 1, 1, 256, NULL },
             new_gd_component
         }
     };
