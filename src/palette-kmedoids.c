@@ -81,13 +81,17 @@
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
+# define SIXEL_KMEDOIDS_TLS_AVAILABLE 1
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
     && !defined(__PCC__)
 # define SIXEL_TLS _Thread_local
+# define SIXEL_KMEDOIDS_TLS_AVAILABLE 1
 #elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_TLS __thread
+# define SIXEL_KMEDOIDS_TLS_AVAILABLE 1
 #else
 # define SIXEL_TLS
+# define SIXEL_KMEDOIDS_TLS_AVAILABLE 0
 #endif
 
 static SIXEL_TLS int sixel_kmedoids_algo_override_enabled = 0;
@@ -129,6 +133,94 @@ static SIXEL_TLS unsigned int
     sixel_kmedoids_clarans_guided_full_build_count = 0u;
 
 #undef SIXEL_TLS
+
+#if SIXEL_ENABLE_THREADS && !SIXEL_KMEDOIDS_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+static CRITICAL_SECTION sixel_kmedoids_override_mutex;
+static INIT_ONCE sixel_kmedoids_override_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_kmedoids_override_lock_init_once(PINIT_ONCE once,
+                                       PVOID parameter,
+                                       PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    InitializeCriticalSection(&sixel_kmedoids_override_mutex);
+    return TRUE;
+}
+# else
+#  include <pthread.h>
+static pthread_mutex_t sixel_kmedoids_override_mutex
+    = PTHREAD_MUTEX_INITIALIZER;
+# endif
+#endif
+
+/*
+ * K-medoids tunables are thread-local when TLS exists.  Without TLS these
+ * become process globals, so serialize override access in threaded builds.
+ */
+static int
+sixel_kmedoids_override_lock_acquire(void)
+{
+#if SIXEL_ENABLE_THREADS && !SIXEL_KMEDOIDS_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&sixel_kmedoids_override_once,
+                                      sixel_kmedoids_override_lock_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized) {
+        return 0;
+    }
+    EnterCriticalSection(&sixel_kmedoids_override_mutex);
+    return 1;
+# else
+    int rc;
+
+    rc = pthread_mutex_lock(&sixel_kmedoids_override_mutex);
+    if (rc != 0) {
+        return 0;
+    }
+    return 1;
+# endif
+#else
+    return 0;
+#endif
+}
+
+static void
+sixel_kmedoids_override_lock_release(int acquired)
+{
+    if (acquired == 0) {
+        return;
+    }
+#if SIXEL_ENABLE_THREADS && !SIXEL_KMEDOIDS_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    LeaveCriticalSection(&sixel_kmedoids_override_mutex);
+# else
+    (void)pthread_mutex_unlock(&sixel_kmedoids_override_mutex);
+# endif
+#endif
+}
+
+#undef SIXEL_KMEDOIDS_TLS_AVAILABLE
 
 typedef struct sixel_kmedoids_unique_slot {
     uint64_t key0;
@@ -3168,8 +3260,12 @@ void
 sixel_set_kmedoids_algo_override(int enabled,
                                  sixel_kmedoids_algo_t algo)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_algo_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_algo_override_value = sixel_kmedoids_resolve_algo(algo);
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API sixel_kmedoids_algo_t
@@ -3210,8 +3306,12 @@ void
 sixel_set_kmedoids_seed_override(int enabled,
                                  uint32_t seed)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_seed_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_seed_override_value = seed;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API uint32_t
@@ -3251,8 +3351,12 @@ void
 sixel_set_kmedoids_iter_override(int enabled,
                                  unsigned int iter_count)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_iter_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_iter_override_value = iter_count;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3283,8 +3387,12 @@ void
 sixel_set_kmedoids_sample_override(int enabled,
                                    unsigned int sample_count)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_sample_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_sample_override_value = sample_count;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3318,8 +3426,12 @@ void
 sixel_set_kmedoids_clara_trials_override(int enabled,
                                          unsigned int trials)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_clara_trials_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_clara_trials_override_value = trials;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3351,8 +3463,12 @@ void
 sixel_set_kmedoids_clara_sample_override(int enabled,
                                          unsigned int sample_count)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_clara_sample_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_clara_sample_override_value = sample_count;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3387,8 +3503,12 @@ void
 sixel_set_kmedoids_clarans_local_override(int enabled,
                                           unsigned int local_searches)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_clarans_local_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_clarans_local_override_value = local_searches;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3420,8 +3540,12 @@ void
 sixel_set_kmedoids_clarans_neighbors_override(int enabled,
                                               unsigned int neighbors)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_clarans_neighbors_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_clarans_neighbors_override_value = neighbors;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3456,8 +3580,12 @@ void
 sixel_set_kmedoids_bandit_iter_override(int enabled,
                                         unsigned int iter_count)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_bandit_iter_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_bandit_iter_override_value = iter_count;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3489,8 +3617,12 @@ void
 sixel_set_kmedoids_bandit_candidates_override(int enabled,
                                               unsigned int candidates)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_bandit_candidates_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_bandit_candidates_override_value = candidates;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3522,8 +3654,12 @@ void
 sixel_set_kmedoids_bandit_batch_override(int enabled,
                                          unsigned int batch_size)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_bandit_batch_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_bandit_batch_override_value = batch_size;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3555,8 +3691,12 @@ void
 sixel_set_kmedoids_histbits_override(int enabled,
                                      unsigned int histbits)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_histbits_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_histbits_override_value = histbits;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3588,8 +3728,12 @@ void
 sixel_set_kmedoids_point_budget_override(int enabled,
                                          unsigned int point_budget)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_point_budget_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_point_budget_override_value = point_budget;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3621,8 +3765,12 @@ void
 sixel_set_kmedoids_rare_keep_override(int enabled,
                                       unsigned int rare_keep)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_rare_keep_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_rare_keep_override_value = rare_keep;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -3657,8 +3805,12 @@ void
 sixel_set_kmedoids_prune_mass_override(int enabled,
                                        double prune_mass)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
     sixel_kmedoids_prune_mass_override_enabled = enabled ? 1 : 0;
     sixel_kmedoids_prune_mass_override_value = prune_mass;
+    sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API double
@@ -10382,6 +10534,7 @@ build_palette_kmedoids(unsigned char **result,
     unsigned int auto_sample_size;
     unsigned int auto_candidate_cap;
     int run_second_polish;
+    int override_lock_acquired;
 
     status = SIXEL_BAD_ARGUMENT;
     channels = depth;
@@ -10482,6 +10635,7 @@ build_palette_kmedoids(unsigned char **result,
     auto_sample_size = 0u;
     auto_candidate_cap = 0u;
     run_second_polish = 0;
+    override_lock_acquired = 0;
 
     if (result != NULL) {
         *result = NULL;
@@ -10554,6 +10708,7 @@ build_palette_kmedoids(unsigned char **result,
     if (reqcolors == 0u) {
         reqcolors = 1u;
     }
+    override_lock_acquired = sixel_kmedoids_override_lock_acquire();
 
     job_init = sixel_palette_kmedoids_log_start(logger,
                                                 job_seq,
@@ -11444,6 +11599,7 @@ end:
     if (distance_cache != NULL) {
         sixel_allocator_free(allocator, distance_cache);
     }
+    sixel_kmedoids_override_lock_release(override_lock_acquired);
     return status;
 }
 

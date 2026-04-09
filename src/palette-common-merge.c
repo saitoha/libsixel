@@ -50,13 +50,17 @@
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
+# define SIXEL_FINAL_MERGE_OVERRIDE_TLS_AVAILABLE 1
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
     && !defined(__PCC__)
 # define SIXEL_TLS _Thread_local
+# define SIXEL_FINAL_MERGE_OVERRIDE_TLS_AVAILABLE 1
 #elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_TLS __thread
+# define SIXEL_FINAL_MERGE_OVERRIDE_TLS_AVAILABLE 1
 #else
 # define SIXEL_TLS
+# define SIXEL_FINAL_MERGE_OVERRIDE_TLS_AVAILABLE 0
 #endif
 
 static SIXEL_TLS int sixel_kmeans_threshold_override_enabled = 0;
@@ -161,6 +165,32 @@ sixel_final_merge_env_lock_release(int acquired)
 # endif
 #endif
 }
+
+/*
+ * Reuse the environment lock when TLS is unavailable.  In that configuration
+ * override storage degrades to process globals and requires serialization.
+ */
+static int
+sixel_final_merge_override_lock_acquire(void)
+{
+#if SIXEL_ENABLE_THREADS && !SIXEL_FINAL_MERGE_OVERRIDE_TLS_AVAILABLE
+    return sixel_final_merge_env_lock_acquire();
+#else
+    return 0;
+#endif
+}
+
+static void
+sixel_final_merge_override_lock_release(int acquired)
+{
+#if SIXEL_ENABLE_THREADS && !SIXEL_FINAL_MERGE_OVERRIDE_TLS_AVAILABLE
+    sixel_final_merge_env_lock_release(acquired);
+#else
+    (void)acquired;
+#endif
+}
+
+#undef SIXEL_FINAL_MERGE_OVERRIDE_TLS_AVAILABLE
 
 /*
  * Internal statistics accumulator used while clustering provisional
@@ -407,14 +437,25 @@ sixel_final_merge_load_env(void)
 unsigned int
 sixel_palette_kmeans_iter_max(void)
 {
-    if (sixel_kmeans_iter_max_override_enabled) {
-        if (sixel_kmeans_iter_max_override_value < 1u) {
+    unsigned int override_iter_max;
+    int override_enabled;
+    int lock_acquired;
+
+    override_iter_max = 0u;
+    override_enabled = 0;
+    lock_acquired = sixel_final_merge_override_lock_acquire();
+    override_enabled = sixel_kmeans_iter_max_override_enabled;
+    override_iter_max = sixel_kmeans_iter_max_override_value;
+    sixel_final_merge_override_lock_release(lock_acquired);
+
+    if (override_enabled) {
+        if (override_iter_max < 1u) {
             return 1u;
         }
-        if (sixel_kmeans_iter_max_override_value > 100u) {
+        if (override_iter_max > 100u) {
             return 100u;
         }
-        return sixel_kmeans_iter_max_override_value;
+        return override_iter_max;
     }
 
     sixel_final_merge_load_env();
@@ -426,23 +467,42 @@ void
 sixel_set_kmeans_iter_max_override(int enabled,
                                    unsigned int iter_max)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_final_merge_override_lock_acquire();
     sixel_kmeans_iter_max_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_iter_max_override_value = iter_max;
+    sixel_final_merge_override_lock_release(lock_acquired);
 }
 
 void
 sixel_set_kmeans_threshold_override(int enabled,
                                    double threshold)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_final_merge_override_lock_acquire();
     sixel_kmeans_threshold_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_threshold_override_value = threshold;
+    sixel_final_merge_override_lock_release(lock_acquired);
 }
 
 double
 sixel_palette_kmeans_threshold(void)
 {
-    if (sixel_kmeans_threshold_override_enabled) {
-        return sixel_kmeans_threshold_override_value;
+    double override_threshold;
+    int override_enabled;
+    int lock_acquired;
+
+    override_threshold = 0.0;
+    override_enabled = 0;
+    lock_acquired = sixel_final_merge_override_lock_acquire();
+    override_enabled = sixel_kmeans_threshold_override_enabled;
+    override_threshold = sixel_kmeans_threshold_override_value;
+    sixel_final_merge_override_lock_release(lock_acquired);
+
+    if (override_enabled) {
+        return override_threshold;
     }
 
     sixel_final_merge_load_env();
@@ -454,28 +514,47 @@ void
 sixel_set_final_merge_target_factor_override(int enabled,
                                              double factor)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_final_merge_override_lock_acquire();
     sixel_final_merge_target_factor_override_enabled = enabled ? 1 : 0;
     sixel_final_merge_target_factor_override_value = factor;
+    sixel_final_merge_override_lock_release(lock_acquired);
 }
 
 void
 sixel_set_final_merge_lloyd_iterations_override(int enabled,
                                                 unsigned int iterations)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_final_merge_override_lock_acquire();
     sixel_final_merge_lloyd_override_enabled = enabled ? 1 : 0;
     sixel_final_merge_lloyd_override_value = iterations;
+    sixel_final_merge_override_lock_release(lock_acquired);
 }
 
 unsigned int
 sixel_final_merge_lloyd_iterations(int merge_mode)
 {
+    unsigned int override_iterations;
+    int override_enabled;
+    int lock_acquired;
+
     (void)merge_mode;
 
-    if (sixel_final_merge_lloyd_override_enabled) {
-        if (sixel_final_merge_lloyd_override_value > 30u) {
+    override_iterations = 0u;
+    override_enabled = 0;
+    lock_acquired = sixel_final_merge_override_lock_acquire();
+    override_enabled = sixel_final_merge_lloyd_override_enabled;
+    override_iterations = sixel_final_merge_lloyd_override_value;
+    sixel_final_merge_override_lock_release(lock_acquired);
+
+    if (override_enabled) {
+        if (override_iterations > 30u) {
             return 30u;
         }
-        return sixel_final_merge_lloyd_override_value;
+        return override_iterations;
     }
 
     sixel_final_merge_load_env();
@@ -691,8 +770,11 @@ unsigned int
 sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
 {
     double factor;
+    double override_factor;
     unsigned int scaled;
     int resolved;
+    int override_enabled;
+    int lock_acquired;
 
     sixel_final_merge_load_env();
     resolved = sixel_resolve_final_merge_mode(final_merge_mode);
@@ -700,8 +782,15 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
         return reqcolors;
     }
     factor = env_final_merge_target_factor;
-    if (sixel_final_merge_target_factor_override_enabled) {
-        factor = sixel_final_merge_target_factor_override_value;
+    override_factor = 0.0;
+    override_enabled = 0;
+    lock_acquired = sixel_final_merge_override_lock_acquire();
+    override_enabled = sixel_final_merge_target_factor_override_enabled;
+    override_factor = sixel_final_merge_target_factor_override_value;
+    sixel_final_merge_override_lock_release(lock_acquired);
+
+    if (override_enabled) {
+        factor = override_factor;
         if (factor < 1.0) {
             factor = 1.0;
         }

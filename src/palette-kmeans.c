@@ -68,13 +68,17 @@
 
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
+# define SIXEL_KMEANS_TLS_AVAILABLE 1
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
     && !defined(__PCC__)
 # define SIXEL_TLS _Thread_local
+# define SIXEL_KMEANS_TLS_AVAILABLE 1
 #elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
 # define SIXEL_TLS __thread
+# define SIXEL_KMEANS_TLS_AVAILABLE 1
 #else
 # define SIXEL_TLS
+# define SIXEL_KMEANS_TLS_AVAILABLE 0
 #endif
 
 static SIXEL_TLS int sixel_kmeans_init_type_override_enabled = 0;
@@ -117,6 +121,93 @@ static SIXEL_TLS unsigned int sixel_kmeans_feedback_interval_override_value
     = 1u;
 
 #undef SIXEL_TLS
+
+#if SIXEL_ENABLE_THREADS && !SIXEL_KMEANS_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+static CRITICAL_SECTION sixel_kmeans_override_mutex;
+static INIT_ONCE sixel_kmeans_override_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_kmeans_override_lock_init_once(PINIT_ONCE once,
+                                     PVOID parameter,
+                                     PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    InitializeCriticalSection(&sixel_kmeans_override_mutex);
+    return TRUE;
+}
+# else
+#  include <pthread.h>
+static pthread_mutex_t sixel_kmeans_override_mutex = PTHREAD_MUTEX_INITIALIZER;
+# endif
+#endif
+
+/*
+ * K-means tunables are normally thread-local.  When TLS is unavailable they
+ * collapse into process globals, so protect override access in threaded builds.
+ */
+static int
+sixel_kmeans_override_lock_acquire(void)
+{
+#if SIXEL_ENABLE_THREADS && !SIXEL_KMEANS_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&sixel_kmeans_override_once,
+                                      sixel_kmeans_override_lock_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized) {
+        return 0;
+    }
+    EnterCriticalSection(&sixel_kmeans_override_mutex);
+    return 1;
+# else
+    int rc;
+
+    rc = pthread_mutex_lock(&sixel_kmeans_override_mutex);
+    if (rc != 0) {
+        return 0;
+    }
+    return 1;
+# endif
+#else
+    return 0;
+#endif
+}
+
+static void
+sixel_kmeans_override_lock_release(int acquired)
+{
+    if (acquired == 0) {
+        return;
+    }
+#if SIXEL_ENABLE_THREADS && !SIXEL_KMEANS_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    LeaveCriticalSection(&sixel_kmeans_override_mutex);
+# else
+    (void)pthread_mutex_unlock(&sixel_kmeans_override_mutex);
+# endif
+#endif
+}
+
+#undef SIXEL_KMEANS_TLS_AVAILABLE
 
 typedef struct sixel_kmeans_projection_entry {
     double projection;
@@ -219,8 +310,12 @@ void
 sixel_set_kmeans_init_type_override(int enabled,
                                     sixel_kmeans_init_type init_type)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_init_type_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_init_type_override_value = init_type;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXELAPI sixel_kmeans_init_type
@@ -282,9 +377,13 @@ void
 sixel_set_kmeans_binning_mode_override(int enabled,
                                        sixel_kmeans_binning_mode mode)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_binning_mode_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_binning_mode_override_value
         = sixel_kmeans_resolve_binning_mode(mode);
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API sixel_kmeans_binning_mode
@@ -324,8 +423,12 @@ void
 sixel_set_kmeans_binbits_override(int enabled,
                                   unsigned int bits)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_binbits_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_binbits_override_value = bits;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -389,9 +492,13 @@ void
 sixel_set_kmeans_mapping_mode_override(int enabled,
                                        sixel_kmeans_mapping_mode mode)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_mapping_mode_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_mapping_mode_override_value
         = sixel_kmeans_resolve_mapping_mode(mode);
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API sixel_kmeans_mapping_mode
@@ -438,9 +545,13 @@ void
 sixel_set_kmeans_softdist_mode_override(int enabled,
                                         sixel_kmeans_softdist_mode mode)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_softdist_mode_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_softdist_mode_override_value
         = sixel_kmeans_resolve_softdist_mode(mode);
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API sixel_kmeans_softdist_mode
@@ -474,8 +585,12 @@ void
 sixel_set_kmeans_autoratio_override(int enabled,
                                     unsigned int ratio)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_autoratio_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_autoratio_override_value = ratio;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -582,8 +697,12 @@ void
 sixel_set_kmeans_seed_override(int enabled,
                                uint32_t seed)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_seed_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_seed_override_value = seed;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API uint32_t
@@ -648,8 +767,12 @@ void
 sixel_set_kmeans_restarts_override(int enabled,
                                    unsigned int restarts)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_restarts_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_restarts_override_value = restarts;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -685,8 +808,12 @@ void
 sixel_set_kmeans_iter_override(int enabled,
                                unsigned int iter_count)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_iter_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_iter_override_value = iter_count;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -749,8 +876,12 @@ void
 sixel_set_kmeans_miniter_override(int enabled,
                                   unsigned int miniter)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_miniter_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_miniter_override_value = miniter;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -783,8 +914,12 @@ void
 sixel_set_kmeans_polish_iter_override(int enabled,
                                       unsigned int polish_iter)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_polish_iter_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_polish_iter_override_value = polish_iter;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -830,9 +965,13 @@ void
 sixel_set_kmeans_feedback_mode_override(int enabled,
                                         sixel_kmeans_feedback_mode mode)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_feedback_mode_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_feedback_mode_override_value
         = sixel_kmeans_resolve_feedback_mode(mode);
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API sixel_kmeans_feedback_mode
@@ -868,8 +1007,12 @@ void
 sixel_set_kmeans_feedback_slots_override(int enabled,
                                          unsigned int slots)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_feedback_slots_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_feedback_slots_override_value = slots;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -906,8 +1049,12 @@ void
 sixel_set_kmeans_feedback_interval_override(int enabled,
                                             unsigned int interval)
 {
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
     sixel_kmeans_feedback_interval_override_enabled = enabled ? 1 : 0;
     sixel_kmeans_feedback_interval_override_value = interval;
+    sixel_kmeans_override_lock_release(lock_acquired);
 }
 
 SIXEL_INTERNAL_API unsigned int
@@ -2806,6 +2953,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     int job_iteration;
     int job_merge;
     int job_export;
+    int override_lock_acquired;
     char log_detail[128];
     double wall_start;
     double init_stop;
@@ -2827,6 +2975,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     if (request == NULL) {
         return status;
     }
+    override_lock_acquired = sixel_kmeans_override_lock_acquire();
     result = request->result;
     result_float32 = request->result_float32;
     data = request->data;
@@ -2975,7 +3124,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         *origcolors = 0U;
     }
     if (allocator == NULL) {
-        return status;
+        goto end;
     }
 
     job_init = sixel_palette_kmeans_log_start(logger,
@@ -3022,16 +3171,16 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
         }
         if (depth == 0U || depth % (unsigned int)sizeof(float) != 0U) {
-            return status;
+            goto end;
         }
         channels = depth / (unsigned int)sizeof(float);
         pixel_stride = channels * (unsigned int)sizeof(float);
     }
     if (channels != 3U && channels != 4U) {
-        return status;
+        goto end;
     }
     if (pixel_stride == 0U) {
-        return status;
+        goto end;
     }
     pixel_count = length / pixel_stride;
     if (pixel_count == 0U) {
@@ -4105,6 +4254,7 @@ end:
     if (float_palette_new != NULL) {
         sixel_allocator_free(allocator, float_palette_new);
     }
+    sixel_kmeans_override_lock_release(override_lock_acquired);
     return status;
 }
 
