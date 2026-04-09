@@ -81,6 +81,87 @@ static double env_final_merge_channel_factor_l = 1.0 / 3.0;
 static int env_final_merge_additional_lloyd_overridden = 0;
 static int env_final_merge_env_loaded = 0;
 
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+static CRITICAL_SECTION sixel_final_merge_env_mutex;
+static INIT_ONCE sixel_final_merge_env_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_final_merge_env_lock_init_once(PINIT_ONCE once,
+                                     PVOID parameter,
+                                     PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    InitializeCriticalSection(&sixel_final_merge_env_mutex);
+    return TRUE;
+}
+# else
+#  include <pthread.h>
+static pthread_mutex_t sixel_final_merge_env_mutex = PTHREAD_MUTEX_INITIALIZER;
+# endif
+#endif
+
+static int
+sixel_final_merge_env_lock_acquire(void)
+{
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&sixel_final_merge_env_once,
+                                      sixel_final_merge_env_lock_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized) {
+        return 0;
+    }
+    EnterCriticalSection(&sixel_final_merge_env_mutex);
+    return 1;
+# else
+    int rc;
+
+    rc = pthread_mutex_lock(&sixel_final_merge_env_mutex);
+    if (rc != 0) {
+        return 0;
+    }
+    return 1;
+# endif
+#else
+    return 0;
+#endif
+}
+
+static void
+sixel_final_merge_env_lock_release(int acquired)
+{
+    if (acquired == 0) {
+        return;
+    }
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    LeaveCriticalSection(&sixel_final_merge_env_mutex);
+# else
+    (void)pthread_mutex_unlock(&sixel_final_merge_env_mutex);
+# endif
+#endif
+}
+
 /*
  * Internal statistics accumulator used while clustering provisional
  * palette entries.  The tuple stores RGB centroids along with the
@@ -154,6 +235,7 @@ sixel_final_merge_load_env(void)
     long parsed_limit;
     int r_overridden;
     int g_overridden;
+    int lock_acquired;
 
     env_value = NULL;
     endptr = NULL;
@@ -168,7 +250,10 @@ sixel_final_merge_load_env(void)
     parsed_limit = 0L;
     r_overridden = 0;
     g_overridden = 0;
+    lock_acquired = 0;
+    lock_acquired = sixel_final_merge_env_lock_acquire();
     if (env_final_merge_env_loaded) {
+        sixel_final_merge_env_lock_release(lock_acquired);
         return;
     }
     env_final_merge_env_loaded = 1;
@@ -311,6 +396,7 @@ sixel_final_merge_load_env(void)
         parsed_channel_factor = 1.0;
     }
     env_final_merge_channel_factor_l = parsed_channel_factor;
+    sixel_final_merge_env_lock_release(lock_acquired);
 }
 
 /*

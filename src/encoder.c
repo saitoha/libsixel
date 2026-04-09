@@ -126,6 +126,113 @@
 #define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
     "SIXEL_ANIMATION_HIDE_CURSOR"
 
+#if defined(_MSC_VER)
+# define SIXEL_ENCODER_OVERRIDE_TLS_AVAILABLE 1
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__PCC__)
+# define SIXEL_ENCODER_OVERRIDE_TLS_AVAILABLE 1
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
+# define SIXEL_ENCODER_OVERRIDE_TLS_AVAILABLE 1
+#else
+# define SIXEL_ENCODER_OVERRIDE_TLS_AVAILABLE 0
+#endif
+
+#if SIXEL_ENABLE_THREADS && !SIXEL_ENCODER_OVERRIDE_TLS_AVAILABLE
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+static CRITICAL_SECTION sixel_encoder_quantize_override_mutex;
+static INIT_ONCE sixel_encoder_quantize_override_once
+    = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_encoder_quantize_override_lock_init_once(PINIT_ONCE once,
+                                               PVOID parameter,
+                                               PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    InitializeCriticalSection(&sixel_encoder_quantize_override_mutex);
+    return TRUE;
+}
+# else
+#  include <pthread.h>
+static pthread_mutex_t sixel_encoder_quantize_override_mutex
+    = PTHREAD_MUTEX_INITIALIZER;
+# endif
+
+/*
+ * Quantize overrides are stored in TLS variables inside the palette backends.
+ * Compilers without TLS support collapse those into process globals, so
+ * concurrent encodes would otherwise race while one thread updates temporary
+ * overrides for another thread's palette build.
+ */
+static int
+sixel_encoder_quantize_override_lock_acquire(void)
+{
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(
+        &sixel_encoder_quantize_override_once,
+        sixel_encoder_quantize_override_lock_init_once,
+        NULL,
+        NULL);
+    if (!initialized) {
+        return 0;
+    }
+    EnterCriticalSection(&sixel_encoder_quantize_override_mutex);
+    return 1;
+# else
+    int rc;
+
+    rc = pthread_mutex_lock(&sixel_encoder_quantize_override_mutex);
+    if (rc != 0) {
+        return 0;
+    }
+    return 1;
+# endif
+}
+
+static void
+sixel_encoder_quantize_override_lock_release(int acquired)
+{
+    if (acquired == 0) {
+        return;
+    }
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    LeaveCriticalSection(&sixel_encoder_quantize_override_mutex);
+# else
+    (void)pthread_mutex_unlock(&sixel_encoder_quantize_override_mutex);
+# endif
+}
+#else
+static int
+sixel_encoder_quantize_override_lock_acquire(void)
+{
+    return 0;
+}
+
+static void
+sixel_encoder_quantize_override_lock_release(int acquired)
+{
+    (void)acquired;
+}
+#endif
+
 typedef enum sixel_encoder_precision_mode {
     SIXEL_ENCODER_PRECISION_MODE_AUTO = 0,
     SIXEL_ENCODER_PRECISION_MODE_8BIT,
@@ -4027,6 +4134,7 @@ sixel_encoder_prepare_palette(
     int prefer_float32;
     int reserve_alpha_key;
     int palette_reqcolors;
+    int quantize_override_lock_acquired;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -4040,6 +4148,7 @@ sixel_encoder_prepare_palette(
     prefer_float32 = 0;
     reserve_alpha_key = 0;
     palette_reqcolors = 0;
+    quantize_override_lock_acquired = 0;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4220,6 +4329,8 @@ sixel_encoder_prepare_palette(
 
     palette_pixels = sixel_frame_get_pixels(palette_frame);
     palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
+    quantize_override_lock_acquired =
+        sixel_encoder_quantize_override_lock_acquire();
     sixel_set_kmeans_init_type_override(
         encoder->quantize_model_kmeans_init_override,
         (sixel_kmeans_init_type)encoder->quantize_model_kmeans_init_type);
@@ -4374,6 +4485,9 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_point_budget_override(0, 0u);
     sixel_set_kmedoids_rare_keep_override(0, 0u);
     sixel_set_kmedoids_prune_mass_override(0, 0.0);
+    sixel_encoder_quantize_override_lock_release(
+        quantize_override_lock_acquired);
+    quantize_override_lock_acquired = 0;
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -4406,6 +4520,11 @@ sixel_encoder_prepare_palette(
     status = SIXEL_OK;
 
 end:
+    if (quantize_override_lock_acquired != 0) {
+        sixel_encoder_quantize_override_lock_release(
+            quantize_override_lock_acquired);
+        quantize_override_lock_acquired = 0;
+    }
     if (cluster_frame != NULL) {
         sixel_frame_unref(cluster_frame);
         cluster_frame = NULL;
