@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=23
+total=24
 index=0
 pass_count=0
 skip_count=0
@@ -163,6 +163,10 @@ fail_and_exit() {
 run_case_tap "staticcheck-private-includes" \
     "$src_root/tests/_static/sh/staticcheck-private-includes.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?
+
+run_case_tap "staticcheck-c-size-max-header" \
+    "$src_root/tests/_static/sh/staticcheck-c-size-max-header.sh" \
+    "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-makefile-recipes" \
     "$src_root/tests/_static/sh/staticcheck-makefile-recipes.sh" \

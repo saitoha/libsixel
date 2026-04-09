@@ -671,6 +671,11 @@ staticcheck_cases = [
       python_for_tests_path],
   ],
   [
+    'staticcheck-c-size-max-header',
+    [meson.current_source_dir() / '_static/sh/staticcheck-c-size-max-header.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-makefile-recipes',
     [meson.current_source_dir() / '_static/sh/staticcheck-makefile-recipes.sh',
       meson.project_source_root()],

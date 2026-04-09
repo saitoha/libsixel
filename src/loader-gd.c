@@ -35,12 +35,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
+
 #if HAVE_MATH_H
 # include <math.h>
 #endif
 
 #if HAVE_STRING_H
 # include <string.h>
+#endif
+
+/* Keep SIZE_MAX available even on strict C99 environments. */
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
 #endif
 
 #include <gd.h>

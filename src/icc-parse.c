@@ -32,8 +32,17 @@
 #include <math.h>
 #endif
 
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
+
+/* Keep SIZE_MAX available even on strict C99 environments. */
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t)-1)
+#endif
 
 char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
                                                    int len,
