@@ -213,6 +213,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0053_LOADER_BACKGROUND_COLORSPACE_OVERRIDE \
     -DBUILD_TEST_0054_LOADER_GIF_BGCOLOR_CANVAS_FILL \
     -DBUILD_TEST_0055_LOADER_ANIMATION_HIDE_CURSOR_CONTROL \
+    -DBUILD_TEST_0056_LOADER_FACTORY_PREDICATE_GATE \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -265,6 +266,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0053_loader_background_colorspace_override.c \
     loader/0054_loader_gif_bgcolor_canvas_fill.c \
     loader/0055_loader_animation_hide_cursor_control.c \
+    loader/0056_loader_factory_predicate_gate.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \

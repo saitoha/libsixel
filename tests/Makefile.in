@@ -148,6 +148,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0053_loader_background_colorspace_override.c \
 	loader/0054_loader_gif_bgcolor_canvas_fill.c \
 	loader/0055_loader_animation_hide_cursor_control.c \
+	loader/0056_loader_factory_predicate_gate.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	quant/palette/0002_kmedoids_constraints.c \
@@ -207,6 +208,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0053_loader_background_colorspace_override.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0054_loader_gif_bgcolor_canvas_fill.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0055_loader_animation_hide_cursor_control.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0056_loader_factory_predicate_gate.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
@@ -323,6 +325,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0053_loader_background_colorspace_override.Po \
 	loader/$(DEPDIR)/test_runner-0054_loader_gif_bgcolor_canvas_fill.Po \
 	loader/$(DEPDIR)/test_runner-0055_loader_animation_hide_cursor_control.Po \
+	loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
@@ -1040,6 +1043,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_LOADER_BACKGROUND_COLORSPACE_OVERRIDE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_LOADER_GIF_BGCOLOR_CANVAS_FILL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_LOADER_ANIMATION_HIDE_CURSOR_CONTROL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_LOADER_FACTORY_PREDICATE_GATE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -1120,6 +1124,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0053_loader_background_colorspace_override.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0054_loader_gif_bgcolor_canvas_fill.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0055_loader_animation_hide_cursor_control.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0056_loader_factory_predicate_gate.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0002_kmedoids_constraints.c \
@@ -1426,6 +1431,8 @@ loader/test_runner-0054_loader_gif_bgcolor_canvas_fill.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0055_loader_animation_hide_cursor_control.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0056_loader_factory_predicate_gate.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1586,6 +1593,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0053_loader_background_colorspace_override.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0054_loader_gif_bgcolor_canvas_fill.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0055_loader_animation_hide_cursor_control.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
@@ -2192,6 +2200,20 @@ loader/test_runner-0055_loader_animation_hide_cursor_control.obj: loader/0055_lo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0055_loader_animation_hide_cursor_control.c' object='loader/test_runner-0055_loader_animation_hide_cursor_control.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0055_loader_animation_hide_cursor_control.obj `if test -f 'loader/0055_loader_animation_hide_cursor_control.c'; then $(CYGPATH_W) 'loader/0055_loader_animation_hide_cursor_control.c'; else $(CYGPATH_W) '$(srcdir)/loader/0055_loader_animation_hide_cursor_control.c'; fi`
+
+loader/test_runner-0056_loader_factory_predicate_gate.o: loader/0056_loader_factory_predicate_gate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0056_loader_factory_predicate_gate.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Tpo -c -o loader/test_runner-0056_loader_factory_predicate_gate.o `test -f 'loader/0056_loader_factory_predicate_gate.c' || echo '$(srcdir)/'`loader/0056_loader_factory_predicate_gate.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Tpo loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0056_loader_factory_predicate_gate.c' object='loader/test_runner-0056_loader_factory_predicate_gate.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0056_loader_factory_predicate_gate.o `test -f 'loader/0056_loader_factory_predicate_gate.c' || echo '$(srcdir)/'`loader/0056_loader_factory_predicate_gate.c
+
+loader/test_runner-0056_loader_factory_predicate_gate.obj: loader/0056_loader_factory_predicate_gate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0056_loader_factory_predicate_gate.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Tpo -c -o loader/test_runner-0056_loader_factory_predicate_gate.obj `if test -f 'loader/0056_loader_factory_predicate_gate.c'; then $(CYGPATH_W) 'loader/0056_loader_factory_predicate_gate.c'; else $(CYGPATH_W) '$(srcdir)/loader/0056_loader_factory_predicate_gate.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Tpo loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0056_loader_factory_predicate_gate.c' object='loader/test_runner-0056_loader_factory_predicate_gate.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0056_loader_factory_predicate_gate.obj `if test -f 'loader/0056_loader_factory_predicate_gate.c'; then $(CYGPATH_W) 'loader/0056_loader_factory_predicate_gate.c'; else $(CYGPATH_W) '$(srcdir)/loader/0056_loader_factory_predicate_gate.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -2870,6 +2892,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0053_loader_background_colorspace_override.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0054_loader_gif_bgcolor_canvas_fill.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0055_loader_animation_hide_cursor_control.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
@@ -2973,6 +2996,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0053_loader_background_colorspace_override.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0054_loader_gif_bgcolor_canvas_fill.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0055_loader_animation_hide_cursor_control.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0056_loader_factory_predicate_gate.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
