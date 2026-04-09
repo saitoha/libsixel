@@ -30,6 +30,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include "dither.h"
 
 #define SIXEL_TEMPORAL_METHOD_NONE      0
@@ -73,6 +74,122 @@ typedef struct sixel_temporal_method_ops {
     sixel_temporal_clear_pixel_fn clear_pixel;
     sixel_temporal_store_error_fn store_error;
 } sixel_temporal_method_ops_t;
+
+/*
+ * Shared temporal frame ownership helpers used by temporal strategies.
+ * The owner method id protects the frame from cross-strategy reuse.
+ */
+static void
+sixel_temporal_release_shared_frame(sixel_dither_t *dither)
+{
+    sixel_allocator_t *allocator;
+
+    if (dither == NULL) {
+        return;
+    }
+
+    allocator = dither->allocator;
+    if (dither->temporal_state.error_frame != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, dither->temporal_state.error_frame);
+    }
+
+    dither->temporal_state.error_frame = NULL;
+    dither->temporal_state.error_frame_size = 0U;
+    dither->temporal_state.width = 0;
+    dither->temporal_state.height = 0;
+    dither->temporal_state.depth = 0;
+    dither->temporal_state.method_id = SIXEL_TEMPORAL_METHOD_NONE;
+}
+
+static SIXELSTATUS
+sixel_temporal_prepare_shared_frame(sixel_dither_t *dither,
+                                    int width,
+                                    int height,
+                                    int depth,
+                                    int can_update,
+                                    int owner_method,
+                                    int *enabled,
+                                    int32_t **frame)
+{
+    SIXELSTATUS status;
+    size_t temporal_len;
+    size_t temporal_bytes;
+    int needs_reset;
+    int32_t *new_frame;
+
+    status = SIXEL_OK;
+    temporal_len = 0U;
+    temporal_bytes = 0U;
+    needs_reset = 0;
+    new_frame = NULL;
+
+    if (dither == NULL || dither->allocator == NULL
+            || enabled == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (owner_method != SIXEL_TEMPORAL_METHOD_DIFFUSION
+            && owner_method != SIXEL_TEMPORAL_METHOD_STBN) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *frame = NULL;
+    if (*enabled == 0) {
+        return status;
+    }
+
+    temporal_len = (size_t)width * (size_t)height * (size_t)depth;
+    if (temporal_len == 0U) {
+        *enabled = 0;
+        return status;
+    }
+
+    if (dither->temporal_state.error_frame != NULL) {
+        if (dither->temporal_state.method_id != owner_method) {
+            needs_reset = 1;
+        } else if (dither->temporal_state.width != width
+                || dither->temporal_state.height != height
+                || dither->temporal_state.depth != depth) {
+            needs_reset = 1;
+        }
+    }
+
+    if (needs_reset) {
+        if (can_update) {
+            sixel_temporal_release_shared_frame(dither);
+        } else {
+            *enabled = 0;
+            return status;
+        }
+    }
+
+    if (dither->temporal_state.error_frame == NULL) {
+        if (can_update == 0) {
+            *enabled = 0;
+            return status;
+        }
+
+        if (temporal_len > SIZE_MAX / sizeof(int32_t)) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        temporal_bytes = temporal_len * sizeof(int32_t);
+        new_frame = (int32_t *)sixel_allocator_malloc(dither->allocator,
+                                                      temporal_bytes);
+        if (new_frame == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+
+        memset(new_frame, 0x00, temporal_bytes);
+        dither->temporal_state.error_frame = new_frame;
+        dither->temporal_state.error_frame_size = temporal_bytes;
+        dither->temporal_state.width = width;
+        dither->temporal_state.height = height;
+        dither->temporal_state.depth = depth;
+    }
+
+    dither->temporal_state.method_id = owner_method;
+    *frame = (int32_t *)dither->temporal_state.error_frame;
+    return status;
+}
 
 #endif /* LIBSIXEL_DITHER_TEMPORAL_METHOD_H */
 
