@@ -15351,50 +15351,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             layer_for_composite.has_vector_mask_bbox = 0;
             effective_composite_layer = &layer_for_composite;
         }
-        if (layer->has_vector_mask != 0) {
-            if (allow_pixel_layer_decode_skip != 0 &&
-                synthetic_fill != 0 &&
-                effective_composite_layer->has_vector_mask_data != 0 &&
-                sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
-                    chunk,
-                    info,
-                    effective_composite_layer,
-                    &src_layer)) {
-                sixel_trace_topic_message(
-                    "psd_decode",
-                    "builtin PSD: applying vector mask bbox in "
-                    "layer fallback");
-            } else if (allow_pixel_layer_decode_skip != 0 &&
-                ignore_placeholder_vector_bbox == 0 &&
-                effective_composite_layer->has_vector_mask_bbox != 0) {
-                sixel_trace_topic_message(
-                    "psd_decode",
-                    "builtin PSD: applying vector mask bbox in "
-                    "layer fallback");
-                sixel_builtin_psd_apply_vector_mask_bbox_to_layer_buffers(
-                    info,
-                    effective_composite_layer,
-                    &src_layer);
-            } else {
-                sixel_trace_topic_message(
-                    "psd_decode",
-                    "builtin PSD: ignoring vector mask in layer fallback");
-                if (ignore_placeholder_vector_bbox != 0) {
-                    sixel_trace_topic_message(
-                        "psd_decode",
-                        "builtin PSD: ignoring placeholder vector mask bbox in "
-                        "layer fallback");
-                } else if (layer->has_vector_mask_bbox != 0) {
-                    sixel_trace_topic_message(
-                        "psd_decode",
-                        "builtin PSD: vector mask bbox parsed");
-                } else {
-                    sixel_trace_topic_message(
-                        "psd_decode",
-                        "builtin PSD: vector mask bbox unavailable");
-                }
-            }
-        }
         if (layer->has_layer_effects != 0) {
             if (layer->has_effect_solid_overlay != 0 ||
                 layer->has_effect_gradient_overlay != 0 ||
@@ -15496,6 +15452,49 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     continue;
                 }
                 goto cleanup;
+            }
+        }
+        if (layer->has_vector_mask != 0) {
+            if (allow_pixel_layer_decode_skip != 0 &&
+                effective_composite_layer->has_vector_mask_data != 0 &&
+                sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
+                    chunk,
+                    info,
+                    effective_composite_layer,
+                    &src_layer)) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying vector mask path in "
+                    "layer fallback");
+            } else if (allow_pixel_layer_decode_skip != 0 &&
+                       ignore_placeholder_vector_bbox == 0 &&
+                       effective_composite_layer->has_vector_mask_bbox != 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying vector mask bbox in "
+                    "layer fallback");
+                sixel_builtin_psd_apply_vector_mask_bbox_to_layer_buffers(
+                    info,
+                    effective_composite_layer,
+                    &src_layer);
+            } else {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: ignoring vector mask in layer fallback");
+                if (ignore_placeholder_vector_bbox != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: ignoring placeholder vector mask bbox in "
+                        "layer fallback");
+                } else if (layer->has_vector_mask_bbox != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: vector mask bbox parsed");
+                } else {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: vector mask bbox unavailable");
+                }
             }
         }
         defer_clip_group_overlay = 0;
