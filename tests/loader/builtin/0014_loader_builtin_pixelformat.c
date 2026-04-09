@@ -4260,7 +4260,10 @@ run_builtin_loader_test(void)
     int parsed_pixelformat;
     int dispatch_result;
     int result;
-    loader_component_case_spec_t psd_alpha_case;
+    /*
+     * Keep optional expectation fields disabled unless this case sets them.
+     */
+    loader_component_case_spec_t psd_alpha_case = { 0 };
 
     dispatch_result = run_builtin_loader_env_dispatch_groups(
         env_dispatch_groups,
