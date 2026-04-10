@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper for gd pixelpolicy case: multi-key pal8 normalization.
+# TAP wrapper for gd pixelpolicy case: single nonzero key is preserved.
 
 set -eux
 
@@ -13,10 +13,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0059_loader_gd_pixelpolicy_detail" \
-    "multi_keyonly_pal8_normalized" || {
-    echo "not ok 1 - gd multi_keyonly_pal8_normalized"
+    "single_key_nonzero_preserved" || {
+    echo "not ok 1 - gd single_key_nonzero_preserved"
     exit 0
 }
 
-echo "ok 1 - gd multi_keyonly_pal8_normalized"
+echo "ok 1 - gd single_key_nonzero_preserved"
 exit 0

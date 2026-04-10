@@ -410,6 +410,100 @@ test_gama_only_bg_float32_linear(void)
 }
 
 static int
+test_single_key_nonzero_preserved(void)
+{
+    gd_pixel_probe_t probe;
+
+    memset(&probe, 0, sizeof(probe));
+    if (run_gd_probe("/tests/data/inputs/formats/pal8-trns-key2.png",
+                     1,
+                     SIXEL_PALETTE_MAX,
+                     NULL,
+                     &probe) != 0) {
+        return 1;
+    }
+
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_PAL8 ||
+        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.width != 4 ||
+        probe.height != 1 ||
+        probe.transparent != 2 ||
+        probe.has_transparent_mask != 0 ||
+        probe.alpha_zero_is_transparent != 0) {
+        fprintf(stderr, "single-key nonzero metadata mismatch\n");
+        return 1;
+    }
+
+    if (probe.indexed_pixels[0] != 0u ||
+        probe.indexed_pixels[1] != 2u ||
+        probe.indexed_pixels[2] != 1u ||
+        probe.indexed_pixels[3] != 3u) {
+        fprintf(stderr, "single-key nonzero index mapping mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+test_partial_alpha_bg_float32_semantics(void)
+{
+    static unsigned char const white_bg[3] = { 0xffu, 0xffu, 0xffu };
+    gd_pixel_probe_t probe;
+    size_t i;
+    float r;
+    float g;
+    float b;
+    int saw_white;
+    int saw_tinted;
+
+    memset(&probe, 0, sizeof(probe));
+    i = 0u;
+    r = 0.0f;
+    g = 0.0f;
+    b = 0.0f;
+    saw_white = 0;
+    saw_tinted = 0;
+    if (run_gd_probe("/tests/data/inputs/formats/"
+                     "libpng-pal8-trns-single0-semi-icc.png",
+                     1,
+                     SIXEL_PALETTE_MAX,
+                     white_bg,
+                     &probe) != 0) {
+        return 1;
+    }
+
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_LINEAR ||
+        probe.has_transparent_mask != 0 ||
+        probe.width != 6 ||
+        probe.height != 1) {
+        fprintf(stderr, "partial alpha background float32 metadata mismatch\n");
+        return 1;
+    }
+
+    for (i = 0u; i < probe.pixel_count && i < GD_PROBE_MAX_PIXELS; ++i) {
+        r = probe.pixels_f32[i * 3u + 0u];
+        g = probe.pixels_f32[i * 3u + 1u];
+        b = probe.pixels_f32[i * 3u + 2u];
+        if (r > 0.98f && g > 0.98f && b > 0.98f) {
+            saw_white = 1;
+            continue;
+        }
+        if (r > g + 0.05f && r > b + 0.05f && r < 0.98f) {
+            saw_tinted = 1;
+        }
+    }
+
+    if (saw_white == 0 || saw_tinted == 0) {
+        fprintf(stderr, "partial alpha background float32 behavior mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_gd_pixelpolicy_mode(char const *mode)
 {
     if (mode == NULL || strcmp(mode, "all") == 0) {
@@ -422,6 +516,12 @@ run_gd_pixelpolicy_mode(char const *mode)
         if (test_gama_only_bg_float32_linear() != 0) {
             return 1;
         }
+        if (test_single_key_nonzero_preserved() != 0) {
+            return 1;
+        }
+        if (test_partial_alpha_bg_float32_semantics() != 0) {
+            return 1;
+        }
         return 0;
     }
     if (strcmp(mode, "partial_alpha_mask_semantics") == 0) {
@@ -432,6 +532,12 @@ run_gd_pixelpolicy_mode(char const *mode)
     }
     if (strcmp(mode, "gama_only_bg_float32_linear") == 0) {
         return test_gama_only_bg_float32_linear();
+    }
+    if (strcmp(mode, "single_key_nonzero_preserved") == 0) {
+        return test_single_key_nonzero_preserved();
+    }
+    if (strcmp(mode, "partial_alpha_bg_float32_semantics") == 0) {
+        return test_partial_alpha_bg_float32_semantics();
     }
 
     fprintf(stderr, "unknown gd pixelpolicy mode: %s\n", mode);

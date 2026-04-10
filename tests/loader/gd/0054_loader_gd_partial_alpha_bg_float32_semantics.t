@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper for gd pixelpolicy case: multi-key pal8 normalization.
+# TAP wrapper for gd pixelpolicy case: partial alpha bg float32 semantics.
 
 set -eux
 
@@ -13,10 +13,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0059_loader_gd_pixelpolicy_detail" \
-    "multi_keyonly_pal8_normalized" || {
-    echo "not ok 1 - gd multi_keyonly_pal8_normalized"
+    "partial_alpha_bg_float32_semantics" || {
+    echo "not ok 1 - gd partial_alpha_bg_float32_semantics"
     exit 0
 }
 
-echo "ok 1 - gd multi_keyonly_pal8_normalized"
+echo "ok 1 - gd partial_alpha_bg_float32_semantics"
 exit 0

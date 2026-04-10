@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP wrapper for gd pixelformat case: reqcolors zero clamp pal8.
+# TAP wrapper for gd pixelformat case: pal256 req256 keeps pal8.
 
 set -eux
 
@@ -12,10 +12,10 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "loader/0011_loader_gd_pixelformat" "reqcolors_zero_clamp_pal8" || {
-    echo "not ok 1 - gd reqcolors_zero_clamp_pal8"
+    "loader/0011_loader_gd_pixelformat" "pal256_req256_keep_pal8" || {
+    echo "not ok 1 - gd pal256_req256_keep_pal8"
     exit 0
 }
 
-echo "ok 1 - gd reqcolors_zero_clamp_pal8"
+echo "ok 1 - gd pal256_req256_keep_pal8"
 exit 0
