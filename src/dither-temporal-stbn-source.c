@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "dither-temporal-method.h"
+#include "dither-temporal-stbn-source-mask.h"
 
 static uint32_t
 sixel_temporal_stbn_hash_u32_common(uint32_t value)
@@ -70,15 +71,11 @@ sixel_temporal_stbn_sample_mask_u16_common(uint32_t sequence_index,
                                            int channel,
                                            int depth)
 {
-    /*
-     * Placeholder mask source keeps output stable until dedicated STBN mask
-     * tables are connected.
-     */
-    return sixel_temporal_stbn_sample_hash_u16_common(sequence_index,
-                                                      x,
-                                                      y,
-                                                      channel,
-                                                      depth);
+    return sixel_temporal_stbn_source_mask_sample_u16_common(sequence_index,
+                                                             x,
+                                                             y,
+                                                             channel,
+                                                             depth);
 }
 
 SIXELSTATUS
@@ -116,8 +113,8 @@ sixel_temporal_stbn_source_backends_common[] = {
      */
     {
         SIXEL_TEMPORAL_STBN_SOURCE_MASK,
-        sixel_temporal_stbn_sample_mask_u16_common,
-        sixel_temporal_stbn_prepare_state_default_common
+        sixel_temporal_stbn_source_mask_sample_u16_common,
+        sixel_temporal_stbn_source_mask_prepare_state_common
     }
 };
 
