@@ -26,9 +26,10 @@
 #include "dither-temporal-stbn-source-pmj.h"
 
 /*
- * Keep PMJ v1 deterministic and lightweight: sequence index chooses a
- * progressive 64x64 stratum, then we jitter it with a small hash so
- * animation frames decorrelate without introducing thread-dependent state.
+ * Keep PMJ deterministic and thread-stable. This source builds a progressive
+ * 64x64 stratum from sequence/channel/depth, then applies reversible scrambles
+ * over tile coordinates so spatial structure stays balanced while sequence
+ * changes reduce frame-to-frame correlation.
  */
 static uint32_t
 sixel_temporal_stbn_pmj_mix_u32_common(uint32_t value)
@@ -40,6 +41,41 @@ sixel_temporal_stbn_pmj_mix_u32_common(uint32_t value)
     value ^= value >> 16;
 
     return value;
+}
+
+static uint32_t
+sixel_temporal_stbn_pmj_permute_pow2_common(uint32_t value,
+                                            uint32_t key,
+                                            uint32_t mask)
+{
+    value &= mask;
+    value ^= key & mask;
+    value *= 0xe95e1dd5U;
+    value &= mask;
+    value ^= value >> 3;
+    value ^= value >> 5;
+    value ^= (key >> 9) & mask;
+    value *= 0x7feb352dU;
+    value &= mask;
+
+    return value;
+}
+
+static uint32_t
+sixel_temporal_stbn_pmj_interleave6_common(uint32_t x, uint32_t y)
+{
+    uint32_t bit;
+    uint32_t code;
+
+    bit = 0U;
+    code = 0U;
+
+    for (bit = 0U; bit < 6U; ++bit) {
+        code |= ((x >> bit) & 1U) << (bit * 2U);
+        code |= ((y >> bit) & 1U) << (bit * 2U + 1U);
+    }
+
+    return code;
 }
 
 static uint32_t
@@ -70,31 +106,33 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
     uint32_t channel_u32;
     uint32_t depth_u32;
     uint32_t seed;
-    uint32_t strata;
-    uint32_t strata_x;
-    uint32_t strata_y;
+    uint32_t phase_key;
+    uint32_t coord_key;
     uint32_t offset_x;
     uint32_t offset_y;
+    uint32_t scrambled_x;
+    uint32_t scrambled_y;
+    uint32_t rank;
+    uint32_t jitter_seed;
+    uint32_t jitter_u6;
     int sample_x;
     int sample_y;
-    uint32_t tile_rank;
-    uint32_t jitter_seed;
-    uint32_t jitter_rank;
     uint16_t sample_u16;
 
     channel_u32 = 0U;
     depth_u32 = 0U;
     seed = 0U;
-    strata = 0U;
-    strata_x = 0U;
-    strata_y = 0U;
+    phase_key = 0U;
+    coord_key = 0U;
     offset_x = 0U;
     offset_y = 0U;
+    scrambled_x = 0U;
+    scrambled_y = 0U;
+    rank = 0U;
+    jitter_seed = 0U;
+    jitter_u6 = 0U;
     sample_x = 0;
     sample_y = 0;
-    tile_rank = 0U;
-    jitter_seed = 0U;
-    jitter_rank = 0U;
     sample_u16 = 0U;
 
     channel_u32 = sixel_temporal_stbn_pmj_channel_u32_common(channel, depth);
@@ -107,12 +145,17 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
     seed ^= (depth_u32 + 1U) * 0xc2b2ae35U;
     seed = sixel_temporal_stbn_pmj_mix_u32_common(seed);
 
-    strata = sequence_index & 4095U;
-    strata_x = strata & 63U;
-    strata_y = (strata >> 6) & 63U;
+    phase_key = seed ^ 0x9e3779b9U;
+    coord_key = seed ^ 0x243f6a88U;
 
-    offset_x = (strata_x * 37U + (seed & 63U)) & 63U;
-    offset_y = (strata_y * 53U + ((seed >> 8) & 63U)) & 63U;
+    offset_x = sixel_temporal_stbn_pmj_permute_pow2_common(
+        sequence_index + 0x68bc21ebU,
+        phase_key,
+        63U);
+    offset_y = sixel_temporal_stbn_pmj_permute_pow2_common(
+        sequence_index ^ 0x02e5be93U,
+        phase_key >> 7,
+        63U);
 
     sample_x = sixel_temporal_stbn_wrap_tile_coord_common(
         x + (int)offset_x,
@@ -121,13 +164,28 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
         y + (int)offset_y,
         64);
 
-    tile_rank = (uint32_t)sample_y * 64U + (uint32_t)sample_x;
-    jitter_seed = seed
-        ^ ((uint32_t)sample_x * 0x6a09e667U)
-        ^ ((uint32_t)sample_y * 0xbb67ae85U);
-    jitter_rank = sixel_temporal_stbn_pmj_mix_u32_common(jitter_seed) & 4095U;
-    tile_rank = (tile_rank * 73U + jitter_rank) & 4095U;
-    sample_u16 = (uint16_t)((tile_rank * 65535U + 2047U) / 4095U);
+    scrambled_x = sixel_temporal_stbn_pmj_permute_pow2_common(
+        (uint32_t)sample_x,
+        coord_key ^ 0xa511e9b3U,
+        63U);
+    scrambled_y = sixel_temporal_stbn_pmj_permute_pow2_common(
+        (uint32_t)sample_y,
+        coord_key ^ 0x63d83595U,
+        63U);
+    rank = sixel_temporal_stbn_pmj_interleave6_common(scrambled_x,
+                                                       scrambled_y);
+    rank = sixel_temporal_stbn_pmj_permute_pow2_common(
+        rank,
+        seed ^ 0xb7e15162U,
+        4095U);
+
+    jitter_seed = seed;
+    jitter_seed ^= (uint32_t)sample_x * 0x6a09e667U;
+    jitter_seed ^= (uint32_t)sample_y * 0xbb67ae85U;
+    jitter_u6 = sixel_temporal_stbn_pmj_mix_u32_common(jitter_seed) & 63U;
+    rank = (rank + jitter_u6) & 4095U;
+
+    sample_u16 = (uint16_t)((rank * 65535U + 2047U) / 4095U);
 
     return sample_u16;
 }
