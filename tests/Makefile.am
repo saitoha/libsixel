@@ -215,6 +215,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0055_LOADER_ANIMATION_HIDE_CURSOR_CONTROL \
     -DBUILD_TEST_0056_LOADER_FACTORY_PREDICATE_GATE \
     -DBUILD_TEST_0057_LOADER_GD_CAN_TRY_POLICY \
+    -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
+    -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -339,6 +341,7 @@ AM_LOG_FLAGS =
 	staticcheck-private-includes \
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-runner-dllexport \
+	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
 	staticcheck-meson-palette-sources \
@@ -368,6 +371,7 @@ staticcheck-python-compileall \
 staticcheck-private-includes \
 staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
+staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
 staticcheck-src-makefile-dist-sources-sync \
 staticcheck-meson-palette-sources \
@@ -475,6 +479,16 @@ staticcheck-test-runner-dllexport:
 		--trs-file staticcheck-test-runner-dllexport.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-runner-dllexport.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-runner-amalgamation-defines-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-runner-amalgamation-defines-sync" \
+		--log-file staticcheck-test-runner-amalgamation-defines-sync.log \
+		--trs-file staticcheck-test-runner-amalgamation-defines-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-makefile-recipes:
@@ -1284,6 +1298,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-private-includes.sh \
     _static/sh/staticcheck-src-no-direct-getenv.sh \
     _static/sh/staticcheck-test-runner-dllexport.sh \
+    _static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \

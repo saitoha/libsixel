@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=27
+total=28
 index=0
 pass_count=0
 skip_count=0
@@ -210,6 +210,10 @@ run_case_tap "staticcheck-quantize-merge-suboption-sync" \
 
 run_case_tap "staticcheck-test-runner-dllexport" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-dllexport.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-runner-amalgamation-defines-sync" \
+    "$src_root/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-binding-loader-setopt-sync" \
