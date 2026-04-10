@@ -341,18 +341,27 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
      * Keep cache initialization conservative. Missing or inconsistent
      * metadata must fall back to the stateless PMJ sampler path.
      */
-    stbn_state->pmj_cache_valid = 0;
-    stbn_state->pmj_cache_depth = 0;
-
     if (dither == NULL) {
+        stbn_state->pmj_cache_valid = 0;
+        stbn_state->pmj_cache_depth = 0;
+        stbn_state->pmj_cache_sequence_index = 0U;
         return status;
     }
     depth = dither->temporal_state.depth;
     if (depth <= 0 || depth > SIXEL_MAX_CHANNELS) {
+        stbn_state->pmj_cache_valid = 0;
+        stbn_state->pmj_cache_depth = 0;
+        stbn_state->pmj_cache_sequence_index = 0U;
         return status;
     }
 
     sequence_index = stbn_state->sequence_index;
+    if (stbn_state->pmj_cache_valid != 0
+            && stbn_state->pmj_cache_depth == depth
+            && stbn_state->pmj_cache_sequence_index == sequence_index) {
+        return status;
+    }
+
     depth_u32 = (uint32_t)depth;
     for (channel = 0; channel < depth; ++channel) {
         channel_cache = &stbn_state->pmj_channel_cache[channel];
@@ -364,6 +373,7 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
     }
 
     stbn_state->pmj_cache_depth = depth;
+    stbn_state->pmj_cache_sequence_index = sequence_index;
     stbn_state->pmj_cache_valid = 1;
     return status;
 }

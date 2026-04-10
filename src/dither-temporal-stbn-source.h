@@ -66,6 +66,7 @@ typedef struct sixel_temporal_stbn_state_common {
     sixel_temporal_stbn_sample_u16_fn sample_u16;
     int pmj_cache_valid;
     int pmj_cache_depth;
+    uint32_t pmj_cache_sequence_index;
     sixel_temporal_stbn_pmj_channel_cache_common_t
         pmj_channel_cache[SIXEL_MAX_CHANNELS];
 } sixel_temporal_stbn_state_common_t;
