@@ -903,100 +903,106 @@ static sixel_suboption_key_t const g_subkeys_diffusion_temporal[] = {
     }
 };
 
-static size_t const g_subkeys_diffusion_temporal_count
-    = sizeof(g_subkeys_diffusion_temporal)
-      / sizeof(g_subkeys_diffusion_temporal[0]);
+enum {
+    /*
+     * Keep this as an enum constant so static initializers stay valid on
+     * strict compilers (MSVC/pcc reject file-scope const objects here).
+     */
+    G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT =
+        (int)(sizeof(g_subkeys_diffusion_temporal)
+              / sizeof(g_subkeys_diffusion_temporal[0]))
+};
 
 static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
     {
         "auto",
         SIXEL_DIFFUSE_AUTO,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "none",
         SIXEL_DIFFUSE_NONE,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "fs",
         SIXEL_DIFFUSE_FS,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "atkinson",
         SIXEL_DIFFUSE_ATKINSON,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "jajuni",
         SIXEL_DIFFUSE_JAJUNI,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "stucki",
         SIXEL_DIFFUSE_STUCKI,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "burkes",
         SIXEL_DIFFUSE_BURKES,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "sierra1",
         SIXEL_DIFFUSE_SIERRA1,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "sierra2",
         SIXEL_DIFFUSE_SIERRA2,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "sierra3",
         SIXEL_DIFFUSE_SIERRA3,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "a_dither",
         SIXEL_DIFFUSE_A_DITHER,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "x_dither",
         SIXEL_DIFFUSE_X_DITHER,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "bluenoise",
         SIXEL_DIFFUSE_BLUENOISE_DITHER,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "lso2",
         SIXEL_DIFFUSE_LSO2,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
         "temporal-diffusion",
         SIXEL_DIFFUSE_TEMPORAL,
         g_subkeys_diffusion_temporal,
-        g_subkeys_diffusion_temporal_count
+        G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     }
 };
 
