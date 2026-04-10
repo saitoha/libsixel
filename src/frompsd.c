@@ -1532,6 +1532,7 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_effect_outer_glow;
     int has_effect_inner_glow;
     int effect_stroke_position;
+    int effect_stroke_from_vector_style;
     int has_vector_stroke_style;
     int vector_stroke_position;
     int has_knockout;
@@ -10407,6 +10408,7 @@ sixel_builtin_psd_parse_effect_stroke_object(
         layer->effect_stroke_opacity = opacity;
         layer->effect_stroke_size = size_px;
         layer->effect_stroke_mode = blend_mode;
+        layer->effect_stroke_from_vector_style = 0;
     }
     return 1;
 }
@@ -10986,6 +10988,7 @@ sixel_builtin_psd_parse_vector_stroke_payload(
         layer->effect_stroke_opacity = stroke_opacity;
         layer->effect_stroke_size = stroke_size;
         layer->effect_stroke_mode = blend_mode;
+        layer->effect_stroke_from_vector_style = 1;
     }
     return 1;
 }
@@ -11464,6 +11467,7 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->has_effect_outer_glow = 0;
     layer->has_effect_inner_glow = 0;
     layer->effect_stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
+    layer->effect_stroke_from_vector_style = 0;
     layer->has_vector_stroke_style = 0;
     layer->vector_stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     layer->has_knockout = 0;
@@ -15567,8 +15571,14 @@ sixel_builtin_psd_apply_layer_effects_subset(
     stroke_rgb[2] = layer->effect_stroke_rgb[2];
     stroke_position = layer->effect_stroke_position;
     effect_mode = layer->effect_stroke_mode;
+    /*
+     * Keep explicit layer-effect stroke data when both sources exist.
+     * Vector stroke style becomes the effect source only when the effect
+     * stroke fields were synthesized from vstk.
+     */
     if (layer->has_vector_stroke_content_fill != 0 &&
-        layer->has_vector_stroke_style != 0) {
+        layer->has_vector_stroke_style != 0 &&
+        layer->effect_stroke_from_vector_style != 0) {
         stroke_opacity = sixel_builtin_psd_clamp01(
             layer->vector_stroke_opacity);
         stroke_size = layer->vector_stroke_size;
@@ -16210,6 +16220,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int ignore_placeholder_vector_bbox;
         int synthetic_stroke;
         int apply_fill_opacity;
+        int pre_softened_alpha_edges;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
@@ -16223,6 +16234,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         clipping_base_index = -1;
         synthetic_stroke = 0;
         apply_fill_opacity = 0;
+        pre_softened_alpha_edges = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
             info,
             layer);
@@ -16624,6 +16636,18 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                                                    &src_layer);
             clip_alpha_valid = 1;
         }
+        if (effective_composite_layer->has_vector_mask != 0 &&
+            effective_composite_layer->has_effect_stroke != 0) {
+            /*
+             * Stroke approximation uses the alpha silhouette. Shape layers
+             * can have hard alpha edges from vector-mask rasterization, so
+             * pre-soften once before effects.
+             */
+            sixel_builtin_psd_soften_layer_alpha_edges(
+                effective_composite_layer,
+                &src_layer);
+            pre_softened_alpha_edges = 1;
+        }
         if (defer_clip_group_overlay == 0 &&
             (effective_composite_layer->has_effect_solid_overlay != 0 ||
              effective_composite_layer->has_effect_gradient_overlay != 0 ||
@@ -16636,7 +16660,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
         if (synthetic_fill != 0 &&
             effective_composite_layer->has_vector_mask != 0 &&
-            effective_composite_layer->has_layer_effects != 0) {
+            effective_composite_layer->has_layer_effects != 0 &&
+            pre_softened_alpha_edges == 0) {
             /*
              * Vector-mask synthetic fills from descriptor payloads often carry
              * hard alpha transitions. A light edge soften keeps parity with
