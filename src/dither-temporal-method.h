@@ -172,10 +172,18 @@ sixel_temporal_stbn_sample_mask_u16_common(uint32_t sequence_index,
 
 static sixel_temporal_stbn_source_backend_common_t const
 sixel_temporal_stbn_source_backends_common[] = {
+    /*
+     * Index 0 is the fallback backend. Keep it as hash until dedicated
+     * source tables are introduced and validated.
+     */
     {
         SIXEL_TEMPORAL_STBN_SOURCE_HASH,
         sixel_temporal_stbn_sample_hash_u16_common
     },
+    /*
+     * Mask currently reuses hash samples as a placeholder. Table-driven
+     * dispatch keeps future PMJ/STBN mask integration local to this list.
+     */
     {
         SIXEL_TEMPORAL_STBN_SOURCE_MASK,
         sixel_temporal_stbn_sample_mask_u16_common
