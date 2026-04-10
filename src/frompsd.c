@@ -10574,6 +10574,210 @@ sixel_builtin_psd_parse_effect_glow_object(
 }
 
 static int
+sixel_builtin_psd_parse_effect_bevel_object(
+    unsigned char const *data,
+    size_t key_length,
+    size_t *pcursor,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    int enabled;
+    int has_highlight_color;
+    int has_shadow_color;
+    sixel_builtin_psd_layer_blend_mode_t highlight_mode;
+    sixel_builtin_psd_layer_blend_mode_t shadow_mode;
+    float highlight_rgb[3];
+    float shadow_rgb[3];
+    float highlight_opacity;
+    float shadow_opacity;
+    float size_px;
+    char key[5];
+    char type[5];
+    char enum_value[5];
+    char class_key[5];
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    enabled = 1;
+    has_highlight_color = 0;
+    has_shadow_color = 0;
+    highlight_mode = SIXEL_BUILTIN_PSD_BLEND_SCREEN;
+    shadow_mode = SIXEL_BUILTIN_PSD_BLEND_MULTIPLY;
+    highlight_rgb[0] = 1.0f;
+    highlight_rgb[1] = 1.0f;
+    highlight_rgb[2] = 1.0f;
+    shadow_rgb[0] = 0.0f;
+    shadow_rgb[1] = 0.0f;
+    shadow_rgb[2] = 0.0f;
+    highlight_opacity = 0.0f;
+    shadow_opacity = 0.0f;
+    size_px = 0.0f;
+    memset(key, 0, sizeof(key));
+    memset(type, 0, sizeof(type));
+    memset(enum_value, 0, sizeof(enum_value));
+    memset(class_key, 0, sizeof(class_key));
+
+    if (data == NULL || pcursor == NULL || layer == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          key_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                key_length,
+                                                &cursor,
+                                                class_key)) {
+        return 0;
+    }
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        double numeric;
+        int bool_value;
+
+        numeric = 0.0;
+        bool_value = 0;
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "enab", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            enabled = bool_value != 0 ? 1 : 0;
+            continue;
+        }
+        if (memcmp(key, "hglM", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+                enum_value,
+                &highlight_mode);
+            continue;
+        }
+        if (memcmp(key, "sdwM", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+                enum_value,
+                &shadow_mode);
+            continue;
+        }
+        if (memcmp(key, "hglC", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_parse_color_object(
+                    data,
+                    key_length,
+                    &cursor,
+                    highlight_rgb)) {
+                return 0;
+            }
+            has_highlight_color = 1;
+            continue;
+        }
+        if (memcmp(key, "sdwC", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0) {
+            if (!sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                                 key_length,
+                                                                 &cursor,
+                                                                 shadow_rgb)) {
+                return 0;
+            }
+            has_shadow_color = 1;
+            continue;
+        }
+        if (memcmp(key, "hglO", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            highlight_opacity =
+                sixel_builtin_psd_normalize_descriptor_opacity(numeric);
+            continue;
+        }
+        if (memcmp(key, "sdwO", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            shadow_opacity =
+                sixel_builtin_psd_normalize_descriptor_opacity(numeric);
+            continue;
+        }
+        if ((memcmp(key, "blur", 4u) == 0 ||
+             memcmp(key, "srgR", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= 0.0) {
+                size_px = 0.0f;
+            } else if (numeric >= 128.0) {
+                size_px = 128.0f;
+            } else {
+                size_px = (float)numeric;
+            }
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    *pcursor = cursor;
+    if (enabled == 0 || size_px <= 0.0f) {
+        return 1;
+    }
+    if (has_highlight_color != 0 && highlight_opacity > 0.0f) {
+        layer->has_effect_outer_glow = 1;
+        layer->effect_outer_glow_rgb[0] = highlight_rgb[0];
+        layer->effect_outer_glow_rgb[1] = highlight_rgb[1];
+        layer->effect_outer_glow_rgb[2] = highlight_rgb[2];
+        layer->effect_outer_glow_opacity = highlight_opacity;
+        layer->effect_outer_glow_size = size_px;
+        layer->effect_outer_glow_mode = highlight_mode;
+    }
+    if (has_shadow_color != 0 && shadow_opacity > 0.0f) {
+        layer->has_effect_inner_glow = 1;
+        layer->effect_inner_glow_rgb[0] = shadow_rgb[0];
+        layer->effect_inner_glow_rgb[1] = shadow_rgb[1];
+        layer->effect_inner_glow_rgb[2] = shadow_rgb[2];
+        layer->effect_inner_glow_opacity = shadow_opacity;
+        layer->effect_inner_glow_size = size_px;
+        layer->effect_inner_glow_mode = shadow_mode;
+    }
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_layer_effects_payload_loose(
     unsigned char const *data,
     size_t key_length,
@@ -10649,6 +10853,19 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
                                                            &obj_cursor,
                                                            layer,
                                                            1)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (memcmp(data + cursor, "ebblObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_bevel_object(data,
+                                                            key_length,
+                                                            &obj_cursor,
+                                                            layer)) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: parsed ebbl bevel object in layer effects");
                 parsed = 1;
             }
             continue;
