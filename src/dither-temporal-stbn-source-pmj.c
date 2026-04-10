@@ -96,6 +96,9 @@ sixel_temporal_stbn_pmj_channel_u32_common(int channel, int depth)
     if (depth <= 0) {
         return 0U;
     }
+    if (channel >= 0 && channel < depth) {
+        return (uint32_t)channel;
+    }
 
     wrapped = channel % depth;
     if (wrapped < 0) {
@@ -166,12 +169,20 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
         phase_key >> 7,
         63U);
 
-    sample_x = sixel_temporal_stbn_wrap_tile_coord_common(
-        x + (int)offset_x,
-        64);
-    sample_y = sixel_temporal_stbn_wrap_tile_coord_common(
-        y + (int)offset_y,
-        64);
+    sample_x = x + (int)offset_x;
+    sample_y = y + (int)offset_y;
+    if (sample_x >= 0) {
+        sample_x &= 63;
+    } else {
+        sample_x = sixel_temporal_stbn_wrap_tile_coord_common(sample_x,
+                                                               64);
+    }
+    if (sample_y >= 0) {
+        sample_y &= 63;
+    } else {
+        sample_y = sixel_temporal_stbn_wrap_tile_coord_common(sample_y,
+                                                               64);
+    }
 
     scrambled_x = sixel_temporal_stbn_pmj_permute_pow2_common(
         (uint32_t)sample_x,
