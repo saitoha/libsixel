@@ -10782,10 +10782,181 @@ sixel_builtin_psd_parse_effect_bevel_object(
 }
 
 static int
+sixel_builtin_psd_parse_layer_effects_payload_descriptor(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer,
+    int allow_bevel_proxy)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    size_t obj_cursor;
+    int parsed;
+    char key[5];
+    char type[5];
+    char class_key[5];
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    obj_cursor = 0u;
+    parsed = 0;
+    memset(key, 0, sizeof(key));
+    memset(type, 0, sizeof(type));
+    memset(class_key, 0, sizeof(class_key));
+    if (data == NULL || layer == NULL) {
+        return -1;
+    }
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(
+            data,
+            key_length,
+            &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(
+            data,
+            key_length,
+            &cursor,
+            class_key)) {
+        return -1;
+    }
+    if (cursor + 4u > key_length) {
+        return -1;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        obj_cursor = 0u;
+        if (!sixel_builtin_psd_descriptor_read_key4(
+                data,
+                key_length,
+                &cursor,
+                key) ||
+            !sixel_builtin_psd_descriptor_read_type(
+                data,
+                key_length,
+                &cursor,
+                type)) {
+            return -1;
+        }
+        if (memcmp(type, "Objc", 4u) == 0) {
+            obj_cursor = cursor;
+            if (memcmp(key, "SoFi", 4u) == 0) {
+                if (sixel_builtin_psd_parse_effect_solid_overlay_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer)) {
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+            if (memcmp(key, "FrFX", 4u) == 0) {
+                if (sixel_builtin_psd_parse_effect_stroke_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer)) {
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+            if (memcmp(key, "GrFl", 4u) == 0) {
+                if (sixel_builtin_psd_parse_effect_gradient_overlay_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer)) {
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+            if (memcmp(key, "OrGl", 4u) == 0) {
+                if (sixel_builtin_psd_parse_effect_glow_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer,
+                        0)) {
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+            if (memcmp(key, "IrGl", 4u) == 0 ||
+                memcmp(key, "ChFX", 4u) == 0) {
+                if (sixel_builtin_psd_parse_effect_glow_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer,
+                        1)) {
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+            if (memcmp(key, "DrSh", 4u) == 0) {
+                if (sixel_builtin_psd_parse_effect_glow_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer,
+                        0)) {
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+            if (memcmp(key, "IrSh", 4u) == 0) {
+                if (sixel_builtin_psd_parse_effect_glow_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer,
+                        1)) {
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+            if (memcmp(key, "ebbl", 4u) == 0 &&
+                allow_bevel_proxy != 0) {
+                if (sixel_builtin_psd_parse_effect_bevel_object(
+                        data,
+                        key_length,
+                        &obj_cursor,
+                        layer)) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: parsed ebbl bevel object in "
+                        "layer effects");
+                    parsed = 1;
+                }
+                cursor = obj_cursor;
+                continue;
+            }
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(
+                data,
+                key_length,
+                &cursor,
+                type,
+                0u)) {
+            return -1;
+        }
+    }
+    return parsed;
+}
+
+static int
 sixel_builtin_psd_parse_layer_effects_payload_loose(
     unsigned char const *data,
     size_t key_length,
-    sixel_builtin_psd_layer_record_t *layer)
+    sixel_builtin_psd_layer_record_t *layer,
+    int allow_bevel_proxy)
 {
     size_t cursor;
     int parsed;
@@ -10793,6 +10964,14 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
     parsed = 0;
     if (data == NULL || layer == NULL || key_length < 8u) {
         return 0;
+    }
+    parsed = sixel_builtin_psd_parse_layer_effects_payload_descriptor(
+        data,
+        key_length,
+        layer,
+        allow_bevel_proxy);
+    if (parsed >= 0) {
+        return parsed;
     }
     for (cursor = 0u; cursor + 8u <= key_length; ++cursor) {
         size_t obj_cursor;
@@ -10862,6 +11041,9 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
             continue;
         }
         if (memcmp(data + cursor, "ebblObjc", 8u) == 0) {
+            if (allow_bevel_proxy == 0) {
+                continue;
+            }
             obj_cursor = cursor + 8u;
             if (sixel_builtin_psd_parse_effect_bevel_object(data,
                                                             key_length,
@@ -12646,6 +12828,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     int32_t mask_left;
     int32_t mask_bottom;
     int32_t mask_right;
+    int has_object_based_effects;
     uint32_t flag_value;
     char key[5];
 
@@ -12658,6 +12841,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     mask_left = 0;
     mask_bottom = 0;
     mask_right = 0;
+    has_object_based_effects = 0;
     flag_value = 0u;
     key[0] = '\0';
     key[1] = '\0';
@@ -12791,13 +12975,27 @@ sixel_builtin_psd_parse_layer_extra_data(
             (void)sixel_builtin_psd_parse_vector_mask_bbox(buffer + cursor,
                                                            key_length,
                                                            layer);
-        } else if (memcmp(key, "lrFX", 4u) == 0 ||
-                   memcmp(key, "lfx2", 4u) == 0) {
+        } else if (memcmp(key, "lfx2", 4u) == 0) {
             layer->has_layer_effects = 1;
+            has_object_based_effects = 1;
             (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                 buffer + cursor,
                 key_length,
-                layer);
+                layer,
+                0);
+        } else if (memcmp(key, "lrFX", 4u) == 0) {
+            if (has_object_based_effects == 0) {
+                layer->has_layer_effects = 1;
+                (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
+                    buffer + cursor,
+                    key_length,
+                    layer,
+                    1);
+            } else {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: ignoring legacy lrFX when lfx2 is present");
+            }
         } else if (memcmp(key, "vstk", 4u) == 0) {
             layer->has_layer_effects = 1;
             (void)sixel_builtin_psd_parse_vector_stroke_payload(
