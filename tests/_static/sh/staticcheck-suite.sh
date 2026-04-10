@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=31
+total=32
 index=0
 pass_count=0
 skip_count=0
@@ -214,6 +214,10 @@ run_case_tap "staticcheck-temporal-no-compat-getenv-symbol" \
 
 run_case_tap "staticcheck-gd-policy-wrapper-sync" \
     "$src_root/tests/_static/sh/staticcheck-gd-policy-wrapper-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-gd-optional-fallback-profile-sync" \
+    "$src_root/tests/_static/sh/staticcheck-gd-optional-fallback-profile-sync.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-quantize-merge-suboption-sync" \

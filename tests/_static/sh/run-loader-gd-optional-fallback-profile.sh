@@ -48,12 +48,16 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 printf '%s\n' 'test\tresult\treal_seconds'
 
 for test_name in \
+    0108_loader_gd_tiff_unsupported_fallback_libtiff.t \
+    0109_loader_gd_tga_unsupported_fallback_builtin.t \
+    0110_loader_gd_webp_unsupported_fallback_libwebp.t \
     0111_loader_gd_wbmp_unsupported_fallback_any_loader.t \
     0112_loader_gd_gd2_unsupported_fallback_any_loader.t \
     0118_loader_gd_tga_unsupported_stdin_fallback_builtin.t \
     0119_loader_gd_webp_unsupported_stdin_fallback_libwebp.t \
     0122_loader_gd_wbmp_unsupported_stdin_fallback_any_loader.t \
-    0123_loader_gd_gd2_unsupported_stdin_fallback_any_loader.t
+    0123_loader_gd_gd2_unsupported_stdin_fallback_any_loader.t \
+    0126_loader_gd_tiff_unsupported_stdin_fallback_libtiff.t
 do
     test_path="$src_root/tests/loader/gd/$test_name"
     log_path="$tmpdir/$test_name.log"
