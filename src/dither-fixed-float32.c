@@ -92,6 +92,15 @@ typedef struct sixel_temporal_method_float32_ops {
     sixel_temporal_store_error_float32_fn store_error;
 } sixel_temporal_method_float32_ops_t;
 
+typedef sixel_temporal_stbn_state_common_t
+    sixel_temporal_stbn_state_float32_t;
+
+/*
+ * Keep STBN bias conservative in v1 so temporal decorrelation is visible
+ * without dominating palette quantization decisions.
+ */
+#define SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8 24
+
 static void
 error_diffuse_float(float *data,
                     int pos,
@@ -927,6 +936,38 @@ sixel_temporal_diffusion_load_pixel_float32(
     }
 }
 
+static int
+sixel_temporal_stbn_bias_u8_float32(
+    sixel_temporal_stbn_state_float32_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint16_t sample;
+    int32_t centered;
+    int64_t bias;
+
+    sample = 0U;
+    centered = 0;
+    bias = 0;
+
+    sample = sixel_temporal_stbn_sample_u16_state_common(stbn_state,
+                                                         x,
+                                                         y,
+                                                         channel,
+                                                         depth);
+    centered = (int32_t)sample - 32768;
+    bias = (int64_t)centered * (int64_t)SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8;
+    if (bias >= 0) {
+        bias = (bias + 16384) / 32768;
+    } else {
+        bias = (bias - 16384) / 32768;
+    }
+
+    return (int)bias;
+}
+
 static SIXELSTATUS
 sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
                                           int width,
@@ -936,7 +977,15 @@ sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
                                           int *enabled,
                                           int32_t **frame)
 {
-    return sixel_temporal_prepare_shared_frame(
+    SIXELSTATUS status;
+    sixel_temporal_stbn_state_float32_t *stbn_state;
+    int strategy_token;
+
+    status = SIXEL_OK;
+    stbn_state = NULL;
+    strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+
+    status = sixel_temporal_prepare_shared_frame(
         dither,
         width,
         height,
@@ -945,6 +994,22 @@ sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
         SIXEL_TEMPORAL_METHOD_STBN,
         enabled,
         frame);
+    if (status != SIXEL_OK || *enabled == 0) {
+        return status;
+    }
+
+    strategy_token = sixel_temporal_strategy_token_from_env();
+    status = sixel_temporal_prepare_stbn_state_common(
+        dither,
+        can_update,
+        strategy_token,
+        sizeof(sixel_temporal_stbn_state_float32_t),
+        (void **)&stbn_state);
+    if (status != SIXEL_OK || stbn_state == NULL || can_update == 0) {
+        return status;
+    }
+
+    return status;
 }
 
 static void
@@ -960,10 +1025,22 @@ sixel_temporal_stbn_load_pixel_float32(
     float working_float[SIXEL_MAX_CHANNELS],
     unsigned char corrected[SIXEL_MAX_CHANNELS])
 {
-    /*
-     * Placeholder STBN strategy keeps diffusion-equivalent output until
-     * a temporal blue-noise strength model is introduced.
-     */
+    sixel_temporal_stbn_state_float32_t const *stbn_state;
+    int n;
+    int bias_u8;
+    int adjusted_u8;
+
+    stbn_state = NULL;
+    n = 0;
+    bias_u8 = 0;
+    adjusted_u8 = 0;
+
+    stbn_state = (sixel_temporal_stbn_state_float32_t const *)
+        sixel_temporal_get_method_private_const(
+            dither,
+            SIXEL_TEMPORAL_METHOD_STBN,
+            sizeof(sixel_temporal_stbn_state_float32_t));
+
     sixel_temporal_diffusion_load_pixel_float32(
         dither,
         source_pixel,
@@ -975,6 +1052,29 @@ sixel_temporal_stbn_load_pixel_float32(
         frame,
         working_float,
         corrected);
+
+    for (n = 0; n < depth; ++n) {
+        bias_u8 = sixel_temporal_stbn_bias_u8_float32(stbn_state,
+                                                      x,
+                                                      y,
+                                                      n,
+                                                      depth);
+        if (bias_u8 == 0) {
+            continue;
+        }
+
+        adjusted_u8 = (int)corrected[n] + bias_u8;
+        if (adjusted_u8 < 0) {
+            adjusted_u8 = 0;
+        } else if (adjusted_u8 > 255) {
+            adjusted_u8 = 255;
+        }
+        corrected[n] = (unsigned char)adjusted_u8;
+        working_float[n] = sixel_pixelformat_byte_to_float(
+            pixelformat,
+            n,
+            corrected[n]);
+    }
 }
 
 static sixel_temporal_method_float32_ops_t const
