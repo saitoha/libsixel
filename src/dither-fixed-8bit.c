@@ -136,13 +136,6 @@ sixel_temporal_stbn_store_error(int32_t *frame,
                                 int offset,
                                 int can_update);
 
-static int32_t
-sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
-                                int x,
-                                int y,
-                                int channel,
-                                int depth);
-
 static sixel_temporal_method_ops_t const
 sixel_temporal_diffusion_ops = {
     SIXEL_TEMPORAL_METHOD_DIFFUSION,
@@ -424,35 +417,24 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
 }
 
 static int32_t
-sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
-                                int x,
-                                int y,
-                                int channel,
-                                int depth)
+sixel_temporal_stbn_bias_scaled_sampled(
+    sixel_temporal_stbn_sample_u16_fn sample_u16,
+    uint32_t sequence_index,
+    int x,
+    int y,
+    int channel,
+    int depth)
 {
+    int32_t centered;
     int32_t bias_u8;
 
+    centered = 0;
     bias_u8 = 0;
 
-    /*
-     * Keep hash-equivalent behavior for legacy 8bit strategy while the
-     * table-backed mask source carries the first visible STBN effect.
-     */
-    if (!sixel_temporal_stbn_state_uses_source_common(
-            stbn_state,
-            SIXEL_TEMPORAL_STBN_SOURCE_MASK)
-            && !sixel_temporal_stbn_state_uses_source_common(
-                stbn_state,
-                SIXEL_TEMPORAL_STBN_SOURCE_PMJ)) {
-        return 0;
-    }
-
-    bias_u8 = sixel_temporal_stbn_bias_u8_state_common(
-        stbn_state,
-        x,
-        y,
-        channel,
-        depth,
+    centered = sixel_temporal_stbn_sample_centered_u16_common(
+        sample_u16(sequence_index, x, y, channel, depth));
+    bias_u8 = sixel_temporal_stbn_bias_u8_from_centered_common(
+        centered,
         SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
     return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
 }
@@ -473,10 +455,16 @@ sixel_temporal_stbn_load_pixel(
     int32_t bias_scaled;
     int64_t adjusted_scaled;
     sixel_temporal_stbn_state_t const *stbn_state;
+    sixel_temporal_stbn_sample_u16_fn sample_u16;
+    uint32_t sequence_index;
+    int use_stbn_bias;
 
     n = 0;
     bias_scaled = 0;
     adjusted_scaled = 0;
+    sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
+    sequence_index = 0U;
+    use_stbn_bias = 0;
     stbn_state = (sixel_temporal_stbn_state_t const *)
         sixel_temporal_get_method_private_const(
             dither,
@@ -493,12 +481,32 @@ sixel_temporal_stbn_load_pixel(
                                         corrected,
                                         accum_scaled);
 
+    /*
+     * 8bit keeps hash-equivalent behavior while mask/pmj apply temporal
+     * STBN bias. Cache sampling inputs once per pixel to reduce overhead.
+     */
+    if (stbn_state != NULL
+            && (stbn_state->sample_source_id == SIXEL_TEMPORAL_STBN_SOURCE_MASK
+                || stbn_state->sample_source_id
+                == SIXEL_TEMPORAL_STBN_SOURCE_PMJ)) {
+        use_stbn_bias = 1;
+        sequence_index = stbn_state->sequence_index;
+        if (stbn_state->sample_u16 != NULL) {
+            sample_u16 = stbn_state->sample_u16;
+        }
+    }
+
     for (n = 0; n < depth; ++n) {
-        bias_scaled = sixel_temporal_stbn_bias_scaled(stbn_state,
-                                                      x,
-                                                      y,
-                                                      n,
-                                                      depth);
+        if (use_stbn_bias == 0) {
+            continue;
+        }
+        bias_scaled = sixel_temporal_stbn_bias_scaled_sampled(
+            sample_u16,
+            sequence_index,
+            x,
+            y,
+            n,
+            depth);
         if (bias_scaled == 0) {
             continue;
         }

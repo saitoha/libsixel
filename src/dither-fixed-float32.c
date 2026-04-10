@@ -922,24 +922,27 @@ sixel_temporal_diffusion_load_pixel_float32(
 }
 
 static int
-sixel_temporal_stbn_bias_u8_float32(
-    sixel_temporal_stbn_state_float32_t const *stbn_state,
+sixel_temporal_stbn_bias_u8_sampled_float32(
+    sixel_temporal_stbn_sample_u16_fn sample_u16,
+    uint32_t sequence_index,
     int x,
     int y,
     int channel,
     int depth)
 {
+    int32_t centered;
     int32_t bias_u8;
+
+    centered = 0;
+    bias_u8 = 0;
 
     /*
      * Float32 keeps STBN active for both hash and mask backends in v1.
      */
-    bias_u8 = sixel_temporal_stbn_bias_u8_state_common(
-        stbn_state,
-        x,
-        y,
-        channel,
-        depth,
+    centered = sixel_temporal_stbn_sample_centered_u16_common(
+        sample_u16(sequence_index, x, y, channel, depth));
+    bias_u8 = sixel_temporal_stbn_bias_u8_from_centered_common(
+        centered,
         SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
 
     return (int)bias_u8;
@@ -1007,11 +1010,15 @@ sixel_temporal_stbn_load_pixel_float32(
     int n;
     int bias_u8;
     int adjusted_u8;
+    sixel_temporal_stbn_sample_u16_fn sample_u16;
+    uint32_t sequence_index;
 
     stbn_state = NULL;
     n = 0;
     bias_u8 = 0;
     adjusted_u8 = 0;
+    sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
+    sequence_index = 0U;
 
     stbn_state = (sixel_temporal_stbn_state_float32_t const *)
         sixel_temporal_get_method_private_const(
@@ -1031,12 +1038,25 @@ sixel_temporal_stbn_load_pixel_float32(
         working_float,
         corrected);
 
+    /*
+     * Cache resolved STBN sample source per pixel so per-channel bias
+     * uses only the backend sample function call.
+     */
+    if (stbn_state != NULL) {
+        sequence_index = stbn_state->sequence_index;
+        if (stbn_state->sample_u16 != NULL) {
+            sample_u16 = stbn_state->sample_u16;
+        }
+    }
+
     for (n = 0; n < depth; ++n) {
-        bias_u8 = sixel_temporal_stbn_bias_u8_float32(stbn_state,
-                                                      x,
-                                                      y,
-                                                      n,
-                                                      depth);
+        bias_u8 = sixel_temporal_stbn_bias_u8_sampled_float32(
+            sample_u16,
+            sequence_index,
+            x,
+            y,
+            n,
+            depth);
         if (bias_u8 == 0) {
             continue;
         }
