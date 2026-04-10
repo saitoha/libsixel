@@ -6,7 +6,7 @@ set -eu
 echo "1..1"
 
 src_root=$1
-source_file=$src_root/src/dither-fixed-8bit.c
+source_file=$src_root/src/dither-temporal-method.h
 temporal_tests_dir=$src_root/tests/processing/dither/temporal
 
 if test ! -f "$source_file" || test ! -d "$temporal_tests_dir"; then
@@ -19,6 +19,7 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 expected_tokens=$tmpdir/expected_tokens.txt
 source_tokens=$tmpdir/source_tokens.txt
+expected_float32_tests=$tmpdir/expected_float32_tests.txt
 missing=$tmpdir/missing.txt
 status=0
 
@@ -27,6 +28,14 @@ diffusion
 stbn
 stbn-hash
 stbn-mask
+EOF
+
+cat > "$expected_float32_tests" <<'EOF'
+0016_temporal_diffusion_float32_accepts_scan_option.t
+0017_temporal_diffusion_float32_matches_fs_for_static_start_frame.t
+0018_temporal_diffusion_float32_accepts_animated_input_builtin_apng.t
+0019_temporal_diffusion_float32_mapfile_capture_stable_output_builtin_apng.t
+0020_temporal_diffusion_float32_thread_count_stable_output_builtin_apng.t
 EOF
 
 awk '
@@ -50,7 +59,7 @@ in_func && /^}/ {
 while IFS= read -r token; do
     test -n "$token" || continue
     if ! grep -Fxq "$token" "$source_tokens"; then
-        echo "# src/dither-fixed-8bit.c: missing strategy token: $token" \
+        echo "# src/dither-temporal-method.h: missing strategy token: $token" \
             >> "$missing"
         status=1
     fi
@@ -65,11 +74,32 @@ done < "$expected_tokens"
 while IFS= read -r token; do
     test -n "$token" || continue
     if ! grep -Fxq "$token" "$expected_tokens"; then
-        echo "# src/dither-fixed-8bit.c: unexpected strategy token: $token" \
+        echo "# src/dither-temporal-method.h: unexpected strategy token: $token" \
             >> "$missing"
         status=1
     fi
 done < "$source_tokens"
+
+while IFS= read -r test_name; do
+    test -n "$test_name" || continue
+    test_path="$temporal_tests_dir/$test_name"
+    if test ! -f "$test_path"; then
+        echo "# tests/processing/dither/temporal: missing float32 temporal test: $test_name" \
+            >> "$missing"
+        status=1
+        continue
+    fi
+    if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: missing --precision=float32 in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "-d temporal-diffusion" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: missing temporal-diffusion mode in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+done < "$expected_float32_tests"
 
 if test "$status" -eq 0; then
     echo "ok 1 - temporal strategy tokens stay synchronized"
