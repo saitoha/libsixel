@@ -1497,6 +1497,7 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_non_pixel_payload;
     int has_tysh_payload;
     int has_fill_payload;
+    int has_vector_stroke_content_fill;
     int has_malformed_fill_payload;
     int tysh_fill_flag_present;
     int tysh_fill_flag_enabled;
@@ -1511,6 +1512,11 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_vector_mask_bbox;
     int has_vector_mask_curve_bbox;
     int has_vector_mask_data;
+    int has_layer_mask_rect;
+    int32_t layer_mask_top;
+    int32_t layer_mask_left;
+    int32_t layer_mask_bottom;
+    int32_t layer_mask_right;
     size_t vector_mask_data_offset;
     size_t vector_mask_data_length;
     int has_layer_effects;
@@ -1878,7 +1884,7 @@ sixel_builtin_psd_layer_is_non_pixel_key(char const key[5])
 {
     /* Common Photoshop adjustment/text/smart-object payload keys. */
     static char const * const keys[] = {
-        "TySh", "SoCo", "GdFl", "PtFl", "vibA", "curv", "le\x76l",
+        "TySh", "SoCo", "GdFl", "PtFl", "vscg", "vibA", "curv", "le\x76l",
         "expA", "hue2", "blnc", "selc", "phfl", "mixr", "clrL",
         "nvrt", "post", "thrs", "grdm", "brit", "blwh", "chnl",
         "lsct", "Lr16", "Lr32", "PlLd", "SoLd", "lnkD", "lnk2"
@@ -2006,6 +2012,57 @@ sixel_builtin_psd_descriptor_read_key4(
     }
     cursor += key_length;
     *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_descriptor_read_key_text(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    char *out_key,
+    size_t out_key_size,
+    size_t *pkey_length)
+{
+    size_t cursor;
+    size_t key_length;
+    size_t key_bytes;
+    size_t copy_length;
+
+    cursor = 0u;
+    key_length = 0u;
+    key_bytes = 0u;
+    copy_length = 0u;
+    if (data == NULL || pcursor == NULL || out_key == NULL ||
+        out_key_size == 0u || pkey_length == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    key_length = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    if (key_length == 0u) {
+        key_bytes = 4u;
+        key_length = 4u;
+    } else {
+        key_bytes = key_length;
+    }
+    if (key_bytes > data_length - cursor) {
+        return 0;
+    }
+    copy_length = key_length;
+    if (copy_length >= out_key_size) {
+        copy_length = out_key_size - 1u;
+    }
+    if (copy_length > 0u) {
+        memcpy(out_key, data + cursor, copy_length);
+    }
+    out_key[copy_length] = '\0';
+    cursor += key_bytes;
+    *pcursor = cursor;
+    *pkey_length = key_length;
     return 1;
 }
 
@@ -2309,6 +2366,49 @@ sixel_builtin_psd_descriptor_read_text_ascii(
         out_text[out_index] = '\0';
     }
     cursor += total_bytes;
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_descriptor_read_enum_text(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    char const type[5],
+    char *out_value,
+    size_t out_value_size,
+    size_t *pvalue_length)
+{
+    size_t cursor;
+    char enum_type[64];
+    size_t enum_type_length;
+
+    cursor = 0u;
+    memset(enum_type, 0, sizeof(enum_type));
+    enum_type_length = 0u;
+    if (data == NULL || pcursor == NULL || type == NULL || out_value == NULL ||
+        out_value_size == 0u || pvalue_length == NULL) {
+        return 0;
+    }
+    if (memcmp(type, "enum", 4u) != 0) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_read_key_text(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    enum_type,
+                                                    sizeof(enum_type),
+                                                    &enum_type_length) ||
+        !sixel_builtin_psd_descriptor_read_key_text(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    out_value,
+                                                    out_value_size,
+                                                    pvalue_length)) {
+        return 0;
+    }
     *pcursor = cursor;
     return 1;
 }
@@ -10516,7 +10616,40 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
             }
             continue;
         }
+        if (memcmp(data + cursor, "IrGlObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_glow_object(data,
+                                                           key_length,
+                                                           &obj_cursor,
+                                                           layer,
+                                                           1)) {
+                parsed = 1;
+            }
+            continue;
+        }
         if (memcmp(data + cursor, "ChFXObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_glow_object(data,
+                                                           key_length,
+                                                           &obj_cursor,
+                                                           layer,
+                                                           1)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (memcmp(data + cursor, "DrShObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_glow_object(data,
+                                                           key_length,
+                                                           &obj_cursor,
+                                                           layer,
+                                                           0)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (memcmp(data + cursor, "IrShObjc", 8u) == 0) {
             obj_cursor = cursor + 8u;
             if (sixel_builtin_psd_parse_effect_glow_object(data,
                                                            key_length,
@@ -10529,6 +10662,311 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
         }
     }
     return parsed;
+}
+
+static int
+sixel_builtin_psd_parse_vector_stroke_content_object(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    float out_rgb[3])
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key[5];
+    char type[5];
+    char class_key[5];
+    int has_color;
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    memset(key, 0, sizeof(key));
+    memset(type, 0, sizeof(type));
+    memset(class_key, 0, sizeof(class_key));
+    has_color = 0;
+    if (data == NULL || pcursor == NULL || out_rgb == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          data_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                data_length,
+                                                &cursor,
+                                                class_key)) {
+        return 0;
+    }
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "Clr ", 4u) == 0 &&
+            memcmp(type, "Objc", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_parse_color_object(data,
+                                                            data_length,
+                                                            &cursor,
+                                                            out_rgb)) {
+            has_color = 1;
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     data_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    *pcursor = cursor;
+    return has_color;
+}
+
+static int
+sixel_builtin_psd_parse_vector_stroke_content_payload(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t descriptor_offset;
+    unsigned int descriptor_version;
+    float fill_rgb[3];
+
+    cursor = 0u;
+    descriptor_offset = 0u;
+    descriptor_version = 0u;
+    fill_rgb[0] = 0.0f;
+    fill_rgb[1] = 0.0f;
+    fill_rgb[2] = 0.0f;
+    if (data == NULL || layer == NULL || key_length < 4u) {
+        return 0;
+    }
+    if (key_length >= 8u && memcmp(data, "SoCo", 4u) == 0) {
+        descriptor_offset = 4u;
+    }
+    if (key_length - descriptor_offset < 4u) {
+        return 0;
+    }
+    descriptor_version = sixel_builtin_read_u32be(data + descriptor_offset);
+    if (descriptor_version != 16u) {
+        return 0;
+    }
+    cursor = descriptor_offset + 4u;
+    if (!sixel_builtin_psd_parse_vector_stroke_content_object(data,
+                                                               key_length,
+                                                               &cursor,
+                                                               fill_rgb)) {
+        return 0;
+    }
+    if (layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_NONE ||
+        layer->has_fill_payload == 0) {
+        layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_SOCO;
+        layer->fill_solid_rgb[0] = fill_rgb[0];
+        layer->fill_solid_rgb[1] = fill_rgb[1];
+        layer->fill_solid_rgb[2] = fill_rgb[2];
+    }
+    layer->has_fill_payload = 1;
+    layer->has_vector_stroke_content_fill = 1;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_vector_stroke_payload(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    char key_text[64];
+    size_t key_text_length;
+    char type[5];
+    char enum_value[64];
+    size_t enum_value_length;
+    char enum_value4[5];
+    char class_key[5];
+    unsigned int descriptor_version;
+    double numeric;
+    int bool_value;
+    int enabled;
+    int has_color;
+    float stroke_rgb[3];
+    float stroke_opacity;
+    float stroke_size;
+    int stroke_position;
+    sixel_builtin_psd_layer_blend_mode_t blend_mode;
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    memset(key_text, 0, sizeof(key_text));
+    key_text_length = 0u;
+    memset(type, 0, sizeof(type));
+    memset(enum_value, 0, sizeof(enum_value));
+    enum_value_length = 0u;
+    memset(enum_value4, 0, sizeof(enum_value4));
+    memset(class_key, 0, sizeof(class_key));
+    descriptor_version = 0u;
+    numeric = 0.0;
+    bool_value = 0;
+    enabled = 1;
+    has_color = 0;
+    stroke_rgb[0] = 0.0f;
+    stroke_rgb[1] = 0.0f;
+    stroke_rgb[2] = 0.0f;
+    stroke_opacity = 1.0f;
+    stroke_size = 0.0f;
+    stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
+    blend_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    if (data == NULL || layer == NULL) {
+        return 0;
+    }
+    if (key_length < 4u) {
+        return 0;
+    }
+    descriptor_version = sixel_builtin_read_u32be(data + cursor);
+    cursor += 4u;
+    if (descriptor_version != 16u) {
+        return 0;
+    }
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          key_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                key_length,
+                                                &cursor,
+                                                class_key)) {
+        return 0;
+    }
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_key_text(data,
+                                                        key_length,
+                                                        &cursor,
+                                                        key_text,
+                                                        sizeof(key_text),
+                                                        &key_text_length) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (strcmp(key_text, "strokeEnabled") == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            enabled = bool_value != 0 ? 1 : 0;
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleLineWidth") == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= 0.0) {
+                stroke_size = 0.0f;
+            } else if (numeric >= 64.0) {
+                stroke_size = 64.0f;
+            } else {
+                stroke_size = (float)numeric;
+            }
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleOpacity") == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            stroke_opacity = sixel_builtin_psd_normalize_descriptor_opacity(
+                numeric);
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleLineAlignment") == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_text(data,
+                                                        key_length,
+                                                        &cursor,
+                                                        type,
+                                                        enum_value,
+                                                        sizeof(enum_value),
+                                                        &enum_value_length)) {
+            if (strcmp(enum_value, "strokeStyleAlignInside") == 0) {
+                stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE;
+            } else if (strcmp(enum_value, "strokeStyleAlignCenter") == 0) {
+                stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER;
+            } else {
+                stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
+            }
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleBlendMode") == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value4)) {
+            sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
+                enum_value4,
+                &blend_mode);
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleContent") == 0 &&
+            memcmp(type, "Objc", 4u) == 0 &&
+            sixel_builtin_psd_parse_vector_stroke_content_object(
+                data,
+                key_length,
+                &cursor,
+                stroke_rgb)) {
+            has_color = 1;
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    if (enabled == 0 || has_color == 0 || stroke_size <= 0.0f ||
+        stroke_opacity <= 0.0f) {
+        return 1;
+    }
+    if (layer->has_effect_stroke == 0) {
+        layer->has_effect_stroke = 1;
+        layer->effect_stroke_position = stroke_position;
+        layer->effect_stroke_rgb[0] = stroke_rgb[0];
+        layer->effect_stroke_rgb[1] = stroke_rgb[1];
+        layer->effect_stroke_rgb[2] = stroke_rgb[2];
+        layer->effect_stroke_opacity = stroke_opacity;
+        layer->effect_stroke_size = stroke_size;
+        layer->effect_stroke_mode = blend_mode;
+    }
+    return 1;
 }
 
 static int
@@ -10971,6 +11409,7 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_NONE;
     layer->has_tysh_payload = 0;
     layer->has_fill_payload = 0;
+    layer->has_vector_stroke_content_fill = 0;
     layer->has_malformed_fill_payload = 0;
     layer->tysh_fill_flag_present = 0;
     layer->tysh_fill_flag_enabled = 1;
@@ -10983,6 +11422,11 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->has_vector_mask_bbox = 0;
     layer->has_vector_mask_curve_bbox = 0;
     layer->has_vector_mask_data = 0;
+    layer->has_layer_mask_rect = 0;
+    layer->layer_mask_top = 0;
+    layer->layer_mask_left = 0;
+    layer->layer_mask_bottom = 0;
+    layer->layer_mask_right = 0;
     layer->vector_mask_data_offset = 0u;
     layer->vector_mask_data_length = 0u;
     layer->vector_mask_left_norm = 0.0f;
@@ -11355,14 +11799,23 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     unsigned char const *data;
     size_t key_length;
     size_t max_records;
-    float *points_x;
-    float *points_y;
+    size_t poly_capacity;
+    float *anchor_x;
+    float *anchor_y;
+    float *ctrl_in_x;
+    float *ctrl_in_y;
+    float *ctrl_out_x;
+    float *ctrl_out_y;
+    float *poly_x;
+    float *poly_y;
     size_t *subpath_start;
     size_t *subpath_count;
     unsigned char *subpath_closed;
     size_t cursor;
-    size_t point_count;
+    size_t knot_count;
+    size_t flat_point_count;
     size_t path_count;
+    size_t flattened_path_count;
     int have_subpath;
     size_t current_start;
     size_t current_count;
@@ -11378,19 +11831,45 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     float ny;
     float nx;
     size_t p;
+    size_t k;
+    size_t next_k;
+    size_t segment_count;
+    size_t step_index;
+    size_t step_count;
+    size_t i0;
+    size_t i1;
+    float p0x;
+    float p0y;
+    float p1x;
+    float p1y;
+    float p2x;
+    float p2y;
+    float p3x;
+    float p3y;
+    float t;
+    float omt;
     int inside;
 
     data = NULL;
     key_length = 0u;
     max_records = 0u;
-    points_x = NULL;
-    points_y = NULL;
+    poly_capacity = 0u;
+    anchor_x = NULL;
+    anchor_y = NULL;
+    ctrl_in_x = NULL;
+    ctrl_in_y = NULL;
+    ctrl_out_x = NULL;
+    ctrl_out_y = NULL;
+    poly_x = NULL;
+    poly_y = NULL;
     subpath_start = NULL;
     subpath_count = NULL;
     subpath_closed = NULL;
     cursor = 0u;
-    point_count = 0u;
+    knot_count = 0u;
+    flat_point_count = 0u;
     path_count = 0u;
+    flattened_path_count = 0u;
     have_subpath = 0;
     current_start = 0u;
     current_count = 0u;
@@ -11406,6 +11885,23 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     ny = 0.0f;
     nx = 0.0f;
     p = 0u;
+    k = 0u;
+    next_k = 0u;
+    segment_count = 0u;
+    step_index = 0u;
+    step_count = 0u;
+    i0 = 0u;
+    i1 = 0u;
+    p0x = 0.0f;
+    p0y = 0.0f;
+    p1x = 0.0f;
+    p1y = 0.0f;
+    p2x = 0.0f;
+    p2y = 0.0f;
+    p3x = 0.0f;
+    p3y = 0.0f;
+    t = 0.0f;
+    omt = 0.0f;
     inside = 0;
 
     if (chunk == NULL || info == NULL || layer == NULL || src == NULL ||
@@ -11430,16 +11926,39 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     if (max_records > SIZE_MAX / sizeof(float)) {
         return 0;
     }
+    if (max_records > SIZE_MAX / 16u) {
+        return 0;
+    }
+    poly_capacity = max_records * 16u;
+    if (poly_capacity < max_records) {
+        return 0;
+    }
 
-    points_x = (float *)malloc(max_records * sizeof(float));
-    points_y = (float *)malloc(max_records * sizeof(float));
+    anchor_x = (float *)malloc(max_records * sizeof(float));
+    anchor_y = (float *)malloc(max_records * sizeof(float));
+    ctrl_in_x = (float *)malloc(max_records * sizeof(float));
+    ctrl_in_y = (float *)malloc(max_records * sizeof(float));
+    ctrl_out_x = (float *)malloc(max_records * sizeof(float));
+    ctrl_out_y = (float *)malloc(max_records * sizeof(float));
+    poly_x = (float *)malloc(poly_capacity * sizeof(float));
+    poly_y = (float *)malloc(poly_capacity * sizeof(float));
     subpath_start = (size_t *)malloc(max_records * sizeof(size_t));
     subpath_count = (size_t *)malloc(max_records * sizeof(size_t));
     subpath_closed = (unsigned char *)malloc(max_records);
-    if (points_x == NULL || points_y == NULL || subpath_start == NULL ||
-        subpath_count == NULL || subpath_closed == NULL) {
-        free(points_x);
-        free(points_y);
+    if (anchor_x == NULL || anchor_y == NULL ||
+        ctrl_in_x == NULL || ctrl_in_y == NULL ||
+        ctrl_out_x == NULL || ctrl_out_y == NULL ||
+        poly_x == NULL || poly_y == NULL ||
+        subpath_start == NULL || subpath_count == NULL ||
+        subpath_closed == NULL) {
+        free(anchor_x);
+        free(anchor_y);
+        free(ctrl_in_x);
+        free(ctrl_in_y);
+        free(ctrl_out_x);
+        free(ctrl_out_y);
+        free(poly_x);
+        free(poly_y);
         free(subpath_start);
         free(subpath_count);
         free(subpath_closed);
@@ -11460,21 +11979,33 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
             }
             expected_knots =
                 (unsigned int)sixel_builtin_read_u16be_as_u16(data + cursor + 2u);
-            current_start = point_count;
+            current_start = knot_count;
             current_count = 0u;
             current_closed = selector == 0u ? 1 : 0;
             have_subpath = 1;
         } else if (selector == 1u || selector == 2u ||
                    selector == 4u || selector == 5u) {
-            if (have_subpath != 0 && point_count < max_records &&
+            if (have_subpath != 0 && knot_count < max_records &&
                 (expected_knots == 0u || current_count < (size_t)expected_knots)) {
+                py = sixel_builtin_psd_fixed8_24_to_float(
+                    sixel_builtin_read_i32be(data + cursor + 2u));
+                px = sixel_builtin_psd_fixed8_24_to_float(
+                    sixel_builtin_read_i32be(data + cursor + 6u));
+                ctrl_in_y[knot_count] = py;
+                ctrl_in_x[knot_count] = px;
                 py = sixel_builtin_psd_fixed8_24_to_float(
                     sixel_builtin_read_i32be(data + cursor + 10u));
                 px = sixel_builtin_psd_fixed8_24_to_float(
                     sixel_builtin_read_i32be(data + cursor + 14u));
-                points_x[point_count] = sixel_builtin_psd_clamp01(px);
-                points_y[point_count] = sixel_builtin_psd_clamp01(py);
-                ++point_count;
+                anchor_x[knot_count] = px;
+                anchor_y[knot_count] = py;
+                py = sixel_builtin_psd_fixed8_24_to_float(
+                    sixel_builtin_read_i32be(data + cursor + 18u));
+                px = sixel_builtin_psd_fixed8_24_to_float(
+                    sixel_builtin_read_i32be(data + cursor + 22u));
+                ctrl_out_y[knot_count] = py;
+                ctrl_out_x[knot_count] = px;
+                ++knot_count;
                 ++current_count;
             }
         }
@@ -11488,6 +12019,60 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     }
 
     if (path_count > 0u) {
+        for (p = 0u; p < path_count; ++p) {
+            if (subpath_closed[p] == 0u || subpath_count[p] < 2u ||
+                flattened_path_count >= max_records) {
+                continue;
+            }
+            current_start = subpath_start[p];
+            current_count = subpath_count[p];
+            subpath_start[flattened_path_count] = flat_point_count;
+            if (flat_point_count < poly_capacity) {
+                poly_x[flat_point_count] = anchor_x[current_start];
+                poly_y[flat_point_count] = anchor_y[current_start];
+                ++flat_point_count;
+            }
+            segment_count = current_count;
+            for (k = 0u; k < segment_count; ++k) {
+                next_k = (k + 1u) % current_count;
+                i0 = current_start + k;
+                i1 = current_start + next_k;
+                p0x = anchor_x[i0];
+                p0y = anchor_y[i0];
+                p1x = ctrl_out_x[i0];
+                p1y = ctrl_out_y[i0];
+                p2x = ctrl_in_x[i1];
+                p2y = ctrl_in_y[i1];
+                p3x = anchor_x[i1];
+                p3y = anchor_y[i1];
+                step_count = 12u;
+                for (step_index = 1u; step_index <= step_count; ++step_index) {
+                    if (flat_point_count >= poly_capacity) {
+                        break;
+                    }
+                    t = (float)step_index / (float)step_count;
+                    omt = 1.0f - t;
+                    poly_x[flat_point_count] =
+                        omt * omt * omt * p0x +
+                        3.0f * omt * omt * t * p1x +
+                        3.0f * omt * t * t * p2x +
+                        t * t * t * p3x;
+                    poly_y[flat_point_count] =
+                        omt * omt * omt * p0y +
+                        3.0f * omt * omt * t * p1y +
+                        3.0f * omt * t * t * p2y +
+                        t * t * t * p3y;
+                    ++flat_point_count;
+                }
+            }
+            subpath_count[flattened_path_count] =
+                flat_point_count - subpath_start[flattened_path_count];
+            subpath_closed[flattened_path_count] = 1u;
+            if (subpath_count[flattened_path_count] >= 3u) {
+                ++flattened_path_count;
+            }
+        }
+        path_count = flattened_path_count;
         for (y = 0u; y < (size_t)layer->height; ++y) {
             ny = ((float)layer->top + (float)y + 0.5f) / (float)info->height;
             for (x = 0u; x < (size_t)layer->width; ++x) {
@@ -11501,8 +12086,8 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
                     if (sixel_builtin_psd_point_in_polygon_even_odd(
                             nx,
                             ny,
-                            points_x + subpath_start[p],
-                            points_y + subpath_start[p],
+                            poly_x + subpath_start[p],
+                            poly_y + subpath_start[p],
                             subpath_count[p])) {
                         inside = !inside;
                     }
@@ -11516,8 +12101,14 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
         applied = 1;
     }
 
-    free(points_x);
-    free(points_y);
+    free(anchor_x);
+    free(anchor_y);
+    free(ctrl_in_x);
+    free(ctrl_in_y);
+    free(ctrl_out_x);
+    free(ctrl_out_y);
+    free(poly_x);
+    free(poly_y);
     free(subpath_start);
     free(subpath_count);
     free(subpath_closed);
@@ -11651,14 +12242,24 @@ sixel_builtin_psd_parse_layer_extra_data(
 {
     size_t cursor;
     size_t block_length;
+    size_t mask_block_offset;
     size_t key_length;
     int parsed_fill;
+    int32_t mask_top;
+    int32_t mask_left;
+    int32_t mask_bottom;
+    int32_t mask_right;
     char key[5];
 
     cursor = 0u;
     block_length = 0u;
+    mask_block_offset = 0u;
     key_length = 0u;
     parsed_fill = 0;
+    mask_top = 0;
+    mask_left = 0;
+    mask_bottom = 0;
+    mask_right = 0;
     key[0] = '\0';
     key[1] = '\0';
     key[2] = '\0';
@@ -11684,6 +12285,20 @@ sixel_builtin_psd_parse_layer_extra_data(
         sixel_helper_set_additional_message(
             "builtin PSD: malformed layer extra data");
         return SIXEL_STBI_ERROR;
+    }
+    mask_block_offset = cursor;
+    if (block_length >= 16u) {
+        mask_top = sixel_builtin_read_i32be(buffer + mask_block_offset + 0u);
+        mask_left = sixel_builtin_read_i32be(buffer + mask_block_offset + 4u);
+        mask_bottom = sixel_builtin_read_i32be(buffer + mask_block_offset + 8u);
+        mask_right = sixel_builtin_read_i32be(buffer + mask_block_offset + 12u);
+        if (mask_bottom >= mask_top && mask_right >= mask_left) {
+            layer->has_layer_mask_rect = 1;
+            layer->layer_mask_top = mask_top;
+            layer->layer_mask_left = mask_left;
+            layer->layer_mask_bottom = mask_bottom;
+            layer->layer_mask_right = mask_right;
+        }
     }
     cursor += block_length;
 
@@ -11726,7 +12341,12 @@ sixel_builtin_psd_parse_layer_extra_data(
         if (sixel_builtin_psd_layer_is_non_pixel_key(key)) {
             layer->has_non_pixel_payload = 1;
         }
-        if (memcmp(key, "TySh", 4u) == 0) {
+        if (memcmp(key, "vscg", 4u) == 0) {
+            (void)sixel_builtin_psd_parse_vector_stroke_content_payload(
+                buffer + cursor,
+                key_length,
+                layer);
+        } else if (memcmp(key, "TySh", 4u) == 0) {
             layer->has_tysh_payload = 1;
             parsed_fill = sixel_builtin_psd_parse_tysh_payload(
                 buffer + cursor,
@@ -11753,11 +12373,18 @@ sixel_builtin_psd_parse_layer_extra_data(
             }
         }
         if (memcmp(key, "vmsk", 4u) == 0 ||
-            memcmp(key, "vsms", 4u) == 0) {
+            memcmp(key, "vsms", 4u) == 0 ||
+            memcmp(key, "vogk", 4u) == 0) {
+            /*
+             * Treat vogk as a vector-mask carrier for fallback heuristics.
+             * Keep raw path payload only for vmsk/vsms because vogk records
+             * are descriptor-based and should not be fed into path decoders.
+             */
             layer->has_vector_mask = 1;
             if (key_length >= 8u &&
                 (memcmp(key, "vmsk", 4u) == 0 ||
-                 layer->has_vector_mask_data == 0)) {
+                 memcmp(key, "vsms", 4u) == 0) &&
+                layer->has_vector_mask_data == 0) {
                 layer->has_vector_mask_data = 1;
                 layer->vector_mask_data_offset = cursor;
                 layer->vector_mask_data_length = key_length;
@@ -11769,6 +12396,12 @@ sixel_builtin_psd_parse_layer_extra_data(
                    memcmp(key, "lfx2", 4u) == 0) {
             layer->has_layer_effects = 1;
             (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
+                buffer + cursor,
+                key_length,
+                layer);
+        } else if (memcmp(key, "vstk", 4u) == 0) {
+            layer->has_layer_effects = 1;
+            (void)sixel_builtin_psd_parse_vector_stroke_payload(
                 buffer + cursor,
                 key_length,
                 layer);
@@ -12168,6 +12801,20 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                 force_merged = 1;
             }
             if (layer->visible != 0 &&
+                layer->has_layer_effects != 0 &&
+                layer->has_vector_mask != 0 &&
+                !sixel_builtin_psd_layer_has_decodable_pixel_channels(
+                    info,
+                    layer)) {
+                /*
+                 * Shape/effect documents frequently keep merged previews that
+                 * diverge from runtime compositing. Prefer fallback when the
+                 * layer is vector-mask/effect driven and has no decodable
+                 * pixel channels.
+                 */
+                force_layer_fallback = 1;
+            }
+            if (layer->visible != 0 &&
                 layer->has_fill_payload != 0 &&
                 layer->has_tysh_payload == 0 &&
                 !sixel_builtin_psd_layer_has_decodable_pixel_channels(
@@ -12180,18 +12827,6 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                  * Pattern-fill-oriented no-pixel layers are only represented in
                  * layer fallback today. Preferring merged here can collapse the
                  * output into near-solid composites.
-                 */
-                force_layer_fallback = 1;
-            }
-            if (layer->visible != 0 &&
-                layer->has_fill_payload != 0 &&
-                layer->has_vector_mask_curve_bbox != 0 &&
-                layer->has_layer_effects != 0 &&
-                layer->has_knockout != 0 &&
-                layer->fill_kind == SIXEL_BUILTIN_PSD_FILL_SOCO) {
-                /*
-                 * Rounded vector-mask SoCo fills with knockout are frequently
-                 * stale in merged composites from external generators.
                  */
                 force_layer_fallback = 1;
             }
@@ -12209,12 +12844,12 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                 force_merged = 1;
             }
         }
-        if (force_merged != 0) {
-            should_prefer = 0;
-            goto done;
-        }
         if (force_layer_fallback != 0) {
             should_prefer = 1;
+            goto done;
+        }
+        if (force_merged != 0) {
+            should_prefer = 0;
             goto done;
         }
         if (has_visible_clipping != 0) {
@@ -12309,11 +12944,13 @@ sixel_builtin_psd_layer_buffers_destroy(sixel_allocator_t *allocator,
 }
 
 static SIXELSTATUS
-sixel_builtin_psd_decode_layer_channel_float(
+sixel_builtin_psd_decode_layer_channel_float_with_size(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_layer_record_t const *layer,
     int channel_index,
     unsigned int depth,
+    unsigned int width,
+    unsigned int height,
     size_t row_length_field_size,
     float *out_values)
 {
@@ -12330,13 +12967,14 @@ sixel_builtin_psd_decode_layer_channel_float(
     plane16 = NULL;
 
     if (chunk == NULL || layer == NULL || out_values == NULL ||
-        channel_index < 0 || chunk->allocator == NULL || chunk->buffer == NULL) {
+        channel_index < 0 || chunk->allocator == NULL ||
+        chunk->buffer == NULL || width == 0u || height == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((size_t)layer->width > SIZE_MAX / (size_t)layer->height) {
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    pixel_count = (size_t)layer->width * (size_t)layer->height;
+    pixel_count = (size_t)width * (size_t)height;
     if (depth == 8u) {
         plane8 = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
                                                          pixel_count);
@@ -12349,8 +12987,8 @@ sixel_builtin_psd_decode_layer_channel_float(
             chunk->buffer,
             layer->channels,
             channel_index,
-            layer->width,
-            layer->height,
+            width,
+            height,
             row_length_field_size,
             plane8);
         if (SIXEL_FAILED(status)) {
@@ -12368,7 +13006,8 @@ sixel_builtin_psd_decode_layer_channel_float(
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         plane16 = (uint16_t *)sixel_allocator_malloc(chunk->allocator,
-                                                     pixel_count * sizeof(uint16_t));
+                                                     pixel_count *
+                                                         sizeof(uint16_t));
         if (plane16 == NULL) {
             sixel_helper_set_additional_message(
                 "builtin PSD: sixel_allocator_malloc() failed.");
@@ -12378,8 +13017,8 @@ sixel_builtin_psd_decode_layer_channel_float(
             chunk->buffer,
             layer->channels,
             channel_index,
-            layer->width,
-            layer->height,
+            width,
+            height,
             row_length_field_size,
             plane16);
         if (SIXEL_FAILED(status)) {
@@ -12397,12 +13036,35 @@ sixel_builtin_psd_decode_layer_channel_float(
             chunk->buffer,
             layer->channels,
             channel_index,
-            layer->width,
-            layer->height,
+            width,
+            height,
             row_length_field_size,
             out_values);
     }
     return SIXEL_BAD_INPUT;
+}
+
+static SIXELSTATUS
+sixel_builtin_psd_decode_layer_channel_float(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_layer_record_t const *layer,
+    int channel_index,
+    unsigned int depth,
+    size_t row_length_field_size,
+    float *out_values)
+{
+    if (layer == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_builtin_psd_decode_layer_channel_float_with_size(
+        chunk,
+        layer,
+        channel_index,
+        depth,
+        layer->width,
+        layer->height,
+        row_length_field_size,
+        out_values);
 }
 
 static SIXELSTATUS
@@ -12423,10 +13085,23 @@ sixel_builtin_psd_decode_layer_to_linear(
     float *c3;
     float *rgb;
     float *alpha;
+    float *mask_values;
     float opacity_scale;
     size_t row_length_field_size;
+    size_t mask_pixel_count;
+    size_t mask_y;
+    size_t mask_x;
+    size_t mask_index;
     SIXELSTATUS status;
     int cms_applied;
+    int32_t mask_top;
+    int32_t mask_left;
+    int32_t mask_bottom;
+    int32_t mask_right;
+    unsigned int mask_width;
+    unsigned int mask_height;
+    int layer_x;
+    int layer_y;
     sixel_cms_profile_t *src_profile;
     sixel_cms_profile_t *dst_profile;
     sixel_cms_transform_t *transform;
@@ -12439,10 +13114,23 @@ sixel_builtin_psd_decode_layer_to_linear(
     c3 = NULL;
     rgb = NULL;
     alpha = NULL;
+    mask_values = NULL;
     opacity_scale = 1.0f;
     row_length_field_size = 2u;
+    mask_pixel_count = 0u;
+    mask_y = 0u;
+    mask_x = 0u;
+    mask_index = 0u;
     status = SIXEL_FALSE;
     cms_applied = 0;
+    mask_top = 0;
+    mask_left = 0;
+    mask_bottom = 0;
+    mask_right = 0;
+    mask_width = 0u;
+    mask_height = 0u;
+    layer_x = 0;
+    layer_y = 0;
     src_profile = NULL;
     dst_profile = NULL;
     transform = NULL;
@@ -12504,26 +13192,105 @@ sixel_builtin_psd_decode_layer_to_linear(
         }
     }
     if (layer->user_mask_channel_index >= 0) {
-        status = sixel_builtin_psd_decode_layer_channel_float(
-            chunk,
-            layer,
-            layer->user_mask_channel_index,
-            info->depth,
-            row_length_field_size,
-            c0);
-        if (SIXEL_FAILED(status)) {
-            if (!sixel_builtin_psd_is_optional_mask_channel(
-                    layer,
-                    layer->user_mask_channel_index)) {
+        if (layer->has_layer_mask_rect != 0 &&
+            layer->layer_mask_bottom > layer->layer_mask_top &&
+            layer->layer_mask_right > layer->layer_mask_left) {
+            mask_top = layer->layer_mask_top;
+            mask_left = layer->layer_mask_left;
+            mask_bottom = layer->layer_mask_bottom;
+            mask_right = layer->layer_mask_right;
+            mask_width = (unsigned int)(mask_right - mask_left);
+            mask_height = (unsigned int)(mask_bottom - mask_top);
+            if ((size_t)mask_width > SIZE_MAX / (size_t)mask_height) {
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
                 goto cleanup;
             }
-            sixel_trace_topic_message(
-                "psd_decode",
-                "builtin PSD: malformed optional layer mask channel; "
-                "ignoring");
+            mask_pixel_count = (size_t)mask_width * (size_t)mask_height;
+            if (mask_pixel_count > SIZE_MAX / sizeof(float)) {
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto cleanup;
+            }
+            mask_values = (float *)sixel_allocator_malloc(
+                chunk->allocator,
+                mask_pixel_count * sizeof(float));
+            if (mask_values == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                sixel_helper_set_additional_message(
+                    "builtin PSD: sixel_allocator_malloc() failed.");
+                goto cleanup;
+            }
+            status = sixel_builtin_psd_decode_layer_channel_float_with_size(
+                chunk,
+                layer,
+                layer->user_mask_channel_index,
+                info->depth,
+                mask_width,
+                mask_height,
+                row_length_field_size,
+                mask_values);
+            if (SIXEL_FAILED(status)) {
+                if (!sixel_builtin_psd_is_optional_mask_channel(
+                        layer,
+                        layer->user_mask_channel_index)) {
+                    goto cleanup;
+                }
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: malformed optional layer mask channel; "
+                    "ignoring");
+            } else {
+                for (i = 0u; i < pixel_count; ++i) {
+                    /*
+                     * Pixels outside the mask rectangle remain fully opaque.
+                     * The rectangle only defines where mask samples exist.
+                     */
+                    c0[i] = 1.0f;
+                }
+                for (mask_y = 0u; mask_y < (size_t)mask_height; ++mask_y) {
+                    layer_y = mask_top + (int)mask_y - layer->top;
+                    if (layer_y < 0 || layer_y >= (int)layer->height) {
+                        continue;
+                    }
+                    for (mask_x = 0u; mask_x < (size_t)mask_width; ++mask_x) {
+                        layer_x = mask_left + (int)mask_x - layer->left;
+                        if (layer_x < 0 || layer_x >= (int)layer->width) {
+                            continue;
+                        }
+                        mask_index = mask_y * (size_t)mask_width + mask_x;
+                        i = (size_t)layer_y * (size_t)layer->width +
+                            (size_t)layer_x;
+                        c0[i] = sixel_builtin_psd_clamp_alpha_float32(
+                            mask_values[mask_index]);
+                    }
+                }
+                for (i = 0u; i < pixel_count; ++i) {
+                    alpha[i] *= c0[i];
+                }
+            }
+            sixel_allocator_free(chunk->allocator, mask_values);
+            mask_values = NULL;
         } else {
-            for (i = 0u; i < pixel_count; ++i) {
-                alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(c0[i]);
+            status = sixel_builtin_psd_decode_layer_channel_float(
+                chunk,
+                layer,
+                layer->user_mask_channel_index,
+                info->depth,
+                row_length_field_size,
+                c0);
+            if (SIXEL_FAILED(status)) {
+                if (!sixel_builtin_psd_is_optional_mask_channel(
+                        layer,
+                        layer->user_mask_channel_index)) {
+                    goto cleanup;
+                }
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: malformed optional layer mask channel; "
+                    "ignoring");
+            } else {
+                for (i = 0u; i < pixel_count; ++i) {
+                    alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(c0[i]);
+                }
             }
         }
     }
@@ -12833,6 +13600,9 @@ cleanup:
     }
     if (alpha != NULL) {
         sixel_allocator_free(chunk->allocator, alpha);
+    }
+    if (mask_values != NULL) {
+        sixel_allocator_free(chunk->allocator, mask_values);
     }
     if (c3 != NULL) {
         sixel_allocator_free(chunk->allocator, c3);
@@ -13507,11 +14277,24 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
     float *rgb;
     float *alpha;
     float *tmp;
+    float *mask_values;
     float opacity_scale;
     size_t row_length_field_size;
+    size_t mask_pixel_count;
+    size_t mask_y;
+    size_t mask_x;
+    size_t mask_index;
     unsigned int tile;
+    unsigned int mask_width;
+    unsigned int mask_height;
     int apply_layer_alpha_channel;
     int apply_layer_mask_channels;
+    int layer_x;
+    int layer_y;
+    int32_t mask_top;
+    int32_t mask_left;
+    int32_t mask_bottom;
+    int32_t mask_right;
     unsigned char *pattern_rgb;
     unsigned int pattern_width;
     unsigned int pattern_height;
@@ -13524,11 +14307,24 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
     rgb = NULL;
     alpha = NULL;
     tmp = NULL;
+    mask_values = NULL;
     opacity_scale = 1.0f;
     row_length_field_size = 2u;
+    mask_pixel_count = 0u;
+    mask_y = 0u;
+    mask_x = 0u;
+    mask_index = 0u;
     tile = 1u;
+    mask_width = 0u;
+    mask_height = 0u;
     apply_layer_alpha_channel = 1;
     apply_layer_mask_channels = 1;
+    layer_x = 0;
+    layer_y = 0;
+    mask_top = 0;
+    mask_left = 0;
+    mask_bottom = 0;
+    mask_right = 0;
     pattern_rgb = NULL;
     pattern_width = 0u;
     pattern_height = 0u;
@@ -13539,7 +14335,8 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
     }
     if (layer->has_non_pixel_payload != 0 &&
         layer->has_fill_payload != 0 &&
-        layer->has_tysh_payload == 0) {
+        layer->has_tysh_payload == 0 &&
+        layer->has_vector_stroke_content_fill == 0) {
         /* Fill layers commonly carry placeholder alpha channels that are not
          * meaningful for synthetic fill reconstruction. */
         apply_layer_alpha_channel = 0;
@@ -13620,28 +14417,119 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
         }
         if (apply_layer_mask_channels != 0 &&
             layer->user_mask_channel_index >= 0) {
-            if (SIXEL_FAILED(sixel_builtin_psd_decode_layer_channel_float(
-                    chunk,
-                    layer,
-                    layer->user_mask_channel_index,
-                    info->depth,
-                    row_length_field_size,
-                    tmp))) {
-                if (!sixel_builtin_psd_is_optional_mask_channel(
-                        layer,
-                        layer->user_mask_channel_index)) {
+            if (layer->has_layer_mask_rect != 0 &&
+                layer->layer_mask_bottom > layer->layer_mask_top &&
+                layer->layer_mask_right > layer->layer_mask_left) {
+                mask_top = layer->layer_mask_top;
+                mask_left = layer->layer_mask_left;
+                mask_bottom = layer->layer_mask_bottom;
+                mask_right = layer->layer_mask_right;
+                mask_width = (unsigned int)(mask_right - mask_left);
+                mask_height = (unsigned int)(mask_bottom - mask_top);
+                if ((size_t)mask_width > SIZE_MAX / (size_t)mask_height) {
                     sixel_allocator_free(chunk->allocator, tmp);
                     sixel_allocator_free(chunk->allocator, rgb);
                     sixel_allocator_free(chunk->allocator, alpha);
-                    return SIXEL_STBI_ERROR;
+                    return SIXEL_BAD_INTEGER_OVERFLOW;
                 }
-                sixel_trace_topic_message(
-                    "psd_decode",
-                    "builtin PSD: malformed optional layer mask channel; "
-                    "ignoring");
+                mask_pixel_count = (size_t)mask_width * (size_t)mask_height;
+                if (mask_pixel_count > SIZE_MAX / sizeof(float)) {
+                    sixel_allocator_free(chunk->allocator, tmp);
+                    sixel_allocator_free(chunk->allocator, rgb);
+                    sixel_allocator_free(chunk->allocator, alpha);
+                    return SIXEL_BAD_INTEGER_OVERFLOW;
+                }
+                mask_values = (float *)sixel_allocator_malloc(
+                    chunk->allocator,
+                    mask_pixel_count * sizeof(float));
+                if (mask_values == NULL) {
+                    sixel_allocator_free(chunk->allocator, tmp);
+                    sixel_allocator_free(chunk->allocator, rgb);
+                    sixel_allocator_free(chunk->allocator, alpha);
+                    sixel_helper_set_additional_message(
+                        "builtin PSD: sixel_allocator_malloc() failed.");
+                    return SIXEL_BAD_ALLOCATION;
+                }
+                if (SIXEL_FAILED(
+                        sixel_builtin_psd_decode_layer_channel_float_with_size(
+                            chunk,
+                            layer,
+                            layer->user_mask_channel_index,
+                            info->depth,
+                            mask_width,
+                            mask_height,
+                            row_length_field_size,
+                            mask_values))) {
+                    if (!sixel_builtin_psd_is_optional_mask_channel(
+                            layer,
+                            layer->user_mask_channel_index)) {
+                        sixel_allocator_free(chunk->allocator, mask_values);
+                        sixel_allocator_free(chunk->allocator, tmp);
+                        sixel_allocator_free(chunk->allocator, rgb);
+                        sixel_allocator_free(chunk->allocator, alpha);
+                        return SIXEL_STBI_ERROR;
+                    }
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: malformed optional layer mask channel; "
+                        "ignoring");
+                } else {
+                    for (i = 0u; i < pixel_count; ++i) {
+                        /*
+                         * Pixels outside the mask rectangle remain fully
+                         * opaque. The rectangle only defines mask samples.
+                         */
+                        tmp[i] = 1.0f;
+                    }
+                    for (mask_y = 0u; mask_y < (size_t)mask_height; ++mask_y) {
+                        layer_y = mask_top + (int)mask_y - layer->top;
+                        if (layer_y < 0 || layer_y >= (int)layer->height) {
+                            continue;
+                        }
+                        for (mask_x = 0u; mask_x < (size_t)mask_width;
+                             ++mask_x) {
+                            layer_x = mask_left + (int)mask_x - layer->left;
+                            if (layer_x < 0 || layer_x >= (int)layer->width) {
+                                continue;
+                            }
+                            mask_index = mask_y * (size_t)mask_width + mask_x;
+                            i = (size_t)layer_y * (size_t)layer->width +
+                                (size_t)layer_x;
+                            tmp[i] = sixel_builtin_psd_clamp_alpha_float32(
+                                mask_values[mask_index]);
+                        }
+                    }
+                    for (i = 0u; i < pixel_count; ++i) {
+                        alpha[i] *= tmp[i];
+                    }
+                }
+                sixel_allocator_free(chunk->allocator, mask_values);
+                mask_values = NULL;
             } else {
-                for (i = 0u; i < pixel_count; ++i) {
-                    alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(tmp[i]);
+                if (SIXEL_FAILED(sixel_builtin_psd_decode_layer_channel_float(
+                        chunk,
+                        layer,
+                        layer->user_mask_channel_index,
+                        info->depth,
+                        row_length_field_size,
+                        tmp))) {
+                    if (!sixel_builtin_psd_is_optional_mask_channel(
+                            layer,
+                            layer->user_mask_channel_index)) {
+                        sixel_allocator_free(chunk->allocator, tmp);
+                        sixel_allocator_free(chunk->allocator, rgb);
+                        sixel_allocator_free(chunk->allocator, alpha);
+                        return SIXEL_STBI_ERROR;
+                    }
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: malformed optional layer mask channel; "
+                        "ignoring");
+                } else {
+                    for (i = 0u; i < pixel_count; ++i) {
+                        alpha[i] *= sixel_builtin_psd_clamp_alpha_float32(
+                            tmp[i]);
+                    }
                 }
             }
         }
@@ -15140,6 +16028,11 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         prefer_non_pixel_fill =
             (layer->has_fill_payload != 0 && layer->has_tysh_payload == 0)
             ? 1 : 0;
+        if (allow_pixel_layer_decode_skip != 0 &&
+            has_pixel_channels &&
+            layer->has_vector_stroke_content_fill == 0) {
+            prefer_non_pixel_fill = 0;
+        }
         apply_clipping = layer->clipping != 0u ? 1 : 0;
         if (apply_clipping != 0) {
             clipping_base_index = clip_base_indices[(size_t)i];
@@ -15517,6 +16410,19 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "psd_decode",
                 "builtin PSD: compositing full-canvas layer in layer fallback");
         }
+        if (apply_clipping == 0) {
+            /*
+             * Clipping groups should reference the base layer coverage before
+             * layer effects are expanded. Effects (stroke/glow/overlay) can
+             * intentionally draw outside the intrinsic alpha silhouette.
+             */
+            sixel_builtin_psd_build_clip_alpha_map(clip_alpha_map,
+                                                   info->width,
+                                                   info->height,
+                                                   effective_composite_layer,
+                                                   &src_layer);
+            clip_alpha_valid = 1;
+        }
         if (defer_clip_group_overlay == 0 &&
             (effective_composite_layer->has_effect_solid_overlay != 0 ||
              effective_composite_layer->has_effect_gradient_overlay != 0 ||
@@ -15529,8 +16435,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
         if (synthetic_fill != 0 &&
             effective_composite_layer->has_vector_mask != 0 &&
-            effective_composite_layer->has_layer_effects != 0 &&
-            effective_composite_layer->has_knockout != 0) {
+            effective_composite_layer->has_layer_effects != 0) {
+            /*
+             * Vector-mask synthetic fills from descriptor payloads often carry
+             * hard alpha transitions. A light edge soften keeps parity with
+             * external compositors that rasterize path edges with coverage.
+             */
             sixel_builtin_psd_soften_layer_alpha_edges(
                 effective_composite_layer,
                 &src_layer);
@@ -15546,14 +16456,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                                                    : NULL,
                                                blend_mode);
         composed_layer_count++;
-        if (apply_clipping == 0) {
-            sixel_builtin_psd_build_clip_alpha_map(clip_alpha_map,
-                                                   info->width,
-                                                   info->height,
-                                                   effective_composite_layer,
-                                                   &src_layer);
-            clip_alpha_valid = 1;
-        }
         sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
     }
     if (pending_clip_group_overlay != 0) {
