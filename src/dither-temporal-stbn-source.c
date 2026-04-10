@@ -82,8 +82,9 @@ sixel_temporal_stbn_source_backends_common[] = {
      */
     &sixel_temporal_stbn_source_hash_backend_common,
     /*
-     * Mask currently reuses hash samples as a placeholder. Table-driven
-     * dispatch keeps future PMJ/STBN mask integration local to this list.
+     * Mask currently falls back to hash while mask-table assets are absent.
+     * Table-driven dispatch keeps future PMJ/STBN integration local to this
+     * backend list.
      */
     &sixel_temporal_stbn_source_mask_backend_common
 };

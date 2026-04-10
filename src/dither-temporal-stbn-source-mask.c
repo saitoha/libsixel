@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include "dither-temporal-stbn-source-mask.h"
+#include "dither-temporal-stbn-source-mask-table.h"
 
 uint16_t
 sixel_temporal_stbn_source_mask_sample_u16_common(uint32_t sequence_index,
@@ -32,9 +33,26 @@ sixel_temporal_stbn_source_mask_sample_u16_common(uint32_t sequence_index,
                                                   int channel,
                                                   int depth)
 {
+    uint16_t sample;
+    int has_table_sample;
+
+    sample = 0U;
+    has_table_sample = 0;
+
+    has_table_sample = sixel_temporal_stbn_mask_table_try_sample_u16_common(
+        sequence_index,
+        x,
+        y,
+        channel,
+        depth,
+        &sample);
+    if (has_table_sample != 0) {
+        return sample;
+    }
+
     /*
-     * Keep mask source output identical to hash while dedicated STBN mask
-     * tables are under integration.
+     * Keep mask source output identical to hash until real mask-table
+     * assets are wired through the lookup hook.
      */
     return sixel_temporal_stbn_sample_hash_u16_common(sequence_index,
                                                       x,
@@ -49,6 +67,12 @@ sixel_temporal_stbn_source_mask_prepare_state_common(
     sixel_temporal_stbn_state_common_t *stbn_state,
     int can_update)
 {
+    int has_table;
+
+    has_table = 0;
+    has_table = sixel_temporal_stbn_mask_table_is_available_common();
+    (void)has_table;
+
     /*
      * Mask source currently follows the default frame-index behavior.
      * Keeping a dedicated prepare hook here localizes future table lifecycle

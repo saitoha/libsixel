@@ -92,6 +92,13 @@ typedef struct sixel_temporal_method_ops {
     sixel_temporal_store_error_fn store_error;
 } sixel_temporal_method_ops_t;
 
+/*
+ * Pull only the getenv wrapper symbol we need here to avoid importing the
+ * full compat header into every temporal backend translation unit.
+ */
+char const *
+sixel_compat_getenv(char const *name);
+
 static inline uint8_t
 sixel_temporal_stbn_source_id_from_token(int strategy_token);
 
@@ -135,6 +142,19 @@ sixel_temporal_strategy_method_from_token(int strategy_token)
     }
 
     return SIXEL_TEMPORAL_METHOD_NONE;
+}
+
+/*
+ * Resolve temporal strategy token from environment in one shared helper so
+ * fixed 8bit and float32 backends always use the same parsing path.
+ */
+static inline int
+sixel_temporal_strategy_token_from_env_common(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
+    return sixel_temporal_strategy_token_from_string(value);
 }
 
 static inline uint8_t

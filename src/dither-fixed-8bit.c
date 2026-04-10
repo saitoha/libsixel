@@ -145,9 +145,6 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int channel,
                                 int depth);
 
-static int
-sixel_temporal_strategy_token_from_env_fixed8(void);
-
 static uint16_t
 sixel_temporal_stbn_sample_u16(
     sixel_temporal_stbn_state_t const *stbn_state,
@@ -430,7 +427,7 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
         return status;
     }
 
-    strategy_token = sixel_temporal_strategy_token_from_env_fixed8();
+    strategy_token = sixel_temporal_strategy_token_from_env_common();
     status = sixel_temporal_prepare_stbn_state_common(
         dither,
         can_update,
@@ -457,15 +454,6 @@ sixel_temporal_stbn_sample_u16(
                                                        y,
                                                        channel,
                                                        depth);
-}
-
-static int
-sixel_temporal_strategy_token_from_env_fixed8(void)
-{
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
-    return sixel_temporal_strategy_token_from_string(value);
 }
 
 static int32_t
@@ -607,7 +595,7 @@ sixel_temporal_method_from_diffuse(int method_for_diffuse)
 {
     int token;
 
-    token = sixel_temporal_strategy_token_from_env_fixed8();
+    token = sixel_temporal_strategy_token_from_env_common();
     return sixel_temporal_method_from_diffuse_and_token(
         method_for_diffuse,
         token);

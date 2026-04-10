@@ -191,6 +191,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-temporal-stbn-source-hash.h \
 	$(srcdir)/dither-temporal-stbn-source-mask.c \
 	$(srcdir)/dither-temporal-stbn-source-mask.h \
+	$(srcdir)/dither-temporal-stbn-source-mask-table.c \
+	$(srcdir)/dither-temporal-stbn-source-mask-table.h \
 	$(srcdir)/dither-fixed-float32.c \
 	$(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
 	$(srcdir)/dither-varcoeff-8bit.c \
@@ -296,6 +298,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-temporal-stbn-source.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-temporal-stbn-source-hash.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-temporal-stbn-source-mask.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-temporal-stbn-source-mask-table.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-fixed-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-varcoeff-8bit.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-varcoeff-float32.lo \
@@ -423,6 +426,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source.Plo \
 	./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-hash.Plo \
 	./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask.Plo \
+	./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask-table.Plo \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
@@ -878,6 +882,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-temporal-stbn-source-hash.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-temporal-stbn-source-mask.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-temporal-stbn-source-mask.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-temporal-stbn-source-mask-table.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-temporal-stbn-source-mask-table.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-fixed-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-fixed-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-internal.h \
@@ -1185,6 +1191,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-hash.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask-table.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
@@ -1489,6 +1496,13 @@ libsixel_la-dither-temporal-stbn-source-mask.lo: dither-temporal-stbn-source-mas
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-temporal-stbn-source-mask.c' object='libsixel_la-dither-temporal-stbn-source-mask.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-temporal-stbn-source-mask.lo `test -f 'dither-temporal-stbn-source-mask.c' || echo '$(srcdir)/'`dither-temporal-stbn-source-mask.c
+
+libsixel_la-dither-temporal-stbn-source-mask-table.lo: dither-temporal-stbn-source-mask-table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-temporal-stbn-source-mask-table.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask-table.Tpo -c -o libsixel_la-dither-temporal-stbn-source-mask-table.lo `test -f 'dither-temporal-stbn-source-mask-table.c' || echo '$(srcdir)/'`dither-temporal-stbn-source-mask-table.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask-table.Tpo $(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask-table.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-temporal-stbn-source-mask-table.c' object='libsixel_la-dither-temporal-stbn-source-mask-table.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-temporal-stbn-source-mask-table.lo `test -f 'dither-temporal-stbn-source-mask-table.c' || echo '$(srcdir)/'`dither-temporal-stbn-source-mask-table.c
 
 libsixel_la-dither-fixed-float32.lo: dither-fixed-float32.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-fixed-float32.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-fixed-float32.Tpo -c -o libsixel_la-dither-fixed-float32.lo `test -f 'dither-fixed-float32.c' || echo '$(srcdir)/'`dither-fixed-float32.c
@@ -2267,6 +2281,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-hash.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask-table.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
@@ -2417,6 +2432,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-hash.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-temporal-stbn-source-mask-table.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo

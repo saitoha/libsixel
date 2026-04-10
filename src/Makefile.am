@@ -103,6 +103,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-temporal-stbn-source-hash.h \
                 $(srcdir)/dither-temporal-stbn-source-mask.c \
                 $(srcdir)/dither-temporal-stbn-source-mask.h \
+                $(srcdir)/dither-temporal-stbn-source-mask-table.c \
+                $(srcdir)/dither-temporal-stbn-source-mask-table.h \
                 $(srcdir)/dither-fixed-float32.c \
                 $(srcdir)/dither-fixed-float32.h \
                 $(srcdir)/dither-internal.h \

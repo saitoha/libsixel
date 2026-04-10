@@ -823,15 +823,6 @@ diffuse_sierra3_float(float *data,
     }
 }
 
-static int
-sixel_temporal_strategy_token_from_env_float32(void)
-{
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
-    return sixel_temporal_strategy_token_from_string(value);
-}
-
 static void
 sixel_temporal_clear_pixel_float32(int32_t *frame,
                                    size_t base,
@@ -998,7 +989,7 @@ sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
         return status;
     }
 
-    strategy_token = sixel_temporal_strategy_token_from_env_float32();
+    strategy_token = sixel_temporal_strategy_token_from_env_common();
     status = sixel_temporal_prepare_stbn_state_common(
         dither,
         can_update,
@@ -1274,7 +1265,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
          * method id so follow-up changes can stay isolated in method ops.
          */
         f_diffuse = diffuse_fs_float;
-        strategy_token = sixel_temporal_strategy_token_from_env_float32();
+        strategy_token = sixel_temporal_strategy_token_from_env_common();
         temporal_method = sixel_temporal_method_from_diffuse_and_token(
             method_for_diffuse,
             strategy_token);
