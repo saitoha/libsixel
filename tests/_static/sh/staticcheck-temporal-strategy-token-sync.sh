@@ -29,6 +29,7 @@ expected_8bit_mask_tests=$tmpdir/expected_8bit_mask_tests.txt
 expected_8bit_pmj_tests=$tmpdir/expected_8bit_pmj_tests.txt
 expected_8bit_pmj_cli_tests=$tmpdir/expected_8bit_pmj_cli_tests.txt
 expected_float32_pmj_cli_tests=$tmpdir/expected_float32_pmj_cli_tests.txt
+expected_8bit_mask_cli_tests=$tmpdir/expected_8bit_mask_cli_tests.txt
 missing=$tmpdir/missing.txt
 status=0
 
@@ -61,6 +62,8 @@ cat > "$expected_float32_tests" <<'EOF'
 0041_temporal_strategy_cli_overrides_env_float32_pmj_animated_gif.t
 0042_temporal_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t
 0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t
+0045_temporal_strategy_cli_diffusion_matches_default_float32_animated_gif.t
+0047_temporal_strategy_cli_stbn_alias_matches_hash_float32_animated_gif.t
 EOF
 
 cat > "$expected_8bit_mask_tests" <<'EOF'
@@ -76,11 +79,16 @@ EOF
 cat > "$expected_8bit_pmj_cli_tests" <<'EOF'
 0039_temporal_pmj_cli_mapfile_capture_repeatable_output_builtin_apng.t
 0040_temporal_pmj_cli_thread_count_stable_output_builtin_apng.t
+0048_temporal_strategy_cli_pmj_resets_between_inputs_builtin_apng.t
 EOF
 
 cat > "$expected_float32_pmj_cli_tests" <<'EOF'
 0042_temporal_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t
 0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t
+EOF
+
+cat > "$expected_8bit_mask_cli_tests" <<'EOF'
+0049_temporal_strategy_cli_stbn_mask_resets_across_size_change_builtin_mixed.t
 EOF
 
 if grep -F -- "\"SIXEL_TEMPORAL_STRATEGY\"" "$source_file_h" "$source_file_c" \
@@ -295,6 +303,32 @@ while IFS= read -r test_name; do
     fi
 done < "$expected_float32_pmj_cli_tests"
 
+while IFS= read -r test_name; do
+    test -n "$test_name" || continue
+    test_path="$temporal_tests_dir/$test_name"
+    if test ! -f "$test_path"; then
+        echo "# tests/processing/dither/temporal: missing 8bit stbn-mask cli test: $test_name" \
+            >> "$missing"
+        status=1
+        continue
+    fi
+    if ! grep -F -- "temporal-diffusion:strategy=stbn-mask" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: missing cli strategy=stbn-mask in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: unexpected env-based stbn-mask in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: unexpected float32 mode in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+done < "$expected_8bit_mask_cli_tests"
+
 if ! grep -F -- "-M " \
         "$temporal_tests_dir/0029_temporal_stbn_mask_mapfile_capture_repeatable_output_builtin_apng.t" \
         >/dev/null 2>&1; then
@@ -355,6 +389,22 @@ if ! grep -F -- "--threads=2" \
         "$temporal_tests_dir/0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t" \
         >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: 0043 must compare --threads=1 and --threads=2" \
+        >> "$missing"
+    status=1
+fi
+
+if ! grep -F -- "expected_output=\"\${single_output}\${single_output}\"" \
+        "$temporal_tests_dir/0048_temporal_strategy_cli_pmj_resets_between_inputs_builtin_apng.t" \
+        >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: 0048 must verify reset by concatenating single outputs" \
+        >> "$missing"
+    status=1
+fi
+
+if ! grep -F -- "expected_output=\"\${animated_output}\${single_output}\"" \
+        "$temporal_tests_dir/0049_temporal_strategy_cli_stbn_mask_resets_across_size_change_builtin_mixed.t" \
+        >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: 0049 must verify reset by mixed-size concatenation" \
         >> "$missing"
     status=1
 fi
@@ -458,6 +508,92 @@ else
     if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
             || ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0041 must cover float32 env/cli precedence for pmj" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$temporal_tests_dir/0044_temporal_strategy_cli_diffusion_matches_default_8bit_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing 8bit strategy=diffusion cli/default equivalence test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "-d temporal-diffusion -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "temporal-diffusion:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0044 must compare default temporal vs strategy=diffusion" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0044 must remain 8bit coverage" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$temporal_tests_dir/0045_temporal_strategy_cli_diffusion_matches_default_float32_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing float32 strategy=diffusion cli/default equivalence test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "-d temporal-diffusion -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "temporal-diffusion:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0045 must compare default temporal vs strategy=diffusion" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0045 must run in float32 mode" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$temporal_tests_dir/0046_temporal_strategy_cli_stbn_alias_matches_hash_8bit_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing 8bit cli stbn alias equivalence test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "temporal-diffusion:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "temporal-diffusion:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0046 must compare CLI stbn and stbn-hash" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0046 must use CLI path without env override" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0046 must remain 8bit coverage" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$temporal_tests_dir/0047_temporal_strategy_cli_stbn_alias_matches_hash_float32_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing float32 cli stbn alias equivalence test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "temporal-diffusion:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "temporal-diffusion:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0047 must compare CLI stbn and stbn-hash" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0047 must use CLI path without env override" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0047 must run in float32 mode" \
             >> "$missing"
         status=1
     fi

@@ -1,0 +1,58 @@
+#!/bin/sh
+# TAP test ensuring CLI strategy=pmj resets state between input files.
+
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
+
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --threads=1 \
+    -L builtin \
+    -ldisable \
+    -S -T 1 \
+    -d fs -Y direct -p 16 \
+    "${input_apng}" >/dev/null 2>&1 || {
+    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
+    exit 0
+}
+
+echo "1..1"
+set -v
+
+combined_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -d temporal-diffusion:strategy=pmj -p 16 \
+        "${input_apng}" "${input_apng}"
+) || {
+    echo "not ok" 1 - "temporal strategy=pmj two-input encode failed"
+    exit 0
+}
+
+single_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -d temporal-diffusion:strategy=pmj -p 16 \
+        "${input_apng}"
+) || {
+    echo "not ok" 1 - "temporal strategy=pmj single-input encode failed"
+    exit 0
+}
+
+expected_output="${single_output}${single_output}"
+test "${combined_output}" = "${expected_output}" || {
+    echo "not ok" 1 - "strategy=pmj state leaked across input boundary"
+    exit 0
+}
+
+echo "ok" 1 - "strategy=pmj resets between input files"
+exit 0
