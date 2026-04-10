@@ -71,21 +71,22 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 #define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
 #define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
 
-typedef struct sixel_temporal_stbn_state {
-    uint32_t sequence_index;
-    uint8_t sample_source_id;
-} sixel_temporal_stbn_state_t;
-
-#define SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED 0
-#define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
-#define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
-
 typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
     uint32_t sequence_index,
     int x,
     int y,
     int channel,
     int depth);
+
+#define SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED 0
+#define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
+#define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
+
+typedef struct sixel_temporal_stbn_state {
+    uint32_t sequence_index;
+    uint8_t sample_source_id;
+    sixel_temporal_stbn_sample_u16_fn sample_u16;
+} sixel_temporal_stbn_state_t;
 
 typedef struct sixel_temporal_stbn_source_ops {
     uint8_t source_id;
@@ -192,17 +193,17 @@ sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
                                     int channel,
                                     int depth);
 
-static uint8_t
-sixel_temporal_stbn_select_sample_source(void);
-
-static uint8_t
-sixel_temporal_stbn_source_from_strategy(char const *value);
-
 static int
 sixel_temporal_strategy_is_stbn(char const *value);
 
 static sixel_temporal_stbn_source_ops_t const *
 sixel_temporal_stbn_source_ops_for_id(uint8_t source_id);
+
+static sixel_temporal_stbn_source_ops_t const *
+sixel_temporal_stbn_source_ops_from_strategy(char const *value);
+
+static sixel_temporal_stbn_source_ops_t const *
+sixel_temporal_stbn_select_source_ops(void);
 
 static uint16_t
 sixel_temporal_stbn_sample_u16(
@@ -464,9 +465,11 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
 {
     SIXELSTATUS status;
     sixel_temporal_stbn_state_t *stbn_state;
+    sixel_temporal_stbn_source_ops_t const *source_ops;
 
     status = SIXEL_OK;
     stbn_state = NULL;
+    source_ops = NULL;
 
     /*
      * Placeholder STBN strategy keeps the same state shape as temporal
@@ -504,7 +507,19 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    stbn_state->sample_source_id = sixel_temporal_stbn_select_sample_source();
+    source_ops = sixel_temporal_stbn_select_source_ops();
+    if (source_ops == NULL || source_ops->sample_u16 == NULL) {
+        source_ops = sixel_temporal_stbn_source_ops_for_id(
+            SIXEL_TEMPORAL_STBN_SOURCE_HASH);
+    }
+    if (source_ops != NULL) {
+        stbn_state->sample_source_id = source_ops->source_id;
+        stbn_state->sample_u16 = source_ops->sample_u16;
+    } else {
+        stbn_state->sample_source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+        stbn_state->sample_u16 = sixel_temporal_stbn_sample_hash_u16;
+    }
+
     if (dither->frame_context.valid) {
         stbn_state->sequence_index =
             (uint32_t)dither->frame_context.frame_no;
@@ -602,25 +617,6 @@ sixel_temporal_stbn_source_mask_ops = {
     sixel_temporal_stbn_sample_mask_u16
 };
 
-static uint8_t
-sixel_temporal_stbn_select_sample_source(void)
-{
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
-    return sixel_temporal_stbn_source_from_strategy(value);
-}
-
-static uint8_t
-sixel_temporal_stbn_source_from_strategy(char const *value)
-{
-    if (value != NULL && strcmp(value, "stbn-mask") == 0) {
-        return SIXEL_TEMPORAL_STBN_SOURCE_MASK;
-    }
-
-    return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
-}
-
 static int
 sixel_temporal_strategy_is_stbn(char const *value)
 {
@@ -655,6 +651,28 @@ sixel_temporal_stbn_source_ops_for_id(uint8_t source_id)
     return &sixel_temporal_stbn_source_hash_ops;
 }
 
+static sixel_temporal_stbn_source_ops_t const *
+sixel_temporal_stbn_source_ops_from_strategy(char const *value)
+{
+    uint8_t source_id;
+
+    source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+    if (value != NULL && strcmp(value, "stbn-mask") == 0) {
+        source_id = SIXEL_TEMPORAL_STBN_SOURCE_MASK;
+    }
+
+    return sixel_temporal_stbn_source_ops_for_id(source_id);
+}
+
+static sixel_temporal_stbn_source_ops_t const *
+sixel_temporal_stbn_select_source_ops(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
+    return sixel_temporal_stbn_source_ops_from_strategy(value);
+}
+
 static uint16_t
 sixel_temporal_stbn_sample_u16(
     sixel_temporal_stbn_state_t const *stbn_state,
@@ -665,13 +683,22 @@ sixel_temporal_stbn_sample_u16(
 {
     uint32_t sequence_index;
     uint8_t source_id;
+    sixel_temporal_stbn_sample_u16_fn sample_u16;
     sixel_temporal_stbn_source_ops_t const *source_ops;
 
     sequence_index = 0U;
     source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+    sample_u16 = NULL;
     source_ops = NULL;
 
     sequence_index = sixel_temporal_stbn_sequence_index(stbn_state);
+    if (stbn_state != NULL) {
+        sample_u16 = stbn_state->sample_u16;
+    }
+    if (sample_u16 != NULL) {
+        return sample_u16(sequence_index, x, y, channel, depth);
+    }
+
     source_id = sixel_temporal_stbn_sample_source_id(stbn_state);
     source_ops = sixel_temporal_stbn_source_ops_for_id(source_id);
 
