@@ -30,12 +30,16 @@
 #include "sixel_atomic.h"
 #include "palette.h"
 
+#if !defined(SIXEL_DIFFUSE_INTERFRAME)
+# define SIXEL_DIFFUSE_INTERFRAME 0xb
+#endif
+
 typedef void (*sixel_dither_pipeline_row_fn)(void *priv, int row_index);
 
 struct sixel_logger;
 
 /*
- * Frame metadata supplied by the encoder. Temporal dithering stages use this
+ * Frame metadata supplied by the encoder. Interframe dithering stages use this
  * context to decide when to keep or reset frame-to-frame state.
  */
 typedef struct sixel_dither_frame_context {
@@ -46,11 +50,11 @@ typedef struct sixel_dither_frame_context {
 } sixel_dither_frame_context_t;
 
 /*
- * Temporal dithering state container. The method_id identifies which temporal
- * strategy owns error_frame so future strategies (for example STBN) can keep
- * state isolated behind a shared lifecycle.
+ * Interframe dithering state container. The method_id identifies which
+ * interframe strategy owns error_frame so future strategies (for example STBN)
+ * can keep state isolated behind a shared lifecycle.
  */
-typedef struct sixel_dither_temporal_state {
+typedef struct sixel_dither_interframe_state {
     void *error_frame;
     size_t error_frame_size;
     int width;
@@ -63,11 +67,11 @@ typedef struct sixel_dither_temporal_state {
     unsigned long consume_count;
     int last_apply_status;
     int last_apply_consumed;
-} sixel_dither_temporal_state_t;
+} sixel_dither_interframe_state_t;
 
 /* apply mode for sixel_dither_apply_palette_with_mode() */
-#define SIXEL_DITHER_APPLY_PRESERVE_TEMPORAL_STATE 0
-#define SIXEL_DITHER_APPLY_CONSUME_TEMPORAL_STATE  1
+#define SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE 0
+#define SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE  1
 
 /* dither context object */
 struct sixel_dither {
@@ -87,8 +91,8 @@ struct sixel_dither {
     int method_for_diffuse;         /* method for diffusing */
     int method_for_scan;            /* scan order for diffusing */
     int method_for_carry;           /* carry buffer mode for diffusion */
-    int temporal_strategy_override; /* CLI strategy override enable flag */
-    int temporal_strategy_token;    /* parsed temporal strategy token */
+    int interframe_strategy_override; /* CLI strategy override enable flag */
+    int interframe_strategy_token;    /* parsed interframe strategy token */
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */
@@ -118,7 +122,7 @@ struct sixel_dither {
     int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
     struct sixel_logger *pipeline_logger; /* parallel log sink */
     sixel_dither_frame_context_t frame_context; /* encoder frame metadata */
-    sixel_dither_temporal_state_t temporal_state; /* reserved temporal */
+    sixel_dither_interframe_state_t interframe_state; /* reserved interframe */
 };
 
 #ifdef __cplusplus
@@ -133,8 +137,8 @@ sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
                            int                 /* in */ height);
 
 /*
- * Apply palette with explicit temporal-state handling mode. The default API
- * consumes temporal state; capture paths can request preserve mode.
+ * Apply palette with explicit interframe-state handling mode. The default API
+ * consumes interframe state; capture paths can request preserve mode.
  */
 SIXEL_INTERNAL_API sixel_index_t *
 sixel_dither_apply_palette_with_mode(struct sixel_dither /* in */ *dither,
@@ -144,7 +148,7 @@ sixel_dither_apply_palette_with_mode(struct sixel_dither /* in */ *dither,
                                      int                 /* in */ apply_mode);
 
 /*
- * Attach frame metadata from the encoder to the dither object. Temporal
+ * Attach frame metadata from the encoder to the dither object. Interframe
  * diffusion workers read this metadata to detect loop and timeline boundaries.
  */
 SIXEL_INTERNAL_API void

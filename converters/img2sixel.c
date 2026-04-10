@@ -386,7 +386,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      x_dither -> positionally stable arithmetic xor based dither\n"
         "      bluenoise -> tileable blue-noise ordered dither\n"
         "      lso2     -> libsixel method based on variable error diffusion tables, optimized for\n"
-        "      interframe[:strategy=MODE] -> temporal error diffusion\n"
+        "      interframe[:strategy=MODE] -> interframe error diffusion\n"
         "          MODE: diffusion, stbn, stbn-hash, stbn-mask, pmj\n"
         "          strategy=... is valid only for interframe.\n"
         "          ignores -Y; not available with -I\n"
@@ -817,8 +817,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "enables it while 0, off, false, or no keep the 8-bit pipeline."
     },
     {
-        "SIXEL_DITHER_TEMPORAL_STRATEGY",
-        "internal temporal strategy override for -d interframe.\n"
+        "SIXEL_DITHER_INTERFRAME_STRATEGY",
+        "internal interframe strategy override for -d interframe.\n"
         "Accepts diffusion (default), stbn, stbn-hash, stbn-mask, or pmj."
     },
     {

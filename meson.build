@@ -1781,7 +1781,7 @@ loader_helper_sources = files(
   'src/dither-common-pipeline.c',
   'src/dither.c',
   'src/dither-fixed-8bit.c',
-  'src/dither-temporal-method.h',
+  'src/dither-interframe-method.h',
   'src/dither-fixed-float32.c',
   'src/dither-positional-8bit.c',
   'src/dither-positional-float32.c',

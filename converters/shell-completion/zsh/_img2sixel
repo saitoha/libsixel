@@ -30,12 +30,12 @@ _diffusiontype() {
     'x_dither[positionally stable arithmetic xor based dither]' \
     'bluenoise[tileable blue-noise ordered dither]' \
     'lso2[libsixel method based on variable error diffusion]' \
-    'interframe[temporal error diffusion (palette path; ignores -Y)]' \
-    'interframe:strategy=diffusion[temporal strategy override]' \
-    'interframe:strategy=stbn[temporal strategy override]' \
-    'interframe:strategy=stbn-hash[temporal strategy override]' \
-    'interframe:strategy=stbn-mask[temporal strategy override]' \
-    'interframe:strategy=pmj[temporal strategy override]'
+    'interframe[interframe error diffusion (palette path; ignores -Y)]' \
+    'interframe:strategy=diffusion[interframe strategy override]' \
+    'interframe:strategy=stbn[interframe strategy override]' \
+    'interframe:strategy=stbn-hash[interframe strategy override]' \
+    'interframe:strategy=stbn-mask[interframe strategy override]' \
+    'interframe:strategy=pmj[interframe strategy override]'
 }
 
 _scantype() {

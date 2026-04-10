@@ -119,7 +119,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_BLUENOISE_DITHER 0x9  /* positionally stable bluenoise dither */
 #define SIXEL_DIFFUSE_LSO2        0xa  /* libsixel method based on
                                           variable error diffusion */
-#define SIXEL_DIFFUSE_TEMPORAL    0xb  /* temporal error diffusion */
+#define SIXEL_DIFFUSE_INTERFRAME  0xb  /* interframe error diffusion */
 #define SIXEL_DIFFUSE_SIERRA1     0xc  /* diffuse with Sierra Lite method */
 #define SIXEL_DIFFUSE_SIERRA2     0xd  /* diffuse with Sierra Two-row method */
 #define SIXEL_DIFFUSE_SIERRA3     0xe  /* diffuse with Sierra-3 method */
@@ -324,7 +324,7 @@ typedef int SIXELSTATUS;
                                                                     variable error diffusion
                                                                     tables, optimized for size
                                                     interframe
-                                                                 -> temporal
+                                                                 -> interframe
                                                                  error
                                                                  diffusion
                                                                  (palette
@@ -718,7 +718,7 @@ enum methodForDiffuse {
     DIFFUSE_BLUENOISE_DITHER = 9,  /* positionally stable bluenoise */
     DIFFUSE_LSO2     = 10, /* libsixel method based on variable
                               error diffusion */
-    DIFFUSE_TEMPORAL = 11, /* temporal error diffusion */
+    DIFFUSE_INTERFRAME = 11, /* interframe error diffusion */
     DIFFUSE_SIERRA1  = 12, /* diffuse with Sierra Lite method */
     DIFFUSE_SIERRA2  = 13, /* diffuse with Sierra Two-row method */
     DIFFUSE_SIERRA3  = 14  /* diffuse with Sierra-3 method */

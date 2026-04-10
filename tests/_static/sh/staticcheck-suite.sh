@@ -200,16 +200,16 @@ run_case_tap "staticcheck-kmeans-suboption-env-sync" \
     "$src_root/tests/_static/sh/staticcheck-kmeans-suboption-env-sync.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-temporal-strategy-token-sync" \
-    sh "$src_root/tests/_static/sh/staticcheck-temporal-strategy-token-sync.sh" \
+run_case_tap "staticcheck-interframe-strategy-token-sync" \
+    sh "$src_root/tests/_static/sh/staticcheck-interframe-strategy-token-sync.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-temporal-c-h-pair-sync" \
-    "$src_root/tests/_static/sh/staticcheck-temporal-c-h-pair-sync.sh" \
+run_case_tap "staticcheck-interframe-c-h-pair-sync" \
+    "$src_root/tests/_static/sh/staticcheck-interframe-c-h-pair-sync.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-temporal-no-compat-getenv-symbol" \
-    "$src_root/tests/_static/sh/staticcheck-temporal-no-compat-getenv-symbol.sh" \
+run_case_tap "staticcheck-interframe-no-compat-getenv-symbol" \
+    "$src_root/tests/_static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-gd-policy-wrapper-sync" \

@@ -70,8 +70,8 @@ struct sixel_encoder {
     int loader_start_frame_no_set;
     int builtin_palette;
     int method_for_diffuse;
-    int temporal_strategy_override;
-    int temporal_strategy_token;
+    int interframe_strategy_override;
+    int interframe_strategy_token;
     int method_for_scan;
     int method_for_carry;
     int method_for_largest;

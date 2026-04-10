@@ -719,21 +719,21 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
-    'staticcheck-temporal-strategy-token-sync',
+    'staticcheck-interframe-strategy-token-sync',
     [meson.current_source_dir()
-      / '_static/sh/staticcheck-temporal-strategy-token-sync.sh',
+      / '_static/sh/staticcheck-interframe-strategy-token-sync.sh',
       meson.project_source_root()],
   ],
   [
-    'staticcheck-temporal-c-h-pair-sync',
+    'staticcheck-interframe-c-h-pair-sync',
     [meson.current_source_dir()
-      / '_static/sh/staticcheck-temporal-c-h-pair-sync.sh',
+      / '_static/sh/staticcheck-interframe-c-h-pair-sync.sh',
       meson.project_source_root()],
   ],
   [
-    'staticcheck-temporal-no-compat-getenv-symbol',
+    'staticcheck-interframe-no-compat-getenv-symbol',
     [meson.current_source_dir()
-      / '_static/sh/staticcheck-temporal-no-compat-getenv-symbol.sh',
+      / '_static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh',
       meson.project_source_root()],
   ],
   [

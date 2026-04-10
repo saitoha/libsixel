@@ -36,7 +36,7 @@
 
 #include "compat_stub.h"
 #include "dither-fixed-8bit.h"
-#include "dither-temporal-method.h"
+#include "dither-interframe-method.h"
 #include "dither-common-pipeline.h"
 #include "lookup-common.h"
 
@@ -66,10 +66,10 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
     }
 }
 
-typedef sixel_temporal_stbn_state_common_t sixel_temporal_stbn_state_t;
+typedef sixel_interframe_stbn_state_common_t sixel_interframe_stbn_state_t;
 
 static SIXELSTATUS
-sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
+sixel_interframe_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
                                        int height,
                                        int depth,
@@ -78,7 +78,7 @@ sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int32_t **frame);
 
 static void
-sixel_temporal_diffusion_load_pixel(
+sixel_interframe_diffusion_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
@@ -90,20 +90,20 @@ sixel_temporal_diffusion_load_pixel(
     int32_t accum_scaled[SIXEL_MAX_CHANNELS]);
 
 static void
-sixel_temporal_diffusion_clear_pixel(int32_t *frame,
+sixel_interframe_diffusion_clear_pixel(int32_t *frame,
                                      size_t base,
                                      int depth,
                                      int can_update);
 
 static void
-sixel_temporal_diffusion_store_error(int32_t *frame,
+sixel_interframe_diffusion_store_error(int32_t *frame,
                                      size_t base,
                                      int channel,
                                      int offset,
                                      int can_update);
 
 static SIXELSTATUS
-sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
+sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
                                   int width,
                                   int height,
                                   int depth,
@@ -112,7 +112,7 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
                                   int32_t **frame);
 
 static void
-sixel_temporal_stbn_load_pixel(
+sixel_interframe_stbn_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
@@ -124,42 +124,42 @@ sixel_temporal_stbn_load_pixel(
     int32_t accum_scaled[SIXEL_MAX_CHANNELS]);
 
 static void
-sixel_temporal_stbn_clear_pixel(int32_t *frame,
+sixel_interframe_stbn_clear_pixel(int32_t *frame,
                                 size_t base,
                                 int depth,
                                 int can_update);
 
 static void
-sixel_temporal_stbn_store_error(int32_t *frame,
+sixel_interframe_stbn_store_error(int32_t *frame,
                                 size_t base,
                                 int channel,
                                 int offset,
                                 int can_update);
 
-static sixel_temporal_method_ops_t const
-sixel_temporal_diffusion_ops = {
-    SIXEL_TEMPORAL_METHOD_DIFFUSION,
-    sixel_temporal_diffusion_prepare_frame,
-    sixel_temporal_diffusion_load_pixel,
-    sixel_temporal_diffusion_clear_pixel,
-    sixel_temporal_diffusion_store_error
+static sixel_interframe_method_ops_t const
+sixel_interframe_diffusion_ops = {
+    SIXEL_INTERFRAME_METHOD_DIFFUSION,
+    sixel_interframe_diffusion_prepare_frame,
+    sixel_interframe_diffusion_load_pixel,
+    sixel_interframe_diffusion_clear_pixel,
+    sixel_interframe_diffusion_store_error
 };
 
-static sixel_temporal_method_ops_t const
-sixel_temporal_stbn_ops = {
-    SIXEL_TEMPORAL_METHOD_STBN,
-    sixel_temporal_stbn_prepare_frame,
-    sixel_temporal_stbn_load_pixel,
-    sixel_temporal_stbn_clear_pixel,
-    sixel_temporal_stbn_store_error
+static sixel_interframe_method_ops_t const
+sixel_interframe_stbn_ops = {
+    SIXEL_INTERFRAME_METHOD_STBN,
+    sixel_interframe_stbn_prepare_frame,
+    sixel_interframe_stbn_load_pixel,
+    sixel_interframe_stbn_clear_pixel,
+    sixel_interframe_stbn_store_error
 };
 
 static int
-sixel_temporal_method_from_diffuse(sixel_dither_t const *dither,
+sixel_interframe_method_from_diffuse(sixel_dither_t const *dither,
                                    int method_for_diffuse);
 
-static sixel_temporal_method_ops_t const *
-sixel_temporal_method_for_strategy(int temporal_method);
+static sixel_interframe_method_ops_t const *
+sixel_interframe_method_for_strategy(int interframe_method);
 
 static void
 error_diffuse_normal(
@@ -259,7 +259,7 @@ diffuse_fixed_term(int32_t error, int numerator, int denominator)
 }
 
 static SIXELSTATUS
-sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
+sixel_interframe_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
                                        int height,
                                        int depth,
@@ -267,18 +267,18 @@ sixel_temporal_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int *enabled,
                                        int32_t **frame)
 {
-    return sixel_temporal_prepare_shared_frame(dither,
+    return sixel_interframe_prepare_shared_frame(dither,
                                                width,
                                                height,
                                                depth,
                                                can_update,
-                                               SIXEL_TEMPORAL_METHOD_DIFFUSION,
+                                               SIXEL_INTERFRAME_METHOD_DIFFUSION,
                                                enabled,
                                                frame);
 }
 
 static void
-sixel_temporal_diffusion_load_pixel(
+sixel_interframe_diffusion_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
@@ -291,8 +291,8 @@ sixel_temporal_diffusion_load_pixel(
 {
     int n;
     size_t channel_base;
-    int64_t temporal_sum;
-    int64_t temporal_clamped;
+    int64_t interframe_sum;
+    int64_t interframe_clamped;
 
     (void)dither;
     (void)x;
@@ -300,37 +300,37 @@ sixel_temporal_diffusion_load_pixel(
 
     n = 0;
     channel_base = 0U;
-    temporal_sum = 0;
-    temporal_clamped = 0;
+    interframe_sum = 0;
+    interframe_clamped = 0;
 
     for (n = 0; n < depth; ++n) {
         channel_base = base + (size_t)n;
-        temporal_sum = ((int64_t)data[channel_base]
-                        << SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
+        interframe_sum = ((int64_t)data[channel_base]
+                        << SIXEL_INTERFRAME_VARERR_SCALE_SHIFT);
         if (frame != NULL) {
-            temporal_sum += frame[channel_base];
+            interframe_sum += frame[channel_base];
         }
-        if (temporal_sum < INT32_MIN) {
-            temporal_sum = INT32_MIN;
-        } else if (temporal_sum > INT32_MAX) {
-            temporal_sum = INT32_MAX;
+        if (interframe_sum < INT32_MIN) {
+            interframe_sum = INT32_MIN;
+        } else if (interframe_sum > INT32_MAX) {
+            interframe_sum = INT32_MAX;
         }
 
-        temporal_clamped = temporal_sum;
-        if (temporal_clamped < 0) {
-            temporal_clamped = 0;
-        } else if (temporal_clamped > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
-            temporal_clamped = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
+        interframe_clamped = interframe_sum;
+        if (interframe_clamped < 0) {
+            interframe_clamped = 0;
+        } else if (interframe_clamped > SIXEL_INTERFRAME_VARERR_MAX_VALUE) {
+            interframe_clamped = SIXEL_INTERFRAME_VARERR_MAX_VALUE;
         }
-        accum_scaled[n] = (int32_t)temporal_clamped;
-        corrected[n] = (unsigned char)((temporal_clamped
-                                        + SIXEL_TEMPORAL_VARERR_ROUND)
-                                       >> SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
+        accum_scaled[n] = (int32_t)interframe_clamped;
+        corrected[n] = (unsigned char)((interframe_clamped
+                                        + SIXEL_INTERFRAME_VARERR_ROUND)
+                                       >> SIXEL_INTERFRAME_VARERR_SCALE_SHIFT);
     }
 }
 
 static void
-sixel_temporal_diffusion_clear_pixel(int32_t *frame,
+sixel_interframe_diffusion_clear_pixel(int32_t *frame,
                                      size_t base,
                                      int depth,
                                      int can_update)
@@ -348,7 +348,7 @@ sixel_temporal_diffusion_clear_pixel(int32_t *frame,
 }
 
 static void
-sixel_temporal_diffusion_store_error(int32_t *frame,
+sixel_interframe_diffusion_store_error(int32_t *frame,
                                      size_t base,
                                      int channel,
                                      int offset,
@@ -364,12 +364,12 @@ sixel_temporal_diffusion_store_error(int32_t *frame,
     /*
      * Multiplication avoids undefined behavior from shifting negative values.
      */
-    scaled = (int32_t)(offset * SIXEL_TEMPORAL_VARERR_SCALE);
+    scaled = (int32_t)(offset * SIXEL_INTERFRAME_VARERR_SCALE);
     frame[base + (size_t)channel] = scaled;
 }
 
 static SIXELSTATUS
-sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
+sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
                                   int width,
                                   int height,
                                   int depth,
@@ -378,36 +378,36 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
                                   int32_t **frame)
 {
     SIXELSTATUS status;
-    sixel_temporal_stbn_state_t *stbn_state;
+    sixel_interframe_stbn_state_t *stbn_state;
     int strategy_token;
 
     status = SIXEL_OK;
     stbn_state = NULL;
-    strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
 
     /*
-     * STBN strategy reuses the shared temporal frame state so source
-     * backends can change without touching the method call contract.
+     * STBN strategy reuses the shared interframe state so source backends can
+     * change without touching the method call contract.
      */
-    status = sixel_temporal_prepare_shared_frame(dither,
+    status = sixel_interframe_prepare_shared_frame(dither,
                                                  width,
                                                  height,
                                                  depth,
                                                  can_update,
-                                                 SIXEL_TEMPORAL_METHOD_STBN,
+                                                 SIXEL_INTERFRAME_METHOD_STBN,
                                                  enabled,
                                                  frame);
     if (status != SIXEL_OK || *enabled == 0) {
         return status;
     }
 
-    strategy_token = sixel_temporal_strategy_token_from_dither_or_env_common(
+    strategy_token = sixel_interframe_strategy_token_from_dither_or_env_common(
         dither);
-    status = sixel_temporal_prepare_stbn_state_common(
+    status = sixel_interframe_prepare_stbn_state_common(
         dither,
         can_update,
         strategy_token,
-        sizeof(sixel_temporal_stbn_state_t),
+        sizeof(sixel_interframe_stbn_state_t),
         (void **)&stbn_state);
     if (status != SIXEL_OK || stbn_state == NULL || can_update == 0) {
         return status;
@@ -417,8 +417,8 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
 }
 
 static int32_t
-sixel_temporal_stbn_bias_scaled_sampled(
-    sixel_temporal_stbn_sample_u16_fn sample_fn,
+sixel_interframe_stbn_bias_scaled_sampled(
+    sixel_interframe_stbn_sample_u16_fn sample_fn,
     uint32_t sequence_index,
     int x,
     int y,
@@ -432,15 +432,15 @@ sixel_temporal_stbn_bias_scaled_sampled(
     bias_u8 = 0;
 
     sample_value = sample_fn(sequence_index, x, y, channel, depth);
-    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+    bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
-    return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
+        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
+    return bias_u8 * SIXEL_INTERFRAME_VARERR_SCALE;
 }
 
 static int32_t
-sixel_temporal_stbn_bias_scaled_sampled_row_cached(
-    sixel_temporal_stbn_state_t *stbn_state,
+sixel_interframe_stbn_bias_scaled_sampled_row_cached(
+    sixel_interframe_stbn_state_t *stbn_state,
     int x,
     int y,
     int channel,
@@ -452,21 +452,21 @@ sixel_temporal_stbn_bias_scaled_sampled_row_cached(
     sample_value = 0U;
     bias_u8 = 0;
 
-    sample_value = sixel_temporal_stbn_source_pmj_sample_u16_row_cached_common(
+    sample_value = sixel_interframe_stbn_source_pmj_sample_u16_row_cached_common(
         stbn_state,
         x,
         y,
         channel,
         depth);
-    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+    bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
-    return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
+        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
+    return bias_u8 * SIXEL_INTERFRAME_VARERR_SCALE;
 }
 
 static int32_t
-sixel_temporal_stbn_bias_scaled_sampled_tiled(
-    sixel_temporal_stbn_state_t const *stbn_state,
+sixel_interframe_stbn_bias_scaled_sampled_tiled(
+    sixel_interframe_stbn_state_t const *stbn_state,
     int x,
     int y,
     int channel,
@@ -478,20 +478,20 @@ sixel_temporal_stbn_bias_scaled_sampled_tiled(
     sample_value = 0U;
     bias_u8 = 0;
 
-    sample_value = sixel_temporal_stbn_source_pmj_sample_u16_tiled_common(
+    sample_value = sixel_interframe_stbn_source_pmj_sample_u16_tiled_common(
         stbn_state,
         x,
         y,
         channel,
         depth);
-    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+    bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
-    return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
+        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
+    return bias_u8 * SIXEL_INTERFRAME_VARERR_SCALE;
 }
 
 static void
-sixel_temporal_stbn_load_pixel(
+sixel_interframe_stbn_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
     size_t base,
@@ -505,8 +505,8 @@ sixel_temporal_stbn_load_pixel(
     int n;
     int32_t bias_scaled;
     int64_t adjusted_scaled;
-    sixel_temporal_stbn_state_t *stbn_state;
-    sixel_temporal_stbn_sample_u16_fn sample_u16;
+    sixel_interframe_stbn_state_t *stbn_state;
+    sixel_interframe_stbn_sample_u16_fn sample_u16;
     uint32_t sequence_index;
     int use_stbn_bias;
     int use_pmj_row_cached;
@@ -515,18 +515,18 @@ sixel_temporal_stbn_load_pixel(
     n = 0;
     bias_scaled = 0;
     adjusted_scaled = 0;
-    sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
+    sample_u16 = sixel_interframe_stbn_sample_hash_u16_common;
     sequence_index = 0U;
     use_stbn_bias = 0;
     use_pmj_row_cached = 0;
     use_pmj_tiled = 0;
-    stbn_state = (sixel_temporal_stbn_state_t *)
-        sixel_temporal_get_method_private(
+    stbn_state = (sixel_interframe_stbn_state_t *)
+        sixel_interframe_get_method_private(
             dither,
-            SIXEL_TEMPORAL_METHOD_STBN,
-            sizeof(sixel_temporal_stbn_state_t));
+            SIXEL_INTERFRAME_METHOD_STBN,
+            sizeof(sixel_interframe_stbn_state_t));
 
-    sixel_temporal_diffusion_load_pixel(dither,
+    sixel_interframe_diffusion_load_pixel(dither,
                                         data,
                                         base,
                                         x,
@@ -537,15 +537,15 @@ sixel_temporal_stbn_load_pixel(
                                         accum_scaled);
 
     /*
-     * 8bit keeps hash-equivalent behavior while mask/pmj apply temporal
+     * 8bit keeps hash-equivalent behavior while mask/pmj apply interframe
      * STBN bias. Cache sampling inputs once per pixel to reduce overhead.
      */
     if (stbn_state != NULL
-            && (stbn_state->sample_source_id == SIXEL_TEMPORAL_STBN_SOURCE_MASK
+            && (stbn_state->sample_source_id == SIXEL_INTERFRAME_STBN_SOURCE_MASK
                 || stbn_state->sample_source_id
-                == SIXEL_TEMPORAL_STBN_SOURCE_PMJ)) {
+                == SIXEL_INTERFRAME_STBN_SOURCE_PMJ)) {
         use_stbn_bias = 1;
-        if (stbn_state->sample_source_id == SIXEL_TEMPORAL_STBN_SOURCE_PMJ) {
+        if (stbn_state->sample_source_id == SIXEL_INTERFRAME_STBN_SOURCE_PMJ) {
             use_pmj_row_cached = 1;
             if (stbn_state->pmj_tile_enabled != 0) {
                 use_pmj_tiled = 1;
@@ -563,7 +563,7 @@ sixel_temporal_stbn_load_pixel(
 
     if (use_pmj_tiled != 0) {
         for (n = 0; n < depth; ++n) {
-            bias_scaled = sixel_temporal_stbn_bias_scaled_sampled_tiled(
+            bias_scaled = sixel_interframe_stbn_bias_scaled_sampled_tiled(
                 stbn_state,
                 x,
                 y,
@@ -576,22 +576,22 @@ sixel_temporal_stbn_load_pixel(
             adjusted_scaled = (int64_t)accum_scaled[n] + (int64_t)bias_scaled;
             if (adjusted_scaled < 0) {
                 adjusted_scaled = 0;
-            } else if (adjusted_scaled > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
-                adjusted_scaled = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
+            } else if (adjusted_scaled > SIXEL_INTERFRAME_VARERR_MAX_VALUE) {
+                adjusted_scaled = SIXEL_INTERFRAME_VARERR_MAX_VALUE;
             }
 
             accum_scaled[n] = (int32_t)adjusted_scaled;
             corrected[n] = (unsigned char)((adjusted_scaled
-                                            + SIXEL_TEMPORAL_VARERR_ROUND)
+                                            + SIXEL_INTERFRAME_VARERR_ROUND)
                                            >>
-                                           SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
+                                           SIXEL_INTERFRAME_VARERR_SCALE_SHIFT);
         }
         return;
     }
 
     if (use_pmj_row_cached != 0) {
         for (n = 0; n < depth; ++n) {
-            bias_scaled = sixel_temporal_stbn_bias_scaled_sampled_row_cached(
+            bias_scaled = sixel_interframe_stbn_bias_scaled_sampled_row_cached(
                 stbn_state,
                 x,
                 y,
@@ -604,21 +604,21 @@ sixel_temporal_stbn_load_pixel(
             adjusted_scaled = (int64_t)accum_scaled[n] + (int64_t)bias_scaled;
             if (adjusted_scaled < 0) {
                 adjusted_scaled = 0;
-            } else if (adjusted_scaled > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
-                adjusted_scaled = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
+            } else if (adjusted_scaled > SIXEL_INTERFRAME_VARERR_MAX_VALUE) {
+                adjusted_scaled = SIXEL_INTERFRAME_VARERR_MAX_VALUE;
             }
 
             accum_scaled[n] = (int32_t)adjusted_scaled;
             corrected[n] = (unsigned char)((adjusted_scaled
-                                            + SIXEL_TEMPORAL_VARERR_ROUND)
+                                            + SIXEL_INTERFRAME_VARERR_ROUND)
                                            >>
-                                           SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
+                                           SIXEL_INTERFRAME_VARERR_SCALE_SHIFT);
         }
         return;
     }
 
     for (n = 0; n < depth; ++n) {
-        bias_scaled = sixel_temporal_stbn_bias_scaled_sampled(
+        bias_scaled = sixel_interframe_stbn_bias_scaled_sampled(
             sample_u16,
             sequence_index,
             x,
@@ -632,37 +632,37 @@ sixel_temporal_stbn_load_pixel(
         adjusted_scaled = (int64_t)accum_scaled[n] + (int64_t)bias_scaled;
         if (adjusted_scaled < 0) {
             adjusted_scaled = 0;
-        } else if (adjusted_scaled > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
-            adjusted_scaled = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
+        } else if (adjusted_scaled > SIXEL_INTERFRAME_VARERR_MAX_VALUE) {
+            adjusted_scaled = SIXEL_INTERFRAME_VARERR_MAX_VALUE;
         }
 
         accum_scaled[n] = (int32_t)adjusted_scaled;
         corrected[n] = (unsigned char)((adjusted_scaled
-                                        + SIXEL_TEMPORAL_VARERR_ROUND)
-                                       >> SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
+                                        + SIXEL_INTERFRAME_VARERR_ROUND)
+                                       >> SIXEL_INTERFRAME_VARERR_SCALE_SHIFT);
     }
 }
 
 static void
-sixel_temporal_stbn_clear_pixel(int32_t *frame,
+sixel_interframe_stbn_clear_pixel(int32_t *frame,
                                 size_t base,
                                 int depth,
                                 int can_update)
 {
-    sixel_temporal_diffusion_clear_pixel(frame,
+    sixel_interframe_diffusion_clear_pixel(frame,
                                          base,
                                          depth,
                                          can_update);
 }
 
 static void
-sixel_temporal_stbn_store_error(int32_t *frame,
+sixel_interframe_stbn_store_error(int32_t *frame,
                                 size_t base,
                                 int channel,
                                 int offset,
                                 int can_update)
 {
-    sixel_temporal_diffusion_store_error(frame,
+    sixel_interframe_diffusion_store_error(frame,
                                          base,
                                          channel,
                                          offset,
@@ -670,25 +670,25 @@ sixel_temporal_stbn_store_error(int32_t *frame,
 }
 
 static int
-sixel_temporal_method_from_diffuse(sixel_dither_t const *dither,
+sixel_interframe_method_from_diffuse(sixel_dither_t const *dither,
                                    int method_for_diffuse)
 {
     int token;
 
-    token = sixel_temporal_strategy_token_from_dither_or_env_common(dither);
-    return sixel_temporal_method_from_diffuse_and_token(
+    token = sixel_interframe_strategy_token_from_dither_or_env_common(dither);
+    return sixel_interframe_method_from_diffuse_and_token(
         method_for_diffuse,
         token);
 }
 
-static sixel_temporal_method_ops_t const *
-sixel_temporal_method_for_strategy(int temporal_method)
+static sixel_interframe_method_ops_t const *
+sixel_interframe_method_for_strategy(int interframe_method)
 {
-    switch (temporal_method) {
-    case SIXEL_TEMPORAL_METHOD_DIFFUSION:
-        return &sixel_temporal_diffusion_ops;
-    case SIXEL_TEMPORAL_METHOD_STBN:
-        return &sixel_temporal_stbn_ops;
+    switch (interframe_method) {
+    case SIXEL_INTERFRAME_METHOD_DIFFUSION:
+        return &sixel_interframe_diffusion_ops;
+    case SIXEL_INTERFRAME_METHOD_STBN:
+        return &sixel_interframe_stbn_ops;
     default:
         break;
     }
@@ -931,15 +931,15 @@ sixel_dither_apply_fixed_impl(
                       int direction);
     diffuse_fixed_carry_mode f_diffuse_carry;
     int use_carry;
-    int use_temporal;
-    int temporal_can_update;
-    int temporal_method;
-    sixel_temporal_method_ops_t const *temporal_ops;
+    int use_interframe;
+    int interframe_can_update;
+    int interframe_method;
+    sixel_interframe_method_ops_t const *interframe_ops;
     size_t carry_len;
     int32_t *carry_curr = NULL;
     int32_t *carry_next = NULL;
     int32_t *carry_far = NULL;
-    int32_t *temporal_error;
+    int32_t *interframe_error;
     unsigned char corrected[SIXEL_MAX_CHANNELS];
     int32_t accum_scaled[SIXEL_MAX_CHANNELS];
     int start;
@@ -990,12 +990,12 @@ sixel_dither_apply_fixed_impl(
     }
 
     use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
-    use_temporal = 0;
-    temporal_can_update = 0;
-    temporal_method = SIXEL_TEMPORAL_METHOD_NONE;
-    temporal_ops = NULL;
+    use_interframe = 0;
+    interframe_can_update = 0;
+    interframe_method = SIXEL_INTERFRAME_METHOD_NONE;
+    interframe_ops = NULL;
     carry_len = 0;
-    temporal_error = NULL;
+    interframe_error = NULL;
 
     if (depth != 3) {
         f_diffuse = diffuse_none;
@@ -1015,16 +1015,16 @@ sixel_dither_apply_fixed_impl(
             f_diffuse = diffuse_fs;
             f_diffuse_carry = diffuse_fs_carry;
             break;
-        case SIXEL_DIFFUSE_TEMPORAL:
+        case SIXEL_DIFFUSE_INTERFRAME:
             f_diffuse = diffuse_fs;
             f_diffuse_carry = diffuse_fs_carry;
-            temporal_method = sixel_temporal_method_from_diffuse(
+            interframe_method = sixel_interframe_method_from_diffuse(
                 dither,
                 method_for_diffuse);
-            temporal_ops = sixel_temporal_method_for_strategy(
-                temporal_method);
-            if (temporal_ops != NULL) {
-                use_temporal = 1;
+            interframe_ops = sixel_interframe_method_for_strategy(
+                interframe_method);
+            if (interframe_ops != NULL) {
+                use_interframe = 1;
             }
             break;
         case SIXEL_DIFFUSE_JAJUNI:
@@ -1057,23 +1057,23 @@ sixel_dither_apply_fixed_impl(
             break;
         }
     }
-    if (use_temporal) {
+    if (use_interframe) {
         use_carry = 0;
     }
 
-    if (use_temporal) {
-        if (dither == NULL || temporal_ops == NULL) {
+    if (use_interframe) {
+        if (dither == NULL || interframe_ops == NULL) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        temporal_can_update = dither->temporal_state.last_apply_consumed;
-        status = temporal_ops->prepare_frame(dither,
+        interframe_can_update = dither->interframe_state.last_apply_consumed;
+        status = interframe_ops->prepare_frame(dither,
                                              width,
                                              height,
                                              depth,
-                                             temporal_can_update,
-                                             &use_temporal,
-                                             &temporal_error);
+                                             interframe_can_update,
+                                             &use_interframe,
+                                             &interframe_error);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1145,30 +1145,30 @@ sixel_dither_apply_fixed_impl(
                         carry_curr[carry_base + (size_t)n] = 0;
                     }
                 }
-                if (use_temporal && temporal_error != NULL
-                        && temporal_can_update) {
-                    temporal_ops->clear_pixel(temporal_error,
+                if (use_interframe && interframe_error != NULL
+                        && interframe_can_update) {
+                    interframe_ops->clear_pixel(interframe_error,
                                               base,
                                               depth,
-                                              temporal_can_update);
+                                              interframe_can_update);
                 }
                 continue;
             }
-            if (use_temporal) {
-                temporal_ops->load_pixel(dither,
+            if (use_interframe) {
+                interframe_ops->load_pixel(dither,
                                          data,
                                          base,
                                          x,
                                          absolute_y,
                                          depth,
-                                         temporal_error,
+                                         interframe_error,
                                          corrected,
                                          accum_scaled);
                 source_pixel = corrected;
             } else if (use_carry) {
                 for (n = 0; n < depth; ++n) {
                     accum = ((int64_t)data[base + n]
-                             << SIXEL_TEMPORAL_VARERR_SCALE_SHIFT)
+                             << SIXEL_INTERFRAME_VARERR_SCALE_SHIFT)
                            + carry_curr[carry_base + (size_t)n];
                     if (accum < INT32_MIN) {
                         accum = INT32_MIN;
@@ -1178,14 +1178,14 @@ sixel_dither_apply_fixed_impl(
                     clamped = accum;
                     if (clamped < 0) {
                         clamped = 0;
-                    } else if (clamped > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
-                        clamped = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
+                    } else if (clamped > SIXEL_INTERFRAME_VARERR_MAX_VALUE) {
+                        clamped = SIXEL_INTERFRAME_VARERR_MAX_VALUE;
                     }
                     accum_scaled[n] = (int32_t)clamped;
                     corrected[n]
                         = (unsigned char)((clamped
-                                           + SIXEL_TEMPORAL_VARERR_ROUND)
-                                          >> SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
+                                           + SIXEL_INTERFRAME_VARERR_ROUND)
+                                          >> SIXEL_INTERFRAME_VARERR_SCALE_SHIFT);
                     data[base + n] = corrected[n];
                     carry_curr[carry_base + (size_t)n] = 0;
                 }
@@ -1251,19 +1251,19 @@ sixel_dither_apply_fixed_impl(
                 }
                 if (use_carry) {
                     target_scaled = (int32_t)palette_value
-                        << SIXEL_TEMPORAL_VARERR_SCALE_SHIFT;
+                        << SIXEL_INTERFRAME_VARERR_SCALE_SHIFT;
                     error_scaled = accum_scaled[n] - target_scaled;
                     f_diffuse_carry(carry_curr, carry_next, carry_far,
                                     width, height, depth,
                                     x, y, error_scaled, direction, n);
                 } else {
                     offset = (int)source_pixel[n] - palette_value;
-                    if (use_temporal) {
-                        temporal_ops->store_error(temporal_error,
+                    if (use_interframe) {
+                        interframe_ops->store_error(interframe_error,
                                                   base,
                                                   n,
                                                   offset,
-                                                  temporal_can_update);
+                                                  interframe_can_update);
                     }
                     f_diffuse(data + n, width, height, x, y,
                               depth, offset, direction);

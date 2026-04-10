@@ -46,7 +46,7 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "dither.h"
-#include "dither-temporal-method.h"
+#include "dither-interframe-method.h"
 #include "palette.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
@@ -82,23 +82,23 @@ sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
                                     unsigned char const *background);
 
 static void
-sixel_dither_temporal_state_init(sixel_dither_t *dither);
+sixel_dither_interframe_state_init(sixel_dither_t *dither);
 
 static void
-sixel_dither_temporal_state_reset(sixel_dither_t *dither);
+sixel_dither_interframe_state_reset(sixel_dither_t *dither);
 
 static void
-sixel_dither_temporal_state_dispose(sixel_dither_t *dither);
+sixel_dither_interframe_state_dispose(sixel_dither_t *dither);
 
 static int
-sixel_dither_temporal_resolve_apply_mode(int apply_mode);
+sixel_dither_interframe_resolve_apply_mode(int apply_mode);
 
 static void
-sixel_dither_temporal_begin_apply(sixel_dither_t *dither,
+sixel_dither_interframe_begin_apply(sixel_dither_t *dither,
                                   int apply_mode);
 
 static void
-sixel_dither_temporal_finish_apply(sixel_dither_t *dither,
+sixel_dither_interframe_finish_apply(sixel_dither_t *dither,
                                    int apply_mode,
                                    SIXELSTATUS status);
 
@@ -177,7 +177,7 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     if (dither->prefer_float32 == 0) {
         return 0;
     }
-    if (dither->method_for_diffuse != SIXEL_DIFFUSE_TEMPORAL
+    if (dither->method_for_diffuse != SIXEL_DIFFUSE_INTERFRAME
             && dither->method_for_carry == SIXEL_CARRY_ENABLE) {
         return 0;
     }
@@ -199,7 +199,7 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
     case SIXEL_DIFFUSE_LSO2:
         return 1;
-    case SIXEL_DIFFUSE_TEMPORAL:
+    case SIXEL_DIFFUSE_INTERFRAME:
         return 1;
     default:
         return 0;
@@ -594,7 +594,7 @@ sixel_dither_map_pixels(
                     int const complexion) = lookup_normal;
     int use_varerr;
     int use_positional;
-    int use_temporal;
+    int use_interframe;
     int carry_mode;
     sixel_lut_t *active_lut;
     int manage_lut;
@@ -689,12 +689,12 @@ sixel_dither_map_pixels(
     use_positional = (methodForDiffuse == SIXEL_DIFFUSE_A_DITHER
                       || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER
                       || methodForDiffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER);
-    use_temporal = (depth == 3
-                    && methodForDiffuse == SIXEL_DIFFUSE_TEMPORAL);
+    use_interframe = (depth == 3
+                    && methodForDiffuse == SIXEL_DIFFUSE_INTERFRAME);
     carry_mode = (methodForCarry == SIXEL_CARRY_ENABLE)
                ? SIXEL_CARRY_ENABLE
                : SIXEL_CARRY_DISABLE;
-    if (use_temporal) {
+    if (use_interframe) {
         /*
          * Temporal diffusion controls inter-frame feedback internally and
          * intentionally ignores the legacy carry-mode selector.
@@ -1508,8 +1508,8 @@ sixel_dither_new(
     (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
     (*ppdither)->method_for_carry = SIXEL_CARRY_AUTO;
-    (*ppdither)->temporal_strategy_override = 0;
-    (*ppdither)->temporal_strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    (*ppdither)->interframe_strategy_override = 0;
+    (*ppdither)->interframe_strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1533,7 +1533,7 @@ sixel_dither_new(
     (*ppdither)->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(*ppdither);
     (*ppdither)->pipeline_logger = NULL;
-    sixel_dither_temporal_state_init(*ppdither);
+    sixel_dither_interframe_state_init(*ppdither);
 
     status = sixel_palette_new(&(*ppdither)->palette, allocator);
     if (SIXEL_FAILED(status)) {
@@ -1608,7 +1608,7 @@ sixel_dither_destroy(
             sixel_palette_unref(dither->palette);
             dither->palette = NULL;
         }
-        sixel_dither_temporal_state_dispose(dither);
+        sixel_dither_interframe_state_dispose(dither);
         sixel_allocator_free(allocator, dither);
         sixel_allocator_unref(allocator);
     }
@@ -2371,7 +2371,7 @@ sixel_dither_set_pipeline_transparent_mask_hint(
 }
 
 static void
-sixel_dither_temporal_state_init(sixel_dither_t *dither)
+sixel_dither_interframe_state_init(sixel_dither_t *dither)
 {
     if (dither == NULL) {
         return;
@@ -2382,46 +2382,46 @@ sixel_dither_temporal_state_init(sixel_dither_t *dither)
     dither->frame_context.multiframe = 0;
     dither->frame_context.valid = 0;
 
-    dither->temporal_state.error_frame = NULL;
-    dither->temporal_state.error_frame_size = 0U;
-    dither->temporal_state.width = 0;
-    dither->temporal_state.height = 0;
-    dither->temporal_state.depth = 0;
-    dither->temporal_state.method_id = SIXEL_TEMPORAL_METHOD_NONE;
-    dither->temporal_state.method_private = NULL;
-    dither->temporal_state.method_private_size = 0U;
-    dither->temporal_state.apply_count = 0UL;
-    dither->temporal_state.consume_count = 0UL;
-    dither->temporal_state.last_apply_status = SIXEL_FALSE;
-    dither->temporal_state.last_apply_consumed = 0;
+    dither->interframe_state.error_frame = NULL;
+    dither->interframe_state.error_frame_size = 0U;
+    dither->interframe_state.width = 0;
+    dither->interframe_state.height = 0;
+    dither->interframe_state.depth = 0;
+    dither->interframe_state.method_id = SIXEL_INTERFRAME_METHOD_NONE;
+    dither->interframe_state.method_private = NULL;
+    dither->interframe_state.method_private_size = 0U;
+    dither->interframe_state.apply_count = 0UL;
+    dither->interframe_state.consume_count = 0UL;
+    dither->interframe_state.last_apply_status = SIXEL_FALSE;
+    dither->interframe_state.last_apply_consumed = 0;
 }
 
 static void
-sixel_dither_temporal_state_reset(sixel_dither_t *dither)
+sixel_dither_interframe_state_reset(sixel_dither_t *dither)
 {
     if (dither == NULL) {
         return;
     }
 
-    sixel_temporal_release_shared_frame(dither);
-    dither->temporal_state.last_apply_status = SIXEL_FALSE;
-    dither->temporal_state.last_apply_consumed = 0;
+    sixel_interframe_release_shared_frame(dither);
+    dither->interframe_state.last_apply_status = SIXEL_FALSE;
+    dither->interframe_state.last_apply_consumed = 0;
 }
 
 static void
-sixel_dither_temporal_state_dispose(sixel_dither_t *dither)
+sixel_dither_interframe_state_dispose(sixel_dither_t *dither)
 {
     if (dither == NULL) {
         return;
     }
 
-    sixel_dither_temporal_state_reset(dither);
+    sixel_dither_interframe_state_reset(dither);
     dither->frame_context.frame_no = 0;
     dither->frame_context.loop_no = 0;
     dither->frame_context.multiframe = 0;
     dither->frame_context.valid = 0;
-    dither->temporal_state.apply_count = 0UL;
-    dither->temporal_state.consume_count = 0UL;
+    dither->interframe_state.apply_count = 0UL;
+    dither->interframe_state.consume_count = 0UL;
 }
 
 SIXEL_INTERNAL_API void
@@ -2435,7 +2435,7 @@ sixel_dither_clear_frame_context(sixel_dither_t *dither)
     dither->frame_context.loop_no = 0;
     dither->frame_context.multiframe = 0;
     dither->frame_context.valid = 0;
-    sixel_dither_temporal_state_reset(dither);
+    sixel_dither_interframe_state_reset(dither);
 }
 
 SIXEL_INTERNAL_API void
@@ -2468,38 +2468,38 @@ sixel_dither_set_frame_context(sixel_dither_t *dither,
 
     if (needs_reset) {
         /*
-         * Temporal buffers are reserved for future diffusion modes. Reset
+         * Interframe buffers are reserved for future diffusion modes. Reset
          * state at timeline boundaries so capture and encode paths stay in
-         * sync even before temporal diffusion is enabled.
+         * sync even before interframe diffusion is enabled.
          */
-        sixel_dither_temporal_state_reset(dither);
+        sixel_dither_interframe_state_reset(dither);
     }
 }
 
 static int
-sixel_dither_temporal_resolve_apply_mode(int apply_mode)
+sixel_dither_interframe_resolve_apply_mode(int apply_mode)
 {
-    if (apply_mode == SIXEL_DITHER_APPLY_PRESERVE_TEMPORAL_STATE) {
-        return SIXEL_DITHER_APPLY_PRESERVE_TEMPORAL_STATE;
+    if (apply_mode == SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE) {
+        return SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE;
     }
-    return SIXEL_DITHER_APPLY_CONSUME_TEMPORAL_STATE;
+    return SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
 }
 
 static void
-sixel_dither_temporal_begin_apply(sixel_dither_t *dither,
+sixel_dither_interframe_begin_apply(sixel_dither_t *dither,
                                   int apply_mode)
 {
     if (dither == NULL) {
         return;
     }
 
-    dither->temporal_state.apply_count += 1UL;
-    dither->temporal_state.last_apply_consumed =
-        (apply_mode == SIXEL_DITHER_APPLY_CONSUME_TEMPORAL_STATE) ? 1 : 0;
+    dither->interframe_state.apply_count += 1UL;
+    dither->interframe_state.last_apply_consumed =
+        (apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) ? 1 : 0;
 }
 
 static void
-sixel_dither_temporal_finish_apply(sixel_dither_t *dither,
+sixel_dither_interframe_finish_apply(sixel_dither_t *dither,
                                    int apply_mode,
                                    SIXELSTATUS status)
 {
@@ -2507,10 +2507,10 @@ sixel_dither_temporal_finish_apply(sixel_dither_t *dither,
         return;
     }
 
-    dither->temporal_state.last_apply_status = status;
+    dither->interframe_state.last_apply_status = status;
     if (status == SIXEL_OK
-            && apply_mode == SIXEL_DITHER_APPLY_CONSUME_TEMPORAL_STATE) {
-        dither->temporal_state.consume_count += 1UL;
+            && apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
+        dither->interframe_state.consume_count += 1UL;
     }
 }
 
@@ -2829,7 +2829,7 @@ sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
 }
 
 
-/* apply palette with optional temporal-state consumption */
+/* apply palette with optional interframe-state consumption */
 SIXEL_INTERNAL_API sixel_index_t *
 sixel_dither_apply_palette_with_mode(
     sixel_dither_t  /* in */ *dither,
@@ -2876,7 +2876,7 @@ sixel_dither_apply_palette_with_mode(
     int wcomp1;
     int wcomp2;
     int wcomp3;
-    int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_TEMPORAL_STATE;
+    int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -2890,9 +2890,9 @@ sixel_dither_apply_palette_with_mode(
     }
 
     resolved_apply_mode =
-        sixel_dither_temporal_resolve_apply_mode(apply_mode);
+        sixel_dither_interframe_resolve_apply_mode(apply_mode);
     sixel_dither_ref(dither);
-    sixel_dither_temporal_begin_apply(dither, resolved_apply_mode);
+    sixel_dither_interframe_begin_apply(dither, resolved_apply_mode);
 
     palette = dither->palette;
     if (palette == NULL) {
@@ -2952,10 +2952,10 @@ sixel_dither_apply_palette_with_mode(
         parallel_active = 0;
     }
     if (parallel_active
-            && dither->method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
+            && dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         /*
-         * Temporal diffusion keeps frame-wide state. Disable band-parallel
-         * dithering until temporal state synchronization is introduced.
+         * Interframe diffusion keeps frame-wide state. Disable band-parallel
+         * dithering until interframe state synchronization is introduced.
          */
         parallel_active = 0;
     }
@@ -3383,7 +3383,7 @@ end:
     }
     sixel_lookup_set_parallel_dither_active(0);
     if (dither != NULL) {
-        sixel_dither_temporal_finish_apply(dither,
+        sixel_dither_interframe_finish_apply(dither,
                                            resolved_apply_mode,
                                            status);
         if (normalized_pixels != NULL) {
@@ -3417,7 +3417,7 @@ sixel_dither_apply_palette(
         pixels,
         width,
         height,
-        SIXEL_DITHER_APPLY_CONSUME_TEMPORAL_STATE);
+        SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE);
 }
 
 

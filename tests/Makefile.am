@@ -349,9 +349,9 @@ AM_LOG_FLAGS =
 	staticcheck-kmedoids-suboption-env-sync \
 	staticcheck-completion-medoids-tokens \
 	staticcheck-kmeans-suboption-env-sync \
-	staticcheck-temporal-strategy-token-sync \
-	staticcheck-temporal-c-h-pair-sync \
-	staticcheck-temporal-no-compat-getenv-symbol \
+	staticcheck-interframe-strategy-token-sync \
+	staticcheck-interframe-c-h-pair-sync \
+	staticcheck-interframe-no-compat-getenv-symbol \
 	staticcheck-quantize-merge-suboption-sync \
 	staticcheck-test-plan-single \
 	staticcheck-test-no-grep-awk \
@@ -381,9 +381,9 @@ staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
 staticcheck-kmeans-suboption-env-sync \
-staticcheck-temporal-strategy-token-sync \
-staticcheck-temporal-c-h-pair-sync \
-staticcheck-temporal-no-compat-getenv-symbol \
+staticcheck-interframe-strategy-token-sync \
+staticcheck-interframe-c-h-pair-sync \
+staticcheck-interframe-no-compat-getenv-symbol \
 staticcheck-quantize-merge-suboption-sync \
 staticcheck-test-plan-single \
 staticcheck-test-no-grep-awk \
@@ -556,34 +556,34 @@ staticcheck-kmeans-suboption-env-sync:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmeans-suboption-env-sync.sh" \
 		"$(abs_top_srcdir)"
 
-staticcheck-temporal-strategy-token-sync:
+staticcheck-interframe-strategy-token-sync:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-temporal-strategy-token-sync" \
-		--log-file staticcheck-temporal-strategy-token-sync.log \
-		--trs-file staticcheck-temporal-strategy-token-sync.trs \
+	$(T_LOG_DRIVER) --test-name "staticcheck-interframe-strategy-token-sync" \
+		--log-file staticcheck-interframe-strategy-token-sync.log \
+		--trs-file staticcheck-interframe-strategy-token-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-temporal-strategy-token-sync.sh" \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-interframe-strategy-token-sync.sh" \
 		"$(abs_top_srcdir)"
 
-staticcheck-temporal-c-h-pair-sync:
+staticcheck-interframe-c-h-pair-sync:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-temporal-c-h-pair-sync" \
-		--log-file staticcheck-temporal-c-h-pair-sync.log \
-		--trs-file staticcheck-temporal-c-h-pair-sync.trs \
+	$(T_LOG_DRIVER) --test-name "staticcheck-interframe-c-h-pair-sync" \
+		--log-file staticcheck-interframe-c-h-pair-sync.log \
+		--trs-file staticcheck-interframe-c-h-pair-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-temporal-c-h-pair-sync.sh" \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-interframe-c-h-pair-sync.sh" \
 		"$(abs_top_srcdir)"
 
-staticcheck-temporal-no-compat-getenv-symbol:
+staticcheck-interframe-no-compat-getenv-symbol:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-temporal-no-compat-getenv-symbol" \
-		--log-file staticcheck-temporal-no-compat-getenv-symbol.log \
-		--trs-file staticcheck-temporal-no-compat-getenv-symbol.trs \
+	$(T_LOG_DRIVER) --test-name "staticcheck-interframe-no-compat-getenv-symbol" \
+		--log-file staticcheck-interframe-no-compat-getenv-symbol.log \
+		--trs-file staticcheck-interframe-no-compat-getenv-symbol.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-temporal-no-compat-getenv-symbol.sh" \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-quantize-merge-suboption-sync:
@@ -1330,9 +1330,9 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \
     _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
-    _static/sh/staticcheck-temporal-strategy-token-sync.sh \
-    _static/sh/staticcheck-temporal-c-h-pair-sync.sh \
-    _static/sh/staticcheck-temporal-no-compat-getenv-symbol.sh \
+    _static/sh/staticcheck-interframe-strategy-token-sync.sh \
+    _static/sh/staticcheck-interframe-c-h-pair-sync.sh \
+    _static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh \
     _static/sh/staticcheck-quantize-merge-suboption-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \

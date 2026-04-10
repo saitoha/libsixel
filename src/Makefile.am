@@ -96,18 +96,18 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-positional-float32.h \
                 $(srcdir)/dither-fixed-8bit.c \
                 $(srcdir)/dither-fixed-8bit.h \
-                $(srcdir)/dither-temporal-method.c \
-                $(srcdir)/dither-temporal-method.h \
-                $(srcdir)/dither-temporal-stbn-source.c \
-                $(srcdir)/dither-temporal-stbn-source.h \
-                $(srcdir)/dither-temporal-stbn-source-hash.c \
-                $(srcdir)/dither-temporal-stbn-source-hash.h \
-                $(srcdir)/dither-temporal-stbn-source-mask.c \
-                $(srcdir)/dither-temporal-stbn-source-mask.h \
-                $(srcdir)/dither-temporal-stbn-source-mask-table.c \
-                $(srcdir)/dither-temporal-stbn-source-mask-table.h \
-                $(srcdir)/dither-temporal-stbn-source-pmj.c \
-                $(srcdir)/dither-temporal-stbn-source-pmj.h \
+                $(srcdir)/dither-interframe-method.c \
+                $(srcdir)/dither-interframe-method.h \
+                $(srcdir)/dither-interframe-stbn-source.c \
+                $(srcdir)/dither-interframe-stbn-source.h \
+                $(srcdir)/dither-interframe-stbn-source-hash.c \
+                $(srcdir)/dither-interframe-stbn-source-hash.h \
+                $(srcdir)/dither-interframe-stbn-source-mask.c \
+                $(srcdir)/dither-interframe-stbn-source-mask.h \
+                $(srcdir)/dither-interframe-stbn-source-mask-table.c \
+                $(srcdir)/dither-interframe-stbn-source-mask-table.h \
+                $(srcdir)/dither-interframe-stbn-source-pmj.c \
+                $(srcdir)/dither-interframe-stbn-source-pmj.h \
                 $(srcdir)/dither-fixed-float32.c \
                 $(srcdir)/dither-fixed-float32.h \
                 $(srcdir)/dither-internal.h \

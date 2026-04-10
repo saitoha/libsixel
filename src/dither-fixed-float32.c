@@ -34,7 +34,7 @@
 
 #include "compat_stub.h"
 #include "dither-fixed-float32.h"
-#include "dither-temporal-method.h"
+#include "dither-interframe-method.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
 #include "lookup-common.h"
@@ -50,7 +50,7 @@ typedef void (*diffuse_fixed_float_fn)(float *data,
                                        int pixelformat,
                                        int channel_index);
 
-typedef SIXELSTATUS (*sixel_temporal_prepare_frame_float32_fn)(
+typedef SIXELSTATUS (*sixel_interframe_prepare_frame_float32_fn)(
     sixel_dither_t *dither,
     int width,
     int height,
@@ -59,7 +59,7 @@ typedef SIXELSTATUS (*sixel_temporal_prepare_frame_float32_fn)(
     int *enabled,
     int32_t **frame);
 
-typedef void (*sixel_temporal_load_pixel_float32_fn)(
+typedef void (*sixel_interframe_load_pixel_float32_fn)(
     sixel_dither_t *dither,
     float const *source_pixel,
     size_t base,
@@ -71,29 +71,29 @@ typedef void (*sixel_temporal_load_pixel_float32_fn)(
     float working_float[SIXEL_MAX_CHANNELS],
     unsigned char corrected[SIXEL_MAX_CHANNELS]);
 
-typedef void (*sixel_temporal_clear_pixel_float32_fn)(
+typedef void (*sixel_interframe_clear_pixel_float32_fn)(
     int32_t *frame,
     size_t base,
     int depth,
     int can_update);
 
-typedef void (*sixel_temporal_store_error_float32_fn)(
+typedef void (*sixel_interframe_store_error_float32_fn)(
     int32_t *frame,
     size_t base,
     int channel,
     int offset,
     int can_update);
 
-typedef struct sixel_temporal_method_float32_ops {
+typedef struct sixel_interframe_method_float32_ops {
     int method_id;
-    sixel_temporal_prepare_frame_float32_fn prepare_frame;
-    sixel_temporal_load_pixel_float32_fn load_pixel;
-    sixel_temporal_clear_pixel_float32_fn clear_pixel;
-    sixel_temporal_store_error_float32_fn store_error;
-} sixel_temporal_method_float32_ops_t;
+    sixel_interframe_prepare_frame_float32_fn prepare_frame;
+    sixel_interframe_load_pixel_float32_fn load_pixel;
+    sixel_interframe_clear_pixel_float32_fn clear_pixel;
+    sixel_interframe_store_error_float32_fn store_error;
+} sixel_interframe_method_float32_ops_t;
 
-typedef sixel_temporal_stbn_state_common_t
-    sixel_temporal_stbn_state_float32_t;
+typedef sixel_interframe_stbn_state_common_t
+    sixel_interframe_stbn_state_float32_t;
 
 static void
 error_diffuse_float(float *data,
@@ -818,7 +818,7 @@ diffuse_sierra3_float(float *data,
 }
 
 static void
-sixel_temporal_clear_pixel_float32(int32_t *frame,
+sixel_interframe_clear_pixel_float32(int32_t *frame,
                                    size_t base,
                                    int depth,
                                    int can_update)
@@ -835,7 +835,7 @@ sixel_temporal_clear_pixel_float32(int32_t *frame,
 }
 
 static void
-sixel_temporal_store_error_float32(int32_t *frame,
+sixel_interframe_store_error_float32(int32_t *frame,
                                    size_t base,
                                    int channel,
                                    int offset,
@@ -851,12 +851,12 @@ sixel_temporal_store_error_float32(int32_t *frame,
     /*
      * Multiplication keeps signed offsets defined on every compiler.
      */
-    scaled = (int32_t)(offset * SIXEL_TEMPORAL_VARERR_SCALE);
+    scaled = (int32_t)(offset * SIXEL_INTERFRAME_VARERR_SCALE);
     frame[base + (size_t)channel] = scaled;
 }
 
 static SIXELSTATUS
-sixel_temporal_diffusion_prepare_frame_float32(sixel_dither_t *dither,
+sixel_interframe_diffusion_prepare_frame_float32(sixel_dither_t *dither,
                                                int width,
                                                int height,
                                                int depth,
@@ -864,19 +864,19 @@ sixel_temporal_diffusion_prepare_frame_float32(sixel_dither_t *dither,
                                                int *enabled,
                                                int32_t **frame)
 {
-    return sixel_temporal_prepare_shared_frame(
+    return sixel_interframe_prepare_shared_frame(
         dither,
         width,
         height,
         depth,
         can_update,
-        SIXEL_TEMPORAL_METHOD_DIFFUSION,
+        SIXEL_INTERFRAME_METHOD_DIFFUSION,
         enabled,
         frame);
 }
 
 static void
-sixel_temporal_diffusion_load_pixel_float32(
+sixel_interframe_diffusion_load_pixel_float32(
     sixel_dither_t *dither,
     float const *source_pixel,
     size_t base,
@@ -889,41 +889,41 @@ sixel_temporal_diffusion_load_pixel_float32(
     unsigned char corrected[SIXEL_MAX_CHANNELS])
 {
     int n;
-    float temporal_delta;
-    float temporal_corrected;
+    float interframe_delta;
+    float interframe_corrected;
 
     (void)dither;
     (void)x;
     (void)y;
 
     n = 0;
-    temporal_delta = 0.0f;
-    temporal_corrected = 0.0f;
+    interframe_delta = 0.0f;
+    interframe_corrected = 0.0f;
 
     for (n = 0; n < depth; ++n) {
         if (frame != NULL) {
-            temporal_delta = (float)frame[base + (size_t)n]
-                / (float)SIXEL_TEMPORAL_VARERR_SCALE
+            interframe_delta = (float)frame[base + (size_t)n]
+                / (float)SIXEL_INTERFRAME_VARERR_SCALE
                 / 255.0f;
         } else {
-            temporal_delta = 0.0f;
+            interframe_delta = 0.0f;
         }
-        temporal_corrected = source_pixel[n] + temporal_delta;
-        temporal_corrected = sixel_pixelformat_float_channel_clamp(
+        interframe_corrected = source_pixel[n] + interframe_delta;
+        interframe_corrected = sixel_pixelformat_float_channel_clamp(
             pixelformat,
             n,
-            temporal_corrected);
-        working_float[n] = temporal_corrected;
+            interframe_corrected);
+        working_float[n] = interframe_corrected;
         corrected[n] = (unsigned char)sixel_pixelformat_float_channel_to_byte(
             pixelformat,
             n,
-            temporal_corrected);
+            interframe_corrected);
     }
 }
 
 static int
-sixel_temporal_stbn_bias_u8_sampled_float32(
-    sixel_temporal_stbn_sample_u16_fn sample_fn,
+sixel_interframe_stbn_bias_u8_sampled_float32(
+    sixel_interframe_stbn_sample_u16_fn sample_fn,
     uint32_t sequence_index,
     int x,
     int y,
@@ -940,16 +940,16 @@ sixel_temporal_stbn_bias_u8_sampled_float32(
      * Float32 keeps STBN active for both hash and mask backends in v1.
      */
     sample_value = sample_fn(sequence_index, x, y, channel, depth);
-    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+    bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
+        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
 
     return (int)bias_u8;
 }
 
 static int
-sixel_temporal_stbn_bias_u8_sampled_row_cached_float32(
-    sixel_temporal_stbn_state_float32_t *stbn_state,
+sixel_interframe_stbn_bias_u8_sampled_row_cached_float32(
+    sixel_interframe_stbn_state_float32_t *stbn_state,
     int x,
     int y,
     int channel,
@@ -961,22 +961,22 @@ sixel_temporal_stbn_bias_u8_sampled_row_cached_float32(
     sample_value = 0U;
     bias_u8 = 0;
 
-    sample_value = sixel_temporal_stbn_source_pmj_sample_u16_row_cached_common(
+    sample_value = sixel_interframe_stbn_source_pmj_sample_u16_row_cached_common(
         stbn_state,
         x,
         y,
         channel,
         depth);
-    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+    bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
+        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
 
     return (int)bias_u8;
 }
 
 static int
-sixel_temporal_stbn_bias_u8_sampled_tiled_float32(
-    sixel_temporal_stbn_state_float32_t const *stbn_state,
+sixel_interframe_stbn_bias_u8_sampled_tiled_float32(
+    sixel_interframe_stbn_state_float32_t const *stbn_state,
     int x,
     int y,
     int channel,
@@ -988,22 +988,22 @@ sixel_temporal_stbn_bias_u8_sampled_tiled_float32(
     sample_value = 0U;
     bias_u8 = 0;
 
-    sample_value = sixel_temporal_stbn_source_pmj_sample_u16_tiled_common(
+    sample_value = sixel_interframe_stbn_source_pmj_sample_u16_tiled_common(
         stbn_state,
         x,
         y,
         channel,
         depth);
-    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+    bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
+        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
 
     return (int)bias_u8;
 }
 
 static int
-sixel_temporal_stbn_prepare_pmj_float_lut_float32(
-    sixel_temporal_stbn_state_float32_t *stbn_state,
+sixel_interframe_stbn_prepare_pmj_float_lut_float32(
+    sixel_interframe_stbn_state_float32_t *stbn_state,
     int pixelformat,
     int depth)
 {
@@ -1023,7 +1023,7 @@ sixel_temporal_stbn_prepare_pmj_float_lut_float32(
     }
 
     for (channel = 0; channel < depth; ++channel) {
-        for (value = 0; value < SIXEL_TEMPORAL_FLOAT_LUT_SIZE; ++value) {
+        for (value = 0; value < SIXEL_INTERFRAME_FLOAT_LUT_SIZE; ++value) {
             stbn_state->pmj_float_u8_to_float[channel][value]
                 = sixel_pixelformat_byte_to_float(
                     pixelformat,
@@ -1039,7 +1039,7 @@ sixel_temporal_stbn_prepare_pmj_float_lut_float32(
 }
 
 static SIXELSTATUS
-sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
+sixel_interframe_stbn_prepare_frame_float32(sixel_dither_t *dither,
                                           int width,
                                           int height,
                                           int depth,
@@ -1048,33 +1048,33 @@ sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
                                           int32_t **frame)
 {
     SIXELSTATUS status;
-    sixel_temporal_stbn_state_float32_t *stbn_state;
+    sixel_interframe_stbn_state_float32_t *stbn_state;
     int strategy_token;
 
     status = SIXEL_OK;
     stbn_state = NULL;
-    strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
 
-    status = sixel_temporal_prepare_shared_frame(
+    status = sixel_interframe_prepare_shared_frame(
         dither,
         width,
         height,
         depth,
         can_update,
-        SIXEL_TEMPORAL_METHOD_STBN,
+        SIXEL_INTERFRAME_METHOD_STBN,
         enabled,
         frame);
     if (status != SIXEL_OK || *enabled == 0) {
         return status;
     }
 
-    strategy_token = sixel_temporal_strategy_token_from_dither_or_env_common(
+    strategy_token = sixel_interframe_strategy_token_from_dither_or_env_common(
         dither);
-    status = sixel_temporal_prepare_stbn_state_common(
+    status = sixel_interframe_prepare_stbn_state_common(
         dither,
         can_update,
         strategy_token,
-        sizeof(sixel_temporal_stbn_state_float32_t),
+        sizeof(sixel_interframe_stbn_state_float32_t),
         (void **)&stbn_state);
     if (status != SIXEL_OK || stbn_state == NULL || can_update == 0) {
         return status;
@@ -1084,7 +1084,7 @@ sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
 }
 
 static void
-sixel_temporal_stbn_load_pixel_float32(
+sixel_interframe_stbn_load_pixel_float32(
     sixel_dither_t *dither,
     float const *source_pixel,
     size_t base,
@@ -1096,11 +1096,11 @@ sixel_temporal_stbn_load_pixel_float32(
     float working_float[SIXEL_MAX_CHANNELS],
     unsigned char corrected[SIXEL_MAX_CHANNELS])
 {
-    sixel_temporal_stbn_state_float32_t *stbn_state;
+    sixel_interframe_stbn_state_float32_t *stbn_state;
     int n;
     int bias_u8;
     int adjusted_u8;
-    sixel_temporal_stbn_sample_u16_fn sample_u16;
+    sixel_interframe_stbn_sample_u16_fn sample_u16;
     uint32_t sequence_index;
     int use_pmj_row_cached;
     int use_pmj_tiled;
@@ -1110,19 +1110,19 @@ sixel_temporal_stbn_load_pixel_float32(
     n = 0;
     bias_u8 = 0;
     adjusted_u8 = 0;
-    sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
+    sample_u16 = sixel_interframe_stbn_sample_hash_u16_common;
     sequence_index = 0U;
     use_pmj_row_cached = 0;
     use_pmj_tiled = 0;
     use_pmj_float_lut = 0;
 
-    stbn_state = (sixel_temporal_stbn_state_float32_t *)
-        sixel_temporal_get_method_private(
+    stbn_state = (sixel_interframe_stbn_state_float32_t *)
+        sixel_interframe_get_method_private(
             dither,
-            SIXEL_TEMPORAL_METHOD_STBN,
-            sizeof(sixel_temporal_stbn_state_float32_t));
+            SIXEL_INTERFRAME_METHOD_STBN,
+            sizeof(sixel_interframe_stbn_state_float32_t));
 
-    sixel_temporal_diffusion_load_pixel_float32(
+    sixel_interframe_diffusion_load_pixel_float32(
         dither,
         source_pixel,
         base,
@@ -1143,13 +1143,13 @@ sixel_temporal_stbn_load_pixel_float32(
         if (stbn_state->sample_u16 != NULL) {
             sample_u16 = stbn_state->sample_u16;
         }
-        if (stbn_state->sample_source_id == SIXEL_TEMPORAL_STBN_SOURCE_PMJ) {
+        if (stbn_state->sample_source_id == SIXEL_INTERFRAME_STBN_SOURCE_PMJ) {
             use_pmj_row_cached = 1;
             if (stbn_state->pmj_tile_enabled != 0) {
                 use_pmj_tiled = 1;
             }
             use_pmj_float_lut
-                = sixel_temporal_stbn_prepare_pmj_float_lut_float32(
+                = sixel_interframe_stbn_prepare_pmj_float_lut_float32(
                       stbn_state,
                       pixelformat,
                       depth);
@@ -1158,7 +1158,7 @@ sixel_temporal_stbn_load_pixel_float32(
 
     if (use_pmj_tiled != 0) {
         for (n = 0; n < depth; ++n) {
-            bias_u8 = sixel_temporal_stbn_bias_u8_sampled_tiled_float32(
+            bias_u8 = sixel_interframe_stbn_bias_u8_sampled_tiled_float32(
                 stbn_state,
                 x,
                 y,
@@ -1190,7 +1190,7 @@ sixel_temporal_stbn_load_pixel_float32(
 
     if (use_pmj_row_cached != 0) {
         for (n = 0; n < depth; ++n) {
-            bias_u8 = sixel_temporal_stbn_bias_u8_sampled_row_cached_float32(
+            bias_u8 = sixel_interframe_stbn_bias_u8_sampled_row_cached_float32(
                 stbn_state,
                 x,
                 y,
@@ -1221,7 +1221,7 @@ sixel_temporal_stbn_load_pixel_float32(
     }
 
     for (n = 0; n < depth; ++n) {
-        bias_u8 = sixel_temporal_stbn_bias_u8_sampled_float32(
+        bias_u8 = sixel_interframe_stbn_bias_u8_sampled_float32(
             sample_u16,
             sequence_index,
             x,
@@ -1246,32 +1246,32 @@ sixel_temporal_stbn_load_pixel_float32(
     }
 }
 
-static sixel_temporal_method_float32_ops_t const
-sixel_temporal_diffusion_ops_float32 = {
-    SIXEL_TEMPORAL_METHOD_DIFFUSION,
-    sixel_temporal_diffusion_prepare_frame_float32,
-    sixel_temporal_diffusion_load_pixel_float32,
-    sixel_temporal_clear_pixel_float32,
-    sixel_temporal_store_error_float32
+static sixel_interframe_method_float32_ops_t const
+sixel_interframe_diffusion_ops_float32 = {
+    SIXEL_INTERFRAME_METHOD_DIFFUSION,
+    sixel_interframe_diffusion_prepare_frame_float32,
+    sixel_interframe_diffusion_load_pixel_float32,
+    sixel_interframe_clear_pixel_float32,
+    sixel_interframe_store_error_float32
 };
 
-static sixel_temporal_method_float32_ops_t const
-sixel_temporal_stbn_ops_float32 = {
-    SIXEL_TEMPORAL_METHOD_STBN,
-    sixel_temporal_stbn_prepare_frame_float32,
-    sixel_temporal_stbn_load_pixel_float32,
-    sixel_temporal_clear_pixel_float32,
-    sixel_temporal_store_error_float32
+static sixel_interframe_method_float32_ops_t const
+sixel_interframe_stbn_ops_float32 = {
+    SIXEL_INTERFRAME_METHOD_STBN,
+    sixel_interframe_stbn_prepare_frame_float32,
+    sixel_interframe_stbn_load_pixel_float32,
+    sixel_interframe_clear_pixel_float32,
+    sixel_interframe_store_error_float32
 };
 
-static sixel_temporal_method_float32_ops_t const *
-sixel_temporal_method_ops_float32_for_id(int method_id)
+static sixel_interframe_method_float32_ops_t const *
+sixel_interframe_method_ops_float32_for_id(int method_id)
 {
     switch (method_id) {
-    case SIXEL_TEMPORAL_METHOD_DIFFUSION:
-        return &sixel_temporal_diffusion_ops_float32;
-    case SIXEL_TEMPORAL_METHOD_STBN:
-        return &sixel_temporal_stbn_ops_float32;
+    case SIXEL_INTERFRAME_METHOD_DIFFUSION:
+        return &sixel_interframe_diffusion_ops_float32;
+    case SIXEL_INTERFRAME_METHOD_STBN:
+        return &sixel_interframe_stbn_ops_float32;
     default:
         break;
     }
@@ -1327,22 +1327,22 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
-    int temporal_method;
-    int temporal_enabled;
-    int temporal_can_update;
-    int32_t *temporal_error;
-    sixel_temporal_method_float32_ops_t const *temporal_ops;
+    int interframe_method;
+    int interframe_enabled;
+    int interframe_can_update;
+    int32_t *interframe_error;
+    sixel_interframe_method_float32_ops_t const *interframe_ops;
     int strategy_token;
 
     palette_float = NULL;
     new_palette_float = NULL;
     float_depth = 0;
-    temporal_method = SIXEL_TEMPORAL_METHOD_NONE;
-    temporal_enabled = 0;
-    temporal_can_update = 0;
-    temporal_error = NULL;
-    temporal_ops = NULL;
-    strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    interframe_method = SIXEL_INTERFRAME_METHOD_NONE;
+    interframe_enabled = 0;
+    interframe_can_update = 0;
+    interframe_error = NULL;
+    interframe_ops = NULL;
+    strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1436,22 +1436,22 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     case SIXEL_DIFFUSE_SIERRA3:
         f_diffuse = diffuse_sierra3_float;
         break;
-    case SIXEL_DIFFUSE_TEMPORAL:
+    case SIXEL_DIFFUSE_INTERFRAME:
         /*
-         * Temporal mode currently reuses Floyd-Steinberg spatial diffusion.
-         * Strategy variants (for example STBN) are selected by the temporal
+         * Interframe mode currently reuses Floyd-Steinberg spatial diffusion.
+         * Strategy variants (for example STBN) are selected by the interframe
          * method id so follow-up changes can stay isolated in method ops.
          */
         f_diffuse = diffuse_fs_float;
         strategy_token =
-            sixel_temporal_strategy_token_from_dither_or_env_common(dither);
-        temporal_method = sixel_temporal_method_from_diffuse_and_token(
+            sixel_interframe_strategy_token_from_dither_or_env_common(dither);
+        interframe_method = sixel_interframe_method_from_diffuse_and_token(
             method_for_diffuse,
             strategy_token);
-        temporal_ops = sixel_temporal_method_ops_float32_for_id(
-            temporal_method);
-        if (temporal_ops != NULL) {
-            temporal_enabled = 1;
+        interframe_ops = sixel_interframe_method_ops_float32_for_id(
+            interframe_method);
+        if (interframe_ops != NULL) {
+            interframe_enabled = 1;
         }
         break;
     case SIXEL_DIFFUSE_FS:
@@ -1460,19 +1460,19 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
         break;
     }
 
-    if (temporal_enabled) {
-        if (temporal_ops == NULL) {
+    if (interframe_enabled) {
+        if (interframe_ops == NULL) {
             return SIXEL_BAD_ARGUMENT;
         }
-        temporal_can_update = dither->temporal_state.last_apply_consumed;
-        status = temporal_ops->prepare_frame(
+        interframe_can_update = dither->interframe_state.last_apply_consumed;
+        status = interframe_ops->prepare_frame(
             dither,
             context->width,
             context->height,
             context->depth,
-            temporal_can_update,
-            &temporal_enabled,
-            &temporal_error);
+            interframe_can_update,
+            &interframe_enabled,
+            &interframe_error);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -1514,29 +1514,29 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                 if (absolute_y >= context->output_start) {
                     context->result[pos] = (sixel_index_t)transparent_keycolor;
                 }
-                if (temporal_enabled && temporal_ops != NULL) {
-                    temporal_ops->clear_pixel(temporal_error,
+                if (interframe_enabled && interframe_ops != NULL) {
+                    interframe_ops->clear_pixel(interframe_error,
                                               base,
                                               context->depth,
-                                              temporal_can_update);
+                                              interframe_can_update);
                 }
                 continue;
             }
             source_pixel = data + base;
 
             /*
-             * Keep the dereference guarded even after the early temporal setup
-             * checks so GCC -fanalyzer can prove this path is safe.
+             * Keep the dereference guarded even after the early interframe
+             * setup checks so GCC -fanalyzer can prove this path is safe.
              */
-            if (temporal_enabled && temporal_ops != NULL) {
-                temporal_ops->load_pixel(dither,
+            if (interframe_enabled && interframe_ops != NULL) {
+                interframe_ops->load_pixel(dither,
                                          source_pixel,
                                          base,
                                          x,
                                          absolute_y,
                                          context->depth,
                                          context->pixelformat,
-                                         temporal_error,
+                                         interframe_error,
                                          working_float,
                                          corrected);
                 for (n = 0; n < context->depth; ++n) {
@@ -1672,13 +1672,13 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                     }
                 }
                 error = working_float[n] - palette_value_float;
-                if (temporal_enabled && temporal_ops != NULL) {
-                    temporal_ops->store_error(
-                        temporal_error,
+                if (interframe_enabled && interframe_ops != NULL) {
+                    interframe_ops->store_error(
+                        interframe_error,
                         base,
                         n,
                         (int)corrected[n] - (int)palette_value_u8,
-                        temporal_can_update);
+                        interframe_can_update);
                 }
                 source_pixel[n] = palette_value_float;
                 f_diffuse(data + (size_t)n,
