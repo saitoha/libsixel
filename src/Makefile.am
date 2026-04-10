@@ -97,6 +97,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-fixed-8bit.c \
                 $(srcdir)/dither-fixed-8bit.h \
                 $(srcdir)/dither-temporal-method.h \
+                $(srcdir)/dither-temporal-stbn-source.c \
+                $(srcdir)/dither-temporal-stbn-source.h \
                 $(srcdir)/dither-fixed-float32.c \
                 $(srcdir)/dither-fixed-float32.h \
                 $(srcdir)/dither-internal.h \
