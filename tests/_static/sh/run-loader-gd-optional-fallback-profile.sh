@@ -51,7 +51,9 @@ for test_name in \
     0111_loader_gd_wbmp_unsupported_fallback_any_loader.t \
     0112_loader_gd_gd2_unsupported_fallback_any_loader.t \
     0118_loader_gd_tga_unsupported_stdin_fallback_builtin.t \
-    0119_loader_gd_webp_unsupported_stdin_fallback_libwebp.t
+    0119_loader_gd_webp_unsupported_stdin_fallback_libwebp.t \
+    0122_loader_gd_wbmp_unsupported_stdin_fallback_any_loader.t \
+    0123_loader_gd_gd2_unsupported_stdin_fallback_any_loader.t
 do
     test_path="$src_root/tests/loader/gd/$test_name"
     log_path="$tmpdir/$test_name.log"
