@@ -31,6 +31,9 @@
 #include <stdint.h>
 #include "dither.h"
 
+#define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
+#define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
+
 typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
     uint32_t sequence_index,
     int x,

@@ -175,6 +175,8 @@ srcs = [
   'dither-temporal-method.h',
   'dither-temporal-stbn-source.c',
   'dither-temporal-stbn-source.h',
+  'dither-temporal-stbn-source-hash.c',
+  'dither-temporal-stbn-source-hash.h',
   'dither-temporal-stbn-source-mask.c',
   'dither-temporal-stbn-source-mask.h',
   'dither-fixed-float32.h',

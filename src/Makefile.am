@@ -99,6 +99,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-temporal-method.h \
                 $(srcdir)/dither-temporal-stbn-source.c \
                 $(srcdir)/dither-temporal-stbn-source.h \
+                $(srcdir)/dither-temporal-stbn-source-hash.c \
+                $(srcdir)/dither-temporal-stbn-source-hash.h \
                 $(srcdir)/dither-temporal-stbn-source-mask.c \
                 $(srcdir)/dither-temporal-stbn-source-mask.h \
                 $(srcdir)/dither-fixed-float32.c \

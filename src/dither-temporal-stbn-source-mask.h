@@ -44,6 +44,9 @@ sixel_temporal_stbn_source_mask_prepare_state_common(
     sixel_temporal_stbn_state_common_t *stbn_state,
     int can_update);
 
+extern sixel_temporal_stbn_source_backend_common_t const
+sixel_temporal_stbn_source_mask_backend_common;
+
 #endif /* LIBSIXEL_DITHER_TEMPORAL_STBN_SOURCE_MASK_H */
 
 /* emacs Local Variables:      */

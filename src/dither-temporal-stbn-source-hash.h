@@ -22,50 +22,32 @@
  * SOFTWARE.
  */
 
+/*
+ * STBN hash source module entry points.
+ */
+#ifndef LIBSIXEL_DITHER_TEMPORAL_STBN_SOURCE_HASH_H
+#define LIBSIXEL_DITHER_TEMPORAL_STBN_SOURCE_HASH_H
+
 #include <stdint.h>
-#include "dither-temporal-stbn-source-mask.h"
+#include "dither-temporal-stbn-source.h"
 
 uint16_t
-sixel_temporal_stbn_source_mask_sample_u16_common(uint32_t sequence_index,
+sixel_temporal_stbn_source_hash_sample_u16_common(uint32_t sequence_index,
                                                   int x,
                                                   int y,
                                                   int channel,
-                                                  int depth)
-{
-    /*
-     * Keep mask source output identical to hash while dedicated STBN mask
-     * tables are under integration.
-     */
-    return sixel_temporal_stbn_sample_hash_u16_common(sequence_index,
-                                                      x,
-                                                      y,
-                                                      channel,
-                                                      depth);
-}
+                                                  int depth);
 
 SIXELSTATUS
-sixel_temporal_stbn_source_mask_prepare_state_common(
+sixel_temporal_stbn_source_hash_prepare_state_common(
     sixel_dither_t const *dither,
     sixel_temporal_stbn_state_common_t *stbn_state,
-    int can_update)
-{
-    /*
-     * Mask source currently follows the default frame-index behavior.
-     * Keeping a dedicated prepare hook here localizes future table lifecycle
-     * changes to this module.
-     */
-    return sixel_temporal_stbn_prepare_state_default_common(
-        dither,
-        stbn_state,
-        can_update);
-}
+    int can_update);
 
-sixel_temporal_stbn_source_backend_common_t const
-sixel_temporal_stbn_source_mask_backend_common = {
-    SIXEL_TEMPORAL_STBN_SOURCE_MASK,
-    sixel_temporal_stbn_source_mask_sample_u16_common,
-    sixel_temporal_stbn_source_mask_prepare_state_common
-};
+extern sixel_temporal_stbn_source_backend_common_t const
+sixel_temporal_stbn_source_hash_backend_common;
+
+#endif /* LIBSIXEL_DITHER_TEMPORAL_STBN_SOURCE_HASH_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

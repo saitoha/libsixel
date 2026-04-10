@@ -25,18 +25,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "dither-temporal-method.h"
+#include "dither-temporal-stbn-source-hash.h"
 #include "dither-temporal-stbn-source-mask.h"
-
-static uint32_t
-sixel_temporal_stbn_hash_u32_common(uint32_t value)
-{
-    value ^= value >> 16;
-    value *= 0x7feb352dU;
-    value ^= value >> 15;
-    value *= 0x846ca68bU;
-    value ^= value >> 16;
-    return value;
-}
 
 uint16_t
 sixel_temporal_stbn_sample_hash_u16_common(uint32_t sequence_index,
@@ -45,23 +35,11 @@ sixel_temporal_stbn_sample_hash_u16_common(uint32_t sequence_index,
                                            int channel,
                                            int depth)
 {
-    uint32_t key;
-    uint32_t ch;
-
-    key = 0U;
-    ch = 0U;
-
-    if (depth > 0) {
-        ch = (uint32_t)(channel % depth);
-    }
-
-    key = sequence_index * 0x9e3779b9U;
-    key ^= (uint32_t)x * 0x6a09e667U;
-    key ^= (uint32_t)y * 0xbb67ae85U;
-    key ^= ch * 0x3c6ef372U;
-    key = sixel_temporal_stbn_hash_u32_common(key);
-
-    return (uint16_t)(key >> 16);
+    return sixel_temporal_stbn_source_hash_sample_u16_common(sequence_index,
+                                                             x,
+                                                             y,
+                                                             channel,
+                                                             depth);
 }
 
 uint16_t
@@ -96,26 +74,18 @@ sixel_temporal_stbn_prepare_state_default_common(
     return SIXEL_OK;
 }
 
-static sixel_temporal_stbn_source_backend_common_t const
+static sixel_temporal_stbn_source_backend_common_t const * const
 sixel_temporal_stbn_source_backends_common[] = {
     /*
      * Index 0 is the fallback backend. Keep it as hash until dedicated
      * source tables are introduced and validated.
      */
-    {
-        SIXEL_TEMPORAL_STBN_SOURCE_HASH,
-        sixel_temporal_stbn_sample_hash_u16_common,
-        sixel_temporal_stbn_prepare_state_default_common
-    },
+    &sixel_temporal_stbn_source_hash_backend_common,
     /*
      * Mask currently reuses hash samples as a placeholder. Table-driven
      * dispatch keeps future PMJ/STBN mask integration local to this list.
      */
-    {
-        SIXEL_TEMPORAL_STBN_SOURCE_MASK,
-        sixel_temporal_stbn_source_mask_sample_u16_common,
-        sixel_temporal_stbn_source_mask_prepare_state_common
-    }
+    &sixel_temporal_stbn_source_mask_backend_common
 };
 
 sixel_temporal_stbn_source_backend_common_t const *
@@ -129,13 +99,14 @@ sixel_temporal_stbn_source_backend_from_id_common(uint8_t source_id)
         / sizeof(sixel_temporal_stbn_source_backends_common[0]);
 
     for (i = 0U; i < count; ++i) {
-        if (sixel_temporal_stbn_source_backends_common[i].source_id
+        if (sixel_temporal_stbn_source_backends_common[i] != NULL
+                && sixel_temporal_stbn_source_backends_common[i]->source_id
                 == source_id) {
-            return &sixel_temporal_stbn_source_backends_common[i];
+            return sixel_temporal_stbn_source_backends_common[i];
         }
     }
 
-    return &sixel_temporal_stbn_source_backends_common[0];
+    return sixel_temporal_stbn_source_backends_common[0];
 }
 
 sixel_temporal_stbn_source_backend_common_t const *
