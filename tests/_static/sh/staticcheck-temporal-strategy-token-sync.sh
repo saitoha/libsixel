@@ -143,6 +143,19 @@ else
     fi
 fi
 
+test_path="$src_root/tests/cli/options/matching/0131_option_matching_diffusion_temporal_strategy_pmj_success.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing strategy=pmj success coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0131 must exercise strategy=pmj" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
 while IFS= read -r token; do
     test -n "$token" || continue
     if ! grep -Fxq "$token" "$expected_tokens"; then
@@ -311,6 +324,25 @@ if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: 0023 must remain float32 coverage" \
         >> "$missing"
     status=1
+fi
+
+test_path="$temporal_tests_dir/0038_temporal_strategy_cli_overrides_env_8bit_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing 8bit cli override coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0038 must cover env/cli precedence for pmj" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0038 must remain 8bit coverage" \
+            >> "$missing"
+        status=1
+    fi
 fi
 
 if test "$status" -eq 0; then
