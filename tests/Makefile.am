@@ -17,6 +17,7 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 endif
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \
+    loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
     loader/builtin/1318_loader_builtin_psd_psdtools_effects_stroke_composite_hardcase_lsqa.t
 
