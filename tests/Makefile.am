@@ -270,6 +270,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0056_loader_factory_predicate_gate.c \
     loader/0057_loader_gd_can_try_policy.c \
     loader/0058_loader_gd_status_policy.c \
+    loader/0059_loader_gd_pixelpolicy_detail.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \

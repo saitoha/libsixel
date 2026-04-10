@@ -27,7 +27,11 @@ typedef enum gd_pixelformat_case_id {
     GD_PIXELFORMAT_OPAQUE_RGB_GAMMA_FASTPATH,
     GD_PIXELFORMAT_INDEXED_NO_PALETTE_RGB_GAMMA,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_GAMA_ICCP_BG_FLOAT32_LINEAR,
+    GD_PIXELFORMAT_GAMA_ONLY_BG_FLOAT32_LINEAR,
     GD_PIXELFORMAT_HIGHDEPTH_SRGB_ONLY_FLOAT32_LINEAR,
+    GD_PIXELFORMAT_INDEXED_SINGLE_TRNS_SEMI_MASK,
+    GD_PIXELFORMAT_REQCOLORS_ZERO_CLAMP_PAL8,
+    GD_PIXELFORMAT_REQCOLORS_LARGE_CLAMP_PAL8,
     GD_PIXELFORMAT_CASE_COUNT
 } gd_pixelformat_case_id_t;
 
@@ -253,6 +257,24 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
             new_gd_component
         },
         {
+            "gd indexed keycolor gAMA-only with background emits float32",
+            "/tests/data/inputs/formats/pal8-trns-key0-gama-only.png",
+            {
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                2,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
+            },
+            { 1, 1, 256, white_bg },
+            new_gd_component
+        },
+        {
             "gd rgb16 sRGB-only png promotes to float32 linear",
             "/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png",
             {
@@ -268,6 +290,60 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1
             },
             { 1, 0, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd indexed single trns+semi emits rgb+mask",
+            "/tests/data/inputs/formats/libpng-pal8-trns-single0-semi-icc.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                6,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                1,
+                1,
+                SIXEL_COLORSPACE_GAMMA,
+                1
+            },
+            { 1, 1, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd reqcolors zero clamps to pal8-safe default",
+            "/tests/data/inputs/formats/pal8-trns-key0.png",
+            {
+                SIXEL_PIXELFORMAT_PAL8,
+                4,
+                1,
+                1,
+                FRAME_TRANSPARENT_NONNEG,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
+            },
+            { 1, 1, 0, NULL },
+            new_gd_component
+        },
+        {
+            "gd reqcolors above cap clamps to pal8-safe default",
+            "/tests/data/inputs/formats/pal8-trns-key0.png",
+            {
+                SIXEL_PIXELFORMAT_PAL8,
+                4,
+                1,
+                1,
+                FRAME_TRANSPARENT_NONNEG,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
+            },
+            { 1, 1, SIXEL_PALETTE_MAX + 1, NULL },
             new_gd_component
         }
     };
@@ -346,9 +422,25 @@ run_gd_loader_test_mode(char const *mode)
         return run_gd_pixelformat_case_by_id(
             GD_PIXELFORMAT_INDEXED_KEYCOLOR_GAMA_ICCP_BG_FLOAT32_LINEAR);
     }
+    if (strcmp(mode, "gama_only_bg_float32_linear") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_GAMA_ONLY_BG_FLOAT32_LINEAR);
+    }
     if (strcmp(mode, "highdepth_srgb_only_float32_linear") == 0) {
         return run_gd_pixelformat_case_by_id(
             GD_PIXELFORMAT_HIGHDEPTH_SRGB_ONLY_FLOAT32_LINEAR);
+    }
+    if (strcmp(mode, "indexed_single_trns_semi_mask") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_INDEXED_SINGLE_TRNS_SEMI_MASK);
+    }
+    if (strcmp(mode, "reqcolors_zero_clamp_pal8") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_REQCOLORS_ZERO_CLAMP_PAL8);
+    }
+    if (strcmp(mode, "reqcolors_large_clamp_pal8") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_REQCOLORS_LARGE_CLAMP_PAL8);
     }
 
     fprintf(stderr, "unknown gd pixelformat test mode: %s\n", mode);
