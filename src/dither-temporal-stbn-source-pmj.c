@@ -169,20 +169,12 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
         phase_key >> 7,
         63U);
 
-    sample_x = x + (int)offset_x;
-    sample_y = y + (int)offset_y;
-    if (sample_x >= 0) {
-        sample_x &= 63;
-    } else {
-        sample_x = sixel_temporal_stbn_wrap_tile_coord_common(sample_x,
-                                                               64);
-    }
-    if (sample_y >= 0) {
-        sample_y &= 63;
-    } else {
-        sample_y = sixel_temporal_stbn_wrap_tile_coord_common(sample_y,
-                                                               64);
-    }
+    /*
+     * Wrap to the 64x64 tile without branches. Unsigned conversion is
+     * modulo 2^N, so masking low 6 bits is equivalent to modulo 64.
+     */
+    sample_x = (int)((uint32_t)(x + (int)offset_x) & 63U);
+    sample_y = (int)((uint32_t)(y + (int)offset_y) & 63U);
 
     scrambled_x = sixel_temporal_stbn_pmj_permute_pow2_common(
         (uint32_t)sample_x,
