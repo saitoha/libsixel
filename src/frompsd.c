@@ -15341,7 +15341,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     size_t height;
     int stroke_radius;
     int suppress_stroke;
-    int has_overlay_base;
+    int traced_vector_mask_glow;
     float stroke_opacity;
     float stroke_size;
     float stroke_rgb[3];
@@ -15368,7 +15368,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     height = 0u;
     stroke_radius = 0;
     suppress_stroke = 0;
-    has_overlay_base = 0;
+    traced_vector_mask_glow = 0;
     stroke_opacity = 0.0f;
     stroke_size = 0.0f;
     stroke_rgb[0] = 0.0f;
@@ -15386,7 +15386,6 @@ sixel_builtin_psd_apply_layer_effects_subset(
             layer->effect_solid_overlay_opacity);
         effect_mode = layer->effect_solid_overlay_mode;
         if (overlay_opacity > 0.0f) {
-            has_overlay_base = 1;
             for (i = 0u; i < src->pixel_count; ++i) {
                 alpha = sixel_builtin_psd_clamp_alpha_float32(src->alpha[i]);
                 if (alpha <= 0.0f) {
@@ -15538,10 +15537,21 @@ sixel_builtin_psd_apply_layer_effects_subset(
         }
     }
 
-    if (has_overlay_base != 0 &&
-        layer->has_effect_outer_glow != 0 &&
-        layer->has_vector_mask == 0 &&
+    /*
+     * Glow styles are independent from solid overlay. Keep them active even
+     * when SoFi is absent so vector-mask effect stacks do not lose glow
+     * passes during fallback composition.
+     */
+    if (layer->has_effect_outer_glow != 0 &&
         layer->has_knockout == 0) {
+        if (layer->has_vector_mask != 0 &&
+            traced_vector_mask_glow == 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: applying glow effects on vector-mask layer "
+                "in layer fallback");
+            traced_vector_mask_glow = 1;
+        }
         sixel_builtin_psd_apply_glow_effect(
             src,
             layer->width,
@@ -15552,10 +15562,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
             layer->effect_outer_glow_mode,
             0);
     }
-    if (has_overlay_base != 0 &&
-        layer->has_effect_inner_glow != 0 &&
-        layer->has_vector_mask == 0 &&
+    if (layer->has_effect_inner_glow != 0 &&
         layer->has_knockout == 0) {
+        if (layer->has_vector_mask != 0 &&
+            traced_vector_mask_glow == 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: applying glow effects on vector-mask layer "
+                "in layer fallback");
+            traced_vector_mask_glow = 1;
+        }
         sixel_builtin_psd_apply_glow_effect(
             src,
             layer->width,
