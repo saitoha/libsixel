@@ -237,6 +237,7 @@ sixel_temporal_prepare_method_private(sixel_dither_t *dither,
 
     new_state = NULL;
     allocator = NULL;
+    (void)can_update;
 
     if (dither == NULL || state == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -255,18 +256,17 @@ sixel_temporal_prepare_method_private(sixel_dither_t *dither,
     if (dither->temporal_state.method_private != NULL
             && (dither->temporal_state.method_id != owner_method
                 || dither->temporal_state.method_private_size != state_size)) {
-        if (can_update == 0) {
-            return SIXEL_OK;
-        }
         sixel_allocator_free(allocator, dither->temporal_state.method_private);
         dither->temporal_state.method_private = NULL;
         dither->temporal_state.method_private_size = 0U;
     }
 
     if (dither->temporal_state.method_private == NULL) {
-        if (can_update == 0) {
-            return SIXEL_OK;
-        }
+        /*
+         * Even in capture-only passes (can_update == 0), STBN sampling still
+         * needs a deterministic backend selection state. Allocating here keeps
+         * mapfile capture output identical to regular encode output.
+         */
         new_state = sixel_allocator_malloc(allocator, state_size);
         if (new_state == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -307,7 +307,7 @@ sixel_temporal_prepare_stbn_state_common(sixel_dither_t *dither,
         can_update,
         state_size,
         state);
-    if (status != SIXEL_OK || *state == NULL || can_update == 0) {
+    if (status != SIXEL_OK || *state == NULL) {
         return status;
     }
 

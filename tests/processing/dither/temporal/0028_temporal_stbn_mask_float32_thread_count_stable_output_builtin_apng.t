@@ -1,10 +1,15 @@
 #!/bin/sh
-# TAP test ensuring float32 STBN mask source placeholder matches hash source.
+# TAP test ensuring float32 stbn-mask output is stable across threads.
 
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
+    printf "1..0 # SKIP thread backend is unavailable\n"
     exit 0
 }
 
@@ -25,21 +30,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-hash_output=$(
-    SIXEL_TEMPORAL_STRATEGY=stbn-hash \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        --precision=float32 \
-        -L builtin \
-        -ldisable \
-        -d temporal-diffusion -p 16 \
-        "${input_apng}"
-) || {
-    echo "not ok" 1 - "temporal stbn-hash float32 encode failed"
-    exit 0
-}
-
-mask_output=$(
+single_thread_output=$(
     SIXEL_TEMPORAL_STRATEGY=stbn-mask \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
@@ -49,14 +40,28 @@ mask_output=$(
         -d temporal-diffusion -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-mask float32 encode failed"
+    echo "not ok" 1 - "float32 stbn-mask single-thread encode failed"
     exit 0
 }
 
-test "${mask_output}" = "${hash_output}" || {
-    echo "not ok" 1 - "float32 stbn-mask output differs from stbn-hash"
+multi_thread_output=$(
+    SIXEL_TEMPORAL_STRATEGY=stbn-mask \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=2 \
+        --precision=float32 \
+        -L builtin \
+        -ldisable \
+        -d temporal-diffusion -p 16 \
+        "${input_apng}"
+) || {
+    echo "not ok" 1 - "float32 stbn-mask multi-thread encode failed"
     exit 0
 }
 
-echo "ok" 1 - "float32 stbn-mask placeholder matches stbn-hash"
+test "${multi_thread_output}" = "${single_thread_output}" || {
+    echo "not ok" 1 - "float32 stbn-mask output changed across thread counts"
+    exit 0
+}
+
+echo "ok" 1 - "float32 stbn-mask output is stable across thread counts"
 exit 0

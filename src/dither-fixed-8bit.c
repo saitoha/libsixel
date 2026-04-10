@@ -66,7 +66,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
     }
 }
 
-#define SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED 0
+#define SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8 24
 
 typedef sixel_temporal_stbn_state_common_t sixel_temporal_stbn_state_t;
 
@@ -411,9 +411,8 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
     strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
 
     /*
-     * Placeholder STBN strategy keeps the same state shape as temporal
-     * diffusion. A dedicated STBN mask sequence can be integrated later
-     * without changing the call site contract.
+     * STBN strategy reuses the shared temporal frame state so source
+     * backends can change without touching the method call contract.
      */
     status = sixel_temporal_prepare_shared_frame(dither,
                                                  width,
@@ -482,11 +481,25 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int channel,
                                 int depth)
 {
+    uint8_t source_id;
     int32_t sample_centered;
     int64_t bias_scaled;
 
+    source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
     sample_centered = 0;
     bias_scaled = 0;
+
+    if (stbn_state == NULL) {
+        return 0;
+    }
+    source_id = stbn_state->sample_source_id;
+    /*
+     * Keep hash-equivalent behavior for legacy 8bit strategy while the
+     * table-backed mask source carries the first visible STBN effect.
+     */
+    if (source_id != SIXEL_TEMPORAL_STBN_SOURCE_MASK) {
+        return 0;
+    }
 
     sample_centered = sixel_temporal_stbn_sample_centered(stbn_state,
                                                           x,
@@ -494,14 +507,15 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                                           channel,
                                                           depth);
     bias_scaled = (int64_t)sample_centered
-        * (int64_t)SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED;
-    (void)bias_scaled;
+        * (int64_t)SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8
+        * (int64_t)SIXEL_TEMPORAL_VARERR_SCALE;
+    if (bias_scaled >= 0) {
+        bias_scaled = (bias_scaled + 16384) / 32768;
+    } else {
+        bias_scaled = (bias_scaled - 16384) / 32768;
+    }
 
-    /*
-     * Placeholder keeps STBN sample plumbing active while output stays
-     * identical to temporal diffusion until real STBN strength is defined.
-     */
-    return 0;
+    return (int32_t)bias_scaled;
 }
 
 static void

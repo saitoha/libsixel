@@ -25,9 +25,8 @@
 /*
  * STBN mask table lookup hooks.
  *
- * This module defines the lookup boundary used by the mask source backend.
- * The first version intentionally reports "unavailable" so output remains
- * hash-equivalent until real table assets are integrated.
+ * This module provides deterministic mask-table sampling backed by the
+ * embedded 64x64 blue-noise tile.
  */
 #ifndef LIBSIXEL_DITHER_TEMPORAL_STBN_SOURCE_MASK_TABLE_H
 #define LIBSIXEL_DITHER_TEMPORAL_STBN_SOURCE_MASK_TABLE_H

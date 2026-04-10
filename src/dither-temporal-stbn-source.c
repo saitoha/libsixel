@@ -28,6 +28,30 @@
 #include "dither-temporal-stbn-source-hash.h"
 #include "dither-temporal-stbn-source-mask.h"
 
+int
+sixel_temporal_stbn_wrap_tile_coord_common(int value, int tile_size)
+{
+    int wrapped;
+
+    wrapped = 0;
+    if (tile_size <= 0) {
+        return wrapped;
+    }
+
+    wrapped = value % tile_size;
+    if (wrapped < 0) {
+        wrapped += tile_size;
+    }
+
+    return wrapped;
+}
+
+uint16_t
+sixel_temporal_stbn_sample_u8_to_u16_common(uint8_t sample_u8)
+{
+    return (uint16_t)((uint16_t)sample_u8 * 257U);
+}
+
 uint16_t
 sixel_temporal_stbn_sample_hash_u16_common(uint32_t sequence_index,
                                            int x,
@@ -78,13 +102,12 @@ static sixel_temporal_stbn_source_backend_common_t const * const
 sixel_temporal_stbn_source_backends_common[] = {
     /*
      * Index 0 is the fallback backend. Keep it as hash until dedicated
-     * source tables are introduced and validated.
+     * source ids are unavailable or backend selection fails.
      */
     &sixel_temporal_stbn_source_hash_backend_common,
     /*
-     * Mask currently falls back to hash while mask-table assets are absent.
-     * Table-driven dispatch keeps future PMJ/STBN integration local to this
-     * backend list.
+     * Mask uses a deterministic table-backed source so hash and mask can be
+     * switched without touching temporal method call sites.
      */
     &sixel_temporal_stbn_source_mask_backend_common
 };

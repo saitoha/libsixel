@@ -358,7 +358,7 @@ static const uint8_t sixel_bn64[SIXEL_BN_W * SIXEL_BN_H] = {
      71, 251,  29, 133
 };
 
-static float
+static inline float
 sixel_bn_mask(int x, int y)
 {
     int ix;

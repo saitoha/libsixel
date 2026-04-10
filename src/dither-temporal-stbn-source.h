@@ -58,6 +58,12 @@ typedef struct sixel_temporal_stbn_source_backend_common {
     sixel_temporal_stbn_prepare_state_common_fn prepare_state;
 } sixel_temporal_stbn_source_backend_common_t;
 
+int
+sixel_temporal_stbn_wrap_tile_coord_common(int value, int tile_size);
+
+uint16_t
+sixel_temporal_stbn_sample_u8_to_u16_common(uint8_t sample_u8);
+
 uint16_t
 sixel_temporal_stbn_sample_hash_u16_common(uint32_t sequence_index,
                                            int x,

@@ -24,12 +24,47 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "bluenoise_64x64.h"
+#include "dither-temporal-stbn-source.h"
 #include "dither-temporal-stbn-source-mask-table.h"
+
+static uint32_t
+sixel_temporal_stbn_mask_table_mix_u32_common(uint32_t value)
+{
+    value ^= value >> 16;
+    value *= 0x7feb352dU;
+    value ^= value >> 15;
+    value *= 0x846ca68bU;
+    value ^= value >> 16;
+
+    return value;
+}
+
+static uint32_t
+sixel_temporal_stbn_mask_table_channel_u32_common(int channel, int depth)
+{
+    int wrapped;
+    uint32_t channel_u32;
+
+    wrapped = 0;
+    channel_u32 = 0U;
+    if (depth <= 0) {
+        return channel_u32;
+    }
+
+    wrapped = channel % depth;
+    if (wrapped < 0) {
+        wrapped += depth;
+    }
+    channel_u32 = (uint32_t)wrapped;
+
+    return channel_u32;
+}
 
 int
 sixel_temporal_stbn_mask_table_is_available_common(void)
 {
-    return 0;
+    return 1;
 }
 
 int
@@ -40,21 +75,57 @@ sixel_temporal_stbn_mask_table_try_sample_u16_common(uint32_t sequence_index,
                                                       int depth,
                                                       uint16_t *sample)
 {
-    (void)sequence_index;
-    (void)x;
-    (void)y;
-    (void)channel;
-    (void)depth;
+    uint32_t channel_u32;
+    uint32_t depth_u32;
+    uint32_t phase;
+    uint32_t offset_x;
+    uint32_t offset_y;
+    int sample_x;
+    int sample_y;
+    size_t sample_index;
+    uint8_t sample_u8;
+    uint16_t sample_u16;
 
-    if (sample != NULL) {
-        *sample = 0U;
+    channel_u32 = 0U;
+    depth_u32 = 0U;
+    phase = 0U;
+    offset_x = 0U;
+    offset_y = 0U;
+    sample_x = 0;
+    sample_y = 0;
+    sample_index = 0U;
+    sample_u8 = 0U;
+    sample_u16 = 0U;
+
+    channel_u32 = sixel_temporal_stbn_mask_table_channel_u32_common(
+        channel,
+        depth);
+    if (depth > 0) {
+        depth_u32 = (uint32_t)depth;
     }
 
-    /*
-     * v1 keeps mask-table lookup disabled so the mask backend is fully
-     * deterministic without shipping table assets yet.
-     */
-    return 0;
+    phase = sequence_index * 0x9e3779b9U;
+    phase ^= (channel_u32 + 1U) * 0x85ebca6bU;
+    phase ^= (depth_u32 + 1U) * 0xc2b2ae35U;
+    phase = sixel_temporal_stbn_mask_table_mix_u32_common(phase);
+
+    offset_x = phase & (uint32_t)(SIXEL_BN_W - 1);
+    offset_y = (phase >> 8) & (uint32_t)(SIXEL_BN_H - 1);
+    sample_x = sixel_temporal_stbn_wrap_tile_coord_common(
+        x + (int)offset_x,
+        SIXEL_BN_W);
+    sample_y = sixel_temporal_stbn_wrap_tile_coord_common(
+        y + (int)offset_y,
+        SIXEL_BN_H);
+    sample_index = (size_t)sample_y * (size_t)SIXEL_BN_W + (size_t)sample_x;
+    sample_u8 = sixel_bn64[sample_index];
+    sample_u16 = sixel_temporal_stbn_sample_u8_to_u16_common(sample_u8);
+
+    if (sample != NULL) {
+        *sample = sample_u16;
+    }
+
+    return 1;
 }
 
 /* emacs Local Variables:      */

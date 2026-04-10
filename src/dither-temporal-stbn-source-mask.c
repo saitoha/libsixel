@@ -51,8 +51,7 @@ sixel_temporal_stbn_source_mask_sample_u16_common(uint32_t sequence_index,
     }
 
     /*
-     * Keep mask source output identical to hash until real mask-table
-     * assets are wired through the lookup hook.
+     * Keep hash fallback for safety if table lookup is unavailable.
      */
     return sixel_temporal_stbn_sample_hash_u16_common(sequence_index,
                                                       x,
@@ -74,9 +73,8 @@ sixel_temporal_stbn_source_mask_prepare_state_common(
     (void)has_table;
 
     /*
-     * Mask source currently follows the default frame-index behavior.
-     * Keeping a dedicated prepare hook here localizes future table lifecycle
-     * changes to this module.
+     * Mask source follows the shared frame-index rule. Keep a dedicated
+     * prepare hook so future table lifecycle changes stay local.
      */
     return sixel_temporal_stbn_prepare_state_default_common(
         dither,
