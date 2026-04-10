@@ -172,6 +172,7 @@ srcs = [
   'dither-positional-8bit.h',
   'dither-positional-float32.h',
   'dither-fixed-8bit.h',
+  'dither-temporal-method.c',
   'dither-temporal-method.h',
   'dither-temporal-stbn-source.c',
   'dither-temporal-stbn-source.h',

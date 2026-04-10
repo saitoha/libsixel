@@ -6,10 +6,15 @@ set -eu
 echo "1..1"
 
 src_root=$1
-source_file=$src_root/src/dither-temporal-method.h
+source_file_h=$src_root/src/dither-temporal-method.h
+source_file_c=$src_root/src/dither-temporal-method.c
 temporal_tests_dir=$src_root/tests/processing/dither/temporal
 
-if test ! -f "$source_file" || test ! -d "$temporal_tests_dir"; then
+if test ! -d "$temporal_tests_dir"; then
+    echo "ok 1 # SKIP missing temporal strategy source or test directory"
+    exit 0
+fi
+if test ! -f "$source_file_h" && test ! -f "$source_file_c"; then
     echo "ok 1 # SKIP missing temporal strategy source or test directory"
     exit 0
 fi
@@ -44,7 +49,7 @@ cat > "$expected_float32_tests" <<'EOF'
 0026_temporal_stbn_hash_float32_thread_count_stable_output_builtin_apng.t
 EOF
 
-awk '
+cat "$source_file_h" "$source_file_c" 2>/dev/null | awk '
 /^sixel_temporal_strategy_token_from_string\(/ {
     in_func = 1
     next
@@ -65,7 +70,7 @@ in_func && /^}/ {
 while IFS= read -r token; do
     test -n "$token" || continue
     if ! grep -Fxq "$token" "$source_tokens"; then
-        echo "# src/dither-temporal-method.h: missing strategy token: $token" \
+        echo "# src/dither-temporal-method.[ch]: missing strategy token: $token" \
             >> "$missing"
         status=1
     fi
@@ -80,7 +85,7 @@ done < "$expected_tokens"
 while IFS= read -r token; do
     test -n "$token" || continue
     if ! grep -Fxq "$token" "$expected_tokens"; then
-        echo "# src/dither-temporal-method.h: unexpected strategy token: $token" \
+        echo "# src/dither-temporal-method.[ch]: unexpected strategy token: $token" \
             >> "$missing"
         status=1
     fi

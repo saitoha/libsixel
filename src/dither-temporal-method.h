@@ -30,7 +30,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 #include "dither.h"
 #include "dither-temporal-stbn-source.h"
 
@@ -92,132 +91,26 @@ typedef struct sixel_temporal_method_ops {
     sixel_temporal_store_error_fn store_error;
 } sixel_temporal_method_ops_t;
 
-/*
- * Pull only the getenv wrapper symbol we need here to avoid importing the
- * full compat header into every temporal backend translation unit.
- */
-char const *
-sixel_compat_getenv(char const *name);
+int
+sixel_temporal_strategy_token_from_string(char const *value);
 
-static inline uint8_t
+int
+sixel_temporal_strategy_method_from_token(int strategy_token);
+
+int
+sixel_temporal_strategy_token_from_env_common(void);
+
+uint8_t
 sixel_temporal_stbn_source_id_from_token(int strategy_token);
 
-/*
- * Keep temporal strategy token parsing in one place so 8bit and float32
- * backends resolve overrides with identical fallback rules.
- */
-static inline int
-sixel_temporal_strategy_token_from_string(char const *value)
-{
-    if (value == NULL) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
-    }
-    if (strcmp(value, "diffusion") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION;
-    }
-    if (strcmp(value, "stbn") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
-    }
-    if (strcmp(value, "stbn-hash") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
-    }
-    if (strcmp(value, "stbn-mask") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK;
-    }
-
-    return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
-}
-
-static inline int
-sixel_temporal_strategy_method_from_token(int strategy_token)
-{
-    switch (strategy_token) {
-    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH:
-    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK:
-        return SIXEL_TEMPORAL_METHOD_STBN;
-    case SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION:
-        return SIXEL_TEMPORAL_METHOD_DIFFUSION;
-    default:
-        break;
-    }
-
-    return SIXEL_TEMPORAL_METHOD_NONE;
-}
-
-/*
- * Resolve temporal strategy token from environment in one shared helper so
- * fixed 8bit and float32 backends always use the same parsing path.
- */
-static inline int
-sixel_temporal_strategy_token_from_env_common(void)
-{
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
-    return sixel_temporal_strategy_token_from_string(value);
-}
-
-static inline uint8_t
-sixel_temporal_stbn_source_id_from_token(int strategy_token)
-{
-    if (strategy_token == SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK) {
-        return SIXEL_TEMPORAL_STBN_SOURCE_MASK;
-    }
-
-    return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
-}
-
-static inline int
+int
 sixel_temporal_method_from_diffuse_and_token(int method_for_diffuse,
-                                             int strategy_token)
-{
-    int method;
+                                             int strategy_token);
 
-    method = SIXEL_TEMPORAL_METHOD_NONE;
-    if (method_for_diffuse != SIXEL_DIFFUSE_TEMPORAL) {
-        return method;
-    }
+void
+sixel_temporal_release_shared_frame(sixel_dither_t *dither);
 
-    method = sixel_temporal_strategy_method_from_token(strategy_token);
-    if (method == SIXEL_TEMPORAL_METHOD_STBN) {
-        return method;
-    }
-
-    return SIXEL_TEMPORAL_METHOD_DIFFUSION;
-}
-
-/*
- * Shared temporal frame ownership helpers used by temporal strategies.
- * The owner method id protects the frame from cross-strategy reuse.
- */
-static inline void
-sixel_temporal_release_shared_frame(sixel_dither_t *dither)
-{
-    sixel_allocator_t *allocator;
-
-    if (dither == NULL) {
-        return;
-    }
-
-    allocator = dither->allocator;
-    if (dither->temporal_state.error_frame != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, dither->temporal_state.error_frame);
-    }
-    if (dither->temporal_state.method_private != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, dither->temporal_state.method_private);
-    }
-
-    dither->temporal_state.error_frame = NULL;
-    dither->temporal_state.error_frame_size = 0U;
-    dither->temporal_state.width = 0;
-    dither->temporal_state.height = 0;
-    dither->temporal_state.depth = 0;
-    dither->temporal_state.method_id = SIXEL_TEMPORAL_METHOD_NONE;
-    dither->temporal_state.method_private = NULL;
-    dither->temporal_state.method_private_size = 0U;
-}
-
-static inline SIXELSTATUS
+SIXELSTATUS
 sixel_temporal_prepare_shared_frame(sixel_dither_t *dither,
                                     int width,
                                     int height,
@@ -225,152 +118,25 @@ sixel_temporal_prepare_shared_frame(sixel_dither_t *dither,
                                     int can_update,
                                     int owner_method,
                                     int *enabled,
-                                    int32_t **frame)
-{
-    SIXELSTATUS status;
-    size_t temporal_len;
-    size_t temporal_bytes;
-    int needs_reset;
-    int32_t *new_frame;
+                                    int32_t **frame);
 
-    status = SIXEL_OK;
-    temporal_len = 0U;
-    temporal_bytes = 0U;
-    needs_reset = 0;
-    new_frame = NULL;
-
-    if (dither == NULL || dither->allocator == NULL
-            || enabled == NULL || frame == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (owner_method != SIXEL_TEMPORAL_METHOD_DIFFUSION
-            && owner_method != SIXEL_TEMPORAL_METHOD_STBN) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    *frame = NULL;
-    if (*enabled == 0) {
-        return status;
-    }
-
-    temporal_len = (size_t)width * (size_t)height * (size_t)depth;
-    if (temporal_len == 0U) {
-        *enabled = 0;
-        return status;
-    }
-
-    if (dither->temporal_state.error_frame != NULL) {
-        if (dither->temporal_state.method_id != owner_method) {
-            needs_reset = 1;
-        } else if (dither->temporal_state.width != width
-                || dither->temporal_state.height != height
-                || dither->temporal_state.depth != depth) {
-            needs_reset = 1;
-        }
-    }
-
-    if (needs_reset) {
-        if (can_update) {
-            sixel_temporal_release_shared_frame(dither);
-        } else {
-            *enabled = 0;
-            return status;
-        }
-    }
-
-    if (dither->temporal_state.error_frame == NULL) {
-        if (can_update == 0) {
-            *enabled = 0;
-            return status;
-        }
-
-        if (temporal_len > SIZE_MAX / sizeof(int32_t)) {
-            return SIXEL_BAD_ALLOCATION;
-        }
-        temporal_bytes = temporal_len * sizeof(int32_t);
-        new_frame = (int32_t *)sixel_allocator_malloc(dither->allocator,
-                                                      temporal_bytes);
-        if (new_frame == NULL) {
-            return SIXEL_BAD_ALLOCATION;
-        }
-
-        memset(new_frame, 0x00, temporal_bytes);
-        dither->temporal_state.error_frame = new_frame;
-        dither->temporal_state.error_frame_size = temporal_bytes;
-        dither->temporal_state.width = width;
-        dither->temporal_state.height = height;
-        dither->temporal_state.depth = depth;
-    }
-
-    dither->temporal_state.method_id = owner_method;
-    *frame = (int32_t *)dither->temporal_state.error_frame;
-    return status;
-}
-
-/*
- * Reserve method-private temporal state for strategy-specific data such as
- * STBN sequence cursors. The state buffer is reused while method and size are
- * unchanged.
- */
-static inline SIXELSTATUS
+SIXELSTATUS
 sixel_temporal_prepare_method_private(sixel_dither_t *dither,
                                       int owner_method,
                                       int can_update,
                                       size_t state_size,
-                                      void **state)
-{
-    void *new_state;
-    sixel_allocator_t *allocator;
+                                      void **state);
 
-    new_state = NULL;
-    allocator = NULL;
-
-    if (dither == NULL || state == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    *state = NULL;
-    if (state_size == 0U) {
-        return SIXEL_OK;
-    }
-
-    allocator = dither->allocator;
-    if (allocator == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (dither->temporal_state.method_private != NULL
-            && (dither->temporal_state.method_id != owner_method
-                || dither->temporal_state.method_private_size != state_size)) {
-        if (can_update == 0) {
-            return SIXEL_OK;
-        }
-        sixel_allocator_free(allocator, dither->temporal_state.method_private);
-        dither->temporal_state.method_private = NULL;
-        dither->temporal_state.method_private_size = 0U;
-    }
-
-    if (dither->temporal_state.method_private == NULL) {
-        if (can_update == 0) {
-            return SIXEL_OK;
-        }
-        new_state = sixel_allocator_malloc(allocator, state_size);
-        if (new_state == NULL) {
-            return SIXEL_BAD_ALLOCATION;
-        }
-        memset(new_state, 0x00, state_size);
-        dither->temporal_state.method_private = new_state;
-        dither->temporal_state.method_private_size = state_size;
-    }
-
-    dither->temporal_state.method_id = owner_method;
-    *state = dither->temporal_state.method_private;
-    return SIXEL_OK;
-}
+SIXELSTATUS
+sixel_temporal_prepare_stbn_state_common(sixel_dither_t *dither,
+                                         int can_update,
+                                         int strategy_token,
+                                         size_t state_size,
+                                         void **state);
 
 /*
- * Fetch strategy-specific temporal private state with ownership and size
- * validation. This avoids open-coded access checks at call sites.
+ * `load_pixel()` calls this on every pixel for STBN paths, so keep it inline
+ * in the header to avoid a function-call penalty on hot loops.
  */
 static inline void const *
 sixel_temporal_get_method_private_const(sixel_dither_t const *dither,
@@ -399,76 +165,6 @@ sixel_temporal_get_method_private(sixel_dither_t *dither,
         (sixel_dither_t const *)dither,
         owner_method,
         state_size);
-}
-
-/*
- * Prepare STBN private state with consistent source resolution and sequence
- * selection so fixed 8bit and float32 backends share the same behavior.
- */
-static inline SIXELSTATUS
-sixel_temporal_prepare_stbn_state_common(sixel_dither_t *dither,
-                                         int can_update,
-                                         int strategy_token,
-                                         size_t state_size,
-                                         void **state)
-{
-    SIXELSTATUS status;
-    sixel_temporal_stbn_state_common_t *typed_state;
-    sixel_temporal_stbn_source_backend_common_t const *backend;
-
-    status = SIXEL_OK;
-    typed_state = NULL;
-    backend = NULL;
-
-    if (state == NULL || state_size < sizeof(*typed_state)) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    *state = NULL;
-    status = sixel_temporal_prepare_method_private(
-        dither,
-        SIXEL_TEMPORAL_METHOD_STBN,
-        can_update,
-        state_size,
-        state);
-    if (status != SIXEL_OK || *state == NULL || can_update == 0) {
-        return status;
-    }
-
-    typed_state = (sixel_temporal_stbn_state_common_t *)
-        sixel_temporal_get_method_private(
-            dither,
-            SIXEL_TEMPORAL_METHOD_STBN,
-            state_size);
-    if (typed_state == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    backend = sixel_temporal_stbn_source_backend_from_token_common(
-        strategy_token);
-    if (backend != NULL) {
-        typed_state->sample_source_id = backend->source_id;
-        typed_state->sample_u16 = backend->sample_u16;
-    }
-    if (typed_state->sample_u16 == NULL) {
-        typed_state->sample_source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
-        typed_state->sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
-    }
-
-    if (backend != NULL && backend->prepare_state != NULL) {
-        status = backend->prepare_state(dither, typed_state, can_update);
-    } else {
-        status = sixel_temporal_stbn_prepare_state_default_common(
-            dither,
-            typed_state,
-            can_update);
-    }
-    if (status != SIXEL_OK) {
-        return status;
-    }
-
-    *state = typed_state;
-    return status;
 }
 
 #endif /* LIBSIXEL_DITHER_TEMPORAL_METHOD_H */
