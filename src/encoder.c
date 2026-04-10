@@ -92,6 +92,7 @@
 #include "logger.h"
 #include "options.h"
 #include "dither.h"
+#include "dither-temporal-method.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
 #include "palette-common-merge.h"
@@ -882,22 +883,128 @@ static sixel_option_choice_t const g_option_choices_builtin_palette[] = {
     { "gray8", SIXEL_BUILTIN_G8 }
 };
 
-static sixel_option_choice_t const g_option_choices_diffusion[] = {
-    { "auto", SIXEL_DIFFUSE_AUTO },
-    { "none", SIXEL_DIFFUSE_NONE },
-    { "fs", SIXEL_DIFFUSE_FS },
-    { "atkinson", SIXEL_DIFFUSE_ATKINSON },
-    { "jajuni", SIXEL_DIFFUSE_JAJUNI },
-    { "stucki", SIXEL_DIFFUSE_STUCKI },
-    { "burkes", SIXEL_DIFFUSE_BURKES },
-    { "sierra1", SIXEL_DIFFUSE_SIERRA1 },
-    { "sierra2", SIXEL_DIFFUSE_SIERRA2 },
-    { "sierra3", SIXEL_DIFFUSE_SIERRA3 },
-    { "a_dither", SIXEL_DIFFUSE_A_DITHER },
-    { "x_dither", SIXEL_DIFFUSE_X_DITHER },
-    { "bluenoise", SIXEL_DIFFUSE_BLUENOISE_DITHER },
-    { "lso2", SIXEL_DIFFUSE_LSO2 },
-    { "temporal-diffusion", SIXEL_DIFFUSE_TEMPORAL },
+static sixel_suboption_choice_t const g_option_choices_temporal_strategy[] = {
+    { "diffusion", SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION },
+    { "stbn", SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH },
+    { "stbn-hash", SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH },
+    { "stbn-mask", SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK },
+    { "pmj", SIXEL_TEMPORAL_STRATEGY_TOKEN_PMJ }
+};
+
+static sixel_suboption_key_t const g_subkeys_diffusion_temporal[] = {
+    {
+        "strategy",
+        NULL,
+        SIXEL_DITHER_TEMPORAL_STRATEGY_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_temporal_strategy,
+        sizeof(g_option_choices_temporal_strategy)
+        / sizeof(g_option_choices_temporal_strategy[0])
+    }
+};
+
+static size_t const g_subkeys_diffusion_temporal_count
+    = sizeof(g_subkeys_diffusion_temporal)
+      / sizeof(g_subkeys_diffusion_temporal[0]);
+
+static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
+    {
+        "auto",
+        SIXEL_DIFFUSE_AUTO,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "none",
+        SIXEL_DIFFUSE_NONE,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "fs",
+        SIXEL_DIFFUSE_FS,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "atkinson",
+        SIXEL_DIFFUSE_ATKINSON,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "jajuni",
+        SIXEL_DIFFUSE_JAJUNI,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "stucki",
+        SIXEL_DIFFUSE_STUCKI,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "burkes",
+        SIXEL_DIFFUSE_BURKES,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "sierra1",
+        SIXEL_DIFFUSE_SIERRA1,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "sierra2",
+        SIXEL_DIFFUSE_SIERRA2,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "sierra3",
+        SIXEL_DIFFUSE_SIERRA3,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "a_dither",
+        SIXEL_DIFFUSE_A_DITHER,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "x_dither",
+        SIXEL_DIFFUSE_X_DITHER,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "bluenoise",
+        SIXEL_DIFFUSE_BLUENOISE_DITHER,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "lso2",
+        SIXEL_DIFFUSE_LSO2,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    },
+    {
+        "temporal-diffusion",
+        SIXEL_DIFFUSE_TEMPORAL,
+        g_subkeys_diffusion_temporal,
+        g_subkeys_diffusion_temporal_count
+    }
+};
+
+static sixel_option_argument_schema_t const g_schema_diffusion = {
+    SIXEL_OPTFLAG_DIFFUSION,
+    "--diffusion",
+    g_schema_diffusion_values,
+    sizeof(g_schema_diffusion_values) / sizeof(g_schema_diffusion_values[0])
 };
 
 static sixel_option_choice_t const g_option_choices_diffusion_scan[] = {
@@ -3251,6 +3358,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
 
     sixel_dither_set_diffusion_type(context->dither,
                                     context->encoder->method_for_diffuse);
+    context->dither->temporal_strategy_override =
+        context->encoder->temporal_strategy_override;
+    context->dither->temporal_strategy_token =
+        context->encoder->temporal_strategy_token;
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
     sixel_dither_set_diffusion_carry(context->dither,
@@ -5417,6 +5528,9 @@ sixel_encoder_new(
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
+    (*ppencoder)->temporal_strategy_override = 0;
+    (*ppencoder)->temporal_strategy_token
+        = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_carry      = SIXEL_CARRY_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
@@ -6625,6 +6739,78 @@ sixel_encoder_parse_quantize_model_argument(
     return status;
 }
 
+static SIXELSTATUS
+sixel_encoder_parse_diffusion_argument(
+    char const *value,
+    sixel_option_argument_resolution_t *resolution,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (resolution == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        value,
+        &g_schema_diffusion,
+        resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (resolution->resolved_base_value != SIXEL_DIFFUSE_TEMPORAL
+            && resolution->assignment_count > 0u) {
+        sixel_helper_set_additional_message(
+            "-d suboptions are supported only for temporal-diffusion.");
+        sixel_option_free_argument_resolution(resolution);
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+sixel_encoder_resolve_temporal_strategy_token(
+    sixel_option_argument_resolution_t const *resolution,
+    int *has_override,
+    int *strategy_token)
+{
+    size_t index;
+    sixel_suboption_assignment_t const *assignment;
+    int resolved_choice;
+
+    index = 0u;
+    assignment = NULL;
+    resolved_choice = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    if (resolution == NULL || has_override == NULL || strategy_token == NULL) {
+        return 0;
+    }
+
+    *has_override = 0;
+    *strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    while (index < resolution->assignment_count) {
+        assignment = resolution->assignments + index;
+        if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "strategy") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return 0;
+            }
+            *has_override = 1;
+            *strategy_token = resolved_choice;
+        }
+        ++index;
+    }
+
+    return 1;
+}
+
 typedef struct sixel_encoder_setopt_context {
     sixel_option_argument_list_resolution_t q_list_resolution;
 } sixel_encoder_setopt_context_t;
@@ -7601,6 +7787,9 @@ sixel_encoder_setopt(
     size_t i;
     sixel_encoder_setopt_context_t setopt_context;
     int match_value;
+    sixel_option_argument_resolution_t d_resolution;
+    int temporal_strategy_override;
+    int temporal_strategy_token;
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
@@ -7635,6 +7824,12 @@ sixel_encoder_setopt(
 
     sixel_encoder_ref(encoder);
     sixel_encoder_setopt_context_init(&setopt_context);
+    d_resolution.resolved_base_value = 0;
+    d_resolution.base_def = NULL;
+    d_resolution.assignments = NULL;
+    d_resolution.assignment_count = 0u;
+    temporal_strategy_override = 0;
+    temporal_strategy_token = SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
@@ -7748,17 +7943,32 @@ sixel_encoder_setopt(
         encoder->color_option = SIXEL_COLOR_OPTION_BUILTIN;
         break;
     case SIXEL_OPTFLAG_DIFFUSION:  /* d */
-        status = sixel_encoder_parse_choice_argument(
+        status = sixel_encoder_parse_diffusion_argument(
             value,
-            g_option_choices_diffusion,
-            sizeof(g_option_choices_diffusion) /
-                sizeof(g_option_choices_diffusion[0]),
-            "specified diffusion method is not supported.",
-            &match_value);
+            &d_resolution,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        match_value = d_resolution.resolved_base_value;
+        status = SIXEL_OK;
+        if (!sixel_encoder_resolve_temporal_strategy_token(
+                &d_resolution,
+                &temporal_strategy_override,
+                &temporal_strategy_token)) {
+            sixel_helper_set_additional_message(
+                "invalid -d temporal-diffusion strategy resolution.");
+            status = SIXEL_BAD_ARGUMENT;
+        }
+        sixel_option_free_argument_resolution(&d_resolution);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
         encoder->method_for_diffuse = match_value;
+        encoder->temporal_strategy_override = temporal_strategy_override;
+        encoder->temporal_strategy_token = temporal_strategy_token;
         break;
     case SIXEL_OPTFLAG_DIFFUSION_SCAN:  /* y */
         status = sixel_encoder_parse_choice_argument(

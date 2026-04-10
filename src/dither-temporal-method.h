@@ -41,6 +41,10 @@
 #define SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION 1
 #define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH 2
 #define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK 3
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_PMJ       4
+
+#define SIXEL_DITHER_TEMPORAL_STRATEGY_ENVVAR \
+    "SIXEL_DITHER_TEMPORAL_STRATEGY"
 
 #define SIXEL_TEMPORAL_VARERR_SCALE_SHIFT 12
 #define SIXEL_TEMPORAL_VARERR_SCALE \
@@ -99,6 +103,10 @@ sixel_temporal_strategy_method_from_token(int strategy_token);
 
 int
 sixel_temporal_strategy_token_from_env_common(void);
+
+int
+sixel_temporal_strategy_token_from_dither_or_env_common(
+    sixel_dither_t const *dither);
 
 uint8_t
 sixel_temporal_stbn_source_id_from_token(int strategy_token);

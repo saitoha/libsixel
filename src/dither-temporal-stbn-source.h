@@ -33,6 +33,7 @@
 
 #define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
 #define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
+#define SIXEL_TEMPORAL_STBN_SOURCE_PMJ  2
 
 /*
  * Shared v1 STBN strength in byte-domain units.

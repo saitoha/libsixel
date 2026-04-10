@@ -975,7 +975,8 @@ sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
         return status;
     }
 
-    strategy_token = sixel_temporal_strategy_token_from_env_common();
+    strategy_token = sixel_temporal_strategy_token_from_dither_or_env_common(
+        dither);
     status = sixel_temporal_prepare_stbn_state_common(
         dither,
         can_update,
@@ -1251,7 +1252,8 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
          * method id so follow-up changes can stay isolated in method ops.
          */
         f_diffuse = diffuse_fs_float;
-        strategy_token = sixel_temporal_strategy_token_from_env_common();
+        strategy_token =
+            sixel_temporal_strategy_token_from_dither_or_env_common(dither);
         temporal_method = sixel_temporal_method_from_diffuse_and_token(
             method_for_diffuse,
             strategy_token);

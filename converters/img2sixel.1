@@ -272,9 +272,13 @@ lso2     -> libsixel method based on variable error diffusion tables,
 .br
             optimized for size
 .br
-temporal-diffusion -> temporal error diffusion (palette path;
+temporal-diffusion[:strategy=MODE] -> temporal error diffusion
 .br
-                      ignores \-Y; not available with \-I)
+MODE: diffusion, stbn, stbn-hash, stbn-mask, pmj
+.br
+strategy=... is valid only for temporal-diffusion.
+.br
+ignores \-Y; not available with \-I
 .TP 5
 .B \-y \fISCANTYPE\fP, \-\-diffusion\-scan=\fISCANTYPE\fP
 choose scan order for error diffusion.

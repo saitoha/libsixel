@@ -162,7 +162,8 @@ sixel_temporal_stbn_ops = {
 };
 
 static int
-sixel_temporal_method_from_diffuse(int method_for_diffuse);
+sixel_temporal_method_from_diffuse(sixel_dither_t const *dither,
+                                   int method_for_diffuse);
 
 static sixel_temporal_method_ops_t const *
 sixel_temporal_method_for_strategy(int temporal_method);
@@ -407,7 +408,8 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
         return status;
     }
 
-    strategy_token = sixel_temporal_strategy_token_from_env_common();
+    strategy_token = sixel_temporal_strategy_token_from_dither_or_env_common(
+        dither);
     status = sixel_temporal_prepare_stbn_state_common(
         dither,
         can_update,
@@ -438,7 +440,10 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
      */
     if (!sixel_temporal_stbn_state_uses_source_common(
             stbn_state,
-            SIXEL_TEMPORAL_STBN_SOURCE_MASK)) {
+            SIXEL_TEMPORAL_STBN_SOURCE_MASK)
+            && !sixel_temporal_stbn_state_uses_source_common(
+                stbn_state,
+                SIXEL_TEMPORAL_STBN_SOURCE_PMJ)) {
         return 0;
     }
 
@@ -539,11 +544,12 @@ sixel_temporal_stbn_store_error(int32_t *frame,
 }
 
 static int
-sixel_temporal_method_from_diffuse(int method_for_diffuse)
+sixel_temporal_method_from_diffuse(sixel_dither_t const *dither,
+                                   int method_for_diffuse)
 {
     int token;
 
-    token = sixel_temporal_strategy_token_from_env_common();
+    token = sixel_temporal_strategy_token_from_dither_or_env_common(dither);
     return sixel_temporal_method_from_diffuse_and_token(
         method_for_diffuse,
         token);
@@ -887,6 +893,7 @@ sixel_dither_apply_fixed_impl(
             f_diffuse = diffuse_fs;
             f_diffuse_carry = diffuse_fs_carry;
             temporal_method = sixel_temporal_method_from_diffuse(
+                dither,
                 method_for_diffuse);
             temporal_ops = sixel_temporal_method_for_strategy(
                 temporal_method);

@@ -27,6 +27,7 @@
 #include "dither-temporal-method.h"
 #include "dither-temporal-stbn-source-hash.h"
 #include "dither-temporal-stbn-source-mask.h"
+#include "dither-temporal-stbn-source-pmj.h"
 
 int
 sixel_temporal_stbn_wrap_tile_coord_common(int value, int tile_size)
@@ -184,7 +185,12 @@ sixel_temporal_stbn_source_backends_common[] = {
      * Mask uses a deterministic table-backed source so hash and mask can be
      * switched without touching temporal method call sites.
      */
-    &sixel_temporal_stbn_source_mask_backend_common
+    &sixel_temporal_stbn_source_mask_backend_common,
+    /*
+     * PMJ v1 uses a deterministic progressive-jittered backend. Keep it in
+     * this table so strategy-token routing stays data-driven.
+     */
+    &sixel_temporal_stbn_source_pmj_backend_common
 };
 
 sixel_temporal_stbn_source_backend_common_t const *

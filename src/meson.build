@@ -182,6 +182,8 @@ srcs = [
   'dither-temporal-stbn-source-mask.h',
   'dither-temporal-stbn-source-mask-table.c',
   'dither-temporal-stbn-source-mask-table.h',
+  'dither-temporal-stbn-source-pmj.c',
+  'dither-temporal-stbn-source-pmj.h',
   'dither-fixed-float32.h',
   'dither-internal.h',
   'dither-varcoeff-8bit.h',

@@ -87,6 +87,8 @@ struct sixel_dither {
     int method_for_diffuse;         /* method for diffusing */
     int method_for_scan;            /* scan order for diffusing */
     int method_for_carry;           /* carry buffer mode for diffusion */
+    int temporal_strategy_override; /* CLI strategy override enable flag */
+    int temporal_strategy_token;    /* parsed temporal strategy token */
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */

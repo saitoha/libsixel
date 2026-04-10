@@ -386,8 +386,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "      x_dither -> positionally stable arithmetic xor based dither\n"
         "      bluenoise -> tileable blue-noise ordered dither\n"
         "      lso2     -> libsixel method based on variable error diffusion tables, optimized for\n"
-        "      temporal-diffusion -> temporal error diffusion (palette path;\n"
-        "                           ignores -Y; not available with -I)\n"
+        "      temporal-diffusion[:strategy=MODE] -> temporal error diffusion\n"
+        "          MODE: diffusion, stbn, stbn-hash, stbn-mask, pmj\n"
+        "          strategy=... is valid only for temporal-diffusion.\n"
+        "          ignores -Y; not available with -I\n"
         "      size\n"
     },
     {
@@ -815,9 +817,9 @@ static cli_env_help_t const g_env_help_table[] = {
         "enables it while 0, off, false, or no keep the 8-bit pipeline."
     },
     {
-        "SIXEL_TEMPORAL_STRATEGY",
+        "SIXEL_DITHER_TEMPORAL_STRATEGY",
         "internal temporal strategy override for -d temporal-diffusion.\n"
-        "Accepts diffusion (default) or stbn (placeholder for future work)."
+        "Accepts diffusion (default), stbn, stbn-hash, stbn-mask, or pmj."
     },
     {
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE",

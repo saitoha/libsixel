@@ -50,6 +50,9 @@ sixel_temporal_strategy_token_from_string(char const *value)
     if (strcmp(value, "stbn-mask") == 0) {
         return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK;
     }
+    if (strcmp(value, "pmj") == 0) {
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_PMJ;
+    }
 
     return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
 }
@@ -60,6 +63,7 @@ sixel_temporal_strategy_method_from_token(int strategy_token)
     switch (strategy_token) {
     case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH:
     case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK:
+    case SIXEL_TEMPORAL_STRATEGY_TOKEN_PMJ:
         return SIXEL_TEMPORAL_METHOD_STBN;
     case SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION:
         return SIXEL_TEMPORAL_METHOD_DIFFUSION;
@@ -75,8 +79,19 @@ sixel_temporal_strategy_token_from_env_common(void)
 {
     char const *value;
 
-    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
+    value = sixel_compat_getenv(SIXEL_DITHER_TEMPORAL_STRATEGY_ENVVAR);
     return sixel_temporal_strategy_token_from_string(value);
+}
+
+int
+sixel_temporal_strategy_token_from_dither_or_env_common(
+    sixel_dither_t const *dither)
+{
+    if (dither != NULL && dither->temporal_strategy_override != 0) {
+        return dither->temporal_strategy_token;
+    }
+
+    return sixel_temporal_strategy_token_from_env_common();
 }
 
 uint8_t
@@ -84,6 +99,9 @@ sixel_temporal_stbn_source_id_from_token(int strategy_token)
 {
     if (strategy_token == SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK) {
         return SIXEL_TEMPORAL_STBN_SOURCE_MASK;
+    }
+    if (strategy_token == SIXEL_TEMPORAL_STRATEGY_TOKEN_PMJ) {
+        return SIXEL_TEMPORAL_STBN_SOURCE_PMJ;
     }
 
     return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
