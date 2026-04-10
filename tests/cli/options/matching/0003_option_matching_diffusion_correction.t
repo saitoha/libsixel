@@ -15,7 +15,8 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) || {
     case "${msg}" in
-        *'specified diffusion method is not supported.'*)
+        *'specified diffusion method is not supported.'*|\
+        *'unknown option base value "burkez".'*'Did you mean:'*)
             echo "ok" 1 - "distance-1 typo rejected with diagnostic"
             exit 0
             ;;
