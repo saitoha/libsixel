@@ -941,6 +941,234 @@ sixel_builtin_blend_channel_with_bg(
                             + bg_channel * (0xffu - alpha)) >> 8);
 }
 
+static float
+sixel_builtin_decode_srgb_unit(float gamma_value)
+{
+    if (!(gamma_value > 0.0f)) {
+        return 0.0f;
+    }
+    if (gamma_value >= 1.0f) {
+        return 1.0f;
+    }
+    if (gamma_value <= 0.04045f) {
+        return gamma_value / 12.92f;
+    }
+    return powf((gamma_value + 0.055f) / 1.055f, 2.4f);
+}
+
+static void
+sixel_builtin_fill_linear_bgcolor(float bg_linear[3],
+                                  unsigned char const *bgcolor)
+{
+    int channel;
+    int bg_colorspace;
+    float gamma_value;
+
+    channel = 0;
+    bg_colorspace = SIXEL_COLORSPACE_GAMMA;
+    gamma_value = 0.0f;
+    if (bg_linear == NULL || bgcolor == NULL) {
+        return;
+    }
+
+    bg_colorspace = loader_background_colorspace();
+    for (channel = 0; channel < 3; ++channel) {
+        if (bg_colorspace == SIXEL_COLORSPACE_LINEAR) {
+            bg_linear[channel] = (float)bgcolor[channel] / 255.0f;
+        } else {
+            gamma_value = (float)bgcolor[channel] / 255.0f;
+            bg_linear[channel] = sixel_builtin_decode_srgb_unit(gamma_value);
+        }
+    }
+}
+
+static int
+sixel_builtin_bmp_has_alpha(sixel_chunk_t const *chunk,
+                            int chunk_size,
+                            stbi__context *stb_context)
+{
+    int bmp_width;
+    int bmp_height;
+    int bmp_comp;
+
+    bmp_width = 0;
+    bmp_height = 0;
+    bmp_comp = 0;
+    if (chunk == NULL ||
+        chunk->buffer == NULL ||
+        chunk_size <= 0 ||
+        stb_context == NULL ||
+        !chunk_is_bmp(chunk)) {
+        return 0;
+    }
+
+    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
+    if (!stbi__bmp_info(stb_context, &bmp_width, &bmp_height, &bmp_comp)) {
+        return 0;
+    }
+    return bmp_comp == 4 ? 1 : 0;
+}
+
+static SIXELSTATUS
+sixel_builtin_apply_bmp_alpha_policy(
+    sixel_frame_t *frame,
+    unsigned char *bgcolor)
+{
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    unsigned char *transparent_mask;
+    float *float_pixels;
+    float bg_linear[3];
+    size_t pixel_count;
+    size_t float_count;
+    size_t float_size;
+    size_t index;
+    unsigned int alpha_u8;
+    unsigned int r;
+    unsigned int g;
+    unsigned int b;
+    float alpha_unit;
+    float inv_alpha;
+    int channel;
+    int has_zero_alpha;
+    float src_gamma;
+
+    status = SIXEL_FALSE;
+    pixels = NULL;
+    transparent_mask = NULL;
+    float_pixels = NULL;
+    memset(bg_linear, 0, sizeof(bg_linear));
+    pixel_count = 0u;
+    float_count = 0u;
+    float_size = 0u;
+    index = 0u;
+    alpha_u8 = 0u;
+    r = 0u;
+    g = 0u;
+    b = 0u;
+    alpha_unit = 0.0f;
+    inv_alpha = 0.0f;
+    channel = 0;
+    has_zero_alpha = 0;
+    src_gamma = 0.0f;
+    if (frame == NULL ||
+        frame->allocator == NULL ||
+        frame->pixels.u8ptr == NULL ||
+        frame->width <= 0 ||
+        frame->height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    pixels = frame->pixels.u8ptr;
+
+    if (bgcolor != NULL) {
+        if (pixel_count > SIZE_MAX / 3u) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        float_count = pixel_count * 3u;
+        if (float_count > SIZE_MAX / sizeof(float)) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        float_size = float_count * sizeof(float);
+        float_pixels = (float *)sixel_allocator_malloc(frame->allocator,
+                                                       float_size);
+        if (float_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "builtin BMP: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        sixel_builtin_fill_linear_bgcolor(bg_linear, bgcolor);
+
+        for (index = 0u; index < pixel_count; ++index) {
+            alpha_unit = (float)pixels[index * 4u + 3u] / 255.0f;
+            inv_alpha = 1.0f - alpha_unit;
+            for (channel = 0; channel < 3; ++channel) {
+                src_gamma = (float)pixels[index * 4u + (size_t)channel]
+                    / 255.0f;
+                float_pixels[index * 3u + (size_t)channel] =
+                    sixel_builtin_decode_srgb_unit(src_gamma) * alpha_unit
+                    + bg_linear[channel] * inv_alpha;
+            }
+        }
+
+        if (frame->transparent_mask != NULL) {
+            sixel_allocator_free(frame->allocator, frame->transparent_mask);
+            frame->transparent_mask = NULL;
+            frame->transparent_mask_size = 0u;
+        }
+        sixel_allocator_free(frame->allocator, pixels);
+        sixel_frame_set_pixels_float32(frame, float_pixels);
+        float_pixels = NULL;
+        frame->transparent = -1;
+        frame->alpha_zero_is_transparent = 0;
+        frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    transparent_mask = (unsigned char *)sixel_allocator_malloc(
+        frame->allocator,
+        pixel_count);
+    if (transparent_mask == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin BMP: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        alpha_u8 = pixels[index * 4u + 3u];
+        transparent_mask[index] = alpha_u8 == 0u ? 1u : 0u;
+        if (alpha_u8 == 0u) {
+            has_zero_alpha = 1;
+        }
+        if (alpha_u8 < 0xffu) {
+            r = sixel_builtin_blend_channel_with_bg(pixels[index * 4u + 0u],
+                                                    alpha_u8,
+                                                    0u);
+            g = sixel_builtin_blend_channel_with_bg(pixels[index * 4u + 1u],
+                                                    alpha_u8,
+                                                    0u);
+            b = sixel_builtin_blend_channel_with_bg(pixels[index * 4u + 2u],
+                                                    alpha_u8,
+                                                    0u);
+        } else {
+            r = pixels[index * 4u + 0u];
+            g = pixels[index * 4u + 1u];
+            b = pixels[index * 4u + 2u];
+        }
+        pixels[index * 3u + 0u] = (unsigned char)r;
+        pixels[index * 3u + 1u] = (unsigned char)g;
+        pixels[index * 3u + 2u] = (unsigned char)b;
+    }
+
+    if (frame->transparent_mask != NULL) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+    }
+    if (has_zero_alpha != 0) {
+        frame->transparent_mask = transparent_mask;
+        frame->transparent_mask_size = pixel_count;
+        frame->alpha_zero_is_transparent = 1;
+        transparent_mask = NULL;
+    } else {
+        frame->alpha_zero_is_transparent = 0;
+    }
+    frame->transparent = -1;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(frame->allocator, transparent_mask);
+    sixel_allocator_free(frame->allocator, float_pixels);
+    return status;
+}
+
 typedef union _fn_pointer {
     sixel_load_image_function fn;
     void *                    p;
@@ -4358,6 +4586,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     int depth;
     int req_comp;
     int tga_truecolor_alpha;
+    int bmp_has_alpha;
     int nwrite;
     char message[80];
 #if HAVE_LCMS2
@@ -4369,6 +4598,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     depth = 0;
     req_comp = 3;
     tga_truecolor_alpha = 0;
+    bmp_has_alpha = 0;
     nwrite = 0;
     message[0] = '\0';
 #if HAVE_LCMS2
@@ -4387,12 +4617,16 @@ sixel_builtin_load_nonpng_rgb8_fallback(
 #else
     (void)enable_cms;
 #endif
+    bmp_has_alpha = sixel_builtin_bmp_has_alpha(chunk,
+                                                chunk_size,
+                                                stb_context);
     tga_truecolor_alpha = sixel_builtin_tga_has_truecolor_alpha(chunk,
                                                                  chunk_size);
-    if (is_pic || tga_truecolor_alpha != 0) {
+    if (is_pic || tga_truecolor_alpha != 0 || bmp_has_alpha != 0) {
         req_comp = 4;
     }
 
+    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
     pixels = stbi__load_and_postprocess_8bit(stb_context,
                                              &frame->width,
                                              &frame->height,
@@ -4456,6 +4690,12 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
         frame->colorspace = SIXEL_COLORSPACE_GAMMA;
         status = sixel_builtin_apply_tga_truecolor_alpha_policy(frame, bgcolor);
+        return status;
+    }
+    if (bmp_has_alpha != 0) {
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        status = sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
         return status;
     }
     switch (depth) {
