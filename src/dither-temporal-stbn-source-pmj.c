@@ -220,10 +220,77 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
     sixel_temporal_stbn_state_common_t *stbn_state,
     int can_update)
 {
-    return sixel_temporal_stbn_prepare_state_default_common(
+    SIXELSTATUS status;
+    int depth;
+    int channel;
+    uint32_t sequence_index;
+    uint32_t depth_u32;
+    uint32_t seed;
+    uint32_t phase_key;
+    uint32_t coord_key;
+    sixel_temporal_stbn_pmj_channel_cache_common_t *channel_cache;
+
+    status = SIXEL_OK;
+    depth = 0;
+    channel = 0;
+    sequence_index = 0U;
+    depth_u32 = 0U;
+    seed = 0U;
+    phase_key = 0U;
+    coord_key = 0U;
+    channel_cache = NULL;
+
+    status = sixel_temporal_stbn_prepare_state_default_common(
         dither,
         stbn_state,
         can_update);
+    if (status != SIXEL_OK || stbn_state == NULL) {
+        return status;
+    }
+
+    /*
+     * Keep cache initialization conservative. Missing or inconsistent
+     * metadata must fall back to the stateless PMJ sampler path.
+     */
+    stbn_state->pmj_cache_valid = 0;
+    stbn_state->pmj_cache_depth = 0;
+
+    if (dither == NULL) {
+        return status;
+    }
+    depth = dither->temporal_state.depth;
+    if (depth <= 0 || depth > SIXEL_MAX_CHANNELS) {
+        return status;
+    }
+
+    sequence_index = stbn_state->sequence_index;
+    depth_u32 = (uint32_t)depth;
+    for (channel = 0; channel < depth; ++channel) {
+        channel_cache = &stbn_state->pmj_channel_cache[channel];
+
+        seed = sequence_index * 0x9e3779b9U;
+        seed ^= (uint32_t)(channel + 1) * 0x85ebca6bU;
+        seed ^= (depth_u32 + 1U) * 0xc2b2ae35U;
+        seed = sixel_temporal_stbn_pmj_mix_u32_common(seed);
+
+        phase_key = seed ^ 0x9e3779b9U;
+        coord_key = seed ^ 0x243f6a88U;
+
+        channel_cache->seed = seed;
+        channel_cache->coord_key_x = coord_key ^ 0xa511e9b3U;
+        channel_cache->coord_key_y = coord_key ^ 0x63d83595U;
+        channel_cache->rank_key = seed ^ 0xb7e15162U;
+        channel_cache->offset_x = sixel_temporal_stbn_pmj_permute6_common(
+            sequence_index + 0x68bc21ebU,
+            phase_key);
+        channel_cache->offset_y = sixel_temporal_stbn_pmj_permute6_common(
+            sequence_index ^ 0x02e5be93U,
+            phase_key >> 7);
+    }
+
+    stbn_state->pmj_cache_depth = depth;
+    stbn_state->pmj_cache_valid = 1;
+    return status;
 }
 
 sixel_temporal_stbn_source_backend_common_t const

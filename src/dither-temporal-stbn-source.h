@@ -30,6 +30,7 @@
 
 #include <stdint.h>
 #include "dither.h"
+#include "lookup-common.h"
 
 #define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
 #define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
@@ -50,10 +51,23 @@ typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
     int channel,
     int depth);
 
+typedef struct sixel_temporal_stbn_pmj_channel_cache_common {
+    uint32_t seed;
+    uint32_t coord_key_x;
+    uint32_t coord_key_y;
+    uint32_t rank_key;
+    uint32_t offset_x;
+    uint32_t offset_y;
+} sixel_temporal_stbn_pmj_channel_cache_common_t;
+
 typedef struct sixel_temporal_stbn_state_common {
     uint32_t sequence_index;
     uint8_t sample_source_id;
     sixel_temporal_stbn_sample_u16_fn sample_u16;
+    int pmj_cache_valid;
+    int pmj_cache_depth;
+    sixel_temporal_stbn_pmj_channel_cache_common_t
+        pmj_channel_cache[SIXEL_MAX_CHANNELS];
 } sixel_temporal_stbn_state_common_t;
 
 typedef SIXELSTATUS (*sixel_temporal_stbn_prepare_state_common_fn)(
