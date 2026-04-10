@@ -161,7 +161,7 @@ sixel_temporal_stbn_source_pmj_build_channel_cache_common(
 }
 
 static uint16_t
-sixel_temporal_stbn_source_pmj_sample_u16_from_cache_common(
+sixel_temporal_stbn_pmj_sample_u16_cached_internal(
     sixel_temporal_stbn_pmj_channel_cache_common_t const *channel_cache,
     int x,
     int y)
@@ -251,7 +251,7 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
                                                               channel_u32,
                                                               depth_u32,
                                                               &channel_cache);
-    sample_u16 = sixel_temporal_stbn_source_pmj_sample_u16_from_cache_common(
+    sample_u16 = sixel_temporal_stbn_pmj_sample_u16_cached_internal(
         &channel_cache,
         x,
         y);
@@ -303,7 +303,7 @@ sixel_temporal_stbn_source_pmj_sample_u16_cached_common(
     }
 
     channel_cache = &stbn_state->pmj_channel_cache[(int)channel_u32];
-    return sixel_temporal_stbn_source_pmj_sample_u16_from_cache_common(
+    return sixel_temporal_stbn_pmj_sample_u16_cached_internal(
         channel_cache,
         x,
         y);
@@ -366,6 +366,91 @@ sixel_temporal_stbn_source_pmj_sample_u16_tiled_common(
     return stbn_state->pmj_tile_u16[(int)channel_u32][tile_index];
 }
 
+uint16_t
+sixel_temporal_stbn_source_pmj_sample_u16_row_cached_common(
+    sixel_temporal_stbn_state_common_t *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint32_t sequence_index;
+    uint32_t channel_u32;
+    int tile_x;
+    int tile_y;
+    int cache_x;
+    int cache_channel;
+    uint16_t row_sample;
+    sixel_temporal_stbn_pmj_channel_cache_common_t const *channel_cache;
+
+    sequence_index = 0U;
+    channel_u32 = 0U;
+    tile_x = 0;
+    tile_y = 0;
+    cache_x = 0;
+    cache_channel = 0;
+    row_sample = 0U;
+    channel_cache = NULL;
+
+    if (stbn_state == NULL) {
+        return sixel_temporal_stbn_source_pmj_sample_u16_common(
+            0U,
+            x,
+            y,
+            channel,
+            depth);
+    }
+
+    sequence_index = stbn_state->sequence_index;
+    if (stbn_state->pmj_cache_valid == 0
+            || depth <= 0
+            || depth > SIXEL_MAX_CHANNELS
+            || depth != stbn_state->pmj_cache_depth
+            || stbn_state->pmj_cache_sequence_index != sequence_index) {
+        return sixel_temporal_stbn_source_pmj_sample_u16_cached_common(
+            stbn_state,
+            x,
+            y,
+            channel,
+            depth);
+    }
+
+    channel_u32 = sixel_temporal_stbn_pmj_channel_u32_common(channel, depth);
+    if (channel_u32 >= (uint32_t)depth) {
+        return sixel_temporal_stbn_source_pmj_sample_u16_cached_common(
+            stbn_state,
+            x,
+            y,
+            channel,
+            depth);
+    }
+
+    tile_x = (int)((uint32_t)x & (SIXEL_TEMPORAL_PMJ_TILE_SIDE - 1U));
+    tile_y = (int)((uint32_t)y & (SIXEL_TEMPORAL_PMJ_TILE_SIDE - 1U));
+    if (stbn_state->pmj_row_cache_valid == 0
+            || stbn_state->pmj_row_cache_depth != depth
+            || stbn_state->pmj_row_cache_sequence_index != sequence_index
+            || stbn_state->pmj_row_cache_y != tile_y) {
+        for (cache_channel = 0; cache_channel < depth; ++cache_channel) {
+            channel_cache = &stbn_state->pmj_channel_cache[cache_channel];
+            for (cache_x = 0; cache_x < SIXEL_TEMPORAL_PMJ_TILE_SIDE;
+                    ++cache_x) {
+                row_sample = sixel_temporal_stbn_pmj_sample_u16_cached_internal(
+                    channel_cache,
+                    cache_x,
+                    tile_y);
+                stbn_state->pmj_row_u16[cache_channel][cache_x] = row_sample;
+            }
+        }
+        stbn_state->pmj_row_cache_depth = depth;
+        stbn_state->pmj_row_cache_sequence_index = sequence_index;
+        stbn_state->pmj_row_cache_y = tile_y;
+        stbn_state->pmj_row_cache_valid = 1;
+    }
+
+    return stbn_state->pmj_row_u16[(int)channel_u32][tile_x];
+}
+
 SIXELSTATUS
 sixel_temporal_stbn_source_pmj_prepare_state_common(
     sixel_dither_t const *dither,
@@ -416,6 +501,10 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
         stbn_state->pmj_cache_valid = 0;
         stbn_state->pmj_cache_depth = 0;
         stbn_state->pmj_cache_sequence_index = 0U;
+        stbn_state->pmj_row_cache_valid = 0;
+        stbn_state->pmj_row_cache_depth = 0;
+        stbn_state->pmj_row_cache_sequence_index = 0U;
+        stbn_state->pmj_row_cache_y = 0;
         stbn_state->pmj_tile_valid = 0;
         stbn_state->pmj_tile_depth = 0;
         stbn_state->pmj_tile_sequence_index = 0U;
@@ -427,6 +516,10 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
         stbn_state->pmj_cache_valid = 0;
         stbn_state->pmj_cache_depth = 0;
         stbn_state->pmj_cache_sequence_index = 0U;
+        stbn_state->pmj_row_cache_valid = 0;
+        stbn_state->pmj_row_cache_depth = 0;
+        stbn_state->pmj_row_cache_sequence_index = 0U;
+        stbn_state->pmj_row_cache_y = 0;
         stbn_state->pmj_tile_valid = 0;
         stbn_state->pmj_tile_depth = 0;
         stbn_state->pmj_tile_sequence_index = 0U;
@@ -455,6 +548,10 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
         stbn_state->pmj_cache_depth = depth;
         stbn_state->pmj_cache_sequence_index = sequence_index;
         stbn_state->pmj_cache_valid = 1;
+        stbn_state->pmj_row_cache_valid = 0;
+        stbn_state->pmj_row_cache_depth = 0;
+        stbn_state->pmj_row_cache_sequence_index = 0U;
+        stbn_state->pmj_row_cache_y = 0;
     }
 
     width = dither->temporal_state.width;
@@ -485,7 +582,7 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
                 tile_index = (size_t)tile_y
                     * (size_t)SIXEL_TEMPORAL_PMJ_TILE_SIDE + (size_t)tile_x;
                 stbn_state->pmj_tile_u16[channel][tile_index] =
-                    sixel_temporal_stbn_source_pmj_sample_u16_from_cache_common(
+                    sixel_temporal_stbn_pmj_sample_u16_cached_internal(
                         channel_cache,
                         tile_x,
                         tile_y);
