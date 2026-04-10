@@ -93,6 +93,31 @@ int32_t
 sixel_temporal_stbn_bias_u8_from_centered_common(int32_t centered,
                                                   int strength_u8);
 
+/*
+ * Hot-path helper: convert one 16-bit sample to signed byte-domain bias
+ * with symmetric rounding, matching sixel_temporal_stbn_bias_u8_from_centered
+ * behavior without cross-translation-unit calls.
+ */
+static inline int32_t
+sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(uint16_t sample_u16,
+                                                           int strength_u8)
+{
+    int32_t centered;
+    int64_t bias;
+
+    centered = 0;
+    bias = 0;
+    centered = (int32_t)sample_u16 - 32768;
+    bias = (int64_t)centered * (int64_t)strength_u8;
+    if (bias >= 0) {
+        bias = (bias + 16384) / 32768;
+    } else {
+        bias = (bias - 16384) / 32768;
+    }
+
+    return (int32_t)bias;
+}
+
 int32_t
 sixel_temporal_stbn_bias_u8_state_common(
     sixel_temporal_stbn_state_common_t const *stbn_state,

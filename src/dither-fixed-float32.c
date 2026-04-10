@@ -923,26 +923,25 @@ sixel_temporal_diffusion_load_pixel_float32(
 
 static int
 sixel_temporal_stbn_bias_u8_sampled_float32(
-    sixel_temporal_stbn_sample_u16_fn sample_u16,
+    sixel_temporal_stbn_sample_u16_fn sample_fn,
     uint32_t sequence_index,
     int x,
     int y,
     int channel,
     int depth)
 {
-    int32_t centered;
+    uint16_t sample_value;
     int32_t bias_u8;
 
-    centered = 0;
+    sample_value = 0U;
     bias_u8 = 0;
 
     /*
      * Float32 keeps STBN active for both hash and mask backends in v1.
      */
-    centered = sixel_temporal_stbn_sample_centered_u16_common(
-        sample_u16(sequence_index, x, y, channel, depth));
-    bias_u8 = sixel_temporal_stbn_bias_u8_from_centered_common(
-        centered,
+    sample_value = sample_fn(sequence_index, x, y, channel, depth);
+    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+        sample_value,
         SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
 
     return (int)bias_u8;
