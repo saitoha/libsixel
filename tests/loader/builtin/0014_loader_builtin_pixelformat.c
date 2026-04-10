@@ -2394,6 +2394,188 @@ run_builtin_loader_bmp_fail_rle8_missing_end_marker_numeric_test(void)
         "/tests/data/inputs/formats/bmp-bad-rle8-missing-eob.bmp");
 }
 
+static int
+run_builtin_loader_bmp_info40_8bpp_palette_colors_used_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp info40 8bpp palette colors-used numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-info40-8bpp-pal-colors-used-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_info40_32bpp_bitfields_no_alpha_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp info40 32bpp bitfields no-alpha numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-info40-bitfields-rgbx-noalpha-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_v3_alpha_bgcolor_float32_numeric_test(void)
+{
+    static unsigned char const src_rgba_topdown[16] = {
+        0xffu, 0x00u, 0x00u, 0xffu, 0x00u, 0xffu, 0x00u, 0x80u,
+        0x00u, 0x00u, 0xffu, 0x40u, 0xffu, 0xffu, 0xffu, 0x00u
+    };
+    static unsigned char const bgcolor_u8[3] = { 0x20u, 0x40u, 0x80u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    float expected_linear[12];
+    float bg_linear[3];
+    int result;
+    int channel;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    memset(expected_linear, 0, sizeof(expected_linear));
+    memset(bg_linear, 0, sizeof(bg_linear));
+    result = 1;
+    channel = 0;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_u8;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v3 alpha bgcolor float32 numeric",
+        "/tests/data/inputs/formats/bmp-v3-bitfields-rgba-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v3 alpha bgcolor float32 numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        bg_linear[channel] = (float)bgcolor_u8[channel] / 255.0f;
+    }
+    bmp_numeric_compose_expected_linear(expected_linear,
+                                        src_rgba_topdown,
+                                        bg_linear);
+    result = verify_bmp_float_probe(
+        "builtin loader bmp v3 alpha bgcolor float32 numeric",
+        &probe,
+        expected_linear,
+        0.00001f);
+
+end:
+    sixel_helper_set_loader_background_colorspace(-1);
+    return result;
+}
+
+static int
+run_builtin_loader_bmp_rle8_topdown_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp rle8 topdown numeric",
+        "/tests/data/inputs/formats/bmp-info40-rle8-topdown-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_rle4_topdown_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0xffu, 0x00u, 0xffu, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp rle4 topdown numeric",
+        "/tests/data/inputs/formats/bmp-info40-rle4-topdown-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_fail_truncated_masks_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail truncated masks numeric",
+        "/tests/data/inputs/formats/bmp-bad-bitfields-truncated-masks.bmp");
+}
+
+static int
+run_builtin_loader_bmp_fail_truncated_pixel_data_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail truncated pixel data numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-bad-truncated-pixel-data-24bpp-2x2.bmp");
+}
+
+static int
+run_builtin_loader_bmp_fail_palette_index_overflow_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail palette index overflow numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-bad-palette-index-overflow-8bpp.bmp");
+}
+
+static int
+run_builtin_loader_bmp_fail_rle8_absolute_overflow_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail rle8 absolute overflow numeric",
+        "/tests/data/inputs/formats/bmp-bad-rle8-absolute-overflow.bmp");
+}
+
+static int
+run_builtin_loader_bmp_fail_unsupported_compression_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail unsupported compression numeric",
+        "/tests/data/inputs/formats/bmp-bad-unsupported-compression.bmp");
+}
+
 static SIXELSTATUS
 capture_pnm_numeric_probe(sixel_frame_t *frame, void *data)
 {
@@ -5989,7 +6171,27 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_INVALID_COLOR_MASKS",
           run_builtin_loader_bmp_fail_invalid_color_masks_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_RLE8_MISSING_END_MARKER",
-          run_builtin_loader_bmp_fail_rle8_missing_end_marker_numeric_test }
+          run_builtin_loader_bmp_fail_rle8_missing_end_marker_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_8BPP_COLORS_USED_PALETTE",
+          run_builtin_loader_bmp_info40_8bpp_palette_colors_used_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_32BPP_BITFIELDS_NO_ALPHA",
+          run_builtin_loader_bmp_info40_32bpp_bitfields_no_alpha_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V3_32_ALPHA_BGCOLOR_FLOAT32",
+          run_builtin_loader_bmp_v3_alpha_bgcolor_float32_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_RLE8_TOPDOWN",
+          run_builtin_loader_bmp_rle8_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_RLE4_TOPDOWN",
+          run_builtin_loader_bmp_rle4_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_TRUNCATED_MASKS",
+          run_builtin_loader_bmp_fail_truncated_masks_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_TRUNCATED_PIXEL_DATA",
+          run_builtin_loader_bmp_fail_truncated_pixel_data_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_PALETTE_INDEX_OVERFLOW",
+          run_builtin_loader_bmp_fail_palette_index_overflow_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_RLE8_ABSOLUTE_OVERFLOW",
+          run_builtin_loader_bmp_fail_rle8_absolute_overflow_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_UNSUPPORTED_COMPRESSION",
+          run_builtin_loader_bmp_fail_unsupported_compression_numeric_test }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
         { "SIXEL_TEST_TGA_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
