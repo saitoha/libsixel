@@ -12398,6 +12398,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     int32_t mask_left;
     int32_t mask_bottom;
     int32_t mask_right;
+    uint32_t flag_value;
     char key[5];
 
     cursor = 0u;
@@ -12409,6 +12410,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     mask_left = 0;
     mask_bottom = 0;
     mask_right = 0;
+    flag_value = 0u;
     key[0] = '\0';
     key[1] = '\0';
     key[2] = '\0';
@@ -12560,16 +12562,40 @@ sixel_builtin_psd_parse_layer_extra_data(
                 layer->fill_opacity = buffer[cursor];
             }
         } else if (memcmp(key, "clbl", 4u) == 0) {
-            if (key_length >= 1u) {
-                layer->has_blend_clipped_elements = 1;
-                layer->blend_clipped_elements_enabled =
-                    buffer[cursor] != 0 ? 1 : 0;
+            if (key_length >= 4u) {
+                flag_value = sixel_builtin_read_u32be(buffer + cursor);
+            } else if (key_length >= 1u) {
+                flag_value = (uint32_t)buffer[cursor];
+            } else {
+                flag_value = 0u;
+            }
+            layer->has_blend_clipped_elements = 1;
+            layer->blend_clipped_elements_enabled =
+                flag_value != 0u ? 1 : 0;
+            if (layer->blend_clipped_elements_enabled != 0) {
+                sixel_trace_topic_message("psd_decode",
+                                          "builtin PSD: parsed clbl=1");
+            } else {
+                sixel_trace_topic_message("psd_decode",
+                                          "builtin PSD: parsed clbl=0");
             }
         } else if (memcmp(key, "infx", 4u) == 0) {
-            if (key_length >= 1u) {
-                layer->has_blend_interior_effects = 1;
-                layer->blend_interior_effects_enabled =
-                    buffer[cursor] != 0 ? 1 : 0;
+            if (key_length >= 4u) {
+                flag_value = sixel_builtin_read_u32be(buffer + cursor);
+            } else if (key_length >= 1u) {
+                flag_value = (uint32_t)buffer[cursor];
+            } else {
+                flag_value = 0u;
+            }
+            layer->has_blend_interior_effects = 1;
+            layer->blend_interior_effects_enabled =
+                flag_value != 0u ? 1 : 0;
+            if (layer->blend_interior_effects_enabled != 0) {
+                sixel_trace_topic_message("psd_decode",
+                                          "builtin PSD: parsed infx=1");
+            } else {
+                sixel_trace_topic_message("psd_decode",
+                                          "builtin PSD: parsed infx=0");
             }
         } else if (memcmp(key, "knko", 4u) == 0) {
             layer->knockout_mode = sixel_builtin_psd_parse_knockout_mode(
