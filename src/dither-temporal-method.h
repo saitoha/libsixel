@@ -171,29 +171,35 @@ sixel_temporal_stbn_sample_mask_u16_common(uint32_t sequence_index,
 }
 
 static sixel_temporal_stbn_source_backend_common_t const
-sixel_temporal_stbn_source_hash_backend_common = {
-    SIXEL_TEMPORAL_STBN_SOURCE_HASH,
-    sixel_temporal_stbn_sample_hash_u16_common
-};
-
-static sixel_temporal_stbn_source_backend_common_t const
-sixel_temporal_stbn_source_mask_backend_common = {
-    SIXEL_TEMPORAL_STBN_SOURCE_MASK,
-    sixel_temporal_stbn_sample_mask_u16_common
+sixel_temporal_stbn_source_backends_common[] = {
+    {
+        SIXEL_TEMPORAL_STBN_SOURCE_HASH,
+        sixel_temporal_stbn_sample_hash_u16_common
+    },
+    {
+        SIXEL_TEMPORAL_STBN_SOURCE_MASK,
+        sixel_temporal_stbn_sample_mask_u16_common
+    }
 };
 
 static inline sixel_temporal_stbn_source_backend_common_t const *
 sixel_temporal_stbn_source_backend_from_id_common(uint8_t source_id)
 {
-    switch (source_id) {
-    case SIXEL_TEMPORAL_STBN_SOURCE_MASK:
-        return &sixel_temporal_stbn_source_mask_backend_common;
-    case SIXEL_TEMPORAL_STBN_SOURCE_HASH:
-    default:
-        break;
+    size_t i;
+    size_t count;
+
+    i = 0U;
+    count = sizeof(sixel_temporal_stbn_source_backends_common)
+        / sizeof(sixel_temporal_stbn_source_backends_common[0]);
+
+    for (i = 0U; i < count; ++i) {
+        if (sixel_temporal_stbn_source_backends_common[i].source_id
+                == source_id) {
+            return &sixel_temporal_stbn_source_backends_common[i];
+        }
     }
 
-    return &sixel_temporal_stbn_source_hash_backend_common;
+    return &sixel_temporal_stbn_source_backends_common[0];
 }
 
 static inline sixel_temporal_stbn_source_backend_common_t const *
