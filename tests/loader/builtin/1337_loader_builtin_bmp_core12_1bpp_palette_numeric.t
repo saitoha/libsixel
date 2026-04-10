@@ -1,0 +1,18 @@
+#!/bin/sh
+# TAP wrapper for builtin BMP CORE12 1bpp palette numeric checks.
+
+set -eux
+
+
+echo "1..1"
+set -v
+
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    --env "SIXEL_TEST_BMP_NUMERIC_CORE12_1BPP_PALETTE=1" \
+    "loader/0014_loader_builtin_pixelformat" || {
+    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp core12 1bpp palette numeric)"
+    exit 0
+}
+
+echo "ok 1 - loader/0014_loader_builtin_pixelformat (bmp core12 1bpp palette numeric)"
+exit 0

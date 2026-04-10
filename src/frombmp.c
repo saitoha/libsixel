@@ -132,9 +132,7 @@ sixel_bmp_read_s32le(unsigned char const *buffer,
     if (!sixel_bmp_read_u32le(buffer, size, offset, &u32)) {
         return 0;
     }
-    if (u32 > (unsigned int)INT_MAX + 1u) {
-        return 0;
-    }
+    /* Keep the two's-complement bit pattern when decoding signed fields. */
     *value = (int)(int32_t)u32;
     return 1;
 }
