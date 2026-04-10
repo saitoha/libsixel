@@ -13448,6 +13448,24 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
                 force_layer_fallback = 1;
             }
             if (layer->visible != 0 &&
+                layer->has_layer_effects != 0 &&
+                layer->has_vector_stroke_style != 0 &&
+                layer->has_blend_clipped_elements != 0 &&
+                layer->blend_clipped_elements_enabled != 0 &&
+                layer->has_blend_interior_effects != 0 &&
+                layer->blend_interior_effects_enabled == 0 &&
+                (layer->has_fill_payload != 0 ||
+                 layer->has_tysh_payload != 0 ||
+                 layer->has_vector_stroke_content_fill != 0)) {
+                /*
+                 * clbl=1 + infx=0 vector/effect stacks can keep merged
+                 * previews that diverge from runtime compositing. Prefer
+                 * fallback for this narrow subset even when pixel channels are
+                 * present.
+                 */
+                force_layer_fallback = 1;
+            }
+            if (layer->visible != 0 &&
                 layer->has_fill_payload != 0 &&
                 layer->has_tysh_payload == 0 &&
                 !sixel_builtin_psd_layer_has_decodable_pixel_channels(
@@ -16115,7 +16133,14 @@ sixel_builtin_psd_apply_layer_effects_subset(
         layer->has_vector_mask_curve_bbox != 0 &&
         layer->red_channel_index < 0 &&
         layer->gray_channel_index < 0 &&
-        layer->c_channel_index < 0) {
+        layer->c_channel_index < 0 &&
+        layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled == 0) {
+        /*
+         * Only suppress approximation when clbl=0 explicitly asks the clipped
+         * content to avoid group-style blending. clbl=1 layers should keep
+         * stroke approximation enabled to preserve vector-stroke silhouettes.
+         */
         suppress_stroke = 1;
     }
     if (layer->has_vector_mask != 0 &&

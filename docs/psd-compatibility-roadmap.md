@@ -297,10 +297,17 @@ Key points used by this roadmap:
   - Representative trace guards were added as PASS tests:
     `1327` (no clipping orphan trace), `1328` (knko=0 no ignore trace),
     `1329` (clbl parse), `1330` (infx parse), `1331` (ebbl parse),
-    `1349` (clbl=0 deferred-effect trace), and `1350` (vstk parse trace).
+    `1349` (clbl=0 deferred-effect trace), `1350` (vstk parse trace +
+    no unexpected suppression), and `1372` (stroke-composite merged-to-
+    fallback preference trace).
   - PASS LSQA representatives now include shape-fx parse+quality contracts
     for `clbl`/`infx` (`1347`, `1348`) while keeping hardcase XFAIL gates
     (`1317`, `1318`) unchanged until full effect parity is completed.
+  - Stroke suppression on vector-mask non-pixel fill layers is now gated by
+    `clbl=0` to avoid over-suppressing `clbl=1` effect stacks.
+  - Merged-vs-fallback selection now includes a narrow `clbl=1 + infx=0`
+    vector/effects subset so stroke-composite parity work can proceed
+    without broad fallback expansion.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

@@ -37,5 +37,11 @@ test "${trace_output#*builtin PSD: parsed vstk vector stroke style payload*}" \
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps vstk parse trace contract"
+test "${trace_output#*builtin PSD: suppressing stroke approximation on vector-mask non-pixel fill layer*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly suppressed stroke approximation"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps vstk parse and no-suppress trace contract"
 exit 0
