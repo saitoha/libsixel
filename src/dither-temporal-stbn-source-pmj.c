@@ -75,30 +75,29 @@ sixel_temporal_stbn_pmj_permute12_common(uint32_t value, uint32_t key)
     return value;
 }
 
-static uint32_t
-sixel_temporal_stbn_pmj_part1by1_6_common(uint32_t value)
-{
-    value &= 63U;
-    value = (value | (value << 4)) & 0x0f0fU;
-    value = (value | (value << 2)) & 0x3333U;
-    value = (value | (value << 1)) & 0x5555U;
-
-    return value;
-}
+static uint16_t const
+sixel_temporal_stbn_pmj_part1by1_lut6_common[] = {
+    0x0000U, 0x0001U, 0x0004U, 0x0005U, 0x0010U, 0x0011U, 0x0014U, 0x0015U,
+    0x0040U, 0x0041U, 0x0044U, 0x0045U, 0x0050U, 0x0051U, 0x0054U, 0x0055U,
+    0x0100U, 0x0101U, 0x0104U, 0x0105U, 0x0110U, 0x0111U, 0x0114U, 0x0115U,
+    0x0140U, 0x0141U, 0x0144U, 0x0145U, 0x0150U, 0x0151U, 0x0154U, 0x0155U,
+    0x0400U, 0x0401U, 0x0404U, 0x0405U, 0x0410U, 0x0411U, 0x0414U, 0x0415U,
+    0x0440U, 0x0441U, 0x0444U, 0x0445U, 0x0450U, 0x0451U, 0x0454U, 0x0455U,
+    0x0500U, 0x0501U, 0x0504U, 0x0505U, 0x0510U, 0x0511U, 0x0514U, 0x0515U,
+    0x0540U, 0x0541U, 0x0544U, 0x0545U, 0x0550U, 0x0551U, 0x0554U, 0x0555U
+};
 
 static uint32_t
 sixel_temporal_stbn_pmj_interleave6_common(uint32_t x, uint32_t y)
 {
-    uint32_t code;
-
     /*
      * Expand 6-bit coordinates into even/odd lanes and combine them
      * into a 12-bit Morton code. This keeps PMJ deterministic while
-     * avoiding per-bit loops on the hot sampling path.
+     * avoiding per-bit loops and repeated bit spreading in hot loops.
      */
-    code = sixel_temporal_stbn_pmj_part1by1_6_common(x);
-    code |= sixel_temporal_stbn_pmj_part1by1_6_common(y) << 1;
-    return code;
+    return (uint32_t)sixel_temporal_stbn_pmj_part1by1_lut6_common[x & 63U]
+        | ((uint32_t)sixel_temporal_stbn_pmj_part1by1_lut6_common[y & 63U]
+           << 1);
 }
 
 static uint32_t
