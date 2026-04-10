@@ -177,7 +177,8 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     if (dither->prefer_float32 == 0) {
         return 0;
     }
-    if (dither->method_for_carry == SIXEL_CARRY_ENABLE) {
+    if (dither->method_for_diffuse != SIXEL_DIFFUSE_TEMPORAL
+            && dither->method_for_carry == SIXEL_CARRY_ENABLE) {
         return 0;
     }
 
@@ -199,7 +200,7 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     case SIXEL_DIFFUSE_LSO2:
         return 1;
     case SIXEL_DIFFUSE_TEMPORAL:
-        return 0;
+        return 1;
     default:
         return 0;
     }
@@ -856,16 +857,16 @@ sixel_dither_map_pixels(
     } else {
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
             && context.pixels_float != NULL
-            && !use_temporal
-            && methodForCarry != SIXEL_CARRY_ENABLE
+            && context.method_for_carry != SIXEL_CARRY_ENABLE
             && depth == 3
             && dither != NULL
             && dither->prefer_float32 != 0) {
             /*
              * Float inputs can reuse the float32 renderer for every
              * fixed-weight kernel (FS, Sierra, Stucki, etc.) as long as
-             * carry buffers are disabled.  The legacy 8bit path remains as
-             * a fallback for unsupported argument combinations.
+             * carry buffers are disabled. Temporal diffusion is included
+             * here because it owns its inter-frame state internally and
+             * ignores the legacy carry selector.
              */
             status = sixel_dither_apply_fixed_float32(dither, &context);
             if (status == SIXEL_BAD_ARGUMENT) {

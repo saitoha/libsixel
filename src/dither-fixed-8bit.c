@@ -66,11 +66,6 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
     }
 }
 
-#define VARERR_SCALE_SHIFT 12
-#define VARERR_SCALE       (1 << VARERR_SCALE_SHIFT)
-#define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
-#define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
-
 typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
     uint32_t sequence_index,
     int x,
@@ -79,13 +74,6 @@ typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
     int depth);
 
 #define SIXEL_TEMPORAL_STBN_PLACEHOLDER_STRENGTH_SCALED 0
-#define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
-#define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
-
-#define SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE      0
-#define SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION 1
-#define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH 2
-#define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK 3
 
 typedef struct sixel_temporal_stbn_state {
     uint32_t sequence_index;
@@ -199,9 +187,6 @@ sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
                                     int depth);
 
 static int
-sixel_temporal_strategy_token_from_string(char const *value);
-
-static int
 sixel_temporal_strategy_token_from_env(void);
 
 static sixel_temporal_stbn_source_ops_t const *
@@ -253,9 +238,6 @@ sixel_temporal_method_from_diffuse(int method_for_diffuse);
 
 static sixel_temporal_method_ops_t const *
 sixel_temporal_method_for_strategy(int temporal_method);
-
-static int
-sixel_temporal_strategy_override(void);
 
 static void
 error_diffuse_normal(
@@ -401,7 +383,8 @@ sixel_temporal_diffusion_load_pixel(
 
     for (n = 0; n < depth; ++n) {
         channel_base = base + (size_t)n;
-        temporal_sum = ((int64_t)data[channel_base] << VARERR_SCALE_SHIFT);
+        temporal_sum = ((int64_t)data[channel_base]
+                        << SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
         if (frame != NULL) {
             temporal_sum += frame[channel_base];
         }
@@ -414,12 +397,13 @@ sixel_temporal_diffusion_load_pixel(
         temporal_clamped = temporal_sum;
         if (temporal_clamped < 0) {
             temporal_clamped = 0;
-        } else if (temporal_clamped > VARERR_MAX_VALUE) {
-            temporal_clamped = VARERR_MAX_VALUE;
+        } else if (temporal_clamped > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
+            temporal_clamped = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
         }
         accum_scaled[n] = (int32_t)temporal_clamped;
-        corrected[n] = (unsigned char)((temporal_clamped + VARERR_ROUND)
-                                       >> VARERR_SCALE_SHIFT);
+        corrected[n] = (unsigned char)((temporal_clamped
+                                        + SIXEL_TEMPORAL_VARERR_ROUND)
+                                       >> SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
     }
 }
 
@@ -458,7 +442,7 @@ sixel_temporal_diffusion_store_error(int32_t *frame,
     /*
      * Multiplication avoids undefined behavior from shifting negative values.
      */
-    scaled = (int32_t)(offset * VARERR_SCALE);
+    scaled = (int32_t)(offset * SIXEL_TEMPORAL_VARERR_SCALE);
     frame[base + (size_t)channel] = scaled;
 }
 
@@ -626,30 +610,6 @@ sixel_temporal_stbn_source_mask_ops = {
 };
 
 static int
-sixel_temporal_strategy_token_from_string(char const *value)
-{
-    if (value == NULL) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
-    }
-
-    if (strcmp(value, "diffusion") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION;
-    }
-
-    if (strcmp(value, "stbn") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
-    }
-    if (strcmp(value, "stbn-hash") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
-    }
-    if (strcmp(value, "stbn-mask") == 0) {
-        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK;
-    }
-
-    return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
-}
-
-static int
 sixel_temporal_strategy_token_from_env(void)
 {
     char const *value;
@@ -677,10 +637,7 @@ sixel_temporal_stbn_source_ops_for_token(int token)
 {
     uint8_t source_id;
 
-    source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
-    if (token == SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK) {
-        source_id = SIXEL_TEMPORAL_STBN_SOURCE_MASK;
-    }
+    source_id = sixel_temporal_stbn_source_id_from_token(token);
 
     return sixel_temporal_stbn_source_ops_for_id(source_id);
 }
@@ -833,13 +790,14 @@ sixel_temporal_stbn_load_pixel(
         adjusted_scaled = (int64_t)accum_scaled[n] + (int64_t)bias_scaled;
         if (adjusted_scaled < 0) {
             adjusted_scaled = 0;
-        } else if (adjusted_scaled > VARERR_MAX_VALUE) {
-            adjusted_scaled = VARERR_MAX_VALUE;
+        } else if (adjusted_scaled > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
+            adjusted_scaled = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
         }
 
         accum_scaled[n] = (int32_t)adjusted_scaled;
-        corrected[n] = (unsigned char)((adjusted_scaled + VARERR_ROUND)
-                                       >> VARERR_SCALE_SHIFT);
+        corrected[n] = (unsigned char)((adjusted_scaled
+                                        + SIXEL_TEMPORAL_VARERR_ROUND)
+                                       >> SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
     }
 }
 
@@ -872,34 +830,12 @@ sixel_temporal_stbn_store_error(int32_t *frame,
 static int
 sixel_temporal_method_from_diffuse(int method_for_diffuse)
 {
-    int override_method;
+    int token;
 
-    override_method = SIXEL_TEMPORAL_METHOD_NONE;
-    if (method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
-        override_method = sixel_temporal_strategy_override();
-        if (override_method == SIXEL_TEMPORAL_METHOD_STBN) {
-            return SIXEL_TEMPORAL_METHOD_STBN;
-        }
-        return SIXEL_TEMPORAL_METHOD_DIFFUSION;
-    }
-
-    return SIXEL_TEMPORAL_METHOD_NONE;
-}
-
-static int
-sixel_temporal_strategy_override(void)
-{
-    switch (sixel_temporal_strategy_token_from_env()) {
-    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH:
-    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK:
-        return SIXEL_TEMPORAL_METHOD_STBN;
-    case SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION:
-        return SIXEL_TEMPORAL_METHOD_DIFFUSION;
-    default:
-        break;
-    }
-
-    return SIXEL_TEMPORAL_METHOD_NONE;
+    token = sixel_temporal_strategy_token_from_env();
+    return sixel_temporal_method_from_diffuse_and_token(
+        method_for_diffuse,
+        token);
 }
 
 static sixel_temporal_method_ops_t const *
@@ -1388,7 +1324,7 @@ sixel_dither_apply_fixed_impl(
             } else if (use_carry) {
                 for (n = 0; n < depth; ++n) {
                     accum = ((int64_t)data[base + n]
-                             << VARERR_SCALE_SHIFT)
+                             << SIXEL_TEMPORAL_VARERR_SCALE_SHIFT)
                            + carry_curr[carry_base + (size_t)n];
                     if (accum < INT32_MIN) {
                         accum = INT32_MIN;
@@ -1398,13 +1334,14 @@ sixel_dither_apply_fixed_impl(
                     clamped = accum;
                     if (clamped < 0) {
                         clamped = 0;
-                    } else if (clamped > VARERR_MAX_VALUE) {
-                        clamped = VARERR_MAX_VALUE;
+                    } else if (clamped > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
+                        clamped = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
                     }
                     accum_scaled[n] = (int32_t)clamped;
                     corrected[n]
-                        = (unsigned char)((clamped + VARERR_ROUND)
-                                          >> VARERR_SCALE_SHIFT);
+                        = (unsigned char)((clamped
+                                           + SIXEL_TEMPORAL_VARERR_ROUND)
+                                          >> SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
                     data[base + n] = corrected[n];
                     carry_curr[carry_base + (size_t)n] = 0;
                 }
@@ -1470,7 +1407,7 @@ sixel_dither_apply_fixed_impl(
                 }
                 if (use_carry) {
                     target_scaled = (int32_t)palette_value
-                                  << VARERR_SCALE_SHIFT;
+                        << SIXEL_TEMPORAL_VARERR_SCALE_SHIFT;
                     error_scaled = accum_scaled[n] - target_scaled;
                     f_diffuse_carry(carry_curr, carry_next, carry_far,
                                     width, height, depth,

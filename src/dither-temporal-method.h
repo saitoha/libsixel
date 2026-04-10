@@ -37,6 +37,22 @@
 #define SIXEL_TEMPORAL_METHOD_DIFFUSION 1
 #define SIXEL_TEMPORAL_METHOD_STBN      2
 
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE      0
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION 1
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH 2
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK 3
+
+#define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
+#define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
+
+#define SIXEL_TEMPORAL_VARERR_SCALE_SHIFT 12
+#define SIXEL_TEMPORAL_VARERR_SCALE \
+    (1 << SIXEL_TEMPORAL_VARERR_SCALE_SHIFT)
+#define SIXEL_TEMPORAL_VARERR_ROUND \
+    (1 << (SIXEL_TEMPORAL_VARERR_SCALE_SHIFT - 1))
+#define SIXEL_TEMPORAL_VARERR_MAX_VALUE \
+    (255 * SIXEL_TEMPORAL_VARERR_SCALE)
+
 typedef SIXELSTATUS (*sixel_temporal_prepare_frame_fn)(
     sixel_dither_t *dither,
     int width,
@@ -77,6 +93,77 @@ typedef struct sixel_temporal_method_ops {
     sixel_temporal_clear_pixel_fn clear_pixel;
     sixel_temporal_store_error_fn store_error;
 } sixel_temporal_method_ops_t;
+
+/*
+ * Keep temporal strategy token parsing in one place so 8bit and float32
+ * backends resolve overrides with identical fallback rules.
+ */
+static inline int
+sixel_temporal_strategy_token_from_string(char const *value)
+{
+    if (value == NULL) {
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    }
+    if (strcmp(value, "diffusion") == 0) {
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION;
+    }
+    if (strcmp(value, "stbn") == 0) {
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
+    }
+    if (strcmp(value, "stbn-hash") == 0) {
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
+    }
+    if (strcmp(value, "stbn-mask") == 0) {
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK;
+    }
+
+    return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+}
+
+static inline int
+sixel_temporal_strategy_method_from_token(int strategy_token)
+{
+    switch (strategy_token) {
+    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH:
+    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK:
+        return SIXEL_TEMPORAL_METHOD_STBN;
+    case SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION:
+        return SIXEL_TEMPORAL_METHOD_DIFFUSION;
+    default:
+        break;
+    }
+
+    return SIXEL_TEMPORAL_METHOD_NONE;
+}
+
+static inline uint8_t
+sixel_temporal_stbn_source_id_from_token(int strategy_token)
+{
+    if (strategy_token == SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK) {
+        return SIXEL_TEMPORAL_STBN_SOURCE_MASK;
+    }
+
+    return SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+}
+
+static inline int
+sixel_temporal_method_from_diffuse_and_token(int method_for_diffuse,
+                                             int strategy_token)
+{
+    int method;
+
+    method = SIXEL_TEMPORAL_METHOD_NONE;
+    if (method_for_diffuse != SIXEL_DIFFUSE_TEMPORAL) {
+        return method;
+    }
+
+    method = sixel_temporal_strategy_method_from_token(strategy_token);
+    if (method == SIXEL_TEMPORAL_METHOD_STBN) {
+        return method;
+    }
+
+    return SIXEL_TEMPORAL_METHOD_DIFFUSION;
+}
 
 /*
  * Shared temporal frame ownership helpers used by temporal strategies.
