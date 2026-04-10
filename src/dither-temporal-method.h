@@ -66,9 +66,15 @@ typedef struct sixel_temporal_stbn_state_common {
     sixel_temporal_stbn_sample_u16_fn sample_u16;
 } sixel_temporal_stbn_state_common_t;
 
+typedef SIXELSTATUS (*sixel_temporal_stbn_prepare_state_common_fn)(
+    sixel_dither_t const *dither,
+    sixel_temporal_stbn_state_common_t *stbn_state,
+    int can_update);
+
 typedef struct sixel_temporal_stbn_source_backend_common {
     uint8_t source_id;
     sixel_temporal_stbn_sample_u16_fn sample_u16;
+    sixel_temporal_stbn_prepare_state_common_fn prepare_state;
 } sixel_temporal_stbn_source_backend_common_t;
 
 typedef SIXELSTATUS (*sixel_temporal_prepare_frame_fn)(
@@ -170,6 +176,25 @@ sixel_temporal_stbn_sample_mask_u16_common(uint32_t sequence_index,
                                                       depth);
 }
 
+static inline SIXELSTATUS
+sixel_temporal_stbn_prepare_state_default_common(
+    sixel_dither_t const *dither,
+    sixel_temporal_stbn_state_common_t *stbn_state,
+    int can_update)
+{
+    (void)can_update;
+
+    if (stbn_state == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (dither != NULL && dither->frame_context.valid) {
+        stbn_state->sequence_index =
+            (uint32_t)dither->frame_context.frame_no;
+    }
+
+    return SIXEL_OK;
+}
+
 static sixel_temporal_stbn_source_backend_common_t const
 sixel_temporal_stbn_source_backends_common[] = {
     /*
@@ -178,7 +203,8 @@ sixel_temporal_stbn_source_backends_common[] = {
      */
     {
         SIXEL_TEMPORAL_STBN_SOURCE_HASH,
-        sixel_temporal_stbn_sample_hash_u16_common
+        sixel_temporal_stbn_sample_hash_u16_common,
+        sixel_temporal_stbn_prepare_state_default_common
     },
     /*
      * Mask currently reuses hash samples as a placeholder. Table-driven
@@ -186,7 +212,8 @@ sixel_temporal_stbn_source_backends_common[] = {
      */
     {
         SIXEL_TEMPORAL_STBN_SOURCE_MASK,
-        sixel_temporal_stbn_sample_mask_u16_common
+        sixel_temporal_stbn_sample_mask_u16_common,
+        sixel_temporal_stbn_prepare_state_default_common
     }
 };
 
@@ -627,9 +654,16 @@ sixel_temporal_prepare_stbn_state_common(sixel_dither_t *dither,
         typed_state->sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
     }
 
-    if (dither != NULL && dither->frame_context.valid) {
-        typed_state->sequence_index =
-            (uint32_t)dither->frame_context.frame_no;
+    if (backend != NULL && backend->prepare_state != NULL) {
+        status = backend->prepare_state(dither, typed_state, can_update);
+    } else {
+        status = sixel_temporal_stbn_prepare_state_default_common(
+            dither,
+            typed_state,
+            can_update);
+    }
+    if (status != SIXEL_OK) {
+        return status;
     }
 
     *state = typed_state;
