@@ -11336,6 +11336,10 @@ sixel_builtin_psd_parse_vector_stroke_payload(
                 stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE;
             } else if (strcmp(enum_value, "strokeStyleAlignCenter") == 0) {
                 stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER;
+            } else if (strcmp(enum_value, "InsF") == 0) {
+                stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE;
+            } else if (strcmp(enum_value, "CtrF") == 0) {
+                stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER;
             } else {
                 stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
             }
