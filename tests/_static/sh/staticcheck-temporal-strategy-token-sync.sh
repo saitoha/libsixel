@@ -65,7 +65,7 @@ in_func && /strcmp\(value, "/ {
 in_func && /^}/ {
     in_func = 0
 }
-' "$source_file" | LC_ALL=C sort -u > "$source_tokens"
+' | LC_ALL=C sort -u > "$source_tokens"
 
 while IFS= read -r token; do
     test -n "$token" || continue

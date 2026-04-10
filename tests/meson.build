@@ -725,6 +725,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-temporal-c-h-pair-sync',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-temporal-c-h-pair-sync.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-quantize-merge-suboption-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-quantize-merge-suboption-sync.sh',
       meson.project_source_root()],
