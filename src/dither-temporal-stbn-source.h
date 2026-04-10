@@ -34,6 +34,14 @@
 #define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
 #define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
 
+/*
+ * Shared v1 STBN strength in byte-domain units.
+ *
+ *  - 0 disables STBN bias.
+ *  - 24 keeps visible decorrelation while preserving palette locality.
+ */
+#define SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8 24
+
 typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
     uint32_t sequence_index,
     int x,
@@ -63,6 +71,35 @@ sixel_temporal_stbn_wrap_tile_coord_common(int value, int tile_size);
 
 uint16_t
 sixel_temporal_stbn_sample_u8_to_u16_common(uint8_t sample_u8);
+
+int
+sixel_temporal_stbn_state_uses_source_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    uint8_t source_id);
+
+int32_t
+sixel_temporal_stbn_sample_centered_u16_common(uint16_t sample_u16);
+
+int32_t
+sixel_temporal_stbn_sample_centered_state_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth);
+
+int32_t
+sixel_temporal_stbn_bias_u8_from_centered_common(int32_t centered,
+                                                  int strength_u8);
+
+int32_t
+sixel_temporal_stbn_bias_u8_state_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth,
+    int strength_u8);
 
 uint16_t
 sixel_temporal_stbn_sample_hash_u16_common(uint32_t sequence_index,

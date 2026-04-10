@@ -66,8 +66,6 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
     }
 }
 
-#define SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8 24
-
 typedef sixel_temporal_stbn_state_common_t sixel_temporal_stbn_state_t;
 
 static SIXELSTATUS
@@ -144,23 +142,6 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int y,
                                 int channel,
                                 int depth);
-
-static uint16_t
-sixel_temporal_stbn_sample_u16(
-    sixel_temporal_stbn_state_t const *stbn_state,
-    int x,
-    int y,
-    int channel,
-    int depth);
-
-static int32_t
-sixel_temporal_stbn_sample_centered(
-                                    sixel_temporal_stbn_state_t const
-                                        *stbn_state,
-                                    int x,
-                                    int y,
-                                    int channel,
-                                    int depth);
 
 static sixel_temporal_method_ops_t const
 sixel_temporal_diffusion_ops = {
@@ -440,40 +421,6 @@ sixel_temporal_stbn_prepare_frame(sixel_dither_t *dither,
     return status;
 }
 
-static uint16_t
-sixel_temporal_stbn_sample_u16(
-    sixel_temporal_stbn_state_t const *stbn_state,
-    int x,
-    int y,
-    int channel,
-    int depth)
-{
-    return sixel_temporal_stbn_sample_u16_state_common(stbn_state,
-                                                       x,
-                                                       y,
-                                                       channel,
-                                                       depth);
-}
-
-static int32_t
-sixel_temporal_stbn_sample_centered(
-                                    sixel_temporal_stbn_state_t const
-                                        *stbn_state,
-                                    int x,
-                                    int y,
-                                    int channel,
-                                    int depth)
-{
-    uint16_t sample;
-
-    sample = sixel_temporal_stbn_sample_u16(stbn_state,
-                                            x,
-                                            y,
-                                            channel,
-                                            depth);
-    return (int32_t)sample - 32768;
-}
-
 static int32_t
 sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int x,
@@ -481,41 +428,28 @@ sixel_temporal_stbn_bias_scaled(sixel_temporal_stbn_state_t const *stbn_state,
                                 int channel,
                                 int depth)
 {
-    uint8_t source_id;
-    int32_t sample_centered;
-    int64_t bias_scaled;
+    int32_t bias_u8;
 
-    source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
-    sample_centered = 0;
-    bias_scaled = 0;
+    bias_u8 = 0;
 
-    if (stbn_state == NULL) {
-        return 0;
-    }
-    source_id = stbn_state->sample_source_id;
     /*
      * Keep hash-equivalent behavior for legacy 8bit strategy while the
      * table-backed mask source carries the first visible STBN effect.
      */
-    if (source_id != SIXEL_TEMPORAL_STBN_SOURCE_MASK) {
+    if (!sixel_temporal_stbn_state_uses_source_common(
+            stbn_state,
+            SIXEL_TEMPORAL_STBN_SOURCE_MASK)) {
         return 0;
     }
 
-    sample_centered = sixel_temporal_stbn_sample_centered(stbn_state,
-                                                          x,
-                                                          y,
-                                                          channel,
-                                                          depth);
-    bias_scaled = (int64_t)sample_centered
-        * (int64_t)SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8
-        * (int64_t)SIXEL_TEMPORAL_VARERR_SCALE;
-    if (bias_scaled >= 0) {
-        bias_scaled = (bias_scaled + 16384) / 32768;
-    } else {
-        bias_scaled = (bias_scaled - 16384) / 32768;
-    }
-
-    return (int32_t)bias_scaled;
+    bias_u8 = sixel_temporal_stbn_bias_u8_state_common(
+        stbn_state,
+        x,
+        y,
+        channel,
+        depth,
+        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
+    return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
 }
 
 static void

@@ -95,12 +95,6 @@ typedef struct sixel_temporal_method_float32_ops {
 typedef sixel_temporal_stbn_state_common_t
     sixel_temporal_stbn_state_float32_t;
 
-/*
- * Keep STBN bias conservative in v1 so temporal decorrelation is visible
- * without dominating palette quantization decisions.
- */
-#define SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8 24
-
 static void
 error_diffuse_float(float *data,
                     int pos,
@@ -935,28 +929,20 @@ sixel_temporal_stbn_bias_u8_float32(
     int channel,
     int depth)
 {
-    uint16_t sample;
-    int32_t centered;
-    int64_t bias;
+    int32_t bias_u8;
 
-    sample = 0U;
-    centered = 0;
-    bias = 0;
+    /*
+     * Float32 keeps STBN active for both hash and mask backends in v1.
+     */
+    bias_u8 = sixel_temporal_stbn_bias_u8_state_common(
+        stbn_state,
+        x,
+        y,
+        channel,
+        depth,
+        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
 
-    sample = sixel_temporal_stbn_sample_u16_state_common(stbn_state,
-                                                         x,
-                                                         y,
-                                                         channel,
-                                                         depth);
-    centered = (int32_t)sample - 32768;
-    bias = (int64_t)centered * (int64_t)SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8;
-    if (bias >= 0) {
-        bias = (bias + 16384) / 32768;
-    } else {
-        bias = (bias - 16384) / 32768;
-    }
-
-    return (int)bias;
+    return (int)bias_u8;
 }
 
 static SIXELSTATUS

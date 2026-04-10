@@ -52,6 +52,81 @@ sixel_temporal_stbn_sample_u8_to_u16_common(uint8_t sample_u8)
     return (uint16_t)((uint16_t)sample_u8 * 257U);
 }
 
+int
+sixel_temporal_stbn_state_uses_source_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    uint8_t source_id)
+{
+    if (stbn_state == NULL) {
+        return 0;
+    }
+
+    return stbn_state->sample_source_id == source_id;
+}
+
+int32_t
+sixel_temporal_stbn_sample_centered_u16_common(uint16_t sample_u16)
+{
+    return (int32_t)sample_u16 - 32768;
+}
+
+int32_t
+sixel_temporal_stbn_sample_centered_state_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint16_t sample_u16;
+
+    sample_u16 = 0U;
+
+    sample_u16 = sixel_temporal_stbn_sample_u16_state_common(stbn_state,
+                                                             x,
+                                                             y,
+                                                             channel,
+                                                             depth);
+    return sixel_temporal_stbn_sample_centered_u16_common(sample_u16);
+}
+
+int32_t
+sixel_temporal_stbn_bias_u8_from_centered_common(int32_t centered,
+                                                  int strength_u8)
+{
+    int64_t bias;
+
+    bias = (int64_t)centered * (int64_t)strength_u8;
+    if (bias >= 0) {
+        bias = (bias + 16384) / 32768;
+    } else {
+        bias = (bias - 16384) / 32768;
+    }
+
+    return (int32_t)bias;
+}
+
+int32_t
+sixel_temporal_stbn_bias_u8_state_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth,
+    int strength_u8)
+{
+    int32_t centered;
+
+    centered = 0;
+    centered = sixel_temporal_stbn_sample_centered_state_common(stbn_state,
+                                                                 x,
+                                                                 y,
+                                                                 channel,
+                                                                 depth);
+    return sixel_temporal_stbn_bias_u8_from_centered_common(centered,
+                                                            strength_u8);
+}
+
 uint16_t
 sixel_temporal_stbn_sample_hash_u16_common(uint32_t sequence_index,
                                            int x,
