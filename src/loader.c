@@ -1941,6 +1941,7 @@ sixel_loader_load_file(
         manager,
         chain,
         pchunk,
+        skip_predicate_gate,
         loader_callback_trampoline,
         &callback_state,
         loader_manager_configure_component,

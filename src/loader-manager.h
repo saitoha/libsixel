@@ -72,9 +72,10 @@ typedef void (*sixel_loader_manager_trace_result_fn)(
  * 2) resolve_loader_suboptions(): resolve defaults + overrides into an
  *    execution-local suboption context.
  * 3) build_plan_from_resolution(): map resolution entries to factory entries.
- * 4) build_chain_from_plan(): ask factory for per-entry eligibility and
+ * 4) build_chain_from_plan(): apply coarse eligibility (magic signature) and
  *    materialize components in plan order.
- * 5) execute_chain(): run configured components until one succeeds.
+ * 5) execute_chain(): evaluate predicate eligibility lazily for reached
+ *    components, then run until one succeeds.
  */
 
 SIXELSTATUS
@@ -123,6 +124,7 @@ loader_manager_execute_chain(
     sixel_loader_manager_t *manager,
     sixel_loader_chain_t const *chain,
     sixel_chunk_t const *chunk,
+    int skip_predicate_gate,
     sixel_load_image_function fn_load,
     void *load_context,
     sixel_loader_manager_configure_component_fn fn_configure,

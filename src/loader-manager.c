@@ -57,6 +57,60 @@ static struct sixel_loader_manager g_loader_manager_singleton = {
     NULL
 };
 
+static sixel_loader_entry_t const *
+loader_manager_find_entry_by_name(sixel_loader_manager_t *manager,
+                                  char const *name)
+{
+    sixel_loader_entry_t const *entries;
+    size_t entry_count;
+    size_t index;
+
+    entries = NULL;
+    entry_count = 0u;
+    index = 0u;
+    if (manager == NULL || manager->factory == NULL || name == NULL) {
+        return NULL;
+    }
+
+    entry_count = loader_factory_get_entries(manager->factory, &entries);
+    for (index = 0u; index < entry_count; ++index) {
+        if (entries[index].name == NULL) {
+            continue;
+        }
+        if (strcmp(entries[index].name, name) == 0) {
+            return &entries[index];
+        }
+    }
+
+    return NULL;
+}
+
+static int
+loader_manager_component_matches_chunk(
+    sixel_loader_manager_t *manager,
+    char const *name,
+    sixel_chunk_t const *chunk,
+    int enforce_predicate)
+{
+    sixel_loader_entry_t const *entry;
+
+    entry = NULL;
+    if (manager == NULL || name == NULL || chunk == NULL) {
+        return 0;
+    }
+
+    entry = loader_manager_find_entry_by_name(manager, name);
+    if (entry == NULL) {
+        return 0;
+    }
+
+    return loader_factory_entry_matches_chunk_with_predicate(
+        manager->factory,
+        entry,
+        chunk,
+        enforce_predicate);
+}
+
 static void
 loader_manager_unref_singleton_ref(sixel_atomic_u32_t *ref)
 {
@@ -703,6 +757,7 @@ loader_manager_build_chain_from_plan(
     chain = NULL;
     component = NULL;
     index = 0u;
+    (void)skip_predicate_gate;
     if (ppchain == NULL || manager == NULL || plan == NULL) {
         sixel_helper_set_additional_message(
             "loader_manager_build_chain_from_plan: invalid argument.");
@@ -719,7 +774,7 @@ loader_manager_build_chain_from_plan(
      * Chain assembly keeps a strict separation of concerns.
      *
      * 1) plan[] already defines candidate order.
-     * 2) factory decides whether a candidate can run for this chunk.
+     * 2) factory applies only coarse magic gating while assembling the chain.
      * 3) factory materializes a backend component.
      * 4) chain owns component references in execution order.
      */
@@ -727,11 +782,17 @@ loader_manager_build_chain_from_plan(
         if (plan[index] == NULL) {
             continue;
         }
+        /*
+         * Predicate checks can be expensive for some backends.
+         * Evaluate only the fixed magic signature here and defer predicate
+         * checks to execution so backends after an early success are never
+         * probed.
+         */
         if (!loader_factory_entry_matches_chunk_with_predicate(
                 manager->factory,
                 plan[index],
                 chunk,
-                skip_predicate_gate ? 0 : 1)) {
+                0)) {
             continue;
         }
 
@@ -767,6 +828,7 @@ loader_manager_execute_chain(
     sixel_loader_manager_t *manager,
     sixel_loader_chain_t const *chain,
     sixel_chunk_t const *chunk,
+    int skip_predicate_gate,
     sixel_load_image_function fn_load,
     void *load_context,
     sixel_loader_manager_configure_component_fn fn_configure,
@@ -779,10 +841,12 @@ loader_manager_execute_chain(
     SIXELSTATUS status;
     sixel_loader_chain_node_t const *node;
     char const *name;
+    int enforce_predicate;
 
     status = SIXEL_FALSE;
     node = NULL;
     name = NULL;
+    enforce_predicate = 1;
     if (selected_name != NULL) {
         *selected_name = NULL;
     }
@@ -792,10 +856,17 @@ loader_manager_execute_chain(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    (void)manager;
+    enforce_predicate = skip_predicate_gate ? 0 : 1;
     node = loader_chain_head(chain);
     while (node != NULL) {
         name = sixel_loader_component_get_name(node->component);
+        if (!loader_manager_component_matches_chunk(manager,
+                                                    name,
+                                                    chunk,
+                                                    enforce_predicate)) {
+            node = node->next;
+            continue;
+        }
         if (fn_configure != NULL) {
             status = fn_configure(node->component, configure_context);
             if (SIXEL_FAILED(status)) {
