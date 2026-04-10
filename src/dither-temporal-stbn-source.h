@@ -36,6 +36,11 @@
 #define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
 #define SIXEL_TEMPORAL_STBN_SOURCE_PMJ  2
 
+#define SIXEL_TEMPORAL_PMJ_TILE_SIDE 64
+#define SIXEL_TEMPORAL_PMJ_TILE_PIXELS \
+    (SIXEL_TEMPORAL_PMJ_TILE_SIDE * SIXEL_TEMPORAL_PMJ_TILE_SIDE)
+#define SIXEL_TEMPORAL_PMJ_TILE_ENABLE_MIN_PIXELS 1024
+
 /*
  * Shared v1 STBN strength in byte-domain units.
  *
@@ -67,6 +72,11 @@ typedef struct sixel_temporal_stbn_state_common {
     int pmj_cache_valid;
     int pmj_cache_depth;
     uint32_t pmj_cache_sequence_index;
+    int pmj_tile_valid;
+    int pmj_tile_depth;
+    uint32_t pmj_tile_sequence_index;
+    int pmj_tile_enabled;
+    uint16_t pmj_tile_u16[SIXEL_MAX_CHANNELS][SIXEL_TEMPORAL_PMJ_TILE_PIXELS];
     sixel_temporal_stbn_pmj_channel_cache_common_t
         pmj_channel_cache[SIXEL_MAX_CHANNELS];
 } sixel_temporal_stbn_state_common_t;
@@ -158,6 +168,14 @@ sixel_temporal_stbn_sample_mask_u16_common(uint32_t sequence_index,
 
 uint16_t
 sixel_temporal_stbn_source_pmj_sample_u16_cached_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth);
+
+uint16_t
+sixel_temporal_stbn_source_pmj_sample_u16_tiled_common(
     sixel_temporal_stbn_state_common_t const *stbn_state,
     int x,
     int y,

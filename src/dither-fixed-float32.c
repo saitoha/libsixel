@@ -974,6 +974,33 @@ sixel_temporal_stbn_bias_u8_sampled_cached_float32(
     return (int)bias_u8;
 }
 
+static int
+sixel_temporal_stbn_bias_u8_sampled_tiled_float32(
+    sixel_temporal_stbn_state_float32_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint16_t sample_value;
+    int32_t bias_u8;
+
+    sample_value = 0U;
+    bias_u8 = 0;
+
+    sample_value = sixel_temporal_stbn_source_pmj_sample_u16_tiled_common(
+        stbn_state,
+        x,
+        y,
+        channel,
+        depth);
+    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+        sample_value,
+        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
+
+    return (int)bias_u8;
+}
+
 static SIXELSTATUS
 sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
                                           int width,
@@ -1039,6 +1066,7 @@ sixel_temporal_stbn_load_pixel_float32(
     sixel_temporal_stbn_sample_u16_fn sample_u16;
     uint32_t sequence_index;
     int use_pmj_cached;
+    int use_pmj_tiled;
 
     stbn_state = NULL;
     n = 0;
@@ -1047,6 +1075,7 @@ sixel_temporal_stbn_load_pixel_float32(
     sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
     sequence_index = 0U;
     use_pmj_cached = 0;
+    use_pmj_tiled = 0;
 
     stbn_state = (sixel_temporal_stbn_state_float32_t const *)
         sixel_temporal_get_method_private_const(
@@ -1077,7 +1106,37 @@ sixel_temporal_stbn_load_pixel_float32(
         }
         if (stbn_state->sample_source_id == SIXEL_TEMPORAL_STBN_SOURCE_PMJ) {
             use_pmj_cached = 1;
+            if (stbn_state->pmj_tile_enabled != 0) {
+                use_pmj_tiled = 1;
+            }
         }
+    }
+
+    if (use_pmj_tiled != 0) {
+        for (n = 0; n < depth; ++n) {
+            bias_u8 = sixel_temporal_stbn_bias_u8_sampled_tiled_float32(
+                stbn_state,
+                x,
+                y,
+                n,
+                depth);
+            if (bias_u8 == 0) {
+                continue;
+            }
+
+            adjusted_u8 = (int)corrected[n] + bias_u8;
+            if (adjusted_u8 < 0) {
+                adjusted_u8 = 0;
+            } else if (adjusted_u8 > 255) {
+                adjusted_u8 = 255;
+            }
+            corrected[n] = (unsigned char)adjusted_u8;
+            working_float[n] = sixel_pixelformat_byte_to_float(
+                pixelformat,
+                n,
+                corrected[n]);
+        }
+        return;
     }
 
     if (use_pmj_cached != 0) {

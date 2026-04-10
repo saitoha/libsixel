@@ -464,6 +464,32 @@ sixel_temporal_stbn_bias_scaled_sampled_cached(
     return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
 }
 
+static int32_t
+sixel_temporal_stbn_bias_scaled_sampled_tiled(
+    sixel_temporal_stbn_state_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint16_t sample_value;
+    int32_t bias_u8;
+
+    sample_value = 0U;
+    bias_u8 = 0;
+
+    sample_value = sixel_temporal_stbn_source_pmj_sample_u16_tiled_common(
+        stbn_state,
+        x,
+        y,
+        channel,
+        depth);
+    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+        sample_value,
+        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
+    return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
+}
+
 static void
 sixel_temporal_stbn_load_pixel(
     sixel_dither_t *dither,
@@ -484,6 +510,7 @@ sixel_temporal_stbn_load_pixel(
     uint32_t sequence_index;
     int use_stbn_bias;
     int use_pmj_cached;
+    int use_pmj_tiled;
 
     n = 0;
     bias_scaled = 0;
@@ -492,6 +519,7 @@ sixel_temporal_stbn_load_pixel(
     sequence_index = 0U;
     use_stbn_bias = 0;
     use_pmj_cached = 0;
+    use_pmj_tiled = 0;
     stbn_state = (sixel_temporal_stbn_state_t const *)
         sixel_temporal_get_method_private_const(
             dither,
@@ -519,6 +547,9 @@ sixel_temporal_stbn_load_pixel(
         use_stbn_bias = 1;
         if (stbn_state->sample_source_id == SIXEL_TEMPORAL_STBN_SOURCE_PMJ) {
             use_pmj_cached = 1;
+            if (stbn_state->pmj_tile_enabled != 0) {
+                use_pmj_tiled = 1;
+            }
         }
         sequence_index = stbn_state->sequence_index;
         if (stbn_state->sample_u16 != NULL) {
@@ -527,6 +558,34 @@ sixel_temporal_stbn_load_pixel(
     }
 
     if (use_stbn_bias == 0) {
+        return;
+    }
+
+    if (use_pmj_tiled != 0) {
+        for (n = 0; n < depth; ++n) {
+            bias_scaled = sixel_temporal_stbn_bias_scaled_sampled_tiled(
+                stbn_state,
+                x,
+                y,
+                n,
+                depth);
+            if (bias_scaled == 0) {
+                continue;
+            }
+
+            adjusted_scaled = (int64_t)accum_scaled[n] + (int64_t)bias_scaled;
+            if (adjusted_scaled < 0) {
+                adjusted_scaled = 0;
+            } else if (adjusted_scaled > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
+                adjusted_scaled = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
+            }
+
+            accum_scaled[n] = (int32_t)adjusted_scaled;
+            corrected[n] = (unsigned char)((adjusted_scaled
+                                            + SIXEL_TEMPORAL_VARERR_ROUND)
+                                           >>
+                                           SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
+        }
         return;
     }
 
