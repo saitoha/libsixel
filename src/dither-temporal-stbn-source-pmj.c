@@ -62,19 +62,28 @@ sixel_temporal_stbn_pmj_permute_pow2_common(uint32_t value,
 }
 
 static uint32_t
+sixel_temporal_stbn_pmj_part1by1_6_common(uint32_t value)
+{
+    value &= 63U;
+    value = (value | (value << 4)) & 0x0f0fU;
+    value = (value | (value << 2)) & 0x3333U;
+    value = (value | (value << 1)) & 0x5555U;
+
+    return value;
+}
+
+static uint32_t
 sixel_temporal_stbn_pmj_interleave6_common(uint32_t x, uint32_t y)
 {
-    uint32_t bit;
     uint32_t code;
 
-    bit = 0U;
-    code = 0U;
-
-    for (bit = 0U; bit < 6U; ++bit) {
-        code |= ((x >> bit) & 1U) << (bit * 2U);
-        code |= ((y >> bit) & 1U) << (bit * 2U + 1U);
-    }
-
+    /*
+     * Expand 6-bit coordinates into even/odd lanes and combine them
+     * into a 12-bit Morton code. This keeps PMJ deterministic while
+     * avoiding per-bit loops on the hot sampling path.
+     */
+    code = sixel_temporal_stbn_pmj_part1by1_6_common(x);
+    code |= sixel_temporal_stbn_pmj_part1by1_6_common(y) << 1;
     return code;
 }
 
