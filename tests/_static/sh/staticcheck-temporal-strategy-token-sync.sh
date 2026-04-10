@@ -64,6 +64,8 @@ cat > "$expected_float32_tests" <<'EOF'
 0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t
 0045_temporal_strategy_cli_diffusion_matches_default_float32_animated_gif.t
 0047_temporal_strategy_cli_stbn_alias_matches_hash_float32_animated_gif.t
+0051_temporal_pmj_source_changes_output_vs_stbn_hash_float32_builtin_apng.t
+0053_temporal_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t
 EOF
 
 cat > "$expected_8bit_mask_tests" <<'EOF'
@@ -74,17 +76,20 @@ EOF
 cat > "$expected_8bit_pmj_tests" <<'EOF'
 0036_temporal_pmj_mapfile_capture_repeatable_output_builtin_apng.t
 0037_temporal_pmj_thread_count_stable_output_builtin_apng.t
+0050_temporal_pmj_source_changes_output_vs_stbn_hash_builtin_apng.t
 EOF
 
 cat > "$expected_8bit_pmj_cli_tests" <<'EOF'
 0039_temporal_pmj_cli_mapfile_capture_repeatable_output_builtin_apng.t
 0040_temporal_pmj_cli_thread_count_stable_output_builtin_apng.t
 0048_temporal_strategy_cli_pmj_resets_between_inputs_builtin_apng.t
+0052_temporal_strategy_cli_pmj_resets_across_size_change_builtin_mixed.t
 EOF
 
 cat > "$expected_float32_pmj_cli_tests" <<'EOF'
 0042_temporal_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t
 0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t
+0053_temporal_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t
 EOF
 
 cat > "$expected_8bit_mask_cli_tests" <<'EOF'
@@ -409,6 +414,22 @@ if ! grep -F -- "expected_output=\"\${animated_output}\${single_output}\"" \
     status=1
 fi
 
+if ! grep -F -- "expected_output=\"\${animated_output}\${single_output}\"" \
+        "$temporal_tests_dir/0052_temporal_strategy_cli_pmj_resets_across_size_change_builtin_mixed.t" \
+        >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: 0052 must verify reset by mixed-size concatenation" \
+        >> "$missing"
+    status=1
+fi
+
+if ! grep -F -- "expected_output=\"\${animated_output}\${single_output}\"" \
+        "$temporal_tests_dir/0053_temporal_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t" \
+        >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: 0053 must verify reset by mixed-size concatenation" \
+        >> "$missing"
+    status=1
+fi
+
 test_path="$temporal_tests_dir/0034_temporal_pmj_source_changes_output_vs_stbn_hash_animated_gif.t"
 if test ! -f "$test_path"; then
     echo "# tests/processing/dither/temporal: missing 8bit pmj coverage test" \
@@ -418,6 +439,55 @@ else
     if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=pmj" "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0034 must exercise pmj strategy" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$temporal_tests_dir/0050_temporal_pmj_source_changes_output_vs_stbn_hash_builtin_apng.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing 8bit small-frame pmj coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=pmj" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0050 must compare pmj and stbn-hash" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "test \"\${pmj_output}\" != \"\${hash_output}\"" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0050 must enforce pmj!=stbn-hash" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$temporal_tests_dir/0051_temporal_pmj_source_changes_output_vs_stbn_hash_float32_builtin_apng.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing float32 small-frame pmj coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=pmj" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0051 must compare pmj and stbn-hash" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0051 must run in float32 mode" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "test \"\${pmj_output}\" != \"\${hash_output}\"" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0051 must enforce pmj!=stbn-hash" \
             >> "$missing"
         status=1
     fi
