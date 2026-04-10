@@ -344,6 +344,7 @@ AM_LOG_FLAGS =
 	staticcheck-kmedoids-suboption-env-sync \
 	staticcheck-completion-medoids-tokens \
 	staticcheck-kmeans-suboption-env-sync \
+	staticcheck-temporal-strategy-token-sync \
 	staticcheck-quantize-merge-suboption-sync \
 	staticcheck-test-plan-single \
 	staticcheck-test-no-grep-awk \
@@ -372,6 +373,7 @@ staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
 staticcheck-kmeans-suboption-env-sync \
+staticcheck-temporal-strategy-token-sync \
 staticcheck-quantize-merge-suboption-sync \
 staticcheck-test-plan-single \
 staticcheck-test-no-grep-awk \
@@ -532,6 +534,16 @@ staticcheck-kmeans-suboption-env-sync:
 		--trs-file staticcheck-kmeans-suboption-env-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmeans-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-temporal-strategy-token-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-temporal-strategy-token-sync" \
+		--log-file staticcheck-temporal-strategy-token-sync.log \
+		--trs-file staticcheck-temporal-strategy-token-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-temporal-strategy-token-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-quantize-merge-suboption-sync:
@@ -1277,6 +1289,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \
     _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
+    _static/sh/staticcheck-temporal-strategy-token-sync.sh \
     _static/sh/staticcheck-quantize-merge-suboption-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \

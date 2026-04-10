@@ -82,6 +82,11 @@ typedef uint16_t (*sixel_temporal_stbn_sample_u16_fn)(
 #define SIXEL_TEMPORAL_STBN_SOURCE_HASH 0
 #define SIXEL_TEMPORAL_STBN_SOURCE_MASK 1
 
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE      0
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION 1
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH 2
+#define SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK 3
+
 typedef struct sixel_temporal_stbn_state {
     uint32_t sequence_index;
     uint8_t sample_source_id;
@@ -194,13 +199,16 @@ sixel_temporal_stbn_sample_mask_u16(uint32_t sequence_index,
                                     int depth);
 
 static int
-sixel_temporal_strategy_is_stbn(char const *value);
+sixel_temporal_strategy_token_from_string(char const *value);
+
+static int
+sixel_temporal_strategy_token_from_env(void);
 
 static sixel_temporal_stbn_source_ops_t const *
 sixel_temporal_stbn_source_ops_for_id(uint8_t source_id);
 
 static sixel_temporal_stbn_source_ops_t const *
-sixel_temporal_stbn_source_ops_from_strategy(char const *value);
+sixel_temporal_stbn_source_ops_for_token(int token);
 
 static sixel_temporal_stbn_source_ops_t const *
 sixel_temporal_stbn_select_source_ops(void);
@@ -618,23 +626,36 @@ sixel_temporal_stbn_source_mask_ops = {
 };
 
 static int
-sixel_temporal_strategy_is_stbn(char const *value)
+sixel_temporal_strategy_token_from_string(char const *value)
 {
     if (value == NULL) {
-        return 0;
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+    }
+
+    if (strcmp(value, "diffusion") == 0) {
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION;
     }
 
     if (strcmp(value, "stbn") == 0) {
-        return 1;
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
     }
     if (strcmp(value, "stbn-hash") == 0) {
-        return 1;
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH;
     }
     if (strcmp(value, "stbn-mask") == 0) {
-        return 1;
+        return SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK;
     }
 
-    return 0;
+    return SIXEL_TEMPORAL_STRATEGY_TOKEN_NONE;
+}
+
+static int
+sixel_temporal_strategy_token_from_env(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
+    return sixel_temporal_strategy_token_from_string(value);
 }
 
 static sixel_temporal_stbn_source_ops_t const *
@@ -652,12 +673,12 @@ sixel_temporal_stbn_source_ops_for_id(uint8_t source_id)
 }
 
 static sixel_temporal_stbn_source_ops_t const *
-sixel_temporal_stbn_source_ops_from_strategy(char const *value)
+sixel_temporal_stbn_source_ops_for_token(int token)
 {
     uint8_t source_id;
 
     source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
-    if (value != NULL && strcmp(value, "stbn-mask") == 0) {
+    if (token == SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK) {
         source_id = SIXEL_TEMPORAL_STBN_SOURCE_MASK;
     }
 
@@ -667,10 +688,8 @@ sixel_temporal_stbn_source_ops_from_strategy(char const *value)
 static sixel_temporal_stbn_source_ops_t const *
 sixel_temporal_stbn_select_source_ops(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
-    return sixel_temporal_stbn_source_ops_from_strategy(value);
+    return sixel_temporal_stbn_source_ops_for_token(
+        sixel_temporal_strategy_token_from_env());
 }
 
 static uint16_t
@@ -870,21 +889,14 @@ sixel_temporal_method_from_diffuse(int method_for_diffuse)
 static int
 sixel_temporal_strategy_override(void)
 {
-    char const *value;
-
-    value = sixel_compat_getenv("SIXEL_TEMPORAL_STRATEGY");
-    if (value == NULL) {
-        return SIXEL_TEMPORAL_METHOD_NONE;
-    }
-
-    /*
-     * Keep the public CLI unchanged while enabling internal strategy probing.
-     */
-    if (sixel_temporal_strategy_is_stbn(value)) {
+    switch (sixel_temporal_strategy_token_from_env()) {
+    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_HASH:
+    case SIXEL_TEMPORAL_STRATEGY_TOKEN_STBN_MASK:
         return SIXEL_TEMPORAL_METHOD_STBN;
-    }
-    if (strcmp(value, "diffusion") == 0) {
+    case SIXEL_TEMPORAL_STRATEGY_TOKEN_DIFFUSION:
         return SIXEL_TEMPORAL_METHOD_DIFFUSION;
+    default:
+        break;
     }
 
     return SIXEL_TEMPORAL_METHOD_NONE;

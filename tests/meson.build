@@ -718,6 +718,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-temporal-strategy-token-sync',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-temporal-strategy-token-sync.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-quantize-merge-suboption-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-quantize-merge-suboption-sync.sh',
       meson.project_source_root()],
