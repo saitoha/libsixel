@@ -1619,7 +1619,9 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 1,
-                1
+                1,
+                FRAME_METADATA_ANY,
+                0
             },
             { 1, 0, 256, NULL },
             new_coregraphics_component
@@ -1635,6 +1637,8 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                0,
+                FRAME_METADATA_ANY,
                 0
             },
             { 1, 0, 256, white_bg },
@@ -1651,6 +1655,8 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                0,
+                FRAME_METADATA_ANY,
                 0
             },
             { 1, 1, 256, NULL },
@@ -1667,7 +1673,9 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 1,
-                1
+                1,
+                FRAME_METADATA_ANY,
+                0
             },
             { 1, 1, 256, NULL },
             new_coregraphics_component
@@ -1683,7 +1691,9 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 1,
-                1
+                1,
+                FRAME_METADATA_ANY,
+                0
             },
             { 1, 1, 256, NULL },
             new_coregraphics_component
@@ -1699,7 +1709,9 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 1,
-                1
+                1,
+                FRAME_METADATA_ANY,
+                0
             },
             { 1, 1, 3, NULL },
             new_coregraphics_component
@@ -1715,6 +1727,8 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                0,
+                FRAME_METADATA_ANY,
                 0
             },
             { 1, 1, 253, NULL },
@@ -1731,7 +1745,9 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 1,
-                1
+                1,
+                FRAME_METADATA_ANY,
+                0
             },
             { 1, 1, 256, NULL },
             new_coregraphics_component
@@ -1747,6 +1763,8 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                0,
+                FRAME_METADATA_ANY,
                 0
             },
             { 1, 1, 256, white_bg },
@@ -1763,6 +1781,8 @@ run_coregraphics_pixelformat_case_by_id(
                 -1,
                 FRAME_METADATA_ANY,
                 0,
+                0,
+                FRAME_METADATA_ANY,
                 0
             },
             { 1, 0, 256, NULL },
