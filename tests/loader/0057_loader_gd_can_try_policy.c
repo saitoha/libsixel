@@ -299,7 +299,8 @@ run_can_try_policy_mode(char const *mode)
             strcmp(mode, "optional_tga_consistency") == 0 ||
             strcmp(mode, "optional_wbmp_consistency") == 0 ||
             strcmp(mode, "optional_gd2_consistency") == 0 ||
-            strcmp(mode, "optional_webp_consistency") == 0) {
+            strcmp(mode, "optional_webp_consistency") == 0 ||
+            strcmp(mode, "optional_matrix_consistency") == 0) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
         if (SIXEL_FAILED(status)) {
             fprintf(stderr, "allocator initialization failed\n");
@@ -348,6 +349,39 @@ run_can_try_policy_mode(char const *mode)
         if (expect_optional_can_try_consistency(
                 allocator,
                 "optional-webp",
+                "/tests/data/inputs/snake_64.webp") != 0) {
+            result = 1;
+        }
+    }
+    if (run_all || strcmp(mode, "optional_matrix_consistency") == 0) {
+        matched = 1;
+        if (expect_optional_can_try_consistency(
+                allocator,
+                "optional-matrix-tiff",
+                "/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_consistency(
+                allocator,
+                "optional-matrix-tga",
+                "/tests/data/inputs/formats/snake-tga-type2-rgb.tga") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_consistency(
+                allocator,
+                "optional-matrix-wbmp",
+                "/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_consistency(
+                allocator,
+                "optional-matrix-gd2",
+                "/tests/data/inputs/formats/sample-gd2-conv_test.gd2") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_consistency(
+                allocator,
+                "optional-matrix-webp",
                 "/tests/data/inputs/snake_64.webp") != 0) {
             result = 1;
         }
