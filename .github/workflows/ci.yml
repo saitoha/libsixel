@@ -545,10 +545,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_INPUT_DIR }}
-          key: fuzz-corpus-cli-${{ github.event_name }}-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: fuzz-corpus-cli-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            fuzz-corpus-cli-${{ github.event_name }}-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
-            fuzz-corpus-cli-${{ github.event_name }}-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-cli-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
             fuzz-corpus-cli-${{ matrix.buildtool }}-${{ matrix.target }}-
 
       - name: Seed CLI fuzz corpus
@@ -727,6 +726,93 @@ jobs:
               ! -name 'README.txt' -print0)
           fi
           echo "cli-corpus files after harvest (${{ matrix.target }}): $(find "$FUZZ_INPUT_DIR" -type f | wc -l)"
+
+      - name: Minimize CLI corpus with AFL cmin
+        if: ${{ always() && steps.cli_scope.outputs.run_target == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          before_count="$(find "$FUZZ_INPUT_DIR" -type f | wc -l | tr -d ' ')"
+          if [ "$before_count" -eq 0 ]; then
+            echo "cli-corpus minimize: skipped (empty corpus)"
+            exit 0
+          fi
+
+          if ! command -v afl-cmin >/dev/null 2>&1; then
+            echo "::warning::afl-cmin was not found; skip corpus minimization."
+            exit 0
+          fi
+
+          asan_runner="$PWD/.tmp/fuzz-img2sixel-afl-persistent"
+          if [ "${{ matrix.buildtool }}" = "meson" ]; then
+            asan_runner="$PWD/builddir/converters/fuzz-img2sixel-afl-persistent"
+          fi
+
+          case "${{ matrix.target }}" in
+            parser)
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-parser-afl-persistent"
+              if [ "${{ matrix.buildtool }}" = "meson" ]; then
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-parser-afl-persistent"
+              fi
+              ;;
+            boundary)
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-boundary-afl-persistent"
+              if [ "${{ matrix.buildtool }}" = "meson" ]; then
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-boundary-afl-persistent"
+              fi
+              ;;
+            pathenv)
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-pathenv-afl-persistent"
+              if [ "${{ matrix.buildtool }}" = "meson" ]; then
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-pathenv-afl-persistent"
+              fi
+              ;;
+            numeric)
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-numeric-afl-persistent"
+              if [ "${{ matrix.buildtool }}" = "meson" ]; then
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-numeric-afl-persistent"
+              fi
+              ;;
+          esac
+
+          if [ -f "$asan_runner" ] && head -n 1 "$asan_runner" | grep -q '^#!'; then
+            candidate="$(dirname "$asan_runner")/.libs/$(basename "$asan_runner")"
+            if [ -x "$candidate" ]; then
+              asan_runner="$candidate"
+            fi
+          fi
+
+          if [ ! -x "$asan_runner" ]; then
+            echo "::warning::missing CLI runner for corpus minimization: $asan_runner"
+            exit 0
+          fi
+
+          minimized_dir="${FUZZ_INPUT_DIR}.cmin"
+          rm -rf "$minimized_dir"
+
+          set +e
+          timeout 180 afl-cmin -i "$FUZZ_INPUT_DIR" -o "$minimized_dir" -- "$asan_runner" >/dev/null 2>&1
+          cmin_rc=$?
+          set -e
+
+          if [ "$cmin_rc" -ne 0 ]; then
+            echo "::warning::afl-cmin failed (rc=$cmin_rc); keep original corpus."
+            rm -rf "$minimized_dir"
+            exit 0
+          fi
+
+          after_count="$(find "$minimized_dir" -type f | wc -l | tr -d ' ')"
+          if [ "$after_count" -eq 0 ]; then
+            echo "::warning::afl-cmin produced an empty corpus; keep original corpus."
+            rm -rf "$minimized_dir"
+            exit 0
+          fi
+
+          find "$FUZZ_INPUT_DIR" -mindepth 1 -delete
+          cp -a "$minimized_dir"/. "$FUZZ_INPUT_DIR"/
+          rm -rf "$minimized_dir"
+
+          echo "cli-corpus minimized (${{ matrix.target }}): before=${before_count} after=${after_count}"
 
       - name: Pack img2sixel CLI fuzz artifacts
         if: ${{ always() && steps.cli_scope.outputs.run_target == '1' }}
