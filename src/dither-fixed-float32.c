@@ -1335,7 +1335,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                 if (absolute_y >= context->output_start) {
                     context->result[pos] = (sixel_index_t)transparent_keycolor;
                 }
-                if (temporal_enabled) {
+                if (temporal_enabled && temporal_ops != NULL) {
                     temporal_ops->clear_pixel(temporal_error,
                                               base,
                                               context->depth,
@@ -1345,7 +1345,11 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
             }
             source_pixel = data + base;
 
-            if (temporal_enabled) {
+            /*
+             * Keep the dereference guarded even after the early temporal setup
+             * checks so GCC -fanalyzer can prove this path is safe.
+             */
+            if (temporal_enabled && temporal_ops != NULL) {
                 temporal_ops->load_pixel(dither,
                                          source_pixel,
                                          base,
@@ -1489,7 +1493,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                     }
                 }
                 error = working_float[n] - palette_value_float;
-                if (temporal_enabled) {
+                if (temporal_enabled && temporal_ops != NULL) {
                     temporal_ops->store_error(
                         temporal_error,
                         base,
