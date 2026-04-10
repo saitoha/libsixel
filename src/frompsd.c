@@ -16836,6 +16836,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int synthetic_stroke;
         int apply_fill_opacity;
         int pre_softened_alpha_edges;
+        int base_has_clipping_children;
+        int apply_effects_without_overlay;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
@@ -16850,6 +16852,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         synthetic_stroke = 0;
         apply_fill_opacity = 0;
         pre_softened_alpha_edges = 0;
+        base_has_clipping_children = 0;
+        apply_effects_without_overlay = 0;
         pending_overlay_interior_enabled = 1;
         apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
@@ -17236,6 +17240,13 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             }
         }
         defer_clip_group_overlay = 0;
+        if (step == 1 && apply_clipping == 0) {
+            next_index = (size_t)(i + 1);
+            if (next_index < model.layer_count &&
+                model.layers[next_index].clipping != 0u) {
+                base_has_clipping_children = 1;
+            }
+        }
         if (step == 1 &&
             apply_clipping == 0 &&
             effective_composite_layer->has_effect_solid_overlay != 0) {
@@ -17294,11 +17305,59 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->has_effect_stroke != 0 ||
             effective_composite_layer->has_effect_outer_glow != 0 ||
             effective_composite_layer->has_effect_inner_glow != 0;
+        if (base_has_clipping_children != 0 &&
+            effective_composite_layer->has_vector_stroke_style != 0 &&
+            effective_composite_layer->has_vector_stroke_content_fill != 0 &&
+            effective_composite_layer->has_effect_stroke != 0 &&
+            effective_composite_layer->effect_stroke_from_vector_style != 0) {
+            /*
+             * For clipping groups, vector-style stroke from vstk on the base
+             * layer can overpaint clipped siblings around inner cutouts. Keep
+             * the base fill/effects but suppress this synthesized stroke.
+             */
+            layer_for_composite = *effective_composite_layer;
+            layer_for_composite.has_effect_stroke = 0;
+            effective_composite_layer = &layer_for_composite;
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: suppressing synthesized vector stroke on "
+                "clipping-group base layer");
+            apply_effects_subset =
+                effective_composite_layer->has_effect_solid_overlay != 0 ||
+                effective_composite_layer->has_effect_gradient_overlay != 0 ||
+                effective_composite_layer->has_effect_outer_glow != 0 ||
+                effective_composite_layer->has_effect_inner_glow != 0;
+        }
         if (defer_clip_group_overlay == 0 &&
             apply_effects_subset != 0) {
             sixel_builtin_psd_apply_layer_effects_subset(
                 effective_composite_layer,
                 &src_layer);
+        } else if (defer_clip_group_overlay != 0 &&
+                   apply_effects_subset != 0) {
+            /*
+             * For clbl=1 groups, only defer SoFi to the clipped-group pass.
+             * Keep gradient/stroke/glow subset effects on the base layer.
+             * clbl=0 keeps the legacy deferred-only behavior.
+             */
+            if (effective_composite_layer->has_blend_clipped_elements != 0 &&
+                effective_composite_layer->blend_clipped_elements_enabled ==
+                0) {
+                apply_effects_without_overlay = 0;
+            } else {
+                layer_for_composite = *effective_composite_layer;
+                layer_for_composite.has_effect_solid_overlay = 0;
+                apply_effects_without_overlay =
+                    layer_for_composite.has_effect_gradient_overlay != 0 ||
+                    layer_for_composite.has_effect_stroke != 0 ||
+                    layer_for_composite.has_effect_outer_glow != 0 ||
+                    layer_for_composite.has_effect_inner_glow != 0;
+            }
+            if (apply_effects_without_overlay != 0) {
+                sixel_builtin_psd_apply_layer_effects_subset(
+                    &layer_for_composite,
+                    &src_layer);
+            }
         }
         if (synthetic_fill != 0 &&
             effective_composite_layer->has_vector_mask != 0 &&
