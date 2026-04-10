@@ -349,6 +349,86 @@ expect_transfer_cache_reused_for_file(sixel_allocator_t *allocator,
 }
 
 static int
+expect_can_try_status_for_buffer(sixel_allocator_t *allocator,
+                                 unsigned char const *buffer,
+                                 size_t size,
+                                 int expected_can_try,
+                                 SIXELSTATUS expected_status,
+                                 char const *label)
+{
+    sixel_chunk_t chunk;
+    SIXELSTATUS status;
+    int can_try;
+
+    memset(&chunk, 0, sizeof(chunk));
+    chunk.buffer = (unsigned char *)buffer;
+    chunk.size = size;
+    chunk.allocator = allocator;
+    can_try = loader_can_try_gd(&chunk);
+    status = run_load_with_gd_status(&chunk);
+    if (can_try != expected_can_try) {
+        fprintf(stderr,
+                "%s: can_try mismatch (got=%d expected=%d)\n",
+                label,
+                can_try,
+                expected_can_try);
+        return 1;
+    }
+    if (status != expected_status) {
+        fprintf(stderr,
+                "%s: status mismatch (got=%d expected=%d)\n",
+                label,
+                (int)status,
+                (int)expected_status);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+expect_can_try_status_for_file(sixel_allocator_t *allocator,
+                               char const *relative_path,
+                               int expected_can_try,
+                               SIXELSTATUS expected_status,
+                               char const *label)
+{
+    sixel_chunk_t *chunk;
+    SIXELSTATUS status;
+    int can_try;
+
+    chunk = NULL;
+    status = SIXEL_FALSE;
+    can_try = 0;
+    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        return 1;
+    }
+
+    can_try = loader_can_try_gd(chunk);
+    status = run_load_with_gd_status(chunk);
+    sixel_chunk_destroy(chunk);
+    if (can_try != expected_can_try) {
+        fprintf(stderr,
+                "%s: can_try mismatch (got=%d expected=%d)\n",
+                label,
+                can_try,
+                expected_can_try);
+        return 1;
+    }
+    if (status != expected_status) {
+        fprintf(stderr,
+                "%s: status mismatch (got=%d expected=%d)\n",
+                label,
+                (int)status,
+                (int)expected_status);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 expect_optional_wbmp_status(sixel_allocator_t *allocator)
 {
     static unsigned char const wbmp_oversize_data[] = {
@@ -399,6 +479,9 @@ run_status_policy_mode(char const *mode)
     };
     static unsigned char const unknown_data[] = {
         'N', 'O', 'T', '_', 'I', 'M', 'G'
+    };
+    static unsigned char const png_signature_only_data[] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
     };
     static unsigned char const png_bad_ihdr_len_data[] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au,
@@ -462,6 +545,81 @@ run_status_policy_mode(char const *mode)
                                      sizeof(unknown_data),
                                      SIXEL_FALSE,
                                      "delegate-unknown") != 0) {
+            result = 1;
+        }
+    }
+    if (run_all || strcmp(mode, "can_try_status_core_matrix") == 0) {
+        matched = 1;
+        if (expect_can_try_status_for_buffer(allocator,
+                                             gif_data,
+                                             sizeof(gif_data),
+                                             0,
+                                             SIXEL_FALSE,
+                                             "matrix-gif") != 0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_buffer(allocator,
+                                             png_apng_data,
+                                             sizeof(png_apng_data),
+                                             0,
+                                             SIXEL_FALSE,
+                                             "matrix-apng") != 0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_buffer(allocator,
+                                             png_interlaced_data,
+                                             sizeof(png_interlaced_data),
+                                             0,
+                                             SIXEL_FALSE,
+                                             "matrix-interlaced-png") != 0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_buffer(allocator,
+                                             unknown_data,
+                                             sizeof(unknown_data),
+                                             0,
+                                             SIXEL_FALSE,
+                                             "matrix-unknown") != 0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_buffer(allocator,
+                                             png_signature_only_data,
+                                             sizeof(png_signature_only_data),
+                                             1,
+                                             SIXEL_GD_ERROR,
+                                             "matrix-png-signature-only") !=
+                0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_buffer(allocator,
+                                             png_bad_ihdr_len_data,
+                                             sizeof(png_bad_ihdr_len_data),
+                                             1,
+                                             SIXEL_GD_ERROR,
+                                             "matrix-png-bad-ihdr-len") != 0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_file(allocator,
+                                           "/tests/data/inputs/formats/rgb.png",
+                                           1,
+                                           SIXEL_OK,
+                                           "matrix-decode-png") != 0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_file(
+                allocator,
+                "/tests/data/inputs/formats/snake-jpeg-444.jpg",
+                1,
+                SIXEL_OK,
+                "matrix-decode-jpeg") != 0) {
+            result = 1;
+        }
+        if (expect_can_try_status_for_file(
+                allocator,
+                "/tests/data/inputs/formats/snake-bmp3-rgb.bmp",
+                1,
+                SIXEL_OK,
+                "matrix-decode-bmp") != 0) {
             result = 1;
         }
     }
