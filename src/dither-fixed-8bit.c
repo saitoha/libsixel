@@ -526,26 +526,46 @@ sixel_temporal_stbn_load_pixel(
         }
     }
 
-    for (n = 0; n < depth; ++n) {
-        if (use_stbn_bias == 0) {
-            continue;
-        }
-        if (use_pmj_cached != 0) {
+    if (use_stbn_bias == 0) {
+        return;
+    }
+
+    if (use_pmj_cached != 0) {
+        for (n = 0; n < depth; ++n) {
             bias_scaled = sixel_temporal_stbn_bias_scaled_sampled_cached(
                 stbn_state,
                 x,
                 y,
                 n,
                 depth);
-        } else {
-            bias_scaled = sixel_temporal_stbn_bias_scaled_sampled(
-                sample_u16,
-                sequence_index,
-                x,
-                y,
-                n,
-                depth);
+            if (bias_scaled == 0) {
+                continue;
+            }
+
+            adjusted_scaled = (int64_t)accum_scaled[n] + (int64_t)bias_scaled;
+            if (adjusted_scaled < 0) {
+                adjusted_scaled = 0;
+            } else if (adjusted_scaled > SIXEL_TEMPORAL_VARERR_MAX_VALUE) {
+                adjusted_scaled = SIXEL_TEMPORAL_VARERR_MAX_VALUE;
+            }
+
+            accum_scaled[n] = (int32_t)adjusted_scaled;
+            corrected[n] = (unsigned char)((adjusted_scaled
+                                            + SIXEL_TEMPORAL_VARERR_ROUND)
+                                           >>
+                                           SIXEL_TEMPORAL_VARERR_SCALE_SHIFT);
         }
+        return;
+    }
+
+    for (n = 0; n < depth; ++n) {
+        bias_scaled = sixel_temporal_stbn_bias_scaled_sampled(
+            sample_u16,
+            sequence_index,
+            x,
+            y,
+            n,
+            depth);
         if (bias_scaled == 0) {
             continue;
         }

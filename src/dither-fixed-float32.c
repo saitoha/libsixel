@@ -1080,23 +1080,41 @@ sixel_temporal_stbn_load_pixel_float32(
         }
     }
 
-    for (n = 0; n < depth; ++n) {
-        if (use_pmj_cached != 0) {
+    if (use_pmj_cached != 0) {
+        for (n = 0; n < depth; ++n) {
             bias_u8 = sixel_temporal_stbn_bias_u8_sampled_cached_float32(
                 stbn_state,
                 x,
                 y,
                 n,
                 depth);
-        } else {
-            bias_u8 = sixel_temporal_stbn_bias_u8_sampled_float32(
-                sample_u16,
-                sequence_index,
-                x,
-                y,
+            if (bias_u8 == 0) {
+                continue;
+            }
+
+            adjusted_u8 = (int)corrected[n] + bias_u8;
+            if (adjusted_u8 < 0) {
+                adjusted_u8 = 0;
+            } else if (adjusted_u8 > 255) {
+                adjusted_u8 = 255;
+            }
+            corrected[n] = (unsigned char)adjusted_u8;
+            working_float[n] = sixel_pixelformat_byte_to_float(
+                pixelformat,
                 n,
-                depth);
+                corrected[n]);
         }
+        return;
+    }
+
+    for (n = 0; n < depth; ++n) {
+        bias_u8 = sixel_temporal_stbn_bias_u8_sampled_float32(
+            sample_u16,
+            sequence_index,
+            x,
+            y,
+            n,
+            depth);
         if (bias_u8 == 0) {
             continue;
         }
