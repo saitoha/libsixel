@@ -66,6 +66,11 @@ typedef struct sixel_temporal_stbn_state_common {
     sixel_temporal_stbn_sample_u16_fn sample_u16;
 } sixel_temporal_stbn_state_common_t;
 
+typedef struct sixel_temporal_stbn_source_backend_common {
+    uint8_t source_id;
+    sixel_temporal_stbn_sample_u16_fn sample_u16;
+} sixel_temporal_stbn_source_backend_common_t;
+
 typedef SIXELSTATUS (*sixel_temporal_prepare_frame_fn)(
     sixel_dither_t *dither,
     int width,
@@ -106,6 +111,9 @@ typedef struct sixel_temporal_method_ops {
     sixel_temporal_clear_pixel_fn clear_pixel;
     sixel_temporal_store_error_fn store_error;
 } sixel_temporal_method_ops_t;
+
+static inline uint8_t
+sixel_temporal_stbn_source_id_from_token(int strategy_token);
 
 static inline uint32_t
 sixel_temporal_stbn_hash_u32_common(uint32_t value)
@@ -162,15 +170,49 @@ sixel_temporal_stbn_sample_mask_u16_common(uint32_t sequence_index,
                                                       depth);
 }
 
-static inline sixel_temporal_stbn_sample_u16_fn
-sixel_temporal_stbn_sample_fn_from_source_id_common(uint8_t source_id)
+static sixel_temporal_stbn_source_backend_common_t const
+sixel_temporal_stbn_source_hash_backend_common = {
+    SIXEL_TEMPORAL_STBN_SOURCE_HASH,
+    sixel_temporal_stbn_sample_hash_u16_common
+};
+
+static sixel_temporal_stbn_source_backend_common_t const
+sixel_temporal_stbn_source_mask_backend_common = {
+    SIXEL_TEMPORAL_STBN_SOURCE_MASK,
+    sixel_temporal_stbn_sample_mask_u16_common
+};
+
+static inline sixel_temporal_stbn_source_backend_common_t const *
+sixel_temporal_stbn_source_backend_from_id_common(uint8_t source_id)
 {
     switch (source_id) {
     case SIXEL_TEMPORAL_STBN_SOURCE_MASK:
-        return sixel_temporal_stbn_sample_mask_u16_common;
+        return &sixel_temporal_stbn_source_mask_backend_common;
     case SIXEL_TEMPORAL_STBN_SOURCE_HASH:
     default:
         break;
+    }
+
+    return &sixel_temporal_stbn_source_hash_backend_common;
+}
+
+static inline sixel_temporal_stbn_source_backend_common_t const *
+sixel_temporal_stbn_source_backend_from_token_common(int strategy_token)
+{
+    uint8_t source_id;
+
+    source_id = sixel_temporal_stbn_source_id_from_token(strategy_token);
+    return sixel_temporal_stbn_source_backend_from_id_common(source_id);
+}
+
+static inline sixel_temporal_stbn_sample_u16_fn
+sixel_temporal_stbn_sample_fn_from_source_id_common(uint8_t source_id)
+{
+    sixel_temporal_stbn_source_backend_common_t const *backend;
+
+    backend = sixel_temporal_stbn_source_backend_from_id_common(source_id);
+    if (backend != NULL && backend->sample_u16 != NULL) {
+        return backend->sample_u16;
     }
 
     return sixel_temporal_stbn_sample_hash_u16_common;
@@ -209,16 +251,20 @@ sixel_temporal_stbn_sample_u16_state_common(
     uint32_t sequence_index;
     uint8_t source_id;
     sixel_temporal_stbn_sample_u16_fn sample_u16;
+    sixel_temporal_stbn_source_backend_common_t const *backend;
 
     sequence_index = sixel_temporal_stbn_sequence_index_common(stbn_state);
     source_id = sixel_temporal_stbn_sample_source_id_common(stbn_state);
     sample_u16 = NULL;
+    backend = NULL;
     if (stbn_state != NULL) {
         sample_u16 = stbn_state->sample_u16;
     }
     if (sample_u16 == NULL) {
-        sample_u16 = sixel_temporal_stbn_sample_fn_from_source_id_common(
-            source_id);
+        backend = sixel_temporal_stbn_source_backend_from_id_common(source_id);
+        if (backend != NULL) {
+            sample_u16 = backend->sample_u16;
+        }
     }
     if (sample_u16 == NULL) {
         sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
@@ -526,11 +572,11 @@ sixel_temporal_prepare_stbn_state_common(sixel_dither_t *dither,
 {
     SIXELSTATUS status;
     sixel_temporal_stbn_state_common_t *typed_state;
-    uint8_t source_id;
+    sixel_temporal_stbn_source_backend_common_t const *backend;
 
     status = SIXEL_OK;
     typed_state = NULL;
-    source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
+    backend = NULL;
 
     if (state == NULL || state_size < sizeof(*typed_state)) {
         return SIXEL_BAD_ARGUMENT;
@@ -556,11 +602,14 @@ sixel_temporal_prepare_stbn_state_common(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    source_id = sixel_temporal_stbn_source_id_from_token(strategy_token);
-    typed_state->sample_source_id = source_id;
-    typed_state->sample_u16 =
-        sixel_temporal_stbn_sample_fn_from_source_id_common(source_id);
+    backend = sixel_temporal_stbn_source_backend_from_token_common(
+        strategy_token);
+    if (backend != NULL) {
+        typed_state->sample_source_id = backend->source_id;
+        typed_state->sample_u16 = backend->sample_u16;
+    }
     if (typed_state->sample_u16 == NULL) {
+        typed_state->sample_source_id = SIXEL_TEMPORAL_STBN_SOURCE_HASH;
         typed_state->sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
     }
 
