@@ -205,7 +205,11 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
     jitter_u6 = sixel_temporal_stbn_pmj_mix_u32_common(jitter_seed) & 63U;
     rank = (rank + jitter_u6) & 4095U;
 
-    sample_u16 = (uint16_t)((rank * 65535U + 2047U) / 4095U);
+    /*
+     * Convert 12-bit rank to rounded 16-bit sample without division.
+     * This matches `(rank * 65535 + 2047) / 4095` for all rank values.
+     */
+    sample_u16 = (uint16_t)((rank * 65551U + 2055U) >> 12);
 
     return sample_u16;
 }
