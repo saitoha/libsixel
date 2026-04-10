@@ -121,48 +121,23 @@ sixel_temporal_stbn_pmj_channel_u32_common(int channel, int depth)
     return (uint32_t)wrapped;
 }
 
-uint16_t
-sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
-                                                 int x,
-                                                 int y,
-                                                 int channel,
-                                                 int depth)
+static void
+sixel_temporal_stbn_source_pmj_build_channel_cache_common(
+    uint32_t sequence_index,
+    uint32_t channel_u32,
+    uint32_t depth_u32,
+    sixel_temporal_stbn_pmj_channel_cache_common_t *channel_cache)
 {
-    uint32_t channel_u32;
-    uint32_t depth_u32;
     uint32_t seed;
     uint32_t phase_key;
     uint32_t coord_key;
-    uint32_t offset_x;
-    uint32_t offset_y;
-    uint32_t scrambled_x;
-    uint32_t scrambled_y;
-    uint32_t rank;
-    uint32_t jitter_seed;
-    uint32_t jitter_u6;
-    int sample_x;
-    int sample_y;
-    uint16_t sample_u16;
 
-    channel_u32 = 0U;
-    depth_u32 = 0U;
     seed = 0U;
     phase_key = 0U;
     coord_key = 0U;
-    offset_x = 0U;
-    offset_y = 0U;
-    scrambled_x = 0U;
-    scrambled_y = 0U;
-    rank = 0U;
-    jitter_seed = 0U;
-    jitter_u6 = 0U;
-    sample_x = 0;
-    sample_y = 0;
-    sample_u16 = 0U;
 
-    channel_u32 = sixel_temporal_stbn_pmj_channel_u32_common(channel, depth);
-    if (depth > 0) {
-        depth_u32 = (uint32_t)depth;
+    if (channel_cache == NULL) {
+        return;
     }
 
     seed = sequence_index * 0x9e3779b9U;
@@ -173,33 +148,65 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
     phase_key = seed ^ 0x9e3779b9U;
     coord_key = seed ^ 0x243f6a88U;
 
-    offset_x = sixel_temporal_stbn_pmj_permute6_common(
+    channel_cache->seed = seed;
+    channel_cache->coord_key_x = coord_key ^ 0xa511e9b3U;
+    channel_cache->coord_key_y = coord_key ^ 0x63d83595U;
+    channel_cache->rank_key = seed ^ 0xb7e15162U;
+    channel_cache->offset_x = sixel_temporal_stbn_pmj_permute6_common(
         sequence_index + 0x68bc21ebU,
         phase_key);
-    offset_y = sixel_temporal_stbn_pmj_permute6_common(
+    channel_cache->offset_y = sixel_temporal_stbn_pmj_permute6_common(
         sequence_index ^ 0x02e5be93U,
         phase_key >> 7);
+}
+
+static uint16_t
+sixel_temporal_stbn_source_pmj_sample_u16_from_cache_common(
+    sixel_temporal_stbn_pmj_channel_cache_common_t const *channel_cache,
+    int x,
+    int y)
+{
+    uint32_t scrambled_x;
+    uint32_t scrambled_y;
+    uint32_t rank;
+    uint32_t jitter_seed;
+    uint32_t jitter_u6;
+    int sample_x;
+    int sample_y;
+    uint16_t sample_u16;
+
+    scrambled_x = 0U;
+    scrambled_y = 0U;
+    rank = 0U;
+    jitter_seed = 0U;
+    jitter_u6 = 0U;
+    sample_x = 0;
+    sample_y = 0;
+    sample_u16 = 0U;
+
+    if (channel_cache == NULL) {
+        return 0U;
+    }
 
     /*
      * Wrap to the 64x64 tile without branches. Unsigned conversion is
      * modulo 2^N, so masking low 6 bits is equivalent to modulo 64.
      */
-    sample_x = (int)((uint32_t)(x + (int)offset_x) & 63U);
-    sample_y = (int)((uint32_t)(y + (int)offset_y) & 63U);
+    sample_x = (int)((uint32_t)(x + (int)channel_cache->offset_x) & 63U);
+    sample_y = (int)((uint32_t)(y + (int)channel_cache->offset_y) & 63U);
 
     scrambled_x = sixel_temporal_stbn_pmj_permute6_common(
         (uint32_t)sample_x,
-        coord_key ^ 0xa511e9b3U);
+        channel_cache->coord_key_x);
     scrambled_y = sixel_temporal_stbn_pmj_permute6_common(
         (uint32_t)sample_y,
-        coord_key ^ 0x63d83595U);
+        channel_cache->coord_key_y);
     rank = sixel_temporal_stbn_pmj_interleave6_common(scrambled_x,
                                                        scrambled_y);
-    rank = sixel_temporal_stbn_pmj_permute12_common(
-        rank,
-        seed ^ 0xb7e15162U);
+    rank = sixel_temporal_stbn_pmj_permute12_common(rank,
+                                                    channel_cache->rank_key);
 
-    jitter_seed = seed;
+    jitter_seed = channel_cache->seed;
     jitter_seed ^= (uint32_t)sample_x * 0x6a09e667U;
     jitter_seed ^= (uint32_t)sample_y * 0xbb67ae85U;
     jitter_u6 = sixel_temporal_stbn_pmj_mix_u32_common(jitter_seed) & 63U;
@@ -214,6 +221,94 @@ sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
     return sample_u16;
 }
 
+uint16_t
+sixel_temporal_stbn_source_pmj_sample_u16_common(uint32_t sequence_index,
+                                                 int x,
+                                                 int y,
+                                                 int channel,
+                                                 int depth)
+{
+    uint32_t channel_u32;
+    uint32_t depth_u32;
+    sixel_temporal_stbn_pmj_channel_cache_common_t channel_cache;
+    uint16_t sample_u16;
+
+    channel_u32 = 0U;
+    depth_u32 = 0U;
+    channel_cache.seed = 0U;
+    channel_cache.coord_key_x = 0U;
+    channel_cache.coord_key_y = 0U;
+    channel_cache.rank_key = 0U;
+    channel_cache.offset_x = 0U;
+    channel_cache.offset_y = 0U;
+    sample_u16 = 0U;
+
+    channel_u32 = sixel_temporal_stbn_pmj_channel_u32_common(channel, depth);
+    if (depth > 0) {
+        depth_u32 = (uint32_t)depth;
+    }
+    sixel_temporal_stbn_source_pmj_build_channel_cache_common(sequence_index,
+                                                              channel_u32,
+                                                              depth_u32,
+                                                              &channel_cache);
+    sample_u16 = sixel_temporal_stbn_source_pmj_sample_u16_from_cache_common(
+        &channel_cache,
+        x,
+        y);
+
+    return sample_u16;
+}
+
+uint16_t
+sixel_temporal_stbn_source_pmj_sample_u16_cached_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint32_t sequence_index;
+    uint32_t channel_u32;
+    sixel_temporal_stbn_pmj_channel_cache_common_t const *channel_cache;
+
+    sequence_index = 0U;
+    channel_u32 = 0U;
+    channel_cache = NULL;
+
+    if (stbn_state != NULL) {
+        sequence_index = stbn_state->sequence_index;
+    }
+
+    if (stbn_state == NULL
+            || stbn_state->pmj_cache_valid == 0
+            || depth <= 0
+            || depth > SIXEL_MAX_CHANNELS
+            || depth != stbn_state->pmj_cache_depth) {
+        return sixel_temporal_stbn_source_pmj_sample_u16_common(
+            sequence_index,
+            x,
+            y,
+            channel,
+            depth);
+    }
+
+    channel_u32 = sixel_temporal_stbn_pmj_channel_u32_common(channel, depth);
+    if (channel_u32 >= (uint32_t)stbn_state->pmj_cache_depth) {
+        return sixel_temporal_stbn_source_pmj_sample_u16_common(
+            sequence_index,
+            x,
+            y,
+            channel,
+            depth);
+    }
+
+    channel_cache = &stbn_state->pmj_channel_cache[(int)channel_u32];
+    return sixel_temporal_stbn_source_pmj_sample_u16_from_cache_common(
+        channel_cache,
+        x,
+        y);
+}
+
 SIXELSTATUS
 sixel_temporal_stbn_source_pmj_prepare_state_common(
     sixel_dither_t const *dither,
@@ -225,9 +320,6 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
     int channel;
     uint32_t sequence_index;
     uint32_t depth_u32;
-    uint32_t seed;
-    uint32_t phase_key;
-    uint32_t coord_key;
     sixel_temporal_stbn_pmj_channel_cache_common_t *channel_cache;
 
     status = SIXEL_OK;
@@ -235,9 +327,6 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
     channel = 0;
     sequence_index = 0U;
     depth_u32 = 0U;
-    seed = 0U;
-    phase_key = 0U;
-    coord_key = 0U;
     channel_cache = NULL;
 
     status = sixel_temporal_stbn_prepare_state_default_common(
@@ -267,25 +356,11 @@ sixel_temporal_stbn_source_pmj_prepare_state_common(
     depth_u32 = (uint32_t)depth;
     for (channel = 0; channel < depth; ++channel) {
         channel_cache = &stbn_state->pmj_channel_cache[channel];
-
-        seed = sequence_index * 0x9e3779b9U;
-        seed ^= (uint32_t)(channel + 1) * 0x85ebca6bU;
-        seed ^= (depth_u32 + 1U) * 0xc2b2ae35U;
-        seed = sixel_temporal_stbn_pmj_mix_u32_common(seed);
-
-        phase_key = seed ^ 0x9e3779b9U;
-        coord_key = seed ^ 0x243f6a88U;
-
-        channel_cache->seed = seed;
-        channel_cache->coord_key_x = coord_key ^ 0xa511e9b3U;
-        channel_cache->coord_key_y = coord_key ^ 0x63d83595U;
-        channel_cache->rank_key = seed ^ 0xb7e15162U;
-        channel_cache->offset_x = sixel_temporal_stbn_pmj_permute6_common(
-            sequence_index + 0x68bc21ebU,
-            phase_key);
-        channel_cache->offset_y = sixel_temporal_stbn_pmj_permute6_common(
-            sequence_index ^ 0x02e5be93U,
-            phase_key >> 7);
+        sixel_temporal_stbn_source_pmj_build_channel_cache_common(
+            sequence_index,
+            (uint32_t)channel,
+            depth_u32,
+            channel_cache);
     }
 
     stbn_state->pmj_cache_depth = depth;

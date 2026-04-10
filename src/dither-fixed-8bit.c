@@ -438,6 +438,32 @@ sixel_temporal_stbn_bias_scaled_sampled(
     return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
 }
 
+static int32_t
+sixel_temporal_stbn_bias_scaled_sampled_cached(
+    sixel_temporal_stbn_state_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth)
+{
+    uint16_t sample_value;
+    int32_t bias_u8;
+
+    sample_value = 0U;
+    bias_u8 = 0;
+
+    sample_value = sixel_temporal_stbn_source_pmj_sample_u16_cached_common(
+        stbn_state,
+        x,
+        y,
+        channel,
+        depth);
+    bias_u8 = sixel_temporal_stbn_bias_u8_from_sample_u16_inline_common(
+        sample_value,
+        SIXEL_TEMPORAL_STBN_V1_STRENGTH_U8);
+    return bias_u8 * SIXEL_TEMPORAL_VARERR_SCALE;
+}
+
 static void
 sixel_temporal_stbn_load_pixel(
     sixel_dither_t *dither,
@@ -457,6 +483,7 @@ sixel_temporal_stbn_load_pixel(
     sixel_temporal_stbn_sample_u16_fn sample_u16;
     uint32_t sequence_index;
     int use_stbn_bias;
+    int use_pmj_cached;
 
     n = 0;
     bias_scaled = 0;
@@ -464,6 +491,7 @@ sixel_temporal_stbn_load_pixel(
     sample_u16 = sixel_temporal_stbn_sample_hash_u16_common;
     sequence_index = 0U;
     use_stbn_bias = 0;
+    use_pmj_cached = 0;
     stbn_state = (sixel_temporal_stbn_state_t const *)
         sixel_temporal_get_method_private_const(
             dither,
@@ -489,6 +517,9 @@ sixel_temporal_stbn_load_pixel(
                 || stbn_state->sample_source_id
                 == SIXEL_TEMPORAL_STBN_SOURCE_PMJ)) {
         use_stbn_bias = 1;
+        if (stbn_state->sample_source_id == SIXEL_TEMPORAL_STBN_SOURCE_PMJ) {
+            use_pmj_cached = 1;
+        }
         sequence_index = stbn_state->sequence_index;
         if (stbn_state->sample_u16 != NULL) {
             sample_u16 = stbn_state->sample_u16;
@@ -499,13 +530,22 @@ sixel_temporal_stbn_load_pixel(
         if (use_stbn_bias == 0) {
             continue;
         }
-        bias_scaled = sixel_temporal_stbn_bias_scaled_sampled(
-            sample_u16,
-            sequence_index,
-            x,
-            y,
-            n,
-            depth);
+        if (use_pmj_cached != 0) {
+            bias_scaled = sixel_temporal_stbn_bias_scaled_sampled_cached(
+                stbn_state,
+                x,
+                y,
+                n,
+                depth);
+        } else {
+            bias_scaled = sixel_temporal_stbn_bias_scaled_sampled(
+                sample_u16,
+                sequence_index,
+                x,
+                y,
+                n,
+                depth);
+        }
         if (bias_scaled == 0) {
             continue;
         }

@@ -155,6 +155,14 @@ sixel_temporal_stbn_sample_mask_u16_common(uint32_t sequence_index,
                                            int channel,
                                            int depth);
 
+uint16_t
+sixel_temporal_stbn_source_pmj_sample_u16_cached_common(
+    sixel_temporal_stbn_state_common_t const *stbn_state,
+    int x,
+    int y,
+    int channel,
+    int depth);
+
 SIXELSTATUS
 sixel_temporal_stbn_prepare_state_default_common(
     sixel_dither_t const *dither,
