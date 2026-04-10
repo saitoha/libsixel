@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring float32 stbn-hash strategy alias matches stbn output.
+# TAP test ensuring float32 PMJ mapfile capture output is repeatable.
 
 set -eux
 
@@ -9,6 +9,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
+palette_output="${ARTIFACT_LOCAL_DIR}/temporal-float32-pmj-mapfile-builtin-apng.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
@@ -24,39 +25,47 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 echo "1..1"
 set -v
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-stbn_output=$(
-    SIXEL_DITHER_TEMPORAL_STRATEGY=stbn \
+first_capture_output=$(
+    SIXEL_DITHER_TEMPORAL_STRATEGY=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin \
         -ldisable \
         -d temporal-diffusion -p 16 \
+        -M "${palette_output}" \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal stbn float32 encode failed"
+    echo "not ok" 1 - "float32 pmj first mapfile encode failed"
     exit 0
 }
 
-stbn_hash_output=$(
-    SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash \
+second_capture_output=$(
+    SIXEL_DITHER_TEMPORAL_STRATEGY=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin \
         -ldisable \
         -d temporal-diffusion -p 16 \
+        -M "${palette_output}" \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-hash float32 encode failed"
+    echo "not ok" 1 - "float32 pmj second mapfile encode failed"
     exit 0
 }
 
-test "${stbn_hash_output}" = "${stbn_output}" || {
-    echo "not ok" 1 - "float32 stbn-hash output differs from stbn"
+test -s "${palette_output}" || {
+    echo "not ok" 1 - "float32 pmj mapfile output is empty"
     exit 0
 }
 
-echo "ok" 1 - "float32 stbn-hash alias matches stbn output"
+test "${second_capture_output}" = "${first_capture_output}" || {
+    echo "not ok" 1 - "float32 pmj mapfile output is not repeatable"
+    exit 0
+}
+
+echo "ok" 1 - "float32 pmj mapfile output is repeatable"
 exit 0

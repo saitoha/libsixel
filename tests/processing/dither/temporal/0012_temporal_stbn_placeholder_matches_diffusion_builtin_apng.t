@@ -25,7 +25,7 @@ echo "1..1"
 set -v
 
 diffusion_output=$(
-    SIXEL_TEMPORAL_STRATEGY=diffusion \
+    SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
@@ -38,7 +38,7 @@ diffusion_output=$(
 }
 
 stbn_output=$(
-    SIXEL_TEMPORAL_STRATEGY=stbn \
+    SIXEL_DITHER_TEMPORAL_STRATEGY=stbn \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \

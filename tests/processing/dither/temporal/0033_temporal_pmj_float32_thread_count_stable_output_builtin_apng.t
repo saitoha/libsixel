@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring unknown temporal strategy override falls back to diffusion.
+# TAP test ensuring float32 PMJ output is stable across thread counts.
 
 set -eux
 
@@ -8,10 +8,16 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
+    printf "1..0 # SKIP thread backend is unavailable\n"
+    exit 0
+}
+
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
+    --precision=float32 \
     -L builtin \
     -ldisable \
     -S -T 1 \
@@ -24,36 +30,38 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-diffusion_output=$(
-    SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion \
+single_thread_output=$(
+    SIXEL_DITHER_TEMPORAL_STRATEGY=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
+        --precision=float32 \
         -L builtin \
         -ldisable \
         -d temporal-diffusion -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal diffusion baseline encode failed"
+    echo "not ok" 1 - "float32 pmj single-thread encode failed"
     exit 0
 }
 
-unknown_output=$(
-    SIXEL_DITHER_TEMPORAL_STRATEGY=unknown-strategy \
+multi_thread_output=$(
+    SIXEL_DITHER_TEMPORAL_STRATEGY=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
+        --threads=2 \
+        --precision=float32 \
         -L builtin \
         -ldisable \
         -d temporal-diffusion -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal unknown-strategy encode failed"
+    echo "not ok" 1 - "float32 pmj multi-thread encode failed"
     exit 0
 }
 
-test "${unknown_output}" = "${diffusion_output}" || {
-    echo "not ok" 1 - "unknown strategy override changed diffusion output"
+test "${multi_thread_output}" = "${single_thread_output}" || {
+    echo "not ok" 1 - "float32 pmj output changed across thread counts"
     exit 0
 }
 
-echo "ok" 1 - "unknown strategy override falls back to diffusion"
+echo "ok" 1 - "float32 pmj output is stable across thread counts"
 exit 0

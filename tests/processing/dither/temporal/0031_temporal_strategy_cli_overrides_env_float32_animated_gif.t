@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring float32 STBN hash differs from diffusion on animation.
+# TAP test ensuring temporal strategy suboption overrides env strategy.
 
 set -eux
 
@@ -35,11 +35,11 @@ diffusion_output=$(
         -d temporal-diffusion -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal diffusion float32 baseline encode failed"
+    echo "not ok" 1 - "float32 temporal diffusion baseline encode failed"
     exit 0
 }
 
-stbn_hash_output=$(
+env_hash_output=$(
     SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
@@ -49,14 +49,33 @@ stbn_hash_output=$(
         -d temporal-diffusion -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-hash float32 encode failed"
+    echo "not ok" 1 - "float32 temporal stbn-hash env encode failed"
     exit 0
 }
 
-test "${stbn_hash_output}" != "${diffusion_output}" || {
-    echo "not ok" 1 - "float32 stbn-hash output matched diffusion"
+cli_override_output=$(
+    SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        --precision=float32 \
+        -L builtin \
+        -ldisable \
+        -d temporal-diffusion:strategy=stbn-hash -p 16 \
+        "${input_gif}"
+) || {
+    echo "not ok" 1 - "float32 temporal stbn-hash cli override encode failed"
     exit 0
 }
 
-echo "ok" 1 - "float32 stbn-hash output differs from diffusion"
+test "${env_hash_output}" != "${diffusion_output}" || {
+    echo "not ok" 1 - "float32 stbn-hash env output matched diffusion"
+    exit 0
+}
+
+test "${cli_override_output}" = "${env_hash_output}" || {
+    echo "not ok" 1 - "cli strategy override did not take precedence"
+    exit 0
+}
+
+echo "ok" 1 - "temporal strategy cli override wins over env"
 exit 0

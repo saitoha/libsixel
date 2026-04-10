@@ -34,6 +34,7 @@ diffusion
 stbn
 stbn-hash
 stbn-mask
+pmj
 EOF
 
 cat > "$expected_float32_tests" <<'EOF'
@@ -50,12 +51,30 @@ cat > "$expected_float32_tests" <<'EOF'
 0026_temporal_stbn_hash_float32_thread_count_stable_output_builtin_apng.t
 0027_temporal_stbn_mask_float32_mapfile_capture_repeatable_output_builtin_apng.t
 0028_temporal_stbn_mask_float32_thread_count_stable_output_builtin_apng.t
+0031_temporal_strategy_cli_overrides_env_float32_animated_gif.t
+0032_temporal_pmj_source_changes_output_vs_stbn_hash_float32_animated_gif.t
+0033_temporal_pmj_float32_thread_count_stable_output_builtin_apng.t
+0035_temporal_pmj_float32_mapfile_capture_repeatable_output_builtin_apng.t
 EOF
 
 cat > "$expected_8bit_mask_tests" <<'EOF'
 0029_temporal_stbn_mask_mapfile_capture_repeatable_output_builtin_apng.t
 0030_temporal_stbn_mask_thread_count_stable_output_builtin_apng.t
 EOF
+
+if grep -F -- "\"SIXEL_TEMPORAL_STRATEGY\"" "$source_file_h" "$source_file_c" \
+        >/dev/null 2>&1; then
+    echo "# src/dither-temporal-method.[ch]: legacy env name must not remain" \
+        >> "$missing"
+    status=1
+fi
+
+if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY" "$source_file_h" \
+        >/dev/null 2>&1; then
+    echo "# src/dither-temporal-method.h: missing env var macro name" \
+        >> "$missing"
+    status=1
+fi
 
 cat "$source_file_h" "$source_file_c" 2>/dev/null | awk '
 /^sixel_temporal_strategy_token_from_string\(/ {
@@ -83,12 +102,40 @@ while IFS= read -r token; do
         status=1
     fi
     if ! find "$temporal_tests_dir" -type f -name '*.t' -exec \
-            grep -F "SIXEL_TEMPORAL_STRATEGY=$token" {} + >/dev/null 2>&1; then
+            grep -F "SIXEL_DITHER_TEMPORAL_STRATEGY=$token" {} + >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: missing strategy token use: $token" \
             >> "$missing"
         status=1
     fi
 done < "$expected_tokens"
+
+if find "$temporal_tests_dir" -type f -name '*.t' -exec \
+        grep -F "SIXEL_TEMPORAL_STRATEGY=" {} + >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: legacy env name must not remain" \
+        >> "$missing"
+    status=1
+fi
+
+if ! find "$temporal_tests_dir" -type f -name '*.t' -exec \
+        grep -F -- "-d temporal-diffusion:strategy=" {} + \
+        >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: missing CLI strategy suboption coverage" \
+        >> "$missing"
+    status=1
+fi
+
+test_path="$src_root/tests/cli/options/matching/0130_option_matching_diffusion_temporal_strategy_unknown_key.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing unknown strategy key coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "temporal-diffusion:mode=" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0130 must exercise unknown key path" \
+            >> "$missing"
+        status=1
+    fi
+fi
 
 while IFS= read -r token; do
     test -n "$token" || continue
@@ -129,7 +176,7 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: missing stbn-mask strategy in $test_name" \
             >> "$missing"
         status=1
@@ -157,9 +204,23 @@ if ! grep -F -- "--threads=2" \
     status=1
 fi
 
+test_path="$temporal_tests_dir/0034_temporal_pmj_source_changes_output_vs_stbn_hash_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing 8bit pmj coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=pmj" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0034 must exercise pmj strategy" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
 test_path="$temporal_tests_dir/0012_temporal_stbn_placeholder_matches_diffusion_builtin_apng.t"
-if ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=stbn" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: 0012 must keep 8bit stbn=diffusion coverage" \
         >> "$missing"
     status=1
@@ -171,8 +232,8 @@ if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
 fi
 
 test_path="$temporal_tests_dir/0014_temporal_stbn_mask_source_changes_output_vs_hash_animated_gif.t"
-if ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: 0014 must keep 8bit stbn-mask!=stbn-hash coverage" \
         >> "$missing"
     status=1
@@ -184,8 +245,8 @@ if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
 fi
 
 test_path="$temporal_tests_dir/0021_temporal_stbn_hash_changes_output_vs_diffusion_float32_animated_gif.t"
-if ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: 0021 must keep float32 stbn-hash!=diffusion coverage" \
         >> "$missing"
     status=1
@@ -197,8 +258,8 @@ if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
 fi
 
 test_path="$temporal_tests_dir/0023_temporal_stbn_mask_source_changes_output_vs_hash_float32_animated_gif.t"
-if ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_TEMPORAL_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: 0023 must keep float32 stbn-mask!=stbn-hash coverage" \
         >> "$missing"
     status=1

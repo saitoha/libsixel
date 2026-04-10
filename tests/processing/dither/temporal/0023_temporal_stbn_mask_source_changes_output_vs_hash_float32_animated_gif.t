@@ -25,7 +25,7 @@ echo "1..1"
 set -v
 
 hash_output=$(
-    SIXEL_TEMPORAL_STRATEGY=stbn-hash \
+    SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
@@ -38,7 +38,7 @@ hash_output=$(
 }
 
 mask_output=$(
-    SIXEL_TEMPORAL_STRATEGY=stbn-mask \
+    SIXEL_DITHER_TEMPORAL_STRATEGY=stbn-mask \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \

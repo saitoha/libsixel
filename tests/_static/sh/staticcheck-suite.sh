@@ -201,7 +201,7 @@ run_case_tap "staticcheck-kmeans-suboption-env-sync" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-temporal-strategy-token-sync" \
-    "$src_root/tests/_static/sh/staticcheck-temporal-strategy-token-sync.sh" \
+    sh "$src_root/tests/_static/sh/staticcheck-temporal-strategy-token-sync.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-temporal-c-h-pair-sync" \
