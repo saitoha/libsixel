@@ -1185,18 +1185,229 @@ run_builtin_loader_bmp_opaque_fastpath_numeric_test(void)
 }
 
 static int
-run_builtin_loader_bmp_rle8_unsupported_numeric_test(void)
+run_builtin_loader_bmp_rle8_decode_numeric_test(void)
 {
     builtin_loader_probe_options_t options;
     bmp_numeric_probe_context_t probe;
     SIXELSTATUS status;
-    char const *message;
     int result;
 
     status = SIXEL_FALSE;
     memset(&options, 0, sizeof(options));
     memset(&probe, 0, sizeof(probe));
-    message = NULL;
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp rle8 decode numeric",
+        "/tests/data/inputs/formats/snake-bmp3-rle8.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp rle8 decode numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader bmp rle8 decode numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader bmp rle8 decode numeric: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr,
+                "builtin loader bmp rle8 decode numeric: "
+                "colorspace mismatch (%d)\n",
+                probe.colorspace);
+        return 1;
+    }
+    if (probe.width <= 0 || probe.height <= 0) {
+        fprintf(stderr,
+                "builtin loader bmp rle8 decode numeric: "
+                "invalid geometry (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.alpha_zero_is_transparent != 0) {
+        fprintf(stderr,
+                "builtin loader bmp rle8 decode numeric: "
+                "alpha_zero_is_transparent mismatch (%d)\n",
+                probe.alpha_zero_is_transparent);
+        return 1;
+    }
+    if (probe.has_transparent_mask != 0 ||
+        probe.transparent_mask_size != 0u) {
+        fprintf(stderr,
+                "builtin loader bmp rle8 decode numeric: "
+                "unexpected transparent mask (%d, %zu)\n",
+                probe.has_transparent_mask,
+                probe.transparent_mask_size);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_rle4_decode_numeric_test(void)
+{
+    static unsigned char const bmp_rle4_2x2_sample[] = {
+        0x42u, 0x4du, 0x52u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x46u, 0x00u, 0x00u, 0x00u,
+        0x28u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u,
+        0x02u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x04u, 0x00u,
+        0x02u, 0x00u, 0x00u, 0x00u, 0x0cu, 0x00u, 0x00u, 0x00u,
+        0x13u, 0x0bu, 0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u,
+        0x04u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0xffu, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x02u, 0x30u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x02u, 0x12u, 0x00u, 0x00u, 0x01u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader bmp rle4 decode numeric",
+        bmp_rle4_2x2_sample,
+        sizeof(bmp_rle4_2x2_sample),
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "pixelformat mismatch (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "colorspace mismatch (%d)\n",
+                probe.colorspace);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.alpha_zero_is_transparent != 0) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "alpha_zero_is_transparent mismatch (%d)\n",
+                probe.alpha_zero_is_transparent);
+        return 1;
+    }
+    if (probe.has_transparent_mask != 0 ||
+        probe.transparent_mask_size != 0u) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "unexpected transparent mask (%d, %zu)\n",
+                probe.has_transparent_mask,
+                probe.transparent_mask_size);
+        return 1;
+    }
+    if (memcmp(probe.pixels_u8, expected_rgb, sizeof(expected_rgb)) != 0) {
+        fprintf(stderr,
+                "builtin loader bmp rle4 decode numeric: "
+                "RGB samples mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_rle_broken_fail_numeric_test(void)
+{
+    static unsigned char const bmp_rle8_broken_sample[] = {
+        0x42u, 0x4du, 0x41u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x3eu, 0x00u, 0x00u, 0x00u,
+        0x28u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u,
+        0x02u, 0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x08u, 0x00u,
+        0x01u, 0x00u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u, 0x00u,
+        0x13u, 0x0bu, 0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u,
+        0x02u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0x00u,
+        0x00u, 0x02u, 0x01u
+    };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
     result = 1;
 
     options.require_static = 1;
@@ -1210,9 +1421,10 @@ run_builtin_loader_bmp_rle8_unsupported_numeric_test(void)
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
     sixel_helper_set_additional_message(NULL);
-    result = run_builtin_loader_probe_case(
-        "builtin loader bmp rle8 unsupported numeric",
-        "/tests/data/inputs/formats/snake-bmp3-rle8.bmp",
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader bmp rle broken fail numeric",
+        bmp_rle8_broken_sample,
+        sizeof(bmp_rle8_broken_sample),
         &options,
         capture_bmp_numeric_probe,
         &probe,
@@ -1222,16 +1434,8 @@ run_builtin_loader_bmp_rle8_unsupported_numeric_test(void)
     }
     if (SIXEL_SUCCEEDED(status)) {
         fprintf(stderr,
-                "builtin loader bmp rle8 unsupported numeric: "
+                "builtin loader bmp rle broken fail numeric: "
                 "unexpected success\n");
-        return 1;
-    }
-    message = sixel_helper_get_additional_message();
-    if (message == NULL || strstr(message, "RLE") == NULL) {
-        fprintf(stderr,
-                "builtin loader bmp rle8 unsupported numeric: "
-                "unexpected message (%s)\n",
-                message != NULL ? message : "(null)");
         return 1;
     }
 
@@ -4788,8 +4992,12 @@ run_builtin_loader_test(void)
           run_builtin_loader_bmp_rgba_mask_no_bg_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_OPAQUE_FASTPATH",
           run_builtin_loader_bmp_opaque_fastpath_numeric_test },
-        { "SIXEL_TEST_BMP_NUMERIC_RLE8_UNSUPPORTED",
-          run_builtin_loader_bmp_rle8_unsupported_numeric_test }
+        { "SIXEL_TEST_BMP_NUMERIC_RLE8_DECODE",
+          run_builtin_loader_bmp_rle8_decode_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_RLE4_DECODE",
+          run_builtin_loader_bmp_rle4_decode_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_RLE_BROKEN_FAIL",
+          run_builtin_loader_bmp_rle_broken_fail_numeric_test }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
         { "SIXEL_TEST_TGA_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",

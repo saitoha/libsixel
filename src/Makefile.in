@@ -248,8 +248,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
-	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
-	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/frombmp.c \
+	$(srcdir)/frombmp.h $(srcdir)/clipboard.c $(srcdir)/clipboard.h \
+	$(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/mapfile.c $(srcdir)/mapfile.h $(srcdir)/drcs.c \
 	$(srcdir)/drcs.h $(srcdir)/planner.c $(srcdir)/planner.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h \
@@ -357,6 +358,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromhdr.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frombmp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-clipboard.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-mapfile.lo \
@@ -456,6 +458,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
 	./$(DEPDIR)/libsixel_la-fromgif.Plo \
+	./$(DEPDIR)/libsixel_la-frombmp.Plo \
 	./$(DEPDIR)/libsixel_la-fromhdr.Plo \
 	./$(DEPDIR)/libsixel_la-frompng.Plo \
 	./$(DEPDIR)/libsixel_la-frompnm.Plo \
@@ -1000,6 +1003,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frombmp.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frombmp.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.c \
@@ -1226,6 +1231,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frame.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromgif.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frombmp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromhdr.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompng.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
@@ -1901,6 +1907,13 @@ libsixel_la-fromgif.lo: fromgif.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromgif.lo `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
 
+libsixel_la-frombmp.lo: frombmp.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frombmp.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frombmp.Tpo -c -o libsixel_la-frombmp.lo `test -f 'frombmp.c' || echo '$(srcdir)/'`frombmp.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-frombmp.Tpo $(DEPDIR)/libsixel_la-frombmp.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frombmp.c' object='libsixel_la-frombmp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frombmp.lo `test -f 'frombmp.c' || echo '$(srcdir)/'`frombmp.c
+
 libsixel_la-clipboard.lo: clipboard.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-clipboard.lo -MD -MP -MF $(DEPDIR)/libsixel_la-clipboard.Tpo -c -o libsixel_la-clipboard.lo `test -f 'clipboard.c' || echo '$(srcdir)/'`clipboard.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-clipboard.Tpo $(DEPDIR)/libsixel_la-clipboard.Plo
@@ -2332,6 +2345,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frombmp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
@@ -2485,6 +2499,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frombmp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo

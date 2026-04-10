@@ -63,6 +63,7 @@
 #include "compat_stub.h"
 #include "frame.h"
 #include "fromgif.h"
+#include "frombmp.h"
 #include "fromhdr.h"
 #include "frompng.h"
 #include "frompsd.h"
@@ -209,6 +210,7 @@ stbi_free(void *p)
 #define STBI_NO_GIF
 #define STBI_NO_PNM
 #define STBI_NO_PSD
+#define STBI_NO_BMP
 /*
  * Keep HDR decode behavior deterministic in fromhdr.c and disable the
  * stb_image HDR path.
@@ -980,33 +982,6 @@ sixel_builtin_fill_linear_bgcolor(float bg_linear[3],
             bg_linear[channel] = sixel_builtin_decode_srgb_unit(gamma_value);
         }
     }
-}
-
-static int
-sixel_builtin_bmp_has_alpha(sixel_chunk_t const *chunk,
-                            int chunk_size,
-                            stbi__context *stb_context)
-{
-    int bmp_width;
-    int bmp_height;
-    int bmp_comp;
-
-    bmp_width = 0;
-    bmp_height = 0;
-    bmp_comp = 0;
-    if (chunk == NULL ||
-        chunk->buffer == NULL ||
-        chunk_size <= 0 ||
-        stb_context == NULL ||
-        !chunk_is_bmp(chunk)) {
-        return 0;
-    }
-
-    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
-    if (!stbi__bmp_info(stb_context, &bmp_width, &bmp_height, &bmp_comp)) {
-        return 0;
-    }
-    return bmp_comp == 4 ? 1 : 0;
 }
 
 static SIXELSTATUS
@@ -4586,7 +4561,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     int depth;
     int req_comp;
     int tga_truecolor_alpha;
-    int bmp_has_alpha;
+    int bmp_comp;
     int nwrite;
     char message[80];
 #if HAVE_LCMS2
@@ -4598,7 +4573,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     depth = 0;
     req_comp = 3;
     tga_truecolor_alpha = 0;
-    bmp_has_alpha = 0;
+    bmp_comp = 0;
     nwrite = 0;
     message[0] = '\0';
 #if HAVE_LCMS2
@@ -4617,12 +4592,41 @@ sixel_builtin_load_nonpng_rgb8_fallback(
 #else
     (void)enable_cms;
 #endif
-    bmp_has_alpha = sixel_builtin_bmp_has_alpha(chunk,
-                                                chunk_size,
-                                                stb_context);
+    if (chunk_is_bmp(chunk)) {
+        status = sixel_frombmp_load(chunk,
+                                    &pixels,
+                                    &frame->width,
+                                    &frame->height,
+                                    &bmp_comp);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        sixel_frame_set_pixels(frame, pixels);
+        frame->loop_count = 1;
+        if (bmp_comp == 4) {
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            return sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
+        }
+        if (bmp_comp == 3) {
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            return SIXEL_OK;
+        }
+        nwrite = snprintf(message,
+                          sizeof(message),
+                          "load_with_builtin() failed.\n"
+                          "reason: unknown BMP pixel-format.(depth: %d)\n",
+                          bmp_comp);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        return SIXEL_STBI_ERROR;
+    }
+
     tga_truecolor_alpha = sixel_builtin_tga_has_truecolor_alpha(chunk,
                                                                  chunk_size);
-    if (is_pic || tga_truecolor_alpha != 0 || bmp_has_alpha != 0) {
+    if (is_pic || tga_truecolor_alpha != 0) {
         req_comp = 4;
     }
 
@@ -4690,12 +4694,6 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
         frame->colorspace = SIXEL_COLORSPACE_GAMMA;
         status = sixel_builtin_apply_tga_truecolor_alpha_policy(frame, bgcolor);
-        return status;
-    }
-    if (bmp_has_alpha != 0) {
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-        status = sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
         return status;
     }
     switch (depth) {

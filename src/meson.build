@@ -134,6 +134,8 @@ srcs = [
   'frompsd.c',
   'frompsd.h',
   'fromgif.c',
+  'frombmp.c',
+  'frombmp.h',
   'clipboard.c',
   'encoder.c',
   'mapfile.c',

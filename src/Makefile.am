@@ -216,6 +216,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frompsd.h \
                 $(srcdir)/fromgif.c \
                 $(srcdir)/fromgif.h \
+                $(srcdir)/frombmp.c \
+                $(srcdir)/frombmp.h \
                 $(srcdir)/clipboard.c \
                 $(srcdir)/clipboard.h \
                 $(srcdir)/encoder.c \
