@@ -34,7 +34,7 @@ first_capture_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         -M "${palette_output}" \
         "${input_apng}"
 ) || {
@@ -49,7 +49,7 @@ second_capture_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         -M "${palette_output}" \
         "${input_apng}"
 ) || {

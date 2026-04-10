@@ -22,30 +22,30 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 combined_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_anim}" "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion combined encode failed"
+    echo "not ok" 1 - "interframe combined encode failed"
     exit 0
 }
 
 animated_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_anim}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion animated encode failed"
+    echo "not ok" 1 - "interframe animated encode failed"
     exit 0
 }
 
 single_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion single encode failed"
+    echo "not ok" 1 - "interframe single encode failed"
     exit 0
 }
 
@@ -55,5 +55,5 @@ test "${combined_output}" = "${expected_output}" || {
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion resets across size change"
+echo "ok" 1 - "interframe resets across size change"
 exit 0

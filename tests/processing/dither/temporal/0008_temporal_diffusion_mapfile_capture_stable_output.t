@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring mapfile capture does not change temporal-diffusion output.
+# TAP test ensuring mapfile capture does not change interframe output.
 
 set -eux
 
@@ -36,10 +36,10 @@ baseline_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_webp}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion baseline encode failed"
+    echo "not ok" 1 - "interframe baseline encode failed"
     exit 0
 }
 
@@ -48,11 +48,11 @@ captured_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         -M "${palette_output}" \
         "${input_webp}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion mapfile encode failed"
+    echo "not ok" 1 - "interframe mapfile encode failed"
     exit 0
 }
 
@@ -62,9 +62,9 @@ test -s "${palette_output}" || {
 }
 
 test "${captured_output}" = "${baseline_output}" || {
-    echo "not ok" 1 - "mapfile capture changed temporal-diffusion output"
+    echo "not ok" 1 - "mapfile capture changed interframe output"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion output is stable with mapfile capture"
+echo "ok" 1 - "interframe output is stable with mapfile capture"
 exit 0

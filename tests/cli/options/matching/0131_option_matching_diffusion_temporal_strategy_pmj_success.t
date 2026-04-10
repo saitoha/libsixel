@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -d temporal-diffusion accepts strategy=pmj.
+# TAP test verifying -d interframe accepts strategy=pmj.
 
 set -eux
 
@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d temporal-diffusion:strategy=pmj \
+    -d interframe:strategy=pmj \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
     echo "not ok" 1 - "temporal strategy=pmj was rejected"

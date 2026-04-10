@@ -39,10 +39,10 @@ single_thread_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_webp}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion single-thread encode failed"
+    echo "not ok" 1 - "interframe single-thread encode failed"
     exit 0
 }
 
@@ -51,17 +51,17 @@ multi_thread_output=$(
         --threads=2 \
         -L libwebp \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_webp}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion multi-thread encode failed"
+    echo "not ok" 1 - "interframe multi-thread encode failed"
     exit 0
 }
 
 test "${multi_thread_output}" = "${single_thread_output}" || {
-    echo "not ok" 1 - "temporal-diffusion output changed across thread counts"
+    echo "not ok" 1 - "interframe output changed across thread counts"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion output is stable across thread counts"
+echo "ok" 1 - "interframe output is stable across thread counts"
 exit 0

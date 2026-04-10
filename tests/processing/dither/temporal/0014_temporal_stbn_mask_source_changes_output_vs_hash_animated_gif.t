@@ -28,7 +28,7 @@ hash_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "temporal stbn-hash encode failed"
@@ -40,7 +40,7 @@ mask_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "temporal stbn-mask encode failed"

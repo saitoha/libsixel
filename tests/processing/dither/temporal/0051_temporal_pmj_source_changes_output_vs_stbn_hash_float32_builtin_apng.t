@@ -32,7 +32,7 @@ hash_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "temporal stbn-hash float32 APNG encode failed"
@@ -46,7 +46,7 @@ pmj_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "temporal pmj float32 APNG encode failed"

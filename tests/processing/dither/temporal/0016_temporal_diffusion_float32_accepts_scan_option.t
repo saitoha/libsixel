@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test covering temporal-diffusion acceptance on float32 precision.
+# TAP test covering interframe acceptance on float32 precision.
 
 set -eux
 
@@ -18,17 +18,17 @@ float32_output=$(
         --threads=1 \
         --precision=float32 \
         -S -T 0 \
-        -d temporal-diffusion -y serpentine -p 16 \
+        -d interframe -y serpentine -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion float32 with scan option failed"
+    echo "not ok" 1 - "interframe float32 with scan option failed"
     exit 0
 }
 
 test -n "${float32_output}" || {
-    echo "not ok" 1 - "temporal-diffusion float32 output is empty"
+    echo "not ok" 1 - "interframe float32 output is empty"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion float32 accepts -y scan option"
+echo "ok" 1 - "interframe float32 accepts -y scan option"
 exit 0

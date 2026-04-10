@@ -30,7 +30,7 @@ diffusion_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "8bit temporal diffusion baseline encode failed"
@@ -43,7 +43,7 @@ env_pmj_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "8bit temporal pmj env encode failed"
@@ -56,7 +56,7 @@ cli_override_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=pmj -p 16 \
+        -d interframe:strategy=pmj -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "8bit temporal pmj cli override encode failed"

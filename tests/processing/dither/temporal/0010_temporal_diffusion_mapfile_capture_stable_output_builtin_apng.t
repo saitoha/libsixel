@@ -31,10 +31,10 @@ baseline_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion builtin APNG baseline encode failed"
+    echo "not ok" 1 - "interframe builtin APNG baseline encode failed"
     exit 0
 }
 
@@ -43,11 +43,11 @@ captured_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         -M "${palette_output}" \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion builtin APNG mapfile encode failed"
+    echo "not ok" 1 - "interframe builtin APNG mapfile encode failed"
     exit 0
 }
 

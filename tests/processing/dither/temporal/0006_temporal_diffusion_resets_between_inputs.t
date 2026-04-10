@@ -20,20 +20,20 @@ input_anim="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.
 combined_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_anim}" "${input_anim}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion two-input encode failed"
+    echo "not ok" 1 - "interframe two-input encode failed"
     exit 0
 }
 
 single_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_anim}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion single-input encode failed"
+    echo "not ok" 1 - "interframe single-input encode failed"
     exit 0
 }
 
@@ -43,5 +43,5 @@ test "${combined_output}" = "${expected_output}" || {
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion resets between input files"
+echo "ok" 1 - "interframe resets between input files"
 exit 0

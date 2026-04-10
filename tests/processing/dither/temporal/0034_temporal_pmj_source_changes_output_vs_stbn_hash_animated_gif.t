@@ -30,7 +30,7 @@ stbn_hash_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "temporal stbn-hash encode failed"
@@ -43,7 +43,7 @@ pmj_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "temporal pmj encode failed"

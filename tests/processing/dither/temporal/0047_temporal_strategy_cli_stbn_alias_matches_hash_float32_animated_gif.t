@@ -31,7 +31,7 @@ stbn_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=stbn -p 16 \
+        -d interframe:strategy=stbn -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 temporal strategy=stbn encode failed"
@@ -44,7 +44,7 @@ stbn_hash_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=stbn-hash -p 16 \
+        -d interframe:strategy=stbn-hash -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 temporal strategy=stbn-hash encode failed"

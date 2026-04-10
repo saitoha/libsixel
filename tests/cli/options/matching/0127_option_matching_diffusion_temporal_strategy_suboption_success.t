@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -d temporal-diffusion accepts strategy suboptions.
+# TAP test verifying -d interframe accepts strategy suboptions.
 
 set -eux
 
@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d temporal-diffusion:strategy=stbn-mask \
+    -d interframe:strategy=stbn-mask \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
     echo "not ok" 1 - "temporal strategy suboption was rejected"

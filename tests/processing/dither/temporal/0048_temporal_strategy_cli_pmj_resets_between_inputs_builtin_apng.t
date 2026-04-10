@@ -29,7 +29,7 @@ combined_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=pmj -p 16 \
+        -d interframe:strategy=pmj -p 16 \
         "${input_apng}" "${input_apng}"
 ) || {
     echo "not ok" 1 - "temporal strategy=pmj two-input encode failed"
@@ -41,7 +41,7 @@ single_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=pmj -p 16 \
+        -d interframe:strategy=pmj -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "temporal strategy=pmj single-input encode failed"

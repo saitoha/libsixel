@@ -14,7 +14,7 @@ set -v
 msg=$(
     set +xv
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -d temporal-diffusion:strategy=unknown \
+        -d interframe:strategy=unknown \
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
         -o /dev/null 2>&1
 ) && {

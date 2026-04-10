@@ -19,10 +19,10 @@ temporal_static=$(
         --threads=1 \
         --precision=float32 \
         -S -T 0 \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion float32 static encode failed"
+    echo "not ok" 1 - "interframe float32 static encode failed"
     exit 0
 }
 
@@ -39,9 +39,9 @@ fs_static=$(
 }
 
 test "${temporal_static}" = "${fs_static}" || {
-    echo "not ok" 1 - "temporal-diffusion float32 changed static output"
+    echo "not ok" 1 - "interframe float32 changed static output"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion float32 matches fs for static start frame"
+echo "ok" 1 - "interframe float32 matches fs for static start frame"
 exit 0

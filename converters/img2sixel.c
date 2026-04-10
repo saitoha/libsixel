@@ -386,9 +386,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "      x_dither -> positionally stable arithmetic xor based dither\n"
         "      bluenoise -> tileable blue-noise ordered dither\n"
         "      lso2     -> libsixel method based on variable error diffusion tables, optimized for\n"
-        "      temporal-diffusion[:strategy=MODE] -> temporal error diffusion\n"
+        "      interframe[:strategy=MODE] -> temporal error diffusion\n"
         "          MODE: diffusion, stbn, stbn-hash, stbn-mask, pmj\n"
-        "          strategy=... is valid only for temporal-diffusion.\n"
+        "          strategy=... is valid only for interframe.\n"
         "          ignores -Y; not available with -I\n"
         "      size\n"
     },
@@ -409,7 +409,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      auto   -> choose carry mode automatically\n"
         "      direct -> write error back to pixel data immediately\n"
         "      carry  -> accumulate error in workspace buffers\n"
-        "    note: ignored when -d temporal-diffusion is selected\n"
+        "    note: ignored when -d interframe is selected\n"
     },
     {
         'f',
@@ -818,7 +818,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_DITHER_TEMPORAL_STRATEGY",
-        "internal temporal strategy override for -d temporal-diffusion.\n"
+        "internal temporal strategy override for -d interframe.\n"
         "Accepts diffusion (default), stbn, stbn-hash, stbn-mask, or pmj."
     },
     {

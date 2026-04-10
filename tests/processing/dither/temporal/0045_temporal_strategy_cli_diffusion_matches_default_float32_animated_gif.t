@@ -31,7 +31,7 @@ default_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 temporal default encode failed"
@@ -44,7 +44,7 @@ strategy_diffusion_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=diffusion -p 16 \
+        -d interframe:strategy=diffusion -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 temporal strategy=diffusion encode failed"

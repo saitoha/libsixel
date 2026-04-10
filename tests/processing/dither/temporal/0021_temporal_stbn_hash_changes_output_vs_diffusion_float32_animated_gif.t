@@ -32,7 +32,7 @@ diffusion_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "temporal diffusion float32 baseline encode failed"
@@ -46,7 +46,7 @@ stbn_hash_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "temporal stbn-hash float32 encode failed"

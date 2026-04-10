@@ -431,12 +431,12 @@ _img2sixel()
                                    x_dither \
                                    bluenoise \
                                    lso2 \
-                                   temporal-diffusion \
-                                   temporal-diffusion:strategy=diffusion \
-                                   temporal-diffusion:strategy=stbn \
-                                   temporal-diffusion:strategy=stbn-hash \
-                                   temporal-diffusion:strategy=stbn-mask \
-                                   temporal-diffusion:strategy=pmj' -- "$cur" ) )
+                                   interframe \
+                                   interframe:strategy=diffusion \
+                                   interframe:strategy=stbn \
+                                   interframe:strategy=stbn-hash \
+                                   interframe:strategy=stbn-mask \
+                                   interframe:strategy=pmj' -- "$cur" ) )
         return 0
         ;;
     -y|--diffusion-scan)

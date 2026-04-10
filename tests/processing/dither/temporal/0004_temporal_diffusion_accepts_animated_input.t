@@ -33,11 +33,11 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
     -L libwebp \
     -ldisable \
-    -d temporal-diffusion -p 16 \
+    -d interframe -p 16 \
     "${input_webp}" >/dev/null || {
-    echo "not ok" 1 - "temporal-diffusion animated encode failed"
+    echo "not ok" 1 - "interframe animated encode failed"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion accepts animated input"
+echo "ok" 1 - "interframe accepts animated input"
 exit 0

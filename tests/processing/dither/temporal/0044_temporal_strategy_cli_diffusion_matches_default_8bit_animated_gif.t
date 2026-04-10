@@ -29,7 +29,7 @@ default_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "8bit temporal default encode failed"
@@ -41,7 +41,7 @@ strategy_diffusion_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=diffusion -p 16 \
+        -d interframe:strategy=diffusion -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "8bit temporal strategy=diffusion encode failed"

@@ -29,7 +29,7 @@ stbn_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=stbn -p 16 \
+        -d interframe:strategy=stbn -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "8bit temporal strategy=stbn encode failed"
@@ -41,7 +41,7 @@ stbn_hash_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=stbn-hash -p 16 \
+        -d interframe:strategy=stbn-hash -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "8bit temporal strategy=stbn-hash encode failed"

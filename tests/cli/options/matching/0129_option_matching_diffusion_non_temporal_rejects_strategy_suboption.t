@@ -22,7 +22,7 @@ msg=$(
     exit 0
 }
 
-test "${msg#*supported only for temporal-diffusion*}" != "${msg}" || {
+test "${msg#*supported only for interframe*}" != "${msg}" || {
     echo "not ok" 1 - "missing non-temporal strategy rejection diagnostic"
     exit 0
 }

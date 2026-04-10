@@ -31,17 +31,17 @@ temporal_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion float32 animated encode failed"
+    echo "not ok" 1 - "interframe float32 animated encode failed"
     exit 0
 }
 
 test -n "${temporal_output}" || {
-    echo "not ok" 1 - "temporal-diffusion float32 animated output is empty"
+    echo "not ok" 1 - "interframe float32 animated output is empty"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion float32 accepts animated input"
+echo "ok" 1 - "interframe float32 accepts animated input"
 exit 0

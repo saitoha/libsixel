@@ -797,7 +797,7 @@ sixel_encode_highcolor(
 
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_TEMPORAL) {
         sixel_helper_set_additional_message(
-            "sixel_encode_highcolor: temporal-diffusion is not supported "
+            "sixel_encode_highcolor: interframe is not supported "
             "with high-color mode.");
         status = SIXEL_BAD_ARGUMENT;
         goto error;

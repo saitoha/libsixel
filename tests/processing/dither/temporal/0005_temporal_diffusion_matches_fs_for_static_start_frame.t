@@ -18,10 +18,10 @@ temporal_static=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -S -T 0 \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion static start-frame encode failed"
+    echo "not ok" 1 - "interframe static start-frame encode failed"
     exit 0
 }
 
@@ -37,9 +37,9 @@ fs_static=$(
 }
 
 test "${temporal_static}" = "${fs_static}" || {
-    echo "not ok" 1 - "temporal-diffusion changed static start-frame output"
+    echo "not ok" 1 - "interframe changed static start-frame output"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion matches fs for static start-frame"
+echo "ok" 1 - "interframe matches fs for static start-frame"
 exit 0

@@ -323,7 +323,7 @@ typedef int SIXELSTATUS;
                                                     lso2         -> libsixel method based on
                                                                     variable error diffusion
                                                                     tables, optimized for size
-                                                    temporal-diffusion
+                                                    interframe
                                                                  -> temporal
                                                                  error
                                                                  diffusion
@@ -365,7 +365,7 @@ typedef int SIXELSTATUS;
                                                                 workspace buffer before
                                                                 applying
                                                   note: this option is ignored
-                                                        for temporal-diffusion
+                                                        for interframe
                                                 */
 #define SIXEL_OPTFLAG_FIND_LARGEST      ('f')  /* -f FINDTYPE, --find-largest=FINDTYPE:
                                                   choose method for finding the largest

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming temporal-diffusion ignores the legacy carry selector.
+# TAP test confirming interframe ignores the legacy carry selector.
 
 set -eux
 
@@ -17,23 +17,23 @@ output_direct="${ARTIFACT_LOCAL_DIR}/direct.six"
 output_carry="${ARTIFACT_LOCAL_DIR}/carry.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d temporal-diffusion -y raster -Y direct -p 16 \
+    -d interframe -y raster -Y direct -p 16 \
     -o "${output_direct}" "${input_image}" || {
-    echo "not ok" 1 - "temporal-diffusion with -Y direct failed"
+    echo "not ok" 1 - "interframe with -Y direct failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d temporal-diffusion -y raster -Y carry -p 16 \
+    -d interframe -y raster -Y carry -p 16 \
     -o "${output_carry}" "${input_image}" || {
-    echo "not ok" 1 - "temporal-diffusion with -Y carry failed"
+    echo "not ok" 1 - "interframe with -Y carry failed"
     exit 0
 }
 
 cmp -s "${output_direct}" "${output_carry}" || {
-    echo "not ok" 1 - "temporal-diffusion output changed by -Y"
+    echo "not ok" 1 - "interframe output changed by -Y"
     exit 0
 }
 
-echo "ok" 1 - "temporal-diffusion ignores -Y carry mode"
+echo "ok" 1 - "interframe ignores -Y carry mode"
 exit 0

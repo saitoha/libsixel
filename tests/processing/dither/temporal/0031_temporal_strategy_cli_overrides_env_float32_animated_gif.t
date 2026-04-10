@@ -32,7 +32,7 @@ diffusion_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 temporal diffusion baseline encode failed"
@@ -46,7 +46,7 @@ env_hash_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 temporal stbn-hash env encode failed"
@@ -60,7 +60,7 @@ cli_override_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=stbn-hash -p 16 \
+        -d interframe:strategy=stbn-hash -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 temporal stbn-hash cli override encode failed"

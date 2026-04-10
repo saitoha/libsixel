@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal-diffusion is rejected in high-color mode.
+# TAP test ensuring interframe is rejected in high-color mode.
 
 set -eux
 
@@ -17,20 +17,20 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 set +e
 error_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -I -d temporal-diffusion "${input_image}" 2>&1 >/dev/null
+        -I -d interframe "${input_image}" 2>&1 >/dev/null
 )
 status=$?
 set -e
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "high-color mode unexpectedly accepted temporal-diffusion"
+    echo "not ok" 1 - "high-color mode unexpectedly accepted interframe"
     exit 0
 }
 
-test "${error_output#*temporal-diffusion*}" != "${error_output}" || {
-    echo "not ok" 1 - "error message for temporal-diffusion rejection is missing"
+test "${error_output#*interframe*}" != "${error_output}" || {
+    echo "not ok" 1 - "error message for interframe rejection is missing"
     exit 0
 }
 
-echo "ok" 1 - "high-color mode rejects temporal-diffusion"
+echo "ok" 1 - "high-color mode rejects interframe"
 exit 0

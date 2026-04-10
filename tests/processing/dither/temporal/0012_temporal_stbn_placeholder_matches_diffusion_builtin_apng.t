@@ -30,7 +30,7 @@ diffusion_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "temporal diffusion baseline encode failed"
@@ -43,7 +43,7 @@ stbn_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "temporal stbn placeholder encode failed"

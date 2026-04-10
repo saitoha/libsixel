@@ -41,7 +41,7 @@ combined_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=pmj -p 16 \
+        -d interframe:strategy=pmj -p 16 \
         "${input_apng}" "${input_gif}"
 ) || {
     echo "not ok" 1 - "strategy=pmj combined mixed-size encode failed"
@@ -53,7 +53,7 @@ animated_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=pmj -p 16 \
+        -d interframe:strategy=pmj -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "strategy=pmj animated APNG encode failed"
@@ -65,7 +65,7 @@ single_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion:strategy=pmj -p 16 \
+        -d interframe:strategy=pmj -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "strategy=pmj single GIF encode failed"

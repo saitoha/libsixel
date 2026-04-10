@@ -151,7 +151,7 @@ if find "$temporal_tests_dir" -type f -name '*.t' -exec \
 fi
 
 if ! find "$temporal_tests_dir" -type f -name '*.t' -exec \
-        grep -F -- "-d temporal-diffusion:strategy=" {} + \
+        grep -F -- "-d interframe:strategy=" {} + \
         >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: missing CLI strategy suboption coverage" \
         >> "$missing"
@@ -164,7 +164,7 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "temporal-diffusion:mode=" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "interframe:mode=" "$test_path" >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0130 must exercise unknown key path" \
             >> "$missing"
         status=1
@@ -177,11 +177,36 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0131 must exercise strategy=pmj" \
             >> "$missing"
         status=1
     fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0132_option_matching_diffusion_legacy_temporal_diffusion_rejected.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing legacy temporal-diffusion rejection coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "-d temporal-diffusion" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0132 must exercise legacy temporal-diffusion rejection path" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "*interframe*" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0132 must verify interframe hint in diagnostics" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+if find "$temporal_tests_dir" -type f -name '*.t' -exec \
+        grep -F -- "temporal-diffusion" {} + >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: legacy temporal-diffusion spelling must not remain" \
+        >> "$missing"
+    status=1
 fi
 
 while IFS= read -r token; do
@@ -207,8 +232,8 @@ while IFS= read -r test_name; do
             >> "$missing"
         status=1
     fi
-    if ! grep -F -- "-d temporal-diffusion" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/temporal: missing temporal-diffusion mode in $test_name" \
+    if ! grep -F -- "-d interframe" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: missing interframe mode in $test_name" \
             >> "$missing"
         status=1
     fi
@@ -265,7 +290,7 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: missing cli strategy=pmj in $test_name" \
             >> "$missing"
         status=1
@@ -291,7 +316,7 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: missing cli strategy=pmj in $test_name" \
             >> "$missing"
         status=1
@@ -317,7 +342,7 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "temporal-diffusion:strategy=stbn-mask" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "interframe:strategy=stbn-mask" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: missing cli strategy=stbn-mask in $test_name" \
             >> "$missing"
         status=1
@@ -552,7 +577,7 @@ if test ! -f "$test_path"; then
     status=1
 else
     if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+            || ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0038 must cover env/cli precedence for pmj" \
             >> "$missing"
         status=1
@@ -576,7 +601,7 @@ else
         status=1
     fi
     if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+            || ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0041 must cover float32 env/cli precedence for pmj" \
             >> "$missing"
         status=1
@@ -589,8 +614,8 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "-d temporal-diffusion -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "temporal-diffusion:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "interframe:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0044 must compare default temporal vs strategy=diffusion" \
             >> "$missing"
         status=1
@@ -608,8 +633,8 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "-d temporal-diffusion -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "temporal-diffusion:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "interframe:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0045 must compare default temporal vs strategy=diffusion" \
             >> "$missing"
         status=1
@@ -627,8 +652,8 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "temporal-diffusion:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "temporal-diffusion:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "interframe:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "interframe:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0046 must compare CLI stbn and stbn-hash" \
             >> "$missing"
         status=1
@@ -651,8 +676,8 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "temporal-diffusion:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "temporal-diffusion:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "interframe:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "interframe:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0047 must compare CLI stbn and stbn-hash" \
             >> "$missing"
         status=1

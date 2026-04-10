@@ -34,10 +34,10 @@ single_thread_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion builtin APNG single-thread failed"
+    echo "not ok" 1 - "interframe builtin APNG single-thread failed"
     exit 0
 }
 
@@ -46,10 +46,10 @@ multi_thread_output=$(
         --threads=2 \
         -L builtin \
         -ldisable \
-        -d temporal-diffusion -p 16 \
+        -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal-diffusion builtin APNG multi-thread failed"
+    echo "not ok" 1 - "interframe builtin APNG multi-thread failed"
     exit 0
 }
 

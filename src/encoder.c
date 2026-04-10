@@ -999,7 +999,7 @@ static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
         G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
     },
     {
-        "temporal-diffusion",
+        "interframe",
         SIXEL_DIFFUSE_TEMPORAL,
         g_subkeys_diffusion_temporal,
         G_SUBKEYS_DIFFUSION_TEMPORAL_COUNT
@@ -6772,7 +6772,7 @@ sixel_encoder_parse_diffusion_argument(
     if (resolution->resolved_base_value != SIXEL_DIFFUSE_TEMPORAL
             && resolution->assignment_count > 0u) {
         sixel_helper_set_additional_message(
-            "-d suboptions are supported only for temporal-diffusion.");
+            "-d suboptions are supported only for interframe.");
         sixel_option_free_argument_resolution(resolution);
         return SIXEL_BAD_ARGUMENT;
     }
@@ -7964,7 +7964,7 @@ sixel_encoder_setopt(
                 &temporal_strategy_override,
                 &temporal_strategy_token)) {
             sixel_helper_set_additional_message(
-                "invalid -d temporal-diffusion strategy resolution.");
+                "invalid -d interframe strategy resolution.");
             status = SIXEL_BAD_ARGUMENT;
         }
         sixel_option_free_argument_resolution(&d_resolution);
