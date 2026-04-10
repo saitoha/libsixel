@@ -57,6 +57,7 @@ cat > "$expected_float32_tests" <<'EOF'
 0032_temporal_pmj_source_changes_output_vs_stbn_hash_float32_animated_gif.t
 0033_temporal_pmj_float32_thread_count_stable_output_builtin_apng.t
 0035_temporal_pmj_float32_mapfile_capture_repeatable_output_builtin_apng.t
+0041_temporal_strategy_cli_overrides_env_float32_pmj_animated_gif.t
 EOF
 
 cat > "$expected_8bit_mask_tests" <<'EOF'
@@ -388,6 +389,25 @@ else
     fi
     if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/temporal: 0038 must remain 8bit coverage" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$temporal_tests_dir/0041_temporal_strategy_cli_overrides_env_float32_pmj_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/temporal: missing float32 pmj cli override coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0041 must run in float32 mode" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: 0041 must cover float32 env/cli precedence for pmj" \
             >> "$missing"
         status=1
     fi
