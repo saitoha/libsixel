@@ -731,6 +731,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-temporal-no-compat-getenv-symbol',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-temporal-no-compat-getenv-symbol.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-quantize-merge-suboption-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-quantize-merge-suboption-sync.sh',
       meson.project_source_root()],
