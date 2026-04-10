@@ -15559,6 +15559,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int stroke_radius;
     int suppress_stroke;
     int traced_vector_mask_glow;
+    int interior_effects_enabled;
+    int traced_interior_effects_skip;
+    int has_pixel_channels;
     float stroke_opacity;
     float stroke_size;
     float stroke_rgb[3];
@@ -15586,6 +15589,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
     stroke_radius = 0;
     suppress_stroke = 0;
     traced_vector_mask_glow = 0;
+    interior_effects_enabled = 1;
+    traced_interior_effects_skip = 0;
+    has_pixel_channels = 0;
     stroke_opacity = 0.0f;
     stroke_size = 0.0f;
     stroke_rgb[0] = 0.0f;
@@ -15598,7 +15604,28 @@ sixel_builtin_psd_apply_layer_effects_subset(
         src->alpha == NULL) {
         return;
     }
+    if (layer->red_channel_index >= 0 ||
+        layer->green_channel_index >= 0 ||
+        layer->blue_channel_index >= 0 ||
+        layer->gray_channel_index >= 0 ||
+        layer->c_channel_index >= 0 ||
+        layer->m_channel_index >= 0 ||
+        layer->y_channel_index >= 0 ||
+        layer->k_channel_index >= 0) {
+        has_pixel_channels = 1;
+    }
+    if (layer->has_blend_interior_effects != 0 &&
+        layer->blend_interior_effects_enabled == 0 &&
+        has_pixel_channels == 0) {
+        interior_effects_enabled = 0;
+    }
     if (layer->has_effect_solid_overlay != 0) {
+        if (interior_effects_enabled == 0) {
+            traced_interior_effects_skip = 1;
+        }
+    }
+    if (interior_effects_enabled != 0 &&
+        layer->has_effect_solid_overlay != 0) {
         overlay_opacity = sixel_builtin_psd_clamp01(
             layer->effect_solid_overlay_opacity);
         effect_mode = layer->effect_solid_overlay_mode;
@@ -15656,7 +15683,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
         }
     }
 
-    if (layer->has_effect_gradient_overlay != 0 &&
+    if (interior_effects_enabled != 0 &&
+        layer->has_effect_gradient_overlay != 0 &&
         layer->effect_gradient_stop_count > 0u &&
         layer->width > 0u &&
         layer->height > 0u &&
@@ -15780,6 +15808,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
             0);
     }
     if (layer->has_effect_inner_glow != 0 &&
+        interior_effects_enabled != 0 &&
         layer->has_knockout == 0) {
         if (layer->has_vector_mask != 0 &&
             traced_vector_mask_glow == 0) {
@@ -15801,6 +15830,12 @@ sixel_builtin_psd_apply_layer_effects_subset(
     }
 
     if (layer->has_effect_stroke == 0) {
+        if (traced_interior_effects_skip != 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: infx=0; skipping interior effects in "
+                "layer fallback");
+        }
         return;
     }
     if (layer->has_fill_payload != 0 &&
@@ -15852,6 +15887,12 @@ sixel_builtin_psd_apply_layer_effects_subset(
             "effect stroke");
     }
     if (stroke_opacity <= 0.0f || stroke_size <= 0.0f) {
+        if (traced_interior_effects_skip != 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: infx=0; skipping interior effects in "
+                "layer fallback");
+        }
         return;
     }
     stroke_radius = (int)ceilf(stroke_size);
@@ -15972,6 +16013,12 @@ sixel_builtin_psd_apply_layer_effects_subset(
             source_alpha + stroke_alpha * (1.0f - source_alpha));
     }
     free(original_alpha);
+    if (traced_interior_effects_skip != 0) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: infx=0; skipping interior effects in "
+            "layer fallback");
+    }
 }
 
 static float
