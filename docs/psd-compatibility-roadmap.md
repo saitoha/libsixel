@@ -289,6 +289,14 @@ Key points used by this roadmap:
   - New hardcase LSQA TAPs `1313..1318` are added.
     `1314..1316` are PASS and `1313/1317/1318` are currently fixed as XFAIL
     until remaining opacity/effects parity work is completed.
+  - Layer-fallback clipping traversal now adds an overlap-aware tie-break
+    when orphan clipping counts are equal, reducing clip-base mismatches on
+    alternating base/clip layer records.
+  - `knko` is now evaluated by payload value (`0:none`, `1:shallow`,
+    `>=2:deep`) instead of tag-presence only.
+  - Representative trace guards were added as PASS tests:
+    `1327` (no clipping orphan trace), `1328` (knko=0 no ignore trace),
+    and additional `infx` semantics coverage remains queued for the next slice.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
