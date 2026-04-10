@@ -298,8 +298,8 @@ Key points used by this roadmap:
     `1327` (no clipping orphan trace), `1328` (knko=0 no ignore trace),
     `1329` (clbl parse), `1330` (infx parse), `1331` (ebbl parse),
     `1349` (clbl=0 deferred-effect trace), `1350` (vstk parse trace +
-    no unexpected suppression), and `1372` (stroke-composite merged-to-
-    fallback preference trace).
+    no unexpected suppression), `1378` (stroke-composite merged-to-
+    fallback preference trace), and `1379` (vector-stroke preference trace).
   - PASS LSQA representatives now include shape-fx parse+quality contracts
     for `clbl`/`infx` (`1347`, `1348`) while keeping hardcase XFAIL gates
     (`1317`, `1318`) unchanged until full effect parity is completed.
