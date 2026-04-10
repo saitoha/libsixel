@@ -28,6 +28,7 @@ expected_float32_tests=$tmpdir/expected_float32_tests.txt
 expected_8bit_mask_tests=$tmpdir/expected_8bit_mask_tests.txt
 expected_8bit_pmj_tests=$tmpdir/expected_8bit_pmj_tests.txt
 expected_8bit_pmj_cli_tests=$tmpdir/expected_8bit_pmj_cli_tests.txt
+expected_float32_pmj_cli_tests=$tmpdir/expected_float32_pmj_cli_tests.txt
 missing=$tmpdir/missing.txt
 status=0
 
@@ -58,6 +59,8 @@ cat > "$expected_float32_tests" <<'EOF'
 0033_temporal_pmj_float32_thread_count_stable_output_builtin_apng.t
 0035_temporal_pmj_float32_mapfile_capture_repeatable_output_builtin_apng.t
 0041_temporal_strategy_cli_overrides_env_float32_pmj_animated_gif.t
+0042_temporal_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t
+0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t
 EOF
 
 cat > "$expected_8bit_mask_tests" <<'EOF'
@@ -73,6 +76,11 @@ EOF
 cat > "$expected_8bit_pmj_cli_tests" <<'EOF'
 0039_temporal_pmj_cli_mapfile_capture_repeatable_output_builtin_apng.t
 0040_temporal_pmj_cli_thread_count_stable_output_builtin_apng.t
+EOF
+
+cat > "$expected_float32_pmj_cli_tests" <<'EOF'
+0042_temporal_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t
+0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t
 EOF
 
 if grep -F -- "\"SIXEL_TEMPORAL_STRATEGY\"" "$source_file_h" "$source_file_c" \
@@ -261,6 +269,32 @@ while IFS= read -r test_name; do
     fi
 done < "$expected_8bit_pmj_cli_tests"
 
+while IFS= read -r test_name; do
+    test -n "$test_name" || continue
+    test_path="$temporal_tests_dir/$test_name"
+    if test ! -f "$test_path"; then
+        echo "# tests/processing/dither/temporal: missing float32 pmj cli test: $test_name" \
+            >> "$missing"
+        status=1
+        continue
+    fi
+    if ! grep -F -- "temporal-diffusion:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: missing cli strategy=pmj in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+    if grep -F -- "SIXEL_DITHER_TEMPORAL_STRATEGY=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: unexpected env-based pmj in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+    if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/temporal: missing --precision=float32 in $test_name" \
+            >> "$missing"
+        status=1
+    fi
+done < "$expected_float32_pmj_cli_tests"
+
 if ! grep -F -- "-M " \
         "$temporal_tests_dir/0029_temporal_stbn_mask_mapfile_capture_repeatable_output_builtin_apng.t" \
         >/dev/null 2>&1; then
@@ -305,6 +339,22 @@ if ! grep -F -- "--threads=2" \
         "$temporal_tests_dir/0040_temporal_pmj_cli_thread_count_stable_output_builtin_apng.t" \
         >/dev/null 2>&1; then
     echo "# tests/processing/dither/temporal: 0040 must compare --threads=1 and --threads=2" \
+        >> "$missing"
+    status=1
+fi
+
+if ! grep -F -- "-M " \
+        "$temporal_tests_dir/0042_temporal_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t" \
+        >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: 0042 must exercise mapfile capture (-M)" \
+        >> "$missing"
+    status=1
+fi
+
+if ! grep -F -- "--threads=2" \
+        "$temporal_tests_dir/0043_temporal_pmj_cli_float32_thread_count_stable_output_builtin_apng.t" \
+        >/dev/null 2>&1; then
+    echo "# tests/processing/dither/temporal: 0043 must compare --threads=1 and --threads=2" \
         >> "$missing"
     status=1
 fi
