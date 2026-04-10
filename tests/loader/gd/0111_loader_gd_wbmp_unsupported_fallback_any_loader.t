@@ -24,16 +24,15 @@ set -v
 input_wbmp="${TOP_SRCDIR}/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp"
 fallback_loader=""
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
-    "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="builtin"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -ldisable \
-    "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="gdk-pixbuf2"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! -ldisable \
-    "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="wic"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! -ldisable \
-    "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="quicklook"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable \
-    "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="coregraphics"
+test "${fallback_loader}" = "" && \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
+        "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="builtin"
+test "${fallback_loader}" = "" && test "${HAVE_GDK_PIXBUF2-}" = 1 && \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -ldisable \
+        "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="gdk-pixbuf2"
+test "${fallback_loader}" = "" && test "${HAVE_WIC-}" = 1 && \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! -ldisable \
+        "${input_wbmp}" >/dev/null 2>/dev/null && fallback_loader="wic"
 
 test "${fallback_loader}" != "" || {
     printf "ok 1 # SKIP no fallback loader decoded WBMP in this runtime\n"

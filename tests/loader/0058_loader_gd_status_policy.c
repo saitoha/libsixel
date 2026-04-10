@@ -429,6 +429,43 @@ expect_can_try_status_for_file(sixel_allocator_t *allocator,
 }
 
 static int
+expect_optional_can_try_status_for_file(sixel_allocator_t *allocator,
+                                        char const *relative_path,
+                                        char const *label)
+{
+    sixel_chunk_t *chunk;
+    SIXELSTATUS status;
+    int can_try;
+
+    chunk = NULL;
+    status = SIXEL_FALSE;
+    can_try = 0;
+    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        return 1;
+    }
+
+    can_try = loader_can_try_gd(chunk);
+    status = run_load_with_gd_status(chunk);
+    sixel_chunk_destroy(chunk);
+    if (can_try == 0 && status != SIXEL_FALSE) {
+        fprintf(stderr,
+                "%s: can_try=0 but status=%d\n",
+                label,
+                (int)status);
+        return 1;
+    }
+    if (can_try != 0 && status == SIXEL_FALSE) {
+        fprintf(stderr,
+                "%s: can_try=1 but status=SIXEL_FALSE\n",
+                label);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 expect_optional_wbmp_status(sixel_allocator_t *allocator)
 {
     static unsigned char const wbmp_oversize_data[] = {
@@ -620,6 +657,39 @@ run_status_policy_mode(char const *mode)
                 1,
                 SIXEL_OK,
                 "matrix-decode-bmp") != 0) {
+            result = 1;
+        }
+    }
+    if (run_all || strcmp(mode, "can_try_status_optional_matrix") == 0) {
+        matched = 1;
+        if (expect_optional_can_try_status_for_file(
+                allocator,
+                "/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff",
+                "optional-matrix-tiff") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_status_for_file(
+                allocator,
+                "/tests/data/inputs/formats/snake-tga-type2-rgb.tga",
+                "optional-matrix-tga") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_status_for_file(
+                allocator,
+                "/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp",
+                "optional-matrix-wbmp") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_status_for_file(
+                allocator,
+                "/tests/data/inputs/formats/sample-gd2-conv_test.gd2",
+                "optional-matrix-gd2") != 0) {
+            result = 1;
+        }
+        if (expect_optional_can_try_status_for_file(
+                allocator,
+                "/tests/data/inputs/snake_64.webp",
+                "optional-matrix-webp") != 0) {
             result = 1;
         }
     }

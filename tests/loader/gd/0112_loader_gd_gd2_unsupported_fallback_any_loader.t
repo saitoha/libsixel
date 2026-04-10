@@ -24,16 +24,15 @@ set -v
 input_gd2="${TOP_SRCDIR}/tests/data/inputs/formats/sample-gd2-conv_test.gd2"
 fallback_loader=""
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
-    "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="builtin"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -ldisable \
-    "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="gdk-pixbuf2"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! -ldisable \
-    "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="wic"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! -ldisable \
-    "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="quicklook"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable \
-    "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="coregraphics"
+test "${fallback_loader}" = "" && \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
+        "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="builtin"
+test "${fallback_loader}" = "" && test "${HAVE_GDK_PIXBUF2-}" = 1 && \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -ldisable \
+        "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="gdk-pixbuf2"
+test "${fallback_loader}" = "" && test "${HAVE_WIC-}" = 1 && \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! -ldisable \
+        "${input_gd2}" >/dev/null 2>/dev/null && fallback_loader="wic"
 
 test "${fallback_loader}" != "" || {
     printf "ok 1 # SKIP no fallback loader decoded GD2 in this runtime\n"
