@@ -296,7 +296,11 @@ Key points used by this roadmap:
     `>=2:deep`) instead of tag-presence only.
   - Representative trace guards were added as PASS tests:
     `1327` (no clipping orphan trace), `1328` (knko=0 no ignore trace),
-    and additional `infx` semantics coverage remains queued for the next slice.
+    `1329` (clbl parse), `1330` (infx parse), `1331` (ebbl parse),
+    `1349` (clbl=0 deferred-effect trace), and `1350` (vstk parse trace).
+  - PASS LSQA representatives now include shape-fx parse+quality contracts
+    for `clbl`/`infx` (`1347`, `1348`) while keeping hardcase XFAIL gates
+    (`1317`, `1318`) unchanged until full effect parity is completed.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

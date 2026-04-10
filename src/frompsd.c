@@ -9994,7 +9994,8 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
             opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
             continue;
         }
-        if (memcmp(key, "Md  ", 4u) == 0 &&
+        if ((memcmp(key, "Md  ", 4u) == 0 ||
+             memcmp(key, "BlnM", 4u) == 0) &&
             sixel_builtin_psd_descriptor_read_enum_value(data,
                                                          key_length,
                                                          &cursor,
@@ -10131,7 +10132,8 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
             opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
             continue;
         }
-        if (memcmp(key, "Md  ", 4u) == 0 &&
+        if ((memcmp(key, "Md  ", 4u) == 0 ||
+             memcmp(key, "BlnM", 4u) == 0) &&
             sixel_builtin_psd_descriptor_read_enum_value(data,
                                                          key_length,
                                                          &cursor,
@@ -10338,7 +10340,8 @@ sixel_builtin_psd_parse_effect_stroke_object(
             opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
             continue;
         }
-        if (memcmp(key, "Md  ", 4u) == 0 &&
+        if ((memcmp(key, "Md  ", 4u) == 0 ||
+             memcmp(key, "BlnM", 4u) == 0) &&
             sixel_builtin_psd_descriptor_read_enum_value(data,
                                                          key_length,
                                                          &cursor,
@@ -10503,7 +10506,8 @@ sixel_builtin_psd_parse_effect_glow_object(
             opacity = sixel_builtin_psd_normalize_descriptor_opacity(numeric);
             continue;
         }
-        if (memcmp(key, "Md  ", 4u) == 0 &&
+        if ((memcmp(key, "Md  ", 4u) == 0 ||
+             memcmp(key, "BlnM", 4u) == 0) &&
             sixel_builtin_psd_descriptor_read_enum_value(data,
                                                          key_length,
                                                          &cursor,
@@ -12080,8 +12084,6 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     uint16_t selector;
     float py;
     float px;
-    float ny;
-    float nx;
     size_t p;
     size_t k;
     size_t next_k;
@@ -12100,7 +12102,12 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     float p3y;
     float t;
     float omt;
-    int inside;
+    size_t sample_x;
+    size_t sample_y;
+    int sample_inside;
+    float sample_nx;
+    float sample_ny;
+    float coverage;
 
     data = NULL;
     key_length = 0u;
@@ -12134,8 +12141,6 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     selector = 0u;
     py = 0.0f;
     px = 0.0f;
-    ny = 0.0f;
-    nx = 0.0f;
     p = 0u;
     k = 0u;
     next_k = 0u;
@@ -12154,7 +12159,12 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
     p3y = 0.0f;
     t = 0.0f;
     omt = 0.0f;
-    inside = 0;
+    sample_x = 0u;
+    sample_y = 0u;
+    sample_inside = 0;
+    sample_nx = 0.0f;
+    sample_ny = 0.0f;
+    coverage = 0.0f;
 
     if (chunk == NULL || info == NULL || layer == NULL || src == NULL ||
         chunk->buffer == NULL || src->alpha == NULL || info->width == 0u ||
@@ -12326,27 +12336,48 @@ sixel_builtin_psd_apply_vector_mask_path_to_layer_buffers(
         }
         path_count = flattened_path_count;
         for (y = 0u; y < (size_t)layer->height; ++y) {
-            ny = ((float)layer->top + (float)y + 0.5f) / (float)info->height;
             for (x = 0u; x < (size_t)layer->width; ++x) {
-                nx = ((float)layer->left + (float)x + 0.5f) /
-                    (float)info->width;
-                inside = 0;
-                for (p = 0u; p < path_count; ++p) {
-                    if (subpath_closed[p] == 0u || subpath_count[p] < 3u) {
-                        continue;
-                    }
-                    if (sixel_builtin_psd_point_in_polygon_even_odd(
-                            nx,
-                            ny,
-                            poly_x + subpath_start[p],
-                            poly_y + subpath_start[p],
-                            subpath_count[p])) {
-                        inside = !inside;
+                /*
+                 * Rasterize vector masks with 2x2 sub-pixel coverage.
+                 * This avoids hard edge aliasing and tracks external
+                 * compositors more closely on small path geometry.
+                 */
+                coverage = 0.0f;
+                for (sample_y = 0u; sample_y < 2u; ++sample_y) {
+                    sample_ny = ((float)layer->top + (float)y +
+                                 (sample_y == 0u ? 0.25f : 0.75f)) /
+                        (float)info->height;
+                    for (sample_x = 0u; sample_x < 2u; ++sample_x) {
+                        sample_nx = ((float)layer->left + (float)x +
+                                     (sample_x == 0u ? 0.25f : 0.75f)) /
+                            (float)info->width;
+                        sample_inside = 0;
+                        for (p = 0u; p < path_count; ++p) {
+                            if (subpath_closed[p] == 0u ||
+                                subpath_count[p] < 3u) {
+                                continue;
+                            }
+                            if (sixel_builtin_psd_point_in_polygon_even_odd(
+                                    sample_nx,
+                                    sample_ny,
+                                    poly_x + subpath_start[p],
+                                    poly_y + subpath_start[p],
+                                    subpath_count[p])) {
+                                sample_inside = !sample_inside;
+                            }
+                        }
+                        if (sample_inside != 0) {
+                            coverage += 0.25f;
+                        }
                     }
                 }
-                if (inside == 0) {
-                    idx = y * (size_t)layer->width + x;
+                idx = y * (size_t)layer->width + x;
+                if (coverage <= 0.0f) {
                     src->alpha[idx] = 0.0f;
+                } else if (coverage < 1.0f) {
+                    src->alpha[idx] =
+                        sixel_builtin_psd_clamp_alpha_float32(
+                            src->alpha[idx] * coverage);
                 }
             }
         }
@@ -12773,6 +12804,9 @@ sixel_builtin_psd_parse_layer_extra_data(
                 buffer + cursor,
                 key_length,
                 layer);
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: parsed vstk vector stroke style payload");
         } else if (memcmp(key, "iOpa", 4u) == 0) {
             if (key_length >= 1u) {
                 layer->has_fill_opacity = 1;
@@ -13199,15 +13233,19 @@ sixel_builtin_psd_should_prefer_multilayer_with_merged(
             }
             if (layer->visible != 0 &&
                 layer->has_layer_effects != 0 &&
-                layer->has_vector_mask != 0 &&
+                (layer->has_vector_mask != 0 ||
+                 layer->has_vector_stroke_style != 0) &&
+                (layer->has_fill_payload != 0 ||
+                 layer->has_tysh_payload != 0 ||
+                 layer->has_vector_stroke_content_fill != 0) &&
                 !sixel_builtin_psd_layer_has_decodable_pixel_channels(
                     info,
                     layer)) {
                 /*
                  * Shape/effect documents frequently keep merged previews that
                  * diverge from runtime compositing. Prefer fallback when the
-                 * layer is vector-mask/effect driven and has no decodable
-                 * pixel channels.
+                 * layer is vector-shape/effect driven (vector mask or vector
+                 * stroke style) and has no decodable pixel channels.
                  */
                 force_layer_fallback = 1;
             }
@@ -15539,6 +15577,45 @@ sixel_builtin_psd_apply_glow_effect(
 }
 
 static void
+sixel_builtin_psd_layer_effects_trace_interior_skip(void)
+{
+    sixel_trace_topic_message(
+        "psd_decode",
+        "builtin PSD: infx=0; skipping interior effects in "
+        "layer fallback");
+}
+
+static int
+sixel_builtin_psd_layer_interior_effects_enabled(
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    int has_pixel_channels;
+    int enabled;
+
+    has_pixel_channels = 0;
+    enabled = 1;
+    if (layer == NULL) {
+        return 0;
+    }
+    if (layer->red_channel_index >= 0 ||
+        layer->green_channel_index >= 0 ||
+        layer->blue_channel_index >= 0 ||
+        layer->gray_channel_index >= 0 ||
+        layer->c_channel_index >= 0 ||
+        layer->m_channel_index >= 0 ||
+        layer->y_channel_index >= 0 ||
+        layer->k_channel_index >= 0) {
+        has_pixel_channels = 1;
+    }
+    if (layer->has_blend_interior_effects != 0 &&
+        layer->blend_interior_effects_enabled == 0 &&
+        has_pixel_channels == 0) {
+        enabled = 0;
+    }
+    return enabled;
+}
+
+static void
 sixel_builtin_psd_apply_layer_effects_subset(
     sixel_builtin_psd_layer_record_t const *layer,
     sixel_builtin_psd_layer_buffers_t *src)
@@ -15559,9 +15636,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int stroke_radius;
     int suppress_stroke;
     int traced_vector_mask_glow;
+    int suppress_bevel_glow_proxy;
     int interior_effects_enabled;
     int traced_interior_effects_skip;
-    int has_pixel_channels;
     float stroke_opacity;
     float stroke_size;
     float stroke_rgb[3];
@@ -15589,9 +15666,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
     stroke_radius = 0;
     suppress_stroke = 0;
     traced_vector_mask_glow = 0;
+    suppress_bevel_glow_proxy = 0;
     interior_effects_enabled = 1;
     traced_interior_effects_skip = 0;
-    has_pixel_channels = 0;
     stroke_opacity = 0.0f;
     stroke_size = 0.0f;
     stroke_rgb[0] = 0.0f;
@@ -15604,21 +15681,20 @@ sixel_builtin_psd_apply_layer_effects_subset(
         src->alpha == NULL) {
         return;
     }
-    if (layer->red_channel_index >= 0 ||
-        layer->green_channel_index >= 0 ||
-        layer->blue_channel_index >= 0 ||
-        layer->gray_channel_index >= 0 ||
-        layer->c_channel_index >= 0 ||
-        layer->m_channel_index >= 0 ||
-        layer->y_channel_index >= 0 ||
-        layer->k_channel_index >= 0) {
-        has_pixel_channels = 1;
+    if (layer->has_vector_stroke_style != 0 &&
+        layer->has_effect_outer_glow != 0 &&
+        layer->has_effect_inner_glow != 0 &&
+        layer->has_effect_solid_overlay == 0 &&
+        layer->has_effect_gradient_overlay == 0) {
+        /*
+         * Bevel/Emboss payloads are currently approximated as paired glows.
+         * On vector-stroke composite layers this proxy can overpower the
+         * stroke silhouette, so keep the proxy disabled in that subset.
+         */
+        suppress_bevel_glow_proxy = 1;
     }
-    if (layer->has_blend_interior_effects != 0 &&
-        layer->blend_interior_effects_enabled == 0 &&
-        has_pixel_channels == 0) {
-        interior_effects_enabled = 0;
-    }
+    interior_effects_enabled =
+        sixel_builtin_psd_layer_interior_effects_enabled(layer);
     if (layer->has_effect_solid_overlay != 0) {
         if (interior_effects_enabled == 0) {
             traced_interior_effects_skip = 1;
@@ -15788,6 +15864,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
      * passes during fallback composition.
      */
     if (layer->has_effect_outer_glow != 0 &&
+        suppress_bevel_glow_proxy == 0 &&
         layer->has_knockout == 0) {
         if (layer->has_vector_mask != 0 &&
             traced_vector_mask_glow == 0) {
@@ -15808,6 +15885,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
             0);
     }
     if (layer->has_effect_inner_glow != 0 &&
+        suppress_bevel_glow_proxy == 0 &&
         interior_effects_enabled != 0 &&
         layer->has_knockout == 0) {
         if (layer->has_vector_mask != 0 &&
@@ -15831,10 +15909,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
 
     if (layer->has_effect_stroke == 0) {
         if (traced_interior_effects_skip != 0) {
-            sixel_trace_topic_message(
-                "psd_decode",
-                "builtin PSD: infx=0; skipping interior effects in "
-                "layer fallback");
+            sixel_builtin_psd_layer_effects_trace_interior_skip();
         }
         return;
     }
@@ -15843,6 +15918,15 @@ sixel_builtin_psd_apply_layer_effects_subset(
         layer->red_channel_index < 0 &&
         layer->gray_channel_index < 0 &&
         layer->c_channel_index < 0) {
+        suppress_stroke = 1;
+    }
+    if (layer->has_vector_mask != 0 &&
+        layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled == 0) {
+        /*
+         * In clbl=0 cases, keep the clipped-fill approximation from being
+         * overridden by an expanded stroke shell in the fallback path.
+         */
         suppress_stroke = 1;
     }
     if (suppress_stroke != 0) {
@@ -15888,10 +15972,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     }
     if (stroke_opacity <= 0.0f || stroke_size <= 0.0f) {
         if (traced_interior_effects_skip != 0) {
-            sixel_trace_topic_message(
-                "psd_decode",
-                "builtin PSD: infx=0; skipping interior effects in "
-                "layer fallback");
+            sixel_builtin_psd_layer_effects_trace_interior_skip();
         }
         return;
     }
@@ -16014,10 +16095,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     }
     free(original_alpha);
     if (traced_interior_effects_skip != 0) {
-        sixel_trace_topic_message(
-            "psd_decode",
-            "builtin PSD: infx=0; skipping interior effects in "
-            "layer fallback");
+        sixel_builtin_psd_layer_effects_trace_interior_skip();
     }
 }
 
@@ -16385,6 +16463,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int allow_pixel_layer_decode_skip;
     size_t composed_layer_count;
     size_t skipped_pixel_layer_decode_count;
+    int pending_overlay_interior_enabled;
+    int apply_effects_subset;
     sixel_builtin_psd_layer_record_t pending_overlay_layer;
     SIXELSTATUS status;
 
@@ -16412,6 +16492,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     allow_pixel_layer_decode_skip = 0;
     composed_layer_count = 0u;
     skipped_pixel_layer_decode_count = 0u;
+    pending_overlay_interior_enabled = 1;
+    apply_effects_subset = 0;
     memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     status = SIXEL_FALSE;
 
@@ -16541,12 +16623,22 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         synthetic_stroke = 0;
         apply_fill_opacity = 0;
         pre_softened_alpha_edges = 0;
+        pending_overlay_interior_enabled = 1;
+        apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
             info,
             layer);
         prefer_non_pixel_fill =
             (layer->has_fill_payload != 0 && layer->has_tysh_payload == 0)
             ? 1 : 0;
+        if (has_pixel_channels &&
+            layer->has_vector_stroke_style != 0) {
+            /*
+             * Vector-stroke shape documents keep meaningful pixel channels;
+             * forcing synthetic fill first can over-flatten effect stacks.
+             */
+            prefer_non_pixel_fill = 0;
+        }
         if (allow_pixel_layer_decode_skip != 0 &&
             has_pixel_channels &&
             layer->has_vector_stroke_content_fill == 0) {
@@ -16559,13 +16651,20 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         ignore_placeholder_vector_bbox = 0;
         if (pending_clip_group_overlay != 0 &&
             layer->clipping == 0u) {
-            sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
-                canvas_rgb_premul,
-                canvas_alpha,
-                clip_alpha_map,
-                info->width,
-                info->height,
-                &pending_overlay_layer);
+            pending_overlay_interior_enabled =
+                sixel_builtin_psd_layer_interior_effects_enabled(
+                    &pending_overlay_layer);
+            if (pending_overlay_interior_enabled != 0) {
+                sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
+                    canvas_rgb_premul,
+                    canvas_alpha,
+                    clip_alpha_map,
+                    info->width,
+                    info->height,
+                    &pending_overlay_layer);
+            } else {
+                sixel_builtin_psd_layer_effects_trace_interior_skip();
+            }
             pending_clip_group_overlay = 0;
         }
         if (layer->has_non_pixel_payload != 0) {
@@ -16919,6 +17018,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 defer_clip_group_overlay = 1;
                 pending_overlay_layer = *effective_composite_layer;
                 pending_clip_group_overlay = 1;
+                if (effective_composite_layer->has_blend_clipped_elements != 0 &&
+                    effective_composite_layer->blend_clipped_elements_enabled ==
+                    0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: clbl=0; deferring interior effects "
+                        "to clipped group composite");
+                }
             }
         }
         if (effective_composite_layer->width == info->width &&
@@ -16954,12 +17061,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 &src_layer);
             pre_softened_alpha_edges = 1;
         }
+        apply_effects_subset =
+            effective_composite_layer->has_effect_solid_overlay != 0 ||
+            effective_composite_layer->has_effect_gradient_overlay != 0 ||
+            effective_composite_layer->has_effect_stroke != 0 ||
+            effective_composite_layer->has_effect_outer_glow != 0 ||
+            effective_composite_layer->has_effect_inner_glow != 0;
         if (defer_clip_group_overlay == 0 &&
-            (effective_composite_layer->has_effect_solid_overlay != 0 ||
-             effective_composite_layer->has_effect_gradient_overlay != 0 ||
-             effective_composite_layer->has_effect_stroke != 0 ||
-             effective_composite_layer->has_effect_outer_glow != 0 ||
-             effective_composite_layer->has_effect_inner_glow != 0)) {
+            apply_effects_subset != 0) {
             sixel_builtin_psd_apply_layer_effects_subset(
                 effective_composite_layer,
                 &src_layer);
@@ -16991,13 +17100,20 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
     }
     if (pending_clip_group_overlay != 0) {
-        sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
-            canvas_rgb_premul,
-            canvas_alpha,
-            clip_alpha_map,
-            info->width,
-            info->height,
-            &pending_overlay_layer);
+        pending_overlay_interior_enabled =
+            sixel_builtin_psd_layer_interior_effects_enabled(
+                &pending_overlay_layer);
+        if (pending_overlay_interior_enabled != 0) {
+            sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
+                canvas_rgb_premul,
+                canvas_alpha,
+                clip_alpha_map,
+                info->width,
+                info->height,
+                &pending_overlay_layer);
+        } else {
+            sixel_builtin_psd_layer_effects_trace_interior_skip();
+        }
         pending_clip_group_overlay = 0;
     }
     if (allow_pixel_layer_decode_skip != 0 &&
