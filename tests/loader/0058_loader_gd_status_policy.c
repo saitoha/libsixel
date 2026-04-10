@@ -87,6 +87,34 @@ run_load_with_gd_status(sixel_chunk_t const *chunk)
                         &context);
 }
 
+static SIXELSTATUS
+run_load_with_gd_status_and_lut_state(sixel_chunk_t const *chunk,
+                                      unsigned char const *bgcolor,
+                                      int *lut_ready_after)
+{
+    loader_probe_context_t context;
+    int lut_ready;
+    double lut[256];
+    SIXELSTATUS status;
+
+    memset(&context, 0, sizeof(context));
+    lut_ready = 0;
+    memset(lut, 0, sizeof(lut));
+    status = load_with_gd(chunk,
+                          0,
+                          SIXEL_PALETTE_MAX,
+                          (unsigned char *)bgcolor,
+                          &lut_ready,
+                          lut,
+                          capture_frame,
+                          &context);
+    if (lut_ready_after != NULL) {
+        *lut_ready_after = lut_ready;
+    }
+
+    return status;
+}
+
 static int
 expect_status_for_buffer(sixel_allocator_t *allocator,
                          unsigned char const *buffer,
@@ -220,12 +248,56 @@ expect_optional_format_status(sixel_allocator_t *allocator,
 
     return 0;
 }
+
+static int
+expect_transfer_cache_status_for_file(sixel_allocator_t *allocator,
+                                      char const *relative_path,
+                                      unsigned char const *bgcolor,
+                                      int expected_lut_ready,
+                                      char const *label)
+{
+    sixel_chunk_t *chunk;
+    SIXELSTATUS status;
+    int lut_ready;
+
+    chunk = NULL;
+    status = SIXEL_FALSE;
+    lut_ready = 0;
+    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        return 1;
+    }
+
+    status = run_load_with_gd_status_and_lut_state(chunk,
+                                                    bgcolor,
+                                                    &lut_ready);
+    sixel_chunk_destroy(chunk);
+    if (status != SIXEL_OK) {
+        fprintf(stderr,
+                "%s: status mismatch (got=%d expected=%d)\n",
+                label,
+                (int)status,
+                (int)SIXEL_OK);
+        return 1;
+    }
+    if (lut_ready != expected_lut_ready) {
+        fprintf(stderr,
+                "%s: lut-ready mismatch (got=%d expected=%d)\n",
+                label,
+                lut_ready,
+                expected_lut_ready);
+        return 1;
+    }
+
+    return 0;
+}
 #endif
 
 int
 test_loader_0058_loader_gd_status_policy(int argc, char **argv)
 {
 #if HAVE_GD
+    static unsigned char const white_bg[] = { 0xffu, 0xffu, 0xffu };
     static unsigned char const gif_data[] = {
         'G', 'I', 'F', '8', '9', 'a'
     };
@@ -378,6 +450,31 @@ test_loader_0058_loader_gd_status_policy(int argc, char **argv)
             "optional-webp",
             "/tests/data/inputs/snake_64.webp",
             64u) != 0) {
+        result = 1;
+    }
+
+    if (expect_transfer_cache_status_for_file(
+            allocator,
+            "/tests/data/inputs/formats/pal8-trns-key0-gama-only.png",
+            white_bg,
+            0,
+            "transfer-gama-only-no-srgb-cache") != 0) {
+        result = 1;
+    }
+    if (expect_transfer_cache_status_for_file(
+            allocator,
+            "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png",
+            white_bg,
+            1,
+            "transfer-iccp-prioritizes-srgb-cache") != 0) {
+        result = 1;
+    }
+    if (expect_transfer_cache_status_for_file(
+            allocator,
+            "/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png",
+            NULL,
+            1,
+            "transfer-srgb-only-initializes-cache") != 0) {
         result = 1;
     }
 

@@ -7,6 +7,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "src/chunk.h"
@@ -33,6 +34,113 @@ expect_can_try(unsigned char const *buffer,
                 label,
                 actual,
                 expected);
+        return 1;
+    }
+
+    return 0;
+}
+
+static char const *
+loader_test_source_root(void)
+{
+    char const *source_root;
+
+    source_root = getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    return source_root;
+}
+
+static int
+load_chunk_from_relative(sixel_allocator_t *allocator,
+                         char const *relative_path,
+                         sixel_chunk_t **out_chunk)
+{
+    SIXELSTATUS status;
+    char image_path[PATH_MAX];
+    int cancel_flag;
+
+    status = SIXEL_FALSE;
+    cancel_flag = 0;
+    if (allocator == NULL || relative_path == NULL || out_chunk == NULL) {
+        return 1;
+    }
+
+    *out_chunk = NULL;
+    if (build_image_path(loader_test_source_root(),
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        return 1;
+    }
+
+    status = sixel_chunk_new(out_chunk,
+                             image_path,
+                             0,
+                             &cancel_flag,
+                             allocator);
+    return SIXEL_FAILED(status) ? 1 : 0;
+}
+
+static SIXELSTATUS
+run_load_with_gd_status(sixel_chunk_t const *chunk)
+{
+    loader_probe_context_t context;
+    int lut_ready;
+    double lut[256];
+
+    memset(&context, 0, sizeof(context));
+    lut_ready = 0;
+    memset(lut, 0, sizeof(lut));
+
+    return load_with_gd(chunk,
+                        0,
+                        SIXEL_PALETTE_MAX,
+                        NULL,
+                        &lut_ready,
+                        lut,
+                        capture_frame,
+                        &context);
+}
+
+static int
+expect_optional_can_try_consistency(sixel_allocator_t *allocator,
+                                    char const *label,
+                                    char const *relative_path)
+{
+    sixel_chunk_t *chunk;
+    SIXELSTATUS status;
+    int can_try;
+
+    chunk = NULL;
+    status = SIXEL_FALSE;
+    can_try = 0;
+    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        return 1;
+    }
+
+    can_try = loader_can_try_gd(chunk);
+    status = run_load_with_gd_status(chunk);
+    sixel_chunk_destroy(chunk);
+
+    if (can_try == 0 && status != SIXEL_FALSE) {
+        fprintf(stderr,
+                "%s: can_try=0 but status=%d\n",
+                label,
+                (int)status);
+        return 1;
+    }
+    if (can_try != 0 && status == SIXEL_FALSE) {
+        fprintf(stderr, "%s: can_try=1 but status=SIXEL_FALSE\n", label);
         return 1;
     }
 
@@ -87,6 +195,8 @@ test_loader_0057_loader_gd_can_try_policy(int argc, char **argv)
     static unsigned char const unknown_data[] = {
         'N', 'O', 'T', '_', 'I', 'M', 'G'
     };
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
     int result;
 #endif
 
@@ -94,6 +204,8 @@ test_loader_0057_loader_gd_can_try_policy(int argc, char **argv)
     (void)argv;
 
 #if HAVE_GD
+    status = SIXEL_FALSE;
+    allocator = NULL;
     result = 0;
     if (loader_can_try_gd(NULL) != 0) {
         fprintf(stderr, "loader_can_try_gd should reject null chunk\n");
@@ -141,6 +253,44 @@ test_loader_0057_loader_gd_can_try_policy(int argc, char **argv)
                        "unknown") != 0) {
         result = 1;
     }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "allocator initialization failed\n");
+        return 1;
+    }
+
+    if (expect_optional_can_try_consistency(
+            allocator,
+            "optional-tiff",
+            "/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff") != 0) {
+        result = 1;
+    }
+    if (expect_optional_can_try_consistency(
+            allocator,
+            "optional-tga",
+            "/tests/data/inputs/formats/snake-tga-type2-rgb.tga") != 0) {
+        result = 1;
+    }
+    if (expect_optional_can_try_consistency(
+            allocator,
+            "optional-wbmp",
+            "/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp") != 0) {
+        result = 1;
+    }
+    if (expect_optional_can_try_consistency(
+            allocator,
+            "optional-gd2",
+            "/tests/data/inputs/formats/sample-gd2-conv_test.gd2") != 0) {
+        result = 1;
+    }
+    if (expect_optional_can_try_consistency(
+            allocator,
+            "optional-webp",
+            "/tests/data/inputs/snake_64.webp") != 0) {
+        result = 1;
+    }
+    sixel_allocator_unref(allocator);
 
     return result;
 #else
