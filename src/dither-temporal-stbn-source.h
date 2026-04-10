@@ -40,6 +40,7 @@
 #define SIXEL_TEMPORAL_PMJ_TILE_PIXELS \
     (SIXEL_TEMPORAL_PMJ_TILE_SIDE * SIXEL_TEMPORAL_PMJ_TILE_SIDE)
 #define SIXEL_TEMPORAL_PMJ_TILE_ENABLE_MIN_PIXELS 1024
+#define SIXEL_TEMPORAL_FLOAT_LUT_SIZE 256
 
 /*
  * Shared v1 STBN strength in byte-domain units.
@@ -77,6 +78,11 @@ typedef struct sixel_temporal_stbn_state_common {
     uint32_t pmj_row_cache_sequence_index;
     int pmj_row_cache_y;
     uint16_t pmj_row_u16[SIXEL_MAX_CHANNELS][SIXEL_TEMPORAL_PMJ_TILE_SIDE];
+    int pmj_float_lut_valid;
+    int pmj_float_lut_pixelformat;
+    int pmj_float_lut_depth;
+    float pmj_float_u8_to_float[SIXEL_MAX_CHANNELS]
+                               [SIXEL_TEMPORAL_FLOAT_LUT_SIZE];
     int pmj_tile_valid;
     int pmj_tile_depth;
     uint32_t pmj_tile_sequence_index;

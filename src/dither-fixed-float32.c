@@ -1001,6 +1001,43 @@ sixel_temporal_stbn_bias_u8_sampled_tiled_float32(
     return (int)bias_u8;
 }
 
+static int
+sixel_temporal_stbn_prepare_pmj_float_lut_float32(
+    sixel_temporal_stbn_state_float32_t *stbn_state,
+    int pixelformat,
+    int depth)
+{
+    int channel;
+    int value;
+
+    channel = 0;
+    value = 0;
+
+    if (stbn_state == NULL || depth <= 0 || depth > SIXEL_MAX_CHANNELS) {
+        return 0;
+    }
+    if (stbn_state->pmj_float_lut_valid != 0
+            && stbn_state->pmj_float_lut_pixelformat == pixelformat
+            && stbn_state->pmj_float_lut_depth == depth) {
+        return 1;
+    }
+
+    for (channel = 0; channel < depth; ++channel) {
+        for (value = 0; value < SIXEL_TEMPORAL_FLOAT_LUT_SIZE; ++value) {
+            stbn_state->pmj_float_u8_to_float[channel][value]
+                = sixel_pixelformat_byte_to_float(
+                    pixelformat,
+                    channel,
+                    (unsigned char)value);
+        }
+    }
+
+    stbn_state->pmj_float_lut_pixelformat = pixelformat;
+    stbn_state->pmj_float_lut_depth = depth;
+    stbn_state->pmj_float_lut_valid = 1;
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_temporal_stbn_prepare_frame_float32(sixel_dither_t *dither,
                                           int width,
@@ -1067,6 +1104,7 @@ sixel_temporal_stbn_load_pixel_float32(
     uint32_t sequence_index;
     int use_pmj_row_cached;
     int use_pmj_tiled;
+    int use_pmj_float_lut;
 
     stbn_state = NULL;
     n = 0;
@@ -1076,6 +1114,7 @@ sixel_temporal_stbn_load_pixel_float32(
     sequence_index = 0U;
     use_pmj_row_cached = 0;
     use_pmj_tiled = 0;
+    use_pmj_float_lut = 0;
 
     stbn_state = (sixel_temporal_stbn_state_float32_t *)
         sixel_temporal_get_method_private(
@@ -1109,6 +1148,11 @@ sixel_temporal_stbn_load_pixel_float32(
             if (stbn_state->pmj_tile_enabled != 0) {
                 use_pmj_tiled = 1;
             }
+            use_pmj_float_lut
+                = sixel_temporal_stbn_prepare_pmj_float_lut_float32(
+                      stbn_state,
+                      pixelformat,
+                      depth);
         }
     }
 
@@ -1131,10 +1175,15 @@ sixel_temporal_stbn_load_pixel_float32(
                 adjusted_u8 = 255;
             }
             corrected[n] = (unsigned char)adjusted_u8;
-            working_float[n] = sixel_pixelformat_byte_to_float(
-                pixelformat,
-                n,
-                corrected[n]);
+            if (use_pmj_float_lut != 0) {
+                working_float[n] = stbn_state->pmj_float_u8_to_float[
+                    n][corrected[n]];
+            } else {
+                working_float[n] = sixel_pixelformat_byte_to_float(
+                    pixelformat,
+                    n,
+                    corrected[n]);
+            }
         }
         return;
     }
@@ -1158,10 +1207,15 @@ sixel_temporal_stbn_load_pixel_float32(
                 adjusted_u8 = 255;
             }
             corrected[n] = (unsigned char)adjusted_u8;
-            working_float[n] = sixel_pixelformat_byte_to_float(
-                pixelformat,
-                n,
-                corrected[n]);
+            if (use_pmj_float_lut != 0) {
+                working_float[n] = stbn_state->pmj_float_u8_to_float[
+                    n][corrected[n]];
+            } else {
+                working_float[n] = sixel_pixelformat_byte_to_float(
+                    pixelformat,
+                    n,
+                    corrected[n]);
+            }
         }
         return;
     }
