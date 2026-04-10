@@ -88,30 +88,42 @@ run_load_with_gd_status(sixel_chunk_t const *chunk)
 }
 
 static SIXELSTATUS
+run_load_with_gd_status_with_lut(sixel_chunk_t const *chunk,
+                                 unsigned char const *bgcolor,
+                                 int *lut_ready,
+                                 double lut[256])
+{
+    loader_probe_context_t context;
+
+    memset(&context, 0, sizeof(context));
+    return load_with_gd(chunk,
+                        0,
+                        SIXEL_PALETTE_MAX,
+                        (unsigned char *)bgcolor,
+                        lut_ready,
+                        lut,
+                        capture_frame,
+                        &context);
+}
+
+static SIXELSTATUS
 run_load_with_gd_status_and_lut_state(sixel_chunk_t const *chunk,
                                       unsigned char const *bgcolor,
                                       int *lut_ready_after)
 {
-    loader_probe_context_t context;
     int lut_ready;
     double lut[256];
     SIXELSTATUS status;
 
-    memset(&context, 0, sizeof(context));
     lut_ready = 0;
     memset(lut, 0, sizeof(lut));
-    status = load_with_gd(chunk,
-                          0,
-                          SIXEL_PALETTE_MAX,
-                          (unsigned char *)bgcolor,
-                          &lut_ready,
-                          lut,
-                          capture_frame,
-                          &context);
+    status = run_load_with_gd_status_with_lut(chunk,
+                                              bgcolor,
+                                              &lut_ready,
+                                              lut);
     if (lut_ready_after != NULL) {
         *lut_ready_after = lut_ready;
     }
-
     return status;
 }
 
@@ -293,6 +305,50 @@ expect_transfer_cache_status_for_file(sixel_allocator_t *allocator,
 }
 
 static int
+expect_transfer_cache_reused_for_file(sixel_allocator_t *allocator,
+                                      char const *relative_path,
+                                      char const *label)
+{
+    sixel_chunk_t *chunk;
+    SIXELSTATUS status;
+    int lut_ready;
+    double lut[256];
+
+    chunk = NULL;
+    status = SIXEL_FALSE;
+    lut_ready = 0;
+    memset(lut, 0, sizeof(lut));
+    if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        return 1;
+    }
+
+    status = run_load_with_gd_status_with_lut(chunk, NULL, &lut_ready, lut);
+    if (status != SIXEL_OK || lut_ready != 1) {
+        fprintf(stderr,
+                "%s: first decode mismatch (status=%d lut=%d)\n",
+                label,
+                (int)status,
+                lut_ready);
+        sixel_chunk_destroy(chunk);
+        return 1;
+    }
+
+    status = run_load_with_gd_status_with_lut(chunk, NULL, &lut_ready, lut);
+    sixel_chunk_destroy(chunk);
+    if (status != SIXEL_OK || lut_ready != 1) {
+        fprintf(stderr,
+                "%s: second decode mismatch (status=%d lut=%d)\n",
+                label,
+                (int)status,
+                lut_ready);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 expect_optional_wbmp_status(sixel_allocator_t *allocator)
 {
     static unsigned char const wbmp_oversize_data[] = {
@@ -343,6 +399,12 @@ run_status_policy_mode(char const *mode)
     };
     static unsigned char const unknown_data[] = {
         'N', 'O', 'T', '_', 'I', 'M', 'G'
+    };
+    static unsigned char const png_bad_ihdr_len_data[] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au,
+        0x00u, 0x00u, 0x00u, 0x0cu, 'I', 'H', 'D', 'R',
+        0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x08u, 0x06u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
     };
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -400,6 +462,16 @@ run_status_policy_mode(char const *mode)
                                      sizeof(unknown_data),
                                      SIXEL_FALSE,
                                      "delegate-unknown") != 0) {
+            result = 1;
+        }
+    }
+    if (run_all || strcmp(mode, "png_bad_ihdr_len_status_gd_error") == 0) {
+        matched = 1;
+        if (expect_status_for_buffer(allocator,
+                                     png_bad_ihdr_len_data,
+                                     sizeof(png_bad_ihdr_len_data),
+                                     SIXEL_GD_ERROR,
+                                     "png-bad-ihdr-len") != 0) {
             result = 1;
         }
     }
@@ -545,6 +617,28 @@ run_status_policy_mode(char const *mode)
                 NULL,
                 1,
                 "transfer-srgb-only-initializes-cache") != 0) {
+            result = 1;
+        }
+    }
+    if (run_all || strcmp(mode, "lut_cache_srgb_reused_across_calls") == 0) {
+        matched = 1;
+        if (expect_transfer_cache_reused_for_file(
+                allocator,
+                "/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png",
+                "transfer-srgb-cache-reuse") != 0) {
+            result = 1;
+        }
+    }
+    if (run_all ||
+            strcmp(mode, "lut_cache_gama_path_does_not_mark_srgb_ready") ==
+            0) {
+        matched = 1;
+        if (expect_transfer_cache_status_for_file(
+                allocator,
+                "/tests/data/inputs/formats/pal8-trns-key0-gama-only.png",
+                white_bg,
+                0,
+                "transfer-gama-path-keeps-srgb-cache-off") != 0) {
             result = 1;
         }
     }

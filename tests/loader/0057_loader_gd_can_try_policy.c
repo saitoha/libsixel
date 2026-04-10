@@ -170,6 +170,12 @@ run_can_try_policy_mode(char const *mode)
     static unsigned char const png_signature_only_data[] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
     };
+    static unsigned char const png_bad_ihdr_len_data[] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au,
+        0x00u, 0x00u, 0x00u, 0x0cu, 'I', 'H', 'D', 'R',
+        0x00u, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x08u, 0x06u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
     static unsigned char const png_highdepth_data[] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au,
         0x00u, 0x00u, 0x00u, 0x0du, 'I', 'H', 'D', 'R',
@@ -252,6 +258,15 @@ run_can_try_policy_mode(char const *mode)
                            sizeof(png_signature_only_data),
                            1,
                            "png-signature-only") != 0) {
+            result = 1;
+        }
+    }
+    if (run_all || strcmp(mode, "png_bad_ihdr_len_can_try_true") == 0) {
+        matched = 1;
+        if (expect_can_try(png_bad_ihdr_len_data,
+                           sizeof(png_bad_ihdr_len_data),
+                           1,
+                           "png-bad-ihdr-len") != 0) {
             result = 1;
         }
     }

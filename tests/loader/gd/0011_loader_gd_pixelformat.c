@@ -18,10 +18,13 @@ typedef enum gd_pixelformat_case_id {
     GD_PIXELFORMAT_RGBA_NO_BG_MASK = 0,
     GD_PIXELFORMAT_RGBA_BG_FLOAT32,
     GD_PIXELFORMAT_INDEXED_PAL8,
+    GD_PIXELFORMAT_OPAQUE_RGB_WITH_BG_STAYS_RGB888_GAMMA,
+    GD_PIXELFORMAT_INDEXED_OPAQUE_WITH_BG_STAYS_RGB888_GAMMA,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_PAL8,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_MASK,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_BG_FLOAT32,
     GD_PIXELFORMAT_HIGHDEPTH_FLOAT32,
+    GD_PIXELFORMAT_HIGHDEPTH_ALPHA_NO_BG_FLOAT32_MASK,
     GD_PIXELFORMAT_INDEXED_MULTI_TRNS_MASK,
     GD_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_BOUNDARY_PAL8,
     GD_PIXELFORMAT_OPAQUE_RGB_GAMMA_FASTPATH,
@@ -98,6 +101,42 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
             new_gd_component
         },
         {
+            "gd opaque truecolor with bg keeps rgb888 gamma path",
+            "/tests/data/inputs/formats/snake-jpeg-444.jpg",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
+            },
+            { 0, 0, 256, white_bg },
+            new_gd_component
+        },
+        {
+            "gd opaque indexed with bg stays rgb888 gamma",
+            "/tests/data/inputs/formats/snake-png-pal8.png",
+            {
+                SIXEL_PIXELFORMAT_RGB888,
+                64,
+                64,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                0,
+                0,
+                SIXEL_COLORSPACE_GAMMA,
+                1
+            },
+            { 0, 1, 256, white_bg },
+            new_gd_component
+        },
+        {
             "gd indexed keycolor preserves pal8+transparent index",
             "/tests/data/inputs/formats/pal8-trns-key0.png",
             {
@@ -163,6 +202,24 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 FRAME_METADATA_ANY,
                 0,
                 0,
+                SIXEL_COLORSPACE_LINEAR,
+                1
+            },
+            { 1, 0, 256, NULL },
+            new_gd_component
+        },
+        {
+            "gd high-depth alpha png emits float32 plus mask",
+            "/tests/data/inputs/formats/snake-png-rgba16-alpha.png",
+            {
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                2,
+                1,
+                1,
+                -1,
+                FRAME_METADATA_ANY,
+                1,
+                1,
                 SIXEL_COLORSPACE_LINEAR,
                 1
             },
@@ -440,6 +497,14 @@ run_gd_loader_test_mode(char const *mode)
     if (strcmp(mode, "rgba_bg_float32") == 0) {
         return run_gd_pixelformat_case_by_id(GD_PIXELFORMAT_RGBA_BG_FLOAT32);
     }
+    if (strcmp(mode, "opaque_rgb_with_bg_stays_rgb888_gamma") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_OPAQUE_RGB_WITH_BG_STAYS_RGB888_GAMMA);
+    }
+    if (strcmp(mode, "indexed_opaque_with_bg_stays_rgb888_gamma") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_INDEXED_OPAQUE_WITH_BG_STAYS_RGB888_GAMMA);
+    }
     if (strcmp(mode, "indexed_pal8") == 0) {
         return run_gd_pixelformat_case_by_id(GD_PIXELFORMAT_INDEXED_PAL8);
     }
@@ -458,6 +523,10 @@ run_gd_loader_test_mode(char const *mode)
     if (strcmp(mode, "highdepth_float32") == 0) {
         return run_gd_pixelformat_case_by_id(
             GD_PIXELFORMAT_HIGHDEPTH_FLOAT32);
+    }
+    if (strcmp(mode, "highdepth_alpha_no_bg_float32_mask") == 0) {
+        return run_gd_pixelformat_case_by_id(
+            GD_PIXELFORMAT_HIGHDEPTH_ALPHA_NO_BG_FLOAT32_MASK);
     }
     if (strcmp(mode, "indexed_multi_trns_mask") == 0) {
         return run_gd_pixelformat_case_by_id(
