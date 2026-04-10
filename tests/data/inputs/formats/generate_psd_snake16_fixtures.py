@@ -4980,7 +4980,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2],
                     "planes": rgb8_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
@@ -5610,7 +5610,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2, 3],
                     "planes": cmyk16_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
@@ -6702,7 +6702,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2, 3],
                     "planes": cmyk8_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
@@ -6981,7 +6981,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2, 3],
                     "planes": cmyk32_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
@@ -7427,7 +7427,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2],
                     "planes": rgb8_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
@@ -9007,7 +9007,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2, 3],
                     "planes": cmyk8_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
@@ -9570,7 +9570,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2, 3],
                     "planes": cmyk16_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
@@ -10220,7 +10220,7 @@ def generate(out_dir: pathlib.Path):
                     "channel_ids": [0, 1, 2, 3],
                     "planes": cmyk32_planes,
                     "blend_key": b"norm",
-                    "additional_blocks": [(b"knko", b"\x00")],
+                    "additional_blocks": [(b"knko", b"\x01")],
                 },
                 {
                     "top": 0,
