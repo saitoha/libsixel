@@ -272,11 +272,15 @@ lso2     -> libsixel method based on variable error diffusion tables,
 .br
             optimized for size
 .br
-interframe[:strategy=MODE] -> interframe error diffusion
+interframe[:strategy=MODE][:noise_strength=VALUE]
+.br
+            -> interframe error diffusion
 .br
 MODE: diffusion, stbn, stbn-hash, stbn-mask, pmj
 .br
-strategy=... is valid only for interframe.
+VALUE: 0.0-2.0 (default 0.055)
+.br
+strategy=... and noise_strength=... are valid only for interframe.
 .br
 ignores \-Y; not available with \-I
 .TP 5
@@ -945,6 +949,12 @@ a multiple of six scanlines.
 .br
 set overlap between adjacent dither bands to smooth seams. Accepts non-negative
 integers.
+.TP 5
+.B SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH
+.br
+set interframe STBN/PMJ noise strength for \fB\-d interframe\fP.
+Accepts 0.0-2.0; defaults to 0.055.
+Overridden by \fB\-d interframe:noise_strength=VALUE\fP.
 .TP 5
 .B SIXEL_DITHER_BLUENOISE_STRENGTH
 .br

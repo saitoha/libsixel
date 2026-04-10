@@ -386,9 +386,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "      x_dither -> positionally stable arithmetic xor based dither\n"
         "      bluenoise -> tileable blue-noise ordered dither\n"
         "      lso2     -> libsixel method based on variable error diffusion tables, optimized for\n"
-        "      interframe[:strategy=MODE] -> interframe error diffusion\n"
+        "      interframe[:strategy=MODE][:noise_strength=VALUE]\n"
+        "          -> interframe error diffusion\n"
         "          MODE: diffusion, stbn, stbn-hash, stbn-mask, pmj\n"
-        "          strategy=... is valid only for interframe.\n"
+        "          VALUE: 0.0-2.0 (default 0.055)\n"
+        "          strategy=... and noise_strength=... are valid only for\n"
+        "          interframe.\n"
         "          ignores -Y; not available with -I\n"
         "      size\n"
     },
@@ -820,6 +823,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_INTERFRAME_STRATEGY",
         "internal interframe strategy override for -d interframe.\n"
         "Accepts diffusion (default), stbn, stbn-hash, stbn-mask, or pmj."
+    },
+    {
+        "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH",
+        "set interframe STBN/PMJ noise strength for -d interframe.\n"
+        "Accepts 0.0-2.0; defaults to 0.055.\n"
+        "Overridden by -d interframe:noise_strength=VALUE."
     },
     {
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE",

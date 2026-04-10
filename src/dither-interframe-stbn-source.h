@@ -42,6 +42,8 @@
 #define SIXEL_INTERFRAME_PMJ_TILE_ENABLE_MIN_PIXELS 1024
 #define SIXEL_INTERFRAME_FLOAT_LUT_SIZE 256
 
+#define SIXEL_INTERFRAME_NOISE_STRENGTH_DEFAULT 0.055f
+
 /*
  * Shared v1 STBN strength in byte-domain units.
  *
@@ -69,6 +71,7 @@ typedef struct sixel_interframe_stbn_pmj_channel_cache_common {
 typedef struct sixel_interframe_stbn_state_common {
     uint32_t sequence_index;
     uint8_t sample_source_id;
+    int stbn_strength_u8;
     sixel_interframe_stbn_sample_u16_fn sample_u16;
     int pmj_cache_valid;
     int pmj_cache_depth;

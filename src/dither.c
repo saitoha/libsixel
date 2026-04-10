@@ -1509,7 +1509,10 @@ sixel_dither_new(
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
     (*ppdither)->method_for_carry = SIXEL_CARRY_AUTO;
     (*ppdither)->interframe_strategy_override = 0;
-    (*ppdither)->interframe_strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    (*ppdither)->interframe_strategy_token
+        = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    (*ppdither)->interframe_noise_strength_override = 0;
+    (*ppdither)->interframe_noise_strength_u8 = 0;
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;

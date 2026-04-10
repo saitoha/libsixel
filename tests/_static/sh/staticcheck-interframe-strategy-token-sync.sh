@@ -66,11 +66,13 @@ cat > "$expected_float32_tests" <<'EOF'
 0047_interframe_strategy_cli_stbn_alias_matches_hash_float32_animated_gif.t
 0051_interframe_pmj_source_changes_output_vs_stbn_hash_float32_builtin_apng.t
 0053_interframe_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t
+0055_interframe_pmj_strength_zero_matches_diffusion_float32_builtin_apng.t
 EOF
 
 cat > "$expected_8bit_mask_tests" <<'EOF'
 0029_interframe_stbn_mask_mapfile_capture_repeatable_output_builtin_apng.t
 0030_interframe_stbn_mask_thread_count_stable_output_builtin_apng.t
+0054_interframe_stbn_mask_strength_zero_matches_diffusion_builtin_apng.t
 EOF
 
 cat > "$expected_8bit_pmj_tests" <<'EOF'
@@ -90,6 +92,7 @@ cat > "$expected_float32_pmj_cli_tests" <<'EOF'
 0042_interframe_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t
 0043_interframe_pmj_cli_float32_thread_count_stable_output_builtin_apng.t
 0053_interframe_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t
+0055_interframe_pmj_strength_zero_matches_diffusion_float32_builtin_apng.t
 EOF
 
 cat > "$expected_8bit_mask_cli_tests" <<'EOF'
@@ -106,6 +109,12 @@ fi
 if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY" "$source_file_h" \
         >/dev/null 2>&1; then
     echo "# src/dither-interframe-method.h: missing env var macro name" \
+        >> "$missing"
+    status=1
+fi
+if ! grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH" "$source_file_h" \
+        >/dev/null 2>&1; then
+    echo "# src/dither-interframe-method.h: missing noise strength env macro" \
         >> "$missing"
     status=1
 fi
@@ -179,6 +188,50 @@ if test ! -f "$test_path"; then
 else
     if ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0131 must exercise strategy=pmj" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0133_option_matching_diffusion_interframe_noise_strength_suboption_success.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing noise_strength success coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "interframe:strategy=stbn-mask:noise_strength=" \
+            "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0133 must exercise noise_strength suboption" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0134_option_matching_diffusion_non_interframe_rejects_noise_strength_suboption.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing non-interframe noise_strength rejection test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "fs:noise_strength=" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "supported only for interframe" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0134 must reject noise_strength outside interframe" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0135_option_matching_diffusion_interframe_noise_strength_invalid_value.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing invalid noise_strength value test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "interframe:noise_strength=invalid" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "0.0-2.0" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0135 must validate noise_strength range diagnostics" \
             >> "$missing"
         status=1
     fi
@@ -603,6 +656,22 @@ else
     if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
             || ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0041 must cover float32 env/cli precedence for pmj" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$interframe_tests_dir/0056_interframe_noise_strength_cli_overrides_env_8bit_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/interframe: missing cli noise_strength override coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH=0" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "interframe:strategy=stbn-mask:noise_strength=" \
+            "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0056 must cover cli/env noise_strength precedence" \
             >> "$missing"
         status=1
     fi

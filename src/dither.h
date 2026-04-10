@@ -93,6 +93,8 @@ struct sixel_dither {
     int method_for_carry;           /* carry buffer mode for diffusion */
     int interframe_strategy_override; /* CLI strategy override enable flag */
     int interframe_strategy_token;    /* parsed interframe strategy token */
+    int interframe_noise_strength_override; /* CLI strength override flag */
+    int interframe_noise_strength_u8; /* parsed interframe noise strength */
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */

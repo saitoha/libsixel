@@ -432,11 +432,17 @@ _img2sixel()
                                    bluenoise \
                                    lso2 \
                                    interframe \
+                                   interframe:noise_strength=0.055 \
                                    interframe:strategy=diffusion \
+                                   interframe:strategy=diffusion:noise_strength=0.055 \
                                    interframe:strategy=stbn \
+                                   interframe:strategy=stbn:noise_strength=0.055 \
                                    interframe:strategy=stbn-hash \
+                                   interframe:strategy=stbn-hash:noise_strength=0.055 \
                                    interframe:strategy=stbn-mask \
-                                   interframe:strategy=pmj' -- "$cur" ) )
+                                   interframe:strategy=stbn-mask:noise_strength=0.50 \
+                                   interframe:strategy=pmj \
+                                   interframe:strategy=pmj:noise_strength=0.50' -- "$cur" ) )
         return 0
         ;;
     -y|--diffusion-scan)

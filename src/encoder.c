@@ -900,6 +900,14 @@ static sixel_suboption_key_t const g_subkeys_diffusion_interframe[] = {
         g_option_choices_interframe_strategy,
         sizeof(g_option_choices_interframe_strategy)
         / sizeof(g_option_choices_interframe_strategy[0])
+    },
+    {
+        "noise_strength",
+        NULL,
+        SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
     }
 };
 
@@ -3368,6 +3376,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->interframe_strategy_override;
     context->dither->interframe_strategy_token =
         context->encoder->interframe_strategy_token;
+    context->dither->interframe_noise_strength_override =
+        context->encoder->interframe_noise_strength_override;
+    context->dither->interframe_noise_strength_u8 =
+        context->encoder->interframe_noise_strength_u8;
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
     sixel_dither_set_diffusion_carry(context->dither,
@@ -5537,6 +5549,8 @@ sixel_encoder_new(
     (*ppencoder)->interframe_strategy_override = 0;
     (*ppencoder)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    (*ppencoder)->interframe_noise_strength_override = 0;
+    (*ppencoder)->interframe_noise_strength_u8 = 0;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_carry      = SIXEL_CARRY_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
@@ -6104,6 +6118,43 @@ sixel_encoder_parse_dimension_value(char const *value,
     *number = parsed;
     *suffix = endptr;
     return 1;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_interframe_noise_strength_text(
+    char const *text,
+    int *strength_u8_out)
+{
+    char *endptr;
+    double parsed;
+    double scaled;
+
+    endptr = NULL;
+    parsed = 0.0;
+    scaled = 0.0;
+    if (text == NULL || strength_u8_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno != 0 ||
+            parsed < 0.0 ||
+            parsed > 2.0) {
+        sixel_helper_set_additional_message(
+            "-d interframe:noise_strength must be in range 0.0-2.0.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    scaled = parsed * 255.0;
+    if (scaled > 255.0) {
+        scaled = 255.0;
+    }
+    *strength_u8_out = (int)(scaled + 0.5);
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -6780,25 +6831,37 @@ sixel_encoder_parse_diffusion_argument(
     return SIXEL_OK;
 }
 
-static int
-sixel_encoder_resolve_interframe_strategy_token(
+static SIXELSTATUS
+sixel_encoder_resolve_interframe_suboptions(
     sixel_option_argument_resolution_t const *resolution,
-    int *has_override,
-    int *strategy_token)
+    int *has_strategy_override,
+    int *strategy_token,
+    int *has_noise_strength_override,
+    int *noise_strength_u8)
 {
+    SIXELSTATUS status;
     size_t index;
     sixel_suboption_assignment_t const *assignment;
     int resolved_choice;
+    int resolved_strength_u8;
 
+    status = SIXEL_OK;
     index = 0u;
     assignment = NULL;
     resolved_choice = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
-    if (resolution == NULL || has_override == NULL || strategy_token == NULL) {
-        return 0;
+    resolved_strength_u8 = 0;
+    if (resolution == NULL ||
+            has_strategy_override == NULL ||
+            strategy_token == NULL ||
+            has_noise_strength_override == NULL ||
+            noise_strength_u8 == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    *has_override = 0;
+    *has_strategy_override = 0;
     *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    *has_noise_strength_override = 0;
+    *noise_strength_u8 = 0;
     while (index < resolution->assignment_count) {
         assignment = resolution->assignments + index;
         if (assignment->resolved_key_name != NULL
@@ -6806,15 +6869,25 @@ sixel_encoder_resolve_interframe_strategy_token(
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
-                return 0;
+                return SIXEL_BAD_ARGUMENT;
             }
-            *has_override = 1;
+            *has_strategy_override = 1;
             *strategy_token = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "noise_strength") == 0) {
+            status = sixel_encoder_parse_interframe_noise_strength_text(
+                assignment->resolved_value_text,
+                &resolved_strength_u8);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            *has_noise_strength_override = 1;
+            *noise_strength_u8 = resolved_strength_u8;
         }
         ++index;
     }
 
-    return 1;
+    return SIXEL_OK;
 }
 
 typedef struct sixel_encoder_setopt_context {
@@ -7796,6 +7869,8 @@ sixel_encoder_setopt(
     sixel_option_argument_resolution_t d_resolution;
     int interframe_strategy_override;
     int interframe_strategy_token;
+    int interframe_noise_strength_override;
+    int interframe_noise_strength_u8;
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
@@ -7836,6 +7911,8 @@ sixel_encoder_setopt(
     d_resolution.assignment_count = 0u;
     interframe_strategy_override = 0;
     interframe_strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    interframe_noise_strength_override = 0;
+    interframe_noise_strength_u8 = 0;
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
@@ -7959,14 +8036,12 @@ sixel_encoder_setopt(
         }
         match_value = d_resolution.resolved_base_value;
         status = SIXEL_OK;
-        if (!sixel_encoder_resolve_interframe_strategy_token(
-                &d_resolution,
-                &interframe_strategy_override,
-                &interframe_strategy_token)) {
-            sixel_helper_set_additional_message(
-                "invalid -d interframe strategy resolution.");
-            status = SIXEL_BAD_ARGUMENT;
-        }
+        status = sixel_encoder_resolve_interframe_suboptions(
+            &d_resolution,
+            &interframe_strategy_override,
+            &interframe_strategy_token,
+            &interframe_noise_strength_override,
+            &interframe_noise_strength_u8);
         sixel_option_free_argument_resolution(&d_resolution);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -7975,6 +8050,9 @@ sixel_encoder_setopt(
         encoder->method_for_diffuse = match_value;
         encoder->interframe_strategy_override = interframe_strategy_override;
         encoder->interframe_strategy_token = interframe_strategy_token;
+        encoder->interframe_noise_strength_override
+            = interframe_noise_strength_override;
+        encoder->interframe_noise_strength_u8 = interframe_noise_strength_u8;
         break;
     case SIXEL_OPTFLAG_DIFFUSION_SCAN:  /* y */
         status = sixel_encoder_parse_choice_argument(

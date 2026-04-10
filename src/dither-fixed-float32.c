@@ -928,7 +928,8 @@ sixel_interframe_stbn_bias_u8_sampled_float32(
     int x,
     int y,
     int channel,
-    int depth)
+    int depth,
+    int strength_u8)
 {
     uint16_t sample_value;
     int32_t bias_u8;
@@ -942,7 +943,7 @@ sixel_interframe_stbn_bias_u8_sampled_float32(
     sample_value = sample_fn(sequence_index, x, y, channel, depth);
     bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
+        strength_u8);
 
     return (int)bias_u8;
 }
@@ -953,7 +954,8 @@ sixel_interframe_stbn_bias_u8_sampled_row_cached_float32(
     int x,
     int y,
     int channel,
-    int depth)
+    int depth,
+    int strength_u8)
 {
     uint16_t sample_value;
     int32_t bias_u8;
@@ -969,7 +971,7 @@ sixel_interframe_stbn_bias_u8_sampled_row_cached_float32(
         depth);
     bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
+        strength_u8);
 
     return (int)bias_u8;
 }
@@ -980,7 +982,8 @@ sixel_interframe_stbn_bias_u8_sampled_tiled_float32(
     int x,
     int y,
     int channel,
-    int depth)
+    int depth,
+    int strength_u8)
 {
     uint16_t sample_value;
     int32_t bias_u8;
@@ -996,7 +999,7 @@ sixel_interframe_stbn_bias_u8_sampled_tiled_float32(
         depth);
     bias_u8 = sixel_interframe_stbn_bias_u8_from_sample_u16_inline_common(
         sample_value,
-        SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8);
+        strength_u8);
 
     return (int)bias_u8;
 }
@@ -1105,6 +1108,7 @@ sixel_interframe_stbn_load_pixel_float32(
     int use_pmj_row_cached;
     int use_pmj_tiled;
     int use_pmj_float_lut;
+    int stbn_strength_u8;
 
     stbn_state = NULL;
     n = 0;
@@ -1115,6 +1119,7 @@ sixel_interframe_stbn_load_pixel_float32(
     use_pmj_row_cached = 0;
     use_pmj_tiled = 0;
     use_pmj_float_lut = 0;
+    stbn_strength_u8 = SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8;
 
     stbn_state = (sixel_interframe_stbn_state_float32_t *)
         sixel_interframe_get_method_private(
@@ -1140,6 +1145,7 @@ sixel_interframe_stbn_load_pixel_float32(
      */
     if (stbn_state != NULL) {
         sequence_index = stbn_state->sequence_index;
+        stbn_strength_u8 = stbn_state->stbn_strength_u8;
         if (stbn_state->sample_u16 != NULL) {
             sample_u16 = stbn_state->sample_u16;
         }
@@ -1156,6 +1162,10 @@ sixel_interframe_stbn_load_pixel_float32(
         }
     }
 
+    if (stbn_strength_u8 <= 0) {
+        return;
+    }
+
     if (use_pmj_tiled != 0) {
         for (n = 0; n < depth; ++n) {
             bias_u8 = sixel_interframe_stbn_bias_u8_sampled_tiled_float32(
@@ -1163,7 +1173,8 @@ sixel_interframe_stbn_load_pixel_float32(
                 x,
                 y,
                 n,
-                depth);
+                depth,
+                stbn_strength_u8);
             if (bias_u8 == 0) {
                 continue;
             }
@@ -1195,7 +1206,8 @@ sixel_interframe_stbn_load_pixel_float32(
                 x,
                 y,
                 n,
-                depth);
+                depth,
+                stbn_strength_u8);
             if (bias_u8 == 0) {
                 continue;
             }
@@ -1227,7 +1239,8 @@ sixel_interframe_stbn_load_pixel_float32(
             x,
             y,
             n,
-            depth);
+            depth,
+            stbn_strength_u8);
         if (bias_u8 == 0) {
             continue;
         }

@@ -24,10 +24,68 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include "compat_stub.h"
 #include "dither-interframe-method.h"
 #include "dither-interframe-stbn-source-hash.h"
 #include "dither-interframe-stbn-source-mask.h"
 #include "dither-interframe-stbn-source-pmj.h"
+
+static int
+sixel_interframe_parse_noise_strength_common(char const *text,
+                                             float *out_value)
+{
+    char *endptr;
+    double value;
+
+    endptr = NULL;
+    value = 0.0;
+    if (text == NULL || text[0] == '\0' || out_value == NULL) {
+        return 0;
+    }
+
+    errno = 0;
+    value = strtod(text, &endptr);
+    if (endptr == text || *endptr != '\0' || errno != 0) {
+        return 0;
+    }
+
+    *out_value = (float)value;
+    return 1;
+}
+
+static int
+sixel_interframe_noise_strength_u8_from_env_common(void)
+{
+    char const *text;
+    float strength;
+    double scaled;
+    int parsed;
+
+    text = NULL;
+    strength = SIXEL_INTERFRAME_NOISE_STRENGTH_DEFAULT;
+    scaled = 0.0;
+    parsed = 0;
+
+    text = sixel_compat_getenv(SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH_ENVVAR);
+    if (text != NULL) {
+        parsed = sixel_interframe_parse_noise_strength_common(text, &strength);
+        if (parsed == 0) {
+            strength = SIXEL_INTERFRAME_NOISE_STRENGTH_DEFAULT;
+        }
+    }
+
+    if (strength < 0.0f) {
+        strength = 0.0f;
+    }
+    scaled = (double)strength * 255.0;
+    if (scaled > 255.0) {
+        scaled = 255.0;
+    }
+    return (int)(scaled + 0.5);
+}
 
 int
 sixel_interframe_stbn_wrap_tile_coord_common(int value, int tile_size)
@@ -162,11 +220,28 @@ sixel_interframe_stbn_prepare_state_default_common(
     sixel_interframe_stbn_state_common_t *stbn_state,
     int can_update)
 {
+    int resolved_strength_u8;
+
     (void)can_update;
 
+    resolved_strength_u8 = 0;
     if (stbn_state == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    resolved_strength_u8 = sixel_interframe_noise_strength_u8_from_env_common();
+    if (dither != NULL && dither->interframe_noise_strength_override != 0) {
+        resolved_strength_u8 = dither->interframe_noise_strength_u8;
+        if (resolved_strength_u8 < 0) {
+            resolved_strength_u8 = 0;
+        } else if (resolved_strength_u8 > 255) {
+            resolved_strength_u8 = 255;
+        }
+    }
+    /*
+     * Resolve interframe-noise strength once per state prepare so hot pixel
+     * loops never read environment variables.
+     */
+    stbn_state->stbn_strength_u8 = resolved_strength_u8;
     if (dither != NULL && dither->frame_context.valid) {
         stbn_state->sequence_index = (uint32_t)dither->frame_context.frame_no;
     }

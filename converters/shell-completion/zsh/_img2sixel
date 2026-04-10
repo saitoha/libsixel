@@ -31,11 +31,17 @@ _diffusiontype() {
     'bluenoise[tileable blue-noise ordered dither]' \
     'lso2[libsixel method based on variable error diffusion]' \
     'interframe[interframe error diffusion (palette path; ignores -Y)]' \
+    'interframe:noise_strength=0.055[interframe noise strength override]' \
     'interframe:strategy=diffusion[interframe strategy override]' \
+    'interframe:strategy=diffusion:noise_strength=0.055[interframe strategy+noise override]' \
     'interframe:strategy=stbn[interframe strategy override]' \
+    'interframe:strategy=stbn:noise_strength=0.055[interframe strategy+noise override]' \
     'interframe:strategy=stbn-hash[interframe strategy override]' \
+    'interframe:strategy=stbn-hash:noise_strength=0.055[interframe strategy+noise override]' \
     'interframe:strategy=stbn-mask[interframe strategy override]' \
-    'interframe:strategy=pmj[interframe strategy override]'
+    'interframe:strategy=stbn-mask:noise_strength=0.50[interframe strategy+noise override]' \
+    'interframe:strategy=pmj[interframe strategy override]' \
+    'interframe:strategy=pmj:noise_strength=0.50[interframe strategy+noise override]'
 }
 
 _scantype() {
