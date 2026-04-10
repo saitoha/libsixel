@@ -2,8 +2,10 @@
  * Verify CoreGraphics output policy for alpha, indexed, and high-depth paths.
  */
 
-#include "tests/loader/pixelformat_test_common.h"
+#include <stdint.h>
 #include <string.h>
+
+#include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_COREGRAPHICS
 static SIXELSTATUS

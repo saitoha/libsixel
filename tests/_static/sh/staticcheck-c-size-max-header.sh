@@ -20,7 +20,8 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-git -c core.quotepath=false ls-files -- 'src/*.c' > "$tmpfile" || true
+git -c core.quotepath=false ls-files -- 'src/*.c' 'tests/**/*.c' | \
+    awk '!/\.inc\.c$/' > "$tmpfile"
 
 if test ! -s "$tmpfile"; then
     echo "ok 1 # SKIP no tracked C source files"

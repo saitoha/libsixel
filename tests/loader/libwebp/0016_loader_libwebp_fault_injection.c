@@ -2,6 +2,7 @@
  * Verify libwebp loader diagnostics for fault-injection paths.
  */
 
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 
