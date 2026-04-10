@@ -386,20 +386,8 @@ static SIXEL_TEST_UNUSED int
 run_loader_component_case_with_options_full(
     char const *label,
     char const *relative_path,
-    int expected_pixelformat,
-    int expected_colorspace,
-    int check_colorspace,
-    int expected_width,
-    int expected_height,
-    int expected_callback_count,
-    int expected_transparent,
-    int expected_multiframe,
-    int expected_mask_present,
-    int expected_alpha_zero_is_transparent,
-    int require_static,
-    int use_palette,
-    int reqcolors,
-    unsigned char const *bgcolor,
+    loader_component_case_expect_t const *expect,
+    loader_component_case_options_t const *options,
     loader_component_new_fn new_component)
 {
     SIXELSTATUS status;
@@ -415,6 +403,20 @@ run_loader_component_case_with_options_full(
     char image_path[PATH_MAX];
     int cancel_flag;
     int result;
+    int expected_pixelformat;
+    int expected_colorspace;
+    int check_colorspace;
+    int expected_width;
+    int expected_height;
+    int expected_callback_count;
+    int expected_transparent;
+    int expected_multiframe;
+    int expected_mask_present;
+    int expected_alpha_zero_is_transparent;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    unsigned char const *bgcolor;
     loader_probe_callback_state_t callback_state;
 
     status = SIXEL_FALSE;
@@ -423,6 +425,39 @@ run_loader_component_case_with_options_full(
     component = NULL;
     cancel_flag = 0;
     result = 1;
+    expected_pixelformat = 0;
+    expected_colorspace = FRAME_METADATA_ANY;
+    check_colorspace = 0;
+    expected_width = GEOMETRY_ANY;
+    expected_height = GEOMETRY_ANY;
+    expected_callback_count = CALLBACK_COUNT_ANY;
+    expected_transparent = FRAME_METADATA_ANY;
+    expected_multiframe = FRAME_METADATA_ANY;
+    expected_mask_present = FRAME_MASK_ANY;
+    expected_alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    require_static = 1;
+    use_palette = 0;
+    reqcolors = 256;
+    bgcolor = NULL;
+    if (expect != NULL) {
+        expected_pixelformat = expect->pixelformat;
+        expected_colorspace = expect->colorspace;
+        check_colorspace = expect->check_colorspace;
+        expected_width = expect->width;
+        expected_height = expect->height;
+        expected_callback_count = expect->callback_count;
+        expected_transparent = expect->transparent;
+        expected_multiframe = expect->multiframe;
+        expected_mask_present = expect->mask_present;
+        expected_alpha_zero_is_transparent
+            = expect->alpha_zero_is_transparent;
+    }
+    if (options != NULL) {
+        require_static = options->require_static;
+        use_palette = options->use_palette;
+        reqcolors = options->reqcolors;
+        bgcolor = options->bgcolor;
+    }
 #if defined(_MSC_VER)
     source_root = NULL;
     source_root_dupe = NULL;
@@ -678,24 +713,30 @@ run_loader_component_case_with_options_ex(
     unsigned char const *bgcolor,
     loader_component_new_fn new_component)
 {
-    return run_loader_component_case_with_options_full(
-        label,
-        relative_path,
-        expected_pixelformat,
-        FRAME_METADATA_ANY,
-        0,
-        expected_width,
-        expected_height,
-        expected_callback_count,
-        expected_transparent,
-        expected_multiframe,
-        FRAME_MASK_ANY,
-        FRAME_ALPHA_ZERO_ANY,
-        require_static,
-        use_palette,
-        reqcolors,
-        bgcolor,
-        new_component);
+    loader_component_case_expect_t expect;
+    loader_component_case_options_t options;
+    int result;
+
+    expect.pixelformat = expected_pixelformat;
+    expect.width = expected_width;
+    expect.height = expected_height;
+    expect.callback_count = expected_callback_count;
+    expect.transparent = expected_transparent;
+    expect.multiframe = expected_multiframe;
+    expect.mask_present = FRAME_MASK_ANY;
+    expect.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    expect.colorspace = FRAME_METADATA_ANY;
+    expect.check_colorspace = 0;
+    options.require_static = require_static;
+    options.use_palette = use_palette;
+    options.reqcolors = reqcolors;
+    options.bgcolor = bgcolor;
+    result = run_loader_component_case_with_options_full(label,
+                                                         relative_path,
+                                                         &expect,
+                                                         &options,
+                                                         new_component);
+    return result;
 }
 
 static SIXEL_TEST_UNUSED int
@@ -716,53 +757,49 @@ run_loader_component_case_with_options_mask_ex(
     unsigned char const *bgcolor,
     loader_component_new_fn new_component)
 {
-    return run_loader_component_case_with_options_full(
-        label,
-        relative_path,
-        expected_pixelformat,
-        FRAME_METADATA_ANY,
-        0,
-        expected_width,
-        expected_height,
-        expected_callback_count,
-        expected_transparent,
-        expected_multiframe,
-        expected_mask_present,
-        expected_alpha_zero_is_transparent,
-        require_static,
-        use_palette,
-        reqcolors,
-        bgcolor,
-        new_component);
+    loader_component_case_expect_t expect;
+    loader_component_case_options_t options;
+    int result;
+
+    expect.pixelformat = expected_pixelformat;
+    expect.width = expected_width;
+    expect.height = expected_height;
+    expect.callback_count = expected_callback_count;
+    expect.transparent = expected_transparent;
+    expect.multiframe = expected_multiframe;
+    expect.mask_present = expected_mask_present;
+    expect.alpha_zero_is_transparent = expected_alpha_zero_is_transparent;
+    expect.colorspace = FRAME_METADATA_ANY;
+    expect.check_colorspace = 0;
+    options.require_static = require_static;
+    options.use_palette = use_palette;
+    options.reqcolors = reqcolors;
+    options.bgcolor = bgcolor;
+    result = run_loader_component_case_with_options_full(label,
+                                                         relative_path,
+                                                         &expect,
+                                                         &options,
+                                                         new_component);
+    return result;
 }
 
 static SIXEL_TEST_UNUSED int
 run_loader_component_case_from_spec(
     loader_component_case_spec_t const *spec)
 {
+    int result;
+
     if (spec == NULL || spec->label == NULL || spec->relative_path == NULL ||
         spec->new_component == NULL) {
         return 1;
     }
 
-    return run_loader_component_case_with_options_full(
-        spec->label,
-        spec->relative_path,
-        spec->expect.pixelformat,
-        spec->expect.colorspace,
-        spec->expect.check_colorspace,
-        spec->expect.width,
-        spec->expect.height,
-        spec->expect.callback_count,
-        spec->expect.transparent,
-        spec->expect.multiframe,
-        spec->expect.mask_present,
-        spec->expect.alpha_zero_is_transparent,
-        spec->options.require_static,
-        spec->options.use_palette,
-        spec->options.reqcolors,
-        spec->options.bgcolor,
-        spec->new_component);
+    result = run_loader_component_case_with_options_full(spec->label,
+                                                         spec->relative_path,
+                                                         &spec->expect,
+                                                         &spec->options,
+                                                         spec->new_component);
+    return result;
 }
 
 static SIXEL_TEST_UNUSED int
