@@ -566,25 +566,79 @@ Options:
                            DIFFUSION is one of them:
                              auto       -> choose diffusion type
                                            automatically (default)
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              none       -> do not diffuse
                              fs         -> Floyd-Steinberg method
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              atkinson   -> Bill Atkinson's method
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              jajuni     -> Jarvis, Judice & Ninke
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              stucki     -> Stucki's method
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              burkes     -> Burkes' method
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              sierra     -> Sierra diffusion family
                                sub-option:
                                  variant=LEVEL
                                            -> 1, 2, or 3
                                               (default 1)
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              a_dither   -> positionally stable
                                            arithmetic dither
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              x_dither   -> positionally stable
                                            arithmetic xor based dither
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              bluenoise  -> tileable blue-noise
                                            ordered dither
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              lso2       -> libsixel variable error
                                            diffusion tables
+                               sub-option:
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              interframe -> interframe error
                                            diffusion (palette path only)
                                sub-option:
@@ -594,6 +648,10 @@ Options:
                                               stucki, burkes,
                                               sierra1, sierra2,
                                               or sierra3
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                              stbn       -> interframe STBN/PMJ
                                            source selection
                                sub-option:
@@ -609,15 +667,12 @@ Options:
                                  strength=VALUE
                                            -> float in 0.0-2.0
                                               (default 0.055)
+                                 scan=SCANTYPE
+                                           -> auto, raster, or
+                                              serpentine
+                                              (default auto)
                            interframe and stbn ignore -Y and are
                            not available with -I.
--y SCANTYPE, --diffusion-scan=SCANTYPE
-                           choose scan order for error diffusion
-                           SCANTYPE is one of them:
-                             auto -> choose scan order automatically
-                                     (default)
-                             raster -> left-to-right scan
-                             serpentine -> alternate direction on each line
 -Y CARRYTYPE, --diffusion-carry=CARRYTYPE
                            control carry buffers for error diffusion
                            CARRYTYPE is one of them:

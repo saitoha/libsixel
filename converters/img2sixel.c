@@ -373,41 +373,68 @@ static cli_option_help_t const g_option_help_table[] = {
         "    choose diffusion method used with -p option (color reduction).\n"
         "    DIFFUSION is one of them:\n"
         "      auto       -> choose diffusion type automatically (default)\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      none       -> do not diffuse\n"
         "      fs         -> Floyd-Steinberg method\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      atkinson   -> Bill Atkinson's method\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      jajuni     -> Jarvis, Judice & Ninke\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      stucki     -> Stucki's method\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      burkes     -> Burkes' method\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      sierra     -> Sierra diffusion family\n"
         "        sub-option:\n"
         "          variant=LEVEL  -> 1, 2, or 3 (default 1)\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      a_dither   -> positionally stable arithmetic dither\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      x_dither   -> positionally stable arithmetic xor based dither\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      bluenoise  -> tileable blue-noise ordered dither\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      lso2       -> libsixel variable error diffusion tables\n"
+        "        sub-option:\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      interframe -> interframe error diffusion (palette path only)\n"
         "        sub-option:\n"
         "          diffusion=KERNEL  -> auto, none, fs, atkinson, jajuni,\n"
         "                               stucki, burkes, sierra1, sierra2,\n"
         "                               or sierra3\n"
+        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
+        "                                 (default auto)\n"
         "      stbn       -> interframe STBN/PMJ source selection\n"
         "        sub-option:\n"
         "          source=SOURCE         -> hash, mask, or pmj (default hash)\n"
         "          diffusion=KERNEL      -> auto, none, fs, atkinson, jajuni,\n"
         "                                   stucki, burkes, sierra1, sierra2,\n"
         "                                   or sierra3 (default none)\n"
-        "          strength=VALUE  -> float in 0.0-2.0 (default 0.055)\n"
+        "          strength=VALUE        -> float in 0.0-2.0 (default 0.055)\n"
+        "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
+        "                                   (default auto)\n"
         "    interframe and stbn ignore -Y and are not available with -I.\n"
-    },
-    {
-        'y',
-        "diffusion-scan",
-        "-y SCANTYPE, --diffusion-scan=SCANTYPE\n"
-        "    choose scan order for diffusion SCANTYPE is one of them:\n"
-        "      auto       -> choose scan order automatically (default)\n"
-        "      raster     -> left-to-right scan\n"
-        "      serpentine -> alternate direction on each line\n"
     },
     {
         'Y',
@@ -1470,7 +1497,7 @@ static char const g_img2sixel_optstring[] =
     "=:"
     ".:"
     "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
-    "OVX:W:HY:y:%:1:2:3:";
+    "OVX:W:HY:%:1:2:3:";
 
 static int
 img2sixel_option_allows_leading_dash(int short_opt)
@@ -2312,7 +2339,6 @@ img2sixel_main(int argc, char *argv[])
         {"high-color",            no_argument,        &long_opt, 'I'},
         {"builtin-palette",       required_argument,  &long_opt, 'b'},
         {"diffusion",             required_argument,  &long_opt, 'd'},
-        {"diffusion-scan",        required_argument,  &long_opt, 'y'},
         {"diffusion-carry",       required_argument,  &long_opt, 'Y'},
         {"find-largest",          required_argument,  &long_opt, 'f'},
         {"select-color",          required_argument,  &long_opt, 's'},
@@ -2655,7 +2681,6 @@ unknown_option_error:
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"
             "                 [-d diffusiontype] [-Q model]\n"
-            "                 [-y scantype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality]\n"
             "                 [-~ lookuppolicy] [-l loopmode]\n"

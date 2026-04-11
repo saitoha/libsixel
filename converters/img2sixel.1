@@ -244,17 +244,41 @@ choose diffusion method used with color reduction.
 .br
 \fBauto\fP -> choose diffusion type automatically (default)
 .br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBnone\fP -> do not diffuse
 .br
 \fBfs\fP -> Floyd-Steinberg method
 .br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBatkinson\fP -> Bill Atkinson's method
+.br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
 .br
 \fBjajuni\fP -> Jarvis, Judice & Ninke
 .br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBstucki\fP -> Stucki's method
 .br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBburkes\fP -> Burkes' method
+.br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
 .br
 \fBsierra\fP -> Sierra diffusion family
 .br
@@ -262,13 +286,31 @@ sub-option:
 .br
 \fBvariant=LEVEL\fP -> \fB1\fP, \fB2\fP, or \fB3\fP (default \fB1\fP)
 .br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBa_dither\fP -> positionally stable arithmetic dither
+.br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
 .br
 \fBx_dither\fP -> positionally stable arithmetic xor based dither
 .br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBbluenoise\fP -> tileable blue-noise ordered dither
 .br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBlso2\fP -> libsixel variable error diffusion tables
+.br
+sub-option:
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
 .br
 \fBinterframe\fP -> interframe error diffusion (palette path only)
 .br
@@ -276,6 +318,8 @@ sub-option:
 .br
 \fBdiffusion=KERNEL\fP -> \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP,
 \fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP
+.br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
 .br
 \fBstbn\fP -> interframe STBN/PMJ source selection
 .br
@@ -288,18 +332,9 @@ sub-option:
 .br
 \fBstrength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
 .br
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+.br
 \fBinterframe\fP and \fBstbn\fP ignore \-Y and are not available with \-I.
-.TP 5
-.B \-y \fISCANTYPE\fP, \-\-diffusion\-scan=\fISCANTYPE\fP
-choose scan order for error diffusion.
-.br
-\fISCANTYPE\fP is one of them:
-.br
-auto -> choose scan order automatically (default)
-.br
-raster -> left-to-right scan on every line
-.br
-serpentine -> alternate direction on each line
 .TP 5
 .B \-Y \fICARRYTYPE\fP, \-\-diffusion\-carry=\fICARRYTYPE\fP
 control carry buffers used during diffusion.
