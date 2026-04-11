@@ -332,6 +332,10 @@ Key points used by this roadmap:
   - New trace representative `1454` fixes bevel-apply coverage on
     `effects/stroke-composite.psd`, ensuring highlight/shadow application
     stays active after `lfx2` inactive + `lrFX` complement.
+  - Clipping-group base suppression for synthesized `vstk` stroke is now
+    limited to `clbl=0` layers, and trace representative `1459` fixes the
+    `clbl=1` deferred-stroke preservation contract on
+    `effects/stroke-composite.psd`.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

@@ -17825,6 +17825,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
 {
     size_t x;
     size_t y;
+    size_t neighbor_index;
     int stroke_radius;
     float stroke_opacity;
     float stroke_size;
@@ -17834,6 +17835,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
 
     x = 0u;
     y = 0u;
+    neighbor_index = 0u;
     stroke_radius = 0;
     stroke_opacity = 0.0f;
     stroke_size = 0.0f;
@@ -17926,9 +17928,15 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     if (nx < 0 || nx >= (int)canvas_width) {
                         continue;
                     }
-                    neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                        canvas_alpha[(size_t)ny * (size_t)canvas_width +
-                                     (size_t)nx]);
+                    neighbor_index =
+                        (size_t)ny * (size_t)canvas_width + (size_t)nx;
+                    if (clip_alpha_map[neighbor_index] <= 0.0f) {
+                        neighbor_alpha = 0.0f;
+                    } else {
+                        neighbor_alpha =
+                            sixel_builtin_psd_clamp_alpha_float32(
+                                canvas_alpha[neighbor_index]);
+                    }
                     if (neighbor_alpha > max_alpha) {
                         max_alpha = neighbor_alpha;
                     }
@@ -18976,11 +18984,15 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->has_vector_stroke_style != 0 &&
             effective_composite_layer->has_vector_stroke_content_fill != 0 &&
             effective_composite_layer->has_effect_stroke != 0 &&
+            effective_composite_layer->has_blend_clipped_elements != 0 &&
+            effective_composite_layer->blend_clipped_elements_enabled == 0 &&
             effective_composite_layer->effect_stroke_from_vector_style != 0) {
             /*
              * For clipping groups, vector-style stroke from vstk on the base
-             * layer can overpaint clipped siblings around inner cutouts. Keep
-             * the base fill/effects but suppress this synthesized stroke.
+             * layer can overpaint clipped siblings around inner cutouts when
+             * clbl=0 keeps clipped elements blended on the base. Keep the base
+             * fill/effects but suppress this synthesized stroke only in that
+             * narrow subset.
              */
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
