@@ -1612,20 +1612,24 @@ sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
     sixel_cms_profile_t *src_profile;
     sixel_cms_profile_t *dst_profile;
     sixel_cms_transform_t *transform;
+    sixel_cms_color_space_t src_colorspace;
     float *rgb_float;
     size_t float_count;
     size_t float_size;
     size_t index;
     int converted;
+    int trace_conversion_failure;
 
     src_profile = NULL;
     dst_profile = NULL;
     transform = NULL;
+    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     rgb_float = NULL;
     float_count = 0u;
     float_size = 0u;
     index = 0u;
     converted = 0;
+    trace_conversion_failure = 1;
     if (rgb_pixels == NULL ||
         cmyk_pixels == NULL ||
         pixel_count == 0u ||
@@ -1649,6 +1653,21 @@ sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
     src_profile = sixel_cms_open_profile_from_mem(icc_profile,
                                                    icc_profile_length);
     if (src_profile == NULL) {
+        goto cleanup;
+    }
+    src_colorspace = sixel_cms_get_color_space(src_profile);
+    if (src_colorspace == SIXEL_CMS_COLORSPACE_RGB ||
+        src_colorspace == SIXEL_CMS_COLORSPACE_GRAY ||
+        src_colorspace == SIXEL_CMS_COLORSPACE_LAB) {
+        /*
+         * CMYK BMP pixels can only consume CMYK source profiles.
+         * Known non-CMYK domains are non-applicable mismatches.
+         * They should not be reported as conversion failures.
+         */
+        trace_conversion_failure = 0;
+        goto cleanup;
+    }
+    if (src_colorspace != SIXEL_CMS_COLORSPACE_CMYK) {
         goto cleanup;
     }
     dst_profile = sixel_cms_create_srgb_profile();
@@ -1687,7 +1706,7 @@ cleanup:
     sixel_cms_delete_transform(transform);
     sixel_cms_close_profile(dst_profile);
     sixel_cms_close_profile(src_profile);
-    if (!converted) {
+    if (!converted && trace_conversion_failure) {
         loader_trace_message("builtin BMP: CMYK ICC conversion failed");
     }
     return converted;
@@ -4470,10 +4489,14 @@ sixel_builtin_load_jpeg_float32(
     float *float_pixels;
     int depth;
     int cms_converted;
+    sixel_cms_profile_t *src_profile;
+    sixel_cms_color_space_t src_colorspace;
 
     float_pixels = NULL;
     depth = 0;
     cms_converted = 0;
+    src_profile = NULL;
+    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     if (chunk == NULL ||
         frame == NULL ||
         stb_context == NULL ||
@@ -4502,16 +4525,31 @@ sixel_builtin_load_jpeg_float32(
                                            icc_profile,
                                            icc_profile_length,
                                            chunk->allocator)) {
-            cms_converted = sixel_cms_convert_to_srgb_with_profile_bytes(
-                (unsigned char *)float_pixels,
-                frame->width,
-                frame->height,
-                SIXEL_PIXELFORMAT_RGBFLOAT32,
-                *icc_profile,
-                *icc_profile_length);
-            if (!cms_converted) {
+            src_profile = sixel_cms_open_profile_from_mem(*icc_profile,
+                                                          *icc_profile_length);
+            if (src_profile == NULL) {
                 loader_trace_message(
                     "builtin JPEG: embedded ICC conversion failed");
+            } else {
+                src_colorspace = sixel_cms_get_color_space(src_profile);
+                if (src_colorspace == SIXEL_CMS_COLORSPACE_RGB) {
+                    cms_converted = sixel_cms_convert_profile_to_srgb(
+                        (unsigned char *)float_pixels,
+                        frame->width,
+                        frame->height,
+                        SIXEL_PIXELFORMAT_RGBFLOAT32,
+                        src_profile);
+                    if (!cms_converted) {
+                        loader_trace_message(
+                            "builtin JPEG: embedded ICC conversion failed");
+                    }
+                }
+                /*
+                 * RGB JPEG float pixels can only consume RGB source profiles.
+                 * Non-RGB profiles are non-applicable and are skipped quietly.
+                 */
+                sixel_cms_close_profile(src_profile);
+                src_profile = NULL;
             }
         }
     }
