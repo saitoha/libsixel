@@ -16862,6 +16862,10 @@ sixel_builtin_psd_apply_layer_effects_subset(
             layer->effect_solid_overlay_opacity);
         effect_mode = layer->effect_solid_overlay_mode;
         if (overlay_opacity > 0.0f) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: applying solid overlay effect in layer "
+                "fallback");
             for (i = 0u; i < src->pixel_count; ++i) {
                 alpha = sixel_builtin_psd_clamp_alpha_float32(src->alpha[i]);
                 if (alpha <= 0.0f) {
@@ -16947,6 +16951,10 @@ sixel_builtin_psd_apply_layer_effects_subset(
             layer->effect_gradient_overlay_opacity);
         effect_mode = layer->effect_gradient_overlay_mode;
         if (gradient_opacity > 0.0f) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: applying gradient overlay effect in layer "
+                "fallback");
             for (i = 0u; i < src->pixel_count; ++i) {
                 alpha = sixel_builtin_psd_clamp_alpha_float32(src->alpha[i]);
                 if (alpha <= 0.0f) {
