@@ -17636,10 +17636,12 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     size_t x;
     size_t y;
     float overlay_opacity;
+    sixel_builtin_psd_layer_blend_mode_t effect_mode;
 
     x = 0u;
     y = 0u;
     overlay_opacity = 0.0f;
+    effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_solid_overlay == 0 ||
@@ -17648,6 +17650,7 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     }
     overlay_opacity = sixel_builtin_psd_clamp01(
         layer->effect_solid_overlay_opacity);
+    effect_mode = layer->effect_solid_overlay_mode;
     if (overlay_opacity <= 0.0f) {
         return;
     }
@@ -17679,18 +17682,40 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                 canvas_rgb_premul[idx * 3u + 1u] / alpha);
             base_b = sixel_builtin_psd_clamp01(
                 canvas_rgb_premul[idx * 3u + 2u] / alpha);
-            blended_r = sixel_builtin_psd_blend_channel_gamma(
-                base_r,
-                layer->effect_solid_overlay_rgb[0],
-                overlay_opacity);
-            blended_g = sixel_builtin_psd_blend_channel_gamma(
-                base_g,
-                layer->effect_solid_overlay_rgb[1],
-                overlay_opacity);
-            blended_b = sixel_builtin_psd_blend_channel_gamma(
-                base_b,
-                layer->effect_solid_overlay_rgb[2],
-                overlay_opacity);
+            if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
+                blended_r = sixel_builtin_psd_blend_channel_gamma(
+                    base_r,
+                    layer->effect_solid_overlay_rgb[0],
+                    overlay_opacity);
+                blended_g = sixel_builtin_psd_blend_channel_gamma(
+                    base_g,
+                    layer->effect_solid_overlay_rgb[1],
+                    overlay_opacity);
+                blended_b = sixel_builtin_psd_blend_channel_gamma(
+                    base_b,
+                    layer->effect_solid_overlay_rgb[2],
+                    overlay_opacity);
+            } else {
+                sixel_builtin_psd_blend_rgb(base_r,
+                                            base_g,
+                                            base_b,
+                                            layer->effect_solid_overlay_rgb[0],
+                                            layer->effect_solid_overlay_rgb[1],
+                                            layer->effect_solid_overlay_rgb[2],
+                                            effect_mode,
+                                            &blended_r,
+                                            &blended_g,
+                                            &blended_b);
+                blended_r = sixel_builtin_psd_clamp01(
+                    base_r * (1.0f - overlay_opacity) +
+                    blended_r * overlay_opacity);
+                blended_g = sixel_builtin_psd_clamp01(
+                    base_g * (1.0f - overlay_opacity) +
+                    blended_g * overlay_opacity);
+                blended_b = sixel_builtin_psd_clamp01(
+                    base_b * (1.0f - overlay_opacity) +
+                    blended_b * overlay_opacity);
+            }
             canvas_rgb_premul[idx * 3u + 0u] =
                 sixel_builtin_psd_clamp01(blended_r * alpha);
             canvas_rgb_premul[idx * 3u + 1u] =
@@ -18034,15 +18059,18 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 base_b = 0.0f;
             }
             if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
-                blended_r = sixel_builtin_psd_clamp01(
-                    base_r * (1.0f - stroke_alpha) +
-                    stroke_rgb[0] * stroke_alpha);
-                blended_g = sixel_builtin_psd_clamp01(
-                    base_g * (1.0f - stroke_alpha) +
-                    stroke_rgb[1] * stroke_alpha);
-                blended_b = sixel_builtin_psd_clamp01(
-                    base_b * (1.0f - stroke_alpha) +
-                    stroke_rgb[2] * stroke_alpha);
+                blended_r = sixel_builtin_psd_blend_channel_gamma(
+                    base_r,
+                    stroke_rgb[0],
+                    stroke_alpha);
+                blended_g = sixel_builtin_psd_blend_channel_gamma(
+                    base_g,
+                    stroke_rgb[1],
+                    stroke_alpha);
+                blended_b = sixel_builtin_psd_blend_channel_gamma(
+                    base_b,
+                    stroke_rgb[2],
+                    stroke_alpha);
             } else {
                 sixel_builtin_psd_blend_rgb(base_r,
                                             base_g,
