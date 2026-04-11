@@ -11512,7 +11512,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     if (data == NULL || layer == NULL || key_length < 4u) {
         return 0;
     }
-    effect_count = sixel_builtin_read_u32be_size(data);
+    effect_count = (size_t)sixel_builtin_read_u16be_as_u16(data + 2u);
     cursor = 4u;
     for (effect_index = 0u; effect_index < effect_count; ++effect_index) {
         if (cursor + 12u > key_length ||
@@ -13744,6 +13744,11 @@ sixel_builtin_psd_parse_layer_extra_data(
                         "parsing legacy lrFX payload");
                 }
                 (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
+                    buffer + cursor,
+                    key_length,
+                    layer,
+                    1);
+                (void)sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     buffer + cursor,
                     key_length,
                     layer,
