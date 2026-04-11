@@ -1668,6 +1668,26 @@ sixel_builtin_psd_layer_channel_has_payload(
 }
 
 static int
+sixel_builtin_psd_layer_has_active_effects(
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    if (layer == NULL) {
+        return 0;
+    }
+    return layer->has_effect_solid_overlay != 0 ||
+           layer->has_effect_gradient_overlay != 0 ||
+           layer->has_effect_stroke != 0 ||
+           layer->has_effect_orgl != 0 ||
+           layer->has_effect_irgl != 0 ||
+           layer->has_effect_chfx != 0 ||
+           layer->has_effect_drsh != 0 ||
+           layer->has_effect_irsh != 0 ||
+           layer->has_effect_bevel != 0 ||
+           layer->has_effect_outer_glow != 0 ||
+           layer->has_effect_inner_glow != 0;
+}
+
+static int
 sixel_builtin_psd_is_optional_mask_channel(
     sixel_builtin_psd_layer_record_t const *layer,
     int channel_index)
@@ -11259,6 +11279,113 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
 }
 
 static int
+sixel_builtin_psd_merge_missing_legacy_effects(
+    sixel_builtin_psd_layer_record_t *layer,
+    sixel_builtin_psd_layer_record_t const *legacy)
+{
+    int merged;
+
+    merged = 0;
+    if (layer == NULL || legacy == NULL) {
+        return 0;
+    }
+    if (layer->has_effect_orgl == 0 && legacy->has_effect_orgl != 0) {
+        layer->has_effect_orgl = 1;
+        layer->effect_orgl_rgb[0] = legacy->effect_orgl_rgb[0];
+        layer->effect_orgl_rgb[1] = legacy->effect_orgl_rgb[1];
+        layer->effect_orgl_rgb[2] = legacy->effect_orgl_rgb[2];
+        layer->effect_orgl_opacity = legacy->effect_orgl_opacity;
+        layer->effect_orgl_size = legacy->effect_orgl_size;
+        layer->effect_orgl_mode = legacy->effect_orgl_mode;
+        merged = 1;
+    }
+    if (layer->has_effect_irgl == 0 && legacy->has_effect_irgl != 0) {
+        layer->has_effect_irgl = 1;
+        layer->effect_irgl_rgb[0] = legacy->effect_irgl_rgb[0];
+        layer->effect_irgl_rgb[1] = legacy->effect_irgl_rgb[1];
+        layer->effect_irgl_rgb[2] = legacy->effect_irgl_rgb[2];
+        layer->effect_irgl_opacity = legacy->effect_irgl_opacity;
+        layer->effect_irgl_size = legacy->effect_irgl_size;
+        layer->effect_irgl_mode = legacy->effect_irgl_mode;
+        merged = 1;
+    }
+    if (layer->has_effect_chfx == 0 && legacy->has_effect_chfx != 0) {
+        layer->has_effect_chfx = 1;
+        layer->effect_chfx_rgb[0] = legacy->effect_chfx_rgb[0];
+        layer->effect_chfx_rgb[1] = legacy->effect_chfx_rgb[1];
+        layer->effect_chfx_rgb[2] = legacy->effect_chfx_rgb[2];
+        layer->effect_chfx_opacity = legacy->effect_chfx_opacity;
+        layer->effect_chfx_size = legacy->effect_chfx_size;
+        layer->effect_chfx_mode = legacy->effect_chfx_mode;
+        merged = 1;
+    }
+    if (layer->has_effect_drsh == 0 && legacy->has_effect_drsh != 0) {
+        layer->has_effect_drsh = 1;
+        layer->effect_drsh_rgb[0] = legacy->effect_drsh_rgb[0];
+        layer->effect_drsh_rgb[1] = legacy->effect_drsh_rgb[1];
+        layer->effect_drsh_rgb[2] = legacy->effect_drsh_rgb[2];
+        layer->effect_drsh_opacity = legacy->effect_drsh_opacity;
+        layer->effect_drsh_size = legacy->effect_drsh_size;
+        layer->effect_drsh_mode = legacy->effect_drsh_mode;
+        merged = 1;
+    }
+    if (layer->has_effect_irsh == 0 && legacy->has_effect_irsh != 0) {
+        layer->has_effect_irsh = 1;
+        layer->effect_irsh_rgb[0] = legacy->effect_irsh_rgb[0];
+        layer->effect_irsh_rgb[1] = legacy->effect_irsh_rgb[1];
+        layer->effect_irsh_rgb[2] = legacy->effect_irsh_rgb[2];
+        layer->effect_irsh_opacity = legacy->effect_irsh_opacity;
+        layer->effect_irsh_size = legacy->effect_irsh_size;
+        layer->effect_irsh_mode = legacy->effect_irsh_mode;
+        merged = 1;
+    }
+    if (layer->has_effect_bevel == 0 && legacy->has_effect_bevel != 0) {
+        layer->has_effect_bevel = 1;
+        layer->effect_bevel_highlight_rgb[0] =
+            legacy->effect_bevel_highlight_rgb[0];
+        layer->effect_bevel_highlight_rgb[1] =
+            legacy->effect_bevel_highlight_rgb[1];
+        layer->effect_bevel_highlight_rgb[2] =
+            legacy->effect_bevel_highlight_rgb[2];
+        layer->effect_bevel_highlight_opacity =
+            legacy->effect_bevel_highlight_opacity;
+        layer->effect_bevel_highlight_mode =
+            legacy->effect_bevel_highlight_mode;
+        layer->effect_bevel_shadow_rgb[0] = legacy->effect_bevel_shadow_rgb[0];
+        layer->effect_bevel_shadow_rgb[1] = legacy->effect_bevel_shadow_rgb[1];
+        layer->effect_bevel_shadow_rgb[2] = legacy->effect_bevel_shadow_rgb[2];
+        layer->effect_bevel_shadow_opacity =
+            legacy->effect_bevel_shadow_opacity;
+        layer->effect_bevel_shadow_mode = legacy->effect_bevel_shadow_mode;
+        layer->effect_bevel_size = legacy->effect_bevel_size;
+        merged = 1;
+    }
+    if (layer->has_effect_outer_glow == 0 &&
+        legacy->has_effect_outer_glow != 0) {
+        layer->has_effect_outer_glow = 1;
+        layer->effect_outer_glow_rgb[0] = legacy->effect_outer_glow_rgb[0];
+        layer->effect_outer_glow_rgb[1] = legacy->effect_outer_glow_rgb[1];
+        layer->effect_outer_glow_rgb[2] = legacy->effect_outer_glow_rgb[2];
+        layer->effect_outer_glow_opacity = legacy->effect_outer_glow_opacity;
+        layer->effect_outer_glow_size = legacy->effect_outer_glow_size;
+        layer->effect_outer_glow_mode = legacy->effect_outer_glow_mode;
+        merged = 1;
+    }
+    if (layer->has_effect_inner_glow == 0 &&
+        legacy->has_effect_inner_glow != 0) {
+        layer->has_effect_inner_glow = 1;
+        layer->effect_inner_glow_rgb[0] = legacy->effect_inner_glow_rgb[0];
+        layer->effect_inner_glow_rgb[1] = legacy->effect_inner_glow_rgb[1];
+        layer->effect_inner_glow_rgb[2] = legacy->effect_inner_glow_rgb[2];
+        layer->effect_inner_glow_opacity = legacy->effect_inner_glow_opacity;
+        layer->effect_inner_glow_size = legacy->effect_inner_glow_size;
+        layer->effect_inner_glow_mode = legacy->effect_inner_glow_mode;
+        merged = 1;
+    }
+    return merged;
+}
+
+static int
 sixel_builtin_psd_parse_vector_stroke_content_object(
     unsigned char const *data,
     size_t data_length,
@@ -13056,6 +13183,11 @@ sixel_builtin_psd_parse_layer_extra_data(
     int32_t mask_bottom;
     int32_t mask_right;
     int has_object_based_effects;
+    int has_object_based_active_effects;
+    int had_active_effects_before_parse;
+    int has_active_effects_after_parse;
+    int merged_legacy_effects;
+    sixel_builtin_psd_layer_record_t legacy_effects;
     uint32_t flag_value;
     char key[5];
 
@@ -13069,6 +13201,11 @@ sixel_builtin_psd_parse_layer_extra_data(
     mask_bottom = 0;
     mask_right = 0;
     has_object_based_effects = 0;
+    has_object_based_active_effects = 0;
+    had_active_effects_before_parse = 0;
+    has_active_effects_after_parse = 0;
+    merged_legacy_effects = 0;
+    sixel_builtin_psd_layer_record_init(&legacy_effects);
     flag_value = 0u;
     key[0] = '\0';
     key[1] = '\0';
@@ -13205,23 +13342,57 @@ sixel_builtin_psd_parse_layer_extra_data(
         } else if (memcmp(key, "lfx2", 4u) == 0) {
             layer->has_layer_effects = 1;
             has_object_based_effects = 1;
+            had_active_effects_before_parse =
+                sixel_builtin_psd_layer_has_active_effects(layer);
             (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                 buffer + cursor,
                 key_length,
                 layer,
                 1);
+            has_active_effects_after_parse =
+                sixel_builtin_psd_layer_has_active_effects(layer);
+            if (had_active_effects_before_parse == 0 &&
+                has_active_effects_after_parse != 0) {
+                has_object_based_active_effects = 1;
+            }
         } else if (memcmp(key, "lrFX", 4u) == 0) {
-            if (has_object_based_effects == 0) {
+            if (has_object_based_effects == 0 ||
+                has_object_based_active_effects == 0) {
                 layer->has_layer_effects = 1;
+                if (has_object_based_effects != 0 &&
+                    has_object_based_active_effects == 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: lfx2 effects inactive; "
+                        "parsing legacy lrFX payload");
+                }
                 (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                     buffer + cursor,
                     key_length,
                     layer,
                     1);
             } else {
-                sixel_trace_topic_message(
-                    "psd_decode",
-                    "builtin PSD: ignoring legacy lrFX when lfx2 is present");
+                sixel_builtin_psd_layer_record_init(&legacy_effects);
+                (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
+                    buffer + cursor,
+                    key_length,
+                    &legacy_effects,
+                    1);
+                merged_legacy_effects =
+                    sixel_builtin_psd_merge_missing_legacy_effects(
+                        layer,
+                        &legacy_effects);
+                if (merged_legacy_effects != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: merging legacy lrFX effects missing "
+                        "from lfx2");
+                } else {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: ignoring legacy lrFX when lfx2 is "
+                        "present");
+                }
             }
         } else if (memcmp(key, "vstk", 4u) == 0) {
             layer->has_layer_effects = 1;
