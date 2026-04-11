@@ -49,6 +49,7 @@
 
 #define SIXEL_BMP_DIB_CORE      12u
 #define SIXEL_BMP_DIB_INFO      40u
+#define SIXEL_BMP_DIB_V2        52u
 #define SIXEL_BMP_DIB_OS2V2     64u
 #define SIXEL_BMP_DIB_V3        56u
 #define SIXEL_BMP_DIB_V4        108u
@@ -799,6 +800,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     size_t palette_entry_size;
     size_t max_palette_entries;
     size_t mask_offset;
+    size_t required_mask_size;
     size_t payload_size;
     SIXELSTATUS status;
 
@@ -821,6 +823,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     palette_entry_size = 0u;
     max_palette_entries = 0u;
     mask_offset = 0u;
+    required_mask_size = 0u;
     payload_size = 0u;
     status = SIXEL_OK;
     if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
@@ -845,6 +848,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     }
     if (dib_size != SIXEL_BMP_DIB_CORE &&
         dib_size != SIXEL_BMP_DIB_INFO &&
+        dib_size != SIXEL_BMP_DIB_V2 &&
         dib_size != SIXEL_BMP_DIB_OS2V2 &&
         dib_size != SIXEL_BMP_DIB_V3 &&
         dib_size != SIXEL_BMP_DIB_V4 &&
@@ -957,6 +961,11 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
         return sixel_bmp_fail(
             "builtin BMP: BI_ALPHABITFIELDS requires 16/32bpp");
     }
+    if (dib_size == SIXEL_BMP_DIB_V2 &&
+        compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
+        return sixel_bmp_fail(
+            "builtin BMP: BI_ALPHABITFIELDS requires alpha mask fields");
+    }
     if (compression == SIXEL_BMP_COMPRESSION_CMYK &&
         bpp != 32u) {
         return sixel_bmp_fail("builtin BMP: BI_CMYK requires 32bpp");
@@ -1000,10 +1009,20 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     if (!sixel_bmp_is_compressed_payload(info->compression) &&
         info->compression != SIXEL_BMP_COMPRESSION_CMYK &&
         (info->bpp == 16 || info->bpp == 32)) {
-        if (dib_size == SIXEL_BMP_DIB_INFO) {
+        if (dib_size == SIXEL_BMP_DIB_INFO ||
+            dib_size == SIXEL_BMP_DIB_V2) {
             if (compression == SIXEL_BMP_COMPRESSION_BITFIELDS ||
                 compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
                 mask_offset = 14u + SIXEL_BMP_DIB_INFO;
+                if (compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
+                    required_mask_size = 16u;
+                } else {
+                    required_mask_size = 12u;
+                }
+                if ((size_t)pixel_offset_u32 < mask_offset +
+                    required_mask_size) {
+                    return sixel_bmp_fail("builtin BMP: truncated masks");
+                }
                 if (!sixel_bmp_read_u32le(buffer, size, mask_offset + 0u,
                                           &info->red_mask) ||
                     !sixel_bmp_read_u32le(buffer, size, mask_offset + 4u,
@@ -1012,7 +1031,10 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
                                           &info->blue_mask)) {
                     return sixel_bmp_fail("builtin BMP: truncated masks");
                 }
-                if (compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
+                if (dib_size == SIXEL_BMP_DIB_V2) {
+                    info->alpha_mask = 0u;
+                } else if (compression ==
+                           SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
                     if (!sixel_bmp_read_u32le(buffer,
                                               size,
                                               mask_offset + 12u,

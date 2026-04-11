@@ -4259,6 +4259,10 @@ run_builtin_loader_bmp_fail_os2_rle24_topdown_numeric_test(void)
 #define BMP_NUMERIC_OS2_HUFFMAN1D_PIXEL_OFFSET 86u
 #define BMP_NUMERIC_OS2_HUFFMAN1D_MAX_BMP_SIZE 1024u
 #define BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD 256u
+#define BMP_NUMERIC_V2_DIB_SIZE 52u
+#define BMP_NUMERIC_V2_HEADER_SIZE \
+    (14u + BMP_NUMERIC_V2_DIB_SIZE)
+#define BMP_NUMERIC_V2_MAX_BMP_SIZE 512u
 
 static void
 bmp_numeric_write_u16le(unsigned char *buffer,
@@ -4284,6 +4288,282 @@ bmp_numeric_write_u32le(unsigned char *buffer,
     buffer[offset + 1u] = (unsigned char)((value >> 8u) & 0xffu);
     buffer[offset + 2u] = (unsigned char)((value >> 16u) & 0xffu);
     buffer[offset + 3u] = (unsigned char)((value >> 24u) & 0xffu);
+}
+
+static int
+bmp_numeric_build_v2_bmp(unsigned char *bmp,
+                         size_t bmp_capacity,
+                         int width,
+                         int height_signed,
+                         unsigned int bpp,
+                         unsigned int compression,
+                         unsigned int red_mask,
+                         unsigned int green_mask,
+                         unsigned int blue_mask,
+                         size_t pixel_offset,
+                         unsigned char const *payload,
+                         size_t payload_size,
+                         size_t *bmp_size)
+{
+    size_t file_size;
+    uint32_t file_size_u32;
+    uint32_t pixel_offset_u32;
+
+    file_size = 0u;
+    file_size_u32 = 0u;
+    pixel_offset_u32 = 0u;
+    if (bmp == NULL || payload == NULL || bmp_size == NULL) {
+        return 0;
+    }
+    if (width <= 0 || height_signed == 0) {
+        return 0;
+    }
+    if (pixel_offset > SIZE_MAX - payload_size) {
+        return 0;
+    }
+    file_size = pixel_offset + payload_size;
+    if (file_size > bmp_capacity || file_size > 0xffffffffu ||
+        pixel_offset > 0xffffffffu) {
+        return 0;
+    }
+    file_size_u32 = (uint32_t)file_size;
+    pixel_offset_u32 = (uint32_t)pixel_offset;
+
+    memset(bmp, 0, file_size);
+    bmp[0] = 0x42u;
+    bmp[1] = 0x4du;
+    bmp_numeric_write_u32le(bmp, 2u, file_size_u32);
+    bmp_numeric_write_u32le(bmp, 10u, pixel_offset_u32);
+    bmp_numeric_write_u32le(bmp, 14u, BMP_NUMERIC_V2_DIB_SIZE);
+    bmp_numeric_write_u32le(bmp, 18u, (uint32_t)(unsigned int)width);
+    bmp_numeric_write_u32le(bmp, 22u, (uint32_t)height_signed);
+    bmp_numeric_write_u16le(bmp, 26u, 1u);
+    bmp_numeric_write_u16le(bmp, 28u, bpp);
+    bmp_numeric_write_u32le(bmp, 30u, compression);
+    bmp_numeric_write_u32le(bmp, 34u, (uint32_t)payload_size);
+    bmp_numeric_write_u32le(bmp, 38u, 0x00000b13u);
+    bmp_numeric_write_u32le(bmp, 42u, 0x00000b13u);
+    bmp_numeric_write_u32le(bmp, 54u, red_mask);
+    bmp_numeric_write_u32le(bmp, 58u, green_mask);
+    bmp_numeric_write_u32le(bmp, 62u, blue_mask);
+    memcpy(bmp + pixel_offset, payload, payload_size);
+    *bmp_size = file_size;
+
+    return 1;
+}
+
+static int
+run_builtin_loader_bmp_v2_rgb_buffer_case(char const *label,
+                                           unsigned int bpp,
+                                           unsigned int compression,
+                                           unsigned int red_mask,
+                                           unsigned int green_mask,
+                                           unsigned int blue_mask,
+                                           size_t pixel_offset,
+                                           unsigned char const *payload,
+                                           size_t payload_size,
+                                           unsigned char const *expected_rgb,
+                                           size_t expected_rgb_size)
+{
+    unsigned char bmp[BMP_NUMERIC_V2_MAX_BMP_SIZE];
+    size_t bmp_size;
+
+    bmp_size = 0u;
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_numeric_build_v2_bmp(bmp,
+                                  sizeof(bmp),
+                                  2,
+                                  2,
+                                  bpp,
+                                  compression,
+                                  red_mask,
+                                  green_mask,
+                                  blue_mask,
+                                  pixel_offset,
+                                  payload,
+                                  payload_size,
+                                  &bmp_size)) {
+        fprintf(stderr, "%s: failed to build V2 BMP buffer\n", label);
+        return 1;
+    }
+    return run_builtin_loader_bmp_rgb_buffer_case(label,
+                                                  bmp,
+                                                  bmp_size,
+                                                  2,
+                                                  2,
+                                                  expected_rgb,
+                                                  expected_rgb_size);
+}
+
+static int
+run_builtin_loader_bmp_v2_fail_buffer_case(char const *label,
+                                            unsigned int bpp,
+                                            unsigned int compression,
+                                            unsigned int red_mask,
+                                            unsigned int green_mask,
+                                            unsigned int blue_mask,
+                                            size_t pixel_offset,
+                                            unsigned char const *payload,
+                                            size_t payload_size)
+{
+    unsigned char bmp[BMP_NUMERIC_V2_MAX_BMP_SIZE];
+    size_t bmp_size;
+
+    bmp_size = 0u;
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_numeric_build_v2_bmp(bmp,
+                                  sizeof(bmp),
+                                  2,
+                                  2,
+                                  bpp,
+                                  compression,
+                                  red_mask,
+                                  green_mask,
+                                  blue_mask,
+                                  pixel_offset,
+                                  payload,
+                                  payload_size,
+                                  &bmp_size)) {
+        fprintf(stderr, "%s: failed to build V2 BMP buffer\n", label);
+        return 1;
+    }
+    return run_builtin_loader_bmp_expect_fail_buffer_case(label,
+                                                          bmp,
+                                                          bmp_size);
+}
+
+static int
+run_builtin_loader_bmp_v2_16bpp_bitfields_rgb565_numeric_test(void)
+{
+    static unsigned char const payload[] = {
+        0x1fu, 0x00u, 0xffu, 0xffu, 0x00u, 0xf8u, 0xe0u, 0x07u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_bmp_v2_rgb_buffer_case(
+        "builtin loader bmp v2 16bpp bitfields rgb565 numeric",
+        16u,
+        3u,
+        0x0000f800u,
+        0x000007e0u,
+        0x0000001fu,
+        BMP_NUMERIC_V2_HEADER_SIZE,
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_v2_32bpp_bitfields_no_alpha_numeric_test(void)
+{
+    static unsigned char const payload[] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_v2_rgb_buffer_case(
+        "builtin loader bmp v2 32bpp bitfields no alpha numeric",
+        32u,
+        3u,
+        0x00ff0000u,
+        0x0000ff00u,
+        0x000000ffu,
+        BMP_NUMERIC_V2_HEADER_SIZE,
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_v2_16bpp_rgb555_numeric_test(void)
+{
+    static unsigned char const payload[] = {
+        0x1fu, 0x00u, 0xffu, 0x7fu, 0x00u, 0x7cu, 0xe0u, 0x03u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_bmp_v2_rgb_buffer_case(
+        "builtin loader bmp v2 16bpp rgb555 numeric",
+        16u,
+        0u,
+        0u,
+        0u,
+        0u,
+        BMP_NUMERIC_V2_HEADER_SIZE,
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_fail_v2_alphabitfields_numeric_test(void)
+{
+    static unsigned char const payload[] = {
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_v2_fail_buffer_case(
+        "builtin loader bmp fail v2 alphabitfields numeric",
+        32u,
+        6u,
+        0x00ff0000u,
+        0x0000ff00u,
+        0x000000ffu,
+        BMP_NUMERIC_V2_HEADER_SIZE,
+        payload,
+        sizeof(payload));
+}
+
+static int
+run_builtin_loader_bmp_fail_v2_truncated_masks_numeric_test(void)
+{
+    static unsigned char const payload[] = {
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_v2_fail_buffer_case(
+        "builtin loader bmp fail v2 truncated masks numeric",
+        16u,
+        3u,
+        0x0000f800u,
+        0x000007e0u,
+        0x0000001fu,
+        64u,
+        payload,
+        sizeof(payload));
+}
+
+static int
+run_builtin_loader_bmp_fail_v2_zero_color_masks_numeric_test(void)
+{
+    static unsigned char const payload[] = {
+        0x1fu, 0x00u, 0xffu, 0xffu, 0x00u, 0xf8u, 0xe0u, 0x07u
+    };
+
+    return run_builtin_loader_bmp_v2_fail_buffer_case(
+        "builtin loader bmp fail v2 zero color masks numeric",
+        16u,
+        3u,
+        0x00000000u,
+        0x000007e0u,
+        0x0000001fu,
+        BMP_NUMERIC_V2_HEADER_SIZE,
+        payload,
+        sizeof(payload));
 }
 
 static int
@@ -8637,6 +8917,19 @@ run_builtin_loader_test(void)
           run_builtin_loader_bmp_fail_os2_huffman1d_invalid_eol_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_HUFFMAN1D_INVALID_CODE2",
           run_builtin_loader_bmp_fail_os2_huffman1d_invalid_code2_numeric_test
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_V2_16BPP_BITFIELDS_RGB565",
+          run_builtin_loader_bmp_v2_16bpp_bitfields_rgb565_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V2_32BPP_BITFIELDS_NO_ALPHA",
+          run_builtin_loader_bmp_v2_32bpp_bitfields_no_alpha_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V2_16BPP_RGB555",
+          run_builtin_loader_bmp_v2_16bpp_rgb555_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_V2_ALPHABITFIELDS",
+          run_builtin_loader_bmp_fail_v2_alphabitfields_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_V2_TRUNCATED_MASKS",
+          run_builtin_loader_bmp_fail_v2_truncated_masks_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_V2_ZERO_COLOR_MASKS",
+          run_builtin_loader_bmp_fail_v2_zero_color_masks_numeric_test
         }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
