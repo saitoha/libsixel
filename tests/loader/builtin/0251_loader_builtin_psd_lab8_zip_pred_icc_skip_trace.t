@@ -26,6 +26,7 @@ test "${command_status}" -eq 0 || {
 }
 
 case "${trace_log}" in
+    *"builtin PSD: embedded ICC conversion failed"*|\
     *"builtin PSD: malformed embedded ICC resource"*|\
     *"builtin PSD: failed to apply embedded ICC profile"*|\
     *"builtin PSD: skipping embedded ICC conversion for Lab custom decode path"*|\

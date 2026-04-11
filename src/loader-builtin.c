@@ -4645,9 +4645,13 @@ sixel_builtin_psd_apply_embedded_icc(
 {
     int cms_converted;
     sixel_cms_engine_t cms_engine;
+    sixel_cms_profile_t *src_profile;
+    sixel_cms_color_space_t src_colorspace;
 
     cms_converted = 0;
     cms_engine = sixel_cms_get_engine();
+    src_profile = NULL;
+    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     if (pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         cms_converted = sixel_cms_convert_to_linearrgb_with_profile_bytes(
             pixels,
@@ -4657,15 +4661,35 @@ sixel_builtin_psd_apply_embedded_icc(
             icc_profile,
             icc_profile_length);
     } else if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
-        cms_converted = sixel_cms_convert_to_cielab_with_profile_bytes(
+        src_profile = sixel_cms_open_profile_from_mem(icc_profile,
+                                                      icc_profile_length);
+        if (src_profile == NULL) {
+            if (cms_engine == SIXEL_CMS_ENGINE_NONE) {
+                loader_trace_message(
+                    "builtin PSD: skipping embedded ICC conversion "
+                    "for CIELAB path (cms backend unsupported)");
+                return 0;
+            }
+            sixel_builtin_psd_trace_embedded_icc_failure();
+            return 0;
+        }
+        src_colorspace = sixel_cms_get_color_space(src_profile);
+        if (src_colorspace != SIXEL_CMS_COLORSPACE_LAB) {
+            /*
+             * Lab pixels can only consume Lab-domain profiles.
+             * Non-Lab ICC payloads are non-applicable here, not malformed.
+             */
+            sixel_cms_close_profile(src_profile);
+            return 0;
+        }
+        cms_converted = sixel_cms_convert_profile_to_cielab(
             pixels,
             width,
             height,
             pixelformat,
-            icc_profile,
-            icc_profile_length);
-        if (!cms_converted &&
-            cms_engine == SIXEL_CMS_ENGINE_NONE) {
+            src_profile);
+        sixel_cms_close_profile(src_profile);
+        if (!cms_converted && cms_engine == SIXEL_CMS_ENGINE_NONE) {
             loader_trace_message(
                 "builtin PSD: skipping embedded ICC conversion "
                 "for CIELAB path (cms backend unsupported)");
