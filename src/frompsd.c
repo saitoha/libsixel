@@ -11406,6 +11406,359 @@ sixel_builtin_psd_legacy_lrfx_has_record(
 }
 
 static int
+sixel_builtin_psd_legacy_lrfx_mode_from_payload(
+    unsigned char const *data,
+    size_t data_length,
+    size_t offset,
+    sixel_builtin_psd_layer_blend_mode_t fallback_mode,
+    sixel_builtin_psd_layer_blend_mode_t *out_mode)
+{
+    if (data == NULL || out_mode == NULL || offset + 8u > data_length ||
+        memcmp(data + offset, "8BIM", 4u) != 0) {
+        return 0;
+    }
+    if (memcmp(data + offset + 4u, "norm", 4u) == 0) {
+        *out_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    } else if (memcmp(data + offset + 4u, "mul ", 4u) == 0) {
+        *out_mode = SIXEL_BUILTIN_PSD_BLEND_MULTIPLY;
+    } else if (memcmp(data + offset + 4u, "scrn", 4u) == 0) {
+        *out_mode = SIXEL_BUILTIN_PSD_BLEND_SCREEN;
+    } else {
+        *out_mode = fallback_mode;
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+    unsigned char const *data,
+    size_t data_length,
+    float out_rgb[3])
+{
+    uint16_t color_space;
+    uint16_t c0;
+    uint16_t c1;
+    uint16_t c2;
+
+    if (data == NULL || out_rgb == NULL || data_length < 10u) {
+        return 0;
+    }
+    color_space = sixel_builtin_read_u16be_as_u16(data);
+    if (color_space != 0u) {
+        return 0;
+    }
+    c0 = sixel_builtin_read_u16be_as_u16(data + 2u);
+    c1 = sixel_builtin_read_u16be_as_u16(data + 4u);
+    c2 = sixel_builtin_read_u16be_as_u16(data + 6u);
+    out_rgb[0] = (float)c0 / 65535.0f;
+    out_rgb[1] = (float)c1 / 65535.0f;
+    out_rgb[2] = (float)c2 / 65535.0f;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer,
+    int allow_bevel_proxy)
+{
+    size_t cursor;
+    size_t effect_count;
+    size_t effect_index;
+    size_t payload_length;
+    unsigned char const *payload;
+    char key[5];
+    unsigned int version;
+    float rgb0[3];
+    float rgb1[3];
+    float opacity0;
+    float opacity1;
+    float size_px;
+    int enabled;
+    int has_color0;
+    int has_color1;
+    int parsed;
+    sixel_builtin_psd_layer_blend_mode_t mode0;
+    sixel_builtin_psd_layer_blend_mode_t mode1;
+
+    cursor = 0u;
+    effect_count = 0u;
+    effect_index = 0u;
+    payload_length = 0u;
+    payload = NULL;
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    version = 0u;
+    rgb0[0] = 0.0f;
+    rgb0[1] = 0.0f;
+    rgb0[2] = 0.0f;
+    rgb1[0] = 0.0f;
+    rgb1[1] = 0.0f;
+    rgb1[2] = 0.0f;
+    opacity0 = 0.0f;
+    opacity1 = 0.0f;
+    size_px = 0.0f;
+    enabled = 0;
+    has_color0 = 0;
+    has_color1 = 0;
+    parsed = 0;
+    mode0 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    mode1 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+
+    if (data == NULL || layer == NULL || key_length < 4u) {
+        return 0;
+    }
+    effect_count = sixel_builtin_read_u32be_size(data);
+    cursor = 4u;
+    for (effect_index = 0u; effect_index < effect_count; ++effect_index) {
+        if (cursor + 12u > key_length ||
+            memcmp(data + cursor, "8BIM", 4u) != 0) {
+            break;
+        }
+        memcpy(key, data + cursor + 4u, 4u);
+        key[4] = '\0';
+        payload_length = sixel_builtin_read_u32be_size(data + cursor + 8u);
+        cursor += 12u;
+        if (payload_length > key_length - cursor) {
+            break;
+        }
+        payload = data + cursor;
+        if (memcmp(key, "oglw", 4u) == 0 || memcmp(key, "iglw", 4u) == 0) {
+            has_color0 = 0;
+            rgb0[0] = 0.0f;
+            rgb0[1] = 0.0f;
+            rgb0[2] = 0.0f;
+            version = 0u;
+            opacity0 = 0.0f;
+            size_px = 0.0f;
+            enabled = 0;
+            mode0 = SIXEL_BUILTIN_PSD_BLEND_SCREEN;
+            if (payload_length >= 32u) {
+                version = sixel_builtin_read_u32be(payload);
+                size_px = (float)sixel_builtin_read_u32be(payload + 4u);
+                if (size_px > 128.0f) {
+                    size_px = 128.0f;
+                }
+                has_color0 = sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                    payload + 12u,
+                    payload_length - 12u,
+                    rgb0);
+                (void)sixel_builtin_psd_legacy_lrfx_mode_from_payload(
+                    payload,
+                    payload_length,
+                    22u,
+                    SIXEL_BUILTIN_PSD_BLEND_SCREEN,
+                    &mode0);
+                enabled = payload[30] != 0 ? 1 : 0;
+                opacity0 = sixel_builtin_psd_clamp01(
+                    (float)payload[31] / 255.0f);
+                if (version >= 2u && payload_length >= 42u) {
+                    if (sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                            payload + 32u,
+                            payload_length - 32u,
+                            rgb1) != 0) {
+                        rgb0[0] = rgb1[0];
+                        rgb0[1] = rgb1[1];
+                        rgb0[2] = rgb1[2];
+                    }
+                }
+                if (enabled != 0 && has_color0 != 0 && opacity0 > 0.0f &&
+                    size_px > 0.0f) {
+                    if (memcmp(key, "oglw", 4u) == 0) {
+                        layer->has_effect_orgl = 1;
+                        layer->effect_orgl_rgb[0] = rgb0[0];
+                        layer->effect_orgl_rgb[1] = rgb0[1];
+                        layer->effect_orgl_rgb[2] = rgb0[2];
+                        layer->effect_orgl_opacity = opacity0;
+                        layer->effect_orgl_size = size_px;
+                        layer->effect_orgl_mode = mode0;
+                        layer->has_effect_outer_glow = 1;
+                        layer->effect_outer_glow_rgb[0] = rgb0[0];
+                        layer->effect_outer_glow_rgb[1] = rgb0[1];
+                        layer->effect_outer_glow_rgb[2] = rgb0[2];
+                        layer->effect_outer_glow_opacity = opacity0;
+                        layer->effect_outer_glow_size = size_px;
+                        layer->effect_outer_glow_mode = mode0;
+                    } else {
+                        layer->has_effect_irgl = 1;
+                        layer->effect_irgl_rgb[0] = rgb0[0];
+                        layer->effect_irgl_rgb[1] = rgb0[1];
+                        layer->effect_irgl_rgb[2] = rgb0[2];
+                        layer->effect_irgl_opacity = opacity0;
+                        layer->effect_irgl_size = size_px;
+                        layer->effect_irgl_mode = mode0;
+                        layer->has_effect_inner_glow = 1;
+                        layer->effect_inner_glow_rgb[0] = rgb0[0];
+                        layer->effect_inner_glow_rgb[1] = rgb0[1];
+                        layer->effect_inner_glow_rgb[2] = rgb0[2];
+                        layer->effect_inner_glow_opacity = opacity0;
+                        layer->effect_inner_glow_size = size_px;
+                        layer->effect_inner_glow_mode = mode0;
+                    }
+                    parsed = 1;
+                }
+            }
+        } else if (memcmp(key, "bevl", 4u) == 0 && allow_bevel_proxy != 0) {
+            has_color0 = 0;
+            has_color1 = 0;
+            rgb0[0] = 1.0f;
+            rgb0[1] = 1.0f;
+            rgb0[2] = 1.0f;
+            rgb1[0] = 0.0f;
+            rgb1[1] = 0.0f;
+            rgb1[2] = 0.0f;
+            opacity0 = 0.0f;
+            opacity1 = 0.0f;
+            size_px = 0.0f;
+            enabled = 0;
+            mode0 = SIXEL_BUILTIN_PSD_BLEND_SCREEN;
+            mode1 = SIXEL_BUILTIN_PSD_BLEND_MULTIPLY;
+            version = 0u;
+            if (payload_length >= 58u) {
+                version = sixel_builtin_read_u32be(payload);
+                size_px = (float)sixel_builtin_read_u32be(payload + 12u);
+                if (size_px > 128.0f) {
+                    size_px = 128.0f;
+                }
+                (void)sixel_builtin_psd_legacy_lrfx_mode_from_payload(
+                    payload,
+                    payload_length,
+                    16u,
+                    SIXEL_BUILTIN_PSD_BLEND_SCREEN,
+                    &mode0);
+                (void)sixel_builtin_psd_legacy_lrfx_mode_from_payload(
+                    payload,
+                    payload_length,
+                    24u,
+                    SIXEL_BUILTIN_PSD_BLEND_MULTIPLY,
+                    &mode1);
+                has_color0 = sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                    payload + 32u,
+                    payload_length - 32u,
+                    rgb0);
+                has_color1 = sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                    payload + 42u,
+                    payload_length - 42u,
+                    rgb1);
+                opacity0 = sixel_builtin_psd_clamp01(
+                    (float)payload[53] / 255.0f);
+                opacity1 = sixel_builtin_psd_clamp01(
+                    (float)payload[54] / 255.0f);
+                enabled = payload[55] != 0 ? 1 : 0;
+                if (version == 2u && payload_length >= 78u) {
+                    if (sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                            payload + 58u,
+                            payload_length - 58u,
+                            rgb0) != 0) {
+                        has_color0 = 1;
+                    }
+                    if (sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                            payload + 68u,
+                            payload_length - 68u,
+                            rgb1) != 0) {
+                        has_color1 = 1;
+                    }
+                }
+                if (enabled != 0 && size_px > 0.0f &&
+                    (opacity0 > 0.0f || opacity1 > 0.0f)) {
+                    layer->has_effect_bevel = 1;
+                    layer->effect_bevel_size = size_px;
+                    if (opacity0 > 0.0f) {
+                        layer->effect_bevel_highlight_rgb[0] =
+                            has_color0 != 0 ? rgb0[0] : 1.0f;
+                        layer->effect_bevel_highlight_rgb[1] =
+                            has_color0 != 0 ? rgb0[1] : 1.0f;
+                        layer->effect_bevel_highlight_rgb[2] =
+                            has_color0 != 0 ? rgb0[2] : 1.0f;
+                        layer->effect_bevel_highlight_opacity = opacity0;
+                        layer->effect_bevel_highlight_mode = mode0;
+                        layer->has_effect_outer_glow = 1;
+                        layer->effect_outer_glow_rgb[0] =
+                            layer->effect_bevel_highlight_rgb[0];
+                        layer->effect_outer_glow_rgb[1] =
+                            layer->effect_bevel_highlight_rgb[1];
+                        layer->effect_outer_glow_rgb[2] =
+                            layer->effect_bevel_highlight_rgb[2];
+                        layer->effect_outer_glow_opacity = opacity0;
+                        layer->effect_outer_glow_size = size_px;
+                        layer->effect_outer_glow_mode = mode0;
+                    }
+                    if (opacity1 > 0.0f) {
+                        layer->effect_bevel_shadow_rgb[0] =
+                            has_color1 != 0 ? rgb1[0] : 0.0f;
+                        layer->effect_bevel_shadow_rgb[1] =
+                            has_color1 != 0 ? rgb1[1] : 0.0f;
+                        layer->effect_bevel_shadow_rgb[2] =
+                            has_color1 != 0 ? rgb1[2] : 0.0f;
+                        layer->effect_bevel_shadow_opacity = opacity1;
+                        layer->effect_bevel_shadow_mode = mode1;
+                        layer->has_effect_inner_glow = 1;
+                        layer->effect_inner_glow_rgb[0] =
+                            layer->effect_bevel_shadow_rgb[0];
+                        layer->effect_inner_glow_rgb[1] =
+                            layer->effect_bevel_shadow_rgb[1];
+                        layer->effect_inner_glow_rgb[2] =
+                            layer->effect_bevel_shadow_rgb[2];
+                        layer->effect_inner_glow_opacity = opacity1;
+                        layer->effect_inner_glow_size = size_px;
+                        layer->effect_inner_glow_mode = mode1;
+                    }
+                    parsed = 1;
+                }
+            }
+        } else if (memcmp(key, "sofi", 4u) == 0) {
+            has_color0 = 0;
+            rgb0[0] = 0.0f;
+            rgb0[1] = 0.0f;
+            rgb0[2] = 0.0f;
+            opacity0 = 0.0f;
+            enabled = 0;
+            mode0 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+            if (payload_length >= 24u) {
+                (void)sixel_builtin_psd_legacy_lrfx_mode_from_payload(
+                    payload,
+                    payload_length,
+                    4u,
+                    SIXEL_BUILTIN_PSD_BLEND_NORMAL,
+                    &mode0);
+                has_color0 = sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                    payload + 12u,
+                    payload_length - 12u,
+                    rgb0);
+                opacity0 = sixel_builtin_psd_clamp01(
+                    (float)payload[22] / 255.0f);
+                enabled = payload[23] != 0 ? 1 : 0;
+                if (payload_length >= 34u &&
+                    sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                        payload + 24u,
+                        payload_length - 24u,
+                        rgb1) != 0) {
+                    rgb0[0] = rgb1[0];
+                    rgb0[1] = rgb1[1];
+                    rgb0[2] = rgb1[2];
+                    has_color0 = 1;
+                }
+                if (enabled != 0 && has_color0 != 0 && opacity0 > 0.0f) {
+                    layer->has_effect_solid_overlay = 1;
+                    layer->effect_solid_overlay_rgb[0] = rgb0[0];
+                    layer->effect_solid_overlay_rgb[1] = rgb0[1];
+                    layer->effect_solid_overlay_rgb[2] = rgb0[2];
+                    layer->effect_solid_overlay_opacity = opacity0;
+                    layer->effect_solid_overlay_mode = mode0;
+                    parsed = 1;
+                }
+            }
+        }
+        cursor += payload_length;
+    }
+    return parsed;
+}
+
+static int
 sixel_builtin_psd_parse_vector_stroke_content_object(
     unsigned char const *data,
     size_t data_length,
@@ -13207,7 +13560,9 @@ sixel_builtin_psd_parse_layer_extra_data(
     int had_active_effects_before_parse;
     int has_active_effects_after_parse;
     int merged_legacy_effects;
+    int parsed_legacy_binary_effects;
     sixel_builtin_psd_layer_record_t legacy_effects;
+    sixel_builtin_psd_layer_record_t legacy_binary_effects;
     uint32_t flag_value;
     char key[5];
 
@@ -13225,7 +13580,9 @@ sixel_builtin_psd_parse_layer_extra_data(
     had_active_effects_before_parse = 0;
     has_active_effects_after_parse = 0;
     merged_legacy_effects = 0;
+    parsed_legacy_binary_effects = 0;
     sixel_builtin_psd_layer_record_init(&legacy_effects);
+    sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
     flag_value = 0u;
     key[0] = '\0';
     key[1] = '\0';
@@ -13393,11 +13750,23 @@ sixel_builtin_psd_parse_layer_extra_data(
                     1);
             } else {
                 sixel_builtin_psd_layer_record_init(&legacy_effects);
+                sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
                 (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                     buffer + cursor,
                     key_length,
                     &legacy_effects,
                     1);
+                parsed_legacy_binary_effects =
+                    sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
+                        buffer + cursor,
+                        key_length,
+                        &legacy_binary_effects,
+                        1);
+                if (parsed_legacy_binary_effects != 0) {
+                    (void)sixel_builtin_psd_merge_missing_legacy_effects(
+                        &legacy_effects,
+                        &legacy_binary_effects);
+                }
                 merged_legacy_effects =
                     sixel_builtin_psd_merge_missing_legacy_effects(
                         layer,
