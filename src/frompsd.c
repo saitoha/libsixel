@@ -11390,11 +11390,23 @@ sixel_builtin_psd_merge_missing_legacy_effects(
     sixel_builtin_psd_layer_record_t const *legacy)
 {
     int merged;
+    int outer_glow_inactive;
+    int inner_glow_inactive;
 
     merged = 0;
+    outer_glow_inactive = 0;
+    inner_glow_inactive = 0;
     if (layer == NULL || legacy == NULL) {
         return 0;
     }
+    outer_glow_inactive =
+        layer->has_effect_outer_glow == 0 ||
+        layer->effect_outer_glow_opacity <= 0.0f ||
+        layer->effect_outer_glow_size <= 0.0f;
+    inner_glow_inactive =
+        layer->has_effect_inner_glow == 0 ||
+        layer->effect_inner_glow_opacity <= 0.0f ||
+        layer->effect_inner_glow_size <= 0.0f;
     if (layer->has_effect_orgl == 0 &&
         legacy->has_effect_orgl != 0) {
         layer->has_effect_orgl = 1;
@@ -11404,6 +11416,18 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_orgl_opacity = legacy->effect_orgl_opacity;
         layer->effect_orgl_size = legacy->effect_orgl_size;
         layer->effect_orgl_mode = legacy->effect_orgl_mode;
+        if (outer_glow_inactive != 0 &&
+            layer->effect_orgl_opacity > 0.0f &&
+            layer->effect_orgl_size > 0.0f) {
+            layer->has_effect_outer_glow = 1;
+            layer->effect_outer_glow_rgb[0] = layer->effect_orgl_rgb[0];
+            layer->effect_outer_glow_rgb[1] = layer->effect_orgl_rgb[1];
+            layer->effect_outer_glow_rgb[2] = layer->effect_orgl_rgb[2];
+            layer->effect_outer_glow_opacity = layer->effect_orgl_opacity;
+            layer->effect_outer_glow_size = layer->effect_orgl_size;
+            layer->effect_outer_glow_mode = layer->effect_orgl_mode;
+            outer_glow_inactive = 0;
+        }
         merged = 1;
     }
     if (layer->has_effect_irgl == 0 &&
@@ -11415,6 +11439,18 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irgl_opacity = legacy->effect_irgl_opacity;
         layer->effect_irgl_size = legacy->effect_irgl_size;
         layer->effect_irgl_mode = legacy->effect_irgl_mode;
+        if (inner_glow_inactive != 0 &&
+            layer->effect_irgl_opacity > 0.0f &&
+            layer->effect_irgl_size > 0.0f) {
+            layer->has_effect_inner_glow = 1;
+            layer->effect_inner_glow_rgb[0] = layer->effect_irgl_rgb[0];
+            layer->effect_inner_glow_rgb[1] = layer->effect_irgl_rgb[1];
+            layer->effect_inner_glow_rgb[2] = layer->effect_irgl_rgb[2];
+            layer->effect_inner_glow_opacity = layer->effect_irgl_opacity;
+            layer->effect_inner_glow_size = layer->effect_irgl_size;
+            layer->effect_inner_glow_mode = layer->effect_irgl_mode;
+            inner_glow_inactive = 0;
+        }
         merged = 1;
     }
     if (layer->has_effect_chfx == 0 &&
@@ -11426,6 +11462,18 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_chfx_opacity = legacy->effect_chfx_opacity;
         layer->effect_chfx_size = legacy->effect_chfx_size;
         layer->effect_chfx_mode = legacy->effect_chfx_mode;
+        if (inner_glow_inactive != 0 &&
+            layer->effect_chfx_opacity > 0.0f &&
+            layer->effect_chfx_size > 0.0f) {
+            layer->has_effect_inner_glow = 1;
+            layer->effect_inner_glow_rgb[0] = layer->effect_chfx_rgb[0];
+            layer->effect_inner_glow_rgb[1] = layer->effect_chfx_rgb[1];
+            layer->effect_inner_glow_rgb[2] = layer->effect_chfx_rgb[2];
+            layer->effect_inner_glow_opacity = layer->effect_chfx_opacity;
+            layer->effect_inner_glow_size = layer->effect_chfx_size;
+            layer->effect_inner_glow_mode = layer->effect_chfx_mode;
+            inner_glow_inactive = 0;
+        }
         merged = 1;
     }
     if (layer->has_effect_drsh == 0 &&
@@ -11437,6 +11485,18 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_drsh_opacity = legacy->effect_drsh_opacity;
         layer->effect_drsh_size = legacy->effect_drsh_size;
         layer->effect_drsh_mode = legacy->effect_drsh_mode;
+        if (outer_glow_inactive != 0 &&
+            layer->effect_drsh_opacity > 0.0f &&
+            layer->effect_drsh_size > 0.0f) {
+            layer->has_effect_outer_glow = 1;
+            layer->effect_outer_glow_rgb[0] = layer->effect_drsh_rgb[0];
+            layer->effect_outer_glow_rgb[1] = layer->effect_drsh_rgb[1];
+            layer->effect_outer_glow_rgb[2] = layer->effect_drsh_rgb[2];
+            layer->effect_outer_glow_opacity = layer->effect_drsh_opacity;
+            layer->effect_outer_glow_size = layer->effect_drsh_size;
+            layer->effect_outer_glow_mode = layer->effect_drsh_mode;
+            outer_glow_inactive = 0;
+        }
         merged = 1;
     }
     if (layer->has_effect_irsh == 0 &&
@@ -11448,6 +11508,18 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irsh_opacity = legacy->effect_irsh_opacity;
         layer->effect_irsh_size = legacy->effect_irsh_size;
         layer->effect_irsh_mode = legacy->effect_irsh_mode;
+        if (inner_glow_inactive != 0 &&
+            layer->effect_irsh_opacity > 0.0f &&
+            layer->effect_irsh_size > 0.0f) {
+            layer->has_effect_inner_glow = 1;
+            layer->effect_inner_glow_rgb[0] = layer->effect_irsh_rgb[0];
+            layer->effect_inner_glow_rgb[1] = layer->effect_irsh_rgb[1];
+            layer->effect_inner_glow_rgb[2] = layer->effect_irsh_rgb[2];
+            layer->effect_inner_glow_opacity = layer->effect_irsh_opacity;
+            layer->effect_inner_glow_size = layer->effect_irsh_size;
+            layer->effect_inner_glow_mode = layer->effect_irsh_mode;
+            inner_glow_inactive = 0;
+        }
         merged = 1;
     }
     if (layer->has_effect_bevel == 0 &&
@@ -11470,6 +11542,39 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             legacy->effect_bevel_shadow_opacity;
         layer->effect_bevel_shadow_mode = legacy->effect_bevel_shadow_mode;
         layer->effect_bevel_size = legacy->effect_bevel_size;
+        if (outer_glow_inactive != 0 &&
+            layer->effect_bevel_highlight_opacity > 0.0f &&
+            layer->effect_bevel_size > 0.0f) {
+            layer->has_effect_outer_glow = 1;
+            layer->effect_outer_glow_rgb[0] =
+                layer->effect_bevel_highlight_rgb[0];
+            layer->effect_outer_glow_rgb[1] =
+                layer->effect_bevel_highlight_rgb[1];
+            layer->effect_outer_glow_rgb[2] =
+                layer->effect_bevel_highlight_rgb[2];
+            layer->effect_outer_glow_opacity =
+                layer->effect_bevel_highlight_opacity;
+            layer->effect_outer_glow_size = layer->effect_bevel_size;
+            layer->effect_outer_glow_mode =
+                layer->effect_bevel_highlight_mode;
+            outer_glow_inactive = 0;
+        }
+        if (inner_glow_inactive != 0 &&
+            layer->effect_bevel_shadow_opacity > 0.0f &&
+            layer->effect_bevel_size > 0.0f) {
+            layer->has_effect_inner_glow = 1;
+            layer->effect_inner_glow_rgb[0] =
+                layer->effect_bevel_shadow_rgb[0];
+            layer->effect_inner_glow_rgb[1] =
+                layer->effect_bevel_shadow_rgb[1];
+            layer->effect_inner_glow_rgb[2] =
+                layer->effect_bevel_shadow_rgb[2];
+            layer->effect_inner_glow_opacity =
+                layer->effect_bevel_shadow_opacity;
+            layer->effect_inner_glow_size = layer->effect_bevel_size;
+            layer->effect_inner_glow_mode = layer->effect_bevel_shadow_mode;
+            inner_glow_inactive = 0;
+        }
         merged = 1;
     } else if (layer->has_effect_bevel != 0 &&
                legacy->has_effect_bevel != 0) {
@@ -11495,6 +11600,22 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 legacy->effect_bevel_highlight_opacity;
             layer->effect_bevel_highlight_mode =
                 legacy->effect_bevel_highlight_mode;
+            if (outer_glow_inactive != 0 &&
+                layer->effect_bevel_size > 0.0f) {
+                layer->has_effect_outer_glow = 1;
+                layer->effect_outer_glow_rgb[0] =
+                    layer->effect_bevel_highlight_rgb[0];
+                layer->effect_outer_glow_rgb[1] =
+                    layer->effect_bevel_highlight_rgb[1];
+                layer->effect_outer_glow_rgb[2] =
+                    layer->effect_bevel_highlight_rgb[2];
+                layer->effect_outer_glow_opacity =
+                    layer->effect_bevel_highlight_opacity;
+                layer->effect_outer_glow_size = layer->effect_bevel_size;
+                layer->effect_outer_glow_mode =
+                    layer->effect_bevel_highlight_mode;
+                outer_glow_inactive = 0;
+            }
             merged = 1;
         }
         if (layer->effect_bevel_shadow_opacity <= 0.0f &&
@@ -11509,10 +11630,28 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 legacy->effect_bevel_shadow_opacity;
             layer->effect_bevel_shadow_mode =
                 legacy->effect_bevel_shadow_mode;
+            if (inner_glow_inactive != 0 &&
+                layer->effect_bevel_size > 0.0f) {
+                layer->has_effect_inner_glow = 1;
+                layer->effect_inner_glow_rgb[0] =
+                    layer->effect_bevel_shadow_rgb[0];
+                layer->effect_inner_glow_rgb[1] =
+                    layer->effect_bevel_shadow_rgb[1];
+                layer->effect_inner_glow_rgb[2] =
+                    layer->effect_bevel_shadow_rgb[2];
+                layer->effect_inner_glow_opacity =
+                    layer->effect_bevel_shadow_opacity;
+                layer->effect_inner_glow_size = layer->effect_bevel_size;
+                layer->effect_inner_glow_mode =
+                    layer->effect_bevel_shadow_mode;
+                inner_glow_inactive = 0;
+            }
             merged = 1;
         }
     }
-    if (layer->has_effect_outer_glow == 0 &&
+    if ((layer->has_effect_outer_glow == 0 ||
+         layer->effect_outer_glow_opacity <= 0.0f ||
+         layer->effect_outer_glow_size <= 0.0f) &&
         legacy->has_effect_outer_glow != 0) {
         layer->has_effect_outer_glow = 1;
         layer->effect_outer_glow_rgb[0] = legacy->effect_outer_glow_rgb[0];
@@ -11521,9 +11660,12 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_outer_glow_opacity = legacy->effect_outer_glow_opacity;
         layer->effect_outer_glow_size = legacy->effect_outer_glow_size;
         layer->effect_outer_glow_mode = legacy->effect_outer_glow_mode;
+        outer_glow_inactive = 0;
         merged = 1;
     }
-    if (layer->has_effect_inner_glow == 0 &&
+    if ((layer->has_effect_inner_glow == 0 ||
+         layer->effect_inner_glow_opacity <= 0.0f ||
+         layer->effect_inner_glow_size <= 0.0f) &&
         legacy->has_effect_inner_glow != 0) {
         layer->has_effect_inner_glow = 1;
         layer->effect_inner_glow_rgb[0] = legacy->effect_inner_glow_rgb[0];
@@ -11532,6 +11674,7 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_inner_glow_opacity = legacy->effect_inner_glow_opacity;
         layer->effect_inner_glow_size = legacy->effect_inner_glow_size;
         layer->effect_inner_glow_mode = legacy->effect_inner_glow_mode;
+        inner_glow_inactive = 0;
         merged = 1;
     }
     return merged;
@@ -17079,6 +17222,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     interior_glow_effects_enabled = interior_effects_enabled;
     if (layer->has_blend_interior_effects != 0 &&
         layer->blend_interior_effects_enabled == 0 &&
+        layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled == 0 &&
         layer->has_vector_stroke_style != 0 &&
         layer->has_fill_payload != 0 &&
         layer->red_channel_index < 0 &&
@@ -17086,8 +17231,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
         layer->c_channel_index < 0) {
         /*
          * Stroke-composite style no-pixel stacks can encode infx=0 while still
-         * expecting overlay/stroke passes to survive. Keep overlays active, but
-         * hold back inner glow/choke/bevel-shadow proxies in this subset.
+         * expecting overlay/stroke passes to survive. Restrict this interior
+         * glow suppression to clbl=0 layers, then keep overlays active while
+         * holding back inner glow/choke/bevel-shadow proxies in that subset.
          */
         interior_glow_effects_enabled = 0;
     }

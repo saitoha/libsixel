@@ -340,6 +340,12 @@ Key points used by this roadmap:
     in the composite pass (`SoFi`, `GrFl`, `FrFX`), and PASS trace
     representatives `1464..1467` lock clip-weighted contracts while
     `1318` remains XFAIL.
+  - Legacy `lrFX` inactive completion now synchronizes named glow effects
+    (`OrGl/IrGl/ChFX/DrSh/IrSh/bevl`) to proxy glow fields
+    (`outer_glow`/`inner_glow`) when proxy slots are unset/inactive.
+    For `clbl=1` stroke-composite stacks, `infx=0` interior-glow suppression
+    is narrowed to `clbl=0` subsets only; PASS trace representatives
+    `1468..1470` lock the bridge/suppression contracts.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
