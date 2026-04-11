@@ -2386,10 +2386,11 @@ sixel_encoder_reset_quantize_animation_state(sixel_encoder_t *encoder)
 
     encoder->quantize_animation_prev_palette_count = 0U;
     encoder->quantize_animation_prev_palette_valid = 0;
+    encoder->quantize_animation_prev_palette_float_valid = 0;
+    encoder->quantize_animation_prev_palette_float_stride = 0;
     encoder->quantize_animation_prev_probe_valid = 0;
     encoder->quantize_animation_prev_width = 0;
     encoder->quantize_animation_prev_height = 0;
-    encoder->quantize_animation_prev_loop_no = 0;
 }
 
 static void
@@ -2437,6 +2438,44 @@ sixel_encoder_resolve_quantize_animation_options(
 
     *animation_mode_out = resolved_mode;
     *scene_cut_threshold_out = resolved_threshold;
+}
+
+static int
+sixel_encoder_quantize_animation_enabled_for_frame(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame)
+{
+    int animation_mode;
+    double scene_cut_threshold;
+    int frame_no;
+    int loop_no;
+    int multiframe;
+
+    animation_mode = 0;
+    scene_cut_threshold = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
+    frame_no = 0;
+    loop_no = 0;
+    multiframe = 0;
+    if (encoder == NULL || frame == NULL) {
+        return 0;
+    }
+
+    sixel_encoder_resolve_quantize_animation_options(
+        encoder,
+        &animation_mode,
+        &scene_cut_threshold);
+    if (animation_mode == 0) {
+        return 0;
+    }
+
+    frame_no = sixel_frame_get_frame_no(frame);
+    loop_no = sixel_frame_get_loop_no(frame);
+    multiframe = sixel_frame_get_multiframe(frame);
+    if (multiframe == 0 && frame_no == 0 && loop_no == 0) {
+        return 0;
+    }
+
+    return 1;
 }
 
 static SIXELSTATUS
@@ -2591,150 +2630,56 @@ sixel_encoder_scene_probe_distance(unsigned char const *left,
 }
 
 static void
-sixel_encoder_apply_palette_hysteresis(sixel_palette_t *palette,
-                                       unsigned char const *prev_palette,
-                                       unsigned int prev_count)
+sixel_encoder_restore_previous_palette(
+    sixel_palette_t *palette,
+    unsigned char const *prev_palette,
+    float const *prev_palette_float,
+    unsigned int prev_count,
+    int prev_float_valid,
+    int prev_float_stride)
 {
-    unsigned int color_count;
-    unsigned int prev_index;
-    unsigned int current_index;
-    unsigned int assign_index;
-    unsigned int best_index;
-    unsigned int best_distance;
-    unsigned int distance;
-    unsigned int mapped_index;
-    unsigned int mapping[SIXEL_PALETTE_MAX];
-    unsigned char used[SIXEL_PALETTE_MAX];
-    unsigned char reordered[SIXEL_PALETTE_MAX * 3];
-    float reordered_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
-    int blend_bytes;
-    int current_byte;
-    int previous_byte;
-    int dr;
-    int dg;
-    int db;
+    size_t entry_bytes;
+    size_t float_bytes;
     int float_stride;
-    unsigned int channel;
+    unsigned int color_count;
 
-    color_count = 0U;
-    prev_index = 0U;
-    current_index = 0U;
-    assign_index = 0U;
-    best_index = 0U;
-    best_distance = UINT_MAX;
-    distance = 0U;
-    mapped_index = 0U;
-    blend_bytes = 0;
-    current_byte = 0;
-    previous_byte = 0;
-    dr = 0;
-    dg = 0;
-    db = 0;
+    entry_bytes = 0u;
+    float_bytes = 0u;
     float_stride = 0;
-    channel = 0U;
     if (palette == NULL || prev_palette == NULL || prev_count == 0U
             || palette->entries == NULL || palette->depth < 3) {
         return;
     }
 
-    color_count = palette->entry_count;
-    if (color_count == 0U) {
-        return;
-    }
+    color_count = prev_count;
     if (color_count > (unsigned int)SIXEL_PALETTE_MAX) {
         color_count = (unsigned int)SIXEL_PALETTE_MAX;
     }
-    blend_bytes = palette->entries_float32 == NULL ? 1 : 0;
-
-    memset(used, 0, sizeof(used));
-    memset(mapping, 0, sizeof(mapping));
-
-    assign_index = 0U;
-    for (prev_index = 0U;
-            prev_index < prev_count && assign_index < color_count;
-            ++prev_index) {
-        best_distance = UINT_MAX;
-        best_index = color_count;
-        for (current_index = 0U; current_index < color_count;
-                ++current_index) {
-            if (used[current_index] != 0U) {
-                continue;
-            }
-            dr = (int)palette->entries[current_index * 3U + 0U]
-                - (int)prev_palette[prev_index * 3U + 0U];
-            dg = (int)palette->entries[current_index * 3U + 1U]
-                - (int)prev_palette[prev_index * 3U + 1U];
-            db = (int)palette->entries[current_index * 3U + 2U]
-                - (int)prev_palette[prev_index * 3U + 2U];
-            distance = (unsigned int)(dr * dr + dg * dg + db * db);
-            if (distance < best_distance) {
-                best_distance = distance;
-                best_index = current_index;
-            }
-        }
-        if (best_index >= color_count) {
-            continue;
-        }
-        mapping[assign_index] = best_index;
-        used[best_index] = 1U;
-        ++assign_index;
+    entry_bytes = (size_t)color_count * 3u;
+    if (entry_bytes > palette->entries_size) {
+        return;
     }
-
-    for (current_index = 0U; current_index < color_count; ++current_index) {
-        if (used[current_index] != 0U) {
-            continue;
-        }
-        mapping[assign_index] = current_index;
-        used[current_index] = 1U;
-        ++assign_index;
-    }
-
-    for (assign_index = 0U; assign_index < color_count; ++assign_index) {
-        mapped_index = mapping[assign_index];
-        if (blend_bytes != 0 && assign_index < prev_count) {
-            current_byte = (int)palette->entries[mapped_index * 3U + 0U];
-            previous_byte = (int)prev_palette[assign_index * 3U + 0U];
-            reordered[assign_index * 3U + 0U] = (unsigned char)(
-                (current_byte * 3 + previous_byte + 2) / 4);
-            current_byte = (int)palette->entries[mapped_index * 3U + 1U];
-            previous_byte = (int)prev_palette[assign_index * 3U + 1U];
-            reordered[assign_index * 3U + 1U] = (unsigned char)(
-                (current_byte * 3 + previous_byte + 2) / 4);
-            current_byte = (int)palette->entries[mapped_index * 3U + 2U];
-            previous_byte = (int)prev_palette[assign_index * 3U + 2U];
-            reordered[assign_index * 3U + 2U] = (unsigned char)(
-                (current_byte * 3 + previous_byte + 2) / 4);
-        } else {
-            reordered[assign_index * 3U + 0U] =
-                palette->entries[mapped_index * 3U + 0U];
-            reordered[assign_index * 3U + 1U] =
-                palette->entries[mapped_index * 3U + 1U];
-            reordered[assign_index * 3U + 2U] =
-                palette->entries[mapped_index * 3U + 2U];
-        }
-    }
-    memcpy(palette->entries, reordered, (size_t)color_count * 3U);
+    memcpy(palette->entries, prev_palette, entry_bytes);
+    palette->entry_count = color_count;
 
     if (palette->entries_float32 == NULL || palette->float_depth <= 0) {
         return;
     }
-
     float_stride = palette->float_depth / (int)sizeof(float);
     if (float_stride <= 0 || (unsigned int)float_stride > SIXEL_MAX_CHANNELS) {
         return;
     }
-    for (assign_index = 0U; assign_index < color_count; ++assign_index) {
-        mapped_index = mapping[assign_index];
-        for (channel = 0U; channel < (unsigned int)float_stride; ++channel) {
-            reordered_float[assign_index * (unsigned int)float_stride
-                            + channel] =
-                palette->entries_float32[mapped_index
-                    * (unsigned int)float_stride + channel];
-        }
+    if (prev_float_valid == 0 || prev_palette_float == NULL
+            || prev_float_stride != float_stride) {
+        return;
+    }
+    float_bytes = (size_t)color_count * (size_t)float_stride * sizeof(float);
+    if (float_bytes > palette->entries_float32_size) {
+        return;
     }
     memcpy(palette->entries_float32,
-           reordered_float,
-           (size_t)color_count * (size_t)float_stride * sizeof(float));
+           prev_palette_float,
+           float_bytes);
 }
 
 static SIXELSTATUS
@@ -2752,8 +2697,12 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     int scene_cut;
     int width;
     int height;
+    int frame_no;
     int loop_no;
     int multiframe;
+    int current_float_stride;
+    int current_float_valid;
+    size_t current_float_bytes;
 
     status = SIXEL_OK;
     palette = NULL;
@@ -2765,8 +2714,12 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     scene_cut = 0;
     width = 0;
     height = 0;
+    frame_no = 0;
     loop_no = 0;
     multiframe = 0;
+    current_float_stride = 0;
+    current_float_valid = 0;
+    current_float_bytes = 0u;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2779,8 +2732,10 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
         sixel_encoder_reset_quantize_animation_state(encoder);
         return SIXEL_OK;
     }
+    frame_no = sixel_frame_get_frame_no(frame);
+    loop_no = sixel_frame_get_loop_no(frame);
     multiframe = sixel_frame_get_multiframe(frame);
-    if (multiframe == 0) {
+    if (multiframe == 0 && frame_no == 0 && loop_no == 0) {
         sixel_encoder_reset_quantize_animation_state(encoder);
         return SIXEL_OK;
     }
@@ -2798,12 +2753,9 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    loop_no = sixel_frame_get_loop_no(frame);
     scene_cut = 0;
     if (encoder->quantize_animation_prev_probe_valid == 0
             || encoder->quantize_animation_prev_palette_valid == 0) {
-        scene_cut = 1;
-    } else if (encoder->quantize_animation_prev_loop_no != loop_no) {
         scene_cut = 1;
     } else if (encoder->quantize_animation_prev_width != width
             || encoder->quantize_animation_prev_height != height) {
@@ -2818,10 +2770,14 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     }
 
     if (scene_cut == 0) {
-        sixel_encoder_apply_palette_hysteresis(
+        /* Keep palette stable until a scene cut is detected. */
+        sixel_encoder_restore_previous_palette(
             palette,
             encoder->quantize_animation_prev_palette,
-            encoder->quantize_animation_prev_palette_count);
+            encoder->quantize_animation_prev_palette_float,
+            encoder->quantize_animation_prev_palette_count,
+            encoder->quantize_animation_prev_palette_float_valid,
+            encoder->quantize_animation_prev_palette_float_stride);
     }
 
     palette_count = palette->entry_count;
@@ -2831,12 +2787,37 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     if (palette_count == 0U) {
         encoder->quantize_animation_prev_palette_count = 0U;
         encoder->quantize_animation_prev_palette_valid = 0;
+        encoder->quantize_animation_prev_palette_float_valid = 0;
+        encoder->quantize_animation_prev_palette_float_stride = 0;
     } else {
         memcpy(encoder->quantize_animation_prev_palette,
                palette->entries,
                (size_t)palette_count * 3U);
         encoder->quantize_animation_prev_palette_count = palette_count;
         encoder->quantize_animation_prev_palette_valid = 1;
+        current_float_valid = 0;
+        current_float_stride = 0;
+        current_float_bytes = 0u;
+        if (palette->entries_float32 != NULL && palette->float_depth > 0) {
+            current_float_stride = palette->float_depth / (int)sizeof(float);
+            if (current_float_stride > 0
+                    && (unsigned int)current_float_stride
+                        <= SIXEL_MAX_CHANNELS) {
+                current_float_bytes = (size_t)palette_count
+                    * (size_t)current_float_stride * sizeof(float);
+                if (current_float_bytes <= sizeof(
+                        encoder->quantize_animation_prev_palette_float)) {
+                    memcpy(encoder->quantize_animation_prev_palette_float,
+                           palette->entries_float32,
+                           current_float_bytes);
+                    current_float_valid = 1;
+                }
+            }
+        }
+        encoder->quantize_animation_prev_palette_float_valid =
+            current_float_valid;
+        encoder->quantize_animation_prev_palette_float_stride =
+            current_float_stride;
     }
     memcpy(encoder->quantize_animation_prev_probe,
            current_probe,
@@ -2844,7 +2825,6 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     encoder->quantize_animation_prev_probe_valid = 1;
     encoder->quantize_animation_prev_width = width;
     encoder->quantize_animation_prev_height = height;
-    encoder->quantize_animation_prev_loop_no = loop_no;
 
     return SIXEL_OK;
 }
@@ -5782,6 +5762,7 @@ sixel_encoder_output_without_macro(
     size_t size;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     sixel_encoding_planner_t *planner;
+    int quantize_animation_enabled;
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -5791,10 +5772,15 @@ sixel_encoder_output_without_macro(
     }
 
     planner = &encoder->planner;
+    quantize_animation_enabled = 0;
 
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
-        if (encoder->force_palette) {
-            /* keep every slot when the user forced the palette size */
+        quantize_animation_enabled =
+            sixel_encoder_quantize_animation_enabled_for_frame(
+                encoder,
+                frame);
+        if (encoder->force_palette || quantize_animation_enabled) {
+            /* Keep palette slots stable when forced or animation-locked. */
             sixel_dither_set_optimize_palette(dither, 0);
         } else {
             sixel_dither_set_optimize_palette(dither, 1);
@@ -6507,15 +6493,19 @@ sixel_encoder_new(
     memset((*ppencoder)->quantize_animation_prev_palette,
            0,
            sizeof((*ppencoder)->quantize_animation_prev_palette));
+    memset((*ppencoder)->quantize_animation_prev_palette_float,
+           0,
+           sizeof((*ppencoder)->quantize_animation_prev_palette_float));
     (*ppencoder)->quantize_animation_prev_palette_count = 0U;
     (*ppencoder)->quantize_animation_prev_palette_valid = 0;
+    (*ppencoder)->quantize_animation_prev_palette_float_valid = 0;
+    (*ppencoder)->quantize_animation_prev_palette_float_stride = 0;
     memset((*ppencoder)->quantize_animation_prev_probe,
            0,
            sizeof((*ppencoder)->quantize_animation_prev_probe));
     (*ppencoder)->quantize_animation_prev_probe_valid = 0;
     (*ppencoder)->quantize_animation_prev_width = 0;
     (*ppencoder)->quantize_animation_prev_height = 0;
-    (*ppencoder)->quantize_animation_prev_loop_no = 0;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
