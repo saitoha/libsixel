@@ -744,10 +744,20 @@ sixel_bmp_parse_v5_embedded_profile(
 
     dib_offset = SIXEL_BMP_FILE_HEADER_SIZE;
     cs_type = buffer + dib_offset + SIXEL_BMP_V5_CSTYPE_OFFSET;
+    if (memcmp(cs_type, "LINK", 4u) == 0) {
+        /*
+         * Keep PROFILE_LINKED unsupported by design in the builtin path.
+         * Resolving external profile paths would introduce filesystem/network
+         * side effects and make decode behavior environment dependent.
+         */
+        info->icc_profile = NULL;
+        info->icc_profile_length = 0u;
+        return SIXEL_OK;
+    }
     if (memcmp(cs_type, "MBED", 4u) != 0) {
         /*
-         * PROFILE_LINKED and other CSType values are not interpreted in the
-         * builtin BMP path. Decode pixels and continue without ICC.
+         * Ignore all non-embedded profile modes and continue pixel decode
+         * without applying external color profiles.
          */
         return SIXEL_OK;
     }
