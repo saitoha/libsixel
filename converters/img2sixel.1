@@ -240,21 +240,45 @@ render animated GIF as a static image.
 .B \-d \fIDIFFUSION\fP, \-\-diffusion=\fIDIFFUSION\fP
 choose diffusion method used with color reduction.
 .br
-\fIDIFFUSION\fP accepts \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP,
-\fBjajuni\fP, \fBstucki\fP, \fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP,
-\fBsierra3\fP, \fBa_dither\fP, \fBx_dither\fP, \fBbluenoise\fP, \fBlso2\fP,
-\fBinterframe\fP, or \fBstbn\fP.
+\fIDIFFUSION\fP is one of them:
 .br
-\fBinterframe\fP selects interframe error diffusion (palette path only).
+\fBauto\fP -> choose diffusion type automatically (default)
 .br
-\fBstbn\fP selects interframe STBN/PMJ source dithering.
+\fBnone\fP -> do not diffuse
 .br
-\fBstbn\fP accepts suboptions using
-\fBstbn:key=value[:key=value...]\fP.
+\fBfs\fP -> Floyd-Steinberg method
 .br
-\fBsource\fP: \fBhash\fP, \fBmask\fP, or \fBpmj\fP (default hash).
+\fBatkinson\fP -> Bill Atkinson's method
 .br
-\fBnoise_strength\fP: floating value in 0.0-2.0 (default 0.055).
+\fBjajuni\fP -> Jarvis, Judice & Ninke
+.br
+\fBstucki\fP -> Stucki's method
+.br
+\fBburkes\fP -> Burkes' method
+.br
+\fBsierra1\fP -> Sierra Lite method
+.br
+\fBsierra2\fP -> Sierra Two-row method
+.br
+\fBsierra3\fP -> Sierra-3 method
+.br
+\fBa_dither\fP -> positionally stable arithmetic dither
+.br
+\fBx_dither\fP -> positionally stable arithmetic xor based dither
+.br
+\fBbluenoise\fP -> tileable blue-noise ordered dither
+.br
+\fBlso2\fP -> libsixel variable error diffusion tables
+.br
+\fBinterframe\fP -> interframe error diffusion (palette path only)
+.br
+\fBstbn\fP -> interframe STBN/PMJ source selection
+.br
+sub-option:
+.br
+\fBsource=SOURCE\fP -> \fBhash\fP, \fBmask\fP, or \fBpmj\fP (default hash)
+.br
+\fBnoise_strength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
 .br
 \fBinterframe\fP and \fBstbn\fP ignore \-Y and are not available with \-I.
 .TP 5
