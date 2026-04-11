@@ -438,6 +438,16 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                   stucki, burkes, sierra1, sierra2,\n"
         "                                   or sierra3 (default none)\n"
         "          strength=VALUE        -> float in 0.0-2.0 (default 0.055)\n"
+        "          motion_adapt=0|1      -> enable motion adaptive strength\n"
+        "                                   (default 0)\n"
+        "          scene_cut_reset=0|1   -> reset carry at frame boundaries\n"
+        "                                   (default 0)\n"
+        "          alpha_guard=0|1       -> suppress stbn near alpha edges\n"
+        "                                   (default 0)\n"
+        "          perceptual_weight=0|1 -> apply perceptual channel weights\n"
+        "                                   (default 0)\n"
+        "          fastpath=0|1          -> enable pmj fast path (bit-exact)\n"
+        "                                   (default 0)\n"
         "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
         "                                   (default raster)\n"
     },
@@ -871,6 +881,31 @@ static cli_env_help_t const g_env_help_table[] = {
         "set interframe STBN/PMJ noise strength for -d stbn.\n"
         "Accepts 0.0-2.0; defaults to 0.055.\n"
         "Overridden by -d stbn:strength=VALUE."
+    },
+    {
+        "SIXEL_DITHER_STBN_MOTION_ADAPT",
+        "toggle stbn motion adaptation for -d stbn (0 or 1).\n"
+        "Overridden by -d stbn:motion_adapt=0|1."
+    },
+    {
+        "SIXEL_DITHER_STBN_SCENE_CUT_RESET",
+        "toggle stbn scene-cut reset for -d stbn (0 or 1).\n"
+        "Overridden by -d stbn:scene_cut_reset=0|1."
+    },
+    {
+        "SIXEL_DITHER_STBN_ALPHA_GUARD",
+        "toggle stbn alpha-edge guard for -d stbn (0 or 1).\n"
+        "Overridden by -d stbn:alpha_guard=0|1."
+    },
+    {
+        "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT",
+        "toggle stbn perceptual channel weighting for -d stbn (0 or 1).\n"
+        "Overridden by -d stbn:perceptual_weight=0|1."
+    },
+    {
+        "SIXEL_DITHER_STBN_FASTPATH",
+        "toggle stbn pmj fast path for -d stbn (0 or 1).\n"
+        "Overridden by -d stbn:fastpath=0|1."
     },
     {
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE",

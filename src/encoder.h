@@ -76,6 +76,16 @@ struct sixel_encoder {
     int interframe_spatial_diffuse;
     int interframe_noise_strength_override;
     int interframe_noise_strength_u8;
+    int stbn_motion_adapt_override;
+    int stbn_motion_adapt_enabled;
+    int stbn_scene_cut_reset_override;
+    int stbn_scene_cut_reset_enabled;
+    int stbn_alpha_guard_override;
+    int stbn_alpha_guard_enabled;
+    int stbn_perceptual_weight_override;
+    int stbn_perceptual_weight_enabled;
+    int stbn_fastpath_override;
+    int stbn_fastpath_enabled;
     int bluenoise_strength_override;
     float bluenoise_strength;
     int bluenoise_phase_override;

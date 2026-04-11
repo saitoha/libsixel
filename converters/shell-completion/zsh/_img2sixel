@@ -58,7 +58,12 @@ _diffusiontype() {
     'stbn:strength=0.055[STBN/PMJ noise strength override]' \
     'stbn:source=hash:strength=0.055[hash source + noise override]' \
     'stbn:source=mask:strength=0.50[mask source + noise override]' \
-    'stbn:source=pmj:strength=0.50[pmj source + noise override]'
+    'stbn:source=pmj:strength=0.50[pmj source + noise override]' \
+    'stbn:motion_adapt=1[enable motion adaptive stbn strength]' \
+    'stbn:scene_cut_reset=1[reset stbn carry at frame boundaries]' \
+    'stbn:alpha_guard=1[suppress stbn near alpha edges]' \
+    'stbn:perceptual_weight=1[enable perceptual channel weighting]' \
+    'stbn:fastpath=1[enable pmj fast path]'
 }
 
 _findtype() {

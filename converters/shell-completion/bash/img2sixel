@@ -459,6 +459,12 @@ _img2sixel()
                                    stbn:source=hash:strength=0.055 \
                                    stbn:source=mask:strength=0.50 \
                                    stbn:source=pmj:strength=0.50 \
+                                   stbn:motion_adapt=1 \
+                                   stbn:scene_cut_reset=1 \
+                                   stbn:alpha_guard=1 \
+                                   stbn:perceptual_weight=1 \
+                                   stbn:fastpath=1 \
+                                   stbn:source=pmj:fastpath=1 \
                                    fs:scan=raster \
                                    fs:scan=serpentine \
                                    sierra:variant=1:scan=raster \

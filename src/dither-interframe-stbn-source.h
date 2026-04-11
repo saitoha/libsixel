@@ -72,6 +72,11 @@ typedef struct sixel_interframe_stbn_state_common {
     uint32_t sequence_index;
     uint8_t sample_source_id;
     int stbn_strength_u8;
+    int motion_adapt_enabled;
+    int scene_cut_reset_enabled;
+    int alpha_guard_enabled;
+    int perceptual_weight_enabled;
+    int fastpath_enabled;
     sixel_interframe_stbn_sample_u16_fn sample_u16;
     int pmj_cache_valid;
     int pmj_cache_depth;

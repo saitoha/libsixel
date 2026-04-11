@@ -889,6 +889,11 @@ static sixel_suboption_choice_t const g_option_choices_stbn_source[] = {
     { "pmj", SIXEL_INTERFRAME_STRATEGY_TOKEN_PMJ }
 };
 
+static sixel_suboption_choice_t const g_option_choices_toggle_01[] = {
+    { "0", 0 },
+    { "1", 1 }
+};
+
 static sixel_suboption_choice_t const g_option_choices_diffusion_scan[] = {
     { "auto", SIXEL_SCAN_AUTO },
     { "serpentine", SIXEL_SCAN_SERPENTINE },
@@ -1013,6 +1018,51 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
         g_option_choices_diffusion_scan,
         sizeof(g_option_choices_diffusion_scan)
         / sizeof(g_option_choices_diffusion_scan[0])
+    },
+    {
+        "motion_adapt",
+        NULL,
+        SIXEL_DITHER_STBN_MOTION_ADAPT_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_toggle_01,
+        sizeof(g_option_choices_toggle_01)
+        / sizeof(g_option_choices_toggle_01[0])
+    },
+    {
+        "scene_cut_reset",
+        NULL,
+        SIXEL_DITHER_STBN_SCENE_CUT_RESET_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_toggle_01,
+        sizeof(g_option_choices_toggle_01)
+        / sizeof(g_option_choices_toggle_01[0])
+    },
+    {
+        "alpha_guard",
+        NULL,
+        SIXEL_DITHER_STBN_ALPHA_GUARD_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_toggle_01,
+        sizeof(g_option_choices_toggle_01)
+        / sizeof(g_option_choices_toggle_01[0])
+    },
+    {
+        "perceptual_weight",
+        NULL,
+        SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_toggle_01,
+        sizeof(g_option_choices_toggle_01)
+        / sizeof(g_option_choices_toggle_01[0])
+    },
+    {
+        "fastpath",
+        NULL,
+        SIXEL_DITHER_STBN_FASTPATH_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_toggle_01,
+        sizeof(g_option_choices_toggle_01)
+        / sizeof(g_option_choices_toggle_01[0])
     }
 };
 
@@ -3537,6 +3587,26 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->interframe_noise_strength_override;
     context->dither->interframe_noise_strength_u8 =
         context->encoder->interframe_noise_strength_u8;
+    context->dither->stbn_motion_adapt_override =
+        context->encoder->stbn_motion_adapt_override;
+    context->dither->stbn_motion_adapt_enabled =
+        context->encoder->stbn_motion_adapt_enabled;
+    context->dither->stbn_scene_cut_reset_override =
+        context->encoder->stbn_scene_cut_reset_override;
+    context->dither->stbn_scene_cut_reset_enabled =
+        context->encoder->stbn_scene_cut_reset_enabled;
+    context->dither->stbn_alpha_guard_override =
+        context->encoder->stbn_alpha_guard_override;
+    context->dither->stbn_alpha_guard_enabled =
+        context->encoder->stbn_alpha_guard_enabled;
+    context->dither->stbn_perceptual_weight_override =
+        context->encoder->stbn_perceptual_weight_override;
+    context->dither->stbn_perceptual_weight_enabled =
+        context->encoder->stbn_perceptual_weight_enabled;
+    context->dither->stbn_fastpath_override =
+        context->encoder->stbn_fastpath_override;
+    context->dither->stbn_fastpath_enabled =
+        context->encoder->stbn_fastpath_enabled;
     context->dither->bluenoise_strength_override =
         context->encoder->bluenoise_strength_override;
     context->dither->bluenoise_strength = context->encoder->bluenoise_strength;
@@ -5725,6 +5795,16 @@ sixel_encoder_new(
     (*ppencoder)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     (*ppencoder)->interframe_noise_strength_override = 0;
     (*ppencoder)->interframe_noise_strength_u8 = 0;
+    (*ppencoder)->stbn_motion_adapt_override = 0;
+    (*ppencoder)->stbn_motion_adapt_enabled = 0;
+    (*ppencoder)->stbn_scene_cut_reset_override = 0;
+    (*ppencoder)->stbn_scene_cut_reset_enabled = 0;
+    (*ppencoder)->stbn_alpha_guard_override = 0;
+    (*ppencoder)->stbn_alpha_guard_enabled = 0;
+    (*ppencoder)->stbn_perceptual_weight_override = 0;
+    (*ppencoder)->stbn_perceptual_weight_enabled = 0;
+    (*ppencoder)->stbn_fastpath_override = 0;
+    (*ppencoder)->stbn_fastpath_enabled = 0;
     (*ppencoder)->bluenoise_strength_override = 0;
     (*ppencoder)->bluenoise_strength = 0.055f;
     (*ppencoder)->bluenoise_phase_override = 0;
@@ -7218,7 +7298,17 @@ sixel_encoder_resolve_interframe_suboptions(
     int *has_spatial_diffuse_override,
     int *spatial_diffuse,
     int *has_noise_strength_override,
-    int *noise_strength_u8)
+    int *noise_strength_u8,
+    int *has_motion_adapt_override,
+    int *motion_adapt_enabled,
+    int *has_scene_cut_reset_override,
+    int *scene_cut_reset_enabled,
+    int *has_alpha_guard_override,
+    int *alpha_guard_enabled,
+    int *has_perceptual_weight_override,
+    int *perceptual_weight_enabled,
+    int *has_fastpath_override,
+    int *fastpath_enabled)
 {
     SIXELSTATUS status;
     size_t index;
@@ -7241,7 +7331,17 @@ sixel_encoder_resolve_interframe_suboptions(
             has_spatial_diffuse_override == NULL ||
             spatial_diffuse == NULL ||
             has_noise_strength_override == NULL ||
-            noise_strength_u8 == NULL) {
+            noise_strength_u8 == NULL ||
+            has_motion_adapt_override == NULL ||
+            motion_adapt_enabled == NULL ||
+            has_scene_cut_reset_override == NULL ||
+            scene_cut_reset_enabled == NULL ||
+            has_alpha_guard_override == NULL ||
+            alpha_guard_enabled == NULL ||
+            has_perceptual_weight_override == NULL ||
+            perceptual_weight_enabled == NULL ||
+            has_fastpath_override == NULL ||
+            fastpath_enabled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -7251,6 +7351,16 @@ sixel_encoder_resolve_interframe_suboptions(
     *spatial_diffuse = SIXEL_DIFFUSE_FS;
     *has_noise_strength_override = 0;
     *noise_strength_u8 = 0;
+    *has_motion_adapt_override = 0;
+    *motion_adapt_enabled = 0;
+    *has_scene_cut_reset_override = 0;
+    *scene_cut_reset_enabled = 0;
+    *has_alpha_guard_override = 0;
+    *alpha_guard_enabled = 0;
+    *has_perceptual_weight_override = 0;
+    *perceptual_weight_enabled = 0;
+    *has_fastpath_override = 0;
+    *fastpath_enabled = 0;
     if (resolution->resolved_base_value != SIXEL_DIFFUSE_INTERFRAME) {
         return SIXEL_OK;
     }
@@ -7310,6 +7420,52 @@ sixel_encoder_resolve_interframe_suboptions(
             }
             *has_noise_strength_override = 1;
             *noise_strength_u8 = resolved_strength_u8;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "motion_adapt") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_motion_adapt_override = 1;
+            *motion_adapt_enabled = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "scene_cut_reset") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_scene_cut_reset_override = 1;
+            *scene_cut_reset_enabled = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "alpha_guard") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_alpha_guard_override = 1;
+            *alpha_guard_enabled = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "perceptual_weight")
+                == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_perceptual_weight_override = 1;
+            *perceptual_weight_enabled = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "fastpath") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_fastpath_override = 1;
+            *fastpath_enabled = resolved_choice;
         }
         ++index;
     }
@@ -8421,6 +8577,16 @@ sixel_encoder_setopt(
     int interframe_spatial_diffuse;
     int interframe_noise_strength_override;
     int interframe_noise_strength_u8;
+    int stbn_motion_adapt_override;
+    int stbn_motion_adapt_enabled;
+    int stbn_scene_cut_reset_override;
+    int stbn_scene_cut_reset_enabled;
+    int stbn_alpha_guard_override;
+    int stbn_alpha_guard_enabled;
+    int stbn_perceptual_weight_override;
+    int stbn_perceptual_weight_enabled;
+    int stbn_fastpath_override;
+    int stbn_fastpath_enabled;
     int bluenoise_strength_override;
     float bluenoise_strength;
     int bluenoise_phase_override;
@@ -8477,6 +8643,16 @@ sixel_encoder_setopt(
     interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     interframe_noise_strength_override = 0;
     interframe_noise_strength_u8 = 0;
+    stbn_motion_adapt_override = 0;
+    stbn_motion_adapt_enabled = 0;
+    stbn_scene_cut_reset_override = 0;
+    stbn_scene_cut_reset_enabled = 0;
+    stbn_alpha_guard_override = 0;
+    stbn_alpha_guard_enabled = 0;
+    stbn_perceptual_weight_override = 0;
+    stbn_perceptual_weight_enabled = 0;
+    stbn_fastpath_override = 0;
+    stbn_fastpath_enabled = 0;
     bluenoise_strength_override = 0;
     bluenoise_strength = 0.055f;
     bluenoise_phase_override = 0;
@@ -8633,7 +8809,17 @@ sixel_encoder_setopt(
             &interframe_spatial_diffuse_override,
             &interframe_spatial_diffuse,
             &interframe_noise_strength_override,
-            &interframe_noise_strength_u8);
+            &interframe_noise_strength_u8,
+            &stbn_motion_adapt_override,
+            &stbn_motion_adapt_enabled,
+            &stbn_scene_cut_reset_override,
+            &stbn_scene_cut_reset_enabled,
+            &stbn_alpha_guard_override,
+            &stbn_alpha_guard_enabled,
+            &stbn_perceptual_weight_override,
+            &stbn_perceptual_weight_enabled,
+            &stbn_fastpath_override,
+            &stbn_fastpath_enabled);
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_resolve_bluenoise_suboptions(
                 &d_resolution,
@@ -8664,6 +8850,18 @@ sixel_encoder_setopt(
         encoder->interframe_noise_strength_override
             = interframe_noise_strength_override;
         encoder->interframe_noise_strength_u8 = interframe_noise_strength_u8;
+        encoder->stbn_motion_adapt_override = stbn_motion_adapt_override;
+        encoder->stbn_motion_adapt_enabled = stbn_motion_adapt_enabled;
+        encoder->stbn_scene_cut_reset_override = stbn_scene_cut_reset_override;
+        encoder->stbn_scene_cut_reset_enabled = stbn_scene_cut_reset_enabled;
+        encoder->stbn_alpha_guard_override = stbn_alpha_guard_override;
+        encoder->stbn_alpha_guard_enabled = stbn_alpha_guard_enabled;
+        encoder->stbn_perceptual_weight_override
+            = stbn_perceptual_weight_override;
+        encoder->stbn_perceptual_weight_enabled
+            = stbn_perceptual_weight_enabled;
+        encoder->stbn_fastpath_override = stbn_fastpath_override;
+        encoder->stbn_fastpath_enabled = stbn_fastpath_enabled;
         encoder->bluenoise_strength_override = bluenoise_strength_override;
         encoder->bluenoise_strength = bluenoise_strength;
         encoder->bluenoise_phase_override = bluenoise_phase_override;

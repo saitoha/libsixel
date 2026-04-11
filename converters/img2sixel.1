@@ -342,6 +342,16 @@ sub-option:
 .br
 \fBstrength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
 .br
+\fBmotion_adapt=0|1\fP -> enable motion adaptive strength (default 0)
+.br
+\fBscene_cut_reset=0|1\fP -> reset carry at frame boundaries (default 0)
+.br
+\fBalpha_guard=0|1\fP -> suppress stbn near alpha edges (default 0)
+.br
+\fBperceptual_weight=0|1\fP -> apply perceptual channel weights (default 0)
+.br
+\fBfastpath=0|1\fP -> enable pmj fast path (bit-exact, default 0)
+.br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
@@ -1011,6 +1021,31 @@ Overridden by \fB\-d stbn:diffusion=KERNEL\fP.
 set interframe STBN/PMJ noise strength for \fB\-d stbn\fP.
 Accepts 0.0-2.0; defaults to 0.055.
 Overridden by \fB\-d stbn:strength=VALUE\fP.
+.TP 5
+.B SIXEL_DITHER_STBN_MOTION_ADAPT
+.br
+toggle stbn motion adaptation for \fB\-d stbn\fP (0 or 1).
+Overridden by \fB\-d stbn:motion_adapt=0|1\fP.
+.TP 5
+.B SIXEL_DITHER_STBN_SCENE_CUT_RESET
+.br
+toggle stbn scene-cut reset for \fB\-d stbn\fP (0 or 1).
+Overridden by \fB\-d stbn:scene_cut_reset=0|1\fP.
+.TP 5
+.B SIXEL_DITHER_STBN_ALPHA_GUARD
+.br
+toggle stbn alpha-edge guard for \fB\-d stbn\fP (0 or 1).
+Overridden by \fB\-d stbn:alpha_guard=0|1\fP.
+.TP 5
+.B SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT
+.br
+toggle stbn perceptual channel weighting for \fB\-d stbn\fP (0 or 1).
+Overridden by \fB\-d stbn:perceptual_weight=0|1\fP.
+.TP 5
+.B SIXEL_DITHER_STBN_FASTPATH
+.br
+toggle stbn PMJ fast path for \fB\-d stbn\fP (0 or 1).
+Overridden by \fB\-d stbn:fastpath=0|1\fP.
 .TP 5
 .B SIXEL_DITHER_BLUENOISE_STRENGTH
 .br

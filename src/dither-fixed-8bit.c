@@ -380,10 +380,12 @@ sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
     SIXELSTATUS status;
     sixel_interframe_stbn_state_t *stbn_state;
     int strategy_token;
+    size_t frame_bytes;
 
     status = SIXEL_OK;
     stbn_state = NULL;
     strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    frame_bytes = 0U;
 
     /*
      * STBN strategy reuses the shared interframe state so source backends can
@@ -411,6 +413,16 @@ sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
         (void **)&stbn_state);
     if (status != SIXEL_OK || stbn_state == NULL || can_update == 0) {
         return status;
+    }
+    if (*frame != NULL
+            && stbn_state->scene_cut_reset_enabled != 0
+            && dither != NULL
+            && dither->frame_context.valid != 0
+            && dither->frame_context.frame_no > 0) {
+        frame_bytes = dither->interframe_state.error_frame_size;
+        if (frame_bytes > 0U) {
+            memset(*frame, 0x00, frame_bytes);
+        }
     }
 
     return status;
@@ -493,6 +505,123 @@ sixel_interframe_stbn_bias_scaled_sampled_tiled(
     return bias_u8 * SIXEL_INTERFRAME_VARERR_SCALE;
 }
 
+static int
+sixel_interframe_stbn_motion_strength_u8_8bit(int strength_u8,
+                                              int32_t const *frame,
+                                              size_t base,
+                                              int depth)
+{
+    int n;
+    int32_t value32;
+    int64_t value64;
+    int64_t energy;
+    int64_t max_energy;
+    int scaled_u8;
+
+    n = 0;
+    value32 = 0;
+    value64 = 0;
+    energy = 0;
+    max_energy = 0;
+    scaled_u8 = 0;
+    if (strength_u8 <= 0 || frame == NULL || depth <= 0) {
+        return strength_u8;
+    }
+
+    for (n = 0; n < depth; ++n) {
+        value32 = frame[base + (size_t)n];
+        value64 = value32;
+        if (value64 < 0) {
+            value64 = -value64;
+        }
+        if (value64 > SIXEL_INTERFRAME_VARERR_MAX_VALUE) {
+            value64 = SIXEL_INTERFRAME_VARERR_MAX_VALUE;
+        }
+        energy += value64;
+    }
+    max_energy = (int64_t)depth * (int64_t)SIXEL_INTERFRAME_VARERR_MAX_VALUE;
+    if (max_energy <= 0) {
+        return strength_u8;
+    }
+
+    scaled_u8 = (int)((energy * 255 + (max_energy / 2)) / max_energy);
+    if (scaled_u8 < 0) {
+        scaled_u8 = 0;
+    } else if (scaled_u8 > 255) {
+        scaled_u8 = 255;
+    }
+
+    return (strength_u8 * scaled_u8 + 127) / 255;
+}
+
+static int
+sixel_interframe_stbn_perceptual_strength_u8_8bit(int strength_u8,
+                                                  int channel,
+                                                  int depth,
+                                                  int enabled)
+{
+    static int const weights_rgb_u8[3] = { 54, 183, 18 };
+
+    if (enabled == 0 || strength_u8 <= 0) {
+        return strength_u8;
+    }
+    if (depth != 3 || channel < 0 || channel >= 3) {
+        return strength_u8;
+    }
+
+    return (strength_u8 * weights_rgb_u8[channel] + 127) / 255;
+}
+
+static int
+sixel_interframe_alpha_guard_hit_8bit(unsigned char const *transparent_mask,
+                                     size_t transparent_mask_size,
+                                     int width,
+                                     int x,
+                                     int absolute_y)
+{
+    int max_rows;
+    size_t index;
+
+    max_rows = 0;
+    index = 0U;
+    if (transparent_mask == NULL || transparent_mask_size == 0U || width <= 0
+            || x < 0 || x >= width || absolute_y < 0) {
+        return 0;
+    }
+
+    max_rows = (int)(transparent_mask_size / (size_t)width);
+    if (absolute_y >= max_rows) {
+        return 0;
+    }
+
+    if (x > 0) {
+        index = (size_t)absolute_y * (size_t)width + (size_t)(x - 1);
+        if (index < transparent_mask_size && transparent_mask[index] != 0U) {
+            return 1;
+        }
+    }
+    if (x + 1 < width) {
+        index = (size_t)absolute_y * (size_t)width + (size_t)(x + 1);
+        if (index < transparent_mask_size && transparent_mask[index] != 0U) {
+            return 1;
+        }
+    }
+    if (absolute_y > 0) {
+        index = (size_t)(absolute_y - 1) * (size_t)width + (size_t)x;
+        if (index < transparent_mask_size && transparent_mask[index] != 0U) {
+            return 1;
+        }
+    }
+    if (absolute_y + 1 < max_rows) {
+        index = (size_t)(absolute_y + 1) * (size_t)width + (size_t)x;
+        if (index < transparent_mask_size && transparent_mask[index] != 0U) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static void
 sixel_interframe_stbn_load_pixel(
     sixel_dither_t *dither,
@@ -515,6 +644,10 @@ sixel_interframe_stbn_load_pixel(
     int use_pmj_row_cached;
     int use_pmj_tiled;
     int stbn_strength_u8;
+    int motion_adapt_enabled;
+    int perceptual_weight_enabled;
+    int fastpath_enabled;
+    int channel_strength_u8;
 
     n = 0;
     bias_scaled = 0;
@@ -525,6 +658,10 @@ sixel_interframe_stbn_load_pixel(
     use_pmj_row_cached = 0;
     use_pmj_tiled = 0;
     stbn_strength_u8 = SIXEL_INTERFRAME_STBN_V1_STRENGTH_U8;
+    motion_adapt_enabled = 0;
+    perceptual_weight_enabled = 0;
+    fastpath_enabled = 0;
+    channel_strength_u8 = 0;
     stbn_state = (sixel_interframe_stbn_state_t *)
         sixel_interframe_get_method_private(
             dither,
@@ -558,11 +695,26 @@ sixel_interframe_stbn_load_pixel(
         }
         sequence_index = stbn_state->sequence_index;
         stbn_strength_u8 = stbn_state->stbn_strength_u8;
+        motion_adapt_enabled = stbn_state->motion_adapt_enabled != 0;
+        perceptual_weight_enabled =
+            stbn_state->perceptual_weight_enabled != 0;
+        fastpath_enabled = stbn_state->fastpath_enabled != 0;
         if (stbn_state->sample_u16 != NULL) {
             sample_u16 = stbn_state->sample_u16;
         }
+        if (fastpath_enabled == 0) {
+            use_pmj_row_cached = 0;
+            use_pmj_tiled = 0;
+        }
     }
 
+    if (motion_adapt_enabled != 0) {
+        stbn_strength_u8 = sixel_interframe_stbn_motion_strength_u8_8bit(
+            stbn_strength_u8,
+            frame,
+            base,
+            depth);
+    }
     if (use_stbn_bias == 0 || stbn_strength_u8 <= 0) {
         return;
     }
@@ -575,7 +727,11 @@ sixel_interframe_stbn_load_pixel(
                 y,
                 n,
                 depth,
-                stbn_strength_u8);
+                sixel_interframe_stbn_perceptual_strength_u8_8bit(
+                    stbn_strength_u8,
+                    n,
+                    depth,
+                    perceptual_weight_enabled));
             if (bias_scaled == 0) {
                 continue;
             }
@@ -604,7 +760,11 @@ sixel_interframe_stbn_load_pixel(
                 y,
                 n,
                 depth,
-                stbn_strength_u8);
+                sixel_interframe_stbn_perceptual_strength_u8_8bit(
+                    stbn_strength_u8,
+                    n,
+                    depth,
+                    perceptual_weight_enabled));
             if (bias_scaled == 0) {
                 continue;
             }
@@ -626,6 +786,14 @@ sixel_interframe_stbn_load_pixel(
     }
 
     for (n = 0; n < depth; ++n) {
+        channel_strength_u8 = sixel_interframe_stbn_perceptual_strength_u8_8bit(
+            stbn_strength_u8,
+            n,
+            depth,
+            perceptual_weight_enabled);
+        if (channel_strength_u8 <= 0) {
+            continue;
+        }
         bias_scaled = sixel_interframe_stbn_bias_scaled_sampled(
             sample_u16,
             sequence_index,
@@ -633,7 +801,7 @@ sixel_interframe_stbn_load_pixel(
             y,
             n,
             depth,
-            stbn_strength_u8);
+            channel_strength_u8);
         if (bias_scaled == 0) {
             continue;
         }
@@ -979,6 +1147,9 @@ sixel_dither_apply_fixed_impl(
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+    sixel_interframe_stbn_state_t const *stbn_state;
+    int stbn_alpha_guard_enabled;
+    int alpha_guard_hit;
 
     if (depth > SIXEL_MAX_CHANNELS) {
         status = SIXEL_BAD_ARGUMENT;
@@ -989,6 +1160,9 @@ sixel_dither_apply_fixed_impl(
     transparent_mask_size = 0U;
     transparent_keycolor = (-1);
     use_transparent_fence = 0;
+    stbn_state = NULL;
+    stbn_alpha_guard_enabled = 0;
+    alpha_guard_hit = 0;
     if (dither != NULL
             && dither->pipeline_transparent_mask != NULL
             && dither->pipeline_transparent_keycolor >= 0
@@ -1097,6 +1271,17 @@ sixel_dither_apply_fixed_impl(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        if (use_interframe
+                && interframe_method == SIXEL_INTERFRAME_METHOD_STBN) {
+            stbn_state = (sixel_interframe_stbn_state_t const *)
+                sixel_interframe_get_method_private_const(
+                    dither,
+                    SIXEL_INTERFRAME_METHOD_STBN,
+                    sizeof(sixel_interframe_stbn_state_t));
+            if (stbn_state != NULL && stbn_state->alpha_guard_enabled != 0) {
+                stbn_alpha_guard_enabled = 1;
+            }
+        }
     }
 
     if (use_carry) {
@@ -1174,16 +1359,46 @@ sixel_dither_apply_fixed_impl(
                 }
                 continue;
             }
+            alpha_guard_hit = 0;
+            if (stbn_alpha_guard_enabled != 0 && use_transparent_fence != 0) {
+                alpha_guard_hit = sixel_interframe_alpha_guard_hit_8bit(
+                    transparent_mask,
+                    transparent_mask_size,
+                    width,
+                    x,
+                    absolute_y);
+            } else if (stbn_alpha_guard_enabled != 0
+                    && (x == 0 || y == 0
+                        || x == width - 1 || y == height - 1)) {
+                /*
+                 * When no transparent fence exists, keep alpha_guard from
+                 * becoming a no-op by applying a conservative border guard.
+                 */
+                alpha_guard_hit = 1;
+            }
             if (use_interframe) {
-                interframe_ops->load_pixel(dither,
-                                         data,
-                                         base,
-                                         x,
-                                         absolute_y,
-                                         depth,
-                                         interframe_error,
-                                         corrected,
-                                         accum_scaled);
+                if (alpha_guard_hit != 0
+                        && interframe_method == SIXEL_INTERFRAME_METHOD_STBN) {
+                    sixel_interframe_diffusion_load_pixel(dither,
+                                                        data,
+                                                        base,
+                                                        x,
+                                                        absolute_y,
+                                                        depth,
+                                                        interframe_error,
+                                                        corrected,
+                                                        accum_scaled);
+                } else {
+                    interframe_ops->load_pixel(dither,
+                                             data,
+                                             base,
+                                             x,
+                                             absolute_y,
+                                             depth,
+                                             interframe_error,
+                                             corrected,
+                                             accum_scaled);
+                }
                 source_pixel = corrected;
             } else if (use_carry) {
                 for (n = 0; n < depth; ++n) {

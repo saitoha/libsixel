@@ -1484,6 +1484,16 @@ sixel_dither_new(
     (*ppdither)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->interframe_noise_strength_override = 0;
     (*ppdither)->interframe_noise_strength_u8 = 0;
+    (*ppdither)->stbn_motion_adapt_override = 0;
+    (*ppdither)->stbn_motion_adapt_enabled = 0;
+    (*ppdither)->stbn_scene_cut_reset_override = 0;
+    (*ppdither)->stbn_scene_cut_reset_enabled = 0;
+    (*ppdither)->stbn_alpha_guard_override = 0;
+    (*ppdither)->stbn_alpha_guard_enabled = 0;
+    (*ppdither)->stbn_perceptual_weight_override = 0;
+    (*ppdither)->stbn_perceptual_weight_enabled = 0;
+    (*ppdither)->stbn_fastpath_override = 0;
+    (*ppdither)->stbn_fastpath_enabled = 0;
     (*ppdither)->bluenoise_strength_override = 0;
     (*ppdither)->bluenoise_strength = 0.055f;
     (*ppdither)->bluenoise_phase_override = 0;

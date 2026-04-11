@@ -96,6 +96,16 @@ struct sixel_dither {
     int interframe_spatial_diffuse; /* parsed interframe spatial diffusion */
     int interframe_noise_strength_override; /* CLI strength override flag */
     int interframe_noise_strength_u8; /* parsed interframe noise strength */
+    int stbn_motion_adapt_override; /* CLI motion adapt override flag */
+    int stbn_motion_adapt_enabled;  /* parsed motion adapt toggle */
+    int stbn_scene_cut_reset_override; /* CLI scene-cut reset override */
+    int stbn_scene_cut_reset_enabled; /* parsed scene-cut reset toggle */
+    int stbn_alpha_guard_override; /* CLI alpha guard override flag */
+    int stbn_alpha_guard_enabled;  /* parsed alpha guard toggle */
+    int stbn_perceptual_weight_override; /* CLI perceptual weight override */
+    int stbn_perceptual_weight_enabled; /* parsed perceptual weight toggle */
+    int stbn_fastpath_override;    /* CLI stbn fastpath override flag */
+    int stbn_fastpath_enabled;     /* parsed stbn fastpath toggle */
     int bluenoise_strength_override; /* CLI bluenoise strength flag */
     float bluenoise_strength;       /* parsed bluenoise strength */
     int bluenoise_phase_override;   /* CLI bluenoise phase flag */
