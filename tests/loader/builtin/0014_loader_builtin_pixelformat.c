@@ -4573,15 +4573,15 @@ run_builtin_loader_bmp_os2_huffman1d_makeup_chain_numeric_test(void)
         !bmp_numeric_append_huffman_bits(payload,
                                          sizeof(payload),
                                          &bit_count,
-                                         "11011") ||
+                                         "0000001111") ||
         !bmp_numeric_append_huffman_bits(payload,
                                          sizeof(payload),
                                          &bit_count,
-                                         "11011") ||
+                                         "0000001111") ||
         !bmp_numeric_append_huffman_bits(payload,
                                          sizeof(payload),
                                          &bit_count,
-                                         "00110101") ||
+                                         "0000110111") ||
         !bmp_numeric_append_huffman_eol(payload,
                                         sizeof(payload),
                                         &bit_count,
