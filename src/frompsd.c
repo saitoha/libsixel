@@ -11581,6 +11581,29 @@ sixel_builtin_psd_legacy_lrfx_mode_from_payload(
     return 1;
 }
 
+static float
+sixel_builtin_psd_lrfx_size_px(unsigned int version, uint32_t raw_size)
+{
+    double size_px;
+
+    size_px = 0.0;
+    if (raw_size == 0u) {
+        return 0.0f;
+    }
+    if (version >= 2u && raw_size > 0xffffu) {
+        size_px = (double)raw_size / 65536.0;
+    } else {
+        size_px = (double)raw_size;
+    }
+    if (size_px <= 0.0) {
+        return 0.0f;
+    }
+    if (size_px >= 128.0) {
+        return 128.0f;
+    }
+    return (float)size_px;
+}
+
 static int
 sixel_builtin_psd_legacy_lrfx_read_rgb_color(
     unsigned char const *data,
@@ -11704,10 +11727,9 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
             mode0 = SIXEL_BUILTIN_PSD_BLEND_SCREEN;
             if (payload_length >= 32u) {
                 version = sixel_builtin_read_u32be(payload);
-                size_px = (float)sixel_builtin_read_u32be(payload + 4u);
-                if (size_px > 128.0f) {
-                    size_px = 128.0f;
-                }
+                size_px = sixel_builtin_psd_lrfx_size_px(
+                    version,
+                    sixel_builtin_read_u32be(payload + 4u));
                 has_color0 = sixel_builtin_psd_legacy_lrfx_read_rgb_color(
                     payload + 12u,
                     payload_length - 12u,
@@ -11798,10 +11820,9 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
             version = 0u;
             if (payload_length >= 58u) {
                 version = sixel_builtin_read_u32be(payload);
-                size_px = (float)sixel_builtin_read_u32be(payload + 12u);
-                if (size_px > 128.0f) {
-                    size_px = 128.0f;
-                }
+                size_px = sixel_builtin_psd_lrfx_size_px(
+                    version,
+                    sixel_builtin_read_u32be(payload + 12u));
                 (void)sixel_builtin_psd_legacy_lrfx_mode_from_payload(
                     payload,
                     payload_length,
@@ -16971,6 +16992,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int traced_vector_mask_glow;
     int suppress_bevel_glow_proxy;
     int interior_effects_enabled;
+    int interior_glow_effects_enabled;
     int traced_interior_effects_skip;
     int use_split_glow_effects;
     int has_named_bevel;
@@ -17003,6 +17025,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     traced_vector_mask_glow = 0;
     suppress_bevel_glow_proxy = 0;
     interior_effects_enabled = 1;
+    interior_glow_effects_enabled = 1;
     traced_interior_effects_skip = 0;
     use_split_glow_effects = 0;
     has_named_bevel = 0;
@@ -17044,6 +17067,21 @@ sixel_builtin_psd_apply_layer_effects_subset(
     }
     interior_effects_enabled =
         sixel_builtin_psd_layer_interior_effects_enabled(layer);
+    interior_glow_effects_enabled = interior_effects_enabled;
+    if (layer->has_blend_interior_effects != 0 &&
+        layer->blend_interior_effects_enabled == 0 &&
+        layer->has_vector_stroke_style != 0 &&
+        layer->has_fill_payload != 0 &&
+        layer->red_channel_index < 0 &&
+        layer->gray_channel_index < 0 &&
+        layer->c_channel_index < 0) {
+        /*
+         * Stroke-composite style no-pixel stacks can encode infx=0 while still
+         * expecting overlay/stroke passes to survive. Keep overlays active, but
+         * hold back inner glow/choke/bevel-shadow proxies in this subset.
+         */
+        interior_glow_effects_enabled = 0;
+    }
     if (layer->has_effect_solid_overlay != 0) {
         if (interior_effects_enabled == 0) {
             traced_interior_effects_skip = 1;
@@ -17247,7 +17285,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     "builtin PSD: applying outer glow effect in layer fallback",
                     &traced_vector_mask_glow);
             }
-            if (interior_effects_enabled != 0 &&
+            if (interior_glow_effects_enabled != 0 &&
                 layer->has_effect_irsh != 0) {
                 sixel_builtin_psd_apply_named_glow_effect(
                     layer,
@@ -17261,7 +17299,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     "fallback",
                     &traced_vector_mask_glow);
             }
-            if (interior_effects_enabled != 0 &&
+            if (interior_glow_effects_enabled != 0 &&
                 layer->has_effect_irgl != 0) {
                 sixel_builtin_psd_apply_named_glow_effect(
                     layer,
@@ -17274,7 +17312,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     "builtin PSD: applying inner glow effect in layer fallback",
                     &traced_vector_mask_glow);
             }
-            if (interior_effects_enabled != 0 &&
+            if (interior_glow_effects_enabled != 0 &&
                 layer->has_effect_chfx != 0) {
                 sixel_builtin_psd_apply_named_glow_effect(
                     layer,
@@ -17302,7 +17340,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
                         "fallback",
                         &traced_vector_mask_glow);
                 }
-                if (interior_effects_enabled != 0 &&
+                if (interior_glow_effects_enabled != 0 &&
                     layer->effect_bevel_shadow_opacity > 0.0f) {
                     sixel_builtin_psd_apply_named_glow_effect(
                         layer,
@@ -17332,7 +17370,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
             }
             if (layer->has_effect_inner_glow != 0 &&
                 suppress_bevel_glow_proxy == 0 &&
-                interior_effects_enabled != 0) {
+                interior_glow_effects_enabled != 0) {
                 sixel_builtin_psd_apply_named_glow_effect(
                     layer,
                     src,
