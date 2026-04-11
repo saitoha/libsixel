@@ -42,12 +42,20 @@ extern "C" {
 #define SIXEL_FROMBMP_COMPRESSION_PNG        5u
 #define SIXEL_FROMBMP_COMPRESSION_ALPHABITFIELDS 6u
 #define SIXEL_FROMBMP_COMPRESSION_CMYK       11u
+#define SIXEL_FROMBMP_COMPRESSION_CMYKRLE8   12u
+#define SIXEL_FROMBMP_COMPRESSION_CMYKRLE4   13u
+#define SIXEL_FROMBMP_COMPRESSION_OS2_HUFFMAN1D 14u
+#define SIXEL_FROMBMP_COMPRESSION_OS2_RLE24  15u
+
+#define SIXEL_FROMBMP_DIB_FAMILY_WINDOWS 1
+#define SIXEL_FROMBMP_DIB_FAMILY_OS2     2
 
 typedef struct sixel_frombmp_probe {
     int width;
     int height;
     int bpp;
     int is_cmyk;
+    int dib_family;
     unsigned int compression;
     unsigned char const *payload;
     size_t payload_size;

@@ -154,6 +154,10 @@ verify_bmp_float_probe_metadata(char const *label,
                                 int expected_width,
                                 int expected_height);
 
+static int
+run_builtin_loader_bmp_expect_fail_case(char const *label,
+                                        char const *fixture_path);
+
 static SIXELSTATUS
 capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
 {
@@ -1969,56 +1973,11 @@ run_builtin_loader_bmp_rle8_absolute_padding_numeric_test(void)
 }
 
 static int
-run_builtin_loader_bmp_rle8_delta_numeric_test(void)
+run_builtin_loader_bmp_fail_rle8_delta_topdown_numeric_test(void)
 {
-    static unsigned char const expected_rgb[12] = {
-        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
-        0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u
-    };
-    builtin_loader_probe_options_t options;
-    bmp_numeric_probe_context_t probe;
-    SIXELSTATUS status;
-    int result;
-
-    status = SIXEL_FALSE;
-    memset(&options, 0, sizeof(options));
-    memset(&probe, 0, sizeof(probe));
-    result = 1;
-
-    options.require_static = 1;
-    options.use_palette = 0;
-    options.reqcolors = 256;
-    options.set_bgcolor = 0;
-    options.bgcolor = NULL;
-    options.set_loop_control = 0;
-    options.loop_control = SIXEL_LOOP_AUTO;
-    options.set_cms_engine = 0;
-    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
-
-    result = run_builtin_loader_probe_case(
-        "builtin loader bmp rle8 delta numeric",
-        "/tests/data/inputs/formats/bmp-info40-rle8-delta-2x2-topdown.bmp",
-        &options,
-        capture_bmp_numeric_probe,
-        &probe,
-        &status);
-    if (result != 0) {
-        return result;
-    }
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr,
-                "builtin loader bmp rle8 delta numeric: "
-                "loader failed (%d)\n",
-                (int)status);
-        return 1;
-    }
-    return verify_bmp_rgb_probe(
-        "builtin loader bmp rle8 delta numeric",
-        &probe,
-        2,
-        2,
-        expected_rgb,
-        sizeof(expected_rgb));
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail rle8 delta topdown numeric",
+        "/tests/data/inputs/formats/bmp-info40-rle8-delta-2x2-topdown.bmp");
 }
 
 static int
@@ -2205,6 +2164,107 @@ run_builtin_loader_bmp_expect_fail_case(char const *label,
                                            capture_bmp_numeric_probe,
                                            &probe,
                                            &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr, "%s: unexpected success\n", label);
+        return 1;
+    }
+    if (probe.callback_count != 0) {
+        fprintf(stderr, "%s: unexpected callback (%d)\n",
+                label,
+                probe.callback_count);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_rgb_buffer_case(char const *label,
+                                       unsigned char const *buffer,
+                                       size_t buffer_size,
+                                       int expected_width,
+                                       int expected_height,
+                                       unsigned char const *expected_rgb,
+                                       size_t expected_rgb_size)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_buffer_case(label,
+                                                  buffer,
+                                                  buffer_size,
+                                                  &options,
+                                                  capture_bmp_numeric_probe,
+                                                  &probe,
+                                                  &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: loader failed (%d)\n", label, (int)status);
+        return 1;
+    }
+    return verify_bmp_rgb_probe(label,
+                                &probe,
+                                expected_width,
+                                expected_height,
+                                expected_rgb,
+                                expected_rgb_size);
+}
+
+static int
+run_builtin_loader_bmp_expect_fail_buffer_case(char const *label,
+                                                unsigned char const *buffer,
+                                                size_t buffer_size)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(label,
+                                                  buffer,
+                                                  buffer_size,
+                                                  &options,
+                                                  capture_bmp_numeric_probe,
+                                                  &probe,
+                                                  &status);
     if (result != 0) {
         return result;
     }
@@ -2507,37 +2567,19 @@ end:
 }
 
 static int
-run_builtin_loader_bmp_rle8_topdown_numeric_test(void)
+run_builtin_loader_bmp_fail_rle8_topdown_numeric_test(void)
 {
-    static unsigned char const expected_rgb[12] = {
-        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
-        0x00u, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u
-    };
-
-    return run_builtin_loader_bmp_rgb_fixture_case(
-        "builtin loader bmp rle8 topdown numeric",
-        "/tests/data/inputs/formats/bmp-info40-rle8-topdown-2x2.bmp",
-        2,
-        2,
-        expected_rgb,
-        sizeof(expected_rgb));
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail rle8 topdown numeric",
+        "/tests/data/inputs/formats/bmp-info40-rle8-topdown-2x2.bmp");
 }
 
 static int
-run_builtin_loader_bmp_rle4_topdown_numeric_test(void)
+run_builtin_loader_bmp_fail_rle4_topdown_numeric_test(void)
 {
-    static unsigned char const expected_rgb[12] = {
-        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
-        0x00u, 0xffu, 0x00u, 0xffu, 0x00u, 0x00u
-    };
-
-    return run_builtin_loader_bmp_rgb_fixture_case(
-        "builtin loader bmp rle4 topdown numeric",
-        "/tests/data/inputs/formats/bmp-info40-rle4-topdown-2x2.bmp",
-        2,
-        2,
-        expected_rgb,
-        sizeof(expected_rgb));
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail rle4 topdown numeric",
+        "/tests/data/inputs/formats/bmp-info40-rle4-topdown-2x2.bmp");
 }
 
 static int
@@ -3650,20 +3692,11 @@ run_builtin_loader_bmp_cmyk_cms_off_numeric_test(void)
 }
 
 static int
-run_builtin_loader_bmp_cmyk_topdown_numeric_test(void)
+run_builtin_loader_bmp_fail_cmyk_topdown_numeric_test(void)
 {
-    static unsigned char const expected_rgb[12] = {
-        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u,
-        0x00u, 0xffu, 0xffu, 0xffu, 0x00u, 0xffu
-    };
-
-    return run_builtin_loader_bmp_rgb_fixture_case(
-        "builtin loader bmp cmyk topdown numeric",
-        "/tests/data/inputs/formats/bmp-info40-cmyk-32bpp-topdown-2x2.bmp",
-        2,
-        2,
-        expected_rgb,
-        sizeof(expected_rgb));
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail cmyk topdown numeric",
+        "/tests/data/inputs/formats/bmp-info40-cmyk-32bpp-topdown-2x2.bmp");
 }
 
 static int
@@ -3756,6 +3789,471 @@ run_builtin_loader_bmp_fail_cmyk_requires_32bpp_numeric_test(void)
     return run_builtin_loader_bmp_expect_fail_case(
         "builtin loader bmp fail cmyk requires 32bpp numeric",
         "/tests/data/inputs/formats/bmp-bad-info40-cmyk-24bpp.bmp");
+}
+
+static int
+run_builtin_loader_bmp_cmykrle8_decode_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0xffu, 0xffu,
+        0xffu, 0x00u, 0xffu, 0xffu, 0xffu, 0x00u
+    };
+    static unsigned char const bmp_cmykrle8_sample[] = {
+        0x42u, 0x4du, 0x54u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x46u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x08u, 0x00u, 0x0cu, 0x00u,
+        0x00u, 0x00u, 0x0eu, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu,
+        0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u, 0x01u, 0x02u,
+        0x01u, 0x03u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x01u,
+        0x00u, 0x00u, 0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_rgb_buffer_case(
+        "builtin loader bmp cmykrle8 decode numeric",
+        bmp_cmykrle8_sample,
+        sizeof(bmp_cmykrle8_sample),
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_cmykrle4_decode_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0xffu, 0xffu,
+        0xffu, 0x00u, 0xffu, 0xffu, 0xffu, 0x00u
+    };
+    static unsigned char const bmp_cmykrle4_sample[] = {
+        0x42u, 0x4du, 0x54u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x46u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x04u, 0x00u, 0x0du, 0x00u,
+        0x00u, 0x00u, 0x0eu, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu,
+        0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u, 0x02u, 0x23u,
+        0x00u, 0x00u, 0x02u, 0x01u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x00u, 0x00u, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_rgb_buffer_case(
+        "builtin loader bmp cmykrle4 decode numeric",
+        bmp_cmykrle4_sample,
+        sizeof(bmp_cmykrle4_sample),
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_fail_cmykrle8_requires_8bpp_numeric_test(void)
+{
+    static unsigned char const bmp_cmykrle8_bad_bpp_sample[] = {
+        0x42u, 0x4du, 0x3au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x36u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x04u, 0x00u, 0x0cu, 0x00u,
+        0x00u, 0x00u, 0x04u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail cmykrle8 requires 8bpp numeric",
+        bmp_cmykrle8_bad_bpp_sample,
+        sizeof(bmp_cmykrle8_bad_bpp_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_cmykrle4_requires_4bpp_numeric_test(void)
+{
+    static unsigned char const bmp_cmykrle4_bad_bpp_sample[] = {
+        0x42u, 0x4du, 0x3au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x36u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x08u, 0x00u, 0x0du, 0x00u,
+        0x00u, 0x00u, 0x04u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail cmykrle4 requires 4bpp numeric",
+        bmp_cmykrle4_bad_bpp_sample,
+        sizeof(bmp_cmykrle4_bad_bpp_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_cmykrle8_broken_stream_numeric_test(void)
+{
+    static unsigned char const bmp_cmykrle8_broken_stream_sample[] = {
+        0x42u, 0x4du, 0x4au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x46u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x08u, 0x00u, 0x0cu, 0x00u,
+        0x00u, 0x00u, 0x04u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu,
+        0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x03u,
+        0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail cmykrle8 broken stream numeric",
+        bmp_cmykrle8_broken_stream_sample,
+        sizeof(bmp_cmykrle8_broken_stream_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_cmykrle4_broken_stream_numeric_test(void)
+{
+    static unsigned char const bmp_cmykrle4_broken_stream_sample[] = {
+        0x42u, 0x4du, 0x4au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x46u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x04u, 0x00u, 0x0du, 0x00u,
+        0x00u, 0x00u, 0x04u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu,
+        0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x02u,
+        0x03u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail cmykrle4 broken stream numeric",
+        bmp_cmykrle4_broken_stream_sample,
+        sizeof(bmp_cmykrle4_broken_stream_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_cmykrle8_topdown_numeric_test(void)
+{
+    static unsigned char const bmp_cmykrle8_topdown_sample[] = {
+        0x42u, 0x4du, 0x3au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x36u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0xfeu, 0xffu,
+        0xffu, 0xffu, 0x01u, 0x00u, 0x08u, 0x00u, 0x0cu, 0x00u,
+        0x00u, 0x00u, 0x04u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail cmykrle8 topdown numeric",
+        bmp_cmykrle8_topdown_sample,
+        sizeof(bmp_cmykrle8_topdown_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_cmykrle4_topdown_numeric_test(void)
+{
+    static unsigned char const bmp_cmykrle4_topdown_sample[] = {
+        0x42u, 0x4du, 0x3au, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x36u, 0x00u, 0x00u, 0x00u, 0x28u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0xfeu, 0xffu,
+        0xffu, 0xffu, 0x01u, 0x00u, 0x04u, 0x00u, 0x0du, 0x00u,
+        0x00u, 0x00u, 0x04u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u,
+        0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail cmykrle4 topdown numeric",
+        bmp_cmykrle4_topdown_sample,
+        sizeof(bmp_cmykrle4_topdown_sample));
+}
+
+static int
+run_builtin_loader_bmp_os2_rgb24_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const bmp_os2_rgb24_sample[] = {
+        0x42u, 0x4du, 0x5eu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x4eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x18u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x10u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0xffu, 0x00u, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_rgb_buffer_case(
+        "builtin loader bmp os2 rgb24 numeric",
+        bmp_os2_rgb24_sample,
+        sizeof(bmp_os2_rgb24_sample),
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_rle8_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const bmp_os2_rle8_sample[] = {
+        0x42u, 0x4du, 0x6cu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x5eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x08u, 0x00u, 0x01u, 0x00u,
+        0x00u, 0x00u, 0x0eu, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0xffu, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u,
+        0x01u, 0x03u, 0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x01u,
+        0x00u, 0x00u, 0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_rgb_buffer_case(
+        "builtin loader bmp os2 rle8 numeric",
+        bmp_os2_rle8_sample,
+        sizeof(bmp_os2_rle8_sample),
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_rle4_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const bmp_os2_rle4_sample[] = {
+        0x42u, 0x4du, 0x68u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x5eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x04u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x0au, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0xffu, 0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x02u, 0x23u,
+        0x00u, 0x00u, 0x02u, 0x01u, 0x00u, 0x00u, 0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_rgb_buffer_case(
+        "builtin loader bmp os2 rle4 numeric",
+        bmp_os2_rle4_sample,
+        sizeof(bmp_os2_rle4_sample),
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const bmp_os2_huffman1d_sample[] = {
+        0x42u, 0x4du, 0x5cu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x56u, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u, 0x03u, 0x00u,
+        0x00u, 0x00u, 0x06u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0xffu,
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x35u, 0xc0u,
+        0x04u, 0x74u, 0x00u, 0x20u
+    };
+
+    return run_builtin_loader_bmp_rgb_buffer_case(
+        "builtin loader bmp os2 huffman1d numeric",
+        bmp_os2_huffman1d_sample,
+        sizeof(bmp_os2_huffman1d_sample),
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_rle24_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const bmp_os2_rle24_sample[] = {
+        0x42u, 0x4du, 0x64u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x4eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x18u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x16u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0xffu,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x01u, 0x00u, 0x00u, 0xffu, 0x01u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_rgb_buffer_case(
+        "builtin loader bmp os2 rle24 numeric",
+        bmp_os2_rle24_sample,
+        sizeof(bmp_os2_rle24_sample),
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_rle24_truncated_numeric_test(void)
+{
+    static unsigned char const bmp_os2_rle24_truncated_sample[] = {
+        0x42u, 0x4du, 0x51u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x4eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x18u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x03u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u, 0xffu,
+        0x00u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail os2 rle24 truncated numeric",
+        bmp_os2_rle24_truncated_sample,
+        sizeof(bmp_os2_rle24_truncated_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_huffman1d_invalid_numeric_test(void)
+{
+    static unsigned char const bmp_os2_huffman1d_invalid_sample[] = {
+        0x42u, 0x4du, 0x58u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x56u, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x01u, 0x00u, 0x03u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0xffu,
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail os2 huffman1d invalid numeric",
+        bmp_os2_huffman1d_invalid_sample,
+        sizeof(bmp_os2_huffman1d_invalid_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_rle24_absolute_overflow_numeric_test(void)
+{
+    static unsigned char const bmp_os2_rle24_absolute_overflow_sample[] = {
+        0x42u, 0x4du, 0x53u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x4eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x18u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x05u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x02u,
+        0x00u, 0x00u, 0xffu
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail os2 rle24 absolute overflow numeric",
+        bmp_os2_rle24_absolute_overflow_sample,
+        sizeof(bmp_os2_rle24_absolute_overflow_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_rle24_delta_numeric_test(void)
+{
+    static unsigned char const bmp_os2_rle24_delta_sample[] = {
+        0x42u, 0x4du, 0x52u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x4eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x02u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x18u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x04u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x02u,
+        0x03u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail os2 rle24 delta numeric",
+        bmp_os2_rle24_delta_sample,
+        sizeof(bmp_os2_rle24_delta_sample));
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_rle24_topdown_numeric_test(void)
+{
+    static unsigned char const bmp_os2_rle24_topdown_sample[] = {
+        0x42u, 0x4du, 0x50u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x4eu, 0x00u, 0x00u, 0x00u, 0x40u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0xfeu, 0xffu,
+        0xffu, 0xffu, 0x01u, 0x00u, 0x18u, 0x00u, 0x04u, 0x00u,
+        0x00u, 0x00u, 0x02u, 0x00u, 0x00u, 0x00u, 0x13u, 0x0bu,
+        0x00u, 0x00u, 0x13u, 0x0bu, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u
+    };
+
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail os2 rle24 topdown numeric",
+        bmp_os2_rle24_topdown_sample,
+        sizeof(bmp_os2_rle24_topdown_sample));
 }
 
 static SIXELSTATUS
@@ -7328,8 +7826,8 @@ run_builtin_loader_test(void)
           run_builtin_loader_bmp_topdown_24bpp_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_RLE8_ABSOLUTE_PADDING",
           run_builtin_loader_bmp_rle8_absolute_padding_numeric_test },
-        { "SIXEL_TEST_BMP_NUMERIC_RLE8_DELTA",
-          run_builtin_loader_bmp_rle8_delta_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_RLE8_DELTA_TOPDOWN",
+          run_builtin_loader_bmp_fail_rle8_delta_topdown_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_RLE4_MIXED",
           run_builtin_loader_bmp_rle4_mixed_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_RLE4_INVALID_DELTA_FAIL",
@@ -7360,10 +7858,10 @@ run_builtin_loader_test(void)
           run_builtin_loader_bmp_info40_32bpp_bitfields_no_alpha_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_V3_32_ALPHA_BGCOLOR_FLOAT32",
           run_builtin_loader_bmp_v3_alpha_bgcolor_float32_numeric_test },
-        { "SIXEL_TEST_BMP_NUMERIC_RLE8_TOPDOWN",
-          run_builtin_loader_bmp_rle8_topdown_numeric_test },
-        { "SIXEL_TEST_BMP_NUMERIC_RLE4_TOPDOWN",
-          run_builtin_loader_bmp_rle4_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_RLE8_TOPDOWN",
+          run_builtin_loader_bmp_fail_rle8_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_RLE4_TOPDOWN",
+          run_builtin_loader_bmp_fail_rle4_topdown_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_TRUNCATED_MASKS",
           run_builtin_loader_bmp_fail_truncated_masks_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_TRUNCATED_PIXEL_DATA",
@@ -7418,12 +7916,49 @@ run_builtin_loader_test(void)
         },
         { "SIXEL_TEST_BMP_NUMERIC_CMYK_CMS_OFF",
           run_builtin_loader_bmp_cmyk_cms_off_numeric_test },
-        { "SIXEL_TEST_BMP_NUMERIC_CMYK_TOPDOWN",
-          run_builtin_loader_bmp_cmyk_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYK_TOPDOWN",
+          run_builtin_loader_bmp_fail_cmyk_topdown_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_CMYK_EMBEDDED_ICC_CMS_ON",
           run_builtin_loader_bmp_cmyk_embedded_icc_cms_on_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYK_REQUIRES_32BPP",
-          run_builtin_loader_bmp_fail_cmyk_requires_32bpp_numeric_test }
+          run_builtin_loader_bmp_fail_cmyk_requires_32bpp_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_CMYKRLE8_DECODE",
+          run_builtin_loader_bmp_cmykrle8_decode_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_CMYKRLE4_DECODE",
+          run_builtin_loader_bmp_cmykrle4_decode_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYKRLE8_REQUIRES_8BPP",
+          run_builtin_loader_bmp_fail_cmykrle8_requires_8bpp_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYKRLE4_REQUIRES_4BPP",
+          run_builtin_loader_bmp_fail_cmykrle4_requires_4bpp_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYKRLE8_BROKEN_STREAM",
+          run_builtin_loader_bmp_fail_cmykrle8_broken_stream_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYKRLE4_BROKEN_STREAM",
+          run_builtin_loader_bmp_fail_cmykrle4_broken_stream_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYKRLE8_TOPDOWN",
+          run_builtin_loader_bmp_fail_cmykrle8_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYKRLE4_TOPDOWN",
+          run_builtin_loader_bmp_fail_cmykrle4_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_RGB24_DECODE",
+          run_builtin_loader_bmp_os2_rgb24_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_RLE8_DECODE",
+          run_builtin_loader_bmp_os2_rle8_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_RLE4_DECODE",
+          run_builtin_loader_bmp_os2_rle4_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_HUFFMAN1D_DECODE",
+          run_builtin_loader_bmp_os2_huffman1d_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_RLE24_DECODE",
+          run_builtin_loader_bmp_os2_rle24_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_RLE24_TRUNCATED",
+          run_builtin_loader_bmp_fail_os2_rle24_truncated_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_HUFFMAN1D_INVALID_CODE",
+          run_builtin_loader_bmp_fail_os2_huffman1d_invalid_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_RLE24_ABSOLUTE_OVERFLOW",
+          run_builtin_loader_bmp_fail_os2_rle24_absolute_overflow_numeric_test
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_RLE24_DELTA_RANGE",
+          run_builtin_loader_bmp_fail_os2_rle24_delta_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_RLE24_TOPDOWN",
+          run_builtin_loader_bmp_fail_os2_rle24_topdown_numeric_test }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
         { "SIXEL_TEST_TGA_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
