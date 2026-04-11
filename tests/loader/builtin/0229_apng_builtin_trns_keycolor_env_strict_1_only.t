@@ -19,7 +19,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-env0.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
               -Lbuiltin! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_invalid}" || {
     echo "not ok 1 - builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 render failed"
     exit 0
@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Lbuiltin! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
     exit 0

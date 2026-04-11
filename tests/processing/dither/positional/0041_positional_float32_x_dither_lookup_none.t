@@ -16,7 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d x_dither -y raster --precision=float32 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d x_dither:scan=raster --precision=float32 \
         --lookup-policy=none -p 16 -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional float32 x_dither lookup none failed"
     exit 0

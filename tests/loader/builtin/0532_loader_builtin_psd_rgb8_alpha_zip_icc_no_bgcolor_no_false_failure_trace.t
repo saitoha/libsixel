@@ -17,7 +17,7 @@ output_text=''
 status_code=0
 
 output_text=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
-    -d fs -y raster "${input_psd}" 2>&1) || status_code=$?
+    -d fs:scan=raster "${input_psd}" 2>&1) || status_code=$?
 
 test "${status_code}" -eq 0 || {
     echo "not ok 1 - builtin PSD RGB8 alpha ZIP ICC render failed without --bgcolor"

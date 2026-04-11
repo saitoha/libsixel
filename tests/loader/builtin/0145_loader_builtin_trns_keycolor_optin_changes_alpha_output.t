@@ -19,7 +19,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-alpha-env0-basn4a08.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin alpha default render failed"
     exit 0
@@ -28,7 +28,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_THREADS=4 \
               -Lbuiltin:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - builtin alpha SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
     exit 0

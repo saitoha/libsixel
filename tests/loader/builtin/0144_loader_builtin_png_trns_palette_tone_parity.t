@@ -24,7 +24,7 @@ out_libpng="${ARTIFACT_LOCAL_DIR}/libpng_trns_keycolor_tm3n3p02.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR= \
               -Lbuiltin:cms_engine=none! \
-              -d none -y raster \
+              -d none:scan=raster \
               "${input_png}" >"${out_builtin}" || {
     echo "not ok" 1 - "builtin palette+tRNS keycolor decode failed"
     exit 0
@@ -32,7 +32,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR= \
               -Llibpng:cms_engine=none! \
-              -d none -y raster \
+              -d none:scan=raster \
               "${input_png}" >"${out_libpng}" || {
     echo "not ok" 1 - "libpng palette+tRNS keycolor decode failed"
     exit 0

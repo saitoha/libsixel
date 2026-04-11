@@ -23,7 +23,7 @@ output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-fs-serial-tbbn0g04.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=1 \
               -Llibpng:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - fixed fs serial render failed"
     exit 0

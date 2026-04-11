@@ -22,7 +22,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out="${ARTIFACT_LOCAL_DIR}/trns-keycolor-repeated-long-last1-tbbn0g04.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              -Llibpng:cms_engine=none! -d fs -y raster \
+              -Llibpng:cms_engine=none! -d fs:scan=raster \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - repeated long --env render failed"
     exit 0

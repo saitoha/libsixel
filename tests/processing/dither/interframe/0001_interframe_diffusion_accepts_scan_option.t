@@ -16,7 +16,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d interframe -y serpentine -p 16 \
+    -d interframe:scan=serpentine -p 16 \
     -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "interframe with scan option failed"
     exit 0
@@ -27,5 +27,5 @@ test -s "${output_sixel}" || {
     exit 0
 }
 
-echo "ok" 1 - "interframe accepts -y scan option"
+echo "ok" 1 - "interframe accepts diffusion scan suboption"
 exit 0

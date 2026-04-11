@@ -23,7 +23,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -~ none -y raster -W oklab -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -~ none -d none:scan=raster -W oklab -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional float32 with diffusion disabled lsqa failed"
     exit 0
 }

@@ -24,7 +24,7 @@ out_optin="${ARTIFACT_LOCAL_DIR}/trns-keycolor-palette-optin-tbbn3p08.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - palette default render failed"
     exit 0
@@ -33,7 +33,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_optin}" || {
     echo "not ok 1 - palette opt-in render failed"
     exit 0

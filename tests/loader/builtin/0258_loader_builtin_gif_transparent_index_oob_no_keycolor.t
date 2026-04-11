@@ -18,7 +18,7 @@ out_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_index_oob.six"
 keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
-              -Lbuiltin! -ldisable -d fs -y raster \
+              -Lbuiltin! -ldisable -d fs:scan=raster \
               "${input_gif}" >"${out_six}" || {
     echo "not ok" 1 - "transparent-index-oob GIF decode failed"
     exit 0

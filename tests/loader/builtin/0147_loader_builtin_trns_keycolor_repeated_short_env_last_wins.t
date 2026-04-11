@@ -17,7 +17,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-repeated-short-last0-tbbn0g04.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              -Lbuiltin:cms_engine=none! -d fs -y raster \
+              -Lbuiltin:cms_engine=none! -d fs:scan=raster \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - builtin repeated short -% render failed"
     exit 0

@@ -16,7 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d a_dither -y raster --precision=8bit -p 16! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d a_dither:scan=raster --precision=8bit -p 16! \
         -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional 8-bit a_dither forced palette failed"
     exit 0

@@ -23,7 +23,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d a_dither -y raster -W gamma -o "${output_sixel}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d a_dither:scan=raster -W gamma -o "${output_sixel}" \
     "${input_image}" || {
     echo "not ok" 1 - "positional 8-bit a_dither gamma lsqa failed"
     exit 0

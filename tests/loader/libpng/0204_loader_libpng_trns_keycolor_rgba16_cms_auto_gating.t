@@ -24,7 +24,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/libpng-trns-keycolor-rgba16-cms-auto-off.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Llibpng:cms_engine=auto! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_on}" || {
     echo "not ok 1 - libpng rgba16 cms=auto opt-in render failed"
     exit 0
@@ -32,7 +32,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=auto! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - libpng rgba16 cms=auto opt-out render failed"
     exit 0

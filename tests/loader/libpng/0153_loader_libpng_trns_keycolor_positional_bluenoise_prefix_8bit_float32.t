@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               --env SIXEL_THREADS=4 \
               --env SIXEL_DITHER_BLUENOISE_SEED=123 \
               -Llibpng:cms_engine=none! \
-              -d bluenoise -y raster --precision=float32 \
+              -d bluenoise:scan=raster --precision=float32 \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - bluenoise float32 render failed"
     exit 0

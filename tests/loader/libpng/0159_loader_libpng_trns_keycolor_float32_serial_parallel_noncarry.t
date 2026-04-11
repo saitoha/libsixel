@@ -23,7 +23,7 @@ output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-float32-fs-parallel-tbbn0g04.six
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
-              -d fs -y raster --precision=float32 \
+              -d fs:scan=raster --precision=float32 \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - float32 fs parallel render failed"
     exit 0

@@ -16,7 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d x_dither -y serpentine --precision=float32 -p 16 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d x_dither:scan=serpentine --precision=float32 -p 16 \
         -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional float32 x_dither serpentine failed"
     exit 0

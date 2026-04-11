@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               --env SIXEL_THREADS=1 \
               -Llibpng:cms_engine=none! \
               --precision=float32 \
-              -d x_dither -y raster \
+              -d x_dither:scan=raster \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - positional float32 serial render failed"
     exit 0

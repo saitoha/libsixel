@@ -17,7 +17,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_BLUENOISE_CHANNEL=rgb \
-        -d bluenoise -y raster --precision=8bit -p 16 \
+        -d bluenoise:scan=raster --precision=8bit -p 16 \
         -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional 8-bit bluenoise rgb channel env failed"
     exit 0

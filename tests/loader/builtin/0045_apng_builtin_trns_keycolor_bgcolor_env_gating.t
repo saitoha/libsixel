@@ -19,7 +19,7 @@ out_off="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-bg-off.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_BGCOLOR=white \
-              -Lbuiltin! -d fs -y raster \
+              -Lbuiltin! -d fs:scan=raster \
               "${input_png}" >"${out_on}" || {
     echo "not ok 1 - process SIXEL_BGCOLOR + builtin APNG opt-in render failed"
     exit 0
@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_BGCOLOR=white \
-              -Lbuiltin! -d fs -y raster \
+              -Lbuiltin! -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - process SIXEL_BGCOLOR + builtin APNG opt-out render failed"
     exit 0

@@ -17,7 +17,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_X_DITHER_STRENGTH=abc \
-        -d x_dither -y raster --precision=float32 -p 16 \
+        -d x_dither:scan=raster --precision=float32 -p 16 \
         -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional float32 x_dither invalid strength env failed"
     exit 0

@@ -20,7 +20,7 @@ keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               -Lbuiltin! \
-              -ldisable -d fs -y raster \
+              -ldisable -d fs:scan=raster \
               "${input_gif}" >"${out_default}" || {
     echo "not ok" 1 - "builtin transparent GIF default decode failed"
     exit 0
@@ -29,7 +29,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin! \
-              -ldisable -d fs -y raster \
+              -ldisable -d fs:scan=raster \
               "${input_gif}" >"${out_bgcolor}" || {
     echo "not ok" 1 - "builtin transparent GIF with bgcolor decode failed"
     exit 0

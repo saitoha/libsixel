@@ -18,7 +18,7 @@ float32_output=$(
         --threads=1 \
         --precision=float32 \
         -S -T 0 \
-        -d interframe -y serpentine -p 16 \
+        -d interframe:scan=serpentine -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "interframe float32 with scan option failed"
@@ -30,5 +30,5 @@ test -n "${float32_output}" || {
     exit 0
 }
 
-echo "ok" 1 - "interframe float32 accepts -y scan option"
+echo "ok" 1 - "interframe float32 accepts diffusion scan suboption"
 exit 0

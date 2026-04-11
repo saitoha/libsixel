@@ -19,14 +19,14 @@ out_default="${ARTIFACT_LOCAL_DIR}/builtin-trns-keycolor-default-basn4a08.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR= \
               -Lbuiltin:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_empty}" || {
     echo "not ok 1 - builtin empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR render failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin default render failed"
     exit 0

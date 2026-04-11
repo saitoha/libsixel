@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
               --precision=8bit \
-              -d a_dither -y raster \
+              -d a_dither:scan=raster \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - a_dither 8bit render failed"
     exit 0

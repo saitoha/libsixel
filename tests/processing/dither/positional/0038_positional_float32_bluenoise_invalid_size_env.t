@@ -17,7 +17,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_BLUENOISE_SIZE=63 \
-        -d bluenoise -y raster --precision=float32 -p 16 \
+        -d bluenoise:scan=raster --precision=float32 -p 16 \
         -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional float32 bluenoise invalid size env failed"
     exit 0

@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_LOOKUP_POLICY=bogus \
               --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - lookup policy=bogus opt-in render failed"
     exit 0

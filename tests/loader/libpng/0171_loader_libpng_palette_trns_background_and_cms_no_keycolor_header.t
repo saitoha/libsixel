@@ -26,7 +26,7 @@ out_has_header=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! \
               -B#ffffff \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - cms=1 background render failed"
     exit 0

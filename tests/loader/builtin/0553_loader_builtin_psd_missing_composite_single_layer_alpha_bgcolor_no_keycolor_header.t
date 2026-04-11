@@ -17,7 +17,7 @@ output_bg=''
 status_bg=0
 
 output_bg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
-    -d fs -y raster -B "#000000" "${input_psd}" 2>&1) || status_bg=$?
+    -d fs:scan=raster -B "#000000" "${input_psd}" 2>&1) || status_bg=$?
 
 test "${status_bg}" -eq 0 || {
     echo "not ok 1 - missing-composite single-layer RGB8+alpha render failed with --bgcolor"

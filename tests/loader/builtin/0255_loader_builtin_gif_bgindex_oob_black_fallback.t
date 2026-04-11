@@ -19,14 +19,14 @@ out_valid="${ARTIFACT_LOCAL_DIR}/builtin_gif_bgindex_valid.six"
 out_oob="${ARTIFACT_LOCAL_DIR}/builtin_gif_bgindex_oob.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
-              -Lbuiltin! -S -ldisable -d none -p 256 -y raster \
+              -Lbuiltin! -S -ldisable -d none:scan=raster -p 256 \
               "${valid_gif}" >"${out_valid}" || {
     echo "not ok" 1 - "builtin valid bgindex decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
-              -Lbuiltin! -S -ldisable -d none -p 256 -y raster \
+              -Lbuiltin! -S -ldisable -d none:scan=raster -p 256 \
               "${oob_gif}" >"${out_oob}" || {
     echo "not ok" 1 - "builtin oob bgindex decode failed"
     exit 0

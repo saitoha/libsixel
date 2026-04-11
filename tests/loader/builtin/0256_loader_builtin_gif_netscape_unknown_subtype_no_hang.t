@@ -16,7 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-unknown-subtype.gif"
 out_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_netscape_unknown_subtype.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 -Lbuiltin! -lforce -d none -p 256 -y raster \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 -Lbuiltin! -lforce -d none:scan=raster -p 256 \
     "${input_gif}" >"${out_six}" 2>/dev/null &
 pid=$!
 

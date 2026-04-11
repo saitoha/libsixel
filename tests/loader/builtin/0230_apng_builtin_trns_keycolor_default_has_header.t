@@ -20,7 +20,7 @@ out_payload=''
 has_header=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin APNG default render failed"
     exit 0

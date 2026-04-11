@@ -21,7 +21,7 @@ lsqa_floor=0.999
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=1 \
-              -Lbuiltin! -ldisable -d none -p 256 -y raster -g \
+              -Lbuiltin! -ldisable -d none:scan=raster -p 256 -g \
               "${input_gif}" >"${output_six}" || {
     echo "not ok" 1 - "LCT/GCT switch GIF frame2 decode failed"
     exit 0

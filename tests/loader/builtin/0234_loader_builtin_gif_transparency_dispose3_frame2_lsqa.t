@@ -22,7 +22,7 @@ lsqa_floor=0.995
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=2 \
               -Lbuiltin! \
-              -ldisable -d none -p 256 -y raster -g \
+              -ldisable -d none:scan=raster -p 256 -g \
               "${input_gif}" >"${output_six}" || {
     echo "not ok" 1 - "builtin transparent dispose3 frame2 decode failed"
     exit 0

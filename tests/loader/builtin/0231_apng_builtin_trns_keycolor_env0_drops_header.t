@@ -21,7 +21,7 @@ has_header=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Lbuiltin! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
     echo "not ok 1 - builtin APNG render failed with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
     exit 0

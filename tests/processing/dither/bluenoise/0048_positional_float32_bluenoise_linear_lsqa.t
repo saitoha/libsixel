@@ -23,7 +23,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d bluenoise -y raster -W linear -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d bluenoise:scan=raster -W linear -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "positional float32 bluenoise linear lsqa failed"
     exit 0
 }

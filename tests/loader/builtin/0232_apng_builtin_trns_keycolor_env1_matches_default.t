@@ -18,7 +18,7 @@ out_default="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-default-vs-env1-de
 out_env1="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-default-vs-env1-env1.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin APNG default render failed"
     exit 0
@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Lbuiltin! \
-              -d fs -y raster \
+              -d fs:scan=raster \
               "${input_png}" >"${out_env1}" || {
     echo "not ok 1 - builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
     exit 0

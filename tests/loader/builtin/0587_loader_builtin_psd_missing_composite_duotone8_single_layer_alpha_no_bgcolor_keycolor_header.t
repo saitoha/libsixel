@@ -17,7 +17,7 @@ output_no=''
 status_no=0
 
 output_no=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
-    -d fs -y raster "${input_psd}" 2>&1) || status_no=$?
+    -d fs:scan=raster "${input_psd}" 2>&1) || status_no=$?
 
 test "${status_no}" -eq 0 || {
     echo "not ok 1 - missing-composite single-layer Duotone8+alpha render failed without --bgcolor"
