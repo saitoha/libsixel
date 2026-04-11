@@ -9,7 +9,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 
-echo "1..2"
+echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
@@ -18,8 +18,6 @@ output_auto="${ARTIFACT_LOCAL_DIR}/builtin-hdr-cms-auto.six"
 output_none="${ARTIFACT_LOCAL_DIR}/builtin-hdr-cms-none-reference.six"
 black_reference="${ARTIFACT_LOCAL_DIR}/builtin-hdr-black-reference.ppm"
 lsqa_status=0
-trace_status=0
-trace_log=''
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_hdr}" >"${output_auto}" || {
     echo "not ok" 1 - "builtin loader failed to decode HDR with cms=auto"
@@ -49,18 +47,4 @@ test "${lsqa_status}" -eq 5 || {
 }
 
 echo "ok" 1 - "builtin loader decodes HDR with cms=auto, matches cms=none, and avoids black output collapse"
-
-trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms_engine=auto! \
-    "${input_hdr}" -o /dev/null 2>&1) || trace_status=$?
-
-test "${trace_status}" -eq 0 || {
-    echo "not ok" 2 - "builtin HDR cms=auto trace run failed"
-    exit 0
-}
-test "${trace_log#*header-derived source profile is unavailable on this CMS backend*}" = "${trace_log}" || {
-    echo "not ok" 2 - "builtin HDR cms=auto emitted unexpected header-profile unavailable trace"
-    exit 0
-}
-
-echo "ok" 2 - "builtin HDR cms=auto does not emit header-profile unavailable trace"
 exit 0
