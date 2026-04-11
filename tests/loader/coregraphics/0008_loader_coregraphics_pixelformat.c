@@ -97,7 +97,7 @@ typedef enum coregraphics_pixelformat_case_id {
     COREGRAPHICS_PIXELFORMAT_INDEXED_PAL8,
     COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_POLICY,
     COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_ICC_GAMA_POLICY,
-    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK,
+    COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FB_MASK,
     COREGRAPHICS_PIXELFORMAT_INDEXED_REQCOLORS_FALLBACK_RGB,
     COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_FALLBACK_MASK,
     COREGRAPHICS_PIXELFORMAT_INDEXED_ALPHA_BG_COMPOSITE,
@@ -1875,7 +1875,7 @@ static int
 run_coregraphics_indexed_keycolor_reqcolors_fallback_mask_test(void)
 {
     return run_coregraphics_pixelformat_case_by_id(
-        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK);
+        COREGRAPHICS_PIXELFORMAT_INDEXED_KEYCOLOR_REQCOLORS_FB_MASK);
 }
 
 static int
@@ -2187,7 +2187,7 @@ run_coregraphics_loader_test(void)
           run_coregraphics_indexed_keycolor_policy_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_ICC_GAMA_POLICY",
           run_coregraphics_indexed_keycolor_icc_gama_policy_test },
-        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_REQCOLORS_FALLBACK_MASK",
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_KEYCOLOR_REQCOLORS_FB_MASK",
           run_coregraphics_indexed_keycolor_reqcolors_fallback_mask_test },
         { "SIXEL_TEST_COREGRAPHICS_INDEXED_REQCOLORS_FALLBACK_RGB",
           run_coregraphics_indexed_reqcolors_fallback_rgb_test },

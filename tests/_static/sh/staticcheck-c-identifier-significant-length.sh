@@ -24,7 +24,9 @@ git -c core.quotepath=false ls-files -- \
     'src/*.c' \
     'src/*.h' \
     'include/*.h' \
-    'include/*.h.in' > "$tmpfile" || true
+    'include/*.h.in' \
+    'tests/**/*.c' \
+    'tests/**/*.h' > "$tmpfile" || true
 
 if test ! -s "$tmpfile"; then
     echo "ok 1 # SKIP no tracked C/C header files"
