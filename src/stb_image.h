@@ -2556,12 +2556,10 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
    }
 }
 
-static stbi__uint16 stbi__clamp_16(int x, int max_value)
+static stbi__uint16 stbi__clamp_16(stbi__idct_int x, int max_value)
 {
-   if ((unsigned int)x > (unsigned int)max_value) {
-      if (x < 0) return 0;
-      return (stbi__uint16)max_value;
-   }
+   if (x < 0) return 0;
+   if (x > (stbi__idct_int)max_value) return (stbi__uint16)max_value;
    return (stbi__uint16)x;
 }
 
