@@ -28,21 +28,13 @@ test "${command_status}" -eq 0 || {
 case "${trace_log}" in
     *"builtin PSD: malformed embedded ICC resource"*|\
     *"builtin PSD: failed to apply embedded ICC profile"*|\
-    *"builtin PSD: skipping embedded ICC conversion for Lab custom decode path"*)
+    *"builtin PSD: skipping embedded ICC conversion for Lab custom decode path"*|\
+    *"builtin PSD: skipping embedded ICC conversion for CIELAB path (cms backend unsupported)"*)
         echo "not ok" 1 - "Lab ZIP+Prediction produced unexpected ICC trace"
         exit 0
         ;;
     *)
         echo "ok" 1 - "Lab ZIP+Prediction keeps ICC trace contract without false failure"
-        ;;
-esac
-
-case "${trace_log}" in
-    *"builtin PSD: skipping embedded ICC conversion for CIELAB path (cms backend unsupported)"*)
-        echo "# backend without CMS CIELAB path reported skip as expected"
-        ;;
-    *)
-        :
         ;;
 esac
 

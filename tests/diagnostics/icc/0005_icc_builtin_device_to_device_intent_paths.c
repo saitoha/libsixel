@@ -13,6 +13,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_MATH_H
+#include <math.h>
+#endif
 
 #if HAVE_STDINT_H
 #include <stdint.h>
@@ -34,12 +37,17 @@
 #define icc_build_matrix_block icc0005_build_matrix_block
 #define icc_build_clut_block_mode icc0005_build_clut_block_mode
 #define icc_build_mab_mode_tag icc0005_build_mab_mode_tag
+#define icc_select_tag_signature icc0005_select_tag_signature
 #define icc_pack_profile icc0005_pack_profile
 #define icc_build_src_profile icc0005_build_src_profile
 #define icc_build_dst_profile icc0005_build_dst_profile
+#define icc_build_dst_profile_cmyk icc0005_build_dst_profile_cmyk
 #define expect_slot_channel icc0005_expect_slot_channel
+#define expect_slot_channel_cmyk icc0005_expect_slot_channel_cmyk
 #define check_transform_rgb8 icc0005_check_transform_rgb8
 #define check_transform_rgb8_fails icc0005_check_transform_rgb8_fails
+#define check_transform_rgb8_to_cmyk8 icc0005_check_transform_rgb8_to_cmyk8
+#define check_transform_lab_f32_identity icc0005_check_transform_lab_f32_identity
 #define test_setenv icc0005_test_setenv
 
 #define ICC_TAG_TABLE_OFFSET 128u
@@ -279,6 +287,47 @@ icc_build_mab_mode_tag(unsigned char *tag,
     return total_length;
 }
 
+static void
+icc_select_tag_signature(char out_signature[4],
+                         int use_alt_family,
+                         unsigned int slot,
+                         int forward_direction)
+{
+    static char const default_forward[3][4] = {
+        { 'A', '2', 'B', '0' },
+        { 'A', '2', 'B', '1' },
+        { 'A', '2', 'B', '2' }
+    };
+    static char const default_reverse[3][4] = {
+        { 'B', '2', 'A', '0' },
+        { 'B', '2', 'A', '1' },
+        { 'B', '2', 'A', '2' }
+    };
+    static char const alt_forward[3][4] = {
+        { 'D', '2', 'B', '0' },
+        { 'D', '2', 'B', '1' },
+        { 'D', '2', 'B', '2' }
+    };
+    static char const alt_reverse[3][4] = {
+        { 'B', '2', 'D', '0' },
+        { 'B', '2', 'D', '1' },
+        { 'B', '2', 'D', '2' }
+    };
+    char const (*table)[4];
+
+    table = NULL;
+    if (out_signature == NULL || slot >= 3u) {
+        return;
+    }
+
+    if (forward_direction) {
+        table = use_alt_family ? alt_forward : default_forward;
+    } else {
+        table = use_alt_family ? alt_reverse : default_reverse;
+    }
+    memcpy(out_signature, table[slot], 4u);
+}
+
 static int
 icc_pack_profile(unsigned char *profile,
                  size_t profile_capacity,
@@ -335,6 +384,7 @@ icc_build_src_profile(unsigned char *profile,
                       size_t profile_capacity,
                       int truncate_a2b1,
                       int include_a2b2,
+                      int use_d2b,
                       size_t *out_length)
 {
     unsigned char a2b0_tag[4096];
@@ -390,18 +440,18 @@ icc_build_src_profile(unsigned char *profile,
         len1 -= 4u;
     }
 
-    memcpy(tags[tag_count].signature, "A2B0", 4u);
+    icc_select_tag_signature(tags[tag_count].signature, use_d2b, 0u, 1);
     tags[tag_count].data = a2b0_tag;
     tags[tag_count].length = len0;
     ++tag_count;
 
-    memcpy(tags[tag_count].signature, "A2B1", 4u);
+    icc_select_tag_signature(tags[tag_count].signature, use_d2b, 1u, 1);
     tags[tag_count].data = a2b1_tag;
     tags[tag_count].length = len1;
     ++tag_count;
 
     if (include_a2b2) {
-        memcpy(tags[tag_count].signature, "A2B2", 4u);
+        icc_select_tag_signature(tags[tag_count].signature, use_d2b, 2u, 1);
         tags[tag_count].data = a2b2_tag;
         tags[tag_count].length = len2;
         ++tag_count;
@@ -422,10 +472,95 @@ icc_build_src_profile(unsigned char *profile,
 }
 
 static int
+icc_build_dst_profile_cmyk(unsigned char *profile,
+                           size_t profile_capacity,
+                           int use_b2d,
+                           size_t *out_length)
+{
+    unsigned char a2b0_tag[4096];
+    unsigned char b2a0_tag[4096];
+    unsigned char b2a1_tag[4096];
+    unsigned char b2a2_tag[4096];
+    icc_tag_ref_t tags[4];
+    size_t a2b0_len;
+    size_t len0;
+    size_t len1;
+    size_t len2;
+    size_t tag_count;
+
+    a2b0_len = 0u;
+    len0 = 0u;
+    len1 = 0u;
+    len2 = 0u;
+    tag_count = 0u;
+    memset(tags, 0, sizeof(tags));
+    if (profile == NULL || out_length == NULL) {
+        return 0;
+    }
+
+    a2b0_len = icc_build_mab_mode_tag(a2b0_tag,
+                                      sizeof(a2b0_tag),
+                                      "mAB ",
+                                      4u,
+                                      3u,
+                                      0u);
+    len0 = icc_build_mab_mode_tag(b2a0_tag,
+                                  sizeof(b2a0_tag),
+                                  "mAB ",
+                                  3u,
+                                  4u,
+                                  0u);
+    len1 = icc_build_mab_mode_tag(b2a1_tag,
+                                  sizeof(b2a1_tag),
+                                  "mAB ",
+                                  3u,
+                                  4u,
+                                  1u);
+    len2 = icc_build_mab_mode_tag(b2a2_tag,
+                                  sizeof(b2a2_tag),
+                                  "mAB ",
+                                  3u,
+                                  4u,
+                                  2u);
+    if (a2b0_len == 0u || len0 == 0u || len1 == 0u || len2 == 0u) {
+        return 0;
+    }
+
+    memcpy(tags[tag_count].signature, "A2B0", 4u);
+    tags[tag_count].data = a2b0_tag;
+    tags[tag_count].length = a2b0_len;
+    ++tag_count;
+
+    icc_select_tag_signature(tags[tag_count].signature, use_b2d, 0u, 0);
+    tags[tag_count].data = b2a0_tag;
+    tags[tag_count].length = len0;
+    ++tag_count;
+
+    icc_select_tag_signature(tags[tag_count].signature, use_b2d, 1u, 0);
+    tags[tag_count].data = b2a1_tag;
+    tags[tag_count].length = len1;
+    ++tag_count;
+
+    icc_select_tag_signature(tags[tag_count].signature, use_b2d, 2u, 0);
+    tags[tag_count].data = b2a2_tag;
+    tags[tag_count].length = len2;
+    ++tag_count;
+
+    return icc_pack_profile(profile,
+                            profile_capacity,
+                            "CMYK",
+                            "XYZ ",
+                            tags,
+                            tag_count,
+                            out_length);
+}
+
+static int
 icc_build_dst_profile(unsigned char *profile,
                       size_t profile_capacity,
                       int truncate_b2a1,
                       int include_b2a2,
+                      int use_b2d,
                       size_t *out_length)
 {
     unsigned char a2b0_tag[4096];
@@ -486,18 +621,18 @@ icc_build_dst_profile(unsigned char *profile,
     tags[tag_count].length = a2b0_len;
     ++tag_count;
 
-    memcpy(tags[tag_count].signature, "B2A0", 4u);
+    icc_select_tag_signature(tags[tag_count].signature, use_b2d, 0u, 0);
     tags[tag_count].data = b2a0_tag;
     tags[tag_count].length = len0;
     ++tag_count;
 
-    memcpy(tags[tag_count].signature, "B2A1", 4u);
+    icc_select_tag_signature(tags[tag_count].signature, use_b2d, 1u, 0);
     tags[tag_count].data = b2a1_tag;
     tags[tag_count].length = len1;
     ++tag_count;
 
     if (include_b2a2) {
-        memcpy(tags[tag_count].signature, "B2A2", 4u);
+        icc_select_tag_signature(tags[tag_count].signature, use_b2d, 2u, 0);
         tags[tag_count].data = b2a2_tag;
         tags[tag_count].length = len2;
         ++tag_count;
@@ -526,6 +661,18 @@ expect_slot_channel(double const rgb[3], unsigned int slot)
     }
 
     return 0;
+}
+
+static int
+expect_slot_channel_cmyk(unsigned char const cmyk[4], unsigned int slot)
+{
+    if (slot > 2u) {
+        return 0;
+    }
+
+    return cmyk[slot] > 160u &&
+        cmyk[(slot + 1u) % 3u] < 96u &&
+        cmyk[(slot + 2u) % 3u] < 96u;
 }
 
 static int
@@ -596,6 +743,93 @@ check_transform_rgb8_fails(sixel_cms_profile_t *src,
 }
 
 static int
+check_transform_rgb8_to_cmyk8(sixel_cms_profile_t *src,
+                              sixel_cms_profile_t *dst,
+                              unsigned char const input[3],
+                              unsigned int expected_slot)
+{
+    sixel_cms_transform_t *tr;
+    unsigned char out[4];
+
+    tr = NULL;
+    memset(out, 0, sizeof(out));
+    if (src == NULL || dst == NULL || input == NULL) {
+        return 0;
+    }
+
+    tr = sixel_cms_create_transform(src,
+                                    SIXEL_CMS_PIXELFORMAT_RGB_8,
+                                    dst,
+                                    SIXEL_CMS_PIXELFORMAT_CMYK_8,
+                                    SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (tr == NULL) {
+        return 0;
+    }
+    if (!sixel_cms_do_transform(tr, input, out, 1u)) {
+        sixel_cms_delete_transform(tr);
+        return 0;
+    }
+    sixel_cms_delete_transform(tr);
+    return expect_slot_channel_cmyk(out, expected_slot);
+}
+
+static int
+check_transform_lab_f32_identity(void)
+{
+    sixel_cms_profile_t *src;
+    sixel_cms_profile_t *dst;
+    sixel_cms_transform_t *tr;
+    float input[3];
+    float output[3];
+    double eps;
+
+    src = NULL;
+    dst = NULL;
+    tr = NULL;
+    memset(input, 0, sizeof(input));
+    memset(output, 0, sizeof(output));
+    eps = 1.0e-3;
+
+    src = sixel_cms_create_cielab_d50_profile();
+    dst = sixel_cms_create_cielab_d50_profile();
+    if (src == NULL || dst == NULL) {
+        goto fail;
+    }
+
+    tr = sixel_cms_create_transform(src,
+                                    SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                    dst,
+                                    SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                    SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (tr == NULL) {
+        goto fail;
+    }
+
+    input[0] = 0.51f;
+    input[1] = 0.42f;
+    input[2] = 0.61f;
+    if (!sixel_cms_do_transform(tr, input, output, 1u)) {
+        goto fail;
+    }
+    if (fabs((double)output[0] - (double)input[0]) > eps ||
+        fabs((double)output[1] - (double)input[1]) > eps ||
+        fabs((double)output[2] - (double)input[2]) > eps) {
+        goto fail;
+    }
+
+    sixel_cms_delete_transform(tr);
+    sixel_cms_close_profile(src);
+    sixel_cms_close_profile(dst);
+    return 1;
+
+fail:
+    sixel_cms_delete_transform(tr);
+    sixel_cms_close_profile(src);
+    sixel_cms_close_profile(dst);
+    return 0;
+}
+
+static int
 test_setenv(char const *name, char const *value)
 {
 #if defined(HAVE__PUTENV_S)
@@ -643,11 +877,13 @@ run_device_to_device_intent_cases(void)
                                sizeof(src_profile_buf),
                                1,
                                1,
+                               0,
                                &src_len) ||
         !icc_build_dst_profile(dst_profile_buf,
                                sizeof(dst_profile_buf),
                                1,
                                1,
+                               0,
                                &dst_len)) {
         goto fail;
     }
@@ -689,6 +925,7 @@ run_device_to_device_intent_cases(void)
                                sizeof(dst_profile_buf),
                                1,
                                0,
+                               0,
                                &dst_len)) {
         goto fail;
     }
@@ -706,6 +943,76 @@ run_device_to_device_intent_cases(void)
 
     sixel_cms_close_profile(src);
     sixel_cms_close_profile(dst);
+    src = NULL;
+    dst = NULL;
+
+    if (!icc_build_src_profile(src_profile_buf,
+                               sizeof(src_profile_buf),
+                               1,
+                               1,
+                               1,
+                               &src_len) ||
+        !icc_build_dst_profile(dst_profile_buf,
+                               sizeof(dst_profile_buf),
+                               1,
+                               1,
+                               1,
+                               &dst_len)) {
+        goto fail;
+    }
+    src = sixel_cms_open_profile_from_mem(src_profile_buf, src_len);
+    dst = sixel_cms_open_profile_from_mem(dst_profile_buf, dst_len);
+    if (src == NULL || dst == NULL) {
+        goto fail;
+    }
+
+    if (test_setenv("SIXEL_CMS_RENDERING_INTENT", "perceptual!") != 0 ||
+        !check_transform_rgb8(src, dst, input, 0u)) {
+        goto fail;
+    }
+    if (test_setenv("SIXEL_CMS_RENDERING_INTENT",
+                    "relative,saturation!") != 0 ||
+        !check_transform_rgb8(src, dst, input, 2u)) {
+        goto fail;
+    }
+
+    sixel_cms_close_profile(src);
+    sixel_cms_close_profile(dst);
+    src = NULL;
+    dst = NULL;
+
+    if (!icc_build_src_profile(src_profile_buf,
+                               sizeof(src_profile_buf),
+                               0,
+                               0,
+                               0,
+                               &src_len) ||
+        !icc_build_dst_profile_cmyk(dst_profile_buf,
+                                    sizeof(dst_profile_buf),
+                                    1,
+                                    &dst_len)) {
+        goto fail;
+    }
+    src = sixel_cms_open_profile_from_mem(src_profile_buf, src_len);
+    dst = sixel_cms_open_profile_from_mem(dst_profile_buf, dst_len);
+    if (src == NULL || dst == NULL) {
+        goto fail;
+    }
+
+    if (test_setenv("SIXEL_CMS_RENDERING_INTENT", "perceptual!") != 0 ||
+        !check_transform_rgb8_to_cmyk8(src, dst, input, 0u)) {
+        goto fail;
+    }
+
+    sixel_cms_close_profile(src);
+    sixel_cms_close_profile(dst);
+    src = NULL;
+    dst = NULL;
+
+    if (!check_transform_lab_f32_identity()) {
+        goto fail;
+    }
+
     (void)test_setenv("SIXEL_CMS_RENDERING_INTENT", "");
     sixel_cms_set_engine(old_engine);
     return 1;
@@ -737,12 +1044,17 @@ test_icc_0005_icc_builtin_device_to_device_intent_paths(int argc, char **argv)
 }
 
 #undef test_setenv
+#undef check_transform_lab_f32_identity
+#undef check_transform_rgb8_to_cmyk8
 #undef check_transform_rgb8_fails
 #undef check_transform_rgb8
+#undef expect_slot_channel_cmyk
 #undef expect_slot_channel
+#undef icc_build_dst_profile_cmyk
 #undef icc_build_dst_profile
 #undef icc_build_src_profile
 #undef icc_pack_profile
+#undef icc_select_tag_signature
 #undef icc_build_mab_mode_tag
 #undef icc_build_clut_block_mode
 #undef icc_build_matrix_block

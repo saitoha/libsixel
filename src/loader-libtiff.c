@@ -211,6 +211,31 @@ cleanup:
 }
 #endif
 
+static int
+tiff_photometric_allows_embedded_icc(uint16_t photometric,
+                                     int high_precision_path)
+{
+    if (photometric == PHOTOMETRIC_CIELAB) {
+        return 0;
+    }
+    if (high_precision_path) {
+        return 1;
+    }
+
+    switch (photometric) {
+    case PHOTOMETRIC_MINISWHITE:
+    case PHOTOMETRIC_MINISBLACK:
+    case PHOTOMETRIC_RGB:
+    case PHOTOMETRIC_PALETTE:
+    case PHOTOMETRIC_YCBCR:
+    case (uint16_t)0xffffu:
+        return 1;
+    default:
+        break;
+    }
+    return 0;
+}
+
 #if !HAVE_LCMS2
 /*
  * no-lcms fallback for RGBA8888 TIFF decode path.
@@ -249,15 +274,7 @@ tiff_convert_embedded_icc_to_srgb_nolcms(unsigned char *pixels,
         return;
     }
 
-    switch (photometric) {
-    case PHOTOMETRIC_MINISWHITE:
-    case PHOTOMETRIC_MINISBLACK:
-    case PHOTOMETRIC_RGB:
-    case PHOTOMETRIC_PALETTE:
-    case PHOTOMETRIC_YCBCR:
-    case (uint16_t)0xffffu:
-        break;
-    default:
+    if (!tiff_photometric_allows_embedded_icc(photometric, 0)) {
         return;
     }
 
@@ -826,7 +843,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     }
 
     if (icc_profile != NULL && icc_profile_length > 0u &&
-        photometric != PHOTOMETRIC_CIELAB) {
+        tiff_photometric_allows_embedded_icc(photometric, 1)) {
         cms_converted = tiff_convert_embedded_icc_to_srgb_float32(
             float_pixels,
             (int)width,

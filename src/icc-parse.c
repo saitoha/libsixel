@@ -235,6 +235,14 @@ sixel_icc_profile_reset(sixel_icc_profile_t *profile)
         sixel_icc_lut_reset(&profile->b2a_lut[i]);
         sixel_icc_mab_pipeline_reset(&profile->b2a_mab[i]);
     }
+    for (i = 0u; i < SIXEL_ICC_D2B_SLOT_COUNT; ++i) {
+        sixel_icc_lut_reset(&profile->d2b_lut[i]);
+        sixel_icc_mab_pipeline_reset(&profile->d2b_mab[i]);
+    }
+    for (i = 0u; i < SIXEL_ICC_B2D_SLOT_COUNT; ++i) {
+        sixel_icc_lut_reset(&profile->b2d_lut[i]);
+        sixel_icc_mab_pipeline_reset(&profile->b2d_mab[i]);
+    }
 }
 
 void
@@ -256,6 +264,14 @@ sixel_icc_profile_destroy(sixel_icc_profile_t *profile)
     for (i = 0u; i < SIXEL_ICC_B2A_SLOT_COUNT; ++i) {
         sixel_icc_lut_destroy(&profile->b2a_lut[i]);
         sixel_icc_mab_pipeline_destroy(&profile->b2a_mab[i]);
+    }
+    for (i = 0u; i < SIXEL_ICC_D2B_SLOT_COUNT; ++i) {
+        sixel_icc_lut_destroy(&profile->d2b_lut[i]);
+        sixel_icc_mab_pipeline_destroy(&profile->d2b_mab[i]);
+    }
+    for (i = 0u; i < SIXEL_ICC_B2D_SLOT_COUNT; ++i) {
+        sixel_icc_lut_destroy(&profile->b2d_lut[i]);
+        sixel_icc_mab_pipeline_destroy(&profile->b2d_mab[i]);
     }
 
     profile->kind = SIXEL_ICC_PROFILE_KIND_INVALID;
@@ -1612,6 +1628,18 @@ static char const *const sixel_icc_b2a_tag_names[SIXEL_ICC_B2A_SLOT_COUNT] = {
     "B2A2"
 };
 
+static char const *const sixel_icc_d2b_tag_names[SIXEL_ICC_D2B_SLOT_COUNT] = {
+    "D2B0",
+    "D2B1",
+    "D2B2"
+};
+
+static char const *const sixel_icc_b2d_tag_names[SIXEL_ICC_B2D_SLOT_COUNT] = {
+    "B2D0",
+    "B2D1",
+    "B2D2"
+};
+
 static int
 sixel_icc_parse_a2b_slot(unsigned char const *profile_data,
                          size_t profile_size,
@@ -1732,6 +1760,120 @@ sixel_icc_parse_b2a_slot(unsigned char const *profile_data,
     return 0;
 }
 
+static int
+sixel_icc_parse_d2b_slot(unsigned char const *profile_data,
+                         size_t profile_size,
+                         unsigned int slot,
+                         uint8_t input_channels,
+                         uint8_t output_channels,
+                         sixel_icc_profile_t *parsed)
+{
+    size_t tag_offset;
+    size_t tag_length;
+    sixel_icc_lut_t *lut;
+    sixel_icc_mab_pipeline_t *mab;
+
+    tag_offset = 0u;
+    tag_length = 0u;
+    lut = NULL;
+    mab = NULL;
+    if (profile_data == NULL || parsed == NULL ||
+        slot >= SIXEL_ICC_D2B_SLOT_COUNT) {
+        return 0;
+    }
+
+    if (!sixel_icc_find_tag(profile_data,
+                            profile_size,
+                            sixel_icc_d2b_tag_names[slot],
+                            &tag_offset,
+                            &tag_length)) {
+        return 0;
+    }
+
+    lut = &parsed->d2b_lut[slot];
+    mab = &parsed->d2b_mab[slot];
+    if (sixel_icc_parse_mab_tag(profile_data,
+                                profile_size,
+                                tag_offset,
+                                tag_length,
+                                mab) &&
+        mab->input_channels == input_channels &&
+        mab->output_channels == output_channels) {
+        return 1;
+    }
+    sixel_icc_mab_pipeline_destroy(mab);
+
+    if (sixel_icc_parse_lut_tag(profile_data,
+                                profile_size,
+                                tag_offset,
+                                tag_length,
+                                lut) &&
+        lut->input_channels == input_channels &&
+        lut->output_channels == output_channels) {
+        return 1;
+    }
+    sixel_icc_lut_destroy(lut);
+
+    return 0;
+}
+
+static int
+sixel_icc_parse_b2d_slot(unsigned char const *profile_data,
+                         size_t profile_size,
+                         unsigned int slot,
+                         uint8_t input_channels,
+                         uint8_t output_channels,
+                         sixel_icc_profile_t *parsed)
+{
+    size_t tag_offset;
+    size_t tag_length;
+    sixel_icc_lut_t *lut;
+    sixel_icc_mab_pipeline_t *mab;
+
+    tag_offset = 0u;
+    tag_length = 0u;
+    lut = NULL;
+    mab = NULL;
+    if (profile_data == NULL || parsed == NULL ||
+        slot >= SIXEL_ICC_B2D_SLOT_COUNT) {
+        return 0;
+    }
+
+    if (!sixel_icc_find_tag(profile_data,
+                            profile_size,
+                            sixel_icc_b2d_tag_names[slot],
+                            &tag_offset,
+                            &tag_length)) {
+        return 0;
+    }
+
+    lut = &parsed->b2d_lut[slot];
+    mab = &parsed->b2d_mab[slot];
+    if (sixel_icc_parse_mab_tag(profile_data,
+                                profile_size,
+                                tag_offset,
+                                tag_length,
+                                mab) &&
+        mab->input_channels == input_channels &&
+        mab->output_channels == output_channels) {
+        return 1;
+    }
+    sixel_icc_mab_pipeline_destroy(mab);
+
+    if (sixel_icc_parse_lut_tag(profile_data,
+                                profile_size,
+                                tag_offset,
+                                tag_length,
+                                lut) &&
+        lut->input_channels == input_channels &&
+        lut->output_channels == output_channels) {
+        return 1;
+    }
+    sixel_icc_lut_destroy(lut);
+
+    return 0;
+}
+
 int
 sixel_icc_parse_profile(void const *data,
                         size_t length,
@@ -1762,7 +1904,8 @@ sixel_icc_parse_profile(void const *data,
     double rxyz[3];
     double gxyz[3];
     double bxyz[3];
-    int has_a2b0;
+    int has_forward_slot;
+    int has_reverse_slot;
     int has_matrix_tags;
     unsigned int slot;
 
@@ -1774,7 +1917,8 @@ sixel_icc_parse_profile(void const *data,
     memset(rxyz, 0, sizeof(rxyz));
     memset(gxyz, 0, sizeof(gxyz));
     memset(bxyz, 0, sizeof(bxyz));
-    has_a2b0 = 0;
+    has_forward_slot = 0;
+    has_reverse_slot = 0;
     has_matrix_tags = 0;
     rxyz_offset = 0u;
     rxyz_length = 0u;
@@ -1811,7 +1955,8 @@ sixel_icc_parse_profile(void const *data,
     }
 
     if (memcmp(color_space, "RGB ", 4u) == 0) {
-        has_a2b0 = 0;
+        has_forward_slot = 0;
+        has_reverse_slot = 0;
         has_matrix_tags = 0;
 
         for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
@@ -1822,19 +1967,35 @@ sixel_icc_parse_profile(void const *data,
                                          3u,
                                          1,
                                          &parsed)) {
-                has_a2b0 = 1;
+                has_forward_slot = 1;
+            }
+            if (sixel_icc_parse_d2b_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         3u,
+                                         &parsed)) {
+                has_forward_slot = 1;
             }
         }
         for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
-            (void)sixel_icc_parse_b2a_slot(profile_data,
-                                           profile_size,
-                                           slot,
-                                           3u,
-                                           3u,
-                                           &parsed);
+            if (sixel_icc_parse_b2a_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         3u,
+                                         &parsed) ||
+                sixel_icc_parse_b2d_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         3u,
+                                         &parsed)) {
+                has_reverse_slot = 1;
+            }
         }
 
-        if (!has_a2b0) {
+        if (!has_forward_slot) {
             has_matrix_tags = sixel_icc_find_tag(profile_data,
                                                  profile_size,
                                                  "rXYZ",
@@ -1920,7 +2081,8 @@ sixel_icc_parse_profile(void const *data,
 
         parsed.kind = SIXEL_ICC_PROFILE_KIND_RGB;
     } else if (memcmp(color_space, "GRAY", 4u) == 0) {
-        has_a2b0 = 0;
+        has_forward_slot = 0;
+        has_reverse_slot = 0;
         has_matrix_tags = 0;
 
         for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
@@ -1931,19 +2093,35 @@ sixel_icc_parse_profile(void const *data,
                                          3u,
                                          1,
                                          &parsed)) {
-                has_a2b0 = 1;
+                has_forward_slot = 1;
+            }
+            if (sixel_icc_parse_d2b_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         1u,
+                                         3u,
+                                         &parsed)) {
+                has_forward_slot = 1;
             }
         }
         for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
-            (void)sixel_icc_parse_b2a_slot(profile_data,
-                                           profile_size,
-                                           slot,
-                                           3u,
-                                           1u,
-                                           &parsed);
+            if (sixel_icc_parse_b2a_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         1u,
+                                         &parsed) ||
+                sixel_icc_parse_b2d_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         1u,
+                                         &parsed)) {
+                has_reverse_slot = 1;
+            }
         }
 
-        if (!has_a2b0) {
+        if (!has_forward_slot) {
             has_matrix_tags = sixel_icc_find_tag(profile_data,
                                                  profile_size,
                                                  "wtpt",
@@ -1974,7 +2152,8 @@ sixel_icc_parse_profile(void const *data,
 
         parsed.kind = SIXEL_ICC_PROFILE_KIND_GRAY;
     } else if (memcmp(color_space, "CMYK", 4u) == 0) {
-        has_a2b0 = 0;
+        has_forward_slot = 0;
+        has_reverse_slot = 0;
         for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
             if (sixel_icc_parse_a2b_slot(profile_data,
                                          profile_size,
@@ -1983,22 +2162,80 @@ sixel_icc_parse_profile(void const *data,
                                          3u,
                                          0,
                                          &parsed)) {
-                has_a2b0 = 1;
+                has_forward_slot = 1;
+            }
+            if (sixel_icc_parse_d2b_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         4u,
+                                         3u,
+                                         &parsed)) {
+                has_forward_slot = 1;
             }
         }
         for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
-            (void)sixel_icc_parse_b2a_slot(profile_data,
-                                           profile_size,
-                                           slot,
-                                           3u,
-                                           4u,
-                                           &parsed);
+            if (sixel_icc_parse_b2a_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         4u,
+                                         &parsed) ||
+                sixel_icc_parse_b2d_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         4u,
+                                         &parsed)) {
+                has_reverse_slot = 1;
+            }
         }
-        if (!has_a2b0) {
+        if (!has_forward_slot) {
             goto fail;
         }
 
         parsed.kind = SIXEL_ICC_PROFILE_KIND_CMYK;
+    } else if (memcmp(color_space, "Lab ", 4u) == 0) {
+        has_forward_slot = 0;
+        has_reverse_slot = 0;
+
+        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+            if (sixel_icc_parse_a2b_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         3u,
+                                         0,
+                                         &parsed) ||
+                sixel_icc_parse_d2b_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         3u,
+                                         &parsed)) {
+                has_forward_slot = 1;
+            }
+        }
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+            if (sixel_icc_parse_b2a_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         3u,
+                                         &parsed) ||
+                sixel_icc_parse_b2d_slot(profile_data,
+                                         profile_size,
+                                         slot,
+                                         3u,
+                                         3u,
+                                         &parsed)) {
+                has_reverse_slot = 1;
+            }
+        }
+        if (!has_forward_slot && !has_reverse_slot) {
+            goto fail;
+        }
+
+        parsed.kind = SIXEL_ICC_PROFILE_KIND_LAB;
     } else {
         goto fail;
     }

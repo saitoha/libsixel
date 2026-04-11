@@ -12,7 +12,8 @@ This matrix tracks builtin ICC coverage for `cms_engine=builtin` and
 | `A2B0` `mAB`/`mBA` (RGB/GRAY/CMYK) | Implemented | `icc/0002` | Added parser/apply pipeline for `mAB`/`mBA`. |
 | `A2B1` / `A2B2` (`mAB`/`mBA` + `mft1`/`mft2`) | Implemented | `icc/0003`, `loader/libpng/0215`, `loader/libjpeg/0044` | Parser keeps independent slots and apply path can evaluate each slot. |
 | `B2A0` / `B2A1` / `B2A2` (`mAB`/`mBA` + `mft1`/`mft2`) | Implemented | `icc/0004`, `icc/0005` | Parser keeps independent B2A slots and apply path evaluates PCS-to-device conversion. |
-| `D2B*` / `B2D*` | Not implemented | - | Next phase. |
+| `D2B0` / `D2B1` / `D2B2` (`mAB`/`mBA` + `mft1`/`mft2`) | Implemented | `icc/0005` | Parser keeps independent D2B slots and apply path can evaluate each slot. |
+| `B2D0` / `B2D1` / `B2D2` (`mAB`/`mBA` + `mft1`/`mft2`) | Implemented | `icc/0005` | Parser keeps independent B2D slots and apply path can evaluate PCS-to-device conversion. |
 
 ## Curve Coverage
 
@@ -35,11 +36,15 @@ This matrix tracks builtin ICC coverage for `cms_engine=builtin` and
 
 - Priority inside each `A2B*` slot is `mAB/mBA` -> `mft1/mft2`.
 - Priority inside each `B2A*` slot is `mAB/mBA` -> `mft1/mft2`.
+- Priority inside each `D2B*` slot is `mAB/mBA` -> `mft1/mft2`.
+- Priority inside each `B2D*` slot is `mAB/mBA` -> `mft1/mft2`.
 - Rendering-intent mapping is enabled in builtin backend for both directions:
   `perceptual -> slot0`, `relative/absolute -> slot1`, `saturation -> slot2`.
 - Builtin device-to-device transform now uses `src -> PCS -> dst` with
-  `A2B*` on source and `B2A*` on destination in the same intent order.
+  `A2B*/D2B*` on source and `B2A*/B2D*` on destination in the same intent
+  order.
 - Missing or broken intent slot falls back to the next configured slot; RGB/GRAY
   source profiles can finally fall back to matrix/TRC, while CMYK source
-  profiles require at least one valid `A2B*` slot. Destination profiles require
-  a valid `B2A*` slot and do not use reverse matrix/TRC fallback.
+  profiles require at least one valid `A2B*` or `D2B*` slot. Destination
+  profiles use `B2A*` first and then `B2D*`; Lab destination fallback keeps
+  PCS-domain conversion available without reverse matrix/TRC.
