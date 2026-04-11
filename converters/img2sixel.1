@@ -333,21 +333,6 @@ sub-option:
 \fBstrength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
 .br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
-.br
-\fBinterframe\fP and \fBstbn\fP ignore \-Y and are not available with \-I.
-.TP 5
-.B \-Y \fICARRYTYPE\fP, \-\-diffusion\-carry=\fICARRYTYPE\fP
-control carry buffers used during diffusion.
-.br
-\fICARRYTYPE\fP is one of them:
-.br
-auto   -> choose carry mode automatically (default)
-.br
-direct -> write error back to pixel data immediately
-.br
-carry  -> accumulate error in workspace buffers before applying
-.br
-note: ignored when \-d interframe or \-d stbn is selected
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose method for finding the largest dimension of median

@@ -50,7 +50,6 @@ sub attach_all {
     $ffi->attach(['sixel_dither_get_lut_policy' => 'Image::LibSIXEL::sixel_dither_get_lut_policy'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_dither_set_diffusion_type' => 'Image::LibSIXEL::sixel_dither_set_diffusion_type'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_diffusion_scan' => 'Image::LibSIXEL::sixel_dither_set_diffusion_scan'] => ['opaque', 'int'] => 'void');
-    $ffi->attach(['sixel_dither_set_diffusion_carry' => 'Image::LibSIXEL::sixel_dither_set_diffusion_carry'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_get_num_of_palette_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_palette_colors'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_dither_get_num_of_histogram_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_histogram_colors'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_dither_get_num_of_histgram_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_histgram_colors'] => ['opaque'] => 'int');

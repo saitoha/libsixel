@@ -24,7 +24,6 @@ SIXELSTATUS sixel_dither_new(sixel_dither_t **ppdither, int ncolors, void *alloc
 void sixel_dither_unref(sixel_dither_t *dither);
 void sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse);
 void sixel_dither_set_diffusion_scan(sixel_dither_t *dither, int method_for_scan);
-void sixel_dither_set_diffusion_carry(sixel_dither_t *dither, int method_for_carry);
 void sixel_dither_set_complexion_score(sixel_dither_t *dither, int score);
 void sixel_dither_set_body_only(sixel_dither_t *dither, int bodyonly);
 void sixel_dither_set_optimize_palette(sixel_dither_t *dither, int do_opt);
@@ -42,7 +41,6 @@ CDEF, $libPath);
 
     $ffi->sixel_dither_set_diffusion_type($dither, 0x2);
     $ffi->sixel_dither_set_diffusion_scan($dither, 0x2);
-    $ffi->sixel_dither_set_diffusion_carry($dither, 1);
     $ffi->sixel_dither_set_complexion_score($dither, 1);
     $ffi->sixel_dither_set_body_only($dither, 0);
     $ffi->sixel_dither_set_optimize_palette($dither, 1);

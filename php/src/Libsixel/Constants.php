@@ -56,10 +56,6 @@ final class Constants
     public const SIXEL_SCAN_RASTER = 0x1;
     public const SIXEL_SCAN_SERPENTINE = 0x2;
 
-    public const SIXEL_CARRY_AUTO = 0x0;
-    public const SIXEL_CARRY_DISABLE = 0x1;
-    public const SIXEL_CARRY_ENABLE = 0x2;
-
     public const SIXEL_QUALITY_AUTO = 0x0;
     public const SIXEL_QUALITY_HIGH = 0x1;
     public const SIXEL_QUALITY_LOW = 0x2;
@@ -155,8 +151,6 @@ final class Constants
     public const SIXEL_OPTFLAG_IGNORE_DELAY = 'g';
     public const SIXEL_OPTFLAG_STATIC = 'S';
     public const SIXEL_OPTFLAG_DIFFUSION = 'd';
-    public const SIXEL_OPTFLAG_DIFFUSION_SCAN = 'y';
-    public const SIXEL_OPTFLAG_DIFFUSION_CARRY = 'Y';
     public const SIXEL_OPTFLAG_FIND_LARGEST = 'f';
     public const SIXEL_OPTFLAG_SELECT_COLOR = 's';
     public const SIXEL_OPTFLAG_QUANTIZE_MODEL = 'Q';

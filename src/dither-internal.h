@@ -51,7 +51,6 @@ typedef struct sixel_dither_context {
     int reqcolor;
     int method_for_diffuse;
     int method_for_scan;
-    int method_for_carry;
     int optimize_palette;
     int complexion;
     int (*lookup)(const unsigned char *pixel,

@@ -72,10 +72,11 @@ struct sixel_encoder {
     int method_for_diffuse;
     int interframe_strategy_override;
     int interframe_strategy_token;
+    int interframe_spatial_diffuse_override;
+    int interframe_spatial_diffuse;
     int interframe_noise_strength_override;
     int interframe_noise_strength_u8;
     int method_for_scan;
-    int method_for_carry;
     int method_for_largest;
     int method_for_rep;
     int quality_mode;

@@ -433,31 +433,29 @@ _img2sixel()
                                    bluenoise \
                                    lso2 \
                                    interframe \
+                                   interframe:scan=serpentine \
                                    interframe:diffusion=atkinson \
                                    interframe:diffusion=sierra2 \
+                                   interframe:diffusion=atkinson:scan=serpentine \
                                    stbn \
+                                   stbn:scan=serpentine \
                                    stbn:diffusion=atkinson \
                                    stbn:source=hash \
                                    stbn:source=mask \
                                    stbn:source=pmj \
                                    stbn:strength=0.055 \
+                                   stbn:source=mask:scan=serpentine \
+                                   stbn:source=pmj:scan=serpentine \
                                    stbn:source=mask:diffusion=sierra2 \
                                    stbn:source=pmj:diffusion=atkinson \
+                                   stbn:source=mask:diffusion=sierra2:scan=serpentine \
                                    stbn:source=hash:strength=0.055 \
                                    stbn:source=mask:strength=0.50 \
-                                   stbn:source=pmj:strength=0.50' -- "$cur" ) )
-        return 0
-        ;;
-    -y|--diffusion-scan)
-        COMPREPLY=( $( compgen -W 'auto \
-                                   raster \
-                                   serpentine' -- "$cur" ) )
-        return 0
-        ;;
-    -Y|--diffusion-carry)
-        COMPREPLY=( $( compgen -W 'auto \
-                                   direct \
-                                   carry' -- "$cur" ) )
+                                   stbn:source=pmj:strength=0.50 \
+                                   fs:scan=raster \
+                                   fs:scan=serpentine \
+                                   sierra:variant=1:scan=raster \
+                                   sierra:variant=2:scan=serpentine' -- "$cur" ) )
         return 0
         ;;
     -f|--find-largest)
@@ -631,8 +629,6 @@ _img2sixel()
                                    -g --ignore-delay \
                                    -S --static \
                                    -d --diffusion \
-                                   -y --diffusion-scan \
-                                   -Y --diffusion-carry \
                                    -f --find-largest \
                                    -s --select-color \
                                    -c --crop \

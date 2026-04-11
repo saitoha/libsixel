@@ -162,9 +162,9 @@ sixel_dither_promote_rgb888_to_float32(float **out_pixels,
 
 /*
  * Determine whether the selected diffusion method can reuse the float32
- * pipeline.  Positional and variable-coefficient dithers have dedicated
- * float backends, while Floyd-Steinberg must disable the fast path when the
- * user explicitly enables carry buffers.
+ * pipeline. Positional, variable-coefficient, fixed-kernel, and interframe
+ * methods all have float-capable backends, so only the diffusion token
+ * controls eligibility.
  */
 static int
 sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
@@ -177,11 +177,6 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     if (dither->prefer_float32 == 0) {
         return 0;
     }
-    if (dither->method_for_diffuse != SIXEL_DIFFUSE_INTERFRAME
-            && dither->method_for_carry == SIXEL_CARRY_ENABLE) {
-        return 0;
-    }
-
     method = dither->method_for_diffuse;
     switch (method) {
     case SIXEL_DIFFUSE_NONE:
@@ -565,7 +560,6 @@ sixel_dither_map_pixels(
     int               /* in */  reqcolor,
     int               /* in */  methodForDiffuse,
     int               /* in */  methodForScan,
-    int               /* in */  methodForCarry,
     int               /* in */  foptimize,
     int               /* in */  foptimize_palette,
     int               /* in */  complexion,
@@ -594,8 +588,6 @@ sixel_dither_map_pixels(
                     int const complexion) = lookup_normal;
     int use_varerr;
     int use_positional;
-    int use_interframe;
-    int carry_mode;
     sixel_lut_t *active_lut;
     int manage_lut;
     int policy;
@@ -689,21 +681,8 @@ sixel_dither_map_pixels(
     use_positional = (methodForDiffuse == SIXEL_DIFFUSE_A_DITHER
                       || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER
                       || methodForDiffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER);
-    use_interframe = (depth == 3
-                    && methodForDiffuse == SIXEL_DIFFUSE_INTERFRAME);
-    carry_mode = (methodForCarry == SIXEL_CARRY_ENABLE)
-               ? SIXEL_CARRY_ENABLE
-               : SIXEL_CARRY_DISABLE;
-    if (use_interframe) {
-        /*
-         * Interframe diffusion controls inter-frame feedback internally and
-         * intentionally ignores the legacy carry-mode selector.
-         */
-        carry_mode = SIXEL_CARRY_DISABLE;
-    }
     context.method_for_diffuse = methodForDiffuse;
     context.method_for_scan = methodForScan;
-    context.method_for_carry = carry_mode;
 
     if (reqcolor == 2) {
         sum1 = 0;
@@ -857,16 +836,13 @@ sixel_dither_map_pixels(
     } else {
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
             && context.pixels_float != NULL
-            && context.method_for_carry != SIXEL_CARRY_ENABLE
             && depth == 3
             && dither != NULL
             && dither->prefer_float32 != 0) {
             /*
              * Float inputs can reuse the float32 renderer for every
-             * fixed-weight kernel (FS, Sierra, Stucki, etc.) as long as
-             * carry buffers are disabled. Interframe diffusion is included
-             * here because it owns its inter-frame state internally and
-             * ignores the legacy carry selector.
+             * fixed-weight kernel (FS, Sierra, Stucki, etc.), including
+             * interframe diffusion strategies.
              */
             status = sixel_dither_apply_fixed_float32(dither, &context);
             if (status == SIXEL_BAD_ARGUMENT) {
@@ -907,7 +883,6 @@ typedef struct sixel_parallel_dither_plan {
     int overlap;
     int method_for_diffuse;
     int method_for_scan;
-    int method_for_carry;
     int optimize_palette;
     int optimize_palette_entries;
     int complexion;
@@ -1103,7 +1078,6 @@ sixel_dither_parallel_worker(tp_job_t job,
                                      plan->reqcolor,
                                      plan->method_for_diffuse,
                                      plan->method_for_scan,
-                                     plan->method_for_carry,
                                      plan->optimize_palette,
                                      plan->optimize_palette_entries,
                                      plan->complexion,
@@ -1282,7 +1256,6 @@ typedef struct sixel_dither_resolve_indexes_request {
     int reqcolor;
     int method_for_diffuse;
     int method_for_scan;
-    int method_for_carry;
     int foptimize;
     int foptimize_palette;
     int complexion;
@@ -1319,7 +1292,6 @@ sixel_dither_resolve_indexes(
     int reqcolor;
     int method_for_diffuse;
     int method_for_scan;
-    int method_for_carry;
     int foptimize;
     int foptimize_palette;
     int complexion;
@@ -1344,7 +1316,6 @@ sixel_dither_resolve_indexes(
     reqcolor = request->reqcolor;
     method_for_diffuse = request->method_for_diffuse;
     method_for_scan = request->method_for_scan;
-    method_for_carry = request->method_for_carry;
     foptimize = request->foptimize;
     foptimize_palette = request->foptimize_palette;
     complexion = request->complexion;
@@ -1369,7 +1340,6 @@ sixel_dither_resolve_indexes(
                                      reqcolor,
                                      method_for_diffuse,
                                      method_for_scan,
-                                     method_for_carry,
                                      foptimize,
                                      foptimize_palette,
                                      complexion,
@@ -1507,10 +1477,11 @@ sixel_dither_new(
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
     (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
-    (*ppdither)->method_for_carry = SIXEL_CARRY_AUTO;
     (*ppdither)->interframe_strategy_override = 0;
     (*ppdither)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    (*ppdither)->interframe_spatial_diffuse_override = 0;
+    (*ppdither)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->interframe_noise_strength_override = 0;
     (*ppdither)->interframe_noise_strength_u8 = 0;
     (*ppdither)->quality_mode = quality_mode;
@@ -2096,21 +2067,6 @@ sixel_dither_set_diffusion_scan(
         method_for_scan = SIXEL_SCAN_RASTER;
     }
     dither->method_for_scan = method_for_scan;
-}
-
-
-/* set carry buffer mode for diffusion */
-SIXELAPI void
-sixel_dither_set_diffusion_carry(
-    sixel_dither_t  /* in */ *dither,
-    int             /* in */ method_for_carry)
-{
-    if (method_for_carry != SIXEL_CARRY_AUTO &&
-            method_for_carry != SIXEL_CARRY_DISABLE &&
-            method_for_carry != SIXEL_CARRY_ENABLE) {
-        method_for_carry = SIXEL_CARRY_AUTO;
-    }
-    dither->method_for_carry = method_for_carry;
 }
 
 
@@ -2848,7 +2804,6 @@ sixel_dither_apply_palette_with_mode(
     sixel_index_t *dest = NULL;
     int ncolors;
     int method_for_scan;
-    int method_for_carry;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
     float *float_pipeline_pixels = NULL;
@@ -3202,11 +3157,6 @@ sixel_dither_apply_palette_with_mode(
         method_for_scan = SIXEL_SCAN_RASTER;
     }
 
-    method_for_carry = dither->method_for_carry;
-    if (method_for_carry == SIXEL_CARRY_AUTO) {
-        method_for_carry = SIXEL_CARRY_DISABLE;
-    }
-
     palette->lut_policy = dither->lut_policy;
     palette->method_for_largest = dither->method_for_largest;
 #if SIXEL_ENABLE_THREADS
@@ -3243,7 +3193,6 @@ sixel_dither_apply_palette_with_mode(
         plan.overlap = adjusted_overlap;
         plan.method_for_diffuse = dither->method_for_diffuse;
         plan.method_for_scan = method_for_scan;
-        plan.method_for_carry = method_for_carry;
         plan.optimize_palette = dither->optimized;
         plan.optimize_palette_entries = dither->optimize_palette;
         plan.complexion = dither->complexion;
@@ -3322,7 +3271,6 @@ sixel_dither_apply_palette_with_mode(
         resolve_request.reqcolor = dither->ncolors;
         resolve_request.method_for_diffuse = dither->method_for_diffuse;
         resolve_request.method_for_scan = method_for_scan;
-        resolve_request.method_for_carry = method_for_carry;
         resolve_request.foptimize = dither->optimized;
         resolve_request.foptimize_palette = dither->optimize_palette;
         resolve_request.complexion = dither->complexion;

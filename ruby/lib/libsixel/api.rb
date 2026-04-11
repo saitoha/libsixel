@@ -129,8 +129,6 @@ module Libsixel
     SIXEL_OPTFLAG_THREADS = '=' unless const_defined?(:SIXEL_OPTFLAG_THREADS)
     SIXEL_OPTFLAG_6REVERSIBLE = '6' unless const_defined?(:SIXEL_OPTFLAG_6REVERSIBLE)
     SIXEL_OPTFLAG_LUT_POLICY = '~' unless const_defined?(:SIXEL_OPTFLAG_LUT_POLICY)
-    SIXEL_OPTFLAG_DIFFUSION_CARRY = 'Y' unless const_defined?(:SIXEL_OPTFLAG_DIFFUSION_CARRY)
-    SIXEL_OPTFLAG_DIFFUSION_SCAN = 'y' unless const_defined?(:SIXEL_OPTFLAG_DIFFUSION_SCAN)
     SIXEL_OPTFLAG_FIND_LARGEST = 'f' unless const_defined?(:SIXEL_OPTFLAG_FIND_LARGEST)
     SIXEL_OPTFLAG_SELECT_COLOR = 's' unless const_defined?(:SIXEL_OPTFLAG_SELECT_COLOR)
     SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X' unless const_defined?(:SIXEL_OPTFLAG_CLUSTERING_COLORSPACE)
@@ -203,7 +201,6 @@ module Libsixel
     extern "int sixel_dither_initialize(void *, char *, int, int, int, int, int, int)"
     extern "void sixel_dither_set_diffusion_type(void *, int)"
     extern "void sixel_dither_set_diffusion_scan(void *, int)"
-    extern "void sixel_dither_set_diffusion_carry(void *, int)"
     extern "int sixel_dither_get_num_of_palette_colors(void *)"
     extern "int sixel_dither_get_num_of_histogram_colors(void *)"
     extern "int sixel_dither_get_num_of_histgram_colors(void *)"

@@ -23,7 +23,7 @@ output_six="${ARTIFACT_LOCAL_DIR}/trns-keycolor-lso2-carry-tbbn0g04.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
-              -d lso2 -Y carry -y raster \
+              -d lso2:scan=raster \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - carry varcoeff render failed"
     exit 0

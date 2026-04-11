@@ -921,7 +921,6 @@ sixel_dither_apply_fixed_impl(
     unsigned short migration_map[],
     int *ncolors,
     int method_for_diffuse,
-    int method_for_carry,
     float *palette_float,
     float *new_palette_float,
     int float_depth,
@@ -942,7 +941,9 @@ sixel_dither_apply_fixed_impl(
     int use_carry;
     int use_interframe;
     int interframe_can_update;
+    int interframe_spatial_diffuse;
     int interframe_method;
+    int effective_diffuse;
     sixel_interframe_method_ops_t const *interframe_ops;
     size_t carry_len;
     int32_t *carry_curr = NULL;
@@ -998,10 +999,12 @@ sixel_dither_apply_fixed_impl(
         use_transparent_fence = 1;
     }
 
-    use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
+    use_carry = 0;
     use_interframe = 0;
     interframe_can_update = 0;
+    interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     interframe_method = SIXEL_INTERFRAME_METHOD_NONE;
+    effective_diffuse = method_for_diffuse;
     interframe_ops = NULL;
     carry_len = 0;
     interframe_error = NULL;
@@ -1011,7 +1014,26 @@ sixel_dither_apply_fixed_impl(
         f_diffuse_carry = diffuse_none_carry;
         use_carry = 0;
     } else {
-        switch (method_for_diffuse) {
+        if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
+            /*
+             * Interframe strategy (diffusion/stbn/pmj) and spatial kernel are
+             * resolved independently so -d interframe:diffusion=... and
+             * -d stbn:diffusion=... share the same kernel selector.
+             */
+            interframe_spatial_diffuse =
+                sixel_interframe_spatial_diffuse_from_dither_or_env_common(
+                    dither);
+            effective_diffuse = interframe_spatial_diffuse;
+            interframe_method = sixel_interframe_method_from_diffuse(
+                dither,
+                method_for_diffuse);
+            interframe_ops = sixel_interframe_method_for_strategy(
+                interframe_method);
+            if (interframe_ops != NULL) {
+                use_interframe = 1;
+            }
+        }
+        switch (effective_diffuse) {
         case SIXEL_DIFFUSE_NONE:
             f_diffuse = diffuse_none;
             f_diffuse_carry = diffuse_none_carry;
@@ -1021,20 +1043,9 @@ sixel_dither_apply_fixed_impl(
             f_diffuse_carry = diffuse_atkinson_carry;
             break;
         case SIXEL_DIFFUSE_FS:
-            f_diffuse = diffuse_fs;
-            f_diffuse_carry = diffuse_fs_carry;
-            break;
         case SIXEL_DIFFUSE_INTERFRAME:
             f_diffuse = diffuse_fs;
             f_diffuse_carry = diffuse_fs_carry;
-            interframe_method = sixel_interframe_method_from_diffuse(
-                dither,
-                method_for_diffuse);
-            interframe_ops = sixel_interframe_method_for_strategy(
-                interframe_method);
-            if (interframe_ops != NULL) {
-                use_interframe = 1;
-            }
             break;
         case SIXEL_DIFFUSE_JAJUNI:
             f_diffuse = diffuse_jajuni;
@@ -1353,7 +1364,6 @@ sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
                                          context->migration_map,
                                          context->ncolors,
                                          context->method_for_diffuse,
-                                         context->method_for_carry,
                                          context->palette_float,
                                          context->new_palette_float,
                                          context->float_depth,

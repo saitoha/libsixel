@@ -389,7 +389,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     int use_carry;
     size_t carry_len;
     int method_for_diffuse;
-    int method_for_carry;
     int method_for_scan;
     diffuse_varerr_mode varerr_diffuse;
     diffuse_varerr_carry_mode varerr_diffuse_carry;
@@ -454,7 +453,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     float_depth = context->float_depth;
     optimize_palette = context->optimize_palette;
     method_for_diffuse = context->method_for_diffuse;
-    method_for_carry = context->method_for_carry;
     method_for_scan = context->method_for_scan;
     if (data == NULL || palette == NULL || context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -493,7 +491,7 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
         break;
     }
 
-    use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
+    use_carry = 0;
     carry_curr = NULL;
     carry_next = NULL;
     carry_far = NULL;

@@ -15,7 +15,6 @@ def test_0040_python_api_dither_setters() -> None:
         from libsixel_wheel import sixel_dither_new
         from libsixel_wheel import sixel_dither_set_body_only
         from libsixel_wheel import sixel_dither_set_complexion_score
-        from libsixel_wheel import sixel_dither_set_diffusion_carry
         from libsixel_wheel import sixel_dither_set_diffusion_scan
         from libsixel_wheel import sixel_dither_set_diffusion_type
         from libsixel_wheel import sixel_dither_set_optimize_palette
@@ -29,7 +28,6 @@ def test_0040_python_api_dither_setters() -> None:
     dither = sixel_dither_new(16)
     sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_ATKINSON)
     sixel_dither_set_diffusion_scan(dither, SIXEL_SCAN_SERPENTINE)
-    sixel_dither_set_diffusion_carry(dither, 1)
     sixel_dither_set_complexion_score(dither, 1)
     sixel_dither_set_body_only(dither, 0)
     sixel_dither_set_optimize_palette(dither, 1)

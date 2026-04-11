@@ -240,9 +240,6 @@ def _detect_library_bits(bin_path: pathlib.Path) -> str:
 SIXEL_SCAN_AUTO       = 0x0  # choose scan order automatically
 SIXEL_SCAN_RASTER     = 0x1  # scan from left to right on each line
 SIXEL_SCAN_SERPENTINE = 0x2  # alternate scan direction per line
-SIXEL_CARRY_AUTO      = 0x0  # choose carry mode automatically
-SIXEL_CARRY_DISABLE   = 0x1  # apply errors directly to pixels
-SIXEL_CARRY_ENABLE    = 0x2  # accumulate errors in carry lines
 
 # quality modes
 SIXEL_QUALITY_AUTO      = 0x0  # choose quality mode automatically
@@ -442,26 +439,6 @@ SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONT
                                       #            lso2     -> libsixel method based on
                                       #                        variable error diffusion
                                       #                        + jitter
-SIXEL_OPTFLAG_DIFFUSION_SCAN   = 'y'  # -y SCANTYPE, --diffusion-scan=SCANTYPE:
-                                      #          choose scan order for diffusion.
-                                      #          SCANTYPE is one of them:
-                                      #            auto       -> choose scan order
-                                      #                          automatically (default;
-                                      #                          serpentine for variable
-                                      #                          error diffusion or
-                                      #                          --quality high,
-                                      #                          raster otherwise)
-                                      #            raster     -> left-to-right
-                                      #                          scan
-                                      #            serpentine -> alternate direction
-                                      #                          on each line
-
-SIXEL_OPTFLAG_DIFFUSION_CARRY  = 'Y'  # -Y CARRYTYPE, --diffusion-carry=CARRYTYPE:
-                                      #        control diffusion carry buffers.
-                                      #          auto   -> choose automatically
-                                      #          direct -> write error back immediately
-                                      #          carry  -> accumulate in workspace lines
-
 SIXEL_OPTFLAG_FIND_LARGEST     = 'f'  # -f FINDTYPE, --find-largest=FINDTYPE:
                                       #         choose method for finding the largest
                                       #         dimension of median cut boxes for
@@ -1153,12 +1130,6 @@ def sixel_dither_set_diffusion_scan(dither, method_for_scan):
     _sixel.sixel_dither_set_diffusion_scan.restype = None
     _sixel.sixel_dither_set_diffusion_scan.argtypes = [c_void_p, c_int]
     _sixel.sixel_dither_set_diffusion_scan(dither, method_for_scan)
-
-
-def sixel_dither_set_diffusion_carry(dither, method_for_carry):
-    _sixel.sixel_dither_set_diffusion_carry.restype = None
-    _sixel.sixel_dither_set_diffusion_carry.argtypes = [c_void_p, c_int]
-    _sixel.sixel_dither_set_diffusion_carry(dither, method_for_carry)
 
 
 # get number of palette colors

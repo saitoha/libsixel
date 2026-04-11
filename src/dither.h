@@ -90,9 +90,10 @@ struct sixel_dither {
     int method_for_rep;             /* method for choosing a color from the box */
     int method_for_diffuse;         /* method for diffusing */
     int method_for_scan;            /* scan order for diffusing */
-    int method_for_carry;           /* carry buffer mode for diffusion */
     int interframe_strategy_override; /* CLI strategy override enable flag */
     int interframe_strategy_token;    /* parsed interframe strategy token */
+    int interframe_spatial_diffuse_override; /* CLI spatial diffuse flag */
+    int interframe_spatial_diffuse; /* parsed interframe spatial diffusion */
     int interframe_noise_strength_override; /* CLI strength override flag */
     int interframe_noise_strength_u8; /* parsed interframe noise strength */
     int quality_mode;               /* quality of histogram */

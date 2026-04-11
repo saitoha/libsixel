@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
               --precision=float32 \
-              -d lso2 -y serpentine -Y carry \
+              -d lso2:scan=serpentine \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - scan/carry render failed"
     exit 0

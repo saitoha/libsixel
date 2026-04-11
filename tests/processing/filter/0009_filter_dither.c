@@ -44,7 +44,6 @@ configure_test_dither(sixel_dither_t *dither,
     sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
     sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_FS);
     sixel_dither_set_diffusion_scan(dither, SIXEL_SCAN_RASTER);
-    sixel_dither_set_diffusion_carry(dither, SIXEL_CARRY_ENABLE);
     sixel_dither_set_optimize_palette(dither, 0);
     sixel_dither_set_transparent(dither, 0);
 

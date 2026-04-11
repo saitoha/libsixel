@@ -434,17 +434,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "          strength=VALUE        -> float in 0.0-2.0 (default 0.055)\n"
         "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
         "                                   (default auto)\n"
-        "    interframe and stbn ignore -Y and are not available with -I.\n"
-    },
-    {
-        'Y',
-        "diffusion-carry",
-        "-Y CARRYTYPE, --diffusion-carry=CARRYTYPE\n"
-        "    control carry buffers for diffusion CARRYTYPE is one of them:\n"
-        "      auto   -> choose carry mode automatically\n"
-        "      direct -> write error back to pixel data immediately\n"
-        "      carry  -> accumulate error in workspace buffers\n"
-        "    note: ignored when -d interframe or -d stbn is selected\n"
     },
     {
         'f',
@@ -1497,7 +1486,7 @@ static char const g_img2sixel_optstring[] =
     "=:"
     ".:"
     "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
-    "OVX:W:HY:%:1:2:3:";
+    "OVX:W:H%:1:2:3:";
 
 static int
 img2sixel_option_allows_leading_dash(int short_opt)
@@ -2339,7 +2328,6 @@ img2sixel_main(int argc, char *argv[])
         {"high-color",            no_argument,        &long_opt, 'I'},
         {"builtin-palette",       required_argument,  &long_opt, 'b'},
         {"diffusion",             required_argument,  &long_opt, 'd'},
-        {"diffusion-carry",       required_argument,  &long_opt, 'Y'},
         {"find-largest",          required_argument,  &long_opt, 'f'},
         {"select-color",          required_argument,  &long_opt, 's'},
         {"crop",                  required_argument,  &long_opt, 'c'},

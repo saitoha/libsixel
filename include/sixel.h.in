@@ -128,9 +128,6 @@ typedef int SIXELSTATUS;
 #define SIXEL_SCAN_SERPENTINE     0x2  /* alternate scan direction per line */
 
 /* diffusion carry buffer mode */
-#define SIXEL_CARRY_AUTO          0x0  /* choose carry mode automatically */
-#define SIXEL_CARRY_DISABLE       0x1  /* apply errors directly to pixels */
-#define SIXEL_CARRY_ENABLE        0x2  /* accumulate errors in carry lines */
 
 /* quality modes */
 #define SIXEL_QUALITY_AUTO        0x0  /* choose quality mode automatically */
@@ -329,43 +326,9 @@ typedef int SIXELSTATUS;
                                                                  diffusion
                                                                  (palette
                                                                  path;
-                                                                 ignores -Y;
                                                                  not
                                                                  available
                                                                  with -I)
-                                                */
-#define SIXEL_OPTFLAG_DIFFUSION_SCAN    ('y')  /* -y SCANTYPE, --diffusion-scan=SCANTYPE:
-                                                  choose scan order for error diffusion.
-                                                  SCANTYPE is one of:
-                                                    auto       -> choose scan order
-                                                                   automatically (default;
-                                                                   serpentine for variable
-                                                                   error diffusion or when
-                                                                   --quality high is
-                                                                   active, otherwise
-                                                                   raster)
-                                                    raster     -> left-to-right for
-                                                                   every line
-                                                    serpentine -> alternate direction
-                                                                    on each line
-                                                */
-#define SIXEL_OPTFLAG_DIFFUSION_CARRY   ('Y')  /* -Y CARRYTYPE, --diffusion-carry=CARRYTYPE:
-                                                  choose whether to accumulate diffusion
-                                                  error in carry lines.
-                                                  CARRYTYPE is one of:
-                                                    auto    -> choose carry mode
-                                                                automatically (default;
-                                                                enabled when --quality
-                                                                high/full/highcolor or a
-                                                                variable error diffusion
-                                                                is active)
-                                                    direct  -> write error back to pixel
-                                                                data immediately
-                                                    carry   -> accumulate error in a
-                                                                workspace buffer before
-                                                                applying
-                                                  note: this option is ignored
-                                                        for interframe
                                                 */
 #define SIXEL_OPTFLAG_FIND_LARGEST      ('f')  /* -f FINDTYPE, --find-largest=FINDTYPE:
                                                   choose method for finding the largest
@@ -1127,12 +1090,6 @@ SIXELAPI void
 sixel_dither_set_diffusion_scan(
     sixel_dither_t /* in */ *dither, /* dither context object */
     int /* in */ method_for_scan);   /* one of enum methodForScan */
-
-/* set carry buffer mode for diffusion, choose from enum carry mode */
-SIXELAPI void
-sixel_dither_set_diffusion_carry(
-    sixel_dither_t /* in */ *dither, /* dither context object */
-    int /* in */ method_for_carry);  /* one of enum carry mode */
 
 /* get number of palette colors */
 SIXELAPI int

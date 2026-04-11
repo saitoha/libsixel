@@ -889,6 +889,12 @@ static sixel_suboption_choice_t const g_option_choices_stbn_source[] = {
     { "pmj", SIXEL_INTERFRAME_STRATEGY_TOKEN_PMJ }
 };
 
+static sixel_suboption_choice_t const g_option_choices_diffusion_scan[] = {
+    { "auto", SIXEL_SCAN_AUTO },
+    { "serpentine", SIXEL_SCAN_SERPENTINE },
+    { "raster", SIXEL_SCAN_RASTER }
+};
+
 static sixel_suboption_choice_t const
 g_option_choices_interframe_diffusion[] = {
     { "auto", SIXEL_DIFFUSE_FS },
@@ -909,6 +915,18 @@ static sixel_suboption_choice_t const g_option_choices_sierra_variant[] = {
     { "3", SIXEL_DIFFUSE_SIERRA3 }
 };
 
+static sixel_suboption_key_t const g_subkeys_diffusion_scan[] = {
+    {
+        "scan",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_diffusion_scan,
+        sizeof(g_option_choices_diffusion_scan)
+        / sizeof(g_option_choices_diffusion_scan[0])
+    }
+};
+
 static sixel_suboption_key_t const g_subkeys_diffusion_sierra[] = {
     {
         "variant",
@@ -918,6 +936,15 @@ static sixel_suboption_key_t const g_subkeys_diffusion_sierra[] = {
         g_option_choices_sierra_variant,
         sizeof(g_option_choices_sierra_variant)
         / sizeof(g_option_choices_sierra_variant[0])
+    },
+    {
+        "scan",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_diffusion_scan,
+        sizeof(g_option_choices_diffusion_scan)
+        / sizeof(g_option_choices_diffusion_scan[0])
     }
 };
 
@@ -930,6 +957,15 @@ static sixel_suboption_key_t const g_subkeys_diffusion_interframe[] = {
         g_option_choices_interframe_diffusion,
         sizeof(g_option_choices_interframe_diffusion)
         / sizeof(g_option_choices_interframe_diffusion[0])
+    },
+    {
+        "scan",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_diffusion_scan,
+        sizeof(g_option_choices_diffusion_scan)
+        / sizeof(g_option_choices_diffusion_scan[0])
     }
 };
 
@@ -959,6 +995,15 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "scan",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_diffusion_scan,
+        sizeof(g_option_choices_diffusion_scan)
+        / sizeof(g_option_choices_diffusion_scan[0])
     }
 };
 
@@ -970,6 +1015,9 @@ enum {
     G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT =
         (int)(sizeof(g_subkeys_diffusion_interframe)
               / sizeof(g_subkeys_diffusion_interframe[0])),
+    G_SUBKEYS_DIFFUSION_SCAN_COUNT =
+        (int)(sizeof(g_subkeys_diffusion_scan)
+              / sizeof(g_subkeys_diffusion_scan[0])),
     G_SUBKEYS_DIFFUSION_SIERRA_COUNT =
         (int)(sizeof(g_subkeys_diffusion_sierra)
               / sizeof(g_subkeys_diffusion_sierra[0])),
@@ -982,44 +1030,44 @@ static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
     {
         "auto",
         SIXEL_DIFFUSE_AUTO,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "none",
         SIXEL_DIFFUSE_NONE,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "fs",
         SIXEL_DIFFUSE_FS,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "atkinson",
         SIXEL_DIFFUSE_ATKINSON,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "jajuni",
         SIXEL_DIFFUSE_JAJUNI,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "stucki",
         SIXEL_DIFFUSE_STUCKI,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "burkes",
         SIXEL_DIFFUSE_BURKES,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "sierra",
@@ -1030,26 +1078,26 @@ static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
     {
         "a_dither",
         SIXEL_DIFFUSE_A_DITHER,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "x_dither",
         SIXEL_DIFFUSE_X_DITHER,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "bluenoise",
         SIXEL_DIFFUSE_BLUENOISE_DITHER,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "lso2",
         SIXEL_DIFFUSE_LSO2,
-        NULL,
-        0
+        g_subkeys_diffusion_scan,
+        G_SUBKEYS_DIFFUSION_SCAN_COUNT
     },
     {
         "interframe",
@@ -1070,18 +1118,6 @@ static sixel_option_argument_schema_t const g_schema_diffusion = {
     "--diffusion",
     g_schema_diffusion_values,
     sizeof(g_schema_diffusion_values) / sizeof(g_schema_diffusion_values[0])
-};
-
-static sixel_option_choice_t const g_option_choices_diffusion_scan[] = {
-    { "auto", SIXEL_SCAN_AUTO },
-    { "serpentine", SIXEL_SCAN_SERPENTINE },
-    { "raster", SIXEL_SCAN_RASTER }
-};
-
-static sixel_option_choice_t const g_option_choices_diffusion_carry[] = {
-    { "auto", SIXEL_CARRY_AUTO },
-    { "direct", SIXEL_CARRY_DISABLE },
-    { "carry", SIXEL_CARRY_ENABLE }
 };
 
 static sixel_option_choice_t const g_option_choices_find_largest[] = {
@@ -3437,8 +3473,6 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->interframe_noise_strength_u8;
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
-    sixel_dither_set_diffusion_carry(context->dither,
-                                     context->encoder->method_for_carry);
 
     if (context->encoder->complexion > 1) {
         sixel_dither_set_complexion_score(context->dither,
@@ -5609,7 +5643,6 @@ sixel_encoder_new(
     (*ppencoder)->interframe_noise_strength_override = 0;
     (*ppencoder)->interframe_noise_strength_u8 = 0;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
-    (*ppencoder)->method_for_carry      = SIXEL_CARRY_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
@@ -6937,6 +6970,40 @@ sixel_encoder_resolve_sierra_suboptions(
 }
 
 static SIXELSTATUS
+sixel_encoder_resolve_diffusion_scan_suboptions(
+    sixel_option_argument_resolution_t const *resolution,
+    int *scan_mode)
+{
+    size_t index;
+    sixel_suboption_assignment_t const *assignment;
+    int resolved_scan;
+
+    index = 0u;
+    assignment = NULL;
+    resolved_scan = SIXEL_SCAN_AUTO;
+    if (resolution == NULL || scan_mode == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *scan_mode = SIXEL_SCAN_AUTO;
+    while (index < resolution->assignment_count) {
+        assignment = resolution->assignments + index;
+        if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "scan") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_scan)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *scan_mode = resolved_scan;
+        }
+        ++index;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_resolve_interframe_suboptions(
     sixel_option_argument_resolution_t const *resolution,
     int *has_strategy_override,
@@ -8026,6 +8093,7 @@ sixel_encoder_setopt(
     int interframe_spatial_diffuse;
     int interframe_noise_strength_override;
     int interframe_noise_strength_u8;
+    int diffusion_scan;
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
     double q_threshold;
@@ -8070,6 +8138,7 @@ sixel_encoder_setopt(
     interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     interframe_noise_strength_override = 0;
     interframe_noise_strength_u8 = 0;
+    diffusion_scan = SIXEL_SCAN_AUTO;
     q_resolution = NULL;
     q_index = 0u;
     q_threshold = 0.0;
@@ -8200,6 +8269,13 @@ sixel_encoder_setopt(
             sixel_option_free_argument_resolution(&d_resolution);
             goto end;
         }
+        status = sixel_encoder_resolve_diffusion_scan_suboptions(
+            &d_resolution,
+            &diffusion_scan);
+        if (SIXEL_FAILED(status)) {
+            sixel_option_free_argument_resolution(&d_resolution);
+            goto end;
+        }
         status = sixel_encoder_resolve_interframe_suboptions(
             &d_resolution,
             &interframe_strategy_override,
@@ -8214,6 +8290,7 @@ sixel_encoder_setopt(
         }
 
         encoder->method_for_diffuse = match_value;
+        encoder->method_for_scan = diffusion_scan;
         encoder->interframe_strategy_override = interframe_strategy_override;
         encoder->interframe_strategy_token = interframe_strategy_token;
         encoder->interframe_spatial_diffuse_override
@@ -8222,32 +8299,6 @@ sixel_encoder_setopt(
         encoder->interframe_noise_strength_override
             = interframe_noise_strength_override;
         encoder->interframe_noise_strength_u8 = interframe_noise_strength_u8;
-        break;
-    case SIXEL_OPTFLAG_DIFFUSION_SCAN:  /* y */
-        status = sixel_encoder_parse_choice_argument(
-            value,
-            g_option_choices_diffusion_scan,
-            sizeof(g_option_choices_diffusion_scan) /
-                sizeof(g_option_choices_diffusion_scan[0]),
-            "specified diffusion scan is not supported.",
-            &match_value);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        encoder->method_for_scan = match_value;
-        break;
-    case SIXEL_OPTFLAG_DIFFUSION_CARRY:  /* Y */
-        status = sixel_encoder_parse_choice_argument(
-            value,
-            g_option_choices_diffusion_carry,
-            sizeof(g_option_choices_diffusion_carry) /
-                sizeof(g_option_choices_diffusion_carry[0]),
-            "specified diffusion carry mode is not supported.",
-            &match_value);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        encoder->method_for_carry = match_value;
         break;
     case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
         if (value != NULL) {

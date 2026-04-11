@@ -29,7 +29,7 @@ fs_static=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -S -T 0 \
-        -d fs -Y direct -p 16 \
+        -d fs -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "fs static start-frame encode failed"

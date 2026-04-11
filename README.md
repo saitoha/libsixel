@@ -671,18 +671,6 @@ Options:
                                            -> auto, raster, or
                                               serpentine
                                               (default auto)
-                           interframe and stbn ignore -Y and are
-                           not available with -I.
--Y CARRYTYPE, --diffusion-carry=CARRYTYPE
-                           control carry buffers for error diffusion
-                           CARRYTYPE is one of them:
-                             auto   -> choose carry mode automatically
-                             direct -> write error back to pixel data
-                                       immediately
-                             carry  -> accumulate error in workspace
-                                       buffers before applying
-                           note: ignored when -d interframe
-                                 or -d stbn is selected
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for

@@ -461,7 +461,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     int use_carry;
     size_t carry_len;
     int method_for_diffuse;
-    int method_for_carry;
     int method_for_scan;
     sixel_lut_t *fast_lut;
     int use_fast_lut;
@@ -541,7 +540,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     }
     optimize_palette = context->optimize_palette;
     method_for_diffuse = context->method_for_diffuse;
-    method_for_carry = context->method_for_carry;
     method_for_scan = context->method_for_scan;
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
@@ -588,7 +586,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
         break;
     }
 
-    use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
+    use_carry = 0;
     carry_curr = NULL;
     carry_next = NULL;
     carry_far = NULL;
