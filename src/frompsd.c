@@ -16995,6 +16995,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int interior_glow_effects_enabled;
     int traced_interior_effects_skip;
     int use_split_glow_effects;
+    int has_explicit_bevel_channels;
     int has_named_bevel;
     float stroke_opacity;
     float stroke_size;
@@ -17028,6 +17029,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     interior_glow_effects_enabled = 1;
     traced_interior_effects_skip = 0;
     use_split_glow_effects = 0;
+    has_explicit_bevel_channels = 0;
     has_named_bevel = 0;
     stroke_opacity = 0.0f;
     stroke_size = 0.0f;
@@ -17041,15 +17043,21 @@ sixel_builtin_psd_apply_layer_effects_subset(
         src->alpha == NULL) {
         return;
     }
+    has_explicit_bevel_channels =
+        layer->has_effect_bevel != 0 &&
+        (layer->effect_bevel_highlight_opacity > 0.0f ||
+         layer->effect_bevel_shadow_opacity > 0.0f) &&
+        layer->effect_bevel_size > 0.0f;
     if (layer->has_vector_stroke_style != 0 &&
         layer->has_effect_outer_glow != 0 &&
         layer->has_effect_inner_glow != 0 &&
         layer->has_effect_solid_overlay == 0 &&
-        layer->has_effect_gradient_overlay == 0) {
+        layer->has_effect_gradient_overlay == 0 &&
+        has_explicit_bevel_channels == 0) {
         /*
-         * Bevel/Emboss payloads are currently approximated as paired glows.
-         * On vector-stroke composite layers this proxy can overpower the
-         * stroke silhouette, so keep the proxy disabled in that subset.
+         * Bevel/Emboss payloads can be approximated as paired glows. Keep the
+         * proxy disabled on vector-stroke composite layers to avoid edge
+         * overpaint, but retain explicit bevel channels when they exist.
          */
         suppress_bevel_glow_proxy = 1;
     }
@@ -17059,10 +17067,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
          layer->has_vector_stroke_content_fill != 0)) {
         use_split_glow_effects = 1;
     }
-    if (layer->has_effect_bevel != 0 &&
-        (layer->effect_bevel_highlight_opacity > 0.0f ||
-         layer->effect_bevel_shadow_opacity > 0.0f) &&
-        layer->effect_bevel_size > 0.0f) {
+    if (has_explicit_bevel_channels != 0) {
         has_named_bevel = 1;
     }
     interior_effects_enabled =
