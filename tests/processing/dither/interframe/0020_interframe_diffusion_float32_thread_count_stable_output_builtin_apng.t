@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal float32 output is stable across thread counts.
+# TAP test ensuring interframe float32 output is stable across thread counts.
 
 set -eux
 
@@ -57,9 +57,9 @@ multi_thread_output=$(
 }
 
 test "${multi_thread_output}" = "${single_thread_output}" || {
-    echo "not ok" 1 - "float32 temporal output changed across thread counts"
+    echo "not ok" 1 - "float32 interframe output changed across thread counts"
     exit 0
 }
 
-echo "ok" 1 - "temporal float32 output is stable across thread counts"
+echo "ok" 1 - "interframe float32 output is stable across thread counts"
 exit 0

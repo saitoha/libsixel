@@ -33,7 +33,7 @@ diffusion_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal diffusion baseline encode failed"
+    echo "not ok" 1 - "interframe diffusion baseline encode failed"
     exit 0
 }
 
@@ -46,7 +46,7 @@ stbn_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal stbn placeholder encode failed"
+    echo "not ok" 1 - "interframe stbn placeholder encode failed"
     exit 0
 }
 

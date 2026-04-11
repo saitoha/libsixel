@@ -9,7 +9,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
-palette_output="${ARTIFACT_LOCAL_DIR}/temporal-float32-stbn-mask-mapfile-builtin-apng.pal"
+palette_output="${ARTIFACT_LOCAL_DIR}/interframe-float32-stbn-mask-mapfile-builtin-apng.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \

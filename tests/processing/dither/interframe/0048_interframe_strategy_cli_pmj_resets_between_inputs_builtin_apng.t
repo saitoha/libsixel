@@ -32,7 +32,7 @@ combined_output=$(
         -d interframe:strategy=pmj -p 16 \
         "${input_apng}" "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal strategy=pmj two-input encode failed"
+    echo "not ok" 1 - "interframe strategy=pmj two-input encode failed"
     exit 0
 }
 
@@ -44,7 +44,7 @@ single_output=$(
         -d interframe:strategy=pmj -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal strategy=pmj single-input encode failed"
+    echo "not ok" 1 - "interframe strategy=pmj single-input encode failed"
     exit 0
 }
 

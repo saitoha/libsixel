@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal float32 matches fs on static start frame.
+# TAP test ensuring interframe float32 matches fs on static start frame.
 
 set -eux
 

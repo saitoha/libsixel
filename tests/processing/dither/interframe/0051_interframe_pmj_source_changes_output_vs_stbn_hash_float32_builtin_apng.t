@@ -35,7 +35,7 @@ hash_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-hash float32 APNG encode failed"
+    echo "not ok" 1 - "interframe stbn-hash float32 APNG encode failed"
     exit 0
 }
 
@@ -49,7 +49,7 @@ pmj_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal pmj float32 APNG encode failed"
+    echo "not ok" 1 - "interframe pmj float32 APNG encode failed"
     exit 0
 }
 

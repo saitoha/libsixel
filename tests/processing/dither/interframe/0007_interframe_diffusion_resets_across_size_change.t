@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal diffusion state resets before size-changing input.
+# TAP test ensuring interframe diffusion state resets before size-changing input.
 
 set -eux
 
@@ -51,7 +51,7 @@ single_output=$(
 
 expected_output="${animated_output}${single_output}"
 test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "size change carried temporal state into next input"
+    echo "not ok" 1 - "size change carried interframe state into next input"
     exit 0
 }
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal output is stable across threads on builtin APNG.
+# TAP test ensuring interframe output is stable across threads on builtin APNG.
 
 set -eux
 
@@ -54,9 +54,9 @@ multi_thread_output=$(
 }
 
 test "${multi_thread_output}" = "${single_thread_output}" || {
-    echo "not ok" 1 - "builtin APNG temporal output changed across thread counts"
+    echo "not ok" 1 - "builtin APNG interframe output changed across thread counts"
     exit 0
 }
 
-echo "ok" 1 - "builtin APNG temporal output is stable across thread counts"
+echo "ok" 1 - "builtin APNG interframe output is stable across thread counts"
 exit 0

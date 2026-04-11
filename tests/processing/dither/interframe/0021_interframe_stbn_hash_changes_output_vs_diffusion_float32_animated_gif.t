@@ -35,7 +35,7 @@ diffusion_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal diffusion float32 baseline encode failed"
+    echo "not ok" 1 - "interframe diffusion float32 baseline encode failed"
     exit 0
 }
 
@@ -49,7 +49,7 @@ stbn_hash_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-hash float32 encode failed"
+    echo "not ok" 1 - "interframe stbn-hash float32 encode failed"
     exit 0
 }
 

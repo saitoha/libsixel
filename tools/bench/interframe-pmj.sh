@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: MIT
 #
-# Temporal PMJ micro benchmark for local optimization checks.
+# Interframe PMJ micro benchmark for local optimization checks.
 # Output format:
 #   strategy<TAB>precision<TAB>threads<TAB>elapsed_ms
 
@@ -10,11 +10,15 @@ set -eu
 script_dir=${0%/*}
 repo_root=$(cd "${script_dir}/../.." && pwd)
 
-img2sixel_bin=${IMG2SIXEL_BIN:-"${repo_root}/build-autotools-temporalcheck/converters/img2sixel"}
+default_img2sixel_bin="${repo_root}/build-autotools-interframecheck/converters/img2sixel"
+if ! test -x "${default_img2sixel_bin}"; then
+    default_img2sixel_bin="${repo_root}/build-autotools1/converters/img2sixel"
+fi
+img2sixel_bin=${IMG2SIXEL_BIN:-"${default_img2sixel_bin}"}
 input_image=${1:-"${repo_root}/images/snake.png"}
 runs=${2:-3}
 output_dir="${repo_root}/.artifacts"
-output_file="${output_dir}/temporal-pmj.tsv"
+output_file="${output_dir}/interframe-pmj.tsv"
 
 if ! test -x "${img2sixel_bin}"; then
     echo "img2sixel binary is not executable: ${img2sixel_bin}" >&2
@@ -38,14 +42,14 @@ for precision in 8bit float32; do
                 )
                 if test "${precision}" = "float32"; then
                     "${img2sixel_bin}" \
-                        -d "temporal-diffusion:strategy=${strategy}" \
+                        -d "interframe:strategy=${strategy}" \
                         --precision=float32 \
                         -p 16 \
                         --threads="${threads}" \
                         "${input_image}" >/dev/null
                 else
                     "${img2sixel_bin}" \
-                        -d "temporal-diffusion:strategy=${strategy}" \
+                        -d "interframe:strategy=${strategy}" \
                         -p 16 \
                         --threads="${threads}" \
                         "${input_image}" >/dev/null

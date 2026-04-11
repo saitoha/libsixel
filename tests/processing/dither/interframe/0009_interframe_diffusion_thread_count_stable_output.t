@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal diffusion output stays stable across thread counts.
+# TAP test ensuring interframe diffusion output stays stable across thread counts.
 
 set -eux
 

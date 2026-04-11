@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying non-temporal diffusion rejects strategy suboptions.
+# TAP test verifying non-interframe diffusion rejects strategy suboptions.
 
 set -eux
 
@@ -18,14 +18,14 @@ msg=$(
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
         -o /dev/null 2>&1
 ) && {
-    echo "not ok" 1 - "non-temporal diffusion strategy unexpectedly succeeded"
+    echo "not ok" 1 - "non-interframe diffusion strategy unexpectedly succeeded"
     exit 0
 }
 
 test "${msg#*supported only for interframe*}" != "${msg}" || {
-    echo "not ok" 1 - "missing non-temporal strategy rejection diagnostic"
+    echo "not ok" 1 - "missing non-interframe strategy rejection diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "non-temporal diffusion strategy suboption is rejected"
+echo "ok" 1 - "non-interframe diffusion strategy suboption is rejected"
 exit 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring float32 strategy=diffusion matches default temporal output.
+# TAP test ensuring float32 strategy=diffusion matches default interframe output.
 
 set -eux
 
@@ -34,7 +34,7 @@ default_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 temporal default encode failed"
+    echo "not ok" 1 - "float32 interframe default encode failed"
     exit 0
 }
 
@@ -47,7 +47,7 @@ strategy_diffusion_output=$(
         -d interframe:strategy=diffusion -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 temporal strategy=diffusion encode failed"
+    echo "not ok" 1 - "float32 interframe strategy=diffusion encode failed"
     exit 0
 }
 
@@ -56,5 +56,5 @@ test "${strategy_diffusion_output}" = "${default_output}" || {
     exit 0
 }
 
-echo "ok" 1 - "float32 strategy=diffusion matches default temporal output"
+echo "ok" 1 - "float32 strategy=diffusion matches default interframe output"
 exit 0

@@ -32,7 +32,7 @@ stbn_output=$(
         -d interframe:strategy=stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit temporal strategy=stbn encode failed"
+    echo "not ok" 1 - "8bit interframe strategy=stbn encode failed"
     exit 0
 }
 
@@ -44,7 +44,7 @@ stbn_hash_output=$(
         -d interframe:strategy=stbn-hash -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit temporal strategy=stbn-hash encode failed"
+    echo "not ok" 1 - "8bit interframe strategy=stbn-hash encode failed"
     exit 0
 }
 

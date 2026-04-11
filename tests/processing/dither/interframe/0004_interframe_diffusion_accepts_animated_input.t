@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal diffusion accepts animated input.
+# TAP test ensuring interframe diffusion accepts animated input.
 
 set -eux
 

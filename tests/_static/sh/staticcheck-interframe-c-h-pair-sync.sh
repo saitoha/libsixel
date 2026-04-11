@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for temporal source/header one-to-one pairing in src/.
+# Emit TAP for interframe source/header one-to-one pairing in src/.
 
 set -eu
 
@@ -13,7 +13,7 @@ if test ! -d "$src_dir"; then
     exit 0
 fi
 
-tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-temporal-c-h-pair-XXXXXX")
+tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-interframe-c-h-pair-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 c_bases=$tmpdir/c_bases.txt
@@ -43,10 +43,10 @@ while IFS= read -r base; do
 done < "$h_bases"
 
 if test "$status" -eq 0; then
-    echo "ok 1 - temporal c/h files keep one-to-one pairing"
+    echo "ok 1 - interframe c/h files keep one-to-one pairing"
     exit 0
 fi
 
-echo "not ok 1 - temporal c/h files keep one-to-one pairing"
+echo "not ok 1 - interframe c/h files keep one-to-one pairing"
 cat "$missing"
 exit 1

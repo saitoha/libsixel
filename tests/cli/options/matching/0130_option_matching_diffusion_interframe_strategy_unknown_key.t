@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying unknown temporal strategy keys are rejected.
+# TAP test verifying unknown interframe strategy keys are rejected.
 
 set -eux
 
@@ -18,12 +18,12 @@ msg=$(
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
         -o /dev/null 2>&1
 ) && {
-    echo "not ok" 1 - "unknown temporal strategy key unexpectedly succeeded"
+    echo "not ok" 1 - "unknown interframe strategy key unexpectedly succeeded"
     exit 0
 }
 
 test "${msg#*unknown suboption key*}" != "${msg}" || {
-    echo "not ok" 1 - "missing unknown temporal strategy key diagnostic"
+    echo "not ok" 1 - "missing unknown interframe strategy key diagnostic"
     exit 0
 }
 
@@ -32,5 +32,5 @@ test "${msg#*strategy*}" != "${msg}" || {
     exit 0
 }
 
-echo "ok" 1 - "unknown temporal strategy key is rejected"
+echo "ok" 1 - "unknown interframe strategy key is rejected"
 exit 0

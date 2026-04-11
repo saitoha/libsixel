@@ -14,7 +14,7 @@ test "${HAVE_WEBP-}" = 1 || {
 }
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
-palette_output="${ARTIFACT_LOCAL_DIR}/temporal-mapfile.pal"
+palette_output="${ARTIFACT_LOCAL_DIR}/interframe-mapfile.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \

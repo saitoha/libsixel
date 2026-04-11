@@ -696,7 +696,7 @@ sixel_dither_map_pixels(
                : SIXEL_CARRY_DISABLE;
     if (use_interframe) {
         /*
-         * Temporal diffusion controls inter-frame feedback internally and
+         * Interframe diffusion controls inter-frame feedback internally and
          * intentionally ignores the legacy carry-mode selector.
          */
         carry_mode = SIXEL_CARRY_DISABLE;
@@ -864,7 +864,7 @@ sixel_dither_map_pixels(
             /*
              * Float inputs can reuse the float32 renderer for every
              * fixed-weight kernel (FS, Sierra, Stucki, etc.) as long as
-             * carry buffers are disabled. Temporal diffusion is included
+             * carry buffers are disabled. Interframe diffusion is included
              * here because it owns its inter-frame state internally and
              * ignores the legacy carry selector.
              */

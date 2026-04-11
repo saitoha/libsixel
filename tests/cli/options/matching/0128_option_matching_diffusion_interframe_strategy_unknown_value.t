@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying unknown temporal strategy suboption values are rejected.
+# TAP test verifying unknown interframe strategy suboption values are rejected.
 
 set -eux
 
@@ -18,19 +18,19 @@ msg=$(
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
         -o /dev/null 2>&1
 ) && {
-    echo "not ok" 1 - "unknown temporal strategy unexpectedly succeeded"
+    echo "not ok" 1 - "unknown interframe strategy unexpectedly succeeded"
     exit 0
 }
 
 test "${msg#*unknown suboption value*}" != "${msg}" || {
-    echo "not ok" 1 - "missing unknown temporal strategy diagnostic"
+    echo "not ok" 1 - "missing unknown interframe strategy diagnostic"
     exit 0
 }
 
 test "${msg#*strategy*}" != "${msg}" || {
-    echo "not ok" 1 - "unknown temporal strategy diagnostic lacked key name"
+    echo "not ok" 1 - "unknown interframe strategy diagnostic lacked key name"
     exit 0
 }
 
-echo "ok" 1 - "unknown temporal strategy value is rejected"
+echo "ok" 1 - "unknown interframe strategy value is rejected"
 exit 0

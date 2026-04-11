@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal diffusion matches fs on a static frame render.
+# TAP test ensuring interframe diffusion matches fs on a static frame render.
 
 set -eux
 

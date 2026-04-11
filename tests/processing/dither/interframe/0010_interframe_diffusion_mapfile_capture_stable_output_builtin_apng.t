@@ -9,7 +9,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
-palette_output="${ARTIFACT_LOCAL_DIR}/temporal-mapfile-builtin-apng.pal"
+palette_output="${ARTIFACT_LOCAL_DIR}/interframe-mapfile-builtin-apng.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
@@ -57,9 +57,9 @@ test -s "${palette_output}" || {
 }
 
 test "${captured_output}" = "${baseline_output}" || {
-    echo "not ok" 1 - "builtin APNG mapfile capture changed temporal output"
+    echo "not ok" 1 - "builtin APNG mapfile capture changed interframe output"
     exit 0
 }
 
-echo "ok" 1 - "temporal output is stable with mapfile on builtin APNG path"
+echo "ok" 1 - "interframe output is stable with mapfile on builtin APNG path"
 exit 0

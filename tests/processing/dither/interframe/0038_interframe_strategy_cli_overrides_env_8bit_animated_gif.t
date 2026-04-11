@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring 8bit temporal strategy suboption overrides env strategy.
+# TAP test ensuring 8bit interframe strategy suboption overrides env strategy.
 
 set -eux
 
@@ -33,7 +33,7 @@ diffusion_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit temporal diffusion baseline encode failed"
+    echo "not ok" 1 - "8bit interframe diffusion baseline encode failed"
     exit 0
 }
 
@@ -46,7 +46,7 @@ env_pmj_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit temporal pmj env encode failed"
+    echo "not ok" 1 - "8bit interframe pmj env encode failed"
     exit 0
 }
 
@@ -59,7 +59,7 @@ cli_override_output=$(
         -d interframe:strategy=pmj -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit temporal pmj cli override encode failed"
+    echo "not ok" 1 - "8bit interframe pmj cli override encode failed"
     exit 0
 }
 
@@ -73,5 +73,5 @@ test "${cli_override_output}" = "${env_pmj_output}" || {
     exit 0
 }
 
-echo "ok" 1 - "8bit temporal strategy cli override wins over env"
+echo "ok" 1 - "8bit interframe strategy cli override wins over env"
 exit 0

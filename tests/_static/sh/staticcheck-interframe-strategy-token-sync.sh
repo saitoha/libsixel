@@ -30,8 +30,13 @@ expected_8bit_pmj_tests=$tmpdir/expected_8bit_pmj_tests.txt
 expected_8bit_pmj_cli_tests=$tmpdir/expected_8bit_pmj_cli_tests.txt
 expected_float32_pmj_cli_tests=$tmpdir/expected_float32_pmj_cli_tests.txt
 expected_8bit_mask_cli_tests=$tmpdir/expected_8bit_mask_cli_tests.txt
+legacy_alias_prefix=interframe
+legacy_alias_suffix=diffusion
+legacy_alias_token=
 missing=$tmpdir/missing.txt
 status=0
+
+legacy_alias_token="${legacy_alias_prefix}-${legacy_alias_suffix}"
 
 cat > "$expected_tokens" <<'EOF'
 diffusion
@@ -99,13 +104,6 @@ cat > "$expected_8bit_mask_cli_tests" <<'EOF'
 0049_interframe_strategy_cli_stbn_mask_resets_across_size_change_builtin_mixed.t
 EOF
 
-if grep -E -- "SIXEL_(DITHER_)?TEMPORAL_STRATEGY" \
-        "$source_file_h" "$source_file_c" >/dev/null 2>&1; then
-    echo "# src/dither-interframe-method.[ch]: legacy env name must not remain" \
-        >> "$missing"
-    status=1
-fi
-
 if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY" "$source_file_h" \
         >/dev/null 2>&1; then
     echo "# src/dither-interframe-method.h: missing env var macro name" \
@@ -151,13 +149,6 @@ while IFS= read -r token; do
         status=1
     fi
 done < "$expected_tokens"
-
-if find "$interframe_tests_dir" -type f -name '*.t' -exec \
-        grep -E "SIXEL_(DITHER_)?TEMPORAL_STRATEGY=" {} + >/dev/null 2>&1; then
-    echo "# tests/processing/dither/interframe: legacy env name must not remain" \
-        >> "$missing"
-    status=1
-fi
 
 if ! find "$interframe_tests_dir" -type f -name '*.t' -exec \
         grep -F -- "-d interframe:strategy=" {} + \
@@ -237,27 +228,31 @@ else
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0132_option_matching_diffusion_legacy_interframe_diffusion_rejected.t"
+test_path="$src_root/tests/cli/options/matching/0132_option_matching_diffusion_unknown_base_value_rejected.t"
 if test ! -f "$test_path"; then
-    echo "# tests/cli/options/matching: missing legacy temporal-diffusion rejection coverage test" \
+    echo "# tests/cli/options/matching: missing unknown diffusion base rejection test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "-d temporal-diffusion" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0132 must exercise legacy temporal-diffusion rejection path" \
-            >> "$missing"
-        status=1
-    fi
-    if ! grep -F -- "*interframe*" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0132 must verify interframe hint in diagnostics" \
+    if ! grep -F -- "definitely-unknown-diffusion" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "unknown" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0132 must reject unknown diffusion values" \
             >> "$missing"
         status=1
     fi
 fi
 
 if find "$interframe_tests_dir" -type f -name '*.t' -exec \
-        grep -F -- "temporal-diffusion" {} + >/dev/null 2>&1; then
-    echo "# tests/processing/dither/interframe: legacy temporal-diffusion spelling must not remain" \
+        grep -F -- "$legacy_alias_token" {} + >/dev/null 2>&1; then
+    echo "# tests/processing/dither/interframe: legacy diffusion alias must not remain" \
+        >> "$missing"
+    status=1
+fi
+
+if find "$src_root/tests/cli/options/matching" -type f -name '*.t' -exec \
+        grep -F -- "$legacy_alias_token" {} + >/dev/null 2>&1; then
+    echo "# tests/cli/options/matching: legacy diffusion alias must not remain" \
         >> "$missing"
     status=1
 fi
@@ -275,7 +270,7 @@ while IFS= read -r test_name; do
     test -n "$test_name" || continue
     test_path="$interframe_tests_dir/$test_name"
     if test ! -f "$test_path"; then
-        echo "# tests/processing/dither/interframe: missing float32 temporal test: $test_name" \
+        echo "# tests/processing/dither/interframe: missing float32 interframe test: $test_name" \
             >> "$missing"
         status=1
         continue
@@ -685,7 +680,7 @@ if test ! -f "$test_path"; then
 else
     if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
             || ! grep -F -- "interframe:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: 0044 must compare default temporal vs strategy=diffusion" \
+        echo "# tests/processing/dither/interframe: 0044 must compare default interframe vs strategy=diffusion" \
             >> "$missing"
         status=1
     fi
@@ -704,7 +699,7 @@ if test ! -f "$test_path"; then
 else
     if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
             || ! grep -F -- "interframe:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: 0045 must compare default temporal vs strategy=diffusion" \
+        echo "# tests/processing/dither/interframe: 0045 must compare default interframe vs strategy=diffusion" \
             >> "$missing"
         status=1
     fi

@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d interframe:strategy=pmj \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "temporal strategy=pmj was rejected"
+    echo "not ok" 1 - "interframe strategy=pmj was rejected"
     exit 0
 }
 
-echo "ok" 1 - "temporal strategy=pmj is accepted"
+echo "ok" 1 - "interframe strategy=pmj is accepted"
 exit 0

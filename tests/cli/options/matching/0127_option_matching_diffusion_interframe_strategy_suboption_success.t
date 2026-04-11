@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d interframe:strategy=stbn-mask \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "temporal strategy suboption was rejected"
+    echo "not ok" 1 - "interframe strategy suboption was rejected"
     exit 0
 }
 
-echo "ok" 1 - "temporal strategy suboption is accepted"
+echo "ok" 1 - "interframe strategy suboption is accepted"
 exit 0

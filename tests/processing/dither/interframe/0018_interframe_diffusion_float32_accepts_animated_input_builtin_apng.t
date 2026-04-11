@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal float32 accepts builtin APNG animation input.
+# TAP test ensuring interframe float32 accepts builtin APNG animation input.
 
 set -eux
 

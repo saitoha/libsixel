@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal diffusion state is reset between input files.
+# TAP test ensuring interframe diffusion state is reset between input files.
 
 set -eux
 
@@ -39,7 +39,7 @@ single_output=$(
 
 expected_output="${single_output}${single_output}"
 test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "temporal state leaked across input boundary"
+    echo "not ok" 1 - "interframe state leaked across input boundary"
     exit 0
 }
 

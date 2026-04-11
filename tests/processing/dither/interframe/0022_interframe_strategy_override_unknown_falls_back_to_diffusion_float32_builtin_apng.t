@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring unknown float32 temporal strategy falls back to diffusion.
+# TAP test ensuring unknown float32 interframe strategy falls back to diffusion.
 
 set -eux
 
@@ -35,7 +35,7 @@ diffusion_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal diffusion float32 baseline encode failed"
+    echo "not ok" 1 - "interframe diffusion float32 baseline encode failed"
     exit 0
 }
 
@@ -49,7 +49,7 @@ unknown_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal unknown-strategy float32 encode failed"
+    echo "not ok" 1 - "interframe unknown-strategy float32 encode failed"
     exit 0
 }
 

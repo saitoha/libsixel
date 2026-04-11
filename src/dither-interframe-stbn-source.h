@@ -23,7 +23,7 @@
  */
 
 /*
- * Shared STBN temporal source selection and sampling hooks.
+ * Shared STBN interframe source selection and sampling hooks.
  */
 #ifndef LIBSIXEL_DITHER_INTERFRAME_STBN_SOURCE_H
 #define LIBSIXEL_DITHER_INTERFRAME_STBN_SOURCE_H

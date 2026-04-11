@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring temporal strategy suboption overrides env strategy.
+# TAP test ensuring interframe strategy suboption overrides env strategy.
 
 set -eux
 
@@ -35,7 +35,7 @@ diffusion_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 temporal diffusion baseline encode failed"
+    echo "not ok" 1 - "float32 interframe diffusion baseline encode failed"
     exit 0
 }
 
@@ -49,7 +49,7 @@ env_hash_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 temporal stbn-hash env encode failed"
+    echo "not ok" 1 - "float32 interframe stbn-hash env encode failed"
     exit 0
 }
 
@@ -63,7 +63,7 @@ cli_override_output=$(
         -d interframe:strategy=stbn-hash -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 temporal stbn-hash cli override encode failed"
+    echo "not ok" 1 - "float32 interframe stbn-hash cli override encode failed"
     exit 0
 }
 
@@ -77,5 +77,5 @@ test "${cli_override_output}" = "${env_hash_output}" || {
     exit 0
 }
 
-echo "ok" 1 - "temporal strategy cli override wins over env"
+echo "ok" 1 - "interframe strategy cli override wins over env"
 exit 0

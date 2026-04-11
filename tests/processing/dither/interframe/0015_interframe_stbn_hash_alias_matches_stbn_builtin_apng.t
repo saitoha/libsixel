@@ -33,7 +33,7 @@ stbn_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal stbn encode failed"
+    echo "not ok" 1 - "interframe stbn encode failed"
     exit 0
 }
 
@@ -46,7 +46,7 @@ stbn_hash_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-hash encode failed"
+    echo "not ok" 1 - "interframe stbn-hash encode failed"
     exit 0
 }
 

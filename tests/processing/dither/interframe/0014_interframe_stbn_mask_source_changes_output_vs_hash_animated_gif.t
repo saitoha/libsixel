@@ -31,7 +31,7 @@ hash_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-hash encode failed"
+    echo "not ok" 1 - "interframe stbn-hash encode failed"
     exit 0
 }
 
@@ -43,7 +43,7 @@ mask_output=$(
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "temporal stbn-mask encode failed"
+    echo "not ok" 1 - "interframe stbn-mask encode failed"
     exit 0
 }
 

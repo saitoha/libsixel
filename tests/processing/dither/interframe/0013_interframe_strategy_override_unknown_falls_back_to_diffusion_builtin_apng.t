@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring unknown temporal strategy override falls back to diffusion.
+# TAP test ensuring unknown interframe strategy override falls back to diffusion.
 
 set -eux
 
@@ -33,7 +33,7 @@ diffusion_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal diffusion baseline encode failed"
+    echo "not ok" 1 - "interframe diffusion baseline encode failed"
     exit 0
 }
 
@@ -46,7 +46,7 @@ unknown_output=$(
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "temporal unknown-strategy encode failed"
+    echo "not ok" 1 - "interframe unknown-strategy encode failed"
     exit 0
 }
 

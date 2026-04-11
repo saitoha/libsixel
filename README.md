@@ -584,10 +584,10 @@ Options:
                              lso2     -> libsixel method based on
                                          variable error diffusion
                                          tables, optimized for size
-                             temporal-diffusion -> temporal error
-                                          diffusion (palette path;
-                                          ignores -Y; not available
-                                          with -I)
+                             interframe[:strategy=MODE]
+                                         -> interframe error diffusion
+                                            (palette path; ignores -Y;
+                                            not available with -I)
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:
@@ -603,7 +603,7 @@ Options:
                                        immediately
                              carry  -> accumulate error in workspace
                                        buffers before applying
-                           note: ignored when -d temporal-diffusion
+                           note: ignored when -d interframe
                                  is selected
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Keep temporal method headers free from compat getenv declarations.
+# Keep interframe method headers free from compat getenv declarations.
 
 set -eu
 
@@ -16,7 +16,7 @@ fi
 
 header_path="$src_root/src/dither-interframe-method.h"
 if test ! -f "$header_path"; then
-    echo "ok 1 # SKIP missing temporal method header"
+    echo "ok 1 # SKIP missing interframe method header"
     exit 0
 fi
 
@@ -30,10 +30,10 @@ if awk '
 fi
 
 if test "$has_forbidden_symbol" -ne 0; then
-    echo "not ok 1 - temporal method header avoids compat getenv symbol"
+    echo "not ok 1 - interframe method header avoids compat getenv symbol"
     echo "# src/dither-interframe-method.h: remove sixel_compat_getenv symbol"
     exit 1
 fi
 
-echo "ok 1 - temporal method header avoids compat getenv symbol"
+echo "ok 1 - interframe method header avoids compat getenv symbol"
 exit 0
