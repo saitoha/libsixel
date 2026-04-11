@@ -249,8 +249,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/frombmp.c \
-	$(srcdir)/frombmp.h $(srcdir)/clipboard.c $(srcdir)/clipboard.h \
-	$(srcdir)/encoder.c $(srcdir)/encoder.h \
+	$(srcdir)/frombmp.h $(srcdir)/clipboard.c \
+	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/mapfile.c $(srcdir)/mapfile.h $(srcdir)/drcs.c \
 	$(srcdir)/drcs.h $(srcdir)/planner.c $(srcdir)/planner.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h \
@@ -428,14 +428,14 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
 	./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo \
-	./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo \
-	./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask-table.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo \
+	./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo \
+	./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
@@ -457,8 +457,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-filter.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
-	./$(DEPDIR)/libsixel_la-fromgif.Plo \
 	./$(DEPDIR)/libsixel_la-frombmp.Plo \
+	./$(DEPDIR)/libsixel_la-fromgif.Plo \
 	./$(DEPDIR)/libsixel_la-fromhdr.Plo \
 	./$(DEPDIR)/libsixel_la-frompng.Plo \
 	./$(DEPDIR)/libsixel_la-frompnm.Plo \
@@ -1201,14 +1201,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask-table.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
@@ -1230,8 +1230,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frame.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromgif.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frombmp.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromgif.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromhdr.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompng.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
@@ -2315,14 +2315,14 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask-table.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
@@ -2344,8 +2344,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frombmp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
@@ -2469,14 +2469,14 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-hash.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask-table.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
@@ -2498,8 +2498,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frombmp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo

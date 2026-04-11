@@ -1346,6 +1346,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     int32_t *interframe_error;
     sixel_interframe_method_float32_ops_t const *interframe_ops;
     int strategy_token;
+    int interframe_spatial_diffuse;
 
     palette_float = NULL;
     new_palette_float = NULL;
@@ -1356,6 +1357,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     interframe_error = NULL;
     interframe_ops = NULL;
     strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1424,6 +1426,27 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     }
 
     method_for_diffuse = context->method_for_diffuse;
+    if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
+        /*
+         * Keep the interframe strategy token and spatial kernel independent
+         * so callers can choose kernels with
+         * -d interframe:diffusion=... or -d stbn:diffusion=....
+         */
+        strategy_token =
+            sixel_interframe_strategy_token_from_dither_or_env_common(dither);
+        interframe_method = sixel_interframe_method_from_diffuse_and_token(
+            method_for_diffuse,
+            strategy_token);
+        interframe_ops = sixel_interframe_method_ops_float32_for_id(
+            interframe_method);
+        if (interframe_ops != NULL) {
+            interframe_enabled = 1;
+        }
+        interframe_spatial_diffuse =
+            sixel_interframe_spatial_diffuse_from_dither_or_env_common(
+                dither);
+        method_for_diffuse = interframe_spatial_diffuse;
+    }
     switch (method_for_diffuse) {
     case SIXEL_DIFFUSE_NONE:
         f_diffuse = diffuse_none_float;
@@ -1449,25 +1472,8 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     case SIXEL_DIFFUSE_SIERRA3:
         f_diffuse = diffuse_sierra3_float;
         break;
-    case SIXEL_DIFFUSE_INTERFRAME:
-        /*
-         * Interframe mode currently reuses Floyd-Steinberg spatial diffusion.
-         * Strategy variants (for example STBN) are selected by the interframe
-         * method id so follow-up changes can stay isolated in method ops.
-         */
-        f_diffuse = diffuse_fs_float;
-        strategy_token =
-            sixel_interframe_strategy_token_from_dither_or_env_common(dither);
-        interframe_method = sixel_interframe_method_from_diffuse_and_token(
-            method_for_diffuse,
-            strategy_token);
-        interframe_ops = sixel_interframe_method_ops_float32_for_id(
-            interframe_method);
-        if (interframe_ops != NULL) {
-            interframe_enabled = 1;
-        }
-        break;
     case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_INTERFRAME:
     default:
         f_diffuse = diffuse_fs_float;
         break;
