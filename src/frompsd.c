@@ -1545,6 +1545,12 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_effect_bevel;
     int has_effect_outer_glow;
     int has_effect_inner_glow;
+    int eff_orgl_seen;
+    int eff_irgl_seen;
+    int eff_chfx_seen;
+    int eff_drsh_seen;
+    int eff_irsh_seen;
+    int eff_bevl_seen;
     int effect_stroke_position;
     int effect_stroke_from_vector_style;
     int has_vector_stroke_style;
@@ -10222,9 +10228,13 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
                                                             &numeric)) {
             if (numeric <= 0.0) {
                 gradient_scale = 1.0f;
-            } else if (numeric >= 10000.0) {
-                gradient_scale = 10000.0f;
             } else {
+                if (numeric > 4.0) {
+                    numeric /= 100.0;
+                }
+                if (numeric > 100.0) {
+                    numeric = 100.0;
+                }
                 gradient_scale = (float)numeric;
             }
             continue;
@@ -10268,6 +10278,10 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     *pcursor = cursor;
     if (enabled == 0 || has_gradient == 0 || stop_count == 0u ||
         opacity <= 0.0f) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: parsed GrFl effect object in layer effects "
+            "(inactive)");
         return 1;
     }
     layer->has_effect_gradient_overlay = 1;
@@ -10291,6 +10305,9 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
         layer->effect_gradient_stop_alpha[i] =
             gradient_tmp.fill_gradient_stop_alpha[i];
     }
+    sixel_trace_topic_message(
+        "psd_decode",
+        "builtin PSD: parsed GrFl effect object in layer effects");
     return 1;
 }
 
@@ -10647,6 +10664,23 @@ sixel_builtin_psd_parse_effect_glow_object(
         glow_rgb[1] = 0.0f;
         glow_rgb[2] = 0.0f;
     }
+    switch (effect_kind) {
+    case SIXEL_BUILTIN_PSD_EFFECT_GLOW_ORGL:
+        layer->eff_orgl_seen = 1;
+        break;
+    case SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRGL:
+        layer->eff_irgl_seen = 1;
+        break;
+    case SIXEL_BUILTIN_PSD_EFFECT_GLOW_CHFX:
+        layer->eff_chfx_seen = 1;
+        break;
+    case SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH:
+        layer->eff_drsh_seen = 1;
+        break;
+    case SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH:
+        layer->eff_irsh_seen = 1;
+        break;
+    }
     if (enabled == 0 || has_color == 0 || opacity <= 0.0f || size_px <= 0.0f) {
         sixel_trace_topic_message(
             "psd_decode",
@@ -10924,6 +10958,7 @@ sixel_builtin_psd_parse_effect_bevel_object(
         }
     }
     *pcursor = cursor;
+    layer->eff_bevl_seen = 1;
     if (enabled == 0 || size_px <= 0.0f) {
         if (has_highlight_color != 0) {
             sixel_trace_topic_message(
@@ -11360,7 +11395,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
     if (layer == NULL || legacy == NULL) {
         return 0;
     }
-    if (layer->has_effect_orgl == 0 && legacy->has_effect_orgl != 0) {
+    if (layer->has_effect_orgl == 0 &&
+        layer->eff_orgl_seen == 0 &&
+        legacy->has_effect_orgl != 0) {
         layer->has_effect_orgl = 1;
         layer->effect_orgl_rgb[0] = legacy->effect_orgl_rgb[0];
         layer->effect_orgl_rgb[1] = legacy->effect_orgl_rgb[1];
@@ -11370,7 +11407,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_orgl_mode = legacy->effect_orgl_mode;
         merged = 1;
     }
-    if (layer->has_effect_irgl == 0 && legacy->has_effect_irgl != 0) {
+    if (layer->has_effect_irgl == 0 &&
+        layer->eff_irgl_seen == 0 &&
+        legacy->has_effect_irgl != 0) {
         layer->has_effect_irgl = 1;
         layer->effect_irgl_rgb[0] = legacy->effect_irgl_rgb[0];
         layer->effect_irgl_rgb[1] = legacy->effect_irgl_rgb[1];
@@ -11380,7 +11419,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irgl_mode = legacy->effect_irgl_mode;
         merged = 1;
     }
-    if (layer->has_effect_chfx == 0 && legacy->has_effect_chfx != 0) {
+    if (layer->has_effect_chfx == 0 &&
+        layer->eff_chfx_seen == 0 &&
+        legacy->has_effect_chfx != 0) {
         layer->has_effect_chfx = 1;
         layer->effect_chfx_rgb[0] = legacy->effect_chfx_rgb[0];
         layer->effect_chfx_rgb[1] = legacy->effect_chfx_rgb[1];
@@ -11390,7 +11431,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_chfx_mode = legacy->effect_chfx_mode;
         merged = 1;
     }
-    if (layer->has_effect_drsh == 0 && legacy->has_effect_drsh != 0) {
+    if (layer->has_effect_drsh == 0 &&
+        layer->eff_drsh_seen == 0 &&
+        legacy->has_effect_drsh != 0) {
         layer->has_effect_drsh = 1;
         layer->effect_drsh_rgb[0] = legacy->effect_drsh_rgb[0];
         layer->effect_drsh_rgb[1] = legacy->effect_drsh_rgb[1];
@@ -11400,7 +11443,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_drsh_mode = legacy->effect_drsh_mode;
         merged = 1;
     }
-    if (layer->has_effect_irsh == 0 && legacy->has_effect_irsh != 0) {
+    if (layer->has_effect_irsh == 0 &&
+        layer->eff_irsh_seen == 0 &&
+        legacy->has_effect_irsh != 0) {
         layer->has_effect_irsh = 1;
         layer->effect_irsh_rgb[0] = legacy->effect_irsh_rgb[0];
         layer->effect_irsh_rgb[1] = legacy->effect_irsh_rgb[1];
@@ -11410,7 +11455,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irsh_mode = legacy->effect_irsh_mode;
         merged = 1;
     }
-    if (layer->has_effect_bevel == 0 && legacy->has_effect_bevel != 0) {
+    if (layer->has_effect_bevel == 0 &&
+        layer->eff_bevl_seen == 0 &&
+        legacy->has_effect_bevel != 0) {
         layer->has_effect_bevel = 1;
         layer->effect_bevel_highlight_rgb[0] =
             legacy->effect_bevel_highlight_rgb[0];
@@ -12696,6 +12743,12 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->has_effect_bevel = 0;
     layer->has_effect_outer_glow = 0;
     layer->has_effect_inner_glow = 0;
+    layer->eff_orgl_seen = 0;
+    layer->eff_irgl_seen = 0;
+    layer->eff_chfx_seen = 0;
+    layer->eff_drsh_seen = 0;
+    layer->eff_irsh_seen = 0;
+    layer->eff_bevl_seen = 0;
     layer->effect_stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     layer->effect_stroke_from_vector_style = 0;
     layer->has_vector_stroke_style = 0;

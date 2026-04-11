@@ -322,6 +322,13 @@ Key points used by this roadmap:
     `OrGl/ChFX/bevl` inactive: missing active channels are backfilled in the
     effect model, and trace contract `1452` fixes the
     `merging legacy lrFX effects missing from lfx2` behavior.
+  - `GrFl` effect scale now normalizes descriptor percent values
+    (`Scl=100` -> `1.0`) in the same way as fill-gradient parsing,
+    improving stroke-composite gradient parity (`1318` score uplift
+    while keeping XFAIL).
+  - New trace representative `1453` fixes active `GrFl` parse coverage on
+    `effects/stroke-composite.psd` and guards against regressing to
+    inactive-only gradient effect parsing.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
