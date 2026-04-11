@@ -11853,7 +11853,7 @@ sixel_builtin_psd_legacy_lrfx_read_enabled_opacity(
         opacity_offsets[candidate_count] = 30u;
         ++candidate_count;
     }
-    if (version >= 2u && payload_length > 32u &&
+    if (version >= 2u && payload_length > 33u &&
         payload[30] == 0u && payload[31] == 0u) {
         /*
          * Version-2 payloads can carry a reserved zero pair in v1 slots.
@@ -14101,8 +14101,12 @@ sixel_builtin_psd_parse_layer_extra_data(
     int allow_legacy_inactive_completion;
     int legacy_has_feature_records;
     int has_vstk_payload;
+    int has_pending_legacy_merge;
+    int pending_legacy_has_feature_records;
+    int pending_legacy_has_vstk_payload;
     sixel_builtin_psd_layer_record_t legacy_effects;
     sixel_builtin_psd_layer_record_t legacy_binary_effects;
+    sixel_builtin_psd_layer_record_t pending_legacy_effects;
     uint32_t flag_value;
     size_t next_key_cursor;
     char key[5];
@@ -14125,8 +14129,12 @@ sixel_builtin_psd_parse_layer_extra_data(
     allow_legacy_inactive_completion = 0;
     legacy_has_feature_records = 0;
     has_vstk_payload = 0;
+    has_pending_legacy_merge = 0;
+    pending_legacy_has_feature_records = 0;
+    pending_legacy_has_vstk_payload = 0;
     sixel_builtin_psd_layer_record_init(&legacy_effects);
     sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
+    sixel_builtin_psd_layer_record_init(&pending_legacy_effects);
     flag_value = 0u;
     next_key_cursor = 0u;
     key[0] = '\0';
@@ -14315,10 +14323,6 @@ sixel_builtin_psd_parse_layer_extra_data(
                         "vstk") != 0) {
                     has_vstk_payload = 1;
                 }
-                allow_legacy_inactive_completion =
-                    has_vstk_payload != 0 ||
-                    sixel_builtin_psd_layer_has_inactive_effect_targets(
-                        layer) != 0;
                 (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                     buffer + cursor,
                     key_length,
@@ -14352,31 +14356,11 @@ sixel_builtin_psd_parse_layer_extra_data(
                         buffer + cursor,
                         key_length,
                         "sofi") != 0;
-                if (legacy_has_feature_records != 0) {
-                    sixel_trace_topic_message(
-                        "psd_decode",
-                        "builtin PSD: legacy lrFX contains glow/bevel/"
-                        "sofi records");
-                }
-                if (allow_legacy_inactive_completion != 0) {
-                    merged_legacy_effects =
-                        sixel_builtin_psd_merge_missing_legacy_effects(
-                            layer,
-                            &legacy_effects);
-                } else {
-                    merged_legacy_effects = 0;
-                }
-                if (merged_legacy_effects != 0) {
-                    sixel_trace_topic_message(
-                        "psd_decode",
-                        "builtin PSD: merging legacy lrFX effects missing "
-                        "from lfx2");
-                } else {
-                    sixel_trace_topic_message(
-                        "psd_decode",
-                        "builtin PSD: ignoring legacy lrFX when lfx2 is "
-                        "present");
-                }
+                has_pending_legacy_merge = 1;
+                pending_legacy_effects = legacy_effects;
+                pending_legacy_has_feature_records =
+                    legacy_has_feature_records;
+                pending_legacy_has_vstk_payload = has_vstk_payload;
             }
         } else if (memcmp(key, "vstk", 4u) == 0) {
             layer->has_layer_effects = 1;
@@ -14445,6 +14429,44 @@ sixel_builtin_psd_parse_layer_extra_data(
         sixel_helper_set_additional_message(
             "builtin PSD: malformed layer extra data");
         return SIXEL_STBI_ERROR;
+    }
+    if (has_pending_legacy_merge != 0) {
+        allow_legacy_inactive_completion =
+            pending_legacy_has_vstk_payload != 0 ||
+            sixel_builtin_psd_layer_has_inactive_effect_targets(layer) != 0;
+        if (layer->has_blend_clipped_elements != 0 &&
+            layer->blend_clipped_elements_enabled != 0) {
+            allow_legacy_inactive_completion = 1;
+        }
+        if (layer->has_blend_interior_effects != 0 &&
+            layer->blend_interior_effects_enabled == 0) {
+            allow_legacy_inactive_completion = 1;
+        }
+        if (pending_legacy_has_feature_records != 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: legacy lrFX contains glow/bevel/"
+                "sofi records");
+        }
+        if (allow_legacy_inactive_completion != 0) {
+            merged_legacy_effects =
+                sixel_builtin_psd_merge_missing_legacy_effects(
+                    layer,
+                    &pending_legacy_effects);
+        } else {
+            merged_legacy_effects = 0;
+        }
+        if (merged_legacy_effects != 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: merging legacy lrFX effects missing "
+                "from lfx2");
+        } else {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: ignoring legacy lrFX when lfx2 is "
+                "present");
+        }
     }
     return SIXEL_OK;
 }
@@ -17298,6 +17320,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int interior_effects_enabled;
     int interior_glow_effects_enabled;
     int traced_interior_effects_skip;
+    int use_binary_stroke_alpha;
     int use_split_glow_effects;
     int has_explicit_bevel_channels;
     int has_named_bevel;
@@ -17332,6 +17355,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     interior_effects_enabled = 1;
     interior_glow_effects_enabled = 1;
     traced_interior_effects_skip = 0;
+    use_binary_stroke_alpha = 0;
     use_split_glow_effects = 0;
     has_explicit_bevel_channels = 0;
     has_named_bevel = 0;
@@ -17778,6 +17802,15 @@ sixel_builtin_psd_apply_layer_effects_subset(
             "builtin PSD: preferring vector stroke style over layer "
             "effect stroke");
     }
+    if (layer->effect_stroke_from_vector_style != 0 &&
+        layer->has_vector_mask != 0) {
+        /*
+         * Vector-style stroke from vstk expects shape-edge coverage. Using a
+         * binary alpha silhouette avoids over-softening by antialiased mask
+         * ramps during stroke coverage estimation.
+         */
+        use_binary_stroke_alpha = 1;
+    }
     if (stroke_opacity <= 0.0f || stroke_size <= 0.0f) {
         if (traced_interior_effects_skip != 0) {
             sixel_builtin_psd_layer_effects_trace_interior_skip();
@@ -17813,6 +17846,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
         y = i / width;
         source_alpha = sixel_builtin_psd_clamp_alpha_float32(
             original_alpha[i]);
+        if (use_binary_stroke_alpha != 0) {
+            source_alpha = source_alpha >= 0.5f ? 1.0f : 0.0f;
+        }
         max_alpha = 0.0f;
         min_alpha = 1.0f;
         for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
@@ -17835,6 +17871,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 }
                 neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
                     original_alpha[(size_t)ny * width + (size_t)nx]);
+                if (use_binary_stroke_alpha != 0) {
+                    neighbor_alpha = neighbor_alpha >= 0.5f ? 1.0f : 0.0f;
+                }
                 if (neighbor_alpha > max_alpha) {
                     max_alpha = neighbor_alpha;
                 }
@@ -17943,6 +17982,7 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     float effective_opacity;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     int traced_clip_weighted;
+    int use_clip_weight;
 
     x = 0u;
     y = 0u;
@@ -17951,6 +17991,7 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     effective_opacity = 0.0f;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     traced_clip_weighted = 0;
+    use_clip_weight = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_solid_overlay == 0 ||
@@ -17960,6 +18001,8 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     overlay_opacity = sixel_builtin_psd_clamp01(
         layer->effect_solid_overlay_opacity);
     effect_mode = layer->effect_solid_overlay_mode;
+    use_clip_weight = layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
     if (overlay_opacity <= 0.0f) {
         return;
     }
@@ -17987,12 +18030,16 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
             if (alpha <= 0.0f) {
                 continue;
             }
-            effective_opacity = sixel_builtin_psd_clamp01(
-                overlay_opacity * clip_weight);
+            if (use_clip_weight != 0) {
+                effective_opacity = sixel_builtin_psd_clamp01(
+                    overlay_opacity * clip_weight);
+            } else {
+                effective_opacity = overlay_opacity;
+            }
             if (effective_opacity <= 0.0f) {
                 continue;
             }
-            if (traced_clip_weighted == 0) {
+            if (use_clip_weight != 0 && traced_clip_weighted == 0) {
                 sixel_trace_topic_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
@@ -18078,6 +18125,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     int local_x;
     int local_y;
     int traced_clip_weighted;
+    int use_clip_weight;
 
     x = 0u;
     y = 0u;
@@ -18101,6 +18149,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     local_x = 0;
     local_y = 0;
     traced_clip_weighted = 0;
+    use_clip_weight = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_gradient_overlay == 0 ||
@@ -18132,6 +18181,8 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     gradient_opacity = sixel_builtin_psd_clamp01(
         layer->effect_gradient_overlay_opacity);
     effect_mode = layer->effect_gradient_overlay_mode;
+    use_clip_weight = layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
     if (gradient_opacity <= 0.0f) {
         return;
     }
@@ -18170,12 +18221,17 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 &gradient_alpha);
             gradient_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 gradient_alpha * gradient_opacity);
-            effective_gradient_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                gradient_alpha * clip_weight);
+            if (use_clip_weight != 0) {
+                effective_gradient_alpha =
+                    sixel_builtin_psd_clamp_alpha_float32(
+                        gradient_alpha * clip_weight);
+            } else {
+                effective_gradient_alpha = gradient_alpha;
+            }
             if (effective_gradient_alpha <= 0.0f) {
                 continue;
             }
-            if (traced_clip_weighted == 0) {
+            if (use_clip_weight != 0 && traced_clip_weighted == 0) {
                 sixel_trace_topic_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
@@ -18254,6 +18310,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int stroke_position;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     int traced_clip_weighted;
+    int use_clip_weight;
 
     x = 0u;
     y = 0u;
@@ -18270,6 +18327,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     traced_clip_weighted = 0;
+    use_clip_weight = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_stroke == 0 || canvas_width == 0u ||
@@ -18283,6 +18341,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     stroke_rgb[2] = layer->effect_stroke_rgb[2];
     stroke_position = layer->effect_stroke_position;
     effect_mode = layer->effect_stroke_mode;
+    use_clip_weight = layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
     if (stroke_opacity <= 0.0f || stroke_size <= 0.0f) {
         return;
     }
@@ -18330,8 +18390,13 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             if (clip_weight <= 0.0f) {
                 continue;
             }
-            source_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                canvas_alpha[idx] * clip_weight);
+            if (use_clip_weight != 0) {
+                source_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                    canvas_alpha[idx] * clip_weight);
+            } else {
+                source_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                    canvas_alpha[idx]);
+            }
             if (source_alpha <= 0.0f) {
                 continue;
             }
@@ -18358,13 +18423,18 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     }
                     neighbor_index =
                         (size_t)ny * (size_t)canvas_width + (size_t)nx;
-                    neighbor_clip_weight =
-                        sixel_builtin_psd_clamp_alpha_float32(
-                            clip_alpha_map[neighbor_index]);
-                    neighbor_alpha =
-                        sixel_builtin_psd_clamp_alpha_float32(
+                    neighbor_clip_weight = sixel_builtin_psd_clamp_alpha_float32(
+                        clip_alpha_map[neighbor_index]);
+                    if (use_clip_weight != 0) {
+                        neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
                             canvas_alpha[neighbor_index] *
                             neighbor_clip_weight);
+                    } else if (neighbor_clip_weight > 0.0f) {
+                        neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                            canvas_alpha[neighbor_index]);
+                    } else {
+                        neighbor_alpha = 0.0f;
+                    }
                     if (neighbor_alpha > max_alpha) {
                         max_alpha = neighbor_alpha;
                     }
@@ -18391,12 +18461,16 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             stroke_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 stroke_coverage * stroke_opacity);
-            effective_stroke_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                stroke_alpha * clip_weight);
+            if (use_clip_weight != 0) {
+                effective_stroke_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                    stroke_alpha * clip_weight);
+            } else {
+                effective_stroke_alpha = stroke_alpha;
+            }
             if (effective_stroke_alpha <= 0.0f) {
                 continue;
             }
-            if (traced_clip_weighted == 0) {
+            if (use_clip_weight != 0 && traced_clip_weighted == 0) {
                 sixel_trace_topic_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
