@@ -572,9 +572,11 @@ Options:
                              jajuni     -> Jarvis, Judice & Ninke
                              stucki     -> Stucki's method
                              burkes     -> Burkes' method
-                             sierra1    -> Sierra Lite method
-                             sierra2    -> Sierra Two-row method
-                             sierra3    -> Sierra-3 method
+                             sierra     -> Sierra diffusion family
+                               sub-option:
+                                 variant=LEVEL
+                                           -> 1, 2, or 3
+                                              (default 1)
                              a_dither   -> positionally stable
                                            arithmetic dither
                              x_dither   -> positionally stable
@@ -585,12 +587,25 @@ Options:
                                            diffusion tables
                              interframe -> interframe error
                                            diffusion (palette path only)
+                               sub-option:
+                                 diffusion=KERNEL
+                                           -> auto, none, fs,
+                                              atkinson, jajuni,
+                                              stucki, burkes,
+                                              sierra1, sierra2,
+                                              or sierra3
                              stbn       -> interframe STBN/PMJ
                                            source selection
                                sub-option:
                                  source=SOURCE
                                            -> hash, mask, or pmj
                                               (default hash)
+                                 diffusion=KERNEL
+                                           -> auto, none, fs,
+                                              atkinson, jajuni,
+                                              stucki, burkes,
+                                              sierra1, sierra2,
+                                              or sierra3
                                  noise_strength=VALUE
                                            -> float in 0.0-2.0
                                               (default 0.055)

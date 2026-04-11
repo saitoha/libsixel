@@ -379,17 +379,24 @@ static cli_option_help_t const g_option_help_table[] = {
         "      jajuni     -> Jarvis, Judice & Ninke\n"
         "      stucki     -> Stucki's method\n"
         "      burkes     -> Burkes' method\n"
-        "      sierra1    -> Sierra Lite method\n"
-        "      sierra2    -> Sierra Two-row method\n"
-        "      sierra3    -> Sierra-3 method\n"
+        "      sierra     -> Sierra diffusion family\n"
+        "        sub-option:\n"
+        "          variant=LEVEL  -> 1, 2, or 3 (default 1)\n"
         "      a_dither   -> positionally stable arithmetic dither\n"
         "      x_dither   -> positionally stable arithmetic xor based dither\n"
         "      bluenoise  -> tileable blue-noise ordered dither\n"
         "      lso2       -> libsixel variable error diffusion tables\n"
         "      interframe -> interframe error diffusion (palette path only)\n"
+        "        sub-option:\n"
+        "          diffusion=KERNEL  -> auto, none, fs, atkinson, jajuni,\n"
+        "                               stucki, burkes, sierra1, sierra2,\n"
+        "                               or sierra3\n"
         "      stbn       -> interframe STBN/PMJ source selection\n"
         "        sub-option:\n"
         "          source=SOURCE         -> hash, mask, or pmj (default hash)\n"
+        "          diffusion=KERNEL      -> auto, none, fs, atkinson, jajuni,\n"
+        "                                   stucki, burkes, sierra1, sierra2,\n"
+        "                                   or sierra3\n"
         "          noise_strength=VALUE  -> float in 0.0-2.0 (default 0.055)\n"
         "    interframe and stbn ignore -Y and are not available with -I.\n"
     },
@@ -821,6 +828,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_INTERFRAME_STRATEGY",
         "internal STBN source override used by -d stbn.\n"
         "Accepts stbn-hash (default), stbn-mask, or pmj."
+    },
+    {
+        "SIXEL_DITHER_INTERFRAME_DIFFUSION",
+        "set interframe spatial diffusion kernel for -d interframe or -d stbn.\n"
+        "Accepts auto, none, fs, atkinson, jajuni, stucki, burkes,\n"
+        "sierra1, sierra2, or sierra3. Defaults to fs."
     },
     {
         "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH",

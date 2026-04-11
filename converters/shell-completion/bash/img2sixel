@@ -424,19 +424,25 @@ _img2sixel()
                                    jajuni \
                                    stucki \
                                    burkes \
-                                   sierra1 \
-                                   sierra2 \
-                                   sierra3 \
+                                   sierra \
+                                   sierra:variant=1 \
+                                   sierra:variant=2 \
+                                   sierra:variant=3 \
                                    a_dither \
                                    x_dither \
                                    bluenoise \
                                    lso2 \
                                    interframe \
+                                   interframe:diffusion=atkinson \
+                                   interframe:diffusion=sierra2 \
                                    stbn \
+                                   stbn:diffusion=atkinson \
                                    stbn:source=hash \
                                    stbn:source=mask \
                                    stbn:source=pmj \
                                    stbn:noise_strength=0.055 \
+                                   stbn:source=mask:diffusion=sierra2 \
+                                   stbn:source=pmj:diffusion=atkinson \
                                    stbn:source=hash:noise_strength=0.055 \
                                    stbn:source=mask:noise_strength=0.50 \
                                    stbn:source=pmj:noise_strength=0.50' -- "$cur" ) )

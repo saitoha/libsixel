@@ -3,7 +3,7 @@
 #
 # Steps:
 # - Read a standard RGB test image.
-# - Run img2sixel with inspection (-I) and -d sierra2.
+# - Run img2sixel with inspection (-I) and -d sierra:variant=2.
 # - Only confirm that the command exits successfully.
 
 set -eux
@@ -21,7 +21,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -d sierra2 "${input_image}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -d sierra:variant=2 "${input_image}" >"${target_txt}" || {
     echo "not ok" 1 - "inspection with high color and Sierra-2 failed"
     exit 0
 }

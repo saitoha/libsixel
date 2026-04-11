@@ -889,6 +889,50 @@ static sixel_suboption_choice_t const g_option_choices_stbn_source[] = {
     { "pmj", SIXEL_INTERFRAME_STRATEGY_TOKEN_PMJ }
 };
 
+static sixel_suboption_choice_t const
+g_option_choices_interframe_diffusion[] = {
+    { "auto", SIXEL_DIFFUSE_FS },
+    { "none", SIXEL_DIFFUSE_NONE },
+    { "fs", SIXEL_DIFFUSE_FS },
+    { "atkinson", SIXEL_DIFFUSE_ATKINSON },
+    { "jajuni", SIXEL_DIFFUSE_JAJUNI },
+    { "stucki", SIXEL_DIFFUSE_STUCKI },
+    { "burkes", SIXEL_DIFFUSE_BURKES },
+    { "sierra1", SIXEL_DIFFUSE_SIERRA1 },
+    { "sierra2", SIXEL_DIFFUSE_SIERRA2 },
+    { "sierra3", SIXEL_DIFFUSE_SIERRA3 }
+};
+
+static sixel_suboption_choice_t const g_option_choices_sierra_variant[] = {
+    { "1", SIXEL_DIFFUSE_SIERRA1 },
+    { "2", SIXEL_DIFFUSE_SIERRA2 },
+    { "3", SIXEL_DIFFUSE_SIERRA3 }
+};
+
+static sixel_suboption_key_t const g_subkeys_diffusion_sierra[] = {
+    {
+        "variant",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_sierra_variant,
+        sizeof(g_option_choices_sierra_variant)
+        / sizeof(g_option_choices_sierra_variant[0])
+    }
+};
+
+static sixel_suboption_key_t const g_subkeys_diffusion_interframe[] = {
+    {
+        "diffusion",
+        NULL,
+        SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_interframe_diffusion,
+        sizeof(g_option_choices_interframe_diffusion)
+        / sizeof(g_option_choices_interframe_diffusion[0])
+    }
+};
+
 static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
     {
         "source",
@@ -898,6 +942,15 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
         g_option_choices_stbn_source,
         sizeof(g_option_choices_stbn_source)
         / sizeof(g_option_choices_stbn_source[0])
+    },
+    {
+        "diffusion",
+        NULL,
+        SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_interframe_diffusion,
+        sizeof(g_option_choices_interframe_diffusion)
+        / sizeof(g_option_choices_interframe_diffusion[0])
     },
     {
         "noise_strength",
@@ -914,6 +967,12 @@ enum {
      * Keep this as an enum constant so static initializers stay valid on
      * strict compilers (MSVC/pcc reject file-scope const objects here).
      */
+    G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT =
+        (int)(sizeof(g_subkeys_diffusion_interframe)
+              / sizeof(g_subkeys_diffusion_interframe[0])),
+    G_SUBKEYS_DIFFUSION_SIERRA_COUNT =
+        (int)(sizeof(g_subkeys_diffusion_sierra)
+              / sizeof(g_subkeys_diffusion_sierra[0])),
     G_SUBKEYS_DIFFUSION_STBN_COUNT =
         (int)(sizeof(g_subkeys_diffusion_stbn)
               / sizeof(g_subkeys_diffusion_stbn[0]))
@@ -963,22 +1022,10 @@ static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
         0
     },
     {
-        "sierra1",
+        "sierra",
         SIXEL_DIFFUSE_SIERRA1,
-        NULL,
-        0
-    },
-    {
-        "sierra2",
-        SIXEL_DIFFUSE_SIERRA2,
-        NULL,
-        0
-    },
-    {
-        "sierra3",
-        SIXEL_DIFFUSE_SIERRA3,
-        NULL,
-        0
+        g_subkeys_diffusion_sierra,
+        G_SUBKEYS_DIFFUSION_SIERRA_COUNT
     },
     {
         "a_dither",
@@ -1007,8 +1054,8 @@ static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
     {
         "interframe",
         SIXEL_DIFFUSE_INTERFRAME,
-        NULL,
-        0
+        g_subkeys_diffusion_interframe,
+        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
     },
     {
         "stbn",
@@ -3380,6 +3427,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->interframe_strategy_override;
     context->dither->interframe_strategy_token =
         context->encoder->interframe_strategy_token;
+    context->dither->interframe_spatial_diffuse_override =
+        context->encoder->interframe_spatial_diffuse_override;
+    context->dither->interframe_spatial_diffuse =
+        context->encoder->interframe_spatial_diffuse;
     context->dither->interframe_noise_strength_override =
         context->encoder->interframe_noise_strength_override;
     context->dither->interframe_noise_strength_u8 =
@@ -5553,6 +5604,8 @@ sixel_encoder_new(
     (*ppencoder)->interframe_strategy_override = 0;
     (*ppencoder)->interframe_strategy_token
         = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    (*ppencoder)->interframe_spatial_diffuse_override = 0;
+    (*ppencoder)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     (*ppencoder)->interframe_noise_strength_override = 0;
     (*ppencoder)->interframe_noise_strength_u8 = 0;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
@@ -6828,10 +6881,53 @@ sixel_encoder_parse_diffusion_argument(
 }
 
 static SIXELSTATUS
+sixel_encoder_resolve_sierra_suboptions(
+    sixel_option_argument_resolution_t const *resolution,
+    int *resolved_diffusion)
+{
+    size_t index;
+    sixel_suboption_assignment_t const *assignment;
+    int resolved_variant;
+
+    index = 0u;
+    assignment = NULL;
+    resolved_variant = SIXEL_DIFFUSE_SIERRA1;
+    if (resolution == NULL || resolved_diffusion == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *resolved_diffusion = resolution->resolved_base_value;
+    if (resolution->base_def == NULL
+            || resolution->base_def->name == NULL
+            || strcmp(resolution->base_def->name, "sierra") != 0) {
+        return SIXEL_OK;
+    }
+
+    *resolved_diffusion = SIXEL_DIFFUSE_SIERRA1;
+    while (index < resolution->assignment_count) {
+        assignment = resolution->assignments + index;
+        if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "variant") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_variant)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *resolved_diffusion = resolved_variant;
+        }
+        ++index;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_resolve_interframe_suboptions(
     sixel_option_argument_resolution_t const *resolution,
     int *has_strategy_override,
     int *strategy_token,
+    int *has_spatial_diffuse_override,
+    int *spatial_diffuse,
     int *has_noise_strength_override,
     int *noise_strength_u8)
 {
@@ -6840,6 +6936,7 @@ sixel_encoder_resolve_interframe_suboptions(
     sixel_suboption_assignment_t const *assignment;
     char const *base_name;
     int resolved_choice;
+    int resolved_spatial_diffuse;
     int resolved_strength_u8;
 
     status = SIXEL_OK;
@@ -6847,10 +6944,13 @@ sixel_encoder_resolve_interframe_suboptions(
     assignment = NULL;
     base_name = NULL;
     resolved_choice = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    resolved_spatial_diffuse = SIXEL_DIFFUSE_FS;
     resolved_strength_u8 = 0;
     if (resolution == NULL ||
             has_strategy_override == NULL ||
             strategy_token == NULL ||
+            has_spatial_diffuse_override == NULL ||
+            spatial_diffuse == NULL ||
             has_noise_strength_override == NULL ||
             noise_strength_u8 == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -6858,6 +6958,8 @@ sixel_encoder_resolve_interframe_suboptions(
 
     *has_strategy_override = 0;
     *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    *has_spatial_diffuse_override = 0;
+    *spatial_diffuse = SIXEL_DIFFUSE_FS;
     *has_noise_strength_override = 0;
     *noise_strength_u8 = 0;
     if (resolution->resolved_base_value != SIXEL_DIFFUSE_INTERFRAME) {
@@ -6893,6 +6995,15 @@ sixel_encoder_resolve_interframe_suboptions(
             }
             *has_strategy_override = 1;
             *strategy_token = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "diffusion") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_spatial_diffuse)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_spatial_diffuse_override = 1;
+            *spatial_diffuse = resolved_spatial_diffuse;
         } else if (assignment->resolved_key_name != NULL &&
                 strcmp(assignment->resolved_key_name, "noise_strength") == 0) {
             status = sixel_encoder_parse_interframe_noise_strength_text(
@@ -7889,6 +8000,8 @@ sixel_encoder_setopt(
     sixel_option_argument_resolution_t d_resolution;
     int interframe_strategy_override;
     int interframe_strategy_token;
+    int interframe_spatial_diffuse_override;
+    int interframe_spatial_diffuse;
     int interframe_noise_strength_override;
     int interframe_noise_strength_u8;
     sixel_option_argument_resolution_t const *q_resolution;
@@ -7931,6 +8044,8 @@ sixel_encoder_setopt(
     d_resolution.assignment_count = 0u;
     interframe_strategy_override = 0;
     interframe_strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    interframe_spatial_diffuse_override = 0;
+    interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     interframe_noise_strength_override = 0;
     interframe_noise_strength_u8 = 0;
     q_resolution = NULL;
@@ -8056,10 +8171,19 @@ sixel_encoder_setopt(
         }
         match_value = d_resolution.resolved_base_value;
         status = SIXEL_OK;
+        status = sixel_encoder_resolve_sierra_suboptions(
+            &d_resolution,
+            &match_value);
+        if (SIXEL_FAILED(status)) {
+            sixel_option_free_argument_resolution(&d_resolution);
+            goto end;
+        }
         status = sixel_encoder_resolve_interframe_suboptions(
             &d_resolution,
             &interframe_strategy_override,
             &interframe_strategy_token,
+            &interframe_spatial_diffuse_override,
+            &interframe_spatial_diffuse,
             &interframe_noise_strength_override,
             &interframe_noise_strength_u8);
         sixel_option_free_argument_resolution(&d_resolution);
@@ -8070,6 +8194,9 @@ sixel_encoder_setopt(
         encoder->method_for_diffuse = match_value;
         encoder->interframe_strategy_override = interframe_strategy_override;
         encoder->interframe_strategy_token = interframe_strategy_token;
+        encoder->interframe_spatial_diffuse_override
+            = interframe_spatial_diffuse_override;
+        encoder->interframe_spatial_diffuse = interframe_spatial_diffuse;
         encoder->interframe_noise_strength_override
             = interframe_noise_strength_override;
         encoder->interframe_noise_strength_u8 = interframe_noise_strength_u8;

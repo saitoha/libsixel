@@ -256,11 +256,11 @@ choose diffusion method used with color reduction.
 .br
 \fBburkes\fP -> Burkes' method
 .br
-\fBsierra1\fP -> Sierra Lite method
+\fBsierra\fP -> Sierra diffusion family
 .br
-\fBsierra2\fP -> Sierra Two-row method
+sub-option:
 .br
-\fBsierra3\fP -> Sierra-3 method
+\fBvariant=LEVEL\fP -> \fB1\fP, \fB2\fP, or \fB3\fP (default \fB1\fP)
 .br
 \fBa_dither\fP -> positionally stable arithmetic dither
 .br
@@ -272,11 +272,19 @@ choose diffusion method used with color reduction.
 .br
 \fBinterframe\fP -> interframe error diffusion (palette path only)
 .br
+sub-option:
+.br
+\fBdiffusion=KERNEL\fP -> \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP,
+\fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP
+.br
 \fBstbn\fP -> interframe STBN/PMJ source selection
 .br
 sub-option:
 .br
 \fBsource=SOURCE\fP -> \fBhash\fP, \fBmask\fP, or \fBpmj\fP (default hash)
+.br
+\fBdiffusion=KERNEL\fP -> \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP,
+\fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP
 .br
 \fBnoise_strength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
 .br
@@ -947,6 +955,13 @@ a multiple of six scanlines.
 .br
 set overlap between adjacent dither bands to smooth seams. Accepts non-negative
 integers.
+.TP 5
+.B SIXEL_DITHER_INTERFRAME_DIFFUSION
+.br
+set interframe spatial diffusion kernel for \fB\-d interframe\fP or
+\fB\-d stbn\fP.
+Accepts auto, none, fs, atkinson, jajuni, stucki, burkes, sierra1,
+sierra2, or sierra3. Defaults to fs.
 .TP 5
 .B SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH
 .br
