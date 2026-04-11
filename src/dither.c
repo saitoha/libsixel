@@ -3342,6 +3342,15 @@ sixel_dither_apply_palette_with_mode(
         ncolors <= keycolor_for_mask) {
         ncolors = keycolor_for_mask + 1;
     }
+    if (dither->force_palette != 0 && palette_entry_limit > 0) {
+        /*
+         * Keep output palette slots stable for forced-palette mode.
+         * Index resolution may touch fewer colors per frame, but callers
+         * relying on fixed slots (for example animation palette locking)
+         * need the original entry count preserved.
+         */
+        ncolors = palette_entry_limit;
+    }
 
     dither->ncolors = ncolors;
     palette->entry_count = (unsigned int)ncolors;

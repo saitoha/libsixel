@@ -291,6 +291,15 @@ sixel_filter_sample_copy_frame(
     sample->pixelformat = sixel_frame_get_pixelformat(frame);
     sample->colorspace = sixel_frame_get_colorspace(frame);
     sample->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    /*
+     * Preserve timeline metadata so downstream palette/quantize stages can
+     * apply frame-history logic even when the palette path runs on sampled
+     * frames.
+     */
+    sample->frame_no = frame->frame_no;
+    sample->loop_count = frame->loop_count;
+    sample->multiframe = frame->multiframe;
+    sample->delay = frame->delay;
     sample->ncolors = (-1);
     sample->transparent = frame->transparent;
     if (src_mask != NULL && frame->transparent_mask_size >= src_pixel_count) {

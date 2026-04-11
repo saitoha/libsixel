@@ -75,11 +75,6 @@ void
 sixel_encoding_planner_set_loader_metadata(sixel_encoding_planner_t *planner,
                                            int multiframe_known,
                                            int multiframe);
-static int
-sixel_encoding_planner_parse_toggle01_text(char const *text);
-static int
-sixel_encoding_planner_quantize_animation_mode_enabled(
-    sixel_encoder_t *encoder);
 
 static int
 sixel_planner_pixelformat_for_colorspace(int colorspace,
@@ -416,49 +411,6 @@ sixel_encoding_planner_reset_for_frame(sixel_encoding_planner_t *planner)
                                                loader_multiframe);
 }
 
-static int
-sixel_encoding_planner_parse_toggle01_text(char const *text)
-{
-    char *endptr;
-    long value;
-
-    endptr = NULL;
-    value = 0L;
-    if (text == NULL || *text == '\0') {
-        return 0;
-    }
-    errno = 0;
-    value = strtol(text, &endptr, 10);
-    if (errno != 0 || endptr == text || *endptr != '\0') {
-        return 0;
-    }
-    if (value == 1L) {
-        return 1;
-    }
-    return 0;
-}
-
-static int
-sixel_encoding_planner_quantize_animation_mode_enabled(
-    sixel_encoder_t *encoder)
-{
-    char const *env_value;
-
-    env_value = NULL;
-    if (encoder == NULL) {
-        return 0;
-    }
-    if (encoder->quantize_model_animation_mode_override != 0) {
-        if (encoder->quantize_model_animation_mode != 0) {
-            return 1;
-        }
-        return 0;
-    }
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_ANIMATION_MODE");
-    return sixel_encoding_planner_parse_toggle01_text(env_value);
-}
-
-
 int
 sixel_encoding_palette_job_ready(sixel_encoder_t *encoder,
                                  sixel_encoding_planner_t *planner,
@@ -477,14 +429,6 @@ sixel_encoding_palette_job_ready(sixel_encoder_t *encoder,
         return 0;
     }
     if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT) {
-        return 0;
-    }
-    if (sixel_encoding_planner_quantize_animation_mode_enabled(encoder) != 0) {
-        /*
-         * Animation-aware quantization keeps frame history in encoder state.
-         * Background palette jobs sample cloned frames without that timeline
-         * context, so keep this path synchronous.
-         */
         return 0;
     }
     if (encoder->dither_cache != NULL) {

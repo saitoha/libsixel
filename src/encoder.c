@@ -4077,10 +4077,13 @@ static SIXELSTATUS
 sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
+    int quantize_animation_enabled;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+
+    quantize_animation_enabled = 0;
 
     if (context->palette_job_started != 0) {
         status = sixel_encoder_palette_job_wait(&context->palette_job,
@@ -4107,6 +4110,28 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         if (context->palette_job_initialized != 0) {
             sixel_encoder_palette_job_dispose(&context->palette_job);
             context->palette_job_initialized = 0;
+        }
+    }
+
+    if (context->encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
+        status = sixel_encoder_apply_quantize_animation_mode(
+            context->encoder,
+            context->frame,
+            context->dither);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        quantize_animation_enabled =
+            sixel_encoder_quantize_animation_enabled_for_frame(
+                context->encoder,
+                context->frame);
+        if (quantize_animation_enabled != 0) {
+            /*
+             * Keep palette slot count fixed while animation quantize mode is
+             * active. This avoids frame-to-frame palette header churn in
+             * parallel dithering paths.
+             */
+            context->dither->force_palette = 1;
         }
     }
 
@@ -5105,6 +5130,7 @@ sixel_encoder_prepare_palette(
     int reserve_alpha_key;
     int palette_reqcolors;
     int quantize_override_lock_acquired;
+    int quantize_animation_enabled;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -5119,6 +5145,7 @@ sixel_encoder_prepare_palette(
     reserve_alpha_key = 0;
     palette_reqcolors = 0;
     quantize_override_lock_acquired = 0;
+    quantize_animation_enabled = 0;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -5128,6 +5155,20 @@ sixel_encoder_prepare_palette(
     if (encoder != NULL) {
         if (target_logger == NULL) {
             target_logger = encoder->logger;
+        }
+    }
+    quantize_animation_enabled =
+        sixel_encoder_quantize_animation_enabled_for_frame(encoder, frame);
+
+    if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE) != 0
+            && quantize_animation_enabled != 0) {
+        /*
+         * Animation quantize mode needs a stable quantizer path across frames.
+         * Promote indexed input to RGB888 so palette lock logic can run.
+         */
+        status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
     }
 
@@ -5479,14 +5520,6 @@ sixel_encoder_prepare_palette(
             sixel_dither_unref(*dither);
             goto end;
         }
-    }
-    status = sixel_encoder_apply_quantize_animation_mode(
-        encoder,
-        frame,
-        *dither);
-    if (SIXEL_FAILED(status)) {
-        sixel_dither_unref(*dither);
-        goto end;
     }
     sixel_encoder_quantize_override_lock_release(
         quantize_override_lock_acquired);
@@ -6173,6 +6206,15 @@ sixel_encoder_encode_frame(
         context.loop_no = metadata->loop_no;
         context.delay = metadata->delay;
         context.multiframe = metadata->multiframe;
+        /*
+         * Frame metadata can be carried out-of-band in pipeline mode.
+         * Mirror it back to the frame object so downstream helpers that read
+         * frame state directly observe the same timeline context.
+         */
+        sixel_frame_set_frame_no(frame, context.frame_no);
+        sixel_frame_set_loop_count(frame, context.loop_no);
+        sixel_frame_set_delay(frame, context.delay);
+        sixel_frame_set_multiframe(frame, context.multiframe);
     } else {
         context.frame_no = sixel_frame_get_frame_no(frame);
         context.loop_no = sixel_frame_get_loop_no(frame);
@@ -10960,12 +11002,14 @@ sixel_encoder_load_callback_resolve_handoff(
 {
     SIXELSTATUS status;
     int allow_loader_pipeline;
+    int quantize_animation_enabled;
     int result;
     int frame_no;
     int loop_no;
 
     status = SIXEL_OK;
     allow_loader_pipeline = 0;
+    quantize_animation_enabled = 0;
     result = 0;
     frame_no = 0;
     loop_no = 0;
@@ -10987,6 +11031,17 @@ sixel_encoder_load_callback_resolve_handoff(
             planner,
             encoder,
             frame);
+        quantize_animation_enabled =
+            sixel_encoder_quantize_animation_enabled_for_frame(
+                encoder,
+                frame);
+        if (quantize_animation_enabled != 0) {
+            /*
+             * Quantize animation mode keeps frame history in encoder state.
+             * Serialize frame handoff to preserve deterministic order.
+             */
+            allow_loader_pipeline = 0;
+        }
         sixel_encoder_handoff_trace_emit(
             pipeline,
             SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_PLANNER,
