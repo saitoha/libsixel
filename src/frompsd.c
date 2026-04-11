@@ -11417,6 +11417,46 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_bevel_shadow_mode = legacy->effect_bevel_shadow_mode;
         layer->effect_bevel_size = legacy->effect_bevel_size;
         merged = 1;
+    } else if (layer->has_effect_bevel != 0 &&
+               legacy->has_effect_bevel != 0) {
+        /*
+         * Keep active lfx2 bevel values, but backfill missing highlight or
+         * shadow channels from legacy lrFX so split-channel bevel data stays
+         * usable when one side is inactive in lfx2.
+         */
+        if (layer->effect_bevel_size <= 0.0f &&
+            legacy->effect_bevel_size > 0.0f) {
+            layer->effect_bevel_size = legacy->effect_bevel_size;
+            merged = 1;
+        }
+        if (layer->effect_bevel_highlight_opacity <= 0.0f &&
+            legacy->effect_bevel_highlight_opacity > 0.0f) {
+            layer->effect_bevel_highlight_rgb[0] =
+                legacy->effect_bevel_highlight_rgb[0];
+            layer->effect_bevel_highlight_rgb[1] =
+                legacy->effect_bevel_highlight_rgb[1];
+            layer->effect_bevel_highlight_rgb[2] =
+                legacy->effect_bevel_highlight_rgb[2];
+            layer->effect_bevel_highlight_opacity =
+                legacy->effect_bevel_highlight_opacity;
+            layer->effect_bevel_highlight_mode =
+                legacy->effect_bevel_highlight_mode;
+            merged = 1;
+        }
+        if (layer->effect_bevel_shadow_opacity <= 0.0f &&
+            legacy->effect_bevel_shadow_opacity > 0.0f) {
+            layer->effect_bevel_shadow_rgb[0] =
+                legacy->effect_bevel_shadow_rgb[0];
+            layer->effect_bevel_shadow_rgb[1] =
+                legacy->effect_bevel_shadow_rgb[1];
+            layer->effect_bevel_shadow_rgb[2] =
+                legacy->effect_bevel_shadow_rgb[2];
+            layer->effect_bevel_shadow_opacity =
+                legacy->effect_bevel_shadow_opacity;
+            layer->effect_bevel_shadow_mode =
+                legacy->effect_bevel_shadow_mode;
+            merged = 1;
+        }
     }
     if (layer->has_effect_outer_glow == 0 &&
         legacy->has_effect_outer_glow != 0) {
@@ -11497,6 +11537,7 @@ sixel_builtin_psd_legacy_lrfx_read_rgb_color(
     uint16_t c0;
     uint16_t c1;
     uint16_t c2;
+    float scale;
 
     if (data == NULL || out_rgb == NULL || data_length < 10u) {
         return 0;
@@ -11508,9 +11549,17 @@ sixel_builtin_psd_legacy_lrfx_read_rgb_color(
     c0 = sixel_builtin_read_u16be_as_u16(data + 2u);
     c1 = sixel_builtin_read_u16be_as_u16(data + 4u);
     c2 = sixel_builtin_read_u16be_as_u16(data + 6u);
-    out_rgb[0] = (float)c0 / 65535.0f;
-    out_rgb[1] = (float)c1 / 65535.0f;
-    out_rgb[2] = (float)c2 / 65535.0f;
+    /*
+     * Legacy lrFX payloads can store RGB channels either in full 16-bit
+     * range or as 8-bit values packed in 16-bit slots.
+     */
+    scale = 65535.0f;
+    if (c0 <= 0xffu && c1 <= 0xffu && c2 <= 0xffu) {
+        scale = 255.0f;
+    }
+    out_rgb[0] = (float)c0 / scale;
+    out_rgb[1] = (float)c1 / scale;
+    out_rgb[2] = (float)c2 / scale;
     return 1;
 }
 
@@ -11539,6 +11588,8 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     int parsed;
     sixel_builtin_psd_layer_blend_mode_t mode0;
     sixel_builtin_psd_layer_blend_mode_t mode1;
+    int alt_enabled;
+    float alt_opacity;
 
     cursor = 0u;
     effect_count = 0u;
@@ -11566,6 +11617,8 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     parsed = 0;
     mode0 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     mode1 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    alt_enabled = 0;
+    alt_opacity = 0.0f;
 
     if (data == NULL || layer == NULL || key_length < 4u) {
         return 0;
@@ -11615,6 +11668,19 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                 opacity0 = sixel_builtin_psd_clamp01(
                     (float)payload[31] / 255.0f);
                 if (version >= 2u && payload_length >= 42u) {
+                    /*
+                     * Some version-2 writers store opacity/enabled in
+                     * swapped byte order compared to version-1 payloads.
+                     */
+                    alt_enabled = payload[31] != 0 ? 1 : 0;
+                    alt_opacity = sixel_builtin_psd_clamp01(
+                        (float)payload[30] / 255.0f);
+                    if ((enabled == 0 || opacity0 <= 0.0f) &&
+                        alt_enabled != 0 &&
+                        alt_opacity > 0.0f) {
+                        enabled = 1;
+                        opacity0 = alt_opacity;
+                    }
                     if (sixel_builtin_psd_legacy_lrfx_read_rgb_color(
                             payload + 32u,
                             payload_length - 32u,
@@ -11708,6 +11774,10 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     (float)payload[54] / 255.0f);
                 enabled = payload[55] != 0 ? 1 : 0;
                 if (version == 2u && payload_length >= 78u) {
+                    if (enabled == 0 && payload_length > 56u &&
+                        payload[56] != 0) {
+                        enabled = 1;
+                    }
                     if (sixel_builtin_psd_legacy_lrfx_read_rgb_color(
                             payload + 58u,
                             payload_length - 58u,
@@ -13597,6 +13667,43 @@ sixel_builtin_psd_parse_knockout_mode(unsigned char const *data, size_t length)
     return mode;
 }
 
+static int
+sixel_builtin_psd_layer_extra_has_block_key(
+    unsigned char const *buffer,
+    size_t cursor,
+    size_t extra_end,
+    char const key[5])
+{
+    size_t probe_cursor;
+    size_t probe_key_length;
+
+    probe_cursor = cursor;
+    probe_key_length = 0u;
+    if (buffer == NULL || key == NULL || cursor > extra_end) {
+        return 0;
+    }
+    while (probe_cursor + 12u <= extra_end) {
+        if (memcmp(buffer + probe_cursor, "8BIM", 4u) != 0 &&
+            memcmp(buffer + probe_cursor, "8B64", 4u) != 0) {
+            return 0;
+        }
+        if (memcmp(buffer + probe_cursor + 4u, key, 4u) == 0) {
+            return 1;
+        }
+        probe_key_length = sixel_builtin_read_u32be_size(
+            buffer + probe_cursor + 8u);
+        probe_cursor += 12u;
+        if (probe_key_length > extra_end - probe_cursor) {
+            return 0;
+        }
+        probe_cursor += probe_key_length;
+        if ((probe_key_length & 1u) != 0u && probe_cursor < extra_end) {
+            ++probe_cursor;
+        }
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_builtin_psd_parse_layer_extra_data(
     unsigned char const *buffer,
@@ -13619,9 +13726,12 @@ sixel_builtin_psd_parse_layer_extra_data(
     int has_active_effects_after_parse;
     int merged_legacy_effects;
     int parsed_legacy_binary_effects;
+    int allow_legacy_inactive_completion;
+    int has_vstk_payload;
     sixel_builtin_psd_layer_record_t legacy_effects;
     sixel_builtin_psd_layer_record_t legacy_binary_effects;
     uint32_t flag_value;
+    size_t next_key_cursor;
     char key[5];
 
     cursor = 0u;
@@ -13639,9 +13749,12 @@ sixel_builtin_psd_parse_layer_extra_data(
     has_active_effects_after_parse = 0;
     merged_legacy_effects = 0;
     parsed_legacy_binary_effects = 0;
+    allow_legacy_inactive_completion = 0;
+    has_vstk_payload = 0;
     sixel_builtin_psd_layer_record_init(&legacy_effects);
     sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
     flag_value = 0u;
+    next_key_cursor = 0u;
     key[0] = '\0';
     key[1] = '\0';
     key[2] = '\0';
@@ -13814,6 +13927,22 @@ sixel_builtin_psd_parse_layer_extra_data(
             } else {
                 sixel_builtin_psd_layer_record_init(&legacy_effects);
                 sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
+                next_key_cursor = cursor + key_length;
+                if ((key_length & 1u) != 0u && next_key_cursor < extra_end) {
+                    ++next_key_cursor;
+                }
+                has_vstk_payload = layer->has_vector_stroke_style != 0;
+                if (has_vstk_payload == 0 &&
+                    next_key_cursor < extra_end &&
+                    sixel_builtin_psd_layer_extra_has_block_key(
+                        buffer,
+                        next_key_cursor,
+                        extra_end,
+                        "vstk") != 0) {
+                    has_vstk_payload = 1;
+                }
+                allow_legacy_inactive_completion =
+                    has_vstk_payload != 0;
                 (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                     buffer + cursor,
                     key_length,
@@ -13830,10 +13959,14 @@ sixel_builtin_psd_parse_layer_extra_data(
                         &legacy_effects,
                         &legacy_binary_effects);
                 }
-                merged_legacy_effects =
-                    sixel_builtin_psd_merge_missing_legacy_effects(
-                        layer,
-                        &legacy_effects);
+                if (allow_legacy_inactive_completion != 0) {
+                    merged_legacy_effects =
+                        sixel_builtin_psd_merge_missing_legacy_effects(
+                            layer,
+                            &legacy_effects);
+                } else {
+                    merged_legacy_effects = 0;
+                }
                 if (merged_legacy_effects != 0) {
                     sixel_trace_topic_message(
                         "psd_decode",
