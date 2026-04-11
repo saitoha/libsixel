@@ -11429,13 +11429,25 @@ sixel_builtin_psd_merge_missing_legacy_effects(
     int merged;
     int outer_glow_inactive;
     int inner_glow_inactive;
+    int allow_glow_proxy_backfill;
 
     merged = 0;
     outer_glow_inactive = 0;
     inner_glow_inactive = 0;
+    allow_glow_proxy_backfill = 0;
     if (layer == NULL || legacy == NULL) {
         return 0;
     }
+    /*
+     * Restrict legacy glow proxy backfill to stroke-capable stacks.
+     * Blend/clipping cases without stroke payload should keep lfx2 inactive
+     * glow semantics and avoid introducing synthetic halo coverage.
+     */
+    allow_glow_proxy_backfill =
+        layer->has_effect_stroke != 0 ||
+        legacy->has_effect_stroke != 0 ||
+        layer->has_vector_stroke_style != 0 ||
+        legacy->has_vector_stroke_style != 0 ? 1 : 0;
     outer_glow_inactive =
         layer->has_effect_outer_glow == 0 ||
         layer->effect_outer_glow_opacity <= 0.0f ||
@@ -11453,7 +11465,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_orgl_opacity = legacy->effect_orgl_opacity;
         layer->effect_orgl_size = legacy->effect_orgl_size;
         layer->effect_orgl_mode = legacy->effect_orgl_mode;
-        if (outer_glow_inactive != 0 &&
+        if (allow_glow_proxy_backfill != 0 &&
+            outer_glow_inactive != 0 &&
             layer->effect_orgl_opacity > 0.0f &&
             layer->effect_orgl_size > 0.0f) {
             layer->has_effect_outer_glow = 1;
@@ -11476,7 +11489,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irgl_opacity = legacy->effect_irgl_opacity;
         layer->effect_irgl_size = legacy->effect_irgl_size;
         layer->effect_irgl_mode = legacy->effect_irgl_mode;
-        if (inner_glow_inactive != 0 &&
+        if (allow_glow_proxy_backfill != 0 &&
+            inner_glow_inactive != 0 &&
             layer->effect_irgl_opacity > 0.0f &&
             layer->effect_irgl_size > 0.0f) {
             layer->has_effect_inner_glow = 1;
@@ -11499,7 +11513,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_chfx_opacity = legacy->effect_chfx_opacity;
         layer->effect_chfx_size = legacy->effect_chfx_size;
         layer->effect_chfx_mode = legacy->effect_chfx_mode;
-        if (inner_glow_inactive != 0 &&
+        if (allow_glow_proxy_backfill != 0 &&
+            inner_glow_inactive != 0 &&
             layer->effect_chfx_opacity > 0.0f &&
             layer->effect_chfx_size > 0.0f) {
             layer->has_effect_inner_glow = 1;
@@ -11522,7 +11537,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_drsh_opacity = legacy->effect_drsh_opacity;
         layer->effect_drsh_size = legacy->effect_drsh_size;
         layer->effect_drsh_mode = legacy->effect_drsh_mode;
-        if (outer_glow_inactive != 0 &&
+        if (allow_glow_proxy_backfill != 0 &&
+            outer_glow_inactive != 0 &&
             layer->effect_drsh_opacity > 0.0f &&
             layer->effect_drsh_size > 0.0f) {
             layer->has_effect_outer_glow = 1;
@@ -11545,7 +11561,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irsh_opacity = legacy->effect_irsh_opacity;
         layer->effect_irsh_size = legacy->effect_irsh_size;
         layer->effect_irsh_mode = legacy->effect_irsh_mode;
-        if (inner_glow_inactive != 0 &&
+        if (allow_glow_proxy_backfill != 0 &&
+            inner_glow_inactive != 0 &&
             layer->effect_irsh_opacity > 0.0f &&
             layer->effect_irsh_size > 0.0f) {
             layer->has_effect_inner_glow = 1;
@@ -11579,7 +11596,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             legacy->effect_bevel_shadow_opacity;
         layer->effect_bevel_shadow_mode = legacy->effect_bevel_shadow_mode;
         layer->effect_bevel_size = legacy->effect_bevel_size;
-        if (outer_glow_inactive != 0 &&
+        if (allow_glow_proxy_backfill != 0 &&
+            outer_glow_inactive != 0 &&
             layer->effect_bevel_highlight_opacity > 0.0f &&
             layer->effect_bevel_size > 0.0f) {
             layer->has_effect_outer_glow = 1;
@@ -11596,7 +11614,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 layer->effect_bevel_highlight_mode;
             outer_glow_inactive = 0;
         }
-        if (inner_glow_inactive != 0 &&
+        if (allow_glow_proxy_backfill != 0 &&
+            inner_glow_inactive != 0 &&
             layer->effect_bevel_shadow_opacity > 0.0f &&
             layer->effect_bevel_size > 0.0f) {
             layer->has_effect_inner_glow = 1;
@@ -11637,7 +11656,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 legacy->effect_bevel_highlight_opacity;
             layer->effect_bevel_highlight_mode =
                 legacy->effect_bevel_highlight_mode;
-            if (outer_glow_inactive != 0 &&
+            if (allow_glow_proxy_backfill != 0 &&
+                outer_glow_inactive != 0 &&
                 layer->effect_bevel_size > 0.0f) {
                 layer->has_effect_outer_glow = 1;
                 layer->effect_outer_glow_rgb[0] =
@@ -11667,7 +11687,8 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 legacy->effect_bevel_shadow_opacity;
             layer->effect_bevel_shadow_mode =
                 legacy->effect_bevel_shadow_mode;
-            if (inner_glow_inactive != 0 &&
+            if (allow_glow_proxy_backfill != 0 &&
+                inner_glow_inactive != 0 &&
                 layer->effect_bevel_size > 0.0f) {
                 layer->has_effect_inner_glow = 1;
                 layer->effect_inner_glow_rgb[0] =
@@ -17294,6 +17315,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int suppress_stroke;
     int traced_vector_mask_glow;
     int suppress_bevel_glow_proxy;
+    int suppress_clbl_nonstroke_split_glow;
+    int suppress_clbl_nonstroke_glow;
     int interior_effects_enabled;
     int interior_glow_effects_enabled;
     int traced_interior_effects_skip;
@@ -17329,6 +17352,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     suppress_stroke = 0;
     traced_vector_mask_glow = 0;
     suppress_bevel_glow_proxy = 0;
+    suppress_clbl_nonstroke_split_glow = 0;
+    suppress_clbl_nonstroke_glow = 0;
     interior_effects_enabled = 1;
     interior_glow_effects_enabled = 1;
     traced_interior_effects_skip = 0;
@@ -17375,6 +17400,18 @@ sixel_builtin_psd_apply_layer_effects_subset(
     if (has_explicit_bevel_channels != 0) {
         has_named_bevel = 1;
     }
+    if (use_split_glow_effects != 0 &&
+        layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled != 0 &&
+        layer->has_effect_stroke == 0) {
+        /*
+         * clbl=1 non-stroke layers in blend/clipping fixtures can carry
+         * inactive split-glow records that should not expand alpha.
+         * Keep stroke-composite paths untouched by limiting this to
+         * layers without explicit stroke effects.
+         */
+        suppress_clbl_nonstroke_split_glow = 1;
+    }
     interior_effects_enabled =
         sixel_builtin_psd_layer_interior_effects_enabled(layer);
     interior_glow_effects_enabled = interior_effects_enabled;
@@ -17394,6 +17431,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
          * holding back inner glow/choke/bevel-shadow proxies in that subset.
          */
         interior_glow_effects_enabled = 0;
+    }
+    if (layer->has_blend_clipped_elements != 0 &&
+        layer->blend_clipped_elements_enabled != 0 &&
+        layer->has_effect_stroke == 0) {
+        /*
+         * clbl=1 non-stroke layers can encode glow records that should stay
+         * inside deferred interior overlay passes. Skip direct glow passes in
+         * this narrow subset to avoid expanding clipped silhouettes.
+         */
+        suppress_clbl_nonstroke_glow = 1;
     }
     if (layer->has_effect_solid_overlay != 0) {
         if (interior_effects_enabled == 0) {
@@ -17571,8 +17618,10 @@ sixel_builtin_psd_apply_layer_effects_subset(
      * even when SoFi is absent so vector-mask effect stacks do not lose edge
      * passes during fallback composition.
      */
-    if (layer->has_knockout == 0) {
-        if (use_split_glow_effects != 0) {
+    if (layer->has_knockout == 0 &&
+        suppress_clbl_nonstroke_glow == 0) {
+        if (use_split_glow_effects != 0 &&
+            suppress_clbl_nonstroke_split_glow == 0) {
             if (layer->has_effect_drsh != 0) {
                 sixel_builtin_psd_apply_named_glow_effect(
                     layer,
