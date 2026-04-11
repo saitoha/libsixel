@@ -14052,43 +14052,6 @@ sixel_builtin_psd_parse_knockout_mode(unsigned char const *data, size_t length)
     return mode;
 }
 
-static int
-sixel_builtin_psd_layer_extra_has_block_key(
-    unsigned char const *buffer,
-    size_t cursor,
-    size_t extra_end,
-    char const key[5])
-{
-    size_t probe_cursor;
-    size_t probe_key_length;
-
-    probe_cursor = cursor;
-    probe_key_length = 0u;
-    if (buffer == NULL || key == NULL || cursor > extra_end) {
-        return 0;
-    }
-    while (probe_cursor + 12u <= extra_end) {
-        if (memcmp(buffer + probe_cursor, "8BIM", 4u) != 0 &&
-            memcmp(buffer + probe_cursor, "8B64", 4u) != 0) {
-            return 0;
-        }
-        if (memcmp(buffer + probe_cursor + 4u, key, 4u) == 0) {
-            return 1;
-        }
-        probe_key_length = sixel_builtin_read_u32be_size(
-            buffer + probe_cursor + 8u);
-        probe_cursor += 12u;
-        if (probe_key_length > extra_end - probe_cursor) {
-            return 0;
-        }
-        probe_cursor += probe_key_length;
-        if ((probe_key_length & 1u) != 0u && probe_cursor < extra_end) {
-            ++probe_cursor;
-        }
-    }
-    return 0;
-}
-
 static SIXELSTATUS
 sixel_builtin_psd_parse_layer_extra_data(
     unsigned char const *buffer,
@@ -14114,6 +14077,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     int allow_legacy_inactive_completion;
     int legacy_has_feature_records;
     int has_vstk_payload;
+    int has_vstk_block_key;
     int has_pending_legacy_merge;
     int pending_legacy_has_feature_records;
     int pending_legacy_has_vstk_payload;
@@ -14121,7 +14085,6 @@ sixel_builtin_psd_parse_layer_extra_data(
     sixel_builtin_psd_layer_record_t legacy_binary_effects;
     sixel_builtin_psd_layer_record_t pending_legacy_effects;
     uint32_t flag_value;
-    size_t next_key_cursor;
     char key[5];
 
     cursor = 0u;
@@ -14142,6 +14105,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     allow_legacy_inactive_completion = 0;
     legacy_has_feature_records = 0;
     has_vstk_payload = 0;
+    has_vstk_block_key = 0;
     has_pending_legacy_merge = 0;
     pending_legacy_has_feature_records = 0;
     pending_legacy_has_vstk_payload = 0;
@@ -14149,7 +14113,6 @@ sixel_builtin_psd_parse_layer_extra_data(
     sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
     sixel_builtin_psd_layer_record_init(&pending_legacy_effects);
     flag_value = 0u;
-    next_key_cursor = 0u;
     key[0] = '\0';
     key[1] = '\0';
     key[2] = '\0';
@@ -14322,20 +14285,8 @@ sixel_builtin_psd_parse_layer_extra_data(
             } else {
                 sixel_builtin_psd_layer_record_init(&legacy_effects);
                 sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
-                next_key_cursor = cursor + key_length;
-                if ((key_length & 1u) != 0u && next_key_cursor < extra_end) {
-                    ++next_key_cursor;
-                }
-                has_vstk_payload = layer->has_vector_stroke_style != 0;
-                if (has_vstk_payload == 0 &&
-                    next_key_cursor < extra_end &&
-                    sixel_builtin_psd_layer_extra_has_block_key(
-                        buffer,
-                        next_key_cursor,
-                        extra_end,
-                        "vstk") != 0) {
-                    has_vstk_payload = 1;
-                }
+                has_vstk_payload = layer->has_vector_stroke_style != 0 ||
+                    has_vstk_block_key != 0;
                 (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                     buffer + cursor,
                     key_length,
@@ -14363,6 +14314,15 @@ sixel_builtin_psd_parse_layer_extra_data(
                 pending_legacy_has_vstk_payload = has_vstk_payload;
             }
         } else if (memcmp(key, "vstk", 4u) == 0) {
+            has_vstk_block_key = 1;
+            if (has_pending_legacy_merge != 0) {
+                /*
+                 * lrFX can appear before vstk in extra-data ordering.
+                 * Keep pending merge eligibility in sync without rescanning
+                 * the remaining keys.
+                 */
+                pending_legacy_has_vstk_payload = 1;
+            }
             layer->has_layer_effects = 1;
             (void)sixel_builtin_psd_parse_vector_stroke_payload(
                 buffer + cursor,
