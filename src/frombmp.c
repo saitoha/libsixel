@@ -1251,58 +1251,98 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
 }
 
 static int
-sixel_bmp_put_index(sixel_bmp_decode_info_t const *info,
-                    unsigned char *indices,
-                    int *x,
-                    int y,
-                    unsigned char index)
+sixel_bmp_prepare_index_span(sixel_bmp_decode_info_t const *info,
+                             int x,
+                             int y,
+                             unsigned int count,
+                             size_t *offset)
 {
-    size_t offset;
+    size_t span_offset;
 
-    offset = 0u;
-    if (info == NULL || indices == NULL || x == NULL) {
+    span_offset = 0u;
+    if (info == NULL) {
         return 0;
     }
-    if (y < 0 || y >= info->height || *x < 0 || *x >= info->width) {
+    if (count == 0u) {
+        if (offset != NULL) {
+            *offset = 0u;
+        }
+        return 1;
+    }
+    if (y < 0 || y >= info->height || x < 0 || x > info->width) {
+        return 0;
+    }
+    if ((unsigned int)(info->width - x) < count) {
         return 0;
     }
     if ((size_t)info->width != 0u &&
         (size_t)y > SIZE_MAX / (size_t)info->width) {
         return 0;
     }
-    offset = (size_t)y * (size_t)info->width + (size_t)(*x);
-    indices[offset] = index;
-    *x += 1;
+    span_offset = (size_t)y * (size_t)info->width + (size_t)x;
+    if (offset != NULL) {
+        *offset = span_offset;
+    }
     return 1;
 }
 
 static int
-sixel_bmp_put_rgb(sixel_bmp_decode_info_t const *info,
-                  unsigned char *pixels,
-                  int *x,
-                  int y,
-                  unsigned char red,
-                  unsigned char green,
-                  unsigned char blue)
+sixel_bmp_put_index_run(sixel_bmp_decode_info_t const *info,
+                        unsigned char *indices,
+                        int *x,
+                        int y,
+                        unsigned char index,
+                        unsigned int count)
 {
-    size_t offset;
+    size_t span_offset;
 
-    offset = 0u;
-    if (info == NULL || pixels == NULL || x == NULL) {
+    span_offset = 0u;
+    if (info == NULL || indices == NULL || x == NULL) {
         return 0;
     }
-    if (y < 0 || y >= info->height || *x < 0 || *x >= info->width) {
+    if (!sixel_bmp_prepare_index_span(info, *x, y, count, &span_offset)) {
+        return 0;
+    }
+    if (count != 0u) {
+        memset(indices + span_offset, index, (size_t)count);
+        *x += (int)count;
+    }
+    return 1;
+}
+
+static int
+sixel_bmp_prepare_rgb_span(sixel_bmp_decode_info_t const *info,
+                           int x,
+                           int y,
+                           unsigned int count,
+                           size_t *offset)
+{
+    size_t span_offset;
+
+    span_offset = 0u;
+    if (info == NULL) {
+        return 0;
+    }
+    if (count == 0u) {
+        if (offset != NULL) {
+            *offset = 0u;
+        }
+        return 1;
+    }
+    if (y < 0 || y >= info->height || x < 0 || x > info->width) {
+        return 0;
+    }
+    if ((unsigned int)(info->width - x) < count) {
         return 0;
     }
     if ((size_t)info->width != 0u &&
         (size_t)y > SIZE_MAX / (size_t)info->width) {
         return 0;
     }
-    offset = ((size_t)y * (size_t)info->width + (size_t)(*x)) * 3u;
-    pixels[offset + 0u] = red;
-    pixels[offset + 1u] = green;
-    pixels[offset + 2u] = blue;
-    *x += 1;
+    span_offset = ((size_t)y * (size_t)info->width + (size_t)x) * 3u;
+    if (offset != NULL) {
+        *offset = span_offset;
+    }
     return 1;
 }
 
@@ -1663,7 +1703,6 @@ sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
     int black_run;
     int row;
     unsigned int run_length;
-    unsigned int index;
 
     status = SIXEL_FALSE;
     buffer = NULL;
@@ -1675,7 +1714,6 @@ sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
     black_run = 0;
     row = 0;
     run_length = 0u;
-    index = 0u;
     if (info == NULL || indices == NULL || info->chunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1708,15 +1746,14 @@ sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
                 return sixel_bmp_fail(
                     "builtin BMP: HUFFMAN1D write overflow");
             }
-            for (index = 0u; index < run_length; ++index) {
-                if (!sixel_bmp_put_index(info,
+            if (!sixel_bmp_put_index_run(info,
                                          indices,
                                          &x,
                                          y,
-                                         (unsigned char)black_run)) {
-                    return sixel_bmp_fail(
-                        "builtin BMP: HUFFMAN1D write overflow");
-                }
+                                         (unsigned char)black_run,
+                                         run_length)) {
+                return sixel_bmp_fail(
+                    "builtin BMP: HUFFMAN1D write overflow");
             }
             black_run = black_run == 0 ? 1 : 0;
         }
@@ -1744,6 +1781,7 @@ sixel_bmp_decode_rle8_indices(sixel_bmp_decode_info_t const *info,
     unsigned int index;
     unsigned int dx;
     unsigned int dy;
+    size_t span_offset;
 
     buffer = NULL;
     size = 0u;
@@ -1756,6 +1794,7 @@ sixel_bmp_decode_rle8_indices(sixel_bmp_decode_info_t const *info,
     index = 0u;
     dx = 0u;
     dy = 0u;
+    span_offset = 0u;
     if (info == NULL || indices == NULL || info->chunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1779,15 +1818,14 @@ sixel_bmp_decode_rle8_indices(sixel_bmp_decode_info_t const *info,
         code = (unsigned int)buffer[offset++];
 
         if (count != 0u) {
-            for (index = 0u; index < count; ++index) {
-                if (code >= (unsigned int)info->palette_count ||
-                    !sixel_bmp_put_index(info,
+            if (code >= (unsigned int)info->palette_count ||
+                !sixel_bmp_put_index_run(info,
                                          indices,
                                          &x,
                                          y,
-                                         (unsigned char)code)) {
-                    return sixel_bmp_fail("builtin BMP: RLE8 write overflow");
-                }
+                                         (unsigned char)code,
+                                         count)) {
+                return sixel_bmp_fail("builtin BMP: RLE8 write overflow");
             }
             continue;
         }
@@ -1821,17 +1859,17 @@ sixel_bmp_decode_rle8_indices(sixel_bmp_decode_info_t const *info,
         if ((size_t)code > size - offset) {
             return sixel_bmp_fail("builtin BMP: truncated RLE8 absolute");
         }
+        if (!sixel_bmp_prepare_index_span(info, x, y, code, &span_offset)) {
+            return sixel_bmp_fail("builtin BMP: RLE8 absolute overflow");
+        }
         for (index = 0u; index < code; ++index) {
             if ((unsigned int)buffer[offset + index] >=
-                    (unsigned int)info->palette_count ||
-                !sixel_bmp_put_index(info,
-                                     indices,
-                                     &x,
-                                     y,
-                                     buffer[offset + index])) {
+                (unsigned int)info->palette_count) {
                 return sixel_bmp_fail("builtin BMP: RLE8 absolute overflow");
             }
         }
+        memcpy(indices + span_offset, buffer + offset, (size_t)code);
+        x += (int)code;
         offset += (size_t)code;
         if ((code & 1u) != 0u) {
             if (offset >= size) {
@@ -1862,6 +1900,10 @@ sixel_bmp_decode_rle4_indices(sixel_bmp_decode_info_t const *info,
     unsigned int dy;
     unsigned int nibble;
     unsigned char packed;
+    unsigned int nibble_hi;
+    unsigned int nibble_lo;
+    size_t span_offset;
+    unsigned char *dst;
 
     buffer = NULL;
     size = 0u;
@@ -1877,6 +1919,10 @@ sixel_bmp_decode_rle4_indices(sixel_bmp_decode_info_t const *info,
     dy = 0u;
     nibble = 0u;
     packed = 0u;
+    nibble_hi = 0u;
+    nibble_lo = 0u;
+    span_offset = 0u;
+    dst = NULL;
     if (info == NULL || indices == NULL || info->chunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1900,17 +1946,22 @@ sixel_bmp_decode_rle4_indices(sixel_bmp_decode_info_t const *info,
         code = (unsigned int)buffer[offset++];
 
         if (count != 0u) {
-            for (index = 0u; index < count; ++index) {
-                nibble = (index & 1u) == 0u ? (code >> 4u) : (code & 0x0fu);
-                if (nibble >= (unsigned int)info->palette_count ||
-                    !sixel_bmp_put_index(info,
-                                         indices,
-                                         &x,
-                                         y,
-                                         (unsigned char)nibble)) {
-                    return sixel_bmp_fail("builtin BMP: RLE4 write overflow");
-                }
+            nibble_hi = (code >> 4u) & 0x0fu;
+            nibble_lo = code & 0x0fu;
+            if (nibble_hi >= (unsigned int)info->palette_count ||
+                (count > 1u &&
+                 nibble_lo >= (unsigned int)info->palette_count) ||
+                !sixel_bmp_prepare_index_span(info, x, y, count,
+                                              &span_offset)) {
+                return sixel_bmp_fail("builtin BMP: RLE4 write overflow");
             }
+            dst = indices + span_offset;
+            for (index = 0u; index < count; ++index) {
+                dst[index] = (unsigned char)((index & 1u) == 0u
+                    ? nibble_hi
+                    : nibble_lo);
+            }
+            x += (int)count;
             continue;
         }
 
@@ -1944,20 +1995,21 @@ sixel_bmp_decode_rle4_indices(sixel_bmp_decode_info_t const *info,
         if (byte_count > size - offset) {
             return sixel_bmp_fail("builtin BMP: truncated RLE4 absolute");
         }
+        if (!sixel_bmp_prepare_index_span(info, x, y, code, &span_offset)) {
+            return sixel_bmp_fail("builtin BMP: RLE4 absolute overflow");
+        }
+        dst = indices + span_offset;
         for (index = 0u; index < code; ++index) {
             packed = buffer[offset + (index >> 1u)];
             nibble = (index & 1u) == 0u
                 ? (unsigned int)(packed >> 4u)
                 : (unsigned int)(packed & 0x0fu);
-            if (nibble >= (unsigned int)info->palette_count ||
-                !sixel_bmp_put_index(info,
-                                     indices,
-                                     &x,
-                                     y,
-                                     (unsigned char)nibble)) {
+            if (nibble >= (unsigned int)info->palette_count) {
                 return sixel_bmp_fail("builtin BMP: RLE4 absolute overflow");
             }
+            dst[index] = (unsigned char)nibble;
         }
+        x += (int)code;
         offset += byte_count;
         if ((byte_count & 1u) != 0u) {
             if (offset >= size) {
@@ -1989,6 +2041,8 @@ sixel_bmp_decode_rle24_rgb(sixel_bmp_decode_info_t const *info,
     unsigned char blue;
     unsigned char green;
     unsigned char red;
+    size_t span_offset;
+    unsigned char *dst;
 
     buffer = NULL;
     size = 0u;
@@ -2005,6 +2059,8 @@ sixel_bmp_decode_rle24_rgb(sixel_bmp_decode_info_t const *info,
     blue = 0u;
     green = 0u;
     red = 0u;
+    span_offset = 0u;
+    dst = NULL;
     if (info == NULL || pixels == NULL || info->chunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2025,17 +2081,18 @@ sixel_bmp_decode_rle24_rgb(sixel_bmp_decode_info_t const *info,
             blue = buffer[offset++];
             green = buffer[offset++];
             red = buffer[offset++];
-            for (index = 0u; index < count; ++index) {
-                if (!sixel_bmp_put_rgb(info,
-                                       pixels,
-                                       &x,
-                                       y,
-                                       red,
-                                       green,
-                                       blue)) {
-                    return sixel_bmp_fail("builtin BMP: RLE24 write overflow");
-                }
+            if (!sixel_bmp_prepare_rgb_span(info, x, y, count,
+                                            &span_offset)) {
+                return sixel_bmp_fail("builtin BMP: RLE24 write overflow");
             }
+            dst = pixels + span_offset;
+            for (index = 0u; index < count; ++index) {
+                dst[0u] = red;
+                dst[1u] = green;
+                dst[2u] = blue;
+                dst += 3u;
+            }
+            x += (int)count;
             continue;
         }
 
@@ -2073,20 +2130,20 @@ sixel_bmp_decode_rle24_rgb(sixel_bmp_decode_info_t const *info,
         if (absolute_bytes > size - offset) {
             return sixel_bmp_fail("builtin BMP: truncated RLE24 absolute");
         }
+        if (!sixel_bmp_prepare_rgb_span(info, x, y, code, &span_offset)) {
+            return sixel_bmp_fail("builtin BMP: RLE24 absolute overflow");
+        }
+        dst = pixels + span_offset;
         for (index = 0u; index < code; ++index) {
             blue = buffer[offset + index * 3u + 0u];
             green = buffer[offset + index * 3u + 1u];
             red = buffer[offset + index * 3u + 2u];
-            if (!sixel_bmp_put_rgb(info,
-                                   pixels,
-                                   &x,
-                                   y,
-                                   red,
-                                   green,
-                                   blue)) {
-                return sixel_bmp_fail("builtin BMP: RLE24 absolute overflow");
-            }
+            dst[0u] = red;
+            dst[1u] = green;
+            dst[2u] = blue;
+            dst += 3u;
         }
+        x += (int)code;
         offset += absolute_bytes;
         if ((absolute_bytes & 1u) != 0u) {
             if (offset >= size) {

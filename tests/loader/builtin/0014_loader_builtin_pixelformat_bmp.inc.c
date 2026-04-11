@@ -5662,6 +5662,117 @@ run_bmp_i40_win_c15_fail_t(void)
 }
 
 static int
+bmp_num_build_i40_hdr(unsigned char *bmp,
+                      size_t bmp_capacity,
+                      int width,
+                      int height_signed,
+                      unsigned int bpp,
+                      unsigned int compression,
+                      unsigned int image_size,
+                      unsigned int pixel_offset)
+{
+    unsigned int file_size;
+
+    file_size = 54u;
+    if (bmp == NULL || bmp_capacity < (size_t)file_size) {
+        return 0;
+    }
+
+    memset(bmp, 0, (size_t)file_size);
+    bmp[0] = 0x42u;
+    bmp[1] = 0x4du;
+    bmp_numeric_write_u32le(bmp, 2u, file_size);
+    bmp_numeric_write_u32le(bmp, 10u, pixel_offset);
+    bmp_numeric_write_u32le(bmp, 14u, 40u);
+    bmp_numeric_write_u32le(bmp, 18u, (uint32_t)(unsigned int)width);
+    bmp_numeric_write_u32le(bmp, 22u, (uint32_t)height_signed);
+    bmp_numeric_write_u16le(bmp, 26u, 1u);
+    bmp_numeric_write_u16le(bmp, 28u, bpp);
+    bmp_numeric_write_u32le(bmp, 30u, compression);
+    bmp_numeric_write_u32le(bmp, 34u, image_size);
+    bmp_numeric_write_u32le(bmp, 38u, 0x00000b13u);
+    bmp_numeric_write_u32le(bmp, 42u, 0x00000b13u);
+
+    return 1;
+}
+
+static int
+run_bmp_i40_fail_rgb32_imgovf_t(void)
+{
+    unsigned char bmp[54u];
+
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_num_build_i40_hdr(bmp,
+                               sizeof(bmp),
+                               2147483647,
+                               2147483647,
+                               32u,
+                               0u,
+                               0u,
+                               54u)) {
+        fprintf(stderr,
+                "builtin loader bmp fail info40 rgb32 image overflow "
+                "numeric: failed to build buffer\n");
+        return 1;
+    }
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail info40 rgb32 image overflow numeric",
+        bmp,
+        sizeof(bmp));
+}
+
+static int
+run_bmp_i40_fail_pixoff_eqsize_t(void)
+{
+    unsigned char bmp[54u];
+
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_num_build_i40_hdr(bmp,
+                               sizeof(bmp),
+                               2,
+                               2,
+                               24u,
+                               0u,
+                               0u,
+                               54u)) {
+        fprintf(stderr,
+                "builtin loader bmp fail info40 pixel offset equal file "
+                "size numeric: failed to build buffer\n");
+        return 1;
+    }
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail info40 pixel offset equal file size "
+        "numeric",
+        bmp,
+        sizeof(bmp));
+}
+
+static int
+run_bmp_i40_fail_paloff_t(void)
+{
+    unsigned char bmp[54u];
+
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_num_build_i40_hdr(bmp,
+                               sizeof(bmp),
+                               2,
+                               2,
+                               8u,
+                               0u,
+                               0u,
+                               53u)) {
+        fprintf(stderr,
+                "builtin loader bmp fail info40 palette offset numeric: "
+                "failed to build buffer\n");
+        return 1;
+    }
+    return run_builtin_loader_bmp_expect_fail_buffer_case(
+        "builtin loader bmp fail info40 palette offset numeric",
+        bmp,
+        sizeof(bmp));
+}
+
+static int
 bmp_numeric_append_huffman_bits(unsigned char *payload,
                                 size_t payload_capacity,
                                 size_t *bit_count,

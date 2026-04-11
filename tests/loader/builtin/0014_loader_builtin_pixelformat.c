@@ -4467,6 +4467,12 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_COMP15_FAIL",
           run_bmp_i40_win_c15_fail_t
         },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_I40_RGB32_IMAGE_SIZE_OVERFLOW",
+          run_bmp_i40_fail_rgb32_imgovf_t },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_I40_PIXEL_OFFSET_EQUALS_FILE_SIZE",
+          run_bmp_i40_fail_pixoff_eqsize_t },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_I40_PALETTE_OFFSET",
+          run_bmp_i40_fail_paloff_t },
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_ABF_ALLZERO_ALPHA_MASK_NO_BG",
           run_bmp_i40_abf_a0_mask_num_t },
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_BF_A0_EXPLICIT_MASK_NO_BG",
