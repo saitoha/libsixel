@@ -11723,17 +11723,28 @@ sixel_builtin_psd_legacy_lrfx_has_feature_record(
     size_t key_length)
 {
     size_t cursor;
+    size_t effect_count;
+    size_t effect_index;
+    size_t payload_length;
 
-    if (data == NULL || key_length < 12u) {
+    effect_count = 0u;
+    effect_index = 0u;
+    payload_length = 0u;
+    cursor = 0u;
+    if (data == NULL || key_length < 4u) {
         return 0;
     }
+
+    effect_count = (size_t)sixel_builtin_read_u16be_as_u16(data + 2u);
+    cursor = 4u;
     /*
-     * Probe known feature keys in one linear pass to avoid rescanning large
-     * lrFX payloads for each individual key.
+     * Scan only lrFX effect record headers. This avoids false positives from
+     * payload bytes that accidentally contain "8BIMxxxx" sequences.
      */
-    for (cursor = 0u; cursor + 12u <= key_length; ++cursor) {
-        if (memcmp(data + cursor, "8BIM", 4u) != 0) {
-            continue;
+    for (effect_index = 0u; effect_index < effect_count; ++effect_index) {
+        if (cursor + 12u > key_length ||
+            memcmp(data + cursor, "8BIM", 4u) != 0) {
+            break;
         }
         if (memcmp(data + cursor + 4u, "oglw", 4u) == 0 ||
             memcmp(data + cursor + 4u, "iglw", 4u) == 0 ||
@@ -11741,6 +11752,12 @@ sixel_builtin_psd_legacy_lrfx_has_feature_record(
             memcmp(data + cursor + 4u, "sofi", 4u) == 0) {
             return 1;
         }
+        payload_length = sixel_builtin_read_u32be_size(data + cursor + 8u);
+        cursor += 12u;
+        if (payload_length > key_length - cursor) {
+            break;
+        }
+        cursor += payload_length;
     }
     return 0;
 }
