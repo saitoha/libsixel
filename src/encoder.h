@@ -172,6 +172,18 @@ struct sixel_encoder {
     double quantize_model_merge_oversplit;
     int quantize_model_merge_lloyd_override;
     unsigned int quantize_model_merge_lloyd;
+    int quantize_model_animation_mode_override;
+    int quantize_model_animation_mode;
+    int quantize_model_scene_cut_threshold_override;
+    double quantize_model_scene_cut_threshold;
+    unsigned char quantize_animation_prev_palette[SIXEL_PALETTE_MAX * 3];
+    unsigned int quantize_animation_prev_palette_count;
+    int quantize_animation_prev_palette_valid;
+    unsigned char quantize_animation_prev_probe[192];
+    int quantize_animation_prev_probe_valid;
+    int quantize_animation_prev_width;
+    int quantize_animation_prev_height;
+    int quantize_animation_prev_loop_no;
     int final_merge_mode;
     int lut_policy;
     int sixel_reversible;

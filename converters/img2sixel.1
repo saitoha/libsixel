@@ -99,6 +99,10 @@ the historical Heckbert median\-cut behaviour.
 .br
 The \fBauto\fP and \fBheckbert\fP base values accept suboptions:
 .br
+\fBanimation_mode\fP: 0 or 1 (default 0).
+.br
+\fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
+.br
 \fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br
 \fBmerge_oversplit\fP (or short key \fBo\fP): floating value in 1.0-3.0.
@@ -143,6 +147,10 @@ when both are specified.
 .br
 \fBfeedback_interval\fP: integer value in 1-64.
 .br
+\fBanimation_mode\fP: 0 or 1 (default 0).
+.br
+\fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
+.br
 \fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br
 \fBmerge_oversplit\fP (or short key \fBo\fP): floating value in 1.0-3.0.
@@ -184,6 +192,10 @@ Supported k-medoids suboptions:
 \fBbandit_candidates\fP: integer value in 8-4096.
 .br
 \fBbandit_batch\fP: integer value in 8-4096.
+.br
+\fBanimation_mode\fP: 0 or 1 (default 0).
+.br
+\fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
 .br
 \fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br
@@ -1216,6 +1228,16 @@ legacy alias for \fBSIXEL_LOADER_WIC_ICO_MINSIZE\fP.
 .br
 request a specific sample count for palette estimation. Positive integers
 override automatic sizing.
+.TP 5
+.B SIXEL_PALETTE_ANIMATION_MODE
+.br
+enable frame-to-frame palette stabilization for animated inputs.
+Accepts 0 or 1 (default 0).
+.TP 5
+.B SIXEL_PALETTE_SCENE_CUT_THRESHOLD
+.br
+scene-cut sensitivity for \fBanimation_mode\fP.
+Accepts 0.0-1.0 (default 0.20).
 .TP 5
 .B SIXEL_PALETTE_OVERSPLIT_FACTOR
 .br

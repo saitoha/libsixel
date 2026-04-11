@@ -131,6 +131,16 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == animation_mode ]]; then
+                    for quant_candidate in 0 1; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == scene_cut_threshold ]]; then
+                    for quant_candidate in 0.15 0.20 0.30; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 elif [[ ${quant_key} == merge_oversplit || \
                         ${quant_key} == o ]]; then
                     for quant_candidate in 1.2 1.5 1.8 2.0; do
@@ -149,6 +159,7 @@ _img2sixel()
 
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
+                animation_mode= scene_cut_threshold= \
                 g= merge= o= merge_oversplit= l= merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -231,6 +242,16 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == animation_mode ]]; then
+                    for quant_candidate in 0 1; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == scene_cut_threshold ]]; then
+                    for quant_candidate in 0.15 0.20 0.30; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 elif [[ ${quant_key} == merge || ${quant_key} == g ]]; then
                     for quant_candidate in auto none ward; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
@@ -260,6 +281,7 @@ _img2sixel()
                 f= feedback= s= seed= restarts= \
                 iter= iter_max= miniter= polish_iter= \
                 feedback_slots= feedback_interval= \
+                animation_mode= scene_cut_threshold= \
                 g= merge= o= merge_oversplit= l= merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -333,6 +355,16 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == animation_mode ]]; then
+                    for quant_candidate in 0 1; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == scene_cut_threshold ]]; then
+                    for quant_candidate in 0.15 0.20 0.30; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 elif [[ ${quant_key} == merge || ${quant_key} == g ]]; then
                     for quant_candidate in auto none ward; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
@@ -361,6 +393,7 @@ _img2sixel()
                 clara_trials= clara_sample= \
                 clarans_local= clarans_neighbors= \
                 bandit_iter= bandit_candidates= bandit_batch= \
+                animation_mode= scene_cut_threshold= \
                 g= merge= o= merge_oversplit= l= merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")

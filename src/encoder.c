@@ -124,8 +124,20 @@
 #define SIXEL_ENCODER_LUT_POLICY_ENVVAR "SIXEL_DITHER_LOOKUP_POLICY"
 #define SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR \
     "SIXEL_PALETTE_SAMPLE_TARGET"
+#define SIXEL_PALETTE_ANIMATION_MODE_ENVVAR \
+    "SIXEL_PALETTE_ANIMATION_MODE"
+#define SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR \
+    "SIXEL_PALETTE_SCENE_CUT_THRESHOLD"
 #define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
     "SIXEL_ANIMATION_HIDE_CURSOR"
+
+#define SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT 0.20
+#define SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE 8
+#define SIXEL_QUANTIZE_SCENE_PROBE_COUNT \
+    (SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE \
+     * SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE)
+#define SIXEL_QUANTIZE_SCENE_PROBE_BYTES \
+    (SIXEL_QUANTIZE_SCENE_PROBE_COUNT * 3)
 
 #if defined(_MSC_VER)
 # define SIXEL_ENCODER_OVERRIDE_TLS_AVAILABLE 1
@@ -1303,6 +1315,22 @@ static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
 
 static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     {
+        "animation_mode",
+        NULL,
+        SIXEL_PALETTE_ANIMATION_MODE_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "scene_cut_threshold",
+        NULL,
+        SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
         "merge",
         "g",
         NULL,
@@ -1464,6 +1492,22 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
         0u
     },
     {
+        "animation_mode",
+        NULL,
+        SIXEL_PALETTE_ANIMATION_MODE_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "scene_cut_threshold",
+        NULL,
+        SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
         "merge",
         "g",
         NULL,
@@ -1608,6 +1652,22 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
         "prune_mass",
         NULL,
         "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "animation_mode",
+        NULL,
+        SIXEL_PALETTE_ANIMATION_MODE_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "scene_cut_threshold",
+        NULL,
+        SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR,
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -2268,6 +2328,525 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
                                              source_colorspace,
                                              target_colorspace);
     return status;
+}
+
+static int
+sixel_encoder_try_parse_toggle01_text(char const *text, int *value_out)
+{
+    char *endptr;
+    long parsed;
+
+    endptr = NULL;
+    parsed = 0L;
+    if (text == NULL || value_out == NULL) {
+        return 0;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno == ERANGE || (parsed != 0L && parsed != 1L)) {
+        return 0;
+    }
+
+    *value_out = (int)parsed;
+    return 1;
+}
+
+static int
+sixel_encoder_try_parse_ratio01_text(char const *text, double *value_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || value_out == NULL) {
+        return 0;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno != 0 || parsed != parsed
+            || parsed < 0.0 || parsed > 1.0) {
+        return 0;
+    }
+
+    *value_out = parsed;
+    return 1;
+}
+
+static void
+sixel_encoder_reset_quantize_animation_state(sixel_encoder_t *encoder)
+{
+    if (encoder == NULL) {
+        return;
+    }
+
+    encoder->quantize_animation_prev_palette_count = 0U;
+    encoder->quantize_animation_prev_palette_valid = 0;
+    encoder->quantize_animation_prev_probe_valid = 0;
+    encoder->quantize_animation_prev_width = 0;
+    encoder->quantize_animation_prev_height = 0;
+    encoder->quantize_animation_prev_loop_no = 0;
+}
+
+static void
+sixel_encoder_resolve_quantize_animation_options(
+    sixel_encoder_t const *encoder,
+    int *animation_mode_out,
+    double *scene_cut_threshold_out)
+{
+    char const *env_value;
+    int resolved_mode;
+    double resolved_threshold;
+
+    env_value = NULL;
+    resolved_mode = 0;
+    resolved_threshold = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
+    if (encoder == NULL || animation_mode_out == NULL
+            || scene_cut_threshold_out == NULL) {
+        return;
+    }
+
+    if (encoder->quantize_model_animation_mode_override != 0) {
+        resolved_mode = encoder->quantize_model_animation_mode;
+    } else {
+        env_value = sixel_compat_getenv(SIXEL_PALETTE_ANIMATION_MODE_ENVVAR);
+        if (!sixel_encoder_try_parse_toggle01_text(env_value,
+                                                   &resolved_mode)) {
+            resolved_mode = 0;
+        }
+    }
+
+    if (encoder->quantize_model_scene_cut_threshold_override != 0) {
+        resolved_threshold = encoder->quantize_model_scene_cut_threshold;
+    } else {
+        env_value = sixel_compat_getenv(
+            SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR);
+        if (!sixel_encoder_try_parse_ratio01_text(env_value,
+                                                  &resolved_threshold)) {
+            resolved_threshold = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
+        }
+    }
+
+    if (resolved_threshold < 0.0 || resolved_threshold > 1.0) {
+        resolved_threshold = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
+    }
+
+    *animation_mode_out = resolved_mode;
+    *scene_cut_threshold_out = resolved_threshold;
+}
+
+static SIXELSTATUS
+sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
+                                  unsigned char probe_out[])
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    unsigned char *normalized;
+    unsigned char *source_pixels;
+    size_t normalized_bytes;
+    int normalized_pixelformat;
+    int width;
+    int height;
+    int pixelformat;
+    int sample_x;
+    int sample_y;
+    int x;
+    int y;
+    size_t probe_index;
+    size_t pixel_index;
+
+    status = SIXEL_OK;
+    allocator = NULL;
+    normalized = NULL;
+    source_pixels = NULL;
+    normalized_bytes = 0U;
+    normalized_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    width = 0;
+    height = 0;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    sample_x = 0;
+    sample_y = 0;
+    x = 0;
+    y = 0;
+    probe_index = 0U;
+    pixel_index = 0U;
+    if (frame == NULL || probe_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        source_pixels = (unsigned char *)sixel_frame_get_pixels_float32(frame);
+    } else {
+        source_pixels = sixel_frame_get_pixels(frame);
+    }
+    if (source_pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    normalized_pixelformat = pixelformat;
+    if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        allocator = sixel_frame_get_allocator(frame);
+        if (allocator == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if ((size_t)width > SIZE_MAX / (size_t)height
+                || (size_t)width * (size_t)height > SIZE_MAX / 3U) {
+            return SIXEL_BAD_INPUT;
+        }
+        normalized_bytes = (size_t)width * (size_t)height * 3U;
+        normalized = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            normalized_bytes);
+        if (normalized == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        status = sixel_helper_normalize_pixelformat(
+            normalized,
+            &normalized_pixelformat,
+            source_pixels,
+            pixelformat,
+            width,
+            height);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, normalized);
+            return status;
+        }
+        source_pixels = normalized;
+    }
+
+    if (normalized_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        if (normalized != NULL && allocator != NULL) {
+            sixel_allocator_free(allocator, normalized);
+        }
+        return SIXEL_BAD_INPUT;
+    }
+
+    probe_index = 0U;
+    for (sample_y = 0; sample_y < SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE;
+            ++sample_y) {
+        if (height <= 1) {
+            y = 0;
+        } else {
+            y = sample_y * (height - 1)
+                / (SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE - 1);
+        }
+        for (sample_x = 0; sample_x < SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE;
+                ++sample_x) {
+            if (width <= 1) {
+                x = 0;
+            } else {
+                x = sample_x * (width - 1)
+                    / (SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE - 1);
+            }
+            pixel_index = ((size_t)y * (size_t)width + (size_t)x) * 3U;
+            probe_out[probe_index + 0U] = source_pixels[pixel_index + 0U];
+            probe_out[probe_index + 1U] = source_pixels[pixel_index + 1U];
+            probe_out[probe_index + 2U] = source_pixels[pixel_index + 2U];
+            probe_index += 3U;
+        }
+    }
+
+    if (normalized != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, normalized);
+    }
+    return SIXEL_OK;
+}
+
+static double
+sixel_encoder_scene_probe_distance(unsigned char const *left,
+                                   unsigned char const *right)
+{
+    size_t index;
+    double diff_sum;
+    int delta;
+
+    index = 0U;
+    diff_sum = 0.0;
+    delta = 0;
+    if (left == NULL || right == NULL) {
+        return 1.0;
+    }
+
+    while (index < SIXEL_QUANTIZE_SCENE_PROBE_BYTES) {
+        delta = (int)left[index] - (int)right[index];
+        if (delta < 0) {
+            delta = -delta;
+        }
+        diff_sum += (double)delta;
+        ++index;
+    }
+
+    return diff_sum / (1020.0 * (double)SIXEL_QUANTIZE_SCENE_PROBE_BYTES);
+}
+
+static void
+sixel_encoder_apply_palette_hysteresis(sixel_palette_t *palette,
+                                       unsigned char const *prev_palette,
+                                       unsigned int prev_count)
+{
+    unsigned int color_count;
+    unsigned int prev_index;
+    unsigned int current_index;
+    unsigned int assign_index;
+    unsigned int best_index;
+    unsigned int best_distance;
+    unsigned int distance;
+    unsigned int mapped_index;
+    unsigned int mapping[SIXEL_PALETTE_MAX];
+    unsigned char used[SIXEL_PALETTE_MAX];
+    unsigned char reordered[SIXEL_PALETTE_MAX * 3];
+    float reordered_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
+    int blend_bytes;
+    int current_byte;
+    int previous_byte;
+    int dr;
+    int dg;
+    int db;
+    int float_stride;
+    unsigned int channel;
+
+    color_count = 0U;
+    prev_index = 0U;
+    current_index = 0U;
+    assign_index = 0U;
+    best_index = 0U;
+    best_distance = UINT_MAX;
+    distance = 0U;
+    mapped_index = 0U;
+    blend_bytes = 0;
+    current_byte = 0;
+    previous_byte = 0;
+    dr = 0;
+    dg = 0;
+    db = 0;
+    float_stride = 0;
+    channel = 0U;
+    if (palette == NULL || prev_palette == NULL || prev_count == 0U
+            || palette->entries == NULL || palette->depth < 3) {
+        return;
+    }
+
+    color_count = palette->entry_count;
+    if (color_count == 0U) {
+        return;
+    }
+    if (color_count > (unsigned int)SIXEL_PALETTE_MAX) {
+        color_count = (unsigned int)SIXEL_PALETTE_MAX;
+    }
+    blend_bytes = palette->entries_float32 == NULL ? 1 : 0;
+
+    memset(used, 0, sizeof(used));
+    memset(mapping, 0, sizeof(mapping));
+
+    assign_index = 0U;
+    for (prev_index = 0U;
+            prev_index < prev_count && assign_index < color_count;
+            ++prev_index) {
+        best_distance = UINT_MAX;
+        best_index = color_count;
+        for (current_index = 0U; current_index < color_count;
+                ++current_index) {
+            if (used[current_index] != 0U) {
+                continue;
+            }
+            dr = (int)palette->entries[current_index * 3U + 0U]
+                - (int)prev_palette[prev_index * 3U + 0U];
+            dg = (int)palette->entries[current_index * 3U + 1U]
+                - (int)prev_palette[prev_index * 3U + 1U];
+            db = (int)palette->entries[current_index * 3U + 2U]
+                - (int)prev_palette[prev_index * 3U + 2U];
+            distance = (unsigned int)(dr * dr + dg * dg + db * db);
+            if (distance < best_distance) {
+                best_distance = distance;
+                best_index = current_index;
+            }
+        }
+        if (best_index >= color_count) {
+            continue;
+        }
+        mapping[assign_index] = best_index;
+        used[best_index] = 1U;
+        ++assign_index;
+    }
+
+    for (current_index = 0U; current_index < color_count; ++current_index) {
+        if (used[current_index] != 0U) {
+            continue;
+        }
+        mapping[assign_index] = current_index;
+        used[current_index] = 1U;
+        ++assign_index;
+    }
+
+    for (assign_index = 0U; assign_index < color_count; ++assign_index) {
+        mapped_index = mapping[assign_index];
+        if (blend_bytes != 0 && assign_index < prev_count) {
+            current_byte = (int)palette->entries[mapped_index * 3U + 0U];
+            previous_byte = (int)prev_palette[assign_index * 3U + 0U];
+            reordered[assign_index * 3U + 0U] = (unsigned char)(
+                (current_byte * 3 + previous_byte + 2) / 4);
+            current_byte = (int)palette->entries[mapped_index * 3U + 1U];
+            previous_byte = (int)prev_palette[assign_index * 3U + 1U];
+            reordered[assign_index * 3U + 1U] = (unsigned char)(
+                (current_byte * 3 + previous_byte + 2) / 4);
+            current_byte = (int)palette->entries[mapped_index * 3U + 2U];
+            previous_byte = (int)prev_palette[assign_index * 3U + 2U];
+            reordered[assign_index * 3U + 2U] = (unsigned char)(
+                (current_byte * 3 + previous_byte + 2) / 4);
+        } else {
+            reordered[assign_index * 3U + 0U] =
+                palette->entries[mapped_index * 3U + 0U];
+            reordered[assign_index * 3U + 1U] =
+                palette->entries[mapped_index * 3U + 1U];
+            reordered[assign_index * 3U + 2U] =
+                palette->entries[mapped_index * 3U + 2U];
+        }
+    }
+    memcpy(palette->entries, reordered, (size_t)color_count * 3U);
+
+    if (palette->entries_float32 == NULL || palette->float_depth <= 0) {
+        return;
+    }
+
+    float_stride = palette->float_depth / (int)sizeof(float);
+    if (float_stride <= 0 || (unsigned int)float_stride > SIXEL_MAX_CHANNELS) {
+        return;
+    }
+    for (assign_index = 0U; assign_index < color_count; ++assign_index) {
+        mapped_index = mapping[assign_index];
+        for (channel = 0U; channel < (unsigned int)float_stride; ++channel) {
+            reordered_float[assign_index * (unsigned int)float_stride
+                            + channel] =
+                palette->entries_float32[mapped_index
+                    * (unsigned int)float_stride + channel];
+        }
+    }
+    memcpy(palette->entries_float32,
+           reordered_float,
+           (size_t)color_count * (size_t)float_stride * sizeof(float));
+}
+
+static SIXELSTATUS
+sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
+                                            sixel_frame_t *frame,
+                                            sixel_dither_t *dither)
+{
+    SIXELSTATUS status;
+    sixel_palette_t *palette;
+    unsigned int palette_count;
+    int animation_mode;
+    double scene_cut_threshold;
+    unsigned char current_probe[SIXEL_QUANTIZE_SCENE_PROBE_BYTES];
+    double scene_score;
+    int scene_cut;
+    int width;
+    int height;
+    int loop_no;
+    int multiframe;
+
+    status = SIXEL_OK;
+    palette = NULL;
+    palette_count = 0U;
+    animation_mode = 0;
+    scene_cut_threshold = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
+    memset(current_probe, 0, sizeof(current_probe));
+    scene_score = 0.0;
+    scene_cut = 0;
+    width = 0;
+    height = 0;
+    loop_no = 0;
+    multiframe = 0;
+    if (encoder == NULL || frame == NULL || dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_encoder_resolve_quantize_animation_options(
+        encoder,
+        &animation_mode,
+        &scene_cut_threshold);
+    if (animation_mode == 0) {
+        sixel_encoder_reset_quantize_animation_state(encoder);
+        return SIXEL_OK;
+    }
+    multiframe = sixel_frame_get_multiframe(frame);
+    if (multiframe == 0) {
+        sixel_encoder_reset_quantize_animation_state(encoder);
+        return SIXEL_OK;
+    }
+
+    palette = dither->palette;
+    if (palette == NULL || palette->entries == NULL || palette->depth < 3) {
+        sixel_encoder_reset_quantize_animation_state(encoder);
+        return SIXEL_OK;
+    }
+
+    status = sixel_encoder_collect_scene_probe(frame, current_probe);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    loop_no = sixel_frame_get_loop_no(frame);
+    scene_cut = 0;
+    if (encoder->quantize_animation_prev_probe_valid == 0
+            || encoder->quantize_animation_prev_palette_valid == 0) {
+        scene_cut = 1;
+    } else if (encoder->quantize_animation_prev_loop_no != loop_no) {
+        scene_cut = 1;
+    } else if (encoder->quantize_animation_prev_width != width
+            || encoder->quantize_animation_prev_height != height) {
+        scene_cut = 1;
+    } else {
+        scene_score = sixel_encoder_scene_probe_distance(
+            current_probe,
+            encoder->quantize_animation_prev_probe);
+        if (scene_score > scene_cut_threshold) {
+            scene_cut = 1;
+        }
+    }
+
+    if (scene_cut == 0) {
+        sixel_encoder_apply_palette_hysteresis(
+            palette,
+            encoder->quantize_animation_prev_palette,
+            encoder->quantize_animation_prev_palette_count);
+    }
+
+    palette_count = palette->entry_count;
+    if (palette_count > (unsigned int)SIXEL_PALETTE_MAX) {
+        palette_count = (unsigned int)SIXEL_PALETTE_MAX;
+    }
+    if (palette_count == 0U) {
+        encoder->quantize_animation_prev_palette_count = 0U;
+        encoder->quantize_animation_prev_palette_valid = 0;
+    } else {
+        memcpy(encoder->quantize_animation_prev_palette,
+               palette->entries,
+               (size_t)palette_count * 3U);
+        encoder->quantize_animation_prev_palette_count = palette_count;
+        encoder->quantize_animation_prev_palette_valid = 1;
+    }
+    memcpy(encoder->quantize_animation_prev_probe,
+           current_probe,
+           sizeof(current_probe));
+    encoder->quantize_animation_prev_probe_valid = 1;
+    encoder->quantize_animation_prev_width = width;
+    encoder->quantize_animation_prev_height = height;
+    encoder->quantize_animation_prev_loop_no = loop_no;
+
+    return SIXEL_OK;
 }
 
 static int
@@ -4563,6 +5142,9 @@ sixel_encoder_prepare_palette(
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT) {
+        sixel_encoder_reset_quantize_animation_state(encoder);
+    }
     if (encoder != NULL) {
         if (target_logger == NULL) {
             target_logger = encoder->logger;
@@ -4896,9 +5478,6 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_point_budget_override(0, 0u);
     sixel_set_kmedoids_rare_keep_override(0, 0u);
     sixel_set_kmedoids_prune_mass_override(0, 0.0);
-    sixel_encoder_quantize_override_lock_release(
-        quantize_override_lock_acquired);
-    quantize_override_lock_acquired = 0;
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -4921,6 +5500,17 @@ sixel_encoder_prepare_palette(
             goto end;
         }
     }
+    status = sixel_encoder_apply_quantize_animation_mode(
+        encoder,
+        frame,
+        *dither);
+    if (SIXEL_FAILED(status)) {
+        sixel_dither_unref(*dither);
+        goto end;
+    }
+    sixel_encoder_quantize_override_lock_release(
+        quantize_override_lock_acquired);
+    quantize_override_lock_acquired = 0;
 
     histogram_colors = sixel_dither_get_num_of_histogram_colors(*dither);
     if (histogram_colors <= encoder->reqcolors) {
@@ -5909,6 +6499,23 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_merge_oversplit = 1.81;
     (*ppencoder)->quantize_model_merge_lloyd_override = 0;
     (*ppencoder)->quantize_model_merge_lloyd = 3u;
+    (*ppencoder)->quantize_model_animation_mode_override = 0;
+    (*ppencoder)->quantize_model_animation_mode = 0;
+    (*ppencoder)->quantize_model_scene_cut_threshold_override = 0;
+    (*ppencoder)->quantize_model_scene_cut_threshold
+        = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
+    memset((*ppencoder)->quantize_animation_prev_palette,
+           0,
+           sizeof((*ppencoder)->quantize_animation_prev_palette));
+    (*ppencoder)->quantize_animation_prev_palette_count = 0U;
+    (*ppencoder)->quantize_animation_prev_palette_valid = 0;
+    memset((*ppencoder)->quantize_animation_prev_probe,
+           0,
+           sizeof((*ppencoder)->quantize_animation_prev_probe));
+    (*ppencoder)->quantize_animation_prev_probe_valid = 0;
+    (*ppencoder)->quantize_animation_prev_width = 0;
+    (*ppencoder)->quantize_animation_prev_height = 0;
+    (*ppencoder)->quantize_animation_prev_loop_no = 0;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
@@ -6596,6 +7203,61 @@ sixel_encoder_parse_quantize_threshold_text(
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_quantize_animation_mode_text(
+    char const *text,
+    int *mode_out)
+{
+    char *endptr;
+    long parsed;
+
+    endptr = NULL;
+    parsed = 0L;
+    if (text == NULL || mode_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno == ERANGE || (parsed != 0L && parsed != 1L)) {
+        sixel_helper_set_additional_message(
+            "-Q animation_mode must be 0 or 1.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *mode_out = (int)parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_quantize_scene_cut_threshold_text(
+    char const *text,
+    double *threshold_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || threshold_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno != 0 || parsed != parsed
+            || parsed < 0.0 || parsed > 1.0) {
+        sixel_helper_set_additional_message(
+            "-Q scene_cut_threshold must be in range 0.0-1.0.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *threshold_out = parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_parse_kmeans_binbits_text(
     char const *text,
     unsigned int *bits_out)
@@ -6838,6 +7500,22 @@ sixel_encoder_validate_quantize_model_resolution(
             ++index;
             continue;
         }
+        if (key_name != NULL && strcmp(key_name, "animation_mode") == 0) {
+            status = sixel_encoder_parse_quantize_animation_mode_text(
+                assignment->resolved_value_text,
+                &resolved_choice);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "scene_cut_threshold") == 0) {
+            status = sixel_encoder_parse_quantize_scene_cut_threshold_text(
+                assignment->resolved_value_text,
+                &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else
         if (key_name != NULL && strcmp(key_name, "threshold") == 0) {
             status = sixel_encoder_parse_quantize_threshold_text(
                 assignment->resolved_value_text,
@@ -7305,32 +7983,55 @@ sixel_encoder_resolve_diffusion_scan_suboptions(
     return SIXEL_OK;
 }
 
+/*
+ * pcc may ICE on very long parameter lists.  Bundle interframe/bluenoise
+ * suboption outputs into compact state objects.
+ */
+typedef struct sixel_encoder_interframe_suboption_state {
+    int has_strategy_override;
+    int strategy_token;
+    int has_spatial_diffuse_override;
+    int spatial_diffuse;
+    int has_noise_strength_override;
+    int noise_strength_u8;
+    int has_motion_adapt_override;
+    int motion_adapt_enabled;
+    int has_scene_cut_reset_override;
+    int scene_cut_reset_enabled;
+    int has_scene_detect_override;
+    int scene_detect_enabled;
+    int has_alpha_guard_override;
+    int alpha_guard_enabled;
+    int has_perceptual_weight_override;
+    int perceptual_weight_enabled;
+    int has_fastpath_override;
+    int fastpath_enabled;
+} sixel_encoder_interframe_suboption_state_t;
+
+typedef struct sixel_encoder_bluenoise_suboption_state {
+    int has_strength_override;
+    float strength;
+    int has_phase_override;
+    int phase_x;
+    int phase_y;
+    int has_seed_override;
+    int seed;
+    int has_channel_override;
+    int channel_rgb;
+    int has_size_override;
+    int size;
+} sixel_encoder_bluenoise_suboption_state_t;
+
 static SIXELSTATUS
 sixel_encoder_resolve_interframe_suboptions(
     sixel_option_argument_resolution_t const *resolution,
-    int *has_strategy_override,
-    int *strategy_token,
-    int *has_spatial_diffuse_override,
-    int *spatial_diffuse,
-    int *has_noise_strength_override,
-    int *noise_strength_u8,
-    int *has_motion_adapt_override,
-    int *motion_adapt_enabled,
-    int *has_scene_cut_reset_override,
-    int *scene_cut_reset_enabled,
-    int *has_scene_detect_override,
-    int *scene_detect_enabled,
-    int *has_alpha_guard_override,
-    int *alpha_guard_enabled,
-    int *has_perceptual_weight_override,
-    int *perceptual_weight_enabled,
-    int *has_fastpath_override,
-    int *fastpath_enabled)
+    sixel_encoder_interframe_suboption_state_t *state)
 {
     SIXELSTATUS status;
     size_t index;
     sixel_suboption_assignment_t const *assignment;
     char const *base_name;
+    char const *resolved_key_name;
     int resolved_choice;
     int resolved_spatial_diffuse;
     int resolved_strength_u8;
@@ -7339,49 +8040,32 @@ sixel_encoder_resolve_interframe_suboptions(
     index = 0u;
     assignment = NULL;
     base_name = NULL;
+    resolved_key_name = NULL;
     resolved_choice = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
     resolved_spatial_diffuse = SIXEL_DIFFUSE_FS;
     resolved_strength_u8 = 0;
-    if (resolution == NULL ||
-            has_strategy_override == NULL ||
-            strategy_token == NULL ||
-            has_spatial_diffuse_override == NULL ||
-            spatial_diffuse == NULL ||
-            has_noise_strength_override == NULL ||
-            noise_strength_u8 == NULL ||
-            has_motion_adapt_override == NULL ||
-            motion_adapt_enabled == NULL ||
-            has_scene_cut_reset_override == NULL ||
-            scene_cut_reset_enabled == NULL ||
-            has_scene_detect_override == NULL ||
-            scene_detect_enabled == NULL ||
-            has_alpha_guard_override == NULL ||
-            alpha_guard_enabled == NULL ||
-            has_perceptual_weight_override == NULL ||
-            perceptual_weight_enabled == NULL ||
-            has_fastpath_override == NULL ||
-            fastpath_enabled == NULL) {
+    if (resolution == NULL || state == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *has_strategy_override = 0;
-    *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
-    *has_spatial_diffuse_override = 0;
-    *spatial_diffuse = SIXEL_DIFFUSE_FS;
-    *has_noise_strength_override = 0;
-    *noise_strength_u8 = 0;
-    *has_motion_adapt_override = 0;
-    *motion_adapt_enabled = 0;
-    *has_scene_cut_reset_override = 0;
-    *scene_cut_reset_enabled = 0;
-    *has_scene_detect_override = 0;
-    *scene_detect_enabled = 0;
-    *has_alpha_guard_override = 0;
-    *alpha_guard_enabled = 0;
-    *has_perceptual_weight_override = 0;
-    *perceptual_weight_enabled = 0;
-    *has_fastpath_override = 0;
-    *fastpath_enabled = 0;
+    state->has_strategy_override = 0;
+    state->strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    state->has_spatial_diffuse_override = 0;
+    state->spatial_diffuse = SIXEL_DIFFUSE_FS;
+    state->has_noise_strength_override = 0;
+    state->noise_strength_u8 = 0;
+    state->has_motion_adapt_override = 0;
+    state->motion_adapt_enabled = 0;
+    state->has_scene_cut_reset_override = 0;
+    state->scene_cut_reset_enabled = 0;
+    state->has_scene_detect_override = 0;
+    state->scene_detect_enabled = 0;
+    state->has_alpha_guard_override = 0;
+    state->alpha_guard_enabled = 0;
+    state->has_perceptual_weight_override = 0;
+    state->perceptual_weight_enabled = 0;
+    state->has_fastpath_override = 0;
+    state->fastpath_enabled = 0;
     if (resolution->resolved_base_value != SIXEL_DIFFUSE_INTERFRAME) {
         return SIXEL_OK;
     }
@@ -7390,22 +8074,23 @@ sixel_encoder_resolve_interframe_suboptions(
         base_name = resolution->base_def->name;
     }
     if (base_name != NULL && strcmp(base_name, "interframe") == 0) {
-        *has_strategy_override = 1;
-        *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_DIFFUSION;
+        state->has_strategy_override = 1;
+        state->strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_DIFFUSION;
     } else if (base_name != NULL && strcmp(base_name, "stbn") == 0) {
-        *has_strategy_override = 1;
-        *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH;
+        state->has_strategy_override = 1;
+        state->strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH;
         /*
          * Keep stbn defaults explicit: absent diffusion suboption means
          * diffusion=none unless the shared interframe diffusion envvar
          * explicitly requests another kernel.
          */
-        *has_spatial_diffuse_override = 1;
-        *spatial_diffuse = sixel_encoder_resolve_stbn_default_spatial_diffuse();
+        state->has_spatial_diffuse_override = 1;
+        state->spatial_diffuse =
+            sixel_encoder_resolve_stbn_default_spatial_diffuse();
         resolved_choice = sixel_interframe_strategy_token_from_env_common();
         if (sixel_interframe_strategy_method_from_token(resolved_choice)
                 == SIXEL_INTERFRAME_METHOD_STBN) {
-            *strategy_token = resolved_choice;
+            state->strategy_token = resolved_choice;
         }
     } else {
         return SIXEL_OK;
@@ -7413,89 +8098,90 @@ sixel_encoder_resolve_interframe_suboptions(
 
     while (index < resolution->assignment_count) {
         assignment = resolution->assignments + index;
-        if (assignment->resolved_key_name != NULL
-                && strcmp(assignment->resolved_key_name, "source") == 0) {
+        resolved_key_name = assignment->resolved_key_name;
+        if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "source") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_strategy_override = 1;
-            *strategy_token = resolved_choice;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "diffusion") == 0) {
+            state->has_strategy_override = 1;
+            state->strategy_token = resolved_choice;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "diffusion") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_spatial_diffuse)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_spatial_diffuse_override = 1;
-            *spatial_diffuse = resolved_spatial_diffuse;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "strength") == 0) {
+            state->has_spatial_diffuse_override = 1;
+            state->spatial_diffuse = resolved_spatial_diffuse;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "strength") == 0) {
             status = sixel_encoder_parse_interframe_noise_strength_text(
                 assignment->resolved_value_text,
                 &resolved_strength_u8);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            *has_noise_strength_override = 1;
-            *noise_strength_u8 = resolved_strength_u8;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "motion_adapt") == 0) {
+            state->has_noise_strength_override = 1;
+            state->noise_strength_u8 = resolved_strength_u8;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "motion_adapt") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_motion_adapt_override = 1;
-            *motion_adapt_enabled = resolved_choice;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "scene_cut_reset") == 0) {
+            state->has_motion_adapt_override = 1;
+            state->motion_adapt_enabled = resolved_choice;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "scene_cut_reset") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_scene_cut_reset_override = 1;
-            *scene_cut_reset_enabled = resolved_choice;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "scene_detect") == 0) {
+            state->has_scene_cut_reset_override = 1;
+            state->scene_cut_reset_enabled = resolved_choice;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "scene_detect") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_scene_detect_override = 1;
-            *scene_detect_enabled = resolved_choice;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "alpha_guard") == 0) {
+            state->has_scene_detect_override = 1;
+            state->scene_detect_enabled = resolved_choice;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "alpha_guard") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_alpha_guard_override = 1;
-            *alpha_guard_enabled = resolved_choice;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "perceptual_weight")
+            state->has_alpha_guard_override = 1;
+            state->alpha_guard_enabled = resolved_choice;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "perceptual_weight")
                 == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_perceptual_weight_override = 1;
-            *perceptual_weight_enabled = resolved_choice;
-        } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "fastpath") == 0) {
+            state->has_perceptual_weight_override = 1;
+            state->perceptual_weight_enabled = resolved_choice;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "fastpath") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_fastpath_override = 1;
-            *fastpath_enabled = resolved_choice;
+            state->has_fastpath_override = 1;
+            state->fastpath_enabled = resolved_choice;
         }
         ++index;
     }
@@ -7506,21 +8192,12 @@ sixel_encoder_resolve_interframe_suboptions(
 static SIXELSTATUS
 sixel_encoder_resolve_bluenoise_suboptions(
     sixel_option_argument_resolution_t const *resolution,
-    int *has_strength_override,
-    float *strength,
-    int *has_phase_override,
-    int *phase_x,
-    int *phase_y,
-    int *has_seed_override,
-    int *seed,
-    int *has_channel_override,
-    int *channel_rgb,
-    int *has_size_override,
-    int *size)
+    sixel_encoder_bluenoise_suboption_state_t *state)
 {
     SIXELSTATUS status;
     size_t index;
     sixel_suboption_assignment_t const *assignment;
+    char const *resolved_key_name;
     int resolved_choice;
     float resolved_strength;
     int resolved_phase_x;
@@ -7530,55 +8207,46 @@ sixel_encoder_resolve_bluenoise_suboptions(
     status = SIXEL_OK;
     index = 0u;
     assignment = NULL;
+    resolved_key_name = NULL;
     resolved_choice = 0;
     resolved_strength = 0.055f;
     resolved_phase_x = 0;
     resolved_phase_y = 0;
     resolved_seed = 0;
-    if (resolution == NULL ||
-            has_strength_override == NULL ||
-            strength == NULL ||
-            has_phase_override == NULL ||
-            phase_x == NULL ||
-            phase_y == NULL ||
-            has_seed_override == NULL ||
-            seed == NULL ||
-            has_channel_override == NULL ||
-            channel_rgb == NULL ||
-            has_size_override == NULL ||
-            size == NULL) {
+    if (resolution == NULL || state == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *has_strength_override = 0;
-    *strength = resolved_strength;
-    *has_phase_override = 0;
-    *phase_x = 0;
-    *phase_y = 0;
-    *has_seed_override = 0;
-    *seed = 0;
-    *has_channel_override = 0;
-    *channel_rgb = 0;
-    *has_size_override = 0;
-    *size = 64;
+    state->has_strength_override = 0;
+    state->strength = resolved_strength;
+    state->has_phase_override = 0;
+    state->phase_x = 0;
+    state->phase_y = 0;
+    state->has_seed_override = 0;
+    state->seed = 0;
+    state->has_channel_override = 0;
+    state->channel_rgb = 0;
+    state->has_size_override = 0;
+    state->size = 64;
     if (resolution->resolved_base_value != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         return SIXEL_OK;
     }
 
     while (index < resolution->assignment_count) {
         assignment = resolution->assignments + index;
-        if (assignment->resolved_key_name != NULL
-                && strcmp(assignment->resolved_key_name, "strength") == 0) {
+        resolved_key_name = assignment->resolved_key_name;
+        if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "strength") == 0) {
             status = sixel_encoder_parse_bluenoise_strength_text(
                 assignment->resolved_value_text,
                 &resolved_strength);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            *has_strength_override = 1;
-            *strength = resolved_strength;
-        } else if (assignment->resolved_key_name != NULL
-                && strcmp(assignment->resolved_key_name, "phase") == 0) {
+            state->has_strength_override = 1;
+            state->strength = resolved_strength;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "phase") == 0) {
             status = sixel_encoder_parse_bluenoise_phase_text(
                 assignment->resolved_value_text,
                 &resolved_phase_x,
@@ -7586,37 +8254,37 @@ sixel_encoder_resolve_bluenoise_suboptions(
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            *has_phase_override = 1;
-            *phase_x = resolved_phase_x;
-            *phase_y = resolved_phase_y;
-        } else if (assignment->resolved_key_name != NULL
-                && strcmp(assignment->resolved_key_name, "seed") == 0) {
+            state->has_phase_override = 1;
+            state->phase_x = resolved_phase_x;
+            state->phase_y = resolved_phase_y;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "seed") == 0) {
             status = sixel_encoder_parse_bluenoise_seed_text(
                 assignment->resolved_value_text,
                 &resolved_seed);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            *has_seed_override = 1;
-            *seed = resolved_seed;
-        } else if (assignment->resolved_key_name != NULL
-                && strcmp(assignment->resolved_key_name, "channel") == 0) {
+            state->has_seed_override = 1;
+            state->seed = resolved_seed;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "channel") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_channel_override = 1;
-            *channel_rgb = resolved_choice;
-        } else if (assignment->resolved_key_name != NULL
-                && strcmp(assignment->resolved_key_name, "size") == 0) {
+            state->has_channel_override = 1;
+            state->channel_rgb = resolved_choice;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "size") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {
                 return SIXEL_BAD_ARGUMENT;
             }
-            *has_size_override = 1;
-            *size = resolved_choice;
+            state->has_size_override = 1;
+            state->size = resolved_choice;
         }
         ++index;
     }
@@ -8601,35 +9269,8 @@ sixel_encoder_setopt(
     sixel_encoder_setopt_context_t setopt_context;
     int match_value;
     sixel_option_argument_resolution_t d_resolution;
-    int interframe_strategy_override;
-    int interframe_strategy_token;
-    int interframe_spatial_diffuse_override;
-    int interframe_spatial_diffuse;
-    int interframe_noise_strength_override;
-    int interframe_noise_strength_u8;
-    int stbn_motion_adapt_override;
-    int stbn_motion_adapt_enabled;
-    int stbn_scene_cut_reset_override;
-    int stbn_scene_cut_reset_enabled;
-    int stbn_scene_detect_override;
-    int stbn_scene_detect_enabled;
-    int stbn_alpha_guard_override;
-    int stbn_alpha_guard_enabled;
-    int stbn_perceptual_weight_override;
-    int stbn_perceptual_weight_enabled;
-    int stbn_fastpath_override;
-    int stbn_fastpath_enabled;
-    int bluenoise_strength_override;
-    float bluenoise_strength;
-    int bluenoise_phase_override;
-    int bluenoise_phase_x;
-    int bluenoise_phase_y;
-    int bluenoise_seed_override;
-    int bluenoise_seed;
-    int bluenoise_channel_override;
-    int bluenoise_channel_rgb;
-    int bluenoise_size_override;
-    int bluenoise_size;
+    sixel_encoder_interframe_suboption_state_t interframe_suboptions;
+    sixel_encoder_bluenoise_suboption_state_t bluenoise_suboptions;
     int diffusion_scan;
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
@@ -8658,6 +9299,8 @@ sixel_encoder_setopt(
     unsigned int q_point_budget;
     unsigned int q_rare_keep;
     double q_prune_mass;
+    int q_animation_mode;
+    double q_scene_cut_threshold;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     int q_model;
@@ -8669,35 +9312,35 @@ sixel_encoder_setopt(
     d_resolution.base_def = NULL;
     d_resolution.assignments = NULL;
     d_resolution.assignment_count = 0u;
-    interframe_strategy_override = 0;
-    interframe_strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
-    interframe_spatial_diffuse_override = 0;
-    interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
-    interframe_noise_strength_override = 0;
-    interframe_noise_strength_u8 = 0;
-    stbn_motion_adapt_override = 0;
-    stbn_motion_adapt_enabled = 0;
-    stbn_scene_cut_reset_override = 0;
-    stbn_scene_cut_reset_enabled = 0;
-    stbn_scene_detect_override = 0;
-    stbn_scene_detect_enabled = 0;
-    stbn_alpha_guard_override = 0;
-    stbn_alpha_guard_enabled = 0;
-    stbn_perceptual_weight_override = 0;
-    stbn_perceptual_weight_enabled = 0;
-    stbn_fastpath_override = 0;
-    stbn_fastpath_enabled = 0;
-    bluenoise_strength_override = 0;
-    bluenoise_strength = 0.055f;
-    bluenoise_phase_override = 0;
-    bluenoise_phase_x = 0;
-    bluenoise_phase_y = 0;
-    bluenoise_seed_override = 0;
-    bluenoise_seed = 0;
-    bluenoise_channel_override = 0;
-    bluenoise_channel_rgb = 0;
-    bluenoise_size_override = 0;
-    bluenoise_size = 64;
+    interframe_suboptions.has_strategy_override = 0;
+    interframe_suboptions.strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
+    interframe_suboptions.has_spatial_diffuse_override = 0;
+    interframe_suboptions.spatial_diffuse = SIXEL_DIFFUSE_FS;
+    interframe_suboptions.has_noise_strength_override = 0;
+    interframe_suboptions.noise_strength_u8 = 0;
+    interframe_suboptions.has_motion_adapt_override = 0;
+    interframe_suboptions.motion_adapt_enabled = 0;
+    interframe_suboptions.has_scene_cut_reset_override = 0;
+    interframe_suboptions.scene_cut_reset_enabled = 0;
+    interframe_suboptions.has_scene_detect_override = 0;
+    interframe_suboptions.scene_detect_enabled = 0;
+    interframe_suboptions.has_alpha_guard_override = 0;
+    interframe_suboptions.alpha_guard_enabled = 0;
+    interframe_suboptions.has_perceptual_weight_override = 0;
+    interframe_suboptions.perceptual_weight_enabled = 0;
+    interframe_suboptions.has_fastpath_override = 0;
+    interframe_suboptions.fastpath_enabled = 0;
+    bluenoise_suboptions.has_strength_override = 0;
+    bluenoise_suboptions.strength = 0.055f;
+    bluenoise_suboptions.has_phase_override = 0;
+    bluenoise_suboptions.phase_x = 0;
+    bluenoise_suboptions.phase_y = 0;
+    bluenoise_suboptions.has_seed_override = 0;
+    bluenoise_suboptions.seed = 0;
+    bluenoise_suboptions.has_channel_override = 0;
+    bluenoise_suboptions.channel_rgb = 0;
+    bluenoise_suboptions.has_size_override = 0;
+    bluenoise_suboptions.size = 64;
     diffusion_scan = SIXEL_SCAN_AUTO;
     q_resolution = NULL;
     q_index = 0u;
@@ -8726,6 +9369,8 @@ sixel_encoder_setopt(
     q_point_budget = 0u;
     q_rare_keep = 0u;
     q_prune_mass = 0.0;
+    q_animation_mode = 0;
+    q_scene_cut_threshold = 0.0;
     q_assignment = NULL;
     q_key = NULL;
     q_model = SIXEL_QUANTIZE_MODEL_AUTO;
@@ -8838,38 +9483,11 @@ sixel_encoder_setopt(
         }
         status = sixel_encoder_resolve_interframe_suboptions(
             &d_resolution,
-            &interframe_strategy_override,
-            &interframe_strategy_token,
-            &interframe_spatial_diffuse_override,
-            &interframe_spatial_diffuse,
-            &interframe_noise_strength_override,
-            &interframe_noise_strength_u8,
-            &stbn_motion_adapt_override,
-            &stbn_motion_adapt_enabled,
-            &stbn_scene_cut_reset_override,
-            &stbn_scene_cut_reset_enabled,
-            &stbn_scene_detect_override,
-            &stbn_scene_detect_enabled,
-            &stbn_alpha_guard_override,
-            &stbn_alpha_guard_enabled,
-            &stbn_perceptual_weight_override,
-            &stbn_perceptual_weight_enabled,
-            &stbn_fastpath_override,
-            &stbn_fastpath_enabled);
+            &interframe_suboptions);
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_resolve_bluenoise_suboptions(
                 &d_resolution,
-                &bluenoise_strength_override,
-                &bluenoise_strength,
-                &bluenoise_phase_override,
-                &bluenoise_phase_x,
-                &bluenoise_phase_y,
-                &bluenoise_seed_override,
-                &bluenoise_seed,
-                &bluenoise_channel_override,
-                &bluenoise_channel_rgb,
-                &bluenoise_size_override,
-                &bluenoise_size);
+                &bluenoise_suboptions);
         }
         sixel_option_free_argument_resolution(&d_resolution);
         if (SIXEL_FAILED(status)) {
@@ -8878,39 +9496,57 @@ sixel_encoder_setopt(
 
         encoder->method_for_diffuse = match_value;
         encoder->method_for_scan = diffusion_scan;
-        encoder->interframe_strategy_override = interframe_strategy_override;
-        encoder->interframe_strategy_token = interframe_strategy_token;
+        encoder->interframe_strategy_override =
+            interframe_suboptions.has_strategy_override;
+        encoder->interframe_strategy_token =
+            interframe_suboptions.strategy_token;
         encoder->interframe_spatial_diffuse_override
-            = interframe_spatial_diffuse_override;
-        encoder->interframe_spatial_diffuse = interframe_spatial_diffuse;
+            = interframe_suboptions.has_spatial_diffuse_override;
+        encoder->interframe_spatial_diffuse =
+            interframe_suboptions.spatial_diffuse;
         encoder->interframe_noise_strength_override
-            = interframe_noise_strength_override;
-        encoder->interframe_noise_strength_u8 = interframe_noise_strength_u8;
-        encoder->stbn_motion_adapt_override = stbn_motion_adapt_override;
-        encoder->stbn_motion_adapt_enabled = stbn_motion_adapt_enabled;
-        encoder->stbn_scene_cut_reset_override = stbn_scene_cut_reset_override;
-        encoder->stbn_scene_cut_reset_enabled = stbn_scene_cut_reset_enabled;
-        encoder->stbn_scene_detect_override = stbn_scene_detect_override;
-        encoder->stbn_scene_detect_enabled = stbn_scene_detect_enabled;
-        encoder->stbn_alpha_guard_override = stbn_alpha_guard_override;
-        encoder->stbn_alpha_guard_enabled = stbn_alpha_guard_enabled;
+            = interframe_suboptions.has_noise_strength_override;
+        encoder->interframe_noise_strength_u8 =
+            interframe_suboptions.noise_strength_u8;
+        encoder->stbn_motion_adapt_override =
+            interframe_suboptions.has_motion_adapt_override;
+        encoder->stbn_motion_adapt_enabled =
+            interframe_suboptions.motion_adapt_enabled;
+        encoder->stbn_scene_cut_reset_override =
+            interframe_suboptions.has_scene_cut_reset_override;
+        encoder->stbn_scene_cut_reset_enabled =
+            interframe_suboptions.scene_cut_reset_enabled;
+        encoder->stbn_scene_detect_override =
+            interframe_suboptions.has_scene_detect_override;
+        encoder->stbn_scene_detect_enabled =
+            interframe_suboptions.scene_detect_enabled;
+        encoder->stbn_alpha_guard_override =
+            interframe_suboptions.has_alpha_guard_override;
+        encoder->stbn_alpha_guard_enabled =
+            interframe_suboptions.alpha_guard_enabled;
         encoder->stbn_perceptual_weight_override
-            = stbn_perceptual_weight_override;
+            = interframe_suboptions.has_perceptual_weight_override;
         encoder->stbn_perceptual_weight_enabled
-            = stbn_perceptual_weight_enabled;
-        encoder->stbn_fastpath_override = stbn_fastpath_override;
-        encoder->stbn_fastpath_enabled = stbn_fastpath_enabled;
-        encoder->bluenoise_strength_override = bluenoise_strength_override;
-        encoder->bluenoise_strength = bluenoise_strength;
-        encoder->bluenoise_phase_override = bluenoise_phase_override;
-        encoder->bluenoise_phase_x = bluenoise_phase_x;
-        encoder->bluenoise_phase_y = bluenoise_phase_y;
-        encoder->bluenoise_seed_override = bluenoise_seed_override;
-        encoder->bluenoise_seed = bluenoise_seed;
-        encoder->bluenoise_channel_override = bluenoise_channel_override;
-        encoder->bluenoise_channel_rgb = bluenoise_channel_rgb;
-        encoder->bluenoise_size_override = bluenoise_size_override;
-        encoder->bluenoise_size = bluenoise_size;
+            = interframe_suboptions.perceptual_weight_enabled;
+        encoder->stbn_fastpath_override =
+            interframe_suboptions.has_fastpath_override;
+        encoder->stbn_fastpath_enabled = interframe_suboptions.fastpath_enabled;
+        encoder->bluenoise_strength_override =
+            bluenoise_suboptions.has_strength_override;
+        encoder->bluenoise_strength = bluenoise_suboptions.strength;
+        encoder->bluenoise_phase_override =
+            bluenoise_suboptions.has_phase_override;
+        encoder->bluenoise_phase_x = bluenoise_suboptions.phase_x;
+        encoder->bluenoise_phase_y = bluenoise_suboptions.phase_y;
+        encoder->bluenoise_seed_override =
+            bluenoise_suboptions.has_seed_override;
+        encoder->bluenoise_seed = bluenoise_suboptions.seed;
+        encoder->bluenoise_channel_override =
+            bluenoise_suboptions.has_channel_override;
+        encoder->bluenoise_channel_rgb = bluenoise_suboptions.channel_rgb;
+        encoder->bluenoise_size_override =
+            bluenoise_suboptions.has_size_override;
+        encoder->bluenoise_size = bluenoise_suboptions.size;
         break;
     case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
         if (value != NULL) {
@@ -8992,6 +9628,8 @@ sixel_encoder_setopt(
         encoder->quantize_model_merge_override = 0;
         encoder->quantize_model_merge_oversplit_override = 0;
         encoder->quantize_model_merge_lloyd_override = 0;
+        encoder->quantize_model_animation_mode_override = 0;
+        encoder->quantize_model_scene_cut_threshold_override = 0;
 
         q_index = 0u;
         while (q_index < q_resolution->assignment_count) {
@@ -9001,7 +9639,29 @@ sixel_encoder_setopt(
                 ++q_index;
                 continue;
             }
-            if (q_key != NULL && strcmp(q_key, "inittype") == 0) {
+            if (q_key != NULL && strcmp(q_key, "animation_mode") == 0) {
+                status = sixel_encoder_parse_quantize_animation_mode_text(
+                    q_assignment->resolved_value_text,
+                    &q_animation_mode);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_animation_mode_override = 1;
+                encoder->quantize_model_animation_mode = q_animation_mode;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "scene_cut_threshold") == 0) {
+                status = sixel_encoder_parse_quantize_scene_cut_threshold_text(
+                    q_assignment->resolved_value_text,
+                    &q_scene_cut_threshold);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_scene_cut_threshold_override = 1;
+                encoder->quantize_model_scene_cut_threshold
+                    = q_scene_cut_threshold;
+            } else if (q_key != NULL && strcmp(q_key, "inittype") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,
                         &match_value)) {

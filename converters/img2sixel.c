@@ -224,6 +224,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      auto     -> choose quantize model automatically (default) auto maps to the heckbert\n"
         "      heckbert -> traditional Heckbert median-cut implementation. auto/heckbert\n"
         "      sub-option:\n"
+        "        :animation_mode=0|1 default 0\n"
+        "        :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
         "        :merge=MODE (:g=MODE) auto, none, ward\n"
         "        :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
         "        :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
@@ -258,6 +260,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :feedback_slots=COUNT relocate this many weak clusters per feedback step (1-16,\n"
         "          default 1).\n"
         "          :feedback_interval=COUNT run feedback every N iterations (1-64, default 1).\n"
+        "          :animation_mode=0|1 default 0\n"
+        "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
         "          :merge=MODE (:g=MODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
@@ -286,6 +290,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :bandit_iter=COUNT BanditPAM iteration cap (1-64).\n"
         "          :bandit_candidates=COUNT Bandit candidate budget (8-4096).\n"
         "          :bandit_batch=COUNT Bandit mini-batch size (8-4096).\n"
+        "          :animation_mode=0|1 default 0\n"
+        "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
         "          :merge=MODE (:g=MODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
@@ -1229,6 +1235,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_SAMPLE_TARGET",
         "request a specific sample count for palette estimation. Positive\n"
         "integers override automatic sizing."
+    },
+    {
+        "SIXEL_PALETTE_ANIMATION_MODE",
+        "enable frame-to-frame palette stabilization for animated inputs.\n"
+        "Accepts 0 or 1 (default 0)."
+    },
+    {
+        "SIXEL_PALETTE_SCENE_CUT_THRESHOLD",
+        "scene-cut sensitivity for animation_mode.\n"
+        "Accepts 0.0-1.0 (default 0.20)."
     },
     {
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",

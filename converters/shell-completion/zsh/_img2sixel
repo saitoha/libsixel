@@ -233,6 +233,15 @@ _quantizemodel() {
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
           return 0
+        elif [[ ${key} == animation_mode ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1"
+          return 0
+        elif [[ ${key} == scene_cut_threshold ]]; then
+          compadd -- "${prefix}${key}=0.15" \
+                     "${prefix}${key}=0.20" \
+                     "${prefix}${key}=0.30"
+          return 0
         elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
@@ -249,7 +258,9 @@ _quantizemodel() {
         fi
       else
         prefix=${current%${segment}}
-        compadd -- "${prefix}g=" \
+        compadd -- "${prefix}animation_mode=" \
+                   "${prefix}scene_cut_threshold=" \
+                   "${prefix}g=" \
                    "${prefix}merge=" \
                    "${prefix}o=" \
                    "${prefix}merge_oversplit=" \
@@ -352,6 +363,15 @@ _quantizemodel() {
                      "${prefix}${key}=32" \
                      "${prefix}${key}=64"
           return 0
+        elif [[ ${key} == animation_mode ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1"
+          return 0
+        elif [[ ${key} == scene_cut_threshold ]]; then
+          compadd -- "${prefix}${key}=0.15" \
+                     "${prefix}${key}=0.20" \
+                     "${prefix}${key}=0.30"
+          return 0
         elif [[ ${key} == merge || ${key} == g ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
@@ -387,6 +407,8 @@ _quantizemodel() {
                    "${prefix}miniter=" "${prefix}polish_iter=" \
                    "${prefix}feedback_slots=" \
                    "${prefix}feedback_interval=" \
+                   "${prefix}animation_mode=" \
+                   "${prefix}scene_cut_threshold=" \
                    "${prefix}g=" \
                    "${prefix}merge=" \
                    "${prefix}o=" \
@@ -476,6 +498,15 @@ _quantizemodel() {
                      "${prefix}${key}=256" \
                      "${prefix}${key}=512"
           return 0
+        elif [[ ${key} == animation_mode ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1"
+          return 0
+        elif [[ ${key} == scene_cut_threshold ]]; then
+          compadd -- "${prefix}${key}=0.15" \
+                     "${prefix}${key}=0.20" \
+                     "${prefix}${key}=0.30"
+          return 0
         elif [[ ${key} == merge || ${key} == g ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
@@ -510,6 +541,8 @@ _quantizemodel() {
                    "${prefix}bandit_iter=" \
                    "${prefix}bandit_candidates=" \
                    "${prefix}bandit_batch=" \
+                   "${prefix}animation_mode=" \
+                   "${prefix}scene_cut_threshold=" \
                    "${prefix}g=" \
                    "${prefix}merge=" \
                    "${prefix}o=" \
