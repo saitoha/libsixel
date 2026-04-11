@@ -1237,8 +1237,10 @@ sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
         return 0;
     }
 
-    src_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(
-        bmp_probe->calibrated_gamma,
+    src_profile = sixel_cms_create_rgb_profile_from_gammas_chrm(
+        bmp_probe->calibrated_gamma_r,
+        bmp_probe->calibrated_gamma_g,
+        bmp_probe->calibrated_gamma_b,
         bmp_probe->white_x,
         bmp_probe->white_y,
         bmp_probe->red_x,
@@ -1247,6 +1249,18 @@ sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
         bmp_probe->green_y,
         bmp_probe->blue_x,
         bmp_probe->blue_y);
+    if (src_profile == NULL) {
+        src_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(
+            bmp_probe->calibrated_gamma,
+            bmp_probe->white_x,
+            bmp_probe->white_y,
+            bmp_probe->red_x,
+            bmp_probe->red_y,
+            bmp_probe->green_x,
+            bmp_probe->green_y,
+            bmp_probe->blue_x,
+            bmp_probe->blue_y);
+    }
     if (src_profile == NULL) {
         loader_trace_message(
             "builtin BMP: calibrated profile creation failed");
@@ -4526,8 +4540,7 @@ sixel_builtin_psd_apply_embedded_icc(
             icc_profile,
             icc_profile_length);
         if (!cms_converted &&
-            (cms_engine == SIXEL_CMS_ENGINE_BUILTIN ||
-             cms_engine == SIXEL_CMS_ENGINE_NONE)) {
+            cms_engine == SIXEL_CMS_ENGINE_NONE) {
             loader_trace_message(
                 "builtin PSD: skipping embedded ICC conversion "
                 "for CIELAB path (cms backend unsupported)");

@@ -108,6 +108,9 @@ typedef struct sixel_bmp_decode_info {
     size_t icc_profile_length;
     int has_calibrated_rgb;
     double calibrated_gamma;
+    double calibrated_gamma_r;
+    double calibrated_gamma_g;
+    double calibrated_gamma_b;
     double white_x;
     double white_y;
     double red_x;
@@ -692,8 +695,8 @@ sixel_bmp_parse_calibrated_v4v5(
     }
 
     /*
-     * cms.c profile synthesis takes a single gamma value for RGB.
-     * Use the channel average when calibrated gamma is available.
+     * Keep per-channel gamma for calibrated RGB profile synthesis and retain
+     * the channel average as a compatibility fallback.
      */
     gamma_avg = (gamma_r + gamma_g + gamma_b) / 3.0;
     if (gamma_avg <= 0.0) {
@@ -702,6 +705,9 @@ sixel_bmp_parse_calibrated_v4v5(
 
     info->has_calibrated_rgb = 1;
     info->calibrated_gamma = gamma_avg;
+    info->calibrated_gamma_r = gamma_r;
+    info->calibrated_gamma_g = gamma_g;
+    info->calibrated_gamma_b = gamma_b;
     info->white_x = white_xy_x;
     info->white_y = white_xy_y;
     info->red_x = red_xy_x;
@@ -2602,6 +2608,9 @@ sixel_frombmp_probe(
     probe->icc_profile_length = info.icc_profile_length;
     probe->has_calibrated_rgb = info.has_calibrated_rgb;
     probe->calibrated_gamma = info.calibrated_gamma;
+    probe->calibrated_gamma_r = info.calibrated_gamma_r;
+    probe->calibrated_gamma_g = info.calibrated_gamma_g;
+    probe->calibrated_gamma_b = info.calibrated_gamma_b;
     probe->white_x = info.white_x;
     probe->white_y = info.white_y;
     probe->red_x = info.red_x;

@@ -63,6 +63,9 @@ typedef struct sixel_frombmp_probe {
     size_t icc_profile_length;
     int has_calibrated_rgb;
     double calibrated_gamma;
+    double calibrated_gamma_r;
+    double calibrated_gamma_g;
+    double calibrated_gamma_b;
     double white_x;
     double white_y;
     double red_x;

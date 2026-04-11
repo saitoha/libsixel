@@ -27,6 +27,7 @@
 
 #include "tests/loader/pixelformat_test_common.h"
 #include "src/cms.h"
+#include "src/frombmp.h"
 #include "src/frompsd.h"
 #include "src/loader-common.h"
 
@@ -2318,6 +2319,103 @@ run_builtin_loader_bmp_expect_fail_buffer_case(char const *label,
 }
 
 static int
+run_builtin_loader_bmp_probe_fixture_case(char const *label,
+                                          char const *fixture_path,
+                                          sixel_frombmp_probe_t *probe_out,
+                                          SIXELSTATUS *status_out)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    char const *source_root;
+#if defined(_MSC_VER)
+    char *source_root_dupe;
+    size_t source_root_len;
+#endif
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int result;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    source_root = NULL;
+    cancel_flag = 0;
+    result = 1;
+#if defined(_MSC_VER)
+    source_root_dupe = NULL;
+    source_root_len = 0u;
+    _dupenv_s(&source_root_dupe, &source_root_len, "MESON_SOURCE_ROOT");
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "abs_top_srcdir");
+    }
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "TOP_SRCDIR");
+    }
+    if (source_root_dupe != NULL) {
+        source_root = source_root_dupe;
+    }
+#else
+    source_root = getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+#endif
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (label == NULL || fixture_path == NULL || probe_out == NULL) {
+        goto cleanup;
+    }
+    if (build_image_path(source_root,
+                         fixture_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        goto cleanup;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        goto cleanup;
+    }
+    status = sixel_chunk_new(&chunk,
+                             image_path,
+                             0,
+                             &cancel_flag,
+                             allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    status = sixel_frombmp_probe(chunk, probe_out);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: frombmp probe failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+    result = 0;
+
+cleanup:
+    if (status_out != NULL) {
+        *status_out = status;
+    }
+    sixel_chunk_destroy(chunk);
+    sixel_allocator_unref(allocator);
+#if defined(_MSC_VER)
+    if (source_root_dupe != NULL) {
+        free(source_root_dupe);
+    }
+#endif
+    return result;
+}
+
+static int
 run_builtin_loader_bmp_info40_8bpp_palette_numeric_test(void)
 {
     static unsigned char const expected_rgb[12] = {
@@ -3790,6 +3888,69 @@ run_builtin_loader_bmp_v4_calibrated_cms_off_numeric_test(void)
         2,
         expected_rgb,
         sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_v4_calibrated_probe_split_gamma_numeric_test(void)
+{
+    sixel_frombmp_probe_t probe;
+    SIXELSTATUS status;
+    double expected_average;
+    int result;
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    expected_average = 0.0;
+    result = 1;
+
+    result = run_builtin_loader_bmp_probe_fixture_case(
+        "builtin loader bmp v4 calibrated probe split gamma numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-v4-calibrated-rgb-split-gamma-24bpp-2x2.bmp",
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated probe split gamma numeric: "
+                "probe failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.has_calibrated_rgb == 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated probe split gamma numeric: "
+                "missing calibrated metadata\n");
+        return 1;
+    }
+
+    expected_average = (1.0 + 2.0 + 3.0) / 3.0;
+    if (fabs(probe.calibrated_gamma_r - 1.0) > 1.0e-8 ||
+        fabs(probe.calibrated_gamma_g - 2.0) > 1.0e-8 ||
+        fabs(probe.calibrated_gamma_b - 3.0) > 1.0e-8 ||
+        fabs(probe.calibrated_gamma - expected_average) > 1.0e-8) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated probe split gamma numeric: "
+                "unexpected gamma values (%0.8f,%0.8f,%0.8f avg=%0.8f)\n",
+                probe.calibrated_gamma_r,
+                probe.calibrated_gamma_g,
+                probe.calibrated_gamma_b,
+                probe.calibrated_gamma);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2 || probe.bpp != 24) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated probe split gamma numeric: "
+                "geometry/depth mismatch (%dx%d bpp=%d)\n",
+                probe.width,
+                probe.height,
+                probe.bpp);
+        return 1;
+    }
+
+    return 0;
 }
 
 static int
@@ -9044,6 +9205,8 @@ run_builtin_loader_test(void)
           run_builtin_loader_bmp_v4_calibrated_cms_on_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_V4_CALIBRATED_CMS_OFF",
           run_builtin_loader_bmp_v4_calibrated_cms_off_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V4_CALIBRATED_PROBE_SPLIT_GAMMA",
+          run_builtin_loader_bmp_v4_calibrated_probe_split_gamma_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_V5_EMBEDDED_ICC_CALIBRATED_PRIORITY",
           run_builtin_loader_bmp_v5_embedded_icc_calibrated_priority_numeric_test
         },

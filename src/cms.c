@@ -80,6 +80,7 @@ struct sixel_cms_profile {
     sixel_cms_profile_backend_t backend;
     sixel_cms_color_space_t colorspace;
     int is_srgb_profile;
+    int is_cielab_d50_profile;
     int builtin_profile_valid;
     sixel_icc_profile_t builtin_profile;
 #if HAVE_LCMS2
@@ -715,6 +716,7 @@ sixel_cms_allocate_profile(void)
     profile->backend = SIXEL_CMS_PROFILE_BACKEND_NONE;
     profile->colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     profile->is_srgb_profile = 0;
+    profile->is_cielab_d50_profile = 0;
     profile->builtin_profile_valid = 0;
     profile->builtin_profile.kind = SIXEL_ICC_PROFILE_KIND_INVALID;
     profile->builtin_profile.pcs = SIXEL_ICC_PROFILE_PCS_INVALID;
@@ -729,6 +731,10 @@ sixel_cms_allocate_profile(void)
         profile->builtin_profile.a2b_mab[i].type = SIXEL_ICC_MAB_TYPE_INVALID;
         profile->builtin_profile.b2a_lut[i].kind = SIXEL_ICC_LUT_INVALID;
         profile->builtin_profile.b2a_mab[i].type = SIXEL_ICC_MAB_TYPE_INVALID;
+        profile->builtin_profile.d2b_lut[i].kind = SIXEL_ICC_LUT_INVALID;
+        profile->builtin_profile.d2b_mab[i].type = SIXEL_ICC_MAB_TYPE_INVALID;
+        profile->builtin_profile.b2d_lut[i].kind = SIXEL_ICC_LUT_INVALID;
+        profile->builtin_profile.b2d_mab[i].type = SIXEL_ICC_MAB_TYPE_INVALID;
     }
 
     return profile;
@@ -789,7 +795,9 @@ sixel_cms_profile_create_srgb_lcms2(sixel_cms_profile_t *profile)
 static int
 sixel_cms_profile_create_rgb_gamma_chrm_lcms2(
     sixel_cms_profile_t *profile,
-    double file_gamma,
+    double gamma_r,
+    double gamma_g,
+    double gamma_b,
     double white_x,
     double white_y,
     double red_x,
@@ -799,12 +807,19 @@ sixel_cms_profile_create_rgb_gamma_chrm_lcms2(
     double blue_x,
     double blue_y)
 {
-    cmsToneCurve *curve;
     cmsToneCurve *curves[3];
     cmsCIExyY white_point;
     cmsCIExyYTRIPLE primaries;
+    int index;
 
-    if (profile == NULL || file_gamma <= 0.0) {
+    curves[0] = NULL;
+    curves[1] = NULL;
+    curves[2] = NULL;
+    index = 0;
+    if (profile == NULL ||
+        gamma_r <= 0.0 ||
+        gamma_g <= 0.0 ||
+        gamma_b <= 0.0) {
         return 0;
     }
 
@@ -821,16 +836,26 @@ sixel_cms_profile_create_rgb_gamma_chrm_lcms2(
     primaries.Blue.y = blue_y;
     primaries.Blue.Y = 1.0;
 
-    curve = cmsBuildGamma(NULL, 1.0 / file_gamma);
-    if (curve == NULL) {
+    curves[0] = cmsBuildGamma(NULL, 1.0 / gamma_r);
+    curves[1] = cmsBuildGamma(NULL, 1.0 / gamma_g);
+    curves[2] = cmsBuildGamma(NULL, 1.0 / gamma_b);
+    if (curves[0] == NULL ||
+        curves[1] == NULL ||
+        curves[2] == NULL) {
+        for (index = 0; index < 3; ++index) {
+            if (curves[index] != NULL) {
+                cmsFreeToneCurve(curves[index]);
+                curves[index] = NULL;
+            }
+        }
         return 0;
     }
-    curves[0] = curve;
-    curves[1] = curve;
-    curves[2] = curve;
 
     profile->lcms_handle = cmsCreateRGBProfile(&white_point, &primaries, curves);
-    cmsFreeToneCurve(curve);
+    for (index = 0; index < 3; ++index) {
+        cmsFreeToneCurve(curves[index]);
+        curves[index] = NULL;
+    }
     if (profile->lcms_handle == NULL) {
         return 0;
     }
@@ -854,9 +879,96 @@ sixel_cms_profile_create_cielab_d50_lcms2(sixel_cms_profile_t *profile)
 
     profile->backend = SIXEL_CMS_PROFILE_BACKEND_LCMS2;
     profile->colorspace = SIXEL_CMS_COLORSPACE_LAB;
+    profile->is_cielab_d50_profile = 1;
     return 1;
 }
 #endif
+
+static int
+sixel_cms_matrix3_invert_internal(double const m[9], double inv_out[9])
+{
+    double det;
+
+    det = m[0] * (m[4] * m[8] - m[5] * m[7])
+        - m[1] * (m[3] * m[8] - m[5] * m[6])
+        + m[2] * (m[3] * m[7] - m[4] * m[6]);
+    if (fabs(det) < 1.0e-12) {
+        return 0;
+    }
+
+    inv_out[0] = (m[4] * m[8] - m[5] * m[7]) / det;
+    inv_out[1] = (m[2] * m[7] - m[1] * m[8]) / det;
+    inv_out[2] = (m[1] * m[5] - m[2] * m[4]) / det;
+    inv_out[3] = (m[5] * m[6] - m[3] * m[8]) / det;
+    inv_out[4] = (m[0] * m[8] - m[2] * m[6]) / det;
+    inv_out[5] = (m[2] * m[3] - m[0] * m[5]) / det;
+    inv_out[6] = (m[3] * m[7] - m[4] * m[6]) / det;
+    inv_out[7] = (m[1] * m[6] - m[0] * m[7]) / det;
+    inv_out[8] = (m[0] * m[4] - m[1] * m[3]) / det;
+
+    return 1;
+}
+
+static int
+sixel_cms_build_rgb_to_xyz_matrix_internal(double white_x,
+                                           double white_y,
+                                           double red_x,
+                                           double red_y,
+                                           double green_x,
+                                           double green_y,
+                                           double blue_x,
+                                           double blue_y,
+                                           double out_matrix[9])
+{
+    double primaries[9];
+    double inv_primaries[9];
+    double white_xyz[3];
+    double scales[3];
+
+    if (white_y <= 0.0 || red_y <= 0.0 || green_y <= 0.0 || blue_y <= 0.0) {
+        return 0;
+    }
+
+    primaries[0] = red_x / red_y;
+    primaries[1] = green_x / green_y;
+    primaries[2] = blue_x / blue_y;
+    primaries[3] = 1.0;
+    primaries[4] = 1.0;
+    primaries[5] = 1.0;
+    primaries[6] = (1.0 - red_x - red_y) / red_y;
+    primaries[7] = (1.0 - green_x - green_y) / green_y;
+    primaries[8] = (1.0 - blue_x - blue_y) / blue_y;
+
+    white_xyz[0] = white_x / white_y;
+    white_xyz[1] = 1.0;
+    white_xyz[2] = (1.0 - white_x - white_y) / white_y;
+
+    if (!sixel_cms_matrix3_invert_internal(primaries, inv_primaries)) {
+        return 0;
+    }
+
+    scales[0] = inv_primaries[0] * white_xyz[0]
+              + inv_primaries[1] * white_xyz[1]
+              + inv_primaries[2] * white_xyz[2];
+    scales[1] = inv_primaries[3] * white_xyz[0]
+              + inv_primaries[4] * white_xyz[1]
+              + inv_primaries[5] * white_xyz[2];
+    scales[2] = inv_primaries[6] * white_xyz[0]
+              + inv_primaries[7] * white_xyz[1]
+              + inv_primaries[8] * white_xyz[2];
+
+    out_matrix[0] = primaries[0] * scales[0];
+    out_matrix[1] = primaries[1] * scales[1];
+    out_matrix[2] = primaries[2] * scales[2];
+    out_matrix[3] = primaries[3] * scales[0];
+    out_matrix[4] = primaries[4] * scales[1];
+    out_matrix[5] = primaries[5] * scales[2];
+    out_matrix[6] = primaries[6] * scales[0];
+    out_matrix[7] = primaries[7] * scales[1];
+    out_matrix[8] = primaries[8] * scales[2];
+
+    return 1;
+}
 
 #if SIXEL_CMS_HAVE_COLORSYNC
 static int
@@ -1003,7 +1115,9 @@ sixel_cms_profile_create_srgb_colorsync(sixel_cms_profile_t *profile)
 static int
 sixel_cms_profile_create_rgb_gamma_chrm_colorsync(
     sixel_cms_profile_t *profile,
-    double file_gamma,
+    double gamma_r,
+    double gamma_g,
+    double gamma_b,
     double white_x,
     double white_y,
     double red_x,
@@ -1022,7 +1136,10 @@ sixel_cms_profile_create_rgb_gamma_chrm_colorsync(
     CFErrorRef error;
     size_t i;
 
-    if (profile == NULL || file_gamma <= 0.0) {
+    if (profile == NULL ||
+        gamma_r <= 0.0 ||
+        gamma_g <= 0.0 ||
+        gamma_b <= 0.0) {
         return 0;
     }
 
@@ -1041,9 +1158,9 @@ sixel_cms_profile_create_rgb_gamma_chrm_colorsync(
     white_point[0] = (CGFloat)(white_x / white_y);
     white_point[1] = (CGFloat)1.0;
     white_point[2] = (CGFloat)((1.0 - white_x - white_y) / white_y);
-    gamma[0] = (CGFloat)(1.0 / file_gamma);
-    gamma[1] = (CGFloat)(1.0 / file_gamma);
-    gamma[2] = (CGFloat)(1.0 / file_gamma);
+    gamma[0] = (CGFloat)(1.0 / gamma_r);
+    gamma[1] = (CGFloat)(1.0 / gamma_g);
+    gamma[2] = (CGFloat)(1.0 / gamma_b);
     for (i = 0u; i < 9u; ++i) {
         cg_matrix[i] = (CGFloat)matrix[i];
     }
@@ -1092,6 +1209,7 @@ sixel_cms_profile_create_cielab_d50_colorsync(sixel_cms_profile_t *profile)
 
     profile->backend = SIXEL_CMS_PROFILE_BACKEND_COLORSYNC;
     profile->colorspace = SIXEL_CMS_COLORSPACE_LAB;
+    profile->is_cielab_d50_profile = 1;
     return 1;
 }
 
@@ -1300,6 +1418,14 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
             profile->builtin_profile.b2a_mab[slot].type
                 != SIXEL_ICC_MAB_TYPE_INVALID ||
             profile->builtin_profile.b2a_lut[slot].kind
+                != SIXEL_ICC_LUT_INVALID ||
+            profile->builtin_profile.d2b_mab[slot].type
+                != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->builtin_profile.d2b_lut[slot].kind
+                != SIXEL_ICC_LUT_INVALID ||
+            profile->builtin_profile.b2d_mab[slot].type
+                != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->builtin_profile.b2d_lut[slot].kind
                 != SIXEL_ICC_LUT_INVALID) {
             has_dynamic_lut_path = 1;
         }
@@ -1307,12 +1433,20 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
             (profile->builtin_profile.a2b_mab[slot].type
                  != SIXEL_ICC_MAB_TYPE_INVALID ||
              profile->builtin_profile.a2b_lut[slot].kind
+                 != SIXEL_ICC_LUT_INVALID ||
+             profile->builtin_profile.d2b_mab[slot].type
+                 != SIXEL_ICC_MAB_TYPE_INVALID ||
+             profile->builtin_profile.d2b_lut[slot].kind
                  != SIXEL_ICC_LUT_INVALID)) {
             has_secondary_a2b_slot = 1;
         }
         if (profile->builtin_profile.b2a_mab[slot].type
                 != SIXEL_ICC_MAB_TYPE_INVALID ||
             profile->builtin_profile.b2a_lut[slot].kind
+                != SIXEL_ICC_LUT_INVALID ||
+            profile->builtin_profile.b2d_mab[slot].type
+                != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->builtin_profile.b2d_lut[slot].kind
                 != SIXEL_ICC_LUT_INVALID) {
             has_any_b2a_slot = 1;
         }
@@ -1342,6 +1476,9 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
     case SIXEL_ICC_PROFILE_KIND_CMYK:
         profile->colorspace = SIXEL_CMS_COLORSPACE_CMYK;
         break;
+    case SIXEL_ICC_PROFILE_KIND_LAB:
+        profile->colorspace = SIXEL_CMS_COLORSPACE_LAB;
+        break;
     default:
         profile->colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
         break;
@@ -1360,6 +1497,94 @@ sixel_cms_profile_create_srgb_builtin(sixel_cms_profile_t *profile)
     profile->backend = SIXEL_CMS_PROFILE_BACKEND_BUILTIN;
     profile->colorspace = SIXEL_CMS_COLORSPACE_RGB;
     profile->is_srgb_profile = 1;
+    profile->is_cielab_d50_profile = 0;
+    return 1;
+}
+
+static int
+sixel_cms_profile_create_cielab_d50_builtin(sixel_cms_profile_t *profile)
+{
+    if (profile == NULL) {
+        return 0;
+    }
+
+    sixel_icc_profile_destroy(&profile->builtin_profile);
+    profile->backend = SIXEL_CMS_PROFILE_BACKEND_BUILTIN;
+    profile->colorspace = SIXEL_CMS_COLORSPACE_LAB;
+    profile->is_srgb_profile = 0;
+    profile->is_cielab_d50_profile = 1;
+    profile->builtin_profile_valid = 1;
+    profile->builtin_profile.kind = SIXEL_ICC_PROFILE_KIND_LAB;
+    profile->builtin_profile.pcs = SIXEL_ICC_PROFILE_PCS_LAB;
+    return 1;
+}
+
+static int
+sixel_cms_profile_create_rgb_gamma_chrm_builtin(
+    sixel_cms_profile_t *profile,
+    double gamma_r,
+    double gamma_g,
+    double gamma_b,
+    double white_x,
+    double white_y,
+    double red_x,
+    double red_y,
+    double green_x,
+    double green_y,
+    double blue_x,
+    double blue_y)
+{
+    double matrix[9];
+    double gamma_values[3];
+    size_t i;
+
+    i = 0u;
+    memset(matrix, 0, sizeof(matrix));
+    memset(gamma_values, 0, sizeof(gamma_values));
+    if (profile == NULL ||
+        gamma_r <= 0.0 ||
+        gamma_g <= 0.0 ||
+        gamma_b <= 0.0) {
+        return 0;
+    }
+    if (!sixel_cms_build_rgb_to_xyz_matrix_internal(white_x,
+                                                    white_y,
+                                                    red_x,
+                                                    red_y,
+                                                    green_x,
+                                                    green_y,
+                                                    blue_x,
+                                                    blue_y,
+                                                    matrix)) {
+        return 0;
+    }
+
+    gamma_values[0] = 1.0 / gamma_r;
+    gamma_values[1] = 1.0 / gamma_g;
+    gamma_values[2] = 1.0 / gamma_b;
+    sixel_icc_profile_destroy(&profile->builtin_profile);
+    profile->backend = SIXEL_CMS_PROFILE_BACKEND_BUILTIN;
+    profile->colorspace = SIXEL_CMS_COLORSPACE_RGB;
+    profile->is_srgb_profile = 0;
+    profile->is_cielab_d50_profile = 0;
+    profile->builtin_profile_valid = 1;
+    profile->builtin_profile.kind = SIXEL_ICC_PROFILE_KIND_RGB;
+    profile->builtin_profile.pcs = SIXEL_ICC_PROFILE_PCS_XYZ;
+
+    for (i = 0u; i < 3u; ++i) {
+        profile->builtin_profile.curves[i].kind = SIXEL_ICC_CURVE_GAMMA;
+        profile->builtin_profile.curves[i].gamma = gamma_values[i];
+    }
+
+    profile->builtin_profile.matrix_to_xyz_d50[0][0] = matrix[0];
+    profile->builtin_profile.matrix_to_xyz_d50[0][1] = matrix[1];
+    profile->builtin_profile.matrix_to_xyz_d50[0][2] = matrix[2];
+    profile->builtin_profile.matrix_to_xyz_d50[1][0] = matrix[3];
+    profile->builtin_profile.matrix_to_xyz_d50[1][1] = matrix[4];
+    profile->builtin_profile.matrix_to_xyz_d50[1][2] = matrix[5];
+    profile->builtin_profile.matrix_to_xyz_d50[2][0] = matrix[6];
+    profile->builtin_profile.matrix_to_xyz_d50[2][1] = matrix[7];
+    profile->builtin_profile.matrix_to_xyz_d50[2][2] = matrix[8];
     return 1;
 }
 
@@ -1482,6 +1707,9 @@ sixel_cms_create_cielab_d50_profile(void)
         return profile;
     }
 #endif
+    if (sixel_cms_profile_create_cielab_d50_builtin(profile)) {
+        return profile;
+    }
     free(profile);
     return NULL;
 }
@@ -1497,20 +1725,35 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
                                              double blue_x,
                                              double blue_y)
 {
+    return sixel_cms_create_rgb_profile_from_gammas_chrm(
+        file_gamma,
+        file_gamma,
+        file_gamma,
+        white_x,
+        white_y,
+        red_x,
+        red_y,
+        green_x,
+        green_y,
+        blue_x,
+        blue_y);
+}
+
+SIXELAPI sixel_cms_profile_t *
+sixel_cms_create_rgb_profile_from_gammas_chrm(double gamma_r,
+                                              double gamma_g,
+                                              double gamma_b,
+                                              double white_x,
+                                              double white_y,
+                                              double red_x,
+                                              double red_y,
+                                              double green_x,
+                                              double green_y,
+                                              double blue_x,
+                                              double blue_y)
+{
     sixel_cms_profile_t *profile;
     sixel_cms_engine_t engine;
-
-#if !HAVE_LCMS2 && !SIXEL_CMS_HAVE_COLORSYNC
-    (void)file_gamma;
-    (void)white_x;
-    (void)white_y;
-    (void)red_x;
-    (void)red_y;
-    (void)green_x;
-    (void)green_y;
-    (void)blue_x;
-    (void)blue_y;
-#endif
 
     profile = sixel_cms_allocate_profile();
     if (profile == NULL) {
@@ -1525,7 +1768,9 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
 #if HAVE_LCMS2
     if (engine == SIXEL_CMS_ENGINE_LCMS2 &&
         sixel_cms_profile_create_rgb_gamma_chrm_lcms2(profile,
-                                                      file_gamma,
+                                                      gamma_r,
+                                                      gamma_g,
+                                                      gamma_b,
                                                       white_x,
                                                       white_y,
                                                       red_x,
@@ -1540,7 +1785,9 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
 #if SIXEL_CMS_HAVE_COLORSYNC
     if (engine == SIXEL_CMS_ENGINE_COLORSYNC &&
         sixel_cms_profile_create_rgb_gamma_chrm_colorsync(profile,
-                                                          file_gamma,
+                                                          gamma_r,
+                                                          gamma_g,
+                                                          gamma_b,
                                                           white_x,
                                                           white_y,
                                                           red_x,
@@ -1552,6 +1799,20 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
         return profile;
     }
 #endif
+    if (sixel_cms_profile_create_rgb_gamma_chrm_builtin(profile,
+                                                        gamma_r,
+                                                        gamma_g,
+                                                        gamma_b,
+                                                        white_x,
+                                                        white_y,
+                                                        red_x,
+                                                        red_y,
+                                                        green_x,
+                                                        green_y,
+                                                        blue_x,
+                                                        blue_y)) {
+        return profile;
+    }
 
     free(profile);
     return NULL;
@@ -2157,7 +2418,8 @@ sixel_cms_builtin_apply_src_to_xyz_intent(
 
     kind = src_profile->builtin_profile.kind;
     if (kind != SIXEL_ICC_PROFILE_KIND_RGB &&
-        kind != SIXEL_ICC_PROFILE_KIND_GRAY) {
+        kind != SIXEL_ICC_PROFILE_KIND_GRAY &&
+        kind != SIXEL_ICC_PROFILE_KIND_LAB) {
         return 0;
     }
 
@@ -2204,6 +2466,217 @@ sixel_cms_builtin_apply_xyz_to_dst_intent(
 }
 
 static int
+sixel_cms_builtin_kind_channel_count(sixel_icc_profile_kind_t kind,
+                                     size_t *out_count)
+{
+    if (out_count == NULL) {
+        return 0;
+    }
+
+    if (kind == SIXEL_ICC_PROFILE_KIND_RGB ||
+        kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+        *out_count = 3u;
+        return 1;
+    }
+    if (kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
+        *out_count = 1u;
+        return 1;
+    }
+    if (kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
+        *out_count = 4u;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_cms_builtin_load_src_unit(double src_unit[4],
+                                size_t *input_channel_count,
+                                unsigned char *alpha,
+                                sixel_cms_pixel_format_t src_format,
+                                void const *src,
+                                size_t pixel_index)
+{
+    unsigned char const *src_u8;
+    uint16_t const *src_u16;
+    float const *src_f32;
+    size_t base;
+
+    src_u8 = NULL;
+    src_u16 = NULL;
+    src_f32 = NULL;
+    base = 0u;
+    if (src_unit == NULL || input_channel_count == NULL || src == NULL) {
+        return 0;
+    }
+
+    src_u8 = (unsigned char const *)src;
+    src_u16 = (uint16_t const *)src;
+    src_f32 = (float const *)src;
+    switch (src_format) {
+    case SIXEL_CMS_PIXELFORMAT_RGB_8:
+        base = pixel_index * 3u;
+        src_unit[0] = (double)src_u8[base + 0u] / 255.0;
+        src_unit[1] = (double)src_u8[base + 1u] / 255.0;
+        src_unit[2] = (double)src_u8[base + 2u] / 255.0;
+        *input_channel_count = 3u;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_RGB_F32:
+        base = pixel_index * 3u;
+        src_unit[0] = sixel_cms_clamp_unit((double)src_f32[base + 0u]);
+        src_unit[1] = sixel_cms_clamp_unit((double)src_f32[base + 1u]);
+        src_unit[2] = sixel_cms_clamp_unit((double)src_f32[base + 2u]);
+        *input_channel_count = 3u;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_RGBA_8:
+        base = pixel_index * 4u;
+        src_unit[0] = (double)src_u8[base + 0u] / 255.0;
+        src_unit[1] = (double)src_u8[base + 1u] / 255.0;
+        src_unit[2] = (double)src_u8[base + 2u] / 255.0;
+        if (alpha != NULL) {
+            *alpha = src_u8[base + 3u];
+        }
+        *input_channel_count = 3u;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_GRAY_8:
+        src_unit[0] = (double)src_u8[pixel_index] / 255.0;
+        *input_channel_count = 1u;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_8:
+        base = pixel_index * 4u;
+        src_unit[0] = (double)src_u8[base + 0u] / 255.0;
+        src_unit[1] = (double)src_u8[base + 1u] / 255.0;
+        src_unit[2] = (double)src_u8[base + 2u] / 255.0;
+        src_unit[3] = (double)src_u8[base + 3u] / 255.0;
+        *input_channel_count = 4u;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_16:
+        base = pixel_index * 4u;
+        src_unit[0] = (double)src_u16[base + 0u] / 65535.0;
+        src_unit[1] = (double)src_u16[base + 1u] / 65535.0;
+        src_unit[2] = (double)src_u16[base + 2u] / 65535.0;
+        src_unit[3] = (double)src_u16[base + 3u] / 65535.0;
+        *input_channel_count = 4u;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_F32:
+        base = pixel_index * 4u;
+        src_unit[0] = sixel_cms_clamp_unit((double)src_f32[base + 0u]);
+        src_unit[1] = sixel_cms_clamp_unit((double)src_f32[base + 1u]);
+        src_unit[2] = sixel_cms_clamp_unit((double)src_f32[base + 2u]);
+        src_unit[3] = sixel_cms_clamp_unit((double)src_f32[base + 3u]);
+        *input_channel_count = 4u;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_LAB_F32:
+        base = pixel_index * 3u;
+        src_unit[0] = sixel_cms_clamp_unit((double)src_f32[base + 0u]);
+        src_unit[1] = sixel_cms_clamp_unit((double)src_f32[base + 1u]);
+        src_unit[2] = sixel_cms_clamp_unit((double)src_f32[base + 2u]);
+        *input_channel_count = 3u;
+        return 1;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static int
+sixel_cms_builtin_store_dst_unit(void *dst,
+                                 sixel_cms_pixel_format_t dst_format,
+                                 size_t pixel_index,
+                                 double const dst_unit[4],
+                                 unsigned char alpha)
+{
+    unsigned char *dst_u8;
+    uint16_t *dst_u16;
+    float *dst_f32;
+    size_t base;
+
+    dst_u8 = NULL;
+    dst_u16 = NULL;
+    dst_f32 = NULL;
+    base = 0u;
+    if (dst == NULL || dst_unit == NULL) {
+        return 0;
+    }
+
+    dst_u8 = (unsigned char *)dst;
+    dst_u16 = (uint16_t *)dst;
+    dst_f32 = (float *)dst;
+    switch (dst_format) {
+    case SIXEL_CMS_PIXELFORMAT_RGB_8:
+        base = pixel_index * 3u;
+        dst_u8[base + 0u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[0]) * 255.0 + 0.5);
+        dst_u8[base + 1u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[1]) * 255.0 + 0.5);
+        dst_u8[base + 2u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[2]) * 255.0 + 0.5);
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_RGB_F32:
+        base = pixel_index * 3u;
+        dst_f32[base + 0u] = (float)sixel_cms_clamp_unit(dst_unit[0]);
+        dst_f32[base + 1u] = (float)sixel_cms_clamp_unit(dst_unit[1]);
+        dst_f32[base + 2u] = (float)sixel_cms_clamp_unit(dst_unit[2]);
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_RGBA_8:
+        base = pixel_index * 4u;
+        dst_u8[base + 0u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[0]) * 255.0 + 0.5);
+        dst_u8[base + 1u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[1]) * 255.0 + 0.5);
+        dst_u8[base + 2u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[2]) * 255.0 + 0.5);
+        dst_u8[base + 3u] = alpha;
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_GRAY_8:
+        dst_u8[pixel_index] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[0]) * 255.0 + 0.5);
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_8:
+        base = pixel_index * 4u;
+        dst_u8[base + 0u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[0]) * 255.0 + 0.5);
+        dst_u8[base + 1u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[1]) * 255.0 + 0.5);
+        dst_u8[base + 2u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[2]) * 255.0 + 0.5);
+        dst_u8[base + 3u] =
+            (unsigned char)(sixel_cms_clamp_unit(dst_unit[3]) * 255.0 + 0.5);
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_16:
+        base = pixel_index * 4u;
+        dst_u16[base + 0u] = (uint16_t)(
+            sixel_cms_clamp_unit(dst_unit[0]) * 65535.0 + 0.5);
+        dst_u16[base + 1u] = (uint16_t)(
+            sixel_cms_clamp_unit(dst_unit[1]) * 65535.0 + 0.5);
+        dst_u16[base + 2u] = (uint16_t)(
+            sixel_cms_clamp_unit(dst_unit[2]) * 65535.0 + 0.5);
+        dst_u16[base + 3u] = (uint16_t)(
+            sixel_cms_clamp_unit(dst_unit[3]) * 65535.0 + 0.5);
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_CMYK_F32:
+        base = pixel_index * 4u;
+        dst_f32[base + 0u] = (float)sixel_cms_clamp_unit(dst_unit[0]);
+        dst_f32[base + 1u] = (float)sixel_cms_clamp_unit(dst_unit[1]);
+        dst_f32[base + 2u] = (float)sixel_cms_clamp_unit(dst_unit[2]);
+        dst_f32[base + 3u] = (float)sixel_cms_clamp_unit(dst_unit[3]);
+        return 1;
+    case SIXEL_CMS_PIXELFORMAT_LAB_F32:
+        base = pixel_index * 3u;
+        dst_f32[base + 0u] = (float)sixel_cms_clamp_unit(dst_unit[0]);
+        dst_f32[base + 1u] = (float)sixel_cms_clamp_unit(dst_unit[1]);
+        dst_f32[base + 2u] = (float)sixel_cms_clamp_unit(dst_unit[2]);
+        return 1;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static int
 sixel_cms_do_transform_builtin_device_to_device(
     sixel_cms_transform_t const *transform,
     void const *src,
@@ -2218,6 +2691,9 @@ sixel_cms_do_transform_builtin_device_to_device(
     float *dst_f32;
     uint16_t const *src_u16;
     size_t i;
+    size_t input_channel_count;
+    size_t output_channel_count;
+    size_t expected_channel_count;
     double src_unit[4];
     double xyz_d50[3];
     double dst_unit[4];
@@ -2231,6 +2707,9 @@ sixel_cms_do_transform_builtin_device_to_device(
     dst_f32 = NULL;
     src_u16 = NULL;
     i = 0u;
+    input_channel_count = 0u;
+    output_channel_count = 0u;
+    expected_channel_count = 0u;
     memset(src_unit, 0, sizeof(src_unit));
     memset(xyz_d50, 0, sizeof(xyz_d50));
     memset(dst_unit, 0, sizeof(dst_unit));
@@ -2528,7 +3007,57 @@ sixel_cms_do_transform_builtin_device_to_device(
         return 1;
     }
 
-    return 0;
+    if (!sixel_cms_builtin_kind_channel_count(dst_profile->builtin_profile.kind,
+                                              &expected_channel_count)) {
+        return 0;
+    }
+
+    if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_8) {
+        output_channel_count = 1u;
+    } else if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
+               transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 ||
+               transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGBA_8 ||
+               transform->dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
+        output_channel_count = 3u;
+    } else if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_CMYK_8 ||
+               transform->dst_format == SIXEL_CMS_PIXELFORMAT_CMYK_16 ||
+               transform->dst_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32) {
+        output_channel_count = 4u;
+    } else {
+        return 0;
+    }
+    if (output_channel_count != expected_channel_count) {
+        return 0;
+    }
+
+    for (i = 0u; i < pixel_count; ++i) {
+        alpha = 255u;
+        if (!sixel_cms_builtin_load_src_unit(src_unit,
+                                             &input_channel_count,
+                                             &alpha,
+                                             transform->src_format,
+                                             src,
+                                             i) ||
+            !sixel_cms_builtin_apply_src_to_xyz_intent(xyz_d50,
+                                                       src_unit,
+                                                       input_channel_count,
+                                                       src_profile,
+                                                       transform) ||
+            !sixel_cms_builtin_apply_xyz_to_dst_intent(dst_unit,
+                                                       output_channel_count,
+                                                       xyz_d50,
+                                                       dst_profile,
+                                                       transform) ||
+            !sixel_cms_builtin_store_dst_unit(dst,
+                                              transform->dst_format,
+                                              i,
+                                              dst_unit,
+                                              alpha)) {
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 static int

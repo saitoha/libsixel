@@ -158,6 +158,19 @@ sixel_cms_create_rgb_profile_from_gamma_chrm(double file_gamma,
                                              double blue_x,
                                              double blue_y);
 
+SIXEL_INTERNAL_API sixel_cms_profile_t *
+sixel_cms_create_rgb_profile_from_gammas_chrm(double gamma_r,
+                                              double gamma_g,
+                                              double gamma_b,
+                                              double white_x,
+                                              double white_y,
+                                              double red_x,
+                                              double red_y,
+                                              double green_x,
+                                              double green_y,
+                                              double blue_x,
+                                              double blue_y);
+
 SIXEL_INTERNAL_API sixel_cms_color_space_t
 sixel_cms_get_color_space(sixel_cms_profile_t const *profile);
 
