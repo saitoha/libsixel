@@ -6114,6 +6114,63 @@ run_bmp_i40_win_r24_fail_t(void)
 }
 
 static int
+run_bmp_i40_win_c14_fail_t(void)
+{
+    static unsigned char const palette[] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const payload[] = {
+        0x35u, 0xc0u, 0x04u, 0x74u, 0x00u, 0x20u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+                           "windows") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_fail_case(
+        "builtin loader bmp info40 windows comp14 fail numeric",
+        40u,
+        2,
+        2,
+        1u,
+        14u,
+        (unsigned int)sizeof(payload),
+        2u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload));
+}
+
+static int
+run_bmp_i40_win_c15_fail_t(void)
+{
+    static unsigned char const payload[] = {
+        0x01u, 0xffu, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0xffu, 0x01u, 0x00u,
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+                           "windows") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_fail_case(
+        "builtin loader bmp info40 windows comp15 fail numeric",
+        40u,
+        2,
+        2,
+        24u,
+        15u,
+        (unsigned int)sizeof(payload),
+        0u,
+        NULL,
+        0u,
+        payload,
+        sizeof(payload));
+}
+
+static int
 bmp_numeric_append_huffman_bits(unsigned char *payload,
                                 size_t payload_capacity,
                                 size_t *bit_count,
@@ -10540,6 +10597,11 @@ run_builtin_loader_test(void)
           run_bmp_i40_auto_r24_num_t },
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_RLE24_FAIL",
           run_bmp_i40_win_r24_fail_t
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_COMP14_FAIL",
+          run_bmp_i40_win_c14_fail_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_COMP15_FAIL",
+          run_bmp_i40_win_c15_fail_t
         }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {

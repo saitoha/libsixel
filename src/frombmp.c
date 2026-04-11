@@ -358,6 +358,16 @@ sixel_bmp_map_compression(int dib_family,
                 "builtin BMP: unsupported OS/2 compression mode");
         }
     } else {
+        /*
+         * Internal IDs 14/15 are reserved for remapped OS/2 compression
+         * codes. Reject them on Windows-family DIB to avoid accepting
+         * out-of-spec Windows compression values.
+         */
+        if (compression_raw == SIXEL_BMP_COMPRESSION_OS2_HUFFMAN1D ||
+            compression_raw == SIXEL_BMP_COMPRESSION_OS2_RLE24) {
+            return sixel_bmp_fail(
+                "builtin BMP: unsupported Windows compression mode");
+        }
         compression = compression_raw;
     }
 
