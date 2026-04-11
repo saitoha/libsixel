@@ -2617,8 +2617,8 @@ sixel_cms_builtin_load_src_unit(double src_unit[4],
     case SIXEL_CMS_PIXELFORMAT_LAB_F32:
         base = pixel_index * 3u;
         src_unit[0] = sixel_cms_clamp_unit((double)src_f32[base + 0u]);
-        src_unit[1] = sixel_cms_clamp_unit((double)src_f32[base + 1u]);
-        src_unit[2] = sixel_cms_clamp_unit((double)src_f32[base + 2u]);
+        src_unit[1] = sixel_cms_clamp_lab_ab((double)src_f32[base + 1u]);
+        src_unit[2] = sixel_cms_clamp_lab_ab((double)src_f32[base + 2u]);
         *input_channel_count = 3u;
         return 1;
     default:
@@ -2713,8 +2713,10 @@ sixel_cms_builtin_store_dst_unit(void *dst,
     case SIXEL_CMS_PIXELFORMAT_LAB_F32:
         base = pixel_index * 3u;
         dst_f32[base + 0u] = (float)sixel_cms_clamp_unit(dst_unit[0]);
-        dst_f32[base + 1u] = (float)sixel_cms_clamp_unit(dst_unit[1]);
-        dst_f32[base + 2u] = (float)sixel_cms_clamp_unit(dst_unit[2]);
+        dst_f32[base + 1u] = (float)sixel_cms_clamp_lab_ab(
+            (sixel_cms_clamp_unit(dst_unit[1]) * 255.0 - 128.0) / 128.0);
+        dst_f32[base + 2u] = (float)sixel_cms_clamp_lab_ab(
+            (sixel_cms_clamp_unit(dst_unit[2]) * 255.0 - 128.0) / 128.0);
         return 1;
     default:
         break;
@@ -2772,6 +2774,14 @@ sixel_cms_do_transform_builtin_device_to_device(
     }
     if (!sixel_cms_builtin_profile_can_convert(src_profile) ||
         !sixel_cms_builtin_profile_can_convert(dst_profile)) {
+        return 0;
+    }
+    if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
+        src_profile->builtin_profile.kind != SIXEL_ICC_PROFILE_KIND_LAB) {
+        return 0;
+    }
+    if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
+        dst_profile->builtin_profile.kind != SIXEL_ICC_PROFILE_KIND_LAB) {
         return 0;
     }
     if (sixel_cms_builtin_profile_is_srgb(dst_profile)) {
@@ -3084,8 +3094,21 @@ sixel_cms_do_transform_builtin_device_to_device(
                                              &alpha,
                                              transform->src_format,
                                              src,
-                                             i) ||
-            !sixel_cms_builtin_apply_src_to_xyz_intent(xyz_d50,
+                                             i)) {
+            return 0;
+        }
+        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
+            src_profile->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+            /*
+             * SIXEL Lab float buffers store a/b in [-1, 1].  ICC apply path
+             * expects Lab device/PCS units where a/b live in [0, 1].
+             */
+            src_unit[1] = sixel_cms_clamp_unit(
+                (src_unit[1] * 128.0 + 128.0) / 255.0);
+            src_unit[2] = sixel_cms_clamp_unit(
+                (src_unit[2] * 128.0 + 128.0) / 255.0);
+        }
+        if (!sixel_cms_builtin_apply_src_to_xyz_intent(xyz_d50,
                                                        src_unit,
                                                        input_channel_count,
                                                        src_profile,
@@ -3845,11 +3868,13 @@ sixel_cms_convert_profile_to_cielab(unsigned char *pixels,
 {
     sixel_cms_profile_t *dst_profile;
     sixel_cms_transform_t *transform;
+    sixel_cms_color_space_t src_colorspace;
     size_t pixel_count;
     int converted;
 
     dst_profile = NULL;
     transform = NULL;
+    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     pixel_count = 0u;
     converted = 0;
     if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
@@ -3859,6 +3884,10 @@ sixel_cms_convert_profile_to_cielab(unsigned char *pixels,
         return 0;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return 0;
+    }
+    src_colorspace = sixel_cms_get_color_space(src_profile);
+    if (src_colorspace != SIXEL_CMS_COLORSPACE_LAB) {
         return 0;
     }
     pixel_count = (size_t)width * (size_t)height;

@@ -48,6 +48,8 @@
 #define check_transform_rgb8_fails icc0005_check_transform_rgb8_fails
 #define check_transform_rgb8_to_cmyk8 icc0005_check_transform_rgb8_to_cmyk8
 #define check_transform_lab_f32_identity icc0005_check_transform_lab_f32_identity
+#define check_transform_lab_f32_rejects_non_lab_profiles \
+    icc0005_check_transform_lab_f32_rejects_non_lab_profiles
 #define test_setenv icc0005_test_setenv
 
 #define ICC_TAG_TABLE_OFFSET 128u
@@ -779,16 +781,18 @@ check_transform_lab_f32_identity(void)
     sixel_cms_profile_t *src;
     sixel_cms_profile_t *dst;
     sixel_cms_transform_t *tr;
-    float input[3];
+    float inputs[2][3];
     float output[3];
     double eps;
+    size_t case_index;
 
     src = NULL;
     dst = NULL;
     tr = NULL;
-    memset(input, 0, sizeof(input));
+    memset(inputs, 0, sizeof(inputs));
     memset(output, 0, sizeof(output));
     eps = 1.0e-3;
+    case_index = 0u;
 
     src = sixel_cms_create_cielab_d50_profile();
     dst = sixel_cms_create_cielab_d50_profile();
@@ -805,16 +809,26 @@ check_transform_lab_f32_identity(void)
         goto fail;
     }
 
-    input[0] = 0.51f;
-    input[1] = 0.42f;
-    input[2] = 0.61f;
-    if (!sixel_cms_do_transform(tr, input, output, 1u)) {
-        goto fail;
-    }
-    if (fabs((double)output[0] - (double)input[0]) > eps ||
-        fabs((double)output[1] - (double)input[1]) > eps ||
-        fabs((double)output[2] - (double)input[2]) > eps) {
-        goto fail;
+    /*
+     * Verify both positive and negative Lab a/b domains survive builtin
+     * device-to-device round-trip with Lab profiles.
+     */
+    inputs[0][0] = 0.51f;
+    inputs[0][1] = 0.42f;
+    inputs[0][2] = 0.61f;
+    inputs[1][0] = 0.33f;
+    inputs[1][1] = -0.47f;
+    inputs[1][2] = 0.18f;
+
+    for (case_index = 0u; case_index < 2u; ++case_index) {
+        if (!sixel_cms_do_transform(tr, inputs[case_index], output, 1u)) {
+            goto fail;
+        }
+        if (fabs((double)output[0] - (double)inputs[case_index][0]) > eps ||
+            fabs((double)output[1] - (double)inputs[case_index][1]) > eps ||
+            fabs((double)output[2] - (double)inputs[case_index][2]) > eps) {
+            goto fail;
+        }
     }
 
     sixel_cms_delete_transform(tr);
@@ -826,6 +840,79 @@ fail:
     sixel_cms_delete_transform(tr);
     sixel_cms_close_profile(src);
     sixel_cms_close_profile(dst);
+    return 0;
+}
+
+static int
+check_transform_lab_f32_rejects_non_lab_profiles(void)
+{
+    sixel_cms_profile_t *src_rgb;
+    sixel_cms_profile_t *dst_lab;
+    sixel_cms_profile_t *src_lab;
+    sixel_cms_profile_t *dst_rgb;
+    sixel_cms_transform_t *tr;
+    float input[3];
+    float output[3];
+
+    src_rgb = NULL;
+    dst_lab = NULL;
+    src_lab = NULL;
+    dst_rgb = NULL;
+    tr = NULL;
+    memset(input, 0, sizeof(input));
+    memset(output, 0, sizeof(output));
+
+    input[0] = 0.40f;
+    input[1] = -0.20f;
+    input[2] = 0.15f;
+
+    src_rgb = sixel_cms_create_srgb_profile();
+    dst_lab = sixel_cms_create_cielab_d50_profile();
+    if (src_rgb == NULL || dst_lab == NULL) {
+        goto fail;
+    }
+    tr = sixel_cms_create_transform(src_rgb,
+                                    SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                    dst_lab,
+                                    SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                    SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (tr != NULL && sixel_cms_do_transform(tr, input, output, 1u)) {
+        goto fail;
+    }
+    sixel_cms_delete_transform(tr);
+    tr = NULL;
+    sixel_cms_close_profile(src_rgb);
+    src_rgb = NULL;
+    sixel_cms_close_profile(dst_lab);
+    dst_lab = NULL;
+
+    src_lab = sixel_cms_create_cielab_d50_profile();
+    dst_rgb = sixel_cms_create_srgb_profile();
+    if (src_lab == NULL || dst_rgb == NULL) {
+        goto fail;
+    }
+    tr = sixel_cms_create_transform(src_lab,
+                                    SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                    dst_rgb,
+                                    SIXEL_CMS_PIXELFORMAT_LAB_F32,
+                                    SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (tr != NULL && sixel_cms_do_transform(tr, input, output, 1u)) {
+        goto fail;
+    }
+
+    sixel_cms_delete_transform(tr);
+    sixel_cms_close_profile(src_rgb);
+    sixel_cms_close_profile(dst_lab);
+    sixel_cms_close_profile(src_lab);
+    sixel_cms_close_profile(dst_rgb);
+    return 1;
+
+fail:
+    sixel_cms_delete_transform(tr);
+    sixel_cms_close_profile(src_rgb);
+    sixel_cms_close_profile(dst_lab);
+    sixel_cms_close_profile(src_lab);
+    sixel_cms_close_profile(dst_rgb);
     return 0;
 }
 
@@ -1012,6 +1099,9 @@ run_device_to_device_intent_cases(void)
     if (!check_transform_lab_f32_identity()) {
         goto fail;
     }
+    if (!check_transform_lab_f32_rejects_non_lab_profiles()) {
+        goto fail;
+    }
 
     (void)test_setenv("SIXEL_CMS_RENDERING_INTENT", "");
     sixel_cms_set_engine(old_engine);
@@ -1044,6 +1134,7 @@ test_icc_0005_icc_builtin_device_to_device_intent_paths(int argc, char **argv)
 }
 
 #undef test_setenv
+#undef check_transform_lab_f32_rejects_non_lab_profiles
 #undef check_transform_lab_f32_identity
 #undef check_transform_rgb8_to_cmyk8
 #undef check_transform_rgb8_fails
