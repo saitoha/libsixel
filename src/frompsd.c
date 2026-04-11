@@ -19002,12 +19002,11 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         if (apply_clipping != 0 &&
             pending_clip_group_overlay != 0 &&
             pending_overlay_defer_stroke != 0 &&
-            effective_composite_layer->has_effect_stroke != 0 &&
-            effective_composite_layer->effect_stroke_from_vector_style == 0) {
+            effective_composite_layer->has_effect_stroke != 0) {
             /*
              * When base-layer stroke is deferred for clbl=1 groups, keep
-             * clipping siblings from overpainting the same contour with their
-             * explicit FrFX stroke.
+             * clipping siblings from overpainting the same contour with either
+             * explicit FrFX stroke or synthesized vstk stroke.
              */
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
