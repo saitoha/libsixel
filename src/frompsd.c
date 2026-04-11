@@ -10976,9 +10976,10 @@ sixel_builtin_psd_parse_effect_bevel_object(
 }
 
 static int
-sixel_builtin_psd_parse_layer_effects_payload_descriptor(
+sixel_builtin_psd_parse_layer_effects_payload_descriptor_at(
     unsigned char const *data,
     size_t key_length,
+    size_t start_offset,
     sixel_builtin_psd_layer_record_t *layer,
     int allow_bevel_proxy)
 {
@@ -11002,6 +11003,10 @@ sixel_builtin_psd_parse_layer_effects_payload_descriptor(
     if (data == NULL || layer == NULL) {
         return -1;
     }
+    if (start_offset > key_length) {
+        return -1;
+    }
+    cursor = start_offset;
     if (!sixel_builtin_psd_descriptor_skip_unicode_string(
             data,
             key_length,
@@ -11142,6 +11147,59 @@ sixel_builtin_psd_parse_layer_effects_payload_descriptor(
         }
     }
     return parsed;
+}
+
+static int
+sixel_builtin_psd_layer_effects_payload_has_descriptor_block2_header(
+    unsigned char const *data,
+    size_t key_length)
+{
+    unsigned int descriptor_version;
+    size_t name_u16_length;
+
+    descriptor_version = 0u;
+    name_u16_length = 0u;
+    if (data == NULL || key_length < 12u) {
+        return 0;
+    }
+    descriptor_version = sixel_builtin_read_u32be(data + 4u);
+    if (descriptor_version != 16u) {
+        return 0;
+    }
+    name_u16_length = sixel_builtin_read_u32be_size(data + 8u);
+    if (name_u16_length > (key_length - 12u) / 2u) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_layer_effects_payload_descriptor(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer,
+    int allow_bevel_proxy)
+{
+    int parsed;
+    if (sixel_builtin_psd_layer_effects_payload_has_descriptor_block2_header(
+            data,
+            key_length)) {
+        parsed = sixel_builtin_psd_parse_layer_effects_payload_descriptor_at(
+            data,
+            key_length,
+            8u,
+            layer,
+            allow_bevel_proxy);
+        if (parsed >= 0) {
+            return parsed;
+        }
+    }
+    return sixel_builtin_psd_parse_layer_effects_payload_descriptor_at(
+        data,
+        key_length,
+        0u,
+        layer,
+        allow_bevel_proxy);
 }
 
 static int
@@ -16680,7 +16738,19 @@ sixel_builtin_psd_layer_interior_effects_enabled(
     if (layer->has_blend_interior_effects != 0 &&
         layer->blend_interior_effects_enabled == 0 &&
         has_pixel_channels == 0) {
-        enabled = 0;
+        if (layer->has_vector_stroke_style != 0 &&
+            (layer->has_effect_stroke != 0 ||
+             layer->has_effect_solid_overlay != 0 ||
+             layer->has_effect_gradient_overlay != 0)) {
+            /*
+             * Shape/effect stacks used by stroke-composite fixtures store
+             * infx=0 while still expecting interior overlays to remain active.
+             * Keep those no-pixel vector-style layers on the interior path.
+             */
+            enabled = 1;
+        } else {
+            enabled = 0;
+        }
     }
     return enabled;
 }
@@ -17809,7 +17879,13 @@ sixel_builtin_psd_finalize_multilayer_output(
      * representation until final conversion to avoid inflating semi-transparent
      * colors by an extra unpremultiply step.
      */
-    keep_straight_alpha_colors = 0;
+    /*
+     * Transparent-mask outputs are consumed as straight-alpha colors in the
+     * loaders/encoders pipeline. Convert premultiplied canvas colors back to
+     * straight-alpha here to avoid dark edge fringes around semi-transparent
+     * vector-mask boundaries.
+     */
+    keep_straight_alpha_colors = preserve_alpha != 0 ? 1 : 0;
     if (preserve_alpha != 0) {
         transparent_mask = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
                                                                    pixel_count);
@@ -18606,11 +18682,22 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 pending_overlay_layer = *effective_composite_layer;
                 pending_clip_group_overlay = 1;
                 /*
-                 * Keep clbl=1 deferred pass focused on interior overlays.
-                 * Explicit stroke should stay on the base-layer pass so
-                 * vector/effect outlines are not delayed or dropped.
+                 * clbl=1 shape/effect stacks can require stroke application
+                 * after clipped siblings are composited. Defer explicit FrFX
+                 * stroke in that narrow subset and keep synthesized vstk
+                 * stroke on the base-layer pass.
                  */
                 pending_overlay_defer_stroke = 0;
+                if (effective_composite_layer->has_blend_clipped_elements != 0 &&
+                    effective_composite_layer->blend_clipped_elements_enabled !=
+                    0 &&
+                    effective_composite_layer->has_effect_stroke != 0 &&
+                    effective_composite_layer->effect_stroke_from_vector_style ==
+                    0 &&
+                    effective_composite_layer->has_vector_stroke_style != 0 &&
+                    effective_composite_layer->has_vector_mask != 0) {
+                    pending_overlay_defer_stroke = 1;
+                }
                 if (effective_composite_layer->has_blend_clipped_elements != 0 &&
                     effective_composite_layer->blend_clipped_elements_enabled ==
                     0) {
@@ -18665,6 +18752,25 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->has_effect_stroke != 0 ||
             effective_composite_layer->has_effect_outer_glow != 0 ||
             effective_composite_layer->has_effect_inner_glow != 0;
+        if (apply_clipping != 0 &&
+            pending_clip_group_overlay != 0 &&
+            pending_overlay_defer_stroke != 0 &&
+            effective_composite_layer->has_effect_stroke != 0 &&
+            effective_composite_layer->effect_stroke_from_vector_style == 0) {
+            /*
+             * When base-layer stroke is deferred for clbl=1 groups, keep
+             * clipping siblings from overpainting the same contour with their
+             * explicit FrFX stroke.
+             */
+            layer_for_composite = *effective_composite_layer;
+            layer_for_composite.has_effect_stroke = 0;
+            effective_composite_layer = &layer_for_composite;
+            apply_effects_subset =
+                effective_composite_layer->has_effect_solid_overlay != 0 ||
+                effective_composite_layer->has_effect_gradient_overlay != 0 ||
+                effective_composite_layer->has_effect_outer_glow != 0 ||
+                effective_composite_layer->has_effect_inner_glow != 0;
+        }
         if (base_has_clipping_children != 0 &&
             effective_composite_layer->has_vector_stroke_style != 0 &&
             effective_composite_layer->has_vector_stroke_content_fill != 0 &&
