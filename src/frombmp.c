@@ -1186,6 +1186,98 @@ typedef struct sixel_bmp_huffman_code {
     unsigned int run_length;
 } sixel_bmp_huffman_code_t;
 
+/*
+ * OS/2 BI_HUFFMAN1D uses CCITT T.4 Modified Huffman (1-D) run codes.
+ * Each run is encoded as zero or more makeup codes followed by one
+ * terminating code. White and black runs use different code tables.
+ */
+static sixel_bmp_huffman_code_t const
+sixel_bmp_huffman_white_terminating_codes[] = {
+    { 0x35u, 8u, 0u },   { 0x07u, 6u, 1u },   { 0x07u, 4u, 2u },
+    { 0x08u, 4u, 3u },   { 0x0bu, 4u, 4u },   { 0x0cu, 4u, 5u },
+    { 0x0eu, 4u, 6u },   { 0x0fu, 4u, 7u },   { 0x13u, 5u, 8u },
+    { 0x14u, 5u, 9u },   { 0x07u, 5u, 10u },  { 0x08u, 5u, 11u },
+    { 0x08u, 6u, 12u },  { 0x03u, 6u, 13u },  { 0x34u, 6u, 14u },
+    { 0x35u, 6u, 15u },  { 0x2au, 6u, 16u },  { 0x2bu, 6u, 17u },
+    { 0x27u, 7u, 18u },  { 0x0cu, 7u, 19u },  { 0x08u, 7u, 20u },
+    { 0x17u, 7u, 21u },  { 0x03u, 7u, 22u },  { 0x04u, 7u, 23u },
+    { 0x28u, 7u, 24u },  { 0x2bu, 7u, 25u },  { 0x13u, 7u, 26u },
+    { 0x24u, 7u, 27u },  { 0x18u, 7u, 28u },  { 0x02u, 8u, 29u },
+    { 0x03u, 8u, 30u },  { 0x1au, 8u, 31u },  { 0x1bu, 8u, 32u },
+    { 0x12u, 8u, 33u },  { 0x13u, 8u, 34u },  { 0x14u, 8u, 35u },
+    { 0x15u, 8u, 36u },  { 0x16u, 8u, 37u },  { 0x17u, 8u, 38u },
+    { 0x28u, 8u, 39u },  { 0x29u, 8u, 40u },  { 0x2au, 8u, 41u },
+    { 0x2bu, 8u, 42u },  { 0x2cu, 8u, 43u },  { 0x2du, 8u, 44u },
+    { 0x04u, 8u, 45u },  { 0x05u, 8u, 46u },  { 0x0au, 8u, 47u },
+    { 0x0bu, 8u, 48u },  { 0x52u, 8u, 49u },  { 0x53u, 8u, 50u },
+    { 0x54u, 8u, 51u },  { 0x55u, 8u, 52u },  { 0x24u, 8u, 53u },
+    { 0x25u, 8u, 54u },  { 0x58u, 8u, 55u },  { 0x59u, 8u, 56u },
+    { 0x5au, 8u, 57u },  { 0x5bu, 8u, 58u },  { 0x4au, 8u, 59u },
+    { 0x4bu, 8u, 60u },  { 0x32u, 8u, 61u },  { 0x33u, 8u, 62u },
+    { 0x34u, 8u, 63u }
+};
+
+static sixel_bmp_huffman_code_t const
+sixel_bmp_huffman_white_makeup_codes[] = {
+    { 0x1bu, 5u, 64u },    { 0x12u, 5u, 128u },   { 0x17u, 6u, 192u },
+    { 0x37u, 7u, 256u },   { 0x36u, 8u, 320u },   { 0x37u, 8u, 384u },
+    { 0x64u, 8u, 448u },   { 0x65u, 8u, 512u },   { 0x68u, 8u, 576u },
+    { 0x67u, 8u, 640u },   { 0xccu, 9u, 704u },   { 0xcdu, 9u, 768u },
+    { 0xd2u, 9u, 832u },   { 0xd3u, 9u, 896u },   { 0xd4u, 9u, 960u },
+    { 0xd5u, 9u, 1024u },  { 0xd6u, 9u, 1088u },  { 0xd7u, 9u, 1152u },
+    { 0xd8u, 9u, 1216u },  { 0xd9u, 9u, 1280u },  { 0xdau, 9u, 1344u },
+    { 0xdbu, 9u, 1408u },  { 0x98u, 9u, 1472u },  { 0x99u, 9u, 1536u },
+    { 0x9au, 9u, 1600u },  { 0x18u, 6u, 1664u },  { 0x9bu, 9u, 1728u }
+};
+
+static sixel_bmp_huffman_code_t const
+sixel_bmp_huffman_black_terminating_codes[] = {
+    { 0x37u, 10u, 0u },    { 0x02u, 3u, 1u },     { 0x03u, 2u, 2u },
+    { 0x02u, 2u, 3u },     { 0x03u, 3u, 4u },     { 0x03u, 4u, 5u },
+    { 0x02u, 4u, 6u },     { 0x03u, 5u, 7u },     { 0x05u, 6u, 8u },
+    { 0x04u, 6u, 9u },     { 0x04u, 7u, 10u },    { 0x05u, 7u, 11u },
+    { 0x07u, 7u, 12u },    { 0x04u, 8u, 13u },    { 0x07u, 8u, 14u },
+    { 0x18u, 9u, 15u },    { 0x17u, 10u, 16u },   { 0x18u, 10u, 17u },
+    { 0x08u, 10u, 18u },   { 0x67u, 11u, 19u },   { 0x68u, 11u, 20u },
+    { 0x6cu, 11u, 21u },   { 0x37u, 11u, 22u },   { 0x28u, 11u, 23u },
+    { 0x17u, 11u, 24u },   { 0x18u, 11u, 25u },   { 0xcau, 12u, 26u },
+    { 0xcbu, 12u, 27u },   { 0xccu, 12u, 28u },   { 0xcdu, 12u, 29u },
+    { 0x68u, 12u, 30u },   { 0x69u, 12u, 31u },   { 0x6au, 12u, 32u },
+    { 0x6bu, 12u, 33u },   { 0xd2u, 12u, 34u },   { 0xd3u, 12u, 35u },
+    { 0xd4u, 12u, 36u },   { 0xd5u, 12u, 37u },   { 0xd6u, 12u, 38u },
+    { 0xd7u, 12u, 39u },   { 0x6cu, 12u, 40u },   { 0x6du, 12u, 41u },
+    { 0xdau, 12u, 42u },   { 0xdbu, 12u, 43u },   { 0x54u, 12u, 44u },
+    { 0x55u, 12u, 45u },   { 0x56u, 12u, 46u },   { 0x57u, 12u, 47u },
+    { 0x64u, 12u, 48u },   { 0x65u, 12u, 49u },   { 0x52u, 12u, 50u },
+    { 0x53u, 12u, 51u },   { 0x24u, 12u, 52u },   { 0x37u, 12u, 53u },
+    { 0x38u, 12u, 54u },   { 0x27u, 12u, 55u },   { 0x28u, 12u, 56u },
+    { 0x58u, 12u, 57u },   { 0x59u, 12u, 58u },   { 0x2bu, 12u, 59u },
+    { 0x2cu, 12u, 60u },   { 0x5au, 12u, 61u },   { 0x66u, 12u, 62u },
+    { 0x67u, 12u, 63u }
+};
+
+static sixel_bmp_huffman_code_t const
+sixel_bmp_huffman_black_makeup_codes[] = {
+    { 0x0fu, 10u, 64u },    { 0xc8u, 12u, 128u },   { 0xc9u, 12u, 192u },
+    { 0x5bu, 12u, 256u },   { 0x33u, 12u, 320u },   { 0x34u, 12u, 384u },
+    { 0x35u, 12u, 448u },   { 0x6cu, 13u, 512u },   { 0x6du, 13u, 576u },
+    { 0x4au, 13u, 640u },   { 0x4bu, 13u, 704u },   { 0x4cu, 13u, 768u },
+    { 0x4du, 13u, 832u },   { 0x72u, 13u, 896u },   { 0x73u, 13u, 960u },
+    { 0x74u, 13u, 1024u },  { 0x75u, 13u, 1088u },  { 0x76u, 13u, 1152u },
+    { 0x77u, 13u, 1216u },  { 0x52u, 13u, 1280u },  { 0x53u, 13u, 1344u },
+    { 0x54u, 13u, 1408u },  { 0x55u, 13u, 1472u },  { 0x5au, 13u, 1536u },
+    { 0x5bu, 13u, 1600u },  { 0x64u, 13u, 1664u },  { 0x65u, 13u, 1728u }
+};
+
+static sixel_bmp_huffman_code_t const
+sixel_bmp_huffman_extended_makeup_codes[] = {
+    { 0x08u, 11u, 1792u },  { 0x0cu, 11u, 1856u },  { 0x0du, 11u, 1920u },
+    { 0x12u, 12u, 1984u },  { 0x13u, 12u, 2048u },  { 0x14u, 12u, 2112u },
+    { 0x15u, 12u, 2176u },  { 0x16u, 12u, 2240u },  { 0x17u, 12u, 2304u },
+    { 0x1cu, 12u, 2368u },  { 0x1du, 12u, 2432u },  { 0x1eu, 12u, 2496u },
+    { 0x1fu, 12u, 2560u }
+};
+
 static int
 sixel_bmp_peek_bits(unsigned char const *buffer,
                     size_t size,
@@ -1231,53 +1323,21 @@ sixel_bmp_peek_bits(unsigned char const *buffer,
 }
 
 static int
-sixel_bmp_decode_huffman_run(unsigned char const *buffer,
-                             size_t size,
-                             size_t *bit_offset,
-                             int black_run,
-                             unsigned int *run_length)
+sixel_bmp_find_huffman_code(sixel_bmp_huffman_code_t const *table,
+                            size_t table_size,
+                            unsigned int bit_length,
+                            unsigned int bits,
+                            unsigned int *run_length)
 {
-    static sixel_bmp_huffman_code_t const white_codes[] = {
-        { 0x35u, 8u, 0u }, { 0x07u, 6u, 1u }, { 0x07u, 4u, 2u },
-        { 0x08u, 4u, 3u }, { 0x0bu, 4u, 4u }, { 0x0cu, 4u, 5u },
-        { 0x0eu, 4u, 6u }, { 0x0fu, 4u, 7u }, { 0x13u, 5u, 8u }
-    };
-    static sixel_bmp_huffman_code_t const black_codes[] = {
-        { 0x37u, 10u, 0u }, { 0x02u, 3u, 1u }, { 0x03u, 2u, 2u },
-        { 0x02u, 2u, 3u },  { 0x03u, 3u, 4u }, { 0x03u, 4u, 5u },
-        { 0x02u, 4u, 6u },  { 0x03u, 5u, 7u }, { 0x05u, 6u, 8u }
-    };
-    sixel_bmp_huffman_code_t const *table;
-    size_t table_size;
     size_t index;
-    unsigned int code;
 
-    table = NULL;
-    table_size = 0u;
     index = 0u;
-    code = 0u;
-    if (buffer == NULL || bit_offset == NULL || run_length == NULL) {
+    if (table == NULL || run_length == NULL || bit_length == 0u) {
         return 0;
     }
-
-    if (black_run != 0) {
-        table = black_codes;
-        table_size = sizeof(black_codes) / sizeof(black_codes[0]);
-    } else {
-        table = white_codes;
-        table_size = sizeof(white_codes) / sizeof(white_codes[0]);
-    }
-
     for (index = 0u; index < table_size; ++index) {
-        if (!sixel_bmp_peek_bits(buffer,
-                                 size,
-                                 *bit_offset,
-                                 table[index].bit_length,
-                                 &code)) {
-            continue;
-        }
-        if (code == table[index].bits) {
-            *bit_offset += (size_t)table[index].bit_length;
+        if (table[index].bit_length == bit_length &&
+            table[index].bits == bits) {
             *run_length = table[index].run_length;
             return 1;
         }
@@ -1286,30 +1346,208 @@ sixel_bmp_decode_huffman_run(unsigned char const *buffer,
 }
 
 static SIXELSTATUS
+sixel_bmp_decode_huffman_symbol(unsigned char const *buffer,
+                                size_t size,
+                                size_t *bit_offset,
+                                int black_run,
+                                unsigned int *run_length)
+{
+    size_t remaining_bits;
+    unsigned int bit_length;
+    unsigned int bits;
+    unsigned int matched_run;
+
+    remaining_bits = 0u;
+    bit_length = 0u;
+    bits = 0u;
+    matched_run = 0u;
+    if (buffer == NULL || bit_offset == NULL || run_length == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (size > SIZE_MAX / 8u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if (*bit_offset > size * 8u) {
+        return sixel_bmp_fail("builtin BMP: malformed HUFFMAN1D offset");
+    }
+
+    remaining_bits = size * 8u - *bit_offset;
+    if (remaining_bits < 2u) {
+        return sixel_bmp_fail("builtin BMP: truncated HUFFMAN1D stream");
+    }
+
+    for (bit_length = 2u; bit_length <= 13u; ++bit_length) {
+        if ((size_t)bit_length > remaining_bits) {
+            break;
+        }
+        if (!sixel_bmp_peek_bits(buffer,
+                                 size,
+                                 *bit_offset,
+                                 bit_length,
+                                 &bits)) {
+            return sixel_bmp_fail("builtin BMP: truncated HUFFMAN1D stream");
+        }
+
+        if (black_run != 0) {
+            if (sixel_bmp_find_huffman_code(
+                    sixel_bmp_huffman_black_terminating_codes,
+                    sizeof(sixel_bmp_huffman_black_terminating_codes)
+                        / sizeof(sixel_bmp_huffman_black_terminating_codes[0]),
+                    bit_length,
+                    bits,
+                    &matched_run) ||
+                sixel_bmp_find_huffman_code(
+                    sixel_bmp_huffman_black_makeup_codes,
+                    sizeof(sixel_bmp_huffman_black_makeup_codes)
+                        / sizeof(sixel_bmp_huffman_black_makeup_codes[0]),
+                    bit_length,
+                    bits,
+                    &matched_run) ||
+                sixel_bmp_find_huffman_code(
+                    sixel_bmp_huffman_extended_makeup_codes,
+                    sizeof(sixel_bmp_huffman_extended_makeup_codes)
+                        / sizeof(
+                            sixel_bmp_huffman_extended_makeup_codes[0]),
+                    bit_length,
+                    bits,
+                    &matched_run)) {
+                *bit_offset += (size_t)bit_length;
+                *run_length = matched_run;
+                return SIXEL_OK;
+            }
+        } else {
+            if (sixel_bmp_find_huffman_code(
+                    sixel_bmp_huffman_white_terminating_codes,
+                    sizeof(sixel_bmp_huffman_white_terminating_codes)
+                        / sizeof(sixel_bmp_huffman_white_terminating_codes[0]),
+                    bit_length,
+                    bits,
+                    &matched_run) ||
+                sixel_bmp_find_huffman_code(
+                    sixel_bmp_huffman_white_makeup_codes,
+                    sizeof(sixel_bmp_huffman_white_makeup_codes)
+                        / sizeof(sixel_bmp_huffman_white_makeup_codes[0]),
+                    bit_length,
+                    bits,
+                    &matched_run) ||
+                sixel_bmp_find_huffman_code(
+                    sixel_bmp_huffman_extended_makeup_codes,
+                    sizeof(sixel_bmp_huffman_extended_makeup_codes)
+                        / sizeof(
+                            sixel_bmp_huffman_extended_makeup_codes[0]),
+                    bit_length,
+                    bits,
+                    &matched_run)) {
+                *bit_offset += (size_t)bit_length;
+                *run_length = matched_run;
+                return SIXEL_OK;
+            }
+        }
+    }
+    return sixel_bmp_fail("builtin BMP: invalid HUFFMAN1D code");
+}
+
+static SIXELSTATUS
+sixel_bmp_decode_huffman_run(unsigned char const *buffer,
+                             size_t size,
+                             size_t *bit_offset,
+                             int black_run,
+                             unsigned int *run_length)
+{
+    SIXELSTATUS status;
+    unsigned int run_chunk;
+    unsigned int run_total;
+
+    status = SIXEL_FALSE;
+    run_chunk = 0u;
+    run_total = 0u;
+    if (buffer == NULL || bit_offset == NULL || run_length == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (;;) {
+        status = sixel_bmp_decode_huffman_symbol(buffer,
+                                                 size,
+                                                 bit_offset,
+                                                 black_run,
+                                                 &run_chunk);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (run_chunk > UINT_MAX - run_total) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        run_total += run_chunk;
+        if (run_chunk < 64u) {
+            break;
+        }
+    }
+    *run_length = run_total;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_bmp_consume_huffman1d_eol(unsigned char const *buffer,
+                                size_t size,
+                                size_t *bit_offset)
+{
+    size_t total_bits;
+    unsigned int bit;
+    unsigned int eol_code;
+
+    total_bits = 0u;
+    bit = 0u;
+    eol_code = 0u;
+    if (buffer == NULL || bit_offset == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (size > SIZE_MAX / 8u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    total_bits = size * 8u;
+
+    while (*bit_offset < total_bits) {
+        if (sixel_bmp_peek_bits(buffer, size, *bit_offset, 12u, &eol_code) &&
+            eol_code == 0x001u) {
+            *bit_offset += 12u;
+            return SIXEL_OK;
+        }
+        if (!sixel_bmp_peek_bits(buffer, size, *bit_offset, 1u, &bit)) {
+            return sixel_bmp_fail("builtin BMP: truncated HUFFMAN1D stream");
+        }
+        if (bit != 0u) {
+            return sixel_bmp_fail("builtin BMP: invalid HUFFMAN1D EOL");
+        }
+        *bit_offset += 1u;
+    }
+    return sixel_bmp_fail("builtin BMP: truncated HUFFMAN1D stream");
+}
+
+static SIXELSTATUS
 sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
                                    unsigned char *indices)
 {
+    SIXELSTATUS status;
     unsigned char const *buffer;
     size_t size;
-    size_t total_bits;
     size_t bit_offset;
     int x;
     int y;
     int step;
     int black_run;
-    unsigned int code;
+    int row;
     unsigned int run_length;
     unsigned int index;
 
+    status = SIXEL_FALSE;
     buffer = NULL;
     size = 0u;
-    total_bits = 0u;
     bit_offset = 0u;
     x = 0;
     y = 0;
     step = 0;
     black_run = 0;
-    code = 0u;
+    row = 0;
     run_length = 0u;
     index = 0u;
     if (info == NULL || indices == NULL || info->chunk == NULL) {
@@ -1324,51 +1562,45 @@ sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
 
     buffer = info->chunk->buffer;
     size = info->chunk->size;
-    total_bits = size * 8u;
     bit_offset = info->pixel_offset * 8u;
-    x = 0;
     y = info->top_down ? 0 : info->height - 1;
     step = info->top_down ? 1 : -1;
-    black_run = 0;
 
-    while (bit_offset < total_bits) {
-        if (y < 0 || y >= info->height) {
-            return SIXEL_OK;
-        }
-        if (sixel_bmp_peek_bits(buffer, size, bit_offset, 12u, &code) &&
-            code == 0x001u) {
-            if (x != info->width) {
-                return sixel_bmp_fail(
-                    "builtin BMP: HUFFMAN1D row length mismatch");
+    for (row = 0; row < info->height; ++row) {
+        x = 0;
+        black_run = 0;
+        while (x < info->width) {
+            status = sixel_bmp_decode_huffman_run(buffer,
+                                                  size,
+                                                  &bit_offset,
+                                                  black_run,
+                                                  &run_length);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
-            bit_offset += 12u;
-            x = 0;
-            y += step;
-            black_run = 0;
-            continue;
-        }
-
-        if (!sixel_bmp_decode_huffman_run(buffer,
-                                          size,
-                                          &bit_offset,
-                                          black_run,
-                                          &run_length)) {
-            return sixel_bmp_fail("builtin BMP: invalid HUFFMAN1D code");
-        }
-        for (index = 0u; index < run_length; ++index) {
-            if (!sixel_bmp_put_index(info,
-                                     indices,
-                                     &x,
-                                     y,
-                                     (unsigned char)black_run)) {
+            if ((unsigned int)(info->width - x) < run_length) {
                 return sixel_bmp_fail(
                     "builtin BMP: HUFFMAN1D write overflow");
             }
+            for (index = 0u; index < run_length; ++index) {
+                if (!sixel_bmp_put_index(info,
+                                         indices,
+                                         &x,
+                                         y,
+                                         (unsigned char)black_run)) {
+                    return sixel_bmp_fail(
+                        "builtin BMP: HUFFMAN1D write overflow");
+                }
+            }
+            black_run = black_run == 0 ? 1 : 0;
         }
-        black_run = black_run == 0 ? 1 : 0;
+        status = sixel_bmp_consume_huffman1d_eol(buffer, size, &bit_offset);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        y += step;
     }
-
-    return sixel_bmp_fail("builtin BMP: truncated HUFFMAN1D stream");
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS

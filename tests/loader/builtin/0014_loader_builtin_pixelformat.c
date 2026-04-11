@@ -4256,6 +4256,662 @@ run_builtin_loader_bmp_fail_os2_rle24_topdown_numeric_test(void)
         sizeof(bmp_os2_rle24_topdown_sample));
 }
 
+#define BMP_NUMERIC_OS2_HUFFMAN1D_PIXEL_OFFSET 86u
+#define BMP_NUMERIC_OS2_HUFFMAN1D_MAX_BMP_SIZE 1024u
+#define BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD 256u
+
+static void
+bmp_numeric_write_u16le(unsigned char *buffer,
+                        size_t offset,
+                        unsigned int value)
+{
+    if (buffer == NULL) {
+        return;
+    }
+    buffer[offset + 0u] = (unsigned char)(value & 0xffu);
+    buffer[offset + 1u] = (unsigned char)((value >> 8u) & 0xffu);
+}
+
+static void
+bmp_numeric_write_u32le(unsigned char *buffer,
+                        size_t offset,
+                        uint32_t value)
+{
+    if (buffer == NULL) {
+        return;
+    }
+    buffer[offset + 0u] = (unsigned char)(value & 0xffu);
+    buffer[offset + 1u] = (unsigned char)((value >> 8u) & 0xffu);
+    buffer[offset + 2u] = (unsigned char)((value >> 16u) & 0xffu);
+    buffer[offset + 3u] = (unsigned char)((value >> 24u) & 0xffu);
+}
+
+static int
+bmp_numeric_append_huffman_bits(unsigned char *payload,
+                                size_t payload_capacity,
+                                size_t *bit_count,
+                                char const *bits)
+{
+    size_t index;
+    size_t byte_index;
+    unsigned int bit_index;
+
+    index = 0u;
+    byte_index = 0u;
+    bit_index = 0u;
+    if (payload == NULL || bit_count == NULL || bits == NULL) {
+        return 0;
+    }
+
+    for (index = 0u; bits[index] != '\0'; ++index) {
+        if (bits[index] != '0' && bits[index] != '1') {
+            return 0;
+        }
+        byte_index = *bit_count >> 3u;
+        if (byte_index >= payload_capacity) {
+            return 0;
+        }
+        bit_index = (unsigned int)(7u - (*bit_count & 7u));
+        if (bits[index] == '1') {
+            payload[byte_index] = (unsigned char)(payload[byte_index]
+                | (unsigned char)(1u << bit_index));
+        }
+        *bit_count += 1u;
+    }
+
+    return 1;
+}
+
+static int
+bmp_numeric_append_huffman_zero_fill(unsigned char *payload,
+                                     size_t payload_capacity,
+                                     size_t *bit_count,
+                                     unsigned int zero_bits)
+{
+    unsigned int index;
+
+    index = 0u;
+    if (payload == NULL || bit_count == NULL) {
+        return 0;
+    }
+
+    for (index = 0u; index < zero_bits; ++index) {
+        if (!bmp_numeric_append_huffman_bits(payload,
+                                             payload_capacity,
+                                             bit_count,
+                                             "0")) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int
+bmp_numeric_append_huffman_eol(unsigned char *payload,
+                               size_t payload_capacity,
+                               size_t *bit_count,
+                               unsigned int fill_zeros)
+{
+    if (!bmp_numeric_append_huffman_zero_fill(payload,
+                                              payload_capacity,
+                                              bit_count,
+                                              fill_zeros)) {
+        return 0;
+    }
+    return bmp_numeric_append_huffman_bits(payload,
+                                           payload_capacity,
+                                           bit_count,
+                                           "000000000001");
+}
+
+static int
+bmp_numeric_build_os2_huffman1d_bmp(unsigned char *bmp,
+                                    size_t bmp_capacity,
+                                    int width,
+                                    int height_signed,
+                                    unsigned char const *payload,
+                                    size_t payload_size,
+                                    size_t *bmp_size)
+{
+    size_t file_size;
+    uint32_t width_u32;
+    uint32_t height_u32;
+    uint32_t payload_u32;
+    uint32_t file_size_u32;
+
+    file_size = 0u;
+    width_u32 = 0u;
+    height_u32 = 0u;
+    payload_u32 = 0u;
+    file_size_u32 = 0u;
+    if (bmp == NULL || payload == NULL || bmp_size == NULL) {
+        return 0;
+    }
+    if (width <= 0 || height_signed == 0) {
+        return 0;
+    }
+    if (payload_size > 0xffffffffu) {
+        return 0;
+    }
+    if (BMP_NUMERIC_OS2_HUFFMAN1D_PIXEL_OFFSET >
+        SIZE_MAX - payload_size) {
+        return 0;
+    }
+    file_size = BMP_NUMERIC_OS2_HUFFMAN1D_PIXEL_OFFSET + payload_size;
+    if (file_size > bmp_capacity || file_size > 0xffffffffu) {
+        return 0;
+    }
+
+    width_u32 = (uint32_t)(unsigned int)width;
+    height_u32 = (uint32_t)height_signed;
+    payload_u32 = (uint32_t)payload_size;
+    file_size_u32 = (uint32_t)file_size;
+
+    memset(bmp, 0, file_size);
+    bmp[0] = 0x42u;
+    bmp[1] = 0x4du;
+    bmp_numeric_write_u32le(bmp, 2u, file_size_u32);
+    bmp_numeric_write_u32le(bmp, 10u,
+                            (uint32_t)BMP_NUMERIC_OS2_HUFFMAN1D_PIXEL_OFFSET);
+    bmp_numeric_write_u32le(bmp, 14u, 64u);
+    bmp_numeric_write_u32le(bmp, 18u, width_u32);
+    bmp_numeric_write_u32le(bmp, 22u, height_u32);
+    bmp_numeric_write_u16le(bmp, 26u, 1u);
+    bmp_numeric_write_u16le(bmp, 28u, 1u);
+    bmp_numeric_write_u32le(bmp, 30u, 3u);
+    bmp_numeric_write_u32le(bmp, 34u, payload_u32);
+    bmp_numeric_write_u32le(bmp, 38u, 0x00000b13u);
+    bmp_numeric_write_u32le(bmp, 42u, 0x00000b13u);
+    bmp_numeric_write_u32le(bmp, 46u, 2u);
+    bmp[78u] = 0xffu;
+    bmp[79u] = 0xffu;
+    bmp[80u] = 0xffu;
+    bmp[81u] = 0x00u;
+    bmp[82u] = 0x00u;
+    bmp[83u] = 0x00u;
+    bmp[84u] = 0x00u;
+    bmp[85u] = 0x00u;
+    memcpy(bmp + BMP_NUMERIC_OS2_HUFFMAN1D_PIXEL_OFFSET,
+           payload,
+           payload_size);
+    *bmp_size = file_size;
+
+    return 1;
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_generated_rgb_case(
+    char const *label,
+    int width,
+    int height_signed,
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char const *expected_rgb,
+    size_t expected_rgb_size)
+{
+    unsigned char bmp[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_BMP_SIZE];
+    size_t bmp_size;
+    int expected_height;
+
+    bmp_size = 0u;
+    expected_height = 0;
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_numeric_build_os2_huffman1d_bmp(bmp,
+                                             sizeof(bmp),
+                                             width,
+                                             height_signed,
+                                             payload,
+                                             payload_size,
+                                             &bmp_size)) {
+        fprintf(stderr, "%s: failed to build OS/2 HUFFMAN1D buffer\n", label);
+        return 1;
+    }
+
+    expected_height = height_signed < 0 ? -height_signed : height_signed;
+    return run_builtin_loader_bmp_rgb_buffer_case(label,
+                                                  bmp,
+                                                  bmp_size,
+                                                  width,
+                                                  expected_height,
+                                                  expected_rgb,
+                                                  expected_rgb_size);
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_generated_fail_case(
+    char const *label,
+    int width,
+    int height_signed,
+    unsigned char const *payload,
+    size_t payload_size)
+{
+    unsigned char bmp[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_BMP_SIZE];
+    size_t bmp_size;
+
+    bmp_size = 0u;
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_numeric_build_os2_huffman1d_bmp(bmp,
+                                             sizeof(bmp),
+                                             width,
+                                             height_signed,
+                                             payload,
+                                             payload_size,
+                                             &bmp_size)) {
+        fprintf(stderr, "%s: failed to build OS/2 HUFFMAN1D buffer\n", label);
+        return 1;
+    }
+    return run_builtin_loader_bmp_expect_fail_buffer_case(label,
+                                                          bmp,
+                                                          bmp_size);
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_long_run_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    unsigned char expected_rgb[12];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    memset(expected_rgb, 0, sizeof(expected_rgb));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "00110101") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "0000001111") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "11") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "1011") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        0u)) {
+        fprintf(stderr,
+                "builtin loader bmp os2 huffman1d long run numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+
+    return run_builtin_loader_bmp_os2_huffman1d_generated_rgb_case(
+        "builtin loader bmp os2 huffman1d long run numeric",
+        70,
+        1,
+        payload,
+        payload_size,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_makeup_chain_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    unsigned char expected_rgb[12];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    memset(expected_rgb, 0, sizeof(expected_rgb));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "00110101") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "11011") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "11011") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "00110101") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        0u)) {
+        fprintf(stderr,
+                "builtin loader bmp os2 huffman1d makeup chain numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+
+    return run_builtin_loader_bmp_os2_huffman1d_generated_rgb_case(
+        "builtin loader bmp os2 huffman1d makeup chain numeric",
+        128,
+        1,
+        payload,
+        payload_size,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_boundary_128_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    unsigned char expected_rgb[12];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    memset(expected_rgb, 0, sizeof(expected_rgb));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "00110101") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "000011001000") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "0000110111") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        0u)) {
+        fprintf(stderr,
+                "builtin loader bmp os2 huffman1d boundary 128 numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+
+    return run_builtin_loader_bmp_os2_huffman1d_generated_rgb_case(
+        "builtin loader bmp os2 huffman1d boundary 128 numeric",
+        128,
+        1,
+        payload,
+        payload_size,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_multiline_fill_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    unsigned char expected_rgb[12];
+    size_t bit_count;
+    size_t payload_size;
+    size_t index;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    index = 0u;
+    memset(payload, 0, sizeof(payload));
+    memset(expected_rgb, 0, sizeof(expected_rgb));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "00110101") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "000101") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        3u) ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "10011") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        5u)) {
+        fprintf(stderr,
+                "builtin loader bmp os2 huffman1d multiline fill numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+    for (index = 0u; index < 4u; ++index) {
+        expected_rgb[index * 3u + 0u] = 0xffu;
+        expected_rgb[index * 3u + 1u] = 0xffu;
+        expected_rgb[index * 3u + 2u] = 0xffu;
+    }
+
+    return run_builtin_loader_bmp_os2_huffman1d_generated_rgb_case(
+        "builtin loader bmp os2 huffman1d multiline fill numeric",
+        8,
+        2,
+        payload,
+        payload_size,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_os2_huffman1d_short_run_compat_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    unsigned char expected_rgb[12];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    memset(expected_rgb, 0, sizeof(expected_rgb));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "00110101") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "11") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        0u) ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "000111") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "010") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        0u)) {
+        fprintf(stderr,
+                "builtin loader bmp os2 huffman1d short run compat numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+    expected_rgb[0u] = 0xffu;
+    expected_rgb[1u] = 0xffu;
+    expected_rgb[2u] = 0xffu;
+
+    return run_builtin_loader_bmp_os2_huffman1d_generated_rgb_case(
+        "builtin loader bmp os2 huffman1d short run compat numeric",
+        2,
+        2,
+        payload,
+        payload_size,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_huffman1d_missing_eol_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "10011")) {
+        fprintf(stderr,
+                "builtin loader bmp fail os2 huffman1d missing eol numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+    return run_builtin_loader_bmp_os2_huffman1d_generated_fail_case(
+        "builtin loader bmp fail os2 huffman1d missing eol numeric",
+        8,
+        1,
+        payload,
+        payload_size);
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_huffman1d_row_overflow_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "00110101") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "000100") ||
+        !bmp_numeric_append_huffman_eol(payload,
+                                        sizeof(payload),
+                                        &bit_count,
+                                        0u)) {
+        fprintf(stderr,
+                "builtin loader bmp fail os2 huffman1d row overflow numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+    return run_builtin_loader_bmp_os2_huffman1d_generated_fail_case(
+        "builtin loader bmp fail os2 huffman1d row overflow numeric",
+        8,
+        1,
+        payload,
+        payload_size);
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_huffman1d_truncated_makeup_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "110110")) {
+        fprintf(stderr,
+                "builtin loader bmp fail os2 huffman1d truncated makeup "
+                "numeric: failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+    return run_builtin_loader_bmp_os2_huffman1d_generated_fail_case(
+        "builtin loader bmp fail os2 huffman1d truncated makeup numeric",
+        128,
+        1,
+        payload,
+        payload_size);
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_huffman1d_invalid_eol_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "10011") ||
+        !bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "1")) {
+        fprintf(stderr,
+                "builtin loader bmp fail os2 huffman1d invalid eol numeric: "
+                "failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+    return run_builtin_loader_bmp_os2_huffman1d_generated_fail_case(
+        "builtin loader bmp fail os2 huffman1d invalid eol numeric",
+        8,
+        1,
+        payload,
+        payload_size);
+}
+
+static int
+run_builtin_loader_bmp_fail_os2_huffman1d_invalid_code2_numeric_test(void)
+{
+    unsigned char payload[BMP_NUMERIC_OS2_HUFFMAN1D_MAX_PAYLOAD];
+    size_t bit_count;
+    size_t payload_size;
+
+    bit_count = 0u;
+    payload_size = 0u;
+    memset(payload, 0, sizeof(payload));
+    if (!bmp_numeric_append_huffman_bits(payload,
+                                         sizeof(payload),
+                                         &bit_count,
+                                         "000000000000")) {
+        fprintf(stderr,
+                "builtin loader bmp fail os2 huffman1d invalid code2 "
+                "numeric: failed to build payload\n");
+        return 1;
+    }
+    payload_size = (bit_count + 7u) >> 3u;
+    return run_builtin_loader_bmp_os2_huffman1d_generated_fail_case(
+        "builtin loader bmp fail os2 huffman1d invalid code2 numeric",
+        8,
+        1,
+        payload,
+        payload_size);
+}
+
 static SIXELSTATUS
 capture_pnm_numeric_probe(sixel_frame_t *frame, void *data)
 {
@@ -7958,7 +8614,30 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_RLE24_DELTA_RANGE",
           run_builtin_loader_bmp_fail_os2_rle24_delta_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_RLE24_TOPDOWN",
-          run_builtin_loader_bmp_fail_os2_rle24_topdown_numeric_test }
+          run_builtin_loader_bmp_fail_os2_rle24_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_HUFFMAN1D_LONG_RUN",
+          run_builtin_loader_bmp_os2_huffman1d_long_run_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_HUFFMAN1D_MAKEUP_CHAIN",
+          run_builtin_loader_bmp_os2_huffman1d_makeup_chain_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_HUFFMAN1D_BOUNDARY_128",
+          run_builtin_loader_bmp_os2_huffman1d_boundary_128_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_HUFFMAN1D_MULTILINE_FILL",
+          run_builtin_loader_bmp_os2_huffman1d_multiline_fill_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_HUFFMAN1D_SHORT_RUN_COMPAT",
+          run_builtin_loader_bmp_os2_huffman1d_short_run_compat_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_HUFFMAN1D_MISSING_EOL",
+          run_builtin_loader_bmp_fail_os2_huffman1d_missing_eol_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_HUFFMAN1D_ROW_OVERFLOW",
+          run_builtin_loader_bmp_fail_os2_huffman1d_row_overflow_numeric_test
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_HUFFMAN1D_TRUNCATED_MAKEUP",
+        run_builtin_loader_bmp_fail_os2_huffman1d_truncated_makeup_numeric_test
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_HUFFMAN1D_INVALID_EOL",
+          run_builtin_loader_bmp_fail_os2_huffman1d_invalid_eol_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_OS2_HUFFMAN1D_INVALID_CODE2",
+          run_builtin_loader_bmp_fail_os2_huffman1d_invalid_code2_numeric_test
+        }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
         { "SIXEL_TEST_TGA_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
